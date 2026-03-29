@@ -1,0 +1,5271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>PokeRogue Mechanics Reference</title>
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#232733;--border:#2d3140;--text:#e4e6ed;--text-dim:#8b8fa3;--accent:#6c8cff;--accent-dim:#4a5a8a;--tag-high:#2a6e4e;--tag-high-text:#6effa8;--tag-med:#6e5a2a;--tag-med-text:#ffd76e;--tag-low:#5a2a2a;--tag-low-text:#ff8a8a;--tag-crit:#6e2a5a;--tag-crit-text:#ff6edf;--code-bg:#161822;--table-header:#1e2230;--table-alt:#16181f;--nav-bg:#13151d}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;min-height:100dvh;overflow-x:hidden}
+
+/* Top bar */
+.top-bar{position:fixed;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top,0));padding-top:env(safe-area-inset-top,0);background:var(--nav-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding-left:16px;padding-right:16px;z-index:100;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.top-bar .menu-btn{background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:6px;margin-right:12px;line-height:1;-webkit-tap-highlight-color:transparent}
+.top-bar .title{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.top-bar .search-btn{background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:6px;margin-left:auto;line-height:1;-webkit-tap-highlight-color:transparent}
+
+/* Search overlay */
+.search-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);display:none;flex-direction:column;backdrop-filter:blur(4px)}
+.search-overlay.open{display:flex}
+.search-box{background:var(--surface);padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.search-box input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:16px;outline:none}
+.search-box input:focus{border-color:var(--accent)}
+.search-box .close-search{background:none;border:none;color:var(--text-dim);font-size:24px;cursor:pointer;padding:4px}
+.search-results{flex:1;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}
+.search-result{padding:12px 16px;border-radius:8px;cursor:pointer;margin-bottom:4px}
+.search-result:active{background:var(--surface2)}
+.search-result .sr-title{font-weight:600;font-size:14px;color:var(--accent)}
+.search-result .sr-snippet{font-size:13px;color:var(--text-dim);margin-top:4px;line-height:1.4}
+.search-result .sr-snippet mark{background:var(--accent-dim);color:var(--text);border-radius:2px;padding:0 2px}
+
+/* Drawer */
+.drawer-overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer-overlay.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(320px,85vw);background:var(--nav-bg);z-index:151;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
+.drawer-header{padding:20px 20px 16px;padding-top:calc(20px + env(safe-area-inset-top,0));border-bottom:1px solid var(--border)}
+.drawer-header h2{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--accent),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.drawer-header p{font-size:12px;color:var(--text-dim);margin-top:4px}
+.drawer-nav{flex:1;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}
+.drawer-nav .ci{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--text-dim);transition:background .15s;-webkit-tap-highlight-color:transparent}
+.drawer-nav .ci:active{background:var(--surface2)}
+.drawer-nav .ci.active{background:var(--surface2);color:var(--text);font-weight:600}
+.drawer-nav .ci .cn{width:26px;height:26px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0}
+.drawer-nav .ci.active .cn{background:var(--accent);color:var(--bg)}
+
+/* Content */
+.content{padding:calc(68px + env(safe-area-inset-top,0)) 16px calc(72px + env(safe-area-inset-bottom,0));max-width:720px;margin:0 auto}
+.ch{display:none}.ch.active{display:block}
+
+/* Typography */
+.content h1{font-size:1.7rem;font-weight:800;line-height:1.2;margin-bottom:8px;background:linear-gradient(135deg,var(--accent),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.content .ov{font-size:14px;color:var(--text-dim);border-left:3px solid var(--border);padding:12px 14px;margin-bottom:20px;line-height:1.6;background:var(--surface);border-radius:0 8px 8px 0}
+.content h2{font-size:1.3rem;font-weight:700;margin:32px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.content h3{font-size:1.05rem;font-weight:600;margin:20px 0 8px;color:var(--accent)}
+.content p{margin-bottom:12px;line-height:1.7}
+.content ul,.content ol{margin:8px 0 16px 20px}
+.content li{margin-bottom:6px;line-height:1.6}
+.content li p{margin-bottom:4px}
+.content strong{color:#fff;font-weight:600}
+.content em{color:var(--text-dim);font-style:italic}
+.content a{color:var(--accent);text-decoration:none}
+.content a:hover{text-decoration:underline}
+.content blockquote{border-left:3px solid var(--border);padding-left:12px;margin:8px 0 16px;color:var(--text-dim);font-size:13px}
+.content code{background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:.88em;font-family:'SF Mono','Fira Code',Consolas,monospace;color:#c4c8e0;border:1px solid var(--border)}
+.content pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:12px 0 16px;-webkit-overflow-scrolling:touch;font-size:.85rem;line-height:1.5}
+.content pre code{background:none;border:none;padding:0;font-size:inherit}
+.content hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+
+/* Tables */
+.tw{overflow-x:auto;margin:12px 0 16px;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:8px}
+.content table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:280px}
+.content th{background:var(--table-header);padding:10px 12px;text-align:left;font-weight:600;font-size:.82rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;border-bottom:1px solid var(--border)}
+.content td{padding:8px 12px;border-bottom:1px solid var(--border);line-height:1.5}
+.content tr:nth-child(even) td{background:var(--table-alt)}
+.content tr:last-child td{border-bottom:none}
+
+/* Koto relevance tags */
+.kt{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;margin-right:6px;vertical-align:middle}
+.kt.h{background:var(--tag-high);color:var(--tag-high-text)}
+.kt.m{background:var(--tag-med);color:var(--tag-med-text)}
+.kt.l{background:var(--tag-low);color:var(--tag-low-text)}
+.kt.c{background:var(--tag-crit);color:var(--tag-crit-text)}
+.kr{background:var(--surface2);border-radius:8px;padding:10px 14px;margin:12px 0 16px;font-size:.9rem;color:var(--text-dim);border-left:3px solid var(--accent-dim);line-height:1.6}
+.src{font-size:12px;color:var(--text-dim);opacity:0.5;margin:4px 0 16px;font-family:'SF Mono',Consolas,monospace;font-style:italic}
+
+/* TOC */
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:16px 0 24px}
+.toc-t{font-size:12px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.toc a{display:block;color:var(--accent);text-decoration:none;padding:5px 0;font-size:14px;-webkit-tap-highlight-color:transparent}
+.toc a:active{color:#fff}
+
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--nav-bg);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:8px 16px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0));z-index:100}
+.bottom-nav button{background:none;border:none;color:var(--text-dim);font-size:14px;padding:10px 16px;cursor:pointer;border-radius:8px;-webkit-tap-highlight-color:transparent}
+.bottom-nav button:active{background:var(--surface2)}
+.bottom-nav button:disabled{opacity:.3}
+.bottom-nav .pi{font-size:13px;color:var(--text-dim);font-weight:600}
+
+/* Scroll to top */
+.st{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0));right:16px;width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:18px;cursor:pointer;z-index:90;opacity:0;transform:scale(.8);transition:opacity .2s,transform .2s;box-shadow:0 2px 12px rgba(108,140,255,.3);-webkit-tap-highlight-color:transparent}
+.st.visible{opacity:1;transform:scale(1)}
+
+@media(min-width:600px){
+  html{font-size:16px}
+  .content{padding-left:24px;padding-right:24px}
+}
+@media(min-width:900px){
+  .content{max-width:800px;padding-left:32px;padding-right:32px}
+}
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <button class="menu-btn" onclick="toggleDrawer()" aria-label="Menu">&#9776;</button>
+  <span class="title" id="topTitle">PokeRogue Reference</span>
+  <button class="search-btn" onclick="openSearch()" aria-label="Search">&#x1F50D;</button>
+</header>
+
+<div class="search-overlay" id="sO">
+  <div class="search-box">
+    <input type="text" id="sI" placeholder="Search all chapters..." autocomplete="off">
+    <button class="close-search" onclick="closeSearch()">&times;</button>
+  </div>
+  <div class="search-results" id="sR"></div>
+</div>
+
+<div class="drawer-overlay" id="dO" onclick="closeDrawer()"></div>
+<nav class="drawer" id="dw">
+  <div class="drawer-header">
+    <h2>PokeRogue Reference</h2>
+    <p>8 chapters &middot; Full mechanics guide</p>
+  </div>
+  <div class="drawer-nav" id="dN"></div>
+</nav>
+
+<main class="content" id="ct">
+<div class="ch active" data-i="0">
+<h1>The Run</h1>
+<div class="ov">A &quot;run&quot; in PokeRogue is a roguelike session where the player progresses through a series of waves (battles), each set in a biome with its own species pool. Every 10 waves is a boss fight, followed by a healing + shop phase. The biome changes at these 10-wave boundaries, following a directed graph of biome connections.
+
+Five game modes exist: Classic (200 waves, story bosses, the &quot;main&quot; mode), Endless (infinite waves), Spliced Endless (endless with fused Pokemon), Daily (50-wave seed-based speedrun), and Challenge (Classic with self-imposed restrictions). Each mode shares the same wave/boss framework but differs in wave count, difficulty scaling, shop availability, and win conditions.
+
+The run&#39;s difficulty curve is controlled by three interlocking systems: enemy level scaling (quadratic formula based on wave number), a dynamic level cap (prevents overleveling), and biome-specific species pools (controls what you fight and can catch).</div>
+<div class="toc"><div class="toc-t">In this chapter</div><a href="#s0-2" class="toc-link">Game Modes</a><a href="#s0-3" class="toc-link">Wave Structure &amp; Boss Schedule</a><a href="#s0-4" class="toc-link">Fixed Battle Schedule (Classic Mode)</a><a href="#s0-5" class="toc-link">Enemy Level Scaling</a><a href="#s0-6" class="toc-link">Level Cap</a><a href="#s0-7" class="toc-link">EXP Distribution</a><a href="#s0-8" class="toc-link">EXP Growth Curves</a><a href="#s0-9" class="toc-link">Biome Progression</a><a href="#s0-10" class="toc-link">Biome Species Pools</a><a href="#s0-11" class="toc-link">Boss Encounters</a><a href="#s0-12" class="toc-link">Mystery Encounter Spawning</a><a href="#s0-13" class="toc-link">Starting Configuration</a><a href="#s0-14" class="toc-link">Win/Loss Conditions</a><a href="#s0-15" class="toc-link">Challenge System</a><a href="#s0-16" class="toc-link">Score Calculation</a></div>
+
+
+
+<p>A &quot;run&quot; in PokeRogue is a roguelike session where the player progresses through a series of waves (battles), each set in a biome with its own species pool. Every 10 waves is a boss fight, followed by a healing + shop phase. The biome changes at these 10-wave boundaries, following a directed graph of biome connections.</p>
+<p>Five game modes exist: Classic (200 waves, story bosses, the &quot;main&quot; mode), Endless (infinite waves), Spliced Endless (endless with fused Pokemon), Daily (50-wave seed-based speedrun), and Challenge (Classic with self-imposed restrictions). Each mode shares the same wave/boss framework but differs in wave count, difficulty scaling, shop availability, and win conditions.</p>
+<p>The run&#39;s difficulty curve is controlled by three interlocking systems: enemy level scaling (quadratic formula based on wave number), a dynamic level cap (prevents overleveling), and biome-specific species pools (controls what you fight and can catch).</p>
+
+<hr>
+<h2 id="s0-2">Game Modes</h2>
+<p>PokeRogue has five game modes that share the same combat engine but differ in run length, starting conditions, and rules.</p>
+<p><strong>Key values:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>ID</th>
+<th>Start Level</th>
+<th>Start Money</th>
+<th>Waves</th>
+<th>Shop</th>
+<th>Biome Path</th>
+<th>Mystery Encounters</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Classic</td>
+<td>0</td>
+<td>5</td>
+<td>1000</td>
+<td>200</td>
+<td>Yes</td>
+<td>Fixed story path</td>
+<td>Yes (waves 10-180)</td>
+</tr>
+<tr>
+<td>Endless</td>
+<td>1</td>
+<td>5</td>
+<td>1000</td>
+<td>Infinite</td>
+<td>Yes</td>
+<td>Random</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Spliced Endless</td>
+<td>2</td>
+<td>5</td>
+<td>1000</td>
+<td>Infinite</td>
+<td>Yes</td>
+<td>Random (fused only)</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>3</td>
+<td>20</td>
+<td>Seed-based</td>
+<td>50</td>
+<td>No</td>
+<td>Seed-based</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Challenge</td>
+<td>4</td>
+<td>5</td>
+<td>1000</td>
+<td>200</td>
+<td>Yes</td>
+<td>Fixed story path</td>
+<td>Yes (waves 10-180)</td>
+</tr>
+</tbody></table>
+</div>
+<p>Daily mode has a unique difficulty modifier: the effective wave for enemy scaling is <code>wave + 30 + floor(wave / 5)</code>, making enemies significantly tougher than they appear. A wave 30 daily fight has the difficulty of roughly wave 66 in Classic.</p>
+<p><strong>Koto Relevance:</strong> High — Koto&#39;s run system maps directly to this. Classic is the primary template; Daily is a good model for short sessions.</p>
+<p><em>(source: <code>enums/game-modes.ts:1-7</code>, <code>game-mode.ts:131-190</code>, <code>game-mode.ts:463-502</code>)</em></p>
+<hr>
+<h2 id="s0-3">Wave Structure &amp; Boss Schedule</h2>
+<p>Waves are the fundamental unit of progression. The game uses a repeating 10-wave cycle that creates a consistent rhythm of regular fights, boss fights, and rest stops.</p>
+<p><strong>How it works:</strong></p>
+<ul>
+<li><strong>Regular waves (X2-X9):</strong> Wild encounters or trainer battles</li>
+<li><strong>Boss waves (X0):</strong> Stronger enemies from the boss species pool, higher rewards</li>
+<li><strong>Boundary waves (X1):</strong> First wave of a new biome; trainers are suppressed here to avoid sprite conflicts during biome transitions</li>
+<li><strong>Heal + Shop:</strong> After completing a boss wave (X0), before the next biome starts (X1), the player heals and selects modifier rewards</li>
+</ul>
+<p>This creates a 10-wave &quot;heartbeat&quot;: 9 fights of increasing tension, a boss climax, then a breather with healing and loot.</p>
+<p><strong>Key values:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Wave Type</th>
+<th>Condition</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Regular</td>
+<td><code>wave % 10</code> is 2-9</td>
+<td>Normal encounters</td>
+</tr>
+<tr>
+<td>Boss</td>
+<td><code>wave % 10 == 0</code></td>
+<td>Boss-tier enemies, level x1.2</td>
+</tr>
+<tr>
+<td>Boundary</td>
+<td><code>wave % 10 == 1</code></td>
+<td>No trainers, biome transition</td>
+</tr>
+<tr>
+<td>Heal/Shop</td>
+<td>After X0, before X1</td>
+<td>Full party heal + modifier selection</td>
+</tr>
+<tr>
+<td>Endless minor boss</td>
+<td><code>wave % 250 == 0</code></td>
+<td>Endless mode milestone</td>
+</tr>
+<tr>
+<td>Endless major boss</td>
+<td><code>wave % 1000 == 0</code></td>
+<td>Endless mode major milestone</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — The 10-wave cycle is directly portable. The boss-every-10 rhythm with a rest stop after is well-proven pacing.</p>
+<p><em>(source: <code>game-mode.ts:285-310</code>, <code>game-mode.ts:308-344</code>)</em></p>
+<hr>
+<h2 id="s0-4">Fixed Battle Schedule (Classic Mode)</h2>
+<p>Classic and Challenge modes have pre-scripted story battles at specific waves — rivals, gym leaders, evil teams, Elite Four, and the Champion. These replace the normal random encounters.</p>
+<p><strong>How it works:</strong></p>
+<p>Fixed battles are stored in a lookup table keyed by wave number. When the game reaches a fixed-battle wave, it loads that trainer config instead of generating a random encounter.</p>
+<p><strong>Key values:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Wave</th>
+<th>Encounter</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>5</td>
+<td>Town Youngster</td>
+<td>Intro</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Rival 1</td>
+<td>Story</td>
+</tr>
+<tr>
+<td>25</td>
+<td>Rival 2</td>
+<td>Story</td>
+</tr>
+<tr>
+<td>35</td>
+<td>Evil Grunt 1</td>
+<td>Team</td>
+</tr>
+<tr>
+<td>55</td>
+<td>Rival 3</td>
+<td>Story</td>
+</tr>
+<tr>
+<td>62-64</td>
+<td>Evil Grunts 2-3</td>
+<td>Team</td>
+</tr>
+<tr>
+<td>66</td>
+<td>Evil Admin 1</td>
+<td>Team</td>
+</tr>
+<tr>
+<td>95</td>
+<td>Rival 4</td>
+<td>Story</td>
+</tr>
+<tr>
+<td>112</td>
+<td>Evil Grunt 4</td>
+<td>Team</td>
+</tr>
+<tr>
+<td>114</td>
+<td>Evil Admin 2</td>
+<td>Team</td>
+</tr>
+<tr>
+<td>115</td>
+<td>Evil Boss 1</td>
+<td>Team</td>
+</tr>
+<tr>
+<td>145</td>
+<td>Rival 5</td>
+<td>Story</td>
+</tr>
+<tr>
+<td>164</td>
+<td>Evil Admin 3</td>
+<td>Team</td>
+</tr>
+<tr>
+<td>165</td>
+<td>Evil Boss 2</td>
+<td>Team</td>
+</tr>
+<tr>
+<td>182</td>
+<td>Elite Four 1</td>
+<td>Elite</td>
+</tr>
+<tr>
+<td>184</td>
+<td>Elite Four 2</td>
+<td>Elite</td>
+</tr>
+<tr>
+<td>186</td>
+<td>Elite Four 3</td>
+<td>Elite</td>
+</tr>
+<tr>
+<td>188</td>
+<td>Elite Four 4</td>
+<td>Elite</td>
+</tr>
+<tr>
+<td>190</td>
+<td>Champion</td>
+<td>Final</td>
+</tr>
+<tr>
+<td>195</td>
+<td>Rival 6</td>
+<td>Post-game</td>
+</tr>
+</tbody></table>
+</div>
+<p>The final boss at wave 200 is Eternamax Eternatus — a scripted encounter with special music and cutscenes.</p>
+<p><strong>Interactions:</strong> Challenges can override or add fixed battles. A random offset (<code>offsetGym</code>) shifts some trainer waves by +10 for variety between runs.</p>
+<p><strong>Koto Relevance:</strong> High — Story-beat placement at specific waves is directly portable to Koto&#39;s NPC/boss encounters.</p>
+<p><em>(source: <code>enums/fixed-boss-waves.ts:1-23</code>, <code>game-mode.ts:351-370</code>)</em></p>
+<hr>
+<h2 id="s0-5">Enemy Level Scaling</h2>
+<p>Enemy levels follow a quadratic curve that accelerates difficulty as the run progresses, with bosses getting a 20% level boost.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>difficultyWave = wave                              (Classic/Endless/Challenge)
+difficultyWave = wave + 30 + floor(wave / 5)       (Daily)
+
+baseLevel = 1 + (difficultyWave / 2) + (difficultyWave / 25)^2
+</code></pre>
+<p>For boss waves, multiply by 1.2:</p>
+<pre><code>bossLevel = baseLevel * 1.2
+</code></pre>
+<p>A random offset is applied: bosses get a small variance based on <code>wave / 10</code>, non-bosses get a Gaussian distribution with deviation <code>10 / wave</code>.</p>
+<p>The final boss (wave 200 Classic) has no random offset and is rounded to the nearest multiple of 25.</p>
+<p><strong>Example values:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Wave</th>
+<th>Difficulty Wave</th>
+<th>Base Level</th>
+<th>Boss Level (x1.2)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10</td>
+<td>10</td>
+<td>6</td>
+<td>7</td>
+</tr>
+<tr>
+<td>20</td>
+<td>20</td>
+<td>12</td>
+<td>14</td>
+</tr>
+<tr>
+<td>50</td>
+<td>50</td>
+<td>29</td>
+<td>35</td>
+</tr>
+<tr>
+<td>100</td>
+<td>100</td>
+<td>67</td>
+<td>80</td>
+</tr>
+<tr>
+<td>150</td>
+<td>150</td>
+<td>112</td>
+<td>134</td>
+</tr>
+<tr>
+<td>200</td>
+<td>200</td>
+<td>165</td>
+<td>198</td>
+</tr>
+</tbody></table>
+</div>
+<p>The quadratic term <code>(wave/25)^2</code> means early waves feel linear but late-game scaling accelerates sharply. Wave 50 adds only +4 from the quadratic, but wave 200 adds +64.</p>
+<p><strong>Koto Relevance:</strong> High — This formula is directly portable. The quadratic curve is elegant and well-balanced.</p>
+<p><em>(source: <code>battle.ts:127-150</code>, <code>game-mode.ts:192-199</code>)</em></p>
+<hr>
+<h2 id="s0-6">Level Cap</h2>
+<p>A dynamic level cap prevents the player from overleveling. It&#39;s always slightly above the current boss level, giving the player a small but consistent edge.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>waveForCalc = ceil(currentWave / 10) * 10
+difficultyWave = gameMode.getWaveForDifficulty(waveForCalc)
+baseLevel = (1 + difficultyWave/2 + (difficultyWave/25)^2) * 1.2
+levelCap = ceil(baseLevel / 2) * 2 + 2
+</code></pre>
+<p>In plain English: take the boss level for the current 10-wave block, round up to the nearest even number, add 2. The player can be ~2 levels above the boss but no more.</p>
+<p><strong>Example progression:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Wave Range</th>
+<th>Boss Level</th>
+<th>Level Cap</th>
+<th>Player Edge</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1-10</td>
+<td>7</td>
+<td>6</td>
+<td>-1 (early game is tight)</td>
+</tr>
+<tr>
+<td>11-20</td>
+<td>13</td>
+<td>8</td>
+<td>-5</td>
+</tr>
+<tr>
+<td>51-60</td>
+<td>35</td>
+<td>22</td>
+<td>-13</td>
+</tr>
+<tr>
+<td>91-100</td>
+<td>80</td>
+<td>41</td>
+<td>-39</td>
+</tr>
+<tr>
+<td>191-200</td>
+<td>198</td>
+<td>63</td>
+<td>-135</td>
+</tr>
+</tbody></table>
+</div>
+<p>Note: The level cap is quite restrictive — at later waves, the boss is significantly higher level than the cap allows the player to be. This forces reliance on items/modifiers and smart play rather than raw levels.</p>
+<p>When the wave crosses a 10-wave boundary and the cap increases, a <code>LevelCapPhase</code> notification shows the new cap to the player.</p>
+<p><strong>Koto Relevance:</strong> High — Level caps prevent grinding cheese and force engagement with other systems (items, type matchups).</p>
+<p><em>(source: <code>battle-scene.ts</code> (getMaxExpLevel), <code>phases/level-cap-phase.ts:1-26</code>)</em></p>
+<hr>
+<h2 id="s0-7">EXP Distribution</h2>
+<p>When an enemy faints, EXP is calculated and distributed among participating and non-participating party members.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li><strong>Base EXP from the defeated enemy:</strong></li>
+</ol>
+<pre><code>baseExp = (enemySpecies.baseExp * enemyLevel) / 5 + 1
+</code></pre>
+<ol start="2">
+<li><strong>Battle type multiplier:</strong></li>
+</ol>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Battle Type</th>
+<th>Multiplier</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Wild</td>
+<td>x1.0</td>
+</tr>
+<tr>
+<td>Trainer</td>
+<td>x1.5</td>
+</tr>
+<tr>
+<td>Mystery Encounter</td>
+<td>x1.5 (customizable)</td>
+</tr>
+</tbody></table>
+</div>
+<ol start="3">
+<li><strong>Distribution among participants:</strong></li>
+</ol>
+<pre><code>perPokemon = baseExp / numberOfParticipants
+</code></pre>
+<ol start="4">
+<li><strong>Non-participants with ExpShare:</strong></li>
+</ol>
+<pre><code>expShareBonus = (baseExp / numberOfParticipants) * (expShareStacks * 0.2)
+</code></pre>
+<ol start="5">
+<li><strong>Per-Pokemon modifiers (applied in order):</strong></li>
+</ol>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Modifier</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pokerus</td>
+<td>x1.5</td>
+</tr>
+<tr>
+<td>EXP Booster item</td>
+<td>x(1 + stacks * 0.1)</td>
+</tr>
+</tbody></table>
+</div>
+<ol start="6">
+<li><strong>EXP Balance modifier (optional):</strong> If the player has an EXP Balancer, it redistributes EXP to favor underleveled party members:<ul>
+<li>Finds the median level of EXP-eligible members</li>
+<li>Members below median share a pool equally</li>
+<li>Members above median get 0 from the balance pool</li>
+<li>Blend rate: <code>0.2 * stackCount</code> toward the balanced distribution</li>
+</ul>
+</li>
+</ol>
+<p>Pokemon at or above the level cap receive no EXP.</p>
+<p><strong>Koto Relevance:</strong> High — The participant/non-participant split with ExpShare is a good model for party-wide progression.</p>
+<p><em>(source: <code>battle-scene.ts</code> (applyPartyExp ~lines 2000-2100), <code>field/pokemon.ts</code> (getExpValue))</em></p>
+<hr>
+<h2 id="s0-8">EXP Growth Curves</h2>
+<p>Six growth curves determine how much total EXP is needed to reach each level. Each species is assigned one curve.</p>
+<p><strong>How it works:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Curve</th>
+<th>Level 50 EXP</th>
+<th>Level 100 EXP</th>
+<th>Character</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Erratic</td>
+<td>131,324</td>
+<td>600,000</td>
+<td>Fast early, slow late</td>
+</tr>
+<tr>
+<td>Fast</td>
+<td>106,120</td>
+<td>800,000</td>
+<td>Consistently fast</td>
+</tr>
+<tr>
+<td>Medium Fast</td>
+<td>125,000</td>
+<td>1,000,000</td>
+<td>The &quot;standard&quot; curve</td>
+</tr>
+<tr>
+<td>Medium Slow</td>
+<td>125,126</td>
+<td>1,059,860</td>
+<td>Slow early, catches up</td>
+</tr>
+<tr>
+<td>Slow</td>
+<td>156,250</td>
+<td>1,250,000</td>
+<td>Consistently slow</td>
+</tr>
+<tr>
+<td>Fluctuating</td>
+<td>151,222</td>
+<td>1,640,000</td>
+<td>Slow overall</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Formulas (at level 100):</strong></p>
+<pre><code>Erratic:       (level^4 + level^3 * 2000) / 3500
+Fast:          level^3 * 4/5
+Medium Fast:   level^3
+Medium Slow:   level^3 * 6/5 - 15*level^2 + 100*level - 140
+Slow:          level^3 * 5/4
+Fluctuating:   level^3 * (level/2 + 8) * 4 / (100 + level)
+</code></pre>
+<p>For non-Medium-Fast curves at level 100, the game interpolates:</p>
+<pre><code>totalExp = floor(speciesCurve * 0.325 + mediumFast * 0.675)
+</code></pre>
+<p>This prevents extreme curves from making species feel too different at high levels.</p>
+<p><strong>Koto Relevance:</strong> Medium — Growth curves add species differentiation. Could simplify to 2-3 curves for Koto.</p>
+<p><em>(source: <code>data/exp.ts:1-126</code>)</em></p>
+<hr>
+<h2 id="s0-9">Biome Progression</h2>
+<p>Every 10 waves, the biome changes. Biomes are connected in a directed graph — each biome has a list of possible next biomes, some with weighted probability.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>After a boss wave (X0), the game looks up the current biome&#39;s <code>biomeLinks</code></li>
+<li>Each link is either a direct connection or a weighted connection <code>[biome, probability_denominator]</code></li>
+<li>For weighted links: the biome is eligible if <code>random(0, denominator) == 0</code></li>
+<li>The player moves to the selected biome (or a random eligible one)</li>
+<li>If the player has a Map Modifier item, they can manually choose from available links</li>
+</ol>
+<p><strong>Special cases:</strong></p>
+<ul>
+<li><strong>Classic wave 190+:</strong> Forces the END biome for the final boss stretch</li>
+<li><strong>Endless every 50 waves:</strong> Forces the END biome</li>
+<li><strong>Daily:</strong> Biome path is deterministic based on the daily seed</li>
+<li><strong>Endless/Spliced Endless:</strong> Biome is randomly selected (no graph)</li>
+</ul>
+<p>There are 30+ biomes total (Town, Plains, Grass, Forest, Cave, Desert, Volcano, etc.), each with unique species pools, weather tendencies, and visual themes.</p>
+<p><strong>Koto Relevance:</strong> High — The biome graph with weighted connections is a great model for Koto&#39;s area progression. The Map Modifier giving player agency is a nice touch.</p>
+<p><em>(source: <code>phases/select-biome-phase.ts:1-115</code>, <code>init/init-biome-depths.ts:1-41</code>, <code>game-mode.ts:286-303</code>)</em></p>
+<hr>
+<h2 id="s0-10">Biome Species Pools</h2>
+<p>Each biome has a stratified species pool with rarity tiers and time-of-day modifiers. This controls what wild Pokemon and bosses appear.</p>
+<p><strong>How it works:</strong></p>
+<p>Each biome defines species for 9 pool tiers, each with 4 time-of-day variants (Dawn, Day, Dusk, Night) plus an &quot;All&quot; category.</p>
+<p><strong>Wild encounter tier probabilities (512 possible values):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Range</th>
+<th>Probability</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Common</td>
+<td>156-511</td>
+<td>69.5%</td>
+</tr>
+<tr>
+<td>Uncommon</td>
+<td>32-155</td>
+<td>24.2%</td>
+</tr>
+<tr>
+<td>Rare</td>
+<td>6-31</td>
+<td>5.1%</td>
+</tr>
+<tr>
+<td>Super Rare</td>
+<td>1-5</td>
+<td>1.0%</td>
+</tr>
+<tr>
+<td>Ultra Rare</td>
+<td>0</td>
+<td>0.2%</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Boss encounter tier probabilities (64 possible values):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Range</th>
+<th>Probability</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Boss</td>
+<td>20-63</td>
+<td>68.8%</td>
+</tr>
+<tr>
+<td>Boss Rare</td>
+<td>6-19</td>
+<td>21.9%</td>
+</tr>
+<tr>
+<td>Boss Super Rare</td>
+<td>1-5</td>
+<td>7.8%</td>
+</tr>
+<tr>
+<td>Boss Ultra Rare</td>
+<td>0</td>
+<td>1.6%</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Example (Grass biome):</strong></p>
+<ul>
+<li>Common (Day): Hoppip, Silcoon</li>
+<li>Uncommon (Day): Sunkern, Combee</li>
+<li>Rare (All): Bulbasaur, Growlithe, Turtwig, Bonsly</li>
+<li>Boss (All): Miltank, Scolipede, Whimsicott, Lilligant</li>
+<li>Boss Rare (All): Venusaur, Arcanine, Sudowoodo, Torterra</li>
+</ul>
+<p><strong>Koto Relevance:</strong> High — The tiered pool system with time-of-day variation is directly portable. The probability breakpoints are well-tuned.</p>
+<p><em>(source: <code>field/arena.ts:181-222</code>, <code>data/balance/biomes/grass.ts</code>, <code>data/balance/biomes/volcano.ts</code>, <code>data/balance/biomes/end.ts</code>)</em></p>
+<hr>
+<h2 id="s0-11">Boss Encounters</h2>
+<p>Boss-wave enemies are drawn from the boss species pool and can have multi-segment health bars that require multiple &quot;kills&quot; to fully defeat.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>Boss detection: <code>wave % 10 == 0</code></li>
+<li>Species drawn from the boss tier pool (see Biome Species Pools)</li>
+<li>Level multiplied by 1.2 over the base wave level</li>
+<li>Boss health is divided into segments — each segment must be depleted before the next becomes vulnerable</li>
+<li>Segment count scales with the enemy&#39;s base stat total (BST) and wave number</li>
+<li>In double battles, segments are reduced: <code>segments = ceil(segments * thisBST / totalBST)</code></li>
+</ol>
+<p><strong>Special boss encounters:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Wave</th>
+<th>Mode</th>
+<th>Boss</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>200</td>
+<td>Classic</td>
+<td>Eternamax Eternatus</td>
+<td>Final boss, special form</td>
+</tr>
+<tr>
+<td>250</td>
+<td>Endless</td>
+<td>Eternatus (normal form)</td>
+<td>Milestone boss</td>
+</tr>
+<tr>
+<td>1000+</td>
+<td>Endless</td>
+<td>Eternatus (Eternamax)</td>
+<td>Major milestone</td>
+</tr>
+<tr>
+<td>Any 50th</td>
+<td>Endless</td>
+<td>END biome forced</td>
+<td>Mini-boss cycle</td>
+</tr>
+</tbody></table>
+</div>
+<p>The Classic final boss at wave 200 is always a randomized legendary with perfect IVs (BST &gt;= 600, excluding Eternatus and Arceus).</p>
+<p><strong>Koto Relevance:</strong> High — Multi-segment boss HP is a great mechanic for making boss fights feel epic without just inflating numbers.</p>
+<p><em>(source: <code>game-mode.ts:308-344</code>, <code>battle.ts:127-150</code>, <code>phases/encounter-phase.ts:109-200</code>)</em></p>
+<hr>
+<h2 id="s0-12">Mystery Encounter Spawning</h2>
+<p>Mystery encounters are special random events that appear between regular waves. A &quot;pity&quot; system ensures they appear at a consistent rate regardless of luck.</p>
+<p><strong>How it works:</strong></p>
+<p>The system uses a rolling weight that increases each time a mystery encounter fails to spawn:</p>
+<pre><code>BASE_WEIGHT = 3
+MAX_WEIGHT = 256
+WEIGHT_INCREMENT_ON_MISS = 3
+
+Each eligible wave:
+  spawnChance = currentWeight / 256
+  if spawn succeeds: reset weight to BASE_WEIGHT
+  if spawn fails: weight += WEIGHT_INCREMENT_ON_MISS
+</code></pre>
+<p>An anti-variance system targets 12 encounters per Classic run (~1 every 16.7 waves):</p>
+<pre><code>TARGET_PER_RUN = 12
+ANTI_VARIANCE_MODIFIER = 15
+
+adjustment = (expectedCount - actualCount) * ANTI_VARIANCE_MODIFIER / 256
+weight += adjustment
+</code></pre>
+<p>If you&#39;ve been unlucky, the weight increases faster. If you&#39;ve been lucky, it slows down.</p>
+<p><strong>Wave ranges where mystery encounters can appear:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Range</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Classic</td>
+<td>Waves 10-180</td>
+</tr>
+<tr>
+<td>Challenge</td>
+<td>Waves 10-180</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Endless</td>
+<td>None</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> Medium — The pity/anti-variance system for random event frequency is a clean design worth adapting.</p>
+<p><em>(source: <code>constants.ts:15-96</code>, <code>game-mode.ts:421-433</code>)</em></p>
+<hr>
+<h2 id="s0-13">Starting Configuration</h2>
+<p>Every run begins with fixed parameters that vary by game mode.</p>
+<p><strong>How it works:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Classic</th>
+<th>Endless</th>
+<th>Daily</th>
+<th>Challenge</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Starting wave</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Starting level</td>
+<td>5</td>
+<td>5</td>
+<td>20</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Starting money</td>
+<td>1000</td>
+<td>1000</td>
+<td>Seed-based</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>Starting biome</td>
+<td>Town</td>
+<td>Random</td>
+<td>Seed-based</td>
+<td>Town</td>
+</tr>
+<tr>
+<td>Party size</td>
+<td>1-6 (player choice)</td>
+<td>1-6</td>
+<td>3 (seed-based)</td>
+<td>1-6</td>
+</tr>
+</tbody></table>
+</div>
+<p>The player selects their starting party from unlocked starters, spending from a point budget (default 10 points). Higher-rarity starters cost more points. See the Party Building doc for starter cost details.</p>
+<p>A random <code>offsetGym</code> flag is set at run start, which shifts certain trainer wave positions by +10 for variety between runs.</p>
+<p><strong>Koto Relevance:</strong> High — Starting conditions directly map to Koto&#39;s run initialization.</p>
+<p><em>(source: <code>game-mode.ts:131-190</code>, <code>starting-wave.ts:1-3</code>)</em></p>
+<hr>
+<h2 id="s0-14">Win/Loss Conditions</h2>
+<p><strong>Victory conditions by mode:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Win Condition</th>
+<th>Score Bonus</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Classic</td>
+<td>Defeat Eternatus at wave 200</td>
+<td>+5,000</td>
+</tr>
+<tr>
+<td>Challenge</td>
+<td>Defeat Eternatus at wave 200</td>
+<td>+5,000</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>Clear wave 50 boss</td>
+<td>+2,500</td>
+</tr>
+<tr>
+<td>Endless</td>
+<td>Optional milestones at 250, 500, 750, 1000</td>
+<td>+0</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Defeat:</strong> The entire player party faints. Some mystery encounters have special loss conditions that can override this.</p>
+<p><strong>On defeat:</strong></p>
+<ul>
+<li>Game over screen with score summary</li>
+<li>Retry option available if enabled</li>
+<li>Session save persists for post-mortem</li>
+</ul>
+<p><strong>Failsafe:</strong> If the wave somehow exceeds 200 in Classic mode, the game forces a victory.</p>
+<p><strong>Koto Relevance:</strong> High — Victory conditions define the run&#39;s purpose. Classic&#39;s wave 200 target is a good template.</p>
+<p><em>(source: <code>phases/game-over-phase.ts:33-200</code>, <code>phases/end-card-phase.ts:1-52</code>, <code>game-mode.ts:291-302</code>)</em></p>
+<hr>
+<h2 id="s0-15">Challenge System</h2>
+<p>Challenges are optional modifiers that make Classic runs harder in specific ways. Each challenge has a severity level (1-3) and awards ribbons on completion.</p>
+<p><strong>How it works:</strong></p>
+<p>Challenges hook into the game at specific points via application functions:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>What It Modifies</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>applyStarterChoice</code></td>
+<td>Restricts available starters</td>
+</tr>
+<tr>
+<td><code>applyPokemonInBattle</code></td>
+<td>Validates party legality mid-run</td>
+</tr>
+<tr>
+<td><code>applyLevelChange</code></td>
+<td>Modifies enemy level scaling</td>
+</tr>
+<tr>
+<td><code>applyFixedBattle</code></td>
+<td>Overrides specific trainer configs</td>
+</tr>
+<tr>
+<td><code>applyPartyHeal</code></td>
+<td>Can disable automatic healing</td>
+</tr>
+<tr>
+<td><code>applyShop</code></td>
+<td>Can disable the shop entirely</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Known challenge types:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Challenge</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Fresh Start</td>
+<td>No held items or item drops</td>
+</tr>
+<tr>
+<td>Single Generation</td>
+<td>Only Pokemon from one generation</td>
+</tr>
+<tr>
+<td>Nuzlocke</td>
+<td>Permanent death on faint</td>
+</tr>
+<tr>
+<td>Passives Disabled</td>
+<td>Passive abilities don&#39;t activate</td>
+</tr>
+<tr>
+<td>Level Scaling</td>
+<td>Enemies scale faster</td>
+</tr>
+<tr>
+<td>Splash Only</td>
+<td>Can only use the move Splash</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> Medium — Challenge modifiers add replayability. The hook-based architecture is clean and extensible.</p>
+<p><em>(source: <code>data/challenge.ts:42-446</code>)</em></p>
+<hr>
+<h2 id="s0-16">Score Calculation</h2>
+<p>Each run tracks a score based on battle performance. Score rewards fast, efficient play.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>battleScore = sum of enemy party BST values
+
+turnMultiplier = sineEaseOut(1 - min(turns - 2, 10 * partyMult) / (10 * partyMult))
+
+if doubleBattle: battleScore /= 1.5
+
+finalBattleScore = floor(battleScore * turnMultiplier)
+</code></pre>
+<p>The turn multiplier rewards finishing battles quickly — fewer turns = higher multiplier. The sine ease-out curve means the first few extra turns barely matter, but dragging a fight out tanks the score.</p>
+<p><strong>Clear bonuses:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Bonus</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Classic</td>
+<td>+5,000</td>
+</tr>
+<tr>
+<td>Challenge</td>
+<td>+5,000</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>+2,500</td>
+</tr>
+<tr>
+<td>Endless</td>
+<td>+0</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> Low — Score is cosmetic. Could adapt for leaderboards but not core gameplay.</p>
+<p><em>(source: <code>battle.ts:215-235</code>, <code>game-mode.ts:382-392</code>)</em></p>
+
+</div>
+<div class="ch" data-i="1">
+<h1>Battle</h1>
+<div class="ov">The battle system is the core gameplay loop. Each wave is a turn-based combat encounter where the player&#39;s party fights wild Pokemon or trainer teams. Combat resolves through a damage formula that combines attacker stats, move power, type effectiveness, and numerous multipliers (weather, terrain, abilities, items, crits, STAB).
+
+Turn order is determined by speed stats within priority brackets — higher priority moves always go first regardless of speed, and within the same bracket, the faster Pokemon acts first (reversed by Trick Room). Status effects, weather, terrain, and arena tags (hazards/screens) layer additional strategic depth.
+
+The system also handles catching wild Pokemon mid-run, berry consumption, Terastallization, and move learning — all integrated into the same phase-based battle flow.</div>
+<div class="toc"><div class="toc-t">In this chapter</div><a href="#s1-2" class="toc-link">Stat Calculation</a><a href="#s1-3" class="toc-link">Stat Stages</a><a href="#s1-4" class="toc-link">Damage Formula</a><a href="#s1-5" class="toc-link">Type Effectiveness</a><a href="#s1-6" class="toc-link">Critical Hits</a><a href="#s1-7" class="toc-link">Accuracy and Evasion</a><a href="#s1-8" class="toc-link">Speed and Turn Order</a><a href="#s1-9" class="toc-link">Status Effects</a><a href="#s1-10" class="toc-link">Weather</a><a href="#s1-11" class="toc-link">Terrain</a><a href="#s1-12" class="toc-link">Arena Tags (Hazards &amp; Screens)</a><a href="#s1-13" class="toc-link">Catch Rate Formula</a><a href="#s1-14" class="toc-link">Multi-Hit Moves</a><a href="#s1-15" class="toc-link">Move Priority</a><a href="#s1-16" class="toc-link">Berries</a><a href="#s1-17" class="toc-link">Terastallization</a></div>
+
+
+
+<p>The battle system is the core gameplay loop. Each wave is a turn-based combat encounter where the player&#39;s party fights wild Pokemon or trainer teams. Combat resolves through a damage formula that combines attacker stats, move power, type effectiveness, and numerous multipliers (weather, terrain, abilities, items, crits, STAB).</p>
+<p>Turn order is determined by speed stats within priority brackets — higher priority moves always go first regardless of speed, and within the same bracket, the faster Pokemon acts first (reversed by Trick Room). Status effects, weather, terrain, and arena tags (hazards/screens) layer additional strategic depth.</p>
+<p>The system also handles catching wild Pokemon mid-run, berry consumption, Terastallization, and move learning — all integrated into the same phase-based battle flow.</p>
+
+<hr>
+<h2 id="s1-2">Stat Calculation</h2>
+<p>Each Pokemon&#39;s six stats (HP, ATK, DEF, SPATK, SPDEF, SPD) are calculated from base stats, IVs, level, and nature.</p>
+<p><strong>How it works:</strong></p>
+<p>For HP:</p>
+<pre><code>HP = floor((2 * baseHP + IV) * level / 100) + level + 10
+</code></pre>
+<p>For all other stats:</p>
+<pre><code>stat = floor((2 * baseStat + IV) * level / 100) + 5
+stat = floor(stat * natureMultiplier)
+</code></pre>
+<p>Nature multiplier is 1.1 (boosted), 0.9 (reduced), or 1.0 (neutral). Each nature boosts one stat and reduces another (5 neutral natures do nothing).</p>
+<p><strong>Key values:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Range</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Base stat</td>
+<td>1-255</td>
+<td>Species-specific</td>
+</tr>
+<tr>
+<td>IV</td>
+<td>0-31</td>
+<td>5 bits from personality value</td>
+</tr>
+<tr>
+<td>Nature multiplier</td>
+<td>0.9 / 1.0 / 1.1</td>
+<td>One up, one down</td>
+</tr>
+<tr>
+<td>Fusion stat</td>
+<td>ceil((stat1 + stat2) / 2)</td>
+<td>Averaged, rounded up</td>
+</tr>
+</tbody></table>
+</div>
+<p>IVs are extracted from the Pokemon&#39;s 32-bit personality ID using 5-bit masks per stat: HP (bits 29-25), ATK (24-20), DEF (19-15), SPATK (14-10), SPDEF (9-5), SPD (4-0).</p>
+<p><strong>Koto Relevance:</strong> High — Directly portable. Koto can use the same formula with creature base stats.</p>
+<p><em>(source: <code>field/pokemon.ts:1581-1622</code>, <code>utils/common.ts:190-199</code>)</em></p>
+<hr>
+<h2 id="s1-3">Stat Stages</h2>
+<p>In-battle stat modifications range from -6 to +6. Each stage changes the effective stat by a ratio.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>multiplier = max(2, 2 + stage) / max(2, 2 - stage)
+</code></pre>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Multiplier</th>
+<th>Stage</th>
+<th>Multiplier</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>+6</td>
+<td>4.00x</td>
+<td>-1</td>
+<td>0.67x</td>
+</tr>
+<tr>
+<td>+5</td>
+<td>3.50x</td>
+<td>-2</td>
+<td>0.50x</td>
+</tr>
+<tr>
+<td>+4</td>
+<td>3.00x</td>
+<td>-3</td>
+<td>0.40x</td>
+</tr>
+<tr>
+<td>+3</td>
+<td>2.50x</td>
+<td>-4</td>
+<td>0.33x</td>
+</tr>
+<tr>
+<td>+2</td>
+<td>2.00x</td>
+<td>-5</td>
+<td>0.29x</td>
+</tr>
+<tr>
+<td>+1</td>
+<td>1.50x</td>
+<td>-6</td>
+<td>0.25x</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1.00x</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+</div>
+<p>Critical hits ignore negative ATK/SPATK stages on the attacker and positive DEF/SPDEF stages on the defender.</p>
+<p><strong>Koto Relevance:</strong> High — The stage multiplier table is directly portable.</p>
+<p><em>(source: <code>field/pokemon.ts:3415-3461</code>)</em></p>
+<hr>
+<h2 id="s1-4">Damage Formula</h2>
+<p>The core damage formula combines base damage with a chain of multipliers.</p>
+<p><strong>How it works:</strong></p>
+<p><strong>Step 1 — Base damage:</strong></p>
+<pre><code>baseDamage = ((2 * level / 5 + 2) * power * ATK / DEF) / 50 + 2
+</code></pre>
+<p><strong>Step 2 — Multiplier chain (all multiplied together):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Multiplier</th>
+<th>Value</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Multi-target</td>
+<td>0.75</td>
+<td>Move hits 2+ non-fainted targets</td>
+</tr>
+<tr>
+<td>Multi-hit</td>
+<td>varies</td>
+<td>From Multi-Lens / Parental Bond</td>
+</tr>
+<tr>
+<td>Weather/Terrain</td>
+<td>1.5 or 0.5</td>
+<td>Type-weather interaction</td>
+</tr>
+<tr>
+<td>Glaive Rush</td>
+<td>2.0</td>
+<td>Target used Glaive Rush last turn</td>
+</tr>
+<tr>
+<td>Critical</td>
+<td>1.5</td>
+<td>On critical hit</td>
+</tr>
+<tr>
+<td>Random</td>
+<td>0.85-1.00</td>
+<td>Uniform random roll</td>
+</tr>
+<tr>
+<td>STAB</td>
+<td>1.5</td>
+<td>Move matches user&#39;s type</td>
+</tr>
+<tr>
+<td>Tera STAB</td>
+<td>+0.5</td>
+<td>Additional if Terastallized + matching</td>
+</tr>
+<tr>
+<td>Type effectiveness</td>
+<td>0 / 0.5 / 1 / 2 / 4</td>
+<td>Per defender type</td>
+</tr>
+<tr>
+<td>Burn</td>
+<td>0.5</td>
+<td>Physical move + user is burned</td>
+</tr>
+<tr>
+<td>Screen</td>
+<td>0.5 (single) / 0.67 (double)</td>
+<td>Reflect/Light Screen active</td>
+</tr>
+<tr>
+<td>Misty Terrain</td>
+<td>0.5</td>
+<td>Dragon move vs grounded target</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>STAB details:</strong></p>
+<ul>
+<li>Base STAB: 1.5x if move type matches user&#39;s type</li>
+<li>Tera STAB: additional +0.5 if Terastallized and move matches Tera type</li>
+<li>Stellar Tera: +0.2 to non-matching types</li>
+<li>Max STAB cap: 2.25x</li>
+</ul>
+<p><strong>Minimum power rule:</strong> Non-priority, single-hit Tera-type moves have minimum 60 power when Terastallized.</p>
+<p><strong>Koto Relevance:</strong> Critical — This is the single most important formula to port. The multiplier chain design is clean and extensible.</p>
+<p><em>(source: <code>field/pokemon.ts:3552-3942</code>)</em></p>
+<hr>
+<h2 id="s1-5">Type Effectiveness</h2>
+<p>18 types form a rock-paper-scissors web. Each attacking type has a multiplier against each defending type (0x immune, 0.5x resisted, 1x neutral, 2x super effective). Dual-typed defenders multiply both.</p>
+<p><strong>Key matchups (super effective):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Attacking Type</th>
+<th>Super Effective Against</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Fire</td>
+<td>Grass, Ice, Bug, Steel</td>
+</tr>
+<tr>
+<td>Water</td>
+<td>Fire, Ground, Rock</td>
+</tr>
+<tr>
+<td>Grass</td>
+<td>Water, Ground, Rock</td>
+</tr>
+<tr>
+<td>Electric</td>
+<td>Flying, Water</td>
+</tr>
+<tr>
+<td>Fighting</td>
+<td>Normal, Rock, Ice, Dark, Steel</td>
+</tr>
+<tr>
+<td>Psychic</td>
+<td>Fighting, Poison</td>
+</tr>
+<tr>
+<td>Dark</td>
+<td>Ghost, Psychic</td>
+</tr>
+<tr>
+<td>Fairy</td>
+<td>Fighting, Dragon, Dark</td>
+</tr>
+<tr>
+<td>Dragon</td>
+<td>Dragon</td>
+</tr>
+<tr>
+<td>Ground</td>
+<td>Poison, Rock, Steel, Fire, Electric</td>
+</tr>
+<tr>
+<td>Steel</td>
+<td>Rock, Ice, Fairy</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Immunities:</strong> Normal/Fighting → Ghost, Ground → Electric, Psychic → Dark, Dragon → Fairy, Poison → Steel.</p>
+<p>Inverse Battle challenge reverses all effectiveness (0 ↔ 2, 0.5 ↔ 2).</p>
+<p><strong>Koto Relevance:</strong> High — Koto uses elements instead of types, but the multiplier structure ports directly.</p>
+<p><em>(source: <code>data/type.ts:19-287</code>)</em></p>
+<hr>
+<h2 id="s1-6">Critical Hits</h2>
+<p>Critical hits deal 1.5x damage and ignore unfavorable stat stages.</p>
+<p><strong>How it works:</strong></p>
+<p>Crit stage determines the chance:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Crit Stage</th>
+<th>Chance</th>
+<th>Percentage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>1 in 24</td>
+<td>4.2%</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1 in 8</td>
+<td>12.5%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1 in 2</td>
+<td>50%</td>
+</tr>
+<tr>
+<td>3+</td>
+<td>1 in 1</td>
+<td>100%</td>
+</tr>
+</tbody></table>
+</div>
+<p>Crit stages are increased by moves with HighCritAttr, abilities (Super Luck), items (Scope Lens), and battler tags (CritBoost from Focus Energy).</p>
+<p>On crit: negative ATK/SPATK stages on the attacker are ignored, positive DEF/SPDEF stages on the defender are ignored.</p>
+<p><strong>Koto Relevance:</strong> High — The crit stage table is elegant and directly portable.</p>
+<p><em>(source: <code>field/pokemon.ts:1424-1438, 3950-3978</code>)</em></p>
+<hr>
+<h2 id="s1-7">Accuracy and Evasion</h2>
+<p>Moves have a base accuracy (typically 70-100, or -1 for never-miss). The accuracy check compares this against accuracy/evasion stage differences.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>stageDiff = user_ACC_stage - target_EVA_stage
+
+if stageDiff &gt; 0: multiplier = (3 + min(stageDiff, 6)) / 3
+if stageDiff &lt; 0: multiplier = 3 / (3 + min(abs(stageDiff), 6))
+if stageDiff = 0: multiplier = 1.0
+
+finalAccuracy = moveAccuracy * multiplier
+hit = random(0, 100) &lt; finalAccuracy
+</code></pre>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Stage Diff</th>
+<th>Multiplier</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>+6</td>
+<td>3.00x</td>
+</tr>
+<tr>
+<td>+3</td>
+<td>2.00x</td>
+</tr>
+<tr>
+<td>+1</td>
+<td>1.33x</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1.00x</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>0.75x</td>
+</tr>
+<tr>
+<td>-3</td>
+<td>0.50x</td>
+</tr>
+<tr>
+<td>-6</td>
+<td>0.33x</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Special cases:</strong></p>
+<ul>
+<li><code>accuracy = -1</code>: always hits</li>
+<li>Gravity: accuracy x1.67</li>
+<li>Fog: accuracy -10%</li>
+<li>Multi-hit moves: only first hit checked (unless CHECK_ALL_HITS flag)</li>
+</ul>
+<p><strong>Koto Relevance:</strong> High — Accuracy stages are directly portable.</p>
+<p><em>(source: <code>field/pokemon.ts:3473-3543</code>)</em></p>
+<hr>
+<h2 id="s1-8">Speed and Turn Order</h2>
+<p>Turn order is resolved by priority bracket first, then speed within each bracket.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>Non-FIGHT commands (Switch, Ball, Run) go before all FIGHT commands</li>
+<li>Within FIGHT commands, group by move priority (+5 to -7)</li>
+<li>Within each priority group, sort by effective speed (highest first)</li>
+<li>Trick Room reverses speed order within each bracket</li>
+</ol>
+<p><strong>Effective speed</strong> = base SPD stat * stat stage multiplier, modified by abilities, items, weather (Ice-type in Snow: 1.5x), paralysis (0.5x).</p>
+<p><strong>Common priority levels:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>+5</td>
+<td>Protect</td>
+</tr>
+<tr>
+<td>+2</td>
+<td>Extreme Speed</td>
+</tr>
+<tr>
+<td>+1</td>
+<td>Quick Attack, Aqua Jet, Mach Punch</td>
+</tr>
+<tr>
+<td>0</td>
+<td>Most moves</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>Vital Throw</td>
+</tr>
+<tr>
+<td>-6</td>
+<td>Trick Room</td>
+</tr>
+<tr>
+<td>-7</td>
+<td>Roar, Whirlwind</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — Priority brackets + speed ordering is the standard and works great.</p>
+<p><em>(source: <code>utils/speed-order.ts:21-83</code>, <code>phases/turn-start-phase.ts:21-79</code>)</em></p>
+<hr>
+<h2 id="s1-9">Status Effects</h2>
+<p>Six non-volatile status conditions affect Pokemon persistently until cured.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Per-Turn Damage</th>
+<th>Other Effect</th>
+<th>Catch Rate</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Poison</td>
+<td>1/8 max HP</td>
+<td>—</td>
+<td>1.5x</td>
+</tr>
+<tr>
+<td>Toxic</td>
+<td>1/16 * turnCount max HP</td>
+<td>Damage increases each turn</td>
+<td>1.5x</td>
+</tr>
+<tr>
+<td>Burn</td>
+<td>1/8 max HP</td>
+<td>Physical ATK halved</td>
+<td>1.5x</td>
+</tr>
+<tr>
+<td>Paralysis</td>
+<td>—</td>
+<td>Speed halved, 25% skip turn</td>
+<td>1.5x</td>
+</tr>
+<tr>
+<td>Sleep</td>
+<td>—</td>
+<td>Can&#39;t act (ticks down)</td>
+<td>2.5x</td>
+</tr>
+<tr>
+<td>Freeze</td>
+<td>—</td>
+<td>Can&#39;t act (20% thaw/turn)</td>
+<td>2.5x</td>
+</tr>
+</tbody></table>
+</div>
+<p>Poison, Burn, and Toxic damage are applied post-turn (after all moves resolve). Toxic&#39;s turn counter increments each application.</p>
+<p><strong>Koto Relevance:</strong> Medium — Status effects are important but Koto may want a simplified set.</p>
+<p><em>(source: <code>data/status-effect.ts:1-181</code>)</em></p>
+<hr>
+<h2 id="s1-10">Weather</h2>
+<p>Weather modifies move damage by type and can deal passive damage.</p>
+<p><strong>Damage multipliers:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Weather</th>
+<th>Boosted Type (1.5x)</th>
+<th>Weakened Type (0.5x)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sunny / Harsh Sun</td>
+<td>Fire</td>
+<td>Water</td>
+</tr>
+<tr>
+<td>Rain / Heavy Rain</td>
+<td>Water</td>
+<td>Fire</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Per-turn damage:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Weather</th>
+<th>Damage</th>
+<th>Immune Types</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sandstorm</td>
+<td>1/8 max HP</td>
+<td>Rock, Ground, Steel</td>
+</tr>
+<tr>
+<td>Hail</td>
+<td>1/8 max HP</td>
+<td>Ice</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Move cancellation:</strong> Harsh Sun cancels Water moves; Heavy Rain cancels Fire moves.</p>
+<p>Standard weather lasts 5 turns. Harsh Sun, Heavy Rain, and Strong Winds are permanent until replaced.</p>
+<p><strong>Koto Relevance:</strong> Medium — Weather is a good optional layer. The 1.5x/0.5x multipliers are well-balanced.</p>
+<p><em>(source: <code>data/weather.ts:10-247</code>)</em></p>
+<hr>
+<h2 id="s1-11">Terrain</h2>
+<p>Terrain boosts moves of a matching type by 1.3x for grounded Pokemon.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Terrain</th>
+<th>Boosted Type</th>
+<th>Special Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Electric</td>
+<td>Electric (1.3x)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Grassy</td>
+<td>Grass (1.3x)</td>
+<td>Heal 1/8 HP per turn</td>
+</tr>
+<tr>
+<td>Psychic</td>
+<td>Psychic (1.3x)</td>
+<td>Blocks priority moves vs grounded targets</td>
+</tr>
+<tr>
+<td>Misty</td>
+<td>—</td>
+<td>Dragon moves deal 0.5x vs grounded targets</td>
+</tr>
+</tbody></table>
+</div>
+<p>Terrain lasts 5 turns.</p>
+<p><strong>Koto Relevance:</strong> Low-Medium — Terrain is a niche mechanic, lower priority for Koto.</p>
+<p><em>(source: <code>data/terrain.ts:10-187</code>)</em></p>
+<hr>
+<h2 id="s1-12">Arena Tags (Hazards &amp; Screens)</h2>
+<p>Field effects placed by moves that persist across turns.</p>
+<p><strong>Damage reduction screens:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Reduces</th>
+<th>Single Battle</th>
+<th>Double Battle</th>
+<th>Duration</th>
+<th>Bypassed By</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Reflect</td>
+<td>Physical</td>
+<td>0.5x</td>
+<td>0.67x</td>
+<td>5 turns</td>
+<td>Crits, Infiltrator</td>
+</tr>
+<tr>
+<td>Light Screen</td>
+<td>Special</td>
+<td>0.5x</td>
+<td>0.67x</td>
+<td>5 turns</td>
+<td>Crits, Infiltrator</td>
+</tr>
+<tr>
+<td>Aurora Veil</td>
+<td>Both</td>
+<td>0.5x</td>
+<td>0.67x</td>
+<td>5 turns</td>
+<td>Crits, Infiltrator</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Entry hazards (damage on switch-in):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Hazard</th>
+<th>Max Layers</th>
+<th>Damage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Stealth Rock</td>
+<td>1</td>
+<td>12.5% * type effectiveness (can be 3.125% to 50%)</td>
+</tr>
+<tr>
+<td>Spikes</td>
+<td>3</td>
+<td>1/8 (1 layer), 1/6 (2), 1/4 (3) — grounded only</td>
+</tr>
+<tr>
+<td>Toxic Spikes</td>
+<td>2</td>
+<td>Poison (1 layer), Toxic (2 layers) — grounded only</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Other key tags:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Duration</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Trick Room</td>
+<td>5 turns</td>
+<td>Reverses speed order</td>
+</tr>
+<tr>
+<td>Tailwind</td>
+<td>4 turns</td>
+<td>Speed 1.5x for team</td>
+</tr>
+<tr>
+<td>Safeguard</td>
+<td>5 turns</td>
+<td>Prevents status</td>
+</tr>
+<tr>
+<td>Mist</td>
+<td>5 turns</td>
+<td>Prevents stat reduction</td>
+</tr>
+<tr>
+<td>Gravity</td>
+<td>5 turns</td>
+<td>Grounds all, accuracy +67%</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — Hazards (especially Stealth Rock) and screens are core competitive mechanics worth porting.</p>
+<p><em>(source: <code>data/arena-tag.ts:113-1850</code>)</em></p>
+<hr>
+<h2 id="s1-13">Catch Rate Formula</h2>
+<p>Wild Pokemon can be caught with Pokeballs using a modified catch rate formula.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>modifiedRate = floor(
+  ((3 * maxHP - 2 * currentHP) * speciesCatchRate * ballMultiplier) / (3 * maxHP)
+  * statusMultiplier
+  * shinyMultiplier
+)
+</code></pre>
+<p><strong>Pokeball multipliers:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Ball</th>
+<th>Multiplier</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pokeball</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Great Ball</td>
+<td>1.5</td>
+</tr>
+<tr>
+<td>Ultra Ball</td>
+<td>2.0</td>
+</tr>
+<tr>
+<td>Rogue Ball</td>
+<td>3.0</td>
+</tr>
+<tr>
+<td>Master Ball</td>
+<td>Guaranteed</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Status multipliers:</strong> Sleep/Freeze = 2.5x, Poison/Burn/Paralysis = 1.5x, None = 1.0x.</p>
+<p><strong>Shake check:</strong> Each catch attempt requires 3 successful shake checks (1 for critical capture):</p>
+<pre><code>shakeProbability = floor(65536 / (255 / modifiedRate)^0.1875)
+</code></pre>
+<p>If modifiedRate &gt;= 255, capture is guaranteed.</p>
+<p><strong>Critical capture:</strong> Chance scales with Pokedex completion (0x at &lt;100 species, 2.5x at &gt;800 species). Only requires 1 shake check instead of 3.</p>
+<p><strong>Koto Relevance:</strong> High — Catch mechanics are core to party building mid-run.</p>
+<p><em>(source: <code>data/pokeball.ts:50-110</code>, <code>phases/attempt-capture-phase.ts:62-87</code>)</em></p>
+<hr>
+<h2 id="s1-14">Multi-Hit Moves</h2>
+<p>Some moves hit 2-5 times per turn.</p>
+<p><strong>Hit count for 2-5 hit moves:</strong></p>
+<pre><code>roll = random(0, 20)
+if roll &gt;= 13: 2 hits (35%)
+if roll &gt;= 6:  3 hits (35%)
+if roll &gt;= 3:  4 hits (15%)
+else:          5 hits (15%)
+</code></pre>
+<p>Skill Link ability forces 5 hits. Parental Bond adds 1 extra hit. Multi-Lens item adds 1 hit per stack.</p>
+<p>First hit checks accuracy; subsequent hits always land (unless CHECK_ALL_HITS flag is set).</p>
+<p><strong>Koto Relevance:</strong> Medium — Multi-hit is a nice mechanic but not essential for Koto&#39;s vocab-card combat.</p>
+<p><em>(source: <code>data/moves/move.ts:2836-2967</code>)</em></p>
+<hr>
+<h2 id="s1-15">Move Priority</h2>
+<p>Each move has a static priority value (-7 to +5). Higher priority moves always act first regardless of speed.</p>
+<p>Common priority moves:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Moves</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>+5</td>
+<td>Protect, Detect</td>
+</tr>
+<tr>
+<td>+3</td>
+<td>Fake Out</td>
+</tr>
+<tr>
+<td>+2</td>
+<td>Extreme Speed</td>
+</tr>
+<tr>
+<td>+1</td>
+<td>Quick Attack, Aqua Jet, Mach Punch, Bullet Punch, Shadow Sneak</td>
+</tr>
+<tr>
+<td>0</td>
+<td>Most moves</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>Vital Throw</td>
+</tr>
+<tr>
+<td>-6</td>
+<td>Trick Room</td>
+</tr>
+<tr>
+<td>-7</td>
+<td>Roar, Whirlwind</td>
+</tr>
+</tbody></table>
+</div>
+<p>Psychic Terrain blocks priority moves against grounded targets.</p>
+<p><strong>Koto Relevance:</strong> Medium — Priority adds depth but Koto&#39;s turn structure may differ.</p>
+<p><em>(source: <code>data/moves/move.ts:1161-1181</code>)</em></p>
+<hr>
+<h2 id="s1-16">Berries</h2>
+<p>Held berries trigger automatically when conditions are met.</p>
+<p><strong>HP-based berries (trigger at &lt;25% HP):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Berry</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sitrus</td>
+<td>Heal 1/4 max HP</td>
+</tr>
+<tr>
+<td>Liechi</td>
+<td>+1 ATK</td>
+</tr>
+<tr>
+<td>Ganlon</td>
+<td>+1 DEF</td>
+</tr>
+<tr>
+<td>Petaya</td>
+<td>+1 SPATK</td>
+</tr>
+<tr>
+<td>Apicot</td>
+<td>+1 SPDEF</td>
+</tr>
+<tr>
+<td>Salac</td>
+<td>+1 SPD</td>
+</tr>
+<tr>
+<td>Lansat</td>
+<td>+1 Crit stage</td>
+</tr>
+<tr>
+<td>Starf</td>
+<td>+2 random stat</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Other berries:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Berry</th>
+<th>Trigger</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Lum</td>
+<td>Has status or confusion</td>
+<td>Cure all</td>
+</tr>
+<tr>
+<td>Enigma</td>
+<td>Hit by super-effective move</td>
+<td>Heal 1/4 max HP</td>
+</tr>
+<tr>
+<td>Leppa</td>
+<td>Any move reaches 0 PP</td>
+<td>Restore 10 PP</td>
+</tr>
+</tbody></table>
+</div>
+<p>Abilities can modify berry thresholds (Gluttony triggers at 50% instead of 25%) and double effects (Ripen).</p>
+<p><strong>Koto Relevance:</strong> Medium — Berry-like consumable items could add depth to Koto&#39;s item system.</p>
+<p><em>(source: <code>data/berry.ts:13-162</code>)</em></p>
+<hr>
+<h2 id="s1-17">Terastallization</h2>
+<p>Terastallization changes a Pokemon&#39;s type to their Tera type, boosting STAB for matching moves.</p>
+<p><strong>How it works:</strong></p>
+<ul>
+<li>Each Pokemon has a Tera type (may differ from their natural types)</li>
+<li>Once per battle, a Pokemon can Terastallize</li>
+<li>Terastallized Pokemon&#39;s defensive typing changes to the Tera type</li>
+<li>STAB bonus: +0.5 for Tera-matching moves (stacks with natural STAB for up to 2.25x)</li>
+<li>Minimum 60 power for non-priority single-hit Tera-type moves</li>
+</ul>
+<p><strong>Stellar Tera (special):</strong> Grants +0.5 STAB to original-type moves and +0.2 to all other moves.</p>
+<p><strong>Koto Relevance:</strong> Medium — Tera is a strong &quot;super mode&quot; mechanic but Pokemon-specific. Could inspire a similar mid-battle transformation for Koto.</p>
+<p><em>(source: <code>phases/tera-phase.ts:13-54</code>, <code>field/pokemon.ts:3630-3663</code>)</em></p>
+
+</div>
+<div class="ch" data-i="2">
+<h1>Party Building</h1>
+<div class="ov">Party building in PokeRogue happens in two phases: pre-run starter selection (spending a point budget on unlocked starters) and mid-run recruitment (catching wild Pokemon, evolution, form changes). The starter system gates access to stronger Pokemon behind a candy economy that rewards repeated play.
+
+Each Pokemon&#39;s power is shaped by its species (base stats), IVs (genetic quality, 0-31 per stat), nature (one stat boosted 10%, one reduced 10%), and ability (including hidden abilities and passives). Shinies are cosmetic with minor luck bonuses. The fusion system lets two Pokemon merge into one with averaged stats.</div>
+<div class="toc"><div class="toc-t">In this chapter</div><a href="#s2-2" class="toc-link">Starter Selection &amp; Cost Budget</a><a href="#s2-3" class="toc-link">Candy Economy</a><a href="#s2-4" class="toc-link">IV System</a><a href="#s2-5" class="toc-link">Nature System</a><a href="#s2-6" class="toc-link">Shiny &amp; Variant System</a><a href="#s2-7" class="toc-link">Hidden Ability System</a><a href="#s2-8" class="toc-link">Passive Ability System</a><a href="#s2-9" class="toc-link">Evolution System</a><a href="#s2-10" class="toc-link">Form Change System</a><a href="#s2-11" class="toc-link">Learnset Structure</a><a href="#s2-12" class="toc-link">Fusion System</a><a href="#s2-13" class="toc-link">Gender System</a><a href="#s2-14" class="toc-link">Pokedex Tracking</a><a href="#s2-15" class="toc-link">Mid-Run Catching</a></div>
+
+
+
+<p>Party building in PokeRogue happens in two phases: pre-run starter selection (spending a point budget on unlocked starters) and mid-run recruitment (catching wild Pokemon, evolution, form changes). The starter system gates access to stronger Pokemon behind a candy economy that rewards repeated play.</p>
+<p>Each Pokemon&#39;s power is shaped by its species (base stats), IVs (genetic quality, 0-31 per stat), nature (one stat boosted 10%, one reduced 10%), and ability (including hidden abilities and passives). Shinies are cosmetic with minor luck bonuses. The fusion system lets two Pokemon merge into one with averaged stats.</p>
+
+<hr>
+<h2 id="s2-2">Starter Selection &amp; Cost Budget</h2>
+<p>At the start of each run, the player picks 1-6 starters from their unlocked roster, spending from a point budget.</p>
+<p><strong>How it works:</strong></p>
+<p>Each species has a fixed cost (1-9). The player&#39;s total starter cost must fit within the budget. Higher-cost species are generally stronger (legendaries cost 6-9, common Pokemon cost 1-2).</p>
+<p>Starter data includes: species, gender, shiny/variant status, IVs, nature, form, ability index, moveset, and Tera type. All of these are configured before the run starts.</p>
+<p><strong>Key values:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Cost</th>
+<th>Example Species</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Weedle, Pidgey, Rattata</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Caterpie, Paras, Diglett</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Bulbasaur, Charmander, Squirtle</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Pikachu, Growlithe, Abra</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Shellder, Scyther, Aerodactyl</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Articuno, Zapdos, Moltres</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Latias, Latios, Heatran</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Mewtwo, Lugia, Ho-Oh, Dialga</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Kyogre, Groudon, Rayquaza</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — The cost-budget starter system is directly portable to Koto&#39;s creature selection.</p>
+<p><em>(source: <code>data/balance/starters.ts:50-687</code>, <code>phases/select-starter-phase.ts:41-129</code>)</em></p>
+<hr>
+<h2 id="s2-3">Candy Economy</h2>
+<p>Candies are the meta-progression currency. You earn them through battle friendship, then spend them to unlock starters.</p>
+<p><strong>How it works:</strong></p>
+<p>Each battle, participating Pokemon gain friendship:</p>
+<pre><code>friendshipGain = 3 (base)
+friendshipGain = 9 in Classic mode (3 * CLASSIC_CANDY_FRIENDSHIP_MULTIPLIER)
+</code></pre>
+<p>When cumulative friendship reaches the species&#39; threshold, you earn 1 candy and the counter resets:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Starter Cost</th>
+<th>Friendship Threshold</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>25</td>
+</tr>
+<tr>
+<td>2</td>
+<td>50</td>
+</tr>
+<tr>
+<td>3</td>
+<td>75</td>
+</tr>
+<tr>
+<td>4</td>
+<td>100</td>
+</tr>
+<tr>
+<td>5</td>
+<td>150</td>
+</tr>
+<tr>
+<td>6</td>
+<td>200</td>
+</tr>
+<tr>
+<td>7</td>
+<td>300</td>
+</tr>
+<tr>
+<td>8</td>
+<td>450</td>
+</tr>
+<tr>
+<td>9</td>
+<td>450</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Other friendship sources:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Amount</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Battle participation</td>
+<td>+3 (base)</td>
+</tr>
+<tr>
+<td>Rare Candy item</td>
+<td>+6</td>
+</tr>
+<tr>
+<td>Fainting</td>
+<td>-5</td>
+</tr>
+<tr>
+<td>Classic mode multiplier</td>
+<td>x3</td>
+</tr>
+<tr>
+<td>Timed event (e.g., PKMNDAY)</td>
+<td>up to x4</td>
+</tr>
+</tbody></table>
+</div>
+<p>Max candy per species: 9,999.</p>
+<p><strong>Koto Relevance:</strong> High — The friendship-to-candy loop creates satisfying between-run progression. Directly portable.</p>
+<p><em>(source: <code>data/balance/starters.ts:1-48</code>)</em></p>
+<hr>
+<h2 id="s2-4">IV System</h2>
+<p>Each Pokemon has 6 Individual Values (0-31) that contribute to stat calculation. Higher IVs = stronger stats.</p>
+<p><strong>How it works:</strong></p>
+<p>IVs are encoded in the Pokemon&#39;s 32-bit personality ID using 5-bit masks:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Stat</th>
+<th>Bits</th>
+<th>Mask</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HP</td>
+<td>29-25</td>
+<td>0x3e000000</td>
+</tr>
+<tr>
+<td>ATK</td>
+<td>24-20</td>
+<td>0x01f00000</td>
+</tr>
+<tr>
+<td>DEF</td>
+<td>19-15</td>
+<td>0x000f8000</td>
+</tr>
+<tr>
+<td>SPATK</td>
+<td>14-10</td>
+<td>0x00007c00</td>
+</tr>
+<tr>
+<td>SPDEF</td>
+<td>9-5</td>
+<td>0x000003e0</td>
+</tr>
+<tr>
+<td>SPD</td>
+<td>4-0</td>
+<td>0x0000001f</td>
+</tr>
+</tbody></table>
+</div>
+<p>At level 100, each IV point adds roughly 2 to the final stat value. The difference between 0 IVs and 31 IVs in a stat is about 62 points at level 100.</p>
+<p>Eggs get an IV bonus: a second set of IVs is rolled and the max of each pair is kept.</p>
+<p><strong>Koto Relevance:</strong> High — IVs add meaningful variation between creatures of the same species.</p>
+<p><em>(source: <code>utils/common.ts:190-199</code>, <code>field/pokemon.ts:1590</code>)</em></p>
+<hr>
+<h2 id="s2-5">Nature System</h2>
+<p>25 natures, each boosting one stat by 10% and reducing another by 10%. 5 neutral natures have no effect.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>nature multiplier: 1.1 (boosted stat), 0.9 (reduced stat), 1.0 (neutral)
+</code></pre>
+<p>Natures affect ATK, DEF, SPATK, SPDEF, and SPD (never HP). Examples:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Nature</th>
+<th>+10%</th>
+<th>-10%</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Adamant</td>
+<td>ATK</td>
+<td>SPATK</td>
+</tr>
+<tr>
+<td>Modest</td>
+<td>SPATK</td>
+<td>ATK</td>
+</tr>
+<tr>
+<td>Jolly</td>
+<td>SPD</td>
+<td>SPATK</td>
+</tr>
+<tr>
+<td>Timid</td>
+<td>SPD</td>
+<td>ATK</td>
+</tr>
+<tr>
+<td>Bold</td>
+<td>DEF</td>
+<td>ATK</td>
+</tr>
+<tr>
+<td>Hardy</td>
+<td>—</td>
+<td>— (neutral)</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — Natures add build diversity and are trivial to implement.</p>
+<p><em>(source: <code>data/nature.ts:43-118</code>)</em></p>
+<hr>
+<h2 id="s2-6">Shiny &amp; Variant System</h2>
+<p>Shinies are rare color variants with a small gameplay bonus (luck stat). Shinies come in 3 visual tiers.</p>
+<p><strong>How it works:</strong></p>
+<p>Base shiny chance: 64/65536 = <strong>1 in 1,024</strong>.</p>
+<p>If shiny, variant tier is rolled:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Chance</th>
+<th>Visual</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Standard</td>
+<td>60% (6/10)</td>
+<td>Basic alternate colors</td>
+</tr>
+<tr>
+<td>Rare</td>
+<td>30% (3/10)</td>
+<td>Enhanced palette</td>
+</tr>
+<tr>
+<td>Epic</td>
+<td>10% (1/10)</td>
+<td>Most distinct palette</td>
+</tr>
+</tbody></table>
+</div>
+<p>Shinies grant a <code>luck</code> stat bonus: <code>luck = variant + 1</code>. Fused shinies add both: <code>luck = (variant + 1) + (fusionVariant + 1)</code>.</p>
+<p>Shiny Charm modifier: multiplies odds by 2^(1 + stacks). With 1 Shiny Charm: 4x shiny rate.</p>
+<p><strong>Koto Relevance:</strong> Medium — Shinies are a nice prestige system. The tiered variant approach adds collector depth.</p>
+<p><em>(source: <code>data/balance/rates.ts:8-9,52-53</code>, <code>field/pokemon.ts:3030-3103</code>)</em></p>
+<hr>
+<h2 id="s2-7">Hidden Ability System</h2>
+<p>Each species can have up to 3 abilities: 2 normal + 1 hidden (often stronger).</p>
+<p><strong>How it works:</strong></p>
+<p>Wild Pokemon hidden ability chance: 256/65536 = <strong>1 in 256</strong> (0.39%).</p>
+<p>Trainer Pokemon never have hidden abilities. Eggs from gacha have 1/192 chance; same-species eggs have 1/8 chance.</p>
+<p>Ability index 0-1 = normal abilities (50/50 split), index 2 = hidden ability.</p>
+<p><strong>Koto Relevance:</strong> High — Hidden abilities as a rare upgrade layer is a great progression mechanic.</p>
+<p><em>(source: <code>data/balance/rates.ts:11-12</code>, <code>field/pokemon.ts:3115-3129</code>)</em></p>
+<hr>
+<h2 id="s2-8">Passive Ability System</h2>
+<p>Separate from the main ability slot, each species can have a passive ability that&#39;s always active.</p>
+<p><strong>How it works:</strong></p>
+<p>A mapping defines passives per species and ability index:</p>
+<pre><code>starterPassiveAbilities[BULBASAUR][0] = GRASSY_SURGE
+starterPassiveAbilities[CHARIZARD][0] = BATTLE_BOND
+</code></pre>
+<p>Passives are unlocked via the starter system and activate alongside the Pokemon&#39;s primary ability.</p>
+<p><strong>Koto Relevance:</strong> High — Passive abilities double the ability design space and add progression depth.</p>
+<p><em>(source: <code>data/balance/passives.ts:1-300+</code>)</em></p>
+<hr>
+<h2 id="s2-9">Evolution System</h2>
+<p>Pokemon evolve into stronger forms when meeting conditions (level, item, friendship, etc.).</p>
+<p><strong>How it works:</strong></p>
+<p>An evolution is defined by: target species, minimum level, optional item, and conditions.</p>
+<p><strong>Condition types:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Level</td>
+<td>Charmeleon → Charizard at level 36</td>
+</tr>
+<tr>
+<td>Friendship</td>
+<td>Eevee → Espeon at high friendship + daytime</td>
+</tr>
+<tr>
+<td>Item</td>
+<td>Seadra + Dragon Scale → Kingdra</td>
+</tr>
+<tr>
+<td>Move</td>
+<td>Knows Ancient Power → Mamoswine</td>
+</tr>
+<tr>
+<td>Biome</td>
+<td>Location-specific evolutions</td>
+</tr>
+<tr>
+<td>Gender</td>
+<td>Female-only or male-only</td>
+</tr>
+<tr>
+<td>Nature</td>
+<td>Nature-based branching</td>
+</tr>
+<tr>
+<td>Time of Day</td>
+<td>Dawn/Day/Dusk/Night triggers</td>
+</tr>
+</tbody></table>
+</div>
+<p>Evolution can be paused by the player. Fusion Pokemon can evolve if either component meets conditions.</p>
+<p><strong>Koto Relevance:</strong> High — Evolution is a core creature RPG mechanic. The condition variety (level + item + context) is worth porting.</p>
+<p><em>(source: <code>data/balance/pokemon-evolutions.ts:25-202</code>)</em></p>
+<hr>
+<h2 id="s2-10">Form Change System</h2>
+<p>Form changes are temporary or permanent transformations triggered by items, moves, abilities, weather, or Tera type.</p>
+<p><strong>Trigger types:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Trigger</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Item</td>
+<td>Mega Stones → Mega Evolution</td>
+</tr>
+<tr>
+<td>Move learned</td>
+<td>Sacred Sword → Keldeo Resolute Form</td>
+</tr>
+<tr>
+<td>Weather</td>
+<td>Rain → Castform Water Form</td>
+</tr>
+<tr>
+<td>Active in battle</td>
+<td>Enters/leaves battle</td>
+</tr>
+<tr>
+<td>Tera type</td>
+<td>Specific Tera → form change</td>
+</tr>
+<tr>
+<td>Ability</td>
+<td>Having specific ability</td>
+</tr>
+<tr>
+<td>Post-move</td>
+<td>After using a specific move</td>
+</tr>
+</tbody></table>
+</div>
+<p>Form changes can alter stats, types, and abilities. They can revert if conditions are no longer met.</p>
+<p><strong>Koto Relevance:</strong> Medium-High — Form changes add depth to creature customization.</p>
+<p><em>(source: <code>data/pokemon-forms.ts:33-97</code>, <code>data/pokemon-forms/form-change-triggers.ts:19-200+</code>)</em></p>
+<hr>
+<h2 id="s2-11">Learnset Structure</h2>
+<p>Pokemon learn moves at specific levels and can inherit egg moves.</p>
+<p><strong>How it works:</strong></p>
+<p><strong>Level-up moves:</strong> Stored as <code>[level, moveId]</code> pairs. When a Pokemon levels up, any moves at or below the new level become available.</p>
+<p>Special markers:</p>
+<ul>
+<li>EVOLVE_MOVE: learned on evolution</li>
+<li>RELEARN_MOVE: available from move tutors</li>
+</ul>
+<p><strong>Egg moves:</strong> Each species has exactly 4 egg moves. Egg move index 3 is the &quot;rare&quot; egg move, harder to obtain from gacha.</p>
+<p>Moveset limit: 4 moves per Pokemon. When learning a 5th move, one must be replaced.</p>
+<p><strong>Koto Relevance:</strong> High — Learnsets define combat options and are core to creature progression.</p>
+<p><em>(source: <code>data/balance/pokemon-level-moves.ts:1-150+</code>, <code>data/balance/egg-moves.ts:1-150+</code>)</em></p>
+<hr>
+<h2 id="s2-12">Fusion System</h2>
+<p>Two Pokemon can merge into one with averaged stats, combined moves, and a blended appearance.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>fusedStat = ceil((primaryBaseStat + fusionBaseStat) / 2)
+</code></pre>
+<p>The fused Pokemon keeps the primary&#39;s species but gains access to the fusion species&#39; move pool, abilities, and types. Shiny status matches between primary and fusion.</p>
+<p>In Spliced Endless mode, all Pokemon are forced fusions.</p>
+<p><strong>Koto Relevance:</strong> High — Fusion is PokeRogue&#39;s most distinctive feature and could inspire a similar mechanic in Koto.</p>
+<p><em>(source: <code>field/pokemon.ts:3136-3200</code>)</em></p>
+<hr>
+<h2 id="s2-13">Gender System</h2>
+<p>Gender is determined from the Pokemon&#39;s ID against the species&#39; male percentage.</p>
+<pre><code>genderChance = (pokemonId % 256) * (100 / 256)
+if genderChance &lt; malePercent: MALE, else: FEMALE
+</code></pre>
+<p>If <code>malePercent</code> is null, the species is genderless.</p>
+<p>Gender affects some evolution conditions (e.g., female-only evolutions) and form changes.</p>
+<p><strong>Koto Relevance:</strong> Medium — Gender can add variety but has minimal gameplay impact.</p>
+<p><em>(source: <code>data/gender.ts:1-26</code>)</em></p>
+<hr>
+<h2 id="s2-14">Pokedex Tracking</h2>
+<p>The Pokedex tracks caught/seen attributes via a bitmask per species.</p>
+<p><strong>Tracked attributes (DexAttr):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Bit</th>
+<th>Attribute</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>Non-shiny caught</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Shiny caught</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Male caught</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Female caught</td>
+</tr>
+<tr>
+<td>16</td>
+<td>Default variant</td>
+</tr>
+<tr>
+<td>32</td>
+<td>Variant 2</td>
+</tr>
+<tr>
+<td>64</td>
+<td>Variant 3</td>
+</tr>
+<tr>
+<td>128</td>
+<td>Default form</td>
+</tr>
+</tbody></table>
+</div>
+<p>Used for: unlock conditions, starter availability, achievement tracking, shiny rate bonuses.</p>
+<p><strong>Koto Relevance:</strong> Medium — Dex completion drives long-term engagement.</p>
+<p><em>(source: <code>enums/dex-attr.ts:1-13</code>)</em></p>
+<hr>
+<h2 id="s2-15">Mid-Run Catching</h2>
+<p>Wild Pokemon can be caught during battle to join your party.</p>
+<p><strong>How it works:</strong></p>
+<p>Catching uses the catch rate formula (see Battle doc). Caught Pokemon are added to the party if there&#39;s space (max 6). Shiny wild Pokemon have a 2x catch rate multiplier.</p>
+<p>Catching counts toward Pokedex completion and can earn candy for the caught species.</p>
+<p><strong>Koto Relevance:</strong> Medium-High — Mid-run recruitment adds tactical flexibility.</p>
+<p><em>(source: <code>data/balance/rates.ts:56</code>, <code>init/init-catchable-species.ts:13-52</code>)</em></p>
+
+</div>
+<div class="ch" data-i="3">
+<h1>Items & Modifiers</h1>
+<div class="ov">PokeRogue&#39;s item system uses &quot;modifiers&quot; — persistent buffs and consumable items that define each run&#39;s power curve. After every boss wave (every 10th), the player picks from randomly-rolled modifiers in a shop. Items are tiered (Common through Master), with luck and wave progression shifting the odds toward better items over time.
+
+The modifier system is where most of PokeRogue&#39;s build variety comes from. Two runs with the same starters can play completely differently based on which items drop. The shop reroll mechanic adds a money-sink decision point, and the Lock Capsule lets you fish for specific items within a tier.</div>
+<div class="toc"><div class="toc-t">In this chapter</div><a href="#s3-2" class="toc-link">Tier System &amp; Roll Probabilities</a><a href="#s3-3" class="toc-link">Luck-Based Tier Upgrades</a><a href="#s3-4" class="toc-link">Items Per Wave</a><a href="#s3-5" class="toc-link">Reroll Mechanics</a><a href="#s3-6" class="toc-link">Stacking Rules</a><a href="#s3-7" class="toc-link">Item Pool Composition</a><a href="#s3-8" class="toc-link">Enemy Buff Scaling</a><a href="#s3-9" class="toc-link">Shop Mechanics</a><a href="#s3-10" class="toc-link">Key Modifier Types</a><a href="#s3-11" class="toc-link">Healing &amp; Revival Items</a><a href="#s3-12" class="toc-link">Lock Capsule</a></div>
+
+
+
+<p>PokeRogue&#39;s item system uses &quot;modifiers&quot; — persistent buffs and consumable items that define each run&#39;s power curve. After every boss wave (every 10th), the player picks from randomly-rolled modifiers in a shop. Items are tiered (Common through Master), with luck and wave progression shifting the odds toward better items over time.</p>
+<p>The modifier system is where most of PokeRogue&#39;s build variety comes from. Two runs with the same starters can play completely differently based on which items drop. The shop reroll mechanic adds a money-sink decision point, and the Lock Capsule lets you fish for specific items within a tier.</p>
+
+<hr>
+<h2 id="s3-2">Tier System &amp; Roll Probabilities</h2>
+<p>Six tiers determine item rarity. Base roll uses a 1024-point scale.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>tierValue = random(0, 1024)
+</code></pre>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Range</th>
+<th>Probability</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>COMMON</td>
+<td>256-1023</td>
+<td>75.0%</td>
+</tr>
+<tr>
+<td>GREAT</td>
+<td>61-255</td>
+<td>19.0%</td>
+</tr>
+<tr>
+<td>ULTRA</td>
+<td>13-60</td>
+<td>4.7%</td>
+</tr>
+<tr>
+<td>ROGUE</td>
+<td>1-12</td>
+<td>1.2%</td>
+</tr>
+<tr>
+<td>MASTER</td>
+<td>0</td>
+<td>0.1%</td>
+</tr>
+<tr>
+<td>LUXURY</td>
+<td>—</td>
+<td>Special (UI only)</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — The 5-tier system with these probability breakpoints is well-tuned and directly portable.</p>
+<p><em>(source: <code>modifier/modifier-type.ts:2352,2809-2819</code>, <code>enums/modifier-tier.ts</code>)</em></p>
+<hr>
+<h2 id="s3-3">Luck-Based Tier Upgrades</h2>
+<p>After the base tier roll, party luck can upgrade items to higher tiers.</p>
+<p><strong>How it works:</strong></p>
+<p>Luck value: sum of all party members&#39; luck stats (0-14 range, clamped). Daily runs use a random value 0-14.</p>
+<pre><code>upgradeOdds = floor(128 / ((luckValue + 4) / 4))
+
+For each potential upgrade:
+  if random(0, upgradeOdds) &lt; 4: tier += 1
+  (repeat — multiple upgrades possible)
+</code></pre>
+<p>With max luck (14), <code>upgradeOdds = floor(128 / 4.5) = 28</code>, giving a ~14% chance per upgrade step. With zero luck, <code>upgradeOdds = 128</code>, giving ~3% per step.</p>
+<p>If the upgraded tier has no items in the pool, it steps back down until valid.</p>
+<p><strong>Koto Relevance:</strong> High — Luck-based upgrades reward shiny/rare Pokemon collection with tangible gameplay benefits.</p>
+<p><em>(source: <code>modifier/modifier-type.ts:2798-2827</code>)</em></p>
+<hr>
+<h2 id="s3-4">Items Per Wave</h2>
+<p>The default reward count is <strong>3 items</strong> per modifier selection phase (after boss waves).</p>
+<p>This can be increased by:</p>
+<ul>
+<li><code>ExtraModifierModifier</code>: permanent +1 per stack</li>
+<li><code>TempExtraModifierModifier</code>: temporary +1 for current phase</li>
+</ul>
+<p><strong>Koto Relevance:</strong> High — 3 choices per shop visit is a sweet spot for decision-making.</p>
+<p><em>(source: <code>phases/select-modifier-phase.ts:375-395</code>)</em></p>
+<hr>
+<h2 id="s3-5">Reroll Mechanics</h2>
+<p>Players can spend money to reroll the item selection.</p>
+<p><strong>How it works:</strong></p>
+<p>Base reroll cost: <strong>250 gold</strong> (without tier lock).</p>
+<p>Reroll cost scales with wave and exponentially with reroll count:</p>
+<pre><code>cost = ceil(waveIndex / 10) * baseCost * 2^rerollCount * customMultiplier
+</code></pre>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Reroll #</th>
+<th>Cost at Wave 50</th>
+<th>Cost at Wave 100</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1st</td>
+<td>1,250</td>
+<td>2,500</td>
+</tr>
+<tr>
+<td>2nd</td>
+<td>2,500</td>
+<td>5,000</td>
+</tr>
+<tr>
+<td>3rd</td>
+<td>5,000</td>
+<td>10,000</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Tier-locked rerolls</strong> (with Lock Capsule) cost the sum of per-tier prices instead:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Lock Cost</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>COMMON</td>
+<td>50</td>
+</tr>
+<tr>
+<td>GREAT</td>
+<td>125</td>
+</tr>
+<tr>
+<td>ULTRA</td>
+<td>300</td>
+</tr>
+<tr>
+<td>ROGUE</td>
+<td>750</td>
+</tr>
+<tr>
+<td>MASTER</td>
+<td>2,000</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — Exponential reroll cost is an elegant money sink that prevents infinite fishing.</p>
+<p><em>(source: <code>phases/select-modifier-phase.ts:417-451</code>)</em></p>
+<hr>
+<h2 id="s3-6">Stacking Rules</h2>
+<p>Most modifiers can stack. Each type has a max stack count.</p>
+<p><strong>Key stacking limits:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Modifier</th>
+<th>Max Stacks</th>
+<th>Stacking Type</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>EXP Booster (25%)</td>
+<td>99</td>
+<td>Additive: exp * (1 + stacks * 0.25)</td>
+</tr>
+<tr>
+<td>EXP Booster (60%)</td>
+<td>30</td>
+<td>Additive</td>
+</tr>
+<tr>
+<td>EXP Booster (100%)</td>
+<td>10</td>
+<td>Additive</td>
+</tr>
+<tr>
+<td>Money Multiplier</td>
+<td>5</td>
+<td>Additive: money * (1 + stacks * 0.2)</td>
+</tr>
+<tr>
+<td>Base Stat Booster (vitamins)</td>
+<td>10 per Pokemon</td>
+<td>Additive: stat * (1 + stacks * 0.1)</td>
+</tr>
+<tr>
+<td>Berry Preservation</td>
+<td>3</td>
+<td>Chance-based</td>
+</tr>
+<tr>
+<td>Enemy Damage Booster</td>
+<td>999</td>
+<td>Multiplicative: 1.05^stacks</td>
+</tr>
+<tr>
+<td>Enemy Damage Reducer</td>
+<td>99 (999 after wave 2000)</td>
+<td>Multiplicative: 0.975^stacks</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Stacking types:</strong></p>
+<ul>
+<li><strong>Additive:</strong> <code>value * (1 + stacks * multiplier)</code> — most player items</li>
+<li><strong>Multiplicative:</strong> <code>value * multiplier^stacks</code> — enemy scaling, shiny charm</li>
+<li>Items that hit max stacks are removed from the reward pool</li>
+</ul>
+<p><strong>Koto Relevance:</strong> High — Stacking rules control power creep. The additive vs multiplicative distinction matters a lot for balance.</p>
+<p><em>(source: <code>modifier/modifier.ts:183-236,737-756,2481,2977,3002,3425</code>)</em></p>
+<hr>
+<h2 id="s3-7">Item Pool Composition</h2>
+<p>Each tier has a pool of possible items, weighted by party state. Items with unmet conditions or max stacks are filtered out.</p>
+<p><strong>COMMON tier highlights:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Weight</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pokeball</td>
+<td>6</td>
+<td>Catch tool</td>
+</tr>
+<tr>
+<td>Rare Candy</td>
+<td>2</td>
+<td>Level +1</td>
+</tr>
+<tr>
+<td>Potion</td>
+<td>0-9 (by damaged count)</td>
+<td>Heal 20 HP / 10%</td>
+</tr>
+<tr>
+<td>Berry</td>
+<td>2</td>
+<td>Random held berry</td>
+</tr>
+<tr>
+<td>Temp Stat Booster</td>
+<td>4</td>
+<td>+1 stat for 5 battles</td>
+</tr>
+<tr>
+<td>TM (Common)</td>
+<td>2</td>
+<td>Teach move</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>GREAT tier highlights:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Weight</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Great Ball</td>
+<td>6</td>
+<td>1.5x catch rate</td>
+</tr>
+<tr>
+<td>Revive</td>
+<td>0-27 (by fainted count)</td>
+<td>Restore 50% HP</td>
+</tr>
+<tr>
+<td>Evolution Item</td>
+<td>scales with wave</td>
+<td>Enable evolution</td>
+</tr>
+<tr>
+<td>Base Stat Booster</td>
+<td>3</td>
+<td>+10% to one base stat</td>
+</tr>
+<tr>
+<td>DNA Splicers</td>
+<td>conditional</td>
+<td>Fuse two Pokemon</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>ULTRA tier highlights:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Weight</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Ultra Ball</td>
+<td>15</td>
+<td>2x catch rate</td>
+</tr>
+<tr>
+<td>Mint</td>
+<td>4</td>
+<td>Change nature</td>
+</tr>
+<tr>
+<td>Eviolite</td>
+<td>10</td>
+<td>+1.5x DEF/SPDEF if unevolved</td>
+</tr>
+<tr>
+<td>Attack Type Booster</td>
+<td>9</td>
+<td>+1.5x damage for one type</td>
+</tr>
+<tr>
+<td>EXP Charm</td>
+<td>8</td>
+<td>+25% EXP</td>
+</tr>
+<tr>
+<td>EXP Share</td>
+<td>10</td>
+<td>Share EXP to whole party</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>ROGUE tier highlights:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Weight</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Rogue Ball</td>
+<td>16</td>
+<td>3x catch rate</td>
+</tr>
+<tr>
+<td>Leftovers</td>
+<td>3</td>
+<td>Heal 12.5% HP/turn</td>
+</tr>
+<tr>
+<td>Shell Bell</td>
+<td>3</td>
+<td>Heal 25% of damage dealt</td>
+</tr>
+<tr>
+<td>Scope Lens</td>
+<td>4</td>
+<td>+1.5x crit rate</td>
+</tr>
+<tr>
+<td>Soul Dew</td>
+<td>7</td>
+<td>SpA/SpD x1.2</td>
+</tr>
+<tr>
+<td>Super EXP Charm</td>
+<td>8</td>
+<td>+60% EXP</td>
+</tr>
+<tr>
+<td>Mega Bracelet</td>
+<td>scales with wave</td>
+<td>Mega Evolution access</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>MASTER tier highlights:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Weight</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Master Ball</td>
+<td>24</td>
+<td>Guaranteed catch</td>
+</tr>
+<tr>
+<td>Shiny Charm</td>
+<td>14</td>
+<td>Shiny rate x2^(1+stacks)</td>
+</tr>
+<tr>
+<td>Healing Charm</td>
+<td>18</td>
+<td>+30% healing per stack</td>
+</tr>
+<tr>
+<td>Multi Lens</td>
+<td>18</td>
+<td>+1 hit to multi-hit moves</td>
+</tr>
+<tr>
+<td>DNA Splicers</td>
+<td>24</td>
+<td>Fuse Pokemon</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — The tiered item pool with conditional weights is a very clean design.</p>
+<p><em>(source: <code>modifier/init-modifier-pools.ts:64-653</code>)</em></p>
+<hr>
+<h2 id="s3-8">Enemy Buff Scaling</h2>
+<p>Enemy Pokemon get stronger each wave via stacking buff modifiers.</p>
+<p><strong>How it works:</strong></p>
+<p>Buff tier by wave milestone:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Wave</th>
+<th>Tier</th>
+<th>Initial Stacks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Every wave</td>
+<td>COMMON</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Every 250</td>
+<td>GREAT</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Every 1000</td>
+<td>ULTRA</td>
+<td>5</td>
+</tr>
+</tbody></table>
+</div>
+<p>Buff count per wave: <code>ceil(wave / 250)</code> — increases by 1 every 250 waves.</p>
+<p><strong>Enemy buff types:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Buff</th>
+<th>Effect</th>
+<th>Rate</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Damage Booster</td>
+<td>x1.05 per stack (multiplicative)</td>
+<td>Common</td>
+</tr>
+<tr>
+<td>Damage Reducer</td>
+<td>x0.975 per stack (multiplicative)</td>
+<td>Common</td>
+</tr>
+<tr>
+<td>Attack Poison/Paralyze/Burn</td>
+<td>2.5% chance on hit</td>
+<td>Common</td>
+</tr>
+<tr>
+<td>Status Heal</td>
+<td>Chance to cure status/turn</td>
+<td>Common</td>
+</tr>
+<tr>
+<td>Endure</td>
+<td>2% survive at 1 HP</td>
+<td>Common</td>
+</tr>
+<tr>
+<td>Fusion</td>
+<td>1% chance enemy is fused</td>
+<td>Common</td>
+</tr>
+<tr>
+<td>Heal (Ultra only)</td>
+<td>2% max HP/turn per stack</td>
+<td>Ultra (wave 1000+)</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — Enemy scaling via invisible buffs is essential for infinite/endless modes.</p>
+<p><em>(source: <code>phases/add-enemy-buff-modifier-phase.ts:14-28</code>, <code>modifier/init-modifier-pools.ts:698-741</code>)</em></p>
+<hr>
+<h2 id="s3-9">Shop Mechanics</h2>
+<p>Non-boss waves have a healing shop with wave-scaled inventory.</p>
+<p><strong>How it works:</strong></p>
+<p>Shop items unlock as waves progress:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Wave Range</th>
+<th>Available Items</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1-29</td>
+<td>Potion, Ether, Revive</td>
+</tr>
+<tr>
+<td>30-59</td>
+<td>+ Super Potion, Full Heal</td>
+</tr>
+<tr>
+<td>60-89</td>
+<td>+ Elixir, Max Ether</td>
+</tr>
+<tr>
+<td>90-119</td>
+<td>+ Hyper Potion, Max Revive, Memory Mushroom</td>
+</tr>
+<tr>
+<td>120-149</td>
+<td>+ Max Potion, Max Elixir</td>
+</tr>
+<tr>
+<td>150-179</td>
+<td>+ Full Restore</td>
+</tr>
+<tr>
+<td>180+</td>
+<td>+ Sacred Ash</td>
+</tr>
+</tbody></table>
+</div>
+<p>Item count formula: <code>ceil((wave + 10) / 30)</code>.</p>
+<p>Prices scale with wave: <code>baseCost * (1 + waveIndex / 10)</code>.</p>
+<p><strong>Koto Relevance:</strong> Medium — Wave-gated shop inventory is a clean way to pace healing access.</p>
+<p><em>(source: <code>modifier/modifier-type.ts:2629-2669</code>)</em></p>
+<hr>
+<h2 id="s3-10">Key Modifier Types</h2>
+<p><strong>Persistent modifiers</strong> (last the whole run):</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Effect</th>
+<th>Max Stacks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Money Multiplier</td>
+<td>+20% money per stack</td>
+<td>5</td>
+</tr>
+<tr>
+<td>EXP Share</td>
+<td>Share EXP to non-participants</td>
+<td>5</td>
+</tr>
+<tr>
+<td>EXP Balance</td>
+<td>Redistribute EXP to underleveled</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Map Modifier</td>
+<td>Choose biome path</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Shiny Charm</td>
+<td>Multiply shiny odds</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Healing Charm</td>
+<td>+30% healing</td>
+<td>5</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Held items</strong> (per-Pokemon):</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Effect</th>
+<th>Max/Pokemon</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Leftovers</td>
+<td>Heal 12.5% HP/turn</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Shell Bell</td>
+<td>Heal 25% damage dealt</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Focus Band</td>
+<td>10% survive at 1 HP</td>
+<td>1</td>
+</tr>
+<tr>
+<td>King&#39;s Rock</td>
+<td>30% flinch</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Wide Lens</td>
+<td>+5% accuracy</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Quick Claw</td>
+<td>+1.5x speed</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Lucky Egg</td>
+<td>+40% EXP</td>
+<td>99</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Lapsing modifiers</strong> (expire after N battles):</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Duration</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Temp Stat Booster</td>
+<td>5 battles</td>
+<td>+1 to random stat</td>
+</tr>
+<tr>
+<td>Dire Hit</td>
+<td>5 battles</td>
+<td>+1 crit stage</td>
+</tr>
+<tr>
+<td>Lure / Super Lure / Max Lure</td>
+<td>10/15/30 battles</td>
+<td>Double battle chance</td>
+</tr>
+<tr>
+<td>Reviver Seed</td>
+<td>10 battles</td>
+<td>Auto-revive at 25% HP</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — The three modifier categories (persistent, held, lapsing) create layered build decisions.</p>
+<p><em>(source: <code>modifier/modifier.ts:139-806</code>)</em></p>
+<hr>
+<h2 id="s3-11">Healing &amp; Revival Items</h2>
+<p><strong>Healing items:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Heal Amount</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Potion</td>
+<td>20 HP or 10%</td>
+</tr>
+<tr>
+<td>Super Potion</td>
+<td>50 HP or 25%</td>
+</tr>
+<tr>
+<td>Hyper Potion</td>
+<td>80%</td>
+</tr>
+<tr>
+<td>Max Potion</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>Full Restore</td>
+<td>100% + cure status</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Revival items:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Revive</td>
+<td>Restore fainted to 50% HP</td>
+</tr>
+<tr>
+<td>Max Revive</td>
+<td>Restore fainted to 100% HP</td>
+</tr>
+<tr>
+<td>Sacred Ash</td>
+<td>Revive all fainted (full HP)</td>
+</tr>
+<tr>
+<td>Reviver Seed (held)</td>
+<td>Auto-revive at 25% HP once</td>
+</tr>
+</tbody></table>
+</div>
+<p>Healing Charm modifier: increases all healing by <code>(1 + stacks * 0.1)</code>.</p>
+<p><strong>Koto Relevance:</strong> Medium — Standard healing tiers. The auto-revive held item is a nice design.</p>
+<p><em>(source: <code>modifier/modifier-type.ts:462-522</code>, <code>modifier/modifier.ts:2413-2445</code>)</em></p>
+<hr>
+<h2 id="s3-12">Lock Capsule</h2>
+<p>A Rogue-tier item that enables tier-locking during rerolls.</p>
+<p><strong>How it works:</strong></p>
+<p>When Lock Capsule is held, rerolling the shop keeps the same tiers but changes which items appear within those tiers. This lets you fish for a specific item within a known tier.</p>
+<p>The tradeoff: tier-locked rerolls cost the sum of each locked tier&#39;s price (potentially much more than the base 250 gold).</p>
+<p><strong>Koto Relevance:</strong> Medium — Adds strategic depth to the reroll system for advanced players.</p>
+<p><em>(source: <code>phases/select-modifier-phase.ts:246-260</code>)</em></p>
+
+</div>
+<div class="ch" data-i="4">
+<h1>Economy & Progression</h1>
+<div class="ov">PokeRogue has two economic layers: an in-run economy (money earned per wave, spent on shop items and rerolls) and a meta-progression economy (candies, vouchers, achievements, unlockables that persist across runs). The in-run economy resets each run; the meta-progression is permanent.
+
+The meta-progression loop is: play runs → earn friendship/candy → unlock starters → try harder runs → earn achievements → get vouchers → pull gacha eggs → unlock more starters. This creates a satisfying long-term progression curve while keeping each individual run self-contained.</div>
+<div class="toc"><div class="toc-t">In this chapter</div><a href="#s4-2" class="toc-link">Money System (In-Run)</a><a href="#s4-3" class="toc-link">What Persists Between Runs</a><a href="#s4-4" class="toc-link">Achievement System</a><a href="#s4-5" class="toc-link">Voucher System</a><a href="#s4-6" class="toc-link">Ribbon System</a><a href="#s4-7" class="toc-link">Game Statistics</a><a href="#s4-8" class="toc-link">Unlockable Content</a><a href="#s4-9" class="toc-link">Timed Events</a></div>
+
+
+
+<p>PokeRogue has two economic layers: an in-run economy (money earned per wave, spent on shop items and rerolls) and a meta-progression economy (candies, vouchers, achievements, unlockables that persist across runs). The in-run economy resets each run; the meta-progression is permanent.</p>
+<p>The meta-progression loop is: play runs → earn friendship/candy → unlock starters → try harder runs → earn achievements → get vouchers → pull gacha eggs → unlock more starters. This creates a satisfying long-term progression curve while keeping each individual run self-contained.</p>
+
+<hr>
+<h2 id="s4-2">Money System (In-Run)</h2>
+<p>Money is earned after each battle and spent on shop items and rerolls. It resets every run.</p>
+<p><strong>How it works:</strong></p>
+<p>Money reward formula:</p>
+<pre><code>waveSetIndex = ceil(wave / 10) - 1
+base = (waveSetIndex + 1 + (0.75 + (((wave - 1) % 10) + 1) / 10)) * 100
+exponent = 1 + (0.005 * waveSetIndex)
+money = floor(base^exponent / 10) * 10
+</code></pre>
+<p>This produces exponential growth — early waves give ~175 gold, late waves give thousands.</p>
+<p><strong>Multipliers:</strong></p>
+<ul>
+<li>MoneyMultiplierModifier: +20% per stack (max 5 stacks = 2x)</li>
+<li>Happy Hour arena tag: 2x</li>
+<li>DamageMoneyRewardModifier (Meowth): earn <code>damage * 0.5 * stacks</code></li>
+<li>MoneyInterestModifier (Coin Case): earn <code>floor(currentMoney * 0.1 * stacks)</code> per turn</li>
+</ul>
+<p><strong>Koto Relevance:</strong> High — The exponential money curve with modifier multipliers is directly portable.</p>
+<p><em>(source: <code>battle-scene.ts:2614-2621</code>)</em></p>
+<hr>
+<h2 id="s4-3">What Persists Between Runs</h2>
+<p>Everything in the <code>SystemSaveData</code> structure survives run death. Everything else resets.</p>
+<p><strong>Persists:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Trainer/Secret ID</td>
+<td>Account identity</td>
+</tr>
+<tr>
+<td>Player Gender</td>
+<td>Cosmetic</td>
+</tr>
+<tr>
+<td>Dex Data</td>
+<td>Species seen/caught/hatched, IVs, ribbons</td>
+</tr>
+<tr>
+<td>Starter Data</td>
+<td>Candy count, friendship, movesets, egg moves, ability unlocks</td>
+</tr>
+<tr>
+<td>Game Stats</td>
+<td>41 cumulative statistics</td>
+</tr>
+<tr>
+<td>Eggs</td>
+<td>Full egg state (tier, species, hatch countdown)</td>
+</tr>
+<tr>
+<td>Egg/Unlock Pity</td>
+<td>Gacha pity counters</td>
+</tr>
+<tr>
+<td>Unlocks</td>
+<td>Feature flags (Endless mode, etc.)</td>
+</tr>
+<tr>
+<td>Achievement Unlocks</td>
+<td>130+ completion flags</td>
+</tr>
+<tr>
+<td>Voucher Unlocks/Counts</td>
+<td>Gacha pull currency</td>
+</tr>
+<tr>
+<td>Run History</td>
+<td>Last 25 runs</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Resets each run:</strong></p>
+<ul>
+<li>Party composition</li>
+<li>Held modifiers/items</li>
+<li>Money</li>
+<li>Wave progress</li>
+<li>Biome state</li>
+</ul>
+<p><strong>Koto Relevance:</strong> High — The clean split between persistent and run-local state is essential for roguelike design.</p>
+<p><em>(source: <code>system/game-data.ts:128-207</code>)</em></p>
+<hr>
+<h2 id="s4-4">Achievement System</h2>
+<p>130+ achievements gate voucher acquisition and track milestones.</p>
+<p><strong>How it works:</strong></p>
+<p>Each achievement has a score that determines its tier and voucher reward:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Score Range</th>
+<th>Tier</th>
+<th>Voucher Reward</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0-24</td>
+<td>COMMON</td>
+<td>REGULAR voucher</td>
+</tr>
+<tr>
+<td>25-49</td>
+<td>GREAT</td>
+<td>PLUS voucher</td>
+</tr>
+<tr>
+<td>50-74</td>
+<td>ULTRA</td>
+<td>PREMIUM voucher</td>
+</tr>
+<tr>
+<td>75-99</td>
+<td>ROGUE</td>
+<td>PREMIUM voucher</td>
+</tr>
+<tr>
+<td>100+</td>
+<td>MASTER</td>
+<td>GOLDEN voucher</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Notable achievements:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Achievement</th>
+<th>Condition</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Classic Victory</td>
+<td>First classic win</td>
+<td>250</td>
+</tr>
+<tr>
+<td>Daily Victory</td>
+<td>Win daily run</td>
+<td>100</td>
+</tr>
+<tr>
+<td>10K Money</td>
+<td>Peak money &gt;= 10,000</td>
+<td>25</td>
+</tr>
+<tr>
+<td>1M Money</td>
+<td>Peak money &gt;= 1,000,000</td>
+<td>50</td>
+</tr>
+<tr>
+<td>250 Damage</td>
+<td>Single hit &gt;= 250</td>
+<td>25</td>
+</tr>
+<tr>
+<td>10,000 Damage</td>
+<td>Single hit &gt;= 10,000</td>
+<td>50</td>
+</tr>
+<tr>
+<td>Level 100</td>
+<td>Reach level 100</td>
+<td>25</td>
+</tr>
+<tr>
+<td>Level 1000</td>
+<td>Reach level 1000</td>
+<td>50</td>
+</tr>
+<tr>
+<td>10 Ribbons</td>
+<td>Earn 10 ribbons</td>
+<td>50</td>
+</tr>
+<tr>
+<td>100 Ribbons</td>
+<td>Earn 100 ribbons</td>
+<td>150</td>
+</tr>
+<tr>
+<td>Mono Normal/Fire/Water/etc.</td>
+<td>Win monotype challenge</td>
+<td>100 each</td>
+</tr>
+<tr>
+<td>Mono Gen 1/2/3/.../9</td>
+<td>Win mono-generation challenge</td>
+<td>100 each</td>
+</tr>
+<tr>
+<td>Nuzlocke</td>
+<td>Win Nuzlocke challenge</td>
+<td>100</td>
+</tr>
+<tr>
+<td>Fresh Start</td>
+<td>Win Fresh Start challenge</td>
+<td>100</td>
+</tr>
+<tr>
+<td>See Shiny</td>
+<td>Encounter any shiny</td>
+<td>50</td>
+</tr>
+<tr>
+<td>Shiny Party</td>
+<td>Full party of shinies</td>
+<td>50</td>
+</tr>
+<tr>
+<td>Perfect IVs</td>
+<td>Get a Pokemon with perfect IVs</td>
+<td>25</td>
+</tr>
+</tbody></table>
+</div>
+<p>~40 achievements are &quot;secret&quot; (hidden until unlocked).</p>
+<p><strong>Koto Relevance:</strong> High — Achievements driving voucher rewards creates a natural progression loop. The tiered score system is elegant.</p>
+<p><em>(source: <code>system/achv.ts:23-891</code>)</em></p>
+<hr>
+<h2 id="s4-5">Voucher System</h2>
+<p>Vouchers are the currency for gacha egg pulls. Earned through achievements and boss victories.</p>
+<p><strong>How it works:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Voucher Type</th>
+<th>Source</th>
+<th>Egg Pull</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>REGULAR</td>
+<td>Common/Great achievements, boss defeats</td>
+<td>1 pull</td>
+</tr>
+<tr>
+<td>PLUS</td>
+<td>Ultra achievements</td>
+<td>5 pulls</td>
+</tr>
+<tr>
+<td>PREMIUM</td>
+<td>Rogue achievements, boss defeats (high multiplier)</td>
+<td>10 pulls</td>
+</tr>
+<tr>
+<td>GOLDEN</td>
+<td>Master achievements</td>
+<td>25 pulls</td>
+</tr>
+</tbody></table>
+</div>
+<p>Voucher sources:</p>
+<ul>
+<li>Achievements: tier determines voucher type (see above)</li>
+<li>Trainer victories: PLUS if moneyMultiplier &lt; 10, PREMIUM if &gt;= 10</li>
+<li>Timed events can upgrade REGULAR to PLUS</li>
+</ul>
+<p>Vouchers persist across runs. No cap on inventory.</p>
+<p><strong>Koto Relevance:</strong> High — Vouchers as a tiered meta-currency that feeds the gacha loop is well-designed.</p>
+<p><em>(source: <code>system/voucher.ts:1-124</code>)</em></p>
+<hr>
+<h2 id="s4-6">Ribbon System</h2>
+<p>Ribbons are prestige marks awarded for completing challenge runs. Stored as a bitfield per species.</p>
+<p><strong>How it works:</strong></p>
+<p>Each species tracks earned ribbons as a 53-bit integer. Ribbons are awarded when a Pokemon participates in a winning challenge run.</p>
+<p><strong>Ribbon types (40+ total):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Examples</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Mono Type</td>
+<td>Normal, Fire, Water, ... Fairy</td>
+<td>18</td>
+</tr>
+<tr>
+<td>Mono Generation</td>
+<td>Gen 1, Gen 2, ... Gen 9</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Classic</td>
+<td>Classic mode win</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Challenge</td>
+<td>Nuzlocke, Fresh Start, Hardcore, No Heal, No Shop</td>
+<td>8+</td>
+</tr>
+<tr>
+<td>Special</td>
+<td>Friendship (max 255), Flip Stats, Inverse</td>
+<td>3+</td>
+</tr>
+</tbody></table>
+</div>
+<p>Total ribbon count feeds the ribbon achievement chain (10 → 25 → 50 → 75 → 100 ribbons), which awards increasingly valuable vouchers.</p>
+<p>Ribbons are cosmetic/prestige — no direct mechanical benefit.</p>
+<p><strong>Koto Relevance:</strong> Medium — Ribbons drive long-term collector engagement and feed the achievement chain.</p>
+<p><em>(source: <code>system/ribbons/ribbon-data.ts:1-170</code>)</em></p>
+<hr>
+<h2 id="s4-7">Game Statistics</h2>
+<p>41 cumulative statistics tracked across all runs.</p>
+<p><strong>Key statistics:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Statistic</th>
+<th>What It Tracks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>playTime</td>
+<td>Total milliseconds played</td>
+</tr>
+<tr>
+<td>battles</td>
+<td>Total battles fought</td>
+</tr>
+<tr>
+<td>sessionsWon</td>
+<td>Classic runs completed</td>
+</tr>
+<tr>
+<td>ribbonsOwned</td>
+<td>Unique ribbons earned</td>
+</tr>
+<tr>
+<td>highestEndlessWave</td>
+<td>Furthest endless wave</td>
+</tr>
+<tr>
+<td>highestLevel</td>
+<td>Highest Pokemon level</td>
+</tr>
+<tr>
+<td>highestMoney</td>
+<td>Peak money in a single run</td>
+</tr>
+<tr>
+<td>highestDamage</td>
+<td>Highest single-hit damage</td>
+</tr>
+<tr>
+<td>pokemonSeen</td>
+<td>Unique species encountered</td>
+</tr>
+<tr>
+<td>pokemonCaught</td>
+<td>Unique species caught</td>
+</tr>
+<tr>
+<td>pokemonHatched</td>
+<td>Unique species hatched</td>
+</tr>
+<tr>
+<td>legendaryPokemonCaught</td>
+<td>Legendary species caught</td>
+</tr>
+<tr>
+<td>shinyPokemonCaught</td>
+<td>Shiny species caught</td>
+</tr>
+<tr>
+<td>trainersDefeated</td>
+<td>Unique trainers beaten</td>
+</tr>
+<tr>
+<td>eggsPulled</td>
+<td>Total eggs from gacha</td>
+</tr>
+<tr>
+<td>legendaryEggsPulled</td>
+<td>Legendary-tier eggs</td>
+</tr>
+</tbody></table>
+</div>
+<p>All stats start at 0 and never reset. Used for achievement validation and profile display.</p>
+<p><strong>Koto Relevance:</strong> Medium — Stat tracking is easy to implement and drives achievement unlocks.</p>
+<p><em>(source: <code>system/game-stats.ts:1-82</code>)</em></p>
+<hr>
+<h2 id="s4-8">Unlockable Content</h2>
+<p>Four major unlockables gated behind milestones.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Unlockable</th>
+<th>Unlock Condition</th>
+<th>What It Grants</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Endless Mode</td>
+<td>Win Classic mode</td>
+<td>Access to infinite-wave mode</td>
+</tr>
+<tr>
+<td>Spliced Endless</td>
+<td>(Hidden)</td>
+<td>Fusion-only endless mode</td>
+</tr>
+<tr>
+<td>Mini Black Hole</td>
+<td>(Hidden)</td>
+<td>Rare modifier availability</td>
+</tr>
+<tr>
+<td>Eviolite</td>
+<td>(Hidden)</td>
+<td>Rare held item in pools</td>
+</tr>
+</tbody></table>
+</div>
+<p>These are persistent boolean flags checked before allowing mode selection or item pool inclusion.</p>
+<p><strong>Koto Relevance:</strong> Low — Small set, but the pattern of unlocking modes via achievements is good.</p>
+<p><em>(source: <code>system/unlockables.ts:1-18</code>)</em></p>
+<hr>
+<h2 id="s4-9">Timed Events</h2>
+<p>Limited-time events provide multipliers, exclusive encounters, and mechanic modifiers.</p>
+<p><strong>How it works:</strong></p>
+<p>Events are defined with absolute UTC start/end dates. Multiple events can overlap. Each event can modify:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Mechanic</th>
+<th>Effect</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>shinyEncounterMultiplier</td>
+<td>Boost shiny odds</td>
+<td>2x during Valentine&#39;s</td>
+</tr>
+<tr>
+<td>shinyCatchMultiplier</td>
+<td>Boost shiny catch rate</td>
+<td>3x during Hearts and Horses</td>
+</tr>
+<tr>
+<td>classicFriendshipMultiplier</td>
+<td>Boost candy earning</td>
+<td>4x during Pokemon Day</td>
+</tr>
+<tr>
+<td>upgradeUnlockedVouchers</td>
+<td>Upgrade voucher tier</td>
+<td>REGULAR→PLUS during Winter</td>
+</tr>
+<tr>
+<td>boostFusions</td>
+<td>Enable fusion encounters</td>
+<td>Valentine&#39;s, Shining Spring</td>
+</tr>
+<tr>
+<td>luckBoostedSpecies</td>
+<td>Boost specific species rates</td>
+<td>Year of the Snake (37 species)</td>
+</tr>
+<tr>
+<td>eventEncounters</td>
+<td>Exclusive wild species pool</td>
+<td>20-25 species per event</td>
+</tr>
+<tr>
+<td>classicWaveRewards</td>
+<td>Fixed wave rewards</td>
+<td>Charms at wave 8</td>
+</tr>
+<tr>
+<td>trainerShinyChance</td>
+<td>Trainer shiny rate</td>
+<td>1/5 during April Fools</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Event cycle:</strong> Events run year-round — Valentine&#39;s, Pokemon Day, April Fools, Shining Spring, Pride, Halloween, Winter, etc.</p>
+<p><strong>Koto Relevance:</strong> Medium-High — Timed events create urgency and re-engagement. The multiplier system is clean and extensible.</p>
+<p><em>(source: <code>timed-event-manager.ts:1-228</code>, <code>data/balance/timed-events.ts:1-462</code>)</em></p>
+
+</div>
+<div class="ch" data-i="5">
+<h1>Gacha & Eggs</h1>
+<div class="ov">The gacha system is PokeRogue&#39;s primary meta-progression mechanic for acquiring new species. Players spend vouchers to pull eggs from three gacha machines, each with different rate bonuses. Eggs hatch after a set number of battle waves, yielding new Pokemon with potential shiny status, hidden abilities, and egg moves.
+
+The system has multiple pity mechanisms to prevent extreme bad luck: tier pity (forces rare tiers after N pulls), species pity (forces new species after N duplicates), and per-batch guarantees (10-pulls guarantee at least Rare). The math is carefully tuned so ~80% of players hit natural rates before pity kicks in.</div>
+<div class="toc"><div class="toc-t">In this chapter</div><a href="#s5-2" class="toc-link">Egg Tiers</a><a href="#s5-3" class="toc-link">Gacha Machines</a><a href="#s5-4" class="toc-link">Pull Costs (Vouchers)</a><a href="#s5-5" class="toc-link">Tier Roll Probabilities</a><a href="#s5-6" class="toc-link">Pity System</a><a href="#s5-7" class="toc-link">Per-Batch Guarantees</a><a href="#s5-8" class="toc-link">Species Selection &amp; Weighting</a><a href="#s5-9" class="toc-link">Species Pity (Unlock Pity)</a><a href="#s5-10" class="toc-link">Shiny Rates</a><a href="#s5-11" class="toc-link">Variant Tiers</a><a href="#s5-12" class="toc-link">Hidden Ability from Eggs</a><a href="#s5-13" class="toc-link">Egg Moves</a><a href="#s5-14" class="toc-link">Hatch Countdown</a><a href="#s5-15" class="toc-link">Manaphy Egg</a><a href="#s5-16" class="toc-link">Legendary Daily Rotation</a><a href="#s5-17" class="toc-link">IV Bonus from Eggs</a><a href="#s5-18" class="toc-link">Complete Constants Table</a></div>
+
+
+
+<p>The gacha system is PokeRogue&#39;s primary meta-progression mechanic for acquiring new species. Players spend vouchers to pull eggs from three gacha machines, each with different rate bonuses. Eggs hatch after a set number of battle waves, yielding new Pokemon with potential shiny status, hidden abilities, and egg moves.</p>
+<p>The system has multiple pity mechanisms to prevent extreme bad luck: tier pity (forces rare tiers after N pulls), species pity (forces new species after N duplicates), and per-batch guarantees (10-pulls guarantee at least Rare). The math is carefully tuned so ~80% of players hit natural rates before pity kicks in.</p>
+
+<hr>
+<h2 id="s5-2">Egg Tiers</h2>
+<p>Four tiers determine species pool, hatch time, and rare rates.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Hatch Waves</th>
+<th>Base Pull Rate</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>COMMON</td>
+<td>10 waves</td>
+<td>79.7%</td>
+</tr>
+<tr>
+<td>RARE</td>
+<td>25 waves</td>
+<td>17.2%</td>
+</tr>
+<tr>
+<td>EPIC</td>
+<td>50 waves</td>
+<td>2.7%</td>
+</tr>
+<tr>
+<td>LEGENDARY</td>
+<td>100 waves</td>
+<td>0.4%</td>
+</tr>
+</tbody></table>
+</div>
+<p>Higher tiers yield rarer species with better egg move rates.</p>
+<p><strong>Koto Relevance:</strong> High — The 4-tier egg system is clean and directly portable.</p>
+<p><em>(source: <code>enums/egg-type.ts:1-6</code>, <code>data/balance/rates.ts:31-35</code>)</em></p>
+<hr>
+<h2 id="s5-3">Gacha Machines</h2>
+<p>Three machines, each boosting a different rate:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Machine</th>
+<th>Focus</th>
+<th>Shiny Rate</th>
+<th>HA Rate</th>
+<th>Egg Move Boost</th>
+<th>Special</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Move</td>
+<td>Egg moves</td>
+<td>1/128</td>
+<td>1/192</td>
+<td>2-3x better rates</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Legendary</td>
+<td>Legendary tier</td>
+<td>1/128</td>
+<td>1/192</td>
+<td>Normal</td>
+<td>+1/256 Legendary rate, daily featured legendary</td>
+</tr>
+<tr>
+<td>Shiny</td>
+<td>Shinies</td>
+<td><strong>1/64</strong></td>
+<td>1/192</td>
+<td>Normal</td>
+<td>2x shiny rate</td>
+</tr>
+</tbody></table>
+</div>
+<p>The Legendary machine has a daily rotating featured legendary: if you pull a Legendary-tier egg, there&#39;s a 50% chance it becomes the featured species.</p>
+<p><strong>Koto Relevance:</strong> High — Three distinct gacha flavors give players meaningful choice in how they spend vouchers.</p>
+<p><em>(source: <code>enums/gacha-types.ts:1-9</code>, <code>data/egg.ts:169-177,397-400</code>)</em></p>
+<hr>
+<h2 id="s5-4">Pull Costs (Vouchers)</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Pull Count</th>
+<th>Voucher Type</th>
+<th>Vouchers Spent</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 pull</td>
+<td>REGULAR</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10 pulls</td>
+<td>REGULAR</td>
+<td>10</td>
+</tr>
+<tr>
+<td>5 pulls</td>
+<td>PLUS</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10 pulls</td>
+<td>PREMIUM</td>
+<td>1</td>
+</tr>
+<tr>
+<td>25 pulls</td>
+<td>GOLDEN</td>
+<td>1</td>
+</tr>
+</tbody></table>
+</div>
+<p>Max egg capacity: 99. Cannot pull if eggs + pullCount &gt; 99.</p>
+<p><strong>Koto Relevance:</strong> High — The voucher-to-pull exchange rates create natural progression tiers.</p>
+<p><em>(source: <code>ui/handlers/egg-gacha-ui-handler.ts:703-716,728-762</code>)</em></p>
+<hr>
+<h2 id="s5-5">Tier Roll Probabilities</h2>
+<p>Each egg&#39;s tier is rolled on a 256-point scale:</p>
+<pre><code>roll = random(0, 256)
+tierOffset = 1 if Legendary gacha, else 0
+
+if roll &gt;= (52 + offset): COMMON
+else if roll &gt;= (8 + offset): RARE
+else if roll &gt;= (1 + offset): EPIC
+else: LEGENDARY
+</code></pre>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Normal Gacha</th>
+<th>Legendary Gacha</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>COMMON</td>
+<td>204/256 (79.7%)</td>
+<td>203/256 (79.3%)</td>
+</tr>
+<tr>
+<td>RARE</td>
+<td>44/256 (17.2%)</td>
+<td>43/256 (16.8%)</td>
+</tr>
+<tr>
+<td>EPIC</td>
+<td>7/256 (2.7%)</td>
+<td>6/256 (2.3%)</td>
+</tr>
+<tr>
+<td>LEGENDARY</td>
+<td>1/256 (0.4%)</td>
+<td>2/256 (0.8%)</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — These probabilities are the core gacha math. Well-tuned for engagement.</p>
+<p><em>(source: <code>data/egg.ts:397-408</code>, <code>data/balance/rates.ts:19-22</code>)</em></p>
+<hr>
+<h2 id="s5-6">Pity System</h2>
+<p>After pulling eggs without hitting a tier, a pity counter forces that tier. Thresholds are set at the ~80th percentile — most players hit naturally before pity fires.</p>
+<p><strong>How it works:</strong></p>
+<p>Three independent counters track consecutive pulls without RARE, EPIC, or LEGENDARY:</p>
+<pre><code>On each pull:
+  for each tier T in {RARE, EPIC, LEGENDARY}:
+    if pulled_tier != T: eggPity[T] += 1
+    else: eggPity[T] = 0
+
+  if pulled_tier == COMMON:
+    if eggPity[LEGENDARY] &gt;= 412: upgrade to LEGENDARY
+    else if eggPity[EPIC] &gt;= 59: upgrade to EPIC
+    else if eggPity[RARE] &gt;= 9: upgrade to RARE
+</code></pre>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Pity Threshold</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RARE</td>
+<td>9</td>
+<td>Guaranteed Rare by 10th pull without one</td>
+</tr>
+<tr>
+<td>EPIC</td>
+<td>59</td>
+<td>Guaranteed Epic by 60th pull without one</td>
+</tr>
+<tr>
+<td>LEGENDARY</td>
+<td>412</td>
+<td>Guaranteed Legendary by 413th pull without one</td>
+</tr>
+</tbody></table>
+</div>
+<p>Only upgrades COMMON eggs. Only fires on pulled eggs (not event eggs).</p>
+<p><strong>Koto Relevance:</strong> High — Pity systems are essential for player trust in gacha. These thresholds are well-calibrated.</p>
+<p><em>(source: <code>data/egg.ts:561-579</code>, <code>data/balance/rates.ts:26-28</code>)</em></p>
+<hr>
+<h2 id="s5-7">Per-Batch Guarantees</h2>
+<p>Multi-pulls guarantee a minimum tier in the batch.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Pull Count</th>
+<th>Guaranteed Minimum</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>None</td>
+</tr>
+<tr>
+<td>5</td>
+<td>None</td>
+</tr>
+<tr>
+<td>10</td>
+<td>RARE</td>
+</tr>
+<tr>
+<td>25</td>
+<td>EPIC</td>
+</tr>
+</tbody></table>
+</div>
+<p>If no egg in the batch naturally reached the guaranteed tier, one random COMMON egg is upgraded. Eggs are shuffled after generation so the guaranteed egg isn&#39;t always last.</p>
+<p><strong>Koto Relevance:</strong> High — Batch guarantees encourage larger pulls, which feels more rewarding.</p>
+<p><em>(source: <code>ui/handlers/egg-gacha-ui-handler.ts:540-549,467-489</code>)</em></p>
+<hr>
+<h2 id="s5-8">Species Selection &amp; Weighting</h2>
+<p>Within a tier, species are weighted by starter cost. Cheaper species appear more often.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>weight = floor(((maxCost - clampedCost) / (maxCost - minCost + 1)) * 1.5 + 1) * 100
+</code></pre>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Starter Cost</th>
+<th>Weight Multiplier</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1 (cheapest)</td>
+<td>2.0x</td>
+<td>Most common</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1.5x</td>
+<td></td>
+</tr>
+<tr>
+<td>3, 5, 7, 9</td>
+<td>1.0x</td>
+<td>Standard</td>
+</tr>
+<tr>
+<td>4, 6, 8</td>
+<td>1.75x</td>
+<td>Slightly above standard</td>
+</tr>
+<tr>
+<td>Regional forms</td>
+<td>0.5x</td>
+<td>Half weight</td>
+</tr>
+</tbody></table>
+</div>
+<p>Pre-evolutions and Phione/Manaphy/Eternatus are excluded from the pool.</p>
+<p>If the egg is shiny with Rare/Epic variant, species without variant data are filtered out.</p>
+<p><strong>Koto Relevance:</strong> High — Weighted species selection ensures common creatures aren&#39;t drowned out by rare ones.</p>
+<p><em>(source: <code>data/egg.ts:410-521</code>)</em></p>
+<hr>
+<h2 id="s5-9">Species Pity (Unlock Pity)</h2>
+<p>After 9 consecutive hatches of already-owned species, the 10th is forced to be a new species.</p>
+<p><strong>How it works:</strong></p>
+<p>Per-tier counter tracks consecutive duplicates:</p>
+<pre><code>if species already caught or already in egg list:
+  unlockPity[tier] = min(unlockPity[tier] + 1, 10)
+else:
+  unlockPity[tier] = 0
+
+if unlockPity[tier] &gt;= 9:
+  filter pool to only uncaught species
+</code></pre>
+<p>Resets to 0 on any new species. Only filters if uncaught species exist in the pool.</p>
+<p><strong>Koto Relevance:</strong> Medium — Quality of life that prevents frustrating duplicate streaks.</p>
+<p><em>(source: <code>data/egg.ts:461-470,512-518</code>)</em></p>
+<hr>
+<h2 id="s5-10">Shiny Rates</h2>
+<p>Shiny determination is independent of tier.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Shiny Rate</th>
+<th>Odds</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Move gacha</td>
+<td>1/128</td>
+<td>0.78%</td>
+</tr>
+<tr>
+<td>Legendary gacha</td>
+<td>1/128</td>
+<td>0.78%</td>
+</tr>
+<tr>
+<td>Shiny gacha</td>
+<td><strong>1/64</strong></td>
+<td>1.56%</td>
+</tr>
+<tr>
+<td>Same-species egg</td>
+<td><strong>1/12</strong></td>
+<td>8.33%</td>
+</tr>
+<tr>
+<td>Event egg</td>
+<td>1/128</td>
+<td>0.78%</td>
+</tr>
+</tbody></table>
+</div>
+<p>Same-species eggs (from starter shop) have dramatically better shiny odds — almost 11x the base rate.</p>
+<p><strong>Koto Relevance:</strong> High — Shiny rates from eggs should be meaningful but not trivial.</p>
+<p><em>(source: <code>data/egg.ts:527-541</code>, <code>data/balance/rates.ts:38-40</code>)</em></p>
+<hr>
+<h2 id="s5-11">Variant Tiers</h2>
+<p>Shiny eggs roll a visual variant tier:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Chance</th>
+<th>Visual</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Standard</td>
+<td>60% (6/10)</td>
+<td>Basic alternate colors</td>
+</tr>
+<tr>
+<td>Rare</td>
+<td>30% (3/10)</td>
+<td>Enhanced palette</td>
+</tr>
+<tr>
+<td>Epic</td>
+<td>10% (1/10)</td>
+<td>Most distinct palette</td>
+</tr>
+</tbody></table>
+</div>
+<p>Non-shiny eggs are always Standard. Species without variant data default to Standard.</p>
+<p><strong>Koto Relevance:</strong> Medium — Variant tiers add collector depth to shinies.</p>
+<p><em>(source: <code>data/egg.ts:546-559</code>, <code>data/balance/rates.ts:52-53</code>)</em></p>
+<hr>
+<h2 id="s5-12">Hidden Ability from Eggs</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Source</th>
+<th>HA Rate</th>
+<th>Odds</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Normal gacha</td>
+<td>1/192</td>
+<td>0.52%</td>
+</tr>
+<tr>
+<td>Same-species egg</td>
+<td><strong>1/8</strong></td>
+<td>12.5%</td>
+</tr>
+</tbody></table>
+</div>
+<p>Only applies if the species actually has a hidden ability.</p>
+<p><strong>Koto Relevance:</strong> Medium — HA from eggs is a rare but meaningful unlock.</p>
+<p><em>(source: <code>data/egg.ts:261-269</code>, <code>data/balance/rates.ts:41,43</code>)</em></p>
+<hr>
+<h2 id="s5-13">Egg Moves</h2>
+<p>Each egg rolls for one of 4 egg moves (indices 0-2 common, index 3 rare).</p>
+<p><strong>Rare egg move rates (1/x):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Normal Rate</th>
+<th>Boosted Rate (Move gacha / same-species)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>COMMON</td>
+<td>1/48</td>
+<td>1/16</td>
+</tr>
+<tr>
+<td>RARE</td>
+<td>1/24</td>
+<td>1/12</td>
+</tr>
+<tr>
+<td>EPIC</td>
+<td>1/12</td>
+<td>1/6</td>
+</tr>
+<tr>
+<td>LEGENDARY</td>
+<td>1/6</td>
+<td>1/3</td>
+</tr>
+</tbody></table>
+</div>
+<p>If the rare roll fails, a random common egg move (0-2) is selected.</p>
+<p><strong>Koto Relevance:</strong> Medium — Egg moves add progression depth to individual species.</p>
+<p><em>(source: <code>data/egg.ts:369-379</code>, <code>data/balance/rates.ts:46-48</code>)</em></p>
+<hr>
+<h2 id="s5-14">Hatch Countdown</h2>
+<p>Eggs hatch after a set number of battle waves.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Waves to Hatch</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>COMMON</td>
+<td>10</td>
+</tr>
+<tr>
+<td>RARE</td>
+<td>25</td>
+</tr>
+<tr>
+<td>EPIC</td>
+<td>50</td>
+</tr>
+<tr>
+<td>LEGENDARY</td>
+<td>100</td>
+</tr>
+<tr>
+<td>MANAPHY</td>
+<td>50</td>
+</tr>
+</tbody></table>
+</div>
+<p>Each battle decrements all eggs&#39; counters by 1. When counter hits 0, the egg hatches (with animation and species reveal).</p>
+<p>UI proximity indicators:</p>
+<ul>
+<li>5 or fewer waves: &quot;Soon&quot;</li>
+<li>15 or fewer: &quot;Close&quot;</li>
+<li>50 or fewer: &quot;Not close&quot;</li>
+<li>Over 50: &quot;Long time&quot;</li>
+</ul>
+<p><strong>Koto Relevance:</strong> High — Hatch countdowns tied to battles (not real time) reward active play.</p>
+<p><em>(source: <code>data/egg.ts:381-395,316-327</code>, <code>phases/egg-lapse-phase.ts:23-25</code>)</em></p>
+<hr>
+<h2 id="s5-15">Manaphy Egg</h2>
+<p>A special egg type hidden within COMMON pulls.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>isManaphy = (eggId % 204 == 0) AND (tier == COMMON)
+</code></pre>
+<p>About 1 in 204 COMMON eggs (~0.5%) becomes a Manaphy egg. These hatch into either Phione (87.5%) or Manaphy (12.5%):</p>
+<pre><code>roll = random(0, 8)
+species = (roll == 0) ? MANAPHY : PHIONE
+</code></pre>
+<p>Manaphy eggs hatch in 50 waves (same as EPIC) despite being pulled from the COMMON pool.</p>
+<p><strong>Koto Relevance:</strong> High — Hidden rare outcomes within common pulls create exciting surprises.</p>
+<p><em>(source: <code>data/egg.ts:227-233,419-427</code>)</em></p>
+<hr>
+<h2 id="s5-16">Legendary Daily Rotation</h2>
+<p>The Legendary gacha features a daily rotating species.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>dayIndex = floor(timestamp / 86400000)  // ms per day
+offset = floor(dayIndex / legendaryCount)
+index = dayIndex % legendaryCount
+
+shuffle the legendary list using offset as seed
+featuredSpecies = shuffledList[index]
+</code></pre>
+<p>When a Legendary-tier egg is pulled from the Legendary gacha, 50% chance it becomes the featured species.</p>
+<p>The featured species rotates every ~40 days (one full cycle through all legendaries).</p>
+<p><strong>Koto Relevance:</strong> High — Daily rotation creates check-in incentives and FOMO for specific species.</p>
+<p><em>(source: <code>data/egg.ts:617-638</code>, <code>ui/handlers/egg-gacha-ui-handler.ts:909-917</code>)</em></p>
+<hr>
+<h2 id="s5-17">IV Bonus from Eggs</h2>
+<p>All egg-hatched Pokemon get an IV boost via a &quot;best of two&quot; system.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>baseIVs = normal random IVs from Pokemon creation
+secondaryIVs = getIvsFromId(random(0, 4294967295))
+
+for each stat:
+  finalIV = max(baseIV, secondaryIV)
+</code></pre>
+<p>This effectively gives each IV two rolls and keeps the better one, biasing toward higher values.</p>
+<p><strong>Koto Relevance:</strong> Medium — Subtle but meaningful — egg Pokemon are statistically better than wild catches.</p>
+<p><em>(source: <code>data/egg.ts:276-280</code>)</em></p>
+<hr>
+<h2 id="s5-18">Complete Constants Table</h2>
+<p>All numeric constants used in the gacha/egg system:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>EGG_SEED</td>
+<td>1,073,741,824</td>
+<td>RNG seed range</td>
+</tr>
+<tr>
+<td>Common egg threshold</td>
+<td>52</td>
+<td>Tier roll cutoff</td>
+</tr>
+<tr>
+<td>Rare egg threshold</td>
+<td>8</td>
+<td>Tier roll cutoff</td>
+</tr>
+<tr>
+<td>Epic egg threshold</td>
+<td>1</td>
+<td>Tier roll cutoff</td>
+</tr>
+<tr>
+<td>Legendary Up offset</td>
+<td>1</td>
+<td>Legendary gacha bonus</td>
+</tr>
+<tr>
+<td>Pity: Rare</td>
+<td>9 pulls</td>
+<td>Force Rare</td>
+</tr>
+<tr>
+<td>Pity: Epic</td>
+<td>59 pulls</td>
+<td>Force Epic</td>
+</tr>
+<tr>
+<td>Pity: Legendary</td>
+<td>412 pulls</td>
+<td>Force Legendary</td>
+</tr>
+<tr>
+<td>Hatch: Common</td>
+<td>10 waves</td>
+<td></td>
+</tr>
+<tr>
+<td>Hatch: Rare</td>
+<td>25 waves</td>
+<td></td>
+</tr>
+<tr>
+<td>Hatch: Epic</td>
+<td>50 waves</td>
+<td></td>
+</tr>
+<tr>
+<td>Hatch: Legendary</td>
+<td>100 waves</td>
+<td></td>
+</tr>
+<tr>
+<td>Hatch: Manaphy</td>
+<td>50 waves</td>
+<td></td>
+</tr>
+<tr>
+<td>Shiny: Default</td>
+<td>1/128</td>
+<td></td>
+</tr>
+<tr>
+<td>Shiny: Shiny gacha</td>
+<td>1/64</td>
+<td></td>
+</tr>
+<tr>
+<td>Shiny: Same-species</td>
+<td>1/12</td>
+<td></td>
+</tr>
+<tr>
+<td>HA: Default</td>
+<td>1/192</td>
+<td></td>
+</tr>
+<tr>
+<td>HA: Same-species</td>
+<td>1/8</td>
+<td></td>
+</tr>
+<tr>
+<td>Manaphy rate</td>
+<td>1/8</td>
+<td>Within Manaphy eggs</td>
+</tr>
+<tr>
+<td>Rare egg move rates</td>
+<td>[1/48, 1/24, 1/12, 1/6]</td>
+<td>Per tier</td>
+</tr>
+<tr>
+<td>Boosted egg move rates</td>
+<td>[1/16, 1/12, 1/6, 1/3]</td>
+<td>Move gacha / same-species</td>
+</tr>
+<tr>
+<td>Variant: Rare threshold</td>
+<td>4/10</td>
+<td></td>
+</tr>
+<tr>
+<td>Variant: Epic threshold</td>
+<td>1/10</td>
+<td></td>
+</tr>
+<tr>
+<td>Max eggs</td>
+<td>99</td>
+<td>Inventory cap</td>
+</tr>
+</tbody></table>
+</div>
+
+</div>
+<div class="ch" data-i="6">
+<h1>Mystery Encounters</h1>
+<div class="ov">Mystery encounters are random special events that appear during Classic and Challenge runs. They break the normal battle-boss-shop loop with branching-choice scenarios — trade a Pokemon for rare items, battle a unique boss for berries, take a quiz, gamble on a chest, etc. Each encounter offers 2-4 options with different risk/reward profiles, and many options have requirements (specific Pokemon types, moves, money).
+
+The spawn system uses a pity weight that increases each wave a mystery encounter fails to appear, targeting ~12 encounters per 200-wave Classic run. Four tiers (Common, Great, Ultra, Rogue) control encounter rarity, and biome restrictions ensure encounters feel contextually appropriate.</div>
+<div class="toc"><div class="toc-t">In this chapter</div><a href="#s6-2" class="toc-link">Spawn Mechanics</a><a href="#s6-3" class="toc-link">Tier System</a><a href="#s6-4" class="toc-link">Biome Restrictions</a><a href="#s6-5" class="toc-link">Option &amp; Requirement System</a><a href="#s6-6" class="toc-link">Encounter Catalog</a></div>
+
+
+
+<p>Mystery encounters are random special events that appear during Classic and Challenge runs. They break the normal battle-boss-shop loop with branching-choice scenarios — trade a Pokemon for rare items, battle a unique boss for berries, take a quiz, gamble on a chest, etc. Each encounter offers 2-4 options with different risk/reward profiles, and many options have requirements (specific Pokemon types, moves, money).</p>
+<p>The spawn system uses a pity weight that increases each wave a mystery encounter fails to appear, targeting ~12 encounters per 200-wave Classic run. Four tiers (Common, Great, Ultra, Rogue) control encounter rarity, and biome restrictions ensure encounters feel contextually appropriate.</p>
+
+<hr>
+<h2 id="s6-2">Spawn Mechanics</h2>
+<p>Mystery encounters use a rolling weight system with anti-variance correction.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>BASE_WEIGHT = 3
+MAX_WEIGHT = 256
+WEIGHT_INCREMENT_ON_MISS = 3
+TARGET_PER_RUN = 12
+ANTI_VARIANCE_MODIFIER = 15
+
+Each eligible wave:
+  spawnChance = currentWeight / 256
+
+  if spawn succeeds: reset weight to BASE_WEIGHT (3)
+  if spawn fails: weight += WEIGHT_INCREMENT_ON_MISS (3)
+
+Anti-variance correction:
+  expectedCount = (currentWave / 200) * TARGET_PER_RUN
+  adjustment = (expectedCount - actualCount) * ANTI_VARIANCE_MODIFIER / 256
+  weight += adjustment
+</code></pre>
+<p>If you&#39;ve been unlucky (fewer encounters than expected), the weight increases faster. If you&#39;ve been lucky, it slows down. This targets ~1 encounter every 16.7 waves.</p>
+<p><strong>Eligible wave ranges:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Range</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Classic</td>
+<td>Waves 10-180</td>
+</tr>
+<tr>
+<td>Challenge</td>
+<td>Waves 10-180</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Endless</td>
+<td>None</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> Medium — The pity-weighted spawn system is a clean design for random event frequency control.</p>
+<p><em>(source: <code>constants.ts:15-96</code>, <code>game-mode.ts:421-433</code>)</em></p>
+<hr>
+<h2 id="s6-3">Tier System</h2>
+<p>Four tiers control encounter rarity:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Weight</th>
+<th>Target Ratio</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>COMMON</td>
+<td>66</td>
+<td>~46%</td>
+</tr>
+<tr>
+<td>GREAT</td>
+<td>40</td>
+<td>~31%</td>
+</tr>
+<tr>
+<td>ULTRA</td>
+<td>19</td>
+<td>~19%</td>
+</tr>
+<tr>
+<td>ROGUE</td>
+<td>3</td>
+<td>~4%</td>
+</tr>
+</tbody></table>
+</div>
+<p>MASTER tier exists in the enum but is not currently used.</p>
+<p><strong>Koto Relevance:</strong> Medium — The 4-tier distribution with heavily weighted common encounters is well-balanced.</p>
+<p><em>(source: <code>enums/mystery-encounter-tier.ts</code>)</em></p>
+<hr>
+<h2 id="s6-4">Biome Restrictions</h2>
+<p>Encounters are filtered by biome categories:</p>
+<ul>
+<li><strong>Extreme biomes</strong> (Sea, Volcano, Abyss, Space, etc.): Only encounters designed for harsh environments</li>
+<li><strong>Non-extreme biomes</strong> (Grass, Forest, Cave, etc.): Most encounters available</li>
+<li><strong>Civilization biomes</strong> (Town, Metropolis): Human NPC encounters</li>
+<li><strong>Any-biome encounters</strong> (13 total): Fight or Flight, Dark Deal, Mysterious Chest, Training Session, Delibirdy, Berries Abound, Clowning Around, Weird Dream, Teleporting Hijinks, Bug Type Superfan, Uncommon Breed, Trash to Treasure, A Trainer&#39;s Test</li>
+</ul>
+<p><strong>Koto Relevance:</strong> Medium — Biome-gated encounters ensure thematic consistency.</p>
+<p><em>(source: <code>data/mystery-encounters/mystery-encounters.ts:37-226</code>)</em></p>
+<hr>
+<h2 id="s6-5">Option &amp; Requirement System</h2>
+<p>Each encounter presents 2-4 options, each with optional requirements. Options can be: always available, available-or-disabled, or special.</p>
+<p><strong>Scene requirements:</strong> Wave range, party size, money amount, weather, time of day, held items, previous encounter history.</p>
+<p><strong>Pokemon requirements:</strong> Type match, specific species, nature, known move, learnable move, ability, status effect, form change capability.</p>
+<p>Requirements can be combined with AND/OR logic.</p>
+<p><strong>Koto Relevance:</strong> High — The requirement framework is very flexible and worth studying for Koto&#39;s NPC encounter system.</p>
+<p><em>(source: <code>data/mystery-encounters/mystery-encounter-option.ts:26-195</code>, <code>mystery-encounter-requirements.ts:180-811</code>)</em></p>
+<hr>
+<h2 id="s6-6">Encounter Catalog</h2>
+<h3>Common Tier</h3>
+<p><strong>Berries Abound</strong> — Battle or race for berries. Speed-check option: your fastest Pokemon vs a random boss. Win = 2-7 berries, lose = half. <em>(waves 10-180, any biome)</em></p>
+<p><strong>Department Store Sale</strong> — Shop with 4 departments: TMs (5 items), Vitamins (3 items), X Items (5 items), Pokeballs (4 items). Weighted random within each. <em>(waves 10-100)</em></p>
+<p><strong>Field Trip</strong> — Quiz: classify a move as Physical, Special, or Status. Correct answer = stat boosters + Rarer Candy. Wrong = consolation EXP. <em>(waves 10-100)</em></p>
+<p><strong>Fiery Fallout</strong> — Double battle vs 2 Volcarona with Sunny weather. They use Fire Spin + Quiver Dance on turn 1, no switching allowed. Reward: Fire-type Attack Booster. <em>(waves 40-180)</em></p>
+<p><strong>Fight or Flight</strong> — Battle a boss with a random +2 stat boost for a tier-scaled item (GREAT→MASTER by wave). Option 2: steal with Thief/Covet move. <em>(waves 10-180, any biome)</em></p>
+<p><strong>Global Trade System</strong> — Wonder Trade (random species) or Legendary Trade (cost-tiered pool). Shiny 1/128, HA 1/64. <em>(waves 10-180, any biome)</em></p>
+<p><strong>Lost at Sea</strong> — Use Surf or Fly (learnable move requirement) to escape safely with EXP. Or wander for 25% HP damage to all. <em>(waves 10-180)</em></p>
+<p><strong>Mysterious Chest</strong> — Open for random outcome: 30% trap (KO highest level Pokemon), 25% Common/Great reward, 30% Ultra reward, 10% Rogue reward, 5% Master reward. <em>(waves 10-180, any biome)</em></p>
+<p><strong>Part Timer</strong> — Work for money or items. Simple reward, no battle. <em>(waves 10-100, civilization biomes)</em></p>
+<p><strong>Shady Vitamin Dealer</strong> — Buy discounted base stat boosters. <em>(waves 10-180)</em></p>
+<p><strong>Teleporting Hijinks</strong> — Use Teleport (learnable) to escape, wander (30% HP damage), or battle to escape. <em>(waves 10-180, any biome)</em></p>
+<p><strong>Uncommon Breed</strong> — Catch a shiny-boosted rare Pokemon. <em>(waves 10-180, any biome)</em></p>
+<h3>Great Tier</h3>
+<p><strong>Absolute Avarice</strong> — Requires 6+ berries. Battle 3-segment boss Greedent holding all your berries. Win = Reviver Seed per party member. Negotiate or steal alternatives. <em>(waves 20-180)</em></p>
+<p><strong>An Offer You Can&#39;t Refuse</strong> — Sell your strongest Pokemon for 10-30x Relic Gold + Shiny Charm. Or extort with Thief/Covet. <em>(waves 10-180, requires party &gt;= 2)</em></p>
+<p><strong>Bug Type Superfan</strong> — Trainer battle scaling with wave (7 difficulty tiers from wave 30 to 160). Reward: tutored bug move. <em>(waves 10-180, requires Bug type or bug item)</em></p>
+<p><strong>Dancing Lessons</strong> — Battle biome-specific Oricorio form (Baile in Volcano, Pom-Pom in Power Plant, etc.) with +1 to 4 stats. Or learn Revelation Dance without fighting. <em>(waves 10-180)</em></p>
+<p><strong>Delibirdy</strong> — Max 4 per run. Trade money for Amulet Coin, berry for Candy Jar, or non-berry item for modifier. Holiday event bonuses. <em>(waves 10-180, requires money &gt;= 2x wave value)</em></p>
+<p><strong>Mysterious Challengers</strong> — Accept a trainer challenge for Common/Great reward. <em>(waves 10-180, human biomes)</em></p>
+<p><strong>Slumbering Snorlax</strong> — Battle boss Snorlax for Rarer Candy, sneak past for EXP, or wake-and-flee. <em>(waves 20-180, grass/plains)</em></p>
+<h3>Ultra Tier</h3>
+<p><strong>Clowning Around</strong> — Double battle vs Mr. Mime + Blacephalon (random types/ability). Mr. Mime uses Role Play on Blacephalon. Post-battle: ability swap option. Disallowed in single-type challenges. <em>(waves 80-180)</em></p>
+<p><strong>Training Session</strong> — Battle a clone of your own Pokemon (2-5 segments by wave). Win: 2 random IVs boosted (+10 if &lt;10, +5 if 10-20, +3 if &gt;20). Or permanently change nature. <em>(waves 10-180, requires party &gt;= 2)</em></p>
+<p><strong>The Expert Pokemon Breeder</strong> — Battle for perfect-IV Pokemon, trade, or get IV boost item. <em>(waves 10-180)</em></p>
+<p><strong>The Pokemon Salesman</strong> — Buy Pokemon, negotiate, or rob. <em>(waves 10-180)</em></p>
+<p><strong>Trash to Treasure</strong> — Search for Common/Great item, or battle for Rogue item. <em>(waves 10-180, any biome)</em></p>
+<h3>Rogue Tier</h3>
+<p><strong>A Trainer&#39;s Test</strong> — Battle stat trainer (Cheryl/Marley/Mira/Riley/Buck) for 2x Rogue modifiers + Relic Gold + Epic egg. Or decline for party heal + Rare egg. <em>(waves 100-180)</em></p>
+<p><strong>Dark Deal</strong> — Sacrifice a random party member. Spawn legendary boss (tier 6-9, weighted 35/50/10/5%) matching removed Pokemon&#39;s types. Win = 5 Rogue Balls. <em>(waves 30-180, requires party &gt;= 2)</em></p>
+<p><strong>The Winstrate Challenge</strong> — 5 consecutive trainer battles (Victor/Victoria/Vito/Vivi/Vicky). Win all = 10x Premium Voucher + Macho Brace (Master tier). Max 1 per run. <em>(waves 100-180, requires party &gt;= 3)</em></p>
+<p><strong>Weird Dream</strong> — Narrative-driven bizarre encounter with unique modifier reward. <em>(waves 40-180)</em></p>
+<hr>
+<p><strong>Koto Relevance by design pattern:</strong></p>
+<ul>
+<li><strong>Risk/reward gambling</strong> (Mysterious Chest, Dark Deal): High — creates memorable moments</li>
+<li><strong>Move/type gating</strong> (Lost at Sea, Fight or Flight steal): High — rewards diverse party composition</li>
+<li><strong>Multi-stage challenges</strong> (Winstrate, Trainer&#39;s Test): High — epic encounters within encounters</li>
+<li><strong>Economy transactions</strong> (Delibirdy, Pokemon Salesman): Medium — money sinks with item rewards</li>
+<li><strong>Quizzes/minigames</strong> (Field Trip, Fun and Games): Medium — educational potential for Koto&#39;s vocab system</li>
+</ul>
+
+</div>
+<div class="ch" data-i="7">
+<h1>AI & Trainers</h1>
+<div class="ov">The AI and trainer system controls all enemy behavior — from random wild Pokemon to gym leaders, Elite Four, and the Champion. Three AI types (Random, Smart Random, Smart) determine how enemies choose moves, with progressively better decision-making. Trainers have configurable party templates, species pools with rarity tiers, and level scaling that follows the same quadratic curve as wild encounters but with strength-based multipliers.
+
+The moveset generation system is particularly sophisticated: it builds weighted move pools from level-up moves, TMs, and egg moves, forces at least one STAB move, scales weights by move power and stat alignment, and caps TM/egg move counts by level. This ensures enemy Pokemon have reasonably competitive movesets without hand-curation.</div>
+<div class="toc"><div class="toc-t">In this chapter</div><a href="#s7-2" class="toc-link">AI Types</a><a href="#s7-3" class="toc-link">Move Selection Algorithm</a><a href="#s7-4" class="toc-link">Target Selection</a><a href="#s7-5" class="toc-link">Matchup Scoring</a><a href="#s7-6" class="toc-link">Switching Logic</a><a href="#s7-7" class="toc-link">Trainer Party Level Scaling</a><a href="#s7-8" class="toc-link">Party Member Strength Tiers</a><a href="#s7-9" class="toc-link">Party Templates</a><a href="#s7-10" class="toc-link">Species Pool &amp; Rarity</a><a href="#s7-11" class="toc-link">Moveset Generation</a><a href="#s7-12" class="toc-link">Trainer Configuration System</a><a href="#s7-13" class="toc-link">Gym Leaders</a><a href="#s7-14" class="toc-link">Elite Four &amp; Champion</a><a href="#s7-15" class="toc-link">Evil Teams</a><a href="#s7-16" class="toc-link">Fixed Battle Schedule</a><a href="#s7-17" class="toc-link">Boss HP Segments</a><a href="#s7-18" class="toc-link">Terastallization AI</a><a href="#s7-19" class="toc-link">Modifier Drop Rates</a></div>
+
+
+
+<p>The AI and trainer system controls all enemy behavior — from random wild Pokemon to gym leaders, Elite Four, and the Champion. Three AI types (Random, Smart Random, Smart) determine how enemies choose moves, with progressively better decision-making. Trainers have configurable party templates, species pools with rarity tiers, and level scaling that follows the same quadratic curve as wild encounters but with strength-based multipliers.</p>
+<p>The moveset generation system is particularly sophisticated: it builds weighted move pools from level-up moves, TMs, and egg moves, forces at least one STAB move, scales weights by move power and stat alignment, and caps TM/egg move counts by level. This ensures enemy Pokemon have reasonably competitive movesets without hand-curation.</p>
+
+<hr>
+<h2 id="s7-2">AI Types</h2>
+<p>Three AI levels control enemy decision quality.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>AI Type</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RANDOM</td>
+<td>Pick moves purely at random</td>
+</tr>
+<tr>
+<td>SMART_RANDOM</td>
+<td>62.5% chance to pick the best move, 37.5% to consider next-best</td>
+</tr>
+<tr>
+<td>SMART</td>
+<td>Score-based selection with diminishing probability down the ranked list</td>
+</tr>
+</tbody></table>
+</div>
+<p>Most trainer Pokemon use SMART_RANDOM or SMART. Wild Pokemon typically use RANDOM or SMART_RANDOM.</p>
+<p><strong>Koto Relevance:</strong> High — The 3-tier AI system lets you tune difficulty without changing the encounters themselves.</p>
+<p><em>(source: <code>enums/ai-type.ts:1-5</code>)</em></p>
+<hr>
+<h2 id="s7-3">Move Selection Algorithm</h2>
+<p>The core decision loop for enemy Pokemon.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>Check for queued move (from multi-turn moves); if usable, return it</li>
+<li>Filter to moves with PP &gt; 0 and not blocked by status</li>
+<li>If only 1 move available, use it</li>
+<li>Check Encore tag forcing a specific move</li>
+<li>Based on AI type, score and select:</li>
+</ol>
+<p><strong>Move scoring formula:</strong></p>
+<pre><code>For each move against each valid target:
+  score = getUserBenefitScore(move) + getTargetBenefitScore(move) * (ally ? -1 : 1)
+
+  If attacking opponent:
+    score *= typeEffectiveness * (STAB ? 1.5 : 1.0)
+  If attacking ally:
+    score /= typeEffectiveness / (STAB ? 1.5 : 1.0)
+
+  moveScore = max(targetScores) across all valid targets
+</code></pre>
+<p><strong>SMART_RANDOM selection:</strong>
+Sort moves by score descending. With 5/8 probability take the best; with 3/8 advance to next-best (repeat).</p>
+<p><strong>SMART selection:</strong>
+Sort by score. For each step down the list: <code>probability = min(nextScore / currentScore, 1) * 50</code>. If random(100) &lt; probability, advance; else use current.</p>
+<p>This means the SMART AI strongly prefers the best move but occasionally uses second-best when scores are close.</p>
+<p><strong>Koto Relevance:</strong> High — The benefit-score system with STAB/effectiveness weighting is directly applicable to Koto&#39;s element system.</p>
+<p><em>(source: <code>field/pokemon.ts:6645-6878</code>)</em></p>
+<hr>
+<h2 id="s7-4">Target Selection</h2>
+<p>For single-target moves, the AI evaluates all valid targets and selects by weighted score.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>Calculate benefit score for each potential target</li>
+<li>Multiply ally scores by -1 (prefer helping allies less)</li>
+<li>Sort by score descending</li>
+<li>Remove targets with score &lt; 50% of max</li>
+<li>Select by weighted random from remaining</li>
+</ol>
+<p><strong>Koto Relevance:</strong> Medium — Relevant for double battles or multi-target scenarios.</p>
+<p><em>(source: <code>field/pokemon.ts:6885-6964</code>)</em></p>
+<hr>
+<h2 id="s7-5">Matchup Scoring</h2>
+<p>Used by trainers to decide whether to switch Pokemon.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>defScore = 1 / max(effectiveness_vs_type1, 0.25)
+  If dual-typed: defScore /= max(effectiveness_vs_type2, 0.25)
+  Capped at 4.0
+
+For each damaging move:
+  moveScore = effectiveness * (STAB ? 1.5 : 1.0)
+atkScore = average(moveScores)
+
+hpDiffRatio = this_hp% + (1 - opponent_hp%)
+  If HP &lt;= 20% and not faster: hpDiffRatio *= 0.85
+  If faster: hpDiffRatio *= 1.25
+  If HP 20-40%: hpDiffRatio *= 0.5
+
+finalScore = (atkScore + defScore) * min(hpDiffRatio, 1.0)
+</code></pre>
+<p>Typical range: 0-16. Considers type matchup, offensive coverage, HP remaining, and speed advantage.</p>
+<p><strong>Koto Relevance:</strong> High — Matchup scoring drives switching behavior, making trainer battles feel strategic.</p>
+<p><em>(source: <code>field/pokemon.ts:2666-2749</code>)</em></p>
+<hr>
+<h2 id="s7-6">Switching Logic</h2>
+<p>Trainers evaluate whether to switch their active Pokemon each turn.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>Get matchup scores for all bench Pokemon against player&#39;s field</li>
+<li>Find best bench score</li>
+<li>Compare against current active score with threshold and switch counter</li>
+</ol>
+<pre><code>switchMultiplier = 1 - (counter ? 0.1^(1/counter) : 0)
+
+Boss trainers: need bench score &gt;= active * 2.0
+Regular trainers: need bench score &gt;= active * 3.0
+
+After switch: counter++
+After move selection: counter = max(counter - 1, 0)
+</code></pre>
+<p>The switch counter creates exponential resistance to repeated switching:</p>
+<ul>
+<li>After 1 switch: ~68% effectiveness on next switch attempt</li>
+<li>After 3 switches: ~89%</li>
+<li>After 10 switches: ~99% (almost impossible to switch again)</li>
+</ul>
+<p>This prevents the AI from switch-looping.</p>
+<p><strong>Koto Relevance:</strong> High — The counter-decay system prevents degenerate AI switching while still allowing smart plays.</p>
+<p><em>(source: <code>phases/enemy-command-phase.ts:41-88</code>, <code>field/trainer.ts:552-596</code>)</em></p>
+<hr>
+<h2 id="s7-7">Trainer Party Level Scaling</h2>
+<p>Enemy trainer levels follow the same quadratic formula as wild Pokemon, modified by party member strength.</p>
+<p><strong>How it works:</strong></p>
+<pre><code>baseLevel = 1 + (difficultyWave / 2) + (difficultyWave / 25)^2
+</code></pre>
+<p>Then per party member:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Strength</th>
+<th>Level Multiplier</th>
+<th>Level Offset</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WEAKER</td>
+<td>0.95</td>
+<td>Scales down with wave</td>
+</tr>
+<tr>
+<td>WEAK</td>
+<td>1.00</td>
+<td>Scales down</td>
+</tr>
+<tr>
+<td>AVERAGE</td>
+<td>1.10</td>
+<td>None</td>
+</tr>
+<tr>
+<td>STRONG</td>
+<td>1.20</td>
+<td>None</td>
+</tr>
+<tr>
+<td>STRONGER</td>
+<td>1.25</td>
+<td>None</td>
+</tr>
+</tbody></table>
+</div>
+<p>Sub-STRONG members get a progressive catch-up: <code>multiplier += 0.025 * floor(wave / 25)</code>, capped at 1.20.</p>
+<p>Level offset for sub-STRONG: <code>offset = -floor((wave / 50) * (STRONG - strength))</code>.</p>
+<p><strong>Koto Relevance:</strong> High — The strength-tier system creates natural difficulty variance within a single trainer&#39;s team.</p>
+<p><em>(source: <code>field/trainer.ts:263-309</code>)</em></p>
+<hr>
+<h2 id="s7-8">Party Member Strength Tiers</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Multiplier</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WEAKER</td>
+<td>0.95x</td>
+<td>Filler/tutorial</td>
+</tr>
+<tr>
+<td>WEAK</td>
+<td>1.00x</td>
+<td>Standard members</td>
+</tr>
+<tr>
+<td>AVERAGE</td>
+<td>1.10x</td>
+<td>Mid-tier</td>
+</tr>
+<tr>
+<td>STRONG</td>
+<td>1.20x</td>
+<td>Ace Pokemon</td>
+</tr>
+<tr>
+<td>STRONGER</td>
+<td>1.25x</td>
+<td>Signature Pokemon</td>
+</tr>
+</tbody></table>
+</div>
+<p><em>(source: <code>enums/party-member-strength.ts:1-8</code>)</em></p>
+<hr>
+<h2 id="s7-9">Party Templates</h2>
+<p>Templates define how many Pokemon a trainer has and at what strength.</p>
+<p><strong>Key templates:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Composition</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TWO_AVG</td>
+<td>2x AVERAGE</td>
+<td>2</td>
+</tr>
+<tr>
+<td>GYM_LEADER_1</td>
+<td>1 AVG + 1 STRONG</td>
+<td>2</td>
+</tr>
+<tr>
+<td>GYM_LEADER_3</td>
+<td>2 AVG + 1 STRONG + 1 STRONGER</td>
+<td>4</td>
+</tr>
+<tr>
+<td>GYM_LEADER_5</td>
+<td>3 AVG + 2 STRONG + 1 STRONGER</td>
+<td>6</td>
+</tr>
+<tr>
+<td>ELITE_FOUR</td>
+<td>1 AVG + 3 STRONG + 1 STRONGER + 1 AVG</td>
+<td>6</td>
+</tr>
+<tr>
+<td>CHAMPION</td>
+<td>4 STRONG + 2 STRONGER</td>
+<td>6</td>
+</tr>
+<tr>
+<td>RIVAL_5</td>
+<td>1 STRONG + 1 AVG + 3 AVG + 1 STRONG</td>
+<td>6</td>
+</tr>
+<tr>
+<td>EVIL_LEADER</td>
+<td>1 STRONG + 2 AVG + 2 STRONG + 1 STRONGER</td>
+<td>6</td>
+</tr>
+</tbody></table>
+</div>
+<p>Gym leader templates scale dynamically with wave:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Wave Range</th>
+<th>Template</th>
+<th>Party Size</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1-20</td>
+<td>GYM_LEADER_1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>21-30</td>
+<td>GYM_LEADER_2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>31-60</td>
+<td>GYM_LEADER_3</td>
+<td>4</td>
+</tr>
+<tr>
+<td>61-90</td>
+<td>GYM_LEADER_4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>91+</td>
+<td>GYM_LEADER_5</td>
+<td>6</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> High — Templates are an elegant way to define difficulty without specifying exact Pokemon.</p>
+<p><em>(source: <code>data/trainers/trainer-party-template.ts:1-313</code>)</em></p>
+<hr>
+<h2 id="s7-10">Species Pool &amp; Rarity</h2>
+<p>Trainer Pokemon are selected from rarity-tiered pools (same tiers as biome pools).</p>
+<p><strong>Rarity distribution (512-point scale):</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Probability</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Common</td>
+<td>59.6%</td>
+</tr>
+<tr>
+<td>Uncommon</td>
+<td>24.2%</td>
+</tr>
+<tr>
+<td>Rare</td>
+<td>5.1%</td>
+</tr>
+<tr>
+<td>Super Rare</td>
+<td>1.0%</td>
+</tr>
+<tr>
+<td>Ultra Rare</td>
+<td>0.2%</td>
+</tr>
+</tbody></table>
+</div>
+<p>If the selected tier&#39;s pool is empty, it downgrades to the next tier.</p>
+<p><strong>Specialty type enforcement:</strong> Trainers with a specialty type (e.g., Fire gym leader) reroll up to 10 times to match the type. Type-balanced templates prevent duplicate types in a party.</p>
+<p><strong>Duplicate prevention:</strong> Species already in the party or in the trainer&#39;s signature list are rerolled.</p>
+<p><strong>Koto Relevance:</strong> High — Rarity pools with specialty filtering is exactly how Koto&#39;s NPC teams should work.</p>
+<p><em>(source: <code>field/trainer.ts:446-529</code>)</em></p>
+<hr>
+<h2 id="s7-11">Moveset Generation</h2>
+<p>The AI moveset generator builds competitive movesets from weighted pools.</p>
+<p><strong>Five-step process:</strong></p>
+<ol>
+<li><strong>Build pools:</strong> Level-up moves weighted by learn level (+20 base), TMs unlocked by level (25/40/55), egg moves at level 60+</li>
+<li><strong>Filter:</strong> Remove unimplemented moves, self-KO moves (bosses), OHKO moves (trainers)</li>
+<li><strong>Trainer adjustments:</strong> Self-KO x0.5, stat buff moves x1.25, charging moves x0.7</li>
+<li><strong>Power scaling:</strong> Weight by move power relative to max (90 cap). Penalize moves that use the weaker offensive stat</li>
+<li><strong>Weight exponentiation:</strong> <code>finalWeight = weight^1.6</code> (or <code>^2.0</code> for bosses)</li>
+</ol>
+<p>Then: force one STAB move, fill remaining slots with weighted selection avoiding duplicate types.</p>
+<p><strong>TM caps by level:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Max TMs</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&lt;25</td>
+<td>0</td>
+</tr>
+<tr>
+<td>25-40</td>
+<td>1</td>
+</tr>
+<tr>
+<td>41-70</td>
+<td>2</td>
+</tr>
+<tr>
+<td>71-100</td>
+<td>3</td>
+</tr>
+<tr>
+<td>101+</td>
+<td>4</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Egg move caps:</strong></p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Max Egg Moves</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&lt;80</td>
+<td>0</td>
+</tr>
+<tr>
+<td>80-120</td>
+<td>1</td>
+</tr>
+<tr>
+<td>121-160</td>
+<td>2</td>
+</tr>
+<tr>
+<td>161-200</td>
+<td>3</td>
+</tr>
+<tr>
+<td>201+</td>
+<td>4</td>
+</tr>
+</tbody></table>
+</div>
+<p><strong>Koto Relevance:</strong> Critical — Automated moveset generation eliminates hand-curation. The STAB forcing + power weighting produces good movesets reliably.</p>
+<p><em>(source: <code>ai/ai-moveset-gen.ts:1-765</code>, <code>data/balance/moveset-generation.ts:1-246</code>)</em></p>
+<hr>
+<h2 id="s7-12">Trainer Configuration System</h2>
+<p>All trainer behavior is defined in <code>TrainerConfig</code> objects with these key properties:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>trainerType</td>
+<td>Trainer class (Youngster, Gym Leader, etc.)</td>
+</tr>
+<tr>
+<td>isBoss</td>
+<td>Boss mechanics enabled</td>
+</tr>
+<tr>
+<td>specialtyType</td>
+<td>Type specialization (Fire, Water, etc.)</td>
+</tr>
+<tr>
+<td>moneyMultiplier</td>
+<td>Reward scaling</td>
+</tr>
+<tr>
+<td>partyTemplates</td>
+<td>Available party formations</td>
+</tr>
+<tr>
+<td>partyMemberFuncs</td>
+<td>Slot-specific Pokemon generators</td>
+</tr>
+<tr>
+<td>speciesPools</td>
+<td>Rarity-based species pools</td>
+</tr>
+<tr>
+<td>speciesFilter</td>
+<td>BST/type filtering</td>
+</tr>
+</tbody></table>
+</div>
+<p>Specialized init methods: <code>initForGymLeader()</code>, <code>initForEliteFour()</code>, <code>initForChampion()</code>.</p>
+<p><strong>Koto Relevance:</strong> High — A central config object per trainer type is clean and maintainable.</p>
+<p><em>(source: <code>data/trainers/trainer-config.ts:68-948</code>)</em></p>
+<hr>
+<h2 id="s7-13">Gym Leaders</h2>
+<p>Gym leaders use dynamic party templates (scaling with wave), specialty types, signature species, and Terastallization.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Money multiplier</td>
+<td>2.5x</td>
+</tr>
+<tr>
+<td>Boss status</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Static party</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Tera</td>
+<td>After wave 100 (1 Pokemon)</td>
+</tr>
+<tr>
+<td>Signature species</td>
+<td>Filled in reverse party slots</td>
+</tr>
+</tbody></table>
+</div>
+<p>Paldean gym leaders always have Tera regardless of wave.</p>
+<p><strong>Koto Relevance:</strong> High — The wave-scaling gym leader template is directly portable to Koto&#39;s NPC bosses.</p>
+<p><em>(source: <code>data/trainers/trainer-config.ts:663-706</code>)</em></p>
+<hr>
+<h2 id="s7-14">Elite Four &amp; Champion</h2>
+<p><strong>Elite Four:</strong></p>
+<ul>
+<li>Party template: 1 AVG + 3 STRONG + 1 STRONGER + 1 AVG (6 total)</li>
+<li>Species filter: BST &gt;= 460</li>
+<li>Money multiplier: 3.25x</li>
+<li>Tera: 1 Pokemon</li>
+</ul>
+<p><strong>Champion:</strong></p>
+<ul>
+<li>Party template: 4 STRONG + 2 STRONGER (6 total)</li>
+<li>No BST filter (already strongest species)</li>
+<li>Money multiplier: <strong>10x</strong> (highest in game)</li>
+</ul>
+<p><strong>Koto Relevance:</strong> High — The escalating multipliers (Gym 2.5x → E4 3.25x → Champ 10x) create satisfying progression.</p>
+<p><em>(source: <code>data/trainers/trainer-config.ts:716-790</code>)</em></p>
+<hr>
+<h2 id="s7-15">Evil Teams</h2>
+<p>Evil grunts scale with wave:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Wave Range</th>
+<th>Template</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1-35</td>
+<td>TWO_AVG</td>
+<td>2</td>
+</tr>
+<tr>
+<td>35-62</td>
+<td>THREE_AVG</td>
+<td>3</td>
+</tr>
+<tr>
+<td>62-64</td>
+<td>TWO_AVG_ONE_STRONG</td>
+<td>3</td>
+</tr>
+<tr>
+<td>64+</td>
+<td>GYM_LEADER_5</td>
+<td>6</td>
+</tr>
+</tbody></table>
+</div>
+<p>Evil admins use the RIVAL_5 template (6 members, boss status, specialty type). Evil leaders use EVIL_LEADER (6 members, signature species).</p>
+<p>10 evil team types exist (one per game generation), randomly selected for each run.</p>
+<p><strong>Koto Relevance:</strong> Medium — Evil team scaling shows how to ramp generic enemy difficulty.</p>
+<p><em>(source: <code>data/trainers/trainer-party-template.ts:254-269</code>)</em></p>
+<hr>
+<h2 id="s7-16">Fixed Battle Schedule</h2>
+<p>See <a href="01-the-run.md#fixed-battle-schedule-classic-mode">The Run doc</a> for the complete wave-by-wave schedule (waves 5, 8, 25, 35, 55, 62-66, 95, 112-115, 145, 164-165, 182-190, 195).</p>
+<p>Rival battles have guaranteed modifier tier rewards that escalate:</p>
+<ul>
+<li>Rival 2: ULTRA + GREAT + GREAT</li>
+<li>Rival 3: ULTRA + ULTRA + GREAT + GREAT</li>
+<li>Rival 4: ULTRA x4</li>
+</ul>
+<p><strong>Koto Relevance:</strong> High — Fixed battles at story beats create memorable pacing.</p>
+<p><em>(source: <code>data/trainers/fixed-battle-configs.ts:1-250+</code>)</em></p>
+<hr>
+<h2 id="s7-17">Boss HP Segments</h2>
+<p>Boss Pokemon divide their HP into segments. Clearing each segment triggers a stat boost.</p>
+<p><strong>How it works:</strong></p>
+<p>When a segment is cleared:</p>
+<ul>
+<li>Select a random non-maxed stat, weighted by base stat value</li>
+<li>Boost by +1 stage (or +2 for the last segment on 3+ segment bosses)</li>
+</ul>
+<p>Segment count scales with BST and wave. Double battles reduce segments proportionally.</p>
+<p><strong>Koto Relevance:</strong> Medium — HP segments make boss fights feel epic. The stat-boost-on-break mechanic adds drama.</p>
+<p><em>(source: <code>field/pokemon.ts:6982-7115</code>)</em></p>
+<hr>
+<h2 id="s7-18">Terastallization AI</h2>
+<p>Trainers can force specific Pokemon to Terastallize on turn 1.</p>
+<p><strong>How it works:</strong></p>
+<p><code>instantTeras</code> is an array of party slot indices. When an enemy Pokemon enters and its slot is in the array, it Terastallizes immediately (before move selection). Can be conditional.</p>
+<p>Tera type defaults to the trainer&#39;s specialty type.</p>
+<p><strong>Koto Relevance:</strong> Medium — Instant Tera creates a power spike at battle start that players must react to.</p>
+<p><em>(source: <code>data/trainers/trainer-config.ts:68-123</code>, <code>phases/enemy-command-phase.ts:93-110</code>)</em></p>
+<hr>
+<h2 id="s7-19">Modifier Drop Rates</h2>
+<p>Weaker party members drop modifiers more frequently.</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Strength</th>
+<th>Drop Multiplier</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>WEAKER</td>
+<td>75%</td>
+</tr>
+<tr>
+<td>WEAK</td>
+<td>67.5%</td>
+</tr>
+<tr>
+<td>AVERAGE</td>
+<td>56.25%</td>
+</tr>
+<tr>
+<td>STRONG</td>
+<td>45%</td>
+</tr>
+<tr>
+<td>STRONGER</td>
+<td>37.5%</td>
+</tr>
+</tbody></table>
+</div>
+<p>This creates an incentive to fight through the whole team rather than just beating the ace.</p>
+<p><strong>Koto Relevance:</strong> Medium — Inverse strength/drop-rate relationship rewards full engagement with trainer battles.</p>
+<p><em>(source: <code>field/trainer.ts:626-642</code>)</em></p>
+
+</div>
+</main>
+
+<div class="bottom-nav">
+  <button id="pB" onclick="prev()">&larr; Prev</button>
+  <span class="pi" id="pI">1 / 8</span>
+  <button id="nB" onclick="next()">Next &rarr;</button>
+</div>
+<button class="st" id="sT" onclick="window.scrollTo({top:0,behavior:'smooth'})">&uarr;</button>
+
+<script>
+const C = [{"n":1,"s":"The Run","t":"The Run"},{"n":2,"s":"Battle","t":"Battle"},{"n":3,"s":"Party Building","t":"Party Building"},{"n":4,"s":"Items & Modifiers","t":"Items & Modifiers"},{"n":5,"s":"Economy","t":"Economy & Progression"},{"n":6,"s":"Gacha & Eggs","t":"Gacha & Eggs"},{"n":7,"s":"Mystery Encounters","t":"Mystery Encounters"},{"n":8,"s":"AI & Trainers","t":"AI & Trainers"}];
+let cur = 0;
+
+function init() {
+  document.getElementById('dN').innerHTML = C.map((c, i) =>
+    '<div class="ci' + (i === 0 ? ' active' : '') + '" onclick="go(' + i + ')">' +
+    '<span class="cn">' + c.n + '</span><span>' + c.s + '</span></div>'
+  ).join('');
+  upd();
+}
+
+function go(i) {
+  cur = i;
+  document.querySelectorAll('.ch').forEach((e, j) => e.classList.toggle('active', j === i));
+  document.querySelectorAll('.ci').forEach((e, j) => e.classList.toggle('active', j === i));
+  upd();
+  closeDrawer();
+  window.scrollTo(0, 0);
+}
+
+function upd() {
+  document.getElementById('topTitle').textContent = C[cur].t;
+  document.getElementById('pI').textContent = (cur + 1) + ' / ' + C.length;
+  document.getElementById('pB').disabled = cur === 0;
+  document.getElementById('nB').disabled = cur === C.length - 1;
+}
+
+function prev() { if (cur > 0) go(cur - 1); }
+function next() { if (cur < C.length - 1) go(cur + 1); }
+
+function toggleDrawer() {
+  const d = document.getElementById('dw'), o = document.getElementById('dO');
+  const op = !d.classList.contains('open');
+  d.classList.toggle('open', op);
+  o.classList.toggle('open', op);
+}
+
+function closeDrawer() {
+  document.getElementById('dw').classList.remove('open');
+  document.getElementById('dO').classList.remove('open');
+}
+
+function openSearch() {
+  document.getElementById('sO').classList.add('open');
+  const i = document.getElementById('sI');
+  i.value = '';
+  i.focus();
+  document.getElementById('sR').innerHTML =
+    '<p style="color:var(--text-dim);padding:20px;text-align:center">Type to search all chapters</p>';
+}
+
+function closeSearch() {
+  document.getElementById('sO').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeSearch(); closeDrawer(); }
+});
+
+// Search across all chapter DOM content
+document.getElementById('sI').addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  const r = document.getElementById('sR');
+  if (q.length < 2) {
+    r.innerHTML = '<p style="color:var(--text-dim);padding:20px;text-align:center">Type 2+ characters</p>';
+    return;
+  }
+  const hits = [];
+  document.querySelectorAll('.ch').forEach((ch, ci) => {
+    const text = ch.textContent;
+    const lines = text.split('\n');
+    lines.forEach(line => {
+      const lo = line.trim().toLowerCase();
+      const idx = lo.indexOf(q);
+      if (idx !== -1 && line.trim().length > 10) {
+        const raw = line.trim();
+        const s = Math.max(0, idx - 50);
+        const e = Math.min(raw.length, idx + q.length + 50);
+        let sn = (s > 0 ? '...' : '') + raw.substring(s, e) + (e < raw.length ? '...' : '');
+        const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        sn = sn.replace(re, m => '<mark>' + m + '</mark>');
+        hits.push({ ci, t: C[ci].t, n: C[ci].n, sn });
+      }
+    });
+  });
+  const perCh = {};
+  const deduped = hits.filter(x => {
+    perCh[x.ci] = (perCh[x.ci] || 0) + 1;
+    return perCh[x.ci] <= 4;
+  }).slice(0, 24);
+  if (!deduped.length) {
+    r.innerHTML = '<p style="color:var(--text-dim);padding:20px;text-align:center">No results</p>';
+    return;
+  }
+  r.innerHTML = deduped.map(x =>
+    '<div class="search-result" onclick="go(' + x.ci + ');closeSearch()">' +
+    '<div class="sr-title">' + x.n + '. ' + x.t + '</div>' +
+    '<div class="sr-snippet">' + x.sn + '</div></div>'
+  ).join('');
+});
+
+// Scroll to top button
+window.addEventListener('scroll', () => {
+  document.getElementById('sT').classList.toggle('visible', window.scrollY > 400);
+});
+
+// Swipe navigation
+let tx = 0, ty = 0;
+document.addEventListener('touchstart', e => {
+  tx = e.touches[0].clientX;
+  ty = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  const dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2) {
+    if (dx > 0) prev(); else next();
+  }
+}, { passive: true });
+
+// TOC smooth scrolling
+document.addEventListener('click', e => {
+  const link = e.target.closest('.toc a');
+  if (link) {
+    e.preventDefault();
+    const id = link.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) {
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 64, behavior: 'smooth' });
+    }
+  }
+});
+
+init();
+</script>
+</body>
+</html>
