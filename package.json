@@ -6,7 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js",
+    "dev": "npx concurrently --names server,vite --prefix-colors blue,green \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "node --watch server.js",
+    "dev:client": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "c8 node --experimental-test-module-mocks --test 'tests/unit/**/*.test.js'",
     "test:integration": "node --test 'tests/integration/**/*.test.js'",
@@ -16,6 +20,15 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.3.0",
+    "@capacitor/keyboard": "^8.0.2",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@google/genai": "^1.43.0",
     "@google/generative-ai": "^0.21.0",
     "animejs": "^4.3.5",
@@ -33,6 +46,9 @@
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "c8": "^11.0.0",
-    "sharp": "^0.34.5"
+    "concurrently": "^9.1.0",
+    "sharp": "^0.34.5",
+    "typescript": "^6.0.2",
+    "vite": "^6.2.0"
   }
 }

@@ -28,7 +28,7 @@
 import * as audio from '../audio.js';
 import * as tts from '../tts.js';
 import { setLang } from './i18n.js';
-import { getAuthHeaders } from '../api.js';
+import { getAuthHeaders, apiUrl } from '../api.js';
 import { loadServerSettings, saveServerSettings } from '../settings.js';
 
 const MODEL_OPTIONS = {
@@ -289,8 +289,8 @@ export async function openSettings() {
     btn.textContent = 'Clearing...';
     try {
       const [npcResp, creatureResp] = await Promise.all([
-        fetch('/api/game/clear-npc-dialogue-cache', { method: 'POST', headers: getAuthHeaders() }),
-        fetch('/api/game/clear-creature-dialogue-cache', { method: 'POST', headers: getAuthHeaders() })
+        fetch(apiUrl('/api/game/clear-npc-dialogue-cache'), { method: 'POST', headers: getAuthHeaders() }),
+        fetch(apiUrl('/api/game/clear-creature-dialogue-cache'), { method: 'POST', headers: getAuthHeaders() })
       ]);
       if (npcResp.ok && creatureResp.ok) {
         btn.textContent = 'Cleared!';
@@ -310,7 +310,7 @@ export async function openSettings() {
     btn.disabled = true;
     btn.textContent = 'Resetting...';
     try {
-      const resp = await fetch('/api/game/prologue-reset', { method: 'POST', headers: getAuthHeaders() });
+      const resp = await fetch(apiUrl('/api/game/prologue-reset'), { method: 'POST', headers: getAuthHeaders() });
       if (resp.ok) {
         btn.textContent = 'Done — reload to replay';
         setTimeout(() => { btn.textContent = 'Reset Prologue'; btn.disabled = false; }, 3000);
@@ -396,8 +396,8 @@ export async function openSettings() {
     if (modelChanged && confirm('You switched AI models. Clear cached dialogue so it regenerates with the new model?')) {
       try {
         await Promise.all([
-          fetch('/api/game/clear-npc-dialogue-cache', { method: 'POST', headers: getAuthHeaders() }),
-          fetch('/api/game/clear-creature-dialogue-cache', { method: 'POST', headers: getAuthHeaders() })
+          fetch(apiUrl('/api/game/clear-npc-dialogue-cache'), { method: 'POST', headers: getAuthHeaders() }),
+          fetch(apiUrl('/api/game/clear-creature-dialogue-cache'), { method: 'POST', headers: getAuthHeaders() })
         ]);
         sceneModule.showToast('Dialogue cache cleared — will regenerate on next exploration', 3000);
       } catch {
@@ -414,7 +414,7 @@ export async function openSettings() {
     const kanaModeEnabled = document.getElementById('settings-kana-mode')?.checked ?? false;
     if (kanaModeEnabled !== kanaMode) {
       try {
-        const resp = await fetch('/api/game/kana-mode', {
+        const resp = await fetch(apiUrl('/api/game/kana-mode'), {
           method: 'POST',
           headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
           body: JSON.stringify({ enabled: kanaModeEnabled }),

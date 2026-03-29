@@ -25,6 +25,8 @@
  * 5. Registration requires invite code
  */
 
+import { apiUrl } from '../api.js';
+
 let currentTab = 'login';
 
 /**
@@ -73,7 +75,7 @@ export async function checkAuth() {
   const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
   try {
-    const res = await fetch('/api/auth/me', { headers });
+    const res = await fetch(apiUrl('/api/auth/me'), { headers });
     if (res.ok) return true;
     if (token) removeToken();
     return false;
@@ -146,7 +148,7 @@ async function handleSubmit(callbacks) {
 
   try {
     const res = await fetch(
-      currentTab === 'login' ? '/api/auth/login' : '/api/auth/register',
+      apiUrl(currentTab === 'login' ? '/api/auth/login' : '/api/auth/register'),
       fetchOptions
     );
     const data = await res.json();

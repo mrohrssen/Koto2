@@ -4,6 +4,7 @@
  * Allows users to attach screenshots and submit bug reports.
  */
 
+import { apiUrl } from '../api.js';
 import { dom } from '../dom.js';
 import { store } from '../store.js';
 
@@ -171,7 +172,7 @@ async function submitReport() {
     const screenshot = await getScreenshotData();
     const context = gatherContext();
 
-    const response = await fetch('/api/bug-report', {
+    const response = await fetch(apiUrl('/api/bug-report'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, tester, note, screenshot, context })

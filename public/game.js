@@ -26,8 +26,10 @@
  * loop responds to user actions via UI callbacks and API responses.
  */
 
-// Register service worker for asset caching with forced update checking
-if ('serviceWorker' in navigator) {
+import { PLATFORM } from './js/platform.js';
+
+// Register service worker for asset caching (skip in native Capacitor app)
+if ('serviceWorker' in navigator && !PLATFORM.isNative) {
   navigator.serviceWorker.register('/sw.js', {
     updateViaCache: 'none'  // Always fetch sw.js from network, never cache
   }).then((registration) => {
@@ -104,6 +106,7 @@ import { showDialogueChoices } from './js/ui/dialogue-choices.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
 import { enterEnemiesOneByOne, playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
+import { initNative, onAppLifecycle } from './js/native/index.js';
 
 // API imports - these are the server communication functions
 import {
@@ -120,6 +123,7 @@ import {
   sendJpdbReview as apiSendJpdbReview,
   getDueWords as apiGetDueWords,
   getAuthHeaders,
+  apiUrl,
   shrineUpgrade as apiShrineUpgrade,
   quizReward as apiQuizReward,
   getQuizQuestion as apiGetQuizQuestion,
@@ -160,7 +164,7 @@ import {
   npcBattleSkillChoose as apiNpcBattleSkillChoose,
 } from './js/api.js';
 
-const API_BASE = '';
+const API_BASE = PLATFORM.apiBase;
 
 // ============ STATE ============
 let gameState = {
@@ -517,7 +521,7 @@ function showEnemyDialogue(text, type = 'possessed') {
 // ============ API CALLS ============
 async function loadKnownWords() {
   try {
-    const resp = await fetch('/api/game/known-words', {
+    const resp = await fetch(apiUrl('/api/game/known-words'), {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     });
     if (resp.ok) {
@@ -563,7 +567,7 @@ let _prologueCache = null;
 
 async function playPrologue() {
   if (!_prologueCache) {
-    const resp = await fetch('/api/game/prologue', { headers: getAuthHeaders() });
+    const resp = await fetch(apiUrl('/api/game/prologue'), { headers: getAuthHeaders() });
     if (!resp.ok) return;
     _prologueCache = await resp.json();
   }
@@ -623,7 +627,7 @@ async function playPrologue() {
     // }
 
     if (prologueScene.id === 'prologue-starter-selection' && result) {
-      const resp = await fetch('/api/game/select-starter', {
+      const resp = await fetch(apiUrl('/api/game/select-starter'), {
         method: 'POST',
         headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ starterId: result })
@@ -640,7 +644,7 @@ async function playPrologue() {
   scene.hideCid();
 
   // Mark prologue as complete on server
-  const completeResp = await fetch('/api/game/prologue-complete', {
+  const completeResp = await fetch(apiUrl('/api/game/prologue-complete'), {
     method: 'POST',
     headers: getAuthHeaders()
   });
@@ -1266,6 +1270,13 @@ function setupEventListeners() {
 
 // ============ INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize Capacitor native plugins (no-op on web)
+  await initNative();
+  onAppLifecycle({
+    onPause: () => audio.pauseBGM?.(),
+    onResume: () => audio.resumeBGM?.(),
+  });
+
   // Lock to portrait orientation (PWA + mobile browsers)
   if (screen.orientation?.lock) {
     screen.orientation.lock('portrait-primary').catch(() => {});
@@ -1492,7 +1503,7 @@ async function initGame() {
     apiGetDiscoveryStatus,
     apiCompleteDiscovery,
     apiSwipeWord: (vid, sid, grade, isDiscovery) => apiSendJpdbReview(vid, sid, grade, isDiscovery),
-    apiPostCombatRefresh: (words) => fetch('/api/game/post-combat-refresh', {
+    apiPostCombatRefresh: (words) => fetch(apiUrl('/api/game/post-combat-refresh'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ words })

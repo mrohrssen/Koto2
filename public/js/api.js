@@ -7,6 +7,8 @@
  */
 
 import { logger } from './logger.js';
+export { apiUrl } from './platform.js';
+import { apiUrl } from './platform.js';
 
 // ============ CORE API WRAPPER ============
 
@@ -52,7 +54,7 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
     };
     if (method !== 'GET' && body) options.body = JSON.stringify(body);
 
-    const response = await fetch(`/api/game${endpoint}`, options);
+    const response = await fetch(`${PLATFORM.apiBase}/api/game${endpoint}`, options);
     const data = await response.json();
 
     if (!response.ok) {
@@ -94,7 +96,7 @@ function isApiLoading() {
  */
 async function getGameState() {
   try {
-    const response = await fetch('/api/game/state', {
+    const response = await fetch(apiUrl('/api/game/state'), {
       headers: getAuthHeaders()
     });
     return await response.json();
@@ -111,7 +113,7 @@ async function getGameState() {
  */
 async function getSettings() {
   try {
-    const response = await fetch('/api/settings', {
+    const response = await fetch(apiUrl('/api/settings'), {
       headers: getAuthHeaders()
     });
     return await response.json();
@@ -151,7 +153,7 @@ async function startRun(body = null) {
  */
 async function getLevels() {
   try {
-    const response = await fetch('/api/game/levels', {
+    const response = await fetch(apiUrl('/api/game/levels'), {
       headers: getAuthHeaders()
     });
     return await response.json();
@@ -187,7 +189,7 @@ async function forfeitRun() {
  */
 async function getAreaOptions() {
   try {
-    const response = await fetch('/api/game/area-options', {
+    const response = await fetch(apiUrl('/api/game/area-options'), {
       headers: getAuthHeaders()
     });
     return await response.json();
@@ -204,7 +206,7 @@ async function getAreaOptions() {
  */
 async function selectArea(areaId) {
   try {
-    const response = await fetch('/api/game/select-area', {
+    const response = await fetch(apiUrl('/api/game/select-area'), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ areaId, forceRoomType: getForceRoomType() })
@@ -246,7 +248,7 @@ async function quizReward(rewardType, creatureId = null) {
 /** Get a quiz question (may be from Bunpro or static) */
 async function getQuizQuestion() {
   try {
-    const response = await fetch('/api/game/quiz-question', {
+    const response = await fetch(apiUrl('/api/game/quiz-question'), {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -269,7 +271,7 @@ async function getQuizQuestion() {
 /** Submit quiz answer for validation */
 async function submitQuizAnswer(questionId, selectedIndex, bunproMeta = null) {
   try {
-    const response = await fetch('/api/game/quiz-answer', {
+    const response = await fetch(apiUrl('/api/game/quiz-answer'), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -345,7 +347,7 @@ async function completeWhackAMole(score) {
 async function sendJpdbReview(vid, sid, grade, wordText = null, isDiscovery = false) {
   console.log('[JPDB Review API] sendJpdbReview called:', { vid, sid, grade, isDiscovery });
   try {
-    const response = await fetch('/api/jpdb/review', {
+    const response = await fetch(apiUrl('/api/jpdb/review'), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ vid, sid, grade, isDiscovery, wordText })
@@ -364,7 +366,7 @@ async function sendJpdbReview(vid, sid, grade, wordText = null, isDiscovery = fa
  */
 async function parseJpdbText(text) {
   try {
-    const response = await fetch('/api/jpdb/parse', {
+    const response = await fetch(apiUrl('/api/jpdb/parse'), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ text })
@@ -382,7 +384,7 @@ async function parseJpdbText(text) {
  */
 async function lookupJpdbWord(vid, sid) {
   try {
-    const response = await fetch('/api/jpdb/lookup', {
+    const response = await fetch(apiUrl('/api/jpdb/lookup'), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ vid, sid })
@@ -400,7 +402,7 @@ async function lookupJpdbWord(vid, sid) {
  */
 async function lookupJpdbBatch(vocabList) {
   try {
-    const response = await fetch('/api/jpdb/lookup-batch', {
+    const response = await fetch(apiUrl('/api/jpdb/lookup-batch'), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ vocabList })
@@ -419,7 +421,7 @@ async function lookupJpdbBatch(vocabList) {
  */
 async function getDiscoveryWords(limit = 2) {
   try {
-    const response = await fetch(`/api/game/discovery-words?limit=${limit}`, {
+    const response = await fetch(`${PLATFORM.apiBase}/api/game/discovery-words?limit=${limit}`, {
       headers: getAuthHeaders()
     });
     return await response.json();
@@ -434,7 +436,7 @@ async function getDiscoveryWords(limit = 2) {
  */
 async function getDiscoveryStatus() {
   try {
-    const response = await fetch('/api/game/discovery-status', {
+    const response = await fetch(apiUrl('/api/game/discovery-status'), {
       headers: getAuthHeaders()
     });
     return await response.json();
@@ -451,7 +453,7 @@ async function getDiscoveryStatus() {
  */
 export async function getDueWords(reviewedWords = []) {
   try {
-    const response = await fetch('/api/vocab/due-words', {
+    const response = await fetch(apiUrl('/api/vocab/due-words'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ reviewedWords })

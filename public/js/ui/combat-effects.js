@@ -10,7 +10,27 @@
  * Effects are designed to layer - call multiple for combined impact.
  */
 
-import { animate as anime } from '../lib/anime.esm.min.js';
+import { animate as anime } from 'animejs';
+import { hapticDamageTier } from '../native/index.js';
+
+/**
+ * Run an anime.js animation with guaranteed cleanup.
+ * Uses anime v4's `finished` promise instead of setTimeout fallbacks.
+ * @param {Element|NodeList} targets - Animation targets
+ * @param {object} properties - anime.js property keyframes
+ * @param {object} options - anime.js options
+ * @param {function} [cleanup] - Called after animation finishes or is interrupted
+ * @returns {Promise<void>}
+ */
+export async function safeAnimate(targets, properties, options, cleanup) {
+  const anim = anime(targets, properties, options);
+  try {
+    await anim.finished;
+  } catch {
+    // Animation was interrupted (element removed, page nav, etc.)
+  }
+  if (cleanup) cleanup();
+}
 
 // ============ CONFIGURATION ============
 
@@ -358,6 +378,9 @@ export function pop(targets, scale = 1.15) {
 export async function impactEnemyEffect(damage, enemyEl, enemyMaxHp = 0) {
   const tier = getDamageTier(damage, enemyMaxHp);
   const effects = CONFIG.tiers.effects[tier];
+
+  // Haptic feedback (no-op on web)
+  hapticDamageTier(tier);
 
   // 1. Hit stop (scaled by tier)
   if (effects.hitStop > 0) {

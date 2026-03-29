@@ -12,6 +12,7 @@
 import * as tts from './tts.js';
 import * as settings from './settings.js';
 import { getAuthHeaders } from './api.js';
+import { PLATFORM } from './platform.js';
 
 // Module state
 let apiSendJpdbReview = null;
@@ -36,8 +37,8 @@ let isCombatActive = null;
 let isEnemyDialogueActive = null;
 let shuffleArray = null;
 
-// API base (set via init)
-let apiBase = '';
+// API base
+let apiBase = PLATFORM.apiBase;
 
 // Fallback test data for word practice (used when JPDB unavailable)
 const FALLBACK_WORD_DATA = [

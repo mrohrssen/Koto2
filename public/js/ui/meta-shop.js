@@ -5,7 +5,7 @@
  * Opened from hub "Upgrades" button.
  */
 
-import { getAuthHeaders } from '../api.js';
+import { getAuthHeaders, apiUrl } from '../api.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -24,7 +24,7 @@ export async function show() {
 
   let shopData;
   try {
-    const res = await fetch('/api/game/meta-shop', { headers: getAuthHeaders() });
+    const res = await fetch(apiUrl('/api/game/meta-shop'), { headers: getAuthHeaders() });
     shopData = await res.json();
     if (!res.ok || !Array.isArray(shopData.upgrades)) {
       console.error('Meta shop unavailable:', shopData?.error || res.status);
@@ -61,7 +61,7 @@ export async function show() {
     btn.addEventListener('click', async () => {
       const upgradeId = btn.dataset.upgradeId;
       try {
-        const res = await fetch('/api/game/meta-shop/buy', {
+        const res = await fetch(apiUrl('/api/game/meta-shop/buy'), {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify({ upgradeId })

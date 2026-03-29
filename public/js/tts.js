@@ -15,7 +15,8 @@
  * - Constants: PERSONALITY_SPEAKERS
  */
 
-const API_BASE = '';
+import { PLATFORM } from './platform.js';
+const API_BASE = PLATFORM.apiBase;
 
 // ============ TTS STATE ============
 

@@ -1,4 +1,4 @@
-import { animate as anime } from '../lib/anime.esm.min.js';
+import { animate as anime } from 'animejs';
 import { toRomaji } from './romaji.js';
 
 /**

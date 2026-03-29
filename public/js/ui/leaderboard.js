@@ -23,7 +23,7 @@
  * - Current user's row highlighted with border
  */
 
-import { getAuthHeaders } from '../api.js';
+import { getAuthHeaders, apiUrl } from '../api.js';
 import { playSFX } from '../audio.js';
 
 let currentPeriod = 'daily';
@@ -57,7 +57,7 @@ export function close() {
 /** Fetch leaderboard data from API */
 async function fetchLeaderboard(period) {
   try {
-    const response = await fetch(`/api/game/leaderboard?period=${period}`, {
+    const response = await fetch(apiUrl(`/api/game/leaderboard?period=${period}`), {
       headers: getAuthHeaders()
     });
     if (!response.ok) throw new Error('Failed to fetch leaderboard');

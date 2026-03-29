@@ -27,6 +27,7 @@
 
 import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
+import { PLATFORM } from '../platform.js';
 import { logger } from '../logger.js';
 import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
 import { t, tPlain } from './i18n.js';
@@ -375,7 +376,7 @@ let kanaSwipeDirection = null;
 // Utility
 let delay = null;
 
-const API_BASE = '';
+const API_BASE = PLATFORM.apiBase;
 
 /** Wrap an async combat animation sequence with the animation-active guard. */
 async function withAnimationActive(fn) {

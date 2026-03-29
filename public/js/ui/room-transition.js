@@ -1,4 +1,4 @@
-import { animate as anime } from '../lib/anime.esm.min.js';
+import { animate as anime } from 'animejs';
 import { showNpcTrainer, showNpcInDisplay, showDealer, showFormation } from './scene.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { speakText } from '../tts.js';

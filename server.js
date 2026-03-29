@@ -226,18 +226,45 @@ function saveSettings(settings) {
 }
 
 // Middleware
-app.use(cors());
+const ALLOWED_ORIGINS = [
+  'https://jrpg-production.up.railway.app',
+  'https://jrpg-dev.up.railway.app',
+  'capacitor://localhost',      // iOS Capacitor WebView
+  'https://localhost',          // Android Capacitor WebView
+  'http://localhost:5173',      // Vite dev server
+  'http://localhost:3000',      // Express dev server
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // TODO: tighten to callback(new Error('CORS')) after testing
+    }
+  },
+  credentials: true
+}));
+// Prevent WebView from caching stale API responses
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 app.use(compression()); // Gzip/Brotli compression for all responses
 app.use(express.json({ limit: '10mb' })); // Increased for bug report screenshots
 
-// Static files - only cache webp images, load everything else fresh
-app.use(express.static(join(__dirname, 'public'), {
+// Static files - serve from dist/ (Vite build) in production, public/ in dev
+const staticDir = process.env.NODE_ENV === 'production' && existsSync(join(__dirname, 'dist'))
+  ? join(__dirname, 'dist')
+  : join(__dirname, 'public');
+
+app.use(express.static(staticDir, {
   maxAge: 0,              // No caching by default
   etag: false,            // Disable ETags for fresh loads
   lastModified: false,    // Disable Last-Modified for fresh loads
-  setHeaders: (res, path) => {
+  setHeaders: (res, filePath) => {
     // Only cache webp images and mp3 audio (sprites, backgrounds, music)
-    if (path.endsWith('.webp') || path.endsWith('.mp3')) {
+    if (filePath.endsWith('.webp') || filePath.endsWith('.mp3')) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
     } else {
       // Everything else loads fresh (JS, CSS, HTML, other assets)
@@ -719,7 +746,7 @@ app.use('/api/sprite-forge', createSpriteForgeRouter({
 
 // Serve game page
 app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'public', 'game.html'));
+  res.sendFile(join(staticDir, 'index.html'));
 });
 
 // ============ TTS Initialization ============

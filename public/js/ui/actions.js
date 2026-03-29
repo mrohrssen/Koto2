@@ -30,6 +30,7 @@
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import { t } from './i18n.js';
+import { hapticLight, hapticMedium } from '../native/index.js';
 
 let onEquipBots = null;
 let onContextAction = null;
@@ -338,6 +339,7 @@ function handleTouchEnd() {
       activeCard.style.opacity = '0';
     }
     playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
+    hapticMedium();
     setTimeout(() => {
       const container = document.getElementById('flash-card-container')
         || document.getElementById('dual-flash-card-container');
@@ -401,6 +403,7 @@ function handleMouseUp() {
       activeCard.style.opacity = '0';
     }
     playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
+    hapticMedium();
     setTimeout(() => {
       const container = document.getElementById('flash-card-container')
         || document.getElementById('dual-flash-card-container');
@@ -426,6 +429,7 @@ function triggerSwipeAnimation(card, direction) {
   card.style.transform = `translateX(${offset}px) rotate(${offset * 0.02}deg)`;
   card.style.opacity = '0';
   playSFX(direction === 'right' ? 'swipe-right' : 'swipe-left');
+  hapticMedium();
   setTimeout(() => {
     // Remove either flash card or dual flash card container
     const container = document.getElementById('flash-card-container')

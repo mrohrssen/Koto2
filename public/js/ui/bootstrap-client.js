@@ -1,5 +1,6 @@
 // public/js/ui/bootstrap-client.js
 
+import { apiUrl } from '../platform.js';
 import { toRomaji } from './romaji.js';
 
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
@@ -87,7 +88,7 @@ export function flushExposures() {
   _pendingExposures.clear();
   const token = localStorage.getItem('authToken');
   if (!token) return;
-  fetch('/api/game/known-words/expose', {
+  fetch(apiUrl('/api/game/known-words/expose'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

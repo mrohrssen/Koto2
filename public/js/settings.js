@@ -141,7 +141,7 @@ export function setDebugMode(enabled) {
 
 // ============ SERVER SETTINGS ============
 
-const API_BASE = '';
+import { apiUrl } from './api.js';
 
 /**
  * Load settings from server
@@ -149,7 +149,7 @@ const API_BASE = '';
  */
 export async function loadServerSettings() {
   try {
-    const response = await fetch(`${API_BASE}/api/settings`);
+    const response = await fetch(apiUrl('/api/settings'));
     return await response.json();
   } catch (error) {
     console.error('Failed to load server settings:', error);
@@ -164,7 +164,7 @@ export async function loadServerSettings() {
  */
 export async function saveServerSettings(settings) {
   try {
-    const response = await fetch(`${API_BASE}/api/settings`, {
+    const response = await fetch(apiUrl('/api/settings'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings)
@@ -270,7 +270,7 @@ export async function saveApiKeysToServer(keys) {
   const token = localStorage.getItem('authToken');
   if (!token) return false;
   try {
-    const res = await fetch('/api/auth/api-keys', {
+    const res = await fetch(apiUrl('/api/auth/api-keys'), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -292,7 +292,7 @@ export async function loadApiKeysFromServer() {
   const token = localStorage.getItem('authToken');
   if (!token) return {};
   try {
-    const res = await fetch('/api/auth/me', {
+    const res = await fetch(apiUrl('/api/auth/me'), {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) return {};

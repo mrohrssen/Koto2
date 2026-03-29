@@ -85,6 +85,9 @@
   --font-weight-bold: 700;
   --font-weight-semi: 600;
   --font-weight-regular: 400;
+
+  /* Native keyboard (set dynamically by Capacitor Keyboard plugin) */
+  --keyboard-height: 0px;
 }
 
 html, body {
@@ -210,6 +213,7 @@ html, body {
   overflow: visible;
   background: transparent;
   border-bottom: 2px solid #3498db;
+  contain: layout;
 }
 
 .scene-background {
@@ -221,6 +225,23 @@ html, body {
   background-size: cover;
   background-position: center top;
   z-index: 0;
+  view-transition-name: scene-background;
+}
+
+/* View Transitions API - smooth room background changes */
+::view-transition-old(scene-background) {
+  animation: 300ms ease-out both fade-out;
+}
+::view-transition-new(scene-background) {
+  animation: 300ms ease-in both fade-in;
+}
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ===== BATTLE STAGE ===== */
@@ -234,6 +255,7 @@ html, body {
   display: flex;
   justify-content: space-between;
   padding: 40px 12px 8px;
+  contain: layout style;
 }
 
 .formation {
@@ -278,7 +300,7 @@ html, body {
   align-items: center;
   gap: 2px;
   cursor: pointer;
-  position: relative;
+  will-change: transform, opacity;
 }
 
 .formation-sprite {
@@ -662,6 +684,11 @@ html, body {
   pointer-events: none;
   z-index: 10;
   overflow: hidden;
+  container-type: inline-size;
+}
+
+@container (max-width: 280px) {
+  .narration-text { font-size: 13px; }
 }
 
 .narration-box.visible {
@@ -799,6 +826,20 @@ html, body {
   -webkit-overflow-scrolling: touch;
   position: relative;
   z-index: 1;
+  container-type: size;
+  container-name: action-area;
+}
+
+/* Container-query responsive flash cards */
+@container action-area (max-height: 200px) {
+  .flash-card { min-height: 70px; }
+  .flash-card-front { font-size: 28px; padding: 8px; }
+  .dual-flash-card { min-height: 60px; font-size: 26px; }
+}
+
+@container action-area (min-height: 320px) {
+  .flash-card { min-height: 110px; }
+  .flash-card-front { font-size: 40px; padding: 20px; }
 }
 
 /* Keep action buttons centered even when a wrapper uses align-items:stretch */
@@ -1006,11 +1047,13 @@ html, body {
   justify-content: center;
   cursor: pointer;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  will-change: transform;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
   min-height: 90px;
   padding: 12px 16px;
+  will-change: transform;
 }
 
 .flash-card:active {
@@ -1116,6 +1159,7 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
   padding: 12px 16px;
+  will-change: transform;
 }
 
 /* Compact flash cards when 3+ are showing */

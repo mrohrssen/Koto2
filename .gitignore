@@ -54,3 +54,8 @@ output/
 tools/sprite-feedback.json
 .playwright-mcp/
 __pycache__/
+# Vite build output
+dist/
+# Capacitor native projects (generated, platform-specific)
+ios/
+android/

@@ -17,7 +17,7 @@ const LEVELS = {
   error: 3
 };
 
-const storedLevel = localStorage.getItem('logLevel');
+const storedLevel = typeof localStorage !== 'undefined' ? localStorage.getItem('logLevel') : null;
 let currentLevel = LEVELS[storedLevel] ?? LEVELS.info;
 
 function shouldLog(level) {

@@ -1,7 +1,7 @@
 {
   "name": "Koto",
   "short_name": "Koto",
-  "start_url": "/game.html",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#f0f4ff",

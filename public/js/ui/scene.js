@@ -43,13 +43,21 @@ function creatureNameRuby(creature) {
   return `<ruby>${reading}<rt>${toRomaji(reading)}</rt></ruby>`;
 }
 
-/** Set scene background image */
+/** Set scene background image, using View Transitions API for smooth crossfade when supported */
 export function setBackground(imagePath) {
-  if (imagePath) {
-    const sep = imagePath.includes('?') ? '&' : '?';
-    dom.sceneBackground.style.backgroundImage = `url('${imagePath}${sep}v=${SPRITE_VERSION}')`;
+  const apply = () => {
+    if (imagePath) {
+      const sep = imagePath.includes('?') ? '&' : '?';
+      dom.sceneBackground.style.backgroundImage = `url('${imagePath}${sep}v=${SPRITE_VERSION}')`;
+    } else {
+      dom.sceneBackground.style.backgroundImage = 'none';
+    }
+  };
+
+  if (document.startViewTransition) {
+    document.startViewTransition(apply);
   } else {
-    dom.sceneBackground.style.backgroundImage = 'none';
+    apply();
   }
 }
 

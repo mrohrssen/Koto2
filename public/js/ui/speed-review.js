@@ -5,10 +5,11 @@
  * Entry from hub, full-screen takeover.
  */
 
+import { apiUrl } from '../api.js';
 import { dom } from '../dom.js';
 import { playSFX, playBGMRandomStart, playBGM } from '../audio.js';
 import * as takeover from './takeover.js';
-import { animate as anime } from '../lib/anime.esm.min.js';
+import { animate as anime } from 'animejs';
 import { setKnownWords } from './bootstrap-client.js';
 
 // Module state
@@ -789,7 +790,7 @@ async function handleExit() {
   // Refresh known words so bootstrap rendering reflects newly learned words
   try {
     const token = localStorage.getItem('authToken');
-    const resp = await fetch('/api/game/known-words', {
+    const resp = await fetch(apiUrl('/api/game/known-words'), {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (resp.ok) {
