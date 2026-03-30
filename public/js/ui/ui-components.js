@@ -74,8 +74,10 @@ export function renderChoices({ cards, onSelect, disableAfterSelect = true, cont
   let selected = false;
 
   cards.forEach((card, i) => {
-    const btn = document.createElement('button');
+    const btn = document.createElement('div');
     btn.className = 'ui-choice';
+    btn.setAttribute('role', 'button');
+    btn.tabIndex = 0;
 
     let html = '';
 
