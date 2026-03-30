@@ -23,6 +23,7 @@ import { renderJpFirst } from './bootstrap-client.js';
 import { buildMoveCell } from './move-select.js';
 import { toRomaji } from './romaji.js';
 import { escapeHtml } from './html-utils.js';
+import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -32,6 +33,10 @@ let sceneModule = null;
 
 // Module-level PvP battle state
 let pvpState = null;
+
+// Pending move state for target selection callbacks
+let pendingMove = null;
+let pendingCreatureIndex = null;
 
 /**
  * Initialize PvP battle with callbacks from game.js.
@@ -51,6 +56,20 @@ export function init(callbacks) {
  */
 export function startPvpBattle(data) {
   const { yourTeam, opponentTeam, opponentName } = data;
+
+  // Initialize shared target-select with PvP callbacks
+  initTargetSelect({
+    onTargetSelectCb: (targetIndex) => {
+      addMoveChoice(pendingCreatureIndex, pendingMove.id, targetIndex);
+      pendingMove = null;
+      pendingCreatureIndex = null;
+    },
+    onCancelCb: () => {
+      pendingMove = null;
+      pendingCreatureIndex = null;
+      showMoveSelection();
+    }
+  });
 
   pvpState = {
     allies: yourTeam,     // Array of creature objects
@@ -193,116 +212,21 @@ function handleMoveSelected(creature, creatureIndex, move) {
   const targetType = move.target || 'single_enemy';
 
   if (targetType === 'single_enemy') {
-    showTargetSelection(creatureIndex, move);
+    pendingMove = move;
+    pendingCreatureIndex = creatureIndex;
+    showEnemyTargets(pvpState.enemies, move);
   } else if (targetType === 'single_ally' || targetType === 'self') {
-    // For ally-targeting or self moves, auto-select self or show ally targets
     if (targetType === 'self') {
       addMoveChoice(creatureIndex, move.id, creatureIndex);
     } else {
-      showAllyTargetSelection(creatureIndex, move);
+      pendingMove = move;
+      pendingCreatureIndex = creatureIndex;
+      showAllyTargets(pvpState.allies, move);
     }
   } else {
     // all_enemies, all_allies — no target selection needed
     addMoveChoice(creatureIndex, move.id, 0);
   }
-}
-
-/**
- * Show enemy target selection.
- */
-function showTargetSelection(creatureIndex, move) {
-  if (!pvpState) return;
-
-  const nameHtml = renderJpFirst(move.name, move.reading, move.nameEn);
-
-  const targetsHtml = pvpState.enemies.map((enemy, i) => {
-    if (!enemy || enemy.hp <= 0) return '';
-    const hpPct = Math.max(0, Math.round((enemy.hp / enemy.maxHp) * 100));
-    const hpColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-    const eName = enemy.nameEn || enemy.name || '???';
-    return `
-      <button class="action-btn action-btn-secondary pvp-target-btn" data-target="${i}" style="text-align:left;padding:8px 12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <strong>${escapeHtml(eName)}</strong>
-          <span style="font-size:0.8em;color:${hpColor};">${hpPct}% HP</span>
-        </div>
-      </button>
-    `;
-  }).join('');
-
-  actions.setContent(`
-    <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin:0 auto;padding:8px 0;">
-      <div style="text-align:center;font-size:0.85em;color:var(--text-secondary);">
-        ${nameHtml} &rarr; Select target
-      </div>
-      ${targetsHtml}
-      <button class="action-btn action-btn-tertiary pvp-target-cancel" style="font-size:0.85em;">
-        Back
-      </button>
-    </div>
-  `);
-
-  document.querySelectorAll('.pvp-target-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      playSFX('button-tap');
-      const targetIdx = parseInt(btn.dataset.target);
-      addMoveChoice(creatureIndex, move.id, targetIdx);
-    });
-  });
-
-  document.querySelector('.pvp-target-cancel')?.addEventListener('click', () => {
-    playSFX('button-tap');
-    showMoveSelection();
-  });
-}
-
-/**
- * Show ally target selection for healing/buff moves.
- */
-function showAllyTargetSelection(creatureIndex, move) {
-  if (!pvpState) return;
-
-  const nameHtml = renderJpFirst(move.name, move.reading, move.nameEn);
-
-  const targetsHtml = pvpState.allies.map((ally, i) => {
-    if (!ally || ally.hp <= 0) return '';
-    const hpPct = Math.max(0, Math.round((ally.hp / ally.maxHp) * 100));
-    const hpColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
-    const aName = ally.nameEn || ally.name || '???';
-    return `
-      <button class="action-btn action-btn-secondary pvp-target-btn" data-target="${i}" style="text-align:left;padding:8px 12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <strong>${escapeHtml(aName)}</strong>
-          <span style="font-size:0.8em;color:${hpColor};">${hpPct}% HP</span>
-        </div>
-      </button>
-    `;
-  }).join('');
-
-  actions.setContent(`
-    <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin:0 auto;padding:8px 0;">
-      <div style="text-align:center;font-size:0.85em;color:var(--text-secondary);">
-        ${nameHtml} &rarr; Select ally
-      </div>
-      ${targetsHtml}
-      <button class="action-btn action-btn-tertiary pvp-target-cancel" style="font-size:0.85em;">
-        Back
-      </button>
-    </div>
-  `);
-
-  document.querySelectorAll('.pvp-target-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      playSFX('button-tap');
-      const targetIdx = parseInt(btn.dataset.target);
-      addMoveChoice(creatureIndex, move.id, targetIdx);
-    });
-  });
-
-  document.querySelector('.pvp-target-cancel')?.addEventListener('click', () => {
-    playSFX('button-tap');
-    showMoveSelection();
-  });
 }
 
 /**
