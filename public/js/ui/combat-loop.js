@@ -320,6 +320,65 @@ function showAttackCardAndWait(atk, isEnemy) {
   return waitForCardTap(card);
 }
 
+/**
+ * Shared attack display sequence used by both PvE and PvP.
+ * Shows: attack card → sound → visual effects → damage number → STAB → effectiveness → tap.
+ * Callers handle mode-specific concerns (HP bar updates, XP, party skills) after this returns.
+ *
+ * @param {Object} atk - Attack object from server (needs damage, element, stab, elementMultiplier, etc.)
+ * @param {Object} opts
+ * @param {boolean} opts.isEnemy - Whether this attack is from the enemy's perspective
+ * @param {Element|null} opts.sourceEl - Attacker's formation slot element
+ * @param {Element|null} opts.targetEl - Target's formation slot element
+ * @param {number} [opts.targetMaxHp=100] - Target's max HP (for tiered impact effects)
+ * @returns {Promise<Element|null>} The attack card element
+ */
+export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp = 100 }) {
+  const attackCard = insertAttackCard(atk, isEnemy);
+
+  playSFX('attack');
+  const element = atk.moveElement || atk.attackerElement || 'neutral';
+
+  if (atk.damage > 0 && sourceEl && targetEl) {
+    playAttackSound(element);
+    if (isEnemy) {
+      await enemyCreatureAttackEffect(sourceEl, targetEl, element, atk.damage);
+    } else {
+      await fireCreatureAttackEffect(sourceEl, targetEl, element, atk.damage, targetMaxHp);
+    }
+  }
+
+  // Damage number on the target
+  if (atk.damage > 0 && targetEl) {
+    const { showDamageNumber } = await import('./scene.js');
+    showDamageNumber(atk.damage, { isCrit: atk.critical, targetEl });
+  }
+
+  // STAB indicator
+  if (atk.stab) {
+    const stabEl = document.createElement('div');
+    stabEl.className = 'stab-indicator';
+    stabEl.textContent = 'STAB!';
+    document.getElementById('action-area')?.appendChild(stabEl);
+  }
+
+  // Type effectiveness popup
+  if (atk.elementMultiplier > 1 && targetEl) {
+    setTimeout(() => effectiveness(targetEl, 'Super Effective!'), 400);
+  } else if (atk.elementMultiplier < 1 && targetEl) {
+    setTimeout(() => resistedEffectiveness(targetEl, 'Resisted...'), 400);
+  }
+
+  // Tap to continue
+  if (attackCard) {
+    await waitForCardTap(attackCard);
+  } else {
+    await effectDelay(800);
+  }
+
+  return attackCard;
+}
+
 // ============ MODULE STATE ============
 
 // Combat state

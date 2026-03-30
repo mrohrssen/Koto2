@@ -23,10 +23,7 @@ import { buildMoveCell } from './move-select.js';
 import { toRomaji } from './romaji.js';
 import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
-import { insertAttackCard, waitForCardTap } from './combat-loop.js';
-import { fireCreatureAttackEffect, enemyCreatureAttackEffect } from './combat-effects.js';
-import { playAttackSound } from './combat-audio.js';
-import { showDamageNumber } from './scene.js';
+import { showAttackDisplay } from './combat-loop.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -290,9 +287,9 @@ async function handleRoundResult(result) {
 }
 
 /**
- * Show attacks using the same display sequence as PvE combat.
- * Each attack: card → sound → visual effects → damage number → HP drain → tap to continue.
- * Uses running HP maps so bars drain progressively per hit (not all at once).
+ * Show attacks using the shared display sequence (same as PvE).
+ * Each attack: card → sound → effects → damage → STAB → effectiveness → tap.
+ * HP bars drain progressively per hit via running HP maps.
  * @param {object[]} attacks - Array of attack record objects from resolveRound
  */
 async function showAttackSummary(attacks) {
@@ -303,53 +300,27 @@ async function showAttackSummary(attacks) {
   for (const atk of attacks) {
     const isEnemy = (atk.side !== pvpState.mySide);
 
-    // 1. Show attack card (same as PvE)
-    const attackCard = insertAttackCard(atk, isEnemy);
-
-    // 2. Sound + visual effects
-    playSFX('attack');
-    const element = atk.moveElement || atk.attackerElement || 'neutral';
-
+    // Resolve source/target DOM elements
+    let sourceEl, targetEl, hpTracker;
     if (isEnemy) {
-      // Enemy attacking our creature
-      const enemyEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
-      const allyEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.targetIndex}"]`);
-      if (enemyEl && allyEl && atk.damage > 0) {
-        playAttackSound(element);
-        await enemyCreatureAttackEffect(enemyEl, allyEl, element, atk.damage);
-      }
-      if (atk.damage > 0) {
-        showDamageNumber(atk.damage, { targetEl: allyEl });
-        // Drain ally HP bar progressively
-        if (allyHp[atk.targetIndex]) {
-          allyHp[atk.targetIndex].hp = Math.max(0, allyHp[atk.targetIndex].hp - atk.damage);
-          updateSlotHp('player-formation', atk.targetIndex, allyHp[atk.targetIndex].hp, allyHp[atk.targetIndex].maxHp);
-        }
-      }
+      sourceEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
+      targetEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.targetIndex}"]`);
+      hpTracker = { map: allyHp, formation: 'player-formation' };
     } else {
-      // Our creature attacking enemy
-      const allyEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
-      const enemyEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.targetIndex}"]`);
-      if (allyEl && enemyEl && atk.damage > 0) {
-        playAttackSound(element);
-        const targetMaxHp = enemyHp[atk.targetIndex]?.maxHp || 100;
-        await fireCreatureAttackEffect(allyEl, enemyEl, element, atk.damage, targetMaxHp);
-      }
-      if (atk.damage > 0) {
-        showDamageNumber(atk.damage, { targetEl: enemyEl });
-        // Drain enemy HP bar progressively
-        if (enemyHp[atk.targetIndex]) {
-          enemyHp[atk.targetIndex].hp = Math.max(0, enemyHp[atk.targetIndex].hp - atk.damage);
-          updateSlotHp('enemy-formation', atk.targetIndex, enemyHp[atk.targetIndex].hp, enemyHp[atk.targetIndex].maxHp);
-        }
-      }
+      sourceEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
+      targetEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.targetIndex}"]`);
+      hpTracker = { map: enemyHp, formation: 'enemy-formation' };
     }
 
-    // 3. Wait for tap to continue (same as PvE)
-    if (attackCard) {
-      await waitForCardTap(attackCard);
-    } else {
-      await delay(800);
+    const targetMaxHp = hpTracker.map[atk.targetIndex]?.maxHp || 100;
+
+    // Shared display: card, sound, effects, damage number, STAB, effectiveness, tap
+    await showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp });
+
+    // Progressive HP bar drain (PvP-specific: server sends final state, we animate incrementally)
+    if (atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
+      hpTracker.map[atk.targetIndex].hp = Math.max(0, hpTracker.map[atk.targetIndex].hp - atk.damage);
+      updateSlotHp(hpTracker.formation, atk.targetIndex, hpTracker.map[atk.targetIndex].hp, hpTracker.map[atk.targetIndex].maxHp);
     }
   }
 }
