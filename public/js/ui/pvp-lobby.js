@@ -52,6 +52,68 @@ export function init(callbacks) {
   sceneModule = callbacks.scene;
 }
 
+/**
+ * Show the existing creature popup for a PvP team creature.
+ * Reuses dom.creaturePopup from creature-row.js pattern.
+ * @param {object} creature - Creature data from the team snapshot
+ * @param {HTMLElement} anchorEl - The ? button element to position near
+ */
+function showPvpCreaturePopup(creature, anchorEl) {
+  if (!creature) return;
+
+  const archetypeLabel = creature.archetype || 'Fighter';
+  const popupSubtitle = creature.modifier
+    ? renderJpFirst(creature.modifier.word, creature.modifier.reading, creature.modifier.meaning)
+      + 'の'
+      + renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning)
+    : renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning);
+
+  const movesHtml = (creature.moves || []).map(m => `
+    <div class="creature-popup-move-row">
+      <span style="color:${ELEMENT_COLORS[m.element] || '#888'}">●</span>
+      ${m.name} (${m.nameEn}) — ${m.category || 'attack'} ${m.power || 0}pw ${m.mpCost ?? 0}mp
+    </div>
+  `).join('');
+
+  const equipHtml = (creature.equippedItems || []).length > 0
+    ? `<div class="creature-popup-equipment">
+        <div class="creature-popup-equipment-label">Equipment:</div>
+        ${creature.equippedItems.map(item =>
+          `<div class="creature-popup-equipment-row">${escapeHtml(item.word || '')} (${escapeHtml(item.nameEn || '')}) <span class="equip-effect">${escapeHtml(item.description || '')}</span></div>`
+        ).join('')}
+      </div>`
+    : '';
+
+  dom.creaturePopup.innerHTML = `
+    <div class="creature-popup-name">${escapeHtml(creature.name)} (${escapeHtml(creature.nameEn)})</div>
+    <div class="creature-popup-subtitle">${popupSubtitle}</div>
+    <div class="creature-popup-element">${ELEMENT_ICONS[creature.element] || ''} ${creature.element}</div>
+    <div class="creature-popup-archetype">${archetypeLabel}</div>
+    <div class="creature-popup-stats">
+      HP: ${creature.hp}/${creature.maxHp} | ATK: ${creature.attack ?? creature.atk ?? '?'} | DEF: ${creature.defense ?? creature.def ?? 5} | MP: ${creature.mp}/${creature.maxMp}
+    </div>
+    ${equipHtml}
+    ${movesHtml ? `<div class="creature-popup-moves"><div class="creature-popup-moves-label">Moves:</div>${movesHtml}</div>` : ''}
+  `;
+
+  // Position below the anchor element
+  const rect = anchorEl.getBoundingClientRect();
+  dom.creaturePopup.style.position = 'fixed';
+  dom.creaturePopup.style.left = Math.max(8, Math.min(rect.left - 60, window.innerWidth - 260)) + 'px';
+  dom.creaturePopup.style.top = (rect.bottom + 8) + 'px';
+  dom.creaturePopup.style.bottom = 'auto';
+  dom.creaturePopup.classList.add('visible');
+
+  // Close on outside click
+  const closeHandler = (e) => {
+    if (!e.target.closest('.creature-popup') && !e.target.closest('.pvp-creature-info-btn')) {
+      dom.creaturePopup.classList.remove('visible');
+      document.removeEventListener('click', closeHandler);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', closeHandler), 0);
+}
+
 // ============ LOBBY SCREEN ============
 
 /**
