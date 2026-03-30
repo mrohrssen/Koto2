@@ -179,10 +179,10 @@ describe('resolveRound', () => {
     }
   });
 
-  it('returns updatedSideA and updatedSideB', () => {
+  it('returns sideA and sideB', () => {
     const result = resolveRound(sideA, sideB, movesA, movesB);
 
-    assert.strictEqual(result.updatedSideA, sideA);
-    assert.strictEqual(result.updatedSideB, sideB);
+    assert.strictEqual(result.sideA, sideA);
+    assert.strictEqual(result.sideB, sideB);
   });
 });

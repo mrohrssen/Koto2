@@ -31,8 +31,8 @@ function makeMockResolveRound(overrides = {}) {
     koSwaps: [],
     mpRegens: [],
     winner: null,
-    updatedSideA: [],
-    updatedSideB: [],
+    sideA: [],
+    sideB: [],
     ...overrides
   }));
 }
@@ -211,8 +211,8 @@ describe('MatchManager', () => {
         koSwaps: [],
         mpRegens: [],
         winner: 'sideA',
-        updatedSideA: [],
-        updatedSideB: []
+        sideA: [],
+        sideB: []
       }));
 
       const moves = [{ creatureIndex: 0, moveId: 'slash', targetIndex: 0 }];
@@ -232,8 +232,8 @@ describe('MatchManager', () => {
         koSwaps: [],
         mpRegens: [],
         winner: 'sideB',
-        updatedSideA: [],
-        updatedSideB: []
+        sideA: [],
+        sideB: []
       }));
 
       const moves = [{ creatureIndex: 0, moveId: 'slash', targetIndex: 0 }];
@@ -251,8 +251,8 @@ describe('MatchManager', () => {
         koSwaps: [],
         mpRegens: [],
         winner: 'draw',
-        updatedSideA: [],
-        updatedSideB: []
+        sideA: [],
+        sideB: []
       }));
 
       const moves = [{ creatureIndex: 0, moveId: 'slash', targetIndex: 0 }];

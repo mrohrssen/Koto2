@@ -196,7 +196,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     koSwaps,
     mpRegens,
     winner,
-    updatedSideA: sideA,
-    updatedSideB: sideB
+    sideA,
+    sideB
   };
 }
