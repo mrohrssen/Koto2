@@ -67,7 +67,7 @@ export async function renderDealerRoom(actionsModule) {
               <div class="dealer-offer-desc">HP: ${creature.maxHp} \u00B7 ATK: ${creature.attack}</div>
             </div>
           </div>
-          <button class="dealer-buy-btn action-btn action-btn-primary" data-creature-id="${creature.id}" ${btnDisabled}>${t('dealerBuyBtn', creature.buyPrice)}</button>
+          <button class="dealer-buy-btn" data-creature-id="${creature.id}" ${btnDisabled}>${t('dealerBuyBtn', creature.buyPrice)}</button>
         </div>
       `;
     }).join('');
@@ -112,7 +112,7 @@ export async function renderDealerRoom(actionsModule) {
       <div class="dealer-inventory-list">
         ${partyHtml}
       </div>
-      <button class="dealer-leave-btn action-btn action-btn-secondary">${t('dealerLeave')}</button>
+      <button class="dealer-leave-btn">${t('dealerLeave')}</button>
     </div>
   `);
 

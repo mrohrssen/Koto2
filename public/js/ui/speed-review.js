@@ -101,7 +101,7 @@ function showRoomCompletionError(errorMessage) {
     <div style="font-size:12px;margin-bottom:8px;color:#ffb7b7;">
       ${escapeHtml(errorMessage || 'Review sync failed. Please retry.')}
     </div>
-    <button id="speed-review-room-retry-btn" class="action-btn action-btn-primary">Retry Sync</button>
+    <button id="speed-review-room-retry-btn" class="ui-btn ui-btn--primary">Retry Sync</button>
   `;
   container.appendChild(panel);
 

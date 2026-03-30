@@ -219,15 +219,15 @@ export async function openSettings() {
       </label>
 
       <h4 style="margin:20px 0 8px;color:var(--accent)">Data</h4>
-      <button class="action-btn" id="settings-clear-dialogue-cache-btn"
+      <button class="ui-btn" id="settings-clear-dialogue-cache-btn"
         style="width:100%;background:var(--surface-2);color:var(--text)">Clear Dialogue Cache</button>
       <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Regenerates all NPC and creature dialogue on next exploration. Useful after switching AI models.</small>
 
-      <button class="action-btn" id="settings-reset-prologue-btn"
+      <button class="ui-btn" id="settings-reset-prologue-btn"
         style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Reset Prologue</button>
       <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Replay the intro prologue on next page load.</small>
 
-      <button class="action-btn action-btn-primary" id="settings-save-btn"
+      <button class="ui-btn ui-btn--primary" id="settings-save-btn"
         style="margin-top:20px;width:100%">Save</button>
     </div>
   `;

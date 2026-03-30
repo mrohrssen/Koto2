@@ -2589,26 +2589,12 @@ function showBefriendTargetSelect(enemies) {
     const actionArea = document.getElementById('action-area');
     if (!actionArea) { resolve(-1); return; }
 
-    const buttons = eligible.map(e => `
-      <div class="shrine-creature-option befriend-target-option" data-index="${e.index}" style="width:100%">
-        <div class="shrine-creature-info" style="padding:1rem; width:100%; text-align:center">
-          <div class="shrine-creature-name" style="color:#4CAF50">${e.nameEn || e.name} (HP: ${Math.round(e.hp / e.maxHp * 100)}%)</div>
-        </div>
-      </div>
-    `).join('');
-
-    actionArea.innerHTML = `
-      <div class="shrine-creature-list" style="padding:0 1rem">
-        <div style="text-align:center; color:var(--text-secondary); margin-bottom:0.5rem">Who do you want to talk to?</div>
-        ${buttons}
-      </div>
-    `;
-
-    actionArea.addEventListener('click', (e) => {
-      const opt = e.target.closest('.befriend-target-option');
-      if (!opt) return;
-      resolve(parseInt(opt.dataset.index, 10));
-    });
+    renderButtonsAsync(
+      eligible.map(e => ({
+        label: `${e.nameEn || e.name} (HP: ${Math.round(e.hp / e.maxHp * 100)}%)`,
+      })),
+      { container: actionArea }
+    ).then(idx => resolve(eligible[idx].index));
   });
 }
 
@@ -2634,7 +2620,7 @@ function showConversationRound(round, creatureName) {
  * Show green/red feedback on answer options.
  */
 function showAnswerFeedback(selectedIndex, correctIndex, correct) {
-  document.querySelectorAll('.befriend-answer-option').forEach((o, idx) => {
+  document.querySelectorAll('#action-area .ui-btn').forEach((o, idx) => {
     o.style.pointerEvents = 'none';
     if (idx === correctIndex) {
       o.style.borderColor = 'var(--success-color, #4ade80)';
