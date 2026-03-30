@@ -147,11 +147,6 @@ function showMoveSelection() {
     }
   }
 
-  // Reset move choices for this round
-  if (pvpState.currentCreatureIdx === 0) {
-    pvpState.moveChoices = [];
-  }
-
   // Find the next creature that hasn't had a move assigned yet
   const assignedIndices = new Set(pvpState.moveChoices.map(m => m.creatureIndex));
   const nextIdx = aliveIndices.find(i => !assignedIndices.has(i));
@@ -285,6 +280,7 @@ async function handleRoundResult(result) {
   // If no winner, continue to next round's move selection
   if (!result.winner) {
     pvpState.currentCreatureIdx = 0;
+    pvpState.moveChoices = [];
     showMoveSelection();
   }
   // If there is a winner, pvp:match-end handler will take over
