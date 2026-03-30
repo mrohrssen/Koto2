@@ -47,79 +47,50 @@ export function show(items) {
   const actionArea = dom.actionArea;
   if (!actionArea) return;
 
-  actionArea.innerHTML = `
-    <div class="post-combat-shop">
-      <div class="shop-title">${t('chooseReward')}</div>
-      <div class="shop-items">
-        ${items.map((item, i) => {
-          const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
-          const icon = TYPE_ICONS[item.type] || '📦';
-          const itemNameHtml = renderJpFirst(item.word, item.reading, item.nameEn);
-          const itemDescHtml = item.descriptionTagged
-            ? renderEnFirst(item.descriptionTagged)
-            : (isJapanified() && item.descriptionJa ? item.descriptionJa : item.description);
-          return `
-          <div class="shop-item-card" data-index="${i}" style="border-color: ${rarityColor}40; position: relative;">
-            <div class="shop-item-rarity-badge" style="background: ${rarityColor}">${(item.rarity || 'common').toUpperCase()}</div>
-            <button class="shop-help-btn" data-item-index="${i}">?</button>
-            <div class="shop-item-sprite">${itemSpriteHtml(item.id, item.word)}</div>
-            <div class="shop-item-info">
-              <div class="shop-item-word">${itemNameHtml}</div>
-              <div class="shop-item-effect">${buildItemEffectPills(item)}</div>
-            </div>
-          </div>
-        `}).join('')}
-      </div>
-    </div>
-  `;
-
-  // Report i+1 word exposures to server
-  flushExposures();
-
   // Prefetch audio for all item words
   items.forEach(item => { if (item.word) prefetchWord(item.word); });
 
-  const cards = actionArea.querySelectorAll('.shop-item-card');
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      const index = parseInt(card.dataset.index, 10);
+  renderChoices({
+    cards: items.map(item => {
+      const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
+      return {
+        sprite: itemSpriteHtml(item.id, item.word),
+        title: renderJpFirst(item.word, item.reading, item.nameEn),
+        pills: buildItemEffectPills(item),
+        badge: { text: (item.rarity || 'common').toUpperCase(), color: rarityColor },
+        helpBtn: () => showItemHelpPopup(item),
+      };
+    }),
+    onSelect: (index) => {
       playSFX('creature-equip');
       if (items[index]?.word) playWord(items[index].word);
-      cards.forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      cards.forEach(c => c.style.pointerEvents = 'none');
+      flushExposures();
       if (onItemSelected) onItemSelected(index);
-    });
+    },
+    container: actionArea,
   });
 
-  // Help button (?) — show item detail popup
-  actionArea.querySelectorAll('.shop-help-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const idx = parseInt(btn.dataset.itemIndex);
-      const item = items[idx];
-      if (!item) return;
-      document.querySelector('.item-help-backdrop')?.remove();
-      const nameHtml = renderJpFirst(item.word, item.reading, item.nameEn);
-      const descHtml = item.descriptionTagged
-        ? renderEnFirst(item.descriptionTagged)
-        : (item.description || '');
-      const backdrop = document.createElement('div');
-      backdrop.className = 'item-help-backdrop';
-      backdrop.innerHTML = `
-        <div class="item-help-popup">
-          <div class="item-help-name">${nameHtml}</div>
-          <div class="item-help-pills">${buildStatPills(item)}</div>
-          <div class="item-help-desc">${descHtml}</div>
-        </div>
-      `;
-      backdrop.addEventListener('click', () => backdrop.remove());
-      document.body.appendChild(backdrop);
-    });
-  });
+  flushExposures();
 }
 
-const ELEMENT_ICONS = { wood: '🌿', fire: '🔥', earth: '⛰️', metal: '⚙️', water: '💧' };
+function showItemHelpPopup(item) {
+  document.querySelector('.item-help-backdrop')?.remove();
+  const nameHtml = renderJpFirst(item.word, item.reading, item.nameEn);
+  const descHtml = item.descriptionTagged
+    ? renderEnFirst(item.descriptionTagged)
+    : (item.description || '');
+  const backdrop = document.createElement('div');
+  backdrop.className = 'item-help-backdrop';
+  backdrop.innerHTML = `
+    <div class="item-help-popup">
+      <div class="item-help-name">${nameHtml}</div>
+      <div class="item-help-pills">${buildItemEffectPills(item)}</div>
+      <div class="item-help-desc">${descHtml}</div>
+    </div>
+  `;
+  backdrop.addEventListener('click', () => backdrop.remove());
+  document.body.appendChild(backdrop);
+}
 
 /**
  * Show creature target picker after item selection.

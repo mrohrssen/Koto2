@@ -1029,14 +1029,13 @@ export async function renderFriendlyNpc() {
         <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
           <div style="text-align:center;font-weight:800;">フレンドリーNPC</div>
           <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Failed to load offers.</div>
-          <button class="action-btn action-btn-primary" id="friendly-npc-retry-btn">Retry</button>
         </div>
       `);
-      document.getElementById('friendly-npc-retry-btn')?.addEventListener('click', () => {
-        friendlyNpcState.fetched = false;
-        friendlyNpcState.offered = null;
-        renderFriendlyNpc();
-      });
+      const retryContainer = document.createElement('div');
+      document.getElementById('action-area').appendChild(retryContainer);
+      renderButtons([
+        { label: 'Retry', onClick: () => { friendlyNpcState.fetched = false; friendlyNpcState.offered = null; renderFriendlyNpc(); }, primary: true },
+      ], { container: retryContainer });
       return;
     }
 
@@ -1051,14 +1050,13 @@ export async function renderFriendlyNpc() {
         <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
           <div style="text-align:center;font-weight:800;">フレンドリーNPC</div>
           <div style="text-align:center;color:var(--text-secondary);font-size:13px;">No items available.</div>
-          <button class="action-btn action-btn-primary" id="friendly-npc-retry-btn">Retry</button>
         </div>
       `);
-      document.getElementById('friendly-npc-retry-btn')?.addEventListener('click', () => {
-        friendlyNpcState.fetched = false;
-        friendlyNpcState.offered = null;
-        renderFriendlyNpc();
-      });
+      const retryContainer = document.createElement('div');
+      document.getElementById('action-area').appendChild(retryContainer);
+      renderButtons([
+        { label: 'Retry', onClick: () => { friendlyNpcState.fetched = false; friendlyNpcState.offered = null; renderFriendlyNpc(); }, primary: true },
+      ], { container: retryContainer });
       return;
     }
 
@@ -1070,114 +1068,51 @@ export async function renderFriendlyNpc() {
 
   const offers = friendlyNpcState.offered || [];
 
-  const cardsHtml = offers.map((item, i) => {
-    const pills = buildItemEffectPills(item);
-    return `
-      <div class="shop-item-card" data-item-id="${item.id}" data-index="${i}" style="position:relative;">
-        <div class="shop-item-sprite">${itemSpriteHtml(item.id, item.word)}</div>
-        <div class="shop-item-info">
-          <div class="shop-item-word">${item.word} <span style="color:var(--text-secondary);font-size:12px">(${item.reading})</span></div>
-          <div class="shop-item-word" style="font-size:12px;opacity:0.8">${item.nameEn}</div>
-          <div class="shop-item-effect">${pills}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  actions.setContent(`
-    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px;">
-      <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">フレンドリーNPC</div>
-      <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
-        Choose a gift. (${room?.friendlyNpc?.offerCategory === 'food' ? '🍱 Food' : '🛡️ Equipment'})
-      </div>
-      <div class="shop-items" style="gap:10px">${cardsHtml}</div>
-    </div>
-  `);
-
-  const cards = document.querySelectorAll('.shop-item-card[data-item-id]');
-  cards.forEach(card => {
-    card.addEventListener('click', async () => {
+  renderChoices({
+    cards: offers.map(item => ({
+      sprite: itemSpriteHtml(item.id, item.word),
+      title: `${item.word} (${item.reading})`,
+      subtitle: item.nameEn,
+      pills: buildItemEffectPills(item),
+    })),
+    onSelect: async (index) => {
       if (friendlyNpcState.choosing) return;
       friendlyNpcState.choosing = true;
-      const itemId = card.dataset.itemId;
-
+      const itemId = offers[index].id;
       playSFX('creature-equip');
 
-      // Visually mark selected and disable others
-      cards.forEach(c => {
-        c.style.pointerEvents = 'none';
-        c.style.opacity = '0.5';
-      });
-      card.classList.add('selected');
-      card.style.opacity = '1';
-
-      // Show creature targeting UI
+      // Phase 2: creature targeting
       const gameState = getGameState();
       const party = gameState.run?.creatureParty?.active || [];
-      const creatureCards = party.map((creature, idx) => {
-        if (!creature) return '';
-        const hpPct = Math.round((creature.hp / creature.maxHp) * 100);
-        return `
-          <div class="shop-item-card creature-target-card" data-creature-index="${idx}"
-               style="cursor:pointer;text-align:center;padding:12px;">
-            <div style="font-weight:800;font-size:16px;">${creature.name}</div>
-            <div style="font-size:12px;color:var(--text-secondary);">${creature.nameEn} Lv.${creature.level}</div>
-            <div style="font-size:11px;margin-top:4px;">HP: ${creature.hp}/${creature.maxHp} (${hpPct}%)</div>
-          </div>
-        `;
-      }).join('');
 
-      actions.setContent(`
-        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px;">
-          <div style="text-align:center;font-weight:800;">どのクリーチャーに？</div>
-          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Choose a creature.</div>
-          <div class="shop-items" style="gap:10px">${creatureCards}</div>
-        </div>
-      `);
-
-      let creatureChoiceSent = false;
-      document.querySelectorAll('.creature-target-card').forEach(tCard => {
-        tCard.addEventListener('click', async () => {
-          if (creatureChoiceSent) return;
-          creatureChoiceSent = true;
-          const targetIdx = parseInt(tCard.dataset.creatureIndex, 10);
-          tCard.classList.add('selected');
-          document.querySelectorAll('.creature-target-card').forEach(c => {
-            c.style.pointerEvents = 'none';
-          });
-
+      renderChoices({
+        cards: party.filter(Boolean).map(creature => ({
+          sprite: `<img src="${creatureStaticPath(creature.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`,
+          title: `${creature.name} (${creature.nameEn})`,
+          subtitle: `Lv.${creature.level} · HP: ${creature.hp}/${creature.maxHp}`,
+        })),
+        onSelect: async (creatureIndex) => {
           let result;
           try {
-            result = await apiChooseFriendlyNpcItem?.(itemId, targetIdx);
+            result = await apiChooseFriendlyNpcItem?.(itemId, creatureIndex);
           } catch (err) {
             friendlyNpcState.choosing = false;
             sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
             renderFriendlyNpc();
             return;
           }
-
           if (result?.state) {
             updateGameState(result.state);
-            const itemCard = document.querySelector(`.friendly-npc-item[data-item-id="${itemId}"]`) ||
-                             document.querySelector('.friendly-npc-item.selected') ||
-                             document.querySelector('.shop-item-card.selected');
-            if (itemCard) {
-              pop(itemCard, 1.15);
-              const itemName = result?.chosen?.nameEn || result?.chosen?.word || 'Item';
-              itemGained(itemCard, `+${itemName}`);
-            }
             friendlyNpcState.choosing = false;
             updateUI();
-            return;
+          } else {
+            friendlyNpcState.choosing = false;
+            sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
+            renderFriendlyNpc();
           }
-
-          // API returned null (e.g. loading gate) or success body missing state — recover UI
-          friendlyNpcState.choosing = false;
-          sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
-          renderFriendlyNpc();
-        });
+        },
       });
-    });
+    },
   });
 }
 
