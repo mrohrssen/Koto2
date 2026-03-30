@@ -8,7 +8,7 @@
 
 import { logger } from './logger.js';
 export { apiUrl } from './platform.js';
-import { apiUrl } from './platform.js';
+import { apiUrl, PLATFORM } from './platform.js';
 
 // ============ CORE API WRAPPER ============
 
