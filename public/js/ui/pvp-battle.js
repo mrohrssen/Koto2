@@ -20,7 +20,9 @@
 import * as pvpSocket from '../pvp-socket.js';
 import { playSFX } from '../audio.js';
 import { renderJpFirst } from './bootstrap-client.js';
+import { buildMoveCell } from './move-select.js';
 import { toRomaji } from './romaji.js';
+import { escapeHtml } from './html-utils.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -146,28 +148,13 @@ function showMoveSelection() {
   pvpState.currentCreatureIdx = nextIdx;
   const creature = pvpState.allies[nextIdx];
 
-  // Build move grid
-  const movesHtml = creature.moves.map((move, mi) => {
+  // Build move grid using shared move-cell builder
+  const moveCells = creature.moves.map((move, mi) => {
     const canAfford = (creature.mp ?? creature.currentMp ?? 99) >= (move.mpCost || 0);
-    const nameHtml = renderJpFirst(move.name, move.reading, move.nameEn);
-    const powerText = move.power > 0 ? `${move.power}` : '-';
-    const mpText = `${move.mpCost || 0} MP`;
-    return `
-      <button class="move-cell pvp-move-btn${canAfford ? '' : ' disabled'}"
-              data-move-idx="${mi}" ${canAfford ? '' : 'disabled'}
-              style="position:relative;">
-        <div class="move-hero">
-          <div class="move-name-block">
-            <div class="move-name-jp">${nameHtml}</div>
-          </div>
-        </div>
-        <div class="move-stats">
-          <span class="move-power">${powerText}</span>
-          <span class="move-cost">${mpText}</span>
-        </div>
-      </button>
-    `;
-  }).join('');
+    const cell = buildMoveCell(move, canAfford);
+    cell.classList.add('pvp-move-btn');
+    return cell;
+  });
 
   const creatureName = creature.nameEn || creature.name || '???';
   const reading = creature.baseReading || creature.name || '';
@@ -178,22 +165,23 @@ function showMoveSelection() {
       <div class="move-active-label" style="text-align:center;font-size:0.85em;color:var(--text-secondary);">
         ${escapeHtml(nameDisplay)}'s turn (Round ${pvpState.roundNumber})
       </div>
-      <div class="move-grid">
-        ${movesHtml}
-      </div>
+      <div class="move-grid"></div>
       <div id="pvp-battle-status" style="text-align:center;color:var(--text-secondary);font-size:0.8em;min-height:1em;">
       </div>
     </div>
   `);
 
-  // Wire move buttons
-  document.querySelectorAll('.pvp-move-btn:not([disabled])').forEach(btn => {
-    btn.addEventListener('click', () => {
-      playSFX('button-tap');
-      const moveIdx = parseInt(btn.dataset.moveIdx);
-      const move = creature.moves[moveIdx];
-      handleMoveSelected(creature, nextIdx, move);
-    });
+  // Append move cells and wire click handlers
+  const grid = document.querySelector('.pvp-move-select .move-grid');
+  moveCells.forEach((cell, mi) => {
+    if (!cell.classList.contains('disabled')) {
+      cell.addEventListener('click', () => {
+        playSFX('button-tap');
+        const move = creature.moves[mi];
+        handleMoveSelected(creature, nextIdx, move);
+      });
+    }
+    grid.appendChild(cell);
   });
 }
 
@@ -547,12 +535,6 @@ function returnToHub() {
 }
 
 // ============ UTILITIES ============
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str || '';
-  return div.innerHTML;
-}
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));

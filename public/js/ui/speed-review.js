@@ -11,6 +11,7 @@ import { playSFX, playBGMRandomStart, playBGM } from '../audio.js';
 import * as takeover from './takeover.js';
 import { animate as anime } from 'animejs';
 import { setKnownWords } from './bootstrap-client.js';
+import { escapeHtml } from './html-utils.js';
 
 // Module state
 let state = {
@@ -812,11 +813,6 @@ export function isActive() {
 }
 
 // Utility functions
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 function formatMeanings(meanings) {
   const text = Array.isArray(meanings) ? meanings.join(', ') : (meanings || '');

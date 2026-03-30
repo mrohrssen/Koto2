@@ -21,6 +21,7 @@ import * as pvpSocket from '../pvp-socket.js';
 import { getPvpTeams } from '../api.js';
 import { playSFX } from '../audio.js';
 import { startPvpBattle } from './pvp-battle.js';
+import { escapeHtml } from './html-utils.js';
 
 let getGameState = null;
 let updateUI = null;
@@ -277,9 +278,3 @@ export async function renderPvpTeamSelect() {
 }
 
 // ============ UTILITIES ============
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}

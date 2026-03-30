@@ -26,6 +26,7 @@
  */
 
 import { dom } from '../dom.js';
+import { escapeHtml } from './html-utils.js';
 
 let isActive = false;
 let isLoading = false;
@@ -386,11 +387,6 @@ function buildHtmlFromTokens(tokens, targetText) {
   return html || escapeHtml(targetText);
 }
 
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 /** Handle click on a lookup word */
 async function handleWordClick(e) {

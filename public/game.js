@@ -112,6 +112,7 @@ import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
 import { enterEnemiesOneByOne, playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
+import { escapeHtml } from './js/ui/html-utils.js';
 
 // API imports - these are the server communication functions
 import {
@@ -204,11 +205,6 @@ let currentFlashCardWord = null;
 let combatReviewedBatch = [];
 
 // ============ UTILITY ============
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 function shuffleArray(array) {
   const arr = [...array];

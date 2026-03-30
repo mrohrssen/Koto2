@@ -18,6 +18,7 @@ import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import { t } from './i18n.js';
 import { hapticMedium } from '../native/index.js';
+import { escapeHtml } from './html-utils.js';
 
 let onEquipBots = null;
 let onContextAction = null;
@@ -269,11 +270,6 @@ function triggerSwipeAnimation(card, direction) {
   }, 300);
 }
 
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 /**
  * Format meanings for flash card display.
