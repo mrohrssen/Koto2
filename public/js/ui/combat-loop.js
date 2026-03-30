@@ -2385,37 +2385,14 @@ async function renderBefriendQuiz(quizData, result) {
     return;
   }
 
-  // Talk path — show "なまえは？" and name options
+  // Talk path — show "なまえは？" in narration, then name options as plain buttons
   await narration.showNarration('なまえは？', { speaker: creatureSpeaker });
 
-  const selectedId = await new Promise((resolve) => {
-    const actionArea = document.getElementById('action-area');
-    if (!actionArea) { resolve(null); return; }
+  const selectedIdx = await renderButtonsAsync(
+    quizData.options.map(opt => ({ label: opt.name }))
+  );
 
-    const optionsHtml = quizData.options.map(opt => `
-      <button class="befriend-name-btn" data-answer-id="${opt.id}">
-        ${opt.name}
-      </button>
-    `).join('');
-
-    actionArea.innerHTML = `
-      <div class="befriend-quiz-names">
-        <div class="befriend-quiz-question">What is this creature's name?</div>
-        <div class="befriend-name-options">
-          ${optionsHtml}
-        </div>
-      </div>
-    `;
-
-    actionArea.querySelectorAll('.befriend-name-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        // Highlight selected
-        actionArea.querySelectorAll('.befriend-name-btn').forEach(b => b.disabled = true);
-        btn.classList.add('selected');
-        resolve(btn.dataset.answerId);
-      });
-    });
-  });
+  const selectedId = quizData.options[selectedIdx]?.id ?? null;
 
   if (!selectedId) return;
 
