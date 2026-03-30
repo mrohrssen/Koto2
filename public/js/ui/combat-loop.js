@@ -2340,31 +2340,13 @@ async function renderBefriendQuiz(quizData, result) {
   await narration.showNarration('まって！！', { speaker: creatureSpeaker });
 
   // Show Fight / Talk choice
-  const actionChoice = await new Promise((resolve) => {
-    const actionArea = document.getElementById('action-area');
-    if (!actionArea) { resolve('fight'); return; }
+  const choiceIdx = await renderButtonsAsync([
+    { label: 'たたかう (Fight)' },
+    { label: 'はなす (Talk)' },
+  ]);
+  // 0 = Fight, 1 = Talk
 
-    actionArea.innerHTML = `
-      <div class="befriend-quiz-choice">
-        <div class="befriend-quiz-prompt"><ruby>${reading}<rt>${toRomaji(reading)}</rt></ruby> wants to talk!</div>
-        <div class="befriend-quiz-actions">
-          <button class="befriend-quiz-btn befriend-fight-btn">
-            <span class="befriend-btn-jp">たたかう</span>
-            <span class="befriend-btn-en">Fight</span>
-          </button>
-          <button class="befriend-quiz-btn befriend-talk-btn">
-            <span class="befriend-btn-jp">はなす</span>
-            <span class="befriend-btn-en">Talk</span>
-          </button>
-        </div>
-      </div>
-    `;
-
-    actionArea.querySelector('.befriend-fight-btn').addEventListener('click', () => resolve('fight'));
-    actionArea.querySelector('.befriend-talk-btn').addEventListener('click', () => resolve('talk'));
-  });
-
-  if (actionChoice === 'fight') {
+  if (choiceIdx === 0) {
     // Kill the creature — call fight endpoint
     const fightResult = await fetch(`${API_BASE}/api/game/befriend-quiz-answer`, {
       method: 'POST',
