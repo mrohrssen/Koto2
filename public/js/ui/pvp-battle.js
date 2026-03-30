@@ -19,7 +19,6 @@
 
 import * as pvpSocket from '../pvp-socket.js';
 import { playSFX } from '../audio.js';
-import { renderJpFirst } from './bootstrap-client.js';
 import { buildMoveCell } from './move-select.js';
 import { toRomaji } from './romaji.js';
 import { escapeHtml } from './html-utils.js';
