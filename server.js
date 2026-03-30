@@ -64,6 +64,8 @@
  */
 
 import express from 'express';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import compression from 'compression';
 import { fileURLToPath } from 'url';
@@ -179,6 +181,13 @@ if (existsSync(wordListPath)) {
 }
 
 const app = express();
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
 const gameManager = new GameManager();
 
 // Debug mode - disables AI narration only (JPDB vocab calls still work)
@@ -780,7 +789,7 @@ setTTSSynthesizer(ttsSynthesizerFn, {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+httpServer.listen(PORT, '0.0.0.0', () => {
   logger.info('[Server] Started:', { port: PORT, env: process.env.NODE_ENV || 'development' });
   logger.info('[Server] Log level:', logger.getLevel());
   console.log(`JRPG server running at http://localhost:${PORT}`);
