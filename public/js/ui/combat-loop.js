@@ -322,10 +322,9 @@ function showAttackCardAndWait(atk, isEnemy) {
 
 /**
  * Shared attack display sequence used by both PvE and PvP.
- * Shows: attack card → sound → visual effects → damage number → STAB → effectiveness → tap.
- * Callers handle mode-specific concerns (HP bar updates, XP, party skills) after this returns.
+ * Shows: card → sound → effects → damage → STAB → effectiveness → party skill procs → tap.
  *
- * @param {Object} atk - Attack object from server (needs damage, element, stab, elementMultiplier, etc.)
+ * @param {Object} atk - Attack object from server
  * @param {Object} opts
  * @param {boolean} opts.isEnemy - Whether this attack is from the enemy's perspective
  * @param {Element|null} opts.sourceEl - Attacker's formation slot element
@@ -367,6 +366,39 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
     setTimeout(() => effectiveness(targetEl, 'Super Effective!'), 400);
   } else if (atk.elementMultiplier < 1 && targetEl) {
     setTimeout(() => resistedEffectiveness(targetEl, 'Resisted...'), 400);
+  }
+
+  // Party skill procs (bonus damage, heals, haste, shields)
+  if (atk.partySkillProcs?.length) {
+    const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
+    for (const proc of atk.partySkillProcs) {
+      let detail = '';
+      if (proc.type === 'bonusDamage') detail = ` +${proc.bonusDamage}`;
+      else if (proc.type === 'healAll') detail = ` +${proc.healAmount} HP`;
+
+      if (sourceEl) {
+        skillProc(sourceEl, `${proc.skillName}!${detail}`);
+        flashElement(sourceEl.querySelector('.formation-sprite'), 1);
+      }
+
+      if (proc.type === 'bonusDamage' && targetEl) {
+        spawnParticles(targetEl, 6, '#FFB74D');
+      } else if (proc.type === 'healAll') {
+        allAllySlots.forEach(slot => {
+          const sprite = slot.querySelector('.formation-sprite');
+          if (sprite && !sprite.classList.contains('ko')) healEffect(slot, proc.healAmount);
+        });
+      } else if (proc.type === 'haste' && sourceEl) {
+        spawnParticles(sourceEl, 8, '#4fc3f7');
+      } else if (proc.type === 'teamShield') {
+        allAllySlots.forEach(slot => {
+          const sprite = slot.querySelector('.formation-sprite');
+          if (sprite && !sprite.classList.contains('ko')) spawnParticles(slot, 6, '#42A5F5');
+        });
+      }
+
+      await effectDelay(600);
+    }
   }
 
   // Tap to continue

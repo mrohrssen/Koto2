@@ -197,7 +197,11 @@ export class MatchManager {
       match.player2.movesSubmitted,
       {
         partyA: combat.partyA,
-        partyB: combat.partyB
+        partyB: combat.partyB,
+        partySkillsA: combat.partySkillsA,
+        partySkillsB: combat.partySkillsB,
+        combatA: combat.combatA,
+        combatB: combat.combatB
       }
     );
 
@@ -343,6 +347,10 @@ export class MatchManager {
         active: sideB,
         reserves: deepCloneCreatures(teamB.creatureParty.reserves || [])
       },
+      partySkillsA: teamA.partySkills || [],
+      partySkillsB: teamB.partySkills || [],
+      combatA: { partySkillCounters: {} },
+      combatB: { partySkillCounters: {} },
       round: 1
     };
   }
