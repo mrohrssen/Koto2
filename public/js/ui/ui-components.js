@@ -53,3 +53,79 @@ export function renderButtonsAsync(buttons, options = {}) {
     renderButtons(wrappedButtons, options);
   });
 }
+
+/**
+ * Render a list of tappable choice cards with a unified card template.
+ * Callers use narration box to instruct the player — no title/subtitle here.
+ *
+ * @param {object} options
+ * @param {Array<{sprite?: string, title: string, subtitle?: string, pills?: string, badge?: {text: string, color: string}, helpBtn?: Function}>} options.cards
+ * @param {Function} options.onSelect - Called with selected card index
+ * @param {boolean} [options.disableAfterSelect=true] - Grey out all cards after selection
+ * @param {HTMLElement} [options.container] - Target element (defaults to #action-area)
+ */
+export function renderChoices({ cards, onSelect, disableAfterSelect = true, container } = {}) {
+  const el = container || document.getElementById('action-area');
+  el.innerHTML = '';
+
+  const list = document.createElement('div');
+  list.className = 'ui-choice-list';
+
+  let selected = false;
+
+  cards.forEach((card, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'ui-choice';
+
+    let html = '';
+
+    if (card.badge) {
+      html += `<span class="ui-choice__badge" style="background:${card.badge.color}">${card.badge.text}</span>`;
+    }
+
+    if (card.helpBtn) {
+      html += `<button class="ui-choice__help" data-help-index="${i}">?</button>`;
+    }
+
+    if (card.sprite) {
+      html += `<div class="ui-choice__sprite">${card.sprite}</div>`;
+    }
+
+    html += '<div class="ui-choice__info">';
+    html += `<div class="ui-choice__title">${card.title}</div>`;
+    if (card.subtitle) html += `<div class="ui-choice__subtitle">${card.subtitle}</div>`;
+    if (card.pills) html += `<div class="ui-choice__pills">${card.pills}</div>`;
+    html += '</div>';
+
+    btn.innerHTML = html;
+
+    btn.addEventListener('click', (e) => {
+      if (e.target.closest('.ui-choice__help')) return;
+      if (selected && disableAfterSelect) return;
+      selected = true;
+      playSFX('button-tap');
+      hapticLight();
+      btn.classList.add('ui-choice--selected');
+      if (disableAfterSelect) {
+        list.querySelectorAll('.ui-choice').forEach(c => {
+          c.classList.add('ui-choice--disabled');
+          c.style.pointerEvents = 'none';
+        });
+        btn.style.opacity = '1';
+      }
+      onSelect(i);
+    });
+
+    if (card.helpBtn) {
+      const helpEl = btn.querySelector('.ui-choice__help');
+      helpEl?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        card.helpBtn();
+      });
+    }
+
+    list.appendChild(btn);
+  });
+
+  el.appendChild(list);
+}
