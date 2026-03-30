@@ -103,7 +103,7 @@ import * as bugReport from './js/ui/bug-report.js';
 import * as speedReview from './js/ui/speed-review.js';
 import * as metaShop from './js/ui/meta-shop.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERSION } from './js/ui/sprite-utils.js';
-import { showDialogueChoices } from './js/ui/dialogue-choices.js';
+import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
 import { enterEnemiesOneByOne, playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
@@ -609,7 +609,11 @@ async function playPrologue() {
 
     if (prologueScene.choices?.length > 0) {
       await narrationBox.show(html, { ...showOpts, persistent: true });
-      const choiceIdx = await showDialogueChoices(prologueScene.choices);
+      const choiceIdx = await renderButtonsAsync(
+        prologueScene.choices.map(c => ({
+          label: renderEnFirst(typeof c === 'string' ? c : c.text),
+        }))
+      );
       actions.clear();
       narrationBox.forceHide();
       const chosen = prologueScene.choices[choiceIdx];

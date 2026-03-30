@@ -59,7 +59,7 @@ import { prefetchWord, playWordPair, playDialogueAudio } from '../tts.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
 import { showLearnPrompt } from './move-learn.js';
-import { showDialogueChoices } from './dialogue-choices.js';
+import { renderButtonsAsync } from './ui-components.js';
 import { playNpcSkillAnimation } from './room-transition.js';
 
 // ============ SPLIT ATTACK CARD ============
@@ -2623,7 +2623,11 @@ function showConversationRound(round, creatureName) {
     persistent: true
   });
 
-  return showDialogueChoices(round.options);
+  return renderButtonsAsync(
+    round.options.map(o => ({
+      label: renderEnFirst(typeof o === 'string' ? o : o.text),
+    }))
+  );
 }
 
 /**
@@ -3122,7 +3126,11 @@ export async function runNpcDialogue() {
     await narration.showNarration(renderEnFirst(round.npcLine), { speaker: npcName, persistent: true, html: true });
 
     // Show 3 response buttons (reuses befriend dialogue styling)
-    const selectedIndex = await showDialogueChoices(round.options);
+    const selectedIndex = await renderButtonsAsync(
+      round.options.map(o => ({
+        label: renderEnFirst(typeof o === 'string' ? o : o.text),
+      }))
+    );
 
     // Play selected option audio if available (fire-and-forget)
     if (round.options[selectedIndex]?.tts && userId) {
