@@ -5139,7 +5139,7 @@ function init() {
   document.getElementById('dN').innerHTML = C.map((c, i) =>
     '<div class="ci' + (i === 0 ? ' active' : '') + '" onclick="go(' + i + ')">' +
     '<span class="cn">' + c.n + '</span><span>' + c.s + '</span></div>'
-  ).join('');
+  ).join('') + '<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);padding:12px 14px"><a href="koto-vs-pokerogue.html" style="color:var(--text-dim);text-decoration:none;font-size:13px">&rarr; Koto vs PokeRogue Comparison</a></div>';
   upd();
 }
 

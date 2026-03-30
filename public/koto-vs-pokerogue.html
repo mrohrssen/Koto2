@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Koto vs PokeRogue — Feature Comparison</title>
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#232733;--border:#2d3140;--text:#e4e6ed;--text-dim:#8b8fa3;--accent:#6c8cff;--accent-dim:#4a5a8a;--koto:#ffb86c;--koto-dim:#8a6a3a;--koto-bg:#2a2218;--poke:#6c8cff;--poke-dim:#4a5a8a;--poke-bg:#181e2a;--built:#2a6e4e;--built-text:#6effa8;--notbuilt:#5a2a2a;--notbuilt-text:#ff8a8a;--na:#3a3a4a;--na-text:#8b8fa3;--different:#2a4a6e;--different-text:#6ecaff;--code-bg:#161822;--table-header:#1e2230;--table-alt:#16181f;--nav-bg:#13151d;--gap-border:#5a2a2a;--gap-bg:#1a1214;--unique-border:#6a5a2a;--unique-bg:#1a1814}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;min-height:100dvh;overflow-x:hidden}
+
+.top-bar{position:fixed;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top,0));padding-top:env(safe-area-inset-top,0);background:var(--nav-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding-left:16px;padding-right:16px;z-index:100;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.top-bar .menu-btn{background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:6px;margin-right:12px;line-height:1;-webkit-tap-highlight-color:transparent}
+.top-bar .title{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.top-bar .search-btn{background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:6px;margin-left:auto;line-height:1;-webkit-tap-highlight-color:transparent}
+
+.search-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);display:none;flex-direction:column;backdrop-filter:blur(4px)}
+.search-overlay.open{display:flex}
+.search-box{background:var(--surface);padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0));border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.search-box input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:16px;outline:none}
+.search-box input:focus{border-color:var(--accent)}
+.search-box .close-search{background:none;border:none;color:var(--text-dim);font-size:24px;cursor:pointer;padding:4px}
+.search-results{flex:1;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}
+.search-result{padding:12px 16px;border-radius:8px;cursor:pointer;margin-bottom:4px}
+.search-result:active{background:var(--surface2)}
+.search-result .sr-title{font-weight:600;font-size:14px;color:var(--accent)}
+.search-result .sr-snippet{font-size:13px;color:var(--text-dim);margin-top:4px;line-height:1.4}
+.search-result .sr-snippet mark{background:var(--accent-dim);color:var(--text);border-radius:2px;padding:0 2px}
+
+.drawer-overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer-overlay.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(320px,85vw);background:var(--nav-bg);z-index:151;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
+.drawer-header{padding:20px 20px 16px;padding-top:calc(20px + env(safe-area-inset-top,0));border-bottom:1px solid var(--border)}
+.drawer-header h2{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--koto),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.drawer-header p{font-size:12px;color:var(--text-dim);margin-top:4px}
+.drawer-nav{flex:1;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}
+.drawer-nav .ci{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--text-dim);transition:background .15s;-webkit-tap-highlight-color:transparent}
+.drawer-nav .ci:active{background:var(--surface2)}
+.drawer-nav .ci.active{background:var(--surface2);color:var(--text);font-weight:600}
+.drawer-nav .ci .cn{width:26px;height:26px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0}
+.drawer-nav .ci.active .cn{background:var(--accent);color:var(--bg)}
+.drawer-nav .ci.koto-unique .cn{color:var(--koto)}
+.drawer-nav .ci.koto-unique.active .cn{background:var(--koto);color:var(--bg)}
+.drawer-nav .link-item{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.drawer-nav .link-item a{color:var(--text-dim);text-decoration:none;font-size:13px}
+
+.content{padding:calc(68px + env(safe-area-inset-top,0)) 20px 60px;max-width:900px;margin:0 auto}
+
+.chapter{margin-bottom:48px;scroll-margin-top:calc(68px + env(safe-area-inset-top,0))}
+.chapter h2{font-size:22px;font-weight:700;margin-bottom:8px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.chapter h2 .ch-num{color:var(--accent);margin-right:8px}
+.chapter h2 .koto-badge{font-size:11px;background:var(--koto-dim);color:var(--koto);padding:2px 8px;border-radius:4px;vertical-align:middle;margin-left:8px;font-weight:600}
+.chapter .ch-intro{color:var(--text-dim);margin-bottom:20px;font-size:14px;line-height:1.7}
+
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.comparison .col{background:var(--surface);border-radius:10px;padding:16px;border:1px solid var(--border)}
+.comparison .col-header{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.comparison .col-header.poke{color:var(--poke)}
+.comparison .col-header.koto{color:var(--koto)}
+@media(max-width:640px){.comparison{grid-template-columns:1fr}}
+
+.formula-block{background:var(--code-bg);border-radius:8px;padding:12px 16px;margin:12px 0;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:13px;line-height:1.6;overflow-x:auto;white-space:pre-wrap;border:1px solid var(--border)}
+
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--table-header);text-align:left;padding:10px 12px;font-weight:600;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--border)}
+tr:nth-child(even) td{background:var(--table-alt)}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.5px}
+.badge-built{background:var(--built);color:var(--built-text)}
+.badge-notbuilt{background:var(--notbuilt);color:var(--notbuilt-text)}
+.badge-na{background:var(--na);color:var(--na-text)}
+.badge-different{background:var(--different);color:var(--different-text)}
+
+.callout{border-radius:10px;padding:16px;margin:16px 0;border-left:4px solid}
+.callout-title{font-size:13px;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.callout-unique{background:var(--unique-bg);border-color:var(--koto);color:var(--text)}
+.callout-unique .callout-title{color:var(--koto)}
+.callout-gap{background:var(--gap-bg);border-color:var(--notbuilt-text);color:var(--text)}
+.callout-gap .callout-title{color:var(--notbuilt-text)}
+
+.sub-section{margin:24px 0}
+.sub-section h3{font-size:16px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.sub-section h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--text-dim)}
+.sub-section p,.sub-section li{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:6px}
+.sub-section ul{padding-left:20px;margin:8px 0}
+
+.feature-matrix{margin:24px 0;overflow-x:auto}
+.feature-matrix table{min-width:700px}
+.feature-matrix th{position:sticky;top:0;z-index:2}
+.feature-matrix td:first-child{font-weight:600;white-space:nowrap}
+.feature-matrix td:nth-child(4){text-align:center}
+.feature-matrix .fm-link{color:var(--accent);text-decoration:none;cursor:pointer}
+.feature-matrix .fm-link:hover{text-decoration:underline}
+
+.key-diff{font-size:13px;color:var(--text-dim);font-style:italic;margin-top:8px;padding:8px 12px;background:var(--surface2);border-radius:6px}
+
+.section-divider{border:none;border-top:1px solid var(--border);margin:32px 0}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+<button class="menu-btn" id="menuBtn">&#9776;</button>
+<div class="title">Koto vs PokeRogue</div>
+<button class="search-btn" id="searchBtn">&#128269;</button>
+</div>
+
+<div class="search-overlay" id="searchOverlay">
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="Search comparisons..." autocomplete="off">
+<button class="close-search" id="closeSearch">&times;</button>
+</div>
+<div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="drawer">
+<div class="drawer-header">
+<h2>Koto vs PokeRogue</h2>
+<p>Feature-by-feature comparison for dev team</p>
+</div>
+<nav class="drawer-nav" id="drawerNav">
+<div class="ci" data-target="matrix"><div class="cn">&#9638;</div>Feature Matrix</div>
+<div class="ci" data-target="ch1"><div class="cn">1</div>The Run</div>
+<div class="ci" data-target="ch2"><div class="cn">2</div>Battle</div>
+<div class="ci" data-target="ch3"><div class="cn">3</div>Party Building</div>
+<div class="ci" data-target="ch4"><div class="cn">4</div>Items &amp; Modifiers</div>
+<div class="ci" data-target="ch5"><div class="cn">5</div>Economy &amp; Progression</div>
+<div class="ci" data-target="ch6"><div class="cn">6</div>Gacha &amp; Eggs</div>
+<div class="ci" data-target="ch7"><div class="cn">7</div>Mystery Encounters</div>
+<div class="ci" data-target="ch8"><div class="cn">8</div>AI &amp; Trainers</div>
+<div class="ci koto-unique" data-target="ch9"><div class="cn">9</div>Vocabulary &amp; Learning</div>
+<div class="ci koto-unique" data-target="ch10"><div class="cn">10</div>NPC Dialogue System</div>
+<div class="ci koto-unique" data-target="ch11"><div class="cn">11</div>Audio &amp; TTS</div>
+<div class="ci link-item"><a href="pokerogue-reference.html">&#8594; PokeRogue Reference (v1)</a></div>
+</nav>
+</div>
+
+<div class="content">
+
+<!-- ============================================================ -->
+<!-- FEATURE MATRIX -->
+<!-- ============================================================ -->
+<div class="chapter" id="matrix">
+<h2>Feature Matrix</h2>
+<p class="ch-intro">High-level comparison of every major system. Click a row to jump to the detailed section. Status: <span class="badge badge-built">BUILT</span> = Koto has this, <span class="badge badge-notbuilt">NOT BUILT</span> = Koto lacks this, <span class="badge badge-different">DIFFERENT</span> = Both have it but the approach differs, <span class="badge badge-na">N/A</span> = Not applicable.</p>
+
+<div class="feature-matrix">
+<table>
+<thead>
+<tr><th>System</th><th>PokeRogue</th><th>Koto</th><th>Status</th><th>Key Difference</th></tr>
+</thead>
+<tbody>
+<tr><td><a class="fm-link" href="#ch1">The Run</a></td><td>200 waves in 10-wave boss cycles, 5 game modes</td><td>10 areas &times; 30 rooms, single mode</td><td><span class="badge badge-different">DIFFERENT</span></td><td>Waves (temporal) vs rooms (spatial)</td></tr>
+<tr><td><a class="fm-link" href="#ch2">Battle</a></td><td>18-type, 13-layer damage formula, crits, accuracy, weather, terrain</td><td>5-element cycle, simplified formula, no crits/weather/terrain</td><td><span class="badge badge-different">DIFFERENT</span></td><td>Deep competitive vs streamlined for learning</td></tr>
+<tr><td><a class="fm-link" href="#ch3">Party Building</a></td><td>Cost budget starters, IVs, natures, abilities, evolution, fusion</td><td>Collection-based, rarity stats, no IVs/natures/evolution</td><td><span class="badge badge-different">DIFFERENT</span></td><td>Customization depth vs simplicity</td></tr>
+<tr><td><a class="fm-link" href="#ch4">Items &amp; Modifiers</a></td><td>213 items, 6 tiers, rerolls, luck upgrades, enemy buff scaling</td><td>15 items, 5 rarities, basic shops, no rerolls</td><td><span class="badge badge-different">DIFFERENT</span></td><td>Build-defining loot vs simple consumables</td></tr>
+<tr><td><a class="fm-link" href="#ch5">Economy</a></td><td>Exponential money, 4-tier vouchers, 130+ achievements</td><td>Flat 15 credits/kill, progression tokens, 4 achievements</td><td><span class="badge badge-different">DIFFERENT</span></td><td>Complex engagement loops vs transparent progression</td></tr>
+<tr><td><a class="fm-link" href="#ch6">Gacha &amp; Eggs</a></td><td>3 gacha machines, egg tiers, pity systems, daily rotation</td><td>Skill-based befriend quiz (10% trigger, vocab test)</td><td><span class="badge badge-different">DIFFERENT</span></td><td>RNG gacha vs knowledge-based recruitment</td></tr>
+<tr><td><a class="fm-link" href="#ch7">Mystery Encounters</a></td><td>~25 named events, 4 tiers, branching choices, pity spawn</td><td>11 room types, fixed layout, deterministic distribution</td><td><span class="badge badge-different">DIFFERENT</span></td><td>Random narrative events vs structured room types</td></tr>
+<tr><td><a class="fm-link" href="#ch8">AI &amp; Trainers</a></td><td>3-tier AI, score-based moves, gym leaders, fixed battle schedule</td><td>50/50 AI, element-priority targeting, NPC skills, bond system</td><td><span class="badge badge-different">DIFFERENT</span></td><td>Competitive AI vs narrative NPCs</td></tr>
+<tr><td><a class="fm-link" href="#ch9">Vocabulary &amp; Learning</a></td><td>N/A</td><td>JPDB integration, i+1 enforcement, FSRS SRS, hiragana deck</td><td><span class="badge badge-built">KOTO-UNIQUE</span></td><td>Entire language learning engine</td></tr>
+<tr><td><a class="fm-link" href="#ch10">NPC Dialogue</a></td><td>N/A</td><td>AI-generated dialogue, character cards, bonds, memory, vocab repair</td><td><span class="badge badge-built">KOTO-UNIQUE</span></td><td>Dynamic personality-driven dialogue</td></tr>
+<tr><td><a class="fm-link" href="#ch11">Audio &amp; TTS</a></td><td>Pre-recorded Pokemon cries</td><td>VOICEVOX TTS, 200+ voices, per-NPC speaker, dual cache</td><td><span class="badge badge-built">KOTO-UNIQUE</span></td><td>Real-time Japanese speech synthesis</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH1: THE RUN -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch1">
+<h2><span class="ch-num">1.</span> The Run</h2>
+<p class="ch-intro">PokeRogue structures runs as 200 waves in 10-wave boss cycles across a biome graph. Koto structures runs as 10 areas, each with a fixed 30-room sequence. Both use a quadratic enemy level formula with nearly identical math.</p>
+
+<div class="sub-section">
+<h3>Run Structure</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue</div>
+<p>200 waves in 10-wave cycles. Waves 2-9 are regular fights, wave X0 is a boss, then heal/shop before biome transition. Creates a &ldquo;heartbeat&rdquo; rhythm: 9 fights &rarr; boss &rarr; breather.</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto</div>
+<p>10 areas &times; 30 rooms = 300 rooms per run. Fixed room layout: indices 5/11/17/23 are NPC battles, index 29 is boss. Other 25 slots: 45% encounter, 45% friendlyNpc, 10% whackAMole. 5% maxHP healed per room entry.</p>
+</div>
+</div>
+<div class="key-diff">PokeRogue progresses temporally through waves; Koto spatially through rooms. PokeRogue&rsquo;s 10-wave cycle is well-proven pacing; Koto&rsquo;s 30-room areas provide deterministic structure.</div>
+</div>
+
+<div class="sub-section">
+<h3>Game Modes</h3>
+<table>
+<thead><tr><th>Mode</th><th>PokeRogue</th><th>Koto</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Classic</td><td>200 waves, story bosses, full shop</td><td>10 areas, single mode (Classic-like)</td><td><span class="badge badge-built">BUILT</span></td></tr>
+<tr><td>Endless</td><td>Infinite waves, random biomes</td><td>&mdash;</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Daily</td><td>50 waves, seed-based, tougher scaling</td><td>&mdash;</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Challenge</td><td>Classic + self-imposed modifiers (Nuzlocke, etc.)</td><td>&mdash;</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Spliced Endless</td><td>Infinite, fused Pokemon only</td><td>&mdash;</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="sub-section">
+<h3>Enemy Level Scaling</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue</div>
+<div class="formula-block">baseLevel = 1 + (wave/2) + (wave/25)&sup2;
+bossLevel = baseLevel &times; 1.2
+
+Daily: difficultyWave = wave + 30 + floor(wave/5)</div>
+<table><thead><tr><th>Wave</th><th>Base</th><th>Boss</th></tr></thead>
+<tbody>
+<tr><td>10</td><td>6</td><td>7</td></tr>
+<tr><td>50</td><td>29</td><td>35</td></tr>
+<tr><td>100</td><td>67</td><td>80</td></tr>
+<tr><td>200</td><td>165</td><td>198</td></tr>
+</tbody></table>
+</div>
+<div class="col">
+<div class="col-header koto">Koto</div>
+<div class="formula-block">baseLevel = 1 + max(0,(encounters-1)/2) + (encounters/25)&sup2;
+bossLevel = baseLevel &times; 1.25
+
+sizeMult = {1: 1.2, 2: 1.0, 3: 0.85}
+variance = floor(random(0,3)) - 1</div>
+<p>Same quadratic structure. Uses <code>totalEncounters</code> instead of wave number. Boss multiplier slightly higher (1.25 vs 1.2). Party size adjusts enemy level.</p>
+</div>
+</div>
+<div class="key-diff">Identical mathematical structure. Koto adds party-size multiplier (3-enemy encounters 15% easier). Boss boost: Koto 1.25&times; vs PokeRogue 1.2&times;.</div>
+</div>
+
+<div class="sub-section">
+<h3>Other Run Systems</h3>
+<table>
+<thead><tr><th>Feature</th><th>PokeRogue</th><th>Koto</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Level Cap</td><td>Dynamic: ceil(bossLevel/2)&times;2 + 2</td><td>No cap &mdash; unlimited leveling</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>EXP Growth Curves</td><td>6 species-specific curves (Erratic&ndash;Fluctuating)</td><td>Single cubic: (L+1)&sup3; - L&sup3;</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>EXP Distribution</td><td>Participant/non-participant split, ExpShare, Pokerus, EXP Balancer</td><td>Uniform party-wide, simple xpMultiplier</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Biome Graph</td><td>30+ biomes, directed weighted graph, Map Modifier for agency</td><td>Single MVP area (Starting Meadow), random selection placeholder</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Species Pools</td><td>9 tiers &times; 4 time-of-day variants per biome</td><td>4 stage-based rarity brackets (early/mid/late/endgame)</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Boss HP Segments</td><td>Multi-segment HP scaling with BST</td><td>Flat 2&times; HP multiplier</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Score System</td><td>BST &times; turn multiplier (sine ease-out)</td><td>Not implemented</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Win Condition</td><td>Defeat Eternatus at wave 200</td><td>Clear 10 areas</td><td><span class="badge badge-built">BUILT</span></td></tr>
+<tr><td>Starting Config</td><td>Level 5, 1000 money, 1-6 starters from budget</td><td>Level 5, 55 credits, party selection WIP</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout callout-gap">
+<div class="callout-title">Key Gaps</div>
+<p>Level cap (prevents grinding cheese), biome graph (replayability), and game modes (Daily/Endless for short sessions) are the highest-value missing features.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH2: BATTLE -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch2">
+<h2><span class="ch-num">2.</span> Battle</h2>
+<p class="ch-intro">PokeRogue uses a deep 18-type system with a 13-layer damage formula, crits, accuracy, weather, terrain, and hazards. Koto uses a streamlined 5-element cycle with a simplified formula optimized for vocab-card combat.</p>
+
+<div class="sub-section">
+<h3>Damage Formula</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue</div>
+<div class="formula-block">base = ((2&times;level/5+2) &times; power &times; ATK/DEF) / 50 + 2
+
+Multipliers (13 layers):
+&times; multiTarget (0.75)
+&times; weather (1.5 or 0.5)
+&times; critical (1.5)
+&times; random (0.85&ndash;1.00)
+&times; STAB (1.5, +0.5 Tera, max 2.25)
+&times; typeEffectiveness (0/0.5/1/2/4)
+&times; burn (0.5 physical)
+&times; screens (0.5/0.67)
+&times; miscellaneous...</div>
+</div>
+<div class="col">
+<div class="col-header koto">Koto</div>
+<div class="formula-block">base = floor(((2&times;level/5+2) &times; power &times; ATK/DEF) / 10 + 2)
+final = floor(base &times; typeMult &times; variance)
+
+Multipliers (~7 layers):
+&times; STAB (1.5)
+&times; element effectiveness (0.67/1.0/1.5)
+&times; attackBuff/Debuff (percentage-based)
+&times; defenseBuff (percentage-based)
+&times; itemElementEdge
+&times; shield reduction (max 90%)
+&times; variance (0.8&ndash;1.2)</div>
+</div>
+</div>
+<div class="key-diff">Same base formula structure. PokeRogue divides by 50, Koto by 10. PokeRogue has 13 multiplier layers; Koto has ~7. Koto trades complexity for clarity.</div>
+</div>
+
+<div class="sub-section">
+<h3>Type System</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue &mdash; 18 Types</div>
+<p>Complex rock-paper-scissors web. Dual-typed defenders multiply both. Immunities (Normal &rarr; Ghost, Ground &rarr; Electric, etc.). Multipliers: 0&times;, 0.5&times;, 1&times;, 2&times;, 4&times;.</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto &mdash; 5 Elements (Cycle)</div>
+<div class="formula-block">Wood &rarr; Earth &rarr; Water &rarr; Fire &rarr; Metal &rarr; Wood
+
+Super effective: next in cycle (1.5&times;)
+Resisted: previous in cycle (0.67&times;)
+Neutral: all others (1.0&times;)
+No immunities. No double SE.</div>
+</div>
+</div>
+</div>
+
+<div class="sub-section">
+<h3>Stats &amp; Stat Modification</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue</div>
+<p><strong>6 stats:</strong> HP, ATK, DEF, SPATK, SPDEF, SPD<br>
+<strong>IVs:</strong> 0-31 per stat (5 bits from personality)<br>
+<strong>Natures:</strong> &plusmn;10% to two stats<br>
+<strong>Stat stages:</strong> -6 to +6, formula: max(2, 2+stage) / max(2, 2-stage)</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto</div>
+<p><strong>4 stats:</strong> HP, ATK, DEF, MP<br>
+<strong>No IVs or Natures</strong> &mdash; deterministic from rarity<br>
+<strong>Rarity multipliers:</strong> common 1.0&times; &rarr; legendary 1.4&times;<br>
+<strong>Buffs/debuffs:</strong> percentage-based stacking (min 0.1&times;)</p>
+<div class="formula-block">stat = floor(baseStat &times; (1 + (level-1) &times; 0.1))</div>
+</div>
+</div>
+</div>
+
+<div class="sub-section">
+<h3>Status Effects</h3>
+<table>
+<thead><tr><th>Effect</th><th>PokeRogue</th><th>Koto</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Poison</td><td>1/8 maxHP/turn</td><td>Caster-ATK based, can&rsquo;t kill</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Toxic</td><td>Escalating: 1/16 &times; turnCount</td><td>&mdash;</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Burn</td><td>1/8 maxHP + halves physical ATK</td><td>&mdash;</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Sleep</td><td>Can&rsquo;t act, ticks down</td><td>Can&rsquo;t act, ticks down</td><td><span class="badge badge-built">BUILT</span></td></tr>
+<tr><td>Paralysis</td><td>Speed halved, 25% skip turn</td><td>&mdash; (Stun instead: skip 1 turn)</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Freeze</td><td>Can&rsquo;t act, 20% thaw/turn</td><td>&mdash;</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Confuse</td><td>25% self-hit</td><td>Affects move selection</td><td><span class="badge badge-built">BUILT</span></td></tr>
+<tr><td>Haste</td><td>&mdash;</td><td>Free extra action, consumed on use</td><td><span class="badge badge-built">KOTO-UNIQUE</span></td></tr>
+<tr><td>Taunt</td><td>Forces attacking moves</td><td>Blocks specific targets</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Shield</td><td>&mdash;</td><td>% damage reduction (max 90%)</td><td><span class="badge badge-built">KOTO-UNIQUE</span></td></tr>
+<tr><td>Team Shield</td><td>&mdash;</td><td>AoE shield for whole team</td><td><span class="badge badge-built">KOTO-UNIQUE</span></td></tr>
+<tr><td>ATK/DEF Buff</td><td>Discrete stages (-6 to +6)</td><td>Percentage-based stacking</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="sub-section">
+<h3>Missing Combat Systems</h3>
+<table>
+<thead><tr><th>System</th><th>PokeRogue</th><th>Koto</th></tr></thead>
+<tbody>
+<tr><td>Critical Hits</td><td>4-stage crit (4.2% base &rarr; 100%)</td><td>Not implemented</td></tr>
+<tr><td>Accuracy/Evasion</td><td>Stage-based (0.33&times;&ndash;3.0&times;)</td><td>100% accuracy always</td></tr>
+<tr><td>Move Priority</td><td>-7 to +5 brackets + speed</td><td>Simultaneous resolution</td></tr>
+<tr><td>Weather</td><td>4 types with damage/type modifiers</td><td>Not implemented</td></tr>
+<tr><td>Terrain</td><td>4 types with 1.3&times; boosts</td><td>Not implemented</td></tr>
+<tr><td>Hazards/Screens</td><td>Stealth Rock, Spikes, Reflect, Light Screen</td><td>Not implemented</td></tr>
+<tr><td>Multi-Hit Moves</td><td>2-5 hits distribution</td><td>Single-hit only</td></tr>
+<tr><td>Berries</td><td>Auto-trigger held consumables</td><td>Not implemented</td></tr>
+<tr><td>Terastallization</td><td>Type change + STAB boost</td><td>Not implemented</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout callout-unique">
+<div class="callout-title">Koto Design Philosophy</div>
+<p>Koto optimizes for <strong>learning clarity</strong> over competitive depth. No RNG beyond variance, all actions simultaneous, creatures and moves are Japanese vocabulary. The simplified system lets players focus on language learning rather than battle optimization.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH3: PARTY BUILDING -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch3">
+<h2><span class="ch-num">3.</span> Party Building</h2>
+<p class="ch-intro">PokeRogue offers deep customization through IVs, natures, abilities, evolution, and fusion. Koto uses a simplified collection-based system where creature power is determined by rarity.</p>
+
+<div class="sub-section">
+<h3>Starter Selection</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue</div>
+<p>Pick 1-6 starters from unlocked roster. Per-species cost (1-9 points). Configure gender, shiny, IVs, nature, form, ability, moves, Tera type. Higher-rarity = higher cost.</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto</div>
+<p>Select from <code>meta.creatureCollection</code>. Rarity-based cost: common=3, uncommon=4, rare=6, epic=7, legendary=8. Max 10 team points. Default starters: hikaribon, hanatchi, tsukimochi.</p>
+</div>
+</div>
+</div>
+
+<div class="sub-section">
+<h3>Creature Customization</h3>
+<table>
+<thead><tr><th>System</th><th>PokeRogue</th><th>Koto</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>IVs</td><td>0-31 per stat (6 stats), extracted from personality</td><td>Not implemented &mdash; all same-rarity creatures identical</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Natures</td><td>25 natures, &plusmn;10% to two stats</td><td>Not implemented</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Abilities</td><td>2 normal + 1 hidden per species, plus passive slot</td><td>Archetype system (Fighter, Tank/Healer)</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Shiny/Variants</td><td>3 tiers (60/30/10%), luck bonus</td><td>Not implemented</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Evolution</td><td>Multi-condition (level, item, friendship, biome, etc.)</td><td>Not implemented</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Fusion</td><td>Merge 2 Pokemon (averaged stats, combined types)</td><td>Not implemented</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Learnset</td><td>Level-up + egg moves, max 4 moves, relearner</td><td>Level-up only, max 3 moves, auto-learn under limit</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Gender</td><td>Deterministic by ID + species ratio</td><td>Not implemented</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Pokedex</td><td>Bitmask per species (caught, shiny, form, gender)</td><td>Simple array of owned IDs + befriend count</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Party Size</td><td>Max 6 (flexible split)</td><td>Max 6 (0-3 active, 0-3 reserves)</td><td><span class="badge badge-built">BUILT</span></td></tr>
+<tr><td>Mid-Run Catching</td><td>Pokeball catch rate formula with shake checks</td><td>Befriend quiz (see Ch6)</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Candy Economy</td><td>Friendship &rarr; candy loop for unlocking starters</td><td>Direct collection via befriend</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH4: ITEMS -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch4">
+<h2><span class="ch-num">4.</span> Items &amp; Modifiers</h2>
+<p class="ch-intro">PokeRogue&rsquo;s modifier system is where build variety lives &mdash; 213 tiered items with luck upgrades, rerolls, and enemy buff scaling. Koto has a functional MVP with 15 food/equipment items and basic shops.</p>
+
+<div class="sub-section">
+<h3>Tier System</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue &mdash; 6 tiers (1024-point scale)</div>
+<table><thead><tr><th>Tier</th><th>Probability</th></tr></thead>
+<tbody>
+<tr><td>Common</td><td>75.0%</td></tr>
+<tr><td>Great</td><td>19.0%</td></tr>
+<tr><td>Ultra</td><td>4.7%</td></tr>
+<tr><td>Rogue</td><td>1.2%</td></tr>
+<tr><td>Master</td><td>0.1%</td></tr>
+</tbody></table>
+<p>Luck stat drives tier upgrades. Rerolls cost exponential money.</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto &mdash; 5 rarities (weighted pool)</div>
+<table><thead><tr><th>Rarity</th><th>Weight</th></tr></thead>
+<tbody>
+<tr><td>Common</td><td>40</td></tr>
+<tr><td>Uncommon</td><td>30</td></tr>
+<tr><td>Rare</td><td>18</td></tr>
+<tr><td>Epic</td><td>9</td></tr>
+<tr><td>Legendary</td><td>3</td></tr>
+</tbody></table>
+<p>No luck upgrades. No reroll mechanics. Stage-gated availability.</p>
+</div>
+</div>
+</div>
+
+<div class="sub-section">
+<h3>Item Pool</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue &mdash; 213 items</div>
+<p>Categorized into persistent (Money Mult, EXP Share, Shiny Charm), held (Leftovers, Shell Bell, Focus Band), and lapsing (Temp Stat Booster, Reviver Seed). Complex stacking: additive for most, multiplicative for enemy buffs. Items removed from pool at max stacks.</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto &mdash; 15 items</div>
+<p><strong>Food:</strong> Ocha (MP), Tofu (+2% ATK), Ringo (15% heal), Tamago (+5% ATK), Ichigo (revive), Sake (+5% ATK/-5% HP), Ramen (10% heal all), Bentou (+5% HP), Sushi (+3% HP), Wasabi (+5% element edge).<br>
+<strong>Equipment:</strong> Katana (+5 ATK), Hon (+10 HP), Kutsu (+10 MP), Kagami (-3 flat DMG), Boushi (+5 HP/MP).</p>
+</div>
+</div>
+</div>
+
+<div class="sub-section">
+<h3>Shop Mechanics</h3>
+<table>
+<thead><tr><th>Feature</th><th>PokeRogue</th><th>Koto</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Post-Boss Shop</td><td>3+ items, wave-gated healing unlocks</td><td>Post-combat: 3 random items</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Reroll</td><td>Exponential cost, Lock Capsule for tier-locking</td><td>Not implemented</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Stacking</td><td>Per-type limits + additive/multiplicative</td><td>No limits, additive only</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Enemy Buffs</td><td>Invisible per-wave scaling (1.05&times;/stack)</td><td>Not implemented</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Equipment</td><td>Held items per Pokemon</td><td>Data structure exists, UI unbuilt</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+<tr><td>Crafting</td><td>Not in PokeRogue</td><td>Designed but unbuilt</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH5: ECONOMY -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch5">
+<h2><span class="ch-num">5.</span> Economy &amp; Progression</h2>
+<p class="ch-intro">PokeRogue has layered engagement loops: exponential money, tiered vouchers, 130+ achievements, ribbons, and timed events. Koto uses transparent, deterministic progression: flat credits, progression tokens, and a small meta-upgrade shop.</p>
+
+<div class="sub-section">
+<h3>In-Run Currency</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue &mdash; Money</div>
+<p>Exponential growth per wave (~175 early, thousands late). Five money multipliers: MoneyMult (+20%/stack), Happy Hour (2&times;), Meowth (damage-based), Coin Case (10%/turn interest). Rewards planning and holding.</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto &mdash; Credits</div>
+<p>Flat 15 credits per kill. Starting: 55 credits. Additional sources: quiz rooms, whack-a-mole, creature dealer sales. No credit multipliers exist. Predictable but lacks scaling tension.</p>
+</div>
+</div>
+</div>
+
+<div class="sub-section">
+<h3>Meta-Progression</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue</div>
+<p><strong>Vouchers:</strong> 4 tiers (Regular/Plus/Premium/Golden) for gacha egg pulls. Earned from achievements and boss victories.<br>
+<strong>Achievements:</strong> 130+ with score-based tiers. Drive voucher economy.<br>
+<strong>Ribbons:</strong> 40+ per species, cosmetic prestige from challenge completions.<br>
+<strong>Timed Events:</strong> 10+ annual events with multipliers (shiny, friendship, etc.).</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto</div>
+<p><strong>Progression Tokens:</strong> +1 per boss defeat, +1 per befriend. ~20/run.<br>
+<strong>Meta Shop:</strong> 3 upgrades &times; 5 levels (HP/ATK/XP Boost). Cost: 1,2,3,4,5 per level. 45 tokens to max all.<br>
+<strong>Achievements:</strong> 4 total (First Victory, Veteran Hunter, Dungeon Master, Perfect Run). No rewards yet.<br>
+<strong>No timed events, no ribbons.</strong></p>
+</div>
+</div>
+</div>
+
+<div class="sub-section">
+<h3>What Persists Between Runs</h3>
+<table>
+<thead><tr><th>Data</th><th>PokeRogue</th><th>Koto</th></tr></thead>
+<tbody>
+<tr><td>Creature roster</td><td>Dex + candy + friendship unlock</td><td>creatureCollection array + befriendCount</td></tr>
+<tr><td>Upgrades</td><td>No upgrade shop (gacha instead)</td><td>HP/ATK/XP Boost (5 levels each)</td></tr>
+<tr><td>Stats</td><td>41 tracked lifetime stats</td><td>10 lifetime stats + per-run stats</td></tr>
+<tr><td>Relationships</td><td>None</td><td>NPC bonds (score, encounters, lastInteraction)</td></tr>
+<tr><td>Eggs/Gacha</td><td>Egg state + pity counters</td><td>None</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout callout-unique">
+<div class="callout-title">Koto Advantage</div>
+<p>Koto&rsquo;s <strong>NPC bond persistence</strong> across runs is unique. Relationship tracking with NPCs adds narrative depth that PokeRogue lacks entirely. The deterministic meta-shop (no RNG) also avoids gacha frustration.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH6: GACHA -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch6">
+<h2><span class="ch-num">6.</span> Gacha &amp; Eggs vs Befriending</h2>
+<p class="ch-intro">This is the biggest philosophical split between the two games. PokeRogue gates roster access behind a gacha system with pity mechanics. Koto uses skill-based befriending through vocabulary quizzes.</p>
+
+<div class="sub-section">
+<h3>Acquisition Model</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue &mdash; Gacha</div>
+<p><strong>3 machines:</strong> Move (egg move focus), Legendary (rare species), Shiny (2&times; shiny rate).<br>
+<strong>4 egg tiers:</strong> Common (10 waves, 79.7%), Rare (25 waves, 17.2%), Epic (50 waves, 2.7%), Legendary (100 waves, 0.4%).<br>
+<strong>Pity systems:</strong> Tier pity (9/59/412 pulls), species pity (9 dupes), batch guarantees (10-pull &ge;1 Rare).<br>
+<strong>Cost:</strong> Vouchers from achievements/bosses.</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto &mdash; Befriend Quiz</div>
+<p><strong>Trigger:</strong> 10% on killing blow (<code>BEFRIEND_QUIZ_CHANCE = 0.10</code>). 100% if player owns &le;1 creature.<br>
+<strong>Quiz:</strong> Shown creature name in Japanese; pick correct English name from 3 options.<br>
+<strong>Correct:</strong> Creature added to permanent collection.<br>
+<strong>Wrong:</strong> Creature counter-attacks (real damage).<br>
+<strong>Cost:</strong> Free &mdash; earned through gameplay knowledge.</p>
+</div>
+</div>
+</div>
+
+<div class="sub-section">
+<h3>Design Philosophy</h3>
+<table>
+<thead><tr><th>Aspect</th><th>PokeRogue Gacha</th><th>Koto Befriend</th></tr></thead>
+<tbody>
+<tr><td>Driver</td><td>RNG (randomness determines pull tier)</td><td>Skill/knowledge (player must know creature name)</td></tr>
+<tr><td>Cost</td><td>Voucher-based (earned currency)</td><td>Free (part of combat)</td></tr>
+<tr><td>Guarantees</td><td>Pity thresholds, batch guarantees</td><td>Trigger chance only (10% or 100% for new players)</td></tr>
+<tr><td>Interaction</td><td>UI menu &rarr; eggs hatch over time</td><td>Combat victory &rarr; immediate quiz</td></tr>
+<tr><td>Incentive</td><td>FOMO (daily rotation, pity counters)</td><td>Mastery (knowing Japanese = rewards)</td></tr>
+<tr><td>Gratification</td><td>Deferred (egg countdown)</td><td>Immediate (quiz success = creature now)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout callout-unique">
+<div class="callout-title">Koto Advantage</div>
+<p>Befriending directly serves the game&rsquo;s educational purpose &mdash; knowing creature names in Japanese is both the skill test and the learning outcome. No paywall, no FOMO. PokeRogue trades this for collection excitement via rare tiers and shinies.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH7: MYSTERY ENCOUNTERS -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch7">
+<h2><span class="ch-num">7.</span> Mystery Encounters vs Room Types</h2>
+<p class="ch-intro">PokeRogue interrupts the combat loop with ~25 named random events using a pity spawn system. Koto uses dedicated room types in a deterministic 30-room area layout, trading surprise for consistent pacing.</p>
+
+<div class="sub-section">
+<h3>Spawn Model</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue &mdash; Pity-Weighted RNG</div>
+<div class="formula-block">BASE_WEIGHT = 3, MAX = 256
+Each wave: spawnChance = weight / 256
+Hit: reset to 3. Miss: weight += 3
+
+Anti-variance correction:
+expected = (wave/200) &times; 12
+weight += (expected - actual) &times; 15/256
+
+Targets ~12 encounters per 200-wave run
+Eligible: waves 10&ndash;180</div>
+</div>
+<div class="col">
+<div class="col-header koto">Koto &mdash; Deterministic Layout</div>
+<div class="formula-block">30 rooms per area:
+Fixed: indices 5,11,17,23 = npcBattle (4/area)
+Fixed: index 29 = boss (1/area)
+Random: 25 slots
+  10% whackAMole
+  45% encounter
+  45% friendlyNpc
+
+Expected per area: ~2-3 whackAMole,
+~11 encounters, ~11 friendlyNpc</div>
+</div>
+</div>
+<div class="key-diff">PokeRogue&rsquo;s surprise factor creates excitement but variance. Koto&rsquo;s deterministic layout ensures consistent pacing and predictable difficulty curves.</div>
+</div>
+
+<div class="sub-section">
+<h3>Content Comparison</h3>
+<table>
+<thead><tr><th>PokeRogue Encounter Type</th><th>Koto Room Equivalent</th><th>Match Quality</th></tr></thead>
+<tbody>
+<tr><td>Field Trip (quiz for rewards)</td><td>quiz room</td><td>Fair &mdash; both quiz-based</td></tr>
+<tr><td>Mysterious Chest (RNG gamble)</td><td>whackAMole (skill-based)</td><td>Poor &mdash; RNG vs skill</td></tr>
+<tr><td>Shady Vitamin Dealer (buy stat boosters)</td><td>dealer room (buy/sell creatures)</td><td>Fair &mdash; both transactions</td></tr>
+<tr><td>Bug Type Superfan (trainer battle)</td><td>npcBattle room</td><td>Good &mdash; both trainer fights</td></tr>
+<tr><td>Training Session (battle clone for IV boost)</td><td>No equivalent</td><td>None</td></tr>
+<tr><td>Dark Deal (sacrifice for legendary)</td><td>No equivalent</td><td>None</td></tr>
+<tr><td>Winstrate Challenge (5 consecutive fights)</td><td>No equivalent</td><td>None</td></tr>
+<tr><td>No equivalent</td><td>wordDiscovery (learn new Japanese words)</td><td>Koto-unique</td></tr>
+<tr><td>No equivalent</td><td>speedReviewRoom (FSRS vocab review)</td><td>Koto-unique</td></tr>
+<tr><td>No equivalent</td><td>shrine (full level-up)</td><td>Koto-unique</td></tr>
+<tr><td>No equivalent</td><td>skillMaster (party skill selection)</td><td>Koto-unique</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout callout-gap">
+<div class="callout-title">Key Gap</div>
+<p>Koto lacks <strong>branching-choice encounters</strong> &mdash; PokeRogue&rsquo;s 2-4 options with requirements create meaningful decisions. Koto rooms are single-action. Adding risk/reward choices to rooms would increase player agency significantly.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH8: AI & TRAINERS -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch8">
+<h2><span class="ch-num">8.</span> AI &amp; Trainers</h2>
+<p class="ch-intro">PokeRogue has sophisticated enemy AI with score-based move selection, gym leaders, and a fixed battle schedule. Koto uses simpler AI but adds NPC personality systems with combat skills and persistent bonds.</p>
+
+<div class="sub-section">
+<h3>Enemy AI</h3>
+<div class="comparison">
+<div class="col">
+<div class="col-header poke">PokeRogue &mdash; 3-Tier AI</div>
+<p><strong>RANDOM:</strong> Pick moves at random.<br>
+<strong>SMART_RANDOM:</strong> 62.5% best move, 37.5% next-best.<br>
+<strong>SMART:</strong> Score-based: user benefit + target benefit &times; type effectiveness &times; STAB. Diminishing probability down ranked list.<br>
+Switching logic with decay resistance. Target selection by weighted scoring.</p>
+</div>
+<div class="col">
+<div class="col-header koto">Koto &mdash; 50/50 Hybrid</div>
+<p><strong>Move:</strong> 50% highest-power damage move, 50% random from moveset.<br>
+<strong>Target:</strong> Priority order: super-effective targets &rarr; neutral targets &rarr; weakest by HP%. All sorted by lowest HP%.<br>
+<strong>No switching.</strong> Applied uniformly to all enemies.</p>
+</div>
+</div>
+</div>
+
+<div class="sub-section">
+<h3>Trainer/NPC System</h3>
+<table>
+<thead><tr><th>Feature</th><th>PokeRogue</th><th>Koto</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Trainer Config</td><td>TrainerConfig objects with specialty types, templates, species pools</td><td>NPC JSON with personality, area, tier, skills</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Party Templates</td><td>8+ templates (GYM_LEADER_1 through CHAMPION), dynamic scaling</td><td>Static NPC stats per tier</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Fixed Battle Schedule</td><td>Story beats at specific waves (rival, gym, Elite Four)</td><td>NPCs assigned per area, random from pool</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>Moveset Generation</td><td>5-step weighted system (STAB forcing, power scaling, type coverage)</td><td>All learnset moves up to level</td><td><span class="badge badge-different">DIFFERENT</span></td></tr>
+<tr><td>NPC Combat Skills</td><td>N/A</td><td>25% proc/turn, element-based damage/effects</td><td><span class="badge badge-built">KOTO-UNIQUE</span></td></tr>
+<tr><td>Bond System</td><td>N/A</td><td>Per-NPC bond score, encounter tracking, affects dialogue</td><td><span class="badge badge-built">KOTO-UNIQUE</span></td></tr>
+<tr><td>NPC Memory</td><td>N/A</td><td>Persistent encounter history, narrative arcs</td><td><span class="badge badge-built">KOTO-UNIQUE</span></td></tr>
+<tr><td>Boss HP Segments</td><td>Scale with BST/wave, stat boost per segment cleared</td><td>Not implemented</td><td><span class="badge badge-notbuilt">NOT BUILT</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout callout-unique">
+<div class="callout-title">Koto Advantage</div>
+<p>Koto&rsquo;s NPC system treats trainers as <strong>narrative characters</strong> with persistent memory, personality, and relationships &mdash; not just combat obstacles. The bond system, combat skills, and AI-driven dialogue are all absent from PokeRogue.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH9: VOCABULARY (KOTO-UNIQUE) -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch9">
+<h2><span class="ch-num">9.</span> Vocabulary &amp; Learning <span class="koto-badge">KOTO-UNIQUE</span></h2>
+<p class="ch-intro">Koto&rsquo;s entire reason for existing. A comprehensive Japanese vocabulary learning engine built on the i+1 comprehensible input principle, integrated with JPDB&rsquo;s spaced repetition database, internal FSRS scheduling, and AI-powered text repair.</p>
+
+<div class="sub-section">
+<h3>JPDB Integration</h3>
+<p>Server-side integration with jpdb.io for word state management. Rate-limited (500ms min interval) with circuit breaker (5-min cooldown). Supports 9 word states: new, learning, known, never-forget, due, failed, suspended, blacklisted, not-in-deck. Review grades 1-5 (nothing &rarr; easy).</p>
+</div>
+
+<div class="sub-section">
+<h3>i+1 Principle Enforcement</h3>
+<p>Every sentence shown to the player must contain <strong>at most 1 unknown word</strong>. Enforced through a 3-phase pipeline:</p>
+<ul>
+<li><strong>Parse:</strong> Split narration into sentences, morphological analysis via JPDB</li>
+<li><strong>Check:</strong> Count unknowns (excluding 156 allowed particles/grammar words)</li>
+<li><strong>Repair:</strong> If violations found, AI rewrites using known vocabulary. Max 2 retry attempts. Falls back to original if repair fails.</li>
+</ul>
+</div>
+
+<div class="sub-section">
+<h3>Vocabulary Manager</h3>
+<p>Per-user suggestion system with intelligent caching. Targets 12 word suggestions per narration with ratio: <strong>60% due</strong>, <strong>25% learning</strong>, <strong>15% known</strong>. Cache expires every 30 minutes. Tracks last 50 words to avoid repetition. Priority scoring: due=1.0, failed=0.9, learning=0.7, known=0.3.</p>
+</div>
+
+<div class="sub-section">
+<h3>Learning Rooms</h3>
+<table>
+<thead><tr><th>Room Type</th><th>Purpose</th><th>Mechanics</th></tr></thead>
+<tbody>
+<tr><td>Speed Review</td><td>JPDB spaced repetition review</td><td>5 initial cards + replacement pool. Grades submitted to JPDB. Targets 10 cards per session.</td></tr>
+<tr><td>Word Discovery</td><td>Introduce new vocabulary</td><td>2 new words per room. Sorted by JPDB frequency rank. Daily limit: 10 words (configurable). Resets at midnight Tokyo time (JST).</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="sub-section">
+<h3>Hiragana SRS</h3>
+<p>71 hiragana characters across 15 rows. Uses FSRS (Free Spaced Repetition Scheduler) algorithm. Row-based unlock: row N unlocks when all cards in row N-1 have &ge;1 review. Persisted per-user as JSON.</p>
+</div>
+
+<div class="sub-section">
+<h3>JLPT Grammar Constraints</h3>
+<p>All AI-generated text respects the player&rsquo;s selected JLPT level (N5&ndash;N1). Grammar specifications injected into every AI prompt &mdash; from basic です/ます at N5 to literary/classical forms at N1.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH10: NPC DIALOGUE (KOTO-UNIQUE) -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch10">
+<h2><span class="ch-num">10.</span> NPC Dialogue System <span class="koto-badge">KOTO-UNIQUE</span></h2>
+<p class="ch-intro">A full AI-driven dialogue engine with persistent NPC memory, SillyTavern-inspired character cards, vocabulary-constrained generation, and 3-round tone-based conversations that affect NPC bonds.</p>
+
+<div class="sub-section">
+<h3>Architecture Overview</h3>
+<p>7-layer prompt assembly: system instructions &rarr; vocabulary constraints &rarr; character card &rarr; lorebook &rarr; NPC memory &rarr; anti-repetition &rarr; task prompt. Supports OpenAI, Anthropic Claude (with prompt caching), Google Gemini, and OpenRouter.</p>
+</div>
+
+<div class="sub-section">
+<h3>Character Cards</h3>
+<p>Each NPC has a personality card with: traits, quirk, example dialogue (3+ lines), state-conditional goals (possessed/glitching/liberated), optional lorebook keys, and a teaching word. Fallback cards auto-generated from creature data for entities without authored cards.</p>
+</div>
+
+<div class="sub-section">
+<h3>Dialogue Format</h3>
+<table>
+<thead><tr><th>Component</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>greeting</td><td>NPC greets the player before interaction</td></tr>
+<tr><td>defeatLine</td><td>NPC&rsquo;s line if player loses</td></tr>
+<tr><td>freedLine</td><td>NPC&rsquo;s line when calmed/befriended</td></tr>
+<tr><td>3 rounds</td><td>Each: npcLine + 3 options (positive/neutral/negative tone)</td></tr>
+</tbody>
+</table>
+<p><strong>Bond change:</strong> Each round&rsquo;s tone choice adds +1/0/-1. After 3 rounds, total delta clamped to [-1, 0, +1] and applied to persistent bond score.</p>
+</div>
+
+<div class="sub-section">
+<h3>Vocabulary Repair Pipeline</h3>
+<p>After AI generates dialogue, all 15 text fields are checked against player&rsquo;s known vocabulary via JPDB. If any field has &gt;1 unknown word, a multi-turn repair loop sends the violations back to the AI with instructions to substitute simpler words. Max 3 repair attempts.</p>
+</div>
+
+<div class="sub-section">
+<h3>NPC Memory &amp; Staleness</h3>
+<p>Per-NPC persistent state: encounter counters, flags (liberated/befriended/betrayed), rolling 5-entry encounter log, narrative arc text, bond score. Dialogue cache invalidates when vocab grows &gt;3% or &gt;10 words, or memory snapshot changes.</p>
+</div>
+
+<div class="sub-section">
+<h3>DM Narration</h3>
+<p>Event-driven Japanese narration for all game events (combat start, attacks, victory, defeat, exploration). Narration memory tracks recent events and used phrases to avoid repetition. Sensory rotation (sight/sound/touch/smell) varies descriptions. 4-6 sentence minimum with light-novel style.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CH11: AUDIO (KOTO-UNIQUE) -->
+<!-- ============================================================ -->
+<div class="chapter" id="ch11">
+<h2><span class="ch-num">11.</span> Audio &amp; TTS <span class="koto-badge">KOTO-UNIQUE</span></h2>
+<p class="ch-intro">Koto features real-time Japanese text-to-speech via VOICEVOX with 200+ voice styles, personality-mapped NPC speakers, and a dual caching system. PokeRogue uses pre-recorded Pokemon cries &mdash; no narration TTS.</p>
+
+<div class="sub-section">
+<h3>VOICEVOX Integration</h3>
+<p>2-step synthesis pipeline: audio query (text &rarr; phonetic parameters) &rarr; synthesis (parameters &rarr; WAV). Customizable per-call: speed (0.5-2.0), pitch, intonation, volume. Default narrator: speaker 13 (&#29572;&#37326;&#27494;&#23439; Cool). Health check with 2s timeout.</p>
+</div>
+
+<div class="sub-section">
+<h3>Personality-Mapped Speakers</h3>
+<table>
+<thead><tr><th>Personality</th><th>Speaker</th><th>Style</th></tr></thead>
+<tbody>
+<tr><td>aggressive, hostile, furious</td><td>&#29572;&#37326;&#27494;&#23439;</td><td>Angry</td></tr>
+<tr><td>cold, calculating, clinical</td><td>&#22235;&#22269;&#12417;&#12383;&#12435;</td><td>Normal (cool female)</td></tr>
+<tr><td>robotic, mechanical</td><td>&#12490;&#12540;&#12473;&#12525;&#12508;_&#12479;&#12452;&#12503;T</td><td>Robotic</td></tr>
+<tr><td>frantic, panicked</td><td>&#26149;&#26085;&#37096;&#12388;&#12416;&#12366;</td><td>Higher-pitched</td></tr>
+<tr><td>erratic, hyper, obsessive</td><td>&#12378;&#12435;&#12384;&#12418;&#12435;</td><td>Expressive</td></tr>
+<tr><td>authoritarian, domineering</td><td>&#30333;&#19978;&#34382;&#22826;&#37070;</td><td>Deep male</td></tr>
+<tr><td>charming, performative</td><td>&#23567;&#22812;/SAYO</td><td>Gentle female</td></tr>
+<tr><td>Default narrator</td><td>&#29572;&#37326;&#27494;&#23439;</td><td>Cool</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="sub-section">
+<h3>Caching Architecture</h3>
+<table>
+<thead><tr><th>Cache Layer</th><th>Scope</th><th>Key</th><th>Contents</th></tr></thead>
+<tbody>
+<tr><td>Static Word Cache</td><td>Server-wide</td><td>MD5(text).slice(0,12)</td><td>Pre-synthesized game vocabulary (moves, creatures, items). Speaker 11, speed 0.9. Generated on startup.</td></tr>
+<tr><td>Per-User Dialogue</td><td>Per user</td><td>MD5(speakerId:text).slice(0,12)</td><td>NPC/creature dialogue lines. Enriched with <code>*Tts</code> fields (greetingTts, npcLineTts, etc.).</td></tr>
+<tr><td>Client Prefetch</td><td>Browser</td><td>Text string</td><td>LRU cache (max 10). Reduces narration playback latency.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="sub-section">
+<h3>Audio Playback</h3>
+<p><strong>SFX:</strong> 13 effects via Web Audio API (attack, heal, swipe, victory, defeat, etc.). Version-stamped for cache busting.<br>
+<strong>BGM:</strong> Phase-mapped tracks via HTMLAudioElement with fade-out on stop. Random start position support.<br>
+<strong>TTS:</strong> Request cancellation via ID counter prevents stale narration. Supports repeat via &lsquo;r&rsquo; key.</p>
+</div>
+
+<div class="sub-section">
+<h3>User Settings</h3>
+<table>
+<thead><tr><th>Setting</th><th>Default</th><th>Range</th></tr></thead>
+<tbody>
+<tr><td>TTS Enabled</td><td>true</td><td>boolean</td></tr>
+<tr><td>Speaker ID</td><td>13</td><td>1-47+</td></tr>
+<tr><td>Speed</td><td>0.9</td><td>0.5-2.0</td></tr>
+<tr><td>Volume</td><td>1.0</td><td>0-1</td></tr>
+<tr><td>Voice Gender</td><td>boy</td><td>boy/girl</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+// Drawer
+const drawer = $('#drawer'), overlay = $('#drawerOverlay');
+const openDrawer = () => { drawer.classList.add('open'); overlay.classList.add('open'); };
+const closeDrawer = () => { drawer.classList.remove('open'); overlay.classList.remove('open'); };
+$('#menuBtn').onclick = openDrawer;
+overlay.onclick = closeDrawer;
+
+// Nav items
+$$('.drawer-nav .ci[data-target]').forEach(ci => {
+  ci.onclick = () => {
+    const el = document.getElementById(ci.dataset.target);
+    if (el) { el.scrollIntoView({ behavior: 'smooth' }); closeDrawer(); }
+  };
+});
+
+// Scroll spy
+const chapters = $$('.chapter');
+const navItems = $$('.drawer-nav .ci[data-target]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const match = navItems.find(n => n.dataset.target === e.target.id);
+      if (match) match.classList.add('active');
+    }
+  });
+}, { rootMargin: '-80px 0px -70% 0px' });
+chapters.forEach(ch => observer.observe(ch));
+
+// Search
+const searchOverlay = $('#searchOverlay'), searchInput = $('#searchInput'), searchResults = $('#searchResults');
+$('#searchBtn').onclick = () => { searchOverlay.classList.add('open'); setTimeout(() => searchInput.focus(), 100); };
+$('#closeSearch').onclick = () => { searchOverlay.classList.remove('open'); searchInput.value = ''; searchResults.innerHTML = ''; };
+searchOverlay.onclick = e => { if (e.target === searchOverlay) $('#closeSearch').click(); };
+
+const searchData = [];
+chapters.forEach(ch => {
+  const title = ch.querySelector('h2')?.textContent || '';
+  const sections = ch.querySelectorAll('.sub-section');
+  sections.forEach(s => {
+    const h = s.querySelector('h3')?.textContent || '';
+    const text = s.textContent;
+    searchData.push({ id: ch.id, title, section: h, text, el: ch });
+  });
+  if (!sections.length) {
+    searchData.push({ id: ch.id, title, section: '', text: ch.textContent, el: ch });
+  }
+});
+
+searchInput.oninput = () => {
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q) { searchResults.innerHTML = ''; return; }
+  const results = searchData.filter(d => d.text.toLowerCase().includes(q)).slice(0, 20);
+  searchResults.innerHTML = results.map(r => {
+    const idx = r.text.toLowerCase().indexOf(q);
+    const start = Math.max(0, idx - 40);
+    const end = Math.min(r.text.length, idx + q.length + 40);
+    let snippet = r.text.slice(start, end).replace(/\s+/g, ' ');
+    const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    snippet = snippet.replace(re, '<mark>$1</mark>');
+    return `<div class="search-result" data-target="${r.id}"><div class="sr-title">${r.title}${r.section ? ' &rsaquo; ' + r.section : ''}</div><div class="sr-snippet">${snippet}</div></div>`;
+  }).join('');
+  $$('.search-result').forEach(el => {
+    el.onclick = () => {
+      const target = document.getElementById(el.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      $('#closeSearch').click();
+    };
+  });
+};
+
+// FM links
+$$('.fm-link').forEach(a => {
+  a.onclick = e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  };
+});
+})();
+</script>
+</body>
+</html>

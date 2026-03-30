@@ -780,7 +780,7 @@ setTTSSynthesizer(ttsSynthesizerFn, {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   logger.info('[Server] Started:', { port: PORT, env: process.env.NODE_ENV || 'development' });
   logger.info('[Server] Log level:', logger.getLevel());
   console.log(`JRPG server running at http://localhost:${PORT}`);
