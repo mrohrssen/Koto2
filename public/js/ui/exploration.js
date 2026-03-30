@@ -31,6 +31,8 @@ import { t, isJapanified } from './i18n.js';
 import * as metaShop from './meta-shop.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { playRoomTransition } from './room-transition.js';
+import { buff, itemGained } from './event-popup.js';
+import { pop, flashElement } from './combat-effects.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -579,6 +581,14 @@ export function renderShrine() {
       const result = await apiShrineUpgrade(creatureId);
       if (result?.state) { updateGameState(result.state); }
       sceneModule.showNarration(t('leveledUp', result?.creatureName || 'Creature', result?.newLevel || '?'), { autoDismiss: 2000 });
+      const shrineSlot = document.querySelector('#player-formation .formation-slot');
+      if (shrineSlot && result.hpGain !== undefined) {
+        const sprite = shrineSlot.querySelector('.formation-sprite');
+        if (sprite) flashElement(sprite, 2);
+        buff(shrineSlot, 'Level Up!');
+        if (result.hpGain > 0) setTimeout(() => buff(shrineSlot, `+${result.hpGain} HP`), 300);
+        if (result.attackGain > 0) setTimeout(() => buff(shrineSlot, `+${result.attackGain} ATK`), 600);
+      }
       shrineInProgress = false;
       updateUI(); // phase becomes 'room' → auto-proceed advances
     });
@@ -1060,6 +1070,12 @@ export async function renderSkillMaster() {
 
       if (result?.state) {
         updateGameState(result.state);
+        const selectedCard = document.querySelector(`.skill-card[data-skill-id="${skillId}"]`) ||
+                             document.querySelector('.skill-card.selected');
+        if (selectedCard) {
+          pop(selectedCard, 1.15);
+          itemGained(selectedCard, 'Skill Acquired!');
+        }
         updateUI();
         choosing = false;
         return;
@@ -1267,6 +1283,14 @@ export async function renderFriendlyNpc() {
 
           if (result?.state) {
             updateGameState(result.state);
+            const itemCard = document.querySelector(`.friendly-npc-item[data-item-id="${itemId}"]`) ||
+                             document.querySelector('.friendly-npc-item.selected') ||
+                             document.querySelector('.shop-item-card.selected');
+            if (itemCard) {
+              pop(itemCard, 1.15);
+              const itemName = result?.chosen?.nameEn || result?.chosen?.word || 'Item';
+              itemGained(itemCard, `+${itemName}`);
+            }
             friendlyNpcState.choosing = false;
             updateUI();
             return;

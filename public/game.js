@@ -86,7 +86,8 @@ import * as characterUI from './js/ui/character.js';
 import * as modalsUI from './js/ui/modals.js';
 import * as combatLoopUI from './js/ui/combat-loop.js';
 import { playAttackSound, playUltimateSound } from './js/ui/combat-audio.js';
-import { playUltimateAnimation, screenShake, showXpPopup, showLevelUpPopup, healEffect, poisonApplyEffect, recoil } from './js/ui/combat-effects.js';
+import { playUltimateAnimation, screenShake, showXpPopup, showLevelUpPopup, healEffect, poisonApplyEffect, recoil, pop } from './js/ui/combat-effects.js';
+import { itemGained } from './js/ui/event-popup.js';
 import { dom } from './js/dom.js';
 import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
@@ -1083,12 +1084,26 @@ async function showPostCombatShopFlow() {
             // Only one creature — auto-target
             const selectResult = await apiSelectShopItem(itemIdx, 0);
             if (selectResult?.state) updateGameState(selectResult.state);
+            const selectedCard = document.querySelector('.shop-item-card.selected');
+            if (selectedCard) {
+              const itemName = selectedCard.querySelector('.shop-item-name')?.textContent || 'Item';
+              pop(selectedCard, 1.15);
+              itemGained(selectedCard, `+${itemName}`);
+              await new Promise(r => setTimeout(r, 600));
+            }
             postCombatShop.hide();
             resolve();
           } else {
             postCombatShop.showTargetPicker(active, async (targetIdx) => {
               const selectResult = await apiSelectShopItem(itemIdx, targetIdx);
               if (selectResult?.state) updateGameState(selectResult.state);
+              const selectedCard = document.querySelector('.shop-item-card.selected');
+              if (selectedCard) {
+                const itemName = selectedCard.querySelector('.shop-item-name')?.textContent || 'Item';
+                pop(selectedCard, 1.15);
+                itemGained(selectedCard, `+${itemName}`);
+                await new Promise(r => setTimeout(r, 600));
+              }
               postCombatShop.hide();
               resolve();
             });

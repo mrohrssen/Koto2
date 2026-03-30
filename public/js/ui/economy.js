@@ -17,6 +17,8 @@ import { creatureSpriteHtml } from './sprite-utils.js';
 import * as narrationBox from './narration-box.js';
 import { t } from './i18n.js';
 import { flushExposures } from './bootstrap-client.js';
+import { credits as creditsPopup, animateCounter } from './event-popup.js';
+import { pop } from './combat-effects.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -128,6 +130,17 @@ export async function renderDealerRoom(actionsModule) {
         const creatureId = e.target.dataset.creatureId;
         const result = await apiDealerBuy(creatureId);
         if (result?.state) { updateGameState(result.state); }
+        if (result?.success) {
+          const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
+          if (creditsEl && result.creditsSpent) {
+            creditsPopup(creditsEl, -result.creditsSpent);
+            const prevCredits = (result.creditsRemaining || 0) + result.creditsSpent;
+            animateCounter(creditsEl, prevCredits, result.creditsRemaining, 400, { flashColor: '#F44336' });
+          }
+          const buyBtn = document.querySelector(`.dealer-buy-btn[data-creature-id="${creatureId}"]`);
+          const card = buyBtn?.closest('.dealer-offer-card');
+          if (card) pop(card, 1.1);
+        }
         updateUI();
         renderDealerRoom(actionsModule);
       } catch (error) {
@@ -147,6 +160,14 @@ export async function renderDealerRoom(actionsModule) {
     try {
       const result = await apiDealerSell(creatureId);
       if (result?.state) { updateGameState(result.state); }
+      if (result?.success) {
+        const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
+        if (creditsEl && result.creditsGained) {
+          creditsPopup(creditsEl, result.creditsGained);
+          const prevCredits = (result.creditsRemaining || 0) - result.creditsGained;
+          animateCounter(creditsEl, prevCredits, result.creditsRemaining, 400, { flashColor: '#FFD700' });
+        }
+      }
       updateUI();
       renderDealerRoom(actionsModule);
     } catch (error) {

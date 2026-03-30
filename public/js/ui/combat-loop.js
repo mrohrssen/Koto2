@@ -2453,6 +2453,14 @@ async function renderBefriendQuiz(quizData, result) {
     }
     syncFinalState(answerResult);
 
+    const newAllySlotQuiz = document.querySelector('#player-formation .formation-slot:last-child');
+    if (newAllySlotQuiz) {
+      setTimeout(() => {
+        buff(newAllySlotQuiz, 'New Ally!');
+        spawnParticles(newAllySlotQuiz, 8, '#4CAF50');
+      }, 500);
+    }
+
     if (answerResult.combatEnded) {
       stopCombatLoop({ ...answerResult, victory: true });
     }
@@ -2860,6 +2868,14 @@ async function executeBefriendAction(actingCreatureSlot = null) {
               })
             });
           }
+        }
+
+        const newAllySlot = document.querySelector('#player-formation .formation-slot:last-child');
+        if (newAllySlot) {
+          setTimeout(() => {
+            buff(newAllySlot, 'New Ally!');
+            spawnParticles(newAllySlot, 8, '#4CAF50');
+          }, 500);
         }
 
         if (answerResult.combatEnded) {
