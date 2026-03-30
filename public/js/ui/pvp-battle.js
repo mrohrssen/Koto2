@@ -258,27 +258,26 @@ function showWaitingForOpponent() {
 
 /**
  * Handle round result from server.
- * @param {object} result - { allies, enemies, actions, winner }
+ * @param {object} result - { allies, enemies, attacks, winner }
  */
 async function handleRoundResult(result) {
   if (!pvpState) return;
 
-  // Update local state
-  pvpState.allies = result.allies;
-  pvpState.enemies = result.enemies;
   pvpState.waitingForOpponent = false;
   pvpState.roundNumber++;
 
-  // Update formations
-  if (sceneModule?.showFormation) {
-    sceneModule.showFormation('player', pvpState.allies);
-    sceneModule.showFormation('enemy', pvpState.enemies);
-  }
-
-  // Show attack results briefly
+  // Show attacks with progressive HP drain (pre-round state still in pvpState)
   const attacks = result.attacks || [];
   if (attacks.length > 0) {
     await showAttackSummary(attacks);
+  }
+
+  // NOW apply final server state and refresh formations
+  pvpState.allies = result.allies;
+  pvpState.enemies = result.enemies;
+  if (sceneModule?.showFormation) {
+    sceneModule.showFormation('player', pvpState.allies);
+    sceneModule.showFormation('enemy', pvpState.enemies);
   }
 
   // If no winner, continue to next round's move selection
@@ -292,10 +291,15 @@ async function handleRoundResult(result) {
 
 /**
  * Show attacks using the same display sequence as PvE combat.
- * Each attack: card → sound → visual effects → damage number → HP update → tap to continue.
+ * Each attack: card → sound → visual effects → damage number → HP drain → tap to continue.
+ * Uses running HP maps so bars drain progressively per hit (not all at once).
  * @param {object[]} attacks - Array of attack record objects from resolveRound
  */
 async function showAttackSummary(attacks) {
+  // Build running HP maps from pre-round state (before server results applied)
+  const allyHp = pvpState.allies.map(c => ({ hp: c.hp, maxHp: c.maxHp }));
+  const enemyHp = pvpState.enemies.map(c => ({ hp: c.hp, maxHp: c.maxHp }));
+
   for (const atk of attacks) {
     const isEnemy = (atk.side !== pvpState.mySide);
 
@@ -314,31 +318,59 @@ async function showAttackSummary(attacks) {
         playAttackSound(element);
         await enemyCreatureAttackEffect(enemyEl, allyEl, element, atk.damage);
       }
-      if (atk.damage > 0) showDamageNumber(atk.damage, { targetEl: allyEl });
+      if (atk.damage > 0) {
+        showDamageNumber(atk.damage, { targetEl: allyEl });
+        // Drain ally HP bar progressively
+        if (allyHp[atk.targetIndex]) {
+          allyHp[atk.targetIndex].hp = Math.max(0, allyHp[atk.targetIndex].hp - atk.damage);
+          updateSlotHp('player-formation', atk.targetIndex, allyHp[atk.targetIndex].hp, allyHp[atk.targetIndex].maxHp);
+        }
+      }
     } else {
       // Our creature attacking enemy
       const allyEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
       const enemyEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.targetIndex}"]`);
       if (allyEl && enemyEl && atk.damage > 0) {
         playAttackSound(element);
-        const targetMaxHp = pvpState.enemies[atk.targetIndex]?.maxHp || 100;
+        const targetMaxHp = enemyHp[atk.targetIndex]?.maxHp || 100;
         await fireCreatureAttackEffect(allyEl, enemyEl, element, atk.damage, targetMaxHp);
       }
-      if (atk.damage > 0) showDamageNumber(atk.damage, { targetEl: enemyEl });
+      if (atk.damage > 0) {
+        showDamageNumber(atk.damage, { targetEl: enemyEl });
+        // Drain enemy HP bar progressively
+        if (enemyHp[atk.targetIndex]) {
+          enemyHp[atk.targetIndex].hp = Math.max(0, enemyHp[atk.targetIndex].hp - atk.damage);
+          updateSlotHp('enemy-formation', atk.targetIndex, enemyHp[atk.targetIndex].hp, enemyHp[atk.targetIndex].maxHp);
+        }
+      }
     }
 
-    // 3. Update formations after each hit (HP bars, KO state)
-    if (sceneModule?.showFormation) {
-      sceneModule.showFormation('player', pvpState.allies);
-      sceneModule.showFormation('enemy', pvpState.enemies);
-    }
-
-    // 4. Wait for tap to continue (same as PvE)
+    // 3. Wait for tap to continue (same as PvE)
     if (attackCard) {
       await waitForCardTap(attackCard);
     } else {
       await delay(800);
     }
+  }
+}
+
+/**
+ * Update a single formation slot's HP bar without rebuilding the DOM.
+ * Same approach PvE uses for progressive HP drain during attack playback.
+ */
+function updateSlotHp(formationId, index, hp, maxHp) {
+  const slot = document.querySelector(`#${formationId} .formation-slot[data-index="${index}"]`);
+  if (!slot) return;
+  const hpPct = maxHp > 0 ? Math.max(0, (hp / maxHp) * 100) : 0;
+  const fill = slot.querySelector('.formation-hp-fill');
+  if (fill) {
+    fill.style.width = `${hpPct}%`;
+    fill.style.backgroundColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+  }
+  const sprite = slot.querySelector('.formation-sprite');
+  if (sprite) {
+    if (hp <= 0) sprite.classList.add('ko');
+    else sprite.classList.remove('ko');
   }
 }
 
