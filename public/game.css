@@ -834,8 +834,8 @@ html, body {
 @container action-area (max-height: 200px) {
   .flash-card { min-height: 70px; }
   .flash-card-front { font-size: 28px; padding: 8px; }
-  .dual-flash-card { min-height: 60px; font-size: 26px; }
 }
+
 
 @container action-area (min-height: 320px) {
   .flash-card { min-height: 110px; }
@@ -887,25 +887,6 @@ html, body {
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
-/* Primary variant for key CTAs */
-.action-btn-primary {
-  background: var(--accent-cyan);
-  color: white;
-}
-
-.action-btn-primary:active {
-  background: #39b0e4;
-}
-
-.action-btn-secondary {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-}
-
-.action-btn-tertiary {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-}
 
 /* Danger variant */
 .action-btn-danger {
@@ -1121,148 +1102,6 @@ html, body {
   background: rgba(239, 83, 80, 0.08);
 }
 
-/* ===== DUAL FLASH CARDS (Attack/Defend) ===== */
-.dual-flash-card-container {
-  width: 100%;
-  max-width: 340px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px;
-}
-
-.dual-card-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.dual-flash-card {
-  width: 100%;
-  position: relative;
-  min-height: 90px;
-  background: var(--bg-elevated);
-  border-radius: var(--card-radius);
-  box-shadow: var(--shadow-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  font-weight: var(--font-weight-bold);
-  cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  overflow: hidden;
-  padding: 12px 16px;
-  will-change: transform;
-}
-
-/* Compact flash cards when 3+ are showing */
-.dual-flash-card:first-child:nth-last-child(n+3),
-.dual-flash-card:first-child:nth-last-child(n+3) ~ .dual-flash-card {
-  min-height: 68px;
-  font-size: 28px;
-}
-
-.dual-flash-card:active {
-  transform: scale(0.98);
-}
-
-/* Dual card front/back for flip animation */
-.dual-card-front {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  height: 100%;
-}
-
-.dual-card-icon {
-  width: 28px;
-  height: 28px;
-  opacity: 0.5;
-  flex-shrink: 0;
-}
-
-.dual-flash-card.attack .dual-card-icon { color: var(--attack-color); }
-.dual-flash-card.defend .dual-card-icon { color: var(--defend-color); }
-.dual-flash-card.befriend .dual-card-icon { color: #4CAF50; }
-
-/* Triple flash cards (befriend available) */
-.dual-flash-card-container.triple {
-  gap: 6px;
-}
-
-.dual-flash-card-container.triple .dual-card-wrapper {
-  flex: 1;
-  min-width: 0;
-}
-
-.dual-flash-card-container.triple .dual-flash-card {
-  font-size: 0.85em;
-}
-
-.dual-flash-card.befriend {
-  border-color: #4CAF50;
-}
-
-.dual-flash-card.befriend .dual-card-front {
-  color: #4CAF50;
-}
-
-.dual-flash-card.befriend.selected {
-  border-color: #4CAF50;
-  box-shadow: 0 0 12px rgba(76, 175, 80, 0.3);
-}
-
-.dual-card-back {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  gap: 8px;
-  padding: 12px;
-}
-
-/* Selected state: flip and expand */
-.dual-flash-card.selected {
-  min-height: 260px;
-  box-shadow: var(--shadow-elevated);
-  border: 2px solid var(--accent-cyan);
-  transition: all 0.3s ease;
-}
-
-.dual-flash-card.selected .dual-card-front {
-  display: none;
-}
-
-.dual-flash-card.selected .dual-card-back {
-  display: flex;
-}
-
-/* Hide the other wrapper when a card is selected */
-.dual-card-wrapper.hidden {
-  display: none;
-}
-
-/* Swipe feedback on selected dual cards */
-.dual-flash-card.swiping-right {
-  transform: translateX(var(--swipe-x, 0)) rotate(var(--swipe-rotate, 0deg));
-  background: rgba(102, 187, 106, 0.08);
-}
-
-.dual-flash-card.swiping-left {
-  transform: translateX(var(--swipe-x, 0)) rotate(var(--swipe-rotate, 0deg));
-  background: rgba(239, 83, 80, 0.08);
-}
 
 .combat-defend-indicator {
   font-size: 18px;
@@ -1897,89 +1736,7 @@ html, body {
   overflow-y: auto;
 }
 
-.ward-option {
-  padding: 14px 16px;
-  background: var(--bg-elevated);
-  border-radius: var(--card-radius);
-  box-shadow: var(--shadow-soft);
-  margin-bottom: 8px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: border-color var(--transition-fast), transform var(--transition-fast);
-}
 
-.ward-option:active {
-  transform: scale(0.98);
-}
-
-.ward-option.selected {
-  border-color: var(--accent-cyan);
-  box-shadow: var(--shadow-elevated);
-}
-
-.ward-option.disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.ward-option-name {
-  font-size: 15px;
-  font-weight: var(--font-weight-semi);
-  color: var(--text-primary);
-}
-
-.ward-option-desc {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-
-/* Area selection proceed button pinned at bottom */
-#area-proceed-btn {
-  position: sticky;
-  bottom: 0;
-  margin-top: 8px;
-  z-index: 2;
-}
-
-/* ===== SHRINE / QUIZ / BEFRIEND LIST ===== */
-.shrine-title {
-  text-align: center;
-  margin: 8px 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.shrine-creature-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0 12px;
-  width: 100%;
-}
-
-.shrine-creature-option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: var(--bg-elevated);
-  border-radius: var(--card-radius);
-  box-shadow: var(--shadow-soft);
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: transform var(--transition-fast), opacity var(--transition-fast);
-}
-
-.shrine-creature-option:active {
-  transform: scale(0.98);
-}
-
-.shrine-creature-option.disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
 
 .shrine-creature-icon {
   width: 44px;
@@ -1995,23 +1752,6 @@ html, body {
   justify-content: center;
 }
 
-.shrine-creature-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.shrine-creature-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.shrine-creature-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
 
 .shrine-creature-rarity {
   font-size: 11px;
@@ -2025,21 +1765,6 @@ html, body {
 .shrine-creature-rarity.epic { color: var(--rarity-epic); }
 .shrine-creature-rarity.legendary { color: var(--rarity-legendary); }
 
-.shrine-creature-desc {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.shrine-creature-upgrade {
-  font-size: 13px;
-  color: var(--accent-amber);
-  font-weight: var(--font-weight-semi);
-}
 
 /* ===== DEALER ROOM ===== */
 .dealer-room {
@@ -3986,66 +3711,6 @@ html, body {
   to { transform: translateX(-50%) translateY(-100px); }
 }
 
-/* Post-Combat Shop */
-.post-combat-shop {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 10px;
-  padding: 0;
-  width: 100%;
-}
-
-.shop-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #5b6abf;
-  letter-spacing: 0.5px;
-}
-
-.shop-items {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-.shop-item-card {
-  position: relative;
-  background: #fff;
-  border: 2px solid #e0e0e0;
-  border-radius: 14px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: pointer;
-  transition: border-color 0.2s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.shop-item-card:active {
-  transform: scale(0.98);
-}
-
-.shop-item-card.selected {
-  border-color: #5b6abf;
-  box-shadow: 0 0 0 3px rgba(91,106,191,0.2);
-}
-
-.shop-item-sprite {
-  width: 52px;
-  height: 52px;
-  border-radius: 10px;
-  background: #f5f5fa;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
 
 .shop-item-sprite-img {
   width: 100%;
@@ -4060,51 +3725,6 @@ html, body {
   height: 52px;
 }
 
-.shop-item-rarity-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  font-size: 8px;
-  font-weight: 700;
-  color: white;
-  padding: 1px 5px;
-  border-radius: 3px;
-  letter-spacing: 0.5px;
-  z-index: 1;
-}
-
-.shop-item-word {
-  font-size: 22px;
-  font-weight: bold;
-  color: #2d2d3a;
-  line-height: 1.2;
-}
-
-.shop-item-reading {
-  font-size: 11px;
-  color: #888;
-}
-
-.shop-item-meaning {
-  font-size: 12px;
-  font-weight: 600;
-  color: #5b6abf;
-}
-
-.shop-item-divider {
-  display: none;
-}
-
-.shop-item-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.shop-item-effect {
-  font-size: 11px;
-  color: #666;
-  line-height: 1.3;
-}
 
 /* ===== INVENTORY OVERLAY ===== */
 .inventory-overlay {
@@ -4263,19 +3883,6 @@ html, body {
   animation: befriend-shake 0.5s ease-in-out;
 }
 
-.befriend-answer-option {
-  cursor: pointer;
-  transition: border-color 0.3s, box-shadow 0.3s, opacity 0.3s;
-}
-
-.befriend-target-option {
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.befriend-target-option:active {
-  opacity: 0.7;
-}
 
 /* ============ NPC BOND FEEDBACK ============ */
 
@@ -4964,141 +4571,6 @@ html, body {
   font-weight: bold;
 }
 
-.target-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0 8px;
-}
-
-.target-row {
-  display: flex;
-  align-items: stretch;
-  background: rgba(0,0,0,0.6);
-  border-radius: 12px;
-  cursor: pointer;
-  border: 2px solid;
-  overflow: hidden;
-  transition: transform 0.1s;
-  color: #fff;
-}
-
-.target-row:active { transform: scale(0.98); }
-
-/* Sprite panel (left side) */
-.target-sprite-panel {
-  width: 70px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.target-sprite-img {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
-.target-sprite-fallback {
-  font-size: 32px;
-}
-
-.target-elem-badge {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  font-size: 11px;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: #fff;
-  border: 1px solid rgba(0,0,0,0.4);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-
-/* Info panel (right side) */
-.target-info-panel {
-  flex: 1;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border-left: 1px solid rgba(255,255,255,0.06);
-}
-
-.target-jp {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.target-en {
-  font-size: 11px;
-  color: #888;
-  margin-top: 1px;
-}
-
-.target-baseword {
-  font-size: 11px;
-  color: #666;
-  margin-top: 2px;
-  font-style: italic;
-}
-
-.target-stats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.target-lv {
-  font-size: 10px;
-  color: #555;
-}
-
-.target-hp-bar {
-  flex: 1;
-  height: 5px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.target-hp-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s;
-}
-
-.target-hp-pct {
-  font-size: 10px;
-  color: #666;
-  min-width: 28px;
-  text-align: right;
-}
-
-.target-cancel-btn {
-  display: block;
-  width: calc(100% - 16px);
-  margin: 8px;
-  padding: 10px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid #333;
-  border-radius: 8px;
-  color: #888;
-  font-size: 13px;
-  cursor: pointer;
-  text-align: center;
-}
 
 /* Item buffs in creature popup */
 .creature-popup-buffs { margin-top: 6px; padding: 4px 8px; background: rgba(76, 175, 80, 0.08); border-radius: 6px; border: 1px solid rgba(76, 175, 80, 0.2); }
@@ -5297,27 +4769,6 @@ html, body {
   color: var(--text-muted);
 }
 
-/* ── Shop help button ── */
-.shop-help-btn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1.5px solid var(--accent-primary, #64b5f6);
-  background: rgba(100, 181, 246, 0.15);
-  color: var(--accent-primary, #64b5f6);
-  font-size: 0.7rem;
-  font-weight: bold;
-  cursor: pointer;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-.shop-item-card { position: relative; }
 
 .shop-stat-pill {
   display: inline-block;
