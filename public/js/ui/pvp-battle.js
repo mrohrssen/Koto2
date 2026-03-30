@@ -23,7 +23,10 @@ import { buildMoveCell } from './move-select.js';
 import { toRomaji } from './romaji.js';
 import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
-import { insertAttackCard } from './combat-loop.js';
+import { insertAttackCard, waitForCardTap } from './combat-loop.js';
+import { fireCreatureAttackEffect, enemyCreatureAttackEffect } from './combat-effects.js';
+import { playAttackSound } from './combat-audio.js';
+import { showDamageNumber } from './scene.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -55,7 +58,7 @@ export function init(callbacks) {
  * @param {object} data - { yourTeam, opponentTeam, opponentName }
  */
 export function startPvpBattle(data) {
-  const { yourTeam, opponentTeam, opponentName } = data;
+  const { yourTeam, opponentTeam, opponentName, mySide } = data;
 
   // Initialize shared target-select with PvP callbacks
   initTargetSelect({
@@ -75,6 +78,7 @@ export function startPvpBattle(data) {
     allies: yourTeam,     // Array of creature objects
     enemies: opponentTeam, // Array of creature objects
     opponentName,
+    mySide: mySide || 'sideA', // Which side we are (for attack card perspective)
     moveChoices: [],       // Accumulates [{creatureIndex, moveId, targetIndex}]
     currentCreatureIdx: 0, // Which ally is currently selecting moves
     waitingForOpponent: false,
@@ -287,23 +291,54 @@ async function handleRoundResult(result) {
 }
 
 /**
- * Show a brief summary of all attacks in the round.
- * Each attack is shown for a short duration before advancing.
- * @param {object[]} attacks - Array of attack record objects
+ * Show attacks using the same display sequence as PvE combat.
+ * Each attack: card → sound → visual effects → damage number → HP update → tap to continue.
+ * @param {object[]} attacks - Array of attack record objects from resolveRound
  */
 async function showAttackSummary(attacks) {
   for (const atk of attacks) {
-    // From this player's perspective, sideA is always "us"
-    const isEnemy = (atk.side !== 'sideA');
-    insertAttackCard(atk, isEnemy);
+    const isEnemy = (atk.side !== pvpState.mySide);
 
-    // Update formations after each attack for visual feedback
+    // 1. Show attack card (same as PvE)
+    const attackCard = insertAttackCard(atk, isEnemy);
+
+    // 2. Sound + visual effects
+    playSFX('attack');
+    const element = atk.moveElement || atk.attackerElement || 'neutral';
+
+    if (isEnemy) {
+      // Enemy attacking our creature
+      const enemyEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
+      const allyEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.targetIndex}"]`);
+      if (enemyEl && allyEl && atk.damage > 0) {
+        playAttackSound(element);
+        await enemyCreatureAttackEffect(enemyEl, allyEl, element, atk.damage);
+      }
+      if (atk.damage > 0) showDamageNumber(atk.damage, { targetEl: allyEl });
+    } else {
+      // Our creature attacking enemy
+      const allyEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
+      const enemyEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.targetIndex}"]`);
+      if (allyEl && enemyEl && atk.damage > 0) {
+        playAttackSound(element);
+        const targetMaxHp = pvpState.enemies[atk.targetIndex]?.maxHp || 100;
+        await fireCreatureAttackEffect(allyEl, enemyEl, element, atk.damage, targetMaxHp);
+      }
+      if (atk.damage > 0) showDamageNumber(atk.damage, { targetEl: enemyEl });
+    }
+
+    // 3. Update formations after each hit (HP bars, KO state)
     if (sceneModule?.showFormation) {
       sceneModule.showFormation('player', pvpState.allies);
       sceneModule.showFormation('enemy', pvpState.enemies);
     }
 
-    await delay(800);
+    // 4. Wait for tap to continue (same as PvE)
+    if (attackCard) {
+      await waitForCardTap(attackCard);
+    } else {
+      await delay(800);
+    }
   }
 }
 

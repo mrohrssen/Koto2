@@ -96,14 +96,16 @@ export function setupPvpSockets(io) {
           p1Socket.emit('pvp:match-start', {
             yourTeam: match.combat.sideA,
             opponentTeam: match.combat.sideB,
-            opponentName: match.player2.username
+            opponentName: match.player2.username,
+            mySide: 'sideA'
           });
         }
         if (p2Socket) {
           p2Socket.emit('pvp:match-start', {
             yourTeam: match.combat.sideB,
             opponentTeam: match.combat.sideA,
-            opponentName: match.player1.username
+            opponentName: match.player1.username,
+            mySide: 'sideB'
           });
         }
       } else {

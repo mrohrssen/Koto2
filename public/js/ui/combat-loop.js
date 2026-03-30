@@ -283,7 +283,7 @@ function insertNpcAttackCard(atk) {
  * @param {Element} card - The .split-attack-card element
  * @returns {Promise<void>}
  */
-function waitForCardTap(card) {
+export function waitForCardTap(card) {
   return new Promise((resolve) => {
     if (!card) { resolve(); return; }
 
