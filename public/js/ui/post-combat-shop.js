@@ -14,7 +14,6 @@
 
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
-import { t, isJapanified } from './i18n.js';
 import { prefetchWord, playWord } from '../tts.js';
 import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
 import { buildItemEffectPills } from './item-effect-pills.js';

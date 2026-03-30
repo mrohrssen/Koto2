@@ -26,7 +26,7 @@
 import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
-import { creatureBgUrl, replaceWithTextSprite, itemSpriteHtml, creatureStaticPath } from './sprite-utils.js';
+import { creatureBgUrl, itemSpriteHtml, creatureStaticPath } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
 import * as metaShop from './meta-shop.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
