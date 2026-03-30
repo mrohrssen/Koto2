@@ -22,6 +22,19 @@ import { getPvpTeams } from '../api.js';
 import { playSFX } from '../audio.js';
 import { startPvpBattle } from './pvp-battle.js';
 import { escapeHtml } from './html-utils.js';
+import { creatureSpriteHtml } from './sprite-utils.js';
+import { dom } from '../dom.js';
+import { ELEMENT_COLORS, ELEMENT_ICONS } from './creature-row.js';
+import { renderJpFirst } from './bootstrap-client.js';
+
+/** Party skill names for display (matches server PARTY_SKILLS_CATALOG) */
+const PARTY_SKILL_NAMES = {
+  superEffectiveMend: 'Super-Effective Mend',
+  hasteSpark: 'Haste Spark',
+  guardPulse: 'Guard Pulse',
+  battleRhythm: 'Battle Rhythm',
+  finisherFeast: 'Finisher Feast'
+};
 
 let getGameState = null;
 let updateUI = null;
