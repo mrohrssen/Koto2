@@ -47,6 +47,7 @@ import {
   flashElement,
   clearFormationTransforms
 } from './combat-effects.js';
+import { effectiveness, resistedEffectiveness, skillProc, buff, debuff, updateStatusIcons, clearAllStatusIcons } from './event-popup.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
@@ -892,6 +893,7 @@ export function cleanupCombat() {
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
+  clearAllStatusIcons();
 }
 
 /**
@@ -1343,10 +1345,37 @@ async function showEffectEvents(result) {
         targetEl = findEnemyTargetElement(event.targetId, result.enemies, event.targetIndex);
       }
       if (targetEl) {
-        showFloatingText(targetEl, label);
+        // Determine if this is a positive or negative effect
+        const BUFF_TYPES = new Set(['attack_buff', 'defense_buff', 'speed_buff', 'haste', 'shield', 'team_shield']);
+        const DEBUFF_TYPES = new Set(['attack_debuff', 'confuse', 'stun', 'sleep']);
+        if (DEBUFF_TYPES.has(baseType)) {
+          debuff(targetEl, label);
+        } else if (BUFF_TYPES.has(baseType)) {
+          buff(targetEl, label);
+        } else {
+          showFloatingText(targetEl, label);
+        }
         await delay(400);
       }
     }
+  }
+  syncStatusIconsFromResult(result);
+}
+
+function syncStatusIconsFromResult(result) {
+  if (result.allies) {
+    result.allies.forEach((ally, i) => {
+      if (!ally) return;
+      const slotEl = document.querySelector(`#player-formation .formation-slot[data-index="${i}"]`);
+      if (slotEl) updateStatusIcons(slotEl, ally.statusEffects || []);
+    });
+  }
+  if (result.enemies) {
+    result.enemies.forEach((enemy, i) => {
+      if (!enemy) return;
+      const slotEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${i}"]`);
+      if (slotEl) updateStatusIcons(slotEl, enemy.statusEffects || []);
+    });
   }
 }
 
@@ -1356,34 +1385,22 @@ async function showEffectEvents(result) {
  */
 async function showPartySkillProcs(atk) {
   if (!atk.partySkillProcs?.length) return;
-
-  const actionArea = document.getElementById('action-area');
   const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
 
   for (const proc of atk.partySkillProcs) {
-    // Show skill name announcement in action area
-    if (actionArea) {
-      const procEl = document.createElement('div');
-      procEl.className = 'party-skill-proc';
-
-      let detail = '';
-      if (proc.type === 'bonusDamage') {
-        detail = ` +${proc.bonusDamage}`;
-        procEl.classList.add('proc-damage');
-      } else if (proc.type === 'healAll') {
-        detail = ` +${proc.healAmount} HP`;
-        procEl.classList.add('proc-heal');
-      } else if (proc.type === 'haste') {
-        procEl.classList.add('proc-buff');
-      } else if (proc.type === 'teamShield') {
-        procEl.classList.add('proc-buff');
-      }
-
-      procEl.textContent = `${proc.skillName}!${detail}`;
-      actionArea.appendChild(procEl);
+    const attackerSlot = findCreatureSlotByAttackerId(atk.attackerId);
+    let detail = '';
+    if (proc.type === 'bonusDamage') {
+      detail = ` +${proc.bonusDamage}`;
+    } else if (proc.type === 'healAll') {
+      detail = ` +${proc.healAmount} HP`;
     }
 
-    // Visual effects by type
+    if (attackerSlot) {
+      skillProc(attackerSlot, `${proc.skillName}!${detail}`);
+      flashElement(attackerSlot.querySelector('.formation-sprite'), 1);
+    }
+
     if (proc.type === 'bonusDamage') {
       const enemyEl = findEnemyTargetElement(atk.targetId, null, atk.targetIndex);
       if (enemyEl) spawnParticles(enemyEl, 6, '#FFB74D');
@@ -1395,12 +1412,7 @@ async function showPartySkillProcs(atk) {
         }
       });
     } else if (proc.type === 'haste') {
-      const attackerSlot = findCreatureSlotByAttackerId(atk.attackerId);
-      if (attackerSlot) {
-        spawnParticles(attackerSlot, 8, '#4fc3f7');
-        const sprite = attackerSlot.querySelector('.formation-sprite');
-        if (sprite) flashElement(sprite, 1);
-      }
+      if (attackerSlot) spawnParticles(attackerSlot, 8, '#4fc3f7');
     } else if (proc.type === 'teamShield') {
       allAllySlots.forEach(slot => {
         const sprite = slot.querySelector('.formation-sprite');
@@ -1410,7 +1422,7 @@ async function showPartySkillProcs(atk) {
       });
     }
 
-    await delay(600);
+    await effectDelay(600);
   }
 }
 
@@ -1499,6 +1511,13 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     }
     updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
 
+    // Type effectiveness popup for enemy attacks
+    if (atk.elementMultiplier > 1 && targetSlotEl) {
+      setTimeout(() => effectiveness(targetSlotEl, 'Super Effective!'), 400);
+    } else if (atk.elementMultiplier < 1 && targetSlotEl) {
+      setTimeout(() => resistedEffectiveness(targetSlotEl, 'Resisted...'), 400);
+    }
+
     // Wait for tap (attack card) or fixed delay (fallback)
     if (attackCard) {
       await waitForCardTap(attackCard);
@@ -1506,6 +1525,7 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
       await delay(400);
     }
   }
+  syncStatusIconsFromResult(result);
 }
 
 /**
@@ -1755,6 +1775,13 @@ async function executeCreatureMovesTurn(choices) {
             if (actionArea2) actionArea2.appendChild(stabEl);
           }
 
+          // Type effectiveness popup
+          if (atk.elementMultiplier > 1 && enemyEl) {
+            setTimeout(() => effectiveness(enemyEl, 'Super Effective!'), 400);
+          } else if (atk.elementMultiplier < 1 && enemyEl) {
+            setTimeout(() => resistedEffectiveness(enemyEl, 'Resisted...'), 400);
+          }
+
           // Show party skill procs inline after this attack
           await showPartySkillProcs(atk);
 
@@ -1766,6 +1793,7 @@ async function executeCreatureMovesTurn(choices) {
           }
         }
       }
+      syncStatusIconsFromResult(result);
 
       // === BEFRIEND NAME QUIZ CHECK ===
       // If the killing blow triggered the befriend quiz, show it instead of continuing combat
@@ -2882,6 +2910,7 @@ export async function stopCombatLoop(result) {
 
   // Final cleanup: clear any stale inline transforms on formation slots
   clearFormationTransforms();
+  clearAllStatusIcons();
 
   // Hide word practice cards and close modal
   wordPractice.hideWordCards();
