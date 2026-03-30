@@ -15,10 +15,10 @@
  * - enterLobby(): Connect and signal lobby entry
  *
  * DEPENDENCIES:
- * - Socket.IO client served by the server at /socket.io/socket.io.esm.min.js
+ * - Socket.IO client from socket.io-client npm package (bundled by Vite)
  */
 
-import { io } from '/socket.io/socket.io.esm.min.js';
+import { io } from 'socket.io-client';
 
 let socket = null;
 let currentMatchCode = null;
