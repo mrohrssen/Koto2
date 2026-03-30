@@ -1,0 +1,293 @@
+/**
+ * @fileoverview PvP Socket.IO event handler
+ *
+ * Bridges Socket.IO events to the MatchManager. Authenticates connections
+ * via JWT and routes match lifecycle events (create, join, team select,
+ * ready, submit moves, rematch, leave, reconnect, disconnect).
+ */
+
+import { MatchManager } from './match-manager.js';
+import { verifyToken } from '../auth/middleware.js';
+
+/**
+ * Set up all PvP Socket.IO event handlers.
+ * @param {import('socket.io').Server} io
+ * @returns {{ mm: MatchManager, io: import('socket.io').Server }}
+ */
+export function setupPvpSockets(io) {
+  const mm = new MatchManager();
+
+  // Map<userId, { timeout: NodeJS.Timeout, matchCode: string }>
+  const disconnectTimers = new Map();
+
+  // JWT auth middleware — runs before every connection
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error('Authentication required'));
+    const payload = verifyToken(token);
+    if (!payload) return next(new Error('Invalid token'));
+    socket.userId = payload.id;
+    socket.username = payload.username;
+    next();
+  });
+
+  io.on('connection', socket => {
+    // If this user has a pending disconnect timer, cancel it (reconnect path)
+    if (disconnectTimers.has(socket.userId)) {
+      const pending = disconnectTimers.get(socket.userId);
+      clearTimeout(pending.timeout);
+      disconnectTimers.delete(socket.userId);
+    }
+
+    // ------------------------------------------------------------------ //
+    // pvp:create-match
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:create-match', () => {
+      const code = mm.createMatch(socket.userId, socket.id);
+      const match = mm.getMatch(code);
+      match.player1.username = socket.username;
+      socket.join(code);
+      socket.emit('pvp:match-created', { code });
+    });
+
+    // ------------------------------------------------------------------ //
+    // pvp:join-match
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:join-match', ({ code } = {}) => {
+      const joined = mm.joinMatch(code, socket.userId, socket.id);
+      if (!joined) {
+        socket.emit('pvp:error', { message: 'Match not found or already full' });
+        return;
+      }
+      const match = mm.getMatch(code);
+      match.player2.username = socket.username;
+      socket.join(code);
+      socket.emit('pvp:match-joined', { code });
+      io.to(code).emit('pvp:opponent-joined', {
+        opponentName: socket.username
+      });
+    });
+
+    // ------------------------------------------------------------------ //
+    // pvp:select-team
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:select-team', ({ slotIndex, teamData } = {}) => {
+      const found = mm.findMatchBySocket(socket.id);
+      if (!found) return;
+      mm.selectTeam(found.code, socket.userId, teamData);
+    });
+
+    // ------------------------------------------------------------------ //
+    // pvp:ready
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:ready', () => {
+      const found = mm.findMatchBySocket(socket.id);
+      if (!found) return;
+
+      const bothReady = mm.setReady(found.code, socket.userId);
+      const match = mm.getMatch(found.code);
+
+      if (bothReady && match.phase === 'battle') {
+        // Emit match-start to each player with their perspective
+        const p1Socket = io.sockets.sockets.get(match.player1.socketId);
+        const p2Socket = io.sockets.sockets.get(match.player2.socketId);
+
+        if (p1Socket) {
+          p1Socket.emit('pvp:match-start', {
+            yourTeam: match.combat.sideA,
+            opponentTeam: match.combat.sideB,
+            opponentName: match.player2.username
+          });
+        }
+        if (p2Socket) {
+          p2Socket.emit('pvp:match-start', {
+            yourTeam: match.combat.sideB,
+            opponentTeam: match.combat.sideA,
+            opponentName: match.player1.username
+          });
+        }
+      } else {
+        // Notify the other player that this player is ready
+        const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
+        const otherPlayer = match[otherPlayerKey];
+        if (otherPlayer) {
+          const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
+          if (otherSocket) {
+            otherSocket.emit('pvp:opponent-ready');
+          }
+        }
+      }
+    });
+
+    // ------------------------------------------------------------------ //
+    // pvp:submit-moves
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:submit-moves', ({ moveChoices } = {}) => {
+      const found = mm.findMatchBySocket(socket.id);
+      if (!found) return;
+
+      const result = mm.submitMoves(found.code, socket.userId, moveChoices);
+
+      if (result === null) {
+        // Still waiting for the other player — notify them
+        const match = mm.getMatch(found.code);
+        if (match) {
+          const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
+          const otherPlayer = match[otherPlayerKey];
+          if (otherPlayer) {
+            const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
+            if (otherSocket) {
+              otherSocket.emit('pvp:opponent-submitted');
+            }
+          }
+        }
+        return;
+      }
+
+      // Both submitted — result is resolved
+      const match = mm.getMatch(found.code);
+      if (!match) return;
+
+      const p1Socket = io.sockets.sockets.get(match.player1.socketId);
+      const p2Socket = io.sockets.sockets.get(match.player2.socketId);
+
+      // Send round result with perspective flip
+      if (p1Socket) {
+        p1Socket.emit('pvp:round-result', {
+          allies: result.sideA,
+          enemies: result.sideB,
+          actions: result.actions,
+          winner: result.winner
+        });
+      }
+      if (p2Socket) {
+        p2Socket.emit('pvp:round-result', {
+          allies: result.sideB,
+          enemies: result.sideA,
+          actions: result.actions,
+          winner: result.winner
+        });
+      }
+
+      // If there's a winner, emit match-end to the room
+      if (result.winner) {
+        const winnerId = match.winnerId;
+        let winnerName = null;
+        if (match.player1.userId === winnerId) {
+          winnerName = match.player1.username;
+        } else if (match.player2 && match.player2.userId === winnerId) {
+          winnerName = match.player2.username;
+        }
+        io.to(found.code).emit('pvp:match-end', { winnerId, winnerName });
+      }
+    });
+
+    // ------------------------------------------------------------------ //
+    // pvp:request-rematch
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:request-rematch', () => {
+      const found = mm.findMatchBySocket(socket.id);
+      if (!found) return;
+
+      const rematchResult = mm.requestRematch(found.code, socket.userId);
+
+      if (rematchResult === 'rematch') {
+        io.to(found.code).emit('pvp:rematch-start');
+      } else if (rematchResult === 'waiting') {
+        const match = mm.getMatch(found.code);
+        if (match) {
+          const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
+          const otherPlayer = match[otherPlayerKey];
+          if (otherPlayer) {
+            const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
+            if (otherSocket) {
+              otherSocket.emit('pvp:opponent-wants-rematch');
+            }
+          }
+        }
+      }
+    });
+
+    // ------------------------------------------------------------------ //
+    // pvp:leave-match
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:leave-match', () => {
+      const found = mm.findMatchBySocket(socket.id);
+      if (!found) return;
+
+      const otherPlayer = mm.leaveMatch(found.code, socket.userId);
+      if (otherPlayer) {
+        const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
+        if (otherSocket) {
+          otherSocket.emit('pvp:rematch-cancelled');
+        }
+      }
+      socket.leave(found.code);
+    });
+
+    // ------------------------------------------------------------------ //
+    // pvp:reconnect
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:reconnect', ({ matchCode } = {}) => {
+      const reconnected = mm.reconnect(matchCode, socket.userId, socket.id);
+      if (!reconnected) {
+        socket.emit('pvp:error', { message: 'Match not found or cannot reconnect' });
+        return;
+      }
+
+      socket.join(matchCode);
+
+      const match = mm.getMatch(matchCode);
+      socket.emit('pvp:reconnected', { currentState: match });
+
+      // Notify the other player
+      const found = mm.findMatchBySocket(socket.id);
+      if (found) {
+        const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
+        const otherPlayer = match[otherPlayerKey];
+        if (otherPlayer) {
+          const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
+          if (otherSocket) {
+            otherSocket.emit('pvp:opponent-reconnected');
+          }
+        }
+      }
+    });
+
+    // ------------------------------------------------------------------ //
+    // disconnect
+    // ------------------------------------------------------------------ //
+    socket.on('disconnect', () => {
+      const found = mm.findMatchBySocket(socket.id);
+      if (!found) return;
+
+      const { code } = found;
+
+      // Start a 30-second grace period before forfeiting
+      const timeout = setTimeout(() => {
+        disconnectTimers.delete(socket.userId);
+
+        const matchFound = mm.findMatchBySocket(socket.id);
+        // After timeout, find match by code since socket id may differ
+        const match = mm.getMatch(code);
+        if (!match) return;
+
+        // Notify the other player
+        const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
+        const otherPlayer = match[otherPlayerKey];
+        if (otherPlayer) {
+          const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
+          if (otherSocket) {
+            otherSocket.emit('pvp:opponent-disconnected');
+          }
+        }
+
+        mm.leaveMatch(code, socket.userId);
+      }, 30000);
+
+      disconnectTimers.set(socket.userId, { timeout, matchCode: code });
+    });
+  });
+
+  return { mm, io };
+}

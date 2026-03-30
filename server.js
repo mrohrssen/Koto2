@@ -144,6 +144,7 @@ import { dataPath } from './src/data-dir.js';
 import { logger } from './src/logger.js';
 import { TtsCache } from './src/services/tts-cache.js';
 import { TtsDialogueCache } from './src/services/tts-dialogue-cache.js';
+import { setupPvpSockets } from './src/pvp/socket-handler.js';
 
 dotenv.config();
 
@@ -188,6 +189,7 @@ const io = new SocketIOServer(httpServer, {
     methods: ['GET', 'POST']
   }
 });
+setupPvpSockets(io);
 const gameManager = new GameManager();
 
 // Debug mode - disables AI narration only (JPDB vocab calls still work)
