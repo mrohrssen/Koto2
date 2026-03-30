@@ -26,7 +26,7 @@
 import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
-import { creatureBgUrl, replaceWithTextSprite, itemSpriteHtml } from './sprite-utils.js';
+import { creatureBgUrl, replaceWithTextSprite, itemSpriteHtml, creatureStaticPath } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
 import * as metaShop from './meta-shop.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
@@ -494,63 +494,27 @@ export function renderShrine() {
     return Math.max(1, o);
   };
 
-  const creatureCards = allCreatures.map(creature => {
-    const hpPercent = Math.floor((creature.hp / creature.maxHp) * 100);
-    return `
-      <div class="shrine-creature-option" data-creature-id="${creature.id}">
-        <div class="shrine-creature-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})">
-          <img class="shrine-creature-img" data-creature-id="${creature.id}" alt="">
-        </div>
-        <div class="shrine-creature-info">
-          <div class="shrine-creature-name">${creature.nameEn} Lv.${creature.level} <span class="shrine-creature-upgrade">\u2192 Lv.${creature.level + 1}</span></div>
-          <div class="shrine-creature-rarity ${creature.rarity || 'common'}">${creature.rarity} \u00B7 ${creature.element}</div>
-          <div class="shrine-creature-desc">HP: ${creature.hp}/${creature.maxHp} (${hpPercent}%) \u00B7 ATK: ${shrineDisplayAtk(creature.attack)}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  actions.setContent(`
-    <h3 class="shrine-title">${t('chooseToTrain')}</h3>
-    <div class="shrine-creature-list">${creatureCards}</div>
-  `);
-
-  // MVP: replace placeholder imgs with text sprites
-  document.querySelectorAll('.shrine-creature-img').forEach(img => {
-    const cid = img.dataset.creatureId;
-    const creature = allCreatures.find(c => c.id === cid);
-    replaceWithTextSprite(img, creature?.baseWord || creature?.name || cid, creature?.element);
-  });
-
-  if (shrineInProgress) return;
-  const list = document.querySelector('.shrine-creature-list');
-  if (list) {
-    list.addEventListener('click', async (e) => {
-      const option = e.target.closest('.shrine-creature-option');
-      if (!option || shrineInProgress) return;
+  renderChoices({
+    cards: allCreatures.map(creature => {
+      const hpPercent = Math.floor((creature.hp / creature.maxHp) * 100);
+      const spriteHtml = `<img src="${creatureStaticPath(creature.id)}" alt="" onerror="this.style.display='none'">`;
+      return {
+        sprite: spriteHtml,
+        title: `${creature.nameEn} Lv.${creature.level} → Lv.${creature.level + 1}`,
+        subtitle: `${creature.rarity} · ${creature.element} · HP: ${creature.hp}/${creature.maxHp} (${hpPercent}%) · ATK: ${shrineDisplayAtk(creature.attack)}`,
+      };
+    }),
+    onSelect: async (index) => {
+      if (shrineInProgress) return;
       shrineInProgress = true;
-
-      document.querySelectorAll('.shrine-creature-option').forEach(o => {
-        o.style.opacity = '0.5';
-        o.style.pointerEvents = 'none';
-      });
-
-      const creatureId = option.dataset.creatureId;
-      const result = await apiShrineUpgrade(creatureId);
+      const creature = allCreatures[index];
+      const result = await apiShrineUpgrade(creature.id);
       if (result?.state) { updateGameState(result.state); }
       sceneModule.showNarration(t('leveledUp', result?.creatureName || 'Creature', result?.newLevel || '?'), { autoDismiss: 2000 });
-      const shrineSlot = document.querySelector('#player-formation .formation-slot');
-      if (shrineSlot && result.hpGain !== undefined) {
-        const sprite = shrineSlot.querySelector('.formation-sprite');
-        if (sprite) flashElement(sprite, 2);
-        buff(shrineSlot, 'Level Up!');
-        if (result.hpGain > 0) setTimeout(() => buff(shrineSlot, `+${result.hpGain} HP`), 300);
-        if (result.attackGain > 0) setTimeout(() => buff(shrineSlot, `+${result.attackGain} ATK`), 600);
-      }
       shrineInProgress = false;
-      updateUI(); // phase becomes 'room' → auto-proceed advances
-    });
-  }
+      updateUI();
+    },
+  });
 }
 
 /** Quiz phase - stubbed out (quiz rooms removed from bootstrap MVP) */

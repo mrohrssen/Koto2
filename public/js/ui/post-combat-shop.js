@@ -19,6 +19,7 @@ import { prefetchWord, playWord } from '../tts.js';
 import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { creatureSpriteHtml, itemSpriteHtml } from './sprite-utils.js';
+import { renderChoices } from './ui-components.js';
 
 let onItemSelected = null;
 
@@ -129,33 +130,17 @@ export function showTargetPicker(creatures, onPicked) {
   const actionArea = dom.actionArea;
   if (!actionArea) return;
 
-  actionArea.innerHTML = `
-    <div class="post-combat-shop">
-      <div class="shop-title">Apply to which creature?</div>
-      <div class="shop-items">
-        ${creatures.map((c, i) => {
-          if (!c) return '';
-          return `
-            <div class="shop-item-card target-pick-card" data-target="${i}" style="border-color: #4fc3f740">
-              ${creatureSpriteHtml(c.id, c.baseWord || c.name, c.element)}
-              <div class="shop-item-info">
-                <div class="shop-item-word">${ELEMENT_ICONS[c.element] || ''} ${c.baseReading || c.name} (${c.nameEn})</div>
-                <div class="shop-item-effect" style="font-size:11px;color:#888">Lv${c.level} · HP ${c.hp}/${c.maxHp}</div>
-              </div>
-            </div>`;
-        }).join('')}
-      </div>
-    </div>
-  `;
-
-  actionArea.querySelectorAll('.target-pick-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const idx = parseInt(card.dataset.target, 10);
+  renderChoices({
+    cards: creatures.filter(Boolean).map((c, i) => ({
+      sprite: creatureSpriteHtml(c.id, c.baseWord || c.name, c.element),
+      title: `${c.baseReading || c.name} (${c.nameEn})`,
+      subtitle: `Lv${c.level} · HP ${c.hp}/${c.maxHp}`,
+    })),
+    onSelect: (index) => {
       playSFX('creature-equip');
-      actionArea.querySelectorAll('.target-pick-card').forEach(c => c.style.pointerEvents = 'none');
-      card.classList.add('selected');
-      if (onPicked) onPicked(idx);
-    });
+      if (onPicked) onPicked(index);
+    },
+    container: actionArea,
   });
 }
 
