@@ -57,7 +57,7 @@ export function createPvpRoutes() {
 
   // Dev-only: seed PvP teams directly (for playtesting)
   router.post('/seed-pvp-teams', (req, res) => {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.RAILWAY_ENVIRONMENT_NAME === 'production') {
       return res.status(403).json({ error: 'Not available in production' });
     }
     const { pvpTeams } = req.body;
