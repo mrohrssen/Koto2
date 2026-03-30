@@ -77,7 +77,9 @@ export function createMetaProgression() {
     prologueComplete: false,
 
     // Whether the player is in hiragana learning mode
-    kanaMode: false
+    kanaMode: false,
+
+    pvpTeams: [null, null, null]  // 3 saved PvP team slots
   };
 }
 
