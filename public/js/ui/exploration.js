@@ -31,7 +31,7 @@ import { t, isJapanified } from './i18n.js';
 import * as metaShop from './meta-shop.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { playRoomTransition } from './room-transition.js';
-import { renderButtons } from './ui-components.js';
+import { renderButtons, renderChoices } from './ui-components.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './combat-effects.js';
 
@@ -352,26 +352,13 @@ export function renderHub() {
 export async function renderAreaSelection() {
   const gameState = getGameState();
 
-  // Skip if starting creature shop is active - creature selection will render instead
-  if (gameState.run?.startingCreatureShop?.active) {
-    return;
-  }
+  if (gameState.run?.startingCreatureShop?.active) return;
 
   const areas = await apiGetAreaOptions();
-
   if (!areas || !areas.length) {
     actions.setContent('<p style="text-align:center">No areas available</p>');
     return;
   }
-
-  let selectedAreaId = null;
-
-  const areaHtml = areas.map(a => `
-    <div class="ward-option" data-area-id="${a.id}">
-      <strong>${a.nameEn || a.name}</strong>
-      <small>${a.theme || ''}</small>
-    </div>
-  `).join('');
 
   const areasCompleted = gameState.run?.areasCompleted || 0;
   const areasToWin = gameState.run?.areasToWin || 10;
@@ -380,27 +367,25 @@ export async function renderAreaSelection() {
     <p style="text-align:center;color:var(--text-secondary);margin-bottom:0.5rem">
       Area ${areasCompleted + 1} / ${areasToWin}
     </p>
-    <div class="ward-selection-list">${areaHtml}</div>
-    <button class="action-btn action-btn-primary" id="area-proceed-btn" disabled>進む</button>
   `);
 
-  document.querySelectorAll('.ward-option').forEach(el => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.ward-option').forEach(o => o.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedAreaId = el.dataset.areaId;
-      const btn = document.getElementById('area-proceed-btn');
-      if (btn) btn.disabled = false;
-    });
-  });
+  const actionArea = document.getElementById('action-area');
+  const choiceContainer = document.createElement('div');
+  actionArea.appendChild(choiceContainer);
 
-  document.getElementById('area-proceed-btn')?.addEventListener('click', async () => {
-    if (!selectedAreaId) return;
-    const result = await apiSelectArea(selectedAreaId);
-    if (result?.state) {
-      updateGameState(result.state);
-      updateUI();
-    }
+  renderChoices({
+    cards: areas.map(a => ({
+      title: `<strong>${a.nameEn || a.name}</strong>`,
+      subtitle: a.theme || '',
+    })),
+    onSelect: async (index) => {
+      const result = await apiSelectArea(areas[index].id);
+      if (result?.state) {
+        updateGameState(result.state);
+        updateUI();
+      }
+    },
+    container: choiceContainer,
   });
 }
 
@@ -947,17 +932,14 @@ export async function renderSkillMaster() {
       actions.setContent(`
         <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
           <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">Skill Master</div>
-          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
-            Failed to load offers.
-          </div>
-          <button class="action-btn action-btn-primary" id="skillmaster-retry-btn">Retry</button>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Failed to load offers.</div>
         </div>
       `);
-      document.getElementById('skillmaster-retry-btn')?.addEventListener('click', () => {
-        skillMasterState.fetched = false;
-        skillMasterState.offered = null;
-        renderSkillMaster();
-      });
+      const retryContainer = document.createElement('div');
+      document.getElementById('action-area').appendChild(retryContainer);
+      renderButtons([
+        { label: 'Retry', onClick: () => { skillMasterState.fetched = false; skillMasterState.offered = null; renderSkillMaster(); }, primary: true },
+      ], { container: retryContainer });
       return;
     }
 
@@ -971,17 +953,14 @@ export async function renderSkillMaster() {
       actions.setContent(`
         <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
           <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">Skill Master</div>
-          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
-            Failed to load offers.
-          </div>
-          <button class="action-btn action-btn-primary" id="skillmaster-retry-btn">Retry</button>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Failed to load offers.</div>
         </div>
       `);
-      document.getElementById('skillmaster-retry-btn')?.addEventListener('click', () => {
-        skillMasterState.fetched = false;
-        skillMasterState.offered = null;
-        renderSkillMaster();
-      });
+      const retryContainer = document.createElement('div');
+      document.getElementById('action-area').appendChild(retryContainer);
+      renderButtons([
+        { label: 'Retry', onClick: () => { skillMasterState.fetched = false; skillMasterState.offered = null; renderSkillMaster(); }, primary: true },
+      ], { container: retryContainer });
       return;
     }
 
@@ -996,71 +975,30 @@ export async function renderSkillMaster() {
   }
 
   const offers = skillMasterState.offered || room?.skillMaster?.offered || [];
-  const cardsHtml = offers.slice(0, 3).map(s => `
-    <button class="ward-option" data-skill-id="${s.id}" style="text-align:left">
-      <div style="font-weight:800">${s.name || skillMasterState.catalogById?.[s.id]?.name || s.id}</div>
-      <div style="margin-top:4px;color:var(--text-secondary);font-size:12px;line-height:1.3">
-        ${s.desc || skillMasterState.catalogById?.[s.id]?.desc || ''}
-      </div>
-    </button>
-  `).join('');
 
-  actions.setContent(`
-    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px;">
-      <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">Skill Master</div>
-      <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
-        Choose one skill.
-      </div>
-      <div class="ward-selection-list" style="gap:10px">${cardsHtml}</div>
-    </div>
-  `);
-
-  let choosing = false;
-  document.querySelectorAll('.ward-option[data-skill-id]').forEach(el => {
-    el.addEventListener('click', async () => {
-      if (choosing) return;
-      choosing = true;
-      const skillId = el.dataset.skillId;
-      playSFX('button-tap');
-      const buttons = Array.from(document.querySelectorAll('.ward-option[data-skill-id]'));
-      buttons.forEach(btn => {
-        btn.disabled = true;
-        btn.style.opacity = '0.6';
-      });
-
+  renderChoices({
+    cards: offers.slice(0, 3).map(s => ({
+      title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
+      subtitle: s.desc || skillMasterState.catalogById?.[s.id]?.desc || '',
+    })),
+    onSelect: async (index) => {
+      const skillId = offers[index].id;
       let result;
       try {
         result = await apiSkillMasterChoose?.(skillId);
       } catch (err) {
-        choosing = false;
-        buttons.forEach(btn => {
-          btn.disabled = false;
-          btn.style.opacity = '';
-        });
         sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+        renderSkillMaster();
         return;
       }
-
       if (result?.state) {
         updateGameState(result.state);
-        const selectedCard = document.querySelector(`.skill-card[data-skill-id="${skillId}"]`) ||
-                             document.querySelector('.skill-card.selected');
-        if (selectedCard) {
-          pop(selectedCard, 1.15);
-          itemGained(selectedCard, 'Skill Acquired!');
-        }
         updateUI();
-        choosing = false;
-        return;
+      } else {
+        sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
+        renderSkillMaster();
       }
-
-      choosing = false;
-      buttons.forEach(btn => {
-        btn.disabled = false;
-        btn.style.opacity = '';
-      });
-      sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
-    });
+    },
   });
 }
 
@@ -1356,17 +1294,14 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       actions.setContent(`
         <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
           <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle Reward</div>
-          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
-            Failed to load offers.
-          </div>
-          <button class="action-btn action-btn-primary" id="npcbattle-skill-retry-btn">Retry</button>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Failed to load offers.</div>
         </div>
       `);
-      document.getElementById('npcbattle-skill-retry-btn')?.addEventListener('click', () => {
-        npcBattleSkillState.fetched = false;
-        npcBattleSkillState.offered = null;
-        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
-      });
+      const retryContainer = document.createElement('div');
+      document.getElementById('action-area').appendChild(retryContainer);
+      renderButtons([
+        { label: 'Retry', onClick: () => { npcBattleSkillState.fetched = false; npcBattleSkillState.offered = null; renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers }); }, primary: true },
+      ], { container: retryContainer });
       return;
     }
 
@@ -1392,49 +1327,20 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   }
 
   const offers = npcBattleSkillState.offered || [];
-  const cardsHtml = offers.slice(0, 3).map(s => `
-    <button class="ward-option" data-skill-id="${s.id}" style="text-align:left">
-      <div style="font-weight:800">${s.name || s.id}</div>
-      <div style="margin-top:4px;color:var(--text-secondary);font-size:12px;line-height:1.3">
-        ${s.desc || ''}
-      </div>
-    </button>
-  `).join('');
 
-  actions.setContent(`
-    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px;">
-      <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle Reward</div>
-      <div style="text-align:center;color:var(--text-secondary);font-size:13px;">
-        Victory! Choose one party skill.
-      </div>
-      <div class="ward-selection-list" style="gap:10px">${cardsHtml}</div>
-    </div>
-  `);
-
-  document.querySelectorAll('.ward-option[data-skill-id]').forEach(el => {
-    el.addEventListener('click', async () => {
-      if (npcBattleSkillState.choosing) return;
-      npcBattleSkillState.choosing = true;
-      const skillId = el.dataset.skillId;
-      playSFX('button-tap');
-
-      const buttons = Array.from(document.querySelectorAll('.ward-option[data-skill-id]'));
-      buttons.forEach(btn => {
-        btn.disabled = true;
-        btn.style.opacity = '0.6';
-      });
-
+  renderChoices({
+    cards: offers.slice(0, 3).map(s => ({
+      title: s.name || s.id,
+      subtitle: s.desc || '',
+    })),
+    onSelect: async (index) => {
+      const skillId = offers[index].id;
       try {
         await onSkillChosen?.(skillId);
       } catch (err) {
         sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
-        buttons.forEach(btn => {
-          btn.disabled = false;
-          btn.style.opacity = '';
-        });
-      } finally {
-        npcBattleSkillState.choosing = false;
+        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
       }
-    });
+    },
   });
 }
