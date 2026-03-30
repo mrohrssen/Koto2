@@ -42,7 +42,12 @@ export const PHASES = {
   SHOP: 'shop',
   POST_COMBAT_SHOP: 'post_combat_shop',
 
-  RUN_COMPLETE: 'run_complete'
+  RUN_COMPLETE: 'run_complete',
+
+  PVP_LOBBY: 'pvp_lobby',
+  PVP_TEAM_SELECT: 'pvp_team_select',
+  PVP_BATTLE: 'pvp_battle',
+  PVP_RESULT: 'pvp_result'
 };
 
 export const VALID_TRANSITIONS = {
@@ -50,7 +55,8 @@ export const VALID_TRANSITIONS = {
 
   [PHASES.HUB]: [
     PHASES.AREA_SELECTION,
-    PHASES.SHOP
+    PHASES.SHOP,
+    PHASES.PVP_LOBBY
   ],
 
   [PHASES.AREA_SELECTION]: [
@@ -146,7 +152,12 @@ export const VALID_TRANSITIONS = {
 
   [PHASES.RUN_ENDED]: [
     PHASES.HUB
-  ]
+  ],
+
+  [PHASES.PVP_LOBBY]: [PHASES.PVP_TEAM_SELECT, PHASES.HUB],
+  [PHASES.PVP_TEAM_SELECT]: [PHASES.PVP_BATTLE, PHASES.PVP_LOBBY, PHASES.HUB],
+  [PHASES.PVP_BATTLE]: [PHASES.PVP_RESULT, PHASES.HUB],
+  [PHASES.PVP_RESULT]: [PHASES.PVP_TEAM_SELECT, PHASES.HUB]
 };
 
 export function canTransition(from, to) {
