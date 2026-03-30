@@ -604,6 +604,25 @@ async function npcBattleSkillChoose(skillId) {
   return apiCall('/npc-battle-skill-choose', 'POST', { skillId });
 }
 
+// ============ PVP TEAM ENDPOINTS ============
+
+/**
+ * Save the current run's team to a PvP slot
+ * @param {number} slotIndex - Slot index 0-2
+ * @returns {Promise<object>} { ok, pvpTeams }
+ */
+export async function savePvpTeam(slotIndex) {
+  return apiCall('/pvp/save-pvp-team', 'POST', { slotIndex });
+}
+
+/**
+ * Get all saved PvP team slots
+ * @returns {Promise<object>} { pvpTeams }
+ */
+export async function getPvpTeams() {
+  return apiCall('/pvp/pvp-teams', 'GET');
+}
+
 export {
   apiCall,
   isApiLoading,
