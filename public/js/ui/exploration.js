@@ -34,6 +34,7 @@ import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './combat-effects.js';
+import { savePvpTeam, getPvpTeams } from '../api.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -334,6 +335,9 @@ export function renderHub() {
   const gameState = getGameState();
   const tokens = gameState.meta?.progressionTokens || 0;
 
+  const pvpTeams = gameState.meta?.pvpTeams || [null, null, null];
+  const hasPvpTeams = pvpTeams.some(t => t !== null);
+
   renderButtons([
     { label: '📚 速習', onClick: async () => {
       const result = await apiGetDueWords();
@@ -344,6 +348,11 @@ export function renderHub() {
       }
     }},
     { label: `⬆️ 強化${tokens > 0 ? ` (${tokens})` : ''}`, onClick: () => metaShop.show() },
+    { label: '⚔️ Multiplayer Battle', onClick: () => {
+      const gs = getGameState();
+      gs.phase = 'pvp_lobby';
+      updateUI();
+    }, disabled: !hasPvpTeams },
     { label: '⚡ 潜入', onClick: () => startNewRun(), primary: true },
   ]);
 }
@@ -450,7 +459,33 @@ export function renderRunComplete() {
   actionArea.appendChild(btnContainer);
   renderButtons([
     { label: 'ハブに戻る', onClick: () => apiReturnToHub(), primary: true },
+    { label: 'Save Team for PvP', onClick: () => showPvpTeamSaveSlots() },
   ], { container: btnContainer });
+}
+
+async function showPvpTeamSaveSlots() {
+  const result = await getPvpTeams();
+  const teams = result?.pvpTeams || [null, null, null];
+
+  const slots = teams.map((team, i) => {
+    const label = team
+      ? team.creatureParty.active.map(c => c?.nameEn || '?').join(', ')
+      : 'Empty';
+    const levelInfo = team
+      ? ` — Lv ${team.creatureParty.active.map(c => c?.level || '?').join('/')}`
+      : '';
+    return {
+      label: `Team ${i + 1}${levelInfo}: ${label}`,
+      onClick: async () => {
+        if (team && !confirm(`Overwrite Team ${i + 1}?`)) return;
+        await savePvpTeam(i);
+        renderRunComplete();
+      }
+    };
+  });
+
+  slots.push({ label: 'Cancel', onClick: () => renderRunComplete() });
+  renderButtons(slots);
 }
 
 /** Run ended — show Return to Hub */
