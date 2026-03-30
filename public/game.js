@@ -105,6 +105,8 @@ import * as pvpBattleUI from './js/ui/pvp-battle.js';
 import * as speedReview from './js/ui/speed-review.js';
 import * as metaShop from './js/ui/meta-shop.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERSION } from './js/ui/sprite-utils.js';
+import { combatEvents } from './js/ui/combat-events.js';
+import * as speechBubble from './js/ui/speech-bubble.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
@@ -1612,7 +1614,10 @@ async function initGame() {
       if (!formation) return;
       const slots = formation.querySelectorAll('.formation-slot');
       const slot = slots[targetIndex ?? 0] || slots[0];
-      if (slot) recoil(slot, 4, 'left');
+      if (slot) {
+        recoil(slot, 4, 'left');
+        combatEvents.emit('creatureHit', { slotEl: slot, side: 'player' });
+      }
     },
     animateEnemyDefeat: () => scene.hideEnemies(),
     updateActionPanel: () => {},
@@ -1654,6 +1659,9 @@ async function initGame() {
 
   // Initialize move/target selection UI for Pokemon-style combat
   combatLoopUI.initMoveUI();
+
+  // Initialize creature speech bubble system
+  speechBubble.init();
 
   setupEventListeners();
 

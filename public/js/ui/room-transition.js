@@ -4,6 +4,7 @@ import { SPRITE_VERSION } from './sprite-utils.js';
 import { speakText } from '../tts.js';
 import * as narrationBox from './narration-box.js';
 import { renderEnFirst } from './bootstrap-client.js';
+import { combatEvents } from './combat-events.js';
 
 /**
  * Bounce player formation slots in place.
@@ -176,6 +177,8 @@ export async function playRoomTransition(gameState) {
     showDealer();
     await slideFromRight(npcDisplay);
   }
+
+  if (hasCreatures) combatEvents.emit('explore');
 }
 
 /**

@@ -78,6 +78,11 @@ export function renderJpFirst(kanji, reading, english) {
   return html;
 }
 
+/** Add a word to the pending exposure queue (used by speech bubbles). */
+export function addExposure(word) {
+  _pendingExposures.add(word);
+}
+
 /**
  * Flush pending i+1 word exposures to the server.
  * Call after rendering a batch of UI (e.g. after shop items are displayed).

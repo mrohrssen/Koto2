@@ -51,6 +51,7 @@ import { effectiveness, resistedEffectiveness, skillProc, buff, debuff, updateSt
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
 import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
+import { combatEvents } from './combat-events.js';
 
 function npcSpritePath(npcId) {
   return `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`;
@@ -1222,6 +1223,8 @@ export async function executePlayerAttack() {
           // Show damage at same time as final damage reveal
           showDamageNumber(pa.damage, false, pa.critical, false, false, null, tierClass);
           animateEnemyHurt();
+          const enemySlot = document.querySelector('#enemy-formation .formation-slot');
+          if (enemySlot) combatEvents.emit('creatureHit', { slotEl: enemySlot, side: 'enemy' });
 
           // Visual effects for enemy damage (pass enemyMaxHp for tier-based effects)
           const enemySprite = document.getElementById('enemy-sprite');
@@ -1729,6 +1732,7 @@ async function executeCreatureMovesTurn(choices) {
               ? enemyHpMap[tIdx].maxHp
               : (result.enemies?.[0]?.maxHp ?? 100);
             await fireCreatureAttackEffect(creatureSlotEl, enemyEl, atk.moveElement || 'neutral', atk.damage, targetMaxHp);
+            if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
           } else if (atk.damage > 0) {
             animateEnemyHurt();
           }
@@ -1927,6 +1931,7 @@ async function executeCreaturePlayerAttack() {
               ? enemyHpMap[tIdx].maxHp
               : (result.enemies?.[0]?.maxHp ?? 100);
             await fireCreatureAttackEffect(creatureSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
+            if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
           } else {
             animateEnemyHurt();
           }
@@ -2872,6 +2877,8 @@ export async function stopCombatLoop(result) {
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
+
+  if (result?.victory) combatEvents.emit('victory');
 
   // Final cleanup: clear any stale inline transforms on formation slots
   clearFormationTransforms();
