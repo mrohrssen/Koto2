@@ -5524,3 +5524,76 @@ html, body {
 .text-sprite.wood  { color: #27ae60; }
 .text-sprite.earth { color: #8B4513; }
 .text-sprite.metal { color: #95a5a6; }
+
+/* ============================================================
+   EVENT POPUPS — Floating text feedback (buffs, heals, items, credits, etc.)
+   ============================================================ */
+
+@keyframes eventPopupFloat {
+  /* Phase 1 (0-15%): Pop in with overshoot scale */
+  0%   { transform: translate(-50%, 0) scale(0); opacity: 1; }
+  8%   { transform: translate(-50%, 0) scale(1.1); opacity: 1; }
+  15%  { transform: translate(-50%, 0) scale(1.0); opacity: 1; }
+  /* Phase 2 (15-70%): Float in direction, fully visible */
+  70%  { transform: translate(-50%, var(--ep-direction)) scale(1.0); opacity: 1; }
+  /* Phase 3 (70-100%): Continue floating + fade out */
+  100% { transform: translate(-50%, var(--ep-direction)) scale(1.0); opacity: 0; }
+}
+
+.event-popup {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  font-weight: 700;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 6px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, 0);
+  animation-name: eventPopupFloat;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  /* --ep-direction is set inline (negative = up, positive = down) */
+  --ep-direction: -45px;
+}
+
+.event-popup-small  { font-size: 12px; }
+.event-popup-normal { font-size: 16px; }
+.event-popup-large  { font-size: 22px; }
+
+/* ============================================================
+   STATUS ICONS — Persistent pill badges on formation slots
+   ============================================================ */
+
+@keyframes statusIconPop {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes statusIconFade {
+  0%   { transform: scale(1);   opacity: 1; }
+  100% { transform: scale(0.5); opacity: 0; }
+}
+
+.status-icons {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  min-height: 0;
+  margin-top: 2px;
+}
+
+.status-icon {
+  font-size: 9px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.status-icon-enter {
+  animation: statusIconPop 200ms ease-out forwards;
+}
+
+.status-icon-exit {
+  animation: statusIconFade 200ms ease-in forwards;
+}

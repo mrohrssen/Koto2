@@ -184,6 +184,11 @@ export function showFormation(side, creatures, { isBoss = false } = {}) {
     infoBox.appendChild(barsEl);
     slotEl.appendChild(infoBox);
 
+    // Status icons container (populated by updateStatusIcons from event-popup.js)
+    const statusIcons = document.createElement('div');
+    statusIcons.className = 'status-icons';
+    slotEl.appendChild(statusIcons);
+
     // Charged state
     if (creature.ultimateCharge >= (creature.ultimateChargeMax || 100)) {
       slotEl.classList.add('charged');
