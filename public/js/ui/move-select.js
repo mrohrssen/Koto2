@@ -29,7 +29,7 @@ function iconSlug(nameEn) {
   return nameEn.toLowerCase().replace(/\s+/g, '-');
 }
 
-function buildMoveCell(move, canAfford) {
+export function buildMoveCell(move, canAfford) {
   const cell = document.createElement('button');
   cell.className = 'move-cell' + (canAfford ? '' : ' disabled');
 
