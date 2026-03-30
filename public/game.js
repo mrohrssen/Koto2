@@ -100,6 +100,8 @@ import * as narrationBox from './js/ui/narration-box.js';
 import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
+import * as pvpLobbyUI from './js/ui/pvp-lobby.js';
+import * as pvpBattleUI from './js/ui/pvp-battle.js';
 import * as speedReview from './js/ui/speed-review.js';
 import * as metaShop from './js/ui/meta-shop.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERSION } from './js/ui/sprite-utils.js';
@@ -473,6 +475,12 @@ function updateGameContent() {
       break;
     case 'run_ended':
       explorationUI.renderRunEnded();
+      break;
+    case 'pvp_lobby':
+      pvpLobbyUI.renderPvpLobby();
+      break;
+    case 'pvp_team_select':
+      pvpLobbyUI.renderPvpTeamSelect();
       break;
   }
 }
@@ -1539,6 +1547,20 @@ async function initGame() {
     apiSkillMasterChoose,
     apiGetFriendlyNpcOffers,
     apiChooseFriendlyNpcItem,
+  });
+
+  pvpLobbyUI.init({
+    getGameState: () => gameState,
+    updateUI,
+    actions,
+    scene,
+  });
+
+  pvpBattleUI.init({
+    getGameState: () => gameState,
+    updateUI,
+    actions,
+    scene,
   });
 
   metaShop.init({
