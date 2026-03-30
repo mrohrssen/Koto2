@@ -274,25 +274,54 @@ export async function renderPvpTeamSelect() {
   const slotsHtml = teams.map((team, i) => {
     if (!team) {
       return `
-        <button class="action-btn action-btn-tertiary pvp-team-slot" data-slot="${i}" disabled style="text-align:left;opacity:0.5;">
-          <div><strong>Team ${i + 1}</strong></div>
-          <div style="font-size:0.85em;color:var(--text-secondary);">Empty</div>
-        </button>
+        <div class="pvp-team-card pvp-team-empty pvp-team-slot" data-slot="${i}">
+          <div class="pvp-team-header">
+            <span class="pvp-team-label">Team ${i + 1}</span>
+          </div>
+          <div class="pvp-team-empty-msg">Empty</div>
+        </div>
       `;
     }
     const creatures = team.creatureParty?.active || [];
-    const label = creatures.map(c => c?.nameEn || '?').join(', ');
-    const levels = creatures.map(c => `Lv${c?.level || '?'}`).join('/');
+    const creaturesHtml = creatures.map((c, ci) => {
+      if (!c) return '';
+      const sprite = creatureSpriteHtml(c.id, c.baseWord || c.name, c.element, 'pvp-mini-sprite');
+      const name = escapeHtml(c.nameEn || c.name || '?');
+      const elRgb = c.element === 'fire' ? '239,83,80' : c.element === 'water' ? '66,165,245' : c.element === 'wood' ? '102,187,106' : c.element === 'earth' ? '141,110,99' : '158,158,158';
+      return `
+        <div class="pvp-creature-mini" style="background:rgba(${elRgb},0.1)" data-team="${i}" data-creature="${ci}">
+          <button class="pvp-creature-info-btn" data-team="${i}" data-creature="${ci}">?</button>
+          <div class="pvp-sprite-frame">${sprite}</div>
+          <div class="pvp-creature-name">${name}</div>
+          <div class="pvp-creature-level" style="color:${ELEMENT_COLORS[c.element] || '#888'}">Lv${c.level || '?'}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Party skills
+    const skills = team.partySkills || [];
+    const skillsHtml = skills.length > 0
+      ? `<div class="pvp-party-skills">${skills.map(s => {
+          const id = typeof s === 'string' ? s : (s?.id || s?.skillId || '');
+          const name = PARTY_SKILL_NAMES[id] || id;
+          return `<span class="pvp-skill-tag">${escapeHtml(name)}</span>`;
+        }).join('')}</div>`
+      : '';
+
     return `
-      <button class="action-btn action-btn-secondary pvp-team-slot" data-slot="${i}" style="text-align:left;">
-        <div><strong>Team ${i + 1}</strong> <span style="font-size:0.85em;color:var(--text-secondary);">${levels}</span></div>
-        <div style="font-size:0.85em;color:var(--text-secondary);">${escapeHtml(label)}</div>
-      </button>
+      <div class="pvp-team-card pvp-team-slot" data-slot="${i}">
+        <div class="pvp-team-header">
+          <span class="pvp-team-label">Team ${i + 1}</span>
+          <span class="pvp-team-count">${creatures.length} creatures</span>
+        </div>
+        <div class="pvp-creature-row">${creaturesHtml}</div>
+        ${skillsHtml}
+      </div>
     `;
   }).join('');
 
   actions.setContent(`
-    <div class="pvp-team-select" style="display:flex;flex-direction:column;align-items:stretch;gap:10px;width:100%;max-width:340px;margin:0 auto;padding:8px 0;">
+    <div class="pvp-team-select" style="display:flex;flex-direction:column;align-items:stretch;gap:10px;width:100%;max-width:380px;margin:0 auto;padding:8px 0;">
       <div style="text-align:center;color:var(--text-secondary);font-size:0.9em;margin-bottom:2px;">
         Select your team
       </div>
@@ -309,18 +338,16 @@ export async function renderPvpTeamSelect() {
   `);
 
   // Wire up team slot selection
-  document.querySelectorAll('.pvp-team-slot:not([disabled])').forEach(btn => {
-    btn.addEventListener('click', () => {
+  document.querySelectorAll('.pvp-team-slot:not(.pvp-team-empty)').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Don't select team if they clicked the ? button
+      if (e.target.closest('.pvp-creature-info-btn')) return;
       playSFX('button-tap');
       // Deselect all
-      document.querySelectorAll('.pvp-team-slot').forEach(b => {
-        b.style.outline = 'none';
-        b.style.outlineOffset = '0';
-      });
+      document.querySelectorAll('.pvp-team-slot').forEach(b => b.classList.remove('selected'));
       // Select this one
-      btn.style.outline = '2px solid var(--accent-primary)';
-      btn.style.outlineOffset = '2px';
-      selectedSlot = parseInt(btn.dataset.slot);
+      card.classList.add('selected');
+      selectedSlot = parseInt(card.dataset.slot);
 
       // Send team to server
       const team = teams[selectedSlot];
@@ -329,6 +356,21 @@ export async function renderPvpTeamSelect() {
       // Enable ready button
       const readyBtn = document.getElementById('pvp-ready-btn');
       if (readyBtn) readyBtn.disabled = false;
+    });
+  });
+
+  // Wire up ? info buttons to show creature popup
+  document.querySelectorAll('.pvp-creature-info-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playSFX('button-tap');
+      const teamIdx = parseInt(btn.dataset.team);
+      const creatureIdx = parseInt(btn.dataset.creature);
+      const team = teams[teamIdx];
+      const creature = team?.creatureParty?.active?.[creatureIdx];
+      if (creature) {
+        showPvpCreaturePopup(creature, btn);
+      }
     });
   });
 
