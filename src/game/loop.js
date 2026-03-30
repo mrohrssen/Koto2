@@ -302,7 +302,8 @@ export class GameManager {
         prologueComplete: this.meta.prologueComplete || false,
         progressionTokens: this.meta.progressionTokens || 0,
         upgrades: this.meta.upgrades || {},
-        kanaMode: this.meta.kanaMode || false
+        kanaMode: this.meta.kanaMode || false,
+        pvpTeams: this.meta.pvpTeams || [null, null, null]
       } : null,
       phase: this.getPhase()
     };
