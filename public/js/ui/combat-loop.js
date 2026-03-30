@@ -168,7 +168,7 @@ function buildSplitAttackCard(atk, isEnemy) {
  * @param {boolean} isEnemy - Whether this is an enemy attack
  * @returns {Element|null} The card element, or null if action-area not found
  */
-function insertAttackCard(atk, isEnemy) {
+export function insertAttackCard(atk, isEnemy) {
   const actionArea = document.getElementById('action-area');
   if (!actionArea) return null;
 

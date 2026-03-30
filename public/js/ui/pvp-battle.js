@@ -24,6 +24,7 @@ import { buildMoveCell } from './move-select.js';
 import { toRomaji } from './romaji.js';
 import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
+import { insertAttackCard } from './combat-loop.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -277,7 +278,7 @@ async function handleRoundResult(result) {
   }
 
   // Show attack results briefly
-  const attacks = result.actions?.attacks || result.attacks || [];
+  const attacks = result.attacks || [];
   if (attacks.length > 0) {
     await showAttackSummary(attacks);
   }
@@ -297,38 +298,9 @@ async function handleRoundResult(result) {
  */
 async function showAttackSummary(attacks) {
   for (const atk of attacks) {
-    const attackerName = atk.attackerName || atk.attackerNameJp || '???';
-    const targetName = atk.targetName || atk.targetNameJp || '???';
-    const moveName = atk.moveNameEn || atk.moveName || '???';
-
-    let resultText;
-    if (atk.healAmount > 0) {
-      resultText = `<span style="color:var(--hp-green);">+${atk.healAmount} HP</span>`;
-    } else if (atk.damage > 0) {
-      resultText = `<span style="color:var(--hp-red);">-${atk.damage} HP</span>`;
-    } else if (atk.effectApplied) {
-      resultText = `<span style="color:var(--accent-primary);">${atk.effectApplied}</span>`;
-    } else {
-      resultText = '<span style="color:var(--text-secondary);">0</span>';
-    }
-
-    const skillNameHtml = atk.attackerSkillName
-      ? renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn)
-      : escapeHtml(moveName);
-
-    actions.setContent(`
-      <div class="pvp-attack-card" style="display:flex;align-items:center;gap:12px;padding:12px 16px;max-width:380px;margin:0 auto;background:var(--surface);border-radius:12px;border:1px solid var(--border-color);">
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:600;font-size:0.9em;">${escapeHtml(attackerName)}</div>
-          <div style="font-size:0.85em;color:var(--text-secondary);">${skillNameHtml}</div>
-        </div>
-        <div style="font-size:0.85em;color:var(--text-secondary);">&rarr;</div>
-        <div style="flex:1;min-width:0;text-align:right;">
-          <div style="font-weight:600;font-size:0.9em;">${escapeHtml(targetName)}</div>
-          <div style="font-size:1em;">${resultText}</div>
-        </div>
-      </div>
-    `);
+    // From this player's perspective, sideA is always "us"
+    const isEnemy = (atk.side !== 'sideA');
+    insertAttackCard(atk, isEnemy);
 
     // Update formations after each attack for visual feedback
     if (sceneModule?.showFormation) {
