@@ -13,7 +13,7 @@ function baseState(overrides = {}) {
       pendingBranch: false,
       areaCleared: false,
       areasCompleted: 0,
-      areasToWin: 10,
+      areasToWin: 1,
       currentRoom: 0,
       rooms: [{ type: 'encounter', interacted: true }],
       ...runOverrides,

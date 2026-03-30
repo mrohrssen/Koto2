@@ -145,7 +145,7 @@ export function createNewRun(player) {
     // Area loop system
     currentArea: null,           // full area object from staging JSON
     areasCompleted: 0,           // number of areas cleared
-    areasToWin: 10,              // win condition threshold
+    areasToWin: 1,               // win condition threshold
     areaPath: [],                // array of area IDs visited (for history)
     areaSelectionRequired: true, // true at start and after each area
     areaCleared: false,          // true when all rooms in current area are done
