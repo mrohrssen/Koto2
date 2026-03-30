@@ -55,5 +55,20 @@ export function createPvpRoutes() {
     res.json({ pvpTeams });
   });
 
+  // Dev-only: seed PvP teams directly (for playtesting)
+  router.post('/seed-pvp-teams', (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({ error: 'Not available in production' });
+    }
+    const { pvpTeams } = req.body;
+    if (!Array.isArray(pvpTeams) || pvpTeams.length !== 3) {
+      return res.status(400).json({ error: 'pvpTeams must be array of 3' });
+    }
+    const gm = req.gameManager;
+    gm.meta.pvpTeams = pvpTeams;
+    req.saveGame();
+    res.json({ ok: true });
+  });
+
   return router;
 }
