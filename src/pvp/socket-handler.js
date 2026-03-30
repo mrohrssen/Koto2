@@ -156,7 +156,7 @@ export function setupPvpSockets(io) {
         p1Socket.emit('pvp:round-result', {
           allies: result.sideA,
           enemies: result.sideB,
-          actions: result.actions,
+          attacks: result.attacks,
           winner: result.winner
         });
       }
@@ -164,7 +164,7 @@ export function setupPvpSockets(io) {
         p2Socket.emit('pvp:round-result', {
           allies: result.sideB,
           enemies: result.sideA,
-          actions: result.actions,
+          attacks: result.attacks,
           winner: result.winner
         });
       }
