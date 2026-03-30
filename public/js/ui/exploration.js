@@ -31,6 +31,7 @@ import { t, isJapanified } from './i18n.js';
 import * as metaShop from './meta-shop.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { playRoomTransition } from './room-transition.js';
+import { renderButtons } from './ui-components.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './combat-effects.js';
 
@@ -333,34 +334,18 @@ export function renderHub() {
   const gameState = getGameState();
   const tokens = gameState.meta?.progressionTokens || 0;
 
-  actions.setContent(`
-    <div style="display:flex;flex-direction:column;align-items:stretch;gap:12px;width:100%;max-width:340px;margin:0 auto;box-sizing:border-box;">
-      <button class="action-btn action-btn-secondary" id="speed-review-btn">\uD83D\uDCDA 速習</button>
-      <button class="action-btn action-btn-secondary" id="upgrades-btn">\u2B06\uFE0F 強化${tokens > 0 ? ` (${tokens})` : ''}</button>
-      <button class="action-btn action-btn-primary" id="context-action-btn">\u26A1 潜入</button>
-    </div>
-  `);
-
-  document.getElementById('speed-review-btn')?.addEventListener('click', async () => {
-    playSFX('button-tap');
-    // Fetch due words and start speed review
-    const result = await apiGetDueWords();
-    if (result?.words?.length > 0) {
-      speedReview.start(result.words);
-    } else {
-      sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
-    }
-  });
-
-  document.getElementById('upgrades-btn')?.addEventListener('click', () => {
-    playSFX('button-tap');
-    metaShop.show();
-  });
-
-  document.getElementById('context-action-btn')?.addEventListener('click', () => {
-    playSFX('button-tap');
-    startNewRun();
-  });
+  renderButtons([
+    { label: '📚 速習', onClick: async () => {
+      const result = await apiGetDueWords();
+      if (result?.words?.length > 0) {
+        speedReview.start(result.words);
+      } else {
+        sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
+      }
+    }},
+    { label: `⬆️ 強化${tokens > 0 ? ` (${tokens})` : ''}`, onClick: () => metaShop.show() },
+    { label: '⚡ 潜入', onClick: () => startNewRun(), primary: true },
+  ]);
 }
 
 /** Area selection — show area cards, proceed button */
@@ -425,38 +410,26 @@ export function renderExploring() {
   const room = gameState.run?.currentRoom;
 
   if (room?.encounter || gameState.phase === 'room_encounter') {
-    actions.setContent(`
-      <button class="action-btn action-btn-tertiary" id="inventory-btn">\uD83D\uDCE6 インベントリ</button>
-      <button class="action-btn action-btn-secondary" id="equip-bots-btn">\uD83D\uDC3E モンスター装備</button>
-      <button class="action-btn action-btn-primary" id="fight-btn">\u2694\uFE0F 戦う</button>
-    `);
-    document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
-    document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
-      actions.triggerEquipBots();
-    });
-    document.getElementById('fight-btn')?.addEventListener('click', () => {
-      startEncounter();
-    });
+    renderButtons([
+      { label: '📦 インベントリ', onClick: showInventory },
+      { label: '🐾 モンスター装備', onClick: () => actions.triggerEquipBots() },
+      { label: '⚔️ 戦う', onClick: () => startEncounter(), primary: true },
+    ]);
     return;
   }
 
-  actions.setContent(`
-    <button class="action-btn action-btn-tertiary" id="inventory-btn">\uD83D\uDCE6 インベントリ</button>
-    <button class="action-btn action-btn-secondary" id="equip-bots-btn">\uD83D\uDC3E モンスター装備</button>
-    <button class="action-btn action-btn-primary" id="proceed-btn">\u27A1\uFE0F 進む</button>
-  `);
-  document.getElementById('inventory-btn')?.addEventListener('click', showInventory);
-  document.getElementById('equip-bots-btn')?.addEventListener('click', () => {
-    actions.triggerEquipBots();
-  });
-  document.getElementById('proceed-btn')?.addEventListener('click', async () => {
-    const result = await apiProceed();
-    if (result?.state) {
-      updateGameState(result.state);
-      await playRoomTransition(result.state);
-      updateUI();
-    }
-  });
+  renderButtons([
+    { label: '📦 インベントリ', onClick: showInventory },
+    { label: '🐾 モンスター装備', onClick: () => actions.triggerEquipBots() },
+    { label: '➡️ 進む', onClick: async () => {
+      const result = await apiProceed();
+      if (result?.state) {
+        updateGameState(result.state);
+        await playRoomTransition(result.state);
+        updateUI();
+      }
+    }, primary: true },
+  ]);
 }
 
 /** Area complete — proceed to area selection */
@@ -469,12 +442,14 @@ export function renderAreaComplete() {
     <p style="text-align:center;color:var(--accent-primary);margin-bottom:0.5rem">
       Area ${areasCompleted} / ${areasToWin} cleared!
     </p>
-    <button class="action-btn action-btn-primary" id="next-area-btn">次のエリアへ</button>
   `);
 
-  document.getElementById('next-area-btn')?.addEventListener('click', () => {
-    updateUI();
-  });
+  const actionArea = document.getElementById('action-area');
+  const btnContainer = document.createElement('div');
+  actionArea.appendChild(btnContainer);
+  renderButtons([
+    { label: '次のエリアへ', onClick: () => updateUI(), primary: true },
+  ], { container: btnContainer });
 }
 
 /** Run complete (game victory) — show Return to Hub */
@@ -483,21 +458,21 @@ export function renderRunComplete() {
     <p style="text-align:center;color:var(--accent-primary);margin-bottom:0.5rem">
       ゲームクリア！おめでとう！
     </p>
-    <button class="action-btn action-btn-primary" id="victory-hub-btn">ハブに戻る</button>
   `);
-  document.getElementById('victory-hub-btn')?.addEventListener('click', () => {
-    apiReturnToHub();
-  });
+
+  const actionArea = document.getElementById('action-area');
+  const btnContainer = document.createElement('div');
+  actionArea.appendChild(btnContainer);
+  renderButtons([
+    { label: 'ハブに戻る', onClick: () => apiReturnToHub(), primary: true },
+  ], { container: btnContainer });
 }
 
 /** Run ended — show Return to Hub */
 export function renderRunEnded() {
-  actions.setContent(`
-    <button class="action-btn action-btn-primary" id="return-hub-btn">ハブに戻る</button>
-  `);
-  document.getElementById('return-hub-btn')?.addEventListener('click', () => {
-    returnToHub();
-  });
+  renderButtons([
+    { label: 'ハブに戻る', onClick: () => returnToHub(), primary: true },
+  ]);
 }
 
 /** Shrine phase - show creature roster for level-up */
@@ -506,18 +481,16 @@ export function renderShrine() {
   const creatureParty = gameState.run?.creatureParty;
 
   if (!creatureParty) {
-    actions.setContent(`
-      <p style="text-align:center;color:var(--text-secondary)">No creatures in party</p>
-      <button class="action-btn action-btn-primary" id="shrine-skip-btn">続ける</button>
-    `);
-    document.getElementById('shrine-skip-btn')?.addEventListener('click', async () => {
-      const result = await apiProceed();
-      if (result?.state) {
-        updateGameState(result.state);
-        await playRoomTransition(result.state);
-        updateUI();
-      }
-    });
+    renderButtons([
+      { label: '続ける', onClick: async () => {
+        const result = await apiProceed();
+        if (result?.state) {
+          updateGameState(result.state);
+          await playRoomTransition(result.state);
+          updateUI();
+        }
+      }, primary: true },
+    ]);
     return;
   }
 
@@ -642,17 +615,16 @@ export async function renderWordDiscovery() {
 
   // If completed on server, show proceed
   if (discovery.completed) {
-    actions.setContent(`
-      <button class="action-btn action-btn-primary" id="proceed-btn">続ける</button>
-    `);
-    document.getElementById('proceed-btn')?.addEventListener('click', async () => {
-      const result = await apiProceed();
-      if (result?.state) {
-        updateGameState(result.state);
-        await playRoomTransition(result.state);
-        updateUI();
-      }
-    });
+    renderButtons([
+      { label: '続ける', onClick: async () => {
+        const result = await apiProceed();
+        if (result?.state) {
+          updateGameState(result.state);
+          await playRoomTransition(result.state);
+          updateUI();
+        }
+      }, primary: true },
+    ]);
     return;
   }
 
@@ -912,14 +884,15 @@ export async function renderWhackAMole() {
       <div class="wam-start">
         <div class="wam-start-title">ワードマッチ!</div>
         <div class="wam-start-desc">Match the word to the correct creature or item</div>
-        <button class="action-btn action-btn-primary wam-start-btn">プレイ</button>
       </div>
     </div>
   `);
 
-  document.querySelector('.wam-start-btn')?.addEventListener('click', () => {
-    startWhackAMoleGame(pool);
-  });
+  const startBtnContainer = document.createElement('div');
+  document.querySelector('.wam-start')?.appendChild(startBtnContainer);
+  renderButtons([
+    { label: 'プレイ', onClick: () => startWhackAMoleGame(pool), primary: true },
+  ], { container: startBtnContainer });
 }
 
 /** Skill Master room — placeholder UI (to be expanded in later task) */
