@@ -19,9 +19,8 @@ function staticFiles() {
         copyFileSync('public/dev-safe-area.css', `${dist}/dev-safe-area.css`);
       }
 
-      // Copy app icons (needed for PWA install prompts)
-      mkdirSync(`${dist}/assets/icons`, { recursive: true });
-      cpSync('public/assets/icons', `${dist}/assets/icons`, { recursive: true });
+      // Copy all game assets (sprites, backgrounds, audio, icons, etc.)
+      cpSync('public/assets', `${dist}/assets`, { recursive: true });
 
       // Fix HTML: restore unhashed paths for PWA assets
       const htmlPath = `${dist}/index.html`;
