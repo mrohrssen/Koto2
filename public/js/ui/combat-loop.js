@@ -415,6 +415,51 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
           const sprite = slot.querySelector('.formation-sprite');
           if (sprite && !sprite.classList.contains('ko')) spawnParticles(slot, 6, '#42A5F5');
         });
+      } else if (proc.type === 'chainHit') {
+        const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+        const chainTargetEl = allEnemySlots[proc.targetIndex];
+        if (chainTargetEl) {
+          spawnParticles(chainTargetEl, 4, proc.isSE ? '#FF6B6B' : '#FFD93D');
+          if (showDamageNumber) showDamageNumber(proc.damage, false, false);
+        }
+      } else if (proc.type === 'stageChange') {
+        const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+        const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
+        const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
+        const slots = proc.targetSide === 'enemy'
+          ? document.querySelectorAll('#enemy-formation .formation-slot')
+          : document.querySelectorAll('#player-formation .formation-slot');
+        const el = slots[proc.targetIndex];
+        if (el) {
+          if (proc.delta > 0) buff(el, text);
+          else debuff(el, text);
+        }
+      } else if (proc.type === 'spread') {
+        const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+        const spreadTargetEl = allEnemySlots[proc.targetIndex];
+        if (spreadTargetEl) {
+          skillProc(spreadTargetEl, 'SPREAD!');
+          spawnParticles(spreadTargetEl, 4, '#9C27B0');
+        }
+      } else if (proc.type === 'teamBuff') {
+        const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+        allAllySlots.forEach(slot => {
+          buff(slot, `${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`);
+        });
+      } else if (proc.type === 'burst') {
+        const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+        const burstTargetEl = allEnemySlots[proc.targetIndex];
+        if (burstTargetEl) {
+          skillProc(burstTargetEl, 'AFFLICTION BURST!');
+          if (showDamageNumber) showDamageNumber(proc.damage, false, false);
+          spawnParticles(burstTargetEl, 10, '#E91E63');
+        }
+      } else if (proc.type === 'pandemic') {
+        const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+        allEnemySlots.forEach(slot => {
+          skillProc(slot, 'PANDEMIC!');
+          spawnParticles(slot, 6, '#9C27B0');
+        });
       }
 
       await effectDelay(600);
@@ -1554,6 +1599,155 @@ async function showPartySkillProcs(atk) {
           spawnParticles(slot, 6, '#42A5F5');
         }
       });
+    } else if (proc.type === 'chainHit') {
+      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+      const chainTargetEl = allEnemySlots[proc.targetIndex];
+      if (chainTargetEl) {
+        spawnParticles(chainTargetEl, 4, proc.isSE ? '#FF6B6B' : '#FFD93D');
+        if (showDamageNumber) showDamageNumber(proc.damage, false, false);
+      }
+    } else if (proc.type === 'stageChange') {
+      const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+      const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
+      const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
+      const slots = proc.targetSide === 'enemy'
+        ? document.querySelectorAll('#enemy-formation .formation-slot')
+        : document.querySelectorAll('#player-formation .formation-slot');
+      const el = slots[proc.targetIndex];
+      if (el) {
+        if (proc.delta > 0) buff(el, text);
+        else debuff(el, text);
+      }
+    } else if (proc.type === 'spread') {
+      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+      const spreadTargetEl = allEnemySlots[proc.targetIndex];
+      if (spreadTargetEl) {
+        skillProc(spreadTargetEl, 'SPREAD!');
+        spawnParticles(spreadTargetEl, 4, '#9C27B0');
+      }
+    } else if (proc.type === 'teamBuff') {
+      const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+      allAllySlots.forEach(slot => {
+        buff(slot, `${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`);
+      });
+    } else if (proc.type === 'burst') {
+      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+      const burstTargetEl = allEnemySlots[proc.targetIndex];
+      if (burstTargetEl) {
+        skillProc(burstTargetEl, 'AFFLICTION BURST!');
+        if (showDamageNumber) showDamageNumber(proc.damage, false, false);
+        spawnParticles(burstTargetEl, 10, '#E91E63');
+      }
+    } else if (proc.type === 'pandemic') {
+      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+      allEnemySlots.forEach(slot => {
+        skillProc(slot, 'PANDEMIC!');
+        spawnParticles(slot, 6, '#9C27B0');
+      });
+    }
+
+    await effectDelay(600);
+  }
+}
+
+/**
+ * Show round-start skill events (Erosion, Momentum, Overflow Vitality).
+ * These fire at the start of each round before any actions.
+ * @param {Object} result - Combat cycle result from server
+ */
+async function showRoundStartEvents(result) {
+  if (!result.roundStartEvents?.length) return;
+  const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+
+  for (const event of result.roundStartEvents) {
+    if (event.type === 'erosion') {
+      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+      const el = allEnemySlots[event.targetIndex];
+      if (el) {
+        const text = `${SC_NAMES[event.stat] || event.stat} ${event.delta}`;
+        debuff(el, text);
+        spawnParticles(el, 3, '#FF5722');
+      }
+    } else if (event.type === 'momentum') {
+      const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
+      const el = allAllySlots[event.targetIndex];
+      if (el) {
+        const text = `${SC_NAMES[event.stat] || event.stat} +${event.delta}`;
+        buff(el, text);
+        spawnParticles(el, 3, '#4CAF50');
+      }
+    } else if (event.type === 'overflowVitality') {
+      const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
+      const el = allAllySlots[event.targetIndex];
+      if (el) {
+        healEffect(el, event.healAmount);
+      }
+    }
+    await effectDelay(400);
+  }
+}
+
+/**
+ * Show counter attack animations after enemy attacks.
+ * @param {Object} result - Combat cycle result from server
+ */
+async function showCounterAttacks(result) {
+  if (!result.counterAttacks?.length) return;
+
+  for (const counter of result.counterAttacks) {
+    const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
+    const defenderEl = allAllySlots[counter.defenderIndex];
+    const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
+    const targetEl = allEnemySlots[counter.targetIndex];
+
+    if (defenderEl) {
+      skillProc(defenderEl, 'COUNTER!');
+      flashElement(defenderEl.querySelector('.formation-sprite'), 1);
+    }
+
+    if (targetEl && counter.damage > 0) {
+      spawnParticles(targetEl, 6, '#FF7043');
+      if (showDamageNumber) showDamageNumber(counter.damage, false, false);
+    }
+
+    // Show Vengeful Mark and other counter procs
+    if (counter.procs?.length) {
+      for (const proc of counter.procs) {
+        if (proc.type === 'stageChange') {
+          const SC_NAMES2 = { atk: 'ATK', def: 'DEF' };
+          const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
+          const text = `${SC_NAMES2[proc.stat] || proc.stat} ${dir}`;
+          const slots = proc.targetSide === 'enemy'
+            ? document.querySelectorAll('#enemy-formation .formation-slot')
+            : document.querySelectorAll('#player-formation .formation-slot');
+          const el = slots[proc.targetIndex];
+          if (el) {
+            if (proc.delta > 0) buff(el, text);
+            else debuff(el, text);
+          }
+        } else if (proc.type === 'spread') {
+          const spreadSlots = document.querySelectorAll('#enemy-formation .formation-slot');
+          const spreadEl = spreadSlots[proc.targetIndex];
+          if (spreadEl) {
+            skillProc(spreadEl, 'SPREAD!');
+            spawnParticles(spreadEl, 4, '#9C27B0');
+          }
+        } else if (proc.type === 'pandemic') {
+          const pandemicSlots = document.querySelectorAll('#enemy-formation .formation-slot');
+          pandemicSlots.forEach(slot => {
+            skillProc(slot, 'PANDEMIC!');
+            spawnParticles(slot, 6, '#9C27B0');
+          });
+        } else if (proc.type === 'burst') {
+          const burstSlots = document.querySelectorAll('#enemy-formation .formation-slot');
+          const burstEl = burstSlots[proc.targetIndex];
+          if (burstEl) {
+            skillProc(burstEl, 'AFFLICTION BURST!');
+            if (showDamageNumber) showDamageNumber(proc.damage, false, false);
+            spawnParticles(burstEl, 10, '#E91E63');
+          }
+        }
+      }
     }
 
     await effectDelay(600);
@@ -1828,6 +2022,9 @@ async function executeCreatureMovesTurn(choices) {
       // Show poison/effect ticks
       await showEffectEvents(result);
 
+      // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
+      await showRoundStartEvents(result);
+
       // Track enemy HP for progressive updates (slot index — duplicate species share id)
       const enemyHpMap = buildEnemyHpMapForPlayerAttacks(result);
 
@@ -1960,6 +2157,9 @@ async function executeCreatureMovesTurn(choices) {
       }
       await showEnemyAttacksAnimated(result, allyHpMap, false);
 
+      // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
+      await showCounterAttacks(result);
+
       // KO swap animations
       await showKoSwapAnimations(result);
 
@@ -2025,6 +2225,9 @@ async function executeCreaturePlayerAttack() {
 
       // Show poison/effect ticks
       await showEffectEvents(result);
+
+      // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
+      await showRoundStartEvents(result);
 
       const enemyHpMap = buildEnemyHpMapForPlayerAttacks(result);
 
@@ -2126,6 +2329,9 @@ async function executeCreaturePlayerAttack() {
       }
       await showEnemyAttacksAnimated(result, allyHpMap, false);
 
+      // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
+      await showCounterAttacks(result);
+
       // KO swap animations
       await showKoSwapAnimations(result);
 
@@ -2195,6 +2401,9 @@ async function executeCreatureDefendThenPause() {
 
       // Show poison/effect ticks
       await showEffectEvents(result);
+
+      // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
+      await showRoundStartEvents(result);
 
       // Show defend indicator
       const actionArea = document.getElementById('action-area');
