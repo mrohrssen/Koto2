@@ -66,6 +66,7 @@ import {
   CREATURES_BY_ID
 } from './creatures.js';
 import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
+import { resetStatStages } from './combat/effects.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
@@ -579,6 +580,11 @@ export class GameManager {
     this.combat.isCreatureCombat = true;
     this.combat.isBoss = isBoss;
     this.combat.swapPhase = true; // Free swap available before first action
+
+    // Reset stat stages for all combatants at battle start
+    for (const c of [...this.combat.allies, ...this.combat.enemies]) {
+      if (c) resetStatStages(c);
+    }
 
     // NPC Battle rooms: always assign an NPC from the area's roster
     if (isNpcBattle) {

@@ -115,13 +115,7 @@ export function applyConfuse(target, { duration = 2, sourceId }) {
   applyOrRefresh(target, { type: 'confuse', remainingTurns: duration, sourceId });
 }
 
-export function applyAttackBuff(target, { percent, duration = 2, sourceId }) {
-  applyOrRefresh(target, { type: 'attack_buff', percent, remainingTurns: duration, sourceId });
-}
-
-export function applyDefenseBuff(target, { percent, duration = 2, sourceId }) {
-  applyOrRefresh(target, { type: 'defense_buff', percent, remainingTurns: duration, sourceId });
-}
+// Legacy applyAttackBuff/applyDefenseBuff removed — replaced by stat stages below.
 
 export function applyHaste(target, { sourceId }) {
   if (!target.activeEffects) {
@@ -146,9 +140,7 @@ export function applyTeamShield(allies, { percent, duration = 2, sourceId }) {
   }
 }
 
-export function applyAttackDebuff(target, { percent, duration = 2, sourceId }) {
-  applyOrRefresh(target, { type: 'attack_debuff', percent, remainingTurns: duration, sourceId });
-}
+// Legacy applyAttackDebuff removed — replaced by stat stages below.
 
 export function applyTaunt(target, { duration = 2, sourceId }) {
   applyOrRefresh(target, { type: 'taunt', remainingTurns: duration, sourceId });
@@ -162,6 +154,60 @@ export function applyHeal(target, amount) {
   const before = target.hp;
   target.hp = Math.min(target.hp + amount, target.maxHp);
   return target.hp - before;
+}
+
+// ── Stat Stages (PokeRogue-style) ─────────────────────────────────
+// Integer stages -6 to +6 per stat. Stored on creature.statStages, NOT in activeEffects.
+// Stages accumulate (not refresh), persist until combat end, reset at battle start.
+
+const STAGE_MIN = -6;
+const STAGE_MAX = 6;
+
+/** Initialize statStages on a creature if missing. */
+export function initStatStages(creature) {
+  if (!creature.statStages) {
+    creature.statStages = { atk: 0, def: 0 };
+  }
+}
+
+/** Reset all stat stages to 0 (call at combat start). */
+export function resetStatStages(creature) {
+  creature.statStages = { atk: 0, def: 0 };
+}
+
+/**
+ * Apply a stat stage change, clamping to [STAGE_MIN, STAGE_MAX].
+ * @returns {number} Actual change applied (0 if already at cap).
+ */
+export function applyStatChange(creature, stat, amount) {
+  initStatStages(creature);
+  const before = creature.statStages[stat] || 0;
+  creature.statStages[stat] = Math.max(STAGE_MIN, Math.min(STAGE_MAX, before + amount));
+  return creature.statStages[stat] - before;
+}
+
+/**
+ * Apply multiple stat changes from a move's statChanges object.
+ * @param {object} creature
+ * @param {object} statChanges - e.g. { atk: 1, def: -1 }
+ * @returns {object} Map of stat -> actual change applied
+ */
+export function applyStatChanges(creature, statChanges) {
+  const results = {};
+  for (const [stat, amount] of Object.entries(statChanges)) {
+    results[stat] = applyStatChange(creature, stat, amount);
+  }
+  return results;
+}
+
+/**
+ * Get the multiplier for a stat based on its stage.
+ * Formula: max(2, 2+stage) / max(2, 2-stage)
+ * +1 = 1.5x, +6 = 4.0x, -1 = 0.667x, -6 = 0.25x
+ */
+export function getStageMultiplier(creature, stat) {
+  const stage = creature.statStages?.[stat] || 0;
+  return Math.max(2, 2 + stage) / Math.max(2, 2 - stage);
 }
 
 // ── Query helpers ──────────────────────────────────────────────────
@@ -187,22 +233,11 @@ export function consumeHaste(creature) {
 }
 
 export function getAttackMultiplier(creature) {
-  if (!creature.activeEffects) return 1;
-  const buffPercent = creature.activeEffects
-    .filter(e => e.type === 'attack_buff')
-    .reduce((sum, e) => sum + e.percent, 0);
-  const debuffPercent = creature.activeEffects
-    .filter(e => e.type === 'attack_debuff')
-    .reduce((sum, e) => sum + e.percent, 0);
-  return Math.max(0.1, 1 + buffPercent / 100 - debuffPercent / 100);
+  return getStageMultiplier(creature, 'atk');
 }
 
 export function getDefenseMultiplier(creature) {
-  if (!creature.activeEffects) return 1;
-  const buffPercent = creature.activeEffects
-    .filter(e => e.type === 'defense_buff')
-    .reduce((sum, e) => sum + e.percent, 0);
-  return Math.max(1, 1 + buffPercent / 100);
+  return getStageMultiplier(creature, 'def');
 }
 
 export function getDamageReduction(creature) {

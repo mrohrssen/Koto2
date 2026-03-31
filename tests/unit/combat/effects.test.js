@@ -3,9 +3,10 @@ import assert from 'node:assert';
 import {
   tickEffects, applyPoison, applyHeal,
   applySleep, applyStun, applyConfuse,
-  applyAttackBuff, applyAttackDebuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
+  applyHaste, applyShield, applyTeamShield, applyTaunt,
+  initStatStages, resetStatStages, applyStatChange, applyStatChanges, getStageMultiplier,
   isIncapacitated, isConfused, hasHaste, consumeHaste,
-  getAttackMultiplier, getDamageReduction, getTauntTarget, breakSleep,
+  getAttackMultiplier, getDefenseMultiplier, getDamageReduction, getTauntTarget, breakSleep,
   applyTempAttackFlat, getFlatAttackBonus
 } from '../../../src/game/combat/effects.js';
 
@@ -137,65 +138,114 @@ describe('Combat Effects - Apply Confuse', () => {
   });
 });
 
-describe('Combat Effects - Apply Attack Buff', () => {
-  it('adds attack_buff with percent from skill power', () => {
-    const target = { hp: 100, maxHp: 100, activeEffects: [] };
-    applyAttackBuff(target, { percent: 30, duration: 2, sourceId: 'buffer-1' });
-    assert.strictEqual(target.activeEffects.length, 1);
-    assert.strictEqual(target.activeEffects[0].type, 'attack_buff');
-    assert.strictEqual(target.activeEffects[0].percent, 30);
-    assert.strictEqual(target.activeEffects[0].remainingTurns, 2);
+describe('Combat Effects - Stat Stages', () => {
+  it('initStatStages sets all stats to 0', () => {
+    const creature = {};
+    initStatStages(creature);
+    assert.deepStrictEqual(creature.statStages, { atk: 0, def: 0 });
   });
 
-  it('refreshes duration on reapplication', () => {
-    const target = { hp: 100, maxHp: 100, activeEffects: [
-      { type: 'attack_buff', percent: 30, remainingTurns: 1, sourceId: 'old' }
-    ]};
-    applyAttackBuff(target, { percent: 50, duration: 2, sourceId: 'new' });
-    const buffs = target.activeEffects.filter(e => e.type === 'attack_buff');
-    assert.strictEqual(buffs.length, 1);
-    assert.strictEqual(buffs[0].percent, 50);
-    assert.strictEqual(buffs[0].remainingTurns, 2);
-  });
-});
-
-describe('Combat Effects - Apply Attack Debuff', () => {
-  it('adds attack_debuff with percent', () => {
-    const target = { hp: 100, maxHp: 100, activeEffects: [] };
-    applyAttackDebuff(target, { percent: 25, duration: 3, sourceId: 'debuffer-1' });
-    assert.strictEqual(target.activeEffects.length, 1);
-    assert.strictEqual(target.activeEffects[0].type, 'attack_debuff');
-    assert.strictEqual(target.activeEffects[0].percent, 25);
-    assert.strictEqual(target.activeEffects[0].remainingTurns, 3);
+  it('initStatStages does not overwrite existing stages', () => {
+    const creature = { statStages: { atk: 3, def: -1 } };
+    initStatStages(creature);
+    assert.deepStrictEqual(creature.statStages, { atk: 3, def: -1 });
   });
 
-  it('refreshes duration on reapplication', () => {
-    const target = { hp: 100, maxHp: 100, activeEffects: [
-      { type: 'attack_debuff', percent: 25, remainingTurns: 1, sourceId: 'old' }
-    ]};
-    applyAttackDebuff(target, { percent: 30, duration: 3, sourceId: 'new' });
-    const debuffs = target.activeEffects.filter(e => e.type === 'attack_debuff');
-    assert.strictEqual(debuffs.length, 1);
-    assert.strictEqual(debuffs[0].percent, 30);
-    assert.strictEqual(debuffs[0].remainingTurns, 3);
+  it('resetStatStages clears all stages to 0', () => {
+    const creature = { statStages: { atk: 3, def: -2 } };
+    resetStatStages(creature);
+    assert.deepStrictEqual(creature.statStages, { atk: 0, def: 0 });
   });
 
-  it('getAttackMultiplier reduces with attack_debuff', () => {
-    const creature = { activeEffects: [{ type: 'attack_debuff', percent: 25, remainingTurns: 2 }] };
-    assert.strictEqual(getAttackMultiplier(creature), 0.75);
+  it('applyStatChange accumulates stages', () => {
+    const creature = { statStages: { atk: 1, def: 0 } };
+    const actual = applyStatChange(creature, 'atk', 2);
+    assert.strictEqual(creature.statStages.atk, 3);
+    assert.strictEqual(actual, 2);
   });
 
-  it('getAttackMultiplier combines buff and debuff', () => {
-    const creature = { activeEffects: [
-      { type: 'attack_buff', percent: 50, remainingTurns: 2 },
-      { type: 'attack_debuff', percent: 25, remainingTurns: 2 }
-    ]};
-    assert.strictEqual(getAttackMultiplier(creature), 1.25);
+  it('applyStatChange clamps at +6', () => {
+    const creature = { statStages: { atk: 5, def: 0 } };
+    const actual = applyStatChange(creature, 'atk', 3);
+    assert.strictEqual(creature.statStages.atk, 6);
+    assert.strictEqual(actual, 1);
   });
 
-  it('getAttackMultiplier floors at 0.1', () => {
-    const creature = { activeEffects: [{ type: 'attack_debuff', percent: 200, remainingTurns: 2 }] };
-    assert.strictEqual(getAttackMultiplier(creature), 0.1);
+  it('applyStatChange clamps at -6', () => {
+    const creature = { statStages: { atk: -5, def: 0 } };
+    const actual = applyStatChange(creature, 'atk', -3);
+    assert.strictEqual(creature.statStages.atk, -6);
+    assert.strictEqual(actual, -1);
+  });
+
+  it('applyStatChange returns 0 when already at cap', () => {
+    const creature = { statStages: { atk: 6, def: 0 } };
+    const actual = applyStatChange(creature, 'atk', 1);
+    assert.strictEqual(actual, 0);
+    assert.strictEqual(creature.statStages.atk, 6);
+  });
+
+  it('applyStatChanges applies multiple stats', () => {
+    const creature = { statStages: { atk: 0, def: 0 } };
+    const results = applyStatChanges(creature, { atk: 1, def: -1 });
+    assert.strictEqual(creature.statStages.atk, 1);
+    assert.strictEqual(creature.statStages.def, -1);
+    assert.deepStrictEqual(results, { atk: 1, def: -1 });
+  });
+
+  it('applyStatChange initializes statStages if missing', () => {
+    const creature = {};
+    applyStatChange(creature, 'atk', 2);
+    assert.strictEqual(creature.statStages.atk, 2);
+    assert.strictEqual(creature.statStages.def, 0);
+  });
+
+  it('getStageMultiplier returns correct values', () => {
+    const creature = { statStages: { atk: 0, def: 0 } };
+    assert.strictEqual(getStageMultiplier(creature, 'atk'), 1.0);
+
+    creature.statStages.atk = 1;
+    assert.strictEqual(getStageMultiplier(creature, 'atk'), 1.5);
+
+    creature.statStages.atk = 2;
+    assert.strictEqual(getStageMultiplier(creature, 'atk'), 2.0);
+
+    creature.statStages.atk = 6;
+    assert.strictEqual(getStageMultiplier(creature, 'atk'), 4.0);
+
+    creature.statStages.atk = -1;
+    assert.ok(Math.abs(getStageMultiplier(creature, 'atk') - 2/3) < 0.001);
+
+    creature.statStages.atk = -2;
+    assert.strictEqual(getStageMultiplier(creature, 'atk'), 0.5);
+
+    creature.statStages.atk = -6;
+    assert.strictEqual(getStageMultiplier(creature, 'atk'), 0.25);
+  });
+
+  it('getStageMultiplier returns 1.0 when statStages is missing', () => {
+    const creature = {};
+    assert.strictEqual(getStageMultiplier(creature, 'atk'), 1.0);
+  });
+
+  it('getAttackMultiplier delegates to stage system', () => {
+    const creature = { statStages: { atk: 2, def: 0 } };
+    assert.strictEqual(getAttackMultiplier(creature), 2.0);
+  });
+
+  it('getDefenseMultiplier delegates to stage system', () => {
+    const creature = { statStages: { atk: 0, def: -2 } };
+    assert.strictEqual(getDefenseMultiplier(creature), 0.5);
+  });
+
+  it('getAttackMultiplier returns 1 with no statStages', () => {
+    const creature = {};
+    assert.strictEqual(getAttackMultiplier(creature), 1);
+  });
+
+  it('getDefenseMultiplier returns 1 with no statStages', () => {
+    const creature = {};
+    assert.strictEqual(getDefenseMultiplier(creature), 1);
   });
 });
 
@@ -288,16 +338,6 @@ describe('Combat Effects - Query Helpers', () => {
     assert.strictEqual(creature.activeEffects.length, 1);
   });
 
-  it('getAttackMultiplier returns 1 with no buffs', () => {
-    const creature = { activeEffects: [] };
-    assert.strictEqual(getAttackMultiplier(creature), 1);
-  });
-
-  it('getAttackMultiplier returns 1.3 with 30% attack buff', () => {
-    const creature = { activeEffects: [{ type: 'attack_buff', percent: 30, remainingTurns: 2 }] };
-    assert.strictEqual(getAttackMultiplier(creature), 1.3);
-  });
-
   it('getDamageReduction returns 0 with no shields', () => {
     const creature = { activeEffects: [] };
     assert.strictEqual(getDamageReduction(creature), 0);
@@ -367,15 +407,6 @@ describe('Combat Effects - Tick expands to all types', () => {
     assert.strictEqual(events[0].type, 'sleep_tick');
   });
 
-  it('decrements attack_buff and keeps while remaining > 0', () => {
-    const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
-      { type: 'attack_buff', percent: 30, remainingTurns: 2, sourceId: 'x' }
-    ]};
-    tickEffects(creature);
-    assert.strictEqual(creature.activeEffects.length, 1);
-    assert.strictEqual(creature.activeEffects[0].remainingTurns, 1);
-  });
-
   it('does not tick haste (no remainingTurns)', () => {
     const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
       { type: 'haste', sourceId: 'x' }
@@ -429,7 +460,7 @@ describe('Combat Effects - getFlatAttackBonus', () => {
   it('ignores other effect types', () => {
     const creature = { activeEffects: [
       { type: 'temp_attack_flat', value: 3, remainingTurns: 5 },
-      { type: 'attack_buff', percent: 30, remainingTurns: 2 }
+      { type: 'poison', damagePerTurn: 5, remainingTurns: 2, sourceId: 'x' }
     ]};
     assert.strictEqual(getFlatAttackBonus(creature), 3);
   });

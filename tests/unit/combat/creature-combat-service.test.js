@@ -194,20 +194,21 @@ describe('Creature Combat - Status Effects in Move Turn', () => {
     assert.ok(!allies[0].activeEffects.some(e => e.type === 'haste'));
   });
 
-  it('attack-buffed creature deals more damage', () => {
+  it('attack-buffed creature deals more damage (stat stages)', () => {
     const allies = [instantiateCreature('mizu')];
     const enemies = [instantiateCreature('ki')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
 
     const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const unbuffed = { ...allies[0], statStages: { atk: 0, def: 0 }, activeEffects: [] };
     const result1 = processMoveTurn(
-      [{ ...allies[0], activeEffects: [] }],
+      [unbuffed],
       [{ ...enemies[0] }],
       [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }]
     );
 
-    allies[0].activeEffects = [{ type: 'attack_buff', percent: 100, remainingTurns: 2, sourceId: 'x' }];
+    allies[0].statStages = { atk: 2, def: 0 };
     const enemies2 = [instantiateCreature('ki')];
     enemies2[0].hp = 9999;
     enemies2[0].maxHp = 9999;
@@ -591,7 +592,7 @@ describe('Creature Combat - executeNpcSkill', () => {
   const buffSkill = {
     id: 'npc-aoe-buff', name: 'NPC Buff', nameEn: 'NPC Buff',
     element: 'neutral', category: 'buff', target: 'all_allies',
-    power: 25, mpCost: 0, statusEffect: 'attack_buff', statusChance: 100, statusDuration: 2
+    power: 0, mpCost: 0, statChanges: { atk: 1 }
   };
 
   const debuffSkill = {
@@ -629,7 +630,7 @@ describe('Creature Combat - executeNpcSkill', () => {
     assert.ok(enemies[1].hp > hpBefore[1], 'second NPC creature should be healed');
   });
 
-  it('AOE buff applies attack_buff to NPC creatures', () => {
+  it('AOE buff applies stat stage boost to NPC creatures', () => {
     const allies = [instantiateCreature('hi')];
     const enemies = [instantiateCreature('ki')];
 
@@ -637,8 +638,7 @@ describe('Creature Combat - executeNpcSkill', () => {
 
     assert.ok(result.attacks.length >= 1, 'should produce attack records');
     // Buff targets "all_allies" from NPC perspective = enemies array
-    const hasAttackBuff = enemies[0].activeEffects.some(e => e.type === 'attack_buff');
-    assert.ok(hasAttackBuff, 'NPC creature should have attack_buff effect');
+    assert.ok(enemies[0].statStages && enemies[0].statStages.atk > 0, 'NPC creature should have raised ATK stage');
   });
 
   it('AOE debuff applies poison to player creatures', () => {

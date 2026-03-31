@@ -147,16 +147,19 @@ export const skillProc = (el, text) => showEventPopup(el, text, {
 
 const STATUS_ICON_CONFIG = {
   poison:        { label: 'PSN',  bg: '#9C27B0', text: '#fff' },
-  attack_buff:   { label: 'ATK↑', bg: '#FF8F00', text: '#fff' },
-  attack_debuff: { label: 'ATK↓', bg: '#7B1FA2', text: '#fff' },
-  defense_buff:  { label: 'DEF↑', bg: '#1976D2', text: '#fff' },
+  // Stat stage icons (from statStages)
+  atk_up:        { label: 'ATK↑', bg: '#FF8F00', text: '#fff' },
+  atk_down:      { label: 'ATK↓', bg: '#7B1FA2', text: '#fff' },
+  def_up:        { label: 'DEF↑', bg: '#1976D2', text: '#fff' },
+  def_down:      { label: 'DEF↓', bg: '#E65100', text: '#fff' },
+  // Duration-based effects
   shield:        { label: 'SHD',  bg: '#00ACC1', text: '#fff' },
   team_shield:   { label: 'SHD',  bg: '#00ACC1', text: '#fff' },
   haste:         { label: 'SPD↑', bg: '#29B6F6', text: '#fff' },
-  speed_buff:    { label: 'SPD↑', bg: '#29B6F6', text: '#fff' },
   stun:          { label: 'STUN', bg: '#F9A825', text: '#000' },
   sleep:         { label: 'SLP',  bg: '#78909C', text: '#fff' },
-  confuse:       { label: 'CONF', bg: '#FDD835', text: '#000' }
+  confuse:       { label: 'CONF', bg: '#FDD835', text: '#000' },
+  taunt:         { label: 'TAUNT', bg: '#D32F2F', text: '#fff' }
 };
 
 /**

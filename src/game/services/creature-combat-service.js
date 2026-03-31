@@ -17,7 +17,8 @@ import {
 import {
   applyHeal, applyPoison, tickEffects,
   applySleep, applyStun, applyConfuse,
-  applyAttackBuff, applyAttackDebuff, applyDefenseBuff, applyHaste, applyShield, applyTeamShield, applyTaunt,
+  applyHaste, applyShield, applyTeamShield, applyTaunt,
+  applyStatChanges, resetStatStages,
   isIncapacitated, isConfused, hasHaste, consumeHaste,
   getAttackMultiplier, getDefenseMultiplier, getDamageReduction, getTauntTarget, breakSleep,
   getFlatAttackBonus
@@ -299,15 +300,6 @@ function tryApplyStatus(move, target, caster, allies) {
     case 'confuse':
       applyConfuse(target, { duration, sourceId });
       return 'confuse';
-    case 'attack_buff':
-      applyAttackBuff(target, { percent: move.power || 25, duration, sourceId });
-      return 'attack_buff';
-    case 'defense_buff':
-      applyDefenseBuff(target, { percent: move.power || 25, duration, sourceId });
-      return 'defense_buff';
-    case 'attack_debuff':
-      applyAttackDebuff(target, { percent: move.power || 25, duration, sourceId });
-      return 'attack_debuff';
     case 'haste':
       applyHaste(target, { sourceId });
       return 'haste';
@@ -323,6 +315,18 @@ function tryApplyStatus(move, target, caster, allies) {
     default:
       return null;
   }
+}
+
+/**
+ * Apply stat stage changes from a move's statChanges field.
+ * @returns {object|null} Applied changes map or null if none applied
+ */
+function tryApplyStatChanges(move, target) {
+  if (!move.statChanges) return null;
+  if (move.statusChance && move.statusChance < 100) {
+    if (Math.random() * 100 >= move.statusChance) return null;
+  }
+  return applyStatChanges(target, move.statChanges);
 }
 
 /**
@@ -351,10 +355,11 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         if (damage > 0) breakSleep(target);
 
         const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
+        const statChangesApplied = tryApplyStatChanges(move, target);
         const targetDefeated = target.hp <= 0;
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
-          damage, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied
+          damage, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
         }));
 
         if (targetDefeated && creatureParty) {
@@ -389,10 +394,11 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const healAmount = applyHeal(creature, Math.floor(damage * 0.5));
 
         const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
+        const statChangesApplied = tryApplyStatChanges(move, target);
         const targetDefeated = target.hp <= 0;
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
-          damage, healAmount, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied
+          damage, healAmount, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
         }));
 
         if (targetDefeated && creatureParty) {
@@ -428,9 +434,10 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const target = targets[i];
         const tIdx = indices[i];
         const effectApplied = tryApplyStatus(move, target, creature, allies);
+        const statChangesApplied = tryApplyStatChanges(move, target);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
-          effectApplied
+          effectApplied, statChangesApplied
         }));
       }
       break;
@@ -475,9 +482,10 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const target = targets[i];
         const tIdx = indices[i];
         const effectApplied = tryApplyStatus(move, target, creature, allies);
+        const statChangesApplied = tryApplyStatChanges(move, target);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
-          effectApplied
+          effectApplied, statChangesApplied
         }));
       }
       break;
@@ -1090,6 +1098,7 @@ export function handleCreatureKO(creatureParty, koCreatureIndex) {
   if (creatureParty.reserves.length === 0) return null;
   const replacement = creatureParty.reserves.shift();
   creatureParty.active[koCreatureIndex] = replacement;
+  resetStatStages(replacement);
   return replacement;
 }
 

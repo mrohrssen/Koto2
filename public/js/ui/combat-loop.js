@@ -115,6 +115,10 @@ function buildSplitAttackCard(atk, isEnemy) {
   if (atk.healAmount > 0) damageSign = `+${atk.healAmount}`;
   else if (atk.damage > 0) damageSign = `-${atk.damage}`;
   else if (atk.effectApplied) damageSign = atk.effectApplied;
+  else if (atk.statChangesApplied) {
+    const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+    damageSign = Object.entries(atk.statChangesApplied).map(([s, v]) => `${SC_NAMES[s] || s} ${v > 0 ? '+' : ''}${v}`).join(' ');
+  }
   else damageSign = '0';
   const targetDisplayName = atk.targetNameJp || atk.targetName || '';
   const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
@@ -215,6 +219,10 @@ function insertNpcAttackCard(atk) {
   if (atk.healAmount > 0) damageSign = `+${atk.healAmount}`;
   else if (atk.damage > 0) damageSign = `-${atk.damage}`;
   else if (atk.effectApplied) damageSign = atk.effectApplied;
+  else if (atk.statChangesApplied) {
+    const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+    damageSign = Object.entries(atk.statChangesApplied).map(([s, v]) => `${SC_NAMES[s] || s} ${v > 0 ? '+' : ''}${v}`).join(' ');
+  }
   else damageSign = '0';
   const targetDisplayName = atk.targetNameJp || atk.targetName || '';
   const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
@@ -366,6 +374,18 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
     setTimeout(() => effectiveness(targetEl, 'Super Effective!'), 400);
   } else if (atk.elementMultiplier < 1 && targetEl) {
     setTimeout(() => resistedEffectiveness(targetEl, 'Resisted...'), 400);
+  }
+
+  // Stat stage change popups
+  if (atk.statChangesApplied && targetEl) {
+    const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+    for (const [stat, change] of Object.entries(atk.statChangesApplied)) {
+      if (change === 0) continue;
+      const dir = change > 0 ? `+${change}` : `${change}`;
+      const text = `${SC_NAMES[stat] || stat} ${dir}`;
+      if (change > 0) buff(targetEl, text);
+      else debuff(targetEl, text);
+    }
   }
 
   // Party skill procs (bonus damage, heals, haste, shields)
@@ -554,9 +574,9 @@ export function initMoveUI() {
       const STATUS_LABELS = {
         poison: 'Poison', stun: 'Stun', confuse: 'Confuse',
         shield: 'Shield', team_shield: 'Team Shield',
-        attack_buff: 'Atk Buff', haste: 'Haste',
-        attack_debuff: 'Atk Debuff'
+        haste: 'Haste'
       };
+      const STAT_NAMES = { atk: 'ATK', def: 'DEF' };
       const CAT_LABELS = {
         damage: 'Attack', drain: 'Drain', heal: 'Heal',
         shield: 'Shield', buff: 'Buff', debuff: 'Debuff'
@@ -573,6 +593,12 @@ export function initMoveUI() {
       if (move.power > 0) statsHtml += `<span class="mhp-stat">Power ${move.power}</span>`;
       statsHtml += `<span class="mhp-stat">${move.mpCost} MP</span>`;
       if (move.element) statsHtml += `<span class="mhp-stat">${move.element}</span>`;
+      if (move.statChanges) {
+        for (const [stat, amount] of Object.entries(move.statChanges)) {
+          const dir = amount > 0 ? `+${amount}` : `${amount}`;
+          statsHtml += `<span class="mhp-stat">${STAT_NAMES[stat] || stat} ${dir}</span>`;
+        }
+      }
       if (move.statusEffect) {
         const label = STATUS_LABELS[move.statusEffect] || move.statusEffect;
         const dur = move.statusDuration ? ` ${move.statusDuration}T` : '';
@@ -1418,13 +1444,10 @@ async function showEffectEvents(result) {
         confuse: t('effectConfuse'),
         stun: t('effectStun'),
         sleep: t('effectSleep'),
-        attack_buff: t('effectAtkUp'),
-        attack_debuff: t('effectAtkDown'),
         haste: t('effectHaste'),
         shield: t('effectShield'),
         team_shield: t('effectShield'),
-        defense_buff: t('effectDefUp'),
-        speed_buff: t('effectSpdUp')
+        taunt: 'Taunt'
       };
       const baseType = event.type.replace(/_tick$/, '');
       const label = EFFECT_LABELS[baseType] || event.type;
@@ -1440,8 +1463,8 @@ async function showEffectEvents(result) {
       }
       if (targetEl) {
         // Determine if this is a positive or negative effect
-        const BUFF_TYPES = new Set(['attack_buff', 'defense_buff', 'speed_buff', 'haste', 'shield', 'team_shield']);
-        const DEBUFF_TYPES = new Set(['attack_debuff', 'confuse', 'stun', 'sleep']);
+        const BUFF_TYPES = new Set(['haste', 'shield', 'team_shield']);
+        const DEBUFF_TYPES = new Set(['confuse', 'stun', 'sleep', 'taunt']);
         if (DEBUFF_TYPES.has(baseType)) {
           debuff(targetEl, label);
         } else if (BUFF_TYPES.has(baseType)) {
@@ -1456,19 +1479,36 @@ async function showEffectEvents(result) {
   syncStatusIconsFromResult(result);
 }
 
+/** Derive status icon keys from a creature's activeEffects + statStages. */
+function getCreatureStatusKeys(creature) {
+  const keys = [];
+  if (creature.activeEffects) {
+    for (const e of creature.activeEffects) {
+      if (!keys.includes(e.type)) keys.push(e.type);
+    }
+  }
+  if (creature.statStages) {
+    for (const [stat, stage] of Object.entries(creature.statStages)) {
+      if (stage > 0) keys.push(`${stat}_up`);
+      else if (stage < 0) keys.push(`${stat}_down`);
+    }
+  }
+  return keys;
+}
+
 function syncStatusIconsFromResult(result) {
   if (result.allies) {
     result.allies.forEach((ally, i) => {
       if (!ally) return;
       const slotEl = document.querySelector(`#player-formation .formation-slot[data-index="${i}"]`);
-      if (slotEl) updateStatusIcons(slotEl, ally.statusEffects || []);
+      if (slotEl) updateStatusIcons(slotEl, getCreatureStatusKeys(ally));
     });
   }
   if (result.enemies) {
     result.enemies.forEach((enemy, i) => {
       if (!enemy) return;
       const slotEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${i}"]`);
-      if (slotEl) updateStatusIcons(slotEl, enemy.statusEffects || []);
+      if (slotEl) updateStatusIcons(slotEl, getCreatureStatusKeys(enemy));
     });
   }
 }
