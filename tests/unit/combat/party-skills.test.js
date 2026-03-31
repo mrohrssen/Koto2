@@ -1,7 +1,42 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { PARTY_SKILLS_CATALOG, rollSkillMasterOffers, getPartySkillDisplay } from '../../../src/game/party-skills.js';
 import { applyPartySkillsAfterPlayerAttacks } from '../../../src/game/services/creature-combat-service.js';
+
+test('catalog has 20 skills across 4 loops', () => {
+  const skills = Object.values(PARTY_SKILLS_CATALOG);
+  assert.equal(skills.length, 20);
+
+  const loops = new Set(skills.map(s => s.loop));
+  assert.deepEqual([...loops].sort(), ['buff', 'chain', 'counter', 'debuff']);
+
+  for (const loop of ['chain', 'counter', 'debuff', 'buff']) {
+    const loopSkills = skills.filter(s => s.loop === loop);
+    assert.equal(loopSkills.length, 5, `${loop} loop should have 5 skills`);
+  }
+
+  for (const skill of skills) {
+    assert.ok(skill.id, `skill missing id`);
+    assert.ok(skill.name, `${skill.id} missing name`);
+    assert.ok(skill.loop, `${skill.id} missing loop`);
+    assert.ok(skill.desc, `${skill.id} missing desc`);
+  }
+});
+
+test('rollSkillMasterOffers excludes owned and returns up to count', () => {
+  const offers = rollSkillMasterOffers({ ownedSkillIds: [], count: 3 });
+  assert.equal(offers.length, 3);
+  assert.equal(new Set(offers).size, 3);
+  for (const id of offers) {
+    assert.ok(PARTY_SKILLS_CATALOG[id], `${id} not in catalog`);
+  }
+
+  const offers2 = rollSkillMasterOffers({ ownedSkillIds: offers, count: 3 });
+  for (const id of offers2) {
+    assert.ok(!offers.includes(id), `${id} should be excluded`);
+  }
+});
 
 function makeAlly({ id, hp = 50, maxHp = 100 } = {}) {
   return { id: id || 'ally', hp, maxHp, activeEffects: [] };

@@ -33,6 +33,7 @@ describe('party-skills', () => {
       id,
       name: PARTY_SKILLS_CATALOG[id].name,
       desc: PARTY_SKILLS_CATALOG[id].desc,
+      loop: PARTY_SKILLS_CATALOG[id].loop,
       params: PARTY_SKILLS_CATALOG[id].params
     });
   });
