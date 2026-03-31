@@ -105,22 +105,21 @@ function getScreenshotData() {
   });
 }
 
-/** Get current username */
+/** Get current username (prefer auth username for bug triage) */
 function getUsername() {
-  // Try to get from game state first
-  const gameState = store.get('gameState') || {};
-  if (gameState.player?.name) return gameState.player.name;
-
-  // Fall back to stored user info
+  // Prefer auth username — identifies the account
   const userStr = localStorage.getItem('user');
   if (userStr) {
     try {
       const user = JSON.parse(userStr);
-      return user.username || 'anonymous';
-    } catch {
-      return 'anonymous';
-    }
+      if (user.username) return user.username;
+    } catch { /* fall through */ }
   }
+
+  // Fall back to in-game player name
+  const gameState = store.get('gameState') || {};
+  if (gameState.player?.name) return gameState.player.name;
+
   return 'anonymous';
 }
 
