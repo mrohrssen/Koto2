@@ -239,7 +239,10 @@ export function createCombatState(enemy) {
     enemies: [],   // MVP: single enemy creature
 
     // Party skills (combat-scoped)
-    partyHitCounter: 0,
+    partyHitCounter: 0,       // Legacy — kept for backward compat
+    chainHitsThisTurn: 0,     // Chain Surge threshold counter (resets each turn)
+    counterCounts: {},        // Per-creature counter stack count for Fury Counter
+    afflictionBurstCooldown: {}, // Per-enemy cooldown tracker for Affliction Burst
 
     // Last action for DM narration
     lastAction: null,

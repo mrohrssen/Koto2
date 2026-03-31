@@ -23,6 +23,12 @@ import {
   getAttackMultiplier, getDefenseMultiplier, getDamageReduction, getTauntTarget, breakSleep,
   getFlatAttackBonus
 } from '../combat/effects.js';
+import {
+  applyAfterPlayerAttacks as _applyAfterPlayerAttacks,
+  applyAfterEnemyAttacks,
+  applyRoundStartSkills
+} from '../combat/party-skill-engine.js';
+export { applyAfterEnemyAttacks, applyRoundStartSkills } from '../combat/party-skill-engine.js';
 export const CREDITS_PER_KILL = 15;
 
 /** Player/NPC move damage: applies ATK buffs, STAB, element mult, item element edge, level, and defender DEF. */
@@ -76,63 +82,95 @@ function rollProc(procChance) {
 }
 
 export function applyPartySkillsAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat }) {
+  // === Legacy v1 skills (battleRhythm, superEffectiveMend, hasteSpark, guardPulse, finisherFeast) ===
   const active = toActivePartySkillIdSet(runPartySkills);
-  if (!active.size) return;
-  if (!Array.isArray(attacks) || attacks.length === 0) return;
-  if (!combat) return;
-  if (typeof combat.partyHitCounter !== 'number') combat.partyHitCounter = 0;
+  if (active.size && Array.isArray(attacks) && attacks.length > 0 && combat) {
+    if (typeof combat.partyHitCounter !== 'number') combat.partyHitCounter = 0;
 
-  for (const record of attacks) {
-    if (!isQualifyingPlayerAttackRecord(record)) continue;
-    if (!record.partySkillProcs) record.partySkillProcs = [];
+    for (const record of attacks) {
+      if (!isQualifyingPlayerAttackRecord(record)) continue;
+      if (!record.partySkillProcs) record.partySkillProcs = [];
 
-    // Combat-scoped counter increments on every qualifying player attack record
-    combat.partyHitCounter += 1;
+      // Combat-scoped counter increments on every qualifying player attack record
+      combat.partyHitCounter += 1;
 
-    const attacker = allies?.[record.attackerIndex] || null;
-    const isSuperEffective = (record.elementMultiplier || 1) > 1;
+      const attacker = allies?.[record.attackerIndex] || null;
+      const isSuperEffective = (record.elementMultiplier || 1) > 1;
 
-    // battleRhythm: every Nth qualifying hit deals bonus damage
-    if (active.has('battleRhythm')) {
-      const everyNthHit = 5;
-      const bonusDamageMult = 0.5;
-      if (everyNthHit > 0 && (combat.partyHitCounter % everyNthHit) === 0) {
-        const baseDamage = Math.max(0, Number(record.damage) || 0);
-        const bonus = Math.floor(baseDamage * bonusDamageMult);
+      // battleRhythm: every Nth qualifying hit deals bonus damage
+      if (active.has('battleRhythm')) {
+        const everyNthHit = 5;
+        const bonusDamageMult = 0.5;
+        if (everyNthHit > 0 && (combat.partyHitCounter % everyNthHit) === 0) {
+          const baseDamage = Math.max(0, Number(record.damage) || 0);
+          const bonus = Math.floor(baseDamage * bonusDamageMult);
 
-        // Prefer slot index — multiple instances share the same template id
-        let target = null;
-        if (typeof record.targetIndex === 'number' && Array.isArray(enemies)) {
-          target = enemies[record.targetIndex] || null;
-        }
-        if (!target && record.targetId && Array.isArray(enemies)) {
-          target = enemies.find(e => e && e.id === record.targetId) || null;
-        }
+          let target = null;
+          if (typeof record.targetIndex === 'number' && Array.isArray(enemies)) {
+            target = enemies[record.targetIndex] || null;
+          }
+          if (!target && record.targetId && Array.isArray(enemies)) {
+            target = enemies.find(e => e && e.id === record.targetId) || null;
+          }
 
-        if (target && target.hp > 1 && bonus > 0) {
-          const shieldReduction = getDamageReduction(target);
-          const reducedBonus = shieldReduction > 0
-            ? Math.floor(bonus * (1 - shieldReduction / 100))
-            : bonus;
+          if (target && target.hp > 1 && bonus > 0) {
+            const shieldReduction = getDamageReduction(target);
+            const reducedBonus = shieldReduction > 0
+              ? Math.floor(bonus * (1 - shieldReduction / 100))
+              : bonus;
 
-          const bonusApplied = Math.min(reducedBonus, Math.max(0, target.hp - 1));
-          if (bonusApplied > 0) {
-            target.hp -= bonusApplied;
-            record.damage = baseDamage + bonusApplied;
-            breakSleep(target);
-            record.partySkillProcs.push({
-              skillId: 'battleRhythm', skillName: 'Battle Rhythm',
-              type: 'bonusDamage', bonusDamage: bonusApplied
-            });
+            const bonusApplied = Math.min(reducedBonus, Math.max(0, target.hp - 1));
+            if (bonusApplied > 0) {
+              target.hp -= bonusApplied;
+              record.damage = baseDamage + bonusApplied;
+              breakSleep(target);
+              record.partySkillProcs.push({
+                skillId: 'battleRhythm', skillName: 'Battle Rhythm',
+                type: 'bonusDamage', bonusDamage: bonusApplied
+              });
+            }
           }
         }
       }
-    }
 
-    // superEffectiveMend / hasteSpark / guardPulse: only on super-effective hits
-    if (isSuperEffective) {
-      if (active.has('superEffectiveMend') && rollProc(0.20)) {
-        const healPct = 0.10;
+      if (isSuperEffective) {
+        if (active.has('superEffectiveMend') && rollProc(0.20)) {
+          const healPct = 0.10;
+          let representativeHeal = 0;
+          for (const ally of allies || []) {
+            if (!ally || ally.hp <= 0) continue;
+            const amount = Math.floor((ally.maxHp || 0) * healPct);
+            if (amount > 0) { applyHeal(ally, amount); representativeHeal = representativeHeal || amount; }
+          }
+          record.partySkillProcs.push({
+            skillId: 'superEffectiveMend', skillName: 'Super-Effective Mend',
+            type: 'healAll', healAmount: representativeHeal
+          });
+        }
+
+        if (active.has('hasteSpark') && attacker && attacker.hp > 0 && rollProc(0.25)) {
+          applyHaste(attacker, { sourceId: 'partySkill-hasteSpark' });
+          record.partySkillProcs.push({
+            skillId: 'hasteSpark', skillName: 'Haste Spark',
+            type: 'haste', attackerIndex: record.attackerIndex
+          });
+        }
+
+        if (active.has('guardPulse') && rollProc(0.20)) {
+          applyTeamShield((allies || []).filter(a => a && a.hp > 0), {
+            percent: 10,
+            duration: 2,
+            sourceId: 'partySkill-guardPulse'
+          });
+          record.partySkillProcs.push({
+            skillId: 'guardPulse', skillName: 'Guard Pulse',
+            type: 'teamShield', shieldPct: 10
+          });
+        }
+      }
+
+      if (active.has('finisherFeast') && record.targetDefeated === true) {
+        const healPct = 0.05;
         let representativeHeal = 0;
         for (const ally of allies || []) {
           if (!ally || ally.hp <= 0) continue;
@@ -140,47 +178,15 @@ export function applyPartySkillsAfterPlayerAttacks({ attacks, allies, enemies, r
           if (amount > 0) { applyHeal(ally, amount); representativeHeal = representativeHeal || amount; }
         }
         record.partySkillProcs.push({
-          skillId: 'superEffectiveMend', skillName: 'Super-Effective Mend',
+          skillId: 'finisherFeast', skillName: 'Finisher Feast',
           type: 'healAll', healAmount: representativeHeal
         });
       }
-
-      if (active.has('hasteSpark') && attacker && attacker.hp > 0 && rollProc(0.25)) {
-        applyHaste(attacker, { sourceId: 'partySkill-hasteSpark' });
-        record.partySkillProcs.push({
-          skillId: 'hasteSpark', skillName: 'Haste Spark',
-          type: 'haste', attackerIndex: record.attackerIndex
-        });
-      }
-
-      if (active.has('guardPulse') && rollProc(0.20)) {
-        applyTeamShield((allies || []).filter(a => a && a.hp > 0), {
-          percent: 10,
-          duration: 2,
-          sourceId: 'partySkill-guardPulse'
-        });
-        record.partySkillProcs.push({
-          skillId: 'guardPulse', skillName: 'Guard Pulse',
-          type: 'teamShield', shieldPct: 10
-        });
-      }
-    }
-
-    // finisherFeast: on defeating an enemy via qualifying player attack record
-    if (active.has('finisherFeast') && record.targetDefeated === true) {
-      const healPct = 0.05;
-      let representativeHeal = 0;
-      for (const ally of allies || []) {
-        if (!ally || ally.hp <= 0) continue;
-        const amount = Math.floor((ally.maxHp || 0) * healPct);
-        if (amount > 0) { applyHeal(ally, amount); representativeHeal = representativeHeal || amount; }
-      }
-      record.partySkillProcs.push({
-        skillId: 'finisherFeast', skillName: 'Finisher Feast',
-        type: 'healAll', healAmount: representativeHeal
-      });
     }
   }
+
+  // === v2 engine skills (chain, counter, debuff, buff loops) ===
+  _applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat });
 }
 
 /**

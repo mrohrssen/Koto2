@@ -65,7 +65,7 @@ import {
   syncCreatureDefense,
   CREATURES_BY_ID
 } from './creatures.js';
-import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
+import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, applyAfterEnemyAttacks, applyRoundStartSkills, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
 import { resetStatStages } from './combat/effects.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
@@ -703,6 +703,14 @@ export class GameManager {
     // New player move round — each creature may try はなす again
     this.combat.befriendAttemptedSlots = {};
 
+    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+    const roundStartEvents = applyRoundStartSkills({
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      runPartySkills: this.run.partySkills,
+      combat: this.combat
+    });
+
     const metaMults = { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 };
     const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.creatureParty, metaMults);
 
@@ -760,6 +768,7 @@ export class GameManager {
             xpEvents: revokedXpEvents,
             mpRegens: playerResult.mpRegens || [],
             effectEvents,
+            roundStartEvents,
             befriendQuizTriggered: true,
             befriendQuiz: {
               targetIndex,
@@ -809,6 +818,7 @@ export class GameManager {
         xpEvents: playerResult.xpEvents || [],
         mpRegens: playerResult.mpRegens || [],
         effectEvents,
+        roundStartEvents,
         combatEnded: true,
         victory: true,
         creatureParty: this.run.creatureParty,
@@ -865,6 +875,8 @@ export class GameManager {
           xpEvents: playerResult.xpEvents || [],
           mpRegens: playerResult.mpRegens || [],
           effectEvents,
+          roundStartEvents,
+          counterAttacks: [],
           koSwaps: [],
           combatEnded: true,
           victory: false,
@@ -876,6 +888,15 @@ export class GameManager {
 
     // Enemy phase
     const enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, false, this.run.itemBuffs);
+
+    // Party skills: counter attacks
+    const counterAttacks = applyAfterEnemyAttacks({
+      enemyAttacks: enemyResult.attacks,
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      runPartySkills: this.run.partySkills,
+      combat: this.combat
+    }) || [];
 
     // Handle KO'd allies — swap reserves in
     const koSwaps = [];
@@ -908,6 +929,8 @@ export class GameManager {
         xpEvents: playerResult.xpEvents || [],
         mpRegens: playerResult.mpRegens || [],
         effectEvents,
+        roundStartEvents,
+        counterAttacks,
         koSwaps,
         combatEnded: true,
         victory: true,
@@ -944,6 +967,8 @@ export class GameManager {
         xpEvents: playerResult.xpEvents || [],
         mpRegens: playerResult.mpRegens || [],
         effectEvents,
+        roundStartEvents,
+        counterAttacks,
         koSwaps,
         combatEnded: true,
         victory: false,
@@ -965,6 +990,8 @@ export class GameManager {
       xpEvents: playerResult.xpEvents || [],
       mpRegens: playerResult.mpRegens || [],
       effectEvents,
+      roundStartEvents,
+      counterAttacks,
       befriend: null,
       koSwaps,
       combatEnded: false,
