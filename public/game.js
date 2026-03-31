@@ -100,6 +100,7 @@ import * as narrationBox from './js/ui/narration-box.js';
 import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
+import * as diagnostics from './js/diagnostics.js';
 import * as pvpLobbyUI from './js/ui/pvp-lobby.js';
 import * as pvpBattleUI from './js/ui/pvp-battle.js';
 import * as speedReview from './js/ui/speed-review.js';
@@ -686,6 +687,7 @@ function removeCollectionOverlay() {
 }
 
 async function startNewRun() {
+  diagnostics.logAction('start_run');
   // Note: clearWordCache() moved to returnToHub() for earlier prefetching
 
   // Fetch creature collection for team select
@@ -932,6 +934,7 @@ let encounterStarting = false;
 async function startEncounter() {
   if (encounterStarting) return;
   encounterStarting = true;
+  diagnostics.logAction('start_encounter', { floor: gameState.run?.floor });
   const hasCreatures = gameState.run?.creatureParty?.active?.length > 0;
 
   let result;
@@ -1003,6 +1006,7 @@ async function startEncounter() {
 
 
 async function returnToHub() {
+  diagnostics.logAction('return_to_hub');
   if (combatLoopUI.isCombatActive()) {
     combatLoopUI.cleanupCombat();
   }
@@ -1323,6 +1327,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initGame() {
+  // Must be first — captures console/fetch before other code runs
+  diagnostics.init();
+
   // Initialize i18n language from settings
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
 
@@ -1371,6 +1378,8 @@ async function initGame() {
     },
     contextAction: null,
     cardSwipe: (direction) => {
+      diagnostics.logAction('card_swipe', { direction });
+
       // Word discovery mode uses its own handler via custom event
       if (gameState.phase === 'wordDiscovery') {
         document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: direction }));
@@ -1444,6 +1453,7 @@ async function initGame() {
     getItemBuffs: () => gameState.run?.itemBuffs,
     getEquippedItems: () => gameState.run?.equippedItems || [],
     swapCreatureCallback: async (activeIndex, reserveIndex) => {
+      diagnostics.logAction('swap_creature', { activeIndex, reserveIndex });
       const result = await apiSwapCreature(activeIndex, reserveIndex);
       if (result.error) {
         console.error('Swap failed:', result.error);

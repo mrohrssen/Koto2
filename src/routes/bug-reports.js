@@ -10,6 +10,8 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync
 import { join } from 'path';
 import { dataPath } from '../data-dir.js';
 import { findUserByUsername } from '../auth/users.js';
+import { optionalAuth } from '../auth/middleware.js';
+import { getErrors } from '../server-error-buffer.js';
 
 const BUG_REPORTS_DIR = dataPath('bug-reports');
 const MAX_REPORTS = 50;
@@ -53,12 +55,12 @@ export default function createBugReportRoutes() {
   const router = Router();
 
   // POST /api/bug-report - Submit a new bug report
-  router.post('/bug-report', (req, res) => {
+  router.post('/bug-report', optionalAuth, (req, res) => {
     try {
       const { name, tester, note, screenshot, context } = req.body;
 
-      if (!name || !screenshot) {
-        return res.status(400).json({ error: 'Name and screenshot are required' });
+      if (!name || (!screenshot && !note)) {
+        return res.status(400).json({ error: 'Name and either screenshot or note required' });
       }
 
       // Sanitize name for filesystem
@@ -68,17 +70,24 @@ export default function createBugReportRoutes() {
 
       mkdirSync(reportDir, { recursive: true });
 
-      // Save screenshot (base64 PNG)
-      const base64Data = screenshot.replace(/^data:image\/png;base64,/, '');
-      writeFileSync(join(reportDir, 'screenshot.png'), base64Data, 'base64');
+      // Save screenshot if provided (base64 PNG)
+      if (screenshot) {
+        const base64Data = screenshot.replace(/^data:image\/(png|jpeg|webp);base64,/, '');
+        writeFileSync(join(reportDir, 'screenshot.png'), base64Data, 'base64');
+      }
 
-      // Save metadata
+      // Attach server-side errors if user is identified
+      const serverErrors = req.user?.id ? getErrors(req.user.id) : [];
+
+      // Save metadata with diagnostic streams
       const report = {
         name: safeName,
         tester: tester || 'anonymous',
+        userId: req.user?.id || null,
         note: note || '',
         timestamp,
-        ...context
+        ...context,
+        serverErrors
       };
       writeFileSync(join(reportDir, 'report.json'), JSON.stringify(report, null, 2));
 

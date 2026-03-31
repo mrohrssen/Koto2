@@ -4,9 +4,10 @@
  * Allows users to attach screenshots and submit bug reports.
  */
 
-import { apiUrl } from '../api.js';
+import { apiUrl, getAuthHeaders } from '../api.js';
 import { dom } from '../dom.js';
 import { store } from '../store.js';
+import { snapshot as getDiagnostics } from '../diagnostics.js';
 
 let modal = null;
 let noteInput = null;
@@ -123,9 +124,46 @@ function getUsername() {
   return 'anonymous';
 }
 
-/** Gather game context */
+/** Extract key fields from game state without sending the entire object */
+function sanitizeGameState(gs) {
+  if (!gs) return null;
+  try {
+    const snapshot = {
+      phase: gs.phase,
+      player: gs.player ? {
+        name: gs.player.name,
+        level: gs.player.level,
+        hp: gs.player.hp,
+        maxHp: gs.player.maxHp,
+        credits: gs.player.credits
+      } : null,
+      run: gs.run ? {
+        floor: gs.run.floor,
+        roomIndex: gs.run.roomIndex,
+        areaId: gs.run.areaId,
+        ward: gs.run.ward?.name
+      } : null,
+      combat: gs.combat ? {
+        turn: gs.combat.turn,
+        enemyCount: gs.combat.enemies?.length,
+        partyAlive: gs.combat.party?.filter(c => c && c.hp > 0).length
+      } : null,
+      partySize: gs.run?.party?.length || 0
+    };
+    const json = JSON.stringify(snapshot);
+    if (json.length > 50000) {
+      return { phase: gs.phase, _truncated: true, sizeBytes: json.length };
+    }
+    return snapshot;
+  } catch {
+    return { phase: gs.phase, _error: 'Failed to serialize' };
+  }
+}
+
+/** Gather game context with full diagnostics */
 function gatherContext() {
   const gameState = store.get('gameState') || {};
+  const diagnostics = getDiagnostics();
 
   return {
     screen: gameState.phase || 'unknown',
@@ -138,12 +176,11 @@ function gatherContext() {
     scrollPositions: {
       main: document.querySelector('.game-app')?.scrollTop || 0
     },
-    gameState: {
-      phase: gameState.phase,
-      floor: gameState.run?.floor,
-      ward: gameState.run?.ward?.name,
-      inCombat: !!gameState.combat
-    }
+    gameState: sanitizeGameState(gameState),
+    consoleErrors: diagnostics.consoleErrors,
+    recentActions: diagnostics.recentActions,
+    networkErrors: diagnostics.networkErrors,
+    performance: diagnostics.performance
   };
 }
 
@@ -174,7 +211,7 @@ async function submitReport() {
 
     const response = await fetch(apiUrl('/api/bug-report'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ name, tester, note, screenshot, context })
     });
 

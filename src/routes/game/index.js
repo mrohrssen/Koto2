@@ -8,6 +8,7 @@
 import { Router } from 'express';
 import { requireAuth } from '../../auth/middleware.js';
 import { getManager, saveManager } from '../../game/manager-registry.js';
+import { captureError } from '../../server-error-buffer.js';
 import { findUserById, getLeaderboard, getUserKeys } from '../../auth/users.js';
 import createGameStateRoutes from './state.js';
 import createPlayerRoutes from './player.js';
@@ -44,6 +45,22 @@ export default function createGameRoutes(deps) {
     req.userKeys = getUserKeys(req.user.id);
     req.getEnrichedGameState = () => deps.enrichGameState(req.gameManager);
     req.getSettings = deps.getSettings;
+    next();
+  });
+
+  // Auto-capture server errors for bug reports
+  router.use((req, res, next) => {
+    const origJson = res.json.bind(res);
+    res.json = function(body) {
+      if (res.statusCode >= 400 && req.user?.id) {
+        captureError(req.user.id, {
+          route: req.originalUrl || req.path,
+          method: req.method,
+          message: body?.error || body?.message || `HTTP ${res.statusCode}`
+        });
+      }
+      return origJson(body);
+    };
     next();
   });
 
