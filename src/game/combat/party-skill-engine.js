@@ -183,8 +183,11 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
 
     // ── Arc Strike: chain to another enemy ──
     if (active.has('arcStrike')) {
-      const otherEnemies = livingEnemies(enemies).filter((_, idx) => idx !== record.targetIndex);
+      const otherEnemies = livingEnemies(enemies).filter(e => e !== enemies[record.targetIndex]);
       if (otherEnemies.length > 0) {
+        // Track which enemies are already dead before chains (for Pandemic)
+        const deadBeforeChains = new Set(enemies.filter(e => e && e.hp <= 0));
+
         const chainTarget = randomFrom(otherEnemies);
         const chainIdx = enemies.indexOf(chainTarget);
         const baseDmg = Math.max(0, Number(record.damage) || 0);
@@ -273,9 +276,13 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
           }
         }
 
-        // Check if chain killed anything → Pandemic
-        if (active.has('pandemic') && chainTarget.hp <= 0) {
-          triggerPandemic(chainTarget, enemies, record, combat);
+        // Check all chain kills → Pandemic (Arc Strike + Forked Arc bounces)
+        if (active.has('pandemic')) {
+          for (const enemy of enemies) {
+            if (enemy && enemy.hp <= 0 && !deadBeforeChains.has(enemy)) {
+              triggerPandemic(enemy, enemies, record, combat);
+            }
+          }
         }
       }
     }
@@ -459,7 +466,7 @@ function tryContagion(active, enemies, sourceIdx, stat, delta, record, combat) {
   let currentIdx = sourceIdx;
 
   while (spreadCount < maxChains && rollProc(0.35)) {
-    const others = livingEnemies(enemies).filter((_, idx) => idx !== currentIdx);
+    const others = livingEnemies(enemies).filter(e => e !== enemies[currentIdx]);
     if (others.length === 0) break;
     const target = randomFrom(others);
     const targetIdx = enemies.indexOf(target);
@@ -488,7 +495,7 @@ function tryContagionStatus(active, enemies, sourceIdx, effectType, record, comb
   let currentIdx = sourceIdx;
 
   while (spreadCount < maxChains && rollProc(0.35)) {
-    const others = livingEnemies(enemies).filter((_, idx) => idx !== currentIdx);
+    const others = livingEnemies(enemies).filter(e => e !== enemies[currentIdx]);
     if (others.length === 0) break;
     const target = randomFrom(others);
     const targetIdx = enemies.indexOf(target);
@@ -515,7 +522,7 @@ function tryContagionFromCounter(active, enemies, sourceIdx, stat, delta, counte
   let currentIdx = sourceIdx;
 
   while (spreadCount < maxChains && rollProc(0.35)) {
-    const others = livingEnemies(enemies).filter((_, idx) => idx !== currentIdx);
+    const others = livingEnemies(enemies).filter(e => e !== enemies[currentIdx]);
     if (others.length === 0) break;
     const target = randomFrom(others);
     const targetIdx = enemies.indexOf(target);
@@ -537,7 +544,7 @@ function trySharedVigor(active, allies, sourceIdx, stat, delta, combat) {
   if (!active.has('sharedVigor')) return;
   if (!rollProc(0.50)) return;
 
-  const others = livingAllies(allies).filter((_, idx) => idx !== sourceIdx);
+  const others = livingAllies(allies).filter(a => a !== allies[sourceIdx]);
   if (others.length === 0) return;
   const target = randomFrom(others);
   initStatStages(target);
@@ -545,10 +552,10 @@ function trySharedVigor(active, allies, sourceIdx, stat, delta, combat) {
   // Note: Shared Vigor spread does NOT re-trigger Shared Vigor (no infinite loops)
 }
 
-/** Trigger Pandemic: all debuffs from defeated enemy spread to all survivors. */
-function triggerPandemic(defeated, enemies, record, combat) {
+/** Spread all debuffs from a defeated enemy to all survivors. Returns survivor count (0 if none). */
+function spreadDefeatedDebuffs(defeated, enemies) {
   const survivors = livingEnemies(enemies).filter(e => e !== defeated);
-  if (survivors.length === 0) return;
+  if (survivors.length === 0) return 0;
 
   // Spread negative stat stages
   if (defeated.statStages) {
@@ -575,30 +582,28 @@ function triggerPandemic(defeated, enemies, record, combat) {
     }
   }
 
+  return survivors.length;
+}
+
+/** Trigger Pandemic: all debuffs from defeated enemy spread to all survivors. */
+function triggerPandemic(defeated, enemies, record, combat) {
+  const survivorCount = spreadDefeatedDebuffs(defeated, enemies);
+  if (survivorCount === 0) return;
+
   record.partySkillProcs.push({
     skillId: 'pandemic', skillName: 'Pandemic',
-    type: 'pandemic', survivorCount: survivors.length
+    type: 'pandemic', survivorCount
   });
 }
 
 /** Pandemic from counter kills. */
 function triggerPandemicCounter(defeated, enemies, counterRecord, combat) {
-  const survivors = livingEnemies(enemies).filter(e => e !== defeated);
-  if (survivors.length === 0) return;
-
-  if (defeated.statStages) {
-    for (const [stat, val] of Object.entries(defeated.statStages)) {
-      if (val >= 0) continue;
-      for (const survivor of survivors) {
-        initStatStages(survivor);
-        applyStatChange(survivor, stat, val);
-      }
-    }
-  }
+  const survivorCount = spreadDefeatedDebuffs(defeated, enemies);
+  if (survivorCount === 0) return;
 
   counterRecord.procs.push({
     skillId: 'pandemic', skillName: 'Pandemic',
-    type: 'pandemic', survivorCount: survivors.length
+    type: 'pandemic', survivorCount
   });
 }
 

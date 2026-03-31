@@ -2421,6 +2421,9 @@ async function executeCreatureDefendThenPause() {
       const allyHpMap = buildAllyHpMap(result);
       await showEnemyAttacksAnimated(result, allyHpMap, true);
 
+      // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
+      await showCounterAttacks(result);
+
       // KO swap animations
       await showKoSwapAnimations(result);
 
