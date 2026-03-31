@@ -576,6 +576,21 @@ export class ExplorationService {
   // ============ SKILL MASTER ROOM ============
 
   getSkillMasterOffers() {
+    // Initial pick (before first room) uses run.initialSkillPick
+    const pick = this.gm.run?.initialSkillPick;
+    const isInitialPick = pick && !pick.chosenId;
+
+    if (isInitialPick) {
+      if (!Array.isArray(pick.offered)) {
+        const ownedSkillIds = (this.gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
+        pick.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
+      }
+      const offered = (pick.offered || []).map(id => getPartySkillDisplay(id)).filter(Boolean);
+      this.gm.emitState();
+      return { offered };
+    }
+
+    // Room-based skill master
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'skillMaster') {
       throw new Error('No Skill Master here');
@@ -600,6 +615,24 @@ export class ExplorationService {
   }
 
   chooseSkillMasterOffer(skillId) {
+    // Initial pick (before first room)
+    const pick = this.gm.run?.initialSkillPick;
+    const isInitialPick = pick && !pick.chosenId;
+
+    if (isInitialPick) {
+      const offeredIds = Array.isArray(pick.offered) ? pick.offered : [];
+      if (!offeredIds.includes(skillId)) {
+        throw new Error('Invalid Skill Master offer');
+      }
+      if (!this.gm.run) throw new Error('No active run');
+      if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
+      this.gm.run.partySkills.push({ id: skillId });
+      pick.chosenId = skillId;
+      this.gm.emitState();
+      return { chosenId: skillId, partySkills: this.gm.run.partySkills };
+    }
+
+    // Room-based skill master
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'skillMaster') {
       throw new Error('No Skill Master here');

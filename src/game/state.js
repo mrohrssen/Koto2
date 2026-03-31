@@ -182,6 +182,9 @@ export function createNewRun(player) {
     // Stored as array of objects: { id: string }
     partySkills: [],
 
+    // Initial party skill pick (once per run, before first room)
+    initialSkillPick: { offered: null, chosenId: null },
+
     // Equipment items picked up this run (for UI display)
     equippedItems: [],
 

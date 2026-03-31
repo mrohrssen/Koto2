@@ -176,6 +176,10 @@ export function derivePhase(state) {
     // Migration: auto-select first door for saves created before door removal.
     run.pendingBranch = false;
   }
+
+  // Initial party skill pick (once per run, before first room)
+  if (run.initialSkillPick && !run.initialSkillPick.chosenId) return PHASES.SKILL_MASTER;
+
   if (combat?.active) return PHASES.COMBAT;
   if (run.npcDialogue?.active) return PHASES.NPC_DIALOGUE;
   if (run.postCombatShop?.active) return PHASES.POST_COMBAT_SHOP;

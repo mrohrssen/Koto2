@@ -882,8 +882,10 @@ export async function renderWhackAMole() {
 /** Skill Master room — placeholder UI (to be expanded in later task) */
 export async function renderSkillMaster() {
   const gameState = getGameState();
-  const room = gameState.room || getActiveRoomFromRun(gameState.run);
-  const roomId = room?.id || room?.type || 'unknown';
+  const run = gameState.run;
+  const isInitialPick = run?.initialSkillPick && !run.initialSkillPick.chosenId;
+  const room = isInitialPick ? null : (gameState.room || getActiveRoomFromRun(run));
+  const roomId = isInitialPick ? 'initialSkillPick' : (room?.id || room?.type || 'unknown');
 
   // Reset per-room cache
   if (skillMasterState.roomId !== roomId) {
@@ -893,8 +895,11 @@ export async function renderSkillMaster() {
     skillMasterState.chosenId = null;
   }
 
-  // If room is already completed on server, don't render choices
-  if (room?.interacted || room?.skillMaster?.completed) {
+  // If already completed, don't render choices
+  const alreadyDone = isInitialPick
+    ? run.initialSkillPick.chosenId
+    : (room?.interacted || room?.skillMaster?.completed);
+  if (alreadyDone) {
     actions.setContent(`
       <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;">
         <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">Skill Master</div>
