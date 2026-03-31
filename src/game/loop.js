@@ -1011,10 +1011,28 @@ export class GameManager {
    */
   _handleCreatureDefendTurn(effectEvents) {
     this.combat.befriendAttemptedSlots = {};
+
+    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+    const roundStartEvents = applyRoundStartSkills({
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      runPartySkills: this.run.partySkills,
+      combat: this.combat
+    });
+
     processDefendTurn(this.combat.allies);
 
     // Enemy phase (defendActive = true reduces damage)
     const enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, true, this.run.itemBuffs);
+
+    // Party skills: counter attacks
+    const counterAttacks = applyAfterEnemyAttacks({
+      enemyAttacks: enemyResult.attacks,
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      runPartySkills: this.run.partySkills,
+      combat: this.combat
+    }) || [];
 
     // Handle KO'd allies — swap reserves in
     const koSwaps = [];
@@ -1053,6 +1071,8 @@ export class GameManager {
         enemyAttacks: enemyResult.attacks || [],
         xpEvents: [],
         effectEvents,
+        roundStartEvents,
+        counterAttacks,
         koSwaps,
         combatEnded: true,
         victory: false,
@@ -1071,6 +1091,8 @@ export class GameManager {
       enemyAttacks: enemyResult.attacks || [],
       xpEvents: [],
       effectEvents,
+      roundStartEvents,
+      counterAttacks,
       befriend: null,
       koSwaps,
       combatEnded: false,
@@ -1099,6 +1121,7 @@ export class GameManager {
           actionType: 'befriend',
           befriend: { success: false, reason: 'boss_first_defeat' },
           effectEvents,
+          roundStartEvents: [],
           combatEnded: false,
           allies: this.combat.allies,
           enemies: this.combat.enemies,
@@ -1106,6 +1129,14 @@ export class GameManager {
         };
       }
     }
+
+    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+    const roundStartEvents = applyRoundStartSkills({
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      runPartySkills: this.run.partySkills,
+      combat: this.combat
+    });
 
     const targetIdx =
       typeof this.combat.befriendConversation?.targetEnemyIndex === 'number'
@@ -1133,6 +1164,7 @@ export class GameManager {
         actionType: 'befriend',
         befriend: befriendResult,
         effectEvents,
+        roundStartEvents,
         combatEnded: true,
         victory: true,
         creatureParty: this.run.creatureParty,
@@ -1143,6 +1175,15 @@ export class GameManager {
 
     // Enemy phase
     const enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, false, this.run.itemBuffs);
+
+    // Party skills: counter attacks
+    const counterAttacks = applyAfterEnemyAttacks({
+      enemyAttacks: enemyResult.attacks,
+      allies: this.combat.allies,
+      enemies: this.combat.enemies,
+      runPartySkills: this.run.partySkills,
+      combat: this.combat
+    }) || [];
 
     // Handle KO'd allies — swap reserves in
     const koSwaps = [];
@@ -1181,6 +1222,8 @@ export class GameManager {
         enemyAttacks: enemyResult.attacks || [],
         xpEvents: [],
         effectEvents,
+        roundStartEvents,
+        counterAttacks,
         koSwaps,
         combatEnded: true,
         victory: false,
@@ -1200,6 +1243,8 @@ export class GameManager {
       enemyAttacks: enemyResult.attacks || [],
       xpEvents: [],
       effectEvents,
+      roundStartEvents,
+      counterAttacks,
       befriend: befriendResult,
       koSwaps,
       combatEnded: false,
