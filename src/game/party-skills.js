@@ -8,21 +8,25 @@ export const PARTY_SKILLS_CATALOG = {
   forkedArc: {
     id: 'forkedArc', name: 'Forked Arc', loop: 'chain',
     desc: 'Chain bounces have a 50% chance to bounce again (up to 4 total).',
+    requires: 'arcStrike',
     params: { bounceChance: 0.50, maxBounces: 4 }
   },
   resonantArc: {
     id: 'resonantArc', name: 'Resonant Arc', loop: 'chain',
     desc: 'Each successive chain bounce deals +15% more than the previous.',
+    requires: 'forkedArc',
     params: { escalation: 0.15 }
   },
   chainSurge: {
     id: 'chainSurge', name: 'Chain Surge', loop: 'chain',
     desc: '3+ chain hits in a turn: all creatures gain ATK +1 stage.',
+    requires: 'arcStrike',
     params: { threshold: 3, stageDelta: 1 }
   },
   elementalCascade: {
     id: 'elementalCascade', name: 'Elemental Cascade', loop: 'chain',
     desc: 'Super-effective chains deal 2x and may apply ATK -1 stage.',
+    requires: 'arcStrike',
     params: { debuffChance: 0.30, stageDelta: -1 }
   },
 
@@ -35,21 +39,25 @@ export const PARTY_SKILLS_CATALOG = {
   hardenedRiposte: {
     id: 'hardenedRiposte', name: 'Hardened Riposte', loop: 'counter',
     desc: 'Counters deal +50% when you have a shield or positive DEF stage.',
+    requires: 'retaliationStrike',
     params: { bonusMult: 0.50 }
   },
   furyCounter: {
     id: 'furyCounter', name: 'Fury Counter', loop: 'counter',
     desc: 'Each counter permanently adds +10% counter damage (up to 10 stacks).',
+    requires: 'retaliationStrike',
     params: { stackBonus: 0.10, maxStacks: 10 }
   },
   vengefulMark: {
     id: 'vengefulMark', name: 'Vengeful Mark', loop: 'counter',
     desc: 'Counters apply ATK -1 stage to the attacker.',
+    requires: 'retaliationStrike',
     params: { stageDelta: -1 }
   },
   lastStand: {
     id: 'lastStand', name: 'Last Stand', loop: 'counter',
     desc: 'Below 30% HP: counters deal double damage.',
+    requires: 'retaliationStrike',
     params: { hpThreshold: 0.30, damageMult: 2.0 }
   },
 
@@ -67,6 +75,7 @@ export const PARTY_SKILLS_CATALOG = {
   virulentChain: {
     id: 'virulentChain', name: 'Virulent Chain', loop: 'debuff',
     desc: 'Contagion spreads can chain up to 3 times.',
+    requires: 'contagion',
     params: { maxChains: 3 }
   },
   afflictionBurst: {
@@ -117,7 +126,12 @@ function toOwnedSet(ownedSkillIds) {
 
 export function rollSkillMasterOffers({ ownedSkillIds = [], count = 3 }) {
   const owned = toOwnedSet(ownedSkillIds);
-  const eligible = Object.keys(PARTY_SKILLS_CATALOG).filter(id => !owned.has(id));
+  const eligible = Object.keys(PARTY_SKILLS_CATALOG).filter(id => {
+    if (owned.has(id)) return false;
+    const req = PARTY_SKILLS_CATALOG[id].requires;
+    if (req && !owned.has(req)) return false;
+    return true;
+  });
   if (eligible.length === 0) return [];
 
   for (let i = eligible.length - 1; i > 0; i--) {
