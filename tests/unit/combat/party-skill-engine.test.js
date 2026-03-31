@@ -1148,6 +1148,114 @@ test('countDebuffTypes does not count positive effects as debuffs', () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════
+// Shared Vigor on Buff Moves (Task 16)
+// ══════════════════════════════════════════════════════════════════════
+
+test('Shared Vigor triggers on buff move stat changes', () => {
+  const allies = [
+    makeAlly({ id: 'a1', hp: 80, maxHp: 100 }),
+    makeAlly({ id: 'a2', hp: 80, maxHp: 100 })
+  ];
+  const enemies = [makeEnemy({ id: 'e1', hp: 100, maxHp: 100 })];
+  // A buff-category record that applied atk +1 to ally at index 0
+  const attacks = [{
+    attackerIndex: 0, category: 'buff', damage: 0, elementMultiplier: 1.0,
+    targetIndex: 0, targetDefeated: false, partySkillProcs: [],
+    statChangesApplied: { atk: 1 }, effectApplied: null
+  }];
+  const combat = makeCombat();
+
+  // 0.1 < 0.50 so Shared Vigor triggers
+  withStubbedRandom(0.1, () => {
+    applyAfterPlayerAttacks({
+      attacks, allies, enemies,
+      runPartySkills: ['sharedVigor'],
+      combat
+    });
+  });
+
+  // Ally 0 got the direct buff (atk +1 from the move, already applied before engine)
+  // Shared Vigor should spread to ally 1 (atk +1)
+  assert.equal(allies[1].statStages.atk, 1, 'Shared Vigor should spread buff to another ally');
+});
+
+test('Shared Vigor triggers on shield move stat changes', () => {
+  const allies = [
+    makeAlly({ id: 'a1', hp: 80, maxHp: 100 }),
+    makeAlly({ id: 'a2', hp: 80, maxHp: 100 })
+  ];
+  const enemies = [makeEnemy({ id: 'e1', hp: 100, maxHp: 100 })];
+  // A shield-category record with def +1
+  const attacks = [{
+    attackerIndex: 0, category: 'shield', damage: 0, elementMultiplier: 1.0,
+    targetIndex: 0, targetDefeated: false, partySkillProcs: [],
+    statChangesApplied: { def: 1 }, effectApplied: null
+  }];
+  const combat = makeCombat();
+
+  // 0.1 < 0.50 so Shared Vigor triggers
+  withStubbedRandom(0.1, () => {
+    applyAfterPlayerAttacks({
+      attacks, allies, enemies,
+      runPartySkills: ['sharedVigor'],
+      combat
+    });
+  });
+
+  assert.equal(allies[1].statStages.def, 1, 'Shared Vigor should spread shield buff to another ally');
+});
+
+test('Shared Vigor does NOT trigger on buff moves without positive stat changes', () => {
+  const allies = [
+    makeAlly({ id: 'a1', hp: 80, maxHp: 100 }),
+    makeAlly({ id: 'a2', hp: 80, maxHp: 100 })
+  ];
+  const enemies = [makeEnemy({ id: 'e1', hp: 100, maxHp: 100 })];
+  // A buff-category record with no stat changes (e.g., status-only buff like haste)
+  const attacks = [{
+    attackerIndex: 0, category: 'buff', damage: 0, elementMultiplier: 1.0,
+    targetIndex: 0, targetDefeated: false, partySkillProcs: [],
+    statChangesApplied: null, effectApplied: 'haste'
+  }];
+  const combat = makeCombat();
+
+  withStubbedRandom(0.1, () => {
+    applyAfterPlayerAttacks({
+      attacks, allies, enemies,
+      runPartySkills: ['sharedVigor'],
+      combat
+    });
+  });
+
+  // No stat stages should change on ally 1
+  assert.equal(allies[1].statStages.atk, 0, 'no Shared Vigor without stat changes');
+  assert.equal(allies[1].statStages.def, 0, 'no Shared Vigor without stat changes');
+});
+
+test('Shared Vigor does NOT trigger on damage-category moves', () => {
+  const allies = [
+    makeAlly({ id: 'a1', hp: 80, maxHp: 100 }),
+    makeAlly({ id: 'a2', hp: 80, maxHp: 100 })
+  ];
+  const enemies = [makeEnemy({ id: 'e1', hp: 100, maxHp: 100 })];
+  // A damage-category record with stat changes (debuff on enemy, not a buff move)
+  const attacks = [makeDmgRecord({ attackerIndex: 0, targetIndex: 0, damage: 20 })];
+  attacks[0].statChangesApplied = { atk: 1 }; // unlikely but tests the guard
+  const combat = makeCombat();
+
+  withStubbedRandom(0.1, () => {
+    applyAfterPlayerAttacks({
+      attacks, allies, enemies,
+      runPartySkills: ['sharedVigor'],
+      combat
+    });
+  });
+
+  // Shared Vigor's buff-move path should not fire for damage moves
+  assert.equal(allies[1].statStages.atk, 0, 'no Shared Vigor spread from damage-category moves');
+});
+
+// ══════════════════════════════════════════════════════════════════════
 // Integration Test (Task 12)
 // ══════════════════════════════════════════════════════════════════════
 

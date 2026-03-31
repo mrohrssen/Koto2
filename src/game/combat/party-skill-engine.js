@@ -303,6 +303,20 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
     }
   }
 
+  // ── Shared Vigor on buff/shield moves ──
+  if (active.has('sharedVigor')) {
+    for (const record of attacks) {
+      if (record.category !== 'buff' && record.category !== 'shield') continue;
+      if (record.statChangesApplied) {
+        for (const [stat, change] of Object.entries(record.statChangesApplied)) {
+          if (change > 0) {
+            trySharedVigor(active, allies, record.targetIndex, stat, change, combat);
+          }
+        }
+      }
+    }
+  }
+
   // ── Chain Surge: 3+ chain hits → team atk +1 ──
   if (active.has('chainSurge') && combat.chainHitsThisTurn >= 3) {
     for (let i = 0; i < allies.length; i++) {
