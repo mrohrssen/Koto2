@@ -1,1 +1,1 @@
-/root/Koto/.claude/plugins/koto-forge/1.1.0/skills/jpdb-frequency-lookup//SKILL.md
+../plugins/koto-forge/1.1.0/skills/jpdb-frequency-lookup/SKILL.md

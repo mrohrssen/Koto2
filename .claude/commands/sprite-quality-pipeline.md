@@ -1,1 +1,1 @@
-/root/Koto/.claude/plugins/koto-forge/1.1.0/skills/sprite-quality-pipeline//SKILL.md
+../plugins/koto-forge/1.1.0/skills/sprite-quality-pipeline/SKILL.md

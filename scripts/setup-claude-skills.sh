@@ -22,14 +22,15 @@ if [ ! -d "$SKILLS_SRC" ]; then
   exit 1
 fi
 
-# 2. Symlink each skill's SKILL.md into .claude/commands/
+# 2. Symlink each skill's SKILL.md into .claude/commands/ (relative paths!)
 mkdir -p "$COMMANDS_DIR"
 count=0
 for skill_dir in "$SKILLS_SRC"/*/; do
   skill_name=$(basename "$skill_dir")
   skill_file="$skill_dir/SKILL.md"
   if [ -f "$skill_file" ]; then
-    ln -sf "$skill_file" "$COMMANDS_DIR/${skill_name}.md"
+    # Use relative path so symlinks work regardless of where the repo is cloned
+    ln -sf "../plugins/koto-forge/1.1.0/skills/${skill_name}/SKILL.md" "$COMMANDS_DIR/${skill_name}.md"
     echo "  Linked: /$(basename "$skill_name") -> skills/$skill_name/SKILL.md"
     count=$((count + 1))
   fi
