@@ -43,8 +43,14 @@ function creatureNameRuby(creature) {
   return `<ruby>${reading}<rt>${toRomaji(reading)}</rt></ruby>`;
 }
 
+let _lastBgPath = null;
+
 /** Set scene background image, using View Transitions API for smooth crossfade when supported */
 export function setBackground(imagePath) {
+  // Skip if already showing this background — prevents redundant repaints/transitions
+  if (imagePath === _lastBgPath) return;
+  _lastBgPath = imagePath;
+
   const apply = () => {
     if (imagePath) {
       const sep = imagePath.includes('?') ? '&' : '?';
@@ -70,8 +76,20 @@ export function setBackground(imagePath) {
  * @param {'player'|'enemy'} side
  * @param {Array} creatures - array of 1-3 creature objects
  */
-export function showFormation(side, creatures, { isBoss = false } = {}) {
+export function showFormation(side, creatures, { isBoss = false, force = false } = {}) {
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
+
+  // Skip redundant rebuilds: if the same creatures (by id+hp) are already rendered,
+  // don't tear down and recreate the DOM. Prevents flickering during rapid updateUI() calls.
+  if (!force && creatures?.length) {
+    const slots = container.querySelectorAll('.formation-slot');
+    const renderedIds = Array.from(slots).map(s => s.dataset.creatureId + ':' + (s.dataset.hp || ''));
+    const newIds = creatures.map(c => (c?.id || '') + ':' + (c?.hp ?? c?.currentHp ?? ''));
+    if (renderedIds.length === newIds.length && renderedIds.every((id, i) => id === newIds[i])) {
+      return;
+    }
+  }
+
   container.innerHTML = '';
   container.classList.toggle('boss-encounter', isBoss);
 
@@ -95,6 +113,7 @@ export function showFormation(side, creatures, { isBoss = false } = {}) {
     slotEl.className = 'formation-slot';
     slotEl.dataset.index = dataIndex;
     slotEl.dataset.creatureId = creature.id || '';
+    slotEl.dataset.hp = String(creature.hp ?? creature.currentHp ?? '');
 
     // Sprite
     const spriteEl = document.createElement('div');

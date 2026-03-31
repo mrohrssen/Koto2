@@ -458,10 +458,9 @@ function updateGameContent() {
       });
       break;
     case 'combat':
-      // Clear stale buttons; flash card will be rendered by combat-loop
-      if (!combatLoopUI.isCombatActive()) {
-        actions.clear();
-      }
+      // Don't clear the action area here — the combat-loop's showMoves() will
+      // overwrite it when ready. Clearing prematurely causes a visible blank
+      // flash while the enemy entrance animation plays (~1-2s).
       break;
     case 'npc_dialogue':
       // Handled by combat-loop's runNpcDialogue()
@@ -800,108 +799,138 @@ function showCollectionSelect(catalog, collection) {
       return a.element.localeCompare(b.element);
     });
 
+    let overlayBuilt = false;
+
     function render() {
       const remaining = MAX_POINTS - usedPoints;
       const budgetClass = remaining <= 0 ? 'budget-full' : remaining <= 3 ? 'budget-tight' : 'budget-ok';
 
-      const cellsHtml = sorted.map(r => {
-        const owned = collection.includes(r.id);
-        const isSelected = selected.has(r.id);
-        const tooExpensive = owned && !isSelected && r.pointCost > remaining;
-        const classes = [
-          'collection-cell',
-          !owned && 'unowned',
-          isSelected && 'selected',
-          tooExpensive && 'too-expensive'
-        ].filter(Boolean).join(' ');
-
-        return `
-          <div class="${classes}" data-id="${r.id}" data-rarity="${r.rarity}" data-element="${r.element}">
-            <img data-creature-id="${r.id}" alt="${r.nameEn}" />
-            ${owned ? `<span class="point-badge">${r.pointCost}</span>` : ''}
-            <span class="creature-name">${owned ? r.nameEn : '???'}</span>
-          </div>
-        `;
-      }).join('');
-
-      // Render into .game-app (not #action-area) so the overlay fills the full mobile container
       const gameApp = document.querySelector('.game-app');
       let overlay = gameApp.querySelector('.collection-select');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'collection-select';
-        gameApp.appendChild(overlay);
-      }
-      // Card area
-      let cardHtml;
-      if (!inspectedId) {
-        cardHtml = '<div class="creature-card-prompt">Tap a creature to view its stats</div>';
-      } else {
-        const inspected = sorted.find(r => r.id === inspectedId);
-        if (inspected) {
-          const owned = collection.includes(inspected.id);
-          cardHtml = owned ? renderOwnedCard(inspected) : renderRedactedCard(inspected);
-        } else {
-          cardHtml = '<div class="creature-card-prompt">Tap a creature to view its stats</div>';
+
+      // --- First render: build entire overlay, bind handlers ---
+      if (!overlay || !overlayBuilt) {
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.className = 'collection-select';
+          gameApp.appendChild(overlay);
         }
-      }
 
-      overlay.innerHTML = `
-        <div class="collection-header">
-          <span class="collection-title">${t('selectTeam')}</span>
-          <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
-        </div>
-        ${cardHtml}
-        <div class="collection-grid">${cellsHtml}</div>
-        <button class="action-btn action-btn-primary" id="collection-confirm-btn" ${selected.size === 0 ? 'disabled' : ''}>
-          ${t('startRun', selected.size, selected.size !== 1 ? 's' : '')}
-        </button>
-      `;
+        const cellsHtml = sorted.map(r => {
+          const owned = collection.includes(r.id);
+          return `
+            <div class="collection-cell${!owned ? ' unowned' : ''}" data-id="${r.id}" data-rarity="${r.rarity}" data-element="${r.element}">
+              <img data-creature-id="${r.id}" alt="${r.nameEn}" />
+              ${owned ? `<span class="point-badge">${r.pointCost}</span>` : ''}
+              <span class="creature-name">${owned ? r.nameEn : '???'}</span>
+            </div>
+          `;
+        }).join('');
 
-      // Text sprites need catalog row for baseWord / name (MVP)
-      overlay.querySelectorAll('img[data-creature-id]').forEach(img => {
-        const cid = img.dataset.creatureId;
-        const row = sorted.find(r => r.id === cid);
-        configureCreatureImg(img, cid, el => { el.style.display = 'none'; }, row);
-      });
+        overlay.innerHTML = `
+          <div class="collection-header">
+            <span class="collection-title">${t('selectTeam')}</span>
+            <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
+          </div>
+          <div class="collection-card-area">
+            <div class="creature-card-prompt">Tap a creature to view its stats</div>
+          </div>
+          <div class="collection-grid">${cellsHtml}</div>
+          <button class="action-btn action-btn-primary" id="collection-confirm-btn" disabled>
+            ${t('startRun', 0, 's')}
+          </button>
+        `;
 
-      // Set background
-      scene.setBackground('/assets/backgrounds/hub.webp');
-
-      // Bind click handlers
-      document.querySelectorAll('.collection-cell').forEach(cell => {
-        cell.addEventListener('click', () => {
-          const id = cell.dataset.id;
-          const creature = sorted.find(r => r.id === id);
-          if (!creature) return;
-
-          // Always update inspection (even for unowned)
-          inspectedId = id;
-
-          // Only toggle selection for owned creatures
-          const owned = collection.includes(id);
-          if (owned) {
-            if (selected.has(id)) {
-              selected.delete(id);
-              usedPoints -= creature.pointCost;
-            } else {
-              if (creature.pointCost > MAX_POINTS - usedPoints) {
-                render();
-                return;
-              }
-              selected.add(id);
-              usedPoints += creature.pointCost;
-            }
-          }
-          render();
+        // Configure all creature sprites once
+        overlay.querySelectorAll('img[data-creature-id]').forEach(img => {
+          const cid = img.dataset.creatureId;
+          const row = sorted.find(r => r.id === cid);
+          configureCreatureImg(img, cid, el => { el.style.display = 'none'; }, row);
         });
+
+        scene.setBackground('/assets/backgrounds/hub.webp');
+
+        // Bind click handlers once
+        overlay.querySelectorAll('.collection-cell').forEach(cell => {
+          cell.addEventListener('click', () => {
+            const id = cell.dataset.id;
+            const creature = sorted.find(r => r.id === id);
+            if (!creature) return;
+
+            inspectedId = id;
+
+            const owned = collection.includes(id);
+            if (owned) {
+              if (selected.has(id)) {
+                selected.delete(id);
+                usedPoints -= creature.pointCost;
+              } else {
+                if (creature.pointCost > MAX_POINTS - usedPoints) {
+                  render();
+                  return;
+                }
+                selected.add(id);
+                usedPoints += creature.pointCost;
+              }
+            }
+            render();
+          });
+        });
+
+        document.getElementById('collection-confirm-btn')?.addEventListener('click', () => {
+          if (selected.size > 0) {
+            resolve([...selected]);
+          }
+        });
+
+        overlayBuilt = true;
+      }
+
+      // --- Update pass: touch only what changed (no innerHTML rebuild) ---
+
+      // Update cell classes
+      overlay.querySelectorAll('.collection-cell').forEach(cell => {
+        const id = cell.dataset.id;
+        const owned = collection.includes(id);
+        const isSelected = selected.has(id);
+        const tooExpensive = owned && !isSelected && (sorted.find(r => r.id === id)?.pointCost || 0) > remaining;
+        cell.classList.toggle('selected', isSelected);
+        cell.classList.toggle('too-expensive', tooExpensive);
       });
 
-      document.getElementById('collection-confirm-btn')?.addEventListener('click', () => {
-        if (selected.size > 0) {
-          resolve([...selected]);
+      // Update budget
+      const pointsEl = overlay.querySelector('.collection-points');
+      if (pointsEl) {
+        pointsEl.textContent = `${usedPoints} / ${MAX_POINTS} pts`;
+        pointsEl.className = `collection-points ${budgetClass}`;
+      }
+
+      // Update inspection card area (only part that needs innerHTML)
+      const cardArea = overlay.querySelector('.collection-card-area');
+      if (cardArea) {
+        if (!inspectedId) {
+          cardArea.innerHTML = '<div class="creature-card-prompt">Tap a creature to view its stats</div>';
+        } else {
+          const inspected = sorted.find(r => r.id === inspectedId);
+          if (inspected) {
+            const owned = collection.includes(inspected.id);
+            cardArea.innerHTML = owned ? renderOwnedCard(inspected) : renderRedactedCard(inspected);
+            // Configure sprites in the card
+            cardArea.querySelectorAll('img[data-creature-id]').forEach(img => {
+              const cid = img.dataset.creatureId;
+              const row = sorted.find(r => r.id === cid);
+              configureCreatureImg(img, cid, el => { el.style.display = 'none'; }, row);
+            });
+          }
         }
-      });
+      }
+
+      // Update confirm button
+      const confirmBtn = document.getElementById('collection-confirm-btn');
+      if (confirmBtn) {
+        confirmBtn.disabled = selected.size === 0;
+        confirmBtn.textContent = t('startRun', selected.size, selected.size !== 1 ? 's' : '');
+      }
     }
 
     render();
@@ -1024,6 +1053,7 @@ function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 
 function showVictoryModal(result) {
   audio.stopBGM();
+  actions.clear(); // Clear stale move buttons now, not when next combat starts
   narrationBox.show('Victory!', { autoDismiss: 2000 });
 
   // Show collection toast for newly befriended creatures
@@ -1046,6 +1076,7 @@ function showVictoryModal(result) {
 function showGameOverModal(result) {
   audio.stopBGM();
   audio.playSFX('defeat');
+  actions.clear(); // Clear stale move buttons now, not when next combat starts
 
   // Trigger batch refresh on combat end if any pending reviews
   if (combatReviewedBatch.length > 0) {
