@@ -32,26 +32,96 @@ import { logger } from '../logger.js';
 import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
 import { t, tPlain } from './i18n.js';
 import {
-  impactEnemyEffect,
-  delay as effectDelay,
-  getDamageTier,
-  getTierClassName,
-  fireCreatureAttackEffect,
-  enemyCreatureAttackEffect,
-  showXpPopup,
-  showLevelUpPopup,
-  poisonTickEffect,
-  healEffect,
-  spawnParticles,
-  flashElement,
-  clearFormationTransforms,
-  lunge
-} from './combat-effects.js';
-import { effectiveness, resistedEffectiveness, skillProc, buff, debuff, updateStatusIcons, clearAllStatusIcons } from './event-popup.js';
+  screenShake, screenFlash, hitStop, recoil as pixiRecoil,
+  lunge as pixiLunge, burstParticles, flowParticles, showVignette,
+  ELEMENT_COLORS
+} from '../pixi/effects.js';
+import {
+  showDamageNumber as pixiDamageNumber, popupBuff, popupDebuff, popupSkillProc,
+  showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup,
+  showHealPopup, showPoisonTick
+} from '../pixi/text.js';
+import { showBanner } from '../pixi/banners.js';
+import { playStatusApplied, clearStatusVfx, clearAllStatusVfx } from '../pixi/status-vfx.js';
+import { getCreatureSprite, showActiveGlow, clearActiveGlow } from '../pixi/formation.js';
+import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
+import { wait } from '../pixi/tween.js';
+import { hapticDamageTier } from '../native/index.js';
+import { updateStatusIcons, clearAllStatusIcons } from './event-popup.js';
 import { playAttackSound } from './combat-audio.js';
 import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
+
+// ============ PIXI ADAPTER FUNCTIONS ============
+
+function spritePos(side, index) {
+  const sprite = getCreatureSprite(side, index);
+  if (!sprite) return { x: 0, y: 0 };
+  return { x: sprite.x, y: sprite.y };
+}
+
+const effectDelay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * PixiJS replacement for the old DOM-based impactEnemyEffect.
+ * Fires tiered hit-stop, particles, shake, flash, damage number, and recoil.
+ */
+async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, element = 'neutral', effectivenessType = 'normal') {
+  const tier = getDamageTier(damage, enemyMaxHp);
+  const effects = TIER_EFFECTS[tier];
+  const pos = spritePos(targetSide, targetIndex);
+  const sprite = getCreatureSprite(targetSide, targetIndex);
+  const elemColor = ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral;
+
+  hapticDamageTier(tier);
+
+  if (effects.hitStop > 0) await hitStop(effects.hitStop);
+  burstParticles(pos, { count: effects.particles, color: elemColor, speed: 80, life: 400, element });
+
+  if (effects.shake !== 'none') {
+    screenShake(effects.shake);
+    if (tier === 4) { await wait(100); screenShake('medium'); }
+  }
+
+  if (effects.flash === 'element') {
+    screenFlash({ color: elemColor, duration: 100 });
+  } else if (effects.flash === 'both') {
+    screenFlash({ color: elemColor, duration: 80 });
+    await wait(50);
+    screenFlash({ color: 0xFFFFFF, duration: 100 });
+  } else if (effects.flash === 'screen2x') {
+    screenFlash({ color: 0xFFFFFF, duration: 80, count: 2 });
+  }
+
+  pixiDamageNumber(damage, pos, { tier, type: effectivenessType });
+
+  if (sprite) {
+    const recoilDir = targetSide === 'enemy' ? 'right' : 'left';
+    pixiRecoil(sprite, { distance: TIER_RECOIL[tier], direction: recoilDir });
+  }
+}
+
+/**
+ * PixiJS replacement for DOM fireCreatureAttackEffect.
+ * Lunges the attacker, then impacts the target.
+ */
+async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, damage, enemyMaxHp, effectivenessType = 'normal') {
+  const attackerSprite = getCreatureSprite('player', attackerIndex);
+  if (attackerSprite) await pixiLunge(attackerSprite, { distance: 20, duration: 200 });
+  await impactEffect(damage, 'enemy', targetIndex, enemyMaxHp, element, effectivenessType);
+}
+
+/**
+ * PixiJS replacement for DOM enemyCreatureAttackEffect.
+ * Lunges the enemy attacker, then impacts the player target.
+ */
+async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, damage, playerMaxHp = 0) {
+  const attackerSprite = getCreatureSprite('enemy', attackerIndex);
+  if (attackerSprite) await pixiLunge(attackerSprite, { distance: -20, duration: 200 });
+  await impactEffect(damage, 'player', targetIndex, playerMaxHp, element);
+  showVignette(200);
+}
 
 function npcSpritePath(npcId) {
   return `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`;
@@ -346,120 +416,115 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   playSFX('attack');
   const element = atk.moveElement || atk.attackerElement || 'neutral';
 
-  if (atk.damage > 0 && sourceEl && targetEl) {
+  // Resolve indices for PixiJS effects (DOM elements are kept for legacy callers)
+  const attackerIndex = atk.attackerIndex ?? 0;
+  const targetIndex = atk.targetIndex ?? 0;
+  const sourceSide = isEnemy ? 'enemy' : 'player';
+  const targetSide = isEnemy ? 'player' : 'enemy';
+
+  if (atk.damage > 0 && (sourceEl || getCreatureSprite(sourceSide, attackerIndex))) {
     playAttackSound(element);
     if (isEnemy) {
-      await enemyCreatureAttackEffect(sourceEl, targetEl, element, atk.damage);
+      await enemyCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp);
     } else {
-      await fireCreatureAttackEffect(sourceEl, targetEl, element, atk.damage, targetMaxHp);
+      await fireCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp);
     }
   }
 
-  // Damage number on the target
-  if (atk.damage > 0 && targetEl) {
-    const { showDamageNumber } = await import('./scene.js');
-    showDamageNumber(atk.damage, { isCrit: atk.critical, targetEl });
-  }
+  // Damage number on the target (already rendered by impactEffect inside the attack effect functions)
 
   // STAB indicator — center-screen banner
   if (atk.stab) {
-    const banner = document.createElement('div');
-    banner.className = 'super-effective-banner';
-    banner.textContent = 'Super effective!';
-    document.body.appendChild(banner);
-    setTimeout(() => banner.remove(), 1100);
+    showBanner('Super effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral });
   }
 
   // Type effectiveness popup
-  if (atk.elementMultiplier > 1 && targetEl) {
-    setTimeout(() => effectiveness(targetEl, 'Super Effective!'), 400);
-  } else if (atk.elementMultiplier < 1 && targetEl) {
-    setTimeout(() => resistedEffectiveness(targetEl, 'Resisted...'), 400);
+  if (atk.elementMultiplier > 1) {
+    setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral }), 400);
+  } else if (atk.elementMultiplier < 1) {
+    setTimeout(() => showBanner('Resisted...', 'weak'), 400);
   }
 
   // Stat stage change popups
-  if (atk.statChangesApplied && targetEl) {
+  if (atk.statChangesApplied) {
     const SC_NAMES = { atk: 'ATK', def: 'DEF' };
     for (const [stat, change] of Object.entries(atk.statChangesApplied)) {
       if (change === 0) continue;
       const dir = change > 0 ? `+${change}` : `${change}`;
       const text = `${SC_NAMES[stat] || stat} ${dir}`;
-      if (change > 0) buff(targetEl, text);
-      else debuff(targetEl, text);
+      const pos = spritePos(targetSide, targetIndex);
+      if (change > 0) popupBuff(text, pos);
+      else popupDebuff(text, pos);
     }
   }
 
   // Party skill procs (bonus damage, heals, haste, shields)
   if (atk.partySkillProcs?.length) {
-    const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
     for (const proc of atk.partySkillProcs) {
       let detail = '';
       if (proc.type === 'bonusDamage') detail = ` +${proc.bonusDamage}`;
       else if (proc.type === 'healAll') detail = ` +${proc.healAmount} HP`;
 
-      if (sourceEl) {
-        skillProc(sourceEl, `${proc.skillName}!${detail}`);
-        flashElement(sourceEl.querySelector('.formation-sprite'), 1);
-      }
+      const attackerPos = spritePos(sourceSide, attackerIndex);
+      popupSkillProc(`${proc.skillName}!${detail}`, attackerPos);
 
-      if (proc.type === 'bonusDamage' && targetEl) {
-        spawnParticles(targetEl, 6, '#FFB74D');
+      if (proc.type === 'bonusDamage') {
+        burstParticles(spritePos(targetSide, targetIndex), { count: 6, color: 0xFFB74D });
       } else if (proc.type === 'healAll') {
-        allAllySlots.forEach(slot => {
-          const sprite = slot.querySelector('.formation-sprite');
-          if (sprite && !sprite.classList.contains('ko')) healEffect(slot, proc.healAmount);
+        const state = getGameState();
+        const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
+        allies.forEach((ally, i) => {
+          if (ally && ally.hp > 0) {
+            const pos = spritePos('player', i);
+            burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
+            showHealPopup(proc.healAmount, pos);
+          }
         });
-      } else if (proc.type === 'haste' && sourceEl) {
-        spawnParticles(sourceEl, 8, '#4fc3f7');
+      } else if (proc.type === 'haste') {
+        burstParticles(attackerPos, { count: 8, color: 0x4FC3F7 });
       } else if (proc.type === 'teamShield') {
-        allAllySlots.forEach(slot => {
-          const sprite = slot.querySelector('.formation-sprite');
-          if (sprite && !sprite.classList.contains('ko')) spawnParticles(slot, 6, '#42A5F5');
+        const state = getGameState();
+        const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
+        allies.forEach((ally, i) => {
+          if (ally && ally.hp > 0) {
+            burstParticles(spritePos('player', i), { count: 6, color: 0x42A5F5 });
+          }
         });
       } else if (proc.type === 'chainHit') {
-        const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-        const chainTargetEl = allEnemySlots[proc.targetIndex];
-        if (chainTargetEl) {
-          spawnParticles(chainTargetEl, 4, proc.isSE ? '#FF6B6B' : '#FFD93D');
-          if (showDamageNumber) showDamageNumber(proc.damage, false, false);
-        }
+        burstParticles(spritePos('enemy', proc.targetIndex), { count: 4, color: proc.isSE ? 0xFF6B6B : 0xFFD93D });
+        pixiDamageNumber(proc.damage, spritePos('enemy', proc.targetIndex), { tier: 1 });
       } else if (proc.type === 'stageChange') {
         const SC_NAMES = { atk: 'ATK', def: 'DEF' };
         const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
         const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
-        const slots = proc.targetSide === 'enemy'
-          ? document.querySelectorAll('#enemy-formation .formation-slot')
-          : document.querySelectorAll('#player-formation .formation-slot');
-        const el = slots[proc.targetIndex];
-        if (el) {
-          if (proc.delta > 0) buff(el, text);
-          else debuff(el, text);
-        }
+        const pos = spritePos(proc.targetSide === 'enemy' ? 'enemy' : 'player', proc.targetIndex);
+        if (proc.delta > 0) popupBuff(text, pos);
+        else popupDebuff(text, pos);
       } else if (proc.type === 'spread') {
-        const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-        const spreadTargetEl = allEnemySlots[proc.targetIndex];
-        if (spreadTargetEl) {
-          skillProc(spreadTargetEl, 'SPREAD!');
-          spawnParticles(spreadTargetEl, 4, '#9C27B0');
-        }
+        const pos = spritePos('enemy', proc.targetIndex);
+        popupSkillProc('SPREAD!', pos);
+        burstParticles(pos, { count: 4, color: 0x9C27B0 });
       } else if (proc.type === 'teamBuff') {
         const SC_NAMES = { atk: 'ATK', def: 'DEF' };
-        allAllySlots.forEach(slot => {
-          buff(slot, `${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`);
+        const state = getGameState();
+        const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
+        allies.forEach((ally, i) => {
+          if (ally) popupBuff(`${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`, spritePos('player', i));
         });
       } else if (proc.type === 'burst') {
-        const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-        const burstTargetEl = allEnemySlots[proc.targetIndex];
-        if (burstTargetEl) {
-          skillProc(burstTargetEl, 'AFFLICTION BURST!');
-          if (showDamageNumber) showDamageNumber(proc.damage, false, false);
-          spawnParticles(burstTargetEl, 10, '#E91E63');
-        }
+        const pos = spritePos('enemy', proc.targetIndex);
+        popupSkillProc('AFFLICTION BURST!', pos);
+        pixiDamageNumber(proc.damage, pos, { tier: 1 });
+        burstParticles(pos, { count: 10, color: 0xE91E63 });
       } else if (proc.type === 'pandemic') {
-        const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-        allEnemySlots.forEach(slot => {
-          skillProc(slot, 'PANDEMIC!');
-          spawnParticles(slot, 6, '#9C27B0');
+        const state = getGameState();
+        const enemies = state.combat?.enemies || [];
+        enemies.forEach((enemy, i) => {
+          if (enemy && enemy.hp > 0) {
+            const pos = spritePos('enemy', i);
+            popupSkillProc('PANDEMIC!', pos);
+            burstParticles(pos, { count: 6, color: 0x9C27B0 });
+          }
         });
       }
 
@@ -871,6 +936,7 @@ async function handleBefriendTalk() {
         if (creature) {
           clearTargetSelect();
           setActiveLabel(creature);
+          showActiveGlow(actingSlot);
           showMoves(creature, actingSlot, getMoveSelectBefriendOpts(actingSlot));
         } else {
           startMoveSelection();
@@ -955,6 +1021,7 @@ function promptNextCreature() {
 
   if (currentCreatureIndex >= allies.length) {
     // All creatures have chosen -- execute the turn
+    clearActiveGlow();
     executeCreatureMovesTurn(moveChoices);
     return;
   }
@@ -962,10 +1029,12 @@ function promptNextCreature() {
   const creature = allies[currentCreatureIndex];
   clearTargetSelect();
   setActiveLabel(creature);
+  showActiveGlow(currentCreatureIndex);
   showMoves(creature, currentCreatureIndex, getMoveSelectBefriendOpts(currentCreatureIndex));
 }
 
 function handleMoveSelected(move, creatureIndex) {
+  clearActiveGlow();
   pendingMove = move;
   const state = getGameState();
 
@@ -1014,6 +1083,7 @@ function handleTargetCancelled() {
   if (creature) {
     clearTargetSelect();
     setActiveLabel(creature);
+    showActiveGlow(currentCreatureIndex);
     showMoves(creature, currentCreatureIndex, getMoveSelectBefriendOpts(currentCreatureIndex));
   }
 }
@@ -1232,7 +1302,7 @@ function showXpEvents(xpEvents) {
       for (const grant of event.xpGrants) {
         const index = activeCreatures.findIndex(r => r && r.id === grant.creatureId);
         if (index >= 0 && slots[index]) {
-          showXpPopup(slots[index], grant.xp);
+          pixiXpPopup(grant.xp, spritePos('player', index));
         }
       }
     }
@@ -1243,7 +1313,7 @@ function showXpEvents(xpEvents) {
         const index = activeCreatures.findIndex(r => r && r.id === lu.creatureId);
         if (index >= 0 && slots[index]) {
           // Slight delay so it appears after XP popup
-          setTimeout(() => showLevelUpPopup(slots[index], lu.newLevel, lu.hpGain), 400);
+          setTimeout(() => pixiLevelUpPopup(lu.newLevel, spritePos('player', index)), 400);
         }
         // Collect move learns for later processing
         if (lu.newMove) {
@@ -1380,18 +1450,13 @@ export async function executePlayerAttack() {
           // Calculate damage tier for visual feedback
           const state = getGameState();
           const enemyMaxHp = state.combat?.enemy?.maxHp || 100;
-          const tier = getDamageTier(pa.damage, enemyMaxHp);
-          const tierClass = `dmg-${getTierClassName(tier)}`;
 
-          // Show damage at same time as final damage reveal
-          showDamageNumber(pa.damage, false, pa.critical, false, false, null, tierClass);
           animateEnemyHurt();
           const enemySlot = document.querySelector('#enemy-formation .formation-slot');
           if (enemySlot) combatEvents.emit('creatureHit', { slotEl: enemySlot, side: 'enemy' });
 
-          // Visual effects for enemy damage (pass enemyMaxHp for tier-based effects)
-          const enemySprite = document.getElementById('enemy-sprite');
-          await impactEnemyEffect(pa.damage, enemySprite, enemyMaxHp);
+          // Visual effects for enemy damage (PixiJS impact with tier-based effects)
+          await impactEffect(pa.damage, 'enemy', 0, enemyMaxHp);
         }
       }
 
@@ -1470,21 +1535,15 @@ function showFloatingText(targetEl, text) {
 async function showEffectEvents(result) {
   if (!result.effectEvents?.length) return;
   for (const event of result.effectEvents) {
+    // Resolve side and index for PixiJS positioning
+    const side = event.targetSide === 'ally' ? 'player' : 'enemy';
+    const index = typeof event.targetIndex === 'number' ? event.targetIndex : 0;
+
     if (event.type === 'poison' && event.damage > 0) {
-      // Find target element — could be ally or enemy (use slot index when duplicate ids)
-      let targetEl = null;
-      if (event.targetSide === 'ally' && typeof event.targetIndex === 'number') {
-        targetEl = findCreatureSlotByAttackerId(event.targetId, event.targetIndex);
-      } else if (event.targetSide === 'enemy' && typeof event.targetIndex === 'number') {
-        targetEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${event.targetIndex}"]`);
-      }
-      if (!targetEl) targetEl = findCreatureSlotByAttackerId(event.targetId);
-      if (!targetEl) {
-        targetEl = findEnemyTargetElement(event.targetId, result.enemies, event.targetIndex);
-      }
-      if (targetEl) {
-        await poisonTickEffect(targetEl, event.damage);
-      }
+      const pos = spritePos(side, index);
+      burstParticles(pos, { count: 4, color: 0x9C27B0, speed: 40, life: 300, element: 'neutral' });
+      showPoisonTick(event.damage, pos);
+      playStatusApplied(side, index, 'poison');
     } else if (event.type !== 'poison') {
       const EFFECT_LABELS = {
         confuse: t('effectConfuse'),
@@ -1497,29 +1556,20 @@ async function showEffectEvents(result) {
       };
       const baseType = event.type.replace(/_tick$/, '');
       const label = EFFECT_LABELS[baseType] || event.type;
-      let targetEl = null;
-      if (event.targetSide === 'ally' && typeof event.targetIndex === 'number') {
-        targetEl = findCreatureSlotByAttackerId(event.targetId, event.targetIndex);
-      } else if (event.targetSide === 'enemy' && typeof event.targetIndex === 'number') {
-        targetEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${event.targetIndex}"]`);
+      const pos = spritePos(side, index);
+      // Determine if this is a positive or negative effect
+      const BUFF_TYPES = new Set(['haste', 'shield', 'team_shield']);
+      const DEBUFF_TYPES = new Set(['confuse', 'stun', 'sleep', 'taunt']);
+      if (DEBUFF_TYPES.has(baseType)) {
+        popupDebuff(label, pos);
+        playStatusApplied(side, index, baseType);
+      } else if (BUFF_TYPES.has(baseType)) {
+        popupBuff(label, pos);
+        playStatusApplied(side, index, baseType);
+      } else {
+        showFloatingText(document.body, label); // fallback for unknown types
       }
-      if (!targetEl) targetEl = findCreatureSlotByAttackerId(event.targetId);
-      if (!targetEl) {
-        targetEl = findEnemyTargetElement(event.targetId, result.enemies, event.targetIndex);
-      }
-      if (targetEl) {
-        // Determine if this is a positive or negative effect
-        const BUFF_TYPES = new Set(['haste', 'shield', 'team_shield']);
-        const DEBUFF_TYPES = new Set(['confuse', 'stun', 'sleep', 'taunt']);
-        if (DEBUFF_TYPES.has(baseType)) {
-          debuff(targetEl, label);
-        } else if (BUFF_TYPES.has(baseType)) {
-          buff(targetEl, label);
-        } else {
-          showFloatingText(targetEl, label);
-        }
-        await delay(400);
-      }
+      await delay(400);
     }
   }
   syncStatusIconsFromResult(result);
@@ -1565,10 +1615,14 @@ function syncStatusIconsFromResult(result) {
  */
 async function showPartySkillProcs(atk) {
   if (!atk.partySkillProcs?.length) return;
-  const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
+
+  // Resolve attacker index for PixiJS positioning
+  const state = getGameState();
+  const activeCreatures = state.run?.creatureParty?.active || [];
+  const attackerIdx = atk.attackerId ? activeCreatures.findIndex(r => r && r.id === atk.attackerId) : 0;
+  const attackerPos = spritePos('player', Math.max(0, attackerIdx));
 
   for (const proc of atk.partySkillProcs) {
-    const attackerSlot = findCreatureSlotByAttackerId(atk.attackerId);
     let detail = '';
     if (proc.type === 'bonusDamage') {
       detail = ` +${proc.bonusDamage}`;
@@ -1576,74 +1630,64 @@ async function showPartySkillProcs(atk) {
       detail = ` +${proc.healAmount} HP`;
     }
 
-    if (attackerSlot) {
-      skillProc(attackerSlot, `${proc.skillName}!${detail}`);
-      flashElement(attackerSlot.querySelector('.formation-sprite'), 1);
-    }
+    popupSkillProc(`${proc.skillName}!${detail}`, attackerPos);
 
     if (proc.type === 'bonusDamage') {
-      const enemyEl = findEnemyTargetElement(atk.targetId, null, atk.targetIndex);
-      if (enemyEl) spawnParticles(enemyEl, 6, '#FFB74D');
+      const targetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
+      burstParticles(spritePos('enemy', targetIdx), { count: 6, color: 0xFFB74D });
     } else if (proc.type === 'healAll') {
-      allAllySlots.forEach(slot => {
-        const sprite = slot.querySelector('.formation-sprite');
-        if (sprite && !sprite.classList.contains('ko')) {
-          healEffect(slot, proc.healAmount);
+      const allies = state.combat?.allies || activeCreatures;
+      allies.forEach((ally, i) => {
+        if (ally && ally.hp > 0) {
+          const pos = spritePos('player', i);
+          burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
+          showHealPopup(proc.healAmount, pos);
         }
       });
     } else if (proc.type === 'haste') {
-      if (attackerSlot) spawnParticles(attackerSlot, 8, '#4fc3f7');
+      burstParticles(attackerPos, { count: 8, color: 0x4FC3F7 });
     } else if (proc.type === 'teamShield') {
-      allAllySlots.forEach(slot => {
-        const sprite = slot.querySelector('.formation-sprite');
-        if (sprite && !sprite.classList.contains('ko')) {
-          spawnParticles(slot, 6, '#42A5F5');
+      const allies = state.combat?.allies || activeCreatures;
+      allies.forEach((ally, i) => {
+        if (ally && ally.hp > 0) {
+          burstParticles(spritePos('player', i), { count: 6, color: 0x42A5F5 });
         }
       });
     } else if (proc.type === 'chainHit') {
-      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-      const chainTargetEl = allEnemySlots[proc.targetIndex];
-      if (chainTargetEl) {
-        spawnParticles(chainTargetEl, 4, proc.isSE ? '#FF6B6B' : '#FFD93D');
-        if (showDamageNumber) showDamageNumber(proc.damage, false, false);
-      }
+      const pos = spritePos('enemy', proc.targetIndex);
+      burstParticles(pos, { count: 4, color: proc.isSE ? 0xFF6B6B : 0xFFD93D });
+      pixiDamageNumber(proc.damage, pos, { tier: 1 });
     } else if (proc.type === 'stageChange') {
       const SC_NAMES = { atk: 'ATK', def: 'DEF' };
       const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
       const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
-      const slots = proc.targetSide === 'enemy'
-        ? document.querySelectorAll('#enemy-formation .formation-slot')
-        : document.querySelectorAll('#player-formation .formation-slot');
-      const el = slots[proc.targetIndex];
-      if (el) {
-        if (proc.delta > 0) buff(el, text);
-        else debuff(el, text);
-      }
+      const side = proc.targetSide === 'enemy' ? 'enemy' : 'player';
+      const pos = spritePos(side, proc.targetIndex);
+      if (proc.delta > 0) popupBuff(text, pos);
+      else popupDebuff(text, pos);
     } else if (proc.type === 'spread') {
-      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-      const spreadTargetEl = allEnemySlots[proc.targetIndex];
-      if (spreadTargetEl) {
-        skillProc(spreadTargetEl, 'SPREAD!');
-        spawnParticles(spreadTargetEl, 4, '#9C27B0');
-      }
+      const pos = spritePos('enemy', proc.targetIndex);
+      popupSkillProc('SPREAD!', pos);
+      burstParticles(pos, { count: 4, color: 0x9C27B0 });
     } else if (proc.type === 'teamBuff') {
       const SC_NAMES = { atk: 'ATK', def: 'DEF' };
-      allAllySlots.forEach(slot => {
-        buff(slot, `${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`);
+      const allies = state.combat?.allies || activeCreatures;
+      allies.forEach((ally, i) => {
+        if (ally) popupBuff(`${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`, spritePos('player', i));
       });
     } else if (proc.type === 'burst') {
-      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-      const burstTargetEl = allEnemySlots[proc.targetIndex];
-      if (burstTargetEl) {
-        skillProc(burstTargetEl, 'AFFLICTION BURST!');
-        if (showDamageNumber) showDamageNumber(proc.damage, false, false);
-        spawnParticles(burstTargetEl, 10, '#E91E63');
-      }
+      const pos = spritePos('enemy', proc.targetIndex);
+      popupSkillProc('AFFLICTION BURST!', pos);
+      pixiDamageNumber(proc.damage, pos, { tier: 1 });
+      burstParticles(pos, { count: 10, color: 0xE91E63 });
     } else if (proc.type === 'pandemic') {
-      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-      allEnemySlots.forEach(slot => {
-        skillProc(slot, 'PANDEMIC!');
-        spawnParticles(slot, 6, '#9C27B0');
+      const enemies = state.combat?.enemies || [];
+      enemies.forEach((enemy, i) => {
+        if (enemy && enemy.hp > 0) {
+          const pos = spritePos('enemy', i);
+          popupSkillProc('PANDEMIC!', pos);
+          burstParticles(pos, { count: 6, color: 0x9C27B0 });
+        }
       });
     }
 
@@ -1662,27 +1706,19 @@ async function showRoundStartEvents(result) {
 
   for (const event of result.roundStartEvents) {
     if (event.type === 'erosion') {
-      const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-      const el = allEnemySlots[event.targetIndex];
-      if (el) {
-        const text = `${SC_NAMES[event.stat] || event.stat} ${event.delta}`;
-        debuff(el, text);
-        spawnParticles(el, 3, '#FF5722');
-      }
+      const pos = spritePos('enemy', event.targetIndex);
+      const text = `${SC_NAMES[event.stat] || event.stat} ${event.delta}`;
+      popupDebuff(text, pos);
+      burstParticles(pos, { count: 3, color: 0xFF5722 });
     } else if (event.type === 'momentum') {
-      const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
-      const el = allAllySlots[event.targetIndex];
-      if (el) {
-        const text = `${SC_NAMES[event.stat] || event.stat} +${event.delta}`;
-        buff(el, text);
-        spawnParticles(el, 3, '#4CAF50');
-      }
+      const pos = spritePos('player', event.targetIndex);
+      const text = `${SC_NAMES[event.stat] || event.stat} +${event.delta}`;
+      popupBuff(text, pos);
+      burstParticles(pos, { count: 3, color: 0x4CAF50 });
     } else if (event.type === 'overflowVitality') {
-      const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
-      const el = allAllySlots[event.targetIndex];
-      if (el) {
-        healEffect(el, event.healAmount);
-      }
+      const pos = spritePos('player', event.targetIndex);
+      burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
+      showHealPopup(event.healAmount, pos);
     }
     await effectDelay(400);
   }
@@ -1696,22 +1732,17 @@ async function showCounterAttacks(result) {
   if (!result.counterAttacks?.length) return;
 
   for (const counter of result.counterAttacks) {
-    const allAllySlots = document.querySelectorAll('#player-formation .formation-slot');
-    const defenderEl = allAllySlots[counter.defenderIndex];
-    const allEnemySlots = document.querySelectorAll('#enemy-formation .formation-slot');
-    const targetEl = allEnemySlots[counter.targetIndex];
+    const defenderPos = spritePos('player', counter.defenderIndex);
+    popupSkillProc('COUNTER!', defenderPos);
 
-    if (defenderEl) {
-      skillProc(defenderEl, 'COUNTER!');
-      // Lunge toward enemy (positive X = right = toward enemy side)
-      const sprite = defenderEl.querySelector('.formation-sprite');
-      if (sprite) await lunge(sprite, 40, 300);
-      flashElement(sprite, 1);
-    }
+    // Lunge toward enemy (positive X = right = toward enemy side)
+    const defenderSprite = getCreatureSprite('player', counter.defenderIndex);
+    if (defenderSprite) await pixiLunge(defenderSprite, { distance: 40, duration: 300 });
 
-    if (targetEl && counter.damage > 0) {
-      spawnParticles(targetEl, 6, '#FF7043');
-      if (showDamageNumber) showDamageNumber(counter.damage, false, false);
+    if (counter.damage > 0) {
+      const targetPos = spritePos('enemy', counter.targetIndex);
+      burstParticles(targetPos, { count: 6, color: 0xFF7043 });
+      pixiDamageNumber(counter.damage, targetPos, { tier: 1 });
     }
 
     // Show Vengeful Mark and other counter procs
@@ -1721,35 +1752,28 @@ async function showCounterAttacks(result) {
           const SC_NAMES2 = { atk: 'ATK', def: 'DEF' };
           const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
           const text = `${SC_NAMES2[proc.stat] || proc.stat} ${dir}`;
-          const slots = proc.targetSide === 'enemy'
-            ? document.querySelectorAll('#enemy-formation .formation-slot')
-            : document.querySelectorAll('#player-formation .formation-slot');
-          const el = slots[proc.targetIndex];
-          if (el) {
-            if (proc.delta > 0) buff(el, text);
-            else debuff(el, text);
-          }
+          const side = proc.targetSide === 'enemy' ? 'enemy' : 'player';
+          const pos = spritePos(side, proc.targetIndex);
+          if (proc.delta > 0) popupBuff(text, pos);
+          else popupDebuff(text, pos);
         } else if (proc.type === 'spread') {
-          const spreadSlots = document.querySelectorAll('#enemy-formation .formation-slot');
-          const spreadEl = spreadSlots[proc.targetIndex];
-          if (spreadEl) {
-            skillProc(spreadEl, 'SPREAD!');
-            spawnParticles(spreadEl, 4, '#9C27B0');
-          }
+          const pos = spritePos('enemy', proc.targetIndex);
+          popupSkillProc('SPREAD!', pos);
+          burstParticles(pos, { count: 4, color: 0x9C27B0 });
         } else if (proc.type === 'pandemic') {
-          const pandemicSlots = document.querySelectorAll('#enemy-formation .formation-slot');
-          pandemicSlots.forEach(slot => {
-            skillProc(slot, 'PANDEMIC!');
-            spawnParticles(slot, 6, '#9C27B0');
+          const enemies = result.enemies || [];
+          enemies.forEach((enemy, i) => {
+            if (enemy && enemy.hp > 0) {
+              const pos = spritePos('enemy', i);
+              popupSkillProc('PANDEMIC!', pos);
+              burstParticles(pos, { count: 6, color: 0x9C27B0 });
+            }
           });
         } else if (proc.type === 'burst') {
-          const burstSlots = document.querySelectorAll('#enemy-formation .formation-slot');
-          const burstEl = burstSlots[proc.targetIndex];
-          if (burstEl) {
-            skillProc(burstEl, 'AFFLICTION BURST!');
-            if (showDamageNumber) showDamageNumber(proc.damage, false, false);
-            spawnParticles(burstEl, 10, '#E91E63');
-          }
+          const pos = spritePos('enemy', proc.targetIndex);
+          popupSkillProc('AFFLICTION BURST!', pos);
+          pixiDamageNumber(proc.damage, pos, { tier: 1 });
+          burstParticles(pos, { count: 10, color: 0xE91E63 });
         }
       }
     }
@@ -1822,15 +1846,15 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     }
 
     // Fire effects while card is showing
-    showDamageNumber(atk.damage, true, false);
     playSFX('player-hit');
 
-    // Fire element-colored orb from specific attacking enemy to targeted creature
-    const enemyEl = findEnemyTargetElement(atk.attackerId, result.enemies, atk.attackerIndex);
-    const targetSlotEl = findCreatureSlotByAttackerId(atk.targetId, atk.targetIndex);
-    if (enemyEl && targetSlotEl && atk.attackerElement) {
+    // Fire PixiJS attack effect from enemy to targeted creature
+    const attackerIdx = typeof atk.attackerIndex === 'number' ? atk.attackerIndex : 0;
+    const targetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
+    const targetMaxHp = result.allies?.[targetIdx]?.maxHp || 100;
+    if (atk.attackerElement) {
       playAttackSound(atk.attackerElement);
-      await enemyCreatureAttackEffect(enemyEl, targetSlotEl, atk.attackerElement, atk.damage);
+      await enemyCreatureAttackEffect(attackerIdx, targetIdx, atk.attackerElement, atk.damage, targetMaxHp);
     } else {
       animatePlayerHurt();
     }
@@ -1844,10 +1868,11 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
 
     // Type effectiveness popup for enemy attacks
-    if (atk.elementMultiplier > 1 && targetSlotEl) {
-      setTimeout(() => effectiveness(targetSlotEl, 'Super Effective!'), 400);
-    } else if (atk.elementMultiplier < 1 && targetSlotEl) {
-      setTimeout(() => resistedEffectiveness(targetSlotEl, 'Resisted...'), 400);
+    const element = atk.attackerElement || atk.moveElement || 'neutral';
+    if (atk.elementMultiplier > 1) {
+      setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral }), 400);
+    } else if (atk.elementMultiplier < 1) {
+      setTimeout(() => showBanner('Resisted...', 'weak'), 400);
     }
 
     // Wait for tap (attack card) or fixed delay (fallback)
@@ -1982,8 +2007,7 @@ function syncFinalState(result) {
   }
   updateCreatureHpBars(result.creatureParty?.active, null);
 
-  // Clear any stale inline transforms left by interrupted anime.js animations
-  clearFormationTransforms();
+  // No-op: PixiJS sprites don't leave stale inline transforms
 }
 
 // ============ CREATURE COMBAT ORCHESTRATORS ============
@@ -2050,22 +2074,26 @@ async function executeCreatureMovesTurn(choices) {
           const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
           const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
 
-          if (atk.damage > 0 && creatureSlotEl && enemyEl) {
-            playAttackSound(atk.moveElement || atk.attackerElement || 'neutral');
+          // Resolve indices for PixiJS
+          const atkElement = atk.moveElement || atk.attackerElement || 'neutral';
+          const atkState = getGameState();
+          const atkActiveCreatures = atkState.run?.creatureParty?.active || [];
+          const atkAttackerIdx = atk.attackerId ? atkActiveCreatures.findIndex(r => r && r.id === atk.attackerId) : 0;
+          const atkTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
+
+          if (atk.damage > 0 && (creatureSlotEl || getCreatureSprite('player', Math.max(0, atkAttackerIdx)))) {
+            playAttackSound(atkElement);
             const tIdx = atk.targetIndex;
             const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
               ? enemyHpMap[tIdx].maxHp
               : (result.enemies?.[0]?.maxHp ?? 100);
-            await fireCreatureAttackEffect(creatureSlotEl, enemyEl, atk.moveElement || 'neutral', atk.damage, targetMaxHp);
+            await fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp);
             if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
           } else if (atk.damage > 0) {
             animateEnemyHurt();
           }
 
-          // Show damage number for damage/drain
-          if (atk.damage > 0) {
-            showDamageNumber(atk.damage, false, false);
-          }
+          // Damage number already shown by impactEffect inside fireCreatureAttackEffect
 
           // Update enemy HP after each hit
           if (atk.damage > 0) {
@@ -2079,6 +2107,15 @@ async function executeCreatureMovesTurn(choices) {
                 characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
               }
             }
+          }
+
+          // Drain move: flow particles from enemy to attacker, then show heal
+          if (atk.healAmount > 0) {
+            const drainTargetPos = spritePos('enemy', atkTargetIdx);
+            const drainAttackerPos = spritePos('player', Math.max(0, atkAttackerIdx));
+            flowParticles(drainTargetPos, drainAttackerPos, { count: 8, color: 0x4CAF50, duration: 600 });
+            await wait(600);
+            showHealPopup(atk.healAmount, drainAttackerPos);
           }
 
           // XP popups on kill — collect pending move learns
@@ -2097,18 +2134,14 @@ async function executeCreatureMovesTurn(choices) {
 
           // STAB indicator — center-screen banner
           if (atk.stab) {
-            const banner = document.createElement('div');
-            banner.className = 'super-effective-banner';
-            banner.textContent = 'Super effective!';
-            document.body.appendChild(banner);
-            setTimeout(() => banner.remove(), 1100);
+            showBanner('Super effective!', 'super', { elementColor: ELEMENT_COLORS[atkElement] || ELEMENT_COLORS.neutral });
           }
 
           // Type effectiveness popup
-          if (atk.elementMultiplier > 1 && enemyEl) {
-            setTimeout(() => effectiveness(enemyEl, 'Super Effective!'), 400);
-          } else if (atk.elementMultiplier < 1 && enemyEl) {
-            setTimeout(() => resistedEffectiveness(enemyEl, 'Resisted...'), 400);
+          if (atk.elementMultiplier > 1) {
+            setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[atkElement] || ELEMENT_COLORS.neutral }), 400);
+          } else if (atk.elementMultiplier < 1) {
+            setTimeout(() => showBanner('Resisted...', 'weak'), 400);
           }
 
           // Show party skill procs inline after this attack
@@ -2254,20 +2287,26 @@ async function executeCreaturePlayerAttack() {
           const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
           const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
 
-          // Fire element-colored orb from creature to enemy with impact effects
-          if (creatureSlotEl && enemyEl && atk.attackerElement) {
+          // Resolve indices for PixiJS
+          const depAttackerState = getGameState();
+          const depActiveCreatures = depAttackerState.run?.creatureParty?.active || [];
+          const depAttackerIdx = atk.attackerId ? depActiveCreatures.findIndex(r => r && r.id === atk.attackerId) : 0;
+          const depTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
+
+          // Fire element-colored effects from creature to enemy with PixiJS impact
+          if ((creatureSlotEl || getCreatureSprite('player', Math.max(0, depAttackerIdx))) && atk.attackerElement) {
             playAttackSound(atk.attackerElement);
             const tIdx = atk.targetIndex;
             const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
               ? enemyHpMap[tIdx].maxHp
               : (result.enemies?.[0]?.maxHp ?? 100);
-            await fireCreatureAttackEffect(creatureSlotEl, enemyEl, atk.attackerElement, atk.damage, targetMaxHp);
+            await fireCreatureAttackEffect(Math.max(0, depAttackerIdx), depTargetIdx, atk.attackerElement, atk.damage, targetMaxHp);
             if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
           } else {
             animateEnemyHurt();
           }
 
-          showDamageNumber(atk.damage, false, false);
+          // Damage number already shown by impactEffect
           // Update enemy HP bar after each hit
           if (typeof atk.targetIndex === 'number' && enemyHpMap[atk.targetIndex]) {
             const entry = enemyHpMap[atk.targetIndex];
@@ -2757,11 +2796,14 @@ async function renderBefriendQuiz(quizData, result) {
     }
     syncFinalState(answerResult);
 
-    const newAllySlotQuiz = document.querySelector('#player-formation .formation-slot:last-child');
-    if (newAllySlotQuiz) {
+    // Show "New Ally!" popup on the last player formation slot
+    const allySlots = document.querySelectorAll('#player-formation .formation-slot');
+    const newAllyIdx = allySlots.length - 1;
+    if (newAllyIdx >= 0) {
       setTimeout(() => {
-        buff(newAllySlotQuiz, 'New Ally!');
-        spawnParticles(newAllySlotQuiz, 8, '#4CAF50');
+        const pos = spritePos('player', newAllyIdx);
+        popupBuff('New Ally!', pos);
+        burstParticles(pos, { count: 8, color: 0x4CAF50 });
       }, 500);
     }
 
@@ -3164,11 +3206,14 @@ async function executeBefriendAction(actingCreatureSlot = null) {
           }
         }
 
-        const newAllySlot = document.querySelector('#player-formation .formation-slot:last-child');
-        if (newAllySlot) {
+        // Show "New Ally!" popup on the last player formation slot
+        const newAllySlots = document.querySelectorAll('#player-formation .formation-slot');
+        const newAllySlotIdx = newAllySlots.length - 1;
+        if (newAllySlotIdx >= 0) {
           setTimeout(() => {
-            buff(newAllySlot, 'New Ally!');
-            spawnParticles(newAllySlot, 8, '#4CAF50');
+            const pos = spritePos('player', newAllySlotIdx);
+            popupBuff('New Ally!', pos);
+            burstParticles(pos, { count: 8, color: 0x4CAF50 });
           }, 500);
         }
 
@@ -3220,8 +3265,8 @@ export async function stopCombatLoop(result) {
 
   if (result?.victory) combatEvents.emit('victory');
 
-  // Final cleanup: clear any stale inline transforms on formation slots
-  clearFormationTransforms();
+  // Final cleanup: clear PixiJS status VFX and DOM status icons
+  clearAllStatusVfx();
   clearAllStatusIcons();
 
   // Hide word practice cards and close modal
