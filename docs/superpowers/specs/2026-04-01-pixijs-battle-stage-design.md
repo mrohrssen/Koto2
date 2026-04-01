@@ -134,7 +134,7 @@ public/assets/backgrounds/
 | `far`, `mid`, `ground` | Transparent above content area |
 | Art style | 2.5D isometric feel (art direction, not implementation) |
 
-**Generation pipeline:** Nano Banana Pro (Scenario.gg API) for generation, background removal API for transparent layers. Credentials stored in `.env` as `SCENARIO_API_KEY` and `SCENARIO_API_SECRET`.
+**Generation pipeline:** Gemini 3.1 Pro via `@google/generative-ai` SDK (same pipeline as creature sprites). API key at `data/.creature-forge-gemini-key`. Generate each layer with a prompt specifying tileable/seamless, then use BiRefNet or manual editing for transparency on `far`, `mid`, `ground` layers.
 
 **MVP scope:** One area (starter meadow), 4 images. Additional areas generated with the same pipeline later.
 

@@ -339,7 +339,7 @@ For MVP, create 4 simple tileable placeholder images (2048×800px WebP):
 - `mid.webp` — tree silhouettes, transparent top
 - `ground.webp` — grass/path strip, transparent top
 
-These can be generated via Scenario.gg Nano Banana Pro, ComfyUI, or any image tool. The key requirement is **tileable** (left edge meets right edge seamlessly).
+Generate via Gemini 3.1 Pro (`@google/generative-ai` SDK, key at `data/.creature-forge-gemini-key`) — same pipeline as creature sprites. Use BiRefNet for background removal on `far`, `mid`, `ground` layers. The key requirement is **tileable** (left edge meets right edge seamlessly).
 
 Save to: `public/assets/backgrounds/starter_meadow/`
 
@@ -1808,15 +1808,15 @@ Add to Coding Conventions:
   Combat effects use the PixiJS ticker + tween.js.
 ```
 
-- [ ] **Step 2: Update .env.example with Scenario credentials**
+- [ ] **Step 2: Verify Gemini API key exists for asset generation**
 
-Add to `.env.example`:
+Parallax backgrounds are generated via Gemini 3.1 Pro using the same key as creature sprites:
 
+```bash
+test -f data/.creature-forge-gemini-key && echo "Gemini key exists" || echo "MISSING — add key to data/.creature-forge-gemini-key"
 ```
-# Scenario.gg (image generation for parallax backgrounds)
-SCENARIO_API_KEY=
-SCENARIO_API_SECRET=
-```
+
+No `.env` changes needed — the generation pipeline already uses this key.
 
 - [ ] **Step 3: Verify anime.js is still needed**
 
