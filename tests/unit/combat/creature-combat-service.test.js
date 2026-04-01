@@ -10,7 +10,8 @@ import {
   tickAllEffects,
   rollTalkAcceptance,
   executeNpcSkill,
-  handleBefriendAnswer
+  handleBefriendAnswer,
+  generateBefriendQuiz
 } from '../../../src/game/services/creature-combat-service.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
 
@@ -715,6 +716,34 @@ describe('Befriend conversation failure keeps initiator slot spent', () => {
     assert.strictEqual(result.correct, false);
     assert.strictEqual(combat.befriendAttemptedSlots[0], true,
       'initiator still marked after failed befriend quiz');
+  });
+});
+
+describe('generateBefriendQuiz', () => {
+  it('wrong answers come from encounter creatures when provided', () => {
+    const target = instantiateCreature('hi');  // Fire
+    const others = [instantiateCreature('ki'), instantiateCreature('mizu')]; // Wood, Water
+
+    const quiz = generateBefriendQuiz(target, others);
+
+    assert.strictEqual(quiz.creatureId, target.id);
+    const wrongOptions = quiz.options.filter(o => !o.correct);
+    assert.strictEqual(wrongOptions.length, 2);
+    const encounterNames = others.map(c => c.nameEn);
+    for (const wrong of wrongOptions) {
+      assert.ok(encounterNames.includes(wrong.name),
+        `wrong answer "${wrong.name}" should be from encounter creatures`);
+    }
+  });
+
+  it('falls back to catalog when encounter has too few creatures', () => {
+    const target = instantiateCreature('hi');
+    const others = [];
+
+    const quiz = generateBefriendQuiz(target, others);
+
+    assert.strictEqual(quiz.options.length, 3);
+    assert.strictEqual(quiz.options.filter(o => o.correct).length, 1);
   });
 });
 

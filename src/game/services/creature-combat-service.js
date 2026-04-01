@@ -674,18 +674,34 @@ export function shouldTriggerBefriendQuiz(enemies, { guaranteed = false } = {}) 
 
 /**
  * Generate a name quiz for a creature. Returns 3 English name options (1 correct, 2 wrong).
- * Wrong answers come from other creatures in the game (CREATURE_DATA), excluding the target.
+ * Prefers wrong answers from encounter creatures for contextual relevance,
+ * falls back to global creature catalog.
  * @param {object} creature - The enemy creature to quiz about
+ * @param {object[]} [encounterCreatures] - Other creatures in the encounter (preferred for wrong answers)
  * @returns {{ creatureId: string, creatureName: string, options: Array<{ id: string, name: string, correct: boolean }> }}
  */
-export function generateBefriendQuiz(creature) {
-  // Get wrong answers: other creature English names from the creature catalog
-  const allCreatureIds = Object.keys(CREATURES_BY_ID);
-  const wrongCandidates = allCreatureIds
-    .filter(id => id !== creature.id)
-    .map(id => CREATURES_BY_ID[id])
-    .filter(Boolean)
-    .map(c => c.nameEn);
+export function generateBefriendQuiz(creature, encounterCreatures = []) {
+  // Prefer wrong answers from encounter creatures
+  let wrongCandidates = encounterCreatures
+    .filter(c => c.id !== creature.id)
+    .map(c => c.nameEn)
+    .filter(Boolean);
+
+  // Deduplicate
+  wrongCandidates = [...new Set(wrongCandidates)];
+
+  // Fall back to global catalog if not enough encounter creatures
+  if (wrongCandidates.length < 2) {
+    const allCreatureIds = Object.keys(CREATURES_BY_ID);
+    const catalogCandidates = allCreatureIds
+      .filter(id => id !== creature.id)
+      .map(id => CREATURES_BY_ID[id])
+      .filter(Boolean)
+      .map(c => c.nameEn)
+      .filter(name => !wrongCandidates.includes(name));
+    const shuffled = catalogCandidates.sort(() => Math.random() - 0.5);
+    wrongCandidates.push(...shuffled);
+  }
 
   // Shuffle and take 2
   const shuffled = wrongCandidates.sort(() => Math.random() - 0.5);

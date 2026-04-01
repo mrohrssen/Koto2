@@ -737,8 +737,12 @@ export class GameManager {
       const totalOwnedCreatures = this.run.creatureParty.active.length + (this.run.creatureParty.reserves?.length || 0);
       const guaranteeBefriend = totalOwnedCreatures <= 1;
       if (!this.combat.isBoss && !this.combat.npcId && shouldTriggerBefriendQuiz(this.combat.enemies, { guaranteed: guaranteeBefriend })) {
-        // Find the last enemy that just died and revive it to 1 HP
-        const lastKilled = [...this.combat.enemies].reverse().find(e => e.hp <= 0 && !e.befriended);
+        // Find the creature killed by the player's last killing blow
+        const killingAttacks = (playerResult.attacks || []).filter(a => a.targetDefeated);
+        const lastKillAtk = killingAttacks[killingAttacks.length - 1];
+        const lastKilled = lastKillAtk
+          ? this.combat.enemies[lastKillAtk.targetIndex]
+          : [...this.combat.enemies].reverse().find(e => e.hp <= 0 && !e.befriended);
         if (lastKilled) {
           lastKilled.hp = 1;
           const targetIndex = this.combat.enemies.indexOf(lastKilled);
@@ -750,7 +754,7 @@ export class GameManager {
           );
 
           // Generate the quiz
-          const quiz = generateBefriendQuiz(lastKilled);
+          const quiz = generateBefriendQuiz(lastKilled, this.combat.enemies);
           this.combat.befriendQuiz = {
             targetIndex,
             creatureId: lastKilled.id,
