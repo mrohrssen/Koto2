@@ -43,7 +43,7 @@ import {
 } from '../pixi/text.js';
 import { showBanner } from '../pixi/banners.js';
 import { playStatusApplied, clearStatusVfx, clearAllStatusVfx } from '../pixi/status-vfx.js';
-import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation } from '../pixi/formation.js';
+import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp } from '../pixi/formation.js';
 import { setScrollState } from '../pixi/parallax.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
@@ -117,10 +117,10 @@ async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, dam
  * PixiJS replacement for DOM enemyCreatureAttackEffect.
  * Lunges the enemy attacker, then impacts the player target.
  */
-async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, damage, playerMaxHp = 0) {
+async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, damage, playerMaxHp = 0, effectivenessType = 'normal') {
   const attackerSprite = getCreatureSprite('enemy', attackerIndex);
   if (attackerSprite) await pixiLunge(attackerSprite, { distance: -20, duration: 200 });
-  await impactEffect(damage, 'player', targetIndex, playerMaxHp, element);
+  await impactEffect(damage, 'player', targetIndex, playerMaxHp, element, effectivenessType);
   showVignette(200);
 }
 
@@ -423,23 +423,20 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   const sourceSide = isEnemy ? 'enemy' : 'player';
   const targetSide = isEnemy ? 'player' : 'enemy';
 
+  const effectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
+
   if (atk.damage > 0 && (sourceEl || getCreatureSprite(sourceSide, attackerIndex))) {
     playAttackSound(element);
     if (isEnemy) {
-      await enemyCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp);
+      await enemyCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType);
     } else {
-      await fireCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp);
+      await fireCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType);
     }
   }
 
   // Damage number on the target (already rendered by impactEffect inside the attack effect functions)
 
-  // STAB indicator — center-screen banner
-  if (atk.stab) {
-    showBanner('Super effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral });
-  }
-
-  // Type effectiveness popup
+  // Type effectiveness popup (STAB has no separate visual; its boost feeds into the tier system)
   if (atk.elementMultiplier > 1) {
     setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral }), 400);
   } else if (atk.elementMultiplier < 1) {
@@ -1315,6 +1312,8 @@ function showXpEvents(xpEvents) {
         if (index >= 0 && slots[index]) {
           // Slight delay so it appears after XP popup
           setTimeout(() => pixiLevelUpPopup(lu.newLevel, spritePos('player', index)), 400);
+          // PixiJS level-up burst + flash
+          setTimeout(() => animateLevelUp('player', index), 400);
         }
         // Collect move learns for later processing
         if (lu.newMove) {
@@ -1545,6 +1544,10 @@ async function showEffectEvents(result) {
       burstParticles(pos, { count: 4, color: 0x9C27B0, speed: 40, life: 300, element: 'neutral' });
       showPoisonTick(event.damage, pos);
       playStatusApplied(side, index, 'poison');
+      // Clear poison VFX when effect expires
+      if (event.remainingTurns === 0) {
+        clearStatusVfx(side, index, 'poison');
+      }
     } else if (event.type !== 'poison') {
       const EFFECT_LABELS = {
         confuse: t('effectConfuse'),
@@ -1569,6 +1572,10 @@ async function showEffectEvents(result) {
         playStatusApplied(side, index, baseType);
       } else {
         showFloatingText(document.body, label); // fallback for unknown types
+      }
+      // Clear ongoing VFX when effect expires (remainingTurns === 0)
+      if (event.remainingTurns === 0) {
+        clearStatusVfx(side, index, baseType);
       }
       await delay(400);
     }
@@ -1853,9 +1860,10 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
     const attackerIdx = typeof atk.attackerIndex === 'number' ? atk.attackerIndex : 0;
     const targetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
     const targetMaxHp = result.allies?.[targetIdx]?.maxHp || 100;
+    const enemyEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
     if (atk.attackerElement) {
       playAttackSound(atk.attackerElement);
-      await enemyCreatureAttackEffect(attackerIdx, targetIdx, atk.attackerElement, atk.damage, targetMaxHp);
+      await enemyCreatureAttackEffect(attackerIdx, targetIdx, atk.attackerElement, atk.damage, targetMaxHp, enemyEffectivenessType);
     } else {
       animatePlayerHurt();
     }
@@ -1933,8 +1941,10 @@ async function showKoSwapAnimations(result) {
       const dyingSlot = slots[koIndex];
       if (dyingSlot) {
         dyingSlot.classList.add('creature-dying');
-        await delay(600);
       }
+      // PixiJS KO animation (runs alongside CSS animation)
+      animateKO('player', koIndex);
+      await delay(600);
     }
 
     const actionArea = document.getElementById('action-area');
@@ -2082,13 +2092,14 @@ async function executeCreatureMovesTurn(choices) {
           const atkAttackerIdx = atk.attackerId ? atkActiveCreatures.findIndex(r => r && r.id === atk.attackerId) : 0;
           const atkTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
 
+          const atkEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
           if (atk.damage > 0 && (creatureSlotEl || getCreatureSprite('player', Math.max(0, atkAttackerIdx)))) {
             playAttackSound(atkElement);
             const tIdx = atk.targetIndex;
             const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
               ? enemyHpMap[tIdx].maxHp
               : (result.enemies?.[0]?.maxHp ?? 100);
-            await fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp);
+            await fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp, atkEffectivenessType);
             if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
           } else if (atk.damage > 0) {
             animateEnemyHurt();
@@ -2133,12 +2144,7 @@ async function executeCreatureMovesTurn(choices) {
             }
           }
 
-          // STAB indicator — center-screen banner
-          if (atk.stab) {
-            showBanner('Super effective!', 'super', { elementColor: ELEMENT_COLORS[atkElement] || ELEMENT_COLORS.neutral });
-          }
-
-          // Type effectiveness popup
+          // Type effectiveness popup (STAB has no separate visual; its boost feeds into the tier system)
           if (atk.elementMultiplier > 1) {
             setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[atkElement] || ELEMENT_COLORS.neutral }), 400);
           } else if (atk.elementMultiplier < 1) {
@@ -2295,13 +2301,14 @@ async function executeCreaturePlayerAttack() {
           const depTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
 
           // Fire element-colored effects from creature to enemy with PixiJS impact
+          const depEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
           if ((creatureSlotEl || getCreatureSprite('player', Math.max(0, depAttackerIdx))) && atk.attackerElement) {
             playAttackSound(atk.attackerElement);
             const tIdx = atk.targetIndex;
             const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
               ? enemyHpMap[tIdx].maxHp
               : (result.enemies?.[0]?.maxHp ?? 100);
-            await fireCreatureAttackEffect(Math.max(0, depAttackerIdx), depTargetIdx, atk.attackerElement, atk.damage, targetMaxHp);
+            await fireCreatureAttackEffect(Math.max(0, depAttackerIdx), depTargetIdx, atk.attackerElement, atk.damage, targetMaxHp, depEffectivenessType);
             if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
           } else {
             animateEnemyHurt();

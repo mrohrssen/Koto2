@@ -168,6 +168,11 @@ export function showActiveGlow(index) {
   layers.effects.addChild(activeGlow);
 
   activeGlowTickFn = () => {
+    const sprite = getCreatureSprite('player', index);
+    if (sprite && activeGlow) {
+      activeGlow.x = sprite.x;
+      activeGlow.y = sprite.y;
+    }
     activeGlow.alpha = 0.3 + 0.3 * Math.sin(Date.now() / 400);
   };
   app.ticker.add(activeGlowTickFn);
