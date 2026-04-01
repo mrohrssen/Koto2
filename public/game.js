@@ -929,7 +929,7 @@ function showCollectionSelect(catalog, collection) {
       const confirmBtn = document.getElementById('collection-confirm-btn');
       if (confirmBtn) {
         confirmBtn.disabled = selected.size === 0;
-        confirmBtn.textContent = t('startRun', selected.size, selected.size !== 1 ? 's' : '');
+        confirmBtn.innerHTML = t('startRun', selected.size, selected.size !== 1 ? 's' : '');
       }
     }
 
