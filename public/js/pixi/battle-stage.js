@@ -9,7 +9,7 @@
 import { Application, Container } from 'pixi.js';
 import { updateParallax, resizeParallax } from './parallax.js';
 import { initFormations, updateFormations, resizeFormations } from './formation.js';
-import { initParticles, updateParticles, initFlash, isFrozen } from './effects.js';
+import { initParticles, updateParticles, initFlash, initVignette, isFrozen } from './effects.js';
 
 let app = null;
 let layers = {};
@@ -62,6 +62,7 @@ export async function initBattleStage() {
   initFormations();
   initParticles();
   initFlash();
+  initVignette();
 
   // Resize handling
   const ro = new ResizeObserver(([entry]) => {
