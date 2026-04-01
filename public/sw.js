@@ -1,4 +1,4 @@
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 const CACHE_NAME = `neo-tokyo-assets-v${CACHE_VERSION}`;
 
 // Future: Add URLs here for eager pre-caching on install
