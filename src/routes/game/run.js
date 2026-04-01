@@ -34,7 +34,6 @@ function loadQuizQuestions() {
 }
 
 export default function createRunRoutes({
-  generateGameNarration,
   cancelPendingPrefetches,
   clearPrefetchCache,
   queueMissingCreatureDialoguesFn,

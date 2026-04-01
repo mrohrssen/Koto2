@@ -37,9 +37,6 @@
  *
  * KEY INTERNAL FUNCTIONS:
  * - loadSettings() / saveSettings() - Settings persistence
- * - generateGameNarration(event, context, userKeys) - AI narration with vocab
- * - applyVocabRepair(narration, vocab, userKeys) - Fix AI vocab errors
- * - trackNarrationStats(narration, jpdbApiKey) - Track word usage
  * - getEnrichedGameState() - Add computed fields to game state
  *
  * STATE:
@@ -50,14 +47,12 @@
  * ARCHITECTURE NOTES:
  * - API keys now in request body (per-user via localStorage)
  * - GameManager instantiated once, persists game state
- * - AI narration generated via generateNarration() with vocab suggestions
  * - Prefetch system disabled (requires server-side keys)
  * - TTS proxied to VOICEVOX_URL environment variable
  * - Game data saved to .jrpg-*.json files
  *
  * CLAUDE HINTS:
  * - For game logic, trace through GameManager methods in loop.js
- * - AI narration flow: endpoint -> generateGameNarration -> dm.js
  * - JPDB endpoints extract jpdbApiKey from req.body
  * - Game endpoints pass req.body as userKeys to helper functions
  * - Settings split: API keys in client localStorage, TTS/JLPT on server
@@ -93,9 +88,7 @@ import {
 
 import {
   chat,
-  getProviders,
-  getJLPTLevels,
-  JLPT_GRAMMAR
+  getProviders
 } from './src/ai-providers.js';
 
 import {
@@ -107,24 +100,22 @@ import {
 
 // Game imports
 import { GameManager } from './src/game/loop.js';
-import { generateNarration, getSimpleNarration } from './src/game/dm.js';
 import { ACHIEVEMENTS } from './src/game/state.js';
 import {
-  loadGameStats, saveGameStats, updateGameStatsWithNarration,
+  loadGameStats, saveGameStats,
   updateGameStatsWithWords, updateGameStatsWithEvent,
   getGameStatsForPeriod, getGameStatsAvailableDates, resetGameStats
 } from './src/game-stats.js';
 import {
-  configureVocabManager, getSuggestionsForNarration, addUsedWords,
+  configureVocabManager,
   refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache as invalidateVocabManagerCache,
   getNarrationVocabularyForUser
 } from './src/game/vocab-manager.js';
 import {
   getCachedAudio, clearCache as clearPrefetchCache,
-  setTTSSynthesizer, updateTTSConfig, cancelPendingPrefetches,
-  queueTTSPrefetch
+  setTTSSynthesizer, updateTTSConfig, cancelPendingPrefetches
 } from './src/game/prefetch.js';
-import { enforceVocabLimit, checkSentenceViolations } from './src/game/vocab-repair.js';
+import { checkSentenceViolations } from './src/game/vocab-repair.js';
 import {
   getDialogueFromCache as getNpcDialogueFromCache,
   getAllDialogueCache as getAllNpcDialogueCache,
@@ -417,7 +408,6 @@ app.use('/api', createRoutes({
   ttsCache,
   ttsDialogueCache,
   enrichGameState,
-  generateGameNarration,
   cancelPendingPrefetches,
   clearPrefetchCache,
   updateGameStatsWithEvent,
@@ -463,169 +453,10 @@ if (devPassword) {
   app.use('/dev', createDevRouter({ password: '' }));
 }
 
-// Narration helpers
-function trackNarrationStats(narration, jpdbApiKey = null, userId = null) {
-  if (!narration) return;
-
-  updateGameStatsWithNarration(gameStats, narration);
-  saveGameStats(gameStats);
-
-  if (jpdbApiKey && userId) {
-    try {
-      addUsedWords(narration, userId);
-    } catch (e) {}
-  }
-}
-
-const DM_EVENT_ALIASES = Object.freeze({
-  encounterStart: 'combatStart',
-  shrine: 'shrineUse'
-});
-
-function normalizeNarrationRequest(event, context = {}) {
-  if (event === 'shrine') {
-    if (typeof context === 'number') {
-      return { event: 'shrineUse', context: { healed: context } };
-    }
-
-    const healed = Number(context?.healed);
-    const effectHealed = Number(context?.effect?.healed);
-    return {
-      event: 'shrineUse',
-      context: {
-        ...(context || {}),
-        healed: Number.isFinite(healed) ? healed : (Number.isFinite(effectHealed) ? effectHealed : 0)
-      }
-    };
-  }
-
-  return {
-    event: DM_EVENT_ALIASES[event] || event,
-    context
-  };
-}
-
 function getUserNarrationVocabulary(userId) {
   const vocabResult = getVocabulary();
   const fallbackVocabulary = Array.isArray(vocabResult?.words) ? vocabResult.words : [];
   return getNarrationVocabularyForUser(userId, fallbackVocabulary);
-}
-
-async function applyVocabRepair(narration, vocabulary, userKeys, gameTerms = [], vidSet = null) {
-  const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel } = userKeys || {};
-  if (!jpdbApiKey || !aiApiKey || !vocabulary?.length) return narration;
-
-  try {
-    const aiConfig = {
-      provider: aiProvider || 'openai',
-      apiKey: aiApiKey,
-      openaiModel: openaiModel || 'gpt-4o-mini',
-      openrouterModel: openrouterModel || ''
-    };
-
-    const repairChat = async (repairPrompt) => {
-      return chat({
-        provider: aiConfig.provider,
-        apiKey: aiConfig.apiKey,
-        messages: [{ role: 'user', content: repairPrompt }],
-        vocabulary,
-        jlptLevel: jlptLevel || 'N4',
-        openaiModel: aiConfig.openaiModel,
-        openrouterModel: aiConfig.openrouterModel,
-        customSystemPrompt: 'You rewrite Japanese text while preserving meaning. Return only the rewritten Japanese sentence.',
-        purpose: 'narration_repair'
-      });
-    };
-
-    const repaired = await enforceVocabLimit(
-      narration,
-      vocabulary,
-      jpdbApiKey,
-      repairChat,
-      1,
-      gameTerms,
-      vidSet
-    );
-
-    return repaired?.narration || narration;
-  } catch (error) {
-    console.error('[Vocab Repair] Error:', error.message);
-    return narration;
-  }
-}
-
-async function generateGameNarration(event, context, userKeys = {}) {
-  const sourceContext = context || {};
-
-  if (debugMode) {
-    const { event: debugEvent, context: debugContext } = normalizeNarrationRequest(event, sourceContext);
-    console.log(`[Debug] Returning fallback narration for ${debugEvent}`);
-    return getSimpleNarration(debugEvent, debugContext);
-  }
-
-  const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel, userId } = userKeys;
-  const { event: normalizedEvent, context: normalizedContext } = normalizeNarrationRequest(event, sourceContext);
-  const enemyForState = sourceContext?.enemy
-    || ((normalizedEvent === 'bossAppear' || normalizedEvent === 'finalBossAppear') ? normalizedContext : null);
-
-  const { words: vocabulary, vidSet } = getUserNarrationVocabulary(userId);
-  const aiConfig = {
-    provider: aiProvider || 'openai',
-    apiKey: aiApiKey,
-    openaiModel: openaiModel || 'gpt-4o-mini',
-    openrouterModel: openrouterModel || ''
-  };
-
-  let narration;
-  let suggestedWords = null;
-
-  if (!aiConfig.apiKey || vocabulary.length === 0) {
-    narration = getSimpleNarration(normalizedEvent, normalizedContext);
-  } else {
-    if (jpdbApiKey && vocabulary.length > 0) {
-      try {
-        suggestedWords = await getSuggestionsForNarration(jpdbApiKey, vocabulary, userId);
-      } catch (e) {}
-    }
-
-    const gameState = {
-      player: sourceContext.player || null,
-      floor: sourceContext.floor || 1,
-      enemy: enemyForState || null,
-      combat: enemyForState ? { active: true, turn: sourceContext.turn || 0 } : null,
-      allies: sourceContext.allies || null
-    };
-
-    narration = await generateNarration(
-      chat,
-      gameState,
-      normalizedEvent,
-      normalizedContext,
-      vocabulary,
-      jlptLevel || 'N4',
-      aiConfig,
-      suggestedWords
-    );
-
-    if (!narration) {
-      narration = getSimpleNarration(normalizedEvent, normalizedContext);
-    }
-  }
-
-  const gameTerms = [];
-  if (enemyForState?.name) {
-    gameTerms.push(enemyForState.name);
-  }
-  narration = await applyVocabRepair(narration, vocabulary, userKeys, gameTerms, vidSet);
-
-  // Prefetch TTS audio so it's ready when the client requests it
-  if (narration) {
-    queueTTSPrefetch(narration);
-  }
-
-  trackNarrationStats(narration, jpdbApiKey, userId);
-
-  return narration;
 }
 
 // ============ Theme Pool Submit ============

@@ -21,7 +21,6 @@ import createBugReportRoutes from './bug-reports.js';
  * @param {function} deps.getSettings - Get current settings object
  * @param {function} deps.saveSettings - Save settings to file
  * @param {function} deps.enrichGameState - Enrich game state (accepts gameManager)
- * @param {function} deps.generateGameNarration - Generate AI narration
  * @param {function} deps.cancelPendingPrefetches - Cancel pending prefetches
  * @param {function} deps.clearPrefetchCache - Clear prefetch cache
  * @returns {Router}
@@ -50,7 +49,6 @@ export default function createRoutes(deps) {
   // Game routes: /api/game/* (auth-protected, per-user managers)
   router.use('/game', createGameRoutes({
     enrichGameState: deps.enrichGameState,
-    generateGameNarration: deps.generateGameNarration,
     cancelPendingPrefetches: deps.cancelPendingPrefetches,
     clearPrefetchCache: deps.clearPrefetchCache,
     updateGameStatsWithEvent: deps.updateGameStatsWithEvent,
