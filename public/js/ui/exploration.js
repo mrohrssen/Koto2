@@ -1137,6 +1137,7 @@ export async function renderFriendlyNpc() {
             result = await apiChooseFriendlyNpcItem?.(itemId, creatureIndex);
           } catch (err) {
             friendlyNpcState.choosing = false;
+            actions.clear();
             sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
             renderFriendlyNpc();
             return;
@@ -1144,6 +1145,7 @@ export async function renderFriendlyNpc() {
           if (result?.state) {
             updateGameState(result.state);
             friendlyNpcState.choosing = false;
+            actions.clear();
             updateUI();
           } else {
             friendlyNpcState.choosing = false;
