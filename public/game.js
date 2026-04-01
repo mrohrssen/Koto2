@@ -85,7 +85,7 @@ import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
 import * as modalsUI from './js/ui/modals.js';
 import * as combatLoopUI from './js/ui/combat-loop.js';
-import { screenShake, showXpPopup, showLevelUpPopup, healEffect, poisonApplyEffect, recoil, pop } from './js/ui/combat-effects.js';
+import { recoil, pop } from './js/ui/dom-effects.js';
 import { itemGained } from './js/ui/event-popup.js';
 import { dom } from './js/dom.js';
 import * as actions from './js/ui/actions.js';
@@ -113,6 +113,11 @@ import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './j
 import { enterEnemiesOneByOne, playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
+
+// PixiJS battle stage imports
+import { initBattleStage } from './js/pixi/battle-stage.js';
+import { loadParallax, setScrollState } from './js/pixi/parallax.js';
+import { showFormation as pixiShowFormation, hideFormation as pixiHideFormation } from './js/pixi/formation.js';
 
 // API imports - these are the server communication functions
 import {
@@ -334,6 +339,11 @@ function updateScene() {
     if (npcSkills?.length) {
       scene.showNpcSkills(npcSkills);
     }
+    // PixiJS: show player formation alongside DOM formation
+    const playerParty = gameState.run?.creatureParty?.active;
+    if (playerParty?.length) {
+      pixiShowFormation('player', playerParty);
+    }
   } else if (gameState.phase === 'shrine') {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
@@ -353,6 +363,9 @@ function updateScene() {
     scene.showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`);
   } else {
     scene.hideEnemies();
+    // PixiJS: hide formations when not in combat
+    pixiHideFormation('player');
+    pixiHideFormation('enemy');
   }
   if (gameState.phase === 'shrine') {
     scene.setBackground('/assets/backgrounds/shrine_background.webp');
@@ -366,6 +379,12 @@ function updateScene() {
     scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
   } else if (!gameState.run) {
     scene.setBackground('/assets/backgrounds/hub.webp');
+  }
+
+  // Load PixiJS parallax layers for the current area (if available)
+  const areaId = gameState.run?.currentArea?.id;
+  if (areaId) {
+    loadParallax(areaId);
   }
 }
 
@@ -982,6 +1001,15 @@ async function startEncounter() {
   try {
     updateGameState(result.state);
 
+    // Decelerate parallax scroll as combat begins
+    setScrollState('decelerating');
+
+    // Show PixiJS enemy formation alongside DOM formation
+    if (hasCreatures && result.state.combat?.enemies?.length) {
+      const isBoss = !!result.state.combat.isBoss;
+      await pixiShowFormation('enemy', result.state.combat.enemies, { isBoss });
+    }
+
     // For NPC battles: play NPC intro before rendering combat.
     // Lock scene transition so updateUI() won't kill the greeting narration.
     if (result?.npc && hasCreatures) {
@@ -1362,6 +1390,9 @@ async function initGame() {
 
   // Initialize i18n language from settings
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
+
+  // Initialize PixiJS battle stage (canvas overlay for combat animations)
+  await initBattleStage();
 
   takeover.init();
   leaderboard.init();

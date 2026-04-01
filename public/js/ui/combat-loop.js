@@ -43,7 +43,8 @@ import {
 } from '../pixi/text.js';
 import { showBanner } from '../pixi/banners.js';
 import { playStatusApplied, clearStatusVfx, clearAllStatusVfx } from '../pixi/status-vfx.js';
-import { getCreatureSprite, showActiveGlow, clearActiveGlow } from '../pixi/formation.js';
+import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation } from '../pixi/formation.js';
+import { setScrollState } from '../pixi/parallax.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
 import { hapticDamageTier } from '../native/index.js';
@@ -3268,6 +3269,11 @@ export async function stopCombatLoop(result) {
   // Final cleanup: clear PixiJS status VFX and DOM status icons
   clearAllStatusVfx();
   clearAllStatusIcons();
+
+  // Resume parallax scroll and hide PixiJS formations
+  setScrollState('accelerating');
+  pixiHideFormation('player');
+  pixiHideFormation('enemy');
 
   // Hide word practice cards and close modal
   wordPractice.hideWordCards();
