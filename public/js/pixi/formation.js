@@ -217,6 +217,46 @@ export function updateFormations(delta) {
 }
 
 /**
+ * Animate a creature being knocked out.
+ * @param {'player'|'enemy'} side
+ * @param {number} index
+ */
+export async function animateKO(side, index) {
+  const sprite = getCreatureSprite(side, index);
+  if (!sprite) return;
+  const pos = { x: sprite.x, y: sprite.y };
+
+  // Lazy import to avoid circular dependency (formation <- effects <- battle-stage <- formation)
+  const { burstParticles } = await import('./effects.js');
+
+  sprite.tint = 0x888888;
+  const targetScaleX = sprite.scale.x * 0.5;
+  const targetScaleY = sprite.scale.y * 0.5;
+  await Promise.all([
+    tween(sprite, { alpha: 0 }, { duration: 600, ease: 'easeOut' }),
+    tween(sprite.scale, { x: targetScaleX, y: targetScaleY }, { duration: 600, ease: 'easeIn' }),
+  ]);
+
+  burstParticles(pos, { count: 8, color: 0xFFFFFF, speed: 60, life: 500, element: 'neutral' });
+}
+
+/**
+ * Animate a creature leveling up.
+ * @param {'player'|'enemy'} side
+ * @param {number} index
+ */
+export async function animateLevelUp(side, index) {
+  const sprite = getCreatureSprite(side, index);
+  if (!sprite) return;
+  const pos = { x: sprite.x, y: sprite.y };
+
+  const { burstParticles, screenFlash } = await import('./effects.js');
+
+  burstParticles({ x: pos.x, y: pos.y + 10 }, { count: 15, color: 0xFFD700, speed: 100, life: 800, element: 'fire' });
+  screenFlash({ color: 0xFFD700, duration: 150 });
+}
+
+/**
  * Reposition formations after resize.
  */
 export async function resizeFormations(width, height) {
