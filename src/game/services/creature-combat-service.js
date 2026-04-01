@@ -542,6 +542,9 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
     if (hasHaste(enemy)) consumeHaste(enemy);
 
     for (let strike = 0; strike < attackCount; strike++) {
+      // Defensive re-check: creature may have died from effects mid-turn
+      if (enemy.hp <= 0) break;
+
       const currentAliveAllies = allies.filter(a => a.hp > 0);
       if (currentAliveAllies.length === 0) break;
 

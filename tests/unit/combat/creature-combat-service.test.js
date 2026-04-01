@@ -717,3 +717,17 @@ describe('Befriend conversation failure keeps initiator slot spent', () => {
       'initiator still marked after failed befriend quiz');
   });
 });
+
+describe('Dead creature cannot attack', () => {
+  it('enemy with 0 hp produces no attacks', () => {
+    const ally = instantiateCreature('hi');
+    ally.hp = 50;
+    const enemy = instantiateCreature('ki');
+    enemy.hp = 0; // Dead
+
+    const result = processEnemyTurn([enemy], [ally]);
+
+    assert.strictEqual(result.attacks.length, 0, 'dead enemy should not attack');
+    assert.strictEqual(ally.hp, 50, 'ally HP should be unchanged');
+  });
+});
