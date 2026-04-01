@@ -30,7 +30,7 @@ export async function initBattleStage() {
   app = new Application();
 
   await app.init({
-    background: 0x1a1a2e,
+    backgroundAlpha: 0, // Transparent — lets DOM .scene-background show through when no parallax is loaded
     resolution: Math.min(window.devicePixelRatio, 2),
     autoDensity: true,
     antialias: false,
@@ -44,6 +44,7 @@ export async function initBattleStage() {
   app.canvas.style.left = '0';
   app.canvas.style.width = '100%';
   app.canvas.style.height = '100%';
+  app.canvas.style.zIndex = '1'; // Above .scene-background (0), below .battle-stage DOM overlay (2)
   sceneArea.insertBefore(app.canvas, sceneArea.firstChild);
 
   // Create ordered layer containers

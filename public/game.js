@@ -376,15 +376,17 @@ function updateScene() {
   } else if (gameState.phase === 'dealer') {
     scene.setBackground('/assets/backgrounds/dealer_background.webp');
   } else if (gameState.run?.background) {
-    scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
+    // If PixiJS parallax is available for this area, clear the DOM background
+    // so it doesn't cover the pixi canvas; otherwise use the old DOM background
+    const areaId = gameState.run?.currentArea?.id;
+    if (areaId) {
+      scene.setBackground(null); // Clear DOM background — PixiJS parallax handles it
+      loadParallax(areaId);
+    } else {
+      scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
+    }
   } else if (!gameState.run) {
     scene.setBackground('/assets/backgrounds/hub.webp');
-  }
-
-  // Load PixiJS parallax layers for the current area (if available)
-  const areaId = gameState.run?.currentArea?.id;
-  if (areaId) {
-    loadParallax(areaId);
   }
 }
 

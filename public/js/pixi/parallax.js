@@ -43,7 +43,6 @@ export async function loadParallax(areaId) {
     try {
       texture = await Assets.load(path);
     } catch {
-      // Fallback: skip this layer (sky will show background color)
       continue;
     }
 
