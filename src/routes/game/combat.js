@@ -1,7 +1,7 @@
 /**
  * @fileoverview Combat routes
  *
- * Handles creature combat, befriending, NPC dialogue, and combat-end-narration
+ * Handles creature combat, befriending, and NPC dialogue
  */
 
 import { Router } from 'express';
@@ -12,9 +12,6 @@ import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogu
 import { buildVocabConfig, buildBefriendDialogueVocabConfig } from './route-helpers.js';
 
 export default function createCombatRoutes({
-  updateGameStatsWithEvent,
-  saveGameStats,
-  getGameStats,
   getUserVocabulary,
   getCreatureDialogueFromCache,
   regenCreatureDialogueFn,
@@ -52,34 +49,6 @@ export default function createCombatRoutes({
     // Explicit opt-in only. Keeps i+1 Japanese rules safe in production.
     return process.env.DEV_BEFRIEND_FALLBACK === '1';
   }
-
-  // Combat end narration
-  router.post('/combat-end-narration', async (req, res) => {
-    const gameManager = req.gameManager;
-    const { victory, expGained, creditsGained, loot, leveledUp, newLevel, isBoss } = req.body;
-    const gameStats = getGameStats();
-    try {
-      let narration;
-      const enemy = gameManager.combat?.enemy || gameManager.combat?.enemies?.[0];
-      const allies = gameManager.combat?.allies || [];
-
-      if (victory) {
-        updateGameStatsWithEvent(gameStats, 'combat', {
-          victory: true,
-          enemyName: enemy?.name
-        });
-        saveGameStats(gameStats);
-
-        narration = null;
-      } else {
-        narration = null;
-      }
-
-      res.json({ narration, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
 
   // ============ CREATURE COMBAT ============
 

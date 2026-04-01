@@ -3256,110 +3256,57 @@ export async function stopCombatLoop(result) {
     await dialogueDismissPromise;
   }
 
-  // Request narration from server
-  try {
-    const apiKeys = settings.getApiKeys();
-    const response = await fetch(`${API_BASE}/api/game/combat-end-narration`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        victory: result.victory,
-        expGained: result.expGained,
-        creditsGained: result.creditsGained,
-        loot: result.loot,
-        leveledUp: result.leveledUp,
-        newLevel: result.newLevel,
-        isBoss: result.isBoss,
-        ...apiKeys
-      })
-    });
-    const narrationResult = await response.json();
+  // Kana graduation check disabled — kana combat mode disabled (Task 8.1)
+  // if (result?.victory) {
+  //   const currentState = getGameState();
+  //   if (currentState.meta?.kanaMode) {
+  //     try {
+  //       const statsResp = await fetch(`${API_BASE}/api/game/kana-stats`, {
+  //         headers: getAuthHeaders()
+  //       });
+  //       const stats = await statsResp.json();
+  //       if (stats.graduated) {
+  //         await fetch(`${API_BASE}/api/game/kana-mode`, {
+  //           method: 'POST',
+  //           headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+  //           body: JSON.stringify({ enabled: false })
+  //         });
+  //         const current = getGameState();
+  //         updateGameState({ ...current, meta: { ...current.meta, kanaMode: false } });
+  //         await narration.showNarration(
+  //           "Incredible progress! You've learned the entire Hiragana alphabet. " +
+  //           "I've upgraded your Translator — from now on, you'll be able to command " +
+  //           "your creatures directly using Japanese vocabulary!",
+  //           { speaker: 'Cid' }
+  //         );
+  //       }
+  //     } catch (e) {
+  //       console.error('[KanaMode] Graduation check failed:', e);
+  //     }
+  //   }
+  // }
 
-    // Display narration (click-to-continue) with enemy sprites still visible
-    if (narrationResult.narration) {
-      await narration.showNarration(narrationResult.narration);
+  // Animate enemy defeat
+  if (result.victory) {
+    animateEnemyDefeat();
+    playSFX('enemy-defeat');
+  }
+
+  // Show victory or defeat modal
+  if (result.victory) {
+    playSFX('victory');
+    const gs = getGameState();
+    const isCreatureCombat = gs?.combat?.isCreatureCombat;
+    if (isCreatureCombat && gs?.combat?.npcId) {
+      await runNpcDialogue();
     }
-
-    // Kana graduation check disabled — kana combat mode disabled (Task 8.1)
-    // if (result?.victory) {
-    //   const currentState = getGameState();
-    //   if (currentState.meta?.kanaMode) {
-    //     try {
-    //       const statsResp = await fetch(`${API_BASE}/api/game/kana-stats`, {
-    //         headers: getAuthHeaders()
-    //       });
-    //       const stats = await statsResp.json();
-    //       if (stats.graduated) {
-    //         await fetch(`${API_BASE}/api/game/kana-mode`, {
-    //           method: 'POST',
-    //           headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-    //           body: JSON.stringify({ enabled: false })
-    //         });
-    //         const current = getGameState();
-    //         updateGameState({ ...current, meta: { ...current.meta, kanaMode: false } });
-    //         await narration.showNarration(
-    //           "Incredible progress! You've learned the entire Hiragana alphabet. " +
-    //           "I've upgraded your Translator — from now on, you'll be able to command " +
-    //           "your creatures directly using Japanese vocabulary!",
-    //           { speaker: 'Cid' }
-    //         );
-    //       }
-    //     } catch (e) {
-    //       console.error('[KanaMode] Graduation check failed:', e);
-    //     }
-    //   }
-    // }
-
-    // NOW animate enemy defeat - after player has read the narration
-    if (result.victory) {
-      animateEnemyDefeat();
-      playSFX('enemy-defeat');
+    if (isCreatureCombat && showPostCombatShop) {
+      await showPostCombatShop();
     }
-
-    // Update game state from server
-    if (narrationResult.state) {
-      updateGameState({ ...gameState, ...narrationResult.state });
-    }
-
-    // Play TTS if available
-    if (narrationResult.audio) {
-      playNarrationAudio(narrationResult.audio);
-    }
-
-    // Show victory or defeat modal
-    if (result.victory) {
-      playSFX('victory');
-      const gs = getGameState();
-      const isCreatureCombat = gs?.combat?.isCreatureCombat;
-      if (isCreatureCombat && gs?.combat?.npcId) {
-        await runNpcDialogue();
-      }
-      if (isCreatureCombat && showPostCombatShop) {
-        await showPostCombatShop();
-      }
-      showVictoryModal(result);
-      wordPractice.prefetchCombatWords();
-    } else {
-      showGameOverModal(result);
-    }
-
-  } catch (error) {
-    console.error('Error getting combat end narration:', error);
-    // Fallback narration
-    if (result.victory) {
-      const gs2 = getGameState();
-      if (gs2?.combat?.npcId) {
-        await runNpcDialogue();
-      }
-      const isCreatureCombat = gs2?.combat?.isCreatureCombat;
-      if (isCreatureCombat && showPostCombatShop) {
-        await showPostCombatShop();
-      }
-      showVictoryModal(result);
-      wordPractice.prefetchCombatWords();
-    } else {
-      showGameOverModal(result);
-    }
+    showVictoryModal(result);
+    wordPractice.prefetchCombatWords();
+  } else {
+    showGameOverModal(result);
   }
 
   // Refresh full UI state

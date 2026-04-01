@@ -90,10 +90,6 @@ export default function createGameRoutes(deps) {
 
   // Mount combat routes
   router.use(createCombatRoutes({
-    generateGameNarration: deps.generateGameNarration,
-    updateGameStatsWithEvent: deps.updateGameStatsWithEvent,
-    saveGameStats: deps.saveGameStats,
-    getGameStats: deps.getGameStats,
     getUserVocabulary: deps.getUserVocabulary,
     getCreatureDialogueFromCache: deps.getCreatureDialogueFromCache,
     regenCreatureDialogueFn: deps.regenCreatureDialogueFn,
