@@ -430,23 +430,9 @@ html, body {
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.formation-slot.charged .formation-romaji {
-  animation: name-charged-glow 1.5s ease-in-out infinite;
-  color: #FFD54F;
-}
-
-@keyframes name-charged-glow {
-  0%, 100% { text-shadow: 0 0 4px rgba(255, 215, 0, 0.4); }
-  50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
-}
-
 .formation-sprite.ko {
   opacity: 0.3;
   filter: grayscale(1);
-}
-
-.formation-sprite.charged {
-  box-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
 }
 
 .enemy-formation .formation-slot.defeated {
@@ -2870,23 +2856,6 @@ html, body {
   margin-bottom: 0.25rem;
 }
 .creature-popup-stats { font-size: 11px; color: #444; }
-.creature-popup-ultimate { font-size: 11px; color: #aaa; margin: 8px 0; }
-.creature-popup-ultimate-btn {
-  width: 100%;
-  padding: 8px;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  background: var(--accent-gold, #FFD700);
-  color: #000;
-}
-.creature-popup-ultimate-btn:disabled {
-  background: #333;
-  color: #666;
-  cursor: not-allowed;
-}
 
 /* Creature Swap in Popup */
 .creature-popup-swap-section {
@@ -3191,131 +3160,6 @@ html, body {
 .befriend-name-btn:disabled {
   opacity: 0.5;
   cursor: default;
-}
-
-/* ===== ULTIMATE ANIMATION OVERLAYS ===== */
-
-/* Screen tint overlay */
-.ultimate-tint-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  pointer-events: none;
-  z-index: 9999;
-  will-change: opacity;
-}
-
-/* Large particles from ultimate source */
-.ultimate-particle {
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
-}
-
-/* Fire: flame columns */
-.ultimate-flame {
-  position: fixed;
-  width: 30px;
-  height: 120px;
-  border-radius: 50% 50% 0 0;
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
-  filter: blur(4px);
-}
-
-/* Water: wave sweep */
-.ultimate-wave {
-  position: fixed;
-  top: 30%;
-  left: 0;
-  width: 100%;
-  height: 40%;
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
-  filter: blur(6px);
-}
-
-/* Water: droplets */
-.ultimate-droplet {
-  position: fixed;
-  width: 6px;
-  height: 10px;
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
-}
-
-/* Earth: crack lines */
-.ultimate-crack {
-  position: fixed;
-  width: 3px;
-  height: 80px;
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
-  transform-origin: bottom center;
-}
-
-/* Earth: debris */
-.ultimate-debris {
-  position: fixed;
-  border-radius: 2px;
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
-}
-
-/* Metal: central flash */
-.ultimate-metal-flash {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 200px;
-  height: 200px;
-  margin: -100px 0 0 -100px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(200,200,200,0.3), transparent);
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
-}
-
-/* Metal: shards */
-.ultimate-shard {
-  position: fixed;
-  width: 8px;
-  height: 3px;
-  border-radius: 1px;
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
-}
-
-/* Wood: vine tendrils */
-.ultimate-vine {
-  position: fixed;
-  width: 150px;
-  height: 4px;
-  border-radius: 2px;
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
-  transform-origin: left center;
-}
-
-/* Wood: leaf particles */
-.ultimate-leaf {
-  position: fixed;
-  width: 8px;
-  height: 6px;
-  border-radius: 0 50% 50% 50%;
-  pointer-events: none;
-  z-index: 10000;
-  will-change: transform, opacity;
 }
 
 /* Creature Collection Grid */

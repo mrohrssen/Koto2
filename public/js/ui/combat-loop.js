@@ -40,7 +40,6 @@ import {
   enemyCreatureAttackEffect,
   showXpPopup,
   showLevelUpPopup,
-  playUltimateAnimation,
   poisonTickEffect,
   healEffect,
   spawnParticles,
@@ -49,7 +48,7 @@ import {
   lunge
 } from './combat-effects.js';
 import { effectiveness, resistedEffectiveness, skillProc, buff, debuff, updateStatusIcons, clearAllStatusIcons } from './event-popup.js';
-import { playAttackSound, playUltimateSound } from './combat-audio.js';
+import { playAttackSound } from './combat-audio.js';
 import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';

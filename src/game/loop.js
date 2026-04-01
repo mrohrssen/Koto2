@@ -1461,8 +1461,6 @@ export class GameManager {
 
     // Create a clean copy for when it joins the party after combat
     const capturedCopy = { ...captured, hp: captured.maxHp, befriended: false };
-    capturedCopy.ultimate = { ...captured.ultimate, charges: 0 };
-
     // Release the old creature and queue the captured one for post-combat
     if (releaseFrom === 'active') {
       party.active.splice(releaseIndex, 1);

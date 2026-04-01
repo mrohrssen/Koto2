@@ -208,12 +208,6 @@ export function showFormation(side, creatures, { isBoss = false, force = false }
     statusIcons.className = 'status-icons';
     slotEl.appendChild(statusIcons);
 
-    // Charged state
-    if (creature.ultimateCharge >= (creature.ultimateChargeMax || 100)) {
-      slotEl.classList.add('charged');
-      spriteEl.classList.add('charged');
-    }
-
     container.appendChild(slotEl);
   });
 }

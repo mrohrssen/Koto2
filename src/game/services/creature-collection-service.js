@@ -71,7 +71,6 @@ export function getCollectionCatalog(collection, befriendCount = {}) {
     baseMeaning: r.baseMeaning,
     modifier: r.modifier || null,
     autoSkill: r.autoSkill,
-    ultimate: r.ultimate,
     learnset: (r.learnset || []).map(entry => ({
       level: entry.level,
       moveId: entry.moveId,
