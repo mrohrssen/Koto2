@@ -148,34 +148,6 @@ async function startRun(body = null) {
 }
 
 /**
- * Get level definitions and player progress
- * @returns {Promise<object>} { levels, progress }
- */
-async function getLevels() {
-  try {
-    const response = await fetch(apiUrl('/api/game/levels'), {
-      headers: getAuthHeaders()
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to fetch levels:', error.message);
-    return { levels: [], progress: { highestUnlocked: 1, completed: [], current: null } };
-  }
-}
-
-/**
- * Select a level and start a run
- * @param {number} levelId - Level to start
- * @param {Array|null} starterIds - Creature starter IDs
- * @returns {Promise<object>} Result with state and narration
- */
-async function selectLevel(levelId, starterIds = null) {
-  const body = { levelId };
-  if (starterIds) body.starterIds = Array.isArray(starterIds) ? starterIds : [starterIds];
-  return apiCall('/levels/select', 'POST', body);
-}
-
-/**
  * Forfeit the current run
  * @returns {Promise<object>} Result
  */
@@ -633,8 +605,6 @@ export {
   createPlayer,
   // Run management endpoints
   startRun,
-  getLevels,
-  selectLevel,
   forfeitRun,
   getAreaOptions,
   selectArea,
