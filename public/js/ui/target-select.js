@@ -2,7 +2,6 @@
 import { dom } from '../dom.js';
 import { ELEMENT_COLORS } from './creature-row.js';
 import { creatureStaticPath } from './sprite-utils.js';
-import { renderJpFirst } from './bootstrap-client.js';
 import { renderChoices, renderButtons } from './ui-components.js';
 
 const ELEMENT_KANJI = {
@@ -46,16 +45,6 @@ function showTargets(targets, move, type) {
     return;
   }
 
-  // Header
-  const header = document.createElement('div');
-  header.className = 'target-header';
-  header.innerHTML = `<span class="target-move-name">${renderJpFirst(move.name, move.reading, move.nameEn)}</span> → Select target`;
-  container.appendChild(header);
-
-  // Choice cards
-  const choiceContainer = document.createElement('div');
-  container.appendChild(choiceContainer);
-
   renderChoices({
     cards: validTargets.map(target => {
       const elemColor = ELEMENT_COLORS[target.element] || '#888';
@@ -71,15 +60,12 @@ function showTargets(targets, move, type) {
     onSelect: (index) => {
       if (onTargetSelect) onTargetSelect(validIndices[index]);
     },
-    container: choiceContainer,
   });
 
-  // Back button
-  const btnContainer = document.createElement('div');
-  container.appendChild(btnContainer);
+  // Back button — appended after renderChoices
   renderButtons([
     { label: 'Back', onClick: () => { if (onCancel) onCancel(); } },
-  ], { container: btnContainer });
+  ]);
 }
 
 export function clear() {

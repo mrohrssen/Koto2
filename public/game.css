@@ -4561,19 +4561,6 @@ html, body {
   font-weight: var(--font-weight-semi);
 }
 
-/* === Target Selection — Full Info Card === */
-.target-header {
-  text-align: center;
-  padding: 10px;
-  color: #aaa;
-  font-size: 13px;
-}
-
-.target-move-name {
-  color: #fff;
-  font-weight: bold;
-}
-
 
 /* Item buffs in creature popup */
 .creature-popup-buffs { margin-top: 6px; padding: 4px 8px; background: rgba(76, 175, 80, 0.08); border-radius: 6px; border: 1px solid rgba(76, 175, 80, 0.2); }
