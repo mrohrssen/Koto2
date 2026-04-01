@@ -33,6 +33,8 @@ The `.scene-area` div remains as the container. A PixiJS `Application` canvas fi
 │       └── Vignette (Graphics)
 ├── .area-header-pill (DOM overlay)
 ├── .enemy-info (DOM overlay)
+├── .narration-box (DOM overlay)
+├── .scene-toast (DOM overlay)
 └── .npc-display (DOM, migrates to canvas later)
 ```
 
@@ -40,6 +42,8 @@ The `.scene-area` div remains as the container. A PixiJS `Application` canvas fi
 
 - Area header pill (area name, room progress)
 - Enemy info bar (name, HP bar, skill bar)
+- Narration box (dialogue, combat results, story moments)
+- Scene toast (notifications)
 - NPC display (friendly NPC sprites — future canvas migration)
 - All UI below the scene area (move cards, buttons, vocab, menus)
 
@@ -53,6 +57,22 @@ The `.scene-area` div remains as the container. A PixiJS `Application` canvas fi
 - Screen flash and vignette (overlay divs → Graphics)
 - Damage numbers (floating divs → BitmapText)
 - Event popups: buff/debuff/skillProc (floating divs → BitmapText)
+
+### Renderer Configuration
+
+- **PixiJS version:** v8.x (latest stable)
+- **Resolution:** `Math.min(window.devicePixelRatio, 2)` — cap at 2x to match asset DPR and save GPU on 3x devices
+- **Resize handling:** `ResizeObserver` on `.scene-area` triggers `app.renderer.resize()`, updates TilingSprite dimensions, and re-positions formations. Handles iOS Safari address bar show/hide, orientation changes, and PWA vs in-browser differences.
+- **Pointer events:** Canvas keeps pointer events for future creature interaction (targeting, inspecting). DOM overlays sit above in z-index and handle their own events naturally as sibling elements.
+
+### Font Assets
+
+BitmapText requires a bitmap font, not CSS web fonts. Use `BitmapFont.from()` at app init to generate bitmap fonts programmatically from a system font:
+
+- **Damage numbers font:** digits 0-9, `+`, `-`, `%`, `.` — bold, white, with stroke outline for readability
+- **Event popup font:** Latin alphanumeric + common punctuation (buff/debuff labels like "ATK", "DEF", "SPREAD!", "COUNTER!") — all labels are English/abbreviations, no CJK needed
+
+Two font sizes: normal (event popups) and large (damage numbers). Generated once at init, reused for all text rendering.
 
 ---
 
@@ -75,10 +95,14 @@ Scroll speeds are constants in code, not data. Layers stack back-to-front: sky r
 
 Parallax scrolls continuously during exploration. Scroll state ties to game phase:
 
-- **exploring** — all layers scroll at their defined speeds, creatures wobble-walk
-- **encounter** — layers decelerate to zero with easing (not abrupt stop), enemies appear from right
-- **combat** — layers stopped, combat effects play
-- **post-combat** — layers accelerate back to scroll speed, creatures resume walking
+| Scroll State | Behavior | Game Phases |
+|-------------|----------|-------------|
+| `scrolling` | Layers scroll at defined speeds, creatures wobble-walk | EXPLORING, ROOM (between encounters) |
+| `decelerating` | Layers ease to stop, enemies appear from right | ROOM_ENCOUNTER |
+| `stopped` | Layers frozen, effects play | COMBAT, VICTORY, DEFEAT, FRIENDLY_NPC, NPC_DIALOGUE, WORD_DISCOVERY, DEALER, SKILL_MASTER, WHACK_A_MOLE, SPEED_REVIEW_ROOM, PVP_BATTLE, HUB, SHOP |
+| `accelerating` | Layers ease back to scroll speed | Post-combat/post-NPC transition back to ROOM |
+
+Default for any unlisted phase: `stopped`.
 
 ### Asset Directory Convention
 
@@ -115,6 +139,8 @@ public/assets/backgrounds/
 **MVP scope:** One area (starter meadow), 4 images. Additional areas generated with the same pipeline later.
 
 If the scene area height changes in the future, regenerate assets at new dimensions. The code scales TilingSprites to fill the canvas — no hardcoded pixel sizes.
+
+**Missing asset fallback:** If an area has no parallax assets (textures fail to load), fall back to a solid color background matching the area's theme. This prevents crashes when entering areas that haven't had backgrounds generated yet.
 
 ---
 
@@ -168,7 +194,7 @@ Object pool pattern using `ParticleContainer`:
 | `spawnSpeedLines()` — orb divs flying A→B | Sprites moving along path in ticker |
 | `screenShake()` — anime.js translateXY on `.game-app` | Offset root Container position |
 | `screenFlash()` — overlay div opacity | Graphics rectangle alpha tween |
-| `hitStop()` — CSS class freezing animations | Pause PixiJS ticker |
+| `hitStop()` — CSS class freezing animations | Set `frozen` flag — ticker skips position updates but still renders (holds frame) |
 | `recoil()` — anime.js translateX | Tween sprite.x with elastic easing |
 | `showDamageNumber()` — floating div | BitmapText float up + fade |
 | Event popups (buff/debuff/skillProc) | BitmapText with color tint |
@@ -206,15 +232,19 @@ public/js/pixi/
   effects.js         # Particle pool, speed lines, flashes, shake
   tween.js           # Promise-based tween utility on PixiJS ticker
   text.js            # BitmapText damage numbers + event popups
+public/js/ui/
+  dom-effects.js     # DOM-only utilities extracted from combat-effects.js (pop, flashElement)
 ```
 
 Modified files:
 - `public/js/ui/scene.js` — stripped to HUD-only (background + formation rendering removed)
-- `public/js/ui/combat-effects.js` — deleted (replaced by `pixi/effects.js`)
-- `public/js/ui/event-popup.js` — showEventPopup/presets removed (moved to `pixi/text.js`), status icons + animateCounter stay (DOM HUD)
+- `public/js/ui/combat-effects.js` — combat-specific functions removed. DOM-only utilities (`pop`, `flashElement`) used by non-combat modules (`exploration.js`, `economy.js`) extracted to `public/js/ui/dom-effects.js`
+- `public/js/ui/event-popup.js` — showEventPopup/presets removed (moved to `pixi/text.js`), `spawnParticles` import removed. Status icons + animateCounter stay (DOM HUD)
 - `public/js/ui/combat-loop.js` — import effects from `pixi/` instead of DOM modules
 - `public/game.css` — remove particle/effect/background animation styles
-- `public/index.html` — remove `scene-background` div, screen-flash/vignette overlays
+- `public/index.html` — remove `scene-background` div, screen-flash/vignette overlays, `.battle-stage` + formation containers (replaced by canvas)
+- `public/js/ui/exploration.js` — update imports from `combat-effects.js` to `dom-effects.js`
+- `public/js/ui/economy.js` — update imports from `combat-effects.js` to `dom-effects.js`
 
 ---
 
@@ -249,7 +279,9 @@ Modified files:
 - Create `text.js` — BitmapText damage numbers and event popups
 - Port all effects from `combat-effects.js` and `event-popup.js`
 - Update `combat-loop.js` imports to use `pixi/` modules
-- Remove anime.js from `combat-effects.js` (delete file)
+- Extract DOM-only utilities (`pop`, `flashElement`) to `dom-effects.js`, update imports in `exploration.js`, `economy.js`
+- Delete remainder of `combat-effects.js`
+- Remove `.battle-stage`, `.player-formation`, `.enemy-formation` divs from `index.html`
 - **Ship gate:** full combat rendered on canvas
 
 ### Phase 4: Cleanup
@@ -269,3 +301,8 @@ Modified files:
 - HUD rework (separate project)
 - Multiple area backgrounds (just starter meadow for MVP)
 - Capacitor-specific optimizations (same WKWebView as PWA)
+
+## Known Dependencies
+
+- **PvP battle** uses the same `.scene-area` with `setBackground()` and `showFormation()`. PvP rendering must be updated in Phase 2 alongside PvE formations.
+- **anime.js** remains a dependency for `speed-review.js`, `whack-a-mole.js`, and `room-transition.js`. Only removed from combat code.
