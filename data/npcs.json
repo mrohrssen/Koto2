@@ -18,6 +18,7 @@
       "quirk": "Always looking for a game."
     },
     "greeting": "こんにちわ!",
+    "shopGreetings": ["こんにちは！"],
     "defeatLine": "いいね!",
     "createdAt": "2026-03-20"
   },
@@ -40,6 +41,7 @@
       "quirk": "Always busy with something."
     },
     "greeting": "こんにちわ!",
+    "shopGreetings": ["こんにちは！"],
     "defeatLine": "いいね!",
     "createdAt": "2026-03-20"
   },
@@ -62,6 +64,7 @@
       "quirk": "Can never stand still."
     },
     "greeting": "こんにちわ!",
+    "shopGreetings": ["こんにちは！"],
     "defeatLine": "いいね!",
     "createdAt": "2026-03-20"
   },
@@ -84,6 +87,7 @@
       "quirk": "Hums to herself."
     },
     "greeting": "こんにちわ!",
+    "shopGreetings": ["こんにちは！"],
     "defeatLine": "いいね!",
     "createdAt": "2026-03-20"
   }

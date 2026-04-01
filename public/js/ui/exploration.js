@@ -1048,10 +1048,8 @@ export async function renderFriendlyNpc() {
 
   // Show loading state immediately
   actions.setContent(`
-    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
-      <div style="text-align:center;font-weight:800;">フレンドリーNPC</div>
-      <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Choose a gift.</div>
-      <div style="text-align:center;color:var(--text-muted);font-size:12px;">Loading offers…</div>
+    <div style="display:flex;justify-content:center;padding:20px;">
+      <div style="color:var(--text-muted);font-size:12px;">Loading...</div>
     </div>
   `);
 
@@ -1065,17 +1063,10 @@ export async function renderFriendlyNpc() {
     } catch (err) {
       friendlyNpcState.fetched = false;
       friendlyNpcState.offered = null;
-      actions.setContent(`
-        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
-          <div style="text-align:center;font-weight:800;">フレンドリーNPC</div>
-          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Failed to load offers.</div>
-        </div>
-      `);
-      const retryContainer = document.createElement('div');
-      document.getElementById('action-area').appendChild(retryContainer);
+      actions.setContent('');
       renderButtons([
         { label: 'Retry', onClick: () => { friendlyNpcState.fetched = false; friendlyNpcState.offered = null; renderFriendlyNpc(); }, primary: true },
-      ], { container: retryContainer });
+      ]);
       return;
     }
 
@@ -1086,17 +1077,10 @@ export async function renderFriendlyNpc() {
     if (!Array.isArray(offered) || offered.length === 0) {
       friendlyNpcState.fetched = false;
       friendlyNpcState.offered = null;
-      actions.setContent(`
-        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
-          <div style="text-align:center;font-weight:800;">フレンドリーNPC</div>
-          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">No items available.</div>
-        </div>
-      `);
-      const retryContainer = document.createElement('div');
-      document.getElementById('action-area').appendChild(retryContainer);
+      actions.setContent('');
       renderButtons([
         { label: 'Retry', onClick: () => { friendlyNpcState.fetched = false; friendlyNpcState.offered = null; renderFriendlyNpc(); }, primary: true },
-      ], { container: retryContainer });
+      ]);
       return;
     }
 
@@ -1104,6 +1088,14 @@ export async function renderFriendlyNpc() {
     if (resp?.state) {
       updateGameState(resp.state);
     }
+  }
+
+  // Show NPC greeting before item cards
+  const npc = room?.npc;
+  if (npc && sceneModule?.showNarration) {
+    const greetings = npc.shopGreetings || ['こんにちは！'];
+    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+    await sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });
   }
 
   const offers = friendlyNpcState.offered || [];
