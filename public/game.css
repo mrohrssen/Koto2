@@ -1407,21 +1407,27 @@ html, body {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* STAB (Same Type Attack Bonus) indicator */
-.stab-indicator {
-  position: absolute;
-  top: 4px;
-  right: 8px;
+/* STAB (Same Type Attack Bonus) — center-screen banner */
+.super-effective-banner {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.5);
+  font-size: 24px;
+  font-weight: 900;
   color: #FFD700;
-  font-weight: bold;
-  font-size: 11px;
-  text-shadow: 0 0 4px rgba(255,215,0,0.5);
-  animation: stab-pulse 0.5s ease-out;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  pointer-events: none;
+  animation: super-effective-anim 1s ease-out forwards;
+  letter-spacing: 0.02em;
 }
-@keyframes stab-pulse {
-  0% { transform: scale(1.5); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+
+@keyframes super-effective-anim {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  60% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
 }
 
 /* Element theming (set via CSS custom properties in JS) */

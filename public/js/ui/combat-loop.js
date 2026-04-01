@@ -45,7 +45,8 @@ import {
   healEffect,
   spawnParticles,
   flashElement,
-  clearFormationTransforms
+  clearFormationTransforms,
+  lunge
 } from './combat-effects.js';
 import { effectiveness, resistedEffectiveness, skillProc, buff, debuff, updateStatusIcons, clearAllStatusIcons } from './event-popup.js';
 import { playAttackSound, playUltimateSound } from './combat-audio.js';
@@ -361,12 +362,13 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
     showDamageNumber(atk.damage, { isCrit: atk.critical, targetEl });
   }
 
-  // STAB indicator
+  // STAB indicator — center-screen banner
   if (atk.stab) {
-    const stabEl = document.createElement('div');
-    stabEl.className = 'stab-indicator';
-    stabEl.textContent = 'STAB!';
-    document.getElementById('action-area')?.appendChild(stabEl);
+    const banner = document.createElement('div');
+    banner.className = 'super-effective-banner';
+    banner.textContent = 'Super effective!';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 1100);
   }
 
   // Type effectiveness popup
@@ -1702,7 +1704,10 @@ async function showCounterAttacks(result) {
 
     if (defenderEl) {
       skillProc(defenderEl, 'COUNTER!');
-      flashElement(defenderEl.querySelector('.formation-sprite'), 1);
+      // Lunge toward enemy (positive X = right = toward enemy side)
+      const sprite = defenderEl.querySelector('.formation-sprite');
+      if (sprite) await lunge(sprite, 40, 300);
+      flashElement(sprite, 1);
     }
 
     if (targetEl && counter.damage > 0) {
@@ -2091,13 +2096,13 @@ async function executeCreatureMovesTurn(choices) {
             }
           }
 
-          // STAB indicator
+          // STAB indicator — center-screen banner
           if (atk.stab) {
-            const stabEl = document.createElement('div');
-            stabEl.className = 'stab-indicator';
-            stabEl.textContent = 'STAB!';
-            const actionArea2 = document.getElementById('action-area');
-            if (actionArea2) actionArea2.appendChild(stabEl);
+            const banner = document.createElement('div');
+            banner.className = 'super-effective-banner';
+            banner.textContent = 'Super effective!';
+            document.body.appendChild(banner);
+            setTimeout(() => banner.remove(), 1100);
           }
 
           // Type effectiveness popup

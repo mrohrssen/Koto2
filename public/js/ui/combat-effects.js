@@ -345,6 +345,31 @@ export function recoil(targets, distance = 5, direction = 'right') {
 }
 
 /**
+ * Lunge animation — creature moves forward toward a target then returns.
+ * Used for counter-attacks.
+ * @param {Element} el - The element to lunge
+ * @param {number} distance - Pixels to move forward (positive = right, negative = left)
+ * @param {number} duration - Total duration in ms
+ */
+export function lunge(el, distance = 30, duration = 300) {
+  if (!el) return Promise.resolve();
+  return new Promise(resolve => {
+    const cleanup = () => {
+      if (el?.style) el.style.transform = '';
+      resolve();
+    };
+    anime(el, {
+      translateX: [0, distance, 0],
+    }, {
+      duration,
+      ease: 'outQuad',
+      onComplete: cleanup
+    });
+    setTimeout(cleanup, duration + 50);
+  });
+}
+
+/**
  * Pop animation (scale overshoot)
  * @param {string|Element} targets
  * @param {number} scale - Max scale
