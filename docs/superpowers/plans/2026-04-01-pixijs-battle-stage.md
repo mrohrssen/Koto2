@@ -8,6 +8,10 @@
 
 **Tech Stack:** PixiJS v8, ES modules, existing Express server, WebP sprite assets
 
+**Implementation decisions (locked before coding):**
+- Non-combat rooms keep the same walking/explore parallax background; no per-room background swaps during NPC interactions.
+- DOM formation containers remain temporarily as compatibility anchors (`.formation-slot`) until dependent modules are migrated; remove only in final cleanup.
+
 **Spec:** `docs/superpowers/specs/2026-04-01-pixijs-battle-stage-design.md`
 
 ---
@@ -256,7 +260,7 @@ git commit -m "feat: add parallax.js — 4-layer auto-scrolling background"
 ### Task 3: Wire battle stage into game startup and ticker
 
 **Files:**
-- Modify: `public/js/game.js` (entry point — add init call)
+- Modify: `public/game.js` (entry point — add init call)
 - Modify: `public/js/pixi/battle-stage.js` (add ticker wiring + resize callback)
 
 - [ ] **Step 1: Update battle-stage.js — wire ticker to parallax update, resize callback**
@@ -283,7 +287,7 @@ app.ticker.add((ticker) => {
 
 - [ ] **Step 2: Add `initBattleStage()` call to game.js**
 
-In `public/js/game.js`, find the app initialization (where DOM is ready and modules are set up). Add:
+In `public/game.js`, find the app initialization (where DOM is ready and modules are set up). Add:
 
 ```js
 import { initBattleStage } from './pixi/battle-stage.js';
@@ -293,14 +297,19 @@ Call `await initBattleStage()` early in the init sequence, before any scene rend
 
 - [ ] **Step 3: Load parallax when entering an area**
 
-Find where `setBackground()` is called in game.js or the phase/room logic. Add a call to `loadParallax(areaId)` alongside or replacing the background image set. For now, hardcode `'starter_meadow'` as the area ID until we have area-to-parallax mapping.
+Load parallax based on current run area (fallback to `starter_meadow`) when entering a run area, not on every room phase. Keep this background stable across non-combat room interactions. Add explicit handling for PvP so it does not fall back to `starter_meadow`.
 
 ```js
 import { loadParallax, setScrollState } from './pixi/parallax.js';
 
-// When entering a new area:
-await loadParallax('starter_meadow');
+// When entering a new run area (or on run bootstrap):
+const areaId = mapRunAreaToParallaxId(gameState.run?.currentArea) || 'starter_meadow';
+await loadParallax(areaId);
 setScrollState('scrolling');
+
+// When entering PvP battle:
+await loadParallax('pvp_arena');
+setScrollState('stopped');
 ```
 
 - [ ] **Step 4: Test manually — start dev server, verify canvas appears**
@@ -317,7 +326,7 @@ Open browser, check that:
 - [ ] **Step 5: Commit**
 
 ```bash
-git add public/js/pixi/battle-stage.js public/js/game.js
+git add public/js/pixi/battle-stage.js public/game.js
 git commit -m "feat: wire PixiJS battle stage into game init and ticker"
 ```
 
@@ -411,20 +420,22 @@ In `public/js/dom.js`, remove the `sceneBackground` entry from the DOM cache obj
 
 - [ ] **Step 5: Update `setBackground()` in scene.js**
 
-Replace the current DOM-based `setBackground()` with a call to `loadParallax()`:
+Replace the current DOM-based `setBackground()` with a compatibility shim. During migration, this function should not trigger per-room background swaps; parallax is loaded from run-area transitions.
 
 ```js
 import { loadParallax } from '../pixi/parallax.js';
 
-let _lastAreaId = null;
-
 export function setBackground(imagePath) {
-  // During Phase 1, still accept image paths but map to parallax
-  // For now, always use starter_meadow parallax
-  const areaId = 'starter_meadow';
-  if (areaId === _lastAreaId) return;
-  _lastAreaId = areaId;
-  loadParallax(areaId);
+  // Compatibility: callers still invoke setBackground() for legacy room phases.
+  // Non-combat room transitions intentionally do not swap background.
+  // Area parallax is loaded separately on area entry.
+  //
+  // Allow explicit PvP override while migration is in progress.
+  if (imagePath?.includes('pvp-arena')) {
+    loadParallax('pvp_arena');
+    return;
+  }
+  return;
 }
 ```
 
@@ -472,7 +483,7 @@ git commit -m "feat: replace DOM background with PixiJS parallax, kill perf-drai
 ### Task 6: Connect scroll state to game phases
 
 **Files:**
-- Modify: `public/js/game.js` or phase transition logic
+- Modify: `public/game.js` or phase transition logic
 - Modify: `public/js/pixi/parallax.js` (if needed)
 
 - [ ] **Step 1: Map game phases to scroll states**
@@ -487,13 +498,26 @@ function onPhaseChange(newPhase) {
   switch (newPhase) {
     case 'exploring':
     case 'room':
+    case 'friendlyNpc':
+    case 'npc_dialogue':
+    case 'wordDiscovery':
+    case 'dealer':
+    case 'skillMaster':
+    case 'whackAMole':
+    case 'speedReviewRoom':
       setScrollState('scrolling');
       break;
     case 'room_encounter':
       setScrollState('decelerating');
       break;
+    case 'combat':
+    case 'victory':
+    case 'defeat':
+    case 'pvp_battle':
+      setScrollState('stopped');
+      break;
     default:
-      // combat, victory, defeat, friendlyNpc, npcDialogue, etc.
+      // Conservative fallback
       setScrollState('stopped');
       break;
   }
@@ -513,18 +537,18 @@ setScrollState('accelerating');
 
 - [ ] **Step 3: Test phase transitions**
 
-Play through the game: start exploring (scrolling), hit an encounter (decelerate), enter combat (stopped), win (accelerate back). Verify smooth transitions.
+Play through the game: start exploring (scrolling), hit an encounter (decelerate), enter combat (stopped), win (accelerate back), then enter a non-combat room and confirm scroll continues with no background swap.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add public/js/game.js
+git add public/game.js
 git commit -m "feat: connect parallax scroll state to game phase transitions"
 ```
 
 ---
 
-**Phase 1 ship gate:** Parallax background scrolls behind the existing DOM game. Scroll stops/starts with encounters. Old background animations and backdrop-filter removed.
+**Phase 1 ship gate:** Parallax background scrolls behind the existing DOM game. Scroll decelerates/stops only for encounter/combat phases. Non-combat room interactions keep the same area parallax with no background swaps.
 
 ---
 
@@ -555,6 +579,7 @@ const ENEMY_STAGGER_X = [-12, -24, -36]; // mirrored
 let playerContainer = null;
 let enemyContainer = null;
 let creatureSprites = { player: [], enemy: [] };
+let lastFormationInput = { player: null, enemy: null };
 let walkingEnabled = false;
 let walkTime = 0;
 
@@ -583,6 +608,10 @@ export async function showFormation(side, creatures, { isBoss = false } = {}) {
 
   const container = side === 'player' ? playerContainer : enemyContainer;
   const sprites = creatureSprites[side];
+  lastFormationInput[side] = {
+    creatures: creatures ? [...creatures] : [],
+    opts: { isBoss },
+  };
 
   // Clear existing
   container.removeChildren();
@@ -688,12 +717,20 @@ export function getCreatureSprite(side, index) {
  * @param {number} delta - PixiJS ticker deltaTime
  */
 export function updateFormations(delta) {
-  if (!walkingEnabled) return;
-
   walkTime += delta * 0.05;
 
   for (const side of ['player', 'enemy']) {
     for (const sprite of creatureSprites[side]) {
+      if (sprite._entering) {
+        sprite.x += (sprite._enterTarget - sprite.x) * 0.1;
+        if (Math.abs(sprite.x - sprite._enterTarget) < 1) {
+          sprite.x = sprite._enterTarget;
+          sprite.baseX = sprite._enterTarget;
+          sprite._entering = false;
+        }
+        continue;
+      }
+      if (!walkingEnabled) continue;
       const t = walkTime + sprite.phaseOffset;
       // Bounce: 2px amplitude
       sprite.y = sprite.baseY + Math.sin(t * 3) * 2;
@@ -706,9 +743,15 @@ export function updateFormations(delta) {
 /**
  * Reposition formations after resize.
  */
-export function resizeFormations(width, height) {
-  // Re-render will be needed — for now, just update base positions
-  // The next showFormation call will recalculate positions
+export async function resizeFormations(width, height) {
+  // Re-render active formations so iOS Safari address-bar resize/orientation
+  // keeps sprite coordinates aligned with the new viewport.
+  if (lastFormationInput.player) {
+    await showFormation('player', lastFormationInput.player.creatures, lastFormationInput.player.opts);
+  }
+  if (lastFormationInput.enemy) {
+    await showFormation('enemy', lastFormationInput.enemy.creatures, lastFormationInput.enemy.opts);
+  }
 }
 ```
 
@@ -778,21 +821,24 @@ git commit -m "feat: wire formation rendering into battle-stage ticker"
 
 - [ ] **Step 1: Replace `showFormation()` in scene.js**
 
-The current `showFormation()` in `scene.js` (lines 79-213) builds DOM elements. Replace its body to delegate to the PixiJS version while keeping the same export signature so all callers (combat-loop.js, pvp-battle.js, room-transition.js, game.js) continue to work unchanged:
+The current `showFormation()` in `scene.js` (lines 79-213) builds DOM elements. Replace it with a hybrid path: render creature visuals on PixiJS while preserving DOM formation slots as semantic compatibility anchors (`.formation-slot`) so existing callers (combat-loop.js, pvp-battle.js, room-transition.js, game.js, creature-row.js) continue to work unchanged during migration.
 
 ```js
 import { showFormation as pixiShowFormation, hideFormation as pixiHideFormation, setWalking } from '../pixi/formation.js';
 
 export async function showFormation(side, creatures, { isBoss = false, force = false } = {}) {
+  // Keep DOM slot anchors for modules that still query .formation-slot
+  renderFormationAnchors(side, creatures, { isBoss, force });
   await pixiShowFormation(side, creatures, { isBoss });
 }
 
 export function hideFormation(side) {
+  clearFormationAnchors(side);
   pixiHideFormation(side);
 }
 ```
 
-Remove the old DOM formation building code (the innerHTML, createElement loop, etc.).
+Keep/rename only the DOM anchor pieces (`.formation-slot` structure, data-index, status icon container, HP/MP bars needed by existing UI logic). Remove DOM sprite visuals that are now redundant.
 
 **Keep** all the NPC display functions (`showNpcInDisplay`, `showShrineFox`, etc.) and HUD functions (`updateEnemyHP`, `showToast`, etc.) — these stay DOM for now.
 
@@ -824,19 +870,14 @@ Start a run, verify:
 4. Creatures stop wobbling during combat
 5. PvP still works (uses same `showFormation` export)
 
-- [ ] **Step 4: Remove old formation DOM from index.html**
+- [ ] **Step 4: Keep formation DOM containers as compatibility anchors**
 
-Now that formations render on canvas, remove the empty containers:
+Do **not** remove these yet:
+- `#battle-stage`
+- `#player-formation`
+- `#enemy-formation`
 
-```html
-<!-- Remove these from index.html: -->
-<div class="battle-stage" id="battle-stage">
-  <div class="formation player-formation" id="player-formation"></div>
-  <div class="formation enemy-formation" id="enemy-formation"></div>
-</div>
-```
-
-Update `dom.js` to remove `battleStage`, `playerFormation`, `enemyFormation` references.
+They remain as temporary semantic anchors until Phase 4 cleanup.
 
 - [ ] **Step 5: Run tests**
 
@@ -844,13 +885,13 @@ Update `dom.js` to remove `battleStage`, `playerFormation`, `enemyFormation` ref
 npm test
 ```
 
-Fix any test failures from removed DOM elements.
+Fix any failures in slot-dependent modules (`combat-loop`, `pvp-battle`, `creature-row`, `room-transition`, `speech-bubble`).
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add public/js/ui/scene.js public/js/pixi/formation.js public/js/pixi/parallax.js public/index.html public/js/dom.js
-git commit -m "feat: replace DOM formation rendering with PixiJS canvas sprites"
+git add public/js/ui/scene.js public/js/pixi/formation.js public/js/pixi/parallax.js
+git commit -m "feat: render formations on Pixi while preserving DOM slot anchors"
 ```
 
 ---
@@ -892,9 +933,12 @@ for (const sprite of creatureSprites[side]) {
     }
     continue; // skip walking wobble during enter
   }
+  if (!walkingEnabled) continue;
   // ... existing wobble code
 }
 ```
+
+Important: do not early-return from `updateFormations()` when `walkingEnabled` is false, or enemy enter animations won't run during `decelerating`/`stopped` states.
 
 - [ ] **Step 2: Test encounter flow**
 
@@ -913,7 +957,7 @@ git commit -m "feat: enemies enter from offscreen right during encounters"
 
 ---
 
-**Phase 2 ship gate:** Creatures render on PixiJS canvas with walking wobble. Enemies enter from offscreen. Scroll state machine drives parallax + creature animation. Combat still uses DOM effects on top.
+**Phase 2 ship gate:** Creatures render on PixiJS canvas with walking wobble. Enemies enter from offscreen. Scroll state machine drives parallax + creature animation. DOM formation slots remain as compatibility anchors; combat still uses DOM effects on top.
 
 ---
 
@@ -1053,28 +1097,20 @@ const POPUP_FONT = 'PopupFont';
  * Initialize bitmap fonts. Call once at battle stage init.
  */
 export function initFonts() {
-  BitmapFont.install({
-    name: DAMAGE_FONT,
-    style: {
+  BitmapFont.from(DAMAGE_FONT, {
       fontFamily: 'Arial',
       fontSize: 32,
       fontWeight: 'bold',
       fill: '#ffffff',
       stroke: { color: '#000000', width: 4 },
-    },
-    chars: BitmapFont.ASCII.concat(['+']),
-  });
+    });
 
-  BitmapFont.install({
-    name: POPUP_FONT,
-    style: {
-      fontFamily: 'Arial',
-      fontSize: 18,
-      fontWeight: 'bold',
-      fill: '#ffffff',
-      stroke: { color: '#000000', width: 3 },
-    },
-    chars: BitmapFont.ASCII,
+  BitmapFont.from(POPUP_FONT, {
+    fontFamily: 'Arial',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fill: '#ffffff',
+    stroke: { color: '#000000', width: 3 },
   });
 
   fontsReady = true;
@@ -1170,6 +1206,16 @@ In `initBattleStage()`, after creating layers:
 ```js
 initFonts();
 ```
+
+- [ ] **Step 2b: Add parity helpers used by existing combat callbacks**
+
+Add Pixi equivalents (or thin wrappers) for currently-used popup APIs so migration does not break callsites that expect these behaviors:
+- `showXpPopup(pos, xpAmount)`
+- `showLevelUpPopup(pos, newLevel, hpGain, attackGain?)`
+- `showHealPopup(pos, healAmount)` (or heal-flavored damage number)
+- `showPoisonTick(pos, damage)` and poison-apply label popup
+
+If any helper is deferred, explicitly keep the DOM version in `dom-effects.js` until parity lands, and document the temporary bridge in Task 15.
 
 - [ ] **Step 3: Verify syntax**
 
@@ -1460,7 +1506,11 @@ git commit -m "feat: add effects.js — particles, shake, flash, recoil, hit sto
 
 - [ ] **Step 1: Update imports in combat-loop.js**
 
-Replace the combat-effects.js and event-popup.js imports with PixiJS versions. The key is to create adapter functions that translate from the old API (which uses DOM elements as targets) to the new API (which uses canvas coordinates).
+Do this in two layers:
+1. Keep `combat-loop.js` callback injection contracts intact (especially `showDamageNumber`).
+2. Migrate internals to Pixi primitives behind adapters, then remove DOM dependencies incrementally.
+
+`combat-loop.js` has many existing `showDamageNumber(...)` callsites that use callback-injected behavior from `init(callbacks)`. Do **not** replace those with direct imports in one pass.
 
 At the top of `combat-loop.js`, replace:
 
@@ -1473,20 +1523,27 @@ import { effectiveness, resistedEffectiveness, skillProc, buff, debuff, ... } fr
 With:
 
 ```js
-// NEW:
+// NEW (inside combat-loop.js):
 import { getDamageTier, getTierClassName } from './combat-effects-util.js'; // pure logic, no DOM
 import { screenShake, screenFlash, hitStop, recoil, lunge, burstParticles, ELEMENT_COLORS } from '../pixi/effects.js';
-import { showDamageNumber, popupBuff, popupDebuff, popupSkillProc, popupEffectiveness, popupResisted } from '../pixi/text.js';
+import { popupBuff, popupDebuff, popupSkillProc, popupEffectiveness, popupResisted } from '../pixi/text.js';
 import { getCreatureSprite } from '../pixi/formation.js';
 ```
 
-The challenge is that the old code passes DOM elements as targets (e.g., `buff(targetEl, 'ATK ↑')`). The new code needs canvas positions. Create a helper:
+In `public/game.js`, update the injected callbacks used by `combatLoopUI.init(...)` so the existing `showDamageNumber(...)` calls route to Pixi text/effects under the hood while preserving the current callback signature.
+
+The challenge is that the old code passes DOM elements as targets (e.g., `buff(targetEl, 'ATK ↑')`). The new code needs canvas positions. Create helpers:
 
 ```js
 function spritePos(side, index) {
   const sprite = getCreatureSprite(side, index);
   if (!sprite) return { x: 0, y: 0 };
   return { x: sprite.x, y: sprite.y };
+}
+
+function spritePosFromSlotEl(slotEl) {
+  // temporary bridge while compatibility anchors exist
+  // map slot dataset.index + side to getCreatureSprite(...)
 }
 ```
 
@@ -1496,16 +1553,18 @@ Then update each call site. For example:
 // NEW: popupBuff(spritePos('enemy', targetIndex), text)
 ```
 
-This is a large refactor — go through each call site methodically. The function signatures in `combat-loop.js` will need the creature index passed through rather than a DOM element reference.
+This is a large refactor — go through each call site methodically. Preserve callback contracts first, then tighten signatures only after parity is verified.
 
 - [ ] **Step 2: Extract pure utility functions to keep**
 
 Create `public/js/ui/combat-effects-util.js` with the pure logic functions that don't touch the DOM:
 
 ```js
-// Extract from combat-effects.js:
-export { delay, getDamageTier, getTierClassName } from './combat-effects.js';
-// These are pure functions — no DOM, no anime.js
+// Do not re-export from combat-effects.js (that file is deleted in Task 15).
+// Copy the pure utilities here directly so this module is standalone.
+export const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+export function getDamageTier(damage, enemyMaxHp) { /* ... */ }
+export function getTierClassName(tier) { /* ... */ }
 ```
 
 Or inline them (they're small):
@@ -1567,6 +1626,16 @@ async function playAttackEffects(attackerSide, attackerIdx, targetSide, targetId
 
 This is a guideline — the exact implementation must match the current call patterns in `combat-loop.js`. Go through each effect call site and translate.
 
+Also migrate/bridge all currently imported `combat-effects.js` functions used outside this one sequence:
+- `screenShake`
+- `showXpPopup`
+- `showLevelUpPopup`
+- `healEffect`
+- `poisonApplyEffect`
+- `poisonTickEffect`
+
+Do not delete `combat-effects.js` until every live import is redirected to either Pixi modules or `dom-effects.js` bridge exports.
+
 - [ ] **Step 4: Test combat flow end-to-end**
 
 ```bash
@@ -1601,12 +1670,24 @@ git commit -m "feat: combat-loop uses PixiJS effects instead of DOM particles"
 - Create: `public/js/ui/dom-effects.js`
 - Modify: `public/js/ui/exploration.js`
 - Modify: `public/js/ui/economy.js`
-- Modify: `public/js/game.js`
+- Modify: `public/game.js`
+- Modify: `public/js/ui/combat-loop.js` (imports that still need non-Pixi helpers)
 - Delete: `public/js/ui/combat-effects.js` (most of it)
 
 - [ ] **Step 1: Create dom-effects.js with extracted DOM utilities**
 
-`exploration.js` imports `pop` and `flashElement`. `economy.js` imports `pop`. `game.js` imports `pop`, `recoil`. These are simple anime.js DOM animations that have nothing to do with the canvas.
+`exploration.js` imports `pop` and `flashElement`. `economy.js` imports `pop`. `game.js` currently imports `screenShake`, `showXpPopup`, `showLevelUpPopup`, `healEffect`, `poisonApplyEffect`, `recoil`, `pop` from `combat-effects.js`. `combat-loop.js` still uses `poisonTickEffect` until that effect is migrated. Move all still-needed non-Pixi functions to `dom-effects.js` (temporary bridge), then migrate callsites incrementally.
+
+For this migration phase, `dom-effects.js` must expose the same bridge API surface used by live imports before `combat-effects.js` is deleted:
+- `screenShake(intensity = 'medium')`
+- `flashElement(targets, count = 1)`
+- `recoil(targets, distance = 5, direction = 'right')`
+- `pop(targets, scale = 1.15)`
+- `poisonApplyEffect(targetEl)`
+- `poisonTickEffect(targetEl, damage)` (temporary until Pixi poison tick parity lands)
+- `healEffect(creatureSlotEl, healAmount)`
+- `showXpPopup(creatureSlotEl, xpAmount)`
+- `showLevelUpPopup(creatureSlotEl, newLevel, hpGain, attackGain)`
 
 Create `public/js/ui/dom-effects.js`:
 
@@ -1621,7 +1702,7 @@ Create `public/js/ui/dom-effects.js`:
 import { animate as anime } from 'animejs';
 
 /** Pop scale animation */
-export function pop(targets, scale = 1.2) {
+export function pop(targets, scale = 1.15) {
   return anime(targets, {
     scale: [1, scale, 1],
   }, {
@@ -1642,7 +1723,7 @@ export function flashElement(targets, count = 1) {
 }
 
 /** Recoil animation on a DOM element */
-export function recoil(targets, distance = 4, direction = 'right') {
+export function recoil(targets, distance = 5, direction = 'right') {
   const dx = direction === 'right' ? distance : -distance;
   return anime(targets, {
     translateX: [dx, 0],
@@ -1651,6 +1732,15 @@ export function recoil(targets, distance = 4, direction = 'right') {
     ease: 'outElastic(1, 0.5)',
   }).finished;
 }
+
+// Temporary bridge exports copied from combat-effects.js signatures.
+// Keep these available until each callsite is migrated to Pixi equivalents.
+export function screenShake(intensity = 'medium') { /* copy existing implementation */ }
+export async function poisonApplyEffect(targetEl) { /* copy existing implementation */ }
+export async function poisonTickEffect(targetEl, damage) { /* copy existing implementation */ }
+export async function healEffect(creatureSlotEl, healAmount) { /* copy existing implementation */ }
+export function showXpPopup(creatureSlotEl, xpAmount) { /* copy existing implementation */ }
+export function showLevelUpPopup(creatureSlotEl, newLevel, hpGain, attackGain) { /* copy existing implementation */ }
 ```
 
 - [ ] **Step 2: Update imports in exploration.js, economy.js, game.js**
@@ -1664,8 +1754,11 @@ import { pop, flashElement } from './dom-effects.js';
 // import { pop } from './combat-effects.js';
 import { pop } from './dom-effects.js';
 
-// game.js — change combat-effects.js imports to dom-effects.js for pop, recoil
-// Remove any imports that now come from pixi/effects.js
+// game.js — change combat-effects.js imports to dom-effects.js for:
+// screenShake, showXpPopup, showLevelUpPopup, healEffect, poisonApplyEffect, recoil, pop
+//
+// combat-loop.js — if poisonTickEffect is not migrated yet, import it from dom-effects.js temporarily
+// and remove once Pixi equivalent lands.
 ```
 
 - [ ] **Step 3: Update event-popup.js — remove spawnParticles dependency**
@@ -1688,7 +1781,7 @@ git rm public/js/ui/combat-effects.js
 - [ ] **Step 5: Verify no broken imports**
 
 ```bash
-node --check public/js/game.js && echo "OK"
+node --check public/game.js && echo "OK"
 node --check public/js/ui/exploration.js && echo "OK"
 node --check public/js/ui/economy.js && echo "OK"
 node --check public/js/ui/event-popup.js && echo "OK"
@@ -1704,7 +1797,7 @@ npm test
 - [ ] **Step 7: Commit**
 
 ```bash
-git add public/js/ui/dom-effects.js public/js/ui/exploration.js public/js/ui/economy.js public/js/game.js public/js/ui/event-popup.js
+git add public/js/ui/dom-effects.js public/js/ui/exploration.js public/js/ui/economy.js public/game.js public/js/ui/combat-loop.js public/js/ui/event-popup.js
 git rm public/js/ui/combat-effects.js
 git commit -m "refactor: extract DOM effects, delete old combat-effects.js"
 ```
@@ -1745,6 +1838,8 @@ Delete:
 
 - [ ] **Step 4: Remove formation/battle-stage CSS (now canvas-rendered)**
 
+Prerequisite: all `.formation-slot` DOM dependencies have been migrated off compatibility anchors (combat-loop, pvp-battle, creature-row, room-transition, speech-bubble).
+
 Delete:
 - `.battle-stage` (around lines 248-259)
 - `.formation` (around lines 261-266)
@@ -1755,6 +1850,18 @@ Delete:
 - `.creature-dying`, `.creature-swapping-in`, `.ko`, `.defeated`, `.befriended`, `.level-up-glow` (around lines 408-489)
 
 **Keep:** `.status-icons` and `.status-icon` rules — these may still be needed for DOM HUD status badges.
+
+- [ ] **Step 4b: Remove compatibility formation anchors from markup**
+
+After dependency migration is complete, remove from `public/index.html`:
+```html
+<div class="battle-stage" id="battle-stage">
+  <div class="formation player-formation" id="player-formation"></div>
+  <div class="formation enemy-formation" id="enemy-formation"></div>
+</div>
+```
+
+Then remove `battleStage`, `playerFormation`, `enemyFormation` from `public/js/dom.js`.
 
 - [ ] **Step 5: Remove old background CSS**
 
