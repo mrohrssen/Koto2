@@ -1863,13 +1863,6 @@ async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
 async function showNpcSkillAttacksAnimated(result, allyHpMap) {
   if (!result.npcSkillAttacks?.length) return;
 
-  // Brief NPC skill announcement
-  const actionArea = document.getElementById('action-area');
-  if (actionArea && result.npcSkillUsed) {
-    actionArea.innerHTML = `<div class="combat-creature-attack" style="color:#FFB74D;font-weight:bold">${result.npcSkillUsed.npcNameJp || result.npcSkillUsed.npcName} uses ${result.npcSkillUsed.skillNameEn}!</div>`;
-    await delay(600);
-  }
-
   for (const atk of result.npcSkillAttacks) {
     let attackCard = null;
 
