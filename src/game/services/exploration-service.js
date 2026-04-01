@@ -384,6 +384,9 @@ export class ExplorationService {
     if (!creature) {
       throw new Error('Creature not in party');
     }
+    if (creature.hp <= 0) {
+      throw new Error('Cannot use shrine on a fainted creature');
+    }
 
     const prevLevel = creature.level;
     const prevMaxHp = creature.maxHp;
@@ -449,6 +452,7 @@ export class ExplorationService {
         ].filter(Boolean);
         const creature = allCreatures.find(r => r.id === creatureId);
         if (!creature) throw new Error('Creature not in party');
+        if (creature.hp <= 0) throw new Error('Cannot level up a fainted creature');
         addXpToCreature(creature, xpToNextLevel(creature.level), null, this.gm.run?.itemBuffs);
         description = `${creature.nameEn} leveled up to Lv. ${creature.level}!`;
         break;
@@ -555,7 +559,7 @@ export class ExplorationService {
       const allCreatures = [
         ...(this.gm.run.creatureParty?.active || []),
         ...(this.gm.run.creatureParty?.reserves || [])
-      ].filter(c => c != null);
+      ].filter(c => c != null && c.hp > 0);
 
       for (const creature of allCreatures) {
         const prevLevel = creature.level;

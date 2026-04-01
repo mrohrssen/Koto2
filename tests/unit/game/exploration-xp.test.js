@@ -28,3 +28,31 @@ describe('Exploration XP - Cubic Curve Integration', () => {
   });
 
 });
+
+describe('Dead creatures excluded from XP', () => {
+  it('addXpToCreature does not increase HP for dead creatures on level-up', () => {
+    const creature = instantiateCreature('hi');
+    creature.level = 5;
+    creature.xp = 0;
+    creature.hp = 0; // Dead
+
+    const xpNeeded = xpToNextLevel(creature.level);
+    addXpToCreature(creature, xpNeeded);
+
+    assert.strictEqual(creature.level, 6, 'should still level up');
+    assert.strictEqual(creature.hp, 0, 'dead creature HP must stay 0');
+  });
+
+  it('addXpToCreature increases HP for alive creatures normally', () => {
+    const creature = instantiateCreature('hi');
+    creature.level = 5;
+    creature.xp = 0;
+    const hpBefore = creature.hp;
+
+    const xpNeeded = xpToNextLevel(creature.level);
+    addXpToCreature(creature, xpNeeded);
+
+    assert.strictEqual(creature.level, 6);
+    assert.ok(creature.hp >= hpBefore, 'alive creature should gain HP on level-up');
+  });
+});

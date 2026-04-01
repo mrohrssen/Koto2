@@ -195,7 +195,9 @@ export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = nul
         creature.attack = Math.floor(creature.attack * metaMults.atkMult);
       }
     }
-    creature.hp += hpDiff;
+    if (creature.hp > 0) {
+      creature.hp += hpDiff;
+    }
     creature.mp = (creature.mp || 0) + mpDiff;
 
     // Check for new move at this level
