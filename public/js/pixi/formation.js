@@ -5,8 +5,9 @@
  * Handles diagonal stagger, depth scaling, walking wobble, and state transitions.
  */
 
-import { Sprite, Assets, Container, Texture } from 'pixi.js';
+import { Sprite, Assets, Container, Texture, Graphics } from 'pixi.js';
 import { getStage } from './battle-stage.js';
+import { tween } from './tween.js';
 
 const DEPTH_SCALES = [0.9, 0.95, 1.0]; // back, mid, front
 const PLAYER_STAGGER_X = [12, 24, 36]; // px offset per row
@@ -18,6 +19,8 @@ let creatureSprites = { player: [], enemy: [] };
 let lastFormationInput = { player: null, enemy: null };
 let walkingEnabled = false;
 let walkTime = 0;
+let activeGlow = null;
+let activeGlowTickFn = null;
 
 /**
  * Initialize formation containers. Called once from battle-stage init.
@@ -146,6 +149,43 @@ export function setWalking(enabled) {
  */
 export function getCreatureSprite(side, index) {
   return creatureSprites[side]?.[index] || null;
+}
+
+/**
+ * Show a pulsing glow outline on the active player creature during move selection.
+ * @param {number} index - creature index in the player formation
+ */
+export function showActiveGlow(index) {
+  clearActiveGlow();
+  const sprite = getCreatureSprite('player', index);
+  const { app, layers } = getStage();
+  if (!sprite || !app) return;
+
+  activeGlow = new Graphics();
+  activeGlow.circle(0, 0, 38).stroke({ color: 0xFFFFFF, width: 2, alpha: 0.6 });
+  activeGlow.x = sprite.x;
+  activeGlow.y = sprite.y;
+  layers.effects.addChild(activeGlow);
+
+  activeGlowTickFn = () => {
+    activeGlow.alpha = 0.3 + 0.3 * Math.sin(Date.now() / 400);
+  };
+  app.ticker.add(activeGlowTickFn);
+}
+
+/**
+ * Remove the active creature glow.
+ */
+export function clearActiveGlow() {
+  if (activeGlow) {
+    activeGlow.destroy();
+    activeGlow = null;
+  }
+  if (activeGlowTickFn) {
+    const { app } = getStage();
+    app?.ticker.remove(activeGlowTickFn);
+    activeGlowTickFn = null;
+  }
 }
 
 /**
