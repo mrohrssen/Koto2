@@ -111,7 +111,7 @@ import * as speechBubble from './js/ui/speech-bubble.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
-import { enterEnemiesOneByOne, playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
+import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
 
@@ -1136,11 +1136,10 @@ async function startEncounter() {
       }
     }
 
-    // Creature encounters: animate enemies entering one-by-one
+    // Creature encounters: make enemy formation visible (PixiJS handles entrance animation)
     if (hasCreatures && gameState.combat?.enemies?.length) {
       const freshEf = document.getElementById('enemy-formation');
       if (freshEf) freshEf.style.opacity = '1';
-      await enterEnemiesOneByOne(gameState.combat.enemies);
     }
 
     await delay(300);
