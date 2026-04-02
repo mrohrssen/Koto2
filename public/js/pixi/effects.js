@@ -24,6 +24,7 @@ export const ELEMENT_COLORS = {
 // ============ PARTICLE POOL ============
 
 const MAX_PARTICLES = 200;
+const PARTICLE_BASE_SIZE = 10; // Texture.WHITE is 1x1 in PixiJS v8; scale must match desired px size
 let particlePool = [];
 let particleContainer = null;
 
@@ -87,7 +88,7 @@ export function burstParticles(pos, { count = 10, color = 0xFFFFFF, speed = 80, 
     p.visible = true;
     p.life = life + Math.random() * 150;
     p.maxLife = p.life;
-    p.scale.set(1);
+    p.scale.set(PARTICLE_BASE_SIZE);
     p._behavior = behavior;
     p._age = 0;
     spawned++;
@@ -120,7 +121,7 @@ export function flowParticles(from, to, { count = 12, color = 0xFFFFFF, speed = 
     p.visible = true;
     p.life = life + Math.random() * 150;
     p.maxLife = p.life;
-    p.scale.set(1);
+    p.scale.set(PARTICLE_BASE_SIZE);
     p._behavior = behavior;
     p._age = 0;
     spawned++;
@@ -153,7 +154,7 @@ export function updateParticles(deltaMS) {
     const t = Math.max(0, p.life / p.maxLife);
     p.alpha = t * b.fadeRate;
     if (p.alpha > 1) p.alpha = 1;
-    p.scale.set(t);
+    p.scale.set(t * PARTICLE_BASE_SIZE);
 
     // Flicker (fire/metal sparkle)
     if (b.flickerSpeed > 0) {
