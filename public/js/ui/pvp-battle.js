@@ -326,7 +326,7 @@ async function showAttackSummary(attacks) {
     const targetMaxHp = hpTracker.map[atk.targetIndex]?.maxHp || 100;
 
     // Shared display: card, sound, effects, damage number, STAB, effectiveness, tap
-    await showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp });
+    await showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp, allies: pvpState.allies, enemies: pvpState.enemies });
 
     // Progressive HP bar drain (PvP-specific: server sends final state, we animate incrementally)
     if (atk.damage > 0 && hpTracker.map[atk.targetIndex]) {

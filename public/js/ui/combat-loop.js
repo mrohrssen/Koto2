@@ -409,9 +409,11 @@ function showAttackCardAndWait(atk, isEnemy) {
  * @param {Element|null} opts.sourceEl - Attacker's formation slot element
  * @param {Element|null} opts.targetEl - Target's formation slot element
  * @param {number} [opts.targetMaxHp=100] - Target's max HP (for tiered impact effects)
+ * @param {Array} [opts.allies] - Override ally list (PvP passes its own state)
+ * @param {Array} [opts.enemies] - Override enemy list (PvP passes its own state)
  * @returns {Promise<Element|null>} The attack card element
  */
-export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp = 100 }) {
+export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp = 100, allies: overrideAllies, enemies: overrideEnemies }) {
   const attackCard = insertAttackCard(atk, isEnemy);
 
   playSFX('attack');
@@ -458,6 +460,9 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
 
   // Party skill procs (bonus damage, heals, haste, shields)
   if (atk.partySkillProcs?.length) {
+    const resolveAllies = () => overrideAllies || getGameState()?.combat?.allies || getGameState()?.run?.creatureParty?.active || [];
+    const resolveEnemies = () => overrideEnemies || getGameState()?.combat?.enemies || [];
+
     for (const proc of atk.partySkillProcs) {
       let detail = '';
       if (proc.type === 'bonusDamage') detail = ` +${proc.bonusDamage}`;
@@ -469,9 +474,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
       if (proc.type === 'bonusDamage') {
         burstParticles(spritePos(targetSide, targetIndex), { count: 6, color: 0xFFB74D });
       } else if (proc.type === 'healAll') {
-        const state = getGameState();
-        const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
-        allies.forEach((ally, i) => {
+        resolveAllies().forEach((ally, i) => {
           if (ally && ally.hp > 0) {
             const pos = spritePos('player', i);
             burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
@@ -481,9 +484,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
       } else if (proc.type === 'haste') {
         burstParticles(attackerPos, { count: 8, color: 0x4FC3F7 });
       } else if (proc.type === 'teamShield') {
-        const state = getGameState();
-        const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
-        allies.forEach((ally, i) => {
+        resolveAllies().forEach((ally, i) => {
           if (ally && ally.hp > 0) {
             burstParticles(spritePos('player', i), { count: 6, color: 0x42A5F5 });
           }
@@ -504,9 +505,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
         burstParticles(pos, { count: 4, color: 0x9C27B0 });
       } else if (proc.type === 'teamBuff') {
         const SC_NAMES = { atk: 'ATK', def: 'DEF' };
-        const state = getGameState();
-        const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
-        allies.forEach((ally, i) => {
+        resolveAllies().forEach((ally, i) => {
           if (ally) popupBuff(`${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`, spritePos('player', i));
         });
       } else if (proc.type === 'burst') {
@@ -515,9 +514,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
         pixiDamageNumber(proc.damage, pos, { tier: 1 });
         burstParticles(pos, { count: 10, color: 0xE91E63 });
       } else if (proc.type === 'pandemic') {
-        const state = getGameState();
-        const enemies = state.combat?.enemies || [];
-        enemies.forEach((enemy, i) => {
+        resolveEnemies().forEach((enemy, i) => {
           if (enemy && enemy.hp > 0) {
             const pos = spritePos('enemy', i);
             popupSkillProc('PANDEMIC!', pos);
