@@ -25,6 +25,9 @@ let activeGlowTickFn = null;
 /** Per-side request counter to invalidate stale async loads. */
 let loadRequestId = { player: 0, enemy: 0 };
 
+/** NPC sprite displayed on the creatures layer (non-combat NPCs) */
+let npcSprite = null;
+
 function sameFormation(prev, creatures, isBoss) {
   if (!prev || !Array.isArray(prev.creatures)) return false;
   if (!!prev.opts?.isBoss !== !!isBoss) return false;
@@ -234,6 +237,64 @@ export function clearActiveGlow() {
     const { app } = getStage();
     app?.ticker.remove(activeGlowTickFn);
     activeGlowTickFn = null;
+  }
+}
+
+/**
+ * Show an NPC sprite on the enemy side of the canvas.
+ * @param {string} spritePath - Path to the NPC sprite image
+ * @param {{ slideIn?: boolean }} opts
+ */
+export async function showNpcSprite(spritePath, { slideIn = false } = {}) {
+  const { app } = getStage();
+  if (!app) return;
+  const container = enemyContainer;
+  if (!container) return;
+
+  hideNpcSprite();
+
+  let texture;
+  try {
+    texture = await Assets.load(spritePath);
+  } catch {
+    texture = Texture.WHITE;
+  }
+
+  const screenW = app.screen.width;
+  const screenH = app.screen.height;
+  const sprite = new Sprite(texture);
+  sprite.anchor.set(0.5);
+  sprite.width = 80;
+  sprite.height = 80;
+  sprite.scale.x *= -1; // Face left (same as enemy creatures)
+  sprite.y = screenH * 0.5;
+
+  if (slideIn) {
+    sprite.x = screenW + 80;
+    container.addChild(sprite);
+    npcSprite = sprite;
+    await tween(sprite, { x: screenW * 0.7 }, { duration: 400, ease: 'easeOut' });
+  } else {
+    sprite.x = screenW * 0.7;
+    container.addChild(sprite);
+    npcSprite = sprite;
+  }
+}
+
+/**
+ * Hide the NPC sprite, optionally sliding it out to the right.
+ * @param {{ slideOut?: boolean }} opts
+ */
+export async function hideNpcSprite({ slideOut = false } = {}) {
+  if (!npcSprite) return;
+  if (slideOut) {
+    const { app } = getStage();
+    const screenW = app?.screen.width || 400;
+    await tween(npcSprite, { x: screenW + 80 }, { duration: 300, ease: 'easeIn' });
+  }
+  if (npcSprite) {
+    npcSprite.destroy();
+    npcSprite = null;
   }
 }
 
