@@ -13,6 +13,12 @@ import { initParticles, updateParticles, initFlash, initVignette, isFrozen } fro
 
 let app = null;
 let layers = {};
+let resizeObserver = null;
+
+// Debug: expose to console for live inspection
+if (typeof window !== 'undefined') {
+  window.__pixiStage = () => ({ app, layers });
+}
 
 /** @returns {{ app: Application, layers: Record<string, Container> }} */
 export function getStage() {
@@ -25,8 +31,12 @@ export function getStage() {
  */
 export async function initBattleStage() {
   const sceneArea = document.getElementById('scene-area');
-  if (!sceneArea || app) return;
+  if (!sceneArea || app) {
+    console.warn('[BattleStage] init skipped:', { sceneArea: !!sceneArea, appExists: !!app });
+    return;
+  }
 
+  try {
   app = new Application();
 
   await app.init({
@@ -46,6 +56,7 @@ export async function initBattleStage() {
   app.canvas.style.height = '100%';
   app.canvas.style.zIndex = '1'; // Above .scene-background (0), below .battle-stage DOM overlay (2)
   sceneArea.insertBefore(app.canvas, sceneArea.firstChild);
+  console.log('[BattleStage] Canvas inserted:', app.canvas.width, 'x', app.canvas.height);
 
   // Create ordered layer containers
   layers = {
@@ -66,7 +77,7 @@ export async function initBattleStage() {
   initVignette();
 
   // Resize handling
-  const ro = new ResizeObserver(([entry]) => {
+  resizeObserver = new ResizeObserver(([entry]) => {
     const { width, height } = entry.contentRect;
     if (width > 0 && height > 0) {
       app.renderer.resize(width, height);
@@ -74,7 +85,7 @@ export async function initBattleStage() {
       resizeFormations(width, height);
     }
   });
-  ro.observe(sceneArea);
+  resizeObserver.observe(sceneArea);
 
   // Main ticker — drives parallax, formations, and particles
   app.ticker.add((ticker) => {
@@ -84,12 +95,22 @@ export async function initBattleStage() {
     }
     updateParticles(ticker.deltaMS);
   });
+
+  console.log('[BattleStage] Init complete');
+  } catch (err) {
+    console.error('[BattleStage] Init FAILED:', err);
+    app = null;
+  }
 }
 
 /**
  * Destroy the PixiJS application and clean up.
  */
 export function destroyBattleStage() {
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
   if (!app) return;
   app.destroy(true, { children: true, texture: true });
   app = null;
