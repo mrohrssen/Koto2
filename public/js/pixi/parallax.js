@@ -25,8 +25,12 @@ let loadRequestId = 0;
  * @param {string|null|undefined} areaId - e.g. 'starter_meadow'
  */
 export async function loadParallax(areaId) {
+  console.log('[Parallax] loadParallax called with:', areaId);
   const { app, layers } = getStage();
-  if (!app) return;
+  if (!app) {
+    console.warn('[Parallax] No pixi app, skipping');
+    return;
+  }
   const requestId = ++loadRequestId;
 
   // Clear existing layers
@@ -52,8 +56,8 @@ export async function loadParallax(areaId) {
     let texture;
     try {
       texture = await Assets.load(path);
-    } catch {
-      // Fallback: skip this layer (sky will show background color)
+    } catch (err) {
+      console.warn('[Parallax] Failed to load', path, err);
       continue;
     }
     if (requestId !== loadRequestId) {
@@ -61,15 +65,18 @@ export async function loadParallax(areaId) {
       return;
     }
 
+    const scale = h / texture.height;
     const ts = new TilingSprite({
       texture,
       width: w,
       height: h,
     });
+    ts.tileScale.set(scale, scale);
     ts.layerSpeed = LAYER_SPEEDS[i];
     tilingSprites.push(ts);
     layers.background.addChild(ts);
   }
+  console.log('[Parallax] Loaded', tilingSprites.length, 'layers for', areaId);
 }
 
 /**
@@ -123,5 +130,7 @@ export function resizeParallax(width, height) {
   for (const ts of tilingSprites) {
     ts.width = width;
     ts.height = height;
+    const scale = height / ts.texture.height;
+    ts.tileScale.set(scale, scale);
   }
 }

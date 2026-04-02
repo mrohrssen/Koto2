@@ -34,8 +34,12 @@ if (typeof window !== 'undefined') {
  */
 export async function initBattleStage() {
   const sceneArea = document.getElementById('scene-area');
-  if (!sceneArea || app) return;
+  if (!sceneArea || app) {
+    console.warn('[BattleStage] init skipped:', { sceneArea: !!sceneArea, appExists: !!app });
+    return;
+  }
 
+  try {
   app = new Application();
 
   await app.init({
@@ -56,6 +60,7 @@ export async function initBattleStage() {
   app.canvas.style.height = '100%';
   app.canvas.style.zIndex = '1';
   sceneArea.insertBefore(app.canvas, sceneArea.firstChild);
+  console.log('[BattleStage] Canvas inserted:', app.canvas.width, 'x', app.canvas.height);
 
   // Create ordered layer containers
   layers = {
@@ -93,6 +98,12 @@ export async function initBattleStage() {
       updateFormations(ticker.deltaTime);
     }
   });
+
+  console.log('[BattleStage] Init complete');
+  } catch (err) {
+    console.error('[BattleStage] Init FAILED:', err);
+    app = null;
+  }
 }
 
 /**
