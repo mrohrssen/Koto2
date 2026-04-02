@@ -85,7 +85,7 @@ import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
 import * as modalsUI from './js/ui/modals.js';
 import * as combatLoopUI from './js/ui/combat-loop.js';
-import { screenShake, showXpPopup, showLevelUpPopup, healEffect, poisonApplyEffect, recoil, pop } from './js/ui/combat-effects.js';
+import { recoil, pop } from './js/ui/dom-effects.js';
 import { itemGained } from './js/ui/event-popup.js';
 import { dom } from './js/dom.js';
 import * as actions from './js/ui/actions.js';
@@ -113,10 +113,11 @@ import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './j
 import { enterEnemiesOneByOne, playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
+
+// PixiJS battle stage imports
 import { initBattleStage } from './js/pixi/battle-stage.js';
 import { loadParallax, setScrollState } from './js/pixi/parallax.js';
-import { setWalking } from './js/pixi/formation.js';
-import { isPvpBattleActive } from './js/ui/pvp-battle.js';
+import { showFormation as pixiShowFormation, hideFormation as pixiHideFormation } from './js/pixi/formation.js';
 
 // API imports - these are the server communication functions
 import {
@@ -235,100 +236,6 @@ function getHpColor(pct) {
 // Set during NPC battle intro so the greeting narration isn't killed by stray updateUI() calls.
 let sceneTransitionActive = false;
 
-// Pixi parallax: reload when run area or PvP mode changes (centralized via updateUI).
-let lastParallaxAreaKey = undefined;
-let lastPhaseForParallax = null;
-
-/**
- * Map run.currentArea to the parallax asset folder under /assets/backgrounds/<id>/.
- * Prefer explicit area.parallaxId when present; else area.id; else starter_meadow.
- * @param {object|null|undefined} currentArea
- * @returns {string}
- */
-function mapRunAreaToParallaxId(currentArea) {
-  if (currentArea && typeof currentArea === 'object') {
-    const pid = currentArea.parallaxId;
-    if (typeof pid === 'string' && pid.length > 0) return pid;
-    const aid = currentArea.id;
-    if (typeof aid === 'string' && aid.length > 0) return aid;
-  }
-  return 'starter_meadow';
-}
-
-function syncParallaxScrollWithPhase() {
-  if (isPvpBattleActive()) {
-    setScrollState('stopped');
-    setWalking(false);
-    lastPhaseForParallax = gameState.phase;
-    return;
-  }
-
-  const p = gameState.phase;
-  const prev = lastPhaseForParallax;
-  lastPhaseForParallax = p;
-
-  if (p === 'room' && prev === 'combat') {
-    setScrollState('accelerating');
-    setWalking(true);
-    return;
-  }
-
-  switch (p) {
-    case 'exploring':
-    case 'room':
-    case 'friendlyNpc':
-    case 'npc_dialogue':
-    case 'wordDiscovery':
-    case 'dealer':
-    case 'skillMaster':
-    case 'whackAMole':
-    case 'speedReviewRoom':
-      setScrollState('scrolling');
-      setWalking(true);
-      break;
-    case 'room_encounter':
-      setScrollState('decelerating');
-      setWalking(false);
-      break;
-    case 'combat':
-      setScrollState('stopped');
-      setWalking(false);
-      break;
-    default:
-      setScrollState('stopped');
-      setWalking(false);
-  }
-}
-
-async function syncBattleStageParallax() {
-  let desiredKey;
-  if (isPvpBattleActive()) {
-    desiredKey = 'pvp_arena';
-  } else if (
-    !gameState.run?.active ||
-    gameState.phase === 'hub' ||
-    gameState.phase === 'no_save' ||
-    gameState.phase === 'area_selection' ||
-    gameState.phase === 'pvp_lobby' ||
-    gameState.phase === 'pvp_team_select'
-  ) {
-    desiredKey = null;
-  } else {
-    desiredKey = mapRunAreaToParallaxId(gameState.run?.currentArea);
-  }
-
-  if (desiredKey !== lastParallaxAreaKey) {
-    lastParallaxAreaKey = desiredKey;
-    try {
-      await loadParallax(desiredKey);
-    } catch (err) {
-      console.warn('[Parallax] load failed:', err);
-    }
-  }
-
-  syncParallaxScrollWithPhase();
-}
-
 function updateUI() {
   // Clear any persistent narration on phase transitions — but NOT during scene transitions
   // like the NPC battle intro, where narration is intentionally showing.
@@ -345,8 +252,6 @@ function updateUI() {
 
   // Update BGM based on current phase
   audio.updateBGMForPhase(gameState.phase);
-
-  void syncBattleStageParallax();
 }
 
 function updateStatusBar() {
@@ -434,6 +339,11 @@ function updateScene() {
     if (npcSkills?.length) {
       scene.showNpcSkills(npcSkills);
     }
+    // PixiJS: show player formation alongside DOM formation
+    const playerParty = gameState.run?.creatureParty?.active;
+    if (playerParty?.length) {
+      pixiShowFormation('player', playerParty);
+    }
   } else if (gameState.phase === 'shrine') {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
@@ -453,6 +363,9 @@ function updateScene() {
     scene.showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`);
   } else {
     scene.hideEnemies();
+    // PixiJS: hide formations when not in combat
+    pixiHideFormation('player');
+    pixiHideFormation('enemy');
   }
   if (gameState.phase === 'shrine') {
     scene.setBackground('/assets/backgrounds/shrine_background.webp');
@@ -463,7 +376,15 @@ function updateScene() {
   } else if (gameState.phase === 'dealer') {
     scene.setBackground('/assets/backgrounds/dealer_background.webp');
   } else if (gameState.run?.background) {
-    scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
+    // If PixiJS parallax is available for this area, clear the DOM background
+    // so it doesn't cover the pixi canvas; otherwise use the old DOM background
+    const areaId = gameState.run?.currentArea?.id;
+    if (areaId) {
+      scene.setBackground(null); // Clear DOM background — PixiJS parallax handles it
+      loadParallax(areaId);
+    } else {
+      scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
+    }
   } else if (!gameState.run) {
     scene.setBackground('/assets/backgrounds/hub.webp');
   }
@@ -1082,6 +1003,15 @@ async function startEncounter() {
   try {
     updateGameState(result.state);
 
+    // Decelerate parallax scroll as combat begins
+    setScrollState('decelerating');
+
+    // Show PixiJS enemy formation alongside DOM formation
+    if (hasCreatures && result.state.combat?.enemies?.length) {
+      const isBoss = !!result.state.combat.isBoss;
+      await pixiShowFormation('enemy', result.state.combat.enemies, { isBoss });
+    }
+
     // For NPC battles: play NPC intro before rendering combat.
     // Lock scene transition so updateUI() won't kill the greeting narration.
     if (result?.npc && hasCreatures) {
@@ -1463,7 +1393,7 @@ async function initGame() {
   // Initialize i18n language from settings
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
 
-  // Pixi battle stage: must exist before scene/combat UI inits that assume #scene-area layout.
+  // Initialize PixiJS battle stage (canvas overlay for combat animations)
   await initBattleStage();
 
   takeover.init();
@@ -1702,15 +1632,6 @@ async function initGame() {
     updateUI,
     actions,
     scene,
-    onPvpBattleStart: async () => {
-      try {
-        await loadParallax('pvp_arena');
-      } catch (err) {
-        console.warn('[Parallax] PvP load failed:', err);
-      }
-      setScrollState('stopped');
-      lastParallaxAreaKey = 'pvp_arena';
-    },
   });
 
   metaShop.init({

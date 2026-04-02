@@ -1,7 +1,7 @@
 {
   "entity_01": {
     "counters": {
-      "encounters": 11,
+      "encounters": 71,
       "defeats": 0,
       "liberations": 0
     },
@@ -14,31 +14,31 @@
       {
         "outcome": "positive",
         "summary": "Met NPC",
-        "timestamp": "2026-03-20T05:22:37.385Z"
+        "timestamp": "2026-04-01T02:25:03.311Z"
       },
       {
         "outcome": "positive",
         "summary": "Met NPC",
-        "timestamp": "2026-03-20T06:42:43.703Z"
+        "timestamp": "2026-04-01T02:25:17.614Z"
       },
       {
         "outcome": "positive",
         "summary": "Met NPC",
-        "timestamp": "2026-03-20T11:51:34.374Z"
+        "timestamp": "2026-04-01T02:25:36.568Z"
       },
       {
         "outcome": "positive",
         "summary": "Met NPC",
-        "timestamp": "2026-03-20T11:53:08.627Z"
+        "timestamp": "2026-04-01T02:26:09.630Z"
       },
       {
         "outcome": "positive",
         "summary": "Met NPC",
-        "timestamp": "2026-03-20T11:55:52.692Z"
+        "timestamp": "2026-04-01T04:23:50.320Z"
       }
     ],
     "narrative": "",
     "bond": 0,
-    "lastEncounter": "2026-03-20T11:55:52.693Z"
+    "lastEncounter": "2026-04-01T04:23:50.320Z"
   }
 }

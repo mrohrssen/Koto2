@@ -11,7 +11,7 @@ const EASING = {
   linear: t => t,
   easeOut: t => 1 - (1 - t) ** 2,
   easeIn: t => t * t,
-  easeInOut: t => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2),
+  easeInOut: t => t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2,
   elastic: t => {
     if (t === 0 || t === 1) return t;
     return -(2 ** (10 * t - 10)) * Math.sin((t * 10 - 10.75) * (2 * Math.PI / 3));
@@ -28,10 +28,7 @@ const EASING = {
 export function tween(target, props, { duration = 300, ease = 'easeOut', delay: delayMs = 0 } = {}) {
   return new Promise(resolve => {
     const { app } = getStage();
-    if (!app) {
-      resolve();
-      return;
-    }
+    if (!app) { resolve(); return; }
 
     const easeFn = EASING[ease] || EASING.easeOut;
     const startValues = {};
@@ -41,9 +38,9 @@ export function tween(target, props, { duration = 300, ease = 'easeOut', delay: 
 
     let elapsed = -delayMs;
 
-    const onTick = ticker => {
+    const onTick = (ticker) => {
       elapsed += ticker.deltaMS;
-      if (elapsed < 0) return;
+      if (elapsed < 0) return; // still in delay
 
       const t = Math.min(elapsed / duration, 1);
       const eased = easeFn(t);
@@ -70,12 +67,9 @@ export function tween(target, props, { duration = 300, ease = 'easeOut', delay: 
 export function wait(ms) {
   return new Promise(resolve => {
     const { app } = getStage();
-    if (!app) {
-      resolve();
-      return;
-    }
+    if (!app) { resolve(); return; }
     let elapsed = 0;
-    const onTick = ticker => {
+    const onTick = (ticker) => {
       elapsed += ticker.deltaMS;
       if (elapsed >= ms) {
         app.ticker.remove(onTick);

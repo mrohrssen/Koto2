@@ -59,3 +59,5 @@ dist/
 # Capacitor native projects (generated, platform-specific)
 ios/
 android/
+.superpowers/
+.claude/commands/

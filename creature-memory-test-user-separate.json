@@ -1,7 +1,7 @@
 {
   "entity_01": {
     "counters": {
-      "encounters": 11,
+      "encounters": 71,
       "defeats": 0,
       "liberations": 0
     },
@@ -14,31 +14,31 @@
       {
         "outcome": "befriend-attempt",
         "summary": "Met creature",
-        "timestamp": "2026-03-20T05:22:37.387Z"
+        "timestamp": "2026-04-01T02:25:03.311Z"
       },
       {
         "outcome": "befriend-attempt",
         "summary": "Met creature",
-        "timestamp": "2026-03-20T06:42:43.708Z"
+        "timestamp": "2026-04-01T02:25:17.615Z"
       },
       {
         "outcome": "befriend-attempt",
         "summary": "Met creature",
-        "timestamp": "2026-03-20T11:51:34.376Z"
+        "timestamp": "2026-04-01T02:25:36.569Z"
       },
       {
         "outcome": "befriend-attempt",
         "summary": "Met creature",
-        "timestamp": "2026-03-20T11:53:08.629Z"
+        "timestamp": "2026-04-01T02:26:09.630Z"
       },
       {
         "outcome": "befriend-attempt",
         "summary": "Met creature",
-        "timestamp": "2026-03-20T11:55:52.694Z"
+        "timestamp": "2026-04-01T04:23:50.323Z"
       }
     ],
     "narrative": "",
     "bond": 0,
-    "lastEncounter": "2026-03-20T11:55:52.694Z"
+    "lastEncounter": "2026-04-01T04:23:50.323Z"
   }
 }

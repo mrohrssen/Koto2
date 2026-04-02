@@ -18,7 +18,7 @@ import * as narrationBox from './narration-box.js';
 import { t } from './i18n.js';
 import { flushExposures } from './bootstrap-client.js';
 import { credits as creditsPopup, animateCounter } from './event-popup.js';
-import { pop } from './combat-effects.js';
+import { pop } from './dom-effects.js';
 
 let getGameState = null;
 let updateGameState = null;

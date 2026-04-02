@@ -4,28 +4,19 @@
  * Creates a PixiJS canvas inside .scene-area with four ordered layers:
  * background (parallax), creatures, effects, overlay.
  * Handles resize via ResizeObserver.
- *
- * Parallax integration: docs/superpowers/plans/2026-04-01-pixijs-battle-stage.md (Task 3).
  */
 
 import { Application, Container } from 'pixi.js';
 import { updateParallax, resizeParallax } from './parallax.js';
 import { initFormations, updateFormations, resizeFormations } from './formation.js';
-import { initFonts } from './text.js';
-import { initParticles, updateParticles, initFlash, isFrozen } from './effects.js';
+import { initParticles, updateParticles, initFlash, initVignette, isFrozen } from './effects.js';
 
 let app = null;
 let layers = {};
-let resizeObserver = null;
 
 /** @returns {{ app: Application, layers: Record<string, Container> }} */
 export function getStage() {
   return { app, layers };
-}
-
-// Debug: expose to console for live inspection
-if (typeof window !== 'undefined') {
-  window.__pixiStage = () => ({ app, layers });
 }
 
 /**
@@ -34,33 +25,27 @@ if (typeof window !== 'undefined') {
  */
 export async function initBattleStage() {
   const sceneArea = document.getElementById('scene-area');
-  if (!sceneArea || app) {
-    console.warn('[BattleStage] init skipped:', { sceneArea: !!sceneArea, appExists: !!app });
-    return;
-  }
+  if (!sceneArea || app) return;
 
-  try {
   app = new Application();
 
   await app.init({
-    backgroundAlpha: 0,
-    resolution: Math.min(window.devicePixelRatio || 1, 2),
+    backgroundAlpha: 0, // Transparent — lets DOM .scene-background show through when no parallax is loaded
+    resolution: Math.min(window.devicePixelRatio, 2),
     autoDensity: true,
     antialias: false,
     width: sceneArea.clientWidth,
     height: sceneArea.clientHeight,
   });
 
-  // Insert canvas as first child so DOM overlays sit on top.
-  // z-index 1 ensures it renders above .scene-background (z-index 0).
+  // Insert canvas as first child so DOM overlays sit on top
   app.canvas.style.position = 'absolute';
   app.canvas.style.top = '0';
   app.canvas.style.left = '0';
   app.canvas.style.width = '100%';
   app.canvas.style.height = '100%';
-  app.canvas.style.zIndex = '1';
+  app.canvas.style.zIndex = '1'; // Above .scene-background (0), below .battle-stage DOM overlay (2)
   sceneArea.insertBefore(app.canvas, sceneArea.firstChild);
-  console.log('[BattleStage] Canvas inserted:', app.canvas.width, 'x', app.canvas.height);
 
   // Create ordered layer containers
   layers = {
@@ -74,46 +59,37 @@ export async function initBattleStage() {
   app.stage.addChild(layers.effects);
   app.stage.addChild(layers.overlay);
 
+  // Initialize sub-modules
   initFormations();
-  initFonts();
   initParticles();
   initFlash();
+  initVignette();
 
   // Resize handling
-  resizeObserver = new ResizeObserver(([entry]) => {
+  const ro = new ResizeObserver(([entry]) => {
     const { width, height } = entry.contentRect;
     if (width > 0 && height > 0) {
       app.renderer.resize(width, height);
       resizeParallax(width, height);
-      void resizeFormations(width, height);
+      resizeFormations(width, height);
     }
   });
-  resizeObserver.observe(sceneArea);
+  ro.observe(sceneArea);
 
+  // Main ticker — drives parallax, formations, and particles
   app.ticker.add((ticker) => {
-    const deltaMS = ticker.elapsedMS;
-    updateParticles(deltaMS);
     if (!isFrozen()) {
       updateParallax(ticker.deltaTime);
       updateFormations(ticker.deltaTime);
     }
+    updateParticles(ticker.deltaMS);
   });
-
-  console.log('[BattleStage] Init complete');
-  } catch (err) {
-    console.error('[BattleStage] Init FAILED:', err);
-    app = null;
-  }
 }
 
 /**
  * Destroy the PixiJS application and clean up.
  */
 export function destroyBattleStage() {
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-    resizeObserver = null;
-  }
   if (!app) return;
   app.destroy(true, { children: true, texture: true });
   app = null;

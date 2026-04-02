@@ -6,9 +6,9 @@ import { hapticLight } from '../native/index.js';
  * @param {Array<{label: string, onClick: Function, primary?: boolean, disabled?: boolean}>} buttons
  * @param {{container?: HTMLElement}} options
  */
-export function renderButtons(buttons, { container } = {}) {
+export function renderButtons(buttons, { container, append } = {}) {
   const el = container || document.getElementById('action-area');
-  el.innerHTML = '';
+  if (!append) el.innerHTML = '';
 
   const list = document.createElement('div');
   list.className = 'ui-btn-list';

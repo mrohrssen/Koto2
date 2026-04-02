@@ -33,7 +33,7 @@ import { buildItemEffectPills } from './item-effect-pills.js';
 import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
 import { buff, itemGained } from './event-popup.js';
-import { pop, flashElement } from './combat-effects.js';
+import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
 
 let getGameState = null;

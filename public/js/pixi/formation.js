@@ -3,12 +3,11 @@
  *
  * Renders creature formations (player and enemy) as PixiJS Sprites.
  * Handles diagonal stagger, depth scaling, walking wobble, and state transitions.
- * Enter-from-right: set sprite._entering = true and sprite._enterTarget to target x;
- * the ticker eases sprite.x toward _enterTarget, then clears _entering and updates baseX.
  */
 
-import { Sprite, Assets, Container, Texture } from 'pixi.js';
+import { Sprite, Assets, Container, Texture, Graphics } from 'pixi.js';
 import { getStage } from './battle-stage.js';
+import { tween } from './tween.js';
 
 const DEPTH_SCALES = [0.9, 0.95, 1.0]; // back, mid, front
 const PLAYER_STAGGER_X = [12, 24, 36]; // px offset per row
@@ -16,30 +15,12 @@ const ENEMY_STAGGER_X = [-12, -24, -36]; // mirrored
 
 let playerContainer = null;
 let enemyContainer = null;
-/** @type {{ player: import('pixi.js').Sprite[], enemy: import('pixi.js').Sprite[] }} */
 let creatureSprites = { player: [], enemy: [] };
-/** Last showFormation args per side — used by resizeFormations to re-layout */
 let lastFormationInput = { player: null, enemy: null };
-
 let walkingEnabled = false;
 let walkTime = 0;
-/** Per-side request counter to invalidate stale async loads. */
-let loadRequestId = { player: 0, enemy: 0 };
-
-function sameFormation(prev, creatures, isBoss) {
-  if (!prev || !Array.isArray(prev.creatures)) return false;
-  if (!!prev.opts?.isBoss !== !!isBoss) return false;
-  if (prev.creatures.length !== creatures.length) return false;
-  for (let i = 0; i < creatures.length; i++) {
-    const a = prev.creatures[i];
-    const b = creatures[i];
-    if ((a?.id || '') !== (b?.id || '')) return false;
-    const aHp = a?.currentHp ?? a?.hp ?? null;
-    const bHp = b?.currentHp ?? b?.hp ?? null;
-    if (aHp !== bHp) return false;
-  }
-  return true;
-}
+let activeGlow = null;
+let activeGlowTickFn = null;
 
 /**
  * Initialize formation containers. Called once from battle-stage init.
@@ -47,7 +28,6 @@ function sameFormation(prev, creatures, isBoss) {
 export function initFormations() {
   const { layers } = getStage();
   if (!layers.creatures) return;
-  if (playerContainer && playerContainer.parent) return;
 
   playerContainer = new Container();
   enemyContainer = new Container();
@@ -59,31 +39,18 @@ export function initFormations() {
  * Render a formation of creatures.
  * @param {'player'|'enemy'} side
  * @param {Array} creatures - array of 1-3 creature objects
- * @param {{ isBoss?: boolean, skipEnter?: boolean }} opts
+ * @param {{ isBoss?: boolean }} opts
  */
-export async function showFormation(side, creatures, { isBoss = false, skipEnter = false } = {}) {
+export async function showFormation(side, creatures, { isBoss = false } = {}) {
   const { app } = getStage();
   if (!app) return;
 
   const container = side === 'player' ? playerContainer : enemyContainer;
-  if (!container) return;
-  const normalizedCreatures = Array.isArray(creatures) ? [...creatures] : [];
-  if (
-    sameFormation(lastFormationInput[side], normalizedCreatures, isBoss) &&
-    creatureSprites[side].length > 0
-  ) {
-    return;
-  }
-
-  // Bump request counter to invalidate any in-flight async loads for this side.
-  const requestId = ++loadRequestId[side];
-
-  lastFormationInput[side] = {
-    creatures: normalizedCreatures,
-    opts: { isBoss, skipEnter },
-  };
-
   const sprites = creatureSprites[side];
+  lastFormationInput[side] = {
+    creatures: creatures ? [...creatures] : [],
+    opts: { isBoss },
+  };
 
   // Clear existing
   container.removeChildren();
@@ -113,19 +80,14 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
     const creature = slots[i];
     if (!creature) continue;
 
-    const spritePath =
-      creature.spriteImg || `/assets/sprites/creatures/${creature.id}.webp`;
+    // Load sprite texture
+    const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}.webp`;
     let texture;
     try {
       texture = await Assets.load(spritePath);
     } catch {
-      texture = Texture.WHITE;
+      texture = Texture.WHITE; // Fallback — will show as white square
     }
-
-    // A newer showFormation call for this side superseded us — bail out.
-    if (requestId !== loadRequestId[side]) return;
-
-    const tw = texture.width || 1;
 
     const sprite = new Sprite(texture);
     sprite.anchor.set(0.5);
@@ -133,31 +95,22 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
     sprite.height = spriteSize;
 
     // Position: staggered diagonally
-    const rowY = screenH * 0.3 + i * screenH * 0.2;
-    const targetX = baseX + staggerX[i];
+    const rowY = (screenH * 0.3) + (i * screenH * 0.2); // spread vertically
+    sprite.x = baseX + staggerX[i];
     sprite.y = rowY;
 
-    // Depth scaling (matches plan: uniform scale from spriteSize / texture.width × row depth)
-    sprite.scale.set(DEPTH_SCALES[i] * (spriteSize / tw));
+    // Depth scaling
+    sprite.scale.set(DEPTH_SCALES[i] * (spriteSize / texture.width));
+
+    // Flip enemy sprites
     if (side === 'enemy') {
       sprite.scale.x *= -1;
     }
 
-    // Enemy: enter from offscreen right (resize replays use skipEnter to snap)
-    if (side === 'enemy' && !skipEnter) {
-      sprite._enterTarget = targetX;
-      sprite._entering = true;
-      sprite.x = screenW + spriteSize * 2;
-      sprite.baseX = targetX;
-    } else {
-      sprite.x = targetX;
-      sprite.baseX = targetX;
-      sprite._entering = false;
-    }
-
     // Store base position for walking animation
+    sprite.baseX = sprite.x;
     sprite.baseY = sprite.y;
-    sprite.phaseOffset = Math.random() * Math.PI * 2;
+    sprite.phaseOffset = Math.random() * Math.PI * 2; // Random phase so they don't sync
     sprite.creatureData = creature;
 
     // KO state
@@ -179,20 +132,17 @@ export function hideFormation(side) {
   const container = side === 'player' ? playerContainer : enemyContainer;
   if (container) container.removeChildren();
   creatureSprites[side].length = 0;
-  // Keep resize replay from resurrecting a side that was explicitly hidden.
-  lastFormationInput[side] = null;
 }
 
 /**
  * Enable/disable walking wobble.
- * @param {boolean} enabled
  */
 export function setWalking(enabled) {
-  walkingEnabled = !!enabled;
+  walkingEnabled = enabled;
 }
 
 /**
- * Get a creature sprite by side and dense display order index (0..n-1).
+ * Get a creature sprite by side and index (for targeting effects).
  * @param {'player'|'enemy'} side
  * @param {number} index
  * @returns {Sprite|null}
@@ -202,7 +152,49 @@ export function getCreatureSprite(side, index) {
 }
 
 /**
- * Ticker update — enter animation and walking wobble.
+ * Show a pulsing glow outline on the active player creature during move selection.
+ * @param {number} index - creature index in the player formation
+ */
+export function showActiveGlow(index) {
+  clearActiveGlow();
+  const sprite = getCreatureSprite('player', index);
+  const { app, layers } = getStage();
+  if (!sprite || !app) return;
+
+  activeGlow = new Graphics();
+  activeGlow.circle(0, 0, 38).stroke({ color: 0xFFFFFF, width: 2, alpha: 0.6 });
+  activeGlow.x = sprite.x;
+  activeGlow.y = sprite.y;
+  layers.effects.addChild(activeGlow);
+
+  activeGlowTickFn = () => {
+    const sprite = getCreatureSprite('player', index);
+    if (sprite && activeGlow) {
+      activeGlow.x = sprite.x;
+      activeGlow.y = sprite.y;
+    }
+    activeGlow.alpha = 0.3 + 0.3 * Math.sin(Date.now() / 400);
+  };
+  app.ticker.add(activeGlowTickFn);
+}
+
+/**
+ * Remove the active creature glow.
+ */
+export function clearActiveGlow() {
+  if (activeGlow) {
+    activeGlow.destroy();
+    activeGlow = null;
+  }
+  if (activeGlowTickFn) {
+    const { app } = getStage();
+    app?.ticker.remove(activeGlowTickFn);
+    activeGlowTickFn = null;
+  }
+}
+
+/**
+ * Ticker update — walking wobble animation.
  * @param {number} delta - PixiJS ticker deltaTime
  */
 export function updateFormations(delta) {
@@ -211,43 +203,74 @@ export function updateFormations(delta) {
   for (const side of ['player', 'enemy']) {
     for (const sprite of creatureSprites[side]) {
       if (sprite._entering) {
-        const target = sprite._enterTarget ?? sprite.baseX;
-        sprite.x += (target - sprite.x) * 0.1;
-        if (Math.abs(sprite.x - target) < 1) {
-          sprite.x = target;
-          sprite.baseX = target;
+        sprite.x += (sprite._enterTarget - sprite.x) * 0.1;
+        if (Math.abs(sprite.x - sprite._enterTarget) < 1) {
+          sprite.x = sprite._enterTarget;
+          sprite.baseX = sprite._enterTarget;
           sprite._entering = false;
         }
         continue;
       }
-
       if (!walkingEnabled) continue;
-
       const t = walkTime + sprite.phaseOffset;
+      // Bounce: 2px amplitude
       sprite.y = sprite.baseY + Math.sin(t * 3) * 2;
+      // Rotation wobble: ~4.5 degrees
       sprite.rotation = Math.sin(t * 2.5) * 0.08;
     }
   }
 }
 
 /**
- * Reposition formations after resize (uses lastFormationInput).
- * @param {number} [_width]
- * @param {number} [_height]
+ * Animate a creature being knocked out.
+ * @param {'player'|'enemy'} side
+ * @param {number} index
  */
-export async function resizeFormations(_width, _height) {
+export async function animateKO(side, index) {
+  const sprite = getCreatureSprite(side, index);
+  if (!sprite) return;
+  const pos = { x: sprite.x, y: sprite.y };
+
+  // Lazy import to avoid circular dependency (formation <- effects <- battle-stage <- formation)
+  const { burstParticles } = await import('./effects.js');
+
+  sprite.tint = 0x888888;
+  const targetScaleX = sprite.scale.x * 0.5;
+  const targetScaleY = sprite.scale.y * 0.5;
+  await Promise.all([
+    tween(sprite, { alpha: 0 }, { duration: 600, ease: 'easeOut' }),
+    tween(sprite.scale, { x: targetScaleX, y: targetScaleY }, { duration: 600, ease: 'easeIn' }),
+  ]);
+
+  burstParticles(pos, { count: 8, color: 0xFFFFFF, speed: 60, life: 500, element: 'neutral' });
+}
+
+/**
+ * Animate a creature leveling up.
+ * @param {'player'|'enemy'} side
+ * @param {number} index
+ */
+export async function animateLevelUp(side, index) {
+  const sprite = getCreatureSprite(side, index);
+  if (!sprite) return;
+  const pos = { x: sprite.x, y: sprite.y };
+
+  const { burstParticles, screenFlash } = await import('./effects.js');
+
+  burstParticles({ x: pos.x, y: pos.y + 10 }, { count: 15, color: 0xFFD700, speed: 100, life: 800, element: 'fire' });
+  screenFlash({ color: 0xFFD700, duration: 150 });
+}
+
+/**
+ * Reposition formations after resize.
+ */
+export async function resizeFormations(width, height) {
+  // Re-render active formations so iOS Safari address-bar resize/orientation
+  // keeps sprite coordinates aligned with the new viewport.
   if (lastFormationInput.player) {
-    await showFormation(
-      'player',
-      lastFormationInput.player.creatures,
-      { ...lastFormationInput.player.opts, skipEnter: true },
-    );
+    await showFormation('player', lastFormationInput.player.creatures, lastFormationInput.player.opts);
   }
   if (lastFormationInput.enemy) {
-    await showFormation(
-      'enemy',
-      lastFormationInput.enemy.creatures,
-      { ...lastFormationInput.enemy.opts, skipEnter: true },
-    );
+    await showFormation('enemy', lastFormationInput.enemy.creatures, lastFormationInput.enemy.opts);
   }
 }

@@ -62,10 +62,9 @@ function showTargets(targets, move, type) {
     },
   });
 
-  // Back button — appended after renderChoices
   renderButtons([
     { label: 'Back', onClick: () => { if (onCancel) onCancel(); } },
-  ]);
+  ], { append: true });
 }
 
 export function clear() {

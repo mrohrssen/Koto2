@@ -35,7 +35,10 @@ The `.scene-area` div remains as the container. A PixiJS `Application` canvas fi
 ├── .enemy-info (DOM overlay)
 ├── .narration-box (DOM overlay)
 ├── .scene-toast (DOM overlay)
-└── .npc-display (DOM, migrates to canvas later)
+├── .npc-display (DOM, migrates to canvas later)
+└── .battle-stage (DOM compatibility anchors, temporary)
+    ├── .player-formation (semantic slots for status/popup targeting)
+    └── .enemy-formation (semantic slots for status/popup targeting)
 ```
 
 ### What Stays DOM
@@ -45,18 +48,24 @@ The `.scene-area` div remains as the container. A PixiJS `Application` canvas fi
 - Narration box (dialogue, combat results, story moments)
 - Scene toast (notifications)
 - NPC display (friendly NPC sprites — future canvas migration)
+- Temporary compatibility formation anchors (`.formation-slot` DOM) for:
+  - status icon badges
+  - creature popup anchoring
+  - modules still querying formation slots during migration (PvP, transitions, etc.)
 - All UI below the scene area (move cards, buttons, vocab, menus)
 
 ### What Moves to Canvas
 
 - Background (static image → parallax layers)
-- Creature sprites (img tags → PixiJS Sprites)
+- Creature visuals (img tags → PixiJS Sprites)
 - Combat particles (DOM divs → ParticleContainer)
 - Speed lines and energy orbs (DOM divs → Sprites)
 - Screen shake (anime.js on .game-app → container offset)
 - Screen flash and vignette (overlay divs → Graphics)
 - Damage numbers (floating divs → BitmapText)
 - Event popups: buff/debuff/skillProc (floating divs → BitmapText)
+
+DOM formation slot removal is deferred until cleanup after all slot-dependent modules are migrated.
 
 ### Renderer Configuration
 
@@ -97,12 +106,16 @@ Parallax scrolls continuously during exploration. Scroll state ties to game phas
 
 | Scroll State | Behavior | Game Phases |
 |-------------|----------|-------------|
-| `scrolling` | Layers scroll at defined speeds, creatures wobble-walk | EXPLORING, ROOM (between encounters) |
+| `scrolling` | Layers scroll at defined speeds, creatures wobble-walk | EXPLORING, ROOM, FRIENDLY_NPC, NPC_DIALOGUE, WORD_DISCOVERY, DEALER, SKILL_MASTER, WHACK_A_MOLE, SPEED_REVIEW_ROOM |
 | `decelerating` | Layers ease to stop, enemies appear from right | ROOM_ENCOUNTER |
-| `stopped` | Layers frozen, effects play | COMBAT, VICTORY, DEFEAT, FRIENDLY_NPC, NPC_DIALOGUE, WORD_DISCOVERY, DEALER, SKILL_MASTER, WHACK_A_MOLE, SPEED_REVIEW_ROOM, PVP_BATTLE, HUB, SHOP |
+| `stopped` | Layers frozen, effects play | COMBAT, VICTORY, DEFEAT, PVP_BATTLE |
 | `accelerating` | Layers ease back to scroll speed | Post-combat/post-NPC transition back to ROOM |
 
 Default for any unlisted phase: `stopped`.
+
+### Background Policy During Non-Combat Rooms
+
+Non-combat rooms do not swap scene backgrounds. The run keeps the current area's active parallax while NPCs slide in/out and interaction text plays, then gameplay returns to walking scroll.
 
 ### Asset Directory Convention
 
@@ -242,7 +255,7 @@ Modified files:
 - `public/js/ui/event-popup.js` — showEventPopup/presets removed (moved to `pixi/text.js`), `spawnParticles` import removed. Status icons + animateCounter stay (DOM HUD)
 - `public/js/ui/combat-loop.js` — import effects from `pixi/` instead of DOM modules
 - `public/game.css` — remove particle/effect/background animation styles
-- `public/index.html` — remove `scene-background` div, screen-flash/vignette overlays, `.battle-stage` + formation containers (replaced by canvas)
+- `public/index.html` — remove `scene-background` div and screen-flash/vignette overlays. Keep `.battle-stage` + formation containers as temporary compatibility anchors until cleanup.
 - `public/js/ui/exploration.js` — update imports from `combat-effects.js` to `dom-effects.js`
 - `public/js/ui/economy.js` — update imports from `combat-effects.js` to `dom-effects.js`
 
@@ -268,7 +281,7 @@ Modified files:
 - Load existing webp sprites as PixiJS Sprites
 - Walking wobble animation (bounce + rotation in ticker)
 - Scroll state machine: walking → decelerate → stopped → resume
-- Remove DOM formation rendering from `scene.js`
+- Replace DOM sprite rendering from `scene.js` while keeping DOM semantic anchors for compatibility
 - Reposition DOM HUD to align with canvas sprite positions
 - **Ship gate:** creatures walk on parallax, combat still functional
 
@@ -281,12 +294,12 @@ Modified files:
 - Update `combat-loop.js` imports to use `pixi/` modules
 - Extract DOM-only utilities (`pop`, `flashElement`) to `dom-effects.js`, update imports in `exploration.js`, `economy.js`
 - Delete remainder of `combat-effects.js`
-- Remove `.battle-stage`, `.player-formation`, `.enemy-formation` divs from `index.html`
 - **Ship gate:** full combat rendered on canvas
 
 ### Phase 4: Cleanup
 
 - Remove dead CSS (particle styles, ultimate styles, background animation keyframes)
+- Migrate remaining formation-slot-dependent modules to Pixi coordinates, then remove compatibility anchors (`.battle-stage`, `.player-formation`, `.enemy-formation`) from `index.html`
 - Remove anime.js dependency if unused elsewhere (check: speed-review, whack-a-mole, room-transition still use it — keep for now)
 - Update `.env.example` with Scenario credentials template
 - Update `CLAUDE.md` with new architecture notes
@@ -305,4 +318,6 @@ Modified files:
 ## Known Dependencies
 
 - **PvP battle** uses the same `.scene-area` with `setBackground()` and `showFormation()`. PvP rendering must be updated in Phase 2 alongside PvE formations.
+- During migration, PvP + room-transition + creature popup/status systems continue using DOM formation slot anchors for targeting/positioning.
+- **creature-row popup interactions** currently anchor to `.formation-slot` DOM nodes. Preserve compatibility anchors until popup anchoring is migrated to Pixi coordinates.
 - **anime.js** remains a dependency for `speed-review.js`, `whack-a-mole.js`, and `room-transition.js`. Only removed from combat code.

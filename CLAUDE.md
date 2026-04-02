@@ -215,6 +215,10 @@ This symlinks each skill's `SKILL.md` into `.claude/commands/<skill-name>.md`. R
 
 Skills use `process.cwd()` for project paths and `$CLAUDE_PROJECT_DIR` for sub-skill references — no hardcoded machine paths. Edit skills in the repo and changes take effect immediately (symlinked).
 
+## Visual Verification Rule
+
+**All visual/CSS/animation/rendering changes MUST be verified with screenshots before reporting completion.** Never claim a visual fix works based on code reasoning alone — run the dev server, open Playwright, navigate to the affected screen, and take a screenshot proving the change is visible. If the fix involves combat animations, play through to combat. If it involves backgrounds, navigate to where the background renders. Evidence before assertions, always.
+
 ## Common Mistakes to Avoid
 
 - **Don't add equipment systems without the plan** - Equipment is designed via `/item-forge --type equipment`. See `docs/plans/2026-03-02-equipment-crafting-town-mvp-design.md`.

@@ -1,0 +1,140 @@
+{
+  "onnanoko": {
+    "counters": {
+      "encounters": 3,
+      "defeats": 0,
+      "liberations": 3
+    },
+    "flags": {
+      "liberated": true,
+      "befriended": false,
+      "betrayed": false
+    },
+    "encounterLog": [
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T12:33:16.336Z"
+      },
+      {
+        "outcome": "negative",
+        "summary": "Bond change: -1",
+        "timestamp": "2026-03-20T13:10:29.870Z"
+      },
+      {
+        "outcome": "negative",
+        "summary": "Bond change: -1",
+        "timestamp": "2026-03-20T13:20:32.458Z"
+      }
+    ],
+    "narrative": "",
+    "bond": -1,
+    "lastEncounter": "2026-03-20T13:20:32.459Z"
+  },
+  "otokonoko": {
+    "counters": {
+      "encounters": 5,
+      "defeats": 0,
+      "liberations": 5
+    },
+    "flags": {
+      "liberated": true,
+      "befriended": false,
+      "betrayed": false
+    },
+    "encounterLog": [
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T12:37:23.168Z"
+      },
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T12:48:22.524Z"
+      },
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T12:49:19.563Z"
+      },
+      {
+        "outcome": "neutral",
+        "summary": "Bond change: 0",
+        "timestamp": "2026-03-20T13:06:10.155Z"
+      },
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T13:08:41.347Z"
+      }
+    ],
+    "narrative": "",
+    "bond": 4,
+    "lastEncounter": "2026-03-20T13:08:41.347Z"
+  },
+  "otona": {
+    "counters": {
+      "encounters": 5,
+      "defeats": 0,
+      "liberations": 5
+    },
+    "flags": {
+      "liberated": true,
+      "befriended": false,
+      "betrayed": false
+    },
+    "encounterLog": [
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T12:39:53.226Z"
+      },
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T12:41:51.524Z"
+      },
+      {
+        "outcome": "negative",
+        "summary": "Bond change: -1",
+        "timestamp": "2026-03-20T13:04:41.486Z"
+      },
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T13:07:47.944Z"
+      },
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T13:18:52.544Z"
+      }
+    ],
+    "narrative": "",
+    "bond": 3,
+    "lastEncounter": "2026-03-20T13:18:52.544Z"
+  },
+  "kodomo": {
+    "counters": {
+      "encounters": 1,
+      "defeats": 0,
+      "liberations": 1
+    },
+    "flags": {
+      "liberated": true,
+      "befriended": false,
+      "betrayed": false
+    },
+    "encounterLog": [
+      {
+        "outcome": "positive",
+        "summary": "Bond change: 1",
+        "timestamp": "2026-03-20T12:44:01.976Z"
+      }
+    ],
+    "narrative": "",
+    "bond": 1,
+    "lastEncounter": "2026-03-20T12:44:01.976Z"
+  }
+}
