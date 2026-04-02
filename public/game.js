@@ -118,7 +118,7 @@ import { escapeHtml } from './js/ui/html-utils.js';
 // PixiJS battle stage imports
 import { initBattleStage } from './js/pixi/battle-stage.js';
 import { loadParallax, setScrollState } from './js/pixi/parallax.js';
-import { showFormation as pixiShowFormation, hideFormation as pixiHideFormation, setWalking } from './js/pixi/formation.js';
+import { showFormation as pixiShowFormation, setWalking } from './js/pixi/formation.js';
 
 // API imports - these are the server communication functions
 import {
@@ -455,9 +455,6 @@ function updateScene() {
     scene.showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`);
   } else {
     scene.hideEnemies();
-    // PixiJS: hide formations when not in combat
-    pixiHideFormation('player');
-    pixiHideFormation('enemy');
   }
   if (gameState.phase === 'shrine') {
     scene.setBackground('/assets/backgrounds/shrine_background.webp');
@@ -1094,12 +1091,6 @@ async function startEncounter() {
 
   try {
     updateGameState(result.state);
-
-    // Show PixiJS enemy formation alongside DOM formation
-    if (hasCreatures && result.state.combat?.enemies?.length) {
-      const isBoss = !!result.state.combat.isBoss;
-      await pixiShowFormation('enemy', result.state.combat.enemies, { isBoss });
-    }
 
     // For NPC battles: play NPC intro before rendering combat.
     // Lock scene transition so updateUI() won't kill the greeting narration.

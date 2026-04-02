@@ -74,7 +74,6 @@ async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, element
   const pos = spritePos(targetSide, targetIndex);
   const sprite = getCreatureSprite(targetSide, targetIndex);
   const elemColor = ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral;
-
   hapticDamageTier(tier);
 
   if (effects.hitStop > 0) await hitStop(effects.hitStop);
@@ -2131,17 +2130,20 @@ async function executeCreatureMovesTurn(choices) {
             showHealPopup(atk.healAmount, drainAttackerPos);
           }
 
-          // XP popups on kill — collect pending move learns
+          // Enemy KO animation + XP popups on kill
           const killKey = typeof atk.targetIndex === 'number' ? `idx:${atk.targetIndex}` : `id:${atk.targetId}`;
-          if (atk.targetDefeated && !killedEnemies.has(killKey) && result.xpEvents) {
+          if (atk.targetDefeated && !killedEnemies.has(killKey)) {
             killedEnemies.add(killKey);
-            const xpEvent = result.xpEvents.find(ev =>
-              (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
-              || (typeof atk.targetIndex !== 'number' && ev.enemyId === atk.targetId)
-            );
-            if (xpEvent) {
-              const pending = showXpEvents([xpEvent]);
-              if (pending?.length) allPendingMoveLearn.push(...pending);
+            animateKO('enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
+            if (result.xpEvents) {
+              const xpEvent = result.xpEvents.find(ev =>
+                (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
+                || (typeof atk.targetIndex !== 'number' && ev.enemyId === atk.targetId)
+              );
+              if (xpEvent) {
+                const pending = showXpEvents([xpEvent]);
+                if (pending?.length) allPendingMoveLearn.push(...pending);
+              }
             }
           }
 
@@ -2327,17 +2329,20 @@ async function executeCreaturePlayerAttack() {
             }
           }
 
-          // Show XP popups when an enemy is killed (BUG B + C) — collect pending move learns
+          // Enemy KO animation + XP popups on kill (BUG B + C)
           const killKey2 = typeof atk.targetIndex === 'number' ? `idx:${atk.targetIndex}` : `id:${atk.targetId}`;
-          if (atk.targetDefeated && !killedEnemies.has(killKey2) && result.xpEvents) {
+          if (atk.targetDefeated && !killedEnemies.has(killKey2)) {
             killedEnemies.add(killKey2);
-            const xpEvent = result.xpEvents.find(ev =>
-              (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
-              || (typeof atk.targetIndex !== 'number' && ev.enemyId === atk.targetId)
-            );
-            if (xpEvent) {
-              const pending = showXpEvents([xpEvent]);
-              if (pending?.length) allPendingMoveLearn2.push(...pending);
+            animateKO('enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
+            if (result.xpEvents) {
+              const xpEvent = result.xpEvents.find(ev =>
+                (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
+                || (typeof atk.targetIndex !== 'number' && ev.enemyId === atk.targetId)
+              );
+              if (xpEvent) {
+                const pending = showXpEvents([xpEvent]);
+                if (pending?.length) allPendingMoveLearn2.push(...pending);
+              }
             }
           }
 

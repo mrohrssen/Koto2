@@ -85,6 +85,7 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
   };
 
   const sprites = creatureSprites[side];
+  const hadSprites = sprites.length > 0;
 
   // Clear existing
   container.removeChildren();
@@ -107,12 +108,19 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
   const screenH = app.screen.height;
   const spriteSize = isBoss ? 120 : 60;
 
-  // Base X position: player on left third, enemy on right third
+  // Read DOM anchor positions so Pixi sprites align with their HUD name bars
+  const sceneArea = document.getElementById('scene-area');
+  const sceneRect = sceneArea?.getBoundingClientRect();
+  const formationSel = side === 'player' ? '.player-formation' : '.enemy-formation';
+
+  // Fallback base X (only used if DOM anchors are missing)
   const baseX = side === 'player' ? screenW * 0.25 : screenW * 0.75;
 
   for (let i = 0; i < slots.length; i++) {
     const creature = slots[i];
     if (!creature) continue;
+
+    const dataIndex = creatures.indexOf(creature);
 
     // Load sprite texture
     const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}.webp`;
@@ -130,12 +138,24 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
     sprite.width = spriteSize;
     sprite.height = spriteSize;
 
-    // Position: staggered diagonally
-    const rowY = (screenH * 0.3) + (i * screenH * 0.2);
-    const targetX = baseX + staggerX[i];
-    sprite.y = rowY;
+    // Position from DOM anchor (centered above name bar), fallback to percentage
+    let targetX, targetY;
+    const anchorEl = sceneRect && document.querySelector(
+      `${formationSel} .formation-slot[data-index="${dataIndex}"] .formation-sprite--pixi-anchor`
+    );
 
-    if (side === 'enemy' && !skipEnter) {
+    if (anchorEl) {
+      const anchorRect = anchorEl.getBoundingClientRect();
+      targetX = anchorRect.left + anchorRect.width / 2 - sceneRect.left;
+      targetY = anchorRect.top + anchorRect.height / 2 - sceneRect.top;
+    } else {
+      targetX = baseX + staggerX[i];
+      targetY = (screenH * 0.3) + (i * screenH * 0.2);
+    }
+
+    sprite.y = targetY;
+
+    if (side === 'enemy' && !skipEnter && !hadSprites) {
       sprite._enterTarget = targetX;
       sprite._entering = true;
       sprite.x = screenW + spriteSize * 2;
