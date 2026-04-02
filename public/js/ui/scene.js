@@ -35,6 +35,7 @@
 import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import * as pixiFormation from '../pixi/formation.js';
+import { showNpcSprite as pixiShowNpcSprite, hideNpcSprite as pixiHideNpcSprite } from '../pixi/formation.js';
 import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 import { toRomaji } from './romaji.js';
 
@@ -330,14 +331,10 @@ export function showNpcInDisplay(name, spritePath) {
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
-  dom.enemySprite.src = spritePath;
-  dom.enemySprite.onerror = () => {
-    dom.enemySprite.classList.remove('visible');
-  };
-  dom.enemySprite.onload = () => {
-    removePlaceholder();
-    dom.enemySprite.classList.add('visible');
-  };
+  // Hide DOM sprite — NPC renders on PixiJS canvas now
+  dom.enemySprite.src = '';
+  dom.enemySprite.classList.remove('visible');
+  pixiShowNpcSprite(spritePath);
 }
 
 /** Show shrine fox in scene (no HP bar) */
@@ -414,17 +411,13 @@ export function showNpcTrainer(npcName, npcId, npc) {
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
 
+  // Hide DOM sprite — NPC renders on PixiJS canvas now
+  dom.enemySprite.src = '';
+  dom.enemySprite.classList.remove('visible');
   const spritePath = npcId
     ? `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`
     : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
-  dom.enemySprite.src = spritePath;
-  dom.enemySprite.onerror = () => {
-    dom.enemySprite.classList.remove('visible');
-  };
-  dom.enemySprite.onload = () => {
-    removePlaceholder();
-    dom.enemySprite.classList.add('visible');
-  };
+  pixiShowNpcSprite(spritePath);
 }
 
 /** Hide NPC trainer from scene */
@@ -447,6 +440,7 @@ export function showNpcSkills(skills) {
 
 /** Hide enemy from scene */
 export function hideEnemy() {
+  pixiHideNpcSprite();
   dom.npcDisplay.classList.remove('visible');
   dom.enemySprite.src = '';
   dom.enemySprite.classList.remove('visible');
