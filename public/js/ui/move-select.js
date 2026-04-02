@@ -26,7 +26,7 @@ export function init({ onMoveSelectCb, onItemsOpenCb, onMoveHelpCb }) {
 }
 
 function iconSlug(nameEn) {
-  return nameEn.toLowerCase().replace(/\s+/g, '-');
+  return nameEn.split(';')[0].trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
 export function buildMoveCell(move, canAfford) {

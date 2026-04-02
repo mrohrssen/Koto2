@@ -32,9 +32,6 @@ const POPUP_CHARS = [[' ', '~'], '\n'];
 export function initFonts() {
   if (fontsReady) return;
 
-  BitmapFont.uninstall(DAMAGE_FONT);
-  BitmapFont.uninstall(POPUP_FONT);
-
   BitmapFont.install({
     name: DAMAGE_FONT,
     chars: DAMAGE_CHARS,
