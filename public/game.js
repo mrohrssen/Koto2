@@ -102,6 +102,7 @@ import * as bugReport from './js/ui/bug-report.js';
 import * as diagnostics from './js/diagnostics.js';
 import * as pvpLobbyUI from './js/ui/pvp-lobby.js';
 import * as pvpBattleUI from './js/ui/pvp-battle.js';
+import { isPvpBattleActive } from './js/ui/pvp-battle.js';
 import * as speedReview from './js/ui/speed-review.js';
 import * as metaShop from './js/ui/meta-shop.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERSION } from './js/ui/sprite-utils.js';
@@ -117,7 +118,7 @@ import { escapeHtml } from './js/ui/html-utils.js';
 // PixiJS battle stage imports
 import { initBattleStage } from './js/pixi/battle-stage.js';
 import { loadParallax, setScrollState } from './js/pixi/parallax.js';
-import { showFormation as pixiShowFormation, hideFormation as pixiHideFormation } from './js/pixi/formation.js';
+import { showFormation as pixiShowFormation, hideFormation as pixiHideFormation, setWalking } from './js/pixi/formation.js';
 
 // API imports - these are the server communication functions
 import {
@@ -232,6 +233,94 @@ function getHpColor(pct) {
 
 // ============ UI UPDATES ============
 
+// Pixi parallax: reload when run area or PvP mode changes (centralized via updateUI).
+let lastParallaxAreaKey = undefined;
+let lastPhaseForParallax = null;
+
+function mapRunAreaToParallaxId(currentArea) {
+  if (currentArea && typeof currentArea === 'object') {
+    const pid = currentArea.parallaxId;
+    if (typeof pid === 'string' && pid.length > 0) return pid;
+    const aid = currentArea.id;
+    if (typeof aid === 'string' && aid.length > 0) return aid;
+  }
+  return 'starter_meadow';
+}
+
+function syncParallaxScrollWithPhase() {
+  if (isPvpBattleActive()) {
+    setScrollState('stopped');
+    setWalking(false);
+    lastPhaseForParallax = gameState.phase;
+    return;
+  }
+
+  const p = gameState.phase;
+  const prev = lastPhaseForParallax;
+  lastPhaseForParallax = p;
+
+  if (p === 'room' && prev === 'combat') {
+    setScrollState('accelerating');
+    setWalking(true);
+    return;
+  }
+
+  switch (p) {
+    case 'exploring':
+    case 'room':
+    case 'friendlyNpc':
+    case 'npc_dialogue':
+    case 'wordDiscovery':
+    case 'dealer':
+    case 'skillMaster':
+    case 'whackAMole':
+    case 'speedReviewRoom':
+      setScrollState('scrolling');
+      setWalking(true);
+      break;
+    case 'room_encounter':
+      setScrollState('decelerating');
+      setWalking(false);
+      break;
+    case 'combat':
+      setScrollState('stopped');
+      setWalking(false);
+      break;
+    default:
+      setScrollState('stopped');
+      setWalking(false);
+  }
+}
+
+async function syncBattleStageParallax() {
+  let desiredKey;
+  if (isPvpBattleActive()) {
+    desiredKey = 'pvp_arena';
+  } else if (
+    !gameState.run?.active ||
+    gameState.phase === 'hub' ||
+    gameState.phase === 'no_save' ||
+    gameState.phase === 'area_selection' ||
+    gameState.phase === 'pvp_lobby' ||
+    gameState.phase === 'pvp_team_select'
+  ) {
+    desiredKey = null;
+  } else {
+    desiredKey = mapRunAreaToParallaxId(gameState.run?.currentArea);
+  }
+
+  if (desiredKey !== lastParallaxAreaKey) {
+    lastParallaxAreaKey = desiredKey;
+    try {
+      await loadParallax(desiredKey);
+    } catch (err) {
+      console.warn('[Parallax] load failed:', err);
+    }
+  }
+
+  syncParallaxScrollWithPhase();
+}
+
 // Guard flag: when true, updateUI() will NOT call narrationBox.forceHide().
 // Set during NPC battle intro so the greeting narration isn't killed by stray updateUI() calls.
 let sceneTransitionActive = false;
@@ -252,6 +341,9 @@ function updateUI() {
 
   // Update BGM based on current phase
   audio.updateBGMForPhase(gameState.phase);
+
+  // Centralized parallax management
+  void syncBattleStageParallax();
 }
 
 function updateStatusBar() {
@@ -381,7 +473,7 @@ function updateScene() {
     const areaId = gameState.run?.currentArea?.id;
     if (areaId) {
       scene.setBackground(null); // Clear DOM background — PixiJS parallax handles it
-      loadParallax(areaId);
+      // Parallax loading handled centrally by syncBattleStageParallax() in updateUI()
     } else {
       scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
     }
@@ -1002,9 +1094,6 @@ async function startEncounter() {
 
   try {
     updateGameState(result.state);
-
-    // Decelerate parallax scroll as combat begins
-    setScrollState('decelerating');
 
     // Show PixiJS enemy formation alongside DOM formation
     if (hasCreatures && result.state.combat?.enemies?.length) {
@@ -1632,6 +1721,15 @@ async function initGame() {
     updateUI,
     actions,
     scene,
+    onPvpBattleStart: async () => {
+      try {
+        await loadParallax('pvp_arena');
+      } catch (err) {
+        console.warn('[Parallax] PvP load failed:', err);
+      }
+      setScrollState('stopped');
+      lastParallaxAreaKey = 'pvp_arena';
+    },
   });
 
   metaShop.init({
