@@ -19,8 +19,7 @@
 
 import * as pvpSocket from '../pvp-socket.js';
 import { playSFX } from '../audio.js';
-import { buildMoveCell } from './move-select.js';
-import { toRomaji } from './romaji.js';
+import { showMoves, setActiveLabel } from './move-select.js';
 import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
 import { showAttackDisplay } from './combat-loop.js';
@@ -174,41 +173,14 @@ function showMoveSelection() {
   pvpState.currentCreatureIdx = nextIdx;
   const creature = pvpState.allies[nextIdx];
 
-  // Build move grid using shared move-cell builder
-  const moveCells = creature.moves.map((move, mi) => {
-    const canAfford = (creature.mp ?? creature.currentMp ?? 99) >= (move.mpCost || 0);
-    const cell = buildMoveCell(move, canAfford);
-    cell.classList.add('pvp-move-btn');
-    return cell;
-  });
-
-  const creatureName = creature.nameEn || creature.name || '???';
-  const reading = creature.baseReading || creature.name || '';
-  const nameDisplay = reading ? `${toRomaji(reading)} (${reading})` : creatureName;
-
-  actions.setContent(`
-    <div class="pvp-move-select" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:380px;margin:0 auto;padding:4px 0;">
-      <div class="move-active-label" style="text-align:center;font-size:0.85em;color:var(--text-secondary);">
-        ${escapeHtml(nameDisplay)}'s turn (Round ${pvpState.roundNumber})
-      </div>
-      <div class="move-grid"></div>
-      <div id="pvp-battle-status" style="text-align:center;color:var(--text-secondary);font-size:0.8em;min-height:1em;">
-      </div>
-    </div>
-  `);
-
-  // Append move cells and wire click handlers
-  const grid = document.querySelector('.pvp-move-select .move-grid');
-  moveCells.forEach((cell, mi) => {
-    if (!cell.classList.contains('disabled')) {
-      cell.addEventListener('click', () => {
-        playSFX('button-tap');
-        const move = creature.moves[mi];
-        handleMoveSelected(creature, nextIdx, move);
-      });
+  showMoves(creature, nextIdx, {
+    includeItems: false,
+    onMoveSelect: (move, creatureIndex) => {
+      playSFX('button-tap');
+      handleMoveSelected(creature, creatureIndex, move);
     }
-    grid.appendChild(cell);
   });
+  setActiveLabel(creature);
 }
 
 /**

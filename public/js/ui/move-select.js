@@ -116,45 +116,45 @@ export function showMoves(creature, creatureIndex, opts = {}) {
   const container = dom.actionArea;
   container.innerHTML = '';
 
-  // Debug: log creature moves data to trace "0 MP" bug
   if (creature.moves?.some(m => !m.mpCost && m.mpCost !== 0)) {
     console.warn('[MoveSelect] showMoves — creature has moves with missing mpCost:',
       creature.nameEn, creature.moves.map(m => ({ id: m.id, mpCost: m.mpCost })));
   }
 
+  const moveSelectCb = opts.onMoveSelect || onMoveSelect;
+  const includeItems = opts.includeItems !== false;
+
   const grid = document.createElement('div');
   grid.className = 'move-grid';
 
   for (const move of creature.moves) {
-    const canAfford = creature.mp >= (move.mpCost || 0);
+    const canAfford = (creature.mp ?? creature.currentMp ?? 0) >= (move.mpCost || 0);
     const cell = buildMoveCell(move, canAfford);
 
     if (canAfford) {
       cell.addEventListener('click', () => {
         if (move.name) playWord(move.name);
-        if (onMoveSelect) onMoveSelect(move, creatureIndex);
+        if (moveSelectCb) moveSelectCb(move, creatureIndex);
       });
     }
     grid.appendChild(cell);
   }
 
-  // Items button fills the last cell in the grid
-  // Only split with befriend when 3+ moves (otherwise there's room for both as full cells)
-  if (opts.befriendAvailable && opts.onBefriend) {
-    if (creature.moves.length <= 2) {
-      grid.appendChild(buildBefriendCell(opts.onBefriend));
-      grid.appendChild(buildItemsCell());
+  if (includeItems) {
+    if (opts.befriendAvailable && opts.onBefriend) {
+      if (creature.moves.length <= 2) {
+        grid.appendChild(buildBefriendCell(opts.onBefriend));
+        grid.appendChild(buildItemsCell());
+      } else {
+        grid.appendChild(buildSplitCell(opts.onBefriend));
+      }
     } else {
-      grid.appendChild(buildSplitCell(opts.onBefriend));
+      grid.appendChild(buildItemsCell());
     }
-  } else {
-    grid.appendChild(buildItemsCell());
   }
 
-  // Report i+1 word exposures to server
   flushExposures();
 
-  // Prefetch TTS audio for all moves
   for (const move of creature.moves) {
     if (move.name) prefetchWord(move.name);
   }
