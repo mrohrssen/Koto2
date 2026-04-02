@@ -60,5 +60,43 @@ export async function poisonApplyEffect(targetEl) {
   if (targetEl) targetEl.classList.add('poisoned');
 }
 
+/**
+ * Spawn particles bursting outward from an element.
+ * Moved here from combat-effects.js — used by event-popup.js for non-combat particle bursts.
+ * @param {Element} sourceEl - Element to burst from
+ * @param {number} count - Number of particles
+ * @param {string} color - Particle color
+ */
+export function spawnParticles(sourceEl, count = 10, color = '#fff') {
+  if (!sourceEl) return;
+
+  const rect = sourceEl.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  for (let i = 0; i < count; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'combat-particle';
+    particle.style.left = `${centerX}px`;
+    particle.style.top = `${centerY}px`;
+    particle.style.backgroundColor = color;
+    document.body.appendChild(particle);
+
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+    const distance = 40 + Math.random() * 40;
+
+    anime(particle, {
+      translateX: Math.cos(angle) * distance,
+      translateY: Math.sin(angle) * distance,
+      scale: [1, 0],
+      opacity: [1, 0],
+    }, {
+      duration: 350 + Math.random() * 150,
+      ease: 'outQuad',
+      onComplete: () => particle.remove()
+    });
+  }
+}
+
 /** Screen shake — now delegated to PixiJS effects.js */
 export { screenShake } from '../pixi/effects.js';

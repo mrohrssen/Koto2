@@ -17,10 +17,10 @@
  * - skillProc(el, text)
  *
  * DEPENDENCIES:
- * - ./combat-effects.js: spawnParticles(sourceEl, count, color)
+ * - ./dom-effects.js: spawnParticles(sourceEl, count, color)
  */
 
-import { spawnParticles } from './combat-effects.js';
+import { spawnParticles } from './dom-effects.js';
 
 // ============ CORE POPUP ============
 
