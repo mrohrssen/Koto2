@@ -249,7 +249,7 @@ function mapRunAreaToParallaxId(currentArea) {
 
 function syncParallaxScrollWithPhase() {
   if (isPvpBattleActive()) {
-    setScrollState('stopped');
+    setScrollState('encounter');
     setWalking(false);
     lastPhaseForParallax = gameState.phase;
     return;
@@ -283,11 +283,11 @@ function syncParallaxScrollWithPhase() {
       setWalking(false);
       break;
     case 'combat':
-      setScrollState('stopped');
+      setScrollState('encounter');
       setWalking(false);
       break;
     default:
-      setScrollState('stopped');
+      setScrollState('encounter');
       setWalking(false);
   }
 }
@@ -1717,7 +1717,7 @@ async function initGame() {
       } catch (err) {
         console.warn('[Parallax] PvP load failed:', err);
       }
-      setScrollState('stopped');
+      setScrollState('encounter');
       lastParallaxAreaKey = 'pvp_arena';
     },
   });

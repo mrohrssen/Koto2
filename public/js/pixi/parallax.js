@@ -3,6 +3,7 @@
  *
  * Fixed layer structure: sky (0.1x), far (0.3x), mid (0.6x), ground (1.0x).
  * Layers auto-scroll during exploration and decelerate/stop for encounters.
+ * In 'encounter' state, sky drifts while all other layers are frozen.
  */
 
 import { TilingSprite, Assets } from 'pixi.js';
@@ -11,9 +12,10 @@ import { getStage } from './battle-stage.js';
 const LAYER_NAMES = ['sky', 'far', 'mid', 'ground'];
 const LAYER_SPEEDS = [0.1, 0.3, 0.6, 1.0];
 const BASE_SCROLL_SPEED = 60; // pixels per second at 1.0x
+const SKY_LAYER_INDEX = 0;
 
 let tilingSprites = [];
-let scrollState = 'stopped'; // 'scrolling' | 'decelerating' | 'stopped' | 'accelerating'
+let scrollState = 'stopped'; // 'scrolling' | 'decelerating' | 'stopped' | 'accelerating' | 'encounter'
 let currentSpeed = 0; // 0 = stopped, 1 = full speed
 const ACCEL_RATE = 2.0; // seconds to reach full speed
 const DECEL_RATE = 1.5; // seconds to stop
@@ -74,12 +76,13 @@ export async function loadParallax(areaId) {
 
 /**
  * Set the scroll state.
- * @param {'scrolling'|'decelerating'|'stopped'|'accelerating'} state
+ * @param {'scrolling'|'decelerating'|'stopped'|'accelerating'|'encounter'} state
  */
 export function setScrollState(state) {
   scrollState = state;
   if (state === 'stopped') currentSpeed = 0;
   if (state === 'scrolling') currentSpeed = 1;
+  if (state === 'encounter') currentSpeed = 0;
 }
 
 export function isParallaxMoving() {
@@ -99,7 +102,16 @@ export function updateParallax(delta) {
     if (currentSpeed >= 1) scrollState = 'scrolling';
   } else if (scrollState === 'decelerating') {
     currentSpeed = Math.max(0, currentSpeed - dt / DECEL_RATE);
-    if (currentSpeed <= 0) scrollState = 'stopped';
+    if (currentSpeed <= 0) scrollState = 'encounter';
+  }
+
+  // In encounter/stopped, only the sky layer drifts
+  if (scrollState === 'encounter' || scrollState === 'stopped') {
+    const skyTs = tilingSprites[SKY_LAYER_INDEX];
+    if (skyTs) {
+      skyTs.tilePosition.x -= BASE_SCROLL_SPEED * dt * skyTs.layerSpeed;
+    }
+    return;
   }
 
   if (currentSpeed <= 0) return;
