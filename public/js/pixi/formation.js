@@ -22,6 +22,24 @@ let walkTime = 0;
 let activeGlow = null;
 let activeGlowTickFn = null;
 
+/** Per-side request counter to invalidate stale async loads. */
+let loadRequestId = { player: 0, enemy: 0 };
+
+function sameFormation(prev, creatures, isBoss) {
+  if (!prev || !Array.isArray(prev.creatures)) return false;
+  if (!!prev.opts?.isBoss !== !!isBoss) return false;
+  if (prev.creatures.length !== creatures.length) return false;
+  for (let i = 0; i < creatures.length; i++) {
+    const a = prev.creatures[i];
+    const b = creatures[i];
+    if ((a?.id || '') !== (b?.id || '')) return false;
+    const aHp = a?.currentHp ?? a?.hp ?? null;
+    const bHp = b?.currentHp ?? b?.hp ?? null;
+    if (aHp !== bHp) return false;
+  }
+  return true;
+}
+
 /**
  * Initialize formation containers. Called once from battle-stage init.
  */
@@ -41,16 +59,29 @@ export function initFormations() {
  * @param {Array} creatures - array of 1-3 creature objects
  * @param {{ isBoss?: boolean }} opts
  */
-export async function showFormation(side, creatures, { isBoss = false } = {}) {
+export async function showFormation(side, creatures, { isBoss = false, skipEnter = false } = {}) {
   const { app } = getStage();
   if (!app) return;
 
   const container = side === 'player' ? playerContainer : enemyContainer;
-  const sprites = creatureSprites[side];
+  if (!container) return;
+  const normalizedCreatures = Array.isArray(creatures) ? [...creatures] : [];
+
+  if (
+    sameFormation(lastFormationInput[side], normalizedCreatures, isBoss) &&
+    creatureSprites[side].length > 0
+  ) {
+    return;
+  }
+
+  const requestId = ++loadRequestId[side];
+
   lastFormationInput[side] = {
-    creatures: creatures ? [...creatures] : [],
-    opts: { isBoss },
+    creatures: normalizedCreatures,
+    opts: { isBoss, skipEnter },
   };
+
+  const sprites = creatureSprites[side];
 
   // Clear existing
   container.removeChildren();
@@ -89,15 +120,28 @@ export async function showFormation(side, creatures, { isBoss = false } = {}) {
       texture = Texture.WHITE; // Fallback — will show as white square
     }
 
+    if (requestId !== loadRequestId[side]) return;
+
     const sprite = new Sprite(texture);
     sprite.anchor.set(0.5);
     sprite.width = spriteSize;
     sprite.height = spriteSize;
 
     // Position: staggered diagonally
-    const rowY = (screenH * 0.3) + (i * screenH * 0.2); // spread vertically
-    sprite.x = baseX + staggerX[i];
+    const rowY = (screenH * 0.3) + (i * screenH * 0.2);
+    const targetX = baseX + staggerX[i];
     sprite.y = rowY;
+
+    if (side === 'enemy' && !skipEnter) {
+      sprite._enterTarget = targetX;
+      sprite._entering = true;
+      sprite.x = screenW + spriteSize * 2;
+      sprite.baseX = targetX;
+    } else {
+      sprite.x = targetX;
+      sprite.baseX = targetX;
+      sprite._entering = false;
+    }
 
     // Depth scaling
     sprite.scale.set(DEPTH_SCALES[i] * (spriteSize / texture.width));
@@ -108,7 +152,6 @@ export async function showFormation(side, creatures, { isBoss = false } = {}) {
     }
 
     // Store base position for walking animation
-    sprite.baseX = sprite.x;
     sprite.baseY = sprite.y;
     sprite.phaseOffset = Math.random() * Math.PI * 2; // Random phase so they don't sync
     sprite.creatureData = creature;
@@ -132,6 +175,7 @@ export function hideFormation(side) {
   const container = side === 'player' ? playerContainer : enemyContainer;
   if (container) container.removeChildren();
   creatureSprites[side].length = 0;
+  lastFormationInput[side] = null;
 }
 
 /**
@@ -267,10 +311,15 @@ export async function animateLevelUp(side, index) {
 export async function resizeFormations(width, height) {
   // Re-render active formations so iOS Safari address-bar resize/orientation
   // keeps sprite coordinates aligned with the new viewport.
-  if (lastFormationInput.player) {
-    await showFormation('player', lastFormationInput.player.creatures, lastFormationInput.player.opts);
+  const playerInput = lastFormationInput.player;
+  const enemyInput = lastFormationInput.enemy;
+  // Clear cache so sameFormation() doesn't skip the re-render
+  lastFormationInput.player = null;
+  lastFormationInput.enemy = null;
+  if (playerInput) {
+    await showFormation('player', playerInput.creatures, { ...playerInput.opts, skipEnter: true });
   }
-  if (lastFormationInput.enemy) {
-    await showFormation('enemy', lastFormationInput.enemy.creatures, lastFormationInput.enemy.opts);
+  if (enemyInput) {
+    await showFormation('enemy', enemyInput.creatures, { ...enemyInput.opts, skipEnter: true });
   }
 }
