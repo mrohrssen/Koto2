@@ -8,7 +8,7 @@
  *
  * KEY EXPORTS:
  * - setBackground(imagePath): Set scene background image
- * - showFormation(side, creatures): Render creatures into a formation container
+ * - showFormation(side, creatures): DOM slot anchors (HUD/bars) + Pixi creature sprites
  * - showPlayerFormation(creatures): Render player party into player formation
  * - hideFormation(side): Clear a formation container
  * - showEnemy(enemy): Display enemy (creature via formation, NPC via npc-display)
@@ -33,7 +33,8 @@
  */
 
 import { dom } from '../dom.js';
-import { createTextSprite, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
+import { SPRITE_VERSION } from './sprite-utils.js';
+import * as pixiFormation from '../pixi/formation.js';
 import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 import { toRomaji } from './romaji.js';
 
@@ -76,7 +77,7 @@ export function setBackground(imagePath) {
  * @param {'player'|'enemy'} side
  * @param {Array} creatures - array of 1-3 creature objects
  */
-export function showFormation(side, creatures, { isBoss = false, force = false } = {}) {
+export async function showFormation(side, creatures, { isBoss = false, force = false } = {}) {
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
 
   // Skip redundant rebuilds: if the same creatures (by id+hp) are already rendered,
@@ -86,6 +87,9 @@ export function showFormation(side, creatures, { isBoss = false, force = false }
     const renderedIds = Array.from(slots).map(s => s.dataset.creatureId + ':' + (s.dataset.hp || ''));
     const newIds = creatures.map(c => (c?.id || '') + ':' + (c?.hp ?? c?.currentHp ?? ''));
     if (renderedIds.length === newIds.length && renderedIds.every((id, i) => id === newIds[i])) {
+      await pixiFormation.showFormation(side, creatures, { isBoss, skipEnter: true }).catch((err) => {
+        console.warn('[Scene] Pixi showFormation failed:', err);
+      });
       return;
     }
   }
@@ -93,7 +97,10 @@ export function showFormation(side, creatures, { isBoss = false, force = false }
   container.innerHTML = '';
   container.classList.toggle('boss-encounter', isBoss);
 
-  if (!creatures || creatures.length === 0) return;
+  if (!creatures || creatures.length === 0) {
+    pixiFormation.hideFormation(side);
+    return;
+  }
 
   // Slot placement: 1->middle, 2->top+bottom, 3->all three
   let slots;
@@ -115,26 +122,11 @@ export function showFormation(side, creatures, { isBoss = false, force = false }
     slotEl.dataset.creatureId = creature.id || '';
     slotEl.dataset.hp = String(creature.hp ?? creature.currentHp ?? '');
 
-    // Sprite
+    // Layout anchor only — creature artwork is drawn on the Pixi battle stage
     const spriteEl = document.createElement('div');
-    spriteEl.className = 'formation-sprite';
+    spriteEl.className = 'formation-sprite formation-sprite--pixi-anchor';
+    spriteEl.setAttribute('aria-hidden', 'true');
     if (creature.currentHp <= 0 || creature.hp <= 0) spriteEl.classList.add('ko');
-    const spriteSrc = creature.spriteImg || creatureStaticPath(creature.id);
-    const img = document.createElement('img');
-    img.src = spriteSrc;
-    img.alt = creature.name || '';
-    img.style.maxWidth = '100%';
-    img.style.maxHeight = '100%';
-    img.style.objectFit = 'contain';
-    img.onerror = () => {
-      // Fall back to text sprite if image doesn't exist
-      const textSprite = createTextSprite(creature.baseWord || creature.name, creature.element);
-      textSprite.style.width = '100%';
-      textSprite.style.height = '100%';
-      textSprite.style.fontSize = '1.4rem';
-      spriteEl.replaceChild(textSprite, img);
-    };
-    spriteEl.appendChild(img);
     slotEl.appendChild(spriteEl);
 
     // Info box: name (romaji + hiragana) + bars
@@ -210,6 +202,10 @@ export function showFormation(side, creatures, { isBoss = false, force = false }
 
     container.appendChild(slotEl);
   });
+
+  await pixiFormation.showFormation(side, creatures, { isBoss }).catch((err) => {
+    console.warn('[Scene] Pixi showFormation failed:', err);
+  });
 }
 
 export function showPlayerFormation(creatures) {
@@ -219,6 +215,7 @@ export function showPlayerFormation(creatures) {
 export function hideFormation(side) {
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
   container.innerHTML = '';
+  pixiFormation.hideFormation(side);
 }
 
 /* ------------------------------------------------------------------ */

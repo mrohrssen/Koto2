@@ -30,6 +30,7 @@ let getGameState = null;
 let updateUI = null;
 let actions = null;
 let sceneModule = null;
+let onPvpBattleStart = null;
 
 // Module-level PvP battle state
 let pvpState = null;
@@ -46,6 +47,12 @@ export function init(callbacks) {
   updateUI = callbacks.updateUI;
   actions = callbacks.actions;
   sceneModule = callbacks.scene;
+  onPvpBattleStart = callbacks.onPvpBattleStart || null;
+}
+
+/** True while a PvP match UI session is active (until returnToHub clears pvpState). */
+export function isPvpBattleActive() {
+  return pvpState !== null;
 }
 
 // ============ START BATTLE ============
@@ -85,6 +92,10 @@ export function startPvpBattle(data) {
   // Set arena background (will fall back if file doesn't exist yet)
   if (sceneModule?.setBackground) {
     sceneModule.setBackground('/assets/backgrounds/pvp-arena.webp');
+  }
+
+  if (typeof onPvpBattleStart === 'function') {
+    onPvpBattleStart();
   }
 
   // Show formations
