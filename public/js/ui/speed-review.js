@@ -126,7 +126,7 @@ function flushPendingReview() {
   if (timerId) clearTimeout(timerId);
 
   const tasks = [];
-  if (word.vid !== undefined && word.sid !== undefined) {
+  if ((word.vid !== undefined && word.sid !== undefined) || word.source === 'internal') {
     tasks.push(Promise.resolve(state.callbacks?.sendReview(word.vid, word.sid, grade, word.word)));
     if (state.session.onCommittedReview) {
       const enqueueCommit = async () => {
