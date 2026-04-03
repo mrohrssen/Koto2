@@ -47,25 +47,16 @@ function creatureNameRuby(creature) {
 
 let _lastBgPath = null;
 
-/** Set scene background image, using View Transitions API for smooth crossfade when supported */
+/** Set scene background image */
 export function setBackground(imagePath) {
-  // Skip if already showing this background — prevents redundant repaints/transitions
   if (imagePath === _lastBgPath) return;
   _lastBgPath = imagePath;
 
-  const apply = () => {
-    if (imagePath) {
-      const sep = imagePath.includes('?') ? '&' : '?';
-      dom.sceneBackground.style.backgroundImage = `url('${imagePath}${sep}v=${SPRITE_VERSION}')`;
-    } else {
-      dom.sceneBackground.style.backgroundImage = 'none';
-    }
-  };
-
-  if (document.startViewTransition) {
-    document.startViewTransition(apply);
+  if (imagePath) {
+    const sep = imagePath.includes('?') ? '&' : '?';
+    dom.sceneBackground.style.backgroundImage = `url('${imagePath}${sep}v=${SPRITE_VERSION}')`;
   } else {
-    apply();
+    dom.sceneBackground.style.backgroundImage = 'none';
   }
 }
 
@@ -81,13 +72,36 @@ export function setBackground(imagePath) {
 export async function showFormation(side, creatures, { isBoss = false, force = false } = {}) {
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
 
-  // Skip redundant rebuilds: if the same creatures (by id+hp) are already rendered,
+  // Skip redundant rebuilds: if the same creatures are already rendered,
   // don't tear down and recreate the DOM. Prevents flickering during rapid updateUI() calls.
   if (!force && creatures?.length) {
     const slots = container.querySelectorAll('.formation-slot');
-    const renderedIds = Array.from(slots).map(s => s.dataset.creatureId + ':' + (s.dataset.hp || ''));
-    const newIds = creatures.map(c => (c?.id || '') + ':' + (c?.hp ?? c?.currentHp ?? ''));
-    if (renderedIds.length === newIds.length && renderedIds.every((id, i) => id === newIds[i])) {
+    const renderedCreatureIds = Array.from(slots).map(s => s.dataset.creatureId);
+    const newCreatureIds = creatures.map(c => c?.id || '');
+    if (renderedCreatureIds.length === newCreatureIds.length && renderedCreatureIds.every((id, i) => id === newCreatureIds[i])) {
+      // Same creatures — update HP/MP bars in-place (no full DOM rebuild, no Pixi teardown)
+      slots.forEach((slot, i) => {
+        const creature = creatures[i];
+        if (!creature) return;
+        const curHp = creature.currentHp ?? creature.hp ?? 0;
+        const maxHp = creature.maxHp ?? 1;
+        const hpPct = maxHp > 0 ? Math.max(0, curHp / maxHp * 100) : 0;
+        const hpFill = slot.querySelector('.formation-hp-fill');
+        if (hpFill) {
+          hpFill.style.width = hpPct + '%';
+          hpFill.style.backgroundColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+        }
+        const mpFill = slot.querySelector('.formation-mp-fill');
+        if (mpFill) {
+          const curMp = creature.currentMp ?? creature.mp ?? 0;
+          const mpMax = creature.maxMp ?? 1;
+          const mpPct = mpMax > 0 ? Math.max(0, curMp / mpMax * 100) : 0;
+          mpFill.style.width = mpPct + '%';
+        }
+        const spriteEl = slot.querySelector('.formation-sprite');
+        if (spriteEl) spriteEl.classList.toggle('ko', (curHp <= 0));
+        slot.dataset.hp = String(curHp);
+      });
       await pixiFormation.showFormation(side, creatures, { isBoss, skipEnter: true }).catch((err) => {
         console.warn('[Scene] Pixi showFormation failed:', err);
       });
@@ -96,6 +110,7 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
   }
 
   container.innerHTML = '';
+  container.style.opacity = '';
   container.classList.toggle('boss-encounter', isBoss);
 
   if (!creatures || creatures.length === 0) {
@@ -216,6 +231,7 @@ export function showPlayerFormation(creatures) {
 export function hideFormation(side) {
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
   container.innerHTML = '';
+  container.style.opacity = '';
   pixiFormation.hideFormation(side);
 }
 

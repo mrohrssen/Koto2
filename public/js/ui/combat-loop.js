@@ -3274,6 +3274,15 @@ export async function stopCombatLoop(result) {
   enemyAttackPending = false;
   combatPausedForVocab = false;
 
+  // Fix A: Immediately mark combat inactive on the client so derivePhase()
+  // stops returning 'combat'. Any stray updateUI() during the victory window
+  // will now hit the non-combat branch and call hideEnemies() instead of
+  // re-rendering defeated enemies as live sprites.
+  const gs = getGameState();
+  if (gs.combat) {
+    updateGameState({ ...gs, combat: { ...gs.combat, active: false } });
+  }
+
   if (result?.victory) combatEvents.emit('victory');
 
   // Final cleanup: clear PixiJS status VFX and DOM status icons
@@ -3310,6 +3319,13 @@ export async function stopCombatLoop(result) {
 
   // Brief pause before narration (let final damage numbers display)
   await delay(720);
+
+  // Fix C: Clear stale DOM enemy formation slots. Pixi sprites were already
+  // removed at pixiHideFormation('enemy') above; this closes the window where
+  // leftover DOM slots could trigger the showFormation() dedup path to
+  // recreate Pixi sprites. The 720ms delay above lets damage numbers finish.
+  const enemyFormationEl = document.getElementById('enemy-formation');
+  if (enemyFormationEl) enemyFormationEl.innerHTML = '';
 
   // Wait for enemy dialogue to be dismissed (e.g., liberated dialogue on victory)
   const dialogueDismissPromise = getDialogueDismissPromise();
@@ -3370,8 +3386,10 @@ export async function stopCombatLoop(result) {
     showGameOverModal(result);
   }
 
-  // Refresh full UI state
-  updateUI();
+  // updateUI() removed: the phase is still 'combat' here, so updateScene()
+  // would re-render defeated enemies as live sprites (ghost bug).
+  // showVictoryModal's 1500ms timer calls loadGameState() + updateUI() with
+  // the correct new phase; showGameOverModal handles its own UI.
 }
 
 /**

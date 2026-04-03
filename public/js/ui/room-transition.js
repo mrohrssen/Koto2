@@ -1,4 +1,4 @@
-import { showNpcTrainer, showNpcInDisplay, showDealer, showFormation } from './scene.js';
+import { showNpcTrainer, showNpcInDisplay, showDealer, showFormation, hideFormation } from './scene.js';
 import { showNpcSprite, hideNpcSprite } from '../pixi/formation.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { speakText } from '../tts.js';
@@ -13,6 +13,9 @@ import { combatEvents } from './combat-events.js';
 export async function playRoomTransition(gameState) {
   const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
   if (!room) return;
+
+  // Clear stale enemy formation from previous room before showing the new one
+  hideFormation('enemy');
 
   const roomType = room.type;
 
