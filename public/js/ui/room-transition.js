@@ -3,7 +3,7 @@ import { showNpcSprite, hideNpcSprite } from '../pixi/formation.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { speakText } from '../tts.js';
 import * as narrationBox from './narration-box.js';
-import { renderEnFirst } from './bootstrap-client.js';
+import { renderEnFirst, flushExposures } from './bootstrap-client.js';
 import { combatEvents } from './combat-events.js';
 
 /**
@@ -64,6 +64,7 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
     narrationBox.forceHide();
     speakText(npcData.greeting);
     await narrationBox.show(renderEnFirst(npcData.greeting), { speaker: npcName, html: true });
+    flushExposures();
   }
 
   await hideNpcSprite({ slideOut: true });

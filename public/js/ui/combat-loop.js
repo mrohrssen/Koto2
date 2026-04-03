@@ -359,6 +359,15 @@ function insertNpcAttackCard(atk) {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
 
+  // Track exposures for NPC base word and skill word
+  if (atk.attackerBaseWord && atk.attackerBaseMeaning) {
+    addExposure(atk.attackerBaseWord, atk.attackerBaseMeaning);
+  }
+  if ((atk.attackerSkillName || atk.moveName) && atk.attackerSkillEn) {
+    addExposure(atk.attackerSkillName || atk.moveName, atk.attackerSkillEn);
+  }
+  flushExposures();
+
   // TTS for NPC base word + skill name
   const baseWord = atk.attackerBaseWord;
   const skillName = atk.attackerSkillName || atk.moveName;

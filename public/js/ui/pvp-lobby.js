@@ -25,7 +25,7 @@ import { escapeHtml } from './html-utils.js';
 import { creatureSpriteHtml } from './sprite-utils.js';
 import { dom } from '../dom.js';
 import { ELEMENT_COLORS, ELEMENT_ICONS } from './creature-row.js';
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpFirst, flushExposures } from './bootstrap-client.js';
 
 /** Party skill names for display (matches server PARTY_SKILLS_CATALOG) */
 const PARTY_SKILL_NAMES = {
@@ -103,6 +103,7 @@ function showPvpCreaturePopup(creature, anchorEl) {
   dom.creaturePopup.style.top = (rect.bottom + 8) + 'px';
   dom.creaturePopup.style.bottom = 'auto';
   dom.creaturePopup.classList.add('visible');
+  flushExposures();
 
   // Close on outside click
   const closeHandler = (e) => {

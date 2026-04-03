@@ -26,7 +26,7 @@
  */
 
 import * as lookup from './lookup.js';
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpFirst, flushExposures } from './bootstrap-client.js';
 
 const box = document.getElementById('narration-box');
 const textEl = document.getElementById('narration-text');
@@ -213,6 +213,7 @@ export async function show(text, options = {}) {
     }
     speakerEl.style.display = speaker ? '' : 'none';
   }
+  flushExposures();
   clearPagination();
   if (autoDismiss) {
     setText(textEl, displayText);
