@@ -110,7 +110,7 @@ import { combatEvents } from './js/ui/combat-events.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
-import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
+import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
 import { toRomaji } from './js/ui/romaji.js';
 import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
@@ -135,6 +135,9 @@ import {
   shopSkip as apiShopSkip,
   sendJpdbReview as apiSendJpdbReview,
   getDueWords as apiGetDueWords,
+  getVocabDueWords,
+  getVocabDueCount,
+  reviewVocabWord,
   getAuthHeaders,
   apiUrl,
   shrineUpgrade as apiShrineUpgrade,
@@ -1458,11 +1461,22 @@ async function initGame() {
   leaderboard.init();
   bugReport.init();
   speedReview.init({
-    sendReview: (vid, sid, grade, wordText) => apiSendJpdbReview(vid, sid, grade, wordText),
+    sendReview: async (vid, sid, grade, wordText) => {
+      // Internal FSRS cards: grade via internal review endpoint
+      if (vid === undefined) {
+        const internalGrade = grade >= 3 ? 'good' : 'again';
+        const result = await reviewVocabWord(wordText, internalGrade);
+        if (result?.mastered) addKnownWord(wordText);
+        else if (result && !result.mastered) removeKnownWord(wordText);
+        return result;
+      }
+      // JPDB cards: use existing JPDB review
+      return apiSendJpdbReview(vid, sid, grade, wordText);
+    },
     playTTS: (word) => tts.playWord(word),
     prefetchTTS: (word) => tts.prefetchWord(word),
-    refreshQueue: async (reviewedWords = []) => {
-      const result = await apiGetDueWords(reviewedWords);
+    refreshQueue: async () => {
+      const result = await getVocabDueWords();
       return result?.words || [];
     },
     startRoomSession: async ({ roomId }) => {
@@ -1664,7 +1678,7 @@ async function initGame() {
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ words })
     }),
-    apiGetDueWords,
+    apiGetDueWords: async () => getVocabDueWords(),
     apiStartSpeedReviewRoom,
     apiProgressSpeedReviewRoom,
     apiCompleteSpeedReviewRoom,
