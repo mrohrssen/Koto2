@@ -43,7 +43,7 @@ import {
 } from '../pixi/text.js';
 import { showBanner } from '../pixi/banners.js';
 import { playStatusApplied, clearStatusVfx, clearAllStatusVfx } from '../pixi/status-vfx.js';
-import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp } from '../pixi/formation.js';
+import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, syncPixiStatusLabels, clearAllPixiStatusLabels } from '../pixi/formation.js';
 import { setScrollState } from '../pixi/parallax.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
@@ -1123,6 +1123,7 @@ export function cleanupCombat() {
   enemyAttackPending = false;
   combatPausedForVocab = false;
   clearAllStatusIcons();
+  clearAllPixiStatusLabels();
 }
 
 /**
@@ -1603,6 +1604,7 @@ function syncStatusIconsFromResult(result) {
       if (!ally) return;
       const slotEl = document.querySelector(`#player-formation .formation-slot[data-index="${i}"]`);
       if (slotEl) updateStatusIcons(slotEl, getCreatureStatusKeys(ally));
+      syncPixiStatusLabels('player', i, getCreatureStatusKeys(ally), ally.statStages);
     });
   }
   if (result.enemies) {
@@ -1610,6 +1612,7 @@ function syncStatusIconsFromResult(result) {
       if (!enemy) return;
       const slotEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${i}"]`);
       if (slotEl) updateStatusIcons(slotEl, getCreatureStatusKeys(enemy));
+      syncPixiStatusLabels('enemy', i, getCreatureStatusKeys(enemy), enemy.statStages);
     });
   }
 }
@@ -3288,6 +3291,7 @@ export async function stopCombatLoop(result) {
   // Final cleanup: clear PixiJS status VFX and DOM status icons
   clearAllStatusVfx();
   clearAllStatusIcons();
+  clearAllPixiStatusLabels();
 
   // Resume parallax scroll and hide defeated enemy PixiJS sprites.
   // Player sprites are kept alive — they should remain visible through the
