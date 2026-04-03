@@ -29,7 +29,7 @@ import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { PLATFORM } from '../platform.js';
 import { logger } from '../logger.js';
-import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
+import { renderJpFirst, renderEnFirst, flushExposures, addExposure } from './bootstrap-client.js';
 import { t, tPlain } from './i18n.js';
 import {
   screenShake, screenFlash, hitStop, recoil as pixiRecoil,
@@ -266,6 +266,15 @@ export function insertAttackCard(atk, isEnemy) {
   rows.forEach((row, i) => {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
+
+  // Track exposures for both creature base word and move/skill word
+  if (atk.attackerBaseWord && atk.attackerBaseMeaning) {
+    addExposure(atk.attackerBaseWord, atk.attackerBaseMeaning);
+  }
+  if ((atk.attackerSkillName || atk.moveName) && atk.attackerSkillEn) {
+    addExposure(atk.attackerSkillName || atk.moveName, atk.attackerSkillEn);
+  }
+  flushExposures();
 
   // Prefetch and play base word + move name audio with a tiny gap
   const baseWord = atk.attackerBaseWord;
