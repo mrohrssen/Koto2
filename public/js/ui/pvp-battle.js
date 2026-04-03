@@ -23,6 +23,7 @@ import { showMoves, setActiveLabel } from './move-select.js';
 import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
 import { showAttackDisplay } from './combat-loop.js';
+import { syncPixiStatusLabels, clearAllPixiStatusLabels } from '../pixi/formation.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -260,6 +261,8 @@ async function handleRoundResult(result) {
     sceneModule.showFormation('enemy', pvpState.enemies);
   }
 
+  syncAllStatusLabels();
+
   // If no winner, continue to next round's move selection
   if (!result.winner) {
     pvpState.currentCreatureIdx = 0;
@@ -437,6 +440,7 @@ function renderResult(resultText, resultColor, winnerName) {
  * Return to hub: clean up PvP state and socket, restore hub phase.
  */
 function returnToHub() {
+  clearAllPixiStatusLabels();
   pvpSocket.leaveMatch();
   pvpSocket.disconnect();
   pvpState = null;
@@ -450,4 +454,34 @@ function returnToHub() {
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getCreatureStatusKeys(creature) {
+  const keys = [];
+  if (creature.activeEffects) {
+    for (const e of creature.activeEffects) {
+      if (!keys.includes(e.type)) keys.push(e.type);
+    }
+  }
+  if (creature.statStages) {
+    for (const [stat, stage] of Object.entries(creature.statStages)) {
+      if (stage > 0) keys.push(`${stat}_up`);
+      else if (stage < 0) keys.push(`${stat}_down`);
+    }
+  }
+  return keys;
+}
+
+function syncAllStatusLabels() {
+  if (!pvpState) return;
+  for (let i = 0; i < pvpState.allies.length; i++) {
+    const c = pvpState.allies[i];
+    if (!c) continue;
+    syncPixiStatusLabels('player', i, getCreatureStatusKeys(c), c.statStages);
+  }
+  for (let i = 0; i < pvpState.enemies.length; i++) {
+    const c = pvpState.enemies[i];
+    if (!c) continue;
+    syncPixiStatusLabels('enemy', i, getCreatureStatusKeys(c), c.statStages);
+  }
 }
