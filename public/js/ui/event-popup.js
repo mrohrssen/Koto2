@@ -145,7 +145,7 @@ export const skillProc = (el, text) => showEventPopup(el, text, {
 
 // ============ STATUS ICONS ============
 
-const STATUS_ICON_CONFIG = {
+export const STATUS_ICON_CONFIG = {
   poison:        { label: 'PSN',  bg: '#9C27B0', text: '#fff' },
   // Stat stage icons (from statStages)
   atk_up:        { label: 'ATK↑', bg: '#FF8F00', text: '#fff' },
