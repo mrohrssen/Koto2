@@ -247,12 +247,14 @@ Add right after `syncPixiStatusLabels`:
  * Called on combat end alongside clearAllStatusIcons().
  */
 export function clearAllPixiStatusLabels() {
-  const { layers } = getStage();
-  if (layers.labels) {
-    layers.labels.removeChildren();
-  }
   for (const side of ['player', 'enemy']) {
     for (const sprite of creatureSprites[side]) {
+      if (!sprite) continue;
+      if (sprite.statusLabels) {
+        for (const pill of sprite.statusLabels) {
+          pill.destroy({ children: true });
+        }
+      }
       sprite.statusLabels = [];
     }
   }
