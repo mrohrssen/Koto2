@@ -3289,9 +3289,12 @@ export async function stopCombatLoop(result) {
   clearAllStatusVfx();
   clearAllStatusIcons();
 
-  // Resume parallax scroll and hide PixiJS formations
+  // Resume parallax scroll and hide defeated enemy PixiJS sprites.
+  // Player sprites are kept alive — they should remain visible through the
+  // victory screen and into the next room. Destroying them here creates a
+  // 1500ms+ gap where DOM info boxes (name/HP bars) float with no creature
+  // image underneath (the "ghost formation" effect).
   setScrollState('accelerating');
-  pixiHideFormation('player');
   pixiHideFormation('enemy');
 
   // Hide word practice cards and close modal

@@ -94,3 +94,9 @@ Fix #3 changed the DOM dedup in `scene.js` to compare creature IDs only (not HP)
 4. Pixi canvas stays empty — sprites "disappear"
 
 Fix: removed HP from `sameFormation()` (ID-only, matching scene.js). Added in-place KO state updates (alpha/tint) on the match path so defeated creatures still show correctly without a full rebuild.
+
+**Fix E — Stop destroying player pixi sprites at combat end (combat-loop.js, 2026-04-03)**
+
+`stopCombatLoop` called `pixiHideFormation('player')` alongside `pixiHideFormation('enemy')`. This destroyed the player's creature sprites the instant combat ended. But the corresponding DOM formation slots (name plates, HP bars) were NOT cleared — they survived because the DOM dedup path in scene.js keeps them alive. Result: for 1500ms+ (victory timer + async texture reload), the player saw DOM info boxes floating in the scene with no creature images underneath — the "ghost formation" effect.
+
+Fix: removed `pixiHideFormation('player')` from stopCombatLoop. Only enemy sprites are destroyed at combat end. Player sprites persist through victory → room transition → next room, matching the DOM formation lifecycle.
