@@ -25,6 +25,10 @@ export function markKnown(wk, wordId) {
   }
 }
 
+export function unmarkKnown(wk, wordId) {
+  delete wk.known[wordId];
+}
+
 export function isWordKnown(wk, wordId) {
   return !!wk.known[wordId];
 }

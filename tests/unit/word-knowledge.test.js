@@ -5,6 +5,7 @@ import {
   createWordKnowledge,
   registerExposure,
   markKnown,
+  unmarkKnown,
   isWordKnown,
   getKnownWords,
   getSeenWords,
@@ -52,5 +53,17 @@ describe('word-knowledge', () => {
     seedKnownWords(wk, ['森']);
     const known = getKnownWords(wk);
     assert.ok(known instanceof Set);
+  });
+
+  it('unmarkKnown removes word from known', () => {
+    markKnown(wk, '森');
+    assert.ok(isWordKnown(wk, '森'));
+    unmarkKnown(wk, '森');
+    assert.ok(!isWordKnown(wk, '森'));
+  });
+
+  it('unmarkKnown is safe on unknown word', () => {
+    unmarkKnown(wk, '森'); // should not throw
+    assert.ok(!isWordKnown(wk, '森'));
   });
 });
