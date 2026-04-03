@@ -192,6 +192,33 @@ html, body {
   letter-spacing: 0.3px;
 }
 
+.area-vocab-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1.2;
+}
+
+.area-romaji {
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.5);
+  text-transform: lowercase;
+}
+
+.area-kana {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+}
+
+.area-english {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.65);
+}
+
 .area-header-sep {
   font-size: 14px;
   color: rgba(255,255,255,0.4);

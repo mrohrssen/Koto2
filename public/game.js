@@ -111,6 +111,7 @@ import * as speechBubble from './js/ui/speech-bubble.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
+import { toRomaji } from './js/ui/romaji.js';
 import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
@@ -356,38 +357,19 @@ function updateStatusBar() {
     const subAreaNameJa = activeRoom?.subArea?.name;
     dom.floorIndicator.textContent = subAreaNameEn || `Area ${(run.areasCompleted || 0) + 1}`;
 
-    // Update area header pill
+    // Update area header pill — single vertical stack: romaji / kana / English
     const areaName = run.currentArea?.name;
     const area = run.currentArea;
     const sep = dom.areaHeaderPill.querySelector('.area-header-sep');
-    if (areaName && subAreaNameJa) {
-      if (area?.modifierWord?.meaning && area?.locationWord?.meaning) {
-        dom.areaHeaderName.innerHTML =
-          renderJpFirst(area.modifierWord.word, area.modifierWord.reading, area.modifierWord.meaning)
-          + (area.particle || '')
-          + renderJpFirst(area.locationWord.word, area.locationWord.reading, area.locationWord.meaning);
-      } else {
-        dom.areaHeaderName.textContent = areaName;
-      }
-      const subArea = activeRoom?.subArea;
-      if (subArea?.modifier && subArea?.location) {
-        dom.areaHeaderSub.innerHTML =
-          renderJpFirst(subArea.modifier.word, subArea.modifier.reading, subArea.modifier.meaning)
-          + renderJpFirst(subArea.location.word, subArea.location.reading, subArea.location.meaning);
-      } else {
-        dom.areaHeaderSub.textContent = subAreaNameJa;
-      }
-      if (sep) sep.style.display = '';
-      dom.areaHeaderPill.classList.add('visible');
-    } else if (areaName) {
-      if (area?.modifierWord?.meaning && area?.locationWord?.meaning) {
-        dom.areaHeaderName.innerHTML =
-          renderJpFirst(area.modifierWord.word, area.modifierWord.reading, area.modifierWord.meaning)
-          + (area.particle || '')
-          + renderJpFirst(area.locationWord.word, area.locationWord.reading, area.locationWord.meaning);
-      } else {
-        dom.areaHeaderName.textContent = areaName;
-      }
+    if (areaName) {
+      const reading = area?.reading || areaName;
+      const romaji = toRomaji(reading);
+      const english = area?.nameEn || '';
+      dom.areaHeaderName.innerHTML = `<div class="area-vocab-stack">
+        <span class="area-romaji">${romaji}</span>
+        <span class="area-kana">${reading}</span>
+        <span class="area-english">${english}</span>
+      </div>`;
       dom.areaHeaderSub.textContent = '';
       if (sep) sep.style.display = 'none';
       dom.areaHeaderPill.classList.add('visible');
