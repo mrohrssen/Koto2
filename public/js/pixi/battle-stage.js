@@ -63,11 +63,13 @@ export async function initBattleStage() {
     background: new Container(),
     creatures: new Container(),
     effects: new Container(),
+    labels: new Container(),
     overlay: new Container(),
   };
   app.stage.addChild(layers.background);
   app.stage.addChild(layers.creatures);
   app.stage.addChild(layers.effects);
+  app.stage.addChild(layers.labels);
   app.stage.addChild(layers.overlay);
 
   // Initialize sub-modules
