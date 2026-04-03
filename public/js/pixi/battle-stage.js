@@ -1,8 +1,8 @@
 /**
  * @file battle-stage.js — PixiJS Application init, resize, layer management
  *
- * Creates a PixiJS canvas inside .scene-area with four ordered layers:
- * background (parallax), creatures, effects, overlay.
+ * Creates a PixiJS canvas inside .scene-area with five ordered layers:
+ * background (parallax), creatures, effects, labels, overlay.
  * Handles resize via ResizeObserver.
  */
 

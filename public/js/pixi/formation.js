@@ -54,11 +54,11 @@ function createPill(label, bg, textColor) {
   const w = text.width + LABEL_PADDING_X * 2;
   const h = text.height + LABEL_PADDING_Y * 2;
 
-  const bg_gfx = new Graphics();
-  bg_gfx.roundRect(-w / 2, -h / 2, w, h, 4);
-  bg_gfx.fill(bg);
+  const bgGfx = new Graphics();
+  bgGfx.roundRect(-w / 2, -h / 2, w, h, 4);
+  bgGfx.fill(bg);
 
-  container.addChild(bg_gfx);
+  container.addChild(bgGfx);
   container.addChild(text);
 
   return container;
@@ -209,6 +209,14 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
 
   // Clear existing
   container.removeChildren();
+  // Clean up orphaned status labels before discarding sprite references
+  for (const sprite of sprites) {
+    if (sprite.statusLabels) {
+      for (const pill of sprite.statusLabels) {
+        pill.destroy({ children: true });
+      }
+    }
+  }
   sprites.length = 0;
 
   if (!creatures || creatures.length === 0) return;

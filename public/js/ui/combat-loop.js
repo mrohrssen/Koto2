@@ -1602,17 +1602,19 @@ function syncStatusIconsFromResult(result) {
   if (result.allies) {
     result.allies.forEach((ally, i) => {
       if (!ally) return;
+      const keys = getCreatureStatusKeys(ally);
       const slotEl = document.querySelector(`#player-formation .formation-slot[data-index="${i}"]`);
-      if (slotEl) updateStatusIcons(slotEl, getCreatureStatusKeys(ally));
-      syncPixiStatusLabels('player', i, getCreatureStatusKeys(ally), ally.statStages);
+      if (slotEl) updateStatusIcons(slotEl, keys);
+      syncPixiStatusLabels('player', i, keys, ally.statStages);
     });
   }
   if (result.enemies) {
     result.enemies.forEach((enemy, i) => {
       if (!enemy) return;
+      const keys = getCreatureStatusKeys(enemy);
       const slotEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${i}"]`);
-      if (slotEl) updateStatusIcons(slotEl, getCreatureStatusKeys(enemy));
-      syncPixiStatusLabels('enemy', i, getCreatureStatusKeys(enemy), enemy.statStages);
+      if (slotEl) updateStatusIcons(slotEl, keys);
+      syncPixiStatusLabels('enemy', i, keys, enemy.statStages);
     });
   }
 }
