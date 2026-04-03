@@ -5,13 +5,22 @@
  * Handles diagonal stagger, depth scaling, walking wobble, and state transitions.
  */
 
-import { Sprite, Assets, Container, Texture, Graphics } from 'pixi.js';
+import { Sprite, Assets, Container, Texture, Graphics, Text } from 'pixi.js';
 import { getStage } from './battle-stage.js';
 import { tween } from './tween.js';
+import { STATUS_ICON_CONFIG } from '../ui/event-popup.js';
 
 const DEPTH_SCALES = [0.9, 0.95, 1.0]; // back, mid, front
 const PLAYER_STAGGER_X = [12, 24, 36]; // px offset per row
 const ENEMY_STAGGER_X = [-12, -24, -36]; // mirrored
+
+const LABEL_FONT_SIZE = 9;
+const LABEL_PADDING_X = 4;
+const LABEL_PADDING_Y = 2;
+const LABEL_GAP = 3;
+const LABEL_OFFSET_Y = -38;
+
+const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF' };
 
 let playerContainer = null;
 let enemyContainer = null;
@@ -27,6 +36,102 @@ let loadRequestId = { player: 0, enemy: 0 };
 
 /** NPC sprite displayed on the creatures layer (non-combat NPCs) */
 let npcSprite = null;
+
+function createPill(label, bg, textColor) {
+  const container = new Container();
+
+  const text = new Text({
+    text: label,
+    style: {
+      fontFamily: 'monospace',
+      fontSize: LABEL_FONT_SIZE,
+      fill: textColor,
+      fontWeight: 'bold',
+    },
+  });
+  text.anchor.set(0.5);
+
+  const w = text.width + LABEL_PADDING_X * 2;
+  const h = text.height + LABEL_PADDING_Y * 2;
+
+  const bg_gfx = new Graphics();
+  bg_gfx.roundRect(-w / 2, -h / 2, w, h, 4);
+  bg_gfx.fill(bg);
+
+  container.addChild(bg_gfx);
+  container.addChild(text);
+
+  return container;
+}
+
+export function syncPixiStatusLabels(side, index, keys, statStages) {
+  const { layers } = getStage();
+  if (!layers.labels) return;
+
+  const sprite = getCreatureSprite(side, index);
+  if (!sprite) return;
+
+  // Clear existing labels for this sprite
+  if (sprite.statusLabels) {
+    for (const pill of sprite.statusLabels) {
+      pill.destroy({ children: true });
+    }
+  }
+  sprite.statusLabels = [];
+
+  if (!keys || keys.length === 0) return;
+
+  // Build pills from keys
+  const pills = [];
+  for (const key of keys) {
+    const config = STATUS_ICON_CONFIG[key];
+    if (!config) continue;
+
+    let label;
+    if (key === 'atk_up' || key === 'atk_down') {
+      const val = statStages?.atk || 0;
+      label = `${STAT_STAGE_NAMES.atk} ${val > 0 ? '+' : ''}${val}`;
+    } else if (key === 'def_up' || key === 'def_down') {
+      const val = statStages?.def || 0;
+      label = `${STAT_STAGE_NAMES.def} ${val > 0 ? '+' : ''}${val}`;
+    } else {
+      label = config.label;
+    }
+
+    const pill = createPill(label, config.bg, config.text);
+    pills.push(pill);
+    layers.labels.addChild(pill);
+  }
+
+  if (pills.length === 0) return;
+
+  // Position pills centered horizontally above sprite base position
+  const totalWidth = pills.reduce((sum, p) => sum + p.width, 0) + LABEL_GAP * (pills.length - 1);
+  let x = sprite.baseX - totalWidth / 2;
+  const y = sprite.baseY + LABEL_OFFSET_Y;
+
+  for (const pill of pills) {
+    pill.x = x + pill.width / 2;
+    pill.y = y;
+    x += pill.width + LABEL_GAP;
+  }
+
+  sprite.statusLabels = pills;
+}
+
+export function clearAllPixiStatusLabels() {
+  for (const side of ['player', 'enemy']) {
+    for (const sprite of creatureSprites[side]) {
+      if (!sprite) continue;
+      if (sprite.statusLabels) {
+        for (const pill of sprite.statusLabels) {
+          pill.destroy({ children: true });
+        }
+      }
+      sprite.statusLabels = [];
+    }
+  }
+}
 
 function sameFormation(prev, creatures, isBoss) {
   if (!prev || !Array.isArray(prev.creatures)) return false;
@@ -212,6 +317,15 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
 export function hideFormation(side) {
   const container = side === 'player' ? playerContainer : enemyContainer;
   if (container) container.removeChildren();
+  // Clean up status labels for this side
+  const { layers } = getStage();
+  for (const sprite of creatureSprites[side]) {
+    if (sprite.statusLabels) {
+      for (const pill of sprite.statusLabels) {
+        pill.destroy({ children: true });
+      }
+    }
+  }
   creatureSprites[side].length = 0;
   lastFormationInput[side] = null;
 }
@@ -437,6 +551,22 @@ export async function resizeFormations(width, height) {
         sprite.y = anchorRect.top + anchorRect.height / 2 - sceneRect.top;
         sprite.baseX = sprite.x;
         sprite.baseY = sprite.y;
+      }
+    }
+  }
+
+  // Reposition status labels to match new sprite base positions
+  for (const side of ['player', 'enemy']) {
+    for (const sprite of creatureSprites[side]) {
+      if (!sprite.statusLabels?.length) continue;
+      const pills = sprite.statusLabels;
+      const totalWidth = pills.reduce((sum, p) => sum + p.width, 0) + LABEL_GAP * (pills.length - 1);
+      let x = sprite.baseX - totalWidth / 2;
+      const y = sprite.baseY + LABEL_OFFSET_Y;
+      for (const pill of pills) {
+        pill.x = x + pill.width / 2;
+        pill.y = y;
+        x += pill.width + LABEL_GAP;
       }
     }
   }
