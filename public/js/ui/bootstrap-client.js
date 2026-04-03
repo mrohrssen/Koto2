@@ -6,7 +6,7 @@ import { toRomaji } from './romaji.js';
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
 
 let _knownWords = new Set();
-const _pendingExposures = new Set();
+const _pendingExposures = new Map();
 
 /** Set the player's known words (called on game load). */
 export function setKnownWords(words) {
@@ -50,7 +50,7 @@ export function renderEnFirst(taggedText) {
       }
       if (!isKnown) {
         html += `<span class="bs-word-en">${esc(english)}</span>`;
-        _pendingExposures.add(kanji);
+        _pendingExposures.set(kanji, english);
       }
       html += '</span>';
       return html;
@@ -73,14 +73,15 @@ export function renderJpFirst(kanji, reading, english) {
   }
   if (!_knownWords.has(kanji) && english) {
     html += `<span class="bs-word-en">${esc(english)}</span>`;
+    _pendingExposures.set(kanji, english);
   }
   html += '</span>';
   return html;
 }
 
 /** Add a word to the pending exposure queue (used by speech bubbles). */
-export function addExposure(word) {
-  _pendingExposures.add(word);
+export function addExposure(word, meaning = '') {
+  _pendingExposures.set(word, meaning);
 }
 
 /**
@@ -89,7 +90,7 @@ export function addExposure(word) {
  */
 export function flushExposures() {
   if (_pendingExposures.size === 0) return;
-  const words = [..._pendingExposures];
+  const words = [..._pendingExposures.entries()].map(([word, meaning]) => ({ word, meaning }));
   _pendingExposures.clear();
   const token = localStorage.getItem('authToken');
   if (!token) return;
@@ -101,6 +102,16 @@ export function flushExposures() {
     },
     body: JSON.stringify({ words })
   }).catch(() => {});
+}
+
+/** Add a word to known set (client-side only, no server call). */
+export function addKnownWord(word) {
+  _knownWords.add(word);
+}
+
+/** Remove a word from known set (client-side only, no server call). */
+export function removeKnownWord(word) {
+  _knownWords.delete(word);
 }
 
 /** HTML-escape a string. Exported for use by other UI modules. */

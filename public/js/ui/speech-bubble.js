@@ -70,7 +70,7 @@ function showBubble(slotEl, phrase) {
   _activeBubble = bubble;
 
   // Track exposure
-  addExposure(phrase.jp);
+  addExposure(phrase.jp, phrase.en);
   flushExposures();
 
   // Auto-dismiss
