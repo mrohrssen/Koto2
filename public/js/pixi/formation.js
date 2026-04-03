@@ -36,9 +36,6 @@ function sameFormation(prev, creatures, isBoss) {
     const a = prev.creatures[i];
     const b = creatures[i];
     if ((a?.id || '') !== (b?.id || '')) return false;
-    const aHp = a?.currentHp ?? a?.hp ?? null;
-    const bHp = b?.currentHp ?? b?.hp ?? null;
-    if (aHp !== bHp) return false;
   }
   return true;
 }
@@ -74,6 +71,24 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
     sameFormation(lastFormationInput[side], normalizedCreatures, isBoss) &&
     creatureSprites[side].length > 0
   ) {
+    // Same creatures by ID — update KO state (alpha/tint) in-place without rebuild.
+    // Matches scene.js dedup which updates HP bars in-place.
+    for (const sprite of creatureSprites[side]) {
+      const c = sprite.creatureData;
+      const match = normalizedCreatures.find(nc => (nc?.id || '') === (c?.id || ''));
+      if (match) {
+        const hp = match.currentHp ?? match.hp ?? 1;
+        if (hp <= 0) {
+          sprite.alpha = 0.3;
+          sprite.tint = 0x888888;
+        } else {
+          sprite.alpha = 1;
+          sprite.tint = 0xFFFFFF;
+        }
+        sprite.creatureData = match;
+      }
+    }
+    lastFormationInput[side] = { creatures: normalizedCreatures, opts: { isBoss, skipEnter } };
     return;
   }
 

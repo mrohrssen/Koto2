@@ -83,3 +83,14 @@ The `document.startViewTransition()` call in `setBackground()` was removed, alon
 **Fix C — DOM formation clear after damage numbers (combat-loop.js)**
 
 After the 720ms damage-number delay, the DOM `#enemy-formation` container is cleared (`innerHTML = ''`). This closes the window where stale DOM formation slots could trigger the `showFormation()` dedup path to recreate Pixi sprites via `skipEnter: true`.
+
+**Fix D — Pixi sameFormation() ID-only comparison (formation.js, 2026-04-03)**
+
+Fix #3 changed the DOM dedup in `scene.js` to compare creature IDs only (not HP), enabling in-place bar updates. But the Pixi layer's `sameFormation()` in `formation.js` still compared HP values. When creatures were healed between rooms (`_healAllLivingCreaturesForRoomEntry`), the HP mismatch caused:
+
+1. `sameFormation()` returns false → full `container.removeChildren()`
+2. Async `Assets.load()` begins for each creature texture
+3. On mobile with rapid state updates, cascading `loadRequestId` increments cancel in-flight loads
+4. Pixi canvas stays empty — sprites "disappear"
+
+Fix: removed HP from `sameFormation()` (ID-only, matching scene.js). Added in-place KO state updates (alpha/tint) on the match path so defeated creatures still show correctly without a full rebuild.
