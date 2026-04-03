@@ -55,11 +55,13 @@ Both show the same information. The DOM pills are also partially occluded by the
 **`showFormation` (lines 214-217):** Remove the `.status-icons` container creation (3 lines).
 
 ### `public/js/ui/event-popup.js`
-**`updateStatusIcons` (lines 172-212):** Keep the export but make it a no-op, or remove entirely. Since it's only called from `combat-loop.js` (which we're cleaning up) and tests, removal is cleaner.
+**`updateStatusIcons` (lines 172-212):** Remove entirely. Only called from `combat-loop.js` (which we're cleaning up) and tests.
 
 **`clearAllStatusIcons` (lines 215-219):** Same — remove.
 
 **`STATUS_ICON_CONFIG` (lines 148-163):** Keep — still used by `syncPixiStatusLabels` in `formation.js`.
+
+**Header comment (lines 9-11):** Update the top-of-file bullet list to remove references to `updateStatusIcons` and `clearAllStatusIcons`.
 
 ### `public/game.css`
 **`.status-icons` (lines 4941-4947):** Remove.
@@ -95,10 +97,14 @@ Positioning formula (in `syncPixiStatusLabels`):
 - `SIDE_OFFSET` ≈ 45-55px (half the typical sprite width + small gap) — tune by eye
 - Pills should be vertically centered around the sprite's vertical center, not anchored to the top or bottom
 
+## Pill Stack Order
+
+Multiple pills stack top-to-bottom in the same order they appear in the `keys` array (same iteration order as the current horizontal layout). No special priority ordering needed.
+
 ## Testing
 
-- Remove `updateStatusIcons` unit tests
-- Existing Pixi tests (if any) for `syncPixiStatusLabels` need position assertion updates
+- Remove `updateStatusIcons` unit tests and related imports/mocks from `event-popup.test.js`
+- No existing Pixi tests assert `syncPixiStatusLabels` positions, so no test updates needed — but adding coverage is welcome
 - Manual verification: play through combat with buffs/debuffs active, confirm:
   - Player pills appear to the left of the sprite
   - Enemy pills appear to the right
