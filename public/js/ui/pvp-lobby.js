@@ -153,14 +153,12 @@ export function renderPvpLobby() {
       <button class="action-btn action-btn-primary" id="pvp-create-btn">
         Create Match
       </button>
-      <div style="display:flex;gap:8px;align-items:stretch;">
-        <input type="text" id="pvp-join-code" placeholder="Enter code"
-          maxlength="4" autocapitalize="characters" autocomplete="off"
-          style="flex:1;padding:10px 14px;border-radius:12px;border:1px solid var(--border-color);background:var(--surface);color:var(--text-primary);font-size:1.1em;text-transform:uppercase;text-align:center;letter-spacing:4px;font-weight:600;">
-        <button class="action-btn action-btn-secondary" id="pvp-join-btn" style="flex:0 0 auto;min-width:80px;">
-          Join
-        </button>
-      </div>
+      <input type="text" id="pvp-join-code" placeholder="Enter code"
+        maxlength="4" autocapitalize="characters" autocomplete="off"
+        style="width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--border-color);background:var(--surface);color:var(--text-primary);font-size:1.1em;text-transform:uppercase;text-align:center;letter-spacing:4px;font-weight:600;box-sizing:border-box;">
+      <button class="action-btn action-btn-secondary" id="pvp-join-btn">
+        Join Match
+      </button>
       <button class="action-btn action-btn-tertiary" id="pvp-back-btn">
         Back
       </button>
