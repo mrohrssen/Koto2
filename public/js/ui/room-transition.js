@@ -25,14 +25,14 @@ export async function playRoomTransition(gameState) {
       const spritePath = npc.id
         ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
         : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
-      showNpcTrainer(npc.nameEn || npc.name, npc.id, npc);
+      showNpcTrainer(npc.nameEn || npc.name, npc.id, npc, { skipPixi: true });
       await showNpcSprite(spritePath, { slideIn: true });
     }
   } else if (roomType === 'whackAMole') {
-    showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`);
+    showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`, { skipPixi: true });
     await showNpcSprite(`/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`, { slideIn: true });
   } else if (roomType === 'dealer') {
-    showDealer();
+    showDealer({ skipPixi: true });
     await showNpcSprite(`/assets/sprites/traveling_merchant.webp?v=${SPRITE_VERSION}`, { slideIn: true });
   }
 
@@ -52,8 +52,8 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
   const enemyFormation = document.getElementById('enemy-formation');
   if (enemyFormation) enemyFormation.style.opacity = '0';
 
-  // Show NPC name/info in DOM, sprite on canvas with slide-in
-  showNpcSpriteFn(npcName, npcData.id, npcData);
+  // Show NPC name/info in DOM; skip pixi spawn since we slide in below
+  showNpcSpriteFn(npcName, npcData.id, npcData, { skipPixi: true });
   const spritePath = npcData.id
     ? `/assets/sprites/npcs/${npcData.id}.webp?v=${SPRITE_VERSION}`
     : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
@@ -80,7 +80,7 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   if (enemyFormation) enemyFormation.style.opacity = '0';
 
   if (npcData && showNpcSpriteFn) {
-    showNpcSpriteFn(npcName, npcData.id, npcData);
+    showNpcSpriteFn(npcName, npcData.id, npcData, { skipPixi: true });
     const spritePath = npcData.id
       ? `/assets/sprites/npcs/${npcData.id}.webp?v=${SPRITE_VERSION}`
       : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;

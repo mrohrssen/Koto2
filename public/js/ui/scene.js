@@ -339,7 +339,7 @@ function removePlaceholder() {
 /* ------------------------------------------------------------------ */
 
 /** Helper: show an NPC sprite in the npc-display area (no HP bar) */
-export function showNpcInDisplay(name, spritePath) {
+export function showNpcInDisplay(name, spritePath, { skipPixi = false } = {}) {
   dom.npcDisplay.classList.add('visible');
   hideFormation('enemy');
   dom.enemyName.textContent = name;
@@ -350,7 +350,7 @@ export function showNpcInDisplay(name, spritePath) {
   // Hide DOM sprite — NPC renders on PixiJS canvas now
   dom.enemySprite.src = '';
   dom.enemySprite.classList.remove('visible');
-  pixiShowNpcSprite(spritePath);
+  if (!skipPixi) pixiShowNpcSprite(spritePath);
 }
 
 /** Show shrine fox in scene (no HP bar) */
@@ -379,8 +379,8 @@ export function hideCid() {
 }
 
 /** Show traveling merchant NPC (shop merchant, no HP bar) */
-export function showDealer() {
-  showNpcInDisplay('Traveling Merchant', `/assets/sprites/traveling_merchant.webp?v=${SPRITE_VERSION}`);
+export function showDealer({ skipPixi = false } = {}) {
+  showNpcInDisplay('Traveling Merchant', `/assets/sprites/traveling_merchant.webp?v=${SPRITE_VERSION}`, { skipPixi });
 }
 
 /** Show Chippy companion sprite (no HP bar) */
@@ -414,7 +414,7 @@ export function hideChippy() {
 }
 
 /** Show NPC trainer in scene (no HP bar) */
-export function showNpcTrainer(npcName, npcId, npc) {
+export function showNpcTrainer(npcName, npcId, npc, { skipPixi = false } = {}) {
   dom.npcDisplay.classList.add('visible');
   hideFormation('enemy');
 
@@ -430,10 +430,12 @@ export function showNpcTrainer(npcName, npcId, npc) {
   // Hide DOM sprite — NPC renders on PixiJS canvas now
   dom.enemySprite.src = '';
   dom.enemySprite.classList.remove('visible');
-  const spritePath = npcId
-    ? `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`
-    : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
-  pixiShowNpcSprite(spritePath);
+  if (!skipPixi) {
+    const spritePath = npcId
+      ? `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`
+      : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+    pixiShowNpcSprite(spritePath);
+  }
 }
 
 /** Hide NPC trainer from scene */

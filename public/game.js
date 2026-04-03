@@ -1081,7 +1081,7 @@ async function startEncounter() {
       try {
         await playNpcBattleIntro(
           result.npc,
-          (name, id, npc) => scene.showNpcTrainer(name, id, npc),
+          (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
           () => scene.hideNpcTrainer()
         );
       } finally {
@@ -1791,7 +1791,7 @@ async function initGame() {
     apiSubmitBefriendAnswer,
     apiStartNpcDialogue: startNpcDialogue,
     apiRespondNpcDialogue: respondNpcDialogue,
-    showNpcSprite: (name, id, npc) => scene.showNpcTrainer(name, id, npc),
+    showNpcSprite: (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
     hideNpcSprite: () => scene.hideNpcTrainer(),
     updateCreatureRowData: (creatures) => creatureRow.updateData(creatures),
   });
