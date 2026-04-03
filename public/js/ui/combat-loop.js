@@ -48,7 +48,6 @@ import { setScrollState } from '../pixi/parallax.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
 import { hapticDamageTier } from '../native/index.js';
-import { updateStatusIcons, clearAllStatusIcons } from './event-popup.js';
 import { playAttackSound } from './combat-audio.js';
 import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
@@ -1127,7 +1126,6 @@ export function cleanupCombat() {
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
-  clearAllStatusIcons();
   clearAllPixiStatusLabels();
 }
 
@@ -1608,8 +1606,6 @@ function syncStatusIconsFromResult(result) {
     result.allies.forEach((ally, i) => {
       if (!ally) return;
       const keys = getCreatureStatusKeys(ally);
-      const slotEl = document.querySelector(`#player-formation .formation-slot[data-index="${i}"]`);
-      if (slotEl) updateStatusIcons(slotEl, keys);
       syncPixiStatusLabels('player', i, keys, ally.statStages);
     });
   }
@@ -1617,8 +1613,6 @@ function syncStatusIconsFromResult(result) {
     result.enemies.forEach((enemy, i) => {
       if (!enemy) return;
       const keys = getCreatureStatusKeys(enemy);
-      const slotEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${i}"]`);
-      if (slotEl) updateStatusIcons(slotEl, keys);
       syncPixiStatusLabels('enemy', i, keys, enemy.statStages);
     });
   }
@@ -1837,6 +1831,72 @@ function buildEnemyHpMapForPlayerAttacks(result) {
 }
 
 /**
+ * Player + enemy attacks in server initiative order (playbackIndex). If absent, player phase then enemy.
+ * @returns {Array<{ side: 'player'|'enemy', atk: object }>}
+ */
+function buildMergedInitiativeAttacks(result) {
+  const player = (result.playerAttacks || []).map(atk => ({ side: 'player', atk }));
+  const enemy = (result.enemyAttacks || []).map(atk => ({ side: 'enemy', atk }));
+  const combined = [...player, ...enemy];
+  if (combined.length === 0) return [];
+  if (combined.some(x => typeof x.atk.playbackIndex === 'number')) {
+    combined.sort((a, b) => (a.atk.playbackIndex ?? 0) - (b.atk.playbackIndex ?? 0));
+  }
+  return combined;
+}
+
+/**
+ * One enemy strike animation (used by full enemy phase and initiative merge).
+ */
+async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved) {
+  const effectKey = halved ? 'dealsHalved' :
+    atk.elementMultiplier > 1 ? 'dealsStrong' :
+    atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
+  let attackCard = null;
+  if (atk.attackerNameJp) {
+    attackCard = insertAttackCard(atk, true);
+  } else {
+    const actionArea = document.getElementById('action-area');
+    if (actionArea) {
+      actionArea.innerHTML = `<div class="combat-creature-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
+    }
+  }
+
+  playSFX('player-hit');
+
+  const attackerIdx = typeof atk.attackerIndex === 'number' ? atk.attackerIndex : 0;
+  const targetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
+  const targetMaxHp = result.allies?.[targetIdx]?.maxHp || 100;
+  const enemyEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
+  if (atk.attackerElement) {
+    playAttackSound(atk.attackerElement);
+    await enemyCreatureAttackEffect(attackerIdx, targetIdx, atk.attackerElement, atk.damage, targetMaxHp, enemyEffectivenessType);
+  } else {
+    animatePlayerHurt();
+  }
+
+  const damagedAlly = typeof atk.targetIndex === 'number' ? result.allies?.[atk.targetIndex] : null;
+  const hpMapKey = damagedAlly?.id ?? atk.targetId;
+  if (hpMapKey && allyHpMap[hpMapKey]) {
+    allyHpMap[hpMapKey].hp = Math.max(0, allyHpMap[hpMapKey].hp - atk.damage);
+  }
+  updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
+
+  const element = atk.attackerElement || atk.moveElement || 'neutral';
+  if (atk.elementMultiplier > 1) {
+    setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral }), 400);
+  } else if (atk.elementMultiplier < 1) {
+    setTimeout(() => showBanner('Resisted...', 'weak'), 400);
+  }
+
+  if (attackCard) {
+    await waitForCardTap(attackCard);
+  } else {
+    await delay(400);
+  }
+}
+
+/**
  * Animate enemy attacks against player creatures with real-time HP bar updates.
  * @param {Object} result - Combat cycle result from server
  * @param {Object} allyHpMap - Running ally HP map (mutated in place)
@@ -1845,58 +1905,7 @@ function buildEnemyHpMapForPlayerAttacks(result) {
 async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
   if (!result.enemyAttacks?.length) return;
   for (const atk of result.enemyAttacks) {
-    // Pick i18n key: halved for defend, element-based for attack
-    const effectKey = halved ? 'dealsHalved' :
-      atk.elementMultiplier > 1 ? 'dealsStrong' :
-      atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-    // Insert attack card (if JP name available) or fallback text
-    let attackCard = null;
-    if (atk.attackerNameJp) {
-      attackCard = insertAttackCard(atk, true);
-    } else {
-      const actionArea = document.getElementById('action-area');
-      if (actionArea) {
-        actionArea.innerHTML = `<div class="combat-creature-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
-      }
-    }
-
-    // Fire effects while card is showing
-    playSFX('player-hit');
-
-    // Fire PixiJS attack effect from enemy to targeted creature
-    const attackerIdx = typeof atk.attackerIndex === 'number' ? atk.attackerIndex : 0;
-    const targetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
-    const targetMaxHp = result.allies?.[targetIdx]?.maxHp || 100;
-    const enemyEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
-    if (atk.attackerElement) {
-      playAttackSound(atk.attackerElement);
-      await enemyCreatureAttackEffect(attackerIdx, targetIdx, atk.attackerElement, atk.damage, targetMaxHp, enemyEffectivenessType);
-    } else {
-      animatePlayerHurt();
-    }
-
-    // Update targeted ally's running HP in the DOM directly (avoid full updateUI)
-    const damagedAlly = typeof atk.targetIndex === 'number' ? result.allies?.[atk.targetIndex] : null;
-    const hpMapKey = damagedAlly?.id ?? atk.targetId;
-    if (hpMapKey && allyHpMap[hpMapKey]) {
-      allyHpMap[hpMapKey].hp = Math.max(0, allyHpMap[hpMapKey].hp - atk.damage);
-    }
-    updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
-
-    // Type effectiveness popup for enemy attacks
-    const element = atk.attackerElement || atk.moveElement || 'neutral';
-    if (atk.elementMultiplier > 1) {
-      setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral }), 400);
-    } else if (atk.elementMultiplier < 1) {
-      setTimeout(() => showBanner('Resisted...', 'weak'), 400);
-    }
-
-    // Wait for tap (attack card) or fixed delay (fallback)
-    if (attackCard) {
-      await waitForCardTap(attackCard);
-    } else {
-      await delay(400);
-    }
+    await showOneEnemyAttackAnimated(result, atk, allyHpMap, halved);
   }
   syncStatusIconsFromResult(result);
 }
@@ -2031,6 +2040,97 @@ function syncFinalState(result) {
 // ============ CREATURE COMBAT ORCHESTRATORS ============
 
 /**
+ * One player-side attack line (move turn) — effects, HP, party skills, card tap.
+ */
+async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn) {
+  let attackCard = null;
+  {
+    const adaptedAtk = {
+      ...atk,
+      attackerSkillName: atk.moveName || atk.attackerSkillName,
+      attackerSkillEn: atk.moveNameEn || atk.attackerSkillEn,
+      attackerSkillReading: atk.moveReading || atk.attackerSkillReading || '',
+      attackerElement: atk.moveElement || atk.attackerElement
+    };
+    attackCard = insertAttackCard(adaptedAtk, false);
+  }
+
+  playSFX('attack');
+  const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
+  const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
+
+  const atkElement = atk.moveElement || atk.attackerElement || 'neutral';
+  const atkState = getGameState();
+  const atkActiveCreatures = atkState.run?.creatureParty?.active || [];
+  const atkAttackerIdx = atk.attackerId ? atkActiveCreatures.findIndex(r => r && r.id === atk.attackerId) : 0;
+  const atkTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
+
+  const atkEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
+  if (atk.damage > 0 && (creatureSlotEl || getCreatureSprite('player', Math.max(0, atkAttackerIdx)))) {
+    playAttackSound(atkElement);
+    const tIdx = atk.targetIndex;
+    const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
+      ? enemyHpMap[tIdx].maxHp
+      : (result.enemies?.[0]?.maxHp ?? 100);
+    await fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp, atkEffectivenessType);
+    if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
+  } else if (atk.damage > 0) {
+    animateEnemyHurt();
+  }
+
+  if (atk.damage > 0) {
+    const tIdx = atk.targetIndex;
+    if (typeof tIdx === 'number' && enemyHpMap[tIdx]) {
+      enemyHpMap[tIdx].hp = Math.max(0, enemyHpMap[tIdx].hp - atk.damage);
+      const entry = enemyHpMap[tIdx];
+      if (result.enemies.length > 1) {
+        characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+      } else {
+        characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+      }
+    }
+  }
+
+  if (atk.healAmount > 0) {
+    const drainTargetPos = spritePos('enemy', atkTargetIdx);
+    const drainAttackerPos = spritePos('player', Math.max(0, atkAttackerIdx));
+    flowParticles(drainTargetPos, drainAttackerPos, { count: 8, color: 0x4CAF50, duration: 600 });
+    await wait(600);
+    showHealPopup(atk.healAmount, drainAttackerPos);
+  }
+
+  const killKey = typeof atk.targetIndex === 'number' ? `idx:${atk.targetIndex}` : `id:${atk.targetId}`;
+  if (atk.targetDefeated && !killedEnemies.has(killKey)) {
+    killedEnemies.add(killKey);
+    animateKO('enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
+    if (result.xpEvents) {
+      const xpEvent = result.xpEvents.find(ev =>
+        (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
+        || (typeof atk.targetIndex !== 'number' && ev.enemyId === atk.targetId)
+      );
+      if (xpEvent) {
+        const pending = showXpEvents([xpEvent]);
+        if (pending?.length) allPendingMoveLearn.push(...pending);
+      }
+    }
+  }
+
+  if (atk.elementMultiplier > 1) {
+    setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[atkElement] || ELEMENT_COLORS.neutral }), 400);
+  } else if (atk.elementMultiplier < 1) {
+    setTimeout(() => showBanner('Resisted...', 'weak'), 400);
+  }
+
+  await showPartySkillProcs(atk);
+
+  if (attackCard) {
+    await waitForCardTap(attackCard);
+  } else {
+    await delay(800);
+  }
+}
+
+/**
  * Execute a full turn of creature moves — calls /creature-combat-cycle with 'attack' + moveChoices.
  * Replaces the old executeCreaturePlayerAttack() for move-based flow.
  * @param {Array} choices - Array of { creatureIndex, moveId, targetIndex }
@@ -2066,109 +2166,17 @@ async function executeCreatureMovesTurn(choices) {
 
       // Track enemy HP for progressive updates (slot index — duplicate species share id)
       const enemyHpMap = buildEnemyHpMapForPlayerAttacks(result);
-
-      // Show each attack result sequentially
+      const allyHpMap = buildAllyHpMap(result);
+      const merged = buildMergedInitiativeAttacks(result);
       const allPendingMoveLearn = [];
-      if (result.playerAttacks?.length > 0) {
-        const killedEnemies = new Set();
-        for (const atk of result.playerAttacks) {
-          let attackCard = null;
-          const actionArea = document.getElementById('action-area');
+      const killedEnemies = new Set();
 
-          {
-            const adaptedAtk = {
-              ...atk,
-              attackerSkillName: atk.moveName || atk.attackerSkillName,
-              attackerSkillEn: atk.moveNameEn || atk.attackerSkillEn,
-              // Server uses attackerSkillReading; moveReading is rarely set — don't wipe furigana
-              attackerSkillReading: atk.moveReading || atk.attackerSkillReading || '',
-              attackerElement: atk.moveElement || atk.attackerElement,
-            };
-            attackCard = insertAttackCard(adaptedAtk, false);
-          }
-
-          // Fire visual effects
-          playSFX('attack');
-          const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
-          const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
-
-          // Resolve indices for PixiJS
-          const atkElement = atk.moveElement || atk.attackerElement || 'neutral';
-          const atkState = getGameState();
-          const atkActiveCreatures = atkState.run?.creatureParty?.active || [];
-          const atkAttackerIdx = atk.attackerId ? atkActiveCreatures.findIndex(r => r && r.id === atk.attackerId) : 0;
-          const atkTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
-
-          const atkEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
-          if (atk.damage > 0 && (creatureSlotEl || getCreatureSprite('player', Math.max(0, atkAttackerIdx)))) {
-            playAttackSound(atkElement);
-            const tIdx = atk.targetIndex;
-            const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
-              ? enemyHpMap[tIdx].maxHp
-              : (result.enemies?.[0]?.maxHp ?? 100);
-            await fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp, atkEffectivenessType);
-            if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
-          } else if (atk.damage > 0) {
-            animateEnemyHurt();
-          }
-
-          // Damage number already shown by impactEffect inside fireCreatureAttackEffect
-
-          // Update enemy HP after each hit
-          if (atk.damage > 0) {
-            const tIdx = atk.targetIndex;
-            if (typeof tIdx === 'number' && enemyHpMap[tIdx]) {
-              enemyHpMap[tIdx].hp = Math.max(0, enemyHpMap[tIdx].hp - atk.damage);
-              const entry = enemyHpMap[tIdx];
-              if (result.enemies.length > 1) {
-                characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
-              } else {
-                characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
-              }
-            }
-          }
-
-          // Drain move: flow particles from enemy to attacker, then show heal
-          if (atk.healAmount > 0) {
-            const drainTargetPos = spritePos('enemy', atkTargetIdx);
-            const drainAttackerPos = spritePos('player', Math.max(0, atkAttackerIdx));
-            flowParticles(drainTargetPos, drainAttackerPos, { count: 8, color: 0x4CAF50, duration: 600 });
-            await wait(600);
-            showHealPopup(atk.healAmount, drainAttackerPos);
-          }
-
-          // Enemy KO animation + XP popups on kill
-          const killKey = typeof atk.targetIndex === 'number' ? `idx:${atk.targetIndex}` : `id:${atk.targetId}`;
-          if (atk.targetDefeated && !killedEnemies.has(killKey)) {
-            killedEnemies.add(killKey);
-            animateKO('enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
-            if (result.xpEvents) {
-              const xpEvent = result.xpEvents.find(ev =>
-                (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
-                || (typeof atk.targetIndex !== 'number' && ev.enemyId === atk.targetId)
-              );
-              if (xpEvent) {
-                const pending = showXpEvents([xpEvent]);
-                if (pending?.length) allPendingMoveLearn.push(...pending);
-              }
-            }
-          }
-
-          // Type effectiveness popup (STAB has no separate visual; its boost feeds into the tier system)
-          if (atk.elementMultiplier > 1) {
-            setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[atkElement] || ELEMENT_COLORS.neutral }), 400);
-          } else if (atk.elementMultiplier < 1) {
-            setTimeout(() => showBanner('Resisted...', 'weak'), 400);
-          }
-
-          // Show party skill procs inline after this attack
-          await showPartySkillProcs(atk);
-
-          // Wait for tap or fixed delay
-          if (attackCard) {
-            await waitForCardTap(attackCard);
+      if (merged.length > 0) {
+        for (const { side, atk } of merged) {
+          if (side === 'player') {
+            await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn);
           } else {
-            await delay(800);
+            await showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
           }
         }
       }
@@ -2185,24 +2193,23 @@ async function executeCreatureMovesTurn(choices) {
 
       // === NPC Skill Phase ===
       if (result.npcSkillAttacks?.length > 0) {
-        const npcAllyHpMap = buildAllyHpMap(result);
         const npcData = getCombatNpcData();
         if (npcData) {
           await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
-            await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+            await showNpcSkillAttacksAnimated(result, allyHpMap);
           }, getCombatEnemies());
         } else {
           await delay(400);
-          await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+          await showNpcSkillAttacksAnimated(result, allyHpMap);
         }
       }
 
-      // Enemy attacks phase (reuse existing code)
-      const allyHpMap = buildAllyHpMap(result);
-      if (result.enemyAttacks?.length > 0) {
+      // Enemy attacks (only if not already shown in initiative merge)
+      const enemyShownInMerge = merged.some(e => e.side === 'enemy');
+      if (!enemyShownInMerge && result.enemyAttacks?.length > 0) {
         await delay(400);
+        await showEnemyAttacksAnimated(result, allyHpMap, false);
       }
-      await showEnemyAttacksAnimated(result, allyHpMap, false);
 
       // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
       await showCounterAttacks(result);
@@ -2277,114 +2284,40 @@ async function executeCreaturePlayerAttack() {
       await showRoundStartEvents(result);
 
       const enemyHpMap = buildEnemyHpMapForPlayerAttacks(result);
-
-      // Show each allied creature's attack result sequentially with real-time HP
+      const allyHpMap = buildAllyHpMap(result);
+      const mergedLegacy = buildMergedInitiativeAttacks(result);
       const allPendingMoveLearn2 = [];
-      if (result.playerAttacks?.length > 0) {
-        const killedEnemies = new Set();
+      const killedEnemies = new Set();
 
-        for (let atkIdx = 0; atkIdx < result.playerAttacks.length; atkIdx++) {
-          const atk = result.playerAttacks[atkIdx];
-          const effectKey = atk.elementMultiplier > 1 ? 'dealsStrong' :
-                            atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-          // Insert attack card (if JP name available) or fallback text
-          let attackCard = null;
-          if (atk.attackerNameJp) {
-            attackCard = insertAttackCard(atk, false);
+      if (mergedLegacy.length > 0) {
+        for (const { side, atk } of mergedLegacy) {
+          if (side === 'player') {
+            await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn2);
           } else {
-            const actionArea = document.getElementById('action-area');
-            if (actionArea) {
-              actionArea.innerHTML = `<div class="combat-creature-attack">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
-            }
-          }
-
-          // Fire effects while card is showing
-          playSFX('attack');
-
-          const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
-          const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
-
-          // Resolve indices for PixiJS
-          const depAttackerState = getGameState();
-          const depActiveCreatures = depAttackerState.run?.creatureParty?.active || [];
-          const depAttackerIdx = atk.attackerId ? depActiveCreatures.findIndex(r => r && r.id === atk.attackerId) : 0;
-          const depTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
-
-          // Fire element-colored effects from creature to enemy with PixiJS impact
-          const depEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
-          if ((creatureSlotEl || getCreatureSprite('player', Math.max(0, depAttackerIdx))) && atk.attackerElement) {
-            playAttackSound(atk.attackerElement);
-            const tIdx = atk.targetIndex;
-            const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
-              ? enemyHpMap[tIdx].maxHp
-              : (result.enemies?.[0]?.maxHp ?? 100);
-            await fireCreatureAttackEffect(Math.max(0, depAttackerIdx), depTargetIdx, atk.attackerElement, atk.damage, targetMaxHp, depEffectivenessType);
-            if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
-          } else {
-            animateEnemyHurt();
-          }
-
-          // Damage number already shown by impactEffect
-          // Update enemy HP bar after each hit
-          if (typeof atk.targetIndex === 'number' && enemyHpMap[atk.targetIndex]) {
-            const entry = enemyHpMap[atk.targetIndex];
-            entry.hp = Math.max(0, entry.hp - atk.damage);
-            if (result.enemies.length > 1) {
-              characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
-            } else {
-              characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
-            }
-          }
-
-          // Enemy KO animation + XP popups on kill (BUG B + C)
-          const killKey2 = typeof atk.targetIndex === 'number' ? `idx:${atk.targetIndex}` : `id:${atk.targetId}`;
-          if (atk.targetDefeated && !killedEnemies.has(killKey2)) {
-            killedEnemies.add(killKey2);
-            animateKO('enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
-            if (result.xpEvents) {
-              const xpEvent = result.xpEvents.find(ev =>
-                (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
-                || (typeof atk.targetIndex !== 'number' && ev.enemyId === atk.targetId)
-              );
-              if (xpEvent) {
-                const pending = showXpEvents([xpEvent]);
-                if (pending?.length) allPendingMoveLearn2.push(...pending);
-              }
-            }
-          }
-
-          // Show party skill procs inline after this attack
-          await showPartySkillProcs(atk);
-
-          // Wait for tap (attack card) or fixed delay (fallback)
-          if (attackCard) {
-            await waitForCardTap(attackCard);
-          } else {
-            await delay(400);
+            await showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
           }
         }
       }
+      syncStatusIconsFromResult(result);
 
       // === NPC Skill Phase ===
       if (result.npcSkillAttacks?.length > 0) {
-        const npcAllyHpMap = buildAllyHpMap(result);
         const npcData = getCombatNpcData();
         if (npcData) {
           await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
-            await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+            await showNpcSkillAttacksAnimated(result, allyHpMap);
           }, getCombatEnemies());
         } else {
           await delay(400);
-          await showNpcSkillAttacksAnimated(result, npcAllyHpMap);
+          await showNpcSkillAttacksAnimated(result, allyHpMap);
         }
       }
 
-      // Enemy attacks phase
-      const allyHpMap = buildAllyHpMap(result);
-      if (result.enemyAttacks?.length > 0) {
-        await delay(400); // Brief pause between player and enemy attack phases
+      const enemyShownInMergeLegacy = mergedLegacy.some(e => e.side === 'enemy');
+      if (!enemyShownInMergeLegacy && result.enemyAttacks?.length > 0) {
+        await delay(400);
+        await showEnemyAttacksAnimated(result, allyHpMap, false);
       }
-      await showEnemyAttacksAnimated(result, allyHpMap, false);
 
       // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
       await showCounterAttacks(result);
@@ -3295,9 +3228,8 @@ export async function stopCombatLoop(result) {
 
   if (result?.victory) combatEvents.emit('victory');
 
-  // Final cleanup: clear PixiJS status VFX and DOM status icons
+  // Final cleanup: clear PixiJS status VFX and canvas status labels
   clearAllStatusVfx();
-  clearAllStatusIcons();
   clearAllPixiStatusLabels();
 
   // Resume parallax scroll and hide defeated enemy PixiJS sprites.
