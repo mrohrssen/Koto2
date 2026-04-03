@@ -1535,17 +1535,18 @@ function showFloatingText(targetEl, text) {
  */
 async function showEffectEvents(result) {
   if (!result.effectEvents?.length) return;
+  const affectedCreatures = new Set();
   for (const event of result.effectEvents) {
     // Resolve side and index for PixiJS positioning
     const side = event.targetSide === 'ally' ? 'player' : 'enemy';
     const index = typeof event.targetIndex === 'number' ? event.targetIndex : 0;
+    affectedCreatures.add(`${side}:${index}`);
 
     if (event.type === 'poison' && event.damage > 0) {
       const pos = spritePos(side, index);
       burstParticles(pos, { count: 4, color: 0x9C27B0, speed: 40, life: 300, element: 'neutral' });
       showPoisonTick(event.damage, pos);
       playStatusApplied(side, index, 'poison');
-      // Clear poison VFX when effect expires
       if (event.remainingTurns === 0) {
         clearStatusVfx(side, index, 'poison');
       }
@@ -1562,7 +1563,6 @@ async function showEffectEvents(result) {
       const baseType = event.type.replace(/_tick$/, '');
       const label = EFFECT_LABELS[baseType] || event.type;
       const pos = spritePos(side, index);
-      // Determine if this is a positive or negative effect
       const BUFF_TYPES = new Set(['haste', 'shield', 'team_shield']);
       const DEBUFF_TYPES = new Set(['confuse', 'stun', 'sleep', 'taunt']);
       if (DEBUFF_TYPES.has(baseType)) {
@@ -1572,16 +1572,19 @@ async function showEffectEvents(result) {
         popupBuff(label, pos);
         playStatusApplied(side, index, baseType);
       } else {
-        showFloatingText(document.body, label); // fallback for unknown types
+        showFloatingText(document.body, label);
       }
-      // Clear ongoing VFX when effect expires (remainingTurns === 0)
       if (event.remainingTurns === 0) {
         clearStatusVfx(side, index, baseType);
       }
       await delay(400);
     }
   }
-  syncStatusIconsFromResult(result);
+  // Only sync pills for creatures that had effect events (avoid premature sync from final state)
+  for (const key of affectedCreatures) {
+    const [side, idx] = key.split(':');
+    syncStatusForCreature(result, side, Number(idx));
+  }
 }
 
 /** Derive status icon keys from a creature's activeEffects + statStages. */
@@ -1617,6 +1620,66 @@ function syncStatusIconsFromResult(result) {
     });
   }
 }
+
+function syncStatusForCreature(result, side, index) {
+  const creatures = side === 'player' ? result.allies : result.enemies;
+  const creature = creatures?.[index];
+  if (!creature) return;
+  const keys = getCreatureStatusKeys(creature);
+  syncPixiStatusLabels(side, index, keys, creature.statStages);
+}
+
+const BUFF_EFFECTS = new Set(['haste', 'shield', 'team_shield']);
+const DEBUFF_EFFECTS = new Set(['poison', 'sleep', 'stun', 'confuse', 'taunt']);
+
+/**
+ * Show VFX + popup + pill sync when a move applies an effect or stat changes.
+ * Called after each individual attack animation so indicators appear in real time.
+ */
+async function showMoveEffectsApplied(atk, targetSide, targetIndex, result) {
+  const pos = spritePos(targetSide, targetIndex);
+  let shown = false;
+
+  if (atk.effectApplied) {
+    const effect = atk.effectApplied;
+    if (DEBUFF_EFFECTS.has(effect)) {
+      popupDebuff(STATUS_EFFECT_LABELS[effect] || effect, pos);
+      playStatusApplied(targetSide, targetIndex, effect);
+    } else if (BUFF_EFFECTS.has(effect)) {
+      popupBuff(STATUS_EFFECT_LABELS[effect] || effect, pos);
+      playStatusApplied(targetSide, targetIndex, effect);
+    }
+    shown = true;
+  }
+
+  if (atk.statChangesApplied) {
+    const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+    for (const [stat, change] of Object.entries(atk.statChangesApplied)) {
+      if (change === 0) continue;
+      const dir = change > 0 ? `+${change}` : `${change}`;
+      const text = `${SC_NAMES[stat] || stat} ${dir}`;
+      if (change > 0) popupBuff(text, pos);
+      else popupDebuff(text, pos);
+    }
+    shown = true;
+  }
+
+  if (shown) {
+    syncStatusForCreature(result, targetSide, targetIndex);
+    await delay(300);
+  }
+}
+
+const STATUS_EFFECT_LABELS = {
+  poison: 'Poisoned!',
+  sleep: 'Sleep!',
+  stun: 'Stunned!',
+  confuse: 'Confused!',
+  haste: 'Haste!',
+  shield: 'Shield!',
+  team_shield: 'Shield!',
+  taunt: 'Taunt!'
+};
 
 /**
  * Show party skill proc visuals inline after a player attack.
@@ -1719,11 +1782,13 @@ async function showRoundStartEvents(result) {
       const text = `${SC_NAMES[event.stat] || event.stat} ${event.delta}`;
       popupDebuff(text, pos);
       burstParticles(pos, { count: 3, color: 0xFF5722 });
+      syncStatusForCreature(result, 'enemy', event.targetIndex);
     } else if (event.type === 'momentum') {
       const pos = spritePos('player', event.targetIndex);
       const text = `${SC_NAMES[event.stat] || event.stat} +${event.delta}`;
       popupBuff(text, pos);
       burstParticles(pos, { count: 3, color: 0x4CAF50 });
+      syncStatusForCreature(result, 'player', event.targetIndex);
     } else if (event.type === 'overflowVitality') {
       const pos = spritePos('player', event.targetIndex);
       burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
@@ -1887,6 +1952,11 @@ async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved) {
     setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral }), 400);
   } else if (atk.elementMultiplier < 1) {
     setTimeout(() => showBanner('Resisted...', 'weak'), 400);
+  }
+
+  // Real-time buff/debuff indicators for enemy-applied effects
+  if (atk.effectApplied || atk.statChangesApplied) {
+    await showMoveEffectsApplied(atk, 'player', targetIdx, result);
   }
 
   if (attackCard) {
@@ -2119,6 +2189,12 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
     setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[atkElement] || ELEMENT_COLORS.neutral }), 400);
   } else if (atk.elementMultiplier < 1) {
     setTimeout(() => showBanner('Resisted...', 'weak'), 400);
+  }
+
+  // Real-time buff/debuff indicators — show immediately when a move applies effects
+  if (atk.effectApplied || atk.statChangesApplied) {
+    const targetSide = (atk.category === 'buff' || atk.category === 'shield') ? 'player' : 'enemy';
+    await showMoveEffectsApplied(atk, targetSide, atkTargetIdx, result);
   }
 
   await showPartySkillProcs(atk);
