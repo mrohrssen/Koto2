@@ -92,8 +92,6 @@ global.setTimeout = (_fn, _ms) => { /* no-op in tests */ };
 const {
   showEventPopup,
   credits,
-  updateStatusIcons,
-  clearAllStatusIcons,
   animateCounter
 } = await import('../../../public/js/ui/event-popup.js');
 
@@ -200,71 +198,6 @@ describe('credits preset', () => {
     const popup = bodyChildren[0];
     assert.equal(popup.textContent, '+0¤');
     assert.equal(popup.style.color, '#FFD700');
-  });
-});
-
-describe('updateStatusIcons', () => {
-  it('creates .status-icons container if missing', () => {
-    const slotEl = createElementMock('div');
-
-    updateStatusIcons(slotEl, ['poison']);
-
-    const container = slotEl._children.find(c => c.className === 'status-icons');
-    assert.ok(container, 'Expected .status-icons container to be created');
-  });
-
-  it('adds icon elements for active effects', () => {
-    const slotEl = createElementMock('div');
-
-    updateStatusIcons(slotEl, ['poison', 'stun']);
-
-    const container = slotEl._children.find(c => c.className === 'status-icons');
-    assert.ok(container, 'Expected .status-icons container');
-    assert.equal(container._children.length, 2);
-  });
-
-  it('skips unknown effect keys', () => {
-    const slotEl = createElementMock('div');
-
-    updateStatusIcons(slotEl, ['unknown_effect_xyz']);
-
-    const container = slotEl._children.find(c => c.className === 'status-icons');
-    assert.ok(container);
-    assert.equal(container._children.length, 0);
-  });
-
-  it('uses correct label for shield effect', () => {
-    const slotEl = createElementMock('div');
-
-    updateStatusIcons(slotEl, ['shield']);
-
-    const container = slotEl._children.find(c => c.className === 'status-icons');
-    const icon = container._children[0];
-    assert.equal(icon.textContent, 'SHD');
-  });
-
-  it('uses correct label for poison effect', () => {
-    const slotEl = createElementMock('div');
-
-    updateStatusIcons(slotEl, ['poison']);
-
-    const container = slotEl._children.find(c => c.className === 'status-icons');
-    const icon = container._children[0];
-    assert.equal(icon.textContent, 'PSN');
-  });
-
-  it('does nothing when slotEl is null', () => {
-    assert.doesNotThrow(() => updateStatusIcons(null, ['poison']));
-  });
-
-  it('handles empty activeEffects array', () => {
-    const slotEl = createElementMock('div');
-
-    updateStatusIcons(slotEl, []);
-
-    const container = slotEl._children.find(c => c.className === 'status-icons');
-    assert.ok(container, 'Container should still be created');
-    assert.equal(container._children.length, 0);
   });
 });
 

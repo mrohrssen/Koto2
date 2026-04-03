@@ -7,8 +7,6 @@
  *
  * KEY EXPORTS:
  * - showEventPopup(targetEl, text, options): Floating text popup anchored to an element
- * - updateStatusIcons(slotEl, activeEffects): Render/remove status pill badges
- * - clearAllStatusIcons(): Remove all status icons from the DOM
  * - animateCounter(el, fromValue, toValue, duration, options): Animated number counter
  *
  * PRESETS (convenience wrappers around showEventPopup):
@@ -161,63 +159,6 @@ export const STATUS_ICON_CONFIG = {
   confuse:       { label: 'CONF', bg: '#FDD835', text: '#000' },
   taunt:         { label: 'TAUNT', bg: '#D32F2F', text: '#fff' }
 };
-
-/**
- * Update status icon badges inside a formation slot.
- * New icons animate in; expired icons animate out and are removed.
- *
- * @param {Element} slotEl - The .formation-slot element
- * @param {string[]} activeEffects - Array of active effect keys (e.g. ['poison','shield'])
- */
-export function updateStatusIcons(slotEl, activeEffects) {
-  if (!slotEl || typeof document === 'undefined') return;
-
-  let container = slotEl.querySelector('.status-icons');
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'status-icons';
-    slotEl.appendChild(container);
-  }
-
-  const activeSet = new Set(activeEffects || []);
-
-  // Remove icons no longer active
-  container.querySelectorAll('.status-icon[data-effect]').forEach(iconEl => {
-    const effect = iconEl.dataset.effect;
-    if (!activeSet.has(effect)) {
-      iconEl.classList.remove('status-icon-enter');
-      iconEl.classList.add('status-icon-exit');
-      setTimeout(() => iconEl.remove(), 200);
-    }
-  });
-
-  // Add new icons that aren't already rendered
-  const existing = new Set(
-    [...container.querySelectorAll('.status-icon[data-effect]')].map(el => el.dataset.effect)
-  );
-
-  activeSet.forEach(effect => {
-    if (existing.has(effect)) return;
-    const config = STATUS_ICON_CONFIG[effect];
-    if (!config) return;
-
-    const iconEl = document.createElement('span');
-    iconEl.className = 'status-icon status-icon-enter';
-    iconEl.dataset.effect = effect;
-    iconEl.textContent = config.label;
-    iconEl.style.backgroundColor = config.bg;
-    iconEl.style.color = config.text;
-    container.appendChild(iconEl);
-  });
-}
-
-/** Remove all status icons from every slot in the document */
-export function clearAllStatusIcons() {
-  if (typeof document === 'undefined') return;
-  document.querySelectorAll('.status-icons').forEach(container => {
-    container.innerHTML = '';
-  });
-}
 
 // ============ COUNTER ANIMATION ============
 
