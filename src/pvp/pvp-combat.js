@@ -2,16 +2,20 @@
  * PvP Combat Resolver
  *
  * Orchestrates two-player combat using the existing creature combat engine.
- * Both sides submit move choices; creatures act in level-descending order.
- * No XP is awarded in PvP — pass null for creatureParty.
+ * Both sides submit moves; creatures act in level-descending initiative order
+ * (ties random). Damage and HP updates happen in that same order so playback
+ * matches mechanical resolution.
  */
 
 import {
   tickAllEffects,
-  processMoveTurn,
   handleCreatureKO,
-  applyPartySkillsAfterPlayerAttacks
+  applyPartySkillsAfterPlayerAttacks,
+  applyRoundStartSkills,
+  applyAfterEnemyAttacks,
+  executeSlotMoveTurn
 } from '../game/services/creature-combat-service.js';
+import { hasHaste, consumeHaste, isIncapacitated } from '../game/combat/effects.js';
 
 /**
  * Build a turn-ordered list of creatures from both sides.
@@ -51,7 +55,6 @@ export function buildTurnOrder(sideA, sideB) {
     }
   }
 
-  // Sort descending by level; ties broken randomly
   entries.sort((a, b) => {
     const levelDiff = (b.creature.level || 1) - (a.creature.level || 1);
     if (levelDiff !== 0) return levelDiff;
@@ -59,6 +62,16 @@ export function buildTurnOrder(sideA, sideB) {
   });
 
   return entries;
+}
+
+function groupMovesBySlot(moves) {
+  const m = new Map();
+  for (const ch of moves || []) {
+    if (typeof ch.creatureIndex !== 'number') continue;
+    if (!m.has(ch.creatureIndex)) m.set(ch.creatureIndex, []);
+    m.get(ch.creatureIndex).push(ch);
+  }
+  return m;
 }
 
 /**
@@ -91,22 +104,112 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     combatB = null
   } = options;
 
-  // Step 1: Tick status effects for both sides
-  // tickAllEffects(allies, enemies) ticks both arrays and labels them 'ally'/'enemy'.
-  // We call it once with sideA as allies, sideB as enemies — this ticks all creatures.
-  // Re-label the 'enemy' events as 'sideB' and 'ally' events as 'sideA' for clarity.
   const rawEffectEvents = tickAllEffects(sideA, sideB);
   const effectEvents = rawEffectEvents.map(e => ({
     ...e,
     pvpSide: e.targetSide === 'ally' ? 'sideA' : 'sideB'
   }));
 
-  // Step 2: Process each side's moves
-  // Pass null for creatureParty (5th arg) to skip XP awarding
-  const resultA = processMoveTurn(sideA, sideB, movesA, itemBuffsA, null);
-  const resultB = processMoveTurn(sideB, sideA, movesB, itemBuffsB, null);
+  // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+  const roundStartEventsA = (partySkillsA && combatA)
+    ? applyRoundStartSkills({ allies: sideA, enemies: sideB, runPartySkills: partySkillsA, combat: combatA })
+    : [];
+  const roundStartEventsB = (partySkillsB && combatB)
+    ? applyRoundStartSkills({ allies: sideB, enemies: sideA, runPartySkills: partySkillsB, combat: combatB })
+    : [];
+  const roundStartEvents = [
+    ...roundStartEventsA.map(e => ({ ...e, pvpSide: e.targetSide === 'ally' ? 'sideA' : 'sideB' })),
+    ...roundStartEventsB.map(e => ({ ...e, pvpSide: e.targetSide === 'ally' ? 'sideB' : 'sideA' }))
+  ];
 
-  // Step 3: Apply party skills for each side
+  const mapA = groupMovesBySlot(movesA);
+  const mapB = groupMovesBySlot(movesB);
+
+  const hastedA = new Set();
+  for (let i = 0; i < sideA.length; i++) {
+    const c = sideA[i];
+    if (c && c.hp > 0 && hasHaste(c)) {
+      hastedA.add(i);
+      consumeHaste(c);
+    }
+  }
+  const hastedB = new Set();
+  for (let i = 0; i < sideB.length; i++) {
+    const c = sideB[i];
+    if (c && c.hp > 0 && hasHaste(c)) {
+      hastedB.add(i);
+      consumeHaste(c);
+    }
+  }
+
+  const initiative = [];
+  for (const idx of mapA.keys()) {
+    const c = sideA[idx];
+    if (c && c.hp > 0 && !isIncapacitated(c)) {
+      initiative.push({ side: 'sideA', index: idx, level: c.level || 1 });
+    }
+  }
+  for (const idx of mapB.keys()) {
+    const c = sideB[idx];
+    if (c && c.hp > 0 && !isIncapacitated(c)) {
+      initiative.push({ side: 'sideB', index: idx, level: c.level || 1 });
+    }
+  }
+
+  initiative.sort((a, b) => {
+    const d = (b.level || 1) - (a.level || 1);
+    if (d !== 0) return d;
+    return Math.random() - 0.5;
+  });
+
+  const resultA = { attacks: [] };
+  const resultB = { attacks: [] };
+  const orderedAttacks = [];
+  const defeatedDummy = new Set();
+  let playbackCounter = 0;
+
+  for (const slot of initiative) {
+    if (slot.side === 'sideA') {
+      const choices = mapA.get(slot.index);
+      const { attacks: slotAttacks } = executeSlotMoveTurn(
+        sideA,
+        sideB,
+        slot.index,
+        choices,
+        itemBuffsA,
+        null,
+        null,
+        hastedA,
+        defeatedDummy
+      );
+      for (const atk of slotAttacks) {
+        atk.playbackIndex = playbackCounter++;
+        atk.side = 'sideA';
+        orderedAttacks.push(atk);
+        resultA.attacks.push(atk);
+      }
+    } else {
+      const choices = mapB.get(slot.index);
+      const { attacks: slotAttacks } = executeSlotMoveTurn(
+        sideB,
+        sideA,
+        slot.index,
+        choices,
+        itemBuffsB,
+        null,
+        null,
+        hastedB,
+        defeatedDummy
+      );
+      for (const atk of slotAttacks) {
+        atk.playbackIndex = playbackCounter++;
+        atk.side = 'sideB';
+        orderedAttacks.push(atk);
+        resultB.attacks.push(atk);
+      }
+    }
+  }
+
   if (partySkillsA && combatA) {
     applyPartySkillsAfterPlayerAttacks({
       attacks: resultA.attacks,
@@ -126,33 +229,46 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     });
   }
 
-  // Step 4: Combine attacks ordered by creature level using buildTurnOrder
-  const turnOrder = buildTurnOrder(sideA, sideB);
-  const orderedAttacks = [];
-  const allAttacks = [
-    ...resultA.attacks.map(a => ({ ...a, side: 'sideA' })),
-    ...resultB.attacks.map(a => ({ ...a, side: 'sideB' }))
+  // Party skills: counter attacks (after opponent's attacks)
+  // Side A's creatures counter side B's attacks that hit them
+  const counterAttacksA = (partySkillsA && combatA)
+    ? (applyAfterEnemyAttacks({
+        enemyAttacks: resultB.attacks,
+        allies: sideA,
+        enemies: sideB,
+        runPartySkills: partySkillsA,
+        combat: combatA
+      }) || [])
+    : [];
+  // Side B's creatures counter side A's attacks that hit them
+  const counterAttacksB = (partySkillsB && combatB)
+    ? (applyAfterEnemyAttacks({
+        enemyAttacks: resultA.attacks,
+        allies: sideB,
+        enemies: sideA,
+        runPartySkills: partySkillsB,
+        combat: combatB
+      }) || [])
+    : [];
+  const counterAttacks = [
+    ...counterAttacksA.map(c => ({ ...c, pvpSide: 'sideA' })),
+    ...counterAttacksB.map(c => ({ ...c, pvpSide: 'sideB' }))
   ];
 
-  // Order attacks by the turn order of their attackers
-  for (const entry of turnOrder) {
-    const matching = allAttacks.filter(a => {
-      if (entry.side === 'sideA') {
-        return a.side === 'sideA' && a.attackerIndex === entry.creatureIndex;
-      } else {
-        return a.side === 'sideB' && a.attackerIndex === entry.creatureIndex;
-      }
-    });
-    orderedAttacks.push(...matching);
+  const mpRegens = [];
+  for (const c of sideA) {
+    if (!c || c.hp <= 0) continue;
+    const regen = Math.floor((c.maxMp || 0) * 0.05);
+    c.mp = Math.min(c.maxMp || 0, (c.mp || 0) + regen);
+    mpRegens.push({ creatureId: c.id, mp: c.mp, maxMp: c.maxMp, regen, side: 'sideA' });
+  }
+  for (const c of sideB) {
+    if (!c || c.hp <= 0) continue;
+    const regen = Math.floor((c.maxMp || 0) * 0.05);
+    c.mp = Math.min(c.maxMp || 0, (c.mp || 0) + regen);
+    mpRegens.push({ creatureId: c.id, mp: c.mp, maxMp: c.maxMp, regen, side: 'sideB' });
   }
 
-  // Add any attacks from creatures that are now KO'd (not in turnOrder)
-  const inOrder = new Set(orderedAttacks);
-  for (const a of allAttacks) {
-    if (!inOrder.has(a)) orderedAttacks.push(a);
-  }
-
-  // Step 5: Handle KO swaps for both sides
   const koSwaps = [];
   if (partyA) {
     for (let i = 0; i < sideA.length; i++) {
@@ -175,7 +291,6 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     }
   }
 
-  // Step 6: Determine winner
   const allADead = sideA.every(c => c.hp <= 0);
   const allBDead = sideB.every(c => c.hp <= 0);
   let winner = null;
@@ -183,16 +298,11 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
   else if (allBDead) winner = 'sideA';
   else if (allADead) winner = 'sideB';
 
-  // Step 7: Collect MP regens from both results
-  const mpRegens = [
-    ...resultA.mpRegens.map(r => ({ ...r, side: 'sideA' })),
-    ...resultB.mpRegens.map(r => ({ ...r, side: 'sideB' }))
-  ];
-
-  // Step 8: Return result
   return {
     attacks: orderedAttacks,
     effectEvents,
+    roundStartEvents,
+    counterAttacks,
     koSwaps,
     mpRegens,
     winner,

@@ -186,4 +186,112 @@ describe('resolveRound', () => {
     assert.strictEqual(result.sideA, sideA);
     assert.strictEqual(result.sideB, sideB);
   });
+
+  it('resolves damage in initiative order (higher level acts first)', () => {
+    sideA[0].level = 3;
+    sideB[0].level = 50;
+    sideA[0].maxHp = 500;
+    sideA[0].hp = 500;
+
+    const result = resolveRound(sideA, sideB, movesA, movesB);
+
+    assert.ok(result.attacks.length >= 1);
+    assert.strictEqual(result.attacks[0].side, 'sideB', 'Lv50 side B should strike before Lv3 side A');
+    if (result.attacks.length >= 2) {
+      assert.strictEqual(result.attacks[1].side, 'sideA');
+    }
+  });
+
+  it('returns roundStartEvents and counterAttacks arrays (even empty)', () => {
+    const result = resolveRound(sideA, sideB, movesA, movesB);
+
+    assert.ok(Array.isArray(result.roundStartEvents), 'roundStartEvents should be an array');
+    assert.ok(Array.isArray(result.counterAttacks), 'counterAttacks should be an array');
+  });
+
+  it('applies Erosion round-start skill for side A', () => {
+    const combatA = {};
+    sideB[0].statStages = { atk: -2, def: 0 };
+
+    const result = resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsA: ['erosion'],
+      combatA
+    });
+
+    assert.ok(sideB[0].statStages.atk < -2, 'Erosion should deepen negative atk stage on enemy');
+    const erosionEvents = result.roundStartEvents.filter(e => e.type === 'erosion');
+    assert.ok(erosionEvents.length > 0, 'should produce erosion events');
+  });
+
+  it('applies Momentum round-start skill for side B', () => {
+    const combatB = {};
+    sideB[0].statStages = { atk: 1, def: 0 };
+
+    const result = resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsB: ['momentum'],
+      combatB
+    });
+
+    assert.ok(sideB[0].statStages.atk > 1, 'Momentum should grow positive atk stage on ally');
+    const momentumEvents = result.roundStartEvents.filter(e => e.type === 'momentum');
+    assert.ok(momentumEvents.length > 0, 'should produce momentum events');
+  });
+
+  it('applies round-start skills for both sides simultaneously', () => {
+    const combatA = {};
+    const combatB = {};
+    sideB[0].statStages = { atk: -1, def: 0 };
+    sideA[0].statStages = { atk: -1, def: 0 };
+
+    const result = resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsA: ['erosion'],
+      partySkillsB: ['erosion'],
+      combatA,
+      combatB
+    });
+
+    assert.ok(sideB[0].statStages.atk < -1, 'Side A erosion should deepen side B debuffs');
+    assert.ok(sideA[0].statStages.atk < -1, 'Side B erosion should deepen side A debuffs');
+  });
+
+  it('applies Retaliation Strike counter attacks in PvP', () => {
+    const combatA = {};
+    sideA[0].attack = 30;
+    sideB[0].hp = 500;
+    sideB[0].maxHp = 500;
+
+    const origRandom = Math.random;
+    Math.random = () => 0.1;
+    try {
+      const result = resolveRound(sideA, sideB, movesA, movesB, {
+        partySkillsA: ['retaliationStrike'],
+        combatA
+      });
+
+      // B must have attacked (survived A's attack), generating enemy attacks for A to counter
+      const bAttacks = result.attacks.filter(a => a.side === 'sideB');
+      assert.ok(bAttacks.length > 0, 'Side B should have attacked');
+
+      const sideACounters = result.counterAttacks.filter(c => c.pvpSide === 'sideA');
+      assert.ok(sideACounters.length > 0, 'Side A should have counter attacks from retaliation');
+      assert.strictEqual(sideACounters[0].type, 'counter');
+    } finally {
+      Math.random = origRandom;
+    }
+  });
+
+  it('tags roundStartEvents with correct pvpSide', () => {
+    const combatA = {};
+    sideB[0].statStages = { atk: -2, def: 0 };
+
+    const result = resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsA: ['erosion'],
+      combatA
+    });
+
+    const erosionEvents = result.roundStartEvents.filter(e => e.type === 'erosion');
+    for (const ev of erosionEvents) {
+      assert.ok(ev.pvpSide === 'sideA' || ev.pvpSide === 'sideB', 'pvpSide should be set');
+    }
+  });
 });
