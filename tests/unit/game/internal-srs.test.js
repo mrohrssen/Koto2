@@ -147,4 +147,64 @@ describe('Internal SRS Service', () => {
       assert.strictEqual(stats.graduated, false);
     });
   });
+
+  describe('Generic deck operations', () => {
+    it('createCard adds a card to the named deck', () => {
+      srs.createCard(TEST_USER, 'test', 'card-1', { label: 'hello' });
+      const cards = srs.getDeckCards(TEST_USER, 'test');
+      assert.strictEqual(cards.length, 1);
+      assert.strictEqual(cards[0].id, 'card-1');
+      assert.strictEqual(cards[0].label, 'hello');
+      assert.ok(cards[0].due instanceof Date);
+    });
+
+    it('createCard is idempotent — does not duplicate', () => {
+      srs.createCard(TEST_USER, 'test', 'card-1', { label: 'hello' });
+      srs.createCard(TEST_USER, 'test', 'card-1', { label: 'hello' });
+      const cards = srs.getDeckCards(TEST_USER, 'test');
+      assert.strictEqual(cards.length, 1);
+    });
+
+    it('gradeCard with good advances card state', () => {
+      srs.createCard(TEST_USER, 'test', 'card-1', {});
+      const updated = srs.gradeCard(TEST_USER, 'test', 'card-1', 'good');
+      assert.strictEqual(updated.reps, 1);
+      assert.ok(updated.due > new Date());
+    });
+
+    it('gradeCard with again keeps card due soon', () => {
+      srs.createCard(TEST_USER, 'test', 'card-1', {});
+      const updated = srs.gradeCard(TEST_USER, 'test', 'card-1', 'again');
+      assert.strictEqual(updated.reps, 1);
+      assert.strictEqual(updated.lapses, 0);
+    });
+
+    it('gradeCard throws for unknown card', () => {
+      assert.throws(() => srs.gradeCard(TEST_USER, 'test', 'nope', 'good'), /not found/);
+    });
+
+    it('getDueCards returns only cards with due <= now', () => {
+      srs.createCard(TEST_USER, 'test', 'card-1', {});
+      const due = srs.getDueCards(TEST_USER, 'test');
+      assert.strictEqual(due.length, 1);
+      srs.gradeCard(TEST_USER, 'test', 'card-1', 'good');
+      const dueAfter = srs.getDueCards(TEST_USER, 'test');
+      assert.strictEqual(dueAfter.length, 0);
+    });
+
+    it('getDueCount returns count of due cards', () => {
+      srs.createCard(TEST_USER, 'test', 'card-1', {});
+      srs.createCard(TEST_USER, 'test', 'card-2', {});
+      assert.strictEqual(srs.getDueCount(TEST_USER, 'test'), 2);
+    });
+
+    it('serialization round-trips dates correctly for generic decks', () => {
+      srs.createCard(TEST_USER, 'test', 'card-1', {});
+      srs.gradeCard(TEST_USER, 'test', 'card-1', 'good');
+      srs.clearSrsCache(TEST_USER);
+      const cards = srs.getDeckCards(TEST_USER, 'test');
+      assert.ok(cards[0].due instanceof Date);
+      assert.ok(cards[0].last_review instanceof Date);
+    });
+  });
 });
