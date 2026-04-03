@@ -84,6 +84,7 @@ let apiCompleteWhackAMole = null;
 
 // Speed review API
 let apiGetDueWords = null;
+let apiGetVocabDueCount = null;
 let apiStartSpeedReviewRoom = null;
 let apiProgressSpeedReviewRoom = null;
 let apiCompleteSpeedReviewRoom = null;
@@ -128,6 +129,7 @@ export function init(callbacks) {
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
   apiGetDueWords = callbacks.apiGetDueWords;
+  apiGetVocabDueCount = callbacks.apiGetVocabDueCount;
   apiStartSpeedReviewRoom = callbacks.apiStartSpeedReviewRoom;
   apiProgressSpeedReviewRoom = callbacks.apiProgressSpeedReviewRoom;
   apiCompleteSpeedReviewRoom = callbacks.apiCompleteSpeedReviewRoom;
@@ -331,15 +333,17 @@ function closeInventory() {
 }
 
 /** Hub phase — show Speed Review + Upgrades + Infiltrate buttons */
-export function renderHub() {
+export async function renderHub() {
   const gameState = getGameState();
   const tokens = gameState.meta?.progressionTokens || 0;
 
   const pvpTeams = gameState.meta?.pvpTeams || [null, null, null];
   const hasPvpTeams = pvpTeams.some(t => t !== null);
 
+  const dueCount = apiGetVocabDueCount ? (await apiGetVocabDueCount().catch(() => ({ count: 0 }))).count : 0;
+
   renderButtons([
-    { label: '📚 速習', onClick: async () => {
+    { label: `📚 速習${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
       const result = await apiGetDueWords();
       if (result?.words?.length > 0) {
         speedReview.start(result.words);

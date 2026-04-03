@@ -1679,6 +1679,7 @@ async function initGame() {
       body: JSON.stringify({ words })
     }),
     apiGetDueWords: async () => getVocabDueWords(),
+    apiGetVocabDueCount: async () => getVocabDueCount(),
     apiStartSpeedReviewRoom,
     apiProgressSpeedReviewRoom,
     apiCompleteSpeedReviewRoom,
