@@ -1143,15 +1143,12 @@ function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 
 function showVictoryModal(result) {
   audio.stopBGM();
-  actions.clear(); // Clear stale move buttons now, not when next combat starts
-  narrationBox.show('Victory!', { autoDismiss: 2000 });
+  actions.clear();
 
-  // Show collection toast for newly befriended creatures
   if (result.newCollectionAdditions?.length > 0) {
     showCollectionToast(result.newCollectionAdditions);
   }
 
-  // Trigger batch refresh on combat end if any pending reviews
   if (combatReviewedBatch.length > 0) {
     const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
     combatReviewedBatch = [];
@@ -1160,7 +1157,7 @@ function showVictoryModal(result) {
   setTimeout(async () => {
     await loadGameState();
     updateUI();
-  }, 1500);
+  }, 300);
 }
 
 function showGameOverModal(result) {

@@ -3334,7 +3334,7 @@ export async function stopCombatLoop(result) {
 
   // updateUI() removed: the phase is still 'combat' here, so updateScene()
   // would re-render defeated enemies as live sprites (ghost bug).
-  // showVictoryModal's 1500ms timer calls loadGameState() + updateUI() with
+  // showVictoryModal's timer calls loadGameState() + updateUI() with
   // the correct new phase; showGameOverModal handles its own UI.
 }
 
