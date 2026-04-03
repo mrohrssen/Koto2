@@ -35,9 +35,9 @@ export function getTierClassName(tier) {
 export const TIER_EFFECTS = [
   { shake: 'none',   hitStop: 0,   particles: 4,  flash: 'none' },
   { shake: 'light',  hitStop: 30,  particles: 8,  flash: 'none' },
-  { shake: 'medium', hitStop: 60,  particles: 12, flash: 'element' },
-  { shake: 'heavy',  hitStop: 100, particles: 18, flash: 'both' },
-  { shake: 'heavy',  hitStop: 150, particles: 25, flash: 'screen2x' },
+  { shake: 'medium', hitStop: 60,  particles: 12, flash: 'none' },
+  { shake: 'heavy',  hitStop: 100, particles: 18, flash: 'none' },
+  { shake: 'heavy',  hitStop: 150, particles: 25, flash: 'none' },
 ];
 
 /** Recoil distance per tier (px) */
