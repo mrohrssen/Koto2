@@ -437,6 +437,58 @@ export async function getDueWords(reviewedWords = []) {
   }
 }
 
+/**
+ * Get due vocab words from internal FSRS (not JPDB).
+ * @returns {Promise<Object>} { words: Array }
+ */
+export async function getVocabDueWords() {
+  try {
+    const response = await fetch(apiUrl('/api/game/known-words/due-words'), {
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('[API] Failed to get vocab due words:', error);
+    return { words: [] };
+  }
+}
+
+/**
+ * Get count of due vocab words from internal FSRS.
+ * @returns {Promise<Object>} { count: number }
+ */
+export async function getVocabDueCount() {
+  try {
+    const response = await fetch(apiUrl('/api/game/known-words/due-count'), {
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('[API] Failed to get vocab due count:', error);
+    return { count: 0 };
+  }
+}
+
+/**
+ * Review a vocab word via internal FSRS.
+ * @param {string} word - The word to review
+ * @param {string} grade - 'good' or 'again'
+ * @returns {Promise<Object>} { ok, mastered, card }
+ */
+export async function reviewVocabWord(word, grade) {
+  try {
+    const response = await fetch(apiUrl('/api/game/known-words/review'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ word, grade })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('[API] Failed to review vocab word:', error);
+    return null;
+  }
+}
+
 /** Mark word discovery room as complete
  * @returns {Promise<Object>} Result with updated state
  */
