@@ -421,13 +421,13 @@ export async function showNpcSprite(spritePath, { slideIn = false } = {}) {
   const screenH = app.screen.height;
   const sprite = new Sprite(texture);
   sprite.anchor.set(0.5);
-  sprite.width = 112;
-  sprite.height = 112;
+  sprite.width = 170;
+  sprite.height = 170;
   sprite.scale.x *= -1; // Face left (same as enemy creatures)
   sprite.y = screenH * 0.5;
 
   if (slideIn) {
-    sprite.x = screenW + 112;
+    sprite.x = screenW + 170;
     container.addChild(sprite);
     npcSprite = sprite;
     await tween(sprite, { x: screenW * 0.7 }, { duration: 400, ease: 'easeOut' });
@@ -447,7 +447,7 @@ export async function hideNpcSprite({ slideOut = false } = {}) {
   if (slideOut) {
     const { app } = getStage();
     const screenW = app?.screen.width || 400;
-    await tween(npcSprite, { x: screenW + 112 }, { duration: 300, ease: 'easeIn' });
+    await tween(npcSprite, { x: screenW + 170 }, { duration: 300, ease: 'easeIn' });
   }
   if (npcSprite) {
     npcSprite.destroy();
