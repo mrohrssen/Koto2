@@ -1224,7 +1224,37 @@ html, body {
   border-top: 1px solid rgba(0,0,0,0.06);
 }
 
-/* Vocab text with ruby */
+/* Vocab vertical stack: romaji → kana → English */
+.sac-vocab-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+  gap: 1px;
+  line-height: 1.2;
+}
+
+.sac-romaji {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-transform: lowercase;
+}
+
+.sac-kana {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sac-english {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Legacy inline vocab (kept for non-attack-card uses) */
 .sac-vocab {
   font-size: 24px;
   font-weight: 700;

@@ -159,6 +159,21 @@ function actionIconPath(nameEn) {
   return slug ? `/assets/sprites/actions/${slug}.webp?v=20260322` : '';
 }
 
+function primaryMeaning(english) {
+  if (!english) return '';
+  const first = english.split(/[;,/]/)[0].trim();
+  return first.charAt(0).toUpperCase() + first.slice(1);
+}
+
+function vocabStackHtml(reading, english) {
+  const romaji = reading ? toRomaji(reading) : '';
+  return `<div class="sac-vocab-stack">
+    <span class="sac-romaji">${romaji}</span>
+    <span class="sac-kana">${reading || ''}</span>
+    <span class="sac-english">${primaryMeaning(english)}</span>
+  </div>`;
+}
+
 function wrapWithRuby(word, reading, englishReading) {
   if (!word || !reading) return word || '';
   // Kanji: show hiragana reading
@@ -174,9 +189,6 @@ function wrapWithRuby(word, reading, englishReading) {
 
 function buildSplitAttackCard(atk, isEnemy) {
   const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
-
-  const baseWordHtml = renderJpFirst(atk.attackerBaseWord, atk.attackerBaseReading, atk.attackerBaseMeaning);
-  const skillNameHtml = renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn);
 
   // Creature names: use English name as furigana for katakana (not teaching targets)
   const attackerNameJp = atk.attackerNameJp || atk.attackerName;
@@ -216,14 +228,12 @@ function buildSplitAttackCard(atk, isEnemy) {
     <div class="sac-right">
       <div class="sac-row" data-row="0">
         ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        <span class="sac-vocab">${baseWordHtml}</span>
-        <span class="sac-meaning">${atk.attackerBaseMeaning || ''}</span>
+        ${vocabStackHtml(atk.attackerBaseReading, atk.attackerBaseMeaning)}
         <span class="sac-tag sac-tag-base">BASE</span>
       </div>
       <div class="sac-row" data-row="1">
         ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        <span class="sac-vocab">${skillNameHtml}</span>
-        <span class="sac-meaning">${atk.attackerSkillEn || ''}</span>
+        ${vocabStackHtml(atk.attackerSkillReading, atk.attackerSkillEn)}
         <span class="sac-tag ${tagClass}">${tagLabel}</span>
       </div>
       <div class="sac-row sac-impact" data-row="2">
@@ -280,9 +290,6 @@ function insertNpcAttackCard(atk) {
   const theme = ELEMENT_THEME[atk.moveElement] || ELEMENT_THEME['neutral'] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
   const spriteUrl = npcSpritePath(atk.attackerId);
 
-  const baseWordHtml = renderJpFirst(atk.attackerBaseWord, atk.attackerBaseReading, atk.attackerBaseMeaning);
-  const skillNameHtml = renderJpFirst(atk.attackerSkillName, atk.attackerSkillReading, atk.attackerSkillEn);
-
   const attackerNameJp = atk.attackerNameJp || atk.attackerName;
   const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
 
@@ -316,14 +323,12 @@ function insertNpcAttackCard(atk) {
     <div class="sac-right">
       <div class="sac-row" data-row="0">
         ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        <span class="sac-vocab">${baseWordHtml}</span>
-        <span class="sac-meaning">${atk.attackerBaseMeaning || ''}</span>
+        ${vocabStackHtml(atk.attackerBaseReading, atk.attackerBaseMeaning)}
         <span class="sac-tag sac-tag-base">BASE</span>
       </div>
       <div class="sac-row" data-row="1">
         ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        <span class="sac-vocab">${skillNameHtml}</span>
-        <span class="sac-meaning">${atk.attackerSkillEn || ''}</span>
+        ${vocabStackHtml(atk.attackerSkillReading, atk.attackerSkillEn)}
         <span class="sac-tag ${tagClass}">${tagLabel}</span>
       </div>
       <div class="sac-row sac-impact" data-row="2">
