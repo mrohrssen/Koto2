@@ -1090,16 +1090,9 @@ export async function renderFriendlyNpc() {
     }
   }
 
-  // Show NPC greeting before item cards
-  const npc = room?.npc;
-  if (npc && sceneModule?.showNarration) {
-    const greetings = npc.shopGreetings || ['こんにちは！'];
-    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-    await sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });
-  }
-
   const offers = friendlyNpcState.offered || [];
 
+  // Render item cards first so they're visible immediately
   renderChoices({
     cards: offers.map(item => ({
       sprite: itemSpriteHtml(item.id, item.word),
@@ -1148,6 +1141,14 @@ export async function renderFriendlyNpc() {
       });
     },
   });
+
+  // Show NPC greeting as non-blocking overlay (items already visible behind it)
+  const npc = room?.npc;
+  if (npc && sceneModule?.showNarration) {
+    const greetings = npc.shopGreetings || ['こんにちは！'];
+    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+    sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });
+  }
 }
 
 function startWhackAMoleGame(pool) {
