@@ -18,7 +18,7 @@ const LABEL_FONT_SIZE = 9;
 const LABEL_PADDING_X = 4;
 const LABEL_PADDING_Y = 2;
 const LABEL_GAP = 3;
-const LABEL_OFFSET_Y = -38;
+const LABEL_SIDE_OFFSET = 50;
 
 const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF' };
 
@@ -105,15 +105,15 @@ export function syncPixiStatusLabels(side, index, keys, statStages) {
 
   if (pills.length === 0) return;
 
-  // Position pills centered horizontally above sprite base position
-  const totalWidth = pills.reduce((sum, p) => sum + p.width, 0) + LABEL_GAP * (pills.length - 1);
-  let x = sprite.baseX - totalWidth / 2;
-  const y = sprite.baseY + LABEL_OFFSET_Y;
+  // Position pills stacked vertically beside the sprite
+  const pillHeight = pills[0].height;
+  const totalHeight = pills.length * pillHeight + LABEL_GAP * (pills.length - 1);
+  const startY = sprite.baseY - totalHeight / 2;
+  const xOffset = side === 'player' ? -LABEL_SIDE_OFFSET : LABEL_SIDE_OFFSET;
 
-  for (const pill of pills) {
-    pill.x = x + pill.width / 2;
-    pill.y = y;
-    x += pill.width + LABEL_GAP;
+  for (let i = 0; i < pills.length; i++) {
+    pills[i].x = sprite.baseX + xOffset;
+    pills[i].y = startY + i * (pillHeight + LABEL_GAP);
   }
 
   sprite.statusLabels = pills;
@@ -568,13 +568,14 @@ export async function resizeFormations(width, height) {
     for (const sprite of creatureSprites[side]) {
       if (!sprite.statusLabels?.length) continue;
       const pills = sprite.statusLabels;
-      const totalWidth = pills.reduce((sum, p) => sum + p.width, 0) + LABEL_GAP * (pills.length - 1);
-      let x = sprite.baseX - totalWidth / 2;
-      const y = sprite.baseY + LABEL_OFFSET_Y;
-      for (const pill of pills) {
-        pill.x = x + pill.width / 2;
-        pill.y = y;
-        x += pill.width + LABEL_GAP;
+      const pillHeight = pills[0].height;
+      const totalHeight = pills.length * pillHeight + LABEL_GAP * (pills.length - 1);
+      const startY = sprite.baseY - totalHeight / 2;
+      const xOffset = side === 'player' ? -LABEL_SIDE_OFFSET : LABEL_SIDE_OFFSET;
+
+      for (let i = 0; i < pills.length; i++) {
+        pills[i].x = sprite.baseX + xOffset;
+        pills[i].y = startY + i * (pillHeight + LABEL_GAP);
       }
     }
   }
