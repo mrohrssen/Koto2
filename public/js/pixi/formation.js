@@ -133,6 +133,15 @@ export function clearAllPixiStatusLabels() {
   }
 }
 
+/** Remove the hidden class from a formation info box so it fades in. */
+function revealFormationInfo(side, dataIndex) {
+  const sel = side === 'player' ? '.player-formation' : '.enemy-formation';
+  const info = document.querySelector(
+    `${sel} .formation-slot[data-index="${dataIndex}"] .formation-info`
+  );
+  if (info) info.classList.remove('formation-info--hidden');
+}
+
 function sameFormation(prev, creatures, isBoss) {
   if (!prev || !Array.isArray(prev.creatures)) return false;
   if (!!prev.opts?.isBoss !== !!isBoss) return false;
@@ -292,6 +301,7 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
       sprite.x = targetX;
       sprite.baseX = targetX;
       sprite._entering = false;
+      revealFormationInfo(side, dataIndex);
     }
 
     // Depth scaling
@@ -304,8 +314,10 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
 
     // Store base position for walking animation
     sprite.baseY = sprite.y;
-    sprite.phaseOffset = Math.random() * Math.PI * 2; // Random phase so they don't sync
+    sprite.phaseOffset = Math.random() * Math.PI * 2;
     sprite.creatureData = creature;
+    sprite._side = side;
+    sprite._dataIndex = dataIndex;
 
     // KO state
     if ((creature.currentHp ?? creature.hp ?? 1) <= 0) {
@@ -470,6 +482,7 @@ export function updateFormations(delta) {
           sprite.x = sprite._enterTarget;
           sprite.baseX = sprite._enterTarget;
           sprite._entering = false;
+          revealFormationInfo(sprite._side, sprite._dataIndex);
         }
         continue;
       }

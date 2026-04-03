@@ -146,8 +146,9 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     slotEl.appendChild(spriteEl);
 
     // Info box: name (romaji + hiragana) + bars
+    // Hidden initially for enemy side — revealed after Pixi entrance animation completes
     const infoBox = document.createElement('div');
-    infoBox.className = 'formation-info';
+    infoBox.className = 'formation-info' + (side === 'enemy' ? ' formation-info--hidden' : '');
 
     // Name column: romaji on top, hiragana below
     const nameCol = document.createElement('div');
