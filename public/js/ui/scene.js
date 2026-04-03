@@ -211,11 +211,6 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     infoBox.appendChild(barsEl);
     slotEl.appendChild(infoBox);
 
-    // Status icons container (populated by updateStatusIcons from event-popup.js)
-    const statusIcons = document.createElement('div');
-    statusIcons.className = 'status-icons';
-    slotEl.appendChild(statusIcons);
-
     container.appendChild(slotEl);
   });
 
