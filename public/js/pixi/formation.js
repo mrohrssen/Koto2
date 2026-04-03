@@ -403,19 +403,41 @@ export async function animateLevelUp(side, index) {
 
 /**
  * Reposition formations after resize.
+ * Moves existing sprites to match new DOM anchor positions without tearing down
+ * and async-reloading textures. The old approach (full showFormation rebuild)
+ * caused sprites to vanish on mobile Safari during address-bar resize events.
  */
 export async function resizeFormations(width, height) {
-  // Re-render active formations so iOS Safari address-bar resize/orientation
-  // keeps sprite coordinates aligned with the new viewport.
-  const playerInput = lastFormationInput.player;
-  const enemyInput = lastFormationInput.enemy;
-  // Clear cache so sameFormation() doesn't skip the re-render
-  lastFormationInput.player = null;
-  lastFormationInput.enemy = null;
-  if (playerInput) {
-    await showFormation('player', playerInput.creatures, { ...playerInput.opts, skipEnter: true });
-  }
-  if (enemyInput) {
-    await showFormation('enemy', enemyInput.creatures, { ...enemyInput.opts, skipEnter: true });
+  const { app } = getStage();
+  if (!app) return;
+
+  const sceneArea = document.getElementById('scene-area');
+  const sceneRect = sceneArea?.getBoundingClientRect();
+
+  for (const side of ['player', 'enemy']) {
+    const sprites = creatureSprites[side];
+    if (!sprites.length) continue;
+
+    const formationSel = side === 'player' ? '.player-formation' : '.enemy-formation';
+    const input = lastFormationInput[side];
+    const creatures = input?.creatures || [];
+
+    for (const sprite of sprites) {
+      const c = sprite.creatureData;
+      if (!c) continue;
+      const dataIndex = creatures.indexOf(c);
+      if (dataIndex < 0) continue;
+
+      const anchorEl = sceneRect && document.querySelector(
+        `${formationSel} .formation-slot[data-index="${dataIndex}"] .formation-sprite--pixi-anchor`
+      );
+      if (anchorEl) {
+        const anchorRect = anchorEl.getBoundingClientRect();
+        sprite.x = anchorRect.left + anchorRect.width / 2 - sceneRect.left;
+        sprite.y = anchorRect.top + anchorRect.height / 2 - sceneRect.top;
+        sprite.baseX = sprite.x;
+        sprite.baseY = sprite.y;
+      }
+    }
   }
 }
