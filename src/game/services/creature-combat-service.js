@@ -511,6 +511,302 @@ export function processDefendTurn(allies) {
   return { mpRegens };
 }
 
+/** Enemy AI: 50% strongest damage move, 50% random move. */
+export function pickEnemyCombatMove(enemy) {
+  if (!enemy.moves || enemy.moves.length === 0) return null;
+  if (Math.random() < 0.5) {
+    const damageMoves = enemy.moves.filter(m => m.category === 'damage');
+    if (damageMoves.length > 0) {
+      return damageMoves.reduce((best, m) => ((m.power || 0) > (best.power || 0) ? m : best));
+    }
+  }
+  return enemy.moves[Math.floor(Math.random() * enemy.moves.length)];
+}
+
+/**
+ * One enemy strike (damage move). Shared by processEnemyTurn and initiative interleave.
+ * @returns {object|null} Attack record or null if skipped
+ */
+export function buildEnemyStrikeRecord(enemy, attackerIndex, move, allies, enemies, defendActive = false, itemBuffs = null) {
+  if (!enemy || enemy.hp <= 0) return null;
+  const currentAliveAllies = allies.filter(a => a.hp > 0);
+  if (currentAliveAllies.length === 0) return null;
+
+  let target;
+  if (isConfused(enemy)) {
+    const allAlive = [...allies, ...enemies].filter(c => c.hp > 0 && c !== enemy);
+    target = allAlive[Math.floor(Math.random() * allAlive.length)];
+  } else {
+    const taunter = getTauntTarget(currentAliveAllies);
+    target = taunter || selectTarget(enemy, currentAliveAllies);
+  }
+
+  const variance = rollVariance();
+  const stab = move.element !== 'neutral' && move.element === enemy.element;
+  const stabMult = stab ? 1.5 : 1.0;
+  const elemMult = getElementMultiplier(move.element, target.element);
+  const typeMult = elemMult * stabMult;
+  const buffedAttack = Math.floor(enemy.attack * getAttackMultiplier(enemy));
+  let damage = calculateCreatureDamage({
+    attackerLevel: Math.max(1, enemy.level || 1),
+    attack: buffedAttack,
+    defenderDefense: Math.floor((target.defense ?? 5) * getDefenseMultiplier(target)),
+    power: move.power,
+    typeMultiplier: typeMult,
+    variance
+  });
+
+  if (defendActive) {
+    damage = Math.floor(damage * 0.5);
+  }
+  if (itemBuffs) {
+    damage = applyDamageReduction(damage, itemBuffs);
+  }
+
+  const shieldReduction = getDamageReduction(target);
+  if (shieldReduction > 0) {
+    damage = Math.floor(damage * (1 - shieldReduction / 100));
+  }
+
+  target.hp = Math.max(0, target.hp - damage);
+
+  if (damage > 0) breakSleep(target);
+
+  return {
+    attackerIndex,
+    attackerId: enemy.id,
+    attackerName: enemy.nameEn,
+    attackerNameJp: enemy.name,
+    attackerElement: enemy.element,
+    attackerBaseWord: enemy.baseWord,
+    attackerBaseReading: enemy.baseReading,
+    attackerBaseMeaning: enemy.baseMeaning,
+    attackerSkillName: move.name,
+    attackerSkillReading: move.reading,
+    attackerSkillEn: move.nameEn,
+    moveId: move.id,
+    moveName: move.name,
+    moveNameEn: move.nameEn,
+    moveElement: move.element,
+    category: 'damage',
+    targetIndex: allies.indexOf(target),
+    targetId: target.id,
+    targetName: target.nameEn,
+    targetNameJp: target.name,
+    targetBaseWord: target.baseWord,
+    targetElement: target.element,
+    damage,
+    elementMultiplier: elemMult,
+    targetDefeated: target.hp <= 0
+  };
+}
+
+/**
+ * Run all submitted choices for one allied creature slot vs an opposing team.
+ * Used by PvE initiative rounds and PvP.
+ *
+ * @param {Set<number>|null} hastedSlots - Slots that consumed haste at round start (double execute, no extra MP)
+ * @param {Set|null} defeatedEnemyIndices - Kill/XP tracking (empty Set in PvP)
+ */
+export function executeSlotMoveTurn(
+  allies,
+  enemies,
+  slotIndex,
+  choices,
+  itemBuffs = null,
+  creatureParty = null,
+  metaMults = null,
+  hastedSlots = null,
+  defeatedEnemyIndices = null
+) {
+  const attacks = [];
+  const xpEvents = [];
+  const defeated = defeatedEnemyIndices || new Set();
+
+  const creature = allies[slotIndex];
+  if (!creature || creature.hp <= 0 || isIncapacitated(creature)) {
+    return { attacks, xpEvents };
+  }
+  if (!choices?.length) {
+    return { attacks, xpEvents };
+  }
+
+  for (const choice of choices) {
+    const aliveEnemies = enemies.filter(e => e.hp > 0);
+    if (aliveEnemies.length === 0) break;
+
+    const move = (creature.moves || []).find(m => m.id === choice.moveId);
+    if (!move) continue;
+    if ((creature.mp || 0) < move.mpCost) continue;
+
+    creature.mp = (creature.mp || 0) - move.mpCost;
+
+    const runOneExecute = () => {
+      const result = executeMove(
+        creature,
+        choice.creatureIndex,
+        move,
+        choice.targetIndex,
+        allies,
+        enemies,
+        itemBuffs,
+        creatureParty,
+        defeated,
+        metaMults
+      );
+      for (const atk of result.attacks) {
+        atk.attackerMp = creature.mp;
+        atk.attackerMaxMp = creature.maxMp || 0;
+        attacks.push(atk);
+      }
+      xpEvents.push(...result.xpEvents);
+    };
+
+    runOneExecute();
+    if (hastedSlots?.has(slotIndex)) {
+      runOneExecute();
+    }
+  }
+
+  return { attacks, xpEvents };
+}
+
+/**
+ * PvE combat round: allies and enemies act in one combined initiative order
+ * (highest creature level first; ties random), same initiative rule as PvP.
+ *
+ * Each creature's full turn (all move choices for that ally, or 1–2 strikes for hasted enemy)
+ * runs when its initiative slot comes up.
+ *
+ * @returns Same shape as processMoveTurn for player phase plus enemy attacks.
+ */
+export function processInterleavedPvERound(
+  allies,
+  enemies,
+  moveChoices,
+  itemBuffs = null,
+  creatureParty = null,
+  metaMults = null
+) {
+  const playerAttacks = [];
+  const enemyAttacks = [];
+  const xpEvents = [];
+  const defeatedEnemyIndices = new Set();
+  const pb = { n: 0 };
+
+  const tagPlayback = (atk, side) => {
+    atk.playbackIndex = pb.n++;
+    atk.combatSide = side;
+  };
+
+  const hastedCreatureIndices = new Set();
+  for (let i = 0; i < allies.length; i++) {
+    if (allies[i] && allies[i].hp > 0 && hasHaste(allies[i])) {
+      hastedCreatureIndices.add(i);
+      consumeHaste(allies[i]);
+    }
+  }
+
+  const choicesByAlly = new Map();
+  for (const choice of moveChoices || []) {
+    if (typeof choice.creatureIndex !== 'number') continue;
+    if (!choicesByAlly.has(choice.creatureIndex)) choicesByAlly.set(choice.creatureIndex, []);
+    choicesByAlly.get(choice.creatureIndex).push(choice);
+  }
+
+  const runAllyChoices = allyIndex => {
+    const choices = choicesByAlly.get(allyIndex);
+    const { attacks: slotAttacks, xpEvents: slotXp } = executeSlotMoveTurn(
+      allies,
+      enemies,
+      allyIndex,
+      choices,
+      itemBuffs,
+      creatureParty,
+      metaMults,
+      hastedCreatureIndices,
+      defeatedEnemyIndices
+    );
+    for (const atk of slotAttacks) {
+      tagPlayback(atk, 'player');
+      playerAttacks.push(atk);
+    }
+    xpEvents.push(...slotXp);
+  };
+
+  const runEnemyTurn = enemyIndex => {
+    const enemy = enemies[enemyIndex];
+    if (!enemy || enemy.hp <= 0 || isIncapacitated(enemy)) return;
+    const aliveAllies = allies.filter(a => a.hp > 0);
+    if (aliveAllies.length === 0) return;
+
+    const move = pickEnemyCombatMove(enemy);
+    if (!move) return;
+
+    const attackCount = hasHaste(enemy) ? 2 : 1;
+    if (hasHaste(enemy)) consumeHaste(enemy);
+
+    for (let strike = 0; strike < attackCount; strike++) {
+      if (enemy.hp <= 0) break;
+      if (allies.filter(a => a.hp > 0).length === 0) break;
+      const rec = buildEnemyStrikeRecord(enemy, enemyIndex, move, allies, enemies, false, itemBuffs);
+      if (rec) {
+        tagPlayback(rec, 'enemy');
+        enemyAttacks.push(rec);
+      }
+    }
+  };
+
+  const initiative = [];
+
+  for (const [allyIndex] of choicesByAlly) {
+    const c = allies[allyIndex];
+    if (c && c.hp > 0 && !isIncapacitated(c)) {
+      initiative.push({ kind: 'ally', index: allyIndex, level: c.level || 1 });
+    }
+  }
+
+  for (let ei = 0; ei < enemies.length; ei++) {
+    const e = enemies[ei];
+    if (e && e.hp > 0 && !isIncapacitated(e) && e.moves?.length > 0) {
+      initiative.push({ kind: 'enemy', index: ei, level: e.level || 1 });
+    }
+  }
+
+  initiative.sort((a, b) => {
+    const d = (b.level || 1) - (a.level || 1);
+    if (d !== 0) return d;
+    return Math.random() - 0.5;
+  });
+
+  for (const slot of initiative) {
+    if (slot.kind === 'ally') runAllyChoices(slot.index);
+    else runEnemyTurn(slot.index);
+  }
+
+  const mpRegens = [];
+  for (const creature of allies) {
+    if (creature.hp <= 0) continue;
+    const regen = Math.floor((creature.maxMp || 0) * 0.05);
+    creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + regen);
+    mpRegens.push({ creatureId: creature.id, mp: creature.mp, maxMp: creature.maxMp, regen });
+  }
+  for (const enemy of enemies) {
+    if (enemy.hp <= 0) continue;
+    const regen = Math.floor((enemy.maxMp || 0) * 0.12);
+    enemy.mp = Math.min(enemy.maxMp || 0, (enemy.mp || 0) + regen);
+  }
+
+  return {
+    attacks: playerAttacks,
+    playerAttacks,
+    enemyAttacks,
+    allEnemiesDefeated: enemies.every(e => !e || e.hp <= 0),
+    xpEvents,
+    mpRegens
+  };
+}
+
 export function processEnemyTurn(enemies, allies, defendActive = false, itemBuffs = null) {
   const attacks = [];
   for (let attackerIndex = 0; attackerIndex < enemies.length; attackerIndex++) {
@@ -521,101 +817,20 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
     const aliveAllies = allies.filter(a => a.hp > 0);
     if (aliveAllies.length === 0) break;
 
-    // Enemy AI: 50% strongest attack move, 50% random move
-    let move = null;
-    if (enemy.moves && enemy.moves.length > 0) {
-      if (Math.random() < 0.5) {
-        // Pick the highest-power damage move
-        const damageMoves = enemy.moves.filter(m => m.category === 'damage');
-        if (damageMoves.length > 0) {
-          move = damageMoves.reduce((best, m) => (m.power || 0) > (best.power || 0) ? m : best);
-        } else {
-          move = enemy.moves[Math.floor(Math.random() * enemy.moves.length)];
-        }
-      } else {
-        move = enemy.moves[Math.floor(Math.random() * enemy.moves.length)];
-      }
-    }
+    const move = pickEnemyCombatMove(enemy);
     if (!move) continue;
 
     const attackCount = hasHaste(enemy) ? 2 : 1;
     if (hasHaste(enemy)) consumeHaste(enemy);
 
     for (let strike = 0; strike < attackCount; strike++) {
-      // Defensive re-check: creature may have died from effects mid-turn
       if (enemy.hp <= 0) break;
 
       const currentAliveAllies = allies.filter(a => a.hp > 0);
       if (currentAliveAllies.length === 0) break;
 
-      let target;
-      if (isConfused(enemy)) {
-        // Use reference inequality — duplicate template ids must still be distinct instances
-        const allAlive = [...allies, ...enemies].filter(c => c.hp > 0 && c !== enemy);
-        target = allAlive[Math.floor(Math.random() * allAlive.length)];
-      } else {
-        const taunter = getTauntTarget(currentAliveAllies);
-        target = taunter || selectTarget(enemy, currentAliveAllies);
-      }
-
-      const variance = rollVariance();
-      const stab = move.element !== 'neutral' && move.element === enemy.element;
-      const stabMult = stab ? 1.5 : 1.0;
-      const elemMult = getElementMultiplier(move.element, target.element);
-      const typeMult = elemMult * stabMult;
-      let buffedAttack = Math.floor(enemy.attack * getAttackMultiplier(enemy));
-      let damage = calculateCreatureDamage({
-        attackerLevel: Math.max(1, enemy.level || 1),
-        attack: buffedAttack,
-        defenderDefense: Math.floor((target.defense ?? 5) * getDefenseMultiplier(target)),
-        power: move.power,
-        typeMultiplier: typeMult,
-        variance
-      });
-
-      if (defendActive) {
-        damage = Math.floor(damage * 0.5);
-      }
-      if (itemBuffs) {
-        damage = applyDamageReduction(damage, itemBuffs);
-      }
-
-      const shieldReduction = getDamageReduction(target);
-      if (shieldReduction > 0) {
-        damage = Math.floor(damage * (1 - shieldReduction / 100));
-      }
-
-      target.hp = Math.max(0, target.hp - damage);
-
-      if (damage > 0) breakSleep(target);
-
-      attacks.push({
-        attackerIndex,
-        attackerId: enemy.id,
-        attackerName: enemy.nameEn,
-        attackerNameJp: enemy.name,
-        attackerElement: enemy.element,
-        attackerBaseWord: enemy.baseWord,
-        attackerBaseReading: enemy.baseReading,
-        attackerBaseMeaning: enemy.baseMeaning,
-        attackerSkillName: move.name,
-        attackerSkillReading: move.reading,
-        attackerSkillEn: move.nameEn,
-        moveId: move.id,
-        moveName: move.name,
-        moveNameEn: move.nameEn,
-        moveElement: move.element,
-        category: 'damage',
-        targetIndex: allies.indexOf(target),
-        targetId: target.id,
-        targetName: target.nameEn,
-        targetNameJp: target.name,
-        targetBaseWord: target.baseWord,
-        targetElement: target.element,
-        damage,
-        elementMultiplier: elemMult,
-        targetDefeated: target.hp <= 0,
-      });
+      const rec = buildEnemyStrikeRecord(enemy, attackerIndex, move, allies, enemies, defendActive, itemBuffs);
+      if (rec) attacks.push(rec);
     }
   }
 

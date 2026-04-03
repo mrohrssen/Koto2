@@ -65,7 +65,7 @@ import {
   syncCreatureDefense,
   CREATURES_BY_ID
 } from './creatures.js';
-import { processMoveTurn, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, applyAfterEnemyAttacks, applyRoundStartSkills, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
+import { processInterleavedPvERound, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, applyAfterEnemyAttacks, applyRoundStartSkills, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
 import { resetStatStages } from './combat/effects.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
@@ -712,9 +712,16 @@ export class GameManager {
     });
 
     const metaMults = { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 };
-    const playerResult = processMoveTurn(this.combat.allies, this.combat.enemies, moveChoices, this.run.itemBuffs, this.run.creatureParty, metaMults);
+    const playerResult = processInterleavedPvERound(
+      this.combat.allies,
+      this.combat.enemies,
+      moveChoices,
+      this.run.itemBuffs,
+      this.run.creatureParty,
+      metaMults
+    );
 
-    // Party skills proc only on player attack records (post-process processMoveTurn output)
+    // Party skills proc only on player attack records (post-process round output)
     applyPartySkillsAfterPlayerAttacks({
       attacks: playerResult.attacks,
       allies: this.combat.allies,
@@ -789,7 +796,7 @@ export class GameManager {
         }
       }
 
-      // XP already awarded per-kill in processMoveTurn
+      // XP already awarded per-kill during the interleaved round
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
@@ -890,8 +897,11 @@ export class GameManager {
       }
     }
 
-    // Enemy phase
-    const enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, false, this.run.itemBuffs);
+    // Enemy strikes already resolved in processInterleavedPvERound (level-based initiative with allies)
+    const enemyResult = {
+      attacks: playerResult.enemyAttacks || [],
+      allAlliesDefeated: this.combat.allies.every(a => !a || a.hp <= 0)
+    };
 
     // Party skills: counter attacks
     const counterAttacks = applyAfterEnemyAttacks({

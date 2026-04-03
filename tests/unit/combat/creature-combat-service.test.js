@@ -2,6 +2,7 @@ import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import {
   processMoveTurn,
+  processInterleavedPvERound,
   processDefendTurn,
   processEnemyTurn,
   processBefriend,
@@ -744,6 +745,25 @@ describe('generateBefriendQuiz', () => {
 
     assert.strictEqual(quiz.options.length, 3);
     assert.strictEqual(quiz.options.filter(o => o.correct).length, 1);
+  });
+});
+
+describe('Creature Combat - Interleaved PvE initiative', () => {
+  it('higher-level creature acts first (playback order)', () => {
+    const allies = [instantiateCreature('mizu')];
+    allies[0].level = 3;
+    allies[0].maxHp = 500;
+    allies[0].hp = 500;
+    const enemies = [instantiateCreature('ki')];
+    enemies[0].level = 50;
+    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const r = processInterleavedPvERound(allies, enemies, moveChoices, null, null, null);
+    const merged = [...r.playerAttacks, ...r.enemyAttacks].sort((a, b) => a.playbackIndex - b.playbackIndex);
+    assert.ok(merged.length >= 1, 'expected at least one attack');
+    assert.strictEqual(merged[0].combatSide, 'enemy', 'Lv50 enemy should act before Lv3 ally');
+    if (merged.length >= 2) {
+      assert.strictEqual(merged[1].combatSide, 'player');
+    }
   });
 });
 
