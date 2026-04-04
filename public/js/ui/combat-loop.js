@@ -36,6 +36,7 @@ import {
   lunge as pixiLunge, burstParticles, flowParticles, showVignette,
   ELEMENT_COLORS
 } from '../pixi/effects.js';
+import { fireElementBlast } from '../pixi/element-blasts.js';
 import {
   showDamageNumber as pixiDamageNumber, popupBuff, popupDebuff, popupSkillProc,
   showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup,
@@ -76,7 +77,6 @@ async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, element
   hapticDamageTier(tier);
 
   if (effects.hitStop > 0) await hitStop(effects.hitStop);
-  burstParticles(pos, { count: effects.particles, color: elemColor, speed: 80, life: 400, element });
 
   if (effects.shake !== 'none') {
     screenShake(effects.shake);
@@ -107,8 +107,13 @@ async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, element
  */
 async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, damage, enemyMaxHp, effectivenessType = 'normal') {
   const attackerSprite = getCreatureSprite('player', attackerIndex);
-  if (attackerSprite) await pixiLunge(attackerSprite, { distance: 20, duration: 200 });
-  await impactEffect(damage, 'enemy', targetIndex, enemyMaxHp, element, effectivenessType);
+  const fromPos = spritePos('player', attackerIndex);
+  const toPos = spritePos('enemy', targetIndex);
+  const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: 20, duration: 200 }) : Promise.resolve();
+  const blastP = fireElementBlast(fromPos, toPos, element, () => {
+    impactEffect(damage, 'enemy', targetIndex, enemyMaxHp, element, effectivenessType);
+  });
+  await Promise.all([lungeP, blastP]);
 }
 
 /**
@@ -117,9 +122,14 @@ async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, dam
  */
 async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, damage, playerMaxHp = 0, effectivenessType = 'normal') {
   const attackerSprite = getCreatureSprite('enemy', attackerIndex);
-  if (attackerSprite) await pixiLunge(attackerSprite, { distance: -20, duration: 200 });
-  await impactEffect(damage, 'player', targetIndex, playerMaxHp, element, effectivenessType);
-  showVignette(200);
+  const fromPos = spritePos('enemy', attackerIndex);
+  const toPos = spritePos('player', targetIndex);
+  const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: -20, duration: 200 }) : Promise.resolve();
+  const blastP = fireElementBlast(fromPos, toPos, element, () => {
+    impactEffect(damage, 'player', targetIndex, playerMaxHp, element, effectivenessType);
+    showVignette(200);
+  });
+  await Promise.all([lungeP, blastP]);
 }
 
 function npcSpritePath(npcId) {
@@ -512,8 +522,13 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
           }
         });
       } else if (proc.type === 'chainHit') {
-        burstParticles(spritePos('enemy', proc.targetIndex), { count: 4, color: proc.isSE ? 0xFF6B6B : 0xFFD93D });
-        pixiDamageNumber(proc.damage, spritePos('enemy', proc.targetIndex), { tier: 1 });
+        const chainFrom = spritePos('enemy', proc.sourceIndex ?? atk.targetIndex);
+        const chainTo = spritePos('enemy', proc.targetIndex);
+        const chainElement = proc.element || element;
+        await fireElementBlast(chainFrom, chainTo, chainElement, () => {
+          pixiDamageNumber(proc.damage, chainTo, { tier: 1 });
+          screenShake('light');
+        });
       } else if (proc.type === 'stageChange') {
         const SC_NAMES = { atk: 'ATK', def: 'DEF' };
         const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
@@ -1744,9 +1759,13 @@ async function showPartySkillProcs(atk) {
         }
       });
     } else if (proc.type === 'chainHit') {
-      const pos = spritePos('enemy', proc.targetIndex);
-      burstParticles(pos, { count: 4, color: proc.isSE ? 0xFF6B6B : 0xFFD93D });
-      pixiDamageNumber(proc.damage, pos, { tier: 1 });
+      const chainFrom = spritePos('enemy', proc.sourceIndex ?? atk.targetIndex);
+      const chainTo = spritePos('enemy', proc.targetIndex);
+      const chainElement = proc.element || 'neutral';
+      await fireElementBlast(chainFrom, chainTo, chainElement, () => {
+        pixiDamageNumber(proc.damage, chainTo, { tier: 1 });
+        screenShake('light');
+      });
     } else if (proc.type === 'stageChange') {
       const SC_NAMES = { atk: 'ATK', def: 'DEF' };
       const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
@@ -1832,9 +1851,12 @@ async function showCounterAttacks(result) {
     if (defenderSprite) await pixiLunge(defenderSprite, { distance: 40, duration: 300 });
 
     if (counter.damage > 0) {
-      const targetPos = spritePos('enemy', counter.targetIndex);
-      burstParticles(targetPos, { count: 6, color: 0xFF7043 });
-      pixiDamageNumber(counter.damage, targetPos, { tier: 1 });
+      const counterFrom = spritePos('player', counter.defenderIndex);
+      const counterTo = spritePos('enemy', counter.targetIndex);
+      await fireElementBlast(counterFrom, counterTo, 'neutral', () => {
+        pixiDamageNumber(counter.damage, counterTo, { tier: 1 });
+        screenShake('light');
+      });
     }
 
     // Show Vengeful Mark and other counter procs
