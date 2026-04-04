@@ -67,6 +67,8 @@ export function getManager(userId) {
           }
           manager.initMeta(data.meta);
         }
+        if (data.run) manager.run = data.run;
+        if (data.combat) manager.combat = data.combat;
       }
       if (needsSave) {
         console.log(`Migrated stale creature IDs for user ${userId}`);
@@ -94,6 +96,8 @@ export function saveManager(userId) {
     version: SAVE_VERSION,
     player: manager.player,
     meta: manager.getMeta(),
+    run: manager.run || null,
+    combat: manager.combat || null,
     savedAt: new Date().toISOString()
   };
   writeFileSync(saveFile, JSON.stringify(state, null, 2));
