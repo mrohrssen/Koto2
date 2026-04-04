@@ -183,6 +183,60 @@ test('Arc Strike chain uses attacker element', () => {
   assert.equal(chainProc.element, 'wood');
 });
 
+test('Arc Strike chainHit proc includes sourceIndex of original target', () => {
+  const combat = makeCombat();
+  const record = makeDmgRecord({ targetIndex: 0, damage: 100 });
+  const allies = [makeAlly({ element: 'fire' })];
+  const enemies = [
+    makeEnemy({ id: 'e1', hp: 100, maxHp: 100, element: 'fire' }),
+    makeEnemy({ id: 'e2', hp: 100, maxHp: 100, element: 'fire' })
+  ];
+
+  withStubbedRandom(0.01, () => {
+    applyAfterPlayerAttacks({
+      attacks: [record],
+      allies,
+      enemies,
+      runPartySkills: ['arcStrike'],
+      combat
+    });
+  });
+
+  const chainProc = record.partySkillProcs.find(p => p.type === 'chainHit');
+  assert.ok(chainProc, 'arc strike chain proc should exist');
+  assert.strictEqual(chainProc.sourceIndex, 0, 'sourceIndex should match original targetIndex');
+});
+
+test('Forked Arc bounce procs include sourceIndex tracking bounce chain', () => {
+  const combat = makeCombat();
+  const record = makeDmgRecord({ targetIndex: 0, damage: 100 });
+  const allies = [makeAlly({ element: 'fire' })];
+  const enemies = [
+    makeEnemy({ id: 'e1', hp: 100, maxHp: 100, element: 'fire' }),
+    makeEnemy({ id: 'e2', hp: 100, maxHp: 100, element: 'fire' }),
+    makeEnemy({ id: 'e3', hp: 100, maxHp: 100, element: 'fire' })
+  ];
+
+  withStubbedRandom(0.01, () => {
+    applyAfterPlayerAttacks({
+      attacks: [record],
+      allies,
+      enemies,
+      runPartySkills: ['arcStrike', 'forkedArc'],
+      combat
+    });
+  });
+
+  const chainProcs = record.partySkillProcs.filter(p => p.type === 'chainHit');
+  assert.ok(chainProcs.length >= 2, `expected at least 2 chain hits, got ${chainProcs.length}`);
+  // Every chain hit proc should have a sourceIndex
+  for (const proc of chainProcs) {
+    assert.notStrictEqual(proc.sourceIndex, undefined, `proc ${proc.skillId} bounce ${proc.bounceNum || 'initial'} should have sourceIndex`);
+  }
+  // First arc strike should originate from the original target
+  assert.strictEqual(chainProcs[0].sourceIndex, 0, 'arc strike sourceIndex should be original targetIndex');
+});
+
 // ── Forked Arc + Resonant Arc ──
 
 test('Forked Arc bounces continue with 50% chance (all succeed)', () => {

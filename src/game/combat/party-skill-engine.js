@@ -208,7 +208,8 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
         const chainProc = {
           skillId: 'arcStrike', skillName: 'Arc Strike',
           type: 'chainHit', targetIndex: chainIdx, damage: actualChainDmg,
-          element: attacker?.element || 'neutral', isSE
+          element: attacker?.element || 'neutral', isSE,
+          sourceIndex: record.targetIndex
         };
         record.partySkillProcs.push(chainProc);
 
@@ -230,6 +231,9 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
         if (active.has('forkedArc')) {
           let prevDmg = actualChainDmg;
           let bounceCount = 1; // already did 1 bounce
+          let lastBounceSource = record.targetIndex;
+          const arcStrikeProc = record.partySkillProcs.find(p => p.skillId === 'arcStrike' && p.type === 'chainHit');
+          if (arcStrikeProc) lastBounceSource = arcStrikeProc.targetIndex;
           while (bounceCount < 4 && rollProc(0.50)) {
             const bounceTargets = livingEnemies(enemies);
             if (bounceTargets.length === 0) break;
@@ -256,8 +260,10 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
             record.partySkillProcs.push({
               skillId: 'forkedArc', skillName: 'Forked Arc',
               type: 'chainHit', targetIndex: bounceIdx, damage: actualBounceDmg,
-              element: attacker?.element || 'neutral', isSE: bounceSE, bounceNum: bounceCount
+              element: attacker?.element || 'neutral', isSE: bounceSE, bounceNum: bounceCount,
+              sourceIndex: lastBounceSource
             });
+            lastBounceSource = bounceIdx;
 
             // Elemental Cascade debuff on bounces
             if (bounceSE && active.has('elementalCascade') && rollProc(0.30)) {
