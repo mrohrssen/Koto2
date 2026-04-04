@@ -4,6 +4,7 @@ node_modules/
 .jrpg-users.json
 .jrpg-save-*.json
 .jchat-*.json
+.pvp-match-*.json
 .DS_Store
 
 # Local work files

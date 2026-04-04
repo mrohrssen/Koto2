@@ -8,6 +8,7 @@
 
 import { MatchManager } from './match-manager.js';
 import { verifyToken } from '../auth/middleware.js';
+import { DATA_DIR } from '../data-dir.js';
 
 const ROUND_TIMEOUT_MS = 60000;
 
@@ -17,7 +18,10 @@ const ROUND_TIMEOUT_MS = 60000;
  * @returns {{ mm: MatchManager, io: import('socket.io').Server }}
  */
 export function setupPvpSockets(io) {
-  const mm = new MatchManager();
+  const mm = new MatchManager({ dataDir: DATA_DIR });
+
+  const restored = mm.restoreMatches();
+  if (restored > 0) console.log(`[PvP] Restored ${restored} active match(es) from disk`);
 
   // Map<userId, { timeout: NodeJS.Timeout, matchCode: string }>
   const disconnectTimers = new Map();
@@ -175,6 +179,9 @@ export function setupPvpSockets(io) {
           winner: result.winner
         });
       }
+
+      // Persist updated match state after round resolution
+      mm.saveMatch(found.code);
 
       // If there's a winner, emit match-end to the room
       if (result.winner) {

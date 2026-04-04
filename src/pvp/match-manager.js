@@ -3,9 +3,12 @@
  *
  * Manages the full lifecycle of PvP matches: create, join, team select,
  * move submission, round resolution, rematch, and cleanup.
- * Matches are ephemeral — stored in memory only, lost on server restart.
+ * When configured with a dataDir, matches are persisted to disk and
+ * restored on startup so they survive server restarts.
  */
 
+import { writeFileSync, readFileSync, readdirSync, unlinkSync, existsSync } from 'fs';
+import { join } from 'path';
 import { resolveRound } from './pvp-combat.js';
 
 // Characters excluding easily confused ones (no I, O, 0, 1)
@@ -15,6 +18,7 @@ export class MatchManager {
   /**
    * @param {object} [options]
    * @param {Function} [options.resolveRoundFn] - Override for testing; defaults to the real resolveRound
+   * @param {string} [options.dataDir] - Directory for persisting match state to disk
    */
   constructor(options = {}) {
     /** @type {Map<string, object>} matchCode -> MatchState */
@@ -25,6 +29,8 @@ export class MatchManager {
     this._resolveRound = options.resolveRoundFn || resolveRound;
     /** @type {Map<string, NodeJS.Timeout>} matchCode -> round timer */
     this._roundTimers = new Map();
+    /** @type {string|null} */
+    this._dataDir = options.dataDir || null;
   }
 
   /**
@@ -282,6 +288,7 @@ export class MatchManager {
     if (match.player1) this.socketToMatch.delete(match.player1.socketId);
     if (match.player2) this.socketToMatch.delete(match.player2.socketId);
     this.clearRoundTimer(code);
+    this.deleteMatchFile(code);
     this.matches.delete(code);
 
     return { winnerId, loserId: forfeitUserId, reason: 'forfeit' };
@@ -314,6 +321,7 @@ export class MatchManager {
     }
 
     this.clearRoundTimer(code);
+    this.deleteMatchFile(code);
     this.matches.delete(code);
     return otherPlayer;
   }
@@ -365,6 +373,50 @@ export class MatchManager {
       clearTimeout(timer);
       this._roundTimers.delete(code);
     }
+  }
+
+  /**
+   * Persist a match to disk as JSON.
+   * No-op if dataDir was not configured.
+   * @param {string} code - Match code
+   */
+  saveMatch(code) {
+    if (!this._dataDir) return;
+    const match = this.matches.get(code);
+    if (!match) return;
+    const filePath = join(this._dataDir, `.pvp-match-${code}.json`);
+    writeFileSync(filePath, JSON.stringify(match, null, 2));
+  }
+
+  /**
+   * Delete a persisted match file from disk.
+   * No-op if dataDir was not configured.
+   * @param {string} code - Match code
+   */
+  deleteMatchFile(code) {
+    if (!this._dataDir) return;
+    const filePath = join(this._dataDir, `.pvp-match-${code}.json`);
+    try { unlinkSync(filePath); } catch (e) { /* file may not exist */ }
+  }
+
+  /**
+   * Restore all persisted matches from disk into memory.
+   * @returns {number} Number of matches restored
+   */
+  restoreMatches() {
+    if (!this._dataDir || !existsSync(this._dataDir)) return 0;
+    let count = 0;
+    const files = readdirSync(this._dataDir).filter(f => f.startsWith('.pvp-match-') && f.endsWith('.json'));
+    for (const file of files) {
+      try {
+        const data = JSON.parse(readFileSync(join(this._dataDir, file), 'utf-8'));
+        if (data.code) {
+          this.matches.set(data.code, data);
+          count++;
+        }
+      } catch (e) { /* skip corrupt files */ }
+    }
+    return count;
   }
 
   /**

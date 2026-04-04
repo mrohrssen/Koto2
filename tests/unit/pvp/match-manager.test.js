@@ -1,5 +1,8 @@
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, existsSync, rmSync } from 'fs';
+import { join } from 'path';
+import os from 'os';
 import { MatchManager } from '../../../src/pvp/match-manager.js';
 
 function makeTeam() {
@@ -427,6 +430,57 @@ describe('MatchManager', () => {
     it('returns false for unknown user', () => {
       const code = mgr.createMatch('user1', 'sock1');
       assert.strictEqual(mgr.reconnect(code, 'unknown', 'sock-new'), false);
+    });
+  });
+
+  describe('match persistence', () => {
+    it('saveMatch persists and restoreMatches loads match state', () => {
+      const tmpDir = mkdtempSync(join(os.tmpdir(), 'pvp-test-'));
+      try {
+        const mm = new MatchManager({ resolveRoundFn: () => {}, dataDir: tmpDir });
+        const code = mm.createMatch('user1', 'socket1');
+        mm.joinMatch(code, 'user2', 'socket2');
+
+        mm.saveMatch(code);
+
+        const matchFile = join(tmpDir, `.pvp-match-${code}.json`);
+        assert.ok(existsSync(matchFile));
+
+        // Create fresh manager and restore
+        const mm2 = new MatchManager({ resolveRoundFn: () => {}, dataDir: tmpDir });
+        const count = mm2.restoreMatches();
+        assert.strictEqual(count, 1);
+        const restored = mm2.getMatch(code);
+        assert.ok(restored);
+        assert.strictEqual(restored.player1.userId, 'user1');
+        assert.strictEqual(restored.player2.userId, 'user2');
+      } finally {
+        rmSync(tmpDir, { recursive: true });
+      }
+    });
+
+    it('deleteMatchFile removes the file', () => {
+      const tmpDir = mkdtempSync(join(os.tmpdir(), 'pvp-test-'));
+      try {
+        const mm = new MatchManager({ resolveRoundFn: () => {}, dataDir: tmpDir });
+        const code = mm.createMatch('user1', 'socket1');
+        mm.saveMatch(code);
+
+        const matchFile = join(tmpDir, `.pvp-match-${code}.json`);
+        assert.ok(existsSync(matchFile));
+
+        mm.deleteMatchFile(code);
+        assert.ok(!existsSync(matchFile));
+      } finally {
+        rmSync(tmpDir, { recursive: true });
+      }
+    });
+
+    it('saveMatch is a no-op without dataDir', () => {
+      const mm = new MatchManager({ resolveRoundFn: () => {} });
+      const code = mm.createMatch('user1', 'socket1');
+      // Should not throw
+      mm.saveMatch(code);
     });
   });
 });
