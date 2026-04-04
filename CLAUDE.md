@@ -219,6 +219,10 @@ Skills use `process.cwd()` for project paths and `$CLAUDE_PROJECT_DIR` for sub-s
 
 **All visual/CSS/animation/rendering changes MUST be verified with screenshots before reporting completion.** Never claim a visual fix works based on code reasoning alone — run the dev server, open Playwright, navigate to the affected screen, and take a screenshot proving the change is visible. If the fix involves combat animations, play through to combat. If it involves backgrounds, navigate to where the background renders. Evidence before assertions, always.
 
+## PvE / PvP Parity
+
+**Never modify PvE combat in ways that disconnect it from PvP.** Both battle modes must share the same visual and mechanical systems. When adding or upgrading combat features (animations, effects, damage display, status indicators), the implementation should work for both PvE and PvP automatically. When that's not possible, both attack loops must be updated in the same PR. A feature that works in PvE but not PvP (or vice versa) is incomplete.
+
 ## Common Mistakes to Avoid
 
 - **Don't add equipment systems without the plan** - Equipment is designed via `/item-forge --type equipment`. See `docs/plans/2026-03-02-equipment-crafting-town-mvp-design.md`.
@@ -228,6 +232,7 @@ Skills use `process.cwd()` for project paths and `$CLAUDE_PROJECT_DIR` for sub-s
 - **Don't forget to bump `SPRITE_VERSION`** - After regenerating sprites, update it in `public/js/ui/sprite-utils.js` or users will see cached old sprites.
 - **Don't use Read tool to "show" images** - The Read tool's image display does NOT render in the terminal. To show the user images, serve them via a local HTTP server and display in the Playwright MCP browser (e.g., `python3 -m http.server` then `browser_navigate`).
 - **Don't launch Playwright without asking first** - Always ask the user before opening a Playwright browser session. Chrome session conflicts are common and launching blindly breaks things.
+- **Don't break PvE/PvP parity** - Combat features (animations, effects, UI) must work in both PvE and PvP. If you touch one attack loop, update the other.
 - **Report non-JSON code changes during forging** - Forge subagents should only produce JSON data for `forge-results.json`. If a forge job requires new code (new effect types, new systems, engine changes), **always report this to the user** before or immediately after. Don't silently add new code paths — the user needs to approve structural changes separately from content.
 
 ## Session Cleanup Rules
