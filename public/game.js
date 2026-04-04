@@ -810,12 +810,7 @@ async function startNewRun() {
       return;
     }
 
-    // Retry up to 3 times if isLoading blocks the call
-    let result = null;
-    for (let attempt = 0; attempt < 3 && !result?.state; attempt++) {
-      if (attempt > 0) await new Promise(r => setTimeout(r, 300));
-      result = await apiStartRun({ starterIds });
-    }
+    const result = await apiStartRun({ starterIds });
 
     removeCollectionOverlay();
     if (result?.state) {

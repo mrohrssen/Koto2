@@ -12,8 +12,30 @@ import { apiUrl, PLATFORM } from './platform.js';
 
 // ============ CORE API WRAPPER ============
 
-// Module-level loading state
-let isLoading = false;
+// Per-endpoint deduplication (replaces global isLoading boolean)
+const inFlightRequests = new Set();
+
+// Connection health tracking (used by offline banner)
+let consecutiveFailures = 0;
+let connectionCallbacks = { onOffline: null, onOnline: null };
+
+export function setConnectionCallbacks(cbs) {
+  connectionCallbacks = cbs;
+}
+
+function onApiSuccess() {
+  if (consecutiveFailures > 0) {
+    consecutiveFailures = 0;
+    connectionCallbacks.onOnline?.();
+  }
+}
+
+function onApiFailure() {
+  consecutiveFailures++;
+  if (consecutiveFailures >= 2) {
+    connectionCallbacks.onOffline?.();
+  }
+}
 
 /**
  * Get auth headers with JWT token
@@ -40,52 +62,80 @@ export function getAuthHeaders() {
 async function apiCall(endpoint, method = 'POST', body = null, onError = null, opts = {}) {
   logger.debug('[API] Request:', { endpoint, method });
   const bypassGate = opts.bypassLoadingGate === true;
-  if (!bypassGate && isLoading) {
-    logger.warn('[API] Request blocked - loading:', { endpoint });
+
+  // Per-endpoint dedup: block duplicate requests to the same endpoint
+  if (!bypassGate && inFlightRequests.has(endpoint)) {
+    logger.warn('[API] Request deduped - in flight:', { endpoint });
     return null;
   }
-  isLoading = true;
-  const startedAt = performance.now();
 
-  try {
-    const options = {
-      method,
-      headers: getAuthHeaders()
-    };
-    if (method !== 'GET' && body) options.body = JSON.stringify(body);
+  // GETs always retry; POSTs only if caller opts in
+  const maxAttempts = (method === 'GET' || opts.retryable) ? 3 : 1;
+  let lastError = null;
 
-    const response = await fetch(`${PLATFORM.apiBase}/api/game${endpoint}`, options);
-    const data = await response.json();
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) {
+      const baseDelay = 500 * Math.pow(2, attempt - 1);
+      const jitter = baseDelay * (0.8 + Math.random() * 0.4);
+      await new Promise(r => setTimeout(r, jitter));
+      logger.debug('[API] Retry:', { endpoint, attempt });
+    }
 
-    if (!response.ok) {
-      if (opts.returnErrorBody) {
-        return { error: data.error || `HTTP ${response.status}` };
+    if (!bypassGate) inFlightRequests.add(endpoint);
+    const startedAt = performance.now();
+
+    try {
+      const options = { method, headers: getAuthHeaders() };
+      if (method !== 'GET' && body) options.body = JSON.stringify(body);
+
+      const response = await fetch(`${PLATFORM.apiBase}/api/game${endpoint}`, options);
+
+      // 401 handled specifically — don't retry auth errors
+      if (response.status === 401) {
+        // Will be wired to redirect in Task 7
+        onApiFailure();
+        throw new Error('Session expired');
       }
-      throw new Error(data.error || 'API call failed');
-    }
 
-    const elapsedMs = Math.round(performance.now() - startedAt);
-    console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
+      const data = await response.json();
 
-    return data;
-  } catch (error) {
-    const elapsedMs = Math.round(performance.now() - startedAt);
-    console.log(`[API Timing] ${method} /api/game${endpoint} -> error in ${elapsedMs}ms`);
-    logger.error('[API] Request failed:', { endpoint, error: error.message });
-    if (onError) {
-      onError(error.message);
+      if (!response.ok) {
+        if (opts.returnErrorBody) {
+          onApiSuccess();
+          return { error: data.error || `HTTP ${response.status}` };
+        }
+        throw new Error(data.error || 'API call failed');
+      }
+
+      const elapsedMs = Math.round(performance.now() - startedAt);
+      console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
+
+      onApiSuccess();
+      return data;
+    } catch (error) {
+      const elapsedMs = Math.round(performance.now() - startedAt);
+      console.log(`[API Timing] ${method} /api/game${endpoint} -> error in ${elapsedMs}ms`);
+      lastError = error;
+
+      // Don't retry auth errors
+      if (error.message === 'Session expired') break;
+
+      onApiFailure();
+    } finally {
+      inFlightRequests.delete(endpoint);
     }
-    return null;
-  } finally {
-    isLoading = false;
   }
+
+  logger.error('[API] Request failed:', { endpoint, error: lastError?.message });
+  if (onError) onError(lastError?.message);
+  return null;
 }
 
 /**
  * Check if an API call is currently in progress
  */
 function isApiLoading() {
-  return isLoading;
+  return inFlightRequests.size > 0;
 }
 
 // ============ GAME STATE ENDPOINTS ============
@@ -144,7 +194,7 @@ async function createPlayer(name, stats, statPoints) {
  * @returns {Promise<object>} Result with state and narration
  */
 async function startRun(body = null) {
-  return apiCall('/start-run', 'POST', body);
+  return apiCall('/start-run', 'POST', body, null, { retryable: true });
 }
 
 /**
@@ -199,7 +249,7 @@ function getForceRoomType() {
 
 /** Proceed to next room */
 async function proceed() {
-  return apiCall('/proceed', 'POST', { forceRoomType: getForceRoomType() });
+  return apiCall('/proceed', 'POST', { forceRoomType: getForceRoomType() }, null, { retryable: true });
 }
 
 /** Start room encounter */
@@ -524,7 +574,7 @@ async function startCreatureEncounter() {
 }
 
 async function creatureCombatCycle(actionType, moveChoices = []) {
-  return apiCall('/creature-combat-cycle', 'POST', { actionType, moveChoices });
+  return apiCall('/creature-combat-cycle', 'POST', { actionType, moveChoices }, null, { retryable: true });
 }
 
 async function getCreatureCollection() {
