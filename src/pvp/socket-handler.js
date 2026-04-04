@@ -269,22 +269,25 @@ export function setupPvpSockets(io) {
       const timeout = setTimeout(() => {
         disconnectTimers.delete(socket.userId);
 
-        const matchFound = mm.findMatchBySocket(socket.id);
-        // After timeout, find match by code since socket id may differ
+        // Read match BEFORE forfeit deletes it (need otherPlayer reference)
         const match = mm.getMatch(code);
         if (!match) return;
 
-        // Notify the other player
+        // Award victory to the remaining player
+        const forfeitResult = mm.forfeitMatch(code, socket.userId);
+
+        // Notify the remaining player they won by forfeit
         const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
         const otherPlayer = match[otherPlayerKey];
-        if (otherPlayer) {
+        if (otherPlayer && forfeitResult) {
           const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
           if (otherSocket) {
-            otherSocket.emit('pvp:opponent-disconnected');
+            otherSocket.emit('pvp:match-forfeit', {
+              winnerId: forfeitResult.winnerId,
+              reason: 'opponent_disconnected'
+            });
           }
         }
-
-        mm.leaveMatch(code, socket.userId);
       }, 30000);
 
       disconnectTimers.set(socket.userId, { timeout, matchCode: code });

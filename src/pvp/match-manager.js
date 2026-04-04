@@ -263,6 +263,28 @@ export class MatchManager {
   }
 
   /**
+   * Forfeit a match — award victory to the other player.
+   * @param {string} code - Match code
+   * @param {string} forfeitUserId - The user who forfeits
+   * @returns {{ winnerId: string, loserId: string, reason: string }|null}
+   */
+  forfeitMatch(code, forfeitUserId) {
+    const match = this.matches.get(code);
+    if (!match) return null;
+
+    const winnerKey = match.player1?.userId === forfeitUserId ? 'player2' : 'player1';
+    const winnerId = match[winnerKey]?.userId;
+    if (!winnerId) return null;
+
+    // Clean up socket mappings
+    if (match.player1) this.socketToMatch.delete(match.player1.socketId);
+    if (match.player2) this.socketToMatch.delete(match.player2.socketId);
+    this.matches.delete(code);
+
+    return { winnerId, loserId: forfeitUserId, reason: 'forfeit' };
+  }
+
+  /**
    * Remove a match and clean up socket mappings.
    * @param {string} code
    * @param {string} userId

@@ -331,6 +331,26 @@ describe('MatchManager', () => {
     });
   });
 
+  describe('forfeitMatch', () => {
+    it('forfeitMatch awards victory to remaining player and cleans up', () => {
+      const code = mgr.createMatch('user1', 'sock1');
+      mgr.joinMatch(code, 'user2', 'sock2');
+
+      const result = mgr.forfeitMatch(code, 'user1');
+
+      assert.equal(result.winnerId, 'user2');
+      assert.equal(result.loserId, 'user1');
+      assert.equal(result.reason, 'forfeit');
+      // Match should be cleaned up
+      assert.equal(mgr.getMatch(code), null);
+    });
+
+    it('forfeitMatch returns null for unknown match', () => {
+      const result = mgr.forfeitMatch('XXXX', 'user1');
+      assert.equal(result, null);
+    });
+  });
+
   describe('findMatchBySocket', () => {
     it('finds match by player1 socket', () => {
       const code = mgr.createMatch('user1', 'sock1');
