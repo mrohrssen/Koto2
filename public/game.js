@@ -400,7 +400,11 @@ function updateStatusBar() {
   }
 }
 
+let npcDialogueRecoveryDone = false;
+
 function updateScene() {
+  if (gameState.phase !== 'npc_dialogue') npcDialogueRecoveryDone = false;
+
   if (gameState.phase === 'combat') {
     // Creature combat uses enemies[] array; legacy uses single enemy
     const enemies = gameState.combat?.enemies;
@@ -557,7 +561,13 @@ function updateGameContent() {
       // flash while the enemy entrance animation plays (~1-2s).
       break;
     case 'npc_dialogue':
-      // Handled by combat-loop's runNpcDialogue()
+      // Normally handled inline by combat-loop's handleCombatEnd().
+      // On page reload, the combat flow isn't running, so we must restart
+      // the dialogue here to prevent the player from getting stuck.
+      if (!combatLoopUI.isNpcDialogueActive() && !npcDialogueRecoveryDone) {
+        npcDialogueRecoveryDone = true;
+        combatLoopUI.runNpcDialogue().then(() => updateUI());
+      }
       break;
     case 'area_complete':
       explorationUI.renderAreaComplete();
@@ -623,7 +633,7 @@ function showEnemyDialogue(text, type = 'possessed') {
 async function loadKnownWords() {
   try {
     const resp = await fetch(apiUrl('/api/game/known-words'), {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
     });
     if (resp.ok) {
       const data = await resp.json();
