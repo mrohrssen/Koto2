@@ -115,6 +115,7 @@ import { toRomaji } from './js/ui/romaji.js';
 import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
+import { showOffline, showOnline } from './js/ui/connection-banner.js';
 
 // PixiJS battle stage imports
 import { initBattleStage } from './js/pixi/battle-stage.js';
@@ -178,6 +179,7 @@ import {
   chooseFriendlyNpcItem as apiChooseFriendlyNpcItem,
   npcBattleSkillOffers as apiNpcBattleSkillOffers,
   npcBattleSkillChoose as apiNpcBattleSkillChoose,
+  setConnectionCallbacks,
 } from './js/api.js';
 
 const API_BASE = PLATFORM.apiBase;
@@ -1823,6 +1825,11 @@ async function initGame() {
 
   // Initialize creature speech bubble system
   speechBubble.init();
+
+  // Connection status banner — shows on API failures, dismisses on recovery
+  setConnectionCallbacks({ onOffline: showOffline, onOnline: showOnline });
+  window.addEventListener('online', showOnline);
+  window.addEventListener('offline', showOffline);
 
   setupEventListeners();
 
