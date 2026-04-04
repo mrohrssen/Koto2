@@ -53,7 +53,14 @@ export function connect() {
   const token = localStorage.getItem('authToken');
   if (!token) return;
 
-  socket = io({ auth: { token }, transports: ['websocket'] });
+  socket = io({
+    auth: { token },
+    transports: ['websocket'],
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 10000
+  });
 
   const events = [
     'pvp:match-created', 'pvp:match-joined', 'pvp:opponent-joined',
@@ -61,12 +68,28 @@ export function connect() {
     'pvp:opponent-submitted', 'pvp:round-result', 'pvp:match-end',
     'pvp:opponent-wants-rematch', 'pvp:rematch-start', 'pvp:rematch-cancelled',
     'pvp:opponent-disconnected', 'pvp:opponent-reconnected', 'pvp:reconnected',
+    'pvp:match-forfeit',
     'pvp:error'
   ];
   for (const event of events) {
     socket.on(event, (data) => handlers[event]?.(data));
   }
   socket.on('connect_error', (err) => console.error('[PvP] Connection error:', err.message));
+
+  // Auto-reconnect to active match when socket recovers
+  socket.io.on('reconnect', () => {
+    const code = currentMatchCode || sessionStorage.getItem('pvpMatchCode');
+    if (code) {
+      console.log('[PvP] Auto-reconnecting to match:', code);
+      socket.emit('pvp:reconnect', { code });
+    }
+    handlers['pvp:socket-reconnected']?.();
+  });
+
+  // Expose socket lifecycle to UI for connection banner
+  socket.on('disconnect', () => {
+    handlers['pvp:socket-disconnected']?.();
+  });
 }
 
 /**
@@ -76,6 +99,7 @@ export function disconnect() {
   socket?.disconnect();
   socket = null;
   currentMatchCode = null;
+  sessionStorage.removeItem('pvpMatchCode');
 }
 
 /** Ask server to create a new match room. */
@@ -84,6 +108,7 @@ export function createMatch() { socket?.emit('pvp:create-match'); }
 /** Join an existing match by code. */
 export function joinMatch(code) {
   currentMatchCode = code;
+  sessionStorage.setItem('pvpMatchCode', code);
   socket?.emit('pvp:join-match', { code });
 }
 
@@ -107,6 +132,7 @@ export function requestRematch() { socket?.emit('pvp:request-rematch'); }
 export function leaveMatch() {
   socket?.emit('pvp:leave-match');
   currentMatchCode = null;
+  sessionStorage.removeItem('pvpMatchCode');
 }
 
 /**
@@ -118,4 +144,7 @@ export function enterLobby() {
 }
 
 // Store match code when we create a match
-on('pvp:match-created', ({ code }) => { currentMatchCode = code; });
+on('pvp:match-created', ({ code }) => {
+  currentMatchCode = code;
+  sessionStorage.setItem('pvpMatchCode', code);
+});
