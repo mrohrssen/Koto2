@@ -401,9 +401,11 @@ function updateStatusBar() {
 }
 
 let npcDialogueRecoveryDone = false;
+let combatRecoveryDone = false;
 
 function updateScene() {
   if (gameState.phase !== 'npc_dialogue') npcDialogueRecoveryDone = false;
+  if (gameState.phase !== 'combat') combatRecoveryDone = false;
 
   if (gameState.phase === 'combat') {
     // Creature combat uses enemies[] array; legacy uses single enemy
@@ -556,9 +558,12 @@ function updateGameContent() {
       });
       break;
     case 'combat':
-      // Don't clear the action area here — the combat-loop's showMoves() will
-      // overwrite it when ready. Clearing prematurely causes a visible blank
-      // flash while the enemy entrance animation plays (~1-2s).
+      // On page reload, the combat loop isn't running. Re-initialize it
+      // so the player sees their current combat state and can pick moves.
+      if (!combatLoopUI.isCombatActive() && !combatRecoveryDone) {
+        combatRecoveryDone = true;
+        combatLoopUI.startCombatLoop({ recovery: true });
+      }
       break;
     case 'npc_dialogue':
       // Normally handled inline by combat-loop's handleCombatEnd().

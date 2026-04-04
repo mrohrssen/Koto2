@@ -1416,14 +1416,20 @@ async function processPendingMoveLearn(pendingList) {
 /**
  * Start the combat loop (vocab-pause turn-based combat)
  */
-export async function startCombatLoop() {
+export async function startCombatLoop(opts = {}) {
   if (combatActive) return;
 
-  logger.info('[CombatLoop] Combat started');
+  logger.info('[CombatLoop] Combat started', opts.recovery ? '(recovery)' : '');
   combatActive = true;
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
+
+  // On recovery (page reload), re-render the scene before showing moves.
+  // updateScene() already rendered enemy sprites, just need the move UI.
+  if (opts.recovery && updateUI) {
+    updateUI();
+  }
 
   // Start move selection for the first turn
   startMoveSelection();
@@ -3471,75 +3477,85 @@ export async function showNpcGreeting(npcData) {
   if (updateUI) updateUI();
 }
 
+let npcDialogueActive = false;
+export function isNpcDialogueActive() { return npcDialogueActive; }
+
 /**
- * Run the full NPC post-combat dialogue flow
+ * Run the full NPC post-combat dialogue flow.
+ * Called from combat victory and also from updateScene() on page reload recovery.
  */
 export async function runNpcDialogue() {
+  if (npcDialogueActive) return;
   if (!apiStartNpcDialogue || !apiRespondNpcDialogue) return;
+  npcDialogueActive = true;
 
-  const dialogueData = await apiStartNpcDialogue();
-  if (!dialogueData) return;
+  try {
+    const dialogueData = await apiStartNpcDialogue();
+    if (!dialogueData) return;
 
-  const { npc, freed, rounds, userId, greetingTts, freedTts } = dialogueData;
-  const npcName = npc.nameEn || npc.name;
+    const { npc, freed, rounds, userId, greetingTts, freedTts } = dialogueData;
+    const npcName = npc.nameEn || npc.name;
 
-  // Show NPC sprite in scene area
-  if (showNpcSprite) showNpcSprite(npcName, npc.id, npc);
+    // Show NPC sprite in scene area
+    if (showNpcSprite) showNpcSprite(npcName, npc.id, npc);
 
-  // Play freed narration audio if available (fire-and-forget)
-  if (freedTts && userId) {
-    playDialogueAudio(userId, freedTts);
-  }
-  // Show freed narration (click to dismiss)
-  await narration.showNarration(renderEnFirst(freed), { speaker: npcName, html: true });
-
-  let totalDelta = 0;
-
-  for (let i = 0; i < rounds.length; i++) {
-    const round = rounds[i];
-
-    // Play NPC line audio if available (fire-and-forget)
-    if (round.npcLineTts && userId) {
-      playDialogueAudio(userId, round.npcLineTts);
+    // Play freed narration audio if available (fire-and-forget)
+    if (freedTts && userId) {
+      playDialogueAudio(userId, freedTts);
     }
-    // Show NPC line (persistent so player can read while choosing)
-    await narration.showNarration(renderEnFirst(round.npcLine), { speaker: npcName, persistent: true, html: true });
+    // Show freed narration (click to dismiss)
+    await narration.showNarration(renderEnFirst(freed), { speaker: npcName, html: true });
 
-    // Show 3 response buttons (reuses befriend dialogue styling)
-    const selectedIndex = await renderButtonsAsync(
-      round.options.map(o => ({
-        label: renderEnFirst(typeof o === 'string' ? o : o.text),
-      }))
-    );
+    let totalDelta = 0;
 
-    // Play selected option audio if available (fire-and-forget)
-    if (round.options[selectedIndex]?.tts && userId) {
-      playDialogueAudio(userId, round.options[selectedIndex].tts);
-    }
+    for (let i = 0; i < rounds.length; i++) {
+      const round = rounds[i];
 
-    // Hide narration
-    if (narration.forceHideNarration) narration.forceHideNarration();
-
-    // Submit to server
-    const result = await apiRespondNpcDialogue(i, selectedIndex);
-    if (!result) break;
-
-    if (result.dialogueComplete) {
-      totalDelta = result.totalDelta;
-      if (result.state) {
-        updateGameState(result.state);
+      // Play NPC line audio if available (fire-and-forget)
+      if (round.npcLineTts && userId) {
+        playDialogueAudio(userId, round.npcLineTts);
       }
-      break;
+      // Show NPC line (persistent so player can read while choosing)
+      await narration.showNarration(renderEnFirst(round.npcLine), { speaker: npcName, persistent: true, html: true });
+
+      // Show 3 response buttons (reuses befriend dialogue styling)
+      const selectedIndex = await renderButtonsAsync(
+        round.options.map(o => ({
+          label: renderEnFirst(typeof o === 'string' ? o : o.text),
+        }))
+      );
+
+      // Play selected option audio if available (fire-and-forget)
+      if (round.options[selectedIndex]?.tts && userId) {
+        playDialogueAudio(userId, round.options[selectedIndex].tts);
+      }
+
+      // Hide narration
+      if (narration.forceHideNarration) narration.forceHideNarration();
+
+      // Submit to server
+      const result = await apiRespondNpcDialogue(i, selectedIndex);
+      if (!result) break;
+
+      if (result.dialogueComplete) {
+        totalDelta = result.totalDelta;
+        if (result.state) {
+          updateGameState(result.state);
+        }
+        break;
+      }
     }
+
+    // Hide NPC sprite
+    if (hideNpcSprite) hideNpcSprite();
+
+    // Show bond summary toast (server clamps to +1/0/-1)
+    showBondSummary(npcName, totalDelta);
+    await delay(2200);
+    document.querySelector('.bond-summary')?.remove();
+  } finally {
+    npcDialogueActive = false;
   }
-
-  // Hide NPC sprite
-  if (hideNpcSprite) hideNpcSprite();
-
-  // Show bond summary toast (server clamps to +1/0/-1)
-  showBondSummary(npcName, totalDelta);
-  await delay(2200);
-  document.querySelector('.bond-summary')?.remove();
 }
 
 function showBondFeedback(tone, delta) {
