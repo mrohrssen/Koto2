@@ -34,6 +34,18 @@ let currentTab = 'login';
  * @param {{ onAuthenticated: function }} callbacks
  */
 export function init(callbacks) {
+  // Show session expired message if redirected from 401
+  const expiredMsg = sessionStorage.getItem('sessionExpiredMsg');
+  if (expiredMsg) {
+    sessionStorage.removeItem('sessionExpiredMsg');
+    const toast = document.createElement('div');
+    toast.className = 'auth-toast';
+    toast.textContent = expiredMsg;
+    const container = document.querySelector('.auth-container') || document.body;
+    container.prepend(toast);
+    setTimeout(() => toast.remove(), 5000);
+  }
+
   const tabs = document.querySelectorAll('.auth-tab');
   const inviteField = document.getElementById('auth-invite');
   const submitBtn = document.getElementById('auth-submit');

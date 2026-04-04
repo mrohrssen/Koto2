@@ -17,6 +17,7 @@ const inFlightRequests = new Set();
 
 // Connection health tracking (used by offline banner)
 let consecutiveFailures = 0;
+let hasRedirectedFor401 = false;
 let connectionCallbacks = { onOffline: null, onOnline: null };
 
 export function setConnectionCallbacks(cbs) {
@@ -92,7 +93,12 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
 
       // 401 handled specifically — don't retry auth errors
       if (response.status === 401) {
-        // Will be wired to redirect in Task 7
+        if (!hasRedirectedFor401) {
+          hasRedirectedFor401 = true;
+          localStorage.removeItem('authToken');
+          sessionStorage.setItem('sessionExpiredMsg', 'Session expired, please log in again');
+          window.location.href = '/';
+        }
         onApiFailure();
         throw new Error('Session expired');
       }

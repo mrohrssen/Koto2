@@ -2412,6 +2412,16 @@ html, body {
   margin-top: 4px;
 }
 
+.auth-toast {
+  background: rgba(220, 53, 69, 0.92);
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
 .auth-fields .hidden {
   display: none;
 }
