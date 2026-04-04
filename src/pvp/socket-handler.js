@@ -9,6 +9,8 @@
 import { MatchManager } from './match-manager.js';
 import { verifyToken } from '../auth/middleware.js';
 
+const ROUND_TIMEOUT_MS = 60000;
+
 /**
  * Set up all PvP Socket.IO event handlers.
  * @param {import('socket.io').Server} io
@@ -128,6 +130,9 @@ export function setupPvpSockets(io) {
       const found = mm.findMatchBySocket(socket.id);
       if (!found) return;
 
+      // Clear round timer before resolving (safe no-op if no timer)
+      mm.clearRoundTimer(found.code);
+
       const result = mm.submitMoves(found.code, socket.userId, moveChoices);
 
       if (result === null) {
@@ -181,6 +186,40 @@ export function setupPvpSockets(io) {
           winnerName = match.player2.username;
         }
         io.to(found.code).emit('pvp:match-end', { winnerId, winnerName });
+      } else if (match.phase === 'battle') {
+        // Start timer for next round's move submission
+        mm.startRoundTimer(found.code, ROUND_TIMEOUT_MS, (timedOutCode) => {
+          const m = mm.getMatch(timedOutCode);
+          if (!m || m.phase !== 'battle') return;
+
+          // Find who hasn't submitted
+          const p1Submitted = !!m.player1?.movesSubmitted;
+          const p2Submitted = !!m.player2?.movesSubmitted;
+          let forfeitUserId;
+          if (!p1Submitted && !p2Submitted) {
+            // Both timed out — forfeit the one who joined second
+            forfeitUserId = m.player2?.userId;
+          } else if (!p1Submitted) {
+            forfeitUserId = m.player1?.userId;
+          } else {
+            forfeitUserId = m.player2?.userId;
+          }
+          if (!forfeitUserId) return;
+
+          // Read player refs before forfeit deletes the match
+          const player1 = m.player1;
+          const player2 = m.player2;
+
+          const forfeitResult = mm.forfeitMatch(timedOutCode, forfeitUserId);
+          if (!forfeitResult) return;
+
+          // Notify both players
+          [player1, player2].forEach(p => {
+            if (!p) return;
+            const s = io.sockets.sockets.get(p.socketId);
+            if (s) s.emit('pvp:match-forfeit', { winnerId: forfeitResult.winnerId, reason: 'timeout' });
+          });
+        });
       }
     });
 

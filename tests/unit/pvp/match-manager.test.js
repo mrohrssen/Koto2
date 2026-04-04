@@ -351,6 +351,33 @@ describe('MatchManager', () => {
     });
   });
 
+  describe('round timer', () => {
+    it('startRoundTimer calls onTimeout after specified duration', async () => {
+      const mm = new MatchManager({ resolveRoundFn: () => {} });
+      const code = mm.createMatch('user1', 'socket1');
+
+      let timedOutCode = null;
+      mm.startRoundTimer(code, 50, (c) => { timedOutCode = c; });
+
+      assert.equal(timedOutCode, null);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+      assert.equal(timedOutCode, code);
+    });
+
+    it('clearRoundTimer cancels pending timeout', async () => {
+      const mm = new MatchManager({ resolveRoundFn: () => {} });
+      const code = mm.createMatch('user1', 'socket1');
+
+      let called = false;
+      mm.startRoundTimer(code, 50, () => { called = true; });
+      mm.clearRoundTimer(code);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+      assert.equal(called, false);
+    });
+  });
+
   describe('findMatchBySocket', () => {
     it('finds match by player1 socket', () => {
       const code = mgr.createMatch('user1', 'sock1');

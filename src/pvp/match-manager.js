@@ -23,6 +23,8 @@ export class MatchManager {
     this.socketToMatch = new Map();
     /** @type {Function} */
     this._resolveRound = options.resolveRoundFn || resolveRound;
+    /** @type {Map<string, NodeJS.Timeout>} matchCode -> round timer */
+    this._roundTimers = new Map();
   }
 
   /**
@@ -276,9 +278,10 @@ export class MatchManager {
     const winnerId = match[winnerKey]?.userId;
     if (!winnerId) return null;
 
-    // Clean up socket mappings
+    // Clean up socket mappings and round timer
     if (match.player1) this.socketToMatch.delete(match.player1.socketId);
     if (match.player2) this.socketToMatch.delete(match.player2.socketId);
+    this.clearRoundTimer(code);
     this.matches.delete(code);
 
     return { winnerId, loserId: forfeitUserId, reason: 'forfeit' };
@@ -310,6 +313,7 @@ export class MatchManager {
       this.socketToMatch.delete(match.player2.socketId);
     }
 
+    this.clearRoundTimer(code);
     this.matches.delete(code);
     return otherPlayer;
   }
@@ -334,6 +338,33 @@ export class MatchManager {
     player.socketId = newSocketId;
     this.socketToMatch.set(newSocketId, code);
     return true;
+  }
+
+  /**
+   * Start a round timer that fires onTimeout if not cleared in time.
+   * @param {string} code - Match code
+   * @param {number} durationMs - Timeout duration in milliseconds
+   * @param {Function} onTimeout - Callback receiving the match code
+   */
+  startRoundTimer(code, durationMs, onTimeout) {
+    this.clearRoundTimer(code);
+    const timer = setTimeout(() => {
+      this._roundTimers.delete(code);
+      onTimeout(code);
+    }, durationMs);
+    this._roundTimers.set(code, timer);
+  }
+
+  /**
+   * Cancel a pending round timer.
+   * @param {string} code - Match code
+   */
+  clearRoundTimer(code) {
+    const timer = this._roundTimers.get(code);
+    if (timer) {
+      clearTimeout(timer);
+      this._roundTimers.delete(code);
+    }
   }
 
   /**
