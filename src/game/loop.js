@@ -276,7 +276,7 @@ export class GameManager {
         partySkills: this.run.partySkills || [],
         itemBuffs: this.run.itemBuffs || null,
         npcDialogue: this.run?.npcDialogue || null,
-        postCombatShop: null
+        postCombatShop: this.run.postCombatShop || null
       } : null,
       room: currentRoom ? {
         ...currentRoom,
@@ -444,7 +444,11 @@ export class GameManager {
    * Skip the post-combat shop without buying
    */
   skipShop() {
-    return this.explorationService.skipShop();
+    if (!this.run) throw new Error('No run');
+    this.run._pendingShopItems = null;
+    this.run.postCombatShop = null;
+    this.emitState();
+    return { skipped: true };
   }
 
   /**
@@ -1270,10 +1274,17 @@ export class GameManager {
   }
 
   /**
-   * Roll 3 random items for the post-combat shop
-   * Koto2 MVP: post-combat shop disabled, friendly NPC rooms replace this
+   * Roll 3 random items for the post-combat shop.
+   * Koto2 MVP: post-combat shop disabled, friendly NPC rooms replace this.
+   * When re-enabled, this sets run.postCombatShop so the phase machine
+   * can recover the shop on page reload.
    */
   rollPostCombatShop() {
+    // If shop items are already active (e.g. page reload), return them
+    if (this.run?.postCombatShop?.active) {
+      return { items: this.run.postCombatShop.items };
+    }
+    // MVP: shop disabled — return null
     return null;
   }
 
@@ -1290,6 +1301,7 @@ export class GameManager {
     const selectedItem = items[itemIndex];
     applyItem(selectedItem, this.run.creatureParty, null, targetIndex);
     this.run._pendingShopItems = null;
+    this.run.postCombatShop = null;
 
     this.emitState();
     return {

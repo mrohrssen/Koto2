@@ -404,10 +404,12 @@ function updateStatusBar() {
 
 let npcDialogueRecoveryDone = false;
 let combatRecoveryDone = false;
+let postCombatShopRecoveryDone = false;
 
 function updateScene() {
   if (gameState.phase !== 'npc_dialogue') npcDialogueRecoveryDone = false;
   if (gameState.phase !== 'combat') combatRecoveryDone = false;
+  if (gameState.phase !== 'post_combat_shop') postCombatShopRecoveryDone = false;
 
   if (gameState.phase === 'combat') {
     // Creature combat uses enemies[] array; legacy uses single enemy
@@ -574,6 +576,22 @@ function updateGameContent() {
       if (!combatLoopUI.isNpcDialogueActive() && !npcDialogueRecoveryDone) {
         npcDialogueRecoveryDone = true;
         combatLoopUI.runNpcDialogue().then(() => updateUI());
+      }
+      break;
+    case 'post_combat_shop':
+      // On page reload, the shop flow isn't running. Re-trigger it so the
+      // player can complete their item selection. rollPostCombatShop returns
+      // the saved items when postCombatShop is already active on the server.
+      if (!postCombatShopRecoveryDone) {
+        postCombatShopRecoveryDone = true;
+        showPostCombatShopFlow().then(() => {
+          loadGameState().then(state => {
+            if (state) {
+              updateGameState(state);
+              updateUI();
+            }
+          });
+        });
       }
       break;
     case 'area_complete':
