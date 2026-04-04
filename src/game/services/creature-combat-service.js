@@ -2,7 +2,6 @@ import {
   calculateCreatureDamage,
   getElementMultiplier,
   rollVariance,
-  selectTarget,
   addXpToCreature,
   generateEnemyCreature,
   xpToNextLevel,
@@ -511,68 +510,94 @@ export function processDefendTurn(allies) {
   return { mpRegens };
 }
 
-/** Enemy AI: 50% strongest damage move, 50% random move. */
-export function pickEnemyCombatMove(enemy) {
-  if (!enemy.moves || enemy.moves.length === 0) return null;
-  if (Math.random() < 0.5) {
-    const damageMoves = enemy.moves.filter(m => m.category === 'damage');
-    if (damageMoves.length > 0) {
-      return damageMoves.reduce((best, m) => ((m.power || 0) > (best.power || 0) ? m : best));
-    }
-  }
+function getStrongestDamageMove(enemy) {
+  if (!enemy.moves?.length) return null;
+  const damageMoves = enemy.moves.filter(m => m.category === 'damage' || m.category === 'drain');
+  if (damageMoves.length === 0) return null;
+  return damageMoves.reduce((best, m) => ((m.power || 0) > (best.power || 0) ? m : best));
+}
+
+function getRandomMove(enemy) {
+  if (!enemy.moves?.length) return null;
   return enemy.moves[Math.floor(Math.random() * enemy.moves.length)];
 }
 
 /**
- * One enemy strike (damage move). Shared by processEnemyTurn and initiative interleave.
+ * Enemy AI step 1: pick a move and decision mode (once per turn).
+ * - Taunt: strongest damage move against taunter
+ * - Confused: random move against random creature
+ * - 2/3 smart: strongest damage move against super-effective target
+ * - 1/3 random: random move; buff/heal→allies, damage/debuff→random enemy
+ */
+export function pickEnemyMoveChoice(enemy, allies, enemies) {
+  if (!enemy.moves?.length) return null;
+  const aliveAllies = allies.filter(c => c.hp > 0);
+  if (aliveAllies.length === 0) return null;
+
+  const taunter = getTauntTarget(aliveAllies);
+  if (taunter) {
+    return { move: getStrongestDamageMove(enemy) || getRandomMove(enemy), mode: 'taunted' };
+  }
+
+  if (isConfused(enemy)) {
+    return { move: getRandomMove(enemy), mode: 'confused' };
+  }
+
+  if (Math.random() < 2 / 3) {
+    const strongest = getStrongestDamageMove(enemy);
+    if (strongest) return { move: strongest, mode: 'smart' };
+  }
+
+  return { move: getRandomMove(enemy), mode: 'random' };
+}
+
+/**
+ * Enemy AI step 2: pick a target for the chosen move/mode (per strike, for haste re-targeting).
+ */
+export function pickEnemyTarget(enemy, move, mode, allies, enemies) {
+  const aliveAllies = allies.filter(c => c.hp > 0);
+
+  switch (mode) {
+    case 'taunted': {
+      const taunter = getTauntTarget(aliveAllies);
+      return { target: taunter || aliveAllies[0], targetSide: 'player' };
+    }
+    case 'confused': {
+      const allAlive = [...allies, ...enemies].filter(c => c.hp > 0 && c !== enemy);
+      if (allAlive.length === 0) return null;
+      const target = allAlive[Math.floor(Math.random() * allAlive.length)];
+      return { target, targetSide: allies.includes(target) ? 'player' : 'enemy' };
+    }
+    case 'smart': {
+      const superEffective = aliveAllies.filter(c => getElementMultiplier(enemy.element, c.element) > 1.0);
+      const pool = superEffective.length > 0 ? superEffective : aliveAllies;
+      return { target: pool[Math.floor(Math.random() * pool.length)], targetSide: 'player' };
+    }
+    case 'random': {
+      if (['buff', 'heal', 'shield'].includes(move.category)) {
+        if (move.target === 'self') return { target: enemy, targetSide: 'enemy' };
+        const aliveTeam = enemies.filter(c => c.hp > 0);
+        return { target: aliveTeam[Math.floor(Math.random() * aliveTeam.length)] || enemy, targetSide: 'enemy' };
+      }
+      return { target: aliveAllies[Math.floor(Math.random() * aliveAllies.length)], targetSide: 'player' };
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * Build an enemy action record for any move category. Shared by processEnemyTurn and initiative interleave.
+ * Target is pre-selected by pickEnemyTarget.
  * @returns {object|null} Attack record or null if skipped
  */
-export function buildEnemyStrikeRecord(enemy, attackerIndex, move, allies, enemies, defendActive = false, itemBuffs = null) {
+export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targetSide, allies, enemies, defendActive = false, itemBuffs = null) {
   if (!enemy || enemy.hp <= 0) return null;
-  const currentAliveAllies = allies.filter(a => a.hp > 0);
-  if (currentAliveAllies.length === 0) return null;
+  if (!target || target.hp <= 0) return null;
 
-  let target;
-  if (isConfused(enemy)) {
-    const allAlive = [...allies, ...enemies].filter(c => c.hp > 0 && c !== enemy);
-    target = allAlive[Math.floor(Math.random() * allAlive.length)];
-  } else {
-    const taunter = getTauntTarget(currentAliveAllies);
-    target = taunter || selectTarget(enemy, currentAliveAllies);
-  }
+  const targetIndex = targetSide === 'player' ? allies.indexOf(target) : enemies.indexOf(target);
 
-  const variance = rollVariance();
-  const stab = move.element !== 'neutral' && move.element === enemy.element;
-  const stabMult = stab ? 1.5 : 1.0;
-  const elemMult = getElementMultiplier(move.element, target.element);
-  const typeMult = elemMult * stabMult;
-  const buffedAttack = Math.floor(enemy.attack * getAttackMultiplier(enemy));
-  let damage = calculateCreatureDamage({
-    attackerLevel: Math.max(1, enemy.level || 1),
-    attack: buffedAttack,
-    defenderDefense: Math.floor((target.defense ?? 5) * getDefenseMultiplier(target)),
-    power: move.power,
-    typeMultiplier: typeMult,
-    variance
-  });
-
-  if (defendActive) {
-    damage = Math.floor(damage * 0.5);
-  }
-  if (itemBuffs) {
-    damage = applyDamageReduction(damage, itemBuffs);
-  }
-
-  const shieldReduction = getDamageReduction(target);
-  if (shieldReduction > 0) {
-    damage = Math.floor(damage * (1 - shieldReduction / 100));
-  }
-
-  target.hp = Math.max(0, target.hp - damage);
-
-  if (damage > 0) breakSleep(target);
-
-  return {
+  const rec = {
     attackerIndex,
     attackerId: enemy.id,
     attackerName: enemy.nameEn,
@@ -588,17 +613,88 @@ export function buildEnemyStrikeRecord(enemy, attackerIndex, move, allies, enemi
     moveName: move.name,
     moveNameEn: move.nameEn,
     moveElement: move.element,
-    category: 'damage',
-    targetIndex: allies.indexOf(target),
+    category: move.category,
+    targetIndex,
+    targetSide,
     targetId: target.id,
     targetName: target.nameEn,
     targetNameJp: target.name,
     targetBaseWord: target.baseWord,
     targetElement: target.element,
-    damage,
-    elementMultiplier: elemMult,
-    targetDefeated: target.hp <= 0
+    damage: 0,
+    healAmount: 0,
+    effectApplied: null,
+    statChangesApplied: null,
+    elementMultiplier: 1.0,
+    targetDefeated: false
   };
+
+  switch (move.category) {
+    case 'damage':
+    case 'drain': {
+      const variance = rollVariance();
+      const stab = move.element !== 'neutral' && move.element === enemy.element;
+      const stabMult = stab ? 1.5 : 1.0;
+      const elemMult = getElementMultiplier(move.element, target.element);
+      const typeMult = elemMult * stabMult;
+      const buffedAttack = Math.floor(enemy.attack * getAttackMultiplier(enemy));
+      let damage = calculateCreatureDamage({
+        attackerLevel: Math.max(1, enemy.level || 1),
+        attack: buffedAttack,
+        defenderDefense: Math.floor((target.defense ?? 5) * getDefenseMultiplier(target)),
+        power: move.power,
+        typeMultiplier: typeMult,
+        variance
+      });
+
+      if (defendActive) damage = Math.floor(damage * 0.5);
+      if (itemBuffs) damage = applyDamageReduction(damage, itemBuffs);
+
+      const shieldReduction = getDamageReduction(target);
+      if (shieldReduction > 0) damage = Math.floor(damage * (1 - shieldReduction / 100));
+
+      target.hp = Math.max(0, target.hp - damage);
+      if (damage > 0) breakSleep(target);
+
+      rec.damage = damage;
+      rec.elementMultiplier = elemMult;
+      rec.targetDefeated = target.hp <= 0;
+
+      if (move.category === 'drain') {
+        rec.healAmount = applyHeal(enemy, Math.floor(damage * 0.5));
+      }
+
+      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
+      rec.statChangesApplied = tryApplyStatChanges(move, target);
+      break;
+    }
+
+    case 'heal': {
+      const variance = rollVariance();
+      rec.healAmount = applyHeal(target, Math.floor((enemy.attack / 10) * move.power * variance));
+      break;
+    }
+
+    case 'buff': {
+      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
+      rec.statChangesApplied = tryApplyStatChanges(move, target);
+      break;
+    }
+
+    case 'debuff': {
+      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
+      rec.statChangesApplied = tryApplyStatChanges(move, target);
+      break;
+    }
+
+    case 'shield': {
+      applyShield(target, { percent: move.power, duration: move.statusDuration || 2, sourceId: enemy.id });
+      rec.effectApplied = 'shield';
+      break;
+    }
+  }
+
+  return rec;
 }
 
 /**
@@ -740,8 +836,9 @@ export function processInterleavedPvERound(
     const aliveAllies = allies.filter(a => a.hp > 0);
     if (aliveAllies.length === 0) return;
 
-    const move = pickEnemyCombatMove(enemy);
-    if (!move) return;
+    const choice = pickEnemyMoveChoice(enemy, allies, enemies);
+    if (!choice) return;
+    const { move, mode } = choice;
 
     const attackCount = hasHaste(enemy) ? 2 : 1;
     if (hasHaste(enemy)) consumeHaste(enemy);
@@ -749,7 +846,9 @@ export function processInterleavedPvERound(
     for (let strike = 0; strike < attackCount; strike++) {
       if (enemy.hp <= 0) break;
       if (allies.filter(a => a.hp > 0).length === 0) break;
-      const rec = buildEnemyStrikeRecord(enemy, enemyIndex, move, allies, enemies, false, itemBuffs);
+      const targeting = pickEnemyTarget(enemy, move, mode, allies, enemies);
+      if (!targeting) break;
+      const rec = buildEnemyActionRecord(enemy, enemyIndex, move, targeting.target, targeting.targetSide, allies, enemies, false, itemBuffs);
       if (rec) {
         tagPlayback(rec, 'enemy');
         enemyAttacks.push(rec);
@@ -817,8 +916,9 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
     const aliveAllies = allies.filter(a => a.hp > 0);
     if (aliveAllies.length === 0) break;
 
-    const move = pickEnemyCombatMove(enemy);
-    if (!move) continue;
+    const choice = pickEnemyMoveChoice(enemy, allies, enemies);
+    if (!choice) continue;
+    const { move, mode } = choice;
 
     const attackCount = hasHaste(enemy) ? 2 : 1;
     if (hasHaste(enemy)) consumeHaste(enemy);
@@ -829,7 +929,10 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
       const currentAliveAllies = allies.filter(a => a.hp > 0);
       if (currentAliveAllies.length === 0) break;
 
-      const rec = buildEnemyStrikeRecord(enemy, attackerIndex, move, allies, enemies, defendActive, itemBuffs);
+      const targeting = pickEnemyTarget(enemy, move, mode, allies, enemies);
+      if (!targeting) break;
+
+      const rec = buildEnemyActionRecord(enemy, attackerIndex, move, targeting.target, targeting.targetSide, allies, enemies, defendActive, itemBuffs);
       if (rec) attacks.push(rec);
     }
   }

@@ -455,7 +455,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   const attackerIndex = atk.attackerIndex ?? 0;
   const targetIndex = atk.targetIndex ?? 0;
   const sourceSide = isEnemy ? 'enemy' : 'player';
-  const targetSide = isEnemy ? 'player' : 'enemy';
+  const targetSide = atk.targetSide || (isEnemy ? 'player' : 'enemy');
 
   const effectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
 
