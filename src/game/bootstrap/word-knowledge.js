@@ -1,6 +1,8 @@
 // src/game/bootstrap/word-knowledge.js
 import fs from 'fs';
 import path from 'path';
+import { getDeckCards } from '../internal-srs.js';
+import { State } from 'ts-fsrs';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 
@@ -62,4 +64,17 @@ export function loadWordKnowledge(userId) {
 export function saveWordKnowledge(wk) {
   const filePath = path.join(DATA_DIR, `word-knowledge-${wk.userId}.json`);
   fs.writeFileSync(filePath, JSON.stringify(wk, null, 2));
+}
+
+/**
+ * Get known words from FSRS vocab deck.
+ * A word is "known" when its FSRS card has state === State.Review.
+ * @param {string} userId
+ * @returns {string[]}
+ */
+export function getKnownWordsFromFsrs(userId) {
+  const cards = getDeckCards(userId, 'vocab');
+  return cards
+    .filter(c => c.state === State.Review)
+    .map(c => c.id);
 }

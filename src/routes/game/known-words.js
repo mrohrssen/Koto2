@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { join } from 'path';
-import { loadWordKnowledge, createWordKnowledge, registerExposure, saveWordKnowledge, markKnown, unmarkKnown } from '../../game/bootstrap/word-knowledge.js';
+import { loadWordKnowledge, createWordKnowledge, registerExposure, saveWordKnowledge, markKnown, unmarkKnown, getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { createCard, getDeckCards, gradeCard, getDueCards, getDueCount } from '../../game/internal-srs.js';
 import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
@@ -16,10 +16,10 @@ function getWordDict() {
 export function createKnownWordsRoutes() {
   const router = Router();
 
-  // GET /api/game/known-words
+  // GET /api/game/known-words — now uses FSRS as source of truth
   router.get('/', (req, res) => {
-    const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
-    res.json({ words: Object.keys(wk.known) });
+    const words = getKnownWordsFromFsrs(req.user.id);
+    res.json({ words });
   });
 
   // POST /api/game/known-words/expose
