@@ -1,18 +1,1688 @@
 [
-  { "id": "cid-welcome-0", "lines": ["こんにちは！"] },
-  { "id": "cid-welcome-1", "lines": ["こんにちは！", "いっしょに いく？"] },
-  { "id": "cid-welcome-2", "lines": ["おはよう！", "たのしい ところだよ！"] },
-  { "id": "cid-welcome-3", "lines": ["こんにちは！", "きょうは とても いい ひだね！"] },
-  { "id": "cid-welcome-4", "lines": ["おはよう！きょうは たのしい ところを しってるよ！", "わたしと いっしょに いく？"] },
-  { "id": "cid-welcome-5", "lines": ["こんにちは！わたしと いっしょに いく？", "すごい ものを みせたい！"] },
-  { "id": "cid-welcome-6", "lines": ["おはよう！", "ここは ひろばだよ！たのしいよ！"] },
-  { "id": "cid-welcome-7", "lines": ["こんにちは！げんきですか？", "きょうも がんばろう！"] },
-  { "id": "cid-welcome-8", "lines": ["おはよう！きょうも いっしょに あそぶ？", "わたしは ここが すき！"] },
-  { "id": "cid-welcome-9", "lines": ["こんにちは！", "わたしは とても うれしい！いっしょに いこう！"] },
-  { "id": "cid-welcome-10", "lines": ["おはよう！", "きょうは あたらしい ともだちに あえるかな？"] },
-  { "id": "cid-welcome-11", "lines": ["こんにちは！いま どこに いく？", "わたしも いきたい！"] },
-  { "id": "cid-welcome-12", "lines": ["おはよう！きょうは すこし さむいね。", "でも たのしいよ！いっしょに いこう！"] },
-  { "id": "cid-welcome-13", "lines": ["こんにちは！", "まえに ここに きたことが ある？たのしい ところだよ！"] },
-  { "id": "cid-welcome-14", "lines": ["おはよう！きょうは とても たのしい ところに いく！", "わたしは ここが すき。いっしょに いくと たのしいと おもう！"] },
-  { "id": "cid-welcome-15", "lines": ["こんにちは！", "この ばしょ、しってる？わたしが まえに きた！", "きれいな はなが あるよ！"] }
+  {
+    "id": "cid-welcome-0",
+    "lines": [
+      {
+        "text": "こんにちは！",
+        "_tokens": [
+          {
+            "surface": "こんにちは",
+            "baseForm": "今日は",
+            "pos": "感動詞",
+            "reading": "こんにちは"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "今日は"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-1",
+    "lines": [
+      {
+        "text": "こんにちは！",
+        "_tokens": [
+          {
+            "surface": "こんにちは",
+            "baseForm": "今日は",
+            "pos": "感動詞",
+            "reading": "こんにちは"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "今日は"
+        ]
+      },
+      {
+        "text": "いっしょに いく？",
+        "_tokens": [
+          {
+            "surface": "いっしょ",
+            "baseForm": "一緒",
+            "pos": "名詞",
+            "reading": "いっしょ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "いく",
+            "baseForm": "行く",
+            "pos": "動詞",
+            "reading": "いく"
+          },
+          {
+            "surface": "？",
+            "baseForm": "？",
+            "pos": "補助記号",
+            "reading": "？"
+          }
+        ],
+        "_contentWords": [
+          "一緒",
+          "に",
+          "行く"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-2",
+    "lines": [
+      {
+        "text": "おはよう！",
+        "_tokens": [
+          {
+            "surface": "おはよう",
+            "baseForm": "御早う",
+            "pos": "感動詞",
+            "reading": "おはよう"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "御早う"
+        ]
+      },
+      {
+        "text": "たのしい ところだよ！",
+        "_tokens": [
+          {
+            "surface": "たのしい",
+            "baseForm": "楽しい",
+            "pos": "形容詞",
+            "reading": "たのしい"
+          },
+          {
+            "surface": "ところ",
+            "baseForm": "所",
+            "pos": "名詞",
+            "reading": "ところ"
+          },
+          {
+            "surface": "だ",
+            "baseForm": "だ",
+            "pos": "助動詞",
+            "reading": "だ"
+          },
+          {
+            "surface": "よ",
+            "baseForm": "よ",
+            "pos": "助詞",
+            "reading": "よ"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "楽しい",
+          "所",
+          "だ",
+          "よ"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-3",
+    "lines": [
+      {
+        "text": "こんにちは！",
+        "_tokens": [
+          {
+            "surface": "こんにちは",
+            "baseForm": "今日は",
+            "pos": "感動詞",
+            "reading": "こんにちは"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "今日は"
+        ]
+      },
+      {
+        "text": "きょうは とても いい ひだね！",
+        "_tokens": [
+          {
+            "surface": "きょう",
+            "baseForm": "今日",
+            "pos": "名詞",
+            "reading": "きょう"
+          },
+          {
+            "surface": "は",
+            "baseForm": "は",
+            "pos": "助詞",
+            "reading": "は"
+          },
+          {
+            "surface": "とても",
+            "baseForm": "迚も",
+            "pos": "副詞",
+            "reading": "とても"
+          },
+          {
+            "surface": "いい",
+            "baseForm": "良い",
+            "pos": "形容詞",
+            "reading": "よい"
+          },
+          {
+            "surface": "ひだ",
+            "baseForm": "襞",
+            "pos": "名詞",
+            "reading": "ひだ"
+          },
+          {
+            "surface": "ね",
+            "baseForm": "ね",
+            "pos": "助詞",
+            "reading": "ね"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "今日",
+          "は",
+          "迚も",
+          "良い",
+          "襞",
+          "ね"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-4",
+    "lines": [
+      {
+        "text": "おはよう！きょうは たのしい ところを しってるよ！",
+        "_tokens": [
+          {
+            "surface": "おはよう",
+            "baseForm": "御早う",
+            "pos": "感動詞",
+            "reading": "おはよう"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "きょう",
+            "baseForm": "今日",
+            "pos": "名詞",
+            "reading": "きょう"
+          },
+          {
+            "surface": "は",
+            "baseForm": "は",
+            "pos": "助詞",
+            "reading": "は"
+          },
+          {
+            "surface": "たのしい",
+            "baseForm": "楽しい",
+            "pos": "形容詞",
+            "reading": "たのしい"
+          },
+          {
+            "surface": "ところ",
+            "baseForm": "所",
+            "pos": "名詞",
+            "reading": "ところ"
+          },
+          {
+            "surface": "を",
+            "baseForm": "を",
+            "pos": "助詞",
+            "reading": "を"
+          },
+          {
+            "surface": "しっ",
+            "baseForm": "知る",
+            "pos": "動詞",
+            "reading": "しる"
+          },
+          {
+            "surface": "てる",
+            "baseForm": "てる",
+            "pos": "助動詞",
+            "reading": "てる"
+          },
+          {
+            "surface": "よ",
+            "baseForm": "よ",
+            "pos": "助詞",
+            "reading": "よ"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "御早う",
+          "今日",
+          "は",
+          "楽しい",
+          "所",
+          "を",
+          "知る",
+          "てる",
+          "よ"
+        ]
+      },
+      {
+        "text": "わたしと いっしょに いく？",
+        "_tokens": [
+          {
+            "surface": "わたし",
+            "baseForm": "私",
+            "pos": "代名詞",
+            "reading": "わたし"
+          },
+          {
+            "surface": "と",
+            "baseForm": "と",
+            "pos": "助詞",
+            "reading": "と"
+          },
+          {
+            "surface": "いっしょ",
+            "baseForm": "一緒",
+            "pos": "名詞",
+            "reading": "いっしょ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "いく",
+            "baseForm": "行く",
+            "pos": "動詞",
+            "reading": "いく"
+          },
+          {
+            "surface": "？",
+            "baseForm": "？",
+            "pos": "補助記号",
+            "reading": "？"
+          }
+        ],
+        "_contentWords": [
+          "私",
+          "と",
+          "一緒",
+          "に",
+          "行く"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-5",
+    "lines": [
+      {
+        "text": "こんにちは！わたしと いっしょに いく？",
+        "_tokens": [
+          {
+            "surface": "こんにちは",
+            "baseForm": "今日は",
+            "pos": "感動詞",
+            "reading": "こんにちは"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "わたし",
+            "baseForm": "私",
+            "pos": "代名詞",
+            "reading": "わたし"
+          },
+          {
+            "surface": "と",
+            "baseForm": "と",
+            "pos": "助詞",
+            "reading": "と"
+          },
+          {
+            "surface": "いっしょ",
+            "baseForm": "一緒",
+            "pos": "名詞",
+            "reading": "いっしょ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "いく",
+            "baseForm": "行く",
+            "pos": "動詞",
+            "reading": "いく"
+          },
+          {
+            "surface": "？",
+            "baseForm": "？",
+            "pos": "補助記号",
+            "reading": "？"
+          }
+        ],
+        "_contentWords": [
+          "今日は",
+          "私",
+          "と",
+          "一緒",
+          "に",
+          "行く"
+        ]
+      },
+      {
+        "text": "すごい ものを みせたい！",
+        "_tokens": [
+          {
+            "surface": "すごい",
+            "baseForm": "凄い",
+            "pos": "形容詞",
+            "reading": "すごい"
+          },
+          {
+            "surface": "もの",
+            "baseForm": "物",
+            "pos": "名詞",
+            "reading": "もの"
+          },
+          {
+            "surface": "を",
+            "baseForm": "を",
+            "pos": "助詞",
+            "reading": "を"
+          },
+          {
+            "surface": "みせ",
+            "baseForm": "見せる",
+            "pos": "動詞",
+            "reading": "みせる"
+          },
+          {
+            "surface": "たい",
+            "baseForm": "たい",
+            "pos": "助動詞",
+            "reading": "たい"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "凄い",
+          "物",
+          "を",
+          "見せる",
+          "たい"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-6",
+    "lines": [
+      {
+        "text": "おはよう！",
+        "_tokens": [
+          {
+            "surface": "おはよう",
+            "baseForm": "御早う",
+            "pos": "感動詞",
+            "reading": "おはよう"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "御早う"
+        ]
+      },
+      {
+        "text": "ここは ひろばだよ！たのしいよ！",
+        "_tokens": [
+          {
+            "surface": "ここ",
+            "baseForm": "此処",
+            "pos": "代名詞",
+            "reading": "ここ"
+          },
+          {
+            "surface": "は",
+            "baseForm": "は",
+            "pos": "助詞",
+            "reading": "は"
+          },
+          {
+            "surface": "ひろば",
+            "baseForm": "広場",
+            "pos": "名詞",
+            "reading": "ひろば"
+          },
+          {
+            "surface": "だ",
+            "baseForm": "だ",
+            "pos": "助動詞",
+            "reading": "だ"
+          },
+          {
+            "surface": "よ",
+            "baseForm": "よ",
+            "pos": "助詞",
+            "reading": "よ"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "たのしい",
+            "baseForm": "楽しい",
+            "pos": "形容詞",
+            "reading": "たのしい"
+          },
+          {
+            "surface": "よ",
+            "baseForm": "よ",
+            "pos": "助詞",
+            "reading": "よ"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "此処",
+          "は",
+          "広場",
+          "だ",
+          "よ",
+          "楽しい",
+          "よ"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-7",
+    "lines": [
+      {
+        "text": "こんにちは！げんきですか？",
+        "_tokens": [
+          {
+            "surface": "こんにちは",
+            "baseForm": "今日は",
+            "pos": "感動詞",
+            "reading": "こんにちは"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "げんき",
+            "baseForm": "元気",
+            "pos": "名詞",
+            "reading": "げんき"
+          },
+          {
+            "surface": "です",
+            "baseForm": "です",
+            "pos": "助動詞",
+            "reading": "です"
+          },
+          {
+            "surface": "か",
+            "baseForm": "か",
+            "pos": "助詞",
+            "reading": "か"
+          },
+          {
+            "surface": "？",
+            "baseForm": "？",
+            "pos": "補助記号",
+            "reading": "？"
+          }
+        ],
+        "_contentWords": [
+          "今日は",
+          "元気",
+          "です",
+          "か"
+        ]
+      },
+      {
+        "text": "きょうも がんばろう！",
+        "_tokens": [
+          {
+            "surface": "きょう",
+            "baseForm": "今日",
+            "pos": "名詞",
+            "reading": "きょう"
+          },
+          {
+            "surface": "も",
+            "baseForm": "も",
+            "pos": "助詞",
+            "reading": "も"
+          },
+          {
+            "surface": "がんばろう",
+            "baseForm": "頑張る",
+            "pos": "動詞",
+            "reading": "がんばる"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "今日",
+          "も",
+          "頑張る"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-8",
+    "lines": [
+      {
+        "text": "おはよう！きょうも いっしょに あそぶ？",
+        "_tokens": [
+          {
+            "surface": "おはよう",
+            "baseForm": "御早う",
+            "pos": "感動詞",
+            "reading": "おはよう"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "きょう",
+            "baseForm": "今日",
+            "pos": "名詞",
+            "reading": "きょう"
+          },
+          {
+            "surface": "も",
+            "baseForm": "も",
+            "pos": "助詞",
+            "reading": "も"
+          },
+          {
+            "surface": "いっしょ",
+            "baseForm": "一緒",
+            "pos": "名詞",
+            "reading": "いっしょ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "あそぶ",
+            "baseForm": "遊ぶ",
+            "pos": "動詞",
+            "reading": "あそぶ"
+          },
+          {
+            "surface": "？",
+            "baseForm": "？",
+            "pos": "補助記号",
+            "reading": "？"
+          }
+        ],
+        "_contentWords": [
+          "御早う",
+          "今日",
+          "も",
+          "一緒",
+          "に",
+          "遊ぶ"
+        ]
+      },
+      {
+        "text": "わたしは ここが すき！",
+        "_tokens": [
+          {
+            "surface": "わたし",
+            "baseForm": "私",
+            "pos": "代名詞",
+            "reading": "わたし"
+          },
+          {
+            "surface": "は",
+            "baseForm": "は",
+            "pos": "助詞",
+            "reading": "は"
+          },
+          {
+            "surface": "ここ",
+            "baseForm": "此処",
+            "pos": "代名詞",
+            "reading": "ここ"
+          },
+          {
+            "surface": "が",
+            "baseForm": "が",
+            "pos": "助詞",
+            "reading": "が"
+          },
+          {
+            "surface": "すき",
+            "baseForm": "隙",
+            "pos": "名詞",
+            "reading": "すき"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "私",
+          "は",
+          "此処",
+          "が",
+          "隙"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-9",
+    "lines": [
+      {
+        "text": "こんにちは！",
+        "_tokens": [
+          {
+            "surface": "こんにちは",
+            "baseForm": "今日は",
+            "pos": "感動詞",
+            "reading": "こんにちは"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "今日は"
+        ]
+      },
+      {
+        "text": "わたしは とても うれしい！いっしょに いこう！",
+        "_tokens": [
+          {
+            "surface": "わたし",
+            "baseForm": "私",
+            "pos": "代名詞",
+            "reading": "わたし"
+          },
+          {
+            "surface": "は",
+            "baseForm": "は",
+            "pos": "助詞",
+            "reading": "は"
+          },
+          {
+            "surface": "とても",
+            "baseForm": "迚も",
+            "pos": "副詞",
+            "reading": "とても"
+          },
+          {
+            "surface": "うれしい",
+            "baseForm": "嬉しい",
+            "pos": "形容詞",
+            "reading": "うれしい"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "いっしょ",
+            "baseForm": "一緒",
+            "pos": "名詞",
+            "reading": "いっしょ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "いこう",
+            "baseForm": "行く",
+            "pos": "動詞",
+            "reading": "いく"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "私",
+          "は",
+          "迚も",
+          "嬉しい",
+          "一緒",
+          "に",
+          "行く"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-10",
+    "lines": [
+      {
+        "text": "おはよう！",
+        "_tokens": [
+          {
+            "surface": "おはよう",
+            "baseForm": "御早う",
+            "pos": "感動詞",
+            "reading": "おはよう"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "御早う"
+        ]
+      },
+      {
+        "text": "きょうは あたらしい ともだちに あえるかな？",
+        "_tokens": [
+          {
+            "surface": "きょう",
+            "baseForm": "今日",
+            "pos": "名詞",
+            "reading": "きょう"
+          },
+          {
+            "surface": "は",
+            "baseForm": "は",
+            "pos": "助詞",
+            "reading": "は"
+          },
+          {
+            "surface": "あたらしい",
+            "baseForm": "新しい",
+            "pos": "形容詞",
+            "reading": "あたらしい"
+          },
+          {
+            "surface": "ともだち",
+            "baseForm": "友達",
+            "pos": "名詞",
+            "reading": "ともだち"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "あえる",
+            "baseForm": "和える",
+            "pos": "動詞",
+            "reading": "あえる"
+          },
+          {
+            "surface": "か",
+            "baseForm": "か",
+            "pos": "助詞",
+            "reading": "か"
+          },
+          {
+            "surface": "な",
+            "baseForm": "な",
+            "pos": "助詞",
+            "reading": "な"
+          },
+          {
+            "surface": "？",
+            "baseForm": "？",
+            "pos": "補助記号",
+            "reading": "？"
+          }
+        ],
+        "_contentWords": [
+          "今日",
+          "は",
+          "新しい",
+          "友達",
+          "に",
+          "和える",
+          "か",
+          "な"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-11",
+    "lines": [
+      {
+        "text": "こんにちは！いま どこに いく？",
+        "_tokens": [
+          {
+            "surface": "こんにちは",
+            "baseForm": "今日は",
+            "pos": "感動詞",
+            "reading": "こんにちは"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "いま",
+            "baseForm": "今",
+            "pos": "名詞",
+            "reading": "いま"
+          },
+          {
+            "surface": "どこ",
+            "baseForm": "何処",
+            "pos": "代名詞",
+            "reading": "どこ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "いく",
+            "baseForm": "行く",
+            "pos": "動詞",
+            "reading": "いく"
+          },
+          {
+            "surface": "？",
+            "baseForm": "？",
+            "pos": "補助記号",
+            "reading": "？"
+          }
+        ],
+        "_contentWords": [
+          "今日は",
+          "今",
+          "何処",
+          "に",
+          "行く"
+        ]
+      },
+      {
+        "text": "わたしも いきたい！",
+        "_tokens": [
+          {
+            "surface": "わたし",
+            "baseForm": "私",
+            "pos": "代名詞",
+            "reading": "わたし"
+          },
+          {
+            "surface": "も",
+            "baseForm": "も",
+            "pos": "助詞",
+            "reading": "も"
+          },
+          {
+            "surface": "いき",
+            "baseForm": "行く",
+            "pos": "動詞",
+            "reading": "いく"
+          },
+          {
+            "surface": "たい",
+            "baseForm": "たい",
+            "pos": "助動詞",
+            "reading": "たい"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "私",
+          "も",
+          "行く",
+          "たい"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-12",
+    "lines": [
+      {
+        "text": "おはよう！きょうは すこし さむいね。",
+        "_tokens": [
+          {
+            "surface": "おはよう",
+            "baseForm": "御早う",
+            "pos": "感動詞",
+            "reading": "おはよう"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "きょう",
+            "baseForm": "今日",
+            "pos": "名詞",
+            "reading": "きょう"
+          },
+          {
+            "surface": "は",
+            "baseForm": "は",
+            "pos": "助詞",
+            "reading": "は"
+          },
+          {
+            "surface": "すこし",
+            "baseForm": "少し",
+            "pos": "副詞",
+            "reading": "すこし"
+          },
+          {
+            "surface": "さむい",
+            "baseForm": "寒い",
+            "pos": "形容詞",
+            "reading": "さむい"
+          },
+          {
+            "surface": "ね",
+            "baseForm": "ね",
+            "pos": "助詞",
+            "reading": "ね"
+          },
+          {
+            "surface": "。",
+            "baseForm": "。",
+            "pos": "補助記号",
+            "reading": "。"
+          }
+        ],
+        "_contentWords": [
+          "御早う",
+          "今日",
+          "は",
+          "少し",
+          "寒い",
+          "ね"
+        ]
+      },
+      {
+        "text": "でも たのしいよ！いっしょに いこう！",
+        "_tokens": [
+          {
+            "surface": "で",
+            "baseForm": "で",
+            "pos": "助詞",
+            "reading": "で"
+          },
+          {
+            "surface": "も",
+            "baseForm": "も",
+            "pos": "助詞",
+            "reading": "も"
+          },
+          {
+            "surface": "たのしい",
+            "baseForm": "楽しい",
+            "pos": "形容詞",
+            "reading": "たのしい"
+          },
+          {
+            "surface": "よ",
+            "baseForm": "よ",
+            "pos": "助詞",
+            "reading": "よ"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "いっしょ",
+            "baseForm": "一緒",
+            "pos": "名詞",
+            "reading": "いっしょ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "いこう",
+            "baseForm": "行く",
+            "pos": "動詞",
+            "reading": "いく"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "で",
+          "も",
+          "楽しい",
+          "よ",
+          "一緒",
+          "に",
+          "行く"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-13",
+    "lines": [
+      {
+        "text": "こんにちは！",
+        "_tokens": [
+          {
+            "surface": "こんにちは",
+            "baseForm": "今日は",
+            "pos": "感動詞",
+            "reading": "こんにちは"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "今日は"
+        ]
+      },
+      {
+        "text": "まえに ここに きたことが ある？たのしい ところだよ！",
+        "_tokens": [
+          {
+            "surface": "まえ",
+            "baseForm": "前",
+            "pos": "名詞",
+            "reading": "まえ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "ここ",
+            "baseForm": "此処",
+            "pos": "代名詞",
+            "reading": "ここ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "き",
+            "baseForm": "来る",
+            "pos": "動詞",
+            "reading": "くる"
+          },
+          {
+            "surface": "た",
+            "baseForm": "た",
+            "pos": "助動詞",
+            "reading": "た"
+          },
+          {
+            "surface": "こと",
+            "baseForm": "事",
+            "pos": "名詞",
+            "reading": "こと"
+          },
+          {
+            "surface": "が",
+            "baseForm": "が",
+            "pos": "助詞",
+            "reading": "が"
+          },
+          {
+            "surface": "ある",
+            "baseForm": "有る",
+            "pos": "動詞",
+            "reading": "ある"
+          },
+          {
+            "surface": "？",
+            "baseForm": "？",
+            "pos": "補助記号",
+            "reading": "？"
+          },
+          {
+            "surface": "たのしい",
+            "baseForm": "楽しい",
+            "pos": "形容詞",
+            "reading": "たのしい"
+          },
+          {
+            "surface": "ところ",
+            "baseForm": "所",
+            "pos": "名詞",
+            "reading": "ところ"
+          },
+          {
+            "surface": "だ",
+            "baseForm": "だ",
+            "pos": "助動詞",
+            "reading": "だ"
+          },
+          {
+            "surface": "よ",
+            "baseForm": "よ",
+            "pos": "助詞",
+            "reading": "よ"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "前",
+          "に",
+          "此処",
+          "に",
+          "来る",
+          "た",
+          "事",
+          "が",
+          "有る",
+          "楽しい",
+          "所",
+          "だ",
+          "よ"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-14",
+    "lines": [
+      {
+        "text": "おはよう！きょうは とても たのしい ところに いく！",
+        "_tokens": [
+          {
+            "surface": "おはよう",
+            "baseForm": "御早う",
+            "pos": "感動詞",
+            "reading": "おはよう"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          },
+          {
+            "surface": "きょう",
+            "baseForm": "今日",
+            "pos": "名詞",
+            "reading": "きょう"
+          },
+          {
+            "surface": "は",
+            "baseForm": "は",
+            "pos": "助詞",
+            "reading": "は"
+          },
+          {
+            "surface": "とても",
+            "baseForm": "迚も",
+            "pos": "副詞",
+            "reading": "とても"
+          },
+          {
+            "surface": "たのしい",
+            "baseForm": "楽しい",
+            "pos": "形容詞",
+            "reading": "たのしい"
+          },
+          {
+            "surface": "ところ",
+            "baseForm": "所",
+            "pos": "名詞",
+            "reading": "ところ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "いく",
+            "baseForm": "行く",
+            "pos": "動詞",
+            "reading": "いく"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "御早う",
+          "今日",
+          "は",
+          "迚も",
+          "楽しい",
+          "所",
+          "に",
+          "行く"
+        ]
+      },
+      {
+        "text": "わたしは ここが すき。いっしょに いくと たのしいと おもう！",
+        "_tokens": [
+          {
+            "surface": "わたし",
+            "baseForm": "私",
+            "pos": "代名詞",
+            "reading": "わたし"
+          },
+          {
+            "surface": "は",
+            "baseForm": "は",
+            "pos": "助詞",
+            "reading": "は"
+          },
+          {
+            "surface": "ここ",
+            "baseForm": "此処",
+            "pos": "代名詞",
+            "reading": "ここ"
+          },
+          {
+            "surface": "が",
+            "baseForm": "が",
+            "pos": "助詞",
+            "reading": "が"
+          },
+          {
+            "surface": "すき",
+            "baseForm": "隙",
+            "pos": "名詞",
+            "reading": "すき"
+          },
+          {
+            "surface": "。",
+            "baseForm": "。",
+            "pos": "補助記号",
+            "reading": "。"
+          },
+          {
+            "surface": "いっしょ",
+            "baseForm": "一緒",
+            "pos": "名詞",
+            "reading": "いっしょ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "いく",
+            "baseForm": "行く",
+            "pos": "動詞",
+            "reading": "いく"
+          },
+          {
+            "surface": "と",
+            "baseForm": "と",
+            "pos": "助詞",
+            "reading": "と"
+          },
+          {
+            "surface": "たのしい",
+            "baseForm": "楽しい",
+            "pos": "形容詞",
+            "reading": "たのしい"
+          },
+          {
+            "surface": "と",
+            "baseForm": "と",
+            "pos": "助詞",
+            "reading": "と"
+          },
+          {
+            "surface": "おもう",
+            "baseForm": "思う",
+            "pos": "動詞",
+            "reading": "おもう"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "私",
+          "は",
+          "此処",
+          "が",
+          "隙",
+          "一緒",
+          "に",
+          "行く",
+          "と",
+          "楽しい",
+          "と",
+          "思う"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cid-welcome-15",
+    "lines": [
+      {
+        "text": "こんにちは！",
+        "_tokens": [
+          {
+            "surface": "こんにちは",
+            "baseForm": "今日は",
+            "pos": "感動詞",
+            "reading": "こんにちは"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "今日は"
+        ]
+      },
+      {
+        "text": "この ばしょ、しってる？わたしが まえに きた！",
+        "_tokens": [
+          {
+            "surface": "この",
+            "baseForm": "此の",
+            "pos": "連体詞",
+            "reading": "この"
+          },
+          {
+            "surface": "ばしょ",
+            "baseForm": "場所",
+            "pos": "名詞",
+            "reading": "ばしょ"
+          },
+          {
+            "surface": "、",
+            "baseForm": "、",
+            "pos": "補助記号",
+            "reading": "、"
+          },
+          {
+            "surface": "しっ",
+            "baseForm": "知る",
+            "pos": "動詞",
+            "reading": "しる"
+          },
+          {
+            "surface": "てる",
+            "baseForm": "てる",
+            "pos": "助動詞",
+            "reading": "てる"
+          },
+          {
+            "surface": "？",
+            "baseForm": "？",
+            "pos": "補助記号",
+            "reading": "？"
+          },
+          {
+            "surface": "わたし",
+            "baseForm": "私",
+            "pos": "代名詞",
+            "reading": "わたし"
+          },
+          {
+            "surface": "が",
+            "baseForm": "が",
+            "pos": "助詞",
+            "reading": "が"
+          },
+          {
+            "surface": "まえ",
+            "baseForm": "前",
+            "pos": "名詞",
+            "reading": "まえ"
+          },
+          {
+            "surface": "に",
+            "baseForm": "に",
+            "pos": "助詞",
+            "reading": "に"
+          },
+          {
+            "surface": "き",
+            "baseForm": "来る",
+            "pos": "動詞",
+            "reading": "くる"
+          },
+          {
+            "surface": "た",
+            "baseForm": "た",
+            "pos": "助動詞",
+            "reading": "た"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "此の",
+          "場所",
+          "知る",
+          "てる",
+          "私",
+          "が",
+          "前",
+          "に",
+          "来る",
+          "た"
+        ]
+      },
+      {
+        "text": "きれいな はなが あるよ！",
+        "_tokens": [
+          {
+            "surface": "きれい",
+            "baseForm": "奇麗",
+            "pos": "形状詞",
+            "reading": "きれい"
+          },
+          {
+            "surface": "な",
+            "baseForm": "だ",
+            "pos": "助動詞",
+            "reading": "だ"
+          },
+          {
+            "surface": "はな",
+            "baseForm": "端",
+            "pos": "名詞",
+            "reading": "はな"
+          },
+          {
+            "surface": "が",
+            "baseForm": "が",
+            "pos": "助詞",
+            "reading": "が"
+          },
+          {
+            "surface": "ある",
+            "baseForm": "有る",
+            "pos": "動詞",
+            "reading": "ある"
+          },
+          {
+            "surface": "よ",
+            "baseForm": "よ",
+            "pos": "助詞",
+            "reading": "よ"
+          },
+          {
+            "surface": "！",
+            "baseForm": "！",
+            "pos": "補助記号",
+            "reading": "！"
+          }
+        ],
+        "_contentWords": [
+          "奇麗",
+          "だ",
+          "端",
+          "が",
+          "有る",
+          "よ"
+        ]
+      }
+    ]
+  }
 ]

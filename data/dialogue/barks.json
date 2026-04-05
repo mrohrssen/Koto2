@@ -1,10 +1,1523 @@
 {
-  "onHit": ["いたい！", "つよい！", "いやだ！", "うわ！", "くっ！", "ああ！", "いたた！", "やめて！", "つらい！", "ひどい！"],
-  "onVictory": ["すごい！", "かった！", "やった！", "よかった！", "つよい！", "うれしい！", "やったね！", "すばらしい！", "かちだ！", "いえーい！"],
-  "onExplore": ["たのしい！", "いくよ！", "みて！", "きれい！", "すごい！", "ここ すき！", "なにか ある！", "いこう！", "あたらしい！", "おもしろい！"],
-  "onHeal": ["ありがとう！", "たすかる！", "だいじょうぶ！", "げんき！", "うれしい！", "よかった！"],
-  "onKO": ["ごめん…", "むり…", "まけた…", "つかれた…", "だめだ…", "くやしい…"],
-  "onStatusEffect": ["しまった！", "まって！", "やめて！", "うごけない！", "なにこれ！", "いやだ！"],
-  "onLowHP": ["あぶない！", "たすけて！", "こわい！", "やばい！", "だめだ！", "ピンチ！"],
-  "onAttack": ["がんばれ！", "まけないぞ！", "いくぞ！", "やるぞ！", "それ！", "いけ！", "とりゃ！", "えいっ！", "くらえ！"]
+  "onHit": [
+    {
+      "text": "いたい！",
+      "_tokens": [
+        {
+          "surface": "い",
+          "baseForm": "居る",
+          "pos": "動詞",
+          "reading": "いる"
+        },
+        {
+          "surface": "たい",
+          "baseForm": "たい",
+          "pos": "助動詞",
+          "reading": "たい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "居る",
+        "たい"
+      ]
+    },
+    {
+      "text": "つよい！",
+      "_tokens": [
+        {
+          "surface": "つよい",
+          "baseForm": "強い",
+          "pos": "形容詞",
+          "reading": "つよい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "強い"
+      ]
+    },
+    {
+      "text": "いやだ！",
+      "_tokens": [
+        {
+          "surface": "いや",
+          "baseForm": "嫌",
+          "pos": "形状詞",
+          "reading": "いや"
+        },
+        {
+          "surface": "だ",
+          "baseForm": "だ",
+          "pos": "助動詞",
+          "reading": "だ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "嫌",
+        "だ"
+      ]
+    },
+    {
+      "text": "うわ！",
+      "_tokens": [
+        {
+          "surface": "うわ",
+          "baseForm": "うわ",
+          "pos": "感動詞",
+          "reading": "うわ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "うわ"
+      ]
+    },
+    {
+      "text": "くっ！",
+      "_tokens": [
+        {
+          "surface": "くっ",
+          "baseForm": "くっ",
+          "pos": "感動詞",
+          "reading": "くっ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "くっ"
+      ]
+    },
+    {
+      "text": "ああ！",
+      "_tokens": [
+        {
+          "surface": "ああ",
+          "baseForm": "ああ",
+          "pos": "感動詞",
+          "reading": "ああ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "ああ"
+      ]
+    },
+    {
+      "text": "いたた！",
+      "_tokens": [
+        {
+          "surface": "い",
+          "baseForm": "居る",
+          "pos": "動詞",
+          "reading": "いる"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "居る",
+        "た",
+        "た"
+      ]
+    },
+    {
+      "text": "やめて！",
+      "_tokens": [
+        {
+          "surface": "やめ",
+          "baseForm": "止める",
+          "pos": "動詞",
+          "reading": "やめる"
+        },
+        {
+          "surface": "て",
+          "baseForm": "て",
+          "pos": "助詞",
+          "reading": "て"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "止める",
+        "て"
+      ]
+    },
+    {
+      "text": "つらい！",
+      "_tokens": [
+        {
+          "surface": "つらい",
+          "baseForm": "辛い",
+          "pos": "形容詞",
+          "reading": "つらい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "辛い"
+      ]
+    },
+    {
+      "text": "ひどい！",
+      "_tokens": [
+        {
+          "surface": "ひどい",
+          "baseForm": "酷い",
+          "pos": "形容詞",
+          "reading": "ひどい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "酷い"
+      ]
+    }
+  ],
+  "onVictory": [
+    {
+      "text": "すごい！",
+      "_tokens": [
+        {
+          "surface": "すごい",
+          "baseForm": "凄い",
+          "pos": "形容詞",
+          "reading": "すごい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "凄い"
+      ]
+    },
+    {
+      "text": "かった！",
+      "_tokens": [
+        {
+          "surface": "かっ",
+          "baseForm": "駆る",
+          "pos": "動詞",
+          "reading": "かる"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "駆る",
+        "た"
+      ]
+    },
+    {
+      "text": "やった！",
+      "_tokens": [
+        {
+          "surface": "やっ",
+          "baseForm": "遣る",
+          "pos": "動詞",
+          "reading": "やる"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "遣る",
+        "た"
+      ]
+    },
+    {
+      "text": "よかった！",
+      "_tokens": [
+        {
+          "surface": "よかっ",
+          "baseForm": "良い",
+          "pos": "形容詞",
+          "reading": "よい"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "良い",
+        "た"
+      ]
+    },
+    {
+      "text": "つよい！",
+      "_tokens": [
+        {
+          "surface": "つよい",
+          "baseForm": "強い",
+          "pos": "形容詞",
+          "reading": "つよい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "強い"
+      ]
+    },
+    {
+      "text": "うれしい！",
+      "_tokens": [
+        {
+          "surface": "うれしい",
+          "baseForm": "嬉しい",
+          "pos": "形容詞",
+          "reading": "うれしい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "嬉しい"
+      ]
+    },
+    {
+      "text": "やったね！",
+      "_tokens": [
+        {
+          "surface": "やっ",
+          "baseForm": "遣る",
+          "pos": "動詞",
+          "reading": "やる"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "ね",
+          "baseForm": "ね",
+          "pos": "助詞",
+          "reading": "ね"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "遣る",
+        "た",
+        "ね"
+      ]
+    },
+    {
+      "text": "すばらしい！",
+      "_tokens": [
+        {
+          "surface": "すばらしい",
+          "baseForm": "素晴らしい",
+          "pos": "形容詞",
+          "reading": "すばらしい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "素晴らしい"
+      ]
+    },
+    {
+      "text": "かちだ！",
+      "_tokens": [
+        {
+          "surface": "かち",
+          "baseForm": "勝ち",
+          "pos": "名詞",
+          "reading": "かち"
+        },
+        {
+          "surface": "だ",
+          "baseForm": "だ",
+          "pos": "助動詞",
+          "reading": "だ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "勝ち",
+        "だ"
+      ]
+    },
+    {
+      "text": "いえーい！",
+      "_tokens": [
+        {
+          "surface": "い",
+          "baseForm": "いー",
+          "pos": "感動詞",
+          "reading": "いー"
+        },
+        {
+          "surface": "えー",
+          "baseForm": "えー",
+          "pos": "感動詞",
+          "reading": "えー"
+        },
+        {
+          "surface": "い",
+          "baseForm": "い",
+          "pos": "助詞",
+          "reading": "い"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "いー",
+        "えー",
+        "い"
+      ]
+    }
+  ],
+  "onExplore": [
+    {
+      "text": "たのしい！",
+      "_tokens": [
+        {
+          "surface": "たのしい",
+          "baseForm": "楽しい",
+          "pos": "形容詞",
+          "reading": "たのしい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "楽しい"
+      ]
+    },
+    {
+      "text": "いくよ！",
+      "_tokens": [
+        {
+          "surface": "いく",
+          "baseForm": "行く",
+          "pos": "動詞",
+          "reading": "いく"
+        },
+        {
+          "surface": "よ",
+          "baseForm": "よ",
+          "pos": "助詞",
+          "reading": "よ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "行く",
+        "よ"
+      ]
+    },
+    {
+      "text": "みて！",
+      "_tokens": [
+        {
+          "surface": "み",
+          "baseForm": "見る",
+          "pos": "動詞",
+          "reading": "みる"
+        },
+        {
+          "surface": "て",
+          "baseForm": "て",
+          "pos": "助詞",
+          "reading": "て"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "見る",
+        "て"
+      ]
+    },
+    {
+      "text": "きれい！",
+      "_tokens": [
+        {
+          "surface": "きれい",
+          "baseForm": "奇麗",
+          "pos": "形状詞",
+          "reading": "きれい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "奇麗"
+      ]
+    },
+    {
+      "text": "すごい！",
+      "_tokens": [
+        {
+          "surface": "すごい",
+          "baseForm": "凄い",
+          "pos": "形容詞",
+          "reading": "すごい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "凄い"
+      ]
+    },
+    {
+      "text": "ここ すき！",
+      "_tokens": [
+        {
+          "surface": "ここ",
+          "baseForm": "此処",
+          "pos": "代名詞",
+          "reading": "ここ"
+        },
+        {
+          "surface": "すき",
+          "baseForm": "隙",
+          "pos": "名詞",
+          "reading": "すき"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "此処",
+        "隙"
+      ]
+    },
+    {
+      "text": "なにか ある！",
+      "_tokens": [
+        {
+          "surface": "なに",
+          "baseForm": "何",
+          "pos": "代名詞",
+          "reading": "なに"
+        },
+        {
+          "surface": "か",
+          "baseForm": "か",
+          "pos": "助詞",
+          "reading": "か"
+        },
+        {
+          "surface": "ある",
+          "baseForm": "有る",
+          "pos": "動詞",
+          "reading": "ある"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "何",
+        "か",
+        "有る"
+      ]
+    },
+    {
+      "text": "いこう！",
+      "_tokens": [
+        {
+          "surface": "いこう",
+          "baseForm": "行く",
+          "pos": "動詞",
+          "reading": "いく"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "行く"
+      ]
+    },
+    {
+      "text": "あたらしい！",
+      "_tokens": [
+        {
+          "surface": "あたらしい",
+          "baseForm": "新しい",
+          "pos": "形容詞",
+          "reading": "あたらしい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "新しい"
+      ]
+    },
+    {
+      "text": "おもしろい！",
+      "_tokens": [
+        {
+          "surface": "おもしろい",
+          "baseForm": "面白い",
+          "pos": "形容詞",
+          "reading": "おもしろい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "面白い"
+      ]
+    }
+  ],
+  "onHeal": [
+    {
+      "text": "ありがとう！",
+      "_tokens": [
+        {
+          "surface": "ありがとう",
+          "baseForm": "有り難う",
+          "pos": "感動詞",
+          "reading": "ありがとう"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "有り難う"
+      ]
+    },
+    {
+      "text": "たすかる！",
+      "_tokens": [
+        {
+          "surface": "たすかる",
+          "baseForm": "助かる",
+          "pos": "動詞",
+          "reading": "たすかる"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "助かる"
+      ]
+    },
+    {
+      "text": "だいじょうぶ！",
+      "_tokens": [
+        {
+          "surface": "だいじょうぶ",
+          "baseForm": "大丈夫",
+          "pos": "形状詞",
+          "reading": "だいじょうぶ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "大丈夫"
+      ]
+    },
+    {
+      "text": "げんき！",
+      "_tokens": [
+        {
+          "surface": "げんき",
+          "baseForm": "元気",
+          "pos": "名詞",
+          "reading": "げんき"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "元気"
+      ]
+    },
+    {
+      "text": "うれしい！",
+      "_tokens": [
+        {
+          "surface": "うれしい",
+          "baseForm": "嬉しい",
+          "pos": "形容詞",
+          "reading": "うれしい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "嬉しい"
+      ]
+    },
+    {
+      "text": "よかった！",
+      "_tokens": [
+        {
+          "surface": "よかっ",
+          "baseForm": "良い",
+          "pos": "形容詞",
+          "reading": "よい"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "良い",
+        "た"
+      ]
+    }
+  ],
+  "onKO": [
+    {
+      "text": "ごめん…",
+      "_tokens": [
+        {
+          "surface": "ごめん",
+          "baseForm": "御免",
+          "pos": "名詞",
+          "reading": "ごめん"
+        },
+        {
+          "surface": "…",
+          "baseForm": "…",
+          "pos": "補助記号",
+          "reading": "…"
+        }
+      ],
+      "_contentWords": [
+        "御免"
+      ]
+    },
+    {
+      "text": "むり…",
+      "_tokens": [
+        {
+          "surface": "むり",
+          "baseForm": "無理",
+          "pos": "名詞",
+          "reading": "むり"
+        },
+        {
+          "surface": "…",
+          "baseForm": "…",
+          "pos": "補助記号",
+          "reading": "…"
+        }
+      ],
+      "_contentWords": [
+        "無理"
+      ]
+    },
+    {
+      "text": "まけた…",
+      "_tokens": [
+        {
+          "surface": "まけ",
+          "baseForm": "負ける",
+          "pos": "動詞",
+          "reading": "まける"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "…",
+          "baseForm": "…",
+          "pos": "補助記号",
+          "reading": "…"
+        }
+      ],
+      "_contentWords": [
+        "負ける",
+        "た"
+      ]
+    },
+    {
+      "text": "つかれた…",
+      "_tokens": [
+        {
+          "surface": "つか",
+          "baseForm": "突く",
+          "pos": "動詞",
+          "reading": "つく"
+        },
+        {
+          "surface": "れ",
+          "baseForm": "れる",
+          "pos": "助動詞",
+          "reading": "れる"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "…",
+          "baseForm": "…",
+          "pos": "補助記号",
+          "reading": "…"
+        }
+      ],
+      "_contentWords": [
+        "突く",
+        "れる",
+        "た"
+      ]
+    },
+    {
+      "text": "だめだ…",
+      "_tokens": [
+        {
+          "surface": "だめ",
+          "baseForm": "駄目",
+          "pos": "名詞",
+          "reading": "だめ"
+        },
+        {
+          "surface": "だ",
+          "baseForm": "だ",
+          "pos": "助動詞",
+          "reading": "だ"
+        },
+        {
+          "surface": "…",
+          "baseForm": "…",
+          "pos": "補助記号",
+          "reading": "…"
+        }
+      ],
+      "_contentWords": [
+        "駄目",
+        "だ"
+      ]
+    },
+    {
+      "text": "くやしい…",
+      "_tokens": [
+        {
+          "surface": "くやしい",
+          "baseForm": "悔しい",
+          "pos": "形容詞",
+          "reading": "くやしい"
+        },
+        {
+          "surface": "…",
+          "baseForm": "…",
+          "pos": "補助記号",
+          "reading": "…"
+        }
+      ],
+      "_contentWords": [
+        "悔しい"
+      ]
+    }
+  ],
+  "onStatusEffect": [
+    {
+      "text": "しまった！",
+      "_tokens": [
+        {
+          "surface": "しまっ",
+          "baseForm": "仕舞う",
+          "pos": "動詞",
+          "reading": "しまう"
+        },
+        {
+          "surface": "た",
+          "baseForm": "た",
+          "pos": "助動詞",
+          "reading": "た"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "仕舞う",
+        "た"
+      ]
+    },
+    {
+      "text": "まって！",
+      "_tokens": [
+        {
+          "surface": "まっ",
+          "baseForm": "待つ",
+          "pos": "動詞",
+          "reading": "まつ"
+        },
+        {
+          "surface": "て",
+          "baseForm": "て",
+          "pos": "助詞",
+          "reading": "て"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "待つ",
+        "て"
+      ]
+    },
+    {
+      "text": "やめて！",
+      "_tokens": [
+        {
+          "surface": "やめ",
+          "baseForm": "止める",
+          "pos": "動詞",
+          "reading": "やめる"
+        },
+        {
+          "surface": "て",
+          "baseForm": "て",
+          "pos": "助詞",
+          "reading": "て"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "止める",
+        "て"
+      ]
+    },
+    {
+      "text": "うごけない！",
+      "_tokens": [
+        {
+          "surface": "うごけ",
+          "baseForm": "動く",
+          "pos": "動詞",
+          "reading": "うごく"
+        },
+        {
+          "surface": "ない",
+          "baseForm": "ない",
+          "pos": "助動詞",
+          "reading": "ない"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "動く",
+        "ない"
+      ]
+    },
+    {
+      "text": "なにこれ！",
+      "_tokens": [
+        {
+          "surface": "なに",
+          "baseForm": "何",
+          "pos": "代名詞",
+          "reading": "なに"
+        },
+        {
+          "surface": "これ",
+          "baseForm": "此れ",
+          "pos": "代名詞",
+          "reading": "これ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "何",
+        "此れ"
+      ]
+    },
+    {
+      "text": "いやだ！",
+      "_tokens": [
+        {
+          "surface": "いや",
+          "baseForm": "嫌",
+          "pos": "形状詞",
+          "reading": "いや"
+        },
+        {
+          "surface": "だ",
+          "baseForm": "だ",
+          "pos": "助動詞",
+          "reading": "だ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "嫌",
+        "だ"
+      ]
+    }
+  ],
+  "onLowHP": [
+    {
+      "text": "あぶない！",
+      "_tokens": [
+        {
+          "surface": "あぶない",
+          "baseForm": "危ない",
+          "pos": "形容詞",
+          "reading": "あぶない"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "危ない"
+      ]
+    },
+    {
+      "text": "たすけて！",
+      "_tokens": [
+        {
+          "surface": "たすけ",
+          "baseForm": "助ける",
+          "pos": "動詞",
+          "reading": "たすける"
+        },
+        {
+          "surface": "て",
+          "baseForm": "て",
+          "pos": "助詞",
+          "reading": "て"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "助ける",
+        "て"
+      ]
+    },
+    {
+      "text": "こわい！",
+      "_tokens": [
+        {
+          "surface": "こわい",
+          "baseForm": "怖い",
+          "pos": "形容詞",
+          "reading": "こわい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "怖い"
+      ]
+    },
+    {
+      "text": "やばい！",
+      "_tokens": [
+        {
+          "surface": "やばい",
+          "baseForm": "やばい",
+          "pos": "形容詞",
+          "reading": "やばい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "やばい"
+      ]
+    },
+    {
+      "text": "だめだ！",
+      "_tokens": [
+        {
+          "surface": "だめ",
+          "baseForm": "駄目",
+          "pos": "名詞",
+          "reading": "だめ"
+        },
+        {
+          "surface": "だ",
+          "baseForm": "だ",
+          "pos": "助動詞",
+          "reading": "だ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "駄目",
+        "だ"
+      ]
+    },
+    {
+      "text": "ピンチ！",
+      "_tokens": [
+        {
+          "surface": "ピンチ",
+          "baseForm": "ピンチ-pinch ",
+          "pos": "名詞",
+          "reading": "ぴんち"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "ピンチ-pinch "
+      ]
+    }
+  ],
+  "onAttack": [
+    {
+      "text": "がんばれ！",
+      "_tokens": [
+        {
+          "surface": "がんばれ",
+          "baseForm": "頑張る",
+          "pos": "動詞",
+          "reading": "がんばる"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "頑張る"
+      ]
+    },
+    {
+      "text": "まけないぞ！",
+      "_tokens": [
+        {
+          "surface": "まけ",
+          "baseForm": "負ける",
+          "pos": "動詞",
+          "reading": "まける"
+        },
+        {
+          "surface": "ない",
+          "baseForm": "ない",
+          "pos": "助動詞",
+          "reading": "ない"
+        },
+        {
+          "surface": "ぞ",
+          "baseForm": "ぞ",
+          "pos": "助詞",
+          "reading": "ぞ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "負ける",
+        "ない",
+        "ぞ"
+      ]
+    },
+    {
+      "text": "いくぞ！",
+      "_tokens": [
+        {
+          "surface": "いく",
+          "baseForm": "行く",
+          "pos": "動詞",
+          "reading": "いく"
+        },
+        {
+          "surface": "ぞ",
+          "baseForm": "ぞ",
+          "pos": "助詞",
+          "reading": "ぞ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "行く",
+        "ぞ"
+      ]
+    },
+    {
+      "text": "やるぞ！",
+      "_tokens": [
+        {
+          "surface": "やる",
+          "baseForm": "遣る",
+          "pos": "動詞",
+          "reading": "やる"
+        },
+        {
+          "surface": "ぞ",
+          "baseForm": "ぞ",
+          "pos": "助詞",
+          "reading": "ぞ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "遣る",
+        "ぞ"
+      ]
+    },
+    {
+      "text": "それ！",
+      "_tokens": [
+        {
+          "surface": "それ",
+          "baseForm": "其れ",
+          "pos": "代名詞",
+          "reading": "それ"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "其れ"
+      ]
+    },
+    {
+      "text": "いけ！",
+      "_tokens": [
+        {
+          "surface": "いけ",
+          "baseForm": "行く",
+          "pos": "動詞",
+          "reading": "いく"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "行く"
+      ]
+    },
+    {
+      "text": "とりゃ！",
+      "_tokens": [
+        {
+          "surface": "とりゃ",
+          "baseForm": "とる",
+          "pos": "助動詞",
+          "reading": "とる"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "とる"
+      ]
+    },
+    {
+      "text": "えいっ！",
+      "_tokens": [
+        {
+          "surface": "えいっ",
+          "baseForm": "えい",
+          "pos": "感動詞",
+          "reading": "えい"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "えい"
+      ]
+    },
+    {
+      "text": "くらえ！",
+      "_tokens": [
+        {
+          "surface": "くらえ",
+          "baseForm": "食らう",
+          "pos": "動詞",
+          "reading": "くらう"
+        },
+        {
+          "surface": "！",
+          "baseForm": "！",
+          "pos": "補助記号",
+          "reading": "！"
+        }
+      ],
+      "_contentWords": [
+        "食らう"
+      ]
+    }
+  ]
 }
