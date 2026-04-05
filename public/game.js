@@ -656,9 +656,10 @@ function showEnemyDialogue(text, type = 'possessed') {
 
 // ============ API CALLS ============
 async function loadKnownWords() {
+  const token = localStorage.getItem('authToken');
   try {
     const resp = await fetch(apiUrl('/api/game/known-words'), {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     if (resp.ok) {
       const data = await resp.json();
@@ -666,6 +667,32 @@ async function loadKnownWords() {
     }
   } catch (e) {
     console.warn('Failed to load known words:', e);
+  }
+
+  // Load word dictionary for dialogue rendering
+  try {
+    const dictRes = await fetch(apiUrl('/api/game/known-words/word-dictionary'), {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const dictData = await dictRes.json();
+    if (dictData.dictionary) {
+      window.gameState.wordDictionary = dictData.dictionary;
+    }
+  } catch (e) {
+    console.warn('[Game] Failed to load word dictionary:', e.message);
+  }
+
+  // Load bark pool for client-side filtering
+  try {
+    const barksRes = await fetch(apiUrl('/api/game/known-words/bark-pool'), {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const barksData = await barksRes.json();
+    if (barksData.barkPool) {
+      window.gameState.barkPool = barksData.barkPool;
+    }
+  } catch (e) {
+    console.warn('[Game] Failed to load bark pool:', e.message);
   }
 }
 
