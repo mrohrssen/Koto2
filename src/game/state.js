@@ -79,7 +79,10 @@ export function createMetaProgression() {
     // Whether the player is in hiragana learning mode
     kanaMode: false,
 
-    pvpTeams: [null, null, null]  // 3 saved PvP team slots
+    pvpTeams: [null, null, null],  // 3 saved PvP team slots
+
+    // CID scripts already shown (avoid repeats across runs)
+    seenCidScripts: []
   };
 }
 

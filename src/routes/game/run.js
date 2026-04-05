@@ -16,6 +16,9 @@ import { validateTeamSelection } from '../../game/services/creature-collection-s
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
 import { applyItem } from '../../game/services/item-service.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
+import { getCidScripts } from '../../game/dialogue-loader.js';
+import { filterEligibleScripts, selectCidScript } from '../../game/dialogue-filter.js';
+import { loadWordKnowledge, createWordKnowledge } from '../../game/bootstrap/word-knowledge.js';
 
 const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
@@ -125,13 +128,40 @@ export default function createRunRoutes({
 
       const narration = null; // DM narration disabled — frontend discards this
 
+      // Select a CID script for this run based on player's known words
+      let cidScript = null;
+      try {
+        const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
+        const knownWords = new Set(Object.keys(wk.known));
+        const seenScripts = gameManager.getMeta()?.seenCidScripts || [];
+        const eligible = filterEligibleScripts(getCidScripts(), knownWords);
+        const selected = selectCidScript(eligible, knownWords, seenScripts);
+        if (selected) {
+          cidScript = {
+            scriptId: selected.id,
+            lines: selected.lines.map(l => ({
+              text: l.text,
+              tokens: l._tokens || [],
+              overrides: l.overrides || {},
+            })),
+          };
+          const meta = gameManager.getMeta();
+          if (!meta.seenCidScripts) meta.seenCidScripts = [];
+          meta.seenCidScripts.push(selected.id);
+        }
+      } catch (e) {
+        console.warn('[CID] Script selection failed:', e.message);
+      }
+
       req.saveGame();
 
       queueBackgroundDialogues(req);
 
       res.json({
         state: req.getEnrichedGameState(),
-        narration
+        narration,
+        cidScript,
+        useKanji: false,
       });
     } catch (error) {
       res.status(400).json({ error: error.message });

@@ -132,6 +132,7 @@ import { createDevRouter } from './src/routes/dev.js';
 import { createForgeRouter } from './src/routes/forge.js';
 import { createSpriteForgeRouter } from './src/routes/sprite-forge.js';
 import { dataPath } from './src/data-dir.js';
+import { loadDialoguePools } from './src/game/dialogue-loader.js';
 import { logger } from './src/logger.js';
 import { TtsCache } from './src/services/tts-cache.js';
 import { TtsDialogueCache } from './src/services/tts-dialogue-cache.js';
@@ -171,6 +172,9 @@ if (existsSync(wordListPath)) {
     console.warn('Failed to load static word list:', e.message);
   }
 }
+
+// Load hardcoded dialogue pools (CID scripts, NPC lines, barks)
+loadDialoguePools(join(process.cwd(), 'data'));
 
 const app = express();
 const httpServer = createServer(app);
