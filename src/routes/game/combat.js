@@ -10,6 +10,9 @@ import { MOVES_BY_ID } from '../../game/creatures.js';
 import { getCollectionCatalog } from '../../game/services/creature-collection-service.js';
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
 import { buildVocabConfig, buildBefriendDialogueVocabConfig } from './route-helpers.js';
+import { getNpcLines } from '../../game/dialogue-loader.js';
+import { selectNpcLine } from '../../game/dialogue-filter.js';
+import { loadWordKnowledge, createWordKnowledge } from '../../game/bootstrap/word-knowledge.js';
 
 export default function createCombatRoutes({
   getUserVocabulary,
@@ -68,7 +71,37 @@ export default function createCombatRoutes({
         }
       }
 
-      res.json({ ...encounter, state: req.getEnrichedGameState() });
+      // Word-gated bootstrap dialogue for NPC encounters
+      let npcDialogue = null;
+      const npcData = encounter.npc;
+      if (npcData && getNpcLines()[npcData.id]) {
+        try {
+          const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
+          const knownWords = new Set(Object.keys(wk.known));
+          const npcPool = getNpcLines()[npcData.id];
+
+          const mapLine = (l) => l ? {
+            text: l.text,
+            tokens: l._tokens || [],
+            overrides: l.overrides || {},
+          } : null;
+
+          const greeting = selectNpcLine(npcPool.shopGreeting || [], knownWords);
+          const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords);
+          const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords);
+
+          npcDialogue = {
+            greeting: mapLine(greeting),
+            fightStart: mapLine(fightStart),
+            defeatLine: mapLine(defeatLine),
+            useKanji: false,
+          };
+        } catch (e) {
+          console.warn('[NPC] Bootstrap dialogue selection failed:', e.message);
+        }
+      }
+
+      res.json({ ...encounter, npcDialogue, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
