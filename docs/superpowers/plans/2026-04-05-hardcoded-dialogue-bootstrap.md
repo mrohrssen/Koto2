@@ -1629,54 +1629,78 @@ import {
 } from '../../src/game/dialogue-filter.js';
 
 describe('dialogue-filter', () => {
-  // Helper: make a pre-tokenized line
-  const line = (text, contentWords) => ({ text, _contentWords: contentWords });
+  // Helper: make a pre-tokenized line.
+  // _tokens is the authoritative source for isLineEligible (per-sentence splitting).
+  // Each token needs surface, baseForm, pos fields.
+  const tok = (surface, baseForm, pos = '名詞') => ({ surface, baseForm, pos, reading: '' });
+  const punct = (ch) => ({ surface: ch, baseForm: ch, pos: '記号', reading: '' });
+  const line = (text, tokenDefs) => ({
+    text,
+    _tokens: tokenDefs,
+    _contentWords: tokenDefs.filter(t => t.pos !== '記号').map(t => t.baseForm),
+  });
 
   describe('isLineEligible', () => {
     it('passes a line with 0 unknown words', () => {
-      const result = isLineEligible(line('すごい！', ['すごい']), new Set(['すごい']));
-      assert.equal(result, true);
+      const l = line('すごい！', [tok('すごい', 'すごい'), punct('！')]);
+      assert.equal(isLineEligible(l, new Set(['すごい'])), true);
     });
 
-    it('passes a line with exactly 1 unknown word (i+1)', () => {
-      const result = isLineEligible(
-        line('こんにちは！いっしょに いく？', ['こんにちは', '一緒', '行く']),
-        new Set(['こんにちは', '行く'])
-      );
-      assert.equal(result, true);
+    it('passes a single-sentence line with exactly 1 unknown word (i+1)', () => {
+      // "いっしょに いく？" — one sentence, 一緒 unknown, 行く known → 1 unknown → pass
+      const l = line('いっしょに いく？', [
+        tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('行く', '行く', '動詞'), punct('？'),
+      ]);
+      assert.equal(isLineEligible(l, new Set(['に', '行く'])), true);
     });
 
-    it('rejects a line with 2+ unknown words', () => {
-      const result = isLineEligible(
-        line('こんにちは！いっしょに いく？', ['こんにちは', '一緒', '行く']),
-        new Set()
-      );
-      assert.equal(result, false);
+    it('checks i+1 per sentence — two sentences each with 1 unknown passes', () => {
+      // "こんにちは！いっしょに いく？" = two sentences
+      // Sentence 1: こんにちは (unknown) → 1 unknown → pass
+      // Sentence 2: 一緒 (unknown), に (known), 行く (known) → 1 unknown → pass
+      const l = line('こんにちは！いっしょに いく？', [
+        tok('こんにちは', 'こんにちは', '感動詞'), punct('！'),
+        tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('行く', '行く', '動詞'), punct('？'),
+      ]);
+      assert.equal(isLineEligible(l, new Set(['に', '行く'])), true);
     });
 
-    it('passes an empty content words line', () => {
-      const result = isLineEligible(line('！', []), new Set());
-      assert.equal(result, true);
+    it('rejects when any sentence has 2+ unknown words', () => {
+      // "こんにちは！いっしょに いく？"
+      // Sentence 2: 一緒 (unknown), に (unknown), 行く (unknown) → 3 unknowns → fail
+      const l = line('こんにちは！いっしょに いく？', [
+        tok('こんにちは', 'こんにちは', '感動詞'), punct('！'),
+        tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('行く', '行く', '動詞'), punct('？'),
+      ]);
+      assert.equal(isLineEligible(l, new Set()), false);
+    });
+
+    it('passes a punctuation-only line', () => {
+      const l = line('！', [punct('！')]);
+      assert.equal(isLineEligible(l, new Set()), true);
     });
   });
 
   describe('filterEligibleScripts', () => {
     const scripts = [
-      { id: 's0', lines: [line('こんにちは！', ['こんにちは'])] },
+      { id: 's0', lines: [line('こんにちは！', [tok('こんにちは', 'こんにちは', '感動詞'), punct('！')])] },
       { id: 's1', lines: [
-        line('こんにちは！', ['こんにちは']),
-        line('いっしょに いく？', ['一緒', '行く']),
+        line('こんにちは！', [tok('こんにちは', 'こんにちは', '感動詞'), punct('！')]),
+        line('いっしょに いく？', [tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('行く', '行く', '動詞'), punct('？')]),
       ]},
       { id: 's2', lines: [
-        line('おはよう！きょうは いい ひだね！', ['おはよう', '今日', '良い', '日']),
+        line('おはよう！きょうは いい ひだね！', [
+          tok('おはよう', 'おはよう', '感動詞'), punct('！'),
+          tok('今日', '今日'), tok('は', 'は', '助詞'), tok('良い', '良い'), tok('日', '日'), tok('だ', 'だ', '助動詞'), tok('ね', 'ね', '助詞'), punct('！'),
+        ]),
       ]},
     ];
 
     it('returns only scripts where ALL lines are eligible', () => {
-      const known = new Set(['こんにちは', '行く']);
+      const known = new Set(['こんにちは', '行く', 'に']);
       // s0: 0 unknowns — eligible
       // s1: line 2 has 1 unknown (一緒) — eligible (i+1)
-      // s2: line 1 has 3 unknowns — not eligible
+      // s2: sentence 2 has 4+ unknowns — not eligible
       const eligible = filterEligibleScripts(scripts, known);
       const ids = eligible.map(s => s.id);
       assert.ok(ids.includes('s0'));
@@ -1684,11 +1708,11 @@ describe('dialogue-filter', () => {
       assert.ok(!ids.includes('s2'));
     });
 
-    it('at 0 known words, only single-word scripts are eligible', () => {
+    it('at 0 known words, only single-word-per-sentence scripts are eligible', () => {
       const eligible = filterEligibleScripts(scripts, new Set());
-      // s0: こんにちは is 1 unknown — passes i+1
-      // s1: line 2 has 2 unknowns — fails
-      // s2: 4 unknowns — fails
+      // s0: sentence has 1 unknown (こんにちは) — passes i+1
+      // s1: line 2 sentence has 3 unknowns — fails
+      // s2: sentence 2 has many unknowns — fails
       const ids = eligible.map(s => s.id);
       assert.ok(ids.includes('s0'));
       assert.ok(!ids.includes('s1'));
@@ -1697,23 +1721,22 @@ describe('dialogue-filter', () => {
 
   describe('selectNpcLine', () => {
     const lines = [
-      line('こんにちは！', ['こんにちは']),
-      line('いっしょに あそぶ？', ['一緒', '遊ぶ']),
-      line('また きた！', ['また', '来る']),
+      line('こんにちは！', [tok('こんにちは', 'こんにちは', '感動詞'), punct('！')]),
+      line('いっしょに あそぶ？', [tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('遊ぶ', '遊ぶ', '動詞'), punct('？')]),
+      line('また きた！', [tok('また', 'また'), tok('来る', '来る', '動詞'), punct('！')]),
     ];
 
     it('returns an eligible line', () => {
-      const known = new Set(['こんにちは', '遊ぶ']);
+      const known = new Set(['こんにちは', '遊ぶ', 'に']);
       const selected = selectNpcLine(lines, known);
       assert.ok(selected);
       assert.ok(typeof selected.text === 'string');
     });
 
-    it('returns null when no lines are eligible', () => {
-      const selected = selectNpcLine(lines, new Set(), { lastSeenText: null });
-      // At 0 known: only line 0 (1 unknown) is eligible
-      // Actually line 0 has 1 unknown = eligible at i+1
-      // But lines 1 and 2 have 2 unknowns each = ineligible
+    it('at 0 known words, only single-word-per-sentence lines are eligible', () => {
+      const selected = selectNpcLine(lines, new Set());
+      // Line 0: 1 unknown (こんにちは) → eligible
+      // Lines 1,2: 2+ unknowns → ineligible
       assert.ok(selected !== null);
       assert.equal(selected.text, 'こんにちは！');
     });
@@ -1722,9 +1745,9 @@ describe('dialogue-filter', () => {
   describe('selectBark', () => {
     const barkPool = {
       onHit: [
-        line('いたい！', ['痛い']),
-        line('つよい！', ['強い']),
-        line('いやだ！', ['嫌']),
+        line('いたい！', [tok('痛い', '痛い'), punct('！')]),
+        line('つよい！', [tok('強い', '強い'), punct('！')]),
+        line('いやだ！', [tok('嫌', '嫌'), punct('！')]),
       ],
     };
 
@@ -1771,15 +1794,52 @@ Expected: FAIL — `src/game/dialogue-filter.js` does not exist.
  * @returns {boolean}
  */
 export function isLineEligible(line, knownWords) {
-  const unknowns = (line._contentWords || []).filter(w => !knownWords.has(w));
-  return unknowns.length <= 1;
+  // Split tokens into sentences on 。！？ boundaries, check i+1 per sentence.
+  // A line passes only if EVERY sentence has at most 1 unknown word.
+  const tokens = line._tokens || [];
+  const sentences = splitIntoSentences(tokens);
+  return sentences.every(sentenceTokens => {
+    const unknowns = sentenceTokens
+      .filter(t => !isPunctuation(t))
+      .filter(t => !knownWords.has(t.baseForm));
+    return unknowns.length <= 1;
+  });
+}
+
+const PUNCT_POS = new Set(['記号', '補助記号', '空白']);
+const SENTENCE_ENDERS = new Set(['。', '！', '？', '!', '?']);
+
+function isPunctuation(token) {
+  return PUNCT_POS.has(token.pos) || /^[\p{P}\p{S}\s]+$/u.test(token.surface);
 }
 
 /**
- * Count how many teaching words (unknowns) a line has.
+ * Split a token array into sentence groups on 。！？ boundaries.
+ * If no sentence-enders found, treat entire array as one sentence.
+ */
+function splitIntoSentences(tokens) {
+  const sentences = [];
+  let current = [];
+  for (const token of tokens) {
+    current.push(token);
+    if (SENTENCE_ENDERS.has(token.surface)) {
+      sentences.push(current);
+      current = [];
+    }
+  }
+  if (current.length > 0) sentences.push(current);
+  return sentences.length > 0 ? sentences : [tokens];
+}
+
+/**
+ * Count how many teaching words (unknowns) a line has (for ranking, not filtering).
  */
 function teachingWordCount(line, knownWords) {
-  return (line._contentWords || []).filter(w => !knownWords.has(w)).length;
+  const tokens = line._tokens || [];
+  return tokens
+    .filter(t => !isPunctuation(t))
+    .filter(t => !knownWords.has(t.baseForm))
+    .length;
 }
 
 /**
@@ -1876,11 +1936,13 @@ export function selectBark(barkPool, trigger, knownWords, options = {}) {
   const eligible = pool.filter(line => isLineEligible(line, knownWords));
   if (eligible.length === 0) return null;
 
+  // Categorize by whether line has any unknown words
+  const getContentTokens = (line) => (line._tokens || []).filter(t => !isPunctuation(t));
   const reinforcement = eligible.filter(line =>
-    (line._contentWords || []).every(w => knownWords.has(w))
+    getContentTokens(line).every(t => knownWords.has(t.baseForm))
   );
   const teachable = eligible.filter(line =>
-    (line._contentWords || []).some(w => !knownWords.has(w))
+    getContentTokens(line).some(t => !knownWords.has(t.baseForm))
   );
 
   // 80/20 roll
@@ -1995,12 +2057,18 @@ try {
   if (selected) {
     cidScript = {
       scriptId: selected.id,
-      lines: selected.lines,
+      // Map internal _tokens/_contentWords to the client-facing format
+      lines: selected.lines.map(l => ({
+        text: l.text,
+        tokens: l._tokens || [],
+        overrides: l.overrides || {},
+      })),
     };
-    // Track seen script in meta
+    // Track seen script in meta — ensure meta.seenCidScripts is initialized
     const meta = gameManager.getMeta();
     if (!meta.seenCidScripts) meta.seenCidScripts = [];
     meta.seenCidScripts.push(selected.id);
+    // req.saveGame() below persists the meta mutation
   }
 } catch (e) {
   console.warn('[CID] Script selection failed:', e.message);
@@ -2020,7 +2088,7 @@ res.json({
 
 - [ ] **Step 4: Add seenCidScripts to meta state**
 
-In `src/game/state.js`, find `createMetaProgression()` (the meta state factory) and add `seenCidScripts: []` to the returned object.
+In `src/game/state.js`, find `createMetaProgression()` (the meta state factory, ~line 39) and add `seenCidScripts: []` to the returned object. **Do this step BEFORE step 3** — the CID selection code reads `meta.seenCidScripts` and it must exist for new players.
 
 - [ ] **Step 5: Syntax check modified files**
 
@@ -2054,21 +2122,28 @@ import { selectNpcLine } from '../../game/dialogue-filter.js';
 import { loadWordKnowledge, createWordKnowledge } from '../../game/bootstrap/word-knowledge.js';
 
 // When returning NPC data in the encounter response:
-let npcDialogueBootstrap = null;
+let npcDialogue = null;
 if (npcData && getNpcLines()[npcData.id]) {
   try {
     const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
     const knownWords = new Set(Object.keys(wk.known));
     const npcPool = getNpcLines()[npcData.id];
 
+    // Select lines and map to client-facing format (tokens, not _tokens)
+    const mapLine = (l) => l ? {
+      text: l.text,
+      tokens: l._tokens || [],
+      overrides: l.overrides || {},
+    } : null;
+
     const greeting = selectNpcLine(npcPool.shopGreeting || [], knownWords);
     const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords);
     const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords);
 
-    npcDialogueBootstrap = {
-      greeting: greeting || null,
-      fightStart: fightStart || null,
-      defeatLine: defeatLine || null,
+    npcDialogue = {
+      greeting: mapLine(greeting),
+      fightStart: mapLine(fightStart),
+      defeatLine: mapLine(defeatLine),
       useKanji: false,
     };
   } catch (e) {
@@ -2077,7 +2152,7 @@ if (npcData && getNpcLines()[npcData.id]) {
 }
 ```
 
-Add `npcDialogueBootstrap` to the encounter response.
+Add `npcDialogue` to the encounter response.
 
 - [ ] **Step 2: Syntax check**
 
