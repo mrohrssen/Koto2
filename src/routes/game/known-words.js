@@ -1,8 +1,17 @@
 import { Router } from 'express';
+import { join } from 'path';
 import { loadWordKnowledge, createWordKnowledge, registerExposure, saveWordKnowledge, markKnown, unmarkKnown } from '../../game/bootstrap/word-knowledge.js';
 import { createCard, getDeckCards, gradeCard, getDueCards, getDueCount } from '../../game/internal-srs.js';
+import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
+import { loadWordDictionary } from '../../game/word-dictionary.js';
 
 const EXPOSURE_THRESHOLD = 5;
+
+let _wordDict = null;
+function getWordDict() {
+  if (!_wordDict) _wordDict = loadWordDictionary(join(process.cwd(), 'data'));
+  return _wordDict;
+}
 
 export function createKnownWordsRoutes() {
   const router = Router();
@@ -90,6 +99,28 @@ export function createKnownWordsRoutes() {
       source: 'internal',
     }));
     res.json({ words });
+  });
+
+  // GET /api/game/known-words/word-dictionary
+  router.get('/word-dictionary', (req, res) => {
+    try {
+      const dialogueWords = getDialogueWordSet();
+      const dict = getWordDict();
+      const filtered = {};
+      for (const word of dialogueWords) {
+        const entry = dict.get(word);
+        if (entry) filtered[word] = entry;
+      }
+      res.json({ dictionary: filtered });
+    } catch (e) {
+      console.warn('[word-dictionary] Error:', e.message);
+      res.json({ dictionary: {} });
+    }
+  });
+
+  // GET /api/game/known-words/bark-pool
+  router.get('/bark-pool', (req, res) => {
+    res.json({ barkPool: getBarkPool() });
   });
 
   return router;
