@@ -79,6 +79,64 @@ export function renderJpFirst(kanji, reading, english) {
   return html;
 }
 
+/**
+ * Punctuation POS values from UniDic that should render as-is.
+ */
+const PUNCT_POS = new Set(['記号', '補助記号', '空白']);
+
+/**
+ * Render a tokenized Japanese sentence with known/unknown word display.
+ *
+ * Known words: inline hiragana (Areas 1-3) or kanji (Area 4+).
+ * Unknown words: vertical stack — hiragana reading on top, English below.
+ * Punctuation: rendered as-is.
+ *
+ * @param {Array<{surface: string, baseForm: string, pos: string, reading: string}>} tokens
+ * @param {Set<string>} knownWords - baseForm strings the player knows
+ * @param {Map<string, {reading: string, definitions: Array<{en: string, primary?: boolean}>}>} wordDict
+ * @param {Object<string, string>} overrides - baseForm → English override
+ * @param {boolean} useKanji - false for Areas 1-3 (hiragana), true for Area 4+
+ * @returns {string} HTML string
+ */
+export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, useKanji = false) {
+  if (!tokens || tokens.length === 0) return '';
+
+  return tokens.map(token => {
+    const { surface, baseForm, pos, reading } = token;
+
+    // Punctuation: render as-is
+    if (PUNCT_POS.has(pos) || /^[\p{P}\p{S}\s]+$/u.test(surface)) {
+      return `<span class="jp-punct">${esc(surface)}</span>`;
+    }
+
+    const isKnown = knownWords.has(baseForm);
+    const dictEntry = wordDict.get(baseForm);
+    const displayReading = reading || dictEntry?.reading || surface;
+
+    if (isKnown) {
+      // Known word: inline, no decoration
+      const display = useKanji ? surface : displayReading;
+      return `<span class="jp-word jp-known">${esc(display)}</span>`;
+    }
+
+    // Unknown word: vertical stack with English
+    const enDef = overrides[baseForm]
+      || dictEntry?.definitions?.find(d => d.primary)?.en
+      || dictEntry?.definitions?.[0]?.en
+      || '';
+
+    // Queue exposure for SRS tracking
+    if (baseForm && enDef) {
+      _pendingExposures.set(baseForm, enDef);
+    }
+
+    return `<span class="jp-word jp-unknown">`
+      + `<span class="jp-stack-reading">${esc(displayReading)}</span>`
+      + `<span class="jp-stack-en">${esc(enDef)}</span>`
+      + `</span>`;
+  }).join('');
+}
+
 /** Add a word to the pending exposure queue (used by speech bubbles). */
 export function addExposure(word, meaning = '') {
   _pendingExposures.set(word, meaning);

@@ -1,0 +1,72 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { renderJpSentence } from '../../public/js/ui/bootstrap-client.js';
+
+const wordDict = new Map([
+  ['こんにちは', { reading: 'こんにちは', definitions: [{ en: 'hello', primary: true }] }],
+  ['一緒', { reading: 'いっしょ', definitions: [{ en: 'together', primary: true }] }],
+  ['遊ぶ', { reading: 'あそぶ', definitions: [{ en: 'to play', primary: true }] }],
+  ['に', { reading: 'に', definitions: [{ en: 'to/at', primary: true }] }],
+]);
+
+describe('renderJpSentence', () => {
+  it('renders known words as inline hiragana (useKanji=false)', () => {
+    const tokens = [{ surface: 'こんにちは', baseForm: 'こんにちは', pos: '感動詞', reading: 'こんにちは' }];
+    const knownWords = new Set(['こんにちは']);
+    const html = renderJpSentence(tokens, knownWords, wordDict, {}, false);
+    assert.ok(html.includes('jp-known'));
+    assert.ok(html.includes('こんにちは'));
+    assert.ok(!html.includes('jp-unknown'));
+  });
+
+  it('renders unknown words as vertical stacks', () => {
+    const tokens = [{ surface: '一緒', baseForm: '一緒', pos: '名詞', reading: 'いっしょ' }];
+    const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
+    assert.ok(html.includes('jp-unknown'));
+    assert.ok(html.includes('jp-stack-reading'));
+    assert.ok(html.includes('jp-stack-en'));
+    assert.ok(html.includes('いっしょ'));
+    assert.ok(html.includes('together'));
+  });
+
+  it('renders punctuation as-is', () => {
+    const tokens = [{ surface: '！', baseForm: '！', pos: '記号', reading: '' }];
+    const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
+    assert.ok(html.includes('jp-punct'));
+    assert.ok(html.includes('！'));
+  });
+
+  it('uses kanji surface form when useKanji=true', () => {
+    const tokens = [{ surface: '一緒', baseForm: '一緒', pos: '名詞', reading: 'いっしょ' }];
+    const html = renderJpSentence(tokens, new Set(['一緒']), wordDict, {}, true);
+    assert.ok(html.includes('一緒'));
+    assert.ok(html.includes('jp-known'));
+  });
+
+  it('applies definition overrides', () => {
+    const tokens = [{ surface: '一緒', baseForm: '一緒', pos: '名詞', reading: 'いっしょ' }];
+    const html = renderJpSentence(tokens, new Set(), wordDict, { '一緒': 'at the same time' }, false);
+    assert.ok(html.includes('at the same time'));
+    assert.ok(!html.includes('together'));
+  });
+
+  it('renders a mixed sentence correctly', () => {
+    const tokens = [
+      { surface: 'こんにちは', baseForm: 'こんにちは', pos: '感動詞', reading: 'こんにちは' },
+      { surface: '！', baseForm: '！', pos: '記号', reading: '' },
+      { surface: '一緒', baseForm: '一緒', pos: '名詞', reading: 'いっしょ' },
+      { surface: 'に', baseForm: 'に', pos: '助詞', reading: 'に' },
+      { surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', reading: 'あそぶ' },
+    ];
+    const knownWords = new Set(['こんにちは', 'に']);
+    const html = renderJpSentence(tokens, knownWords, wordDict, {}, false);
+    assert.equal((html.match(/jp-known/g) || []).length, 2);
+    assert.equal((html.match(/jp-unknown/g) || []).length, 2);
+    assert.equal((html.match(/jp-punct/g) || []).length, 1);
+  });
+
+  it('returns empty string for empty tokens', () => {
+    assert.equal(renderJpSentence([], new Set(), wordDict), '');
+    assert.equal(renderJpSentence(null, new Set(), wordDict), '');
+  });
+});
