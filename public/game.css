@@ -5284,3 +5284,20 @@ html, body {
 .connection-banner.reconnected {
   background: rgba(40, 167, 69, 0.92);
 }
+
+/* ── Sentence renderer (dialogue bootstrap) ──────────────────── */
+.jp-word { display: inline-block; margin: 0 1px; }
+.jp-known { /* no special styling — blends into sentence flow */ }
+.jp-unknown {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1.5px solid var(--accent-blue, #4a9eff);
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin: 0 2px;
+  background: rgba(74, 158, 255, 0.08);
+}
+.jp-stack-reading { font-size: 1em; }
+.jp-stack-en { font-size: 0.7em; opacity: 0.8; color: var(--accent-blue, #4a9eff); }
+.jp-punct { display: inline; }
