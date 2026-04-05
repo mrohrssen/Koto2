@@ -38,5 +38,7 @@
   { "word": "でしょう", "reading": "でしょう", "en": "probably/right?", "stage": "area1-mid" },
   { "word": "こと", "reading": "こと", "en": "thing/fact (abstract)", "stage": "area1-mid" },
   { "word": "もの", "reading": "もの", "en": "thing (physical)", "stage": "area1-mid" },
-  { "word": "よう", "reading": "よう", "en": "appearance/way", "stage": "area1-mid" }
+  { "word": "よう", "reading": "よう", "en": "appearance/way", "stage": "area1-mid" },
+  { "word": "れる", "reading": "れる", "en": "(passive/potential auxiliary)", "stage": "area1-mid" },
+  { "word": "られる", "reading": "られる", "en": "(passive/potential auxiliary, ichidan)", "stage": "area1-mid" }
 ]

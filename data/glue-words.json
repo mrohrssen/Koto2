@@ -48,5 +48,13 @@
   { "word": "初めて", "reading": "はじめて", "en": "first time", "priority": 5 },
   { "word": "元気", "reading": "げんき", "en": "healthy/energetic", "priority": 5 },
   { "word": "名前", "reading": "なまえ", "en": "name", "priority": 5 },
-  { "word": "色", "reading": "いろ", "en": "color", "priority": 5 }
+  { "word": "色", "reading": "いろ", "en": "color", "priority": 5 },
+  { "word": "御早う", "reading": "おはよう", "en": "good morning", "priority": 1 },
+  { "word": "有り難う", "reading": "ありがとう", "en": "thank you", "priority": 1 },
+  { "word": "奇麗", "reading": "きれい", "en": "pretty / beautiful", "priority": 1 },
+  { "word": "ピンチ-pinch ", "reading": "ぴんち", "en": "pinch / crisis / predicament", "priority": 2 },
+  { "word": "いー", "reading": "いー", "en": "yeah! (interjection)", "priority": 2 },
+  { "word": "えー", "reading": "えー", "en": "yeah! (interjection)", "priority": 2 },
+  { "word": "うわ", "reading": "うわ", "en": "whoa / ugh (interjection)", "priority": 2 },
+  { "word": "くっ", "reading": "くっ", "en": "(grunt of pain/frustration)", "priority": 2 }
 ]
