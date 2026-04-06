@@ -68,13 +68,14 @@ export function saveWordKnowledge(wk) {
 
 /**
  * Get known words from FSRS vocab deck.
- * A word is "known" when its FSRS card has state === State.Review.
+ * A word is "known" when its FSRS card is in Learning or Review state
+ * (i.e. any card that has been reviewed at least once).
  * @param {string} userId
  * @returns {string[]}
  */
 export function getKnownWordsFromFsrs(userId) {
   const cards = getDeckCards(userId, 'vocab');
   return cards
-    .filter(c => c.state === State.Review)
+    .filter(c => c.state === State.Learning || c.state === State.Review || c.state === State.Relearning)
     .map(c => c.id);
 }
