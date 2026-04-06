@@ -28,7 +28,8 @@ import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
 import { creatureBgUrl, itemSpriteHtml, creatureStaticPath } from './sprite-utils.js';
 import { t, isJapanified } from './i18n.js';
-import * as metaShop from './meta-shop.js';
+import * as chestsUI from './chests.js';
+import * as crestsEquipUI from './crests-equip.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
@@ -332,10 +333,9 @@ function closeInventory() {
   }
 }
 
-/** Hub phase — show Speed Review + Upgrades + Infiltrate buttons */
+/** Hub phase — show Speed Review + Chests + Crests + PvP + Infiltrate buttons */
 export async function renderHub() {
   const gameState = getGameState();
-  const tokens = gameState.meta?.progressionTokens || 0;
 
   const pvpTeams = gameState.meta?.pvpTeams || [null, null, null];
   const hasPvpTeams = pvpTeams.some(t => t !== null);
@@ -351,7 +351,8 @@ export async function renderHub() {
         sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
       }
     }},
-    { label: `⬆️ 強化${tokens > 0 ? ` (${tokens})` : ''}`, onClick: () => metaShop.show() },
+    { label: '🎁 Chests', onClick: () => chestsUI.show() },
+    { label: '🔮 Crests', onClick: () => crestsEquipUI.show() },
     { label: '⚔️ Multiplayer Battle', onClick: () => {
       const gs = getGameState();
       gs.phase = 'pvp_lobby';

@@ -104,7 +104,9 @@ import * as pvpLobbyUI from './js/ui/pvp-lobby.js';
 import * as pvpBattleUI from './js/ui/pvp-battle.js';
 import { isPvpBattleActive } from './js/ui/pvp-battle.js';
 import * as speedReview from './js/ui/speed-review.js';
-import * as metaShop from './js/ui/meta-shop.js';
+import * as chestsUI from './js/ui/chests.js';
+import * as crestsEquipUI from './js/ui/crests-equip.js';
+import { playChestAnimation } from './js/pixi/chest-animation.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERSION } from './js/ui/sprite-utils.js';
 import { combatEvents } from './js/ui/combat-events.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
@@ -1786,9 +1788,17 @@ async function initGame() {
     },
   });
 
-  metaShop.init({
-    getGameState: () => gameState,
-    updateGameState
+  chestsUI.init({
+    getAuthHeaders,
+    apiUrl,
+    onChestOpened: async (element, crest) => {
+      await playChestAnimation(element, crest);
+    }
+  });
+
+  crestsEquipUI.init({
+    getAuthHeaders,
+    apiUrl
   });
 
   economyUI.init({
