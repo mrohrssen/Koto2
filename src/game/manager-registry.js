@@ -20,6 +20,7 @@ export function getManager(userId) {
   if (managers.has(userId)) return managers.get(userId);
 
   const manager = new GameManager();
+  manager.userId = userId;
   // Ensure meta always exists (routes may touch gm.meta before a save file exists).
   manager.initMeta();
   const saveFile = join(DATA_DIR, `.jrpg-save-${userId}.json`);

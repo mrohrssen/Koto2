@@ -71,6 +71,7 @@ import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
 import { getMetaMultipliers } from './services/meta-shop-service.js';
+import { exposeWords as exposeWords_fn } from './bootstrap/word-knowledge.js';
 
 // ============ GAME MANAGER ============
 
@@ -94,6 +95,7 @@ export class GameManager {
     this.meta = null;               // Meta-progression (persists across runs)
     this.narrationCallback = null;  // Called with narration text
     this.stateCallback = null;      // Called when state changes
+    this.userId = null;             // Set by manager-registry after construction
 
     // Services (extracted from monolithic GameManager)
     this.explorationService = new ExplorationService(this);
@@ -1648,6 +1650,16 @@ export class GameManager {
   }
 
   // ============ UTILITY ============
+
+  /**
+   * Expose words to the SRS system for this user.
+   * No-op if userId is not set (e.g. during tests).
+   * @param {Array<{word: string, meaning?: string}>} words
+   */
+  exposeWords(words) {
+    if (!this.userId) return;
+    exposeWords_fn(this.userId, words);
+  }
 
   /**
    * End the current run (forfeit)
