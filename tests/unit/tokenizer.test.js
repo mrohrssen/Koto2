@@ -64,4 +64,22 @@ describe('tokenizer', () => {
     assert.ok(verb, 'should find verb 走る');
     assert.equal(verb.pos, '動詞');
   });
+
+  it('produces correct baseForm for こんにちは (not 今日は)', () => {
+    const tokens = tokenize('こんにちは');
+    const greeting = tokens.find(t => t.surface === 'こんにちは');
+    assert.equal(greeting.baseForm, 'こんにちは', 'baseForm should be こんにちは, not 今日は');
+  });
+
+  it('produces correct baseForm for 好き (not 隙)', () => {
+    const tokens = tokenize('私はここが好き');
+    const suki = tokens.find(t => t.surface === '好き');
+    assert.equal(suki.baseForm, '好き', 'baseForm should be 好き, not 隙');
+  });
+
+  it('produces correct baseForm for おはよう (not 御早う)', () => {
+    const tokens = tokenize('おはよう');
+    const greeting = tokens.find(t => t.surface === 'おはよう');
+    assert.equal(greeting.baseForm, 'おはよう', 'baseForm should be おはよう, not 御早う');
+  });
 });
