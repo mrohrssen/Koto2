@@ -29,7 +29,7 @@ import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { PLATFORM } from '../platform.js';
 import { logger } from '../logger.js';
-import { renderJpFirst, renderEnFirst, flushExposures, addExposure } from './bootstrap-client.js';
+import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
 import { t, tPlain } from './i18n.js';
 import {
   screenShake, screenFlash, hitStop, recoil as pixiRecoil,
@@ -277,15 +277,6 @@ export function insertAttackCard(atk, isEnemy) {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
 
-  // Track exposures for both creature base word and move/skill word
-  if (atk.attackerBaseWord && atk.attackerBaseMeaning) {
-    addExposure(atk.attackerBaseWord, atk.attackerBaseMeaning);
-  }
-  if ((atk.attackerSkillName || atk.moveName) && atk.attackerSkillEn) {
-    addExposure(atk.attackerSkillName || atk.moveName, atk.attackerSkillEn);
-  }
-  flushExposures();
-
   // Prefetch and play base word + move name audio with a tiny gap
   const baseWord = atk.attackerBaseWord;
   const skillName = atk.attackerSkillName || atk.moveName;
@@ -368,15 +359,6 @@ function insertNpcAttackCard(atk) {
   rows.forEach((row, i) => {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
-
-  // Track exposures for NPC base word and skill word
-  if (atk.attackerBaseWord && atk.attackerBaseMeaning) {
-    addExposure(atk.attackerBaseWord, atk.attackerBaseMeaning);
-  }
-  if ((atk.attackerSkillName || atk.moveName) && atk.attackerSkillEn) {
-    addExposure(atk.attackerSkillName || atk.moveName, atk.attackerSkillEn);
-  }
-  flushExposures();
 
   // TTS for NPC base word + skill name
   const baseWord = atk.attackerBaseWord;
@@ -776,7 +758,6 @@ export function initMoveUI() {
 
       document.body.appendChild(backdrop);
       document.body.appendChild(popup);
-      flushExposures();
     }
   });
   initTargetSelect({

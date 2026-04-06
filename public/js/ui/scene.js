@@ -36,7 +36,7 @@ import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import * as pixiFormation from '../pixi/formation.js';
 import { showNpcSprite as pixiShowNpcSprite, hideNpcSprite as pixiHideNpcSprite } from '../pixi/formation.js';
-import { renderJpFirst, flushExposures, esc as escHtml } from './bootstrap-client.js';
+import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
 import { toRomaji } from './romaji.js';
 
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
@@ -422,7 +422,6 @@ export function showNpcTrainer(npcName, npcId, npc, { skipPixi = false } = {}) {
   dom.enemyInfo.classList.add('visible');
   dom.enemyHpBar.style.display = 'none';
   if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
-  flushExposures();
 
   // Hide DOM sprite — NPC renders on PixiJS canvas now
   dom.enemySprite.src = '';
@@ -451,7 +450,6 @@ export function showNpcSkills(skills) {
     dom.enemySkillBar.appendChild(pill);
   }
   dom.enemySkillBar.style.display = 'flex';
-  flushExposures();
 }
 
 /** Hide enemy from scene */

@@ -2,7 +2,7 @@
  * Renders and displays dialogue lines (CID scripts, NPC greetings, etc.)
  * using the sentence renderer and narration box.
  */
-import { renderJpSentence, getKnownWords, flushExposures } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import * as narrationBox from './narration-box.js';
 
 let _wordDict = new Map();
@@ -38,6 +38,4 @@ export async function showDialogueLines(lines, options = {}) {
     );
     await narrationBox.show(html, { speaker, html: true });
   }
-
-  flushExposures();
 }

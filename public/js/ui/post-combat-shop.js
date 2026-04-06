@@ -15,7 +15,7 @@
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import { prefetchWord, playWord } from '../tts.js';
-import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
+import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { creatureSpriteHtml, itemSpriteHtml } from './sprite-utils.js';
 import { renderChoices } from './ui-components.js';
@@ -63,13 +63,10 @@ export function show(items) {
     onSelect: (index) => {
       playSFX('creature-equip');
       if (items[index]?.word) playWord(items[index].word);
-      flushExposures();
       if (onItemSelected) onItemSelected(index);
     },
     container: actionArea,
   });
-
-  flushExposures();
 }
 
 function showItemHelpPopup(item) {

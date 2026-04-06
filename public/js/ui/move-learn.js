@@ -4,7 +4,7 @@
 // If 3 moves: shows new move + current 3 moves, player picks one to replace or skips
 
 import { dom } from '../dom.js';
-import { renderJpFirst, flushExposures } from './bootstrap-client.js';
+import { renderJpFirst } from './bootstrap-client.js';
 
 const ELEMENT_COLORS = {
   wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63',
@@ -80,7 +80,6 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
     }
 
     container.appendChild(panel);
-    flushExposures();
   });
 }
 

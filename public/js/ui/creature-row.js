@@ -18,7 +18,7 @@
 
 import { dom } from '../dom.js';
 import { showFormation, hideFormation } from './scene.js';
-import { renderJpFirst, flushExposures } from './bootstrap-client.js';
+import { renderJpFirst } from './bootstrap-client.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -249,7 +249,6 @@ function showPopup(index, creature) {
     dom.creaturePopup.style.bottom = 'auto';
   }
   dom.creaturePopup.classList.add('visible');
-  flushExposures();
 
   // Swap button handlers (swap with reserves)
   const swapBtns = dom.creaturePopup.querySelectorAll('.creature-popup-swap-btn');

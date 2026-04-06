@@ -1,12 +1,10 @@
 // public/js/ui/bootstrap-client.js
 
-import { apiUrl } from '../platform.js';
 import { toRomaji } from './romaji.js';
 
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
 
 let _knownWords = new Set();
-const _pendingExposures = new Map();
 
 /** Set the player's known words (called on game load). */
 export function setKnownWords(words) {
@@ -50,7 +48,6 @@ export function renderEnFirst(taggedText) {
       }
       if (!isKnown) {
         html += `<span class="bs-word-en">${esc(english)}</span>`;
-        _pendingExposures.set(kanji, english);
       }
       html += '</span>';
       return html;
@@ -73,7 +70,6 @@ export function renderJpFirst(kanji, reading, english) {
   }
   if (!_knownWords.has(kanji) && english) {
     html += `<span class="bs-word-en">${esc(english)}</span>`;
-    _pendingExposures.set(kanji, english);
   }
   html += '</span>';
   return html;
@@ -125,41 +121,11 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
       || dictEntry?.definitions?.[0]?.en
       || '';
 
-    // Queue exposure for SRS tracking
-    if (baseForm && enDef) {
-      _pendingExposures.set(baseForm, enDef);
-    }
-
     return `<span class="jp-word jp-unknown">`
       + `<span class="jp-stack-reading">${esc(displayReading)}</span>`
       + `<span class="jp-stack-en">${esc(enDef)}</span>`
       + `</span>`;
   }).join('');
-}
-
-/** Add a word to the pending exposure queue (used by speech bubbles). */
-export function addExposure(word, meaning = '') {
-  _pendingExposures.set(word, meaning);
-}
-
-/**
- * Flush pending i+1 word exposures to the server.
- * Call after rendering a batch of UI (e.g. after shop items are displayed).
- */
-export function flushExposures() {
-  if (_pendingExposures.size === 0) return;
-  const words = [..._pendingExposures.entries()].map(([word, meaning]) => ({ word, meaning }));
-  _pendingExposures.clear();
-  const token = localStorage.getItem('authToken');
-  if (!token) return;
-  fetch(apiUrl('/api/game/known-words/expose'), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ words })
-  }).catch(() => {});
 }
 
 /** Add a word to known set (client-side only, no server call). */

@@ -15,7 +15,7 @@
  * - dismissBubble(): Remove active bubble immediately
  */
 
-import { renderJpFirst, renderJpSentence, getKnownWords, addExposure, flushExposures } from './bootstrap-client.js';
+import { renderJpFirst, renderJpSentence } from './bootstrap-client.js';
 import { combatEvents } from './combat-events.js';
 
 const TRIGGER_CHANCE = 0.25;
@@ -167,27 +167,6 @@ function showBubble(slotEl, phrase) {
 
   document.body.appendChild(bubble);
   _activeBubble = bubble;
-
-  // Track exposure
-  if (phrase.isTokenized) {
-    // Track all unknown content words for SRS
-    const knownWords = getKnownWords();
-    const dict = getWordDict();
-    const dictMap = dict instanceof Map ? dict : new Map(Object.entries(dict || {}));
-    for (const token of (phrase._tokens || [])) {
-      if (!isPunctuation(token) && !knownWords.has(token.baseForm)) {
-        const entry = dictMap.get(token.baseForm);
-        const en = (phrase.overrides || {})[token.baseForm]
-          || entry?.definitions?.find(d => d.primary)?.en
-          || entry?.definitions?.[0]?.en
-          || '';
-        addExposure(token.baseForm, en);
-      }
-    }
-  } else {
-    addExposure(phrase.jp, phrase.en);
-  }
-  flushExposures();
 
   // Auto-dismiss
   setTimeout(() => {
