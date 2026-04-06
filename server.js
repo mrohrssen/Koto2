@@ -131,6 +131,7 @@ import createAuthRoutes from './src/auth/routes.js';
 import { createDevRouter } from './src/routes/dev.js';
 import { createForgeRouter } from './src/routes/forge.js';
 import { createSpriteForgeRouter } from './src/routes/sprite-forge.js';
+import createAdminRoutes from './src/routes/admin.js';
 import { dataPath } from './src/data-dir.js';
 import { loadDialoguePools } from './src/game/dialogue-loader.js';
 import { logger } from './src/logger.js';
@@ -592,6 +593,9 @@ app.use('/api/forge', createForgeRouter({
 app.use('/api/sprite-forge', createSpriteForgeRouter({
   projectRoot: __dirname
 }));
+
+// ============ Admin (simulator) ============
+app.use('/api/admin', createAdminRoutes({ dataDir: dataPath('') }));
 
 // Serve game page
 app.get('/', (req, res) => {
