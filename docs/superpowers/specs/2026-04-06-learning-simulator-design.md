@@ -292,7 +292,7 @@ Click any day on the chart to drill into detail.
 
 ## Game Server Changes
 
-Only two additions, both gated behind `ADMIN_SECRET`:
+Only three additions, all gated behind `ADMIN_SECRET`:
 
 1. **`POST /api/admin/advance-time`** — Shift FSRS timestamps for a user (time compression)
 2. **`POST /api/admin/cleanup-sim-user`** — Delete all data for a sim user
