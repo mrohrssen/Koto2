@@ -6,19 +6,19 @@
         "_tokens": [
           {
             "surface": "こんにちは",
-            "baseForm": "今日は",
+            "baseForm": "こんにちは",
             "pos": "感動詞",
             "reading": "こんにちは"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "今日は"
+          "こんにちは"
         ]
       },
       {
@@ -26,32 +26,32 @@
         "_tokens": [
           {
             "surface": "こんにちは",
-            "baseForm": "今日は",
+            "baseForm": "こんにちは",
             "pos": "感動詞",
             "reading": "こんにちは"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           },
           {
             "surface": "あそぶ",
-            "baseForm": "遊ぶ",
+            "baseForm": "あそぶ",
             "pos": "動詞",
             "reading": "あそぶ"
           },
           {
             "surface": "？",
-            "baseForm": "？",
+            "baseForm": "?",
             "pos": "補助記号",
-            "reading": "？"
+            "reading": "?"
           }
         ],
         "_contentWords": [
-          "今日は",
-          "遊ぶ"
+          "こんにちは",
+          "あそぶ"
         ]
       },
       {
@@ -59,19 +59,19 @@
         "_tokens": [
           {
             "surface": "こんにちは",
-            "baseForm": "今日は",
+            "baseForm": "こんにちは",
             "pos": "感動詞",
             "reading": "こんにちは"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           },
           {
             "surface": "わたし",
-            "baseForm": "私",
+            "baseForm": "わたし",
             "pos": "代名詞",
             "reading": "わたし"
           },
@@ -82,8 +82,14 @@
             "reading": "も"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "あそぶ",
-            "baseForm": "遊ぶ",
+            "baseForm": "あそぶ",
             "pos": "動詞",
             "reading": "あそぶ"
           },
@@ -100,26 +106,32 @@
             "reading": "が"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "すき",
-            "baseForm": "隙",
-            "pos": "名詞",
+            "baseForm": "すき",
+            "pos": "形状詞",
             "reading": "すき"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "今日は",
-          "私",
+          "こんにちは",
+          "わたし",
           "も",
-          "遊ぶ",
+          "あそぶ",
           "の",
           "が",
-          "隙"
+          "すき"
         ]
       },
       {
@@ -127,7 +139,7 @@
         "_tokens": [
           {
             "surface": "いっしょ",
-            "baseForm": "一緒",
+            "baseForm": "いっしょ",
             "pos": "名詞",
             "reading": "いっしょ"
           },
@@ -138,20 +150,26 @@
             "reading": "に"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "あそぶ",
-            "baseForm": "遊ぶ",
+            "baseForm": "あそぶ",
             "pos": "動詞",
             "reading": "あそぶ"
           },
           {
             "surface": "？",
-            "baseForm": "？",
+            "baseForm": "?",
             "pos": "補助記号",
-            "reading": "？"
+            "reading": "?"
           },
           {
             "surface": "たのしい",
-            "baseForm": "楽しい",
+            "baseForm": "たのしい",
             "pos": "形容詞",
             "reading": "たのしい"
           },
@@ -163,16 +181,16 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "一緒",
+          "いっしょ",
           "に",
-          "遊ぶ",
-          "楽しい",
+          "あそぶ",
+          "たのしい",
           "よ"
         ]
       },
@@ -181,19 +199,19 @@
         "_tokens": [
           {
             "surface": "おはよう",
-            "baseForm": "御早う",
+            "baseForm": "おはよう",
             "pos": "感動詞",
             "reading": "おはよう"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           },
           {
             "surface": "きょう",
-            "baseForm": "今日",
+            "baseForm": "きょう",
             "pos": "名詞",
             "reading": "きょう"
           },
@@ -204,23 +222,29 @@
             "reading": "も"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "あそぶ",
-            "baseForm": "遊ぶ",
+            "baseForm": "あそぶ",
             "pos": "動詞",
             "reading": "あそぶ"
           },
           {
             "surface": "？",
-            "baseForm": "？",
+            "baseForm": "?",
             "pos": "補助記号",
-            "reading": "？"
+            "reading": "?"
           }
         ],
         "_contentWords": [
-          "御早う",
-          "今日",
+          "おはよう",
+          "きょう",
           "も",
-          "遊ぶ"
+          "あそぶ"
         ]
       },
       {
@@ -228,27 +252,33 @@
         "_tokens": [
           {
             "surface": "すごい",
-            "baseForm": "凄い",
+            "baseForm": "すごい",
             "pos": "形容詞",
             "reading": "すごい"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           },
           {
             "surface": "また",
-            "baseForm": "又",
+            "baseForm": "また",
             "pos": "接続詞",
             "reading": "また"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "き",
-            "baseForm": "来る",
+            "baseForm": "くる",
             "pos": "動詞",
-            "reading": "くる"
+            "reading": "き"
           },
           {
             "surface": "た",
@@ -258,15 +288,15 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "凄い",
-          "又",
-          "来る",
+          "すごい",
+          "また",
+          "くる",
           "た"
         ]
       }
@@ -277,19 +307,19 @@
         "_tokens": [
           {
             "surface": "がんばれ",
-            "baseForm": "頑張る",
+            "baseForm": "がんばる",
             "pos": "動詞",
-            "reading": "がんばる"
+            "reading": "がんばれ"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "頑張る"
+          "がんばる"
         ]
       },
       {
@@ -297,9 +327,9 @@
         "_tokens": [
           {
             "surface": "まけ",
-            "baseForm": "負ける",
+            "baseForm": "まける",
             "pos": "動詞",
-            "reading": "まける"
+            "reading": "まけ"
           },
           {
             "surface": "ない",
@@ -315,13 +345,13 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "負ける",
+          "まける",
           "ない",
           "よ"
         ]
@@ -331,7 +361,7 @@
         "_tokens": [
           {
             "surface": "いく",
-            "baseForm": "行く",
+            "baseForm": "いく",
             "pos": "動詞",
             "reading": "いく"
           },
@@ -343,27 +373,27 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           },
           {
             "surface": "たのしい",
-            "baseForm": "楽しい",
+            "baseForm": "たのしい",
             "pos": "形容詞",
             "reading": "たのしい"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "行く",
+          "いく",
           "よ",
-          "楽しい"
+          "たのしい"
         ]
       },
       {
@@ -371,7 +401,7 @@
         "_tokens": [
           {
             "surface": "わたし",
-            "baseForm": "私",
+            "baseForm": "わたし",
             "pos": "代名詞",
             "reading": "わたし"
           },
@@ -382,8 +412,14 @@
             "reading": "は"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "つよい",
-            "baseForm": "強い",
+            "baseForm": "つよい",
             "pos": "形容詞",
             "reading": "つよい"
           },
@@ -395,15 +431,15 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "私",
+          "わたし",
           "は",
-          "強い",
+          "つよい",
           "よ"
         ]
       }
@@ -414,19 +450,19 @@
         "_tokens": [
           {
             "surface": "つよい",
-            "baseForm": "強い",
+            "baseForm": "つよい",
             "pos": "形容詞",
             "reading": "つよい"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "強い"
+          "つよい"
         ]
       },
       {
@@ -434,19 +470,19 @@
         "_tokens": [
           {
             "surface": "すごい",
-            "baseForm": "凄い",
+            "baseForm": "すごい",
             "pos": "形容詞",
             "reading": "すごい"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "凄い"
+          "すごい"
         ]
       },
       {
@@ -454,9 +490,9 @@
         "_tokens": [
           {
             "surface": "まけ",
-            "baseForm": "負ける",
+            "baseForm": "まける",
             "pos": "動詞",
-            "reading": "まける"
+            "reading": "まけ"
           },
           {
             "surface": "た",
@@ -466,9 +502,9 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           },
           {
             "surface": "で",
@@ -483,24 +519,30 @@
             "reading": "も"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "たのしい",
-            "baseForm": "楽しい",
+            "baseForm": "たのしい",
             "pos": "形容詞",
             "reading": "たのしい"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "負ける",
+          "まける",
           "た",
           "で",
           "も",
-          "楽しい"
+          "たのしい"
         ]
       },
       {
@@ -508,26 +550,32 @@
         "_tokens": [
           {
             "surface": "また",
-            "baseForm": "又",
+            "baseForm": "また",
             "pos": "接続詞",
             "reading": "また"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "あそぼう",
-            "baseForm": "遊ぶ",
+            "baseForm": "あそぶ",
             "pos": "動詞",
-            "reading": "あそぶ"
+            "reading": "あそぼう"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "又",
-          "遊ぶ"
+          "また",
+          "あそぶ"
         ]
       }
     ]
@@ -539,7 +587,7 @@
         "_tokens": [
           {
             "surface": "こんにちは",
-            "baseForm": "今日は",
+            "baseForm": "こんにちは",
             "pos": "感動詞",
             "reading": "こんにちは"
           },
@@ -551,7 +599,7 @@
           }
         ],
         "_contentWords": [
-          "今日は"
+          "こんにちは"
         ]
       },
       {
@@ -559,7 +607,7 @@
         "_tokens": [
           {
             "surface": "こんにちは",
-            "baseForm": "今日は",
+            "baseForm": "こんにちは",
             "pos": "感動詞",
             "reading": "こんにちは"
           },
@@ -571,7 +619,7 @@
           },
           {
             "surface": "じゅんび",
-            "baseForm": "準備",
+            "baseForm": "じゅんび",
             "pos": "名詞",
             "reading": "じゅんび"
           },
@@ -582,10 +630,16 @@
             "reading": "は"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "いい",
-            "baseForm": "良い",
+            "baseForm": "いい",
             "pos": "形容詞",
-            "reading": "よい"
+            "reading": "いい"
           },
           {
             "surface": "です",
@@ -607,10 +661,10 @@
           }
         ],
         "_contentWords": [
-          "今日は",
-          "準備",
+          "こんにちは",
+          "じゅんび",
           "は",
-          "良い",
+          "いい",
           "です",
           "か"
         ]
@@ -620,7 +674,7 @@
         "_tokens": [
           {
             "surface": "ここ",
-            "baseForm": "此処",
+            "baseForm": "ここ",
             "pos": "代名詞",
             "reading": "ここ"
           },
@@ -631,8 +685,14 @@
             "reading": "は"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "ひろば",
-            "baseForm": "広場",
+            "baseForm": "ひろば",
             "pos": "名詞",
             "reading": "ひろば"
           },
@@ -650,9 +710,9 @@
           }
         ],
         "_contentWords": [
-          "此処",
+          "ここ",
           "は",
-          "広場",
+          "ひろば",
           "です"
         ]
       },
@@ -661,7 +721,7 @@
         "_tokens": [
           {
             "surface": "きょう",
-            "baseForm": "今日",
+            "baseForm": "きょう",
             "pos": "名詞",
             "reading": "きょう"
           },
@@ -672,16 +732,22 @@
             "reading": "も"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "がんばり",
-            "baseForm": "頑張る",
+            "baseForm": "がんばる",
             "pos": "動詞",
-            "reading": "がんばる"
+            "reading": "がんばり"
           },
           {
             "surface": "ましょう",
             "baseForm": "ます",
             "pos": "助動詞",
-            "reading": "ます"
+            "reading": "ましょう"
           },
           {
             "surface": "。",
@@ -691,9 +757,9 @@
           }
         ],
         "_contentWords": [
-          "今日",
+          "きょう",
           "も",
-          "頑張る",
+          "がんばる",
           "ます"
         ]
       },
@@ -702,7 +768,7 @@
         "_tokens": [
           {
             "surface": "なに",
-            "baseForm": "何",
+            "baseForm": "なに",
             "pos": "代名詞",
             "reading": "なに"
           },
@@ -713,14 +779,20 @@
             "reading": "か"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "ほしい",
-            "baseForm": "欲しい",
+            "baseForm": "ほしい",
             "pos": "形容詞",
             "reading": "ほしい"
           },
           {
             "surface": "もの",
-            "baseForm": "物",
+            "baseForm": "もの",
             "pos": "名詞",
             "reading": "もの"
           },
@@ -731,10 +803,16 @@
             "reading": "は"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "あり",
-            "baseForm": "有る",
+            "baseForm": "ある",
             "pos": "動詞",
-            "reading": "ある"
+            "reading": "あり"
           },
           {
             "surface": "ます",
@@ -756,12 +834,12 @@
           }
         ],
         "_contentWords": [
-          "何",
+          "なに",
           "か",
-          "欲しい",
-          "物",
+          "ほしい",
+          "もの",
           "は",
-          "有る",
+          "ある",
           "ます",
           "か"
         ]
@@ -776,10 +854,16 @@
             "reading": "ゆっくり"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "み",
-            "baseForm": "見る",
+            "baseForm": "みる",
             "pos": "動詞",
-            "reading": "みる"
+            "reading": "み"
           },
           {
             "surface": "て",
@@ -789,9 +873,9 @@
           },
           {
             "surface": "ください",
-            "baseForm": "下さる",
+            "baseForm": "くださる",
             "pos": "動詞",
-            "reading": "くださる"
+            "reading": "ください"
           },
           {
             "surface": "。",
@@ -802,9 +886,9 @@
         ],
         "_contentWords": [
           "ゆっくり",
-          "見る",
+          "みる",
           "て",
-          "下さる"
+          "くださる"
         ]
       }
     ],
@@ -814,15 +898,15 @@
         "_tokens": [
           {
             "surface": "はじめ",
-            "baseForm": "始める",
+            "baseForm": "はじめる",
             "pos": "動詞",
-            "reading": "はじめる"
+            "reading": "はじめ"
           },
           {
             "surface": "ましょう",
             "baseForm": "ます",
             "pos": "助動詞",
-            "reading": "ます"
+            "reading": "ましょう"
           },
           {
             "surface": "。",
@@ -832,7 +916,7 @@
           }
         ],
         "_contentWords": [
-          "始める",
+          "はじめる",
           "ます"
         ]
       },
@@ -841,7 +925,7 @@
         "_tokens": [
           {
             "surface": "じゅんび",
-            "baseForm": "準備",
+            "baseForm": "じゅんび",
             "pos": "名詞",
             "reading": "じゅんび"
           },
@@ -852,10 +936,16 @@
             "reading": "は"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "いい",
-            "baseForm": "良い",
+            "baseForm": "いい",
             "pos": "形容詞",
-            "reading": "よい"
+            "reading": "いい"
           },
           {
             "surface": "です",
@@ -877,9 +967,9 @@
           }
         ],
         "_contentWords": [
-          "準備",
+          "じゅんび",
           "は",
-          "良い",
+          "いい",
           "です",
           "か"
         ]
@@ -889,21 +979,27 @@
         "_tokens": [
           {
             "surface": "しっかり",
-            "baseForm": "確り",
+            "baseForm": "しっかり",
             "pos": "副詞",
             "reading": "しっかり"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "がんばり",
-            "baseForm": "頑張る",
+            "baseForm": "がんばる",
             "pos": "動詞",
-            "reading": "がんばる"
+            "reading": "がんばり"
           },
           {
             "surface": "ましょう",
             "baseForm": "ます",
             "pos": "助動詞",
-            "reading": "ます"
+            "reading": "ましょう"
           },
           {
             "surface": "。",
@@ -913,8 +1009,8 @@
           }
         ],
         "_contentWords": [
-          "確り",
-          "頑張る",
+          "しっかり",
+          "がんばる",
           "ます"
         ]
       }
@@ -925,7 +1021,7 @@
         "_tokens": [
           {
             "surface": "つよい",
-            "baseForm": "強い",
+            "baseForm": "つよい",
             "pos": "形容詞",
             "reading": "つよい"
           },
@@ -949,7 +1045,7 @@
           }
         ],
         "_contentWords": [
-          "強い",
+          "つよい",
           "です",
           "ね"
         ]
@@ -959,13 +1055,19 @@
         "_tokens": [
           {
             "surface": "いい",
-            "baseForm": "良い",
+            "baseForm": "いい",
             "pos": "形容詞",
-            "reading": "よい"
+            "reading": "いい"
+          },
+          {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
           },
           {
             "surface": "しあい",
-            "baseForm": "試合",
+            "baseForm": "しあい",
             "pos": "名詞",
             "reading": "しあい"
           },
@@ -973,7 +1075,7 @@
             "surface": "でし",
             "baseForm": "です",
             "pos": "助動詞",
-            "reading": "です"
+            "reading": "でし"
           },
           {
             "surface": "た",
@@ -989,8 +1091,8 @@
           }
         ],
         "_contentWords": [
-          "良い",
-          "試合",
+          "いい",
+          "しあい",
           "です",
           "た"
         ]
@@ -1000,7 +1102,7 @@
         "_tokens": [
           {
             "surface": "すばらしい",
-            "baseForm": "素晴らしい",
+            "baseForm": "すばらしい",
             "pos": "形容詞",
             "reading": "すばらしい"
           },
@@ -1012,7 +1114,7 @@
           }
         ],
         "_contentWords": [
-          "素晴らしい"
+          "すばらしい"
         ]
       }
     ]
@@ -1024,19 +1126,19 @@
         "_tokens": [
           {
             "surface": "おはよう",
-            "baseForm": "御早う",
+            "baseForm": "おはよう",
             "pos": "感動詞",
             "reading": "おはよう"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "御早う"
+          "おはよう"
         ]
       },
       {
@@ -1044,32 +1146,32 @@
         "_tokens": [
           {
             "surface": "おはよう",
-            "baseForm": "御早う",
+            "baseForm": "おはよう",
             "pos": "感動詞",
             "reading": "おはよう"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           },
           {
             "surface": "はやい",
-            "baseForm": "早い",
+            "baseForm": "はやい",
             "pos": "形容詞",
             "reading": "はやい"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "御早う",
-          "早い"
+          "おはよう",
+          "はやい"
         ]
       },
       {
@@ -1077,7 +1179,7 @@
         "_tokens": [
           {
             "surface": "きょう",
-            "baseForm": "今日",
+            "baseForm": "きょう",
             "pos": "名詞",
             "reading": "きょう"
           },
@@ -1088,8 +1190,14 @@
             "reading": "も"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "はやい",
-            "baseForm": "早い",
+            "baseForm": "はやい",
             "pos": "形容詞",
             "reading": "はやい"
           },
@@ -1101,15 +1209,15 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "今日",
+          "きょう",
           "も",
-          "早い",
+          "はやい",
           "ね"
         ]
       },
@@ -1123,16 +1231,28 @@
             "reading": "もっと"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "つよく",
-            "baseForm": "強い",
+            "baseForm": "つよい",
             "pos": "形容詞",
-            "reading": "つよい"
+            "reading": "つよく"
+          },
+          {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
           },
           {
             "surface": "なり",
-            "baseForm": "成る",
+            "baseForm": "なる",
             "pos": "動詞",
-            "reading": "なる"
+            "reading": "なり"
           },
           {
             "surface": "たい",
@@ -1142,15 +1262,15 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
           "もっと",
-          "強い",
-          "成る",
+          "つよい",
+          "なる",
           "たい"
         ]
       },
@@ -1159,19 +1279,19 @@
         "_tokens": [
           {
             "surface": "おはよう",
-            "baseForm": "御早う",
+            "baseForm": "おはよう",
             "pos": "感動詞",
             "reading": "おはよう"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           },
           {
             "surface": "いっしょ",
-            "baseForm": "一緒",
+            "baseForm": "いっしょ",
             "pos": "名詞",
             "reading": "いっしょ"
           },
@@ -1182,23 +1302,29 @@
             "reading": "に"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "がんばろう",
-            "baseForm": "頑張る",
+            "baseForm": "がんばる",
             "pos": "動詞",
-            "reading": "がんばる"
+            "reading": "がんばろう"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "御早う",
-          "一緒",
+          "おはよう",
+          "いっしょ",
           "に",
-          "頑張る"
+          "がんばる"
         ]
       },
       {
@@ -1206,7 +1332,7 @@
         "_tokens": [
           {
             "surface": "きょう",
-            "baseForm": "今日",
+            "baseForm": "きょう",
             "pos": "名詞",
             "reading": "きょう"
           },
@@ -1217,14 +1343,20 @@
             "reading": "は"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "つよい",
-            "baseForm": "強い",
+            "baseForm": "つよい",
             "pos": "形容詞",
             "reading": "つよい"
           },
           {
             "surface": "やつ",
-            "baseForm": "奴",
+            "baseForm": "やつ",
             "pos": "名詞",
             "reading": "やつ"
           },
@@ -1235,10 +1367,16 @@
             "reading": "に"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "あい",
-            "baseForm": "会う",
+            "baseForm": "あう",
             "pos": "動詞",
-            "reading": "あう"
+            "reading": "あい"
           },
           {
             "surface": "たい",
@@ -1248,18 +1386,18 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "今日",
+          "きょう",
           "は",
-          "強い",
-          "奴",
+          "つよい",
+          "やつ",
           "に",
-          "会う",
+          "あう",
           "たい"
         ]
       }
@@ -1270,7 +1408,7 @@
         "_tokens": [
           {
             "surface": "いく",
-            "baseForm": "行く",
+            "baseForm": "いく",
             "pos": "動詞",
             "reading": "いく"
           },
@@ -1282,13 +1420,13 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "行く",
+          "いく",
           "ぞ"
         ]
       },
@@ -1297,9 +1435,9 @@
         "_tokens": [
           {
             "surface": "まけ",
-            "baseForm": "負ける",
+            "baseForm": "まける",
             "pos": "動詞",
-            "reading": "まける"
+            "reading": "まけ"
           },
           {
             "surface": "ない",
@@ -1315,13 +1453,13 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "負ける",
+          "まける",
           "ない",
           "ぞ"
         ]
@@ -1331,26 +1469,32 @@
         "_tokens": [
           {
             "surface": "はやく",
-            "baseForm": "早い",
+            "baseForm": "はやい",
             "pos": "形容詞",
-            "reading": "はやい"
+            "reading": "はやく"
+          },
+          {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
           },
           {
             "surface": "はじめよう",
-            "baseForm": "始める",
+            "baseForm": "はじめる",
             "pos": "動詞",
-            "reading": "はじめる"
+            "reading": "はじめよう"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "早い",
-          "始める"
+          "はやい",
+          "はじめる"
         ]
       },
       {
@@ -1358,7 +1502,7 @@
         "_tokens": [
           {
             "surface": "おれ",
-            "baseForm": "俺",
+            "baseForm": "おれ",
             "pos": "代名詞",
             "reading": "おれ"
           },
@@ -1369,8 +1513,14 @@
             "reading": "は"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "つよい",
-            "baseForm": "強い",
+            "baseForm": "つよい",
             "pos": "形容詞",
             "reading": "つよい"
           },
@@ -1382,15 +1532,15 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "俺",
+          "おれ",
           "は",
-          "強い",
+          "つよい",
           "ぞ"
         ]
       }
@@ -1401,19 +1551,19 @@
         "_tokens": [
           {
             "surface": "はやい",
-            "baseForm": "早い",
+            "baseForm": "はやい",
             "pos": "形容詞",
             "reading": "はやい"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "早い"
+          "はやい"
         ]
       },
       {
@@ -1421,19 +1571,19 @@
         "_tokens": [
           {
             "surface": "つよい",
-            "baseForm": "強い",
+            "baseForm": "つよい",
             "pos": "形容詞",
             "reading": "つよい"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "強い"
+          "つよい"
         ]
       },
       {
@@ -1441,15 +1591,15 @@
         "_tokens": [
           {
             "surface": "くやしい",
-            "baseForm": "悔しい",
+            "baseForm": "くやしい",
             "pos": "形容詞",
             "reading": "くやしい"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           },
           {
             "surface": "で",
@@ -1464,30 +1614,42 @@
             "reading": "も"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "また",
-            "baseForm": "又",
+            "baseForm": "また",
             "pos": "接続詞",
             "reading": "また"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "やる",
-            "baseForm": "遣る",
+            "baseForm": "やる",
             "pos": "動詞",
             "reading": "やる"
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "悔しい",
+          "くやしい",
           "で",
           "も",
-          "又",
-          "遣る"
+          "また",
+          "やる"
         ]
       },
       {
@@ -1495,7 +1657,7 @@
         "_tokens": [
           {
             "surface": "つぎ",
-            "baseForm": "次",
+            "baseForm": "つぎ",
             "pos": "名詞",
             "reading": "つぎ"
           },
@@ -1506,10 +1668,16 @@
             "reading": "は"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "まけ",
-            "baseForm": "負ける",
+            "baseForm": "まける",
             "pos": "動詞",
-            "reading": "まける"
+            "reading": "まけ"
           },
           {
             "surface": "ない",
@@ -1519,15 +1687,15 @@
           },
           {
             "surface": "！",
-            "baseForm": "！",
+            "baseForm": "!",
             "pos": "補助記号",
-            "reading": "！"
+            "reading": "!"
           }
         ],
         "_contentWords": [
-          "次",
+          "つぎ",
           "は",
-          "負ける",
+          "まける",
           "ない"
         ]
       }
@@ -1540,19 +1708,31 @@
         "_tokens": [
           {
             "surface": "あ",
-            "baseForm": "あっ",
+            "baseForm": "あ",
             "pos": "感動詞",
-            "reading": "あっ"
+            "reading": "あ"
           },
           {
             "surface": "…",
-            "baseForm": "…",
+            "baseForm": ".",
             "pos": "補助記号",
-            "reading": "…"
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
           },
           {
             "surface": "こんにちは",
-            "baseForm": "今日は",
+            "baseForm": "こんにちは",
             "pos": "感動詞",
             "reading": "こんにちは"
           },
@@ -1564,8 +1744,8 @@
           }
         ],
         "_contentWords": [
-          "あっ",
-          "今日は"
+          "あ",
+          "こんにちは"
         ]
       },
       {
@@ -1573,7 +1753,7 @@
         "_tokens": [
           {
             "surface": "こんにちは",
-            "baseForm": "今日は",
+            "baseForm": "こんにちは",
             "pos": "感動詞",
             "reading": "こんにちは"
           },
@@ -1591,7 +1771,7 @@
           }
         ],
         "_contentWords": [
-          "今日は"
+          "こんにちは"
         ]
       },
       {
@@ -1599,19 +1779,31 @@
         "_tokens": [
           {
             "surface": "あ",
-            "baseForm": "あっ",
+            "baseForm": "あ",
             "pos": "感動詞",
-            "reading": "あっ"
+            "reading": "あ"
           },
           {
             "surface": "…",
-            "baseForm": "…",
+            "baseForm": ".",
             "pos": "補助記号",
-            "reading": "…"
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
           },
           {
             "surface": "こんにちは",
-            "baseForm": "今日は",
+            "baseForm": "こんにちは",
             "pos": "感動詞",
             "reading": "こんにちは"
           },
@@ -1623,7 +1815,7 @@
           },
           {
             "surface": "ここ",
-            "baseForm": "此処",
+            "baseForm": "ここ",
             "pos": "代名詞",
             "reading": "ここ"
           },
@@ -1634,8 +1826,14 @@
             "reading": "の"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "はな",
-            "baseForm": "端",
+            "baseForm": "はな",
             "pos": "名詞",
             "reading": "はな"
           },
@@ -1647,7 +1845,7 @@
           },
           {
             "surface": "きれい",
-            "baseForm": "奇麗",
+            "baseForm": "きれい",
             "pos": "形状詞",
             "reading": "きれい"
           },
@@ -1671,12 +1869,12 @@
           }
         ],
         "_contentWords": [
-          "あっ",
-          "今日は",
-          "此処",
+          "あ",
+          "こんにちは",
+          "ここ",
           "の",
-          "端",
-          "奇麗",
+          "はな",
+          "きれい",
           "です",
           "ね"
         ]
@@ -1686,7 +1884,7 @@
         "_tokens": [
           {
             "surface": "きょう",
-            "baseForm": "今日",
+            "baseForm": "きょう",
             "pos": "名詞",
             "reading": "きょう"
           },
@@ -1697,14 +1895,26 @@
             "reading": "は"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "いい",
-            "baseForm": "良い",
+            "baseForm": "いい",
             "pos": "形容詞",
-            "reading": "よい"
+            "reading": "いい"
+          },
+          {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
           },
           {
             "surface": "てんき",
-            "baseForm": "天気",
+            "baseForm": "てんき",
             "pos": "名詞",
             "reading": "てんき"
           },
@@ -1728,10 +1938,10 @@
           }
         ],
         "_contentWords": [
-          "今日",
+          "きょう",
           "は",
-          "良い",
-          "天気",
+          "いい",
+          "てんき",
           "です",
           "ね"
         ]
@@ -1741,15 +1951,21 @@
         "_tokens": [
           {
             "surface": "すこし",
-            "baseForm": "少し",
+            "baseForm": "すこし",
             "pos": "副詞",
             "reading": "すこし"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "み",
-            "baseForm": "見る",
+            "baseForm": "みる",
             "pos": "動詞",
-            "reading": "みる"
+            "reading": "み"
           },
           {
             "surface": "て",
@@ -1759,9 +1975,9 @@
           },
           {
             "surface": "いき",
-            "baseForm": "行く",
+            "baseForm": "いく",
             "pos": "動詞",
-            "reading": "いく"
+            "reading": "いき"
           },
           {
             "surface": "ます",
@@ -1783,10 +1999,10 @@
           }
         ],
         "_contentWords": [
-          "少し",
-          "見る",
+          "すこし",
+          "みる",
           "て",
-          "行く",
+          "いく",
           "ます",
           "か"
         ]
@@ -1796,27 +2012,45 @@
         "_tokens": [
           {
             "surface": "あ",
-            "baseForm": "あっ",
+            "baseForm": "あ",
             "pos": "感動詞",
-            "reading": "あっ"
+            "reading": "あ"
           },
           {
             "surface": "…",
-            "baseForm": "…",
+            "baseForm": ".",
             "pos": "補助記号",
-            "reading": "…"
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
           },
           {
             "surface": "また",
-            "baseForm": "又",
-            "pos": "副詞",
+            "baseForm": "また",
+            "pos": "接続詞",
             "reading": "また"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "き",
-            "baseForm": "来る",
+            "baseForm": "くる",
             "pos": "動詞",
-            "reading": "くる"
+            "reading": "き"
           },
           {
             "surface": "て",
@@ -1826,9 +2060,9 @@
           },
           {
             "surface": "くれ",
-            "baseForm": "呉れる",
+            "baseForm": "くれる",
             "pos": "動詞",
-            "reading": "くれる"
+            "reading": "くれ"
           },
           {
             "surface": "た",
@@ -1844,7 +2078,7 @@
           },
           {
             "surface": "うれしい",
-            "baseForm": "嬉しい",
+            "baseForm": "うれしい",
             "pos": "形容詞",
             "reading": "うれしい"
           },
@@ -1856,13 +2090,13 @@
           }
         ],
         "_contentWords": [
-          "あっ",
-          "又",
-          "来る",
+          "あ",
+          "また",
+          "くる",
           "て",
-          "呉れる",
+          "くれる",
           "た",
-          "嬉しい"
+          "うれしい"
         ]
       }
     ],
@@ -1872,9 +2106,9 @@
         "_tokens": [
           {
             "surface": "がんばり",
-            "baseForm": "頑張る",
+            "baseForm": "がんばる",
             "pos": "動詞",
-            "reading": "がんばる"
+            "reading": "がんばり"
           },
           {
             "surface": "ます",
@@ -1884,9 +2118,21 @@
           },
           {
             "surface": "…",
-            "baseForm": "…",
+            "baseForm": ".",
             "pos": "補助記号",
-            "reading": "…"
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
           },
           {
             "surface": "。",
@@ -1896,7 +2142,7 @@
           }
         ],
         "_contentWords": [
-          "頑張る",
+          "がんばる",
           "ます"
         ]
       },
@@ -1905,21 +2151,33 @@
         "_tokens": [
           {
             "surface": "あ",
-            "baseForm": "あっ",
+            "baseForm": "あ",
             "pos": "感動詞",
-            "reading": "あっ"
+            "reading": "あ"
           },
           {
             "surface": "…",
-            "baseForm": "…",
+            "baseForm": ".",
             "pos": "補助記号",
-            "reading": "…"
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
           },
           {
             "surface": "はじめ",
-            "baseForm": "始める",
+            "baseForm": "はじめる",
             "pos": "動詞",
-            "reading": "はじめる"
+            "reading": "はじめ"
           },
           {
             "surface": "ます",
@@ -1935,8 +2193,8 @@
           }
         ],
         "_contentWords": [
-          "あっ",
-          "始める",
+          "あ",
+          "はじめる",
           "ます"
         ]
       },
@@ -1945,21 +2203,27 @@
         "_tokens": [
           {
             "surface": "すこし",
-            "baseForm": "少し",
+            "baseForm": "すこし",
             "pos": "副詞",
             "reading": "すこし"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "こわい",
-            "baseForm": "怖い",
+            "baseForm": "こわい",
             "pos": "形容詞",
             "reading": "こわい"
           },
           {
             "surface": "けど",
-            "baseForm": "けれど",
+            "baseForm": "けど",
             "pos": "助詞",
-            "reading": "けれど"
+            "reading": "けど"
           },
           {
             "surface": "…",
@@ -1969,7 +2233,7 @@
           },
           {
             "surface": "がんばる",
-            "baseForm": "頑張る",
+            "baseForm": "がんばる",
             "pos": "動詞",
             "reading": "がんばる"
           },
@@ -1981,10 +2245,10 @@
           }
         ],
         "_contentWords": [
-          "少し",
-          "怖い",
-          "けれど",
-          "頑張る"
+          "すこし",
+          "こわい",
+          "けど",
+          "がんばる"
         ]
       }
     ],
@@ -1994,15 +2258,27 @@
         "_tokens": [
           {
             "surface": "すごい",
-            "baseForm": "凄い",
+            "baseForm": "すごい",
             "pos": "形容詞",
             "reading": "すごい"
           },
           {
             "surface": "…",
-            "baseForm": "…",
+            "baseForm": ".",
             "pos": "補助記号",
-            "reading": "…"
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
           },
           {
             "surface": "。",
@@ -2012,7 +2288,7 @@
           }
         ],
         "_contentWords": [
-          "凄い"
+          "すごい"
         ]
       },
       {
@@ -2020,7 +2296,7 @@
         "_tokens": [
           {
             "surface": "つよい",
-            "baseForm": "強い",
+            "baseForm": "つよい",
             "pos": "形容詞",
             "reading": "つよい"
           },
@@ -2038,9 +2314,21 @@
           },
           {
             "surface": "…",
-            "baseForm": "…",
+            "baseForm": ".",
             "pos": "補助記号",
-            "reading": "…"
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
           },
           {
             "surface": "。",
@@ -2050,7 +2338,7 @@
           }
         ],
         "_contentWords": [
-          "強い",
+          "つよい",
           "です",
           "ね"
         ]
@@ -2060,27 +2348,39 @@
         "_tokens": [
           {
             "surface": "あ",
-            "baseForm": "あっ",
+            "baseForm": "あ",
             "pos": "感動詞",
-            "reading": "あっ"
+            "reading": "あ"
           },
           {
             "surface": "…",
-            "baseForm": "…",
+            "baseForm": ".",
             "pos": "補助記号",
-            "reading": "…"
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
+          },
+          {
+            "surface": "",
+            "baseForm": ".",
+            "pos": "補助記号",
+            "reading": "．"
           },
           {
             "surface": "まけ",
-            "baseForm": "負ける",
+            "baseForm": "まける",
             "pos": "動詞",
-            "reading": "まける"
+            "reading": "まけ"
           },
           {
             "surface": "まし",
             "baseForm": "ます",
             "pos": "助動詞",
-            "reading": "ます"
+            "reading": "まし"
           },
           {
             "surface": "た",
@@ -2107,10 +2407,16 @@
             "reading": "も"
           },
           {
+            "surface": " ",
+            "baseForm": " ",
+            "pos": "空白",
+            "reading": "きごう"
+          },
+          {
             "surface": "たのしかっ",
-            "baseForm": "楽しい",
+            "baseForm": "たのしい",
             "pos": "形容詞",
-            "reading": "たのしい"
+            "reading": "たのしかっ"
           },
           {
             "surface": "た",
@@ -2126,13 +2432,13 @@
           }
         ],
         "_contentWords": [
-          "あっ",
-          "負ける",
+          "あ",
+          "まける",
           "ます",
           "た",
           "で",
           "も",
-          "楽しい",
+          "たのしい",
           "た"
         ]
       }

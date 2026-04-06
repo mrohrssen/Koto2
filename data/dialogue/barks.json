@@ -5,9 +5,9 @@
       "_tokens": [
         {
           "surface": "い",
-          "baseForm": "居る",
+          "baseForm": "いる",
           "pos": "動詞",
-          "reading": "いる"
+          "reading": "い"
         },
         {
           "surface": "たい",
@@ -17,13 +17,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "居る",
+        "いる",
         "たい"
       ]
     },
@@ -32,19 +32,19 @@
       "_tokens": [
         {
           "surface": "つよい",
-          "baseForm": "強い",
+          "baseForm": "つよい",
           "pos": "形容詞",
           "reading": "つよい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "強い"
+        "つよい"
       ]
     },
     {
@@ -52,7 +52,7 @@
       "_tokens": [
         {
           "surface": "いや",
-          "baseForm": "嫌",
+          "baseForm": "いや",
           "pos": "形状詞",
           "reading": "いや"
         },
@@ -64,13 +64,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "嫌",
+        "いや",
         "だ"
       ]
     },
@@ -85,9 +85,9 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
@@ -105,9 +105,9 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
@@ -125,9 +125,9 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
@@ -139,9 +139,9 @@
       "_tokens": [
         {
           "surface": "い",
-          "baseForm": "居る",
+          "baseForm": "いる",
           "pos": "動詞",
-          "reading": "いる"
+          "reading": "い"
         },
         {
           "surface": "た",
@@ -157,13 +157,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "居る",
+        "いる",
         "た",
         "た"
       ]
@@ -173,9 +173,9 @@
       "_tokens": [
         {
           "surface": "やめ",
-          "baseForm": "止める",
+          "baseForm": "やめる",
           "pos": "動詞",
-          "reading": "やめる"
+          "reading": "やめ"
         },
         {
           "surface": "て",
@@ -185,13 +185,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "止める",
+        "やめる",
         "て"
       ]
     },
@@ -200,19 +200,19 @@
       "_tokens": [
         {
           "surface": "つらい",
-          "baseForm": "辛い",
+          "baseForm": "つらい",
           "pos": "形容詞",
           "reading": "つらい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "辛い"
+        "つらい"
       ]
     },
     {
@@ -220,19 +220,19 @@
       "_tokens": [
         {
           "surface": "ひどい",
-          "baseForm": "酷い",
+          "baseForm": "ひどい",
           "pos": "形容詞",
           "reading": "ひどい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "酷い"
+        "ひどい"
       ]
     }
   ],
@@ -242,19 +242,19 @@
       "_tokens": [
         {
           "surface": "すごい",
-          "baseForm": "凄い",
+          "baseForm": "すごい",
           "pos": "形容詞",
           "reading": "すごい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "凄い"
+        "すごい"
       ]
     },
     {
@@ -262,9 +262,9 @@
       "_tokens": [
         {
           "surface": "かっ",
-          "baseForm": "駆る",
+          "baseForm": "かる",
           "pos": "動詞",
-          "reading": "かる"
+          "reading": "かっ"
         },
         {
           "surface": "た",
@@ -274,13 +274,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "駆る",
+        "かる",
         "た"
       ]
     },
@@ -289,9 +289,9 @@
       "_tokens": [
         {
           "surface": "やっ",
-          "baseForm": "遣る",
+          "baseForm": "やる",
           "pos": "動詞",
-          "reading": "やる"
+          "reading": "やっ"
         },
         {
           "surface": "た",
@@ -301,13 +301,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "遣る",
+        "やる",
         "た"
       ]
     },
@@ -316,9 +316,9 @@
       "_tokens": [
         {
           "surface": "よかっ",
-          "baseForm": "良い",
+          "baseForm": "よい",
           "pos": "形容詞",
-          "reading": "よい"
+          "reading": "よかっ"
         },
         {
           "surface": "た",
@@ -328,13 +328,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "良い",
+        "よい",
         "た"
       ]
     },
@@ -343,19 +343,19 @@
       "_tokens": [
         {
           "surface": "つよい",
-          "baseForm": "強い",
+          "baseForm": "つよい",
           "pos": "形容詞",
           "reading": "つよい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "強い"
+        "つよい"
       ]
     },
     {
@@ -363,19 +363,19 @@
       "_tokens": [
         {
           "surface": "うれしい",
-          "baseForm": "嬉しい",
+          "baseForm": "うれしい",
           "pos": "形容詞",
           "reading": "うれしい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "嬉しい"
+        "うれしい"
       ]
     },
     {
@@ -383,9 +383,9 @@
       "_tokens": [
         {
           "surface": "やっ",
-          "baseForm": "遣る",
+          "baseForm": "やる",
           "pos": "動詞",
-          "reading": "やる"
+          "reading": "やっ"
         },
         {
           "surface": "た",
@@ -401,13 +401,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "遣る",
+        "やる",
         "た",
         "ね"
       ]
@@ -417,19 +417,19 @@
       "_tokens": [
         {
           "surface": "すばらしい",
-          "baseForm": "素晴らしい",
+          "baseForm": "すばらしい",
           "pos": "形容詞",
           "reading": "すばらしい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "素晴らしい"
+        "すばらしい"
       ]
     },
     {
@@ -437,7 +437,7 @@
       "_tokens": [
         {
           "surface": "かち",
-          "baseForm": "勝ち",
+          "baseForm": "かち",
           "pos": "名詞",
           "reading": "かち"
         },
@@ -449,13 +449,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "勝ち",
+        "かち",
         "だ"
       ]
     },
@@ -464,9 +464,9 @@
       "_tokens": [
         {
           "surface": "い",
-          "baseForm": "いー",
-          "pos": "感動詞",
-          "reading": "いー"
+          "baseForm": "いく",
+          "pos": "動詞",
+          "reading": "い"
         },
         {
           "surface": "えー",
@@ -482,13 +482,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "いー",
+        "いく",
         "えー",
         "い"
       ]
@@ -500,19 +500,19 @@
       "_tokens": [
         {
           "surface": "たのしい",
-          "baseForm": "楽しい",
+          "baseForm": "たのしい",
           "pos": "形容詞",
           "reading": "たのしい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "楽しい"
+        "たのしい"
       ]
     },
     {
@@ -520,7 +520,7 @@
       "_tokens": [
         {
           "surface": "いく",
-          "baseForm": "行く",
+          "baseForm": "いく",
           "pos": "動詞",
           "reading": "いく"
         },
@@ -532,13 +532,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "行く",
+        "いく",
         "よ"
       ]
     },
@@ -547,9 +547,9 @@
       "_tokens": [
         {
           "surface": "み",
-          "baseForm": "見る",
+          "baseForm": "みる",
           "pos": "動詞",
-          "reading": "みる"
+          "reading": "み"
         },
         {
           "surface": "て",
@@ -559,13 +559,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "見る",
+        "みる",
         "て"
       ]
     },
@@ -574,19 +574,19 @@
       "_tokens": [
         {
           "surface": "きれい",
-          "baseForm": "奇麗",
+          "baseForm": "きれい",
           "pos": "形状詞",
           "reading": "きれい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "奇麗"
+        "きれい"
       ]
     },
     {
@@ -594,19 +594,19 @@
       "_tokens": [
         {
           "surface": "すごい",
-          "baseForm": "凄い",
+          "baseForm": "すごい",
           "pos": "形容詞",
           "reading": "すごい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "凄い"
+        "すごい"
       ]
     },
     {
@@ -614,26 +614,32 @@
       "_tokens": [
         {
           "surface": "ここ",
-          "baseForm": "此処",
+          "baseForm": "ここ",
           "pos": "代名詞",
           "reading": "ここ"
         },
         {
+          "surface": " ",
+          "baseForm": " ",
+          "pos": "空白",
+          "reading": "きごう"
+        },
+        {
           "surface": "すき",
-          "baseForm": "隙",
-          "pos": "名詞",
+          "baseForm": "すき",
+          "pos": "形状詞",
           "reading": "すき"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "此処",
-        "隙"
+        "ここ",
+        "すき"
       ]
     },
     {
@@ -641,7 +647,7 @@
       "_tokens": [
         {
           "surface": "なに",
-          "baseForm": "何",
+          "baseForm": "なに",
           "pos": "代名詞",
           "reading": "なに"
         },
@@ -652,22 +658,28 @@
           "reading": "か"
         },
         {
+          "surface": " ",
+          "baseForm": " ",
+          "pos": "空白",
+          "reading": "きごう"
+        },
+        {
           "surface": "ある",
-          "baseForm": "有る",
+          "baseForm": "ある",
           "pos": "動詞",
           "reading": "ある"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "何",
+        "なに",
         "か",
-        "有る"
+        "ある"
       ]
     },
     {
@@ -675,19 +687,19 @@
       "_tokens": [
         {
           "surface": "いこう",
-          "baseForm": "行く",
+          "baseForm": "いく",
           "pos": "動詞",
-          "reading": "いく"
+          "reading": "いこう"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "行く"
+        "いく"
       ]
     },
     {
@@ -695,19 +707,19 @@
       "_tokens": [
         {
           "surface": "あたらしい",
-          "baseForm": "新しい",
+          "baseForm": "あたらしい",
           "pos": "形容詞",
           "reading": "あたらしい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "新しい"
+        "あたらしい"
       ]
     },
     {
@@ -715,19 +727,19 @@
       "_tokens": [
         {
           "surface": "おもしろい",
-          "baseForm": "面白い",
+          "baseForm": "おもしろい",
           "pos": "形容詞",
           "reading": "おもしろい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "面白い"
+        "おもしろい"
       ]
     }
   ],
@@ -737,19 +749,19 @@
       "_tokens": [
         {
           "surface": "ありがとう",
-          "baseForm": "有り難う",
+          "baseForm": "ありがとう",
           "pos": "感動詞",
           "reading": "ありがとう"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "有り難う"
+        "ありがとう"
       ]
     },
     {
@@ -757,19 +769,19 @@
       "_tokens": [
         {
           "surface": "たすかる",
-          "baseForm": "助かる",
+          "baseForm": "たすかる",
           "pos": "動詞",
           "reading": "たすかる"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "助かる"
+        "たすかる"
       ]
     },
     {
@@ -777,19 +789,19 @@
       "_tokens": [
         {
           "surface": "だいじょうぶ",
-          "baseForm": "大丈夫",
+          "baseForm": "だいじょうぶ",
           "pos": "形状詞",
           "reading": "だいじょうぶ"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "大丈夫"
+        "だいじょうぶ"
       ]
     },
     {
@@ -797,19 +809,19 @@
       "_tokens": [
         {
           "surface": "げんき",
-          "baseForm": "元気",
+          "baseForm": "げんき",
           "pos": "名詞",
           "reading": "げんき"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "元気"
+        "げんき"
       ]
     },
     {
@@ -817,19 +829,19 @@
       "_tokens": [
         {
           "surface": "うれしい",
-          "baseForm": "嬉しい",
+          "baseForm": "うれしい",
           "pos": "形容詞",
           "reading": "うれしい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "嬉しい"
+        "うれしい"
       ]
     },
     {
@@ -837,9 +849,9 @@
       "_tokens": [
         {
           "surface": "よかっ",
-          "baseForm": "良い",
+          "baseForm": "よい",
           "pos": "形容詞",
-          "reading": "よい"
+          "reading": "よかっ"
         },
         {
           "surface": "た",
@@ -849,13 +861,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "良い",
+        "よい",
         "た"
       ]
     }
@@ -866,19 +878,31 @@
       "_tokens": [
         {
           "surface": "ごめん",
-          "baseForm": "御免",
+          "baseForm": "ごめん",
           "pos": "名詞",
           "reading": "ごめん"
         },
         {
           "surface": "…",
-          "baseForm": "…",
+          "baseForm": ".",
           "pos": "補助記号",
-          "reading": "…"
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
         }
       ],
       "_contentWords": [
-        "御免"
+        "ごめん"
       ]
     },
     {
@@ -886,19 +910,31 @@
       "_tokens": [
         {
           "surface": "むり",
-          "baseForm": "無理",
+          "baseForm": "むり",
           "pos": "名詞",
           "reading": "むり"
         },
         {
           "surface": "…",
-          "baseForm": "…",
+          "baseForm": ".",
           "pos": "補助記号",
-          "reading": "…"
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
         }
       ],
       "_contentWords": [
-        "無理"
+        "むり"
       ]
     },
     {
@@ -906,9 +942,9 @@
       "_tokens": [
         {
           "surface": "まけ",
-          "baseForm": "負ける",
+          "baseForm": "まける",
           "pos": "動詞",
-          "reading": "まける"
+          "reading": "まけ"
         },
         {
           "surface": "た",
@@ -918,13 +954,25 @@
         },
         {
           "surface": "…",
-          "baseForm": "…",
+          "baseForm": ".",
           "pos": "補助記号",
-          "reading": "…"
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
         }
       ],
       "_contentWords": [
-        "負ける",
+        "まける",
         "た"
       ]
     },
@@ -933,15 +981,15 @@
       "_tokens": [
         {
           "surface": "つか",
-          "baseForm": "突く",
+          "baseForm": "つく",
           "pos": "動詞",
-          "reading": "つく"
+          "reading": "つか"
         },
         {
           "surface": "れ",
           "baseForm": "れる",
           "pos": "助動詞",
-          "reading": "れる"
+          "reading": "れ"
         },
         {
           "surface": "た",
@@ -951,13 +999,25 @@
         },
         {
           "surface": "…",
-          "baseForm": "…",
+          "baseForm": ".",
           "pos": "補助記号",
-          "reading": "…"
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
         }
       ],
       "_contentWords": [
-        "突く",
+        "つく",
         "れる",
         "た"
       ]
@@ -967,7 +1027,7 @@
       "_tokens": [
         {
           "surface": "だめ",
-          "baseForm": "駄目",
+          "baseForm": "だめ",
           "pos": "名詞",
           "reading": "だめ"
         },
@@ -979,13 +1039,25 @@
         },
         {
           "surface": "…",
-          "baseForm": "…",
+          "baseForm": ".",
           "pos": "補助記号",
-          "reading": "…"
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
         }
       ],
       "_contentWords": [
-        "駄目",
+        "だめ",
         "だ"
       ]
     },
@@ -994,19 +1066,31 @@
       "_tokens": [
         {
           "surface": "くやしい",
-          "baseForm": "悔しい",
+          "baseForm": "くやしい",
           "pos": "形容詞",
           "reading": "くやしい"
         },
         {
           "surface": "…",
-          "baseForm": "…",
+          "baseForm": ".",
           "pos": "補助記号",
-          "reading": "…"
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
+        },
+        {
+          "surface": "",
+          "baseForm": ".",
+          "pos": "補助記号",
+          "reading": "．"
         }
       ],
       "_contentWords": [
-        "悔しい"
+        "くやしい"
       ]
     }
   ],
@@ -1016,9 +1100,9 @@
       "_tokens": [
         {
           "surface": "しまっ",
-          "baseForm": "仕舞う",
+          "baseForm": "しまう",
           "pos": "動詞",
-          "reading": "しまう"
+          "reading": "しまっ"
         },
         {
           "surface": "た",
@@ -1028,13 +1112,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "仕舞う",
+        "しまう",
         "た"
       ]
     },
@@ -1043,9 +1127,9 @@
       "_tokens": [
         {
           "surface": "まっ",
-          "baseForm": "待つ",
+          "baseForm": "まつ",
           "pos": "動詞",
-          "reading": "まつ"
+          "reading": "まっ"
         },
         {
           "surface": "て",
@@ -1055,13 +1139,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "待つ",
+        "まつ",
         "て"
       ]
     },
@@ -1070,9 +1154,9 @@
       "_tokens": [
         {
           "surface": "やめ",
-          "baseForm": "止める",
+          "baseForm": "やめる",
           "pos": "動詞",
-          "reading": "やめる"
+          "reading": "やめ"
         },
         {
           "surface": "て",
@@ -1082,13 +1166,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "止める",
+        "やめる",
         "て"
       ]
     },
@@ -1097,9 +1181,9 @@
       "_tokens": [
         {
           "surface": "うごけ",
-          "baseForm": "動く",
+          "baseForm": "うごける",
           "pos": "動詞",
-          "reading": "うごく"
+          "reading": "うごけ"
         },
         {
           "surface": "ない",
@@ -1109,13 +1193,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "動く",
+        "うごける",
         "ない"
       ]
     },
@@ -1124,26 +1208,26 @@
       "_tokens": [
         {
           "surface": "なに",
-          "baseForm": "何",
+          "baseForm": "なに",
           "pos": "代名詞",
           "reading": "なに"
         },
         {
           "surface": "これ",
-          "baseForm": "此れ",
+          "baseForm": "これ",
           "pos": "代名詞",
           "reading": "これ"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "何",
-        "此れ"
+        "なに",
+        "これ"
       ]
     },
     {
@@ -1151,7 +1235,7 @@
       "_tokens": [
         {
           "surface": "いや",
-          "baseForm": "嫌",
+          "baseForm": "いや",
           "pos": "形状詞",
           "reading": "いや"
         },
@@ -1163,13 +1247,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "嫌",
+        "いや",
         "だ"
       ]
     }
@@ -1180,19 +1264,19 @@
       "_tokens": [
         {
           "surface": "あぶない",
-          "baseForm": "危ない",
+          "baseForm": "あぶない",
           "pos": "形容詞",
           "reading": "あぶない"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "危ない"
+        "あぶない"
       ]
     },
     {
@@ -1200,9 +1284,9 @@
       "_tokens": [
         {
           "surface": "たすけ",
-          "baseForm": "助ける",
+          "baseForm": "たすける",
           "pos": "動詞",
-          "reading": "たすける"
+          "reading": "たすけ"
         },
         {
           "surface": "て",
@@ -1212,13 +1296,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "助ける",
+        "たすける",
         "て"
       ]
     },
@@ -1227,19 +1311,19 @@
       "_tokens": [
         {
           "surface": "こわい",
-          "baseForm": "怖い",
+          "baseForm": "こわい",
           "pos": "形容詞",
           "reading": "こわい"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "怖い"
+        "こわい"
       ]
     },
     {
@@ -1253,9 +1337,9 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
@@ -1267,7 +1351,7 @@
       "_tokens": [
         {
           "surface": "だめ",
-          "baseForm": "駄目",
+          "baseForm": "だめ",
           "pos": "名詞",
           "reading": "だめ"
         },
@@ -1279,13 +1363,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "駄目",
+        "だめ",
         "だ"
       ]
     },
@@ -1294,19 +1378,19 @@
       "_tokens": [
         {
           "surface": "ピンチ",
-          "baseForm": "ピンチ-pinch ",
+          "baseForm": "ピンチ",
           "pos": "名詞",
           "reading": "ぴんち"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "ピンチ-pinch "
+        "ピンチ"
       ]
     }
   ],
@@ -1316,19 +1400,19 @@
       "_tokens": [
         {
           "surface": "がんばれ",
-          "baseForm": "頑張る",
+          "baseForm": "がんばる",
           "pos": "動詞",
-          "reading": "がんばる"
+          "reading": "がんばれ"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "頑張る"
+        "がんばる"
       ]
     },
     {
@@ -1336,9 +1420,9 @@
       "_tokens": [
         {
           "surface": "まけ",
-          "baseForm": "負ける",
+          "baseForm": "まける",
           "pos": "動詞",
-          "reading": "まける"
+          "reading": "まけ"
         },
         {
           "surface": "ない",
@@ -1354,13 +1438,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "負ける",
+        "まける",
         "ない",
         "ぞ"
       ]
@@ -1370,7 +1454,7 @@
       "_tokens": [
         {
           "surface": "いく",
-          "baseForm": "行く",
+          "baseForm": "いく",
           "pos": "動詞",
           "reading": "いく"
         },
@@ -1382,13 +1466,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "行く",
+        "いく",
         "ぞ"
       ]
     },
@@ -1397,7 +1481,7 @@
       "_tokens": [
         {
           "surface": "やる",
-          "baseForm": "遣る",
+          "baseForm": "やる",
           "pos": "動詞",
           "reading": "やる"
         },
@@ -1409,13 +1493,13 @@
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "遣る",
+        "やる",
         "ぞ"
       ]
     },
@@ -1424,19 +1508,19 @@
       "_tokens": [
         {
           "surface": "それ",
-          "baseForm": "其れ",
+          "baseForm": "それ",
           "pos": "代名詞",
           "reading": "それ"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "其れ"
+        "それ"
       ]
     },
     {
@@ -1444,19 +1528,19 @@
       "_tokens": [
         {
           "surface": "いけ",
-          "baseForm": "行く",
+          "baseForm": "いく",
           "pos": "動詞",
-          "reading": "いく"
+          "reading": "いけ"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "行く"
+        "いく"
       ]
     },
     {
@@ -1466,13 +1550,13 @@
           "surface": "とりゃ",
           "baseForm": "とる",
           "pos": "助動詞",
-          "reading": "とる"
+          "reading": "とりゃ"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
@@ -1484,19 +1568,19 @@
       "_tokens": [
         {
           "surface": "えいっ",
-          "baseForm": "えい",
+          "baseForm": "えいっ",
           "pos": "感動詞",
-          "reading": "えい"
+          "reading": "えいっ"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "えい"
+        "えいっ"
       ]
     },
     {
@@ -1504,19 +1588,19 @@
       "_tokens": [
         {
           "surface": "くらえ",
-          "baseForm": "食らう",
+          "baseForm": "くらう",
           "pos": "動詞",
-          "reading": "くらう"
+          "reading": "くらえ"
         },
         {
           "surface": "！",
-          "baseForm": "！",
+          "baseForm": "!",
           "pos": "補助記号",
-          "reading": "！"
+          "reading": "!"
         }
       ],
       "_contentWords": [
-        "食らう"
+        "くらう"
       ]
     }
   ]
