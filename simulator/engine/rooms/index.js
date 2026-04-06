@@ -6,17 +6,24 @@
  */
 import { handleUnknownRoom } from './unknown.js';
 import { handleSkipRoom } from './skip-room.js';
+import { handleEncounter } from './encounter.js';
+import { handleBoss } from './boss.js';
+import { handleFriendlyNpc } from './friendly-npc.js';
+import { handleNpcBattle } from './npc-battle.js';
+import { handleWordDiscovery } from './word-discovery.js';
+import { handleSpeedReview } from './speed-review.js';
+import { handleWhackAMole } from './whack-a-mole.js';
 
 const handlers = new Map();
 
-// Combat rooms — null until registered by their modules
-handlers.set('encounter', null);
-handlers.set('boss', null);
-handlers.set('friendlyNpc', null);
-handlers.set('npcBattle', null);
-handlers.set('wordDiscovery', null);
-handlers.set('speedReviewRoom', null);
-handlers.set('whackAMole', null);
+// Combat / interactive rooms
+handlers.set('encounter', handleEncounter);
+handlers.set('boss', handleBoss);
+handlers.set('friendlyNpc', handleFriendlyNpc);
+handlers.set('npcBattle', handleNpcBattle);
+handlers.set('wordDiscovery', handleWordDiscovery);
+handlers.set('speedReviewRoom', handleSpeedReview);
+handlers.set('whackAMole', handleWhackAMole);
 
 // Rooms we intentionally skip
 handlers.set('shrine', handleSkipRoom);
