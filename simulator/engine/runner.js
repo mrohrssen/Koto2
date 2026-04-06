@@ -155,8 +155,9 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
           } else {
             const proceedResult = await simCall('POST', '/api/game/proceed', null, `day ${day} run ${run} room ${roomIndex}`);
             if (!proceedResult.ok) break;
-            // proceed returns { room: {...}, state: {...} }
-            roomData = proceedResult.data?.room ?? proceedResult.data;
+            // proceed returns { room: { room: {...actual room...}, roomNumber, actions }, state }
+            const roomWrapper = proceedResult.data?.room;
+            roomData = roomWrapper?.room ?? roomWrapper ?? proceedResult.data;
             if (!roomData) break;
           }
 
@@ -180,6 +181,11 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
             runWiped = true;
             break;
           }
+        }
+
+        // If wiped, forfeit the run to clean up combat/run state
+        if (runWiped) {
+          await simCall('POST', '/api/game/forfeit', null, `day ${day} run ${run} forfeit`);
         }
 
         // Log run summary
