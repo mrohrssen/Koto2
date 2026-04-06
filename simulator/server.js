@@ -30,7 +30,7 @@ const store = createStore(DB_PATH);
 const app = express();
 
 app.use(express.json());
-app.use(express.static(join(__dirname, 'public')));
+app.use(express.static(join(__dirname, 'public'), { etag: false, lastModified: false, maxAge: 0 }));
 
 // --- API routes ---
 app.use('/api/profiles', createProfileRoutes(store));
@@ -48,8 +48,8 @@ app.get('*', (req, res) => {
 });
 
 // --- Start server ---
-app.listen(PORT, () => {
-  console.log(`Simulator dashboard running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Simulator dashboard running at http://0.0.0.0:${PORT}`);
   console.log(`Game server target: ${GAME_SERVER_URL}`);
 });
 

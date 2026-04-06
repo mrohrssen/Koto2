@@ -6,6 +6,33 @@
 
 ---
 
+## Executive Summary
+
+**What this does:** Makes the first few hours of the game feel like a real Japanese-speaking world, even when the player knows zero words.
+
+Right now, NPCs and CID can only speak naturally once the player knows ~130+ words -- before that, the AI generates flat, unnatural Japanese. This plan fills that gap with handwritten dialogue that the game shows or hides based on what the player has already learned.
+
+**How it works for the player:**
+
+- **Run 1 (0 words known):** CID greets you with just "こんにちは！" -- one word, shown as a card with the Japanese on top and "hello" below. Creatures shout single-word exclamations in battle ("いたい！" = "ouch!"). Every word is new, every word is a card. The player is immersed in Japanese from minute one.
+- **Runs 2-5 (~20-50 words):** Words the player has seen enough times graduate through Speed Review into "known." CID's greeting gets longer: "こんにちは！たのしいよ！" -- now the player reads some words on their own (no card needed) and learns new ones through the cards. NPCs start showing personality through their word choices.
+- **Runs 5-10 (~50-100 words):** Grammar words (は, です, に) and glue words (わたし, いっしょ, とても) are learned naturally -- they show up as the one new word in sentences where everything else is already known. CID sounds like a real friend. NPCs have distinct voices: the child is excitable, the girl is shy, the boy is competitive.
+- **Area 4+ (~160+ words):** The AI takes over seamlessly. The player doesn't notice the switch because everything looks and works the same -- the only difference is that dialogue is now generated instead of handwritten. Kanji appears for the first time, giving known words a fresh challenge.
+
+**What gets built:**
+
+1. A Japanese tokenizer (breaks sentences into words automatically)
+2. A word dictionary (30-50k entries so the game can display English for any Japanese word)
+3. A sentence renderer (shows known words as plain text, unknown words as learning cards)
+4. ~200 handwritten dialogue lines for Area 1 (CID greetings, NPC lines, combat barks)
+5. A filtering system that automatically picks which lines each player can read based on their vocabulary
+
+**Key design choice:** The existing English prologue is untouched -- it stays exactly as it is. This plan covers what happens *after* the prologue, when the player enters Area 1 and the game switches to Japanese. From that point on, unknown words always appear with their English meaning in a card -- the player is never left guessing. Grammar words like particles (は, が, に) are taught the same way as any other word: they appear as cards until the player has learned them.
+
+**Timeline:** 5 phases. The foundation (tokenizer + dictionary + renderer) comes first. Then dialogue content is authored and validated. Then everything gets wired into the game. A final phase migrates the word-tracking system to use FSRS as the single source of truth.
+
+---
+
 ## 1. Problem
 
 New players know zero Japanese. The game teaches words through gameplay (creature names, moves, items, barks), but AI-generated dialogue requires ~130+ known words to produce natural, personality-rich, i+1-compliant Japanese. Between 0 and 130 words, the AI is unreliable — it produces flat noun-lists, violates i+1 constraints, and wastes teaching slots on survival vocabulary instead of interesting words.
@@ -20,8 +47,7 @@ All hardcoded dialogue renders as **full Japanese with vertical stacks on unknow
 
 - Known words: displayed as hiragana only (inline, no box) in Areas 1-3. Kanji display unlocks in Area 4.
 - Unknown words: vertical stack card — hiragana on top, English definition below, blue border
-- Grammar words (particles, copulas): shown with vertical stacks and English until the player has graduated them through exposure. No words are "free" — every word shown to the player is tracked.
-- Prologue: uses `renderEnFirst` (English with Japanese highlights) to introduce the very first batch of grammar words (は, が, を, に, です, こんにちは, はい, いいえ). This is the only place `renderEnFirst` is used.
+- Grammar words (particles, copulas): shown with vertical stacks and English until the player has graduated them through exposure. No words are "free" — every word shown to the player is tracked. Grammar words are taught through the same i+1 word-gated system as all other words — shown as vertical stacks in CID and NPC dialogue from the very first run.
 
 **Hiragana-only mode:** The renderer takes a `useKanji: boolean` flag. For Areas 1-3 this is `false` — all words display as their hiragana readings, never kanji. わたし not 私, いっしょ not 一緒, いたい not 痛い. Area 4 unlocks kanji, so words the player already knows now appear in kanji form — itself a learning moment that reinforces recognition.
 
@@ -56,7 +82,32 @@ export async function tokenize(text) → [{ surface, baseForm, pos, reading }]
 
 This tokenizer replaces JPDB parsing everywhere — hardcoded dialogue, AI-generated dialogue, bark filtering, i+1 enforcement. One tokenizer for the whole game.
 
-**Pre-tokenization:** Hardcoded dialogue lines are pre-tokenized at authoring/build time and stored alongside the JSON. Server startup loads pre-tokenized data directly. Live tokenization is only needed for dynamically generated content (Area 4+ AI lines).
+**Pre-tokenization:** Hardcoded dialogue lines are pre-tokenized at authoring time and stored alongside the JSON. Server startup loads pre-tokenized data directly. Live tokenization is only needed for dynamically generated content (Area 4+ AI lines).
+
+**Pre-tokenization script:** `scripts/pre-tokenize-dialogue.js` reads all `data/dialogue/*.json` files, runs each line through `tokenize()`, and writes back with tokenization data inline. Run manually after authoring new dialogue content:
+
+```bash
+node scripts/pre-tokenize-dialogue.js
+```
+
+**Output format:** Each dialogue line is augmented with `_tokens` and `_contentWords`:
+
+```json
+{
+  "text": "こんにちは！いっしょに いく？",
+  "_tokens": [
+    { "surface": "こんにちは", "baseForm": "こんにちは", "pos": "感動詞", "reading": "こんにちは" },
+    { "surface": "！", "baseForm": "！", "pos": "記号", "reading": "" },
+    { "surface": "一緒", "baseForm": "一緒", "pos": "名詞", "reading": "いっしょ" },
+    { "surface": "に", "baseForm": "に", "pos": "助詞", "reading": "に" },
+    { "surface": "行く", "baseForm": "行く", "pos": "動詞", "reading": "いく" },
+    { "surface": "？", "baseForm": "？", "pos": "記号", "reading": "" }
+  ],
+  "_contentWords": ["こんにちは", "一緒", "に", "行く"]
+}
+```
+
+The `_contentWords` array lists all non-punctuation baseForm values — used by the dialogue filter for quick i+1 checks without re-parsing tokens. The script also validates that every baseForm exists in the word dictionary and reports missing entries.
 
 ### 2.5 Definition Overrides
 
@@ -90,18 +141,85 @@ Map<baseForm, {
 
 **Scale: 30,000-50,000 entries.** The dictionary must cover every Japanese word the tokenizer can produce. Any word not in the dictionary becomes an unreadable glyph — the renderer can't display an English stack for a word it doesn't know. A 200-word dictionary breaks the moment any NPC, bark, or AI line uses an unlisted word.
 
-**Day-1 source:** A comprehensive base dictionary sourced from JMdict or JPDB frequency data. Game content words (creatures, moves, items, NPCs, areas, glue words) are a tagged subset within this larger dictionary, not the dictionary itself.
+**Day-1 source:** JMdict (open source, CC BY-SA 4.0, comprehensive). A build script (`scripts/build-dictionary.js`) converts JMdict XML/JSON into the runtime format. Full JMdict contains ~180k entries; the build script filters to entries with JLPT tags (N5-N1) or frequency tags to produce the ~30-50k entry runtime dictionary. The `jmdict-simplified` npm package provides a pre-parsed JSON export suitable for this pipeline. Game content words (creatures, moves, items, NPCs, areas, glue words) are a tagged subset within this larger dictionary, not the dictionary itself.
 
 **Multi-definition entries:** Each word stores an array of definitions. The first definition is primary (used by default in vertical stacks). The override system (section 2.5) selects a non-primary definition when dialogue context requires it.
 
 **Source priority for conflicts:** Game data files (creatures.json, moves.json, etc.) override the base dictionary's definitions for their specific words. This ensures game-themed definitions appear first (e.g., 火 shows "fire" not "Tuesday").
 
 **Loading at startup:**
-1. Load base dictionary (30-50k entries from JMdict/JPDB export)
-2. Overlay game data: `data/creatures.json`, `data/moves.json`, `data/items.json`, `data/npcs.json`, `data/npc-skills.json`, `data/areas.json`, `data/creature-speech.json`, `data/glue-words.json`
+1. Load base dictionary (`data/dictionary.json`, 30-50k entries built from JMdict via `scripts/build-dictionary.js`)
+2. Overlay game data: `data/creatures.json`, `data/moves.json`, `data/items.json`, `data/npcs.json`, `data/npc-skills.json`, `data/areas.json`, `data/creature-speech.json`, `data/glue-words.json`, `data/grammar-words.json`
 3. Game data entries replace the base dictionary entry for their word, ensuring game definitions take priority
 
-### 3.2 Dialogue Data Files
+### 3.2 Sentence Renderer (`renderJpSentence`)
+
+The sentence renderer is the core display function for all dialogue, barks, and CID scripts. It replaces the existing `renderJpFirst(kanji, reading, english)` single-word renderer for dialogue contexts.
+
+**Function signature:**
+
+```js
+// public/js/ui/bootstrap-client.js
+export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, useKanji = false) → string (HTML)
+```
+
+**Parameters:**
+- `tokens[]` — pre-tokenized array from server: `[{ surface, baseForm, pos, reading }]`
+- `knownWords` — `Set<string>` of known baseForm strings (already loaded client-side via `setKnownWords`)
+- `wordDict` — `Map<baseForm, { reading, definitions[] }>` (loaded client-side at game init)
+- `overrides` — `{ [baseForm]: string }` mapping words to context-specific English definitions
+- `useKanji` — `false` for Areas 1-3 (hiragana display), `true` for Area 4+ (kanji display)
+
+**HTML output by token type:**
+
+Known word (inline, no decoration):
+```html
+<span class="jp-word jp-known">こんにちは</span>
+```
+In hiragana mode (`useKanji: false`), displays the token's reading. In kanji mode (`useKanji: true`), displays the surface form.
+
+Unknown word (vertical stack with English):
+```html
+<span class="jp-word jp-unknown">
+  <span class="jp-stack-reading">いっしょ</span>
+  <span class="jp-stack-en">together</span>
+</span>
+```
+Blue border, stacked vertically. Reading on top (always hiragana), English definition below. Uses the override definition if provided, otherwise the primary (first) dictionary definition.
+
+Punctuation (rendered as-is):
+```html
+<span class="jp-punct">！</span>
+```
+
+**CSS classes (added to `game.css`):**
+
+```css
+.jp-word { display: inline-block; margin: 0 1px; }
+.jp-known { /* no special styling — blends into sentence flow */ }
+.jp-unknown {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1.5px solid var(--accent-blue, #4a9eff);
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin: 0 2px;
+  background: rgba(74, 158, 255, 0.08);
+}
+.jp-stack-reading { font-size: 1em; }
+.jp-stack-en { font-size: 0.7em; opacity: 0.8; color: var(--accent-blue, #4a9eff); }
+.jp-punct { display: inline; }
+```
+
+**Integration with existing renderers:**
+- `renderJpSentence` is used for CID scripts, NPC dialogue lines, and barks — all dialogue from the hardcoded JSON pools.
+- The existing `renderJpFirst(kanji, reading, english)` stays in place for non-dialogue uses: creature names in the UI, move names, item displays, shop labels. These are single-word displays that don't need sentence-level tokenization.
+- `renderEnFirst(taggedText)` stays for AI-generated dialogue in Area 4+ that still uses the `{en|jp|reading}` tag format, until it is migrated to the tokenizer pipeline.
+
+**Word dictionary on the client:** The client loads a lightweight version of the word dictionary at game init (via a new `/api/game/word-dictionary` endpoint or bundled as a static JSON file). This dictionary only needs entries for words that appear in the current area's dialogue pools — not the full 30-50k. The server can filter to relevant entries when serving the dictionary payload.
+
+### 3.3 Dialogue Data Files
 
 ```
 data/dialogue/
@@ -112,7 +230,7 @@ data/glue-words.json  — glue word curriculum
 data/grammar-words.json — graduated grammar introduction schedule
 ```
 
-### 3.3 CID Run-Start Scripts
+### 3.4 CID Run-Start Scripts
 
 CID speaks 2-4 lines at the start of each roguelike run. Scripts are grouped — multiple lines that form a coherent mini-pep-talk. The system picks the highest-tier eligible script. **Not skippable** — CID's greeting is core immersion, the player's companion welcoming them to adventure.
 
@@ -146,7 +264,7 @@ CID speaks 2-4 lines at the start of each roguelike run. Scripts are grouped —
 
 **Content scope:** ~15-20 scripts for Area 1, covering 0 words through Priority 1 complete. Later areas add more scripts to the same pool. With ~10-15 runs through Areas 1-3, 15-20 scripts ensures the player rarely sees the same greeting twice.
 
-### 3.4 NPC Dialogue Lines
+### 3.5 NPC Dialogue Lines
 
 Each NPC has three dialogue slots, each with a pool of lines:
 
@@ -186,7 +304,7 @@ Each NPC has three dialogue slots, each with a pool of lines:
 
 **Quiz system (Area 3):** The existing NPC dialogue system — 3 rounds, 3 options per round (positive/neutral/negative tone), bond tracking via `updateBond` in `src/game/services/npc-service.js` — serves as the comprehension quiz for Area 3. The player must demonstrate understanding by choosing contextually appropriate responses. Not TBD — already implemented.
 
-### 3.5 Bark Pool
+### 3.6 Bark Pool
 
 One large JSON object keyed by trigger category. Each category contains an array of plain Japanese strings.
 
@@ -220,7 +338,7 @@ One large JSON object keyed by trigger category. Each category contains an array
 3. 80/20 roll: 80% reinforcement bark (all words known), 20% teaching bark (1 unknown)
 4. Pick randomly, avoid repeats within same combat
 
-### 3.6 Glue Word Curriculum
+### 3.7 Glue Word Curriculum
 
 `data/glue-words.json` defines the functional words that NPC dialogue and CID scripts teach. Ordered by priority (validated by 32 experiments — see findings doc).
 
@@ -281,26 +399,24 @@ One large JSON object keyed by trigger category. Each category contains an array
 
 Priority 1 is taught in Area 1 (via CID + NPC dialogue). Priority 2 in Area 2. Priority 3-5 in Area 3. By Area 4, all 50 glue words are known and AI dialogue takes over.
 
-### 3.7 Grammar Word Introduction (No "Free" Words)
+### 3.8 Grammar Word Introduction (No "Free" Words)
 
 Words previously treated as "free" (particles, copulas, greetings, question words from the ALLOWED_WORDS list in `vocab-repair.js`) are **not free**. They are real Japanese words that must be tracked, shown with vertical stacks and English translations, and graduated through exposure like everything else. A total beginner does not magically know what は does or what です means.
 
-Grammar words are introduced gradually through a defined schedule:
+Grammar words are introduced gradually through a defined schedule. The existing English prologue is out of scope for this work and stays as-is. Grammar is taught through Area 1 dialogue using the same i+1 word-gated system as content words. Single-word sentences (e.g., `こんにちは！`) satisfy i+1 at 0 known words because a sentence with exactly 1 unknown word passes.
 
-**Prologue (~10-12 words, taught via `renderEnFirst`):**
+**Area 1 early runs (~20-25 words):**
 - Core particles: は, が, を, に
 - Copula: です
-- Greeting: こんにちは
+- Greetings: こんにちは, おはよう, ありがとう
 - Yes/no: はい, いいえ
-- Basic: うん, ね, よ, か
-
-**Area 1 early runs (~15-20 more words):**
+- Sentence-enders: ね, よ, か, うん
 - More particles: で, へ, と, も, の
 - Question words: なに/何, どこ
 - Polite forms: ます
-- Expressions: ありがとう, ください, おはよう, すみません
+- Expressions: ください, すみません
 
-**Area 1 mid-late runs (remaining grammar as needed):**
+**Area 1 mid-late runs (~20-25 more words):**
 - Compound grammar: から, まで, けど, でも, だけ
 - Auxiliaries: ない, ある, いる, する, なる
 - Sentence endings: ですか, ますか, でしょう
@@ -312,11 +428,15 @@ Each grammar word gets the same vertical stack treatment as content words until 
 
 ```json
 [
-  { "word": "は", "reading": "は", "en": "topic marker", "stage": "prologue" },
-  { "word": "が", "reading": "が", "en": "subject marker", "stage": "prologue" },
-  { "word": "です", "reading": "です", "en": "is/am/are", "stage": "prologue" },
+  { "word": "は", "reading": "は", "en": "topic marker", "stage": "area1-early" },
+  { "word": "が", "reading": "が", "en": "subject marker", "stage": "area1-early" },
+  { "word": "です", "reading": "です", "en": "is/am/are", "stage": "area1-early" },
+  { "word": "こんにちは", "reading": "こんにちは", "en": "hello", "stage": "area1-early" },
+  { "word": "ね", "reading": "ね", "en": "right? (confirmation)", "stage": "area1-early" },
+  { "word": "よ", "reading": "よ", "en": "(emphasis)", "stage": "area1-early" },
   { "word": "で", "reading": "で", "en": "at/by (location/means)", "stage": "area1-early" },
-  { "word": "から", "reading": "から", "en": "from/because", "stage": "area1-mid" }
+  { "word": "から", "reading": "から", "en": "from/because", "stage": "area1-mid" },
+  { "word": "ない", "reading": "ない", "en": "not (negation)", "stage": "area1-mid" }
 ]
 ```
 
@@ -328,7 +448,7 @@ Each grammar word gets the same vertical stack treatment as content words until 
 Server boots
   ↓
 loadWordDictionary()
-  → loads base dictionary (30-50k entries from JMdict/JPDB export)
+  → loads base dictionary (data/dictionary.json, 30-50k entries from JMdict)
   → overlays game data: creatures.json, moves.json, items.json,
     npcs.json, npc-skills.json, areas.json, glue-words.json,
     grammar-words.json
@@ -476,41 +596,115 @@ The renderer then:
 4. If unknown: vertical stack — hiragana reading on top, primary English definition below
 5. Punctuation: rendered as-is
 
-**No "free" category.** Every word — particles, copulas, greetings — goes through the same known/unknown check. The difference is that grammar words are introduced on a defined schedule (section 3.7) so they become available for dialogue filtering at the right time.
+**No "free" category.** Every word — particles, copulas, greetings — goes through the same known/unknown check. The difference is that grammar words are introduced on a defined schedule (section 3.8) so they become available for dialogue filtering at the right time.
 
 Conjugated forms resolve naturally: 遊んで → baseForm: 遊ぶ → finds "to play" in dictionary. The author writes natural Japanese; the tokenizer handles the rest.
+
+### 4.7 Server API Contracts
+
+**`GET /api/game/word-dictionary`** (new) — returns the word dictionary for the current area's dialogue pools. Called once at game init, cached client-side.
+
+```json
+// Response
+{
+  "dictionary": {
+    "こんにちは": { "reading": "こんにちは", "definitions": [{ "en": "hello", "primary": true }] },
+    "一緒": { "reading": "いっしょ", "definitions": [{ "en": "together", "primary": true }] }
+  }
+}
+```
+
+**`POST /api/game/run-start`** (existing, modified) — now includes CID dialogue script in response.
+
+```json
+// Response (additions to existing response)
+{
+  "cidScript": {
+    "scriptId": "cid-welcome-0",
+    "lines": [
+      {
+        "text": "こんにちは！",
+        "tokens": [
+          { "surface": "こんにちは", "baseForm": "こんにちは", "pos": "感動詞", "reading": "こんにちは" },
+          { "surface": "！", "baseForm": "！", "pos": "記号", "reading": "" }
+        ],
+        "overrides": {}
+      }
+    ]
+  },
+  "useKanji": false
+}
+```
+
+**NPC encounter endpoint** (existing, modified) — adds word-gated greeting to response.
+
+```json
+// Response (additions to existing NPC encounter response)
+{
+  "npcDialogue": {
+    "greeting": {
+      "text": "こんにちは！あそぶ？",
+      "tokens": [/* pre-tokenized */],
+      "overrides": {}
+    },
+    "fightStart": {
+      "text": "がんばれ！",
+      "tokens": [/* pre-tokenized */],
+      "overrides": {}
+    },
+    "defeatLine": {
+      "text": "つよい！",
+      "tokens": [/* pre-tokenized */],
+      "overrides": {}
+    }
+  },
+  "useKanji": false
+}
+```
+
+**Bark selection** stays client-side. The full bark pool (pre-tokenized) is loaded at game init alongside the word dictionary. The client runs the i+1 filter and 80/20 roll locally — barks fire during combat and need sub-frame latency, making server round-trips impractical.
+
+```json
+// Bark pool loaded at game init (from /api/game/bark-pool or bundled in game state)
+{
+  "onHit": [
+    { "text": "いたい！", "_tokens": [/* ... */], "_contentWords": ["痛い"] },
+    { "text": "つよい！", "_tokens": [/* ... */], "_contentWords": ["強い"] }
+  ]
+}
+```
 
 ## 5. The Player's Journey: Zero to Full AI
 
 ### Run 1 — First Contact (0 words known)
 
-The player has just finished the prologue (which uses `renderEnFirst` — English with Japanese highlights). They know ~10-12 grammar words from the prologue: は, が, を, に, です, こんにちは, はい, いいえ, うん, ね, よ, か. They know zero content words. CID hasn't spoken in Japanese yet.
+The player has completed the English prologue (which is out of scope for this work and unchanged). They enter Area 1 knowing zero Japanese words — no grammar, no content, nothing. Every Japanese word in the game is unknown. The i+1 system handles this naturally: a single-word sentence with 1 unknown word passes the i+1 check (at most 1 unknown per sentence).
 
-**CID run-start:** The simplest eligible script fires. CID speaks in very basic Japanese:
+**CID run-start:** The simplest eligible script fires. CID speaks one word:
 
 > こんにちは！
 
-One line. こんにちは was taught in the prologue — the player has graduated it. They see pure hiragana with no stacks. This is their first moment of "I can read Japanese."
+One line, one sentence, one unknown word — こんにちは appears as a vertical stack (hiragana on top, "hello" below, blue border). The player taps through. This is their first moment of encountering Japanese in the game. こんにちは gets exposure +1.
 
-**First combats:** The player fights wild creatures. Barks fire — simple ones like:
+**First combats:** The player fights wild creatures. Barks fire — single-word exclamations:
 
 > いたい！
 
 > いくぞ！
 
-Each bark is a single word with a vertical stack (hiragana on top, English below). The player sees the word, hears the TTS, and starts building exposure. After 5 exposures of いたい across multiple fights, it enters their Speed Review deck.
+Each bark is one word shown as a vertical stack. The player sees the word, hears the TTS, and starts building exposure. Every bark encounter adds +1 exposure. After 5 exposures of いたい across multiple fights, it enters their Speed Review deck.
 
 **NPC shop visit:** The player encounters こども (Child). The simplest eligible shopGreeting fires:
 
 > こんにちは！
 
-The NPC speaks with their personality. The player is in a fully Japanese environment, reading real Japanese, even though the vocabulary is tiny.
+Same word CID used — reinforcement. The player has now seen こんにちは twice (CID + NPC), building toward the 5-exposure threshold.
 
-**What the player is learning:** Creature names (ひ, みず, き), move verbs (たたく), bark words (いたい, つよい, いく). All rendered in hiragana. All through gameplay exposure, not dialogue.
+**What the player is learning (all through gameplay, not dialogue):** Creature names (ひ, みず, き), move verbs (たたく), bark words (いたい, つよい, いく), and their first grammar word (こんにちは). All rendered in hiragana. All as vertical stacks with English below.
 
 ### Runs 2-5 — Building the Base (~20-50 words known)
 
-The player has fought many creatures, heard barks dozens of times, and bought items from shops. They've done several Speed Reviews, graduating words from "seen" to "known." Grammar words from the prologue are solid. New grammar words (で, と, も, の, ます, ありがとう) are being introduced through dialogue stacks.
+The player has fought many creatures, heard barks dozens of times, and bought items from shops. They've done several Speed Reviews, graduating words from "seen" to "known." Early grammar words (こんにちは, は, です) are graduating through repeated exposure in CID and NPC dialogue. New grammar words (で, と, も, の, ます, ありがとう) are appearing as i+1 targets in short sentences.
 
 **CID run-start:** A richer script becomes eligible as bark words graduate:
 
@@ -628,8 +822,7 @@ The Japanese just keeps getting richer.
 
 | Area | Dialogue Source | Script | Teaching Focus | New System |
 |------|----------------|--------|----------------|------------|
-| **Prologue** | Tutorial screens | renderEnFirst | Core grammar (は, が, です, こんにちは...) | Prologue teaching flow |
-| **1** | Hardcoded JSON pools | Hiragana only | Priority 1 glue (わたし, いっしょ, とても...) + grammar words | Word-gated filtering, bark pool, CID scripts |
+| **1** | Hardcoded JSON pools | Hiragana only | Grammar words (は, が, です...) + Priority 1 glue (わたし, いっしょ, とても...) | Word-gated filtering, bark pool, CID scripts, tokenizer, word dictionary |
 | **2** | Hardcoded JSON pools | Hiragana only | Priority 2 glue (この, ともだち, うれしい...) | None — just new JSON content |
 | **3** | Hardcoded JSON pools | Hiragana only | Priority 3-5 glue + NPC quiz (existing 3-round dialogue + bond) | None — existing quiz system |
 | **4+** | AI-generated (narration engine) | Kanji unlocked | Full vocabulary | None — existing system takes over |
@@ -644,9 +837,12 @@ Areas 2-3 require zero new systems — content additions only (JSON files). Area
 - `src/game/dialogue-filter.js` — word-gated filtering, line selection, script ranking
 - `renderJpSentence()` in `bootstrap-client.js` — sentence-level renderer using tokenizer + dictionary, with `useKanji` flag
 - `data/dialogue/*.json` — dialogue pool data files (with pre-tokenized content)
+- `data/dictionary.json` — base dictionary (30-50k entries, built from JMdict)
 - `data/glue-words.json` — curriculum data
 - `data/grammar-words.json` — grammar word introduction schedule
-- Base dictionary data file (JMdict/JPDB export, 30-50k entries)
+- `scripts/build-dictionary.js` — JMdict to runtime dictionary conversion
+- `scripts/pre-tokenize-dialogue.js` — pre-tokenizes all dialogue JSON files
+- `scripts/validate-dialogue.js` — validates dialogue lines against dictionary and grammar constraints
 
 ### Modified Code
 - `speech-bubble.js` — uses `renderJpSentence` instead of `renderJpFirst(jp, reading, en)`
@@ -658,6 +854,7 @@ Areas 2-3 require zero new systems — content additions only (JSON files). Area
 
 ### New Dependencies
 - `lindera-wasm-unidic-nodejs` — local morphological analyzer (Rust→WASM)
+- `jmdict-simplified` — pre-parsed JMdict data for dictionary build pipeline (dev dependency)
 
 ### Unchanged
 - Speed Review system
@@ -667,7 +864,53 @@ Areas 2-3 require zero new systems — content additions only (JSON files). Area
 - AI dialogue generation for Area 4+ (narration engine, uses `tokenize()` for validation)
 - NPC dialogue state machine (3 rounds, 3 options, bond tracking)
 
-## 8. Content Authoring Scope (This Implementation)
+## 8. Implementation Order
+
+Five phases, each producing a testable increment. Phases 1-2 can be developed in parallel by separate sessions.
+
+### Phase 1 — Foundation (no user-visible changes)
+
+1. Add `lindera-wasm-unidic-nodejs` and `jmdict-simplified` dependencies
+2. Create `src/tokenizer.js` — `tokenize()` wrapper with unit tests
+3. Create `scripts/build-dictionary.js` — JMdict → `data/dictionary.json` conversion
+4. Create `src/game/word-dictionary.js` — startup loader with game data overlays
+5. Unit tests for tokenizer (Japanese input → correct baseForm/reading output) and dictionary (overlay priority, missing word handling)
+
+### Phase 2 — Renderer
+
+6. Implement `renderJpSentence()` in `public/js/ui/bootstrap-client.js`
+7. Add CSS for vertical stacks (`.jp-word`, `.jp-unknown`, `.jp-stack-reading`, `.jp-stack-en`) to `game.css`
+8. Wire into `narration-box.js` for CID lines (behind feature flag or area check)
+9. Visual verification with Playwright — render test sentences with known/unknown words
+
+### Phase 3 — Data + Filtering
+
+10. Author `data/glue-words.json` (50 entries) and `data/grammar-words.json` (~50-60 entries)
+11. Author `data/dialogue/cid-scripts.json` — 15-20 scripts covering 0 words through Priority 1 complete
+12. Author `data/dialogue/npc-lines.json` — Area 1 NPCs (4 NPCs, 3 slots each, 5-8 lines per slot)
+13. Author `data/dialogue/barks.json` — migrate `creature-speech.json` + expand to 50-100 barks
+14. Create `scripts/pre-tokenize-dialogue.js` and run it on all dialogue files
+15. Create `scripts/validate-dialogue.js` — checks all words in dictionary, N5 grammar, bark length
+16. Create `src/game/dialogue-filter.js` — i+1 filtering, CID script ranking, NPC line selection
+17. Unit tests for dialogue filter (eligible/ineligible at various known-word sets)
+
+### Phase 4 — Integration
+
+18. Add CID run-start hook to `src/game/loop.js` — calls dialogue filter, returns selected script
+19. Modify NPC encounter endpoint to serve word-gated greeting/fightStart/defeatLine
+20. Wire `speech-bubble.js` to use new bark pool with i+1 filtering and 80/20 roll
+21. Add `/api/game/word-dictionary` endpoint for client-side dictionary loading
+22. Integration tests — full pipeline from run-start through combat barks
+
+### Phase 5 — FSRS Migration
+
+23. Deprecate `word-knowledge-{userId}.json` `known` map
+24. Write migration script: seed FSRS `vocab` deck cards from existing `known` entries
+25. Update `GET /api/game/known-words` to query FSRS cards only
+26. Update `setKnownWords` client-side flow to use FSRS-sourced data
+27. Integration test: existing player migrates, known words preserved
+
+## 9. Content Authoring Scope (This Implementation)
 
 Only Area 1 content is authored now. The system is built so adding Area 2-3 content is a JSON-only task.
 
@@ -689,7 +932,23 @@ Total: ~200-250 lines of Japanese dialogue + 50 curriculum entries + ~50-60 gram
 - Barks: 1-3 words maximum, no exceptions
 - Each line must be tokenizable by lindera-wasm and all words must exist in the dictionary
 
-## 9. Conjugation Handling
+**Content authoring workflow:**
+
+Content authoring is a separate task from system implementation (Phase 3 of the implementation order). The system must be built first (Phases 1-2) so that dialogue can be validated against the tokenizer and dictionary.
+
+1. **Author dialogue JSON** — write plain Japanese lines in the appropriate data file (`cid-scripts.json`, `npc-lines.json`, or `barks.json`)
+2. **Run validation** — `node scripts/validate-dialogue.js` checks:
+   - All words tokenizable by lindera-wasm
+   - All baseForm entries exist in `data/dictionary.json`
+   - N5 grammar only (heuristic: no N3+ grammar patterns in token stream)
+   - Barks are ≤ 3 content words
+   - Definition overrides reference real dictionary entries
+3. **Pre-tokenize** — `node scripts/pre-tokenize-dialogue.js` writes `_tokens` and `_contentWords` inline
+4. **Spot-check i+1 progression** — the validation script can simulate a player at various known-word counts to verify that scripts unlock in the intended order
+
+A "dialogue-forge" skill (similar to existing creature-forge, npc-forge) may be created later to assist with bulk authoring, but is not part of this implementation.
+
+## 10. Conjugation Handling
 
 The tokenizer resolves conjugated forms to dictionary form: 遊んで → 遊ぶ, 楽しかった → 楽しい, 負けない → 負ける. This means:
 
@@ -703,16 +962,18 @@ The tokenizer resolves conjugated forms to dictionary form: 遊んで → 遊ぶ
 
 **Known risk:** Some conjugated surface forms may still confuse early learners (they learned あそぶ but see あそんで). The vertical stack shows the English meaning, and the jpdb popup shows the full word entry.
 
-## 10. Open Questions
+## 11. Resolved Design Decisions
 
-1. **Sentence boundary detection:** Japanese doesn't always use clear sentence-ending punctuation. How do we split multi-sentence lines for the per-sentence i+1 check? Proposed: split on 。！？ and treat each segment independently.
+These were open questions during initial design. All are now resolved.
 
-2. **Bark pool size:** Starting with ~50-100 barks (1-3 words each). Is this enough variety? Can be expanded over time without system changes.
+1. **Sentence boundary detection:** Split on `。！？` and treat each segment independently. If a line contains no sentence-ending punctuation, treat the entire line as one sentence. This is simple, predictable, and handles the vast majority of authored dialogue.
 
-3. **CID seen-tracking storage:** Where does "which CID scripts has this player seen" live? Proposed: in the existing NPC memory system (player state).
+2. **Bark pool size:** 50-100 barks is sufficient for Area 1 launch. The pool is additive — new barks can be added to the JSON at any time without system changes. Monitor variety during playtesting and expand as needed.
 
-4. **Grammar word introduction schedule:** The proposed graduated introduction (prologue → area 1 early → area 1 mid) needs playtesting. Exact pacing of particle/copula introduction should be tuned based on how quickly players absorb grammar through stacks vs. explicit teaching.
+3. **CID seen-tracking storage:** Stored in player meta state as `player.meta.seenCidScripts: string[]` (array of script IDs). Uses the existing player state persistence — no new storage mechanism needed.
 
-5. **Dictionary source:** JMdict (open source, comprehensive) vs JPDB frequency export vs custom curation for the 30-50k base dictionary. Needs evaluation for definition quality, multi-reading handling, and licensing.
+4. **Grammar word introduction schedule:** The graduated introduction (area1-early → area1-mid → area1-late) is the shipping schedule. Exact pacing will be tuned post-launch based on player data, but the structure is final. The existing English prologue is out of scope and untouched — grammar words are taught through the Area 1 i+1 dialogue system alongside content words.
 
-6. **FSRS migration:** Moving from the dual system (word-knowledge `known` map + FSRS) to FSRS-only requires a migration path for existing players. Existing `known` entries should seed FSRS cards with appropriate initial state.
+5. **Dictionary source:** JMdict (open source, CC BY-SA 4.0). Converted via `scripts/build-dictionary.js` using the `jmdict-simplified` npm package. Filtered to ~30-50k entries by JLPT/frequency tags. Game data overlays handle definition priority for game-specific words. See section 3.1.
+
+6. **FSRS migration:** Implemented in Phase 5 of the implementation order (section 8). Migration script reads existing `word-knowledge-{userId}.json` `known` entries and seeds FSRS `vocab` deck cards with an initial "known" state. After migration, `GET /api/game/known-words` queries FSRS only. The old `known` map file is kept as backup but not read by the application.

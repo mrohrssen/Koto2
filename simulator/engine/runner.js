@@ -107,8 +107,27 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         pos.run = run; pos.room = 0;
         store.updateSimulation(simId, { current_day: day, current_run: run, current_room: 0 });
 
+        // Select team: fetch collection, greedily pick creatures up to 10 points
+        let starterIds = null;
+        const collResult = await simCall('GET', '/api/game/creature-collection', null, `day ${day} run ${run} collection`);
+        if (collResult.ok && collResult.data?.catalog?.length > 0) {
+          const catalog = collResult.data.catalog.filter(c => c.owned);
+          // Sort cheapest first to maximize team size
+          catalog.sort((a, b) => (a.pointCost || 3) - (b.pointCost || 3));
+          const picked = [];
+          let usedPoints = 0;
+          for (const c of catalog) {
+            const cost = c.pointCost || 3;
+            if (usedPoints + cost <= 10) {
+              picked.push(c.id);
+              usedPoints += cost;
+            }
+          }
+          if (picked.length > 0) starterIds = picked;
+        }
+
         // Start a new run
-        const startRunResult = await simCall('POST', '/api/game/start-run', null, `day ${day} run ${run}`);
+        const startRunResult = await simCall('POST', '/api/game/start-run', starterIds ? { starterIds } : null, `day ${day} run ${run}`);
         if (!startRunResult.ok) continue; // Skip this run if start fails
 
         // Log CID dialogue from cidScript

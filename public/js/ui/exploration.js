@@ -35,6 +35,7 @@ import { renderButtons, renderChoices } from './ui-components.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
+import { addExposure, flushExposures } from './bootstrap-client.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -1096,6 +1097,14 @@ export async function renderFriendlyNpc() {
 
   const offers = friendlyNpcState.offered || [];
 
+  // Track word exposures for all offered items
+  for (const item of offers) {
+    if (item.word && item.nameEn) {
+      addExposure(item.word, item.nameEn);
+    }
+  }
+  flushExposures();
+
   // Render item cards first so they're visible immediately
   renderChoices({
     cards: offers.map(item => ({
@@ -1149,6 +1158,11 @@ export async function renderFriendlyNpc() {
   // Show NPC greeting as non-blocking overlay (items already visible behind it)
   const npc = room?.npc;
   if (npc && sceneModule?.showNarration) {
+    // Track NPC name as word exposure
+    if (npc.name && npc.nameEn) {
+      addExposure(npc.name, npc.nameEn);
+      flushExposures();
+    }
     const greetings = npc.shopGreetings || ['こんにちは！'];
     const greeting = greetings[Math.floor(Math.random() * greetings.length)];
     sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });

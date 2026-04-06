@@ -2,7 +2,7 @@
  * Move-by-move combat loop for the simulator.
  * Drives the game server's creature-combat-cycle endpoint.
  */
-import { pickMove, pickTarget, pickSwap } from './decisions.js';
+import { pickMove, pickTarget } from './decisions.js';
 
 const MAX_ROUNDS = 100;
 
@@ -47,38 +47,41 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
   while (rounds < MAX_ROUNDS) {
     rounds++;
 
-    // Find first alive ally
-    let allyIdx = -1;
+    // Find all alive allies and enemies
+    const aliveAllies = [];
     for (let i = 0; i < allies.length; i++) {
-      if (allies[i] && allies[i].hp > 0) { allyIdx = i; break; }
+      if (allies[i] && allies[i].hp > 0) aliveAllies.push(i);
     }
 
-    // Find first alive enemy
     let enemyIdx = -1;
     for (let i = 0; i < enemies.length; i++) {
       if (enemies[i] && enemies[i].hp > 0) { enemyIdx = i; break; }
     }
 
-    if (allyIdx === -1) { wiped = true; break; }
+    if (aliveAllies.length === 0) { wiped = true; break; }
     if (enemyIdx === -1) { won = true; break; }
 
-    // Pick a move
-    const moveChoice = pickMove(allies, allyIdx, enemies, enemyIdx, combatSkill);
-    let { moveId } = moveChoice;
+    // Build moveChoices for ALL alive active creatures
+    const moveChoices = [];
+    for (const allyIdx of aliveAllies) {
+      const moveChoice = pickMove(allies, allyIdx, enemies, enemyIdx, combatSkill);
+      let { moveId } = moveChoice;
 
-    // Fallback: if moveId is null but creature has moves, use the first one
-    if (moveId == null && allies[allyIdx]?.moves?.length > 0) {
-      moveId = allies[allyIdx].moves[0].id ?? allies[allyIdx].moves[0].moveId;
+      if (moveId == null && allies[allyIdx]?.moves?.length > 0) {
+        moveId = allies[allyIdx].moves[0].id ?? allies[allyIdx].moves[0].moveId;
+      }
+
+      moveChoices.push({
+        creatureIndex: allyIdx,
+        moveId,
+        targetIndex: pickTarget(enemies)
+      });
     }
 
     // Execute combat cycle
     const cycleResult = await simCall('POST', '/api/game/creature-combat-cycle', {
       actionType: 'attack',
-      moveChoices: [{
-        creatureIndex: allyIdx,
-        moveId,
-        targetIndex: enemyIdx
-      }]
+      moveChoices
     }, `combat round ${rounds}`);
 
     if (!cycleResult.ok) {
@@ -153,10 +156,9 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
       }, `befriend quiz round ${rounds}`);
 
       if (quizResult.ok) {
-        logEvent(context.day, context.run, context.roomIndex, 'word_learned', {
-          word: quiz.creatureName,
-          nameEn: quiz.creatureNameEn,
-          source: 'befriend',
+        logEvent(context.day, context.run, context.roomIndex, 'creature_befriended', {
+          creatureName: quiz.creatureName,
+          creatureNameEn: quiz.creatureNameEn,
           creatureId: quiz.creatureId
         });
 
@@ -183,25 +185,27 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
       break;
     }
 
-    // Check if active ally was KO'd — try to swap
-    if (allies[allyIdx] && allies[allyIdx].hp <= 0) {
-      const swapIdx = pickSwap(allies);
-      if (swapIdx === null) {
-        wiped = true;
-        break;
-      }
-      const swapResult = await simCall('POST', '/api/game/swap-creature', {
-        activeIndex: allyIdx,
-        reserveIndex: swapIdx
-      }, `swap after KO round ${rounds}`);
+    // Check if any active ally was KO'd — try to swap from reserves
+    for (const allyIdx of aliveAllies) {
+      if (allies[allyIdx] && allies[allyIdx].hp <= 0) {
+        const stateResult = await simCall('GET', '/api/game/state', null, `state for swap round ${rounds}`);
+        const reserves = stateResult.data?.run?.creatureParty?.reserves || [];
+        const reserveIdx = reserves.findIndex(r => r && r.hp > 0);
 
-      if (!swapResult.ok) {
-        wiped = true;
-        break;
-      }
+        if (reserveIdx === -1) break; // No reserves, will check aliveAllies next iteration
 
-      // Update allies from swap response if provided
-      if (swapResult.data?.allies) allies = swapResult.data.allies;
+        const swapResult = await simCall('POST', '/api/game/swap-creature', {
+          activeIndex: allyIdx,
+          reserveIndex: reserveIdx
+        }, `swap after KO round ${rounds}`);
+
+        if (swapResult.ok) {
+          if (swapResult.data?.allies) allies = swapResult.data.allies;
+          else if (swapResult.data?.state?.run?.creatureParty?.active) {
+            allies = swapResult.data.state.run.creatureParty.active;
+          }
+        }
+      }
     }
   }
 

@@ -455,6 +455,59 @@ The same progressive scaffolding from Phase 1 applies to every word the player h
 
 Pure Japanese narration using the i+1 principle. This is the steady state for the rest of the game. The vocabulary repair system validates all AI-generated text against the player's known words and rewrites any sentence with more than 1 unknown word.
 
+### Dual Vocabulary Track
+
+Research (2026-04-04, 32-experiment stress test) revealed that the game teaches two fundamentally different kinds of vocabulary, and **both are required for dialogue to work:**
+
+| Track | What it teaches | Source | Examples |
+|---|---|---|---|
+| **Content vocab** | Nouns, action verbs | Gameplay (creatures, items, moves, NPC names) | 火, 猫, 切る, りんご |
+| **Functional vocab** | Adjectives, pronouns, common verbs, connectors | Creature barks + NPC dialogue | 強い, 私, 一緒, 思う |
+
+**The key finding:** Content vocabulary (creature names, item names, move verbs) gives the player things to talk *about*, but not the ability to talk *about them naturally*. A player who knows 150 nouns but zero adjectives/pronouns/connectors produces dialogue like "ああ…" and "いいえ" — emotionally dead despite a large word count. A player who knows 80 words including 20 functional words produces "友達になれて嬉しい！初めての友達だ！"
+
+10 functional "glue" words outperform 50 additional creature names for dialogue quality. However, content vocabulary remains essential — it provides the *topics* for dialogue and drives combat, exploration, and collection. The two tracks are complementary:
+
+- **Gameplay teaches content** → creatures, moves, items, area names
+- **Creature barks bridge the gap** → adjectives (強い, 楽しい, 怖い), common verbs (行く, 見る, 待つ), emotional words (すごい, 大丈夫)
+- **NPC dialogue teaches functional glue** → pronouns (私, これ), connectors (一緒, とても), mental verbs (思う, 知る)
+- **More glue enables richer dialogue** → which teaches more glue → positive feedback loop
+
+### Dialogue Graduation System ✅
+
+NPC dialogue graduates through three tiers based on the player's functional vocabulary, not total word count:
+
+| Tier | Threshold | Dialogue Format | How the player gets here |
+|---|---|---|---|
+| **C** (greeting) | ~80 words | AI-generated personalized greeting (1-2 sentences) | Complete Area 1 gameplay (creatures + barks + items) |
+| **B** (exchange) | ~100 words | Greeting + 1-round exchange (NPC line + 3 player options) | + ~20 glue words taught via Tier C greetings |
+| **A** (full dialogue) | ~110-130 words | Full 3-round dialogue (greeting + defeatLine + freedLine + 3 rounds) | + ~30-50 glue words taught via Tier B exchanges |
+
+Before Tier C, NPCs use hardcoded greetings (e.g., "こんにちわ!"). The transition to generative dialogue is invisible to the player — greetings simply become more personalized and varied as their vocabulary grows.
+
+**The teaching loop:**
+1. Player visits NPC → sees Tier C greeting with 1 new glue word (the "+1" in i+1)
+2. Word auto-tracked as exposure 1
+3. Next visits → NPC reinforces that word + introduces another (system prefers words at 3-4 exposures to push them to the 5-exposure "known" threshold)
+4. After 5 exposures → word graduates to "known"
+5. After ~20 graduated glue words → Tier B unlocks
+6. Tier B exchanges reinforce 2-3 nearly-learned words per visit + introduce new ones
+7. After ~30-50 graduated glue words → Tier A unlocks
+8. Tier A dialogue is fully generative, richly personalized, and vocabulary continues expanding naturally
+
+### Per-Area Glue Curriculum
+
+Each area's NPCs are responsible for teaching a set of ~10 functional words alongside their area's content vocabulary. The priority order is experimentally validated:
+
+| Area | Glue Words to Teach | Why |
+|---|---|---|
+| Area 1 | 私, 一緒, とても, 今, 知る, 思う, これ, それ, まだ, 言う | Unlock self-reference, social invitations, opinions, and temporal grounding |
+| Area 2 | この, あの, 来る, 友達, 嬉しい, 今日, 少し, 出る, 入る, 上手 | Unlock pointing, social vocabulary, time references, motion, compliments |
+| Area 3 | 食べる, 大きい, 小さい, 新しい, 人, 前, 後, 時, 話, 方 | Unlock description, storytelling, temporal framing |
+| Area 4+ | 分かる, 教える, 明日, 名前, 元気, 作る, 場所, 出来る, etc. | Unlock teaching/explaining, planning, identity, creation |
+
+The dialogue generation system receives these target words as a preference list. It doesn't force their use — it naturally integrates them when contextually appropriate, and prioritizes words the player has been exposed to but hasn't yet mastered.
+
 ### Word Curriculum (~100 bootstrap words)
 
 Curated for high frequency (JPDB/WaniKani), game relevance, and narrative usefulness:
@@ -582,6 +635,27 @@ Every creature has two possible assignments:
 2. **Town worker** — stays at a town building, contributes to its function
 
 A creature at the 病院 (hospital) speeds healing. One at the 市場 (market) unlocks better shop inventory. This means every captured creature has a purpose — even ones not in the combat party — and creates cross-system vocabulary pairing (creature name displayed alongside building name).
+
+### Creature Combat Barks ✅
+
+Creatures speak short Japanese phrases during combat via speech bubbles. These barks are **the single most important bridge between content vocabulary and functional vocabulary** — they teach adjectives, common verbs, and emotional expressions that can't be learned from creature/item names alone.
+
+**8 bark categories, 3 options each** (defined in `data/creature-speech.json`):
+
+| Trigger | Example Barks | Words Taught |
+|---|---|---|
+| onHit | 痛い！/ 強い！/ 嫌だ！ | Adjectives (painful, strong), emotion (dislike) |
+| onAttack | 行くぞ！/ 負けないぞ！/ 頑張れ！ | Common verbs (go, not lose, do your best) |
+| onVictory | すごい！/ 勝った！/ よかった！ | Emotion (amazing, won, thank goodness) |
+| onExplore | 楽しい！/ 見て！/ 行くよ！ | Adjectives (fun), verbs (look, go) |
+| onHeal | ありがとう！/ 助かる！/ 大丈夫！ | State (helpful, okay) |
+| onKO | ごめん…/ 無理…/ 負けた… | Emotion (sorry, impossible, lost) |
+| onStatusEffect | しまった！/ 待って！/ 止めて！ | Verbs (wait, stop), emotion (oh no) |
+| onLowHP | 危ない！/ 助けて！/ 怖い！ | Adjectives (dangerous, scary), verb (help) |
+
+Players see barks every combat, making them the highest-exposure vocabulary in the game. The ~30 unique words from barks (痛い, 強い, 楽しい, 怖い, 危ない, 行く, 見る, 待つ, 助ける, 負ける, 勝つ, すごい, 大丈夫, etc.) include exactly the adjectives and common verbs needed to bootstrap i+1 dialogue. Without bark vocabulary, NPC dialogue would require explicit teaching of these words before generative Japanese could begin.
+
+**Design rule for new areas:** Every new area's creatures should include barks that reinforce existing functional words AND introduce 2-3 new ones appropriate to the area's theme.
 
 ### Befriending System ✅
 
@@ -895,6 +969,21 @@ Town buildings absorb the "structures" vocabulary that doesn't fit as creature n
 
 **Dialogue choices.** NPC conversations offer 2–3 response options in Japanese, all i+1 validated. Choosing requires reading every option — active engagement.
 
+### NPCs as Functional Vocabulary Teachers
+
+NPCs serve a dual role: they teach content vocabulary through their names, occupations, and personality keywords (as described above), AND they teach **functional vocabulary through dialogue** — the pronouns, connectors, adjectives, and common verbs that make conversation possible (see Section 6: Dual Vocabulary Track).
+
+Each area's NPCs have a **glue curriculum**: a prioritized list of ~10 functional words they're responsible for introducing through i+1 dialogue. The system:
+
+1. **Introduces** 1 new glue word per NPC greeting (the +1 in i+1)
+2. **Reinforces** words the player has seen 1-4 times (preference for nearly-learned words)
+3. **Graduates** words to "known" after 5 exposures
+4. **Escalates** dialogue tier (C → B → A) as the player's functional vocabulary grows
+
+This means revisiting Area 1 NPCs is not grinding — each visit teaches or reinforces a specific functional word, visibly improving future NPC dialogue quality. The player experiences this as: "NPCs are talking to me more, and I understand more."
+
+**NPC personality drives word selection naturally.** The Child NPC gravitates toward 遊ぶ, 楽しい, 一緒. The Adult gravitates toward 働く, 準備, しっかり. The Girl gravitates toward きれい, 花, ゆっくり. Same vocabulary pool, distinct voices — personality differentiation works even at 80 words.
+
 ### All Combat is Creature vs. Creature
 
 Rival trainers don't fight the player directly. They command their own creature teams. This keeps combat in the creature system (vocabulary through split attack cards) and makes every battle about reading Japanese, not watching NPC animations.
@@ -948,9 +1037,16 @@ These words genuinely cannot be attached to game objects. You can't name a creat
 
 NPC dialogue naturally grows richer as the player learns more words. Each NPC encounter is a structured conversation: greeting → 3 rounds of dialogue (NPC line + 3 player response options) → outcome line. All text is i+1-validated Japanese.
 
-- **Early game (~200 words):** Simple greetings and short responses. NPC: 「こんにちは！ここは何？」 Player options: 「はい」/「いいえ」/「わからない」
-- **Mid game (~1,000 words):** NPCs express personality and reference past encounters. NPC: 「また会ったね。今日は何を探している？」 Player options use varied tone (positive/neutral/negative).
-- **Late game (~3,000+ words):** Complex sentences, personality quirks, relationship callbacks, varied registers. NPCs remember encounter history and bond level, producing unique dialogue arcs.
+**Experimentally validated progression** (2026-04-04 research, 32 experiments):
+
+- **~80 words (Area 1 complete):** Tier C. AI-generated personalized greetings replace hardcoded text. NPC: 「こんにちは！ここは楽しいよ！猫と遊びますか？」 Creature barks provide the adjectives (楽しい, すごい, 怖い) that make this possible.
+- **~100 words (+20 glue from dialogue):** Tier B. Greeting + 1-round exchange. NPC: 「広場で走るのはとても楽しいよ！来る？」 Player options: 「うん、行く！楽しそう！」/「少し待つ、まだ準備してる」/「今日は嫌、ごめん」 — all zero unknowns.
+- **~130 words (+50 glue from dialogue):** Tier A. Full 3-round dialogue with zero unknowns across all 15 fields. NPC personality, narrative arc, and emotional depth all emerge naturally. 「こんにちは！元気？名前は何？一緒に遊ぶ？」
+- **~250+ words:** Phase 3 narration. Full Japanese narration AND dialogue. Complex sentences, personality quirks, relationship callbacks.
+- **~1,000+ words:** NPCs express personality and reference past encounters. 「また会ったね。今日は何を探している？」
+- **~3,000+ words:** Complex literary prose, keigo, varied registers, nuanced relationship arcs.
+
+**Critical design insight:** The jump from hardcoded greetings to Tier C doesn't require teaching 200+ words first. It requires ~80 words with the right *composition* — a mix of content nouns (from creatures/items) + functional words (from creature barks). Adding a second area's worth of nouns (50 more creature names) does NOT improve dialogue quality. Adding 10 functional "glue" words does. See Section 6: Dual Vocabulary Track for details.
 
 This progression is emergent, not scripted. As the player's known word count grows, the AI has more vocabulary available, and naturally produces more sophisticated dialogue.
 

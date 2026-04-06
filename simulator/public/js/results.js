@@ -63,6 +63,131 @@ function renderTabs(container, tabs, onSwitch) {
   container.appendChild(bar);
 }
 
+async function renderStatsTab(contentEl, simId) {
+  contentEl.innerHTML = '<div class="empty-state">Loading stats...</div>';
+
+  let snapshots, eventCounts;
+  try {
+    [snapshots, eventCounts] = await Promise.all([
+      results.snapshots(simId),
+      results.eventCounts(simId),
+    ]);
+  } catch (err) {
+    contentEl.innerHTML = `<div class="empty-state">Error: ${esc(err.message)}</div>`;
+    return;
+  }
+
+  if (!snapshots || snapshots.length === 0) {
+    contentEl.innerHTML = '<div class="empty-state">No data yet. Wait for at least one simulated day.</div>';
+    return;
+  }
+
+  const totalRuns = snapshots.reduce((s, d) => s + (d.runs_completed || 0), 0);
+  const totalWipes = snapshots.reduce((s, d) => s + (d.runs_wiped || 0), 0);
+  const totalAttempts = totalRuns + totalWipes;
+  const winRate = totalAttempts > 0 ? Math.round((totalRuns / totalAttempts) * 100) : 0;
+  const totalRooms = snapshots.reduce((s, d) => s + (d.rooms_explored || 0), 0);
+  const totalExposures = snapshots.reduce((s, d) => s + (d.words_exposed_today || 0), 0);
+  const totalNewWords = snapshots.reduce((s, d) => s + (d.new_words_today || 0), 0);
+  const totalDialogue = snapshots.reduce((s, d) => s + (d.dialogue_lines_encountered || 0), 0);
+  const totalSpeedReviews = snapshots.reduce((s, d) => s + (d.speed_reviews_completed || 0), 0);
+  const latest = snapshots[snapshots.length - 1];
+  const daysSimulated = snapshots.length;
+  const avgWordsPerDay = daysSimulated > 0 ? (totalNewWords / daysSimulated).toFixed(1) : 0;
+  const avgRunsPerDay = daysSimulated > 0 ? (totalAttempts / daysSimulated).toFixed(1) : 0;
+  const avgRoomsPerRun = totalAttempts > 0 ? (totalRooms / totalAttempts).toFixed(1) : 0;
+
+  const itemsAcquired = eventCounts.item_acquired || 0;
+  // Count new event type + legacy (befriends were logged as word_learned with source:befriend)
+  let creaturesBefriended = eventCounts.creature_befriended || 0;
+  if (creaturesBefriended === 0 && eventCounts.word_learned) {
+    // Fall back: count word_learned events with befriend source
+    try {
+      const wlEvents = await results.events(simId, { type: 'word_learned', limit: 1000 });
+      creaturesBefriended = wlEvents.filter(e => {
+        const d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+        return d.source === 'befriend';
+      }).length;
+    } catch { /* ignore */ }
+  }
+
+  contentEl.innerHTML = `
+    <div class="stats-overview">
+      <h3 style="margin: 0 0 12px; color: var(--text-primary); font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Run Stats</h3>
+      <div class="summary-stats">
+        <div class="stat-card">
+          <div class="stat-value">${totalRuns}</div>
+          <div class="stat-label">Runs Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${totalWipes}</div>
+          <div class="stat-label">Runs Wiped</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${winRate}%</div>
+          <div class="stat-label">Win Rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${avgRunsPerDay}</div>
+          <div class="stat-label">Avg Runs/Day</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${totalRooms}</div>
+          <div class="stat-label">Total Rooms</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${avgRoomsPerRun}</div>
+          <div class="stat-label">Avg Rooms/Run</div>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 12px; color: var(--text-primary); font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Learning Stats</h3>
+      <div class="summary-stats">
+        <div class="stat-card">
+          <div class="stat-value">${latest.total_known_words || 0}</div>
+          <div class="stat-label">Total Known Words</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${totalNewWords}</div>
+          <div class="stat-label">Words Learned</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${avgWordsPerDay}</div>
+          <div class="stat-label">Avg Words/Day</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${totalExposures}</div>
+          <div class="stat-label">Word Exposures</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${totalSpeedReviews}</div>
+          <div class="stat-label">Speed Reviews</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${totalDialogue}</div>
+          <div class="stat-label">Dialogue Lines</div>
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 12px; color: var(--text-primary); font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Collection</h3>
+      <div class="summary-stats">
+        <div class="stat-card">
+          <div class="stat-value">${creaturesBefriended}</div>
+          <div class="stat-label">Creatures Befriended</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${itemsAcquired}</div>
+          <div class="stat-label">Items Acquired</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${daysSimulated}</div>
+          <div class="stat-label">Days Simulated</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 async function renderProgressionTab(contentEl, simId) {
   contentEl.innerHTML = '<div class="empty-state">Loading chart...</div>';
 
@@ -308,6 +433,7 @@ export async function renderResults(appEl, { simId }) {
 
   // Tabs
   const tabs = [
+    { key: 'stats', label: 'Stats' },
     { key: 'progression', label: 'Progression' },
     { key: 'daily', label: 'Daily Detail' },
     { key: 'dialogue', label: 'Dialogue' },
@@ -318,6 +444,7 @@ export async function renderResults(appEl, { simId }) {
 
   renderTabs(appEl, tabs, (key) => {
     const renderers = {
+      stats: () => renderStatsTab(contentEl, simId),
       progression: () => renderProgressionTab(contentEl, simId),
       daily: () => renderDailyDetailTab(contentEl, simId),
       dialogue: () => renderDialogueTab(contentEl, simId),
@@ -328,13 +455,13 @@ export async function renderResults(appEl, { simId }) {
 
   appEl.appendChild(contentEl);
 
-  // Render default tab
-  renderProgressionTab(contentEl, simId);
+  // Render default tab (Stats)
+  renderStatsTab(contentEl, simId);
 
   // Auto-refresh if running
   if (sim.status === 'running') {
     refreshInterval = setInterval(() => {
-      renderProgressionTab(contentEl, simId);
+      renderStatsTab(contentEl, simId);
     }, 5000);
   }
 }
