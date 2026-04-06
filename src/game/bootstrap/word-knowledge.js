@@ -1,10 +1,45 @@
 // src/game/bootstrap/word-knowledge.js
 import fs from 'fs';
 import path from 'path';
-import { getDeckCards } from '../internal-srs.js';
+import { getDeckCards, createCard } from '../internal-srs.js';
 import { State } from 'ts-fsrs';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
+
+const EXPOSURE_THRESHOLD = 5;
+
+/**
+ * Expose words to the FSRS SRS system.
+ * Registers exposure for each word. Creates a vocab SRS card after
+ * EXPOSURE_THRESHOLD exposures (matching the route handler logic).
+ *
+ * @param {string} userId
+ * @param {Array<{word: string, meaning?: string}>} words
+ */
+export function exposeWords(userId, words) {
+  if (!Array.isArray(words) || words.length === 0) return;
+
+  const wk = loadWordKnowledge(userId) || createWordKnowledge(userId);
+
+  for (const entry of words) {
+    const word = typeof entry === 'string' ? entry : entry?.word;
+    const meaning = typeof entry === 'string' ? '' : (entry?.meaning || '');
+    if (typeof word !== 'string' || word.length === 0) continue;
+
+    registerExposure(wk, word);
+
+    if (wk.seen[word].exposures >= EXPOSURE_THRESHOLD) {
+      const existingCards = getDeckCards(userId, 'vocab');
+      if (!existingCards.find(c => c.id === word)) {
+        createCard(userId, 'vocab', word, {
+          word, meaning, reading: word
+        });
+      }
+    }
+  }
+
+  saveWordKnowledge(wk);
+}
 
 export function createWordKnowledge(userId) {
   return {

@@ -1,11 +1,9 @@
 import { Router } from 'express';
 import { join } from 'path';
-import { loadWordKnowledge, createWordKnowledge, registerExposure, saveWordKnowledge, getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
-import { createCard, getDeckCards, gradeCard, getDueCards, getDueCount } from '../../game/internal-srs.js';
+import { exposeWords, getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { gradeCard, getDueCards, getDueCount } from '../../game/internal-srs.js';
 import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
-
-const EXPOSURE_THRESHOLD = 5;
 
 let _wordDict = null;
 function getWordDict() {
@@ -24,29 +22,8 @@ export function createKnownWordsRoutes() {
 
   // POST /api/game/known-words/expose
   router.post('/expose', (req, res) => {
-    const { words } = req.body || {};
-    if (!Array.isArray(words) || words.length === 0) {
-      return res.json({ ok: true });
-    }
     try {
-      const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
-      for (const entry of words) {
-        const word = typeof entry === 'string' ? entry : entry?.word;
-        const meaning = typeof entry === 'string' ? '' : (entry?.meaning || '');
-        if (typeof word !== 'string' || word.length === 0) continue;
-
-        registerExposure(wk, word);
-
-        if (wk.seen[word].exposures >= EXPOSURE_THRESHOLD) {
-          const existingCards = getDeckCards(req.user.id, 'vocab');
-          if (!existingCards.find(c => c.id === word)) {
-            createCard(req.user.id, 'vocab', word, {
-              word, meaning, reading: word
-            });
-          }
-        }
-      }
-      saveWordKnowledge(wk);
+      exposeWords(req.user.id, req.body?.words || []);
       res.json({ ok: true });
     } catch (e) {
       console.warn('[known-words/expose] Error:', e.message);

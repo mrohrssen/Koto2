@@ -9,7 +9,8 @@ import {
   isWordKnown,
   getKnownWords,
   getSeenWords,
-  seedKnownWords
+  seedKnownWords,
+  exposeWords
 } from '../../src/game/bootstrap/word-knowledge.js';
 
 describe('word-knowledge', () => {
@@ -65,5 +66,9 @@ describe('word-knowledge', () => {
   it('unmarkKnown is safe on unknown word', () => {
     unmarkKnown(wk, '森'); // should not throw
     assert.ok(!isWordKnown(wk, '森'));
+  });
+
+  it('exposeWords is exported and callable', () => {
+    assert.equal(typeof exposeWords, 'function');
   });
 });
