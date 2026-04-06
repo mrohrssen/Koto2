@@ -858,6 +858,19 @@ export class GameManager {
 
       // XP already awarded per-kill during the interleaved round
       const newCollectionAdditions = this._flushPendingCaptures();
+
+      // Collect element drops from defeated enemies
+      if (this.meta) {
+        if (!this.meta.elementDrops) {
+          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
+        }
+        for (const enemy of this.combat.enemies || []) {
+          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
+            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
+          }
+        }
+      }
+
       this.combat.active = false;
       this.run.currentAreaEncounters++;
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
@@ -875,8 +888,6 @@ export class GameManager {
         if (!this.run.bossesDefeated) this.run.bossesDefeated = [];
         if (!this.run.bossesDefeated.includes(bossId)) {
           this.run.bossesDefeated.push(bossId);
-          // Award progression token for boss defeat
-          this.meta.progressionTokens = (this.meta.progressionTokens || 0) + 1;
         }
       }
 
@@ -895,7 +906,10 @@ export class GameManager {
         victory: true,
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
-        newCollectionAdditions
+        newCollectionAdditions,
+        elementDropsCollected: (this.combat.enemies || [])
+          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
+          .map(e => e.element)
       };
     }
 
@@ -991,6 +1005,19 @@ export class GameManager {
     const allEnemiesDown = this.combat.enemies.every(e => e.hp <= 0 || e.befriended);
     if (allEnemiesDown) {
       const newCollectionAdditions = this._flushPendingCaptures();
+
+      // Collect element drops from defeated enemies
+      if (this.meta) {
+        if (!this.meta.elementDrops) {
+          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
+        }
+        for (const enemy of this.combat.enemies || []) {
+          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
+            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
+          }
+        }
+      }
+
       this.combat.active = false;
       this.run.currentAreaEncounters++;
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
@@ -1013,7 +1040,10 @@ export class GameManager {
         victory: true,
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
-        newCollectionAdditions
+        newCollectionAdditions,
+        elementDropsCollected: (this.combat.enemies || [])
+          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
+          .map(e => e.element)
       };
     }
 
@@ -1228,12 +1258,21 @@ export class GameManager {
     if (befriendResult.success && befriendResult.allEnemiesDefeated) {
       awardBattleXp(this.run.creatureParty, this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.run.itemBuffs);
       const newCollectionAdditions = this._flushPendingCaptures();
+
+      // Collect element drops from defeated enemies
+      if (this.meta) {
+        if (!this.meta.elementDrops) {
+          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
+        }
+        for (const enemy of this.combat.enemies || []) {
+          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
+            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
+          }
+        }
+      }
+
       this.combat.active = false;
       this.run.currentAreaEncounters++;
-      // Award progression token for boss befriend
-      if (this.combat.isBoss) {
-        this.meta.progressionTokens = (this.meta.progressionTokens || 0) + 1;
-      }
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
       if (currentRoom) {
         currentRoom.interacted = true;
@@ -1248,7 +1287,10 @@ export class GameManager {
         victory: true,
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
-        newCollectionAdditions
+        newCollectionAdditions,
+        elementDropsCollected: (this.combat.enemies || [])
+          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
+          .map(e => e.element)
       };
     }
 
@@ -1562,6 +1604,19 @@ export class GameManager {
     if (allEnemiesDefeated) {
       awardBattleXp(party, this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.run.itemBuffs);
       newCollectionAdditions = this._flushPendingCaptures();
+
+      // Collect element drops from defeated enemies
+      if (this.meta) {
+        if (!this.meta.elementDrops) {
+          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
+        }
+        for (const enemy of enemies || []) {
+          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
+            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
+          }
+        }
+      }
+
       this.combat.active = false;
       this.run.currentAreaEncounters++;
       // Mark room as interacted
@@ -1581,7 +1636,10 @@ export class GameManager {
       victory: allEnemiesDefeated,
       creatureParty: party,
       enemies,
-      newCollectionAdditions
+      newCollectionAdditions,
+      elementDropsCollected: allEnemiesDefeated
+        ? (enemies || []).filter(e => e.hp <= 0 && e.element && e.element !== 'neutral').map(e => e.element)
+        : []
     };
   }
 
@@ -1617,6 +1675,19 @@ export class GameManager {
       // Victory via befriend
       awardBattleXp(this.run.creatureParty, this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.run.itemBuffs);
       const newCollectionAdditions = this._flushPendingCaptures();
+
+      // Collect element drops from defeated enemies
+      if (this.meta) {
+        if (!this.meta.elementDrops) {
+          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
+        }
+        for (const enemy of this.combat.enemies || []) {
+          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
+            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
+          }
+        }
+      }
+
       this.combat.active = false;
       this.run.currentAreaEncounters++;
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
@@ -1629,7 +1700,10 @@ export class GameManager {
         victory: true,
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
-        newCollectionAdditions
+        newCollectionAdditions,
+        elementDropsCollected: (this.combat.enemies || [])
+          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
+          .map(e => e.element)
       };
     }
 
@@ -1688,6 +1762,19 @@ export class GameManager {
       // the target is already dead. The kill XP from the original turn was stripped.
       // For simplicity, we just end combat as victory.
       const newCollectionAdditions = this._flushPendingCaptures();
+
+      // Collect element drops from defeated enemies
+      if (this.meta) {
+        if (!this.meta.elementDrops) {
+          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
+        }
+        for (const enemy of this.combat.enemies || []) {
+          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
+            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
+          }
+        }
+      }
+
       this.combat.active = false;
       this.run.currentAreaEncounters++;
       const currentRoom = this.run.rooms?.[this.run.currentRoom];
@@ -1700,7 +1787,10 @@ export class GameManager {
         victory: true,
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
-        newCollectionAdditions
+        newCollectionAdditions,
+        elementDropsCollected: (this.combat.enemies || [])
+          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
+          .map(e => e.element)
       };
     }
 
