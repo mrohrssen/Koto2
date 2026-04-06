@@ -147,6 +147,16 @@ export default function createRunRoutes({
           const meta = gameManager.getMeta();
           if (!meta.seenCidScripts) meta.seenCidScripts = [];
           meta.seenCidScripts.push(selected.id);
+          // Expose CID dialogue content words to SRS
+          const cidWords = [];
+          for (const line of selected.lines) {
+            for (const w of (line._contentWords || [])) {
+              cidWords.push({ word: w, meaning: '' });
+            }
+          }
+          if (cidWords.length > 0) {
+            req.gameManager.exposeWords(cidWords);
+          }
         }
       } catch (e) {
         console.warn('[CID] Script selection failed:', e.message);
@@ -647,6 +657,13 @@ export default function createRunRoutes({
       if (!room.friendlyNpc.offered) {
         room.friendlyNpc.offered = rollFriendlyNpcOffers(room.friendlyNpc.offerCategory, allItems);
         req.saveGame();
+        // Expose item words to SRS
+        const itemWords = room.friendlyNpc.offered
+          .filter(item => item.word)
+          .map(item => ({ word: item.word, meaning: item.nameEn || '' }));
+        if (itemWords.length > 0) {
+          req.gameManager.exposeWords(itemWords);
+        }
       }
       res.json({ offered: room.friendlyNpc.offered, state: req.getEnrichedGameState() });
     } catch (err) {
