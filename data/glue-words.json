@@ -56,5 +56,9 @@
   { "word": "いー", "reading": "いー", "en": "yeah! (interjection)", "priority": 2 },
   { "word": "えー", "reading": "えー", "en": "yeah! (interjection)", "priority": 2 },
   { "word": "うわ", "reading": "うわ", "en": "whoa / ugh (interjection)", "priority": 2 },
-  { "word": "くっ", "reading": "くっ", "en": "(grunt of pain/frustration)", "priority": 2 }
+  { "word": "くっ", "reading": "くっ", "en": "(grunt of pain/frustration)", "priority": 2 },
+  { "word": "あ", "reading": "あ", "en": "ah / oh (interjection)", "priority": 2 },
+  { "word": "えいっ", "reading": "えいっ", "en": "(battle cry)", "priority": 2 },
+  { "word": "うごける", "reading": "うごける", "en": "to be able to move", "priority": 3 },
+  { "word": "会える", "reading": "あえる", "en": "to be able to meet", "priority": 3 }
 ]
