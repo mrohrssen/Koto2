@@ -98,7 +98,7 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
     // Log the round
     logEvent(context.day, context.run, context.roomIndex, 'combat_round', {
       round: rounds,
-      moveId,
+      moveChoices: moveChoices.map(m => m.moveId),
       attacks: cycle.playerAttacks ?? cycle.attacks ?? cycle.results ?? []
     });
 
@@ -212,13 +212,6 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
   // Safety: if we hit MAX_ROUNDS without resolution, treat as wiped
   if (!won && !wiped) {
     wiped = true;
-  }
-
-  // Feed all exposed words to the game server's SRS system
-  if (wordsExposed.length > 0) {
-    await simCall('POST', '/api/game/known-words/expose', {
-      words: wordsExposed
-    }, `expose ${wordsExposed.length} combat words`);
   }
 
   return { rounds, won, wiped, barks, wordsExposed, dialogueSeen };

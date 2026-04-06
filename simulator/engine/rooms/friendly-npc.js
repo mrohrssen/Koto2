@@ -44,13 +44,6 @@ export async function handleFriendlyNpc(simCall, room, context, logEvent) {
     exposedWords.push({ word: npc.name, meaning: npc.nameEn });
   }
 
-  // Feed exposed words to the game server's SRS
-  if (exposedWords.length > 0) {
-    await simCall('POST', '/api/game/known-words/expose', {
-      words: exposedWords
-    }, `expose ${exposedWords.length} shop words`);
-  }
-
   const chosen = offered[0];
 
   // Pick target creature index from current game state
