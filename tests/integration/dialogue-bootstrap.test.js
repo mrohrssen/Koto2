@@ -79,6 +79,29 @@ describe('dialogue bootstrap integration', () => {
     assert.equal(isLineEligible(line, known2), true);
   });
 
+  it('CID script selection uses FSRS known words', async () => {
+    const { getKnownWordsFromFsrs } = await import('../../src/game/bootstrap/word-knowledge.js');
+    const { filterEligibleScripts, selectCidScript } = await import('../../src/game/dialogue-filter.js');
+    const { loadDialoguePools, getCidScripts } = await import('../../src/game/dialogue-loader.js');
+
+    loadDialoguePools(join(process.cwd(), 'data'));
+
+    // With no FSRS data, getKnownWordsFromFsrs returns empty array
+    const known = getKnownWordsFromFsrs('test-user-nonexistent');
+    assert.ok(Array.isArray(known), 'returns array');
+
+    const knownSet = new Set(known);
+    const scripts = getCidScripts();
+    const eligible = filterEligibleScripts(scripts, knownSet);
+
+    // At 0 known words, at least the simplest script should be eligible
+    assert.ok(eligible.length > 0, 'at least one script eligible at 0 known words');
+
+    const selected = selectCidScript(eligible, knownSet, []);
+    assert.ok(selected, 'a script is selected');
+    assert.ok(selected.lines.length > 0, 'selected script has lines');
+  });
+
   it('real dialogue files load and filter correctly', async () => {
     const { loadDialoguePools, getCidScripts } = await import('../../src/game/dialogue-loader.js');
     const { filterEligibleScripts, selectCidScript } = await import('../../src/game/dialogue-filter.js');

@@ -8,7 +8,7 @@ import {
 } from './users.js';
 import { dataPath } from '../data-dir.js';
 import { parseWordList } from '../game/bootstrap/word-list-parser.js';
-import { createWordKnowledge, seedKnownWords, saveWordKnowledge } from '../game/bootstrap/word-knowledge.js';
+import { createCard, gradeCard } from '../game/internal-srs.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } });
 
@@ -77,15 +77,14 @@ export default function createAuthRoutes(options = {}) {
         useInviteCode(inviteCode, user.id, usersFile);
       }
 
-      // Seed word knowledge from uploaded word list
-      const wk = createWordKnowledge(user.id);
+      // Seed FSRS vocab deck from uploaded word list
       if (req.file) {
         const words = parseWordList(req.file.buffer.toString('utf-8'));
-        if (words.length > 0) {
-          seedKnownWords(wk, words);
+        for (const word of words) {
+          createCard(user.id, 'vocab', word, { word, meaning: '', reading: word });
+          gradeCard(user.id, 'vocab', word, 'good');
         }
       }
-      saveWordKnowledge(wk);
 
       const token = signToken(user);
       res.json({ token, user: { id: user.id, username: user.username } });

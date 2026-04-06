@@ -12,7 +12,7 @@ import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogu
 import { buildVocabConfig, buildBefriendDialogueVocabConfig } from './route-helpers.js';
 import { getNpcLines } from '../../game/dialogue-loader.js';
 import { selectNpcLine } from '../../game/dialogue-filter.js';
-import { loadWordKnowledge, createWordKnowledge } from '../../game/bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 
 export default function createCombatRoutes({
   getUserVocabulary,
@@ -76,8 +76,7 @@ export default function createCombatRoutes({
       const npcData = encounter.npc;
       if (npcData && getNpcLines()[npcData.id]) {
         try {
-          const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
-          const knownWords = new Set(Object.keys(wk.known));
+          const knownWords = new Set(getKnownWordsFromFsrs(req.user.id));
           const npcPool = getNpcLines()[npcData.id];
 
           const mapLine = (l) => l ? {

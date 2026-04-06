@@ -18,7 +18,7 @@ import { applyItem } from '../../game/services/item-service.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 import { getCidScripts } from '../../game/dialogue-loader.js';
 import { filterEligibleScripts, selectCidScript } from '../../game/dialogue-filter.js';
-import { loadWordKnowledge, createWordKnowledge } from '../../game/bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 
 const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
@@ -131,8 +131,7 @@ export default function createRunRoutes({
       // Select a CID script for this run based on player's known words
       let cidScript = null;
       try {
-        const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
-        const knownWords = new Set(Object.keys(wk.known));
+        const knownWords = new Set(getKnownWordsFromFsrs(req.user.id));
         const seenScripts = gameManager.getMeta()?.seenCidScripts || [];
         const eligible = filterEligibleScripts(getCidScripts(), knownWords);
         const selected = selectCidScript(eligible, knownWords, seenScripts);

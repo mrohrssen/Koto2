@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { join } from 'path';
-import { loadWordKnowledge, createWordKnowledge, registerExposure, saveWordKnowledge, markKnown, unmarkKnown, getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { loadWordKnowledge, createWordKnowledge, registerExposure, saveWordKnowledge, getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { createCard, getDeckCards, gradeCard, getDueCards, getDueCount } from '../../game/internal-srs.js';
 import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
@@ -62,16 +62,6 @@ export function createKnownWordsRoutes() {
     }
     try {
       const updatedCard = gradeCard(req.user.id, 'vocab', word, grade);
-      const wk = loadWordKnowledge(req.user.id) || createWordKnowledge(req.user.id);
-
-      if (grade === 'good') {
-        markKnown(wk, word);
-      } else {
-        unmarkKnown(wk, word);
-        if (wk.seen[word]) wk.seen[word].exposures = 0;
-      }
-      saveWordKnowledge(wk);
-
       res.json({
         ok: true,
         mastered: grade === 'good',

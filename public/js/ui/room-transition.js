@@ -3,7 +3,7 @@ import { showNpcSprite, hideNpcSprite } from '../pixi/formation.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { speakText } from '../tts.js';
 import * as narrationBox from './narration-box.js';
-import { renderEnFirst, flushExposures } from './bootstrap-client.js';
+import { renderEnFirst, flushExposures, renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import { combatEvents } from './combat-events.js';
 
 /**
@@ -43,7 +43,7 @@ export async function playRoomTransition(gameState) {
 /**
  * Play NPC battle intro: NPC slides in, says greeting, slides out.
  */
-export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSpriteFn) {
+export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSpriteFn, npcDialogue) {
   if (!npcData) return;
 
   const npcName = npcData.nameEn || npcData.name;
@@ -59,7 +59,23 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
     : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
   await showNpcSprite(spritePath, { slideIn: true });
 
-  if (npcData.greeting) {
+  // Prefer bootstrap word-gated greeting over legacy AI greeting
+  const bootstrapGreeting = npcDialogue?.greeting;
+  if (bootstrapGreeting?.tokens?.length) {
+    await new Promise(r => setTimeout(r, 100));
+    narrationBox.forceHide();
+    const knownWords = getKnownWords();
+    const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+    const html = renderJpSentence(
+      bootstrapGreeting.tokens,
+      knownWords,
+      wordDict,
+      bootstrapGreeting.overrides || {},
+      npcDialogue.useKanji || false
+    );
+    await narrationBox.show(html, { speaker: npcName, html: true });
+    flushExposures();
+  } else if (npcData.greeting) {
     await new Promise(r => setTimeout(r, 100));
     narrationBox.forceHide();
     speakText(npcData.greeting);

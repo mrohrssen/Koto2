@@ -110,7 +110,7 @@ import { combatEvents } from './js/ui/combat-events.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
-import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
+import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpFirst, flushExposures, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
 import { toRomaji } from './js/ui/romaji.js';
 import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
@@ -863,6 +863,25 @@ async function startNewRun() {
     if (result?.state) {
       updateGameState(result.state);
       updateUI();
+
+      // Show CID dialogue if server returned a script
+      if (result.cidScript?.lines?.length) {
+        const knownWords = getKnownWords();
+        const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+        for (const line of result.cidScript.lines) {
+          const html = renderJpSentence(
+            line.tokens || [],
+            knownWords,
+            wordDict,
+            line.overrides || {},
+            result.useKanji || false
+          );
+          if (html) {
+            await narrationBox.show(html, { speaker: 'CID', html: true });
+          }
+        }
+        flushExposures();
+      }
     }
   }
 }
@@ -1134,6 +1153,11 @@ async function startEncounter() {
   try {
     updateGameState(result.state);
 
+    // Store bootstrap NPC dialogue for use after combat (defeatLine)
+    if (result.npcDialogue) {
+      window.gameState._npcDialogue = result.npcDialogue;
+    }
+
     // For NPC battles: play NPC intro before rendering combat.
     // Lock scene transition so updateUI() won't kill the greeting narration.
     if (result?.npc && hasCreatures) {
@@ -1142,7 +1166,8 @@ async function startEncounter() {
         await playNpcBattleIntro(
           result.npc,
           (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
-          () => scene.hideNpcTrainer()
+          () => scene.hideNpcTrainer(),
+          result.npcDialogue
         );
       } finally {
         sceneTransitionActive = false;
