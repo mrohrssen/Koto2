@@ -682,18 +682,8 @@ async function loadKnownWords() {
     console.warn('[Game] Failed to load word dictionary:', e.message);
   }
 
-  // Load bark pool for client-side filtering
-  try {
-    const barksRes = await fetch(apiUrl('/api/game/known-words/bark-pool'), {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const barksData = await barksRes.json();
-    if (barksData.barkPool) {
-      window.gameState.barkPool = barksData.barkPool;
-    }
-  } catch (e) {
-    console.warn('[Game] Failed to load bark pool:', e.message);
-  }
+  // Bark pool is now provided per-round in combat cycle responses (data.barks).
+  // No client-side fetch needed.
 }
 
 async function loadGameState() {

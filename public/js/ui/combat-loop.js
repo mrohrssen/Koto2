@@ -54,6 +54,12 @@ import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_V
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
 
+// ============ SERVER-PROVIDED BARKS ============
+let _currentRoundBarks = [];
+
+/** Get the barks returned by the latest combat cycle response. */
+export function getCurrentBarks() { return _currentRoundBarks; }
+
 // ============ PIXI ADAPTER FUNCTIONS ============
 
 function spritePos(side, index) {
@@ -1140,6 +1146,7 @@ export function cleanupCombat() {
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
+  _currentRoundBarks = [];
   clearAllPixiStatusLabels();
 }
 
@@ -1405,6 +1412,7 @@ export async function startCombatLoop(opts = {}) {
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
+  _currentRoundBarks = [];
 
   // On recovery (page reload), re-render the scene before showing moves.
   // updateScene() already rendered enemy sprites, just need the move UI.
@@ -2261,6 +2269,9 @@ async function executeCreatureMovesTurn(choices) {
         return;
       }
 
+      // Store server-provided barks for speech bubbles
+      _currentRoundBarks = result.barks || [];
+
       // Show poison/effect ticks
       await showEffectEvents(result);
 
@@ -2380,6 +2391,9 @@ async function executeCreaturePlayerAttack() {
         return;
       }
 
+      // Store server-provided barks for speech bubbles
+      _currentRoundBarks = result.barks || [];
+
       // Show poison/effect ticks
       await showEffectEvents(result);
 
@@ -2491,6 +2505,9 @@ async function executeCreatureDefendThenPause() {
         }
         return;
       }
+
+      // Store server-provided barks for speech bubbles
+      _currentRoundBarks = result.barks || [];
 
       // Show poison/effect ticks
       await showEffectEvents(result);
@@ -3319,6 +3336,7 @@ export async function stopCombatLoop(result) {
   playerAttackPending = false;
   enemyAttackPending = false;
   combatPausedForVocab = false;
+  _currentRoundBarks = [];
 
   // Fix A: Immediately mark combat inactive on the client so derivePhase()
   // stops returning 'combat'. Any stray updateUI() during the victory window
