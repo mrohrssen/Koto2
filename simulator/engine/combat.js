@@ -96,10 +96,39 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
     logEvent(context.day, context.run, context.roomIndex, 'combat_round', {
       round: rounds,
       moveId,
-      attacks: cycle.attacks ?? cycle.results ?? []
+      attacks: cycle.playerAttacks ?? cycle.attacks ?? cycle.results ?? []
     });
 
-    // Collect barks
+    // Extract word exposures from attack data
+    const allAttacks = [...(cycle.playerAttacks ?? []), ...(cycle.enemyAttacks ?? [])];
+    for (const atk of allAttacks) {
+      if (atk.attackerBaseWord) {
+        const word = atk.attackerBaseWord;
+        if (!wordsExposed.includes(word)) {
+          wordsExposed.push(word);
+          logEvent(context.day, context.run, context.roomIndex, 'word_exposure', {
+            word,
+            reading: atk.attackerBaseReading,
+            meaning: atk.attackerBaseMeaning,
+            source: 'combat_creature'
+          });
+        }
+      }
+      if (atk.moveName && atk.moveName !== atk.attackerBaseWord) {
+        const word = atk.moveName;
+        if (!wordsExposed.includes(word)) {
+          wordsExposed.push(word);
+          logEvent(context.day, context.run, context.roomIndex, 'word_exposure', {
+            word,
+            reading: atk.attackerSkillReading,
+            meaning: atk.attackerSkillEn,
+            source: 'combat_move'
+          });
+        }
+      }
+    }
+
+    // Collect barks (legacy field)
     if (cycle.barks) {
       for (const bark of cycle.barks) {
         barks.push(bark);
@@ -110,6 +139,40 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
     // Update allies/enemies from response
     if (cycle.allies) allies = cycle.allies;
     if (cycle.enemies) enemies = cycle.enemies;
+
+    // Handle befriend quiz — the game pauses combat to offer befriending
+    if (cycle.befriendQuizTriggered && cycle.befriendQuiz) {
+      const quiz = cycle.befriendQuiz;
+      // Pick the correct answer (matching the creature being befriended)
+      const correctOption = quiz.options?.find(o => o.id === quiz.creatureId);
+      const answerId = correctOption?.id ?? quiz.options?.[0]?.id ?? quiz.creatureId;
+
+      const quizResult = await simCall('POST', '/api/game/befriend-quiz-answer', {
+        action: 'talk',
+        answerId
+      }, `befriend quiz round ${rounds}`);
+
+      if (quizResult.ok) {
+        logEvent(context.day, context.run, context.roomIndex, 'word_learned', {
+          word: quiz.creatureName,
+          nameEn: quiz.creatureNameEn,
+          source: 'befriend',
+          creatureId: quiz.creatureId
+        });
+
+        // Update state from quiz result
+        if (quizResult.data?.allies) allies = quizResult.data.allies;
+        if (quizResult.data?.enemies) enemies = quizResult.data.enemies;
+        if (quizResult.data?.combatEnded) {
+          const allEnemiesDead = enemies.every(e => !e || e.hp <= 0);
+          won = allEnemiesDead || quizResult.data.combatResult === 'win';
+          wiped = !won;
+          break;
+        }
+      }
+      // Continue combat whether quiz succeeded or not
+      continue;
+    }
 
     // Check combat end
     if (cycle.combatEnded) {
@@ -145,6 +208,13 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
   // Safety: if we hit MAX_ROUNDS without resolution, treat as wiped
   if (!won && !wiped) {
     wiped = true;
+  }
+
+  // Feed all exposed words to the game server's SRS system
+  if (wordsExposed.length > 0) {
+    await simCall('POST', '/api/game/known-words/expose', {
+      words: wordsExposed
+    }, `expose ${wordsExposed.length} combat words`);
   }
 
   return { rounds, won, wiped, barks, wordsExposed, dialogueSeen };

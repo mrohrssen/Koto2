@@ -68,6 +68,12 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
       if (!createResult.ok) {
         throw new Error(`Failed to create game player: ${createResult.error || createResult.status}`);
       }
+
+      // Select a starter creature (prologue step) — without this the party is empty
+      const starters = ['starter-fire', 'starter-water', 'starter-wood'];
+      const starterId = starters[Math.floor(Math.random() * starters.length)];
+      await initCall('POST', '/api/game/select-starter', { starterId }, 'select starter');
+      await initCall('POST', '/api/game/prologue-complete', null, 'prologue complete');
     } else {
       store.updateSimulation(simId, { status: 'running' });
     }
@@ -198,6 +204,31 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
           runsWiped++;
         } else {
           runsCompleted++;
+        }
+
+        // Hub speed review — complete all due reviews between runs
+        const dueResult = await simCall('GET', '/api/game/known-words/due-words', null, `day ${day} run ${run} due words`);
+        if (dueResult.ok) {
+          const dueWords = dueResult.data?.words ?? [];
+          for (const entry of dueWords) {
+            const word = entry.word ?? entry;
+            if (!word) continue;
+            const grade = Math.random() < config.speedReviewAccuracy ? 'good' : 'again';
+            const reviewResult = await simCall('POST', '/api/game/known-words/review', { word, grade }, `hub review ${word}`);
+
+            logEvent(day, run, 0, 'word_exposure', {
+              word,
+              grade,
+              source: 'speed_review'
+            });
+
+            if (reviewResult.ok && reviewResult.data?.mastered) {
+              logEvent(day, run, 0, 'word_learned', {
+                word,
+                source: 'speed_review'
+              });
+            }
+          }
         }
       }
 
