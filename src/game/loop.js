@@ -71,7 +71,9 @@ import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
 import { getMetaMultipliers } from './services/meta-shop-service.js';
-import { exposeWords as exposeWords_fn } from './bootstrap/word-knowledge.js';
+import { exposeWords as exposeWords_fn, getKnownWordsFromFsrs } from './bootstrap/word-knowledge.js';
+import { selectBark } from './dialogue-filter.js';
+import { getBarkPool } from './dialogue-loader.js';
 
 // ============ GAME MANAGER ============
 
@@ -771,6 +773,40 @@ export class GameManager {
       this.exposeWords(combatWordsToExpose);
     }
 
+    // Pick combat barks server-side
+    let barks = [];
+    const barkPool = getBarkPool();
+    if (barkPool && Object.keys(barkPool).length > 0 && this.userId) {
+      const knownWords = new Set(getKnownWordsFromFsrs(this.userId));
+      if (!this.combat.usedBarks) this.combat.usedBarks = new Set();
+
+      // Determine triggers from this round
+      const triggers = ['onAttack']; // Player always attacks in attack turn
+      const allyTookDamage = (playerResult.enemyAttacks || []).some(a => a.damage > 0);
+      if (allyTookDamage) triggers.push('onHit');
+      const allyKOd = (playerResult.enemyAttacks || []).some(a => a.targetDefeated);
+      if (allyKOd) triggers.push('onKO');
+      if (playerResult.allEnemiesDefeated) triggers.push('onVictory');
+      const allyLowHp = this.combat.allies.some(a => a && a.hp > 0 && a.hp / a.maxHp < 0.25);
+      if (allyLowHp) triggers.push('onLowHP');
+
+      const barkWordsToExpose = [];
+      for (const trigger of triggers) {
+        if (Math.random() >= 0.25) continue; // 25% chance per trigger
+        const bark = selectBark(barkPool, trigger, knownWords, { usedThisCombat: this.combat.usedBarks });
+        if (bark) {
+          barks.push({ trigger, text: bark.text, _tokens: bark._tokens || [], _contentWords: bark._contentWords || [] });
+          this.combat.usedBarks.add(bark.text);
+          for (const w of (bark._contentWords || [])) {
+            barkWordsToExpose.push({ word: w, meaning: '' });
+          }
+        }
+      }
+      if (barkWordsToExpose.length > 0) {
+        this.exposeWords(barkWordsToExpose);
+      }
+    }
+
     // Check if all enemies defeated after player attack
     if (playerResult.allEnemiesDefeated) {
       // Befriend quiz trigger: 50% chance when killing blow would end combat
@@ -808,6 +844,7 @@ export class GameManager {
           this.emitState();
           return {
             actionType: 'attack',
+            barks,
             playerAttacks: playerResult.attacks || [],
             npcSkillAttacks: [],
             npcSkillUsed: null,
@@ -858,6 +895,7 @@ export class GameManager {
       this.emitState();
       return {
         actionType: 'attack',
+        barks,
         playerAttacks: playerResult.attacks || [],
         npcSkillAttacks: [],
         npcSkillUsed: null,
@@ -914,6 +952,7 @@ export class GameManager {
         this.emitState();
         return {
           actionType: 'attack',
+          barks,
           playerAttacks: playerResult.attacks || [],
           npcSkillAttacks,
           npcSkillUsed,
@@ -971,6 +1010,7 @@ export class GameManager {
       this.emitState();
       return {
         actionType: 'attack',
+        barks,
         playerAttacks: playerResult.attacks || [],
         npcSkillAttacks,
         npcSkillUsed,
@@ -1009,6 +1049,7 @@ export class GameManager {
       this.emitState();
       return {
         actionType: 'attack',
+        barks,
         playerAttacks: playerResult.attacks || [],
         npcSkillAttacks,
         npcSkillUsed,
@@ -1032,6 +1073,7 @@ export class GameManager {
 
     return {
       actionType: 'attack',
+      barks,
       playerAttacks: playerResult.attacks || [],
       npcSkillAttacks,
       npcSkillUsed,
