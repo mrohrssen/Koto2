@@ -64,3 +64,6 @@ ios/
 android/
 .superpowers/
 .claude/commands/
+# Simulator
+simulator/data/
+simulator/node_modules/
