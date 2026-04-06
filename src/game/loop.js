@@ -580,6 +580,14 @@ export class GameManager {
       });
     }
 
+    // Expose enemy creature names to SRS
+    const enemyNameWords = enemyCreatures
+      .filter(e => e && e.name)
+      .map(e => ({ word: e.name, meaning: e.nameEn || '' }));
+    if (enemyNameWords.length > 0) {
+      this.exposeWords(enemyNameWords);
+    }
+
     this.combat = createCombatState(enemyCreatures[0]);
     this.combat.allies = this.run.creatureParty.active;
     this.combat.enemies = enemyCreatures;
@@ -740,6 +748,27 @@ export class GameManager {
     if (playerResult.xpEvents?.length > 0) {
       const killCredits = playerResult.xpEvents.length * CREDITS_PER_KILL;
       this.run.player.credits = (this.run.player.credits || 0) + killCredits;
+    }
+
+    // Expose combat words to SRS
+    const combatWordsToExpose = [];
+    const allRoundAttacks = [...(playerResult.attacks || []), ...(playerResult.enemyAttacks || [])];
+    for (const atk of allRoundAttacks) {
+      if (atk.attackerBaseWord) {
+        combatWordsToExpose.push({
+          word: atk.attackerBaseWord,
+          meaning: atk.attackerBaseMeaning || ''
+        });
+      }
+      if ((atk.attackerSkillName || atk.moveName) && (atk.attackerSkillName || atk.moveName) !== atk.attackerBaseWord) {
+        combatWordsToExpose.push({
+          word: atk.attackerSkillName || atk.moveName,
+          meaning: atk.attackerSkillEn || ''
+        });
+      }
+    }
+    if (combatWordsToExpose.length > 0) {
+      this.exposeWords(combatWordsToExpose);
     }
 
     // Check if all enemies defeated after player attack
