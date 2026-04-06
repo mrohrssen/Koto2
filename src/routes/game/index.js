@@ -17,7 +17,7 @@ import createCombatRoutes from './combat.js';
 import createEconomyRoutes from './economy.js';
 import createMiscRoutes from './misc.js';
 import { createKnownWordsRoutes } from './known-words.js';
-import createMetaShopRoutes from './meta-shop.js';
+import createCrestRoutes from './crests.js';
 import createKanaRoutes from './kana.js';
 import { createPvpRoutes } from './pvp.js';
 
@@ -102,8 +102,8 @@ export default function createGameRoutes(deps) {
   // Mount economy routes
   router.use(createEconomyRoutes());
 
-  // Mount meta shop routes
-  router.use(createMetaShopRoutes());
+  // Mount crest routes
+  router.use(createCrestRoutes());
 
   // Mount misc routes
   router.use(createMiscRoutes({
