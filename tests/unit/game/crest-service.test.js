@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateCrest, openChest, getCrestMultipliers, equipCrest, unequipCrest, getCrestState, ELEMENT_STAT_MAP, RARITY_RANGES, CHEST_DROP_RATES } from '../../../src/game/services/crest-service.js';
+import { generateCrest, openChest, getCrestMultipliers, equipCrest, unequipCrest, getCrestState, ELEMENT_STAT_MAP, RARITY_RANGES, CHEST_DROP_RATES, CHEST_COST } from '../../../src/game/services/crest-service.js';
 
 describe('crest-service', () => {
   describe('generateCrest', () => {
@@ -162,6 +162,7 @@ describe('crest-service', () => {
   describe('getCrestState', () => {
     it('returns default state for empty meta', () => {
       const state = getCrestState({});
+      assert.equal(state.chestCost, CHEST_COST);
       assert.deepEqual(state.elementDrops, { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 });
       assert.deepEqual(state.crests, []);
       assert.deepEqual(state.equippedCrests, { fire: null, water: null, earth: null, wood: null, metal: null });

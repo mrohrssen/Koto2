@@ -5,6 +5,7 @@
 import { createSimCaller } from './sim-call.js';
 import { createTestUser, seedStartingVocab, advanceTime } from './auth.js';
 import { getRoomHandler } from './rooms/index.js';
+import { runCrestCycle } from './crest-cycle.js';
 
 const PROFILE_DEFAULTS = {
   durationDays: 30,
@@ -102,6 +103,12 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
 
       let runsCompleted = 0;
       let runsWiped = 0;
+      const crestDaily = {
+        chestsOpenedTotal: 0,
+        equipChangesTotal: 0,
+        dropsSpentTotal: 0,
+        runsWithCrestCycle: 0
+      };
 
       for (let run = 1; run <= effectiveRuns; run++) {
         pos.run = run; pos.room = 0;
@@ -249,6 +256,19 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
             }
           }
         }
+
+        // Crest meta progression — open all affordable chests and auto-equip best per element.
+        pos.room = 0;
+        let crestSummary;
+        try {
+          crestSummary = await runCrestCycle(simCall, logEvent, { day, run });
+        } catch (error) {
+          throw new Error(`Crest cycle failed on day ${day} run ${run}: ${error.message || String(error)}`);
+        }
+        crestDaily.chestsOpenedTotal += crestSummary.totalChestsOpened || 0;
+        crestDaily.equipChangesTotal += crestSummary.totalEquipChanges || 0;
+        crestDaily.dropsSpentTotal += crestSummary.dropsSpentTotal || 0;
+        crestDaily.runsWithCrestCycle += 1;
       }
 
       // Advance time after all runs for the day
@@ -288,7 +308,10 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         runs_wiped: runsWiped,
         rooms_explored: roomsExplored,
         speed_reviews_completed: speedReviews,
-        unknown_words_in_dialogue: 0
+        unknown_words_in_dialogue: 0,
+        snapshot_data: {
+          crest: crestDaily
+        }
       });
 
       // Callback

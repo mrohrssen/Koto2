@@ -26,8 +26,9 @@ The simulator creates test users on the game server and plays through the game a
 For each simulated day:
 1. Start a run (creates party, picks initial skill, selects area)
 2. Walk through all 30 rooms — handle encounters (move-by-move combat), word discovery, speed reviews, NPC dialogue, whack-a-mole
-3. After all runs for the day, advance FSRS timestamps by 1 day (so spaced repetition scheduling works)
-4. Snapshot: total known words, new words, dialogue lines, rooms explored, errors
+3. In hub after each run, process crest meta progression (open all affordable chests, auto-equip highest-value crest per element)
+4. After all runs for the day, advance FSRS timestamps by 1 day (so spaced repetition scheduling works)
+5. Snapshot: total known words, new words, dialogue lines, rooms explored, errors
 
 ### What Gets Logged
 
@@ -39,6 +40,7 @@ For each simulated day:
 | `combat_round` | Move used, damage, creatures involved |
 | `room_entered` | Room type, outcome (cleared/wiped/skipped) |
 | `api_error` | Endpoint, status code, error body, day/run/room context |
+| `crest_cycle_*` | Crest automation lifecycle (`started`, `chest_opened`, `equipped`, `summary`, `error`) |
 
 ## Dashboard
 
@@ -79,6 +81,7 @@ simulator/           # Standalone Express app (port 3100)
     store.js         # Database access layer
   engine/
     runner.js        # Main loop: days → runs → rooms
+    crest-cycle.js   # Crest automation: open chests + best equip
     combat.js        # Move-by-move combat simulation
     decisions.js     # Move selection based on combatSkill
     sim-call.js      # Resilient HTTP wrapper (never throws)
@@ -124,7 +127,9 @@ All return 404 if `ADMIN_SECRET` is not set (invisible in production).
 
 ## Error Resilience
 
-Every API call is wrapped in try/catch. Failures are logged as events (with full context: day, run, room) and the simulator continues. Unknown room types are logged and skipped. The simulator never crashes on a game server error.
+Most API calls are wrapped in try/catch. Failures are logged as events (with full context: day, run, room) and the simulator continues. Unknown room types are logged and skipped.
+
+**Exception:** crest automation is fail-hard by design. If the simulator cannot read crest state, open chests, or equip best crests, the simulation is marked `errored` to avoid publishing untrustworthy win-rate data.
 
 When new room types are added to the game, the simulator logs "unknown room type: X" until a handler is added to `engine/rooms/index.js`.
 

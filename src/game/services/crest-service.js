@@ -118,6 +118,7 @@ export function getCrestMultipliers(meta) {
 
 export function getCrestState(meta) {
   return {
+    chestCost: CHEST_COST,
     elementDrops: meta.elementDrops || { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
     crests: meta.crests || [],
     equippedCrests: meta.equippedCrests || { fire: null, water: null, earth: null, wood: null, metal: null }
