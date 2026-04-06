@@ -60,14 +60,14 @@ export async function seedStartingVocab(baseUrl, adminSecret, userId, words) {
 /**
  * Clean up a test user via admin endpoint.
  */
-export async function cleanupTestUser(baseUrl, adminSecret, userId) {
+export async function cleanupTestUser(baseUrl, adminSecret, userId, username) {
   const response = await fetch(`${baseUrl}/api/admin/cleanup-sim-user`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Admin-Secret': adminSecret
     },
-    body: JSON.stringify({ userId })
+    body: JSON.stringify({ userId, username })
   });
 
   if (!response.ok) {

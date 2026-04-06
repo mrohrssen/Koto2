@@ -126,14 +126,15 @@ export default function createAdminRoutes({ dataDir }) {
   // POST /cleanup-sim-user — delete all data for a simulator user
   router.post('/cleanup-sim-user', (req, res) => {
     try {
-      const { userId } = req.body;
+      const { userId, username } = req.body;
       if (!userId) {
         return res.status(400).json({ error: 'userId required' });
       }
 
-      // Safety: only allow simulator user IDs (prefixed with s-)
-      if (!userId.startsWith('s-')) {
-        return res.status(403).json({ error: 'Only simulator users (s-*) can be cleaned up' });
+      // Safety: require simulator username (s- prefix) to prevent accidental real user deletion.
+      // User IDs are UUIDs (u_hex), so we check the username which the simulator controls.
+      if (!username || !username.startsWith('s-')) {
+        return res.status(403).json({ error: 'username starting with s- required for cleanup' });
       }
 
       const deleted = [];

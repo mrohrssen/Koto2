@@ -65,9 +65,12 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
       store.updateSimulation(simId, { status: 'running' });
     }
 
-    // Create simCall with logging
+    // Track current position for simCall error logging
+    const pos = { day: 1, run: 1, room: 0 };
+
+    // Create simCall with logging — uses live pos object, not stale closure
     const logFn = (entry) => {
-      store.logEvent(simId, sim.current_day || 1, sim.current_run || 1, sim.current_room || 0, 'api_error', entry);
+      store.logEvent(simId, pos.day, pos.run, pos.room, 'api_error', entry);
     };
     const simCall = createSimCaller(gameServerUrl, jwt, logFn);
 
@@ -78,6 +81,7 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
 
     // Main day loop
     for (let day = startDay; day <= config.durationDays; day++) {
+      pos.day = day;
       const effectiveRuns = Math.min(
         config.runsPerDay,
         Math.floor(config.dailyPlayMinutes / ESTIMATED_MINUTES_PER_RUN)
@@ -87,6 +91,7 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
       let runsWiped = 0;
 
       for (let run = 1; run <= effectiveRuns; run++) {
+        pos.run = run; pos.room = 0;
         store.updateSimulation(simId, { current_day: day, current_run: run, current_room: 0 });
 
         // Start a new run
@@ -122,6 +127,7 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         // Room loop
         let runWiped = false;
         for (let roomIndex = 1; roomIndex <= 30; roomIndex++) {
+          pos.room = roomIndex;
           store.updateSimulation(simId, { current_room: roomIndex });
 
           // Proceed to next room
@@ -183,7 +189,8 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
       const knownWordsResult = await simCall('GET', '/api/game/known-words', null, `day ${day} known words`);
       if (knownWordsResult.ok) {
         const kw = knownWordsResult.data;
-        totalKnownWords = kw?.total ?? kw?.count ?? (Array.isArray(kw) ? kw.length : 0);
+        // Game server returns { words: [...] } from GET /api/game/known-words
+        totalKnownWords = kw?.words?.length ?? kw?.total ?? kw?.count ?? (Array.isArray(kw) ? kw.length : 0);
       }
 
       // Count today's events
