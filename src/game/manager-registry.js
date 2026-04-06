@@ -46,12 +46,17 @@ export function getManager(userId) {
             delete data.meta.robotCollection;
             needsSave = true;
           }
-          // Migrate: add progressionTokens and upgrades if missing from old saves
-          if (data.meta.progressionTokens === undefined) {
-            data.meta.progressionTokens = 0;
+          // Migrate: remove old meta-upgrade fields, add crest fields
+          delete data.meta.progressionTokens;
+          delete data.meta.upgrades;
+          if (!data.meta.elementDrops) {
+            data.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
           }
-          if (!data.meta.upgrades) {
-            data.meta.upgrades = {};
+          if (!data.meta.crests) {
+            data.meta.crests = [];
+          }
+          if (!data.meta.equippedCrests) {
+            data.meta.equippedCrests = { fire: null, water: null, earth: null, wood: null, metal: null };
           }
           // Migrate: remove stale creature IDs and ensure defaults
           if (data.meta.creatureCollection) {

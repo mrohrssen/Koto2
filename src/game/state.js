@@ -38,12 +38,6 @@
  */
 export function createMetaProgression() {
   return {
-    // Purchased upgrades (key: upgrade ID, value: level purchased)
-    upgrades: {},
-
-    // Progression tokens earned from boss defeats/befriends
-    progressionTokens: 0,
-
     // Lifetime statistics
     lifetimeStats: {
       totalRuns: 0,
@@ -82,7 +76,16 @@ export function createMetaProgression() {
     pvpTeams: [null, null, null],  // 3 saved PvP team slots
 
     // CID scripts already shown (avoid repeats across runs)
-    seenCidScripts: []
+    seenCidScripts: [],
+
+    // Element drops collected from defeating enemies (persistent)
+    elementDrops: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
+
+    // All owned crests
+    crests: [],
+
+    // Equipped crest IDs (one per element slot)
+    equippedCrests: { fire: null, water: null, earth: null, wood: null, metal: null }
   };
 }
 
