@@ -33,6 +33,7 @@ import { getDueWordsWithMeanings } from '../../jpdb.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
 import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
+import { applyCrestBonuses } from './crest-service.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -840,14 +841,8 @@ export class ExplorationService {
       this.gm.run.creatureParty.reserves.push(newCreature);
     }
 
-    // Apply meta progression bonuses to purchased creature
-    if (this.gm.run.metaHpMult > 1) {
-      newCreature.maxHp = Math.floor(newCreature.maxHp * this.gm.run.metaHpMult);
-      newCreature.hp = newCreature.maxHp;
-    }
-    if (this.gm.run.metaAtkMult > 1) {
-      newCreature.attack = Math.floor(newCreature.attack * this.gm.run.metaAtkMult);
-    }
+    // Apply crest progression bonuses to purchased creature
+    applyCrestBonuses(newCreature, this.gm.run.crestMults);
 
     room.dealer.purchasedCreature = creatureId;
 

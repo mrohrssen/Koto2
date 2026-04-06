@@ -70,24 +70,12 @@ import { resetStatStages } from './combat/effects.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
-import { getMetaMultipliers } from './services/meta-shop-service.js';
+import { getCrestMultipliers, applyCrestBonuses } from './services/crest-service.js';
 import { exposeWords as exposeWords_fn, getKnownWordsFromFsrs } from './bootstrap/word-knowledge.js';
 import { selectBark } from './dialogue-filter.js';
 import { getBarkPool } from './dialogue-loader.js';
 
 // ============ GAME MANAGER ============
-
-/** Apply meta progression HP/ATK bonuses to a creature using run multipliers */
-function applyMetaBonuses(creature, run) {
-  if (!creature || !run) return;
-  if (run.metaHpMult > 1) {
-    creature.maxHp = Math.floor(creature.maxHp * run.metaHpMult);
-    creature.hp = creature.maxHp;
-  }
-  if (run.metaAtkMult > 1) {
-    creature.attack = Math.floor(creature.attack * run.metaAtkMult);
-  }
-}
 
 export class GameManager {
   constructor() {
@@ -305,8 +293,9 @@ export class GameManager {
         achievements: this.meta.achievements,
         levels: this.meta.levels || { highestUnlocked: 1, completed: [], current: null },
         prologueComplete: this.meta.prologueComplete || false,
-        progressionTokens: this.meta.progressionTokens || 0,
-        upgrades: this.meta.upgrades || {},
+        elementDrops: this.meta.elementDrops || { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
+        crests: this.meta.crests || [],
+        equippedCrests: this.meta.equippedCrests || { fire: null, water: null, earth: null, wood: null, metal: null },
         kanaMode: this.meta.kanaMode || false,
         pvpTeams: this.meta.pvpTeams || [null, null, null]
       } : null,
@@ -386,18 +375,17 @@ export class GameManager {
       this.run.creatureParty.active = [instantiateCreature(metaStarterId, 5)];
     }
 
-    // Apply meta progression bonuses
-    const metaMults = getMetaMultipliers(this.meta);
-    this.run.metaHpMult = metaMults.hpMult;
-    this.run.metaAtkMult = metaMults.atkMult;
+    // Apply crest progression bonuses
+    const crestMults = getCrestMultipliers(this.meta);
+    this.run.crestMults = crestMults;
 
-    // Apply HP/ATK bonuses to starting creatures
+    // Apply stat bonuses to starting creatures
     for (const creature of this.run.creatureParty.active) {
-      applyMetaBonuses(creature, this.run);
+      applyCrestBonuses(creature, crestMults);
     }
 
     // Fold XP bonus into itemBuffs base
-    this.run.itemBuffs.xpMultiplier = metaMults.xpMult;
+    this.run.itemBuffs.xpMultiplier = crestMults.xpMult;
 
     this.emitState();
 
@@ -668,7 +656,7 @@ export class GameManager {
       } else {
         this.run.creatureParty.reserves.push(creature);
       }
-      applyMetaBonuses(creature, this.run);
+      applyCrestBonuses(creature, this.run.crestMults);
       if (this.meta && !creature.temporary) {
         // Increment befriend counter (always, even if already owned)
         if (!this.meta.befriendCount) this.meta.befriendCount = {};
@@ -727,7 +715,7 @@ export class GameManager {
       combat: this.combat
     });
 
-    const metaMults = { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 };
+    const metaMults = this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
     const playerResult = processInterleavedPvERound(
       this.combat.allies,
       this.combat.enemies,
@@ -1238,7 +1226,7 @@ export class GameManager {
 
     // Captured last enemy — immediate victory
     if (befriendResult.success && befriendResult.allEnemiesDefeated) {
-      awardBattleXp(this.run.creatureParty, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 }, this.run.itemBuffs);
+      awardBattleXp(this.run.creatureParty, this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.run.itemBuffs);
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
@@ -1572,7 +1560,7 @@ export class GameManager {
 
     let newCollectionAdditions = [];
     if (allEnemiesDefeated) {
-      awardBattleXp(party, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 }, this.run.itemBuffs);
+      awardBattleXp(party, this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.run.itemBuffs);
       newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
@@ -1627,7 +1615,7 @@ export class GameManager {
 
     if (result.correct && result.allEnemiesDefeated) {
       // Victory via befriend
-      awardBattleXp(this.run.creatureParty, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 }, this.run.itemBuffs);
+      awardBattleXp(this.run.creatureParty, this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.run.itemBuffs);
       const newCollectionAdditions = this._flushPendingCaptures();
       this.combat.active = false;
       this.run.currentAreaEncounters++;
