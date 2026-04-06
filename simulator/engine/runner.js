@@ -61,6 +61,13 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         status: 'running',
         started_at: new Date().toISOString()
       });
+
+      // Initialize game player — the game server requires this before start-run
+      const initCall = createSimCaller(gameServerUrl, jwt, () => {});
+      const createResult = await initCall('POST', '/api/game/create-player', { name: 'SimPlayer' }, 'init');
+      if (!createResult.ok) {
+        throw new Error(`Failed to create game player: ${createResult.error || createResult.status}`);
+      }
     } else {
       store.updateSimulation(simId, { status: 'running' });
     }
@@ -96,21 +103,27 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
 
         // Start a new run
         const startRunResult = await simCall('POST', '/api/game/start-run', null, `day ${day} run ${run}`);
+        if (!startRunResult.ok) continue; // Skip this run if start fails
 
-        if (startRunResult.ok) {
-          // Log CID dialogue from cidScript
-          const cidScript = startRunResult.data?.cidScript ?? startRunResult.data?.cid?.script;
-          if (cidScript) {
-            const lines = Array.isArray(cidScript) ? cidScript : [cidScript];
-            for (const line of lines) {
-              if (line) {
-                logEvent(day, run, 0, 'dialogue_seen', {
-                  source: 'cid',
-                  line: typeof line === 'string' ? line : line.text ?? JSON.stringify(line)
-                });
-              }
+        // Log CID dialogue from cidScript
+        const cidScript = startRunResult.data?.cidScript;
+        if (cidScript) {
+          const lines = cidScript.lines || (Array.isArray(cidScript) ? cidScript : [cidScript]);
+          for (const line of lines) {
+            if (line) {
+              logEvent(day, run, 0, 'dialogue_seen', {
+                source: 'cid',
+                line: typeof line === 'string' ? line : line.text ?? JSON.stringify(line)
+              });
             }
           }
+        }
+
+        // Handle initial skill pick (game enters skillMaster phase after start-run)
+        const offersResult = await simCall('POST', '/api/game/skill-master-offers', null, `day ${day} run ${run} skill offers`);
+        if (offersResult.ok && offersResult.data?.offered?.length > 0) {
+          const skill = offersResult.data.offered[0]; // Pick first offered skill
+          await simCall('POST', '/api/game/skill-master-choose', { skillId: skill.id }, `day ${day} run ${run} skill choose`);
         }
 
         // Pick an area
@@ -124,22 +137,28 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
           }
         }
 
-        // Room loop
+        // Room loop — get current state to find room 0, then proceed through rooms
         let runWiped = false;
-        for (let roomIndex = 1; roomIndex <= 30; roomIndex++) {
+        for (let roomIndex = 0; roomIndex < 30; roomIndex++) {
           pos.room = roomIndex;
           store.updateSimulation(simId, { current_room: roomIndex });
 
-          // Proceed to next room
-          const proceedResult = await simCall('POST', '/api/game/proceed', null, `day ${day} run ${run} room ${roomIndex}`);
-
-          if (!proceedResult.ok) {
-            // Could mean run is over (no more rooms)
-            break;
+          // For room 0: select-area already placed us here. For rooms 1+: proceed.
+          let roomData;
+          if (roomIndex === 0) {
+            // Get current room from game state
+            const stateResult = await simCall('GET', '/api/game/state', null, `day ${day} run ${run} room 0 state`);
+            if (!stateResult.ok) break;
+            const currentRoom = stateResult.data?.run?.rooms?.[0];
+            if (!currentRoom) break;
+            roomData = currentRoom;
+          } else {
+            const proceedResult = await simCall('POST', '/api/game/proceed', null, `day ${day} run ${run} room ${roomIndex}`);
+            if (!proceedResult.ok) break;
+            // proceed returns { room: {...}, state: {...} }
+            roomData = proceedResult.data?.room ?? proceedResult.data;
+            if (!roomData) break;
           }
-
-          const roomData = proceedResult.data;
-          if (!roomData) break;
 
           const roomType = roomData.type ?? roomData.roomType;
           if (!roomType) break;

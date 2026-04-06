@@ -91,7 +91,8 @@ export default function createAdminRoutes({ dataDir }) {
 
       const filePath = join(dataDir, `srs-${userId}.json`);
       if (!existsSync(filePath)) {
-        return res.status(404).json({ error: `No SRS file for user ${userId}` });
+        // No SRS data yet — nothing to shift, which is fine
+        return res.json({ shifted: 0 });
       }
 
       const result = shiftFsrsTimestamps(filePath, days);
