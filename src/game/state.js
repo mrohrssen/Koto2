@@ -85,7 +85,11 @@ export function createMetaProgression() {
     crests: [],
 
     // Equipped crest IDs (one per element slot)
-    equippedCrests: { fire: null, water: null, earth: null, wood: null, metal: null }
+    equippedCrests: { fire: null, water: null, earth: null, wood: null, metal: null },
+
+    // Tutorial state (first-run guided experience)
+    tutorialStep: 0,
+    tutorialFireDropsGifted: false
   };
 }
 

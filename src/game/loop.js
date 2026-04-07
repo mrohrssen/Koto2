@@ -297,7 +297,8 @@ export class GameManager {
         crests: this.meta.crests || [],
         equippedCrests: this.meta.equippedCrests || { fire: null, water: null, earth: null, wood: null, metal: null },
         kanaMode: this.meta.kanaMode || false,
-        pvpTeams: this.meta.pvpTeams || [null, null, null]
+        pvpTeams: this.meta.pvpTeams || [null, null, null],
+        tutorialStep: this.meta.tutorialStep ?? 7
       } : null,
       phase: this.getPhase()
     };

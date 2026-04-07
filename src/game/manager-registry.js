@@ -58,6 +58,12 @@ export function getManager(userId) {
           if (!data.meta.equippedCrests) {
             data.meta.equippedCrests = { fire: null, water: null, earth: null, wood: null, metal: null };
           }
+          // Migrate: add tutorial fields for existing accounts
+          if (data.meta.tutorialStep === undefined) {
+            data.meta.tutorialStep = 7;
+            data.meta.tutorialFireDropsGifted = false;
+            needsSave = true;
+          }
           // Migrate: remove stale creature IDs and ensure defaults
           if (data.meta.creatureCollection) {
             const original = JSON.stringify(data.meta.creatureCollection);
