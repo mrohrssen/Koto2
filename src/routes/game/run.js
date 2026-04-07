@@ -699,6 +699,7 @@ export default function createRunRoutes({
       room.friendlyNpc.chosenId = itemId;
       room.friendlyNpc.completed = true;
       room.interacted = true;
+      req.gameManager.exposeWords([{ word: 'ください', meaning: 'please (when requesting)' }]);
       req.saveGame();
       res.json({ chosen: item, state: req.getEnrichedGameState() });
     } catch (err) {

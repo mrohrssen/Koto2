@@ -1108,10 +1108,13 @@ export async function renderFriendlyNpc() {
     onSelect: async (index) => {
       if (friendlyNpcState.choosing) return;
       friendlyNpcState.choosing = true;
-      const itemId = offers[index].id;
+      const item = offers[index];
       playSFX('creature-equip');
 
-      // Phase 2: creature targeting
+      if (item.word && sceneModule?.showNarration) {
+        await sceneModule.showNarration(`${item.word}、ください`, { speaker: 'You' });
+      }
+
       const gameState = getGameState();
       const party = gameState.run?.creatureParty?.active || [];
 
@@ -1124,7 +1127,7 @@ export async function renderFriendlyNpc() {
         onSelect: async (creatureIndex) => {
           let result;
           try {
-            result = await apiChooseFriendlyNpcItem?.(itemId, creatureIndex);
+            result = await apiChooseFriendlyNpcItem?.(item.id, creatureIndex);
           } catch (err) {
             friendlyNpcState.choosing = false;
             actions.clear();
