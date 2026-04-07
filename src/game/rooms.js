@@ -221,7 +221,13 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
   // Tutorial override: force first 2 rooms for guaranteed befriend + item shop
   if (tutorialMode) {
     if (rooms[0]) rooms[0].type = ROOM_TYPES.encounter;
-    if (rooms[1]) rooms[1].type = ROOM_TYPES.friendlyNpc;
+    if (rooms[1]) {
+      rooms[1].type = ROOM_TYPES.friendlyNpc;
+      if (!rooms[1].friendlyNpc) {
+        const offerCategory = Math.random() < 0.5 ? 'food' : 'equipment';
+        rooms[1].friendlyNpc = { offerCategory, offered: null, chosenId: null, completed: false };
+      }
+    }
   }
 
   // Attach boss creature if area has one
