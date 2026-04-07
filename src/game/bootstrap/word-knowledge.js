@@ -15,20 +15,27 @@ const EXPOSURE_THRESHOLD = 5;
  *
  * @param {string} userId
  * @param {Array<{word: string, meaning?: string}>} words
+ * @returns {Array<{word: string, meaning: string, exposures: number}>} Newly mastered words (crossed threshold this call)
  */
 export function exposeWords(userId, words) {
-  if (!Array.isArray(words) || words.length === 0) return;
+  if (!Array.isArray(words) || words.length === 0) return [];
 
   const wk = loadWordKnowledge(userId) || createWordKnowledge(userId);
+  const newlyMastered = [];
 
   for (const entry of words) {
     const word = typeof entry === 'string' ? entry : entry?.word;
     const meaning = typeof entry === 'string' ? '' : (entry?.meaning || '');
     if (typeof word !== 'string' || word.length === 0) continue;
 
+    const wasBelowThreshold = !wk.seen[word] || wk.seen[word].exposures < EXPOSURE_THRESHOLD;
+
     registerExposure(wk, word);
 
     if (wk.seen[word].exposures >= EXPOSURE_THRESHOLD) {
+      if (wasBelowThreshold) {
+        newlyMastered.push({ word, meaning, exposures: wk.seen[word].exposures });
+      }
       const existingCards = getDeckCards(userId, 'vocab');
       if (!existingCards.find(c => c.id === word)) {
         createCard(userId, 'vocab', word, {
@@ -39,6 +46,7 @@ export function exposeWords(userId, words) {
   }
 
   saveWordKnowledge(wk);
+  return newlyMastered;
 }
 
 export function createWordKnowledge(userId) {

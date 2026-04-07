@@ -672,6 +672,10 @@ export class GameManager {
         if (!this.meta.befriendCount) this.meta.befriendCount = {};
         this.meta.befriendCount[creature.id] = (this.meta.befriendCount[creature.id] || 0) + 1;
 
+        if (this.run?.runSummary) {
+          this.run.runSummary.creaturesBefriended++;
+        }
+
         const result = addToCollection(this.meta.creatureCollection || [], creature.id);
         if (result.added) {
           this.meta.creatureCollection = result.collection;
@@ -878,6 +882,14 @@ export class GameManager {
           if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
             this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
           }
+          // Track for adventure report
+          if (enemy.hp <= 0 && this.run?.runSummary) {
+            this.run.runSummary.creaturesDefeated++;
+            if (enemy.element && enemy.element !== 'neutral') {
+              this.run.runSummary.elementsCollected[enemy.element] =
+                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
+            }
+          }
         }
       }
 
@@ -1025,6 +1037,14 @@ export class GameManager {
         for (const enemy of this.combat.enemies || []) {
           if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
             this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
+          }
+          // Track for adventure report
+          if (enemy.hp <= 0 && this.run?.runSummary) {
+            this.run.runSummary.creaturesDefeated++;
+            if (enemy.element && enemy.element !== 'neutral') {
+              this.run.runSummary.elementsCollected[enemy.element] =
+                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
+            }
           }
         }
       }
@@ -1281,6 +1301,14 @@ export class GameManager {
           if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
             this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
           }
+          // Track for adventure report
+          if (enemy.hp <= 0 && this.run?.runSummary) {
+            this.run.runSummary.creaturesDefeated++;
+            if (enemy.element && enemy.element !== 'neutral') {
+              this.run.runSummary.elementsCollected[enemy.element] =
+                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
+            }
+          }
         }
       }
 
@@ -1419,6 +1447,16 @@ export class GameManager {
     applyItem(selectedItem, this.run.creatureParty, null, targetIndex);
     this.run._pendingShopItems = null;
     this.run.postCombatShop = null;
+
+    if (this.run?.runSummary) {
+      this.run.runSummary.itemsCollected++;
+    }
+    if (this.meta && selectedItem?.id) {
+      if (!this.meta.itemsDiscovered) this.meta.itemsDiscovered = [];
+      if (!this.meta.itemsDiscovered.includes(selectedItem.id)) {
+        this.meta.itemsDiscovered.push(selectedItem.id);
+      }
+    }
 
     this.emitState();
     return {
@@ -1629,6 +1667,14 @@ export class GameManager {
           if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
             this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
           }
+          // Track for adventure report
+          if (enemy.hp <= 0 && this.run?.runSummary) {
+            this.run.runSummary.creaturesDefeated++;
+            if (enemy.element && enemy.element !== 'neutral') {
+              this.run.runSummary.elementsCollected[enemy.element] =
+                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
+            }
+          }
         }
       }
 
@@ -1705,6 +1751,14 @@ export class GameManager {
         for (const enemy of this.combat.enemies || []) {
           if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
             this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
+          }
+          // Track for adventure report
+          if (enemy.hp <= 0 && this.run?.runSummary) {
+            this.run.runSummary.creaturesDefeated++;
+            if (enemy.element && enemy.element !== 'neutral') {
+              this.run.runSummary.elementsCollected[enemy.element] =
+                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
+            }
           }
         }
       }
@@ -1794,6 +1848,14 @@ export class GameManager {
           if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
             this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
           }
+          // Track for adventure report
+          if (enemy.hp <= 0 && this.run?.runSummary) {
+            this.run.runSummary.creaturesDefeated++;
+            if (enemy.element && enemy.element !== 'neutral') {
+              this.run.runSummary.elementsCollected[enemy.element] =
+                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
+            }
+          }
         }
       }
 
@@ -1829,7 +1891,20 @@ export class GameManager {
    */
   exposeWords(words) {
     if (!this.userId) return;
-    exposeWords_fn(this.userId, words);
+    const newlyMastered = exposeWords_fn(this.userId, words);
+    if (this.run?.runSummary && Array.isArray(words)) {
+      for (const entry of words) {
+        const word = typeof entry === 'string' ? entry : entry?.word;
+        if (word && !this.run.runSummary.wordsExposed.includes(word)) {
+          this.run.runSummary.wordsExposed.push(word);
+        }
+      }
+      if (Array.isArray(newlyMastered)) {
+        for (const mastered of newlyMastered) {
+          this.run.runSummary.wordsMastered.push(mastered);
+        }
+      }
+    }
   }
 
   /**

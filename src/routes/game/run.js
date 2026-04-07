@@ -696,6 +696,16 @@ export default function createRunRoutes({
       // Apply item effect to run state
       const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;
       applyItem(item, gm.run.creatureParty, gm.run.itemBuffs, targetIdx);
+      // Track for adventure report
+      if (gm.run?.runSummary) {
+        gm.run.runSummary.itemsCollected++;
+      }
+      if (gm.meta && item?.id) {
+        if (!gm.meta.itemsDiscovered) gm.meta.itemsDiscovered = [];
+        if (!gm.meta.itemsDiscovered.includes(item.id)) {
+          gm.meta.itemsDiscovered.push(item.id);
+        }
+      }
       room.friendlyNpc.chosenId = itemId;
       room.friendlyNpc.completed = true;
       room.interacted = true;
