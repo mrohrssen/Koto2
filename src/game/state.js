@@ -87,6 +87,9 @@ export function createMetaProgression() {
     // Equipped crest IDs (one per element slot)
     equippedCrests: { fire: null, water: null, earth: null, wood: null, metal: null },
 
+    // Lifetime discovery tracking
+    itemsDiscovered: [],   // array of item IDs ever obtained
+
     // Tutorial state (first-run guided experience)
     tutorialStep: 0,
     tutorialFireDropsGifted: false
@@ -233,6 +236,16 @@ export function createNewRun(player) {
       roomsCleared: 0,
       damageDealt: 0,
       damageHealed: 0
+    },
+
+    // Adventure report tracking (populated during run, snapshot on end)
+    runSummary: {
+      creaturesBefriended: 0,
+      creaturesDefeated: 0,
+      itemsCollected: 0,
+      elementsCollected: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
+      wordsExposed: [],       // unique word strings seen this run
+      wordsMastered: [],      // { word, meaning, exposures } for words crossing threshold
     }
   };
 
