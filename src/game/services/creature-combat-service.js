@@ -25,9 +25,12 @@ import {
 import {
   applyAfterPlayerAttacks as _applyAfterPlayerAttacks,
   applyAfterEnemyAttacks,
-  applyRoundStartSkills
+  applyRoundStartSkills,
+  computeInlineCounter,
+  checkAfflictionBurstCounter,
+  toActivePartySkillIdSet
 } from '../combat/party-skill-engine.js';
-export { applyAfterEnemyAttacks, applyRoundStartSkills } from '../combat/party-skill-engine.js';
+export { applyAfterEnemyAttacks, applyRoundStartSkills, computeInlineCounter, checkAfflictionBurstCounter } from '../combat/party-skill-engine.js';
 export const CREDITS_PER_KILL = 15;
 
 /** Player/NPC move damage: applies ATK buffs, STAB, element mult, item element edge, level, and defender DEF. */
@@ -782,10 +785,12 @@ export function processInterleavedPvERound(
   moveChoices,
   itemBuffs = null,
   creatureParty = null,
-  metaMults = null
+  metaMults = null,
+  options = {}
 ) {
   const playerAttacks = [];
   const enemyAttacks = [];
+  const inlineCounters = [];
   const xpEvents = [];
   const defeatedEnemyIndices = new Set();
   const pb = { n: 0 };
@@ -852,6 +857,16 @@ export function processInterleavedPvERound(
       if (rec) {
         tagPlayback(rec, 'enemy');
         enemyAttacks.push(rec);
+
+        // Inline counter: check immediately after enemy attack
+        if (options.runPartySkills && options.combat) {
+          const counter = computeInlineCounter(rec, allies, enemies, options.runPartySkills, options.combat);
+          if (counter) {
+            tagPlayback(counter, 'player');
+            playerAttacks.push(counter);
+            inlineCounters.push(counter);
+          }
+        }
       }
     }
   };
@@ -883,6 +898,14 @@ export function processInterleavedPvERound(
     else runEnemyTurn(slot.index);
   }
 
+  // Affliction Burst check for inline counters
+  if (options.runPartySkills && options.combat && inlineCounters.length > 0) {
+    const active = toActivePartySkillIdSet(options.runPartySkills);
+    if (active.has('afflictionBurst')) {
+      checkAfflictionBurstCounter(enemies, options.combat, inlineCounters);
+    }
+  }
+
   const mpRegens = [];
   for (const creature of allies) {
     if (creature.hp <= 0) continue;
@@ -900,6 +923,7 @@ export function processInterleavedPvERound(
     attacks: playerAttacks,
     playerAttacks,
     enemyAttacks,
+    inlineCounters,
     allEnemiesDefeated: enemies.every(e => !e || e.hp <= 0),
     xpEvents,
     mpRegens

@@ -737,7 +737,8 @@ export class GameManager {
       moveChoices,
       this.run.itemBuffs,
       this.run.creatureParty,
-      metaMults
+      metaMults,
+      { runPartySkills: this.run.partySkills, combat: this.combat }
     );
 
     // Party skills proc only on player attack records (post-process round output)
@@ -821,6 +822,7 @@ export class GameManager {
       const befriendTriggerRoll = befriendEligible
         ? shouldTriggerBefriendQuiz(this.combat.enemies, { guaranteed: guaranteeBefriend })
         : false;
+      logger.info('[BEFRIEND DEBUG]', { totalOwnedCreatures, guaranteeBefriend, befriendEligible, befriendTriggerRoll, isBoss: !!this.combat.isBoss, npcId: this.combat.npcId, tutorialStep: this.meta?.tutorialStep, activeLen: this.run.creatureParty.active.length, reservesLen: this.run.creatureParty.reserves?.length, enemyHps: this.combat.enemies.map(e => e?.hp) });
       if (befriendEligible && befriendTriggerRoll) {
         // Find the creature killed by the player's last killing blow
         const killingAttacks = (playerResult.attacks || []).filter(a => a.targetDefeated);
@@ -1007,14 +1009,8 @@ export class GameManager {
       allAlliesDefeated: this.combat.allies.every(a => !a || a.hp <= 0)
     };
 
-    // Party skills: counter attacks
-    const counterAttacks = applyAfterEnemyAttacks({
-      enemyAttacks: enemyResult.attacks,
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      runPartySkills: this.run.partySkills,
-      combat: this.combat
-    }) || [];
+    // Party skills: counter attacks (now computed inline in processInterleavedPvERound)
+    const counterAttacks = playerResult.inlineCounters || [];
 
     // Handle KO'd allies — swap reserves in
     const koSwaps = [];
