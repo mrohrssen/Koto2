@@ -110,9 +110,10 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     const displayReading = reading || dictEntry?.reading || surface;
 
     if (isKnown) {
-      // Known word: inline, no decoration
       const display = useKanji ? surface : displayReading;
-      return `<span class="jp-word jp-known">${esc(display)}</span>`;
+      return `<span class="jp-word jp-known">`
+        + `<ruby>${esc(display)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
+        + `</span>`;
     }
 
     // Unknown word: vertical stack with English
@@ -122,7 +123,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
       || '';
 
     return `<span class="jp-word jp-unknown">`
-      + `<span class="jp-stack-reading">${esc(displayReading)}</span>`
+      + `<ruby>${esc(displayReading)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
       + `<span class="jp-stack-en">${esc(enDef)}</span>`
       + `</span>`;
   }).join('');

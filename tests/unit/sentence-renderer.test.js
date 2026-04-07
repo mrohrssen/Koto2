@@ -10,22 +10,25 @@ const wordDict = new Map([
 ]);
 
 describe('renderJpSentence', () => {
-  it('renders known words as inline hiragana (useKanji=false)', () => {
+  it('renders known words with romaji ruby annotation (useKanji=false)', () => {
     const tokens = [{ surface: 'こんにちは', baseForm: 'こんにちは', pos: '感動詞', reading: 'こんにちは' }];
     const knownWords = new Set(['こんにちは']);
     const html = renderJpSentence(tokens, knownWords, wordDict, {}, false);
     assert.ok(html.includes('jp-known'));
+    assert.ok(html.includes('<ruby>'));
     assert.ok(html.includes('こんにちは'));
+    assert.ok(html.includes('<rt>konnichiha</rt>'));
     assert.ok(!html.includes('jp-unknown'));
   });
 
-  it('renders unknown words as vertical stacks', () => {
+  it('renders unknown words with romaji and English', () => {
     const tokens = [{ surface: '一緒', baseForm: '一緒', pos: '名詞', reading: 'いっしょ' }];
     const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
     assert.ok(html.includes('jp-unknown'));
-    assert.ok(html.includes('jp-stack-reading'));
-    assert.ok(html.includes('jp-stack-en'));
+    assert.ok(html.includes('<ruby>'));
     assert.ok(html.includes('いっしょ'));
+    assert.ok(html.includes('<rt>issho</rt>'));
+    assert.ok(html.includes('jp-stack-en'));
     assert.ok(html.includes('together'));
   });
 
@@ -39,7 +42,8 @@ describe('renderJpSentence', () => {
   it('uses kanji surface form when useKanji=true', () => {
     const tokens = [{ surface: '一緒', baseForm: '一緒', pos: '名詞', reading: 'いっしょ' }];
     const html = renderJpSentence(tokens, new Set(['一緒']), wordDict, {}, true);
-    assert.ok(html.includes('一緒'));
+    assert.ok(html.includes('<ruby>一緒<'));
+    assert.ok(html.includes('<rt>issho</rt>'));
     assert.ok(html.includes('jp-known'));
   });
 
@@ -63,6 +67,8 @@ describe('renderJpSentence', () => {
     assert.equal((html.match(/jp-known/g) || []).length, 2);
     assert.equal((html.match(/jp-unknown/g) || []).length, 2);
     assert.equal((html.match(/jp-punct/g) || []).length, 1);
+    // All non-punctuation tokens get ruby
+    assert.equal((html.match(/<ruby>/g) || []).length, 4);
   });
 
   it('returns empty string for empty tokens', () => {
