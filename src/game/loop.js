@@ -821,9 +821,6 @@ export class GameManager {
       const befriendTriggerRoll = befriendEligible
         ? shouldTriggerBefriendQuiz(this.combat.enemies, { guaranteed: guaranteeBefriend })
         : false;
-      // #region agent log
-      fetch('http://localhost:7604/ingest/0ca6ed07-76b5-4455-a1e8-a8df0746bbfa',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'ba98f1'},body:JSON.stringify({sessionId:'ba98f1',runId:'pre-fix',hypothesisId:'H1',location:'src/game/loop.js:_handleCreatureAttackTurn',message:'Befriend trigger decision',data:{tutorialStep:this.meta?.tutorialStep,totalOwnedCreatures,guaranteeBefriend,befriendEligible,befriendTriggerRoll,isBoss:!!this.combat.isBoss,hasNpc:!!this.combat.npcId,allEnemiesDefeated:!!playerResult.allEnemiesDefeated,enemyCount:(this.combat.enemies||[]).length},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       if (befriendEligible && befriendTriggerRoll) {
         // Find the creature killed by the player's last killing blow
         const killingAttacks = (playerResult.attacks || []).filter(a => a.targetDefeated);
