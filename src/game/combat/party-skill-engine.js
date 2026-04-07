@@ -362,6 +362,85 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
 // ── Hook 3: After Enemy Attacks ─────────────────────────────────────
 
 /**
+ * Evaluate a single enemy attack for a counter response.
+ * Returns a counter record or null. Applies damage to the enemy immediately.
+ */
+export function computeInlineCounter(record, allies, enemies, runPartySkills, combat) {
+  const active = toActivePartySkillIdSet(runPartySkills);
+  if (!active.size || !active.has('retaliationStrike')) return null;
+
+  if (typeof record.targetIndex !== 'number') return null;
+  const defender = allies?.[record.targetIndex];
+  if (!defender || defender.hp <= 0) return null;
+  if (typeof record.damage !== 'number' || record.damage <= 0) return null;
+
+  if (!rollProc(0.50)) return null;
+
+  const enemyIdx = record.attackerIndex;
+  const enemy = enemies?.[enemyIdx];
+  if (!enemy || enemy.hp <= 0) return null;
+
+  if (!combat.counterCounts) combat.counterCounts = {};
+
+  let counterDmg = Math.floor((defender.attack || 10) * 0.25);
+
+  if (active.has('hardenedRiposte')) {
+    initStatStages(defender);
+    const hasShield = getDamageReduction(defender) > 0;
+    const hasDefStage = (defender.statStages?.def || 0) > 0;
+    if (hasShield || hasDefStage) {
+      counterDmg = Math.floor(counterDmg * 1.5);
+    }
+  }
+
+  if (active.has('furyCounter')) {
+    const key = String(record.targetIndex);
+    if (!combat.counterCounts[key]) combat.counterCounts[key] = 0;
+    combat.counterCounts[key] = Math.min(combat.counterCounts[key] + 1, 10);
+    counterDmg = Math.floor(counterDmg * (1 + combat.counterCounts[key] * 0.10));
+  }
+
+  if (active.has('lastStand') && defender.hp < defender.maxHp * 0.30) {
+    counterDmg = Math.floor(counterDmg * 2);
+  }
+
+  const actualDmg = Math.min(counterDmg, enemy.hp);
+  enemy.hp -= actualDmg;
+
+  const counterRecord = {
+    type: 'counter',
+    defenderIndex: record.targetIndex,
+    defenderName: defender.nameEn,
+    defenderElement: defender.element,
+    targetIndex: enemyIdx,
+    targetName: enemy.nameEn,
+    damage: actualDmg,
+    targetDefeated: enemy.hp <= 0,
+    furyStacks: combat.counterCounts?.[String(record.targetIndex)] || 0,
+    isLastStand: active.has('lastStand') && defender.hp < defender.maxHp * 0.30,
+    procs: []
+  };
+
+  if (active.has('vengefulMark') && enemy.hp > 0) {
+    initStatStages(enemy);
+    const delta = applyStatChange(enemy, 'atk', -1);
+    if (delta !== 0) {
+      counterRecord.procs.push({
+        skillId: 'vengefulMark', skillName: 'Vengeful Mark',
+        type: 'stageChange', targetIndex: enemyIdx, targetSide: 'enemy', stat: 'atk', delta
+      });
+      tryContagionFromCounter(active, enemies, enemyIdx, 'atk', -1, counterRecord, combat);
+    }
+  }
+
+  if (active.has('pandemic') && enemy.hp <= 0) {
+    triggerPandemicCounter(enemy, enemies, counterRecord, combat);
+  }
+
+  return counterRecord;
+}
+
+/**
  * Called after processEnemyTurn. Handles Counter loop skills.
  * @returns {object[]} Array of counter attack records for frontend display
  */
@@ -369,91 +448,13 @@ export function applyAfterEnemyAttacks({ enemyAttacks, allies, enemies, runParty
   const active = toActivePartySkillIdSet(runPartySkills);
   if (!active.size || !active.has('retaliationStrike')) return [];
   if (!Array.isArray(enemyAttacks) || enemyAttacks.length === 0) return [];
-  if (!combat) return;
-  if (!combat.counterCounts) combat.counterCounts = {};
 
   const counterAttacks = [];
-
   for (const record of enemyAttacks) {
-    if (typeof record.targetIndex !== 'number') continue;
-    const defender = allies?.[record.targetIndex];
-    if (!defender || defender.hp <= 0) continue;
-    if (typeof record.damage !== 'number' || record.damage <= 0) continue;
-
-    // Retaliation Strike: 50% chance to counter
-    if (!rollProc(0.50)) continue;
-
-    const enemyIdx = record.attackerIndex;
-    const enemy = enemies?.[enemyIdx];
-    if (!enemy || enemy.hp <= 0) continue;
-
-    // Base counter damage: 25% of defender's attack stat
-    let counterDmg = Math.floor((defender.attack || 10) * 0.25);
-
-    // Hardened Riposte: +50% if shielded or def stage > 0
-    if (active.has('hardenedRiposte')) {
-      initStatStages(defender);
-      const hasShield = getDamageReduction(defender) > 0;
-      const hasDefStage = (defender.statStages?.def || 0) > 0;
-      if (hasShield || hasDefStage) {
-        counterDmg = Math.floor(counterDmg * 1.5);
-      }
-    }
-
-    // Fury Counter: +10% per stack
-    if (active.has('furyCounter')) {
-      const key = String(record.targetIndex);
-      if (!combat.counterCounts[key]) combat.counterCounts[key] = 0;
-      combat.counterCounts[key] = Math.min(combat.counterCounts[key] + 1, 10);
-      counterDmg = Math.floor(counterDmg * (1 + combat.counterCounts[key] * 0.10));
-    }
-
-    // Last Stand: below 30% HP → double damage
-    if (active.has('lastStand') && defender.hp < defender.maxHp * 0.30) {
-      counterDmg = Math.floor(counterDmg * 2);
-    }
-
-    // Apply counter damage to enemy
-    const actualDmg = Math.min(counterDmg, enemy.hp);
-    enemy.hp -= actualDmg;
-
-    const counterRecord = {
-      type: 'counter',
-      defenderIndex: record.targetIndex,
-      defenderName: defender.nameEn,
-      defenderElement: defender.element,
-      targetIndex: enemyIdx,
-      targetName: enemy.nameEn,
-      damage: actualDmg,
-      targetDefeated: enemy.hp <= 0,
-      furyStacks: combat.counterCounts?.[String(record.targetIndex)] || 0,
-      isLastStand: active.has('lastStand') && defender.hp < defender.maxHp * 0.30,
-      procs: []
-    };
-
-    // Vengeful Mark: atk -1 stage on countered enemy
-    if (active.has('vengefulMark') && enemy.hp > 0) {
-      initStatStages(enemy);
-      const delta = applyStatChange(enemy, 'atk', -1);
-      if (delta !== 0) {
-        counterRecord.procs.push({
-          skillId: 'vengefulMark', skillName: 'Vengeful Mark',
-          type: 'stageChange', targetIndex: enemyIdx, targetSide: 'enemy', stat: 'atk', delta
-        });
-        // Contagion trigger
-        tryContagionFromCounter(active, enemies, enemyIdx, 'atk', -1, counterRecord, combat);
-      }
-    }
-
-    // Pandemic on counter kill
-    if (active.has('pandemic') && enemy.hp <= 0) {
-      triggerPandemicCounter(enemy, enemies, counterRecord, combat);
-    }
-
-    counterAttacks.push(counterRecord);
+    const counter = computeInlineCounter(record, allies, enemies, runPartySkills, combat);
+    if (counter) counterAttacks.push(counter);
   }
 
-  // Affliction Burst check after counters
   if (active.has('afflictionBurst') && counterAttacks.length > 0) {
     checkAfflictionBurstCounter(enemies, combat, counterAttacks);
   }
@@ -648,7 +649,7 @@ function checkAfflictionBurst(enemies, combat, attacks) {
 }
 
 /** Affliction Burst from counter phase. */
-function checkAfflictionBurstCounter(enemies, combat, counterAttacks) {
+export function checkAfflictionBurstCounter(enemies, combat, counterAttacks) {
   if (!combat.afflictionBurstCooldown) combat.afflictionBurstCooldown = {};
 
   for (let i = 0; i < enemies.length; i++) {
