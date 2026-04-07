@@ -454,7 +454,8 @@ export default function createRunRoutes({
 
   // Forfeit run
   router.post('/forfeit', (req, res) => {
-    const result = req.gameManager.forfeitRun();
+    const isVictory = req.body?.isVictory === true;
+    const result = req.gameManager.forfeitRun(isVictory);
     cancelPendingPrefetches();
     clearPrefetchCache();
     req.saveGame();

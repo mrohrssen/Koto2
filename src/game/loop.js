@@ -67,6 +67,7 @@ import {
 } from './creatures.js';
 import { processInterleavedPvERound, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, applyAfterEnemyAttacks, applyRoundStartSkills, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
 import { resetStatStages } from './combat/effects.js';
+import { buildRunSummary } from './adventure-report.js';
 import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
@@ -1910,25 +1911,33 @@ export class GameManager {
   /**
    * End the current run (forfeit)
    */
-  forfeitRun() {
+  forfeitRun(isVictory = false) {
+    let runSummary = null;
     if (this.run) {
       logger.info('[GameManager] Run forfeited:', { areasCompleted: this.run.areasCompleted, roomsExplored: this.run.roomsExplored });
-      // Only update stats if run was still active (not already ended by combat defeat)
+
+      // Always set endTime if missing (defeat path sets active=false but not endTime)
+      if (!this.run.stats.endTime) {
+        this.run.stats.endTime = Date.now();
+      }
+
       if (this.run.active) {
         this.run.active = false;
-        // Clear current level tracking
         if (this.meta?.levels) {
           this.meta.levels.current = null;
         }
-        this.run.stats.endTime = Date.now();
-        this.updateLifetimeStats(false);
+        this.updateLifetimeStats(isVictory);
         this.checkAchievements(this.run.stats);
       }
+
+      // Capture summary before clearing run
+      runSummary = buildRunSummary(this.run, this.meta);
 
       this.combat = null;
       this.run = null;
     }
     this.emitState();
+    return { runSummary };
   }
 
   /**

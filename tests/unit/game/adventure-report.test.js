@@ -25,6 +25,31 @@ describe('adventure-report: meta-progression discovery tracking', () => {
   });
 });
 
+describe('adventure-report: forfeitRun returns summary', () => {
+  it('forfeitRun returns runSummary before clearing run', async () => {
+    const { GameManager } = await import('../../../src/game/loop.js');
+    const gm = new GameManager();
+    gm.initMeta();
+    gm.createPlayer('test');
+    gm.startRun();
+
+    // Simulate some activity
+    gm.run.areasCompleted = 2;
+    gm.run.runSummary.creaturesDefeated = 3;
+    gm.run.runSummary.creaturesBefriended = 1;
+    gm.run.runSummary.itemsCollected = 2;
+
+    const result = gm.forfeitRun();
+
+    assert.ok(result.runSummary, 'forfeitRun should return runSummary');
+    assert.equal(result.runSummary.areasCompleted, 2);
+    assert.equal(result.runSummary.creaturesDefeated, 3);
+    assert.equal(result.runSummary.creaturesBefriended, 1);
+    assert.equal(result.runSummary.itemsCollected, 2);
+    assert.equal(gm.run, null, 'run should be cleared after forfeit');
+  });
+});
+
 describe('adventure-report: buildRunSummary', () => {
   it('buildRunSummary produces correct summary from run and meta state', async () => {
     const { buildRunSummary } = await import('../../../src/game/adventure-report.js');
