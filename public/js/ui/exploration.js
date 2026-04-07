@@ -403,7 +403,7 @@ export async function renderHub() {
       "Don't worry, no one gets past the Starting Meadow on their first try.",
       'We need to get stronger.',
       'Here, let me show you how. Click Chests!'
-    ]);
+    ], { showSprite: true });
     // Highlight Chests button, dim others
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
@@ -1078,9 +1078,8 @@ export async function renderSkillMaster() {
 
   const offers = skillMasterState.offered || room?.skillMaster?.offered || [];
 
-  // Wait for Cid to finish talking before showing choices
-  if (cidNarrationPromise) await cidNarrationPromise;
-
+  // Don't wait for Cid narration — render skills immediately so the player
+  // can see them while Cid is still talking.
   renderChoices({
     cards: offers.slice(0, 3).map(s => ({
       title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,

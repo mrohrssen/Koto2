@@ -1259,13 +1259,23 @@ function updateCreatureHpBars(creatures, allyHpMap) {
       fill.style.width = `${hpPct}%`;
       fill.style.backgroundColor = getHpColor(hpPct);
     }
-    // Update KO state
+    // Update KO state (DOM + Pixi)
     const icon = slot.querySelector('.formation-sprite');
     if (icon) {
       if (currentHp <= 0) {
         icon.classList.add('ko');
       } else {
         icon.classList.remove('ko');
+      }
+    }
+    const pixiSprite = getCreatureSprite('player', i);
+    if (pixiSprite) {
+      if (currentHp <= 0) {
+        pixiSprite.alpha = 0.3;
+        pixiSprite.tint = 0x888888;
+      } else {
+        pixiSprite.alpha = 1;
+        pixiSprite.tint = 0xFFFFFF;
       }
     }
     // Update MP bar
@@ -2859,6 +2869,15 @@ async function executeDefendThenPause() {
 async function renderBefriendQuiz(quizData, result) {
   const reading = quizData.creatureBaseReading || quizData.creatureName || '';
   const creatureSpeaker = { name: reading, reading: toRomaji(reading), meaning: '' };
+
+  // Restore the enemy sprite — animateKO faded it to alpha 0 and halved its
+  // scale, but the creature survived the killing blow and is initiating conversation.
+  const enemySprite = getCreatureSprite('enemy', 0);
+  if (enemySprite) {
+    enemySprite.alpha = 1;
+    enemySprite.tint = 0xFFFFFF;
+    enemySprite.scale.set(enemySprite.scale.x * 2, enemySprite.scale.y * 2);
+  }
 
   // Show "まって!!" narration (creature calls out first)
   await narration.showNarration('まって！！', { speaker: creatureSpeaker });
