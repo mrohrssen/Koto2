@@ -138,7 +138,8 @@ export class ExplorationService {
    */
   getAreaOptions() {
     const excludeId = this.gm.run?.currentArea?.id || null;
-    return getAreaSelectionOptions(excludeId);
+    const areasCompleted = this.gm.run?.areasCompleted || 0;
+    return getAreaSelectionOptions(excludeId, areasCompleted);
   }
 
   /**

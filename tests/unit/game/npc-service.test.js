@@ -17,10 +17,10 @@ import {
 } from '../../../src/game/services/npc-service.js';
 
 describe('NPC Service - loadNpcs', () => {
-  it('loads all NPCs (4 entries)', () => {
+  it('loads all NPCs (8 entries)', () => {
     const npcs = loadNpcs();
     const ids = Object.keys(npcs);
-    assert.strictEqual(ids.length, 4, `Expected 4 NPCs, got ${ids.length}`);
+    assert.strictEqual(ids.length, 8, `Expected 8 NPCs, got ${ids.length}`);
   });
 
   it('kodomo exists', () => {

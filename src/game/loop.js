@@ -403,7 +403,7 @@ export class GameManager {
     return {
       run: this.run,
       areaSelectionRequired: true,
-      areaOptions: getAreaSelectionOptions()
+      areaOptions: getAreaSelectionOptions(null, this.run.areasCompleted || 0)
     };
   }
 
