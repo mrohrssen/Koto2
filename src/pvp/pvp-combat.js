@@ -13,9 +13,12 @@ import {
   applyPartySkillsAfterPlayerAttacks,
   applyRoundStartSkills,
   applyAfterEnemyAttacks,
-  executeSlotMoveTurn
+  executeSlotMoveTurn,
+  computeInlineCounter,
+  checkAfflictionBurstCounter
 } from '../game/services/creature-combat-service.js';
 import { hasHaste, consumeHaste, isIncapacitated } from '../game/combat/effects.js';
+import { toActivePartySkillIdSet } from '../game/combat/party-skill-engine.js';
 
 /**
  * Build a turn-ordered list of creatures from both sides.
@@ -167,6 +170,8 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
   const orderedAttacks = [];
   const defeatedDummy = new Set();
   let playbackCounter = 0;
+  const inlineCountersA = [];
+  const inlineCountersB = [];
 
   for (const slot of initiative) {
     if (slot.side === 'sideA') {
@@ -187,6 +192,17 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
         atk.side = 'sideA';
         orderedAttacks.push(atk);
         resultA.attacks.push(atk);
+
+        // Side B counters side A's attacks
+        if (partySkillsB && combatB) {
+          const counter = computeInlineCounter(atk, sideB, sideA, partySkillsB, combatB);
+          if (counter) {
+            counter.playbackIndex = playbackCounter++;
+            counter.side = 'sideB';
+            orderedAttacks.push(counter);
+            inlineCountersB.push(counter);
+          }
+        }
       }
     } else {
       const choices = mapB.get(slot.index);
@@ -206,6 +222,17 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
         atk.side = 'sideB';
         orderedAttacks.push(atk);
         resultB.attacks.push(atk);
+
+        // Side A counters side B's attacks
+        if (partySkillsA && combatA) {
+          const counter = computeInlineCounter(atk, sideA, sideB, partySkillsA, combatA);
+          if (counter) {
+            counter.playbackIndex = playbackCounter++;
+            counter.side = 'sideA';
+            orderedAttacks.push(counter);
+            inlineCountersA.push(counter);
+          }
+        }
       }
     }
   }
@@ -229,31 +256,22 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     });
   }
 
-  // Party skills: counter attacks (after opponent's attacks)
-  // Side A's creatures counter side B's attacks that hit them
-  const counterAttacksA = (partySkillsA && combatA)
-    ? (applyAfterEnemyAttacks({
-        enemyAttacks: resultB.attacks,
-        allies: sideA,
-        enemies: sideB,
-        runPartySkills: partySkillsA,
-        combat: combatA
-      }) || [])
-    : [];
-  // Side B's creatures counter side A's attacks that hit them
-  const counterAttacksB = (partySkillsB && combatB)
-    ? (applyAfterEnemyAttacks({
-        enemyAttacks: resultA.attacks,
-        allies: sideB,
-        enemies: sideA,
-        runPartySkills: partySkillsB,
-        combat: combatB
-      }) || [])
-    : [];
-  const counterAttacks = [
-    ...counterAttacksA.map(c => ({ ...c, pvpSide: 'sideA' })),
-    ...counterAttacksB.map(c => ({ ...c, pvpSide: 'sideB' }))
-  ];
+  // Affliction Burst for inline counters
+  if (partySkillsA && combatA && inlineCountersA.length > 0) {
+    const activeA = toActivePartySkillIdSet(partySkillsA);
+    if (activeA.has('afflictionBurst')) {
+      checkAfflictionBurstCounter(sideB, combatA, inlineCountersA);
+    }
+  }
+  if (partySkillsB && combatB && inlineCountersB.length > 0) {
+    const activeB = toActivePartySkillIdSet(partySkillsB);
+    if (activeB.has('afflictionBurst')) {
+      checkAfflictionBurstCounter(sideA, combatB, inlineCountersB);
+    }
+  }
+
+  // Backward compat: empty counterAttacks array
+  const counterAttacks = [];
 
   const mpRegens = [];
   for (const c of sideA) {

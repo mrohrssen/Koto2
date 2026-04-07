@@ -206,7 +206,7 @@ describe('resolveRound', () => {
     const result = resolveRound(sideA, sideB, movesA, movesB);
 
     assert.ok(Array.isArray(result.roundStartEvents), 'roundStartEvents should be an array');
-    assert.ok(Array.isArray(result.counterAttacks), 'counterAttacks should be an array');
+    assert.ok(Array.isArray(result.counterAttacks), 'counterAttacks should be an array (empty for backward compat)');
   });
 
   it('applies Erosion round-start skill for side A', () => {
@@ -272,9 +272,10 @@ describe('resolveRound', () => {
       const bAttacks = result.attacks.filter(a => a.side === 'sideB');
       assert.ok(bAttacks.length > 0, 'Side B should have attacked');
 
-      const sideACounters = result.counterAttacks.filter(c => c.pvpSide === 'sideA');
-      assert.ok(sideACounters.length > 0, 'Side A should have counter attacks from retaliation');
-      assert.strictEqual(sideACounters[0].type, 'counter');
+      // Counters are now inline in orderedAttacks with side matching the defending side
+      const sideACounters = result.attacks.filter(a => a.type === 'counter' && a.side === 'sideA');
+      assert.ok(sideACounters.length > 0, 'Side A should have inline counter attacks');
+      assert.ok(typeof sideACounters[0].playbackIndex === 'number', 'counter should have playbackIndex');
     } finally {
       Math.random = origRandom;
     }
