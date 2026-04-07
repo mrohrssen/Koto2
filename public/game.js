@@ -1825,6 +1825,10 @@ async function initGame() {
     },
     showNarration: (text, opts) => narrationBox.show(text, opts),
     getTutorialStep: () => gameState?.meta?.tutorialStep ?? 7,
+    onBack: () => {
+      scene.setBackground('/assets/backgrounds/hub.webp');
+      explorationUI.renderHub();
+    },
   });
 
   crestsEquipUI.init({
@@ -1832,6 +1836,10 @@ async function initGame() {
     apiUrl,
     showNarration: (text, opts) => narrationBox.show(text, opts),
     getTutorialStep: () => gameState?.meta?.tutorialStep ?? 7,
+    onBack: () => {
+      scene.setBackground('/assets/backgrounds/hub.webp');
+      explorationUI.renderHub();
+    },
   });
 
   economyUI.init({
