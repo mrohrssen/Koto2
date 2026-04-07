@@ -1445,7 +1445,9 @@ export class GameManager {
     if (!items || !items[itemIndex]) throw new Error('Invalid shop item');
 
     const selectedItem = items[itemIndex];
-    applyItem(selectedItem, this.run.creatureParty, null, targetIndex);
+    const totalEncounters = this.run.currentAreaEncounters || 0;
+    const enemyLevel = getEnemyLevel({ totalEncounters });
+    const applyResult = applyItem(selectedItem, this.run.creatureParty, null, targetIndex, { enemyLevel });
     this.run._pendingShopItems = null;
     this.run.postCombatShop = null;
 

@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { applyTempAttackFlat } from '../combat/effects.js';
+import { awardKillXp } from './creature-combat-service.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ITEMS = JSON.parse(readFileSync(join(__dirname, '../../../data/items.json'), 'utf8'));
@@ -140,7 +141,7 @@ function ensureCreatureBuffs(creature) {
   if (!creature.equippedItems) creature.equippedItems = [];
 }
 
-export function applyItem(item, creatureParty, _itemBuffs, targetIndex = null) {
+export function applyItem(item, creatureParty, _itemBuffs, targetIndex = null, context = null) {
   if (!creatureParty) return { applied: false };
   const allCreatures = [...creatureParty.active, ...creatureParty.reserves].filter(Boolean);
   const targetCreature = targetIndex !== null ? creatureParty.active[targetIndex] : allCreatures[0];
@@ -261,6 +262,15 @@ export function applyItem(item, creatureParty, _itemBuffs, targetIndex = null) {
     const buffs = targetCreature.itemBuffs;
     buffs.xpBalanceStacks = (buffs.xpBalanceStacks || 0) + item.effect.value;
     return { applied: true };
+  }
+
+  if (item.type === 'xpGrant') {
+    if (!context?.enemyLevel) return { applied: false };
+    if (item.effect.xpGrant === 'killEquivalent') {
+      const result = awardKillXp(creatureParty, context.enemyLevel);
+      return { applied: true, xpGrants: result.xpGrants, levelUps: result.levelUps };
+    }
+    return { applied: false };
   }
 
   return { applied: false };
