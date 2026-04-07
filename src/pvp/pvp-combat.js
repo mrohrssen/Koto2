@@ -174,67 +174,40 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
   const inlineCountersB = [];
 
   for (const slot of initiative) {
-    if (slot.side === 'sideA') {
-      const choices = mapA.get(slot.index);
-      const { attacks: slotAttacks } = executeSlotMoveTurn(
-        sideA,
-        sideB,
-        slot.index,
-        choices,
-        itemBuffsA,
-        null,
-        null,
-        hastedA,
-        defeatedDummy
-      );
-      for (const atk of slotAttacks) {
-        atk.playbackIndex = playbackCounter++;
-        atk.side = 'sideA';
-        orderedAttacks.push(atk);
-        resultA.attacks.push(atk);
+    const isA = slot.side === 'sideA';
+    const attackerSide = isA ? sideA : sideB;
+    const defenderSide = isA ? sideB : sideA;
+    const choices = isA ? mapA.get(slot.index) : mapB.get(slot.index);
+    const attackerResult = isA ? resultA : resultB;
+    const sideLabel = isA ? 'sideA' : 'sideB';
+    const defenderPartySkills = isA ? partySkillsB : partySkillsA;
+    const defenderCombat = isA ? combatB : combatA;
+    const defenderCounters = isA ? inlineCountersB : inlineCountersA;
 
-        // Side B counters side A's attacks
-        if (partySkillsB && combatB) {
-          const counter = computeInlineCounter(atk, sideB, sideA, partySkillsB, combatB);
+    executeSlotMoveTurn(attackerSide, defenderSide, slot.index, choices, {
+      itemBuffs: isA ? itemBuffsA : itemBuffsB,
+      hastedSlots: isA ? hastedA : hastedB,
+      defeatedIndices: defeatedDummy,
+      onAttack(atk) {
+        atk.playbackIndex = playbackCounter++;
+        atk.side = sideLabel;
+        orderedAttacks.push(atk);
+        attackerResult.attacks.push(atk);
+
+        // Opposing side counters
+        if (defenderPartySkills && defenderCombat) {
+          const counter = computeInlineCounter(atk, defenderSide, attackerSide, defenderPartySkills, defenderCombat);
           if (counter) {
             counter.playbackIndex = playbackCounter++;
-            counter.side = 'sideB';
+            counter.side = isA ? 'sideB' : 'sideA';
             orderedAttacks.push(counter);
-            inlineCountersB.push(counter);
+            defenderCounters.push(counter);
           }
         }
-      }
-    } else {
-      const choices = mapB.get(slot.index);
-      const { attacks: slotAttacks } = executeSlotMoveTurn(
-        sideB,
-        sideA,
-        slot.index,
-        choices,
-        itemBuffsB,
-        null,
-        null,
-        hastedB,
-        defeatedDummy
-      );
-      for (const atk of slotAttacks) {
-        atk.playbackIndex = playbackCounter++;
-        atk.side = 'sideB';
-        orderedAttacks.push(atk);
-        resultB.attacks.push(atk);
 
-        // Side A counters side B's attacks
-        if (partySkillsA && combatA) {
-          const counter = computeInlineCounter(atk, sideA, sideB, partySkillsA, combatA);
-          if (counter) {
-            counter.playbackIndex = playbackCounter++;
-            counter.side = 'sideA';
-            orderedAttacks.push(counter);
-            inlineCountersA.push(counter);
-          }
-        }
+        return attackerSide[slot.index]?.hp > 0;
       }
-    }
+    });
   }
 
   if (partySkillsA && combatA) {

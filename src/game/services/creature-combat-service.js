@@ -723,21 +723,7 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
  * @param {Set<number>|null} hastedSlots - Slots that consumed haste at round start (double execute, no extra MP)
  * @param {Set|null} defeatedEnemyIndices - Kill/XP tracking (empty Set in PvP)
  */
-export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, optionsOrItemBuffs = {}, ...legacyArgs) {
-  // Backward compat: detect legacy positional call vs new options object
-  let options;
-  if (legacyArgs.length > 0 || optionsOrItemBuffs === null || typeof optionsOrItemBuffs !== 'object' || Array.isArray(optionsOrItemBuffs)) {
-    options = {
-      itemBuffs: optionsOrItemBuffs ?? null,
-      creatureParty: legacyArgs[0] ?? null,
-      metaMults: legacyArgs[1] ?? null,
-      hastedSlots: legacyArgs[2] ?? null,
-      defeatedIndices: legacyArgs[3] ?? null
-    };
-  } else {
-    options = optionsOrItemBuffs;
-  }
-
+export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options = {}) {
   const {
     itemBuffs = null,
     creatureParty = null,

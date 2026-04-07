@@ -295,4 +295,44 @@ describe('resolveRound', () => {
       assert.ok(ev.pvpSide === 'sideA' || ev.pvpSide === 'sideB', 'pvpSide should be set');
     }
   });
+
+  it('counter-kill prevents subsequent haste attacks in PvP', () => {
+    const strongA = makeCreature({ level: 1, attack: 10, hp: 200, maxHp: 200 });
+    strongA.moves = [{
+      id: 'slash', name: '斬る', nameEn: 'Slash', reading: 'きる',
+      element: 'neutral', category: 'damage', power: 40,
+      target: 'single_enemy', mpCost: 3, accuracy: 100,
+      statusEffect: null, statusChance: 0, statusDuration: 0
+    }];
+
+    const weakB = makeCreature({ level: 10, hp: 1, maxHp: 1, attack: 20 });
+    weakB.moves = [{
+      id: 'bite', name: '噛む', nameEn: 'Bite', reading: 'かむ',
+      element: 'neutral', category: 'damage', power: 30,
+      target: 'single_enemy', mpCost: 3, accuracy: 100,
+      statusEffect: null, statusChance: 0, statusDuration: 0
+    }];
+    weakB.activeEffects = [{ type: 'haste', duration: 1 }];
+
+    const movesA = [{ creatureIndex: 0, moveId: 'slash', targetIndex: 0 }];
+    const movesB = [{ creatureIndex: 0, moveId: 'bite', targetIndex: 0 }];
+
+    const origRandom = Math.random;
+    Math.random = () => 0.1;
+    try {
+      const result = resolveRound([strongA], [weakB], movesA, movesB, {
+        partySkillsA: ['retaliationStrike'],
+        combatA: {}
+      });
+
+      const sideACounters = result.attacks.filter(a => a.type === 'counter' && a.side === 'sideA');
+      assert.ok(sideACounters.length > 0, 'Side A should counter');
+      assert.strictEqual(weakB.hp, 0, 'Side B creature should be dead');
+
+      const sideBAttacks = result.attacks.filter(a => a.side === 'sideB' && a.type !== 'counter');
+      assert.ok(sideBAttacks.length <= 1, 'Dead creature should not get haste follow-up attack');
+    } finally {
+      Math.random = origRandom;
+    }
+  });
 });
