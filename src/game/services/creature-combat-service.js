@@ -855,61 +855,26 @@ export function processInterleavedPvERound(
     choicesByAlly.get(choice.creatureIndex).push(choice);
   }
 
-  const runAllyChoices = allyIndex => {
-    const choices = choicesByAlly.get(allyIndex);
-    const { attacks: slotAttacks, xpEvents: slotXp } = executeSlotMoveTurn(
-      allies,
-      enemies,
-      allyIndex,
-      choices,
-      itemBuffs,
-      creatureParty,
-      metaMults,
-      hastedCreatureIndices,
-      defeatedEnemyIndices
-    );
-    for (const atk of slotAttacks) {
-      tagPlayback(atk, 'player');
-      playerAttacks.push(atk);
+  // Pre-select enemy moves before initiative loop
+  const enemyChoicesMap = new Map();
+  const hastedEnemyIndices = new Set();
+  for (let ei = 0; ei < enemies.length; ei++) {
+    const enemy = enemies[ei];
+    if (!enemy || enemy.hp <= 0 || isIncapacitated(enemy)) continue;
+    if (hasHaste(enemy)) {
+      hastedEnemyIndices.add(ei);
+      consumeHaste(enemy);
     }
-    xpEvents.push(...slotXp);
-  };
-
-  const runEnemyTurn = enemyIndex => {
-    const enemy = enemies[enemyIndex];
-    if (!enemy || enemy.hp <= 0 || isIncapacitated(enemy)) return;
-    const aliveAllies = allies.filter(a => a.hp > 0);
-    if (aliveAllies.length === 0) return;
-
     const choice = pickEnemyMoveChoice(enemy, allies, enemies);
-    if (!choice) return;
+    if (!choice) continue;
     const { move, mode } = choice;
-
-    const attackCount = hasHaste(enemy) ? 2 : 1;
-    if (hasHaste(enemy)) consumeHaste(enemy);
-
-    for (let strike = 0; strike < attackCount; strike++) {
-      if (enemy.hp <= 0) break;
-      if (allies.filter(a => a.hp > 0).length === 0) break;
-      const targeting = pickEnemyTarget(enemy, move, mode, allies, enemies);
-      if (!targeting) break;
-      const rec = buildEnemyActionRecord(enemy, enemyIndex, move, targeting.target, targeting.targetSide, allies, enemies, false, itemBuffs);
-      if (rec) {
-        tagPlayback(rec, 'enemy');
-        enemyAttacks.push(rec);
-
-        // Inline counter: check immediately after enemy attack
-        if (options.runPartySkills && options.combat) {
-          const counter = computeInlineCounter(rec, allies, enemies, options.runPartySkills, options.combat);
-          if (counter) {
-            tagPlayback(counter, 'player');
-            playerAttacks.push(counter);
-            inlineCounters.push(counter);
-          }
-        }
-      }
-    }
-  };
+    const targeting = pickEnemyTarget(enemy, move, mode, allies, enemies);
+    if (!targeting) continue;
+    const targetIndex = targeting.targetSide === 'player'
+      ? allies.indexOf(targeting.target)
+      : enemies.indexOf(targeting.target);
+    enemyChoicesMap.set(ei, [{ creatureIndex: ei, moveId: move.id, targetIndex }]);
+  }
 
   const initiative = [];
 
@@ -934,8 +899,40 @@ export function processInterleavedPvERound(
   });
 
   for (const slot of initiative) {
-    if (slot.kind === 'ally') runAllyChoices(slot.index);
-    else runEnemyTurn(slot.index);
+    const isAlly = slot.kind === 'ally';
+
+    const result = executeSlotMoveTurn(
+      isAlly ? allies : enemies,
+      isAlly ? enemies : allies,
+      slot.index,
+      isAlly ? choicesByAlly.get(slot.index) : enemyChoicesMap.get(slot.index),
+      {
+        itemBuffs,
+        creatureParty: isAlly ? creatureParty : null,
+        metaMults: isAlly ? metaMults : null,
+        hastedSlots: isAlly ? hastedCreatureIndices : hastedEnemyIndices,
+        defeatedIndices: defeatedEnemyIndices,
+        defenderItemBuffs: isAlly ? null : itemBuffs,
+        onAttack(atk) {
+          tagPlayback(atk, isAlly ? 'player' : 'enemy');
+          (isAlly ? playerAttacks : enemyAttacks).push(atk);
+
+          // Inline counter from defending side (only when enemy attacks ally)
+          if (!isAlly && options.runPartySkills && options.combat) {
+            const counter = computeInlineCounter(atk, allies, enemies, options.runPartySkills, options.combat);
+            if (counter) {
+              tagPlayback(counter, 'player');
+              playerAttacks.push(counter);
+              inlineCounters.push(counter);
+            }
+          }
+
+          const attacker = isAlly ? allies : enemies;
+          return attacker[slot.index]?.hp > 0;
+        }
+      }
+    );
+    if (isAlly) xpEvents.push(...result.xpEvents);
   }
 
   // Affliction Burst check for inline counters
