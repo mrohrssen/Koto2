@@ -1189,16 +1189,22 @@ export async function renderFriendlyNpc() {
   }
 
   const offers = friendlyNpcState.offered || [];
-
-  // Tutorial step 2: Cid explains items
+  const npc = room?.npc;
   const tutorialStep = getGameState()?.meta?.tutorialStep;
-  if (tutorialStep === 2) {
-    await showTutorialNarration([
-      "Here you'll be offered items to power up. Choose wisely!"
-    ], { showSprite: true });
+
+  // NPC greeting first (blocking during tutorial so player sees it before items)
+  if (npc && sceneModule?.showNarration) {
+    const greetings = npc.shopGreetings || ['こんにちは！'];
+    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+    if (tutorialStep === 2) {
+      await sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });
+    } else {
+      // Non-tutorial: non-blocking overlay as before
+      sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });
+    }
   }
 
-  // Render item cards first so they're visible immediately
+  // Render item cards so they're visible
   renderChoices({
     cards: offers.map(item => ({
       sprite: itemSpriteHtml(item.id, item.word),
@@ -1251,12 +1257,24 @@ export async function renderFriendlyNpc() {
     },
   });
 
-  // Show NPC greeting as non-blocking overlay (items already visible behind it)
-  const npc = room?.npc;
-  if (npc && sceneModule?.showNarration) {
-    const greetings = npc.shopGreetings || ['こんにちは！'];
-    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-    sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });
+  // Tutorial step 2: Cid explains items AFTER cards are visible
+  if (tutorialStep === 2) {
+    const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+    showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+    await showNpcSprite(cidSprite, { slideIn: true });
+
+    await sceneModule.showNarration("Here you'll be offered items to power up. Choose wisely!", { speaker: 'Cid' });
+
+    await hideNpcSprite({ slideOut: true });
+
+    // Restore NPC sprite so they're visible during item selection
+    if (npc) {
+      const npcSprite = npc.id
+        ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
+        : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+      showNpcInDisplay(npc.nameEn || npc.name, npcSprite, { skipPixi: true });
+      await showNpcSprite(npcSprite, { slideIn: true });
+    }
   }
 }
 
