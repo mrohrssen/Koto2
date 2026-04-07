@@ -522,11 +522,14 @@ export function renderAreaComplete() {
   ], { container: btnContainer });
 }
 
-/** Run complete (game victory) — show adventure report */
+/** Run complete (game victory) — offer PvP save, then show adventure report */
 export function renderRunComplete() {
-  if (showAdventureReport) {
-    showAdventureReport(true);
-  }
+  if (!showAdventureReport) return;
+  // Offer PvP team save before forfeit destroys run data
+  renderButtons([
+    { label: 'Save Team for PvP', onClick: () => showPvpTeamSaveSlots() },
+    { label: 'View Report', onClick: () => showAdventureReport(true), primary: true },
+  ]);
 }
 
 async function showPvpTeamSaveSlots() {
@@ -554,11 +557,15 @@ async function showPvpTeamSaveSlots() {
   renderButtons(slots);
 }
 
-/** Run ended — show Return to Hub */
+/** Run ended — show adventure report (or fallback to simple button) */
 export function renderRunEnded() {
-  renderButtons([
-    { label: 'ハブに戻る', onClick: () => returnToHub(), primary: true },
-  ]);
+  if (showAdventureReport) {
+    showAdventureReport(false);
+  } else {
+    renderButtons([
+      { label: 'ハブに戻る', onClick: () => returnToHub(), primary: true },
+    ]);
+  }
 }
 
 /** Shrine phase - show creature roster for level-up */

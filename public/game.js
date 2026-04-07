@@ -1252,13 +1252,14 @@ async function showAdventureReport(isVictory) {
   const content = takeover.getContent('gameover');
   const response = await apiForfeitRun(isVictory);
   const summary = response?.runSummary || {};
-  renderAdventureReport(content, summary, isVictory, async () => {
+  const returnToHubCb = async () => {
     takeover.close('gameover');
     await loadGameState();
     updateUI();
     wordPractice.clearWordCache();
     wordPractice.prefetchCombatWords();
-  });
+  };
+  renderAdventureReport(content, summary, isVictory, returnToHubCb);
 }
 
 function showGameOverModal(result) {
