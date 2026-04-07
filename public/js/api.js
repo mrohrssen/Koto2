@@ -207,8 +207,8 @@ async function startRun(body = null) {
  * Forfeit the current run
  * @returns {Promise<object>} Result
  */
-async function forfeitRun() {
-  return apiCall('/forfeit', 'POST');
+async function forfeitRun(isVictory = false) {
+  return apiCall('/forfeit', 'POST', { isVictory });
 }
 
 /**

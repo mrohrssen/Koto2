@@ -105,6 +105,7 @@ import * as pvpBattleUI from './js/ui/pvp-battle.js';
 import { isPvpBattleActive } from './js/ui/pvp-battle.js';
 import * as speedReview from './js/ui/speed-review.js';
 import * as chestsUI from './js/ui/chests.js';
+import { renderAdventureReport } from './js/ui/adventure-report.js';
 import * as crestsEquipUI from './js/ui/crests-equip.js';
 import { playChestAnimation } from './js/pixi/chest-animation.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERSION } from './js/ui/sprite-utils.js';
@@ -1246,12 +1247,25 @@ function showVictoryModal(result) {
   }, 300);
 }
 
+async function showAdventureReport(isVictory) {
+  takeover.open('gameover');
+  const content = takeover.getContent('gameover');
+  const response = await apiForfeitRun(isVictory);
+  const summary = response?.runSummary || {};
+  renderAdventureReport(content, summary, isVictory, async () => {
+    takeover.close('gameover');
+    await loadGameState();
+    updateUI();
+    wordPractice.clearWordCache();
+    wordPractice.prefetchCombatWords();
+  });
+}
+
 function showGameOverModal(result) {
   audio.stopBGM();
   audio.playSFX('defeat');
-  actions.clear(); // Clear stale move buttons now, not when next combat starts
+  actions.clear();
 
-  // Trigger batch refresh on combat end if any pending reviews
   if (combatReviewedBatch.length > 0) {
     const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
     combatReviewedBatch = [];
@@ -1259,25 +1273,7 @@ function showGameOverModal(result) {
   }
 
   updateCreatureRow();
-  takeover.open('gameover');
-  const content = takeover.getContent('gameover');
-  const floor = gameState.run?.currentFloor || 1;
-  const roomsCleared = gameState.run?.currentRoom || 0;
-  content.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:0 24px;">
-      <div style="font-size:48px;margin-bottom:8px;">💀</div>
-      <h2 style="text-align:center;font-size:24px;font-weight:700;">${t('defeated')}</h2>
-      <p style="text-align:center;color:var(--text-secondary);font-size:14px;">${t('runEnded')}</p>
-      <div style="text-align:center;color:var(--text-muted);font-size:13px;">
-        ${t('floorRooms', floor, roomsCleared)}
-      </div>
-      <button class="action-btn action-btn-primary" id="gameover-hub-btn" style="margin-top:24px;">ハブに戻る</button>
-    </div>
-  `;
-  document.getElementById('gameover-hub-btn')?.addEventListener('click', async () => {
-    takeover.close('gameover');
-    await returnToHub();
-  });
+  showAdventureReport(false);
 }
 
 // ============ FLASH CARD HANDLERS ============
@@ -1787,6 +1783,7 @@ async function initGame() {
         }
       } catch (e) { console.warn('[Tutorial] advance failed:', e); }
     },
+    showAdventureReport,
   });
 
   pvpLobbyUI.init({

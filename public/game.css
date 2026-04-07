@@ -1997,6 +1997,94 @@ html, body {
   color: var(--text-primary);
 }
 
+/* ===== ADVENTURE REPORT ===== */
+.adventure-report {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 16px 32px;
+  max-width: 400px;
+  margin: 0 auto;
+  overflow-y: auto;
+  max-height: 100vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ar-header { text-align: center; padding: 20px 0 8px; }
+.ar-icon { font-size: 40px; margin-bottom: 8px; }
+.ar-title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.5px; }
+.ar-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+.ar-flavor { font-size: 14px; color: var(--accent-lavender); font-style: italic; margin-top: 8px; }
+
+.ar-section {
+  background: var(--bg-elevated);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  padding: 16px;
+}
+.ar-section-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px;
+}
+
+.ar-metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ar-metric { background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.ar-metric.featured {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(79,195,247,0.08), rgba(179,157,219,0.08));
+  border: 1px solid rgba(79,195,247,0.15);
+}
+.ar-metric-icon { font-size: 20px; margin-bottom: 4px; }
+.ar-metric-value { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+.ar-metric-total { font-size: 14px; font-weight: 400; color: var(--text-muted); }
+.ar-metric-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.ar-elements-label { font-size: 11px; color: var(--text-muted); text-align: center; margin: 12px 0 8px; }
+.ar-elements-row { display: flex; justify-content: space-around; }
+.ar-element { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ar-element-icon {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 14px; color: white;
+}
+.ar-element-icon.fire { background: linear-gradient(135deg, #ef5350, #ff7043); }
+.ar-element-icon.water { background: linear-gradient(135deg, #42a5f5, #4fc3f7); }
+.ar-element-icon.earth { background: linear-gradient(135deg, #ffb74d, #ffa726); }
+.ar-element-icon.wood { background: linear-gradient(135deg, #66bb6a, #81c784); }
+.ar-element-icon.metal { background: linear-gradient(135deg, #b0b8c4, #90a4ae); }
+.ar-element-count { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+.ar-discovery-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.ar-discovery-row + .ar-discovery-row { border-top: 1px solid var(--border-subtle); }
+.ar-discovery-label { font-size: 13px; color: var(--text-secondary); min-width: 72px; }
+.ar-bar-track { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+.ar-bar-fill { height: 100%; border-radius: 4px; }
+.ar-bar-fill.creatures { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-lavender)); }
+.ar-bar-fill.items { background: linear-gradient(90deg, var(--accent-amber), var(--accent-green)); }
+.ar-discovery-count { font-size: 13px; font-weight: 600; color: var(--text-primary); min-width: 44px; text-align: right; }
+
+.ar-word-summary { display: flex; gap: 12px; margin-bottom: 12px; }
+.ar-word-box { flex: 1; background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.ar-word-value { font-size: 22px; font-weight: 700; }
+.ar-word-value.immersed { color: var(--accent-blue); }
+.ar-word-value.mastered { color: var(--accent-green); }
+.ar-word-label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+.ar-mastered-list { list-style: none; }
+.ar-mastered-word { display: flex; align-items: center; padding: 8px 0; gap: 12px; }
+.ar-mastered-word + .ar-mastered-word { border-top: 1px solid var(--border-subtle); }
+.ar-mastered-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); flex-shrink: 0; }
+.ar-mastered-jp { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.ar-mastered-meaning { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+.ar-mastered-exp { font-size: 11px; color: var(--accent-green); font-weight: 600; flex-shrink: 0; min-width: 20px; text-align: right; }
+
+.ar-btn {
+  display: block; width: 100%; padding: 14px; border: none;
+  border-radius: var(--card-radius);
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  color: white; font-size: 16px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(79,195,247,0.3); letter-spacing: 0.5px;
+}
+
 /* ===== DAMAGE NUMBERS ===== */
 .damage-number {
   position: absolute;

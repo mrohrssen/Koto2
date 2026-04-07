@@ -45,6 +45,7 @@ let sceneModule = null;
 let startEncounter = null;
 let startNewRun = null;
 let returnToHub = null;
+let showAdventureReport = null;
 
 // Module-level guard to prevent multiple shrine clicks across re-renders
 let shrineInProgress = false;
@@ -153,6 +154,7 @@ export function init(callbacks) {
   apiGetFriendlyNpcOffers = callbacks.apiGetFriendlyNpcOffers;
   apiChooseFriendlyNpcItem = callbacks.apiChooseFriendlyNpcItem;
   apiTutorialAdvance = callbacks.apiTutorialAdvance;
+  showAdventureReport = callbacks.showAdventureReport;
 }
 
 // ============ INVENTORY OVERLAY ============
@@ -520,21 +522,11 @@ export function renderAreaComplete() {
   ], { container: btnContainer });
 }
 
-/** Run complete (game victory) — show Return to Hub */
+/** Run complete (game victory) — show adventure report */
 export function renderRunComplete() {
-  actions.setContent(`
-    <p style="text-align:center;color:var(--accent-primary);margin-bottom:0.5rem">
-      ゲームクリア！おめでとう！
-    </p>
-  `);
-
-  const actionArea = document.getElementById('action-area');
-  const btnContainer = document.createElement('div');
-  actionArea.appendChild(btnContainer);
-  renderButtons([
-    { label: 'ハブに戻る', onClick: () => apiReturnToHub(), primary: true },
-    { label: 'Save Team for PvP', onClick: () => showPvpTeamSaveSlots() },
-  ], { container: btnContainer });
+  if (showAdventureReport) {
+    showAdventureReport(true);
+  }
 }
 
 async function showPvpTeamSaveSlots() {
