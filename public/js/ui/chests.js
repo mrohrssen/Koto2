@@ -1,16 +1,24 @@
 /**
- * @fileoverview Chests screen — shows 5 element chests, drop counts, and opens chests.
+ * @fileoverview Chests screen — pentagon element selector + dramatic chest scene.
+ * Renders into .scene-area (pedestal visual) and #action-area (selector + open button).
  */
 
 let callbacks = {};
 
 const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal'];
 const ELEMENT_LABELS = {
-  fire: { icon: '🔥', name: 'Fire', color: 'var(--accent-red, #ef5350)' },
-  water: { icon: '💧', name: 'Water', color: 'var(--accent-blue, #42a5f5)' },
-  wood: { icon: '🌿', name: 'Wood', color: 'var(--accent-green, #66bb6a)' },
-  earth: { icon: '🪨', name: 'Earth', color: 'var(--accent-amber, #ffb74d)' },
-  metal: { icon: '⚙️', name: 'Metal', color: 'var(--accent-lavender, #b39ddb)' }
+  fire: { icon: '🔥', name: 'Fire', color: 'var(--accent-red, #ef5350)', rawColor: '#ef5350' },
+  water: { icon: '💧', name: 'Water', color: 'var(--accent-blue, #42a5f5)', rawColor: '#42a5f5' },
+  wood: { icon: '🌿', name: 'Wood', color: 'var(--accent-green, #66bb6a)', rawColor: '#66bb6a' },
+  earth: { icon: '🪨', name: 'Earth', color: 'var(--accent-amber, #ffb74d)', rawColor: '#ffb74d' },
+  metal: { icon: '⚙️', name: 'Metal', color: 'var(--accent-lavender, #b39ddb)', rawColor: '#b39ddb' }
+};
+const ELEMENT_GRADIENTS = {
+  fire: 'linear-gradient(135deg, #b71c1c, #ef5350, #ff8a65)',
+  water: 'linear-gradient(135deg, #1565c0, #42a5f5, #80d8ff)',
+  wood: 'linear-gradient(135deg, #2e7d32, #66bb6a, #a5d6a7)',
+  earth: 'linear-gradient(135deg, #e65100, #ffb74d, #ffe082)',
+  metal: 'linear-gradient(135deg, #4527a0, #b39ddb, #e1bee7)'
 };
 const CHEST_COST = 3;
 
@@ -18,12 +26,10 @@ export function init(cbs) {
   callbacks = cbs;
 }
 
+let selectedElement = 'fire';
+
 export async function show() {
   const { getAuthHeaders, apiUrl, onChestOpened } = callbacks;
-
-  const panel = document.createElement('div');
-  panel.id = 'chests-panel';
-  panel.className = 'crests-panel';
 
   let state;
   try {
@@ -34,45 +40,89 @@ export async function show() {
     return;
   }
 
-  panel.innerHTML = `
-    <div class="crests-header">
-      <button class="crests-close" id="chests-close-btn">&times;</button>
-      <h2>Chests</h2>
-      <div class="crests-subtitle">Open chests to find Crests</div>
-    </div>
-    <div class="chests-grid">
-      ${ELEMENTS.map(el => renderChest(el, state.elementDrops[el] || 0)).join('')}
-    </div>
-  `;
-
-  document.getElementById('action-area').appendChild(panel);
-
-  document.getElementById('chests-close-btn')?.addEventListener('click', () => panel.remove());
+  renderScene(selectedElement);
+  renderActions(state);
 
   // Tutorial step 4: Cid explains chests
   if ((state.tutorialStep ?? 7) === 4 && callbacks.showNarration) {
+    selectedElement = 'fire';
+    renderScene('fire');
+    renderActions(state);
     await callbacks.showNarration('Every run you can use your resources to get stronger.', { speaker: 'Cid' });
     await callbacks.showNarration("I'll give you 3 Fire Elements.", { speaker: 'Cid' });
     await callbacks.showNarration("Let's open that fire chest!", { speaker: 'Cid' });
-    // Highlight fire chest, dim others
-    panel.querySelectorAll('.chest-card').forEach(card => {
-      const btn = card.querySelector('.chest-open-btn');
-      if (btn?.dataset.element === 'fire') {
-        card.classList.add('tutorial-highlight');
-      } else {
-        card.classList.add('tutorial-dimmed');
-      }
-    });
   }
+}
 
-  panel.querySelectorAll('.chest-open-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const element = btn.dataset.element;
+function renderScene(element) {
+  const sceneArea = document.getElementById('scene-area');
+  // Remove any existing chest/crest scene
+  sceneArea.querySelector('.chest-scene')?.remove();
+  sceneArea.querySelector('.crest-scene')?.remove();
+
+  const el = ELEMENT_LABELS[element];
+  const scene = document.createElement('div');
+  scene.className = 'chest-scene';
+  scene.innerHTML = `
+    <div class="chest-scene-bg" style="background: ${ELEMENT_GRADIENTS[element]}"></div>
+    <div class="chest-scene-rays"></div>
+    <div class="chest-scene-particles">${generateParticles(6, el.rawColor)}</div>
+    <div class="chest-scene-icon">🎁</div>
+    <div class="chest-scene-pedestal"></div>
+  `;
+  sceneArea.appendChild(scene);
+}
+
+function renderActions(state) {
+  const actionArea = document.getElementById('action-area');
+  actionArea.innerHTML = '';
+
+  const drops = state.elementDrops || {};
+  const currentDrops = drops[selectedElement] || 0;
+  const canOpen = currentDrops >= CHEST_COST;
+  const el = ELEMENT_LABELS[selectedElement];
+
+  actionArea.innerHTML = `
+    <div class="pentagon-selector">
+      ${ELEMENTS.map(e => {
+        const info = ELEMENT_LABELS[e];
+        const isActive = e === selectedElement;
+        return `<div class="pentagon-btn ${isActive ? 'active' : ''}"
+                     data-element="${e}"
+                     style="background: ${info.rawColor}; color: ${info.rawColor}">
+          ${info.icon}
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="chest-info">
+      <div class="chest-info-title">${el.name} Chest</div>
+      <div class="chest-info-drops">${currentDrops} / ${CHEST_COST} drops</div>
+    </div>
+    <button class="chest-open-btn ${canOpen ? '' : 'disabled'}" ${canOpen ? '' : 'disabled'}>
+      Open Chest
+    </button>
+    <div class="chest-back-link">← Back</div>
+  `;
+
+  // Wire pentagon selector
+  actionArea.querySelectorAll('.pentagon-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedElement = btn.dataset.element;
+      renderScene(selectedElement);
+      renderActions(state);
+    });
+  });
+
+  // Wire open button
+  const openBtn = actionArea.querySelector('.chest-open-btn');
+  if (openBtn && canOpen) {
+    openBtn.addEventListener('click', async () => {
+      const { getAuthHeaders, apiUrl, onChestOpened } = callbacks;
       try {
         const res = await fetch(apiUrl('/api/game/crests/open'), {
           method: 'POST',
           headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ element })
+          body: JSON.stringify({ element: selectedElement })
         });
         const data = await res.json();
         if (data.error) return;
@@ -89,29 +139,41 @@ export async function show() {
         }
 
         if (onChestOpened) {
-          await onChestOpened(element, data.crest);
+          await onChestOpened(selectedElement, data.crest);
         }
 
-        panel.remove();
-        show();
+        // Refresh state and re-render
+        try {
+          const refreshRes = await fetch(apiUrl('/api/game/crests'), { headers: getAuthHeaders() });
+          const refreshed = await refreshRes.json();
+          renderActions(refreshed);
+        } catch (_) {
+          // Fallback: just go back
+          cleanup();
+          callbacks.onBack?.();
+        }
       } catch (e) {
         console.error('[Chests] Failed to open chest:', e);
       }
     });
+  }
+
+  // Wire back
+  actionArea.querySelector('.chest-back-link')?.addEventListener('click', () => {
+    cleanup();
+    callbacks.onBack?.();
   });
 }
 
-function renderChest(element, drops) {
-  const el = ELEMENT_LABELS[element];
-  const canOpen = drops >= CHEST_COST;
-  return `
-    <div class="chest-card ${canOpen ? 'affordable' : ''}" style="--element-color: ${el.color}">
-      <div class="chest-icon">${el.icon}</div>
-      <div class="chest-name">${el.name}</div>
-      <div class="chest-drops">${drops} / ${CHEST_COST}</div>
-      <button class="chest-open-btn ${canOpen ? '' : 'disabled'}" data-element="${element}" ${canOpen ? '' : 'disabled'}>
-        Open
-      </button>
-    </div>
-  `;
+function cleanup() {
+  document.getElementById('scene-area')?.querySelector('.chest-scene')?.remove();
+}
+
+function generateParticles(count, color) {
+  return Array.from({ length: count }, (_, i) => {
+    const left = 10 + Math.random() * 80;
+    const delay = Math.random() * 4;
+    const top = 30 + Math.random() * 50;
+    return `<div class="chest-particle" style="left:${left}%;top:${top}%;background:${color};animation-delay:${delay}s"></div>`;
+  }).join('');
 }
