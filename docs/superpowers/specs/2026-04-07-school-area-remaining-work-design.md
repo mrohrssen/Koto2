@@ -46,14 +46,20 @@ The school area (学校) data has been merged into all game data files (areas, c
 
 **Style:** Match existing creature sprites — pixel art, transparent background, centered, ~128px character size.
 
-## Task 4: Area Background
+## Task 4: Parallax Background (4 layers)
 
-**Problem:** The school area references `areas/school/school_01.webp` which doesn't exist yet.
+**Problem:** The school area has no parallax background. The PixiJS parallax system requires 4 tileable layers at 2048x800 (sky, far, mid, ground).
 
-**Design:** Generate a school-themed parallax background via ComfyUI. Bright, indoor Japanese school hallway/classroom aesthetic matching the area description.
+**Design:** Generate 4 layers via Gemini depicting outdoor school grounds — walking along a path past school buildings. Use BiRefNet for transparency on non-sky layers. Set `parallaxId: "school"` in areas.json.
 
-**Output file:**
-- `public/assets/backgrounds/areas/school/school_01.webp`
+**Layers:**
+- `sky.webp` — Clear blue sky, soft clouds, warm afternoon light (opaque)
+- `far.webp` — School building roofline, clock tower, distant treeline (transparent top ~60%)
+- `mid.webp` — Trees, hedges, flagpole, lamp posts along walkway (transparent top ~40%)
+- `ground.webp` — Concrete path, low shrubs, benches, grass, cherry blossom petals (transparent top ~70%)
+
+**Output directory:**
+- `public/assets/backgrounds/school/`
 
 ## Dependencies
 

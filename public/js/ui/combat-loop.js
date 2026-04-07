@@ -1832,6 +1832,61 @@ async function showRoundStartEvents(result) {
 }
 
 /**
+ * Show a single counter attack animation (used inline in initiative playback).
+ * @param {Object} counter - Counter attack record from server
+ */
+async function showOneCounterAttackAnimated(counter) {
+  const defenderPos = spritePos('player', counter.defenderIndex);
+  popupSkillProc('COUNTER!', defenderPos);
+
+  const defenderSprite = getCreatureSprite('player', counter.defenderIndex);
+  if (defenderSprite) await pixiLunge(defenderSprite, { distance: 40, duration: 300 });
+
+  if (counter.damage > 0) {
+    const counterFrom = spritePos('player', counter.defenderIndex);
+    const counterTo = spritePos('enemy', counter.targetIndex);
+    await fireElementBlast(counterFrom, counterTo, 'neutral', () => {
+      pixiDamageNumber(counter.damage, counterTo, { tier: 1 });
+      screenShake('light');
+    });
+  }
+
+  if (counter.procs?.length) {
+    for (const proc of counter.procs) {
+      if (proc.type === 'stageChange') {
+        const SC_NAMES2 = { atk: 'ATK', def: 'DEF' };
+        const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
+        const text = `${SC_NAMES2[proc.stat] || proc.stat} ${dir}`;
+        const side = proc.targetSide === 'enemy' ? 'enemy' : 'player';
+        const pos = spritePos(side, proc.targetIndex);
+        if (proc.delta > 0) popupBuff(text, pos);
+        else popupDebuff(text, pos);
+      } else if (proc.type === 'spread') {
+        const pos = spritePos('enemy', proc.targetIndex);
+        popupSkillProc('SPREAD!', pos);
+        burstParticles(pos, { count: 4, color: 0x9C27B0 });
+      } else if (proc.type === 'pandemic') {
+        const enemies = getCombatEnemies() || [];
+        enemies.forEach((enemy, i) => {
+          if (enemy && enemy.hp > 0) {
+            const pos = spritePos('enemy', i);
+            popupSkillProc('PANDEMIC!', pos);
+            burstParticles(pos, { count: 6, color: 0x9C27B0 });
+          }
+        });
+      } else if (proc.type === 'burst') {
+        const pos = spritePos('enemy', proc.targetIndex);
+        popupSkillProc('AFFLICTION BURST!', pos);
+        pixiDamageNumber(proc.damage, pos, { tier: 1 });
+        burstParticles(pos, { count: 10, color: 0xE91E63 });
+      }
+    }
+  }
+
+  await effectDelay(600);
+}
+
+/**
  * Show counter attack animations after enemy attacks.
  * @param {Object} result - Combat cycle result from server
  */
@@ -2288,7 +2343,9 @@ async function executeCreatureMovesTurn(choices) {
 
       if (merged.length > 0) {
         for (const { side, atk } of merged) {
-          if (side === 'player') {
+          if (side === 'player' && atk.type === 'counter') {
+            await showOneCounterAttackAnimated(atk);
+          } else if (side === 'player') {
             await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn);
           } else {
             await showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
@@ -2409,7 +2466,9 @@ async function executeCreaturePlayerAttack() {
 
       if (mergedLegacy.length > 0) {
         for (const { side, atk } of mergedLegacy) {
-          if (side === 'player') {
+          if (side === 'player' && atk.type === 'counter') {
+            await showOneCounterAttackAnimated(atk);
+          } else if (side === 'player') {
             await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn2);
           } else {
             await showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
