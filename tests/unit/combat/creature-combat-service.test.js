@@ -837,3 +837,43 @@ describe('Dead creature cannot attack', () => {
     assert.strictEqual(enemy.hp, enemyHpBefore, 'enemy HP unchanged since ally was dead');
   });
 });
+
+describe('executeNpcSkill — single_ally random target', () => {
+  it('does not always target index 0 for single_ally skills', () => {
+    const npcData = {
+      id: 'senpai', name: '先輩', nameEn: 'Older Student',
+      attack: 15, element: 'neutral',
+      baseWord: '先輩', baseReading: 'せんぱい', baseMeaning: 'senior'
+    };
+    const buffSkill = {
+      id: 'oboeru', name: '覚える', nameEn: 'Memorize',
+      element: 'neutral', category: 'buff', target: 'single_ally',
+      power: 0, mpCost: 0, statChanges: { atk: 2 },
+      statusEffect: null, statusChance: 0, statusDuration: 0
+    };
+
+    // 3 alive enemies (NPC's allies from player perspective)
+    const enemies = [
+      { id: 'e0', hp: 50, maxHp: 50, attack: 10, defense: 5, element: 'fire', level: 3, activeEffects: [], statStages: { atk: 0, def: 0 } },
+      { id: 'e1', hp: 50, maxHp: 50, attack: 10, defense: 5, element: 'fire', level: 3, activeEffects: [], statStages: { atk: 0, def: 0 } },
+      { id: 'e2', hp: 50, maxHp: 50, attack: 10, defense: 5, element: 'fire', level: 3, activeEffects: [], statStages: { atk: 0, def: 0 } },
+    ];
+    const allies = [
+      { id: 'a0', hp: 50, maxHp: 50, attack: 10, defense: 5, element: 'water', level: 3, activeEffects: [], statStages: { atk: 0, def: 0 } },
+    ];
+
+    // Run 30 times, track which enemy got buffed
+    const buffedIndices = new Set();
+    for (let i = 0; i < 30; i++) {
+      // Reset stat stages
+      enemies.forEach(e => e.statStages = { atk: 0, def: 0 });
+      executeNpcSkill(npcData, buffSkill, allies, enemies);
+      enemies.forEach((e, idx) => {
+        if (e.statStages.atk > 0) buffedIndices.add(idx);
+      });
+    }
+
+    // With 3 targets and 30 trials, should hit more than just index 0
+    assert.ok(buffedIndices.size > 1, `Expected random targeting, but only hit indices: ${[...buffedIndices]}`);
+  });
+});

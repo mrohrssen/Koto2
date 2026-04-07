@@ -496,7 +496,15 @@ export function executeNpcSkill(npcData, skill, allies, enemies) {
   // executeMove needs defeatedEnemyIndices — NPC skills don't award XP
   const defeatedEnemyIndices = new Set();
 
-  const result = executeMove(pseudoCreature, -1, skill, 0, npcAllies, npcEnemies, null, null, defeatedEnemyIndices);
+  // Pick random alive ally for single_ally targeting (e.g. buff skills)
+  let targetIdx = 0;
+  if (skill.target === 'single_ally') {
+    const aliveIndices = npcAllies.map((c, i) => c.hp > 0 ? i : -1).filter(i => i >= 0);
+    if (aliveIndices.length > 0) {
+      targetIdx = aliveIndices[Math.floor(Math.random() * aliveIndices.length)];
+    }
+  }
+  const result = executeMove(pseudoCreature, -1, skill, targetIdx, npcAllies, npcEnemies, null, null, defeatedEnemyIndices);
 
   return { attacks: result.attacks };
 }
