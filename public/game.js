@@ -1776,11 +1776,15 @@ async function initGame() {
     apiChooseFriendlyNpcItem,
     apiTutorialAdvance: async (expectedStep) => {
       try {
-        await fetch(apiUrl('/api/game/tutorial-advance'), {
+        const res = await fetch(apiUrl('/api/game/tutorial-advance'), {
           method: 'POST',
           headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
           body: JSON.stringify({ expectedStep })
         });
+        const data = await res.json();
+        if (data.tutorialStep !== undefined && gameState?.meta) {
+          gameState.meta.tutorialStep = data.tutorialStep;
+        }
       } catch (e) { console.warn('[Tutorial] advance failed:', e); }
     },
   });

@@ -397,6 +397,21 @@ export async function renderHub() {
     });
   }
 
+  // Tutorial step 5: guide to equip crests
+  if (tutorialStep === 5) {
+    await showTutorialNarration([
+      "Now let's equip that crest to power up!"
+    ]);
+    const buttons = document.querySelectorAll('.action-btn');
+    buttons.forEach(btn => {
+      if (btn.textContent.includes('Crests')) {
+        btn.classList.add('tutorial-highlight');
+      } else {
+        btn.classList.add('tutorial-dimmed');
+      }
+    });
+  }
+
   // Tutorial step 6: guide to formation and re-enter
   if (tutorialStep === 6) {
     const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
