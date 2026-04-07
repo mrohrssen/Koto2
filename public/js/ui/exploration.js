@@ -127,6 +127,9 @@ let apiSkillMasterChoose = null;
 let apiGetFriendlyNpcOffers = null;
 let apiChooseFriendlyNpcItem = null;
 
+// Track whether CID's item-shop tutorial has already been shown this session
+let cidItemShopTutorialShown = false;
+
 // Tutorial API
 let apiTutorialAdvance = null;
 
@@ -1257,8 +1260,9 @@ export async function renderFriendlyNpc() {
     },
   });
 
-  // Tutorial step 2: Cid explains items AFTER cards are visible
-  if (tutorialStep === 2) {
+  // Tutorial step 2: Cid explains items AFTER cards are visible (once per session)
+  if (tutorialStep === 2 && !cidItemShopTutorialShown) {
+    cidItemShopTutorialShown = true;
     const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
     await showNpcSprite(cidSprite, { slideIn: true });

@@ -16,9 +16,6 @@ import { validateTeamSelection } from '../../game/services/creature-collection-s
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
 import { applyItem } from '../../game/services/item-service.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
-import { getCidScripts } from '../../game/dialogue-loader.js';
-import { filterEligibleScripts, selectCidScript } from '../../game/dialogue-filter.js';
-import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 
 const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
@@ -128,39 +125,8 @@ export default function createRunRoutes({
 
       const narration = null; // DM narration disabled — frontend discards this
 
-      // Select a CID script for this run based on player's known words
-      let cidScript = null;
-      try {
-        const knownWords = new Set(getKnownWordsFromFsrs(req.user.id));
-        const seenScripts = gameManager.getMeta()?.seenCidScripts || [];
-        const eligible = filterEligibleScripts(getCidScripts(), knownWords);
-        const selected = selectCidScript(eligible, knownWords, seenScripts);
-        if (selected) {
-          cidScript = {
-            scriptId: selected.id,
-            lines: selected.lines.map(l => ({
-              text: l.text,
-              tokens: l._tokens || [],
-              overrides: l.overrides || {},
-            })),
-          };
-          const meta = gameManager.getMeta();
-          if (!meta.seenCidScripts) meta.seenCidScripts = [];
-          meta.seenCidScripts.push(selected.id);
-          // Expose CID dialogue content words to SRS
-          const cidWords = [];
-          for (const line of selected.lines) {
-            for (const w of (line._contentWords || [])) {
-              cidWords.push({ word: w, meaning: '' });
-            }
-          }
-          if (cidWords.length > 0) {
-            req.gameManager.exposeWords(cidWords);
-          }
-        }
-      } catch (e) {
-        console.warn('[CID] Script selection failed:', e.message);
-      }
+      // CID pre-run scripts disabled
+      const cidScript = null;
 
       req.saveGame();
 
