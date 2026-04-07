@@ -99,15 +99,17 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
           sessionStorage.setItem('sessionExpiredMsg', 'Session expired, please log in again');
           window.location.href = '/';
         }
-        onApiFailure();
+        onApiSuccess(); // Server responded — connection is fine
         throw new Error('Session expired');
       }
 
       const data = await response.json();
 
+      // Any HTTP response (even 4xx/5xx) proves the server is reachable
+      onApiSuccess();
+
       if (!response.ok) {
         if (opts.returnErrorBody) {
-          onApiSuccess();
           return { error: data.error || `HTTP ${response.status}` };
         }
         throw new Error(data.error || 'API call failed');
@@ -116,7 +118,6 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
       const elapsedMs = Math.round(performance.now() - startedAt);
       console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
 
-      onApiSuccess();
       return data;
     } catch (error) {
       const elapsedMs = Math.round(performance.now() - startedAt);
@@ -126,7 +127,9 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
       // Don't retry auth errors
       if (error.message === 'Session expired') break;
 
-      onApiFailure();
+      // Only count as connection failure if fetch itself threw (network error),
+      // not if the server returned an error HTTP status
+      if (error instanceof TypeError) onApiFailure();
     } finally {
       inFlightRequests.delete(endpoint);
     }
