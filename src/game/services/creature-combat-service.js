@@ -211,7 +211,7 @@ function tryApplyStatChanges(move, target) {
 /**
  * Execute a single move for one creature. Returns array of attack records and xpEvents.
  */
-function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null) {
+function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null) {
   const attacks = [];
   const xpEvents = [];
   const stab = move.element !== 'neutral' && move.element === creature.element;
@@ -224,6 +224,10 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const tIdx = indices[i];
         const variance = rollVariance();
         let damage = rollMoveDamage(creature, target, move, itemBuffs, variance);
+
+        if (defenderItemBuffs) {
+          damage = applyDamageReduction(damage, defenderItemBuffs);
+        }
 
         const shieldReduction = getDamageReduction(target);
         if (shieldReduction > 0) {
@@ -260,6 +264,10 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const tIdx = indices[i];
         const variance = rollVariance();
         let damage = rollMoveDamage(creature, target, move, itemBuffs, variance);
+
+        if (defenderItemBuffs) {
+          damage = applyDamageReduction(damage, defenderItemBuffs);
+        }
 
         const shieldReduction = getDamageReduction(target);
         if (shieldReduction > 0) {
@@ -715,20 +723,34 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
  * @param {Set<number>|null} hastedSlots - Slots that consumed haste at round start (double execute, no extra MP)
  * @param {Set|null} defeatedEnemyIndices - Kill/XP tracking (empty Set in PvP)
  */
-export function executeSlotMoveTurn(
-  allies,
-  enemies,
-  slotIndex,
-  choices,
-  itemBuffs = null,
-  creatureParty = null,
-  metaMults = null,
-  hastedSlots = null,
-  defeatedEnemyIndices = null
-) {
+export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, optionsOrItemBuffs = {}, ...legacyArgs) {
+  // Backward compat: detect legacy positional call vs new options object
+  let options;
+  if (legacyArgs.length > 0 || optionsOrItemBuffs === null || typeof optionsOrItemBuffs !== 'object' || Array.isArray(optionsOrItemBuffs)) {
+    options = {
+      itemBuffs: optionsOrItemBuffs ?? null,
+      creatureParty: legacyArgs[0] ?? null,
+      metaMults: legacyArgs[1] ?? null,
+      hastedSlots: legacyArgs[2] ?? null,
+      defeatedIndices: legacyArgs[3] ?? null
+    };
+  } else {
+    options = optionsOrItemBuffs;
+  }
+
+  const {
+    itemBuffs = null,
+    creatureParty = null,
+    metaMults = null,
+    hastedSlots = null,
+    defeatedIndices = null,
+    defenderItemBuffs = null,
+    onAttack = null
+  } = options;
+
   const attacks = [];
   const xpEvents = [];
-  const defeated = defeatedEnemyIndices || new Set();
+  const defeated = defeatedIndices || new Set();
 
   const creature = allies[slotIndex];
   if (!creature || creature.hp <= 0 || isIncapacitated(creature)) {
@@ -748,6 +770,8 @@ export function executeSlotMoveTurn(
 
     creature.mp = (creature.mp || 0) - move.mpCost;
 
+    let stopped = false;
+
     const runOneExecute = () => {
       const result = executeMove(
         creature,
@@ -759,19 +783,27 @@ export function executeSlotMoveTurn(
         itemBuffs,
         creatureParty,
         defeated,
-        metaMults
+        metaMults,
+        defenderItemBuffs
       );
       for (const atk of result.attacks) {
         atk.attackerMp = creature.mp;
         atk.attackerMaxMp = creature.maxMp || 0;
         attacks.push(atk);
+        if (onAttack && onAttack(atk) === false) {
+          stopped = true;
+          return;
+        }
       }
       xpEvents.push(...result.xpEvents);
     };
 
     runOneExecute();
+    if (stopped) break;
+    if (creature.hp <= 0) break;
     if (hastedSlots?.has(slotIndex)) {
       runOneExecute();
+      if (stopped) break;
     }
   }
 
