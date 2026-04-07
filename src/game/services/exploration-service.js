@@ -34,6 +34,7 @@ import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js'
 import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
 import { applyCrestBonuses } from './crest-service.js';
+import { shouldOverrideSkillOffers, advanceTutorial, shouldFixRoomSequence } from './tutorial-service.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -188,7 +189,8 @@ export class ExplorationService {
     this.gm.run.areaCleared = false;
 
     // Generate rooms for this area (fixed 30-room structure for Koto2)
-    this.gm.run.rooms = generateAreaRooms(areaId);
+    const tutorialMode = shouldFixRoomSequence(this.gm.meta);
+    this.gm.run.rooms = generateAreaRooms(areaId, undefined, undefined, undefined, undefined, tutorialMode);
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
 
@@ -586,6 +588,13 @@ export class ExplorationService {
     const isInitialPick = pick && !pick.chosenId;
 
     if (isInitialPick) {
+      // Tutorial step 0: offer only retaliationStrike
+      if (shouldOverrideSkillOffers(this.gm.meta)) {
+        pick.offered = ['retaliationStrike'];
+        const offered = pick.offered.map(id => getPartySkillDisplay(id)).filter(Boolean);
+        this.gm.emitState();
+        return { offered };
+      }
       if (!Array.isArray(pick.offered)) {
         const ownedSkillIds = (this.gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
         pick.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
@@ -633,6 +642,10 @@ export class ExplorationService {
       if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
       this.gm.run.partySkills.push({ id: skillId });
       pick.chosenId = skillId;
+      // Tutorial step 0 → 1: advance after first skill pick
+      if (shouldOverrideSkillOffers(this.gm.meta)) {
+        advanceTutorial(this.gm.meta);
+      }
       this.gm.emitState();
       return { chosenId: skillId, partySkills: this.gm.run.partySkills };
     }

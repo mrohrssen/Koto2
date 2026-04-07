@@ -128,3 +128,27 @@ describe('tutorial-service', () => {
     });
   });
 });
+
+import { generateAreaRooms } from '../../../src/game/rooms.js';
+
+describe('tutorial room generation', () => {
+  it('tutorialMode forces room 0 to encounter and room 1 to friendlyNpc', () => {
+    const rooms = generateAreaRooms('hajimari-no-hiroba', undefined, undefined, undefined, undefined, true);
+    assert.equal(rooms[0].type, 'encounter');
+    assert.equal(rooms[1].type, 'friendlyNpc');
+    assert.equal(rooms.length, 30);
+  });
+
+  it('without tutorialMode rooms are not forced', () => {
+    // Run 50 times — at least one should NOT have encounter+friendlyNpc in slots 0,1
+    let allMatch = true;
+    for (let i = 0; i < 50; i++) {
+      const rooms = generateAreaRooms('hajimari-no-hiroba');
+      if (rooms[0].type !== 'encounter' || rooms[1].type !== 'friendlyNpc') {
+        allMatch = false;
+        break;
+      }
+    }
+    assert.equal(allMatch, false, 'Without tutorialMode, rooms should be randomized');
+  });
+});
