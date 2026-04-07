@@ -64,6 +64,33 @@ describe('manager-registry', () => {
     assert.deepStrictEqual(reloaded.combat, { active: true, npcId: 'npc_01', enemies: [{ id: 'c1', hp: 50 }] });
   });
 
+  it('combat.allies shares reference with run.creatureParty.active after reload', () => {
+    const creature = { id: 'c1', hp: 100, maxHp: 100, attack: 20 };
+    const manager = getManager('u_test123');
+    manager.createPlayer('RefTest', { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 });
+    manager.run = {
+      active: true,
+      creatureParty: { active: [creature], reserves: [] }
+    };
+    manager.combat = {
+      active: true,
+      allies: manager.run.creatureParty.active,
+      enemies: [{ id: 'e1', hp: 50 }]
+    };
+
+    // Before save: references should match
+    assert.strictEqual(manager.combat.allies, manager.run.creatureParty.active,
+      'before save: combat.allies should === run.creatureParty.active');
+
+    saveManager('u_test123');
+    removeManager('u_test123');
+    const reloaded = getManager('u_test123');
+
+    // After reload: references MUST still match (damage propagation depends on this)
+    assert.strictEqual(reloaded.combat.allies, reloaded.run.creatureParty.active,
+      'after reload: combat.allies must === run.creatureParty.active');
+  });
+
   it('loads null run/combat from old save files without those fields', () => {
     const saveData = {
       version: 2,

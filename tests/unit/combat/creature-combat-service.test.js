@@ -779,4 +779,61 @@ describe('Dead creature cannot attack', () => {
     assert.strictEqual(result.attacks.length, 0, 'dead enemy should not attack');
     assert.strictEqual(ally.hp, 50, 'ally HP should be unchanged');
   });
+
+  it('enemy killed mid-round by higher-level ally should not attack in interleaved initiative', () => {
+    // Ally is high level (acts first in initiative) and will one-shot the enemy
+    const ally = instantiateCreature('hi');
+    ally.level = 50;
+    ally.attack = 999;
+    ally.hp = 500;
+    ally.maxHp = 500;
+
+    // Enemy is low level (acts after ally) with low HP — will die from ally's attack
+    const enemy = instantiateCreature('ki');
+    enemy.level = 1;
+    enemy.hp = 1;
+    enemy.maxHp = 1;
+    enemy.attack = 50;
+
+    const allyHpBefore = ally.hp;
+    const moveChoices = [{ creatureIndex: 0, moveId: ally.moves[0].id, targetIndex: 0 }];
+    const r = processInterleavedPvERound([ally], [enemy], moveChoices);
+
+    // Ally should have attacked
+    assert.ok(r.playerAttacks.length > 0, 'ally should have attacked');
+    // Enemy should be dead
+    assert.strictEqual(enemy.hp, 0, 'enemy should be dead');
+    // Enemy should NOT have attacked (dead before its turn)
+    assert.strictEqual(r.enemyAttacks.length, 0, 'dead enemy should produce no attacks');
+    // Ally HP should be unchanged (enemy never got to attack)
+    assert.strictEqual(ally.hp, allyHpBefore, 'ally HP should be unchanged since enemy was dead');
+  });
+
+  it('ally killed mid-round by higher-level enemy should not attack in interleaved initiative', () => {
+    // Enemy is high level (acts first) and will one-shot the ally
+    const enemy = instantiateCreature('ki');
+    enemy.level = 50;
+    enemy.attack = 999;
+    enemy.hp = 500;
+    enemy.maxHp = 500;
+
+    // Ally is low level (acts after enemy) with low HP
+    const ally = instantiateCreature('hi');
+    ally.level = 1;
+    ally.hp = 1;
+    ally.maxHp = 1;
+
+    const enemyHpBefore = enemy.hp;
+    const moveChoices = [{ creatureIndex: 0, moveId: ally.moves[0].id, targetIndex: 0 }];
+    const r = processInterleavedPvERound([ally], [enemy], moveChoices);
+
+    // Enemy should have attacked first
+    assert.ok(r.enemyAttacks.length > 0, 'enemy should have attacked');
+    // Ally should be dead
+    assert.strictEqual(ally.hp, 0, 'ally should be dead');
+    // Ally should NOT have attacked (dead before its turn)
+    assert.strictEqual(r.playerAttacks.length, 0, 'dead ally should produce no attacks');
+    // Enemy HP should be unchanged
+    assert.strictEqual(enemy.hp, enemyHpBefore, 'enemy HP unchanged since ally was dead');
+  });
 });

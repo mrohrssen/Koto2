@@ -83,7 +83,16 @@ export function getManager(userId) {
           manager.initMeta(data.meta);
         }
         if (data.run) manager.run = data.run;
-        if (data.combat) manager.combat = data.combat;
+        if (data.combat) {
+          manager.combat = data.combat;
+          // Re-sync combat.allies → run.creatureParty.active after deserialization.
+          // JSON round-trip breaks the shared reference that combat.allies normally
+          // holds to run.creatureParty.active, causing mid-round HP mutations on
+          // combat.allies to silently diverge from the party state.
+          if (manager.run?.creatureParty?.active && manager.combat.allies) {
+            manager.combat.allies = manager.run.creatureParty.active;
+          }
+        }
       }
       if (needsSave) {
         console.log(`Migrated stale creature IDs for user ${userId}`);
