@@ -42,6 +42,12 @@ const CREATURES = {
   neko:    'A small playful cat with bright mischievous eyes and a flickering flame-tipped tail,',
   inu:     'A small sturdy dog with loyal determined eyes and dusty brown fur with earthy markings,',
   hineko:  'A small fiery cat with blazing ember eyes and flames flickering along its fur and tail,',
+  tsukue:  'A small wooden school desk creature with drawer eyes and pencils sticking up like antennae, short stubby wooden legs,',
+  isu:     'A small wooden school chair creature with seat-cushion face and four sturdy legs, slightly tilted playfully,',
+  fukurou: 'A small round owl creature with enormous wise eyes and soft feathered body, tiny spectacles perched on beak,',
+  chou:    'A small butterfly creature with colorful patterned wings and curious antenna eyes, delicate and graceful,',
+  hachi:   'A small round bee creature with fuzzy yellow and black stripes, tiny translucent wings, and determined eyes,',
+  ari:     'A small ant creature with a shiny dark body, large determined eyes, and strong mandibles, carrying a tiny leaf,',
 };
 
 // ---------------------------------------------------------------------------
