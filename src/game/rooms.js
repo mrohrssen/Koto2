@@ -181,7 +181,7 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
  * @param {boolean} [_encountersOnly] - Ignored
  * @param {*} [_forceRoomType] - Ignored
  */
-export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encountersOnly, _forceRoomType) {
+export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encountersOnly, _forceRoomType, tutorialMode = false) {
   const TOTAL_ROOMS = 30;
   const NPC_BATTLE_INDICES = new Set([5, 11, 17, 23]);
   const BOSS_INDEX = 29;
@@ -215,6 +215,12 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
     if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
 
     rooms.push(room);
+  }
+
+  // Tutorial override: force first 2 rooms for guaranteed befriend + item shop
+  if (tutorialMode) {
+    if (rooms[0]) rooms[0].type = ROOM_TYPES.encounter;
+    if (rooms[1]) rooms[1].type = ROOM_TYPES.friendlyNpc;
   }
 
   // Attach boss creature if area has one

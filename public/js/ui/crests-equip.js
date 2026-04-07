@@ -40,6 +40,17 @@ export async function show() {
   render(panel, state);
   document.getElementById('action-area').appendChild(panel);
   wireEvents(panel, state);
+
+  // Tutorial step 5: Cid guides crest equip
+  if ((state.tutorialStep ?? 7) === 5 && callbacks.showNarration) {
+    await callbacks.showNarration("Now let's equip that crest to power up!", { speaker: 'Cid' });
+    // Highlight fire slot
+    panel.querySelectorAll('.crest-slot').forEach(slot => {
+      if (slot.dataset?.element === 'fire') {
+        slot.classList.add('tutorial-highlight');
+      }
+    });
+  }
 }
 
 function render(panel, state) {
@@ -195,6 +206,16 @@ function wireInventoryClicks(panel, state) {
         });
         const data = await res.json();
         if (!data.error) {
+          // Tutorial: advance step 5→6
+          if (callbacks.getTutorialStep?.() === 5) {
+            try {
+              await fetch(apiUrl('/api/game/tutorial-advance'), {
+                method: 'POST',
+                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ expectedStep: 5 })
+              });
+            } catch (e) { console.warn('[Tutorial] advance failed:', e); }
+          }
           Object.assign(state, data);
           render(panel, state);
           wireEvents(panel, state);

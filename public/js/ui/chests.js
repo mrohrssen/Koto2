@@ -49,6 +49,22 @@ export async function show() {
 
   document.getElementById('chests-close-btn')?.addEventListener('click', () => panel.remove());
 
+  // Tutorial step 4: Cid explains chests
+  if ((state.tutorialStep ?? 7) === 4 && callbacks.showNarration) {
+    await callbacks.showNarration('Every run you can use your resources to get stronger.', { speaker: 'Cid' });
+    await callbacks.showNarration("I'll give you 3 Fire Elements.", { speaker: 'Cid' });
+    await callbacks.showNarration("Let's open that fire chest!", { speaker: 'Cid' });
+    // Highlight fire chest, dim others
+    panel.querySelectorAll('.chest-card').forEach(card => {
+      const btn = card.querySelector('.chest-open-btn');
+      if (btn?.dataset.element === 'fire') {
+        card.classList.add('tutorial-highlight');
+      } else {
+        card.classList.add('tutorial-dimmed');
+      }
+    });
+  }
+
   panel.querySelectorAll('.chest-open-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const element = btn.dataset.element;
@@ -60,6 +76,17 @@ export async function show() {
         });
         const data = await res.json();
         if (data.error) return;
+
+        // Tutorial: advance step 4→5
+        if (callbacks.getTutorialStep?.() === 4) {
+          try {
+            await fetch(apiUrl('/api/game/tutorial-advance'), {
+              method: 'POST',
+              headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+              body: JSON.stringify({ expectedStep: 4 })
+            });
+          } catch (e) { console.warn('[Tutorial] advance failed:', e); }
+        }
 
         if (onChestOpened) {
           await onChestOpened(element, data.crest);

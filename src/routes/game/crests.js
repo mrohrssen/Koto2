@@ -15,7 +15,9 @@ export default function createCrestRoutes() {
 
   router.get('/crests', (req, res) => {
     const meta = req.gameManager.getMeta();
-    res.json(getCrestState(meta));
+    const state = getCrestState(meta);
+    state.tutorialStep = meta.tutorialStep ?? 7;
+    res.json(state);
   });
 
   router.post('/crests/open', (req, res) => {

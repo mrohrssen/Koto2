@@ -18,6 +18,7 @@ import createEconomyRoutes from './economy.js';
 import createMiscRoutes from './misc.js';
 import { createKnownWordsRoutes } from './known-words.js';
 import createCrestRoutes from './crests.js';
+import createTutorialRoutes from './tutorial.js';
 import createKanaRoutes from './kana.js';
 import { createPvpRoutes } from './pvp.js';
 
@@ -104,6 +105,9 @@ export default function createGameRoutes(deps) {
 
   // Mount crest routes
   router.use(createCrestRoutes());
+
+  // Mount tutorial routes
+  router.use(createTutorialRoutes());
 
   // Mount misc routes
   router.use(createMiscRoutes({

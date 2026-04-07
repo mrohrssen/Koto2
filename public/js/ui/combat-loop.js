@@ -2794,6 +2794,13 @@ async function renderBefriendQuiz(quizData, result) {
   const reading = quizData.creatureBaseReading || quizData.creatureName || '';
   const creatureSpeaker = { name: reading, reading: toRomaji(reading), meaning: '' };
 
+  // Tutorial step 1: Cid encourages befriending
+  const tutorialStep = getGameState()?.meta?.tutorialStep;
+  if (tutorialStep === 1) {
+    await narration.showNarration('Wow! This creature wants to talk!', { speaker: 'Cid' });
+    await narration.showNarration("Let's try to befriend them.", { speaker: 'Cid' });
+  }
+
   // Show "まって!!" narration
   await narration.showNarration('まって！！', { speaker: creatureSpeaker });
 
@@ -2826,22 +2833,31 @@ async function renderBefriendQuiz(quizData, result) {
   }
 
   // Talk path — show "なまえは？" in narration, then name options as plain buttons
-  await narration.showNarration('なまえは？', { speaker: creatureSpeaker });
+  // Wrapped in a loop to handle tutorial retry on wrong answers
+  let quizDone = false;
+  while (!quizDone) {
+    await narration.showNarration('なまえは？', { speaker: creatureSpeaker });
 
-  const selectedIdx = await renderButtonsAsync(
-    quizData.options.map(opt => ({ label: opt.name }))
-  );
+    const selectedIdx = await renderButtonsAsync(
+      quizData.options.map(opt => ({ label: opt.name }))
+    );
 
-  const selectedId = quizData.options[selectedIdx]?.id ?? null;
+    const selectedId = quizData.options[selectedIdx]?.id ?? null;
 
-  if (!selectedId) return;
+    if (!selectedId) return;
 
-  // Submit answer
-  const answerResult = await fetch(`${API_BASE}/api/game/befriend-quiz-answer`, {
-    method: 'POST',
-    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'talk', answerId: selectedId })
-  }).then(r => r.json());
+    // Submit answer
+    const answerResult = await fetch(`${API_BASE}/api/game/befriend-quiz-answer`, {
+      method: 'POST',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'talk', answerId: selectedId })
+    }).then(r => r.json());
+
+    if (answerResult.tutorialRetry) {
+      await narration.showNarration("No, I don't think that's it... try again.", { speaker: 'Cid' });
+      continue;
+    }
+    quizDone = true;
 
   if (answerResult.correct) {
     // Befriended!
@@ -2941,6 +2957,7 @@ async function renderBefriendQuiz(quizData, result) {
   // Combat resumes — start next move selection
   await delay(600);
   startMoveSelection();
+  } // end while (!quizDone)
 }
 
 /**
