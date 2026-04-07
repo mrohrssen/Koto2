@@ -623,6 +623,38 @@ export default function createRunRoutes({
       // Generate offers if not already generated (idempotent)
       if (!room.friendlyNpc.offered) {
         room.friendlyNpc.offered = rollFriendlyNpcOffers(room.friendlyNpc.offerCategory, allItems);
+
+        // Tokenize shop phrases for client rendering (batch all items in one call)
+        const PUNCT_POS = new Set(['記号', '補助記号', '空白']);
+        const itemsWithWords = room.friendlyNpc.offered.filter(item => item.word);
+        const phrases = itemsWithWords.map(item => `${item.word}、ください`);
+
+        if (phrases.length > 0) {
+          try {
+            const { execFileSync } = await import('child_process');
+            const { join } = await import('path');
+            const helperPath = join(process.cwd(), 'scripts', 'sudachi-tokenize.py');
+            const raw = execFileSync('python3', [helperPath], {
+              input: JSON.stringify(phrases),
+              encoding: 'utf-8',
+              maxBuffer: 10 * 1024 * 1024,
+            });
+            const allTokens = JSON.parse(raw);
+
+            itemsWithWords.forEach((item, idx) => {
+              const tokens = allTokens[idx];
+              item.shopTokens = tokens;
+              item.shopOverrides = { [item.word]: item.nameEn || '' };
+              item.shopContentWords = tokens
+                .filter(t => !PUNCT_POS.has(t.pos) && !/^[\p{P}\p{S}\s]+$/u.test(t.surface))
+                .map(t => t.baseForm);
+            });
+          } catch (e) {
+            console.warn('[friendly-npc-offers] Tokenization failed:', e.message);
+            // Items still work without tokens — client falls back to plain text
+          }
+        }
+
         req.saveGame();
         // Expose item words to SRS
         const itemWords = room.friendlyNpc.offered
@@ -676,7 +708,9 @@ export default function createRunRoutes({
       room.friendlyNpc.chosenId = itemId;
       room.friendlyNpc.completed = true;
       room.interacted = true;
-      req.gameManager.exposeWords([{ word: 'ください', meaning: 'please (when requesting)' }]);
+      if (item.shopContentWords?.length) {
+        req.gameManager.exposeWords(item.shopContentWords);
+      }
       req.saveGame();
       res.json({ chosen: item, state: req.getEnrichedGameState() });
     } catch (err) {
