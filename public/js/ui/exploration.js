@@ -62,6 +62,13 @@ let discoveryState = {
   dailyLimit: 10
 };
 
+/** Show multi-page Cid tutorial narration. Returns when all pages dismissed. */
+async function showTutorialNarration(pages) {
+  for (const page of pages) {
+    await sceneModule.showNarration(page, { speaker: 'Cid' });
+  }
+}
+
 // API functions
 let apiGetAreaOptions = null;
 let apiSelectArea = null;
@@ -106,6 +113,9 @@ let apiSkillMasterChoose = null;
 let apiGetFriendlyNpcOffers = null;
 let apiChooseFriendlyNpcItem = null;
 
+// Tutorial API
+let apiTutorialAdvance = null;
+
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
   updateGameState = callbacks.updateGameState;
@@ -142,6 +152,7 @@ export function init(callbacks) {
   apiSkillMasterChoose = callbacks.apiSkillMasterChoose;
   apiGetFriendlyNpcOffers = callbacks.apiGetFriendlyNpcOffers;
   apiChooseFriendlyNpcItem = callbacks.apiChooseFriendlyNpcItem;
+  apiTutorialAdvance = callbacks.apiTutorialAdvance;
 }
 
 // ============ INVENTORY OVERLAY ============
@@ -351,7 +362,12 @@ export async function renderHub() {
         sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
       }
     }},
-    { label: '🎁 Chests', onClick: () => chestsUI.show() },
+    { label: '🎁 Chests', onClick: async () => {
+      if (gameState.meta?.tutorialStep === 3) {
+        await apiTutorialAdvance?.(3);
+      }
+      chestsUI.show();
+    }},
     { label: '🔮 Crests', onClick: () => crestsEquipUI.show() },
     { label: '⚔️ Multiplayer Battle', onClick: () => {
       const gs = getGameState();
@@ -360,6 +376,44 @@ export async function renderHub() {
     }, disabled: !hasPvpTeams },
     { label: '⚡ 潜入', onClick: () => startNewRun(), primary: true },
   ]);
+
+  // Tutorial step 3: Cid guides to chests after death
+  const tutorialStep = gameState.meta?.tutorialStep;
+  if (tutorialStep === 3) {
+    await showTutorialNarration([
+      'That was tough huh?',
+      "Don't worry, no one gets past the Starting Meadow on their first try.",
+      'We need to get stronger.',
+      'Here, let me show you how. Click Chests!'
+    ]);
+    // Highlight Chests button, dim others
+    const buttons = document.querySelectorAll('.action-btn');
+    buttons.forEach(btn => {
+      if (btn.textContent.includes('Chests')) {
+        btn.classList.add('tutorial-highlight');
+      } else {
+        btn.classList.add('tutorial-dimmed');
+      }
+    });
+  }
+
+  // Tutorial step 6: guide to formation and re-enter
+  if (tutorialStep === 6) {
+    const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
+    await showTutorialNarration([
+      `Now you have ${creatureCount} creatures!`,
+      'Each creature costs points.',
+      "Select your best party and let's go back to the Starting Meadow!"
+    ]);
+    const buttons = document.querySelectorAll('.action-btn');
+    buttons.forEach(btn => {
+      if (btn.textContent.includes('潜入')) {
+        btn.classList.add('tutorial-highlight');
+      } else {
+        btn.classList.add('tutorial-dimmed');
+      }
+    });
+  }
 }
 
 /** Area selection — show area cards, proceed button */
@@ -985,6 +1039,15 @@ export async function renderSkillMaster() {
 
   const offers = skillMasterState.offered || room?.skillMaster?.offered || [];
 
+  // Tutorial step 0: Cid explains skills
+  const tutorialStep = getGameState()?.meta?.tutorialStep;
+  if (tutorialStep === 0) {
+    await showTutorialNarration([
+      'Each run you can get skills to make your party stronger.',
+      "Let's just pick the first one."
+    ]);
+  }
+
   renderChoices({
     cards: offers.slice(0, 3).map(s => ({
       title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
@@ -1096,6 +1159,14 @@ export async function renderFriendlyNpc() {
   }
 
   const offers = friendlyNpcState.offered || [];
+
+  // Tutorial step 2: Cid explains items
+  const tutorialStep = getGameState()?.meta?.tutorialStep;
+  if (tutorialStep === 2) {
+    await showTutorialNarration([
+      "Here you'll be offered items to power up. Choose wisely!"
+    ]);
+  }
 
   // Render item cards first so they're visible immediately
   renderChoices({

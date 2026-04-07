@@ -855,6 +855,17 @@ async function startNewRun() {
       updateGameState(result.state);
       updateUI();
 
+      // Tutorial: advance step 6→7 (tutorial complete)
+      if (gameState?.meta?.tutorialStep === 6) {
+        try {
+          await fetch(apiUrl('/api/game/tutorial-advance'), {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ expectedStep: 6 })
+          });
+        } catch (e) { console.warn('[Tutorial] advance failed:', e); }
+      }
+
       // Show CID dialogue if server returned a script
       if (result.cidScript?.lines?.length) {
         const knownWords = getKnownWords();
@@ -1763,6 +1774,15 @@ async function initGame() {
     apiSkillMasterChoose,
     apiGetFriendlyNpcOffers,
     apiChooseFriendlyNpcItem,
+    apiTutorialAdvance: async (expectedStep) => {
+      try {
+        await fetch(apiUrl('/api/game/tutorial-advance'), {
+          method: 'POST',
+          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expectedStep })
+        });
+      } catch (e) { console.warn('[Tutorial] advance failed:', e); }
+    },
   });
 
   pvpLobbyUI.init({
@@ -1793,12 +1813,16 @@ async function initGame() {
     apiUrl,
     onChestOpened: async (element, crest) => {
       await playChestAnimation(element, crest);
-    }
+    },
+    showNarration: (text, opts) => narrationBox.show(text, opts),
+    getTutorialStep: () => gameState?.meta?.tutorialStep ?? 7,
   });
 
   crestsEquipUI.init({
     getAuthHeaders,
-    apiUrl
+    apiUrl,
+    showNarration: (text, opts) => narrationBox.show(text, opts),
+    getTutorialStep: () => gameState?.meta?.tutorialStep ?? 7,
   });
 
   economyUI.init({
