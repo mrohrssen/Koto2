@@ -3,8 +3,28 @@ import fs from 'fs';
 import path from 'path';
 import { getDeckCards, createCard } from '../internal-srs.js';
 import { State } from 'ts-fsrs';
+import { loadWordDictionary } from '../word-dictionary.js';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
+
+let _wordDict = null;
+function getWordDict() {
+  if (!_wordDict) _wordDict = loadWordDictionary(DATA_DIR);
+  return _wordDict;
+}
+
+/**
+ * Look up the primary English meaning for a Japanese word.
+ * @param {string} baseForm
+ * @returns {string} English meaning or empty string
+ */
+export function lookupMeaning(baseForm) {
+  const dict = getWordDict();
+  const entry = dict.get(baseForm);
+  if (!entry?.definitions?.length) return '';
+  const primary = entry.definitions.find(d => d.primary);
+  return primary?.en || entry.definitions[0]?.en || '';
+}
 
 const EXPOSURE_THRESHOLD = 5;
 
@@ -38,8 +58,9 @@ export function exposeWords(userId, words) {
       }
       const existingCards = getDeckCards(userId, 'vocab');
       if (!existingCards.find(c => c.id === word)) {
+        const dictMeaning = lookupMeaning(word);
         createCard(userId, 'vocab', word, {
-          word, meaning, reading: word
+          word, meaning: dictMeaning || meaning, reading: word
         });
       }
     }

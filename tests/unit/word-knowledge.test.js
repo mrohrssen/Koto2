@@ -10,7 +10,8 @@ import {
   getKnownWords,
   getSeenWords,
   seedKnownWords,
-  exposeWords
+  exposeWords,
+  lookupMeaning
 } from '../../src/game/bootstrap/word-knowledge.js';
 
 describe('word-knowledge', () => {
@@ -70,5 +71,11 @@ describe('word-knowledge', () => {
 
   it('exposeWords is exported and callable', () => {
     assert.equal(typeof exposeWords, 'function');
+  });
+
+  it('lookupMeaning returns primary definition from dictionary', () => {
+    const meaning = lookupMeaning('ください');
+    assert.ok(meaning.length > 0, 'should find a meaning for ください');
+    assert.ok(meaning.includes('please'), `meaning should contain "please", got: ${meaning}`);
   });
 });
