@@ -15,7 +15,7 @@ The friendly NPC shop dialogue where the player says `{item.word}、ください
 
 ## Design
 
-Three changes wire the existing pieces together.
+Four changes wire the existing pieces together.
 
 ### 1. Renderer: Add romaji to `renderJpSentence`
 
@@ -42,16 +42,29 @@ In the `POST /friendly-npc-offers` handler (`src/routes/game/run.js:616`), after
 3. Attach to each offered item:
    - `shopTokens`: the token array from the tokenizer
    - `shopOverrides`: `{ [item.word]: item.nameEn }` — so the item's game name (e.g., "Apple") takes precedence over the JMdict dictionary definition (e.g., "apple (fruit)") for that word only
-4. Also compute `shopContentWords`: token `baseForm` values paired with English meanings as `{word, meaning}` objects, punctuation POS filtered out (reuse existing `PUNCT_POS` set: 記号, 補助記号, 空白). For the item word, meaning comes from `item.nameEn`. For other words (e.g., ください), meaning comes from the server-side word dictionary.
+4. Also compute `shopContentWords`: an array of `baseForm` strings from the tokens, punctuation POS filtered out (reuse existing `PUNCT_POS` set: 記号, 補助記号, 空白).
 
-`ください` and other non-item words get their English from the word dictionary on the client for rendering. The `{word, meaning}` format in `shopContentWords` is for exposure logging only, so SRS cards have proper definitions when created.
+`ください` and other non-item words get their English from the word dictionary on the client for rendering.
 
-### 3. Exposure logging: Replace hardcoded exposure with tokenized content words
+### 3. `exposeWords` owns meaning lookup
+
+Currently `exposeWords` in `src/game/bootstrap/word-knowledge.js` accepts `{word, meaning}` objects and bakes the caller-provided meaning into SRS cards at the 5-exposure threshold. This forces every caller to know the English meaning — duplicating what the word dictionary already has.
+
+Change `exposeWords` to:
+1. Accept plain strings (array of `baseForm` values). Continue accepting `{word, meaning}` objects for backwards compatibility but ignore the meaning field.
+2. When creating an SRS card at threshold (line 41-43), look up the meaning from the server-side word dictionary (`loadWordDictionary`) instead of using the caller's value.
+3. Lazy-load the word dictionary on first use (same pattern as `src/routes/game/known-words.js:10`).
+
+This means callers just pass `exposeWords(userId, ['りんご', 'ください'])` — no meaning assembly required. The dictionary is the single source of truth for English definitions.
+
+**Impact on existing callers:** All 6 call sites currently pass `{word, meaning}` objects. They continue to work (line 27 already extracts the word string from objects). Simplifying them to pass plain strings is cleanup for a follow-up, not required for this change.
+
+### 4. Exposure logging: Replace hardcoded exposure with tokenized content words
 
 In the `POST /friendly-npc-choose` handler (`src/routes/game/run.js:642`), replace the hardcoded `exposeWords([{ word: 'ください', meaning: 'please (when requesting)' }])` at line 679:
 
 1. Read `shopContentWords` from the chosen item (computed at offer time in step 2)
-2. Call `req.gameManager.exposeWords(shopContentWords)`
+2. Call `req.gameManager.exposeWords(shopContentWords)` — just an array of baseForm strings
 
 This replaces the existing hardcoded ください-only exposure. The item word exposure at offer time (lines 628-633) remains — that fires when the player sees the item cards. The phrase exposure fires when the player speaks the phrase.
 
@@ -91,7 +104,7 @@ Both words get romaji above. Only ください (unknown) gets English below in a
 - **No client-side token construction.** Tokens always come from the real tokenizer. No fake POS tags or hardcoded structures.
 - **Single pipe for rendering and exposure.** Tokenizer output serves both: client renders the tokens, server extracts content words for exposure logging.
 - **Overrides are scoped and intentional.** Only the item word gets an override (game name vs dictionary definition). Grammar words like ください use the word dictionary.
-- **Meanings preserved in exposure.** `shopContentWords` uses `{word, meaning}` objects (not bare strings) so SRS cards created at the 5-exposure threshold have proper English definitions.
+- **Meanings owned by the dictionary.** `exposeWords` looks up meanings from the word dictionary when creating SRS cards — callers just pass baseForm strings. Single source of truth.
 
 ## Files to modify
 
@@ -101,6 +114,7 @@ Both words get romaji above. Only ください (unknown) gets English below in a
 | `public/js/ui/exploration.js` | Import `renderJpSentence`/`getKnownWords`, replace plain-text narration with tokenized render |
 | `src/routes/game/run.js` | In `/friendly-npc-offers`: tokenize phrases, attach tokens + overrides + content words to each item |
 | `src/routes/game/run.js` | In `/friendly-npc-choose`: replace hardcoded ください exposure with `shopContentWords` from the chosen item |
+| `src/game/bootstrap/word-knowledge.js` | `exposeWords` looks up meaning from word dictionary when creating SRS cards, instead of requiring callers to provide it |
 
 ## Out of scope
 
