@@ -589,9 +589,9 @@ export class ExplorationService {
     const isInitialPick = pick && !pick.chosenId;
 
     if (isInitialPick) {
-      // Tutorial step 0: offer only retaliationStrike
+      // Tutorial step 0: offer 3 hardcoded skills (counter first)
       if (shouldOverrideSkillOffers(this.gm.meta)) {
-        pick.offered = ['retaliationStrike'];
+        pick.offered = ['retaliationStrike', 'arcStrike', 'sharedVigor'];
         const offered = pick.offered.map(id => getPartySkillDisplay(id)).filter(Boolean);
         this.gm.emitState();
         return { offered };

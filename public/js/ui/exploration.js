@@ -997,6 +997,15 @@ export async function renderSkillMaster() {
     return;
   }
 
+  // Tutorial step 0: start Cid narration early so it runs while offers load
+  const tutorialStep = getGameState()?.meta?.tutorialStep;
+  const cidNarrationPromise = tutorialStep === 0
+    ? showTutorialNarration([
+        'Each run you can get skills to make your party stronger.',
+        "Let's just pick the first one."
+      ], { showSprite: true })
+    : null;
+
   // Render loading state immediately to avoid flashing old buttons
   actions.setContent(`
     <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
@@ -1066,14 +1075,8 @@ export async function renderSkillMaster() {
 
   const offers = skillMasterState.offered || room?.skillMaster?.offered || [];
 
-  // Tutorial step 0: Cid explains skills
-  const tutorialStep = getGameState()?.meta?.tutorialStep;
-  if (tutorialStep === 0) {
-    await showTutorialNarration([
-      'Each run you can get skills to make your party stronger.',
-      "Let's just pick the first one."
-    ], { showSprite: true });
-  }
+  // Wait for Cid to finish talking before showing choices
+  if (cidNarrationPromise) await cidNarrationPromise;
 
   renderChoices({
     cards: offers.slice(0, 3).map(s => ({
