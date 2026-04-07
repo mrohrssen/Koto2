@@ -2383,8 +2383,11 @@ async function executeCreatureMovesTurn(choices) {
         await showEnemyAttacksAnimated(result, allyHpMap, false);
       }
 
-      // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
-      await showCounterAttacks(result);
+      // Counter attack animations — only if not already shown in initiative merge
+      const countersShownInMerge = merged.some(e => e.side === 'player' && e.atk.type === 'counter');
+      if (!countersShownInMerge) {
+        await showCounterAttacks(result);
+      }
 
       // KO swap animations
       await showKoSwapAnimations(result);
@@ -2496,8 +2499,11 @@ async function executeCreaturePlayerAttack() {
         await showEnemyAttacksAnimated(result, allyHpMap, false);
       }
 
-      // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
-      await showCounterAttacks(result);
+      // Counter attack animations — only if not already shown in initiative merge
+      const countersShownInMergeLegacy = mergedLegacy.some(e => e.side === 'player' && e.atk.type === 'counter');
+      if (!countersShownInMergeLegacy) {
+        await showCounterAttacks(result);
+      }
 
       // KO swap animations
       await showKoSwapAnimations(result);
