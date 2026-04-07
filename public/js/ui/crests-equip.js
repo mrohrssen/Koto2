@@ -1,25 +1,35 @@
 /**
- * @fileoverview Crests equip screen — 5 element slots + inventory grid.
+ * @fileoverview Crests equip screen — pentagon loadout scene + inventory grid.
+ * Renders into .scene-area (equipped pentagon) and #action-area (inventory).
  */
 
 let callbacks = {};
 
 const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal'];
 const ELEMENT_LABELS = {
-  fire: { icon: '🔥', name: 'Fire' },
-  water: { icon: '💧', name: 'Water' },
-  wood: { icon: '🌿', name: 'Wood' },
-  earth: { icon: '🪨', name: 'Earth' },
-  metal: { icon: '⚙️', name: 'Metal' }
+  fire: { icon: '🔥', name: 'Fire', rawColor: '#ef5350' },
+  water: { icon: '💧', name: 'Water', rawColor: '#42a5f5' },
+  wood: { icon: '🌿', name: 'Wood', rawColor: '#66bb6a' },
+  earth: { icon: '🪨', name: 'Earth', rawColor: '#ffb74d' },
+  metal: { icon: '⚙️', name: 'Metal', rawColor: '#b39ddb' }
 };
 const STAT_LABELS = {
   attack: 'ATK', mp: 'MP', hp: 'HP', defense: 'DEF', xp: 'XP'
 };
 const RARITY_ORDER = { legendary: 0, epic: 1, rare: 2, uncommon: 3, common: 4 };
+const RARITY_COLORS = {
+  common: 'var(--rarity-common, #b0bec5)',
+  uncommon: 'var(--rarity-uncommon, #66bb6a)',
+  rare: 'var(--rarity-rare, #42a5f5)',
+  epic: 'var(--rarity-epic, #ab47bc)',
+  legendary: 'var(--rarity-legendary, #ffd54f)'
+};
 
 export function init(cbs) {
   callbacks = cbs;
 }
+
+let currentFilter = 'all';
 
 export async function show() {
   const { getAuthHeaders, apiUrl } = callbacks;
@@ -33,75 +43,88 @@ export async function show() {
     return;
   }
 
-  const panel = document.createElement('div');
-  panel.id = 'crests-equip-panel';
-  panel.className = 'crests-panel';
-
-  render(panel, state);
-  document.getElementById('action-area').appendChild(panel);
-  wireEvents(panel, state);
+  currentFilter = 'all';
+  renderScene(state);
+  renderActions(state);
 
   // Tutorial step 5: Cid guides crest equip
   if ((state.tutorialStep ?? 7) === 5 && callbacks.showNarration) {
     await callbacks.showNarration("Now let's equip that crest to power up!", { speaker: 'Cid' });
-    // Highlight fire slot
-    panel.querySelectorAll('.crest-slot').forEach(slot => {
-      if (slot.dataset?.element === 'fire') {
-        slot.classList.add('tutorial-highlight');
-      }
-    });
   }
 }
 
-function render(panel, state) {
-  const { crests, equippedCrests } = state;
+function renderScene(state) {
+  const sceneArea = document.getElementById('scene-area');
+  sceneArea.querySelector('.crest-scene')?.remove();
+  sceneArea.querySelector('.chest-scene')?.remove();
 
-  panel.innerHTML = `
-    <div class="crests-header">
-      <button class="crests-close" id="crests-close-btn">&times;</button>
-      <h2>Crests</h2>
-    </div>
-    <div class="crests-slots">
+  const { crests, equippedCrests } = state;
+  const scene = document.createElement('div');
+  scene.className = 'crest-scene';
+
+  const particles = Array.from({ length: 8 }, (_, i) => {
+    const left = 10 + Math.random() * 80;
+    const top = 10 + Math.random() * 80;
+    const delay = Math.random() * 5;
+    return `<div class="chest-particle" style="left:${left}%;top:${top}%;background:rgba(255,255,255,0.4);animation-delay:${delay}s"></div>`;
+  }).join('');
+
+  scene.innerHTML = `
+    <div class="crest-scene-particles">${particles}</div>
+    <div class="crest-pentagon">
       ${ELEMENTS.map(el => {
-        const crestId = equippedCrests[el];
+        const info = ELEMENT_LABELS[el];
+        const crestId = equippedCrests?.[el];
         const crest = crestId ? crests.find(c => c.id === crestId) : null;
-        return renderSlot(el, crest);
+
+        if (crest) {
+          const pct = Math.round(crest.value * 100);
+          return `
+            <div class="crest-pent-slot equipped" data-element="${el}" style="color: ${info.rawColor}">
+              <div class="rarity-dot" style="background: ${RARITY_COLORS[crest.rarity] || '#b0bec5'}"></div>
+              <div class="slot-icon">${info.icon}</div>
+              <div class="slot-stat">${STAT_LABELS[crest.stat]} +${pct}%</div>
+            </div>`;
+        }
+        return `
+          <div class="crest-pent-slot empty" data-element="${el}">
+            <div class="slot-plus">+</div>
+          </div>`;
       }).join('')}
     </div>
-    <div class="crests-filter-tabs">
-      <button class="crests-tab active" data-filter="all">All</button>
-      ${ELEMENTS.map(el => `<button class="crests-tab" data-filter="${el}">${ELEMENT_LABELS[el].icon}</button>`).join('')}
-    </div>
-    <div class="crests-inventory">
-      ${renderInventory(crests, equippedCrests, 'all')}
-    </div>
   `;
+  sceneArea.appendChild(scene);
 }
 
-function renderSlot(element, crest) {
-  const el = ELEMENT_LABELS[element];
-  if (crest) {
-    const pct = Math.round(crest.value * 100);
-    return `
-      <div class="crest-slot filled rarity-${crest.rarity}" data-element="${element}" data-crest-id="${crest.id}">
-        <div class="crest-slot-icon">${el.icon}</div>
-        <div class="crest-slot-value">${STAT_LABELS[crest.stat]} +${pct}%</div>
-      </div>
-    `;
-  }
-  return `
-    <div class="crest-slot empty" data-element="${element}">
-      <div class="crest-slot-icon">${el.icon}</div>
-      <div class="crest-slot-plus">+</div>
+function renderActions(state) {
+  const actionArea = document.getElementById('action-area');
+  actionArea.innerHTML = '';
+
+  actionArea.innerHTML = `
+    <div class="crests-title">
+      <h2>Crests</h2>
+      <div class="subtitle">Inventory</div>
     </div>
+    <div class="crests-filter-tabs">
+      <button class="crests-tab ${currentFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
+      ${ELEMENTS.map(el =>
+        `<button class="crests-tab ${currentFilter === el ? 'active' : ''}" data-filter="${el}">${ELEMENT_LABELS[el].icon}</button>`
+      ).join('')}
+    </div>
+    <div class="crests-inventory">
+      ${renderInventory(state.crests, state.equippedCrests, currentFilter)}
+    </div>
+    <div class="crest-back-link">← Back</div>
   `;
+
+  wireEvents(actionArea, state);
 }
 
 function renderInventory(crests, equippedCrests, filter) {
-  const equippedIds = new Set(Object.values(equippedCrests).filter(Boolean));
-  let filtered = crests;
+  const equippedIds = new Set(Object.values(equippedCrests || {}).filter(Boolean));
+  let filtered = crests || [];
   if (filter !== 'all') {
-    filtered = crests.filter(c => c.element === filter);
+    filtered = filtered.filter(c => c.element === filter);
   }
 
   filtered.sort((a, b) => {
@@ -120,7 +143,7 @@ function renderInventory(crests, equippedCrests, filter) {
     const isWeaker = !equipped && isWeakerThanEquipped(c, crests, equippedCrests);
     return `
       <div class="crest-tile rarity-${c.rarity} ${equipped ? 'equipped' : ''} ${isWeaker ? 'weaker' : ''}" data-crest-id="${c.id}">
-        <div class="crest-tile-icon">${ELEMENT_LABELS[c.element].icon}</div>
+        <div class="crest-tile-icon">${ELEMENT_LABELS[c.element]?.icon || '?'}</div>
         <div class="crest-tile-value">+${pct}%</div>
       </div>
     `;
@@ -128,72 +151,31 @@ function renderInventory(crests, equippedCrests, filter) {
 }
 
 function isWeakerThanEquipped(crest, allCrests, equippedCrests) {
-  const equippedId = equippedCrests[crest.element];
+  const equippedId = equippedCrests?.[crest.element];
   if (!equippedId) return false;
   const equipped = allCrests.find(c => c.id === equippedId);
-  if (!equipped) return false;
-  return crest.value < equipped.value;
+  return equipped ? crest.value < equipped.value : false;
 }
 
-function wireEvents(panel, state) {
+function wireEvents(actionArea, state) {
   const { getAuthHeaders, apiUrl } = callbacks;
 
-  panel.querySelector('#crests-close-btn')?.addEventListener('click', () => panel.remove());
-
-  panel.querySelectorAll('.crests-tab').forEach(tab => {
+  // Filter tabs
+  actionArea.querySelectorAll('.crests-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      panel.querySelectorAll('.crests-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const inv = panel.querySelector('.crests-inventory');
-      if (inv) inv.innerHTML = renderInventory(state.crests, state.equippedCrests, tab.dataset.filter);
-      wireInventoryClicks(panel, state);
+      currentFilter = tab.dataset.filter;
+      renderActions(state);
     });
   });
 
-  panel.querySelectorAll('.crest-slot.filled').forEach(slot => {
-    slot.addEventListener('click', async () => {
-      const element = slot.dataset.element;
-      try {
-        const res = await fetch(apiUrl('/api/game/crests/unequip'), {
-          method: 'POST',
-          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ element })
-        });
-        const data = await res.json();
-        if (!data.error) {
-          Object.assign(state, data);
-          render(panel, state);
-          wireEvents(panel, state);
-        }
-      } catch (e) { console.error('[Crests] Unequip failed:', e); }
-    });
-  });
-
-  panel.querySelectorAll('.crest-slot.empty').forEach(slot => {
-    slot.addEventListener('click', () => {
-      const element = slot.dataset.element;
-      panel.querySelectorAll('.crests-tab').forEach(t => {
-        t.classList.toggle('active', t.dataset.filter === element);
-      });
-      const inv = panel.querySelector('.crests-inventory');
-      if (inv) inv.innerHTML = renderInventory(state.crests, state.equippedCrests, element);
-      wireInventoryClicks(panel, state);
-    });
-  });
-
-  wireInventoryClicks(panel, state);
-}
-
-function wireInventoryClicks(panel, state) {
-  const { getAuthHeaders, apiUrl } = callbacks;
-
-  panel.querySelectorAll('.crest-tile:not(.equipped)').forEach(tile => {
+  // Inventory tile clicks
+  actionArea.querySelectorAll('.crest-tile:not(.equipped)').forEach(tile => {
     tile.addEventListener('click', async () => {
       const crestId = tile.dataset.crestId;
       const crest = state.crests.find(c => c.id === crestId);
       if (!crest) return;
 
-      const equippedId = state.equippedCrests[crest.element];
+      const equippedId = state.equippedCrests?.[crest.element];
       const equipped = equippedId ? state.crests.find(c => c.id === equippedId) : null;
       const confirmed = await showEquipPreview(crest, equipped);
       if (!confirmed) return;
@@ -206,7 +188,6 @@ function wireInventoryClicks(panel, state) {
         });
         const data = await res.json();
         if (!data.error) {
-          // Tutorial: advance step 5→6
           if (callbacks.getTutorialStep?.() === 5) {
             try {
               await fetch(apiUrl('/api/game/tutorial-advance'), {
@@ -217,12 +198,49 @@ function wireInventoryClicks(panel, state) {
             } catch (e) { console.warn('[Tutorial] advance failed:', e); }
           }
           Object.assign(state, data);
-          render(panel, state);
-          wireEvents(panel, state);
+          renderScene(state);
+          renderActions(state);
         }
       } catch (e) { console.error('[Crests] Equip failed:', e); }
     });
   });
+
+  // Scene slot clicks (unequip filled, filter empty)
+  document.querySelectorAll('.crest-pent-slot.equipped').forEach(slot => {
+    slot.addEventListener('click', async () => {
+      const element = slot.dataset.element;
+      try {
+        const res = await fetch(apiUrl('/api/game/crests/unequip'), {
+          method: 'POST',
+          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ element })
+        });
+        const data = await res.json();
+        if (!data.error) {
+          Object.assign(state, data);
+          renderScene(state);
+          renderActions(state);
+        }
+      } catch (e) { console.error('[Crests] Unequip failed:', e); }
+    });
+  });
+
+  document.querySelectorAll('.crest-pent-slot.empty').forEach(slot => {
+    slot.addEventListener('click', () => {
+      currentFilter = slot.dataset.element;
+      renderActions(state);
+    });
+  });
+
+  // Back
+  actionArea.querySelector('.crest-back-link')?.addEventListener('click', () => {
+    cleanup();
+    callbacks.onBack?.();
+  });
+}
+
+function cleanup() {
+  document.getElementById('scene-area')?.querySelector('.crest-scene')?.remove();
 }
 
 function showEquipPreview(crest, equipped) {
@@ -236,7 +254,7 @@ function showEquipPreview(crest, equipped) {
     overlay.className = 'crest-preview-overlay';
     overlay.innerHTML = `
       <div class="crest-preview-card">
-        <div class="crest-preview-title">${ELEMENT_LABELS[crest.element].icon} ${STAT_LABELS[crest.stat]} +${newPct}%</div>
+        <div class="crest-preview-title">${ELEMENT_LABELS[crest.element]?.icon || ''} ${STAT_LABELS[crest.stat]} +${newPct}%</div>
         ${equipped ? `<div class="crest-preview-compare">Current: +${curPct}% → ${diffStr}</div>` : ''}
         <div class="crest-preview-rarity rarity-${crest.rarity}">${crest.rarity.toUpperCase()}</div>
         <div class="crest-preview-actions">
