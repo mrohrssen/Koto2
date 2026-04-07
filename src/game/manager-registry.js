@@ -58,6 +58,9 @@ export function getManager(userId) {
           if (!data.meta.equippedCrests) {
             data.meta.equippedCrests = { fire: null, water: null, earth: null, wood: null, metal: null };
           }
+          if (!data.meta.itemsDiscovered) {
+            data.meta.itemsDiscovered = [];
+          }
           // Migrate: add tutorial fields for existing accounts
           if (data.meta.tutorialStep === undefined) {
             data.meta.tutorialStep = 7;
