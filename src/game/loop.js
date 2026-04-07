@@ -71,6 +71,7 @@ import { rollShopItems, applyItem } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
 import { getCrestMultipliers, applyCrestBonuses } from './services/crest-service.js';
+import { shouldProtectBefriend, advanceTutorial as advanceTutorialStep, getTutorialStep, giftTutorialFireDrops } from './services/tutorial-service.js';
 import { exposeWords as exposeWords_fn, getKnownWordsFromFsrs } from './bootstrap/word-knowledge.js';
 import { selectBark } from './dialogue-filter.js';
 import { getBarkPool } from './dialogue-loader.js';
@@ -146,6 +147,14 @@ export class GameManager {
     stats.lastPlayDate = new Date().toISOString();
     if (!stats.firstPlayDate) {
       stats.firstPlayDate = stats.lastPlayDate;
+    }
+  }
+
+  _onRunDefeat() {
+    // Tutorial: advance to step 3 (death → hub) and gift fire drops
+    if (getTutorialStep(this.meta) === 2) {
+      advanceTutorialStep(this.meta);
+      giftTutorialFireDrops(this.meta);
     }
   }
 
@@ -952,6 +961,7 @@ export class GameManager {
       if (allAlliesKOAfterNpc) {
         this.combat.active = false;
         this.run.active = false;
+        this._onRunDefeat();
         this.emitState();
         return {
           actionType: 'attack',
@@ -1065,6 +1075,7 @@ export class GameManager {
 
       this.combat.active = false;
       this.run.active = false;
+      this._onRunDefeat();
       this.emitState();
       return {
         actionType: 'attack',
@@ -1174,6 +1185,7 @@ export class GameManager {
 
       this.combat.active = false;
       this.run.active = false;
+      this._onRunDefeat();
       this.emitState();
       return {
         actionType: 'defend',
@@ -1337,6 +1349,7 @@ export class GameManager {
 
       this.combat.active = false;
       this.run.active = false;
+      this._onRunDefeat();
       this.emitState();
       return {
         actionType: 'befriend',
@@ -1460,6 +1473,7 @@ export class GameManager {
       if (allAlliesKO) {
         this.combat.active = false;
         this.run.active = false;
+        this._onRunDefeat();
       }
 
       this.combat.turnCount++;
@@ -1670,7 +1684,13 @@ export class GameManager {
       return { error: 'No active befriend quiz' };
     }
 
-    const result = processBefriendQuizAnswer(answerId, this.combat, this.run.creatureParty);
+    const tutorialProtect = shouldProtectBefriend(this.meta);
+    const result = processBefriendQuizAnswer(answerId, this.combat, this.run.creatureParty, { tutorialProtect });
+
+    // Tutorial step 1 → 2: advance after successful befriend
+    if (result.correct && shouldProtectBefriend(this.meta)) {
+      advanceTutorialStep(this.meta);
+    }
 
     if (result.correct && result.allEnemiesDefeated) {
       // Victory via befriend
@@ -1725,6 +1745,7 @@ export class GameManager {
       if (allAlliesKO) {
         this.combat.active = false;
         this.run.active = false;
+        this._onRunDefeat();
       }
 
       this.emitState();

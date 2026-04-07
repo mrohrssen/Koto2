@@ -1047,7 +1047,7 @@ export function generateBefriendQuiz(creature, encounterCreatures = []) {
  * @param {object} creatureParty - The player's creature party
  * @returns {{ correct: boolean, befriended?: boolean, counterAttack?: object }}
  */
-export function processBefriendQuizAnswer(answerId, combat, creatureParty) {
+export function processBefriendQuizAnswer(answerId, combat, creatureParty, options = {}) {
   const quiz = combat.befriendQuiz;
   if (!quiz) return { error: 'No active befriend quiz' };
 
@@ -1082,6 +1082,11 @@ export function processBefriendQuizAnswer(answerId, combat, creatureParty) {
     };
   }
 
+  // Tutorial protection: wrong answer = no damage, keep quiz alive
+  if (options.tutorialProtect) {
+    return { correct: false, tutorialRetry: true };
+  }
+
   // Wrong answer: creature fights back
   // Give the creature a free attack on a random alive ally
   const aliveAllies = (combat.allies || []).filter(a => a && a.hp > 0);
@@ -1112,7 +1117,7 @@ export function processBefriendQuizAnswer(answerId, combat, creatureParty) {
       moveNameEn: move.nameEn,
       moveElement: move.element,
       category: 'damage',
-      targetIndex: allies.indexOf(allyTarget),
+      targetIndex: (combat.allies || []).indexOf(allyTarget),
       targetId: allyTarget.id,
       targetName: allyTarget.nameEn,
       targetNameJp: allyTarget.name,

@@ -129,6 +129,45 @@ describe('tutorial-service', () => {
   });
 });
 
+import { processBefriendQuizAnswer } from '../../../src/game/services/creature-combat-service.js';
+
+describe('tutorial befriend protection', () => {
+  function makeQuizCombat() {
+    return {
+      befriendQuiz: {
+        creatureId: 'test-creature',
+        creatureName: 'TestCreature',
+        targetIndex: 0,
+        options: [
+          { id: 'correct', name: 'TestCreature', correct: true },
+          { id: 'wrong1', name: 'WrongA', correct: false },
+          { id: 'wrong2', name: 'WrongB', correct: false }
+        ]
+      },
+      enemies: [{ id: 'test-creature', hp: 1, maxHp: 10, mp: 5, maxMp: 5, element: 'fire', moves: [{ id: 'm1', name: 'Hit', nameEn: 'Hit', element: 'fire', power: 10 }], nameEn: 'TestCreature' }],
+      allies: [{ id: 'ally1', hp: 50, maxHp: 50, mp: 10, maxMp: 10, element: 'water', nameEn: 'Ally' }]
+    };
+  }
+
+  it('wrong answer with tutorialProtect keeps quiz alive and deals no damage', () => {
+    const combat = makeQuizCombat();
+    const party = { active: combat.allies, reserves: [] };
+    const result = processBefriendQuizAnswer('wrong1', combat, party, { tutorialProtect: true });
+    assert.equal(result.correct, false);
+    assert.equal(result.tutorialRetry, true);
+    assert.ok(combat.befriendQuiz !== null, 'quiz should remain active');
+    assert.equal(combat.allies[0].hp, 50);
+  });
+
+  it('correct answer still works with tutorialProtect', () => {
+    const combat = makeQuizCombat();
+    const party = { active: combat.allies, reserves: [], pendingCaptures: [] };
+    const result = processBefriendQuizAnswer('correct', combat, party, { tutorialProtect: true });
+    assert.equal(result.correct, true);
+    assert.equal(result.befriended, true);
+  });
+});
+
 import { generateAreaRooms } from '../../../src/game/rooms.js';
 
 describe('tutorial room generation', () => {
