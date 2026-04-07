@@ -700,7 +700,14 @@ async function loadGameState() {
     ].filter(Boolean).map(r => r.id);
     probeIdleSprites(allCreatureIds);
   } else {
-    updateGameState({ ...gameState, phase: 'no_save' });
+    // Preserve server meta for fresh accounts (e.g., prologueComplete flag).
+    updateGameState({
+      ...data,
+      player: null,
+      run: null,
+      combat: null,
+      phase: data.phase || 'no_save'
+    });
   }
 }
 
@@ -1936,6 +1943,12 @@ async function initGame() {
 
   await loadKnownWords();
   await loadGameState();
+
+  // Freshly registered users should enter prologue immediately without
+  // an extra manual "New Game" click.
+  if (!gameState.player && gameState.meta && gameState.meta.prologueComplete === false) {
+    await createCharacter();
+  }
 
   // Show prologue for returning players who haven't completed it
   if (gameState.player && !gameState.meta?.prologueComplete) {

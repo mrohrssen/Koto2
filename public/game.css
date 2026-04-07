@@ -103,6 +103,28 @@ html, body {
   touch-action: manipulation;
 }
 
+/* Game UX: prevent accidental text highlighting anywhere in the app shell. */
+body,
+.game-app,
+.game-app *,
+.takeover,
+.takeover *,
+.auth-screen,
+.auth-screen * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Keep form fields editable/selectable so login and report forms still work naturally. */
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
 /* ===== GAME APP - Single Column ===== */
 .game-app {
   display: flex;
