@@ -817,7 +817,11 @@ export class GameManager {
       // New player protection: guarantee befriend when player only has 1 creature
       const totalOwnedCreatures = this.run.creatureParty.active.length + (this.run.creatureParty.reserves?.length || 0);
       const guaranteeBefriend = totalOwnedCreatures <= 1;
-      if (!this.combat.isBoss && !this.combat.npcId && shouldTriggerBefriendQuiz(this.combat.enemies, { guaranteed: guaranteeBefriend })) {
+      const befriendEligible = !this.combat.isBoss && !this.combat.npcId;
+      const befriendTriggerRoll = befriendEligible
+        ? shouldTriggerBefriendQuiz(this.combat.enemies, { guaranteed: guaranteeBefriend })
+        : false;
+      if (befriendEligible && befriendTriggerRoll) {
         // Find the creature killed by the player's last killing blow
         const killingAttacks = (playerResult.attacks || []).filter(a => a.targetDefeated);
         const lastKillAtk = killingAttacks[killingAttacks.length - 1];
