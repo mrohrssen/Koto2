@@ -26,7 +26,9 @@
 import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
-import { creatureBgUrl, itemSpriteHtml, creatureStaticPath } from './sprite-utils.js';
+import { creatureBgUrl, itemSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
+import { showNpcInDisplay, hideEnemy } from './scene.js';
+import { showNpcSprite, hideNpcSprite } from '../pixi/formation.js';
 import { t, isJapanified } from './i18n.js';
 import * as chestsUI from './chests.js';
 import * as crestsEquipUI from './crests-equip.js';
@@ -63,10 +65,21 @@ let discoveryState = {
   dailyLimit: 10
 };
 
-/** Show multi-page Cid tutorial narration. Returns when all pages dismissed. */
-async function showTutorialNarration(pages) {
+/** Show multi-page Cid tutorial narration. Optionally slides her sprite in/out. */
+async function showTutorialNarration(pages, { showSprite = false } = {}) {
+  if (showSprite) {
+    const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+    showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+    await showNpcSprite(cidSprite, { slideIn: true });
+  }
+
   for (const page of pages) {
     await sceneModule.showNarration(page, { speaker: 'Cid' });
+  }
+
+  if (showSprite) {
+    await hideNpcSprite({ slideOut: true });
+    hideEnemy();
   }
 }
 
@@ -1052,7 +1065,7 @@ export async function renderSkillMaster() {
     await showTutorialNarration([
       'Each run you can get skills to make your party stronger.',
       "Let's just pick the first one."
-    ]);
+    ], { showSprite: true });
   }
 
   renderChoices({
@@ -1172,7 +1185,7 @@ export async function renderFriendlyNpc() {
   if (tutorialStep === 2) {
     await showTutorialNarration([
       "Here you'll be offered items to power up. Choose wisely!"
-    ]);
+    ], { showSprite: true });
   }
 
   // Render item cards first so they're visible immediately

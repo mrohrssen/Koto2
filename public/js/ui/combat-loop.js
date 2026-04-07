@@ -44,7 +44,8 @@ import {
 } from '../pixi/text.js';
 import { showBanner } from '../pixi/banners.js';
 import { playStatusApplied, clearStatusVfx, clearAllStatusVfx } from '../pixi/status-vfx.js';
-import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, syncPixiStatusLabels, clearAllPixiStatusLabels } from '../pixi/formation.js';
+import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, syncPixiStatusLabels, clearAllPixiStatusLabels, showNpcSprite as pixiSlideInNpc, hideNpcSprite as pixiSlideOutNpc } from '../pixi/formation.js';
+import { showNpcInDisplay, hideEnemy } from './scene.js';
 import { setScrollState } from '../pixi/parallax.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
@@ -2794,11 +2795,18 @@ async function renderBefriendQuiz(quizData, result) {
   const reading = quizData.creatureBaseReading || quizData.creatureName || '';
   const creatureSpeaker = { name: reading, reading: toRomaji(reading), meaning: '' };
 
-  // Tutorial step 1: Cid encourages befriending
+  // Tutorial step 1: Cid encourages befriending (slide her in like any NPC)
   const tutorialStep = getGameState()?.meta?.tutorialStep;
   if (tutorialStep === 1) {
+    const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+    showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+    await pixiSlideInNpc(cidSprite, { slideIn: true });
+
     await narration.showNarration('Wow! This creature wants to talk!', { speaker: 'Cid' });
     await narration.showNarration("Let's try to befriend them.", { speaker: 'Cid' });
+
+    await pixiSlideOutNpc({ slideOut: true });
+    hideEnemy();
   }
 
   // Show "まって!!" narration
@@ -2854,7 +2862,12 @@ async function renderBefriendQuiz(quizData, result) {
     }).then(r => r.json());
 
     if (answerResult.tutorialRetry) {
+      const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+      showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+      await pixiSlideInNpc(cidSprite, { slideIn: true });
       await narration.showNarration("No, I don't think that's it... try again.", { speaker: 'Cid' });
+      await pixiSlideOutNpc({ slideOut: true });
+      hideEnemy();
       continue;
     }
     quizDone = true;
