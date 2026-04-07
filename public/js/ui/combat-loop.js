@@ -2854,7 +2854,16 @@ async function renderBefriendQuiz(quizData, result) {
   const reading = quizData.creatureBaseReading || quizData.creatureName || '';
   const creatureSpeaker = { name: reading, reading: toRomaji(reading), meaning: '' };
 
-  // Tutorial step 1: Cid encourages befriending (slide her in like any NPC)
+  // Show "まって!!" narration (creature calls out first)
+  await narration.showNarration('まって！！', { speaker: creatureSpeaker });
+
+  // Show Fight / Talk choice (buttons render immediately)
+  const choicePromise = renderButtonsAsync([
+    { label: 'たたかう (Fight)' },
+    { label: 'はなす (Talk)' },
+  ]);
+
+  // Tutorial step 1: Cid encourages befriending AFTER buttons are visible
   const tutorialStep = getGameState()?.meta?.tutorialStep;
   if (tutorialStep === 1) {
     const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
@@ -2868,14 +2877,7 @@ async function renderBefriendQuiz(quizData, result) {
     hideEnemy();
   }
 
-  // Show "まって!!" narration
-  await narration.showNarration('まって！！', { speaker: creatureSpeaker });
-
-  // Show Fight / Talk choice
-  const choiceIdx = await renderButtonsAsync([
-    { label: 'たたかう (Fight)' },
-    { label: 'はなす (Talk)' },
-  ]);
+  const choiceIdx = await choicePromise;
   // 0 = Fight, 1 = Talk
 
   if (choiceIdx === 0) {
