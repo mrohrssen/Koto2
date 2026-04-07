@@ -20,77 +20,52 @@
   {
     "id": "prologue-04-translator",
     "speaker": "Cid",
-    "narration": "Ha! I knew it — you're a traveler from far away. Here, take this — it's called the Translator."
+    "narration": "Ha! I knew it — you're the new recruit. Here, take this — it's called the Translator."
   },
   {
     "id": "prologue-05-translator-on",
     "speaker": "Cid",
-    "narration": "Wear it, and you'll start to understand our {world|世界|せかい} — one {word|言葉|ことば} at a time. It grows as YOU grow."
+    "narration": "Our world speaks Japanese. You obviously don't. That's where the Translator comes in."
   },
   {
     "id": "prologue-06-intro",
     "speaker": "Cid",
-    "narration": "My {name|名前|なまえ} is Cid! I {help|助ける|たすける} newcomers find their {way|道|みち}."
+    "narration": "Every creature, human, and item here is Japanese. The Translator will simplify things for you."
   },
   {
     "id": "prologue-07-world",
     "speaker": "Cid",
-    "narration": "Welcome to a {world|世界|せかい} alive with wonder! Every {mountain|山|やま} touches the {sky|空|そら}, and every {forest|森|もり} hums with {secret|秘密|ひみつ} life."
+    "narration": "At first, things might seem too simple. Don't worry. That's the Translator doing it's job."
   },
   {
     "id": "prologue-08-creatures",
     "speaker": "Cid",
-    "narration": "And in this {world|世界|せかい} — creatures! {Big|大きい|おおきい} ones that tower over treetops, {small|小さい|ちいさい} ones that nap in {flower|花|はな} petals."
+    "narration": "Cutting edge research shows this is the fastest way to get you fluent and useful to our cause."
   },
   {
     "id": "prologue-09-partners",
     "speaker": "Cid",
-    "narration": "Here, creatures aren't pets — they're partners. Every {person|人|ひと} has a creature by their side. They {protect|守る|まもる} each other. A creature is a {friend|友達|ともだち}."
+    "narration": "The more you learn, the more of this magical world will be opened up to you."
   },
   {
     "id": "prologue-10-disruption",
     "speaker": "Cid",
-    "narration": "But lately... a {mysterious|不思議|ふしぎ} disruption is spreading. Creatures that were once {gentle|優しい|やさしい} have become confused and wild."
+    "narration": "But enough talking - let's get right into your first adventure."
   },
   {
     "id": "prologue-11-calming",
     "speaker": "Cid",
-    "narration": "We don't hurt them — we calm them. Be {gentle|優しい|やさしい} enough, and they might just decide to join you!"
+    "narration": "Your job is to help us explore this land and gather resources to expand our base."
   },
   {
     "id": "prologue-12-combat",
     "speaker": "Cid",
-    "narration": "Every creature knows special moves, and every move has a {name|名前|なまえ}. The more you {learn|覚える|おぼえる}, the {strong|強い|つよい}er your team becomes!"
+    "narration": "Along the way you'll encounter creatures, friends, and foes alike. Befriend, fight, and learn."
   },
   {
     "id": "prologue-13-exploration",
     "speaker": "Cid",
-    "narration": "There's a whole {world|世界|せかい} waiting — deep {forest|森|もり}, rushing {water|水|みず}, roaring {fire|火|ひ}. Every {place|場所|ばしょ} teaches you something {new|新しい|あたらしい}."
-  },
-  {
-    "id": "prologue-14-items",
-    "speaker": "Cid",
-    "narration": "Along the {road|道|みち}, you'll find {food|食べ物|たべもの} to heal your team and rare ingredients to {make|作る|つくる} something amazing."
-  },
-  {
-    "id": "prologue-15-town",
-    "speaker": "Cid",
-    "narration": "And when you need a break — you'll build your own {town|町|まち}! Start {small|小さい|ちいさい}, grow it {big|大きい|おおきい}."
-  },
-  {
-    "id": "prologue-16-npcs",
-    "speaker": "Cid",
-    "narration": "{Talk|話す|はなす} to every {person|人|ひと} you meet. This {world|世界|せかい} runs on {heart|心|こころ} — the bond between you and everyone around you."
-  },
-  {
-    "id": "prologue-17-someday",
-    "speaker": "Cid",
-    "narration": "Right now the Translator is doing the heavy lifting — readings, meanings, everything. But someday? You'll just... {understand|分かる|わかる}."
-  },
-  {
-    "id": "prologue-18-sendoff",
-    "speaker": "Cid",
-    "narration": "That {day|日|ひ} will {come|来る|くる} sooner than you think. Now {go|行く|いく}! Your {adventure|冒険|ぼうけん} starts here — and your first {friend|友達|ともだち} is right beside you."
+    "narration": "But enough talking, let's get started on your first adventure."
   },
   {
     "id": "prologue-starter-selection",
