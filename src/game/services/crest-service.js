@@ -6,6 +6,7 @@
  */
 
 import { randomBytes } from 'crypto';
+import { shouldHardcodeCrestReward } from './tutorial-service.js';
 
 const VALID_ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal'];
 
@@ -71,7 +72,16 @@ export function openChest(meta, element) {
     return { success: false, error: 'Not enough element drops' };
   }
   meta.elementDrops[element] -= CHEST_COST;
-  const crest = generateCrest(element);
+  let crest;
+  if (shouldHardcodeCrestReward(meta)) {
+    // Tutorial step 4: guaranteed common fire crest
+    crest = generateCrest(element);
+    crest.rarity = 'common';
+    const range = RARITY_RANGES.common;
+    crest.value = Math.round((range.min + Math.random() * (range.max - range.min)) * 100) / 100;
+  } else {
+    crest = generateCrest(element);
+  }
   if (!meta.crests) meta.crests = [];
   meta.crests.push(crest);
   return { success: true, crest };

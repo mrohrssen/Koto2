@@ -191,3 +191,38 @@ describe('tutorial room generation', () => {
     assert.equal(allMatch, false, 'Without tutorialMode, rooms should be randomized');
   });
 });
+
+import { openChest } from '../../../src/game/services/crest-service.js';
+
+describe('tutorial chest override', () => {
+  it('openChest returns common fire crest when tutorialStep is 4', () => {
+    const meta = {
+      tutorialStep: 4,
+      tutorialFireDropsGifted: true,
+      elementDrops: { fire: 3, water: 0, earth: 0, wood: 0, metal: 0 },
+      crests: []
+    };
+    const result = openChest(meta, 'fire');
+    assert.equal(result.success, true);
+    assert.equal(result.crest.element, 'fire');
+    assert.equal(result.crest.rarity, 'common');
+  });
+
+  it('openChest returns random rarity when tutorial is complete', () => {
+    // Run many times, should get at least one non-common
+    let gotNonCommon = false;
+    for (let i = 0; i < 100; i++) {
+      const meta = {
+        tutorialStep: 7,
+        elementDrops: { fire: 3, water: 0, earth: 0, wood: 0, metal: 0 },
+        crests: []
+      };
+      const result = openChest(meta, 'fire');
+      if (result.crest.rarity !== 'common') {
+        gotNonCommon = true;
+        break;
+      }
+    }
+    assert.ok(gotNonCommon, 'Should get non-common rarity when tutorial complete');
+  });
+});
