@@ -1221,13 +1221,16 @@ export async function renderFriendlyNpc() {
       const item = offers[index];
       playSFX('creature-equip');
 
-      if (item.shopTokens?.length && sceneModule?.showNarration) {
+      if (item.tokens?.length && sceneModule?.showNarration) {
         const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-        // useKanji=false for now (Areas 1-3 are hiragana-only; derive from area index when expanding)
+        const html = renderJpSentence(item.tokens, getKnownWords(), wordDict, {}, false);
+        await sceneModule.showNarration(html, { html: true, speaker: 'You' });
+      } else if (item.shopTokens?.length && sceneModule?.showNarration) {
+        // Legacy fallback for in-progress game states
+        const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
         const html = renderJpSentence(item.shopTokens, getKnownWords(), wordDict, item.shopOverrides || {}, false);
         await sceneModule.showNarration(html, { html: true, speaker: 'You' });
       } else if (item.word && sceneModule?.showNarration) {
-        // Fallback: plain text if tokens not available
         await sceneModule.showNarration(`${item.word}、ください`, { speaker: 'You' });
       }
 

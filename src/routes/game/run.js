@@ -15,6 +15,8 @@ import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswe
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
 import { applyItem } from '../../game/services/item-service.js';
+import { assembleFrame, isEligible, scoreCandidate } from '../../game/token-format.js';
+import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 
 const SPRITE_VERSION = '20260321';
@@ -27,6 +29,16 @@ const movesPath = join(__dirname, '../../../data/moves.json');
 const allCreatures = JSON.parse(readFileSync(creaturesPath, 'utf8'));
 const allItems = JSON.parse(readFileSync(itemsPath, 'utf8'));
 const allMoves = JSON.parse(readFileSync(movesPath, 'utf8'));
+
+let _shopFrames = null;
+function getShopFrames() {
+  if (!_shopFrames) {
+    const framesPath = join(__dirname, '../../../data/dialogue/frames.json');
+    const allFrames = JSON.parse(readFileSync(framesPath, 'utf-8'));
+    _shopFrames = allFrames.filter(f => f.category === 'shop');
+  }
+  return _shopFrames;
+}
 
 function loadQuizQuestions() {
   const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));
@@ -624,34 +636,24 @@ export default function createRunRoutes({
       if (!room.friendlyNpc.offered) {
         room.friendlyNpc.offered = rollFriendlyNpcOffers(room.friendlyNpc.offerCategory, allItems);
 
-        // Tokenize shop phrases for client rendering (batch all items in one call)
-        const PUNCT_POS = new Set(['記号', '補助記号', '空白']);
-        const itemsWithWords = room.friendlyNpc.offered.filter(item => item.word);
-        const phrases = itemsWithWords.map(item => `${item.word}、ください`);
+        // Assemble pre-tokenized frames with items and select best per i+1
+        const knownWords = getKnownWordsFromFsrs(req.user.id);
+        const knownSet = new Set(knownWords);
+        const shopFrames = getShopFrames();
 
-        if (phrases.length > 0) {
-          try {
-            const { execFileSync } = await import('child_process');
-            const { join } = await import('path');
-            const helperPath = join(process.cwd(), 'scripts', 'sudachi-tokenize.py');
-            const raw = execFileSync('python3', [helperPath], {
-              input: JSON.stringify(phrases),
-              encoding: 'utf-8',
-              maxBuffer: 10 * 1024 * 1024,
-            });
-            const allTokens = JSON.parse(raw);
+        for (const item of room.friendlyNpc.offered) {
+          if (!item.word) continue;
+          const candidates = shopFrames.map(frame => assembleFrame(frame, { item }));
+          const eligible = candidates.filter(c => isEligible(c.tokens, knownSet));
 
-            itemsWithWords.forEach((item, idx) => {
-              const tokens = allTokens[idx];
-              item.shopTokens = tokens;
-              item.shopOverrides = { [item.word]: item.nameEn || '' };
-              item.shopContentWords = tokens
-                .filter(t => !PUNCT_POS.has(t.pos) && !/^[\p{P}\p{S}\s]+$/u.test(t.surface))
-                .map(t => t.baseForm);
-            });
-          } catch (e) {
-            console.warn('[friendly-npc-offers] Tokenization failed:', e.message);
-            // Items still work without tokens — client falls back to plain text
+          if (eligible.length > 0) {
+            eligible.sort((a, b) => scoreCandidate(b.tokens, knownSet) - scoreCandidate(a.tokens, knownSet));
+            item.tokens = eligible[0].tokens;
+            item.words = eligible[0].words;
+          } else {
+            // Fallback: use simplest frame even if not eligible
+            item.tokens = candidates[0]?.tokens || [];
+            item.words = candidates[0]?.words || [];
           }
         }
 
@@ -708,8 +710,11 @@ export default function createRunRoutes({
       room.friendlyNpc.chosenId = itemId;
       room.friendlyNpc.completed = true;
       room.interacted = true;
-      if (item.shopContentWords?.length) {
-        req.gameManager.exposeWords(item.shopContentWords);
+      if (item.tokens?.length) {
+        const exposures = item.tokens
+          .filter(t => t.base)
+          .map(t => ({ word: t.base, meaning: t.meaning || '' }));
+        req.gameManager.exposeWords(exposures);
       }
       req.saveGame();
       res.json({ chosen: item, state: req.getEnrichedGameState() });
