@@ -61,57 +61,47 @@ Uses `jp-dlg-*` prefix to avoid collision with existing `jp-word`/`jp-unknown` c
 
 ## Approach
 
-### New function: `renderJpSentenceDialogue`
+### Modify `renderJpSentence` in-place
 
-Add to `bootstrap-client.js` alongside existing `renderJpSentence`. Same signature:
+Rewrite the HTML output of `renderJpSentence` in `bootstrap-client.js`. Same function, same signature, same callers. No new function needed.
 
-```js
-export function renderJpSentenceDialogue(tokens, knownWords, wordDict, overrides = {}, useKanji = false)
-```
-
-Logic is identical to `renderJpSentence` for token classification (known/unknown/entity/punct). Only the HTML output differs — uses the 3-row flex column structure above.
+Token classification logic (known/unknown/entity/punct) stays identical. Only the HTML output changes — drops `<ruby>` tags, uses 3-row flex column structure with `jp-dlg-*` classes.
 
 Entity detection: `token.entity === true` (already set by `entityToToken()` on the server).
 
-### CSS: B2 styling scoped to `.narration-text`
+### CSS: Base `jp-dlg-*` styles (no scoping)
 
-New CSS block in `game.css` using `.narration-text .jp-dlg-*` selectors. Adapted for the existing **light** narration box theme (not the dark panel from the mockup):
+Replace old `jp-word`/`jp-unknown` CSS block in `game.css` with `jp-dlg-*` base styles. No scoping to `.narration-text` — same styles apply everywhere (narration, speech bubbles, item cards). Future context-specific overrides can be added later.
 
-- Known romaji: `color: rgba(47,58,69,0.35)` (muted against light bg)
-- Teaching word text: `font-weight: 600; color: #2f3a45`
-- Teaching word underline: amber gradient `rgba(200,160,60,0.5)`
-- Teaching english: `color: rgba(180,140,50,0.8)`
-- Entity text: `color: var(--accent-blue)`
+- Uniform font-size/weight per row, only color varies by word type
 - Consistent height slots: romaji row 12px, en-below row 16px
+- Unknown words: amber color accent + underline glow
+- Entity words: blue color accent + underline glow
 
-### Callers to update
+### No caller changes
 
-Switch from `renderJpSentence` to `renderJpSentenceDialogue`:
-
-1. **`exploration.js:1209`** — NPC greeting tokens
-2. **`exploration.js:1228`** — item name tokens on shop cards
-3. **`exploration.js:1241`** — item purchase dialogue tokens
-4. **`exploration.js:1246`** — shop dialogue tokens
-5. **`dialogue-display.js:32`** — DM/AI dialogue lines
+All existing callers of `renderJpSentence` get the new output automatically:
+- `exploration.js` — NPC greeting, item names, purchase dialogue
+- `dialogue-display.js` — DM/AI dialogue lines
+- `speech-bubble.js` — creature barks
+- `room-transition.js` — room transition narration
+- `game.js` — combat barks
 
 ### What stays the same
 
-- `renderJpSentence` — completely untouched
-- Speech bubbles (`speech-bubble.js`) — keep `renderJpSentence`
-- Room transitions (`room-transition.js`) — keep `renderJpSentence`
-- Combat barks (`game.js`) — keep `renderJpSentence`
-- Narration box panel styling — untouched (light glass theme)
-- Server-side code — untouched
+- Function signature — identical
 - Token data format — untouched
+- Server-side code — untouched
+- Narration box panel styling — untouched (light glass theme)
+- All callers — untouched (no import changes needed)
 
 ## Files Changed
 
 | File | Change |
 |------|--------|
-| `public/js/ui/bootstrap-client.js` | Add `renderJpSentenceDialogue()`, export it |
-| `public/game.css` | Add `.narration-text .jp-dlg-*` style block |
-| `public/js/ui/exploration.js` | Import + use `renderJpSentenceDialogue` for NPC dialogue |
-| `public/js/ui/dialogue-display.js` | Import + use `renderJpSentenceDialogue` |
+| `public/js/ui/bootstrap-client.js` | Rewrite `renderJpSentence` HTML output (same function, new structure) |
+| `public/game.css` | Replace `jp-word`/`jp-unknown` CSS with `jp-dlg-*` base styles |
+| `tests/unit/sentence-renderer.test.js` | Update assertions for new HTML structure |
 
 ## Testing
 
