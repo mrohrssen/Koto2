@@ -1,0 +1,32 @@
+[
+  {
+    "id": "buy_simple",
+    "category": "shop",
+    "raw": "{item}、ください",
+    "slots": ["item"]
+  },
+  {
+    "id": "buy_polite",
+    "category": "shop",
+    "raw": "{item}をください",
+    "slots": ["item"]
+  },
+  {
+    "id": "buy_counting",
+    "category": "shop",
+    "raw": "{item}を一つください",
+    "slots": ["item"]
+  },
+  {
+    "id": "buy_want",
+    "category": "shop",
+    "raw": "{item}がほしいです",
+    "slots": ["item"]
+  },
+  {
+    "id": "buy_please_give",
+    "category": "shop",
+    "raw": "{item}をお願いします",
+    "slots": ["item"]
+  }
+]

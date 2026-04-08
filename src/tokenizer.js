@@ -29,3 +29,20 @@ export function tokenize(text) {
 
   return JSON.parse(result)[0];
 }
+
+/**
+ * Tokenize multiple texts in a single Sudachi call.
+ * @param {string[]} texts - Array of Japanese text strings
+ * @returns {Array<Array<{surface: string, baseForm: string, pos: string, reading: string}>>}
+ */
+export function tokenizeBatch(texts) {
+  if (!texts || texts.length === 0) return [];
+
+  const result = execFileSync('python3', [HELPER_PATH], {
+    input: JSON.stringify(texts),
+    encoding: 'utf-8',
+    maxBuffer: 10 * 1024 * 1024,
+  });
+
+  return JSON.parse(result);
+}

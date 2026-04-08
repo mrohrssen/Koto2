@@ -1,0 +1,134 @@
+[
+  {
+    "id": "buy_simple",
+    "category": "shop",
+    "raw": "{item}、ください",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      }
+    ],
+    "words": [
+      "くださる"
+    ]
+  },
+  {
+    "id": "buy_polite",
+    "category": "shop",
+    "raw": "{item}をください",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      }
+    ],
+    "words": [
+      "くださる"
+    ]
+  },
+  {
+    "id": "buy_counting",
+    "category": "shop",
+    "raw": "{item}を一つください",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "一",
+        "base": "一",
+        "reading": "ひと",
+        "meaning": "one / 1"
+      },
+      {
+        "surface": "つ"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      }
+    ],
+    "words": [
+      "一",
+      "くださる"
+    ]
+  },
+  {
+    "id": "buy_want",
+    "category": "shop",
+    "raw": "{item}がほしいです",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "ほしい",
+        "base": "ほしい",
+        "reading": "ほしい",
+        "meaning": "wanting (to have) / desiring / wishing for"
+      },
+      {
+        "surface": "です"
+      }
+    ],
+    "words": [
+      "ほしい"
+    ]
+  },
+  {
+    "id": "buy_please_give",
+    "category": "shop",
+    "raw": "{item}をお願いします",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "お"
+      },
+      {
+        "surface": "願い",
+        "base": "願う",
+        "reading": "ねがい",
+        "meaning": "to desire / to wish / to hope"
+      },
+      {
+        "surface": "し"
+      },
+      {
+        "surface": "ます"
+      }
+    ],
+    "words": [
+      "願う"
+    ]
+  }
+]
