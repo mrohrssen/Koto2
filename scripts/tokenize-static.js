@@ -75,21 +75,23 @@ function main() {
   for (let i = 0; i < sources.length; i++) {
     const raw = sources[i].raw;
     const slots = sources[i].slots || [];
-    // Split raw text at each {slotName} to get segments between slots
+    // Split raw text at each {slotName} to get segments between slots.
+    // Each segment is the text BEFORE the slot, with slotAfter indicating
+    // what slot follows this segment's text.
     let remaining = raw;
     const segments = [];
     for (const slot of slots) {
       const marker = `{${slot}}`;
       const pos = remaining.indexOf(marker);
       if (pos >= 0) {
-        segments.push({ text: remaining.slice(0, pos), slotBefore: slot });
+        segments.push({ text: remaining.slice(0, pos), slotAfter: slot });
         remaining = remaining.slice(pos + marker.length);
       }
     }
-    segments.push({ text: remaining, slotBefore: null });
+    segments.push({ text: remaining, slotAfter: null });
 
     for (const seg of segments) {
-      segmentMap.push({ frameIdx: i, slotBefore: seg.slotBefore, segmentText: seg.text });
+      segmentMap.push({ frameIdx: i, slotAfter: seg.slotAfter, segmentText: seg.text });
     }
   }
 
@@ -135,20 +137,20 @@ function main() {
   const frameTokens = sources.map(() => ({ tokens: [], words: [] }));
 
   for (let i = 0; i < segmentMap.length; i++) {
-    const { frameIdx, slotBefore } = segmentMap[i];
+    const { frameIdx, slotAfter } = segmentMap[i];
     const frame = frameTokens[frameIdx];
 
-    // Insert slot token before this segment's tokens
-    if (slotBefore) {
-      frame.tokens.push({ slot: slotBefore });
-    }
-
-    // Merge adjacent tokens that form dictionary entries, then convert
+    // Process this segment's text tokens first
     const mergedTokens = mergeSudachiTokens(allSegmentTokens[i]);
     for (const st of mergedTokens) {
       const { token, isContent } = toUniversalToken(st, wordDict);
       frame.tokens.push(token);
       if (isContent) frame.words.push(token.base);
+    }
+
+    // Insert slot token after this segment's tokens
+    if (slotAfter) {
+      frame.tokens.push({ slot: slotAfter });
     }
   }
 

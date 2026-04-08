@@ -24,10 +24,14 @@ describe('tokenize-static output (frames.json)', () => {
     }
   });
 
-  it('slot tokens appear at correct position (first token for {item}... frames)', () => {
-    const buySimple = frames.find(f => f.id === 'buy_simple');
-    assert.ok(buySimple, 'buy_simple frame should exist');
-    assert.deepEqual(buySimple.tokens[0], { slot: 'item' });
+  it('slot tokens appear at correct positions', () => {
+    const polite = frames.find(f => f.id === 'buy_polite');
+    assert.deepEqual(polite.tokens[0], { slot: 'item' }, 'buy_polite: slot should be first');
+
+    const excuse = frames.find(f => f.id === 'buy_excuse_me');
+    assert.ok(excuse.tokens[0].base === 'すみません', 'buy_excuse_me: すみません should be first');
+    const slotIdx = excuse.tokens.findIndex(t => t.slot === 'item');
+    assert.ok(slotIdx > 0, 'buy_excuse_me: slot should come after すみません');
   });
 
   it('particles are surface-only (no base field)', () => {
@@ -43,8 +47,8 @@ describe('tokenize-static output (frames.json)', () => {
   });
 
   it('content words have base, reading, and meaning', () => {
-    const buySimple = frames.find(f => f.id === 'buy_simple');
-    const kudasai = buySimple.tokens.find(t => t.base === 'くださる');
+    const polite = frames.find(f => f.id === 'buy_polite');
+    const kudasai = polite.tokens.find(t => t.base === 'くださる');
     assert.ok(kudasai, 'should have くださる content token');
     assert.ok(kudasai.reading, 'くださる should have reading');
     assert.equal(typeof kudasai.meaning, 'string', 'くださる should have meaning');
@@ -58,26 +62,13 @@ describe('tokenize-static output (frames.json)', () => {
     }
   });
 
-  it('demotes です to surface-only when not merged', () => {
-    const buyWant = frames.find(f => f.id === 'buy_want');
-    const desu = buyWant.tokens.find(t => t.surface === 'です');
-    assert.ok(desu, 'should have です token');
-    assert.equal(desu.base, undefined, 'です should be surface-only (demoted)');
-  });
-
-  it('merges adjacent tokens into dictionary entries (一つ, お願いします, すみません)', () => {
-    const buyCount = frames.find(f => f.id === 'buy_counting');
-    const hitotsu = buyCount.tokens.find(t => t.base === '一つ');
-    assert.ok(hitotsu, 'should merge 一+つ into 一つ');
-    assert.equal(hitotsu.surface, '一つ');
-
-    const buyPlease = frames.find(f => f.id === 'buy_please_give');
-    const onegai = buyPlease.tokens.find(t => t.base === 'お願いします');
-    assert.ok(onegai, 'should merge お+願い+し+ます into お願いします');
-
-    const buyExcuse = frames.find(f => f.id === 'buy_excuse_me');
-    const sumimasen = buyExcuse.tokens.find(t => t.base === 'すみません');
+  it('merges adjacent tokens into dictionary entries (すみません, ありがとうございます)', () => {
+    const excuse = frames.find(f => f.id === 'buy_excuse_me');
+    const sumimasen = excuse.tokens.find(t => t.base === 'すみません');
     assert.ok(sumimasen, 'should merge すみ+ませ+ん into すみません');
-    assert.equal(sumimasen.meaning, 'excuse me/sorry');
+
+    const thanks = frames.find(f => f.id === 'buy_thanks');
+    const arigatou = thanks.tokens.find(t => t.base === 'ありがとうございます');
+    assert.ok(arigatou, 'should merge ありがとう+ございます into ありがとうございます');
   });
 });

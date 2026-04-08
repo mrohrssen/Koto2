@@ -1,27 +1,5 @@
 [
   {
-    "id": "buy_simple",
-    "category": "shop",
-    "raw": "{item}、ください",
-    "tokens": [
-      {
-        "slot": "item"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      }
-    ],
-    "words": [
-      "くださる"
-    ]
-  },
-  {
     "id": "buy_polite",
     "category": "shop",
     "raw": "{item}をください",
@@ -44,89 +22,10 @@
     ]
   },
   {
-    "id": "buy_counting",
-    "category": "shop",
-    "raw": "{item}を一つください",
-    "tokens": [
-      {
-        "slot": "item"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "一つ",
-        "base": "一つ",
-        "reading": "ひとつ",
-        "meaning": "one"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      }
-    ],
-    "words": [
-      "一つ",
-      "くださる"
-    ]
-  },
-  {
-    "id": "buy_want",
-    "category": "shop",
-    "raw": "{item}がほしいです",
-    "tokens": [
-      {
-        "slot": "item"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "ほしい",
-        "base": "ほしい",
-        "reading": "ほしい",
-        "meaning": "wanting (to have) / desiring / wishing for"
-      },
-      {
-        "surface": "です"
-      }
-    ],
-    "words": [
-      "ほしい"
-    ]
-  },
-  {
-    "id": "buy_please_give",
-    "category": "shop",
-    "raw": "{item}をお願いします",
-    "tokens": [
-      {
-        "slot": "item"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "お願いします",
-        "base": "お願いします",
-        "reading": "おねがいします",
-        "meaning": "please"
-      }
-    ],
-    "words": [
-      "お願いします"
-    ]
-  },
-  {
     "id": "buy_excuse_me",
     "category": "shop",
     "raw": "すみません、{item}をください",
     "tokens": [
-      {
-        "slot": "item"
-      },
       {
         "surface": "すみません",
         "base": "すみません",
@@ -135,6 +34,9 @@
       },
       {
         "surface": "、"
+      },
+      {
+        "slot": "item"
       },
       {
         "surface": "を"
@@ -149,6 +51,41 @@
     "words": [
       "すみません",
       "くださる"
+    ]
+  },
+  {
+    "id": "buy_thanks",
+    "category": "shop",
+    "raw": "{item}をください。ありがとうございます。",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      },
+      {
+        "surface": "。"
+      },
+      {
+        "surface": "ありがとうございます",
+        "base": "ありがとうございます",
+        "reading": "ありがとうございます",
+        "meaning": "thank you"
+      },
+      {
+        "surface": "。"
+      }
+    ],
+    "words": [
+      "くださる",
+      "ありがとうございます"
     ]
   }
 ]
