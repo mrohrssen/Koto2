@@ -994,6 +994,7 @@ export class GameManager {
           roundStartEvents,
           counterAttacks: [],
           koSwaps: [],
+          koRemovals: [],
           combatEnded: true,
           victory: false,
           turnCount: this.combat.turnCount,
@@ -1011,17 +1012,23 @@ export class GameManager {
     // Party skills: counter attacks (now computed inline in processInterleavedPvERound)
     const counterAttacks = playerResult.inlineCounters || [];
 
-    // Handle KO'd allies — swap reserves in
+    // Handle KO'd allies — swap reserves in or permanently remove
     const koSwaps = [];
+    const koRemovals = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
       if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
+        const deadName = this.combat.allies[i].nameEn || this.combat.allies[i].name;
         const replacement = handleCreatureKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
           logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
+        } else {
+          koRemovals.push({ slot: i, name: deadName });
+          logger.info('[CreatureCombat] KO removed: slot', i, deadName, '(no reserves)');
         }
       }
     }
+    this.run.creatureParty.active = this.run.creatureParty.active.filter(c => c != null);
     this.combat.allies = this.run.creatureParty.active;
 
     // Check if all enemies died during enemy phase (e.g. confusion self-hit)
@@ -1067,6 +1074,7 @@ export class GameManager {
         roundStartEvents,
         counterAttacks,
         koSwaps,
+        koRemovals,
         combatEnded: true,
         victory: true,
         creatureParty: this.run.creatureParty,
@@ -1079,7 +1087,7 @@ export class GameManager {
     }
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
-    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
+    const allAlliesKO = this.combat.allies.length === 0 || this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
       // Save any befriended creatures to permanent collection before defeat
       const pending = this.run.creatureParty.pendingCaptures || [];
@@ -1110,6 +1118,7 @@ export class GameManager {
         roundStartEvents,
         counterAttacks,
         koSwaps,
+        koRemovals,
         combatEnded: true,
         victory: false,
         turnCount: this.combat.turnCount,
@@ -1135,6 +1144,7 @@ export class GameManager {
       counterAttacks,
       befriend: null,
       koSwaps,
+      koRemovals,
       combatEnded: false,
       turnCount: this.combat.turnCount,
       allies: this.combat.allies,
@@ -1175,21 +1185,27 @@ export class GameManager {
       combat: this.combat
     }) || [];
 
-    // Handle KO'd allies — swap reserves in
+    // Handle KO'd allies — swap reserves in or permanently remove
     const koSwaps = [];
+    const koRemovals = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
       if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
+        const deadName = this.combat.allies[i].nameEn || this.combat.allies[i].name;
         const replacement = handleCreatureKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
           logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
+        } else {
+          koRemovals.push({ slot: i, name: deadName });
+          logger.info('[CreatureCombat] KO removed: slot', i, deadName, '(no reserves)');
         }
       }
     }
+    this.run.creatureParty.active = this.run.creatureParty.active.filter(c => c != null);
     this.combat.allies = this.run.creatureParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
-    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
+    const allAlliesKO = this.combat.allies.length === 0 || this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
       // Save any befriended creatures to permanent collection before defeat
       const pending = this.run.creatureParty.pendingCaptures || [];
@@ -1216,6 +1232,7 @@ export class GameManager {
         roundStartEvents,
         counterAttacks,
         koSwaps,
+        koRemovals,
         combatEnded: true,
         victory: false,
         turnCount: this.combat.turnCount,
@@ -1237,6 +1254,7 @@ export class GameManager {
       counterAttacks,
       befriend: null,
       koSwaps,
+      koRemovals,
       combatEnded: false,
       turnCount: this.combat.turnCount,
       allies: this.combat.allies,
@@ -1347,21 +1365,27 @@ export class GameManager {
       combat: this.combat
     }) || [];
 
-    // Handle KO'd allies — swap reserves in
+    // Handle KO'd allies — swap reserves in or permanently remove
     const koSwaps = [];
+    const koRemovals = [];
     for (let i = 0; i < this.combat.allies.length; i++) {
       if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
+        const deadName = this.combat.allies[i].nameEn || this.combat.allies[i].name;
         const replacement = handleCreatureKO(this.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
           logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
+        } else {
+          koRemovals.push({ slot: i, name: deadName });
+          logger.info('[CreatureCombat] KO removed: slot', i, deadName, '(no reserves)');
         }
       }
     }
+    this.run.creatureParty.active = this.run.creatureParty.active.filter(c => c != null);
     this.combat.allies = this.run.creatureParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
-    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
+    const allAlliesKO = this.combat.allies.length === 0 || this.combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
       // Save any befriended creatures to permanent collection before defeat
       const pending = this.run.creatureParty.pendingCaptures || [];
@@ -1388,6 +1412,7 @@ export class GameManager {
         roundStartEvents,
         counterAttacks,
         koSwaps,
+        koRemovals,
         combatEnded: true,
         victory: false,
         turnCount: this.combat.turnCount,
@@ -1410,6 +1435,7 @@ export class GameManager {
       counterAttacks,
       befriend: befriendResult,
       koSwaps,
+      koRemovals,
       combatEnded: false,
       turnCount: this.combat.turnCount,
       allies: this.combat.allies,

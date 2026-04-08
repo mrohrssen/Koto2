@@ -338,17 +338,22 @@ export default function createCombatRoutes({
       );
 
       const koSwaps = [];
+      const koRemovals = [];
       for (let i = 0; i < combat.allies.length; i++) {
         if (combat.allies[i] && combat.allies[i].hp <= 0) {
+          const deadName = combat.allies[i].nameEn || combat.allies[i].name;
           const replacement = handleCreatureKO(gameManager.run.creatureParty, i);
           if (replacement) {
             koSwaps.push({ slot: i, replacement: replacement.nameEn });
+          } else {
+            koRemovals.push({ slot: i, name: deadName });
           }
         }
       }
+      gameManager.run.creatureParty.active = gameManager.run.creatureParty.active.filter(c => c != null);
       combat.allies = gameManager.run.creatureParty.active;
 
-      const allAlliesKO = combat.allies.every(a => !a || a.hp <= 0);
+      const allAlliesKO = combat.allies.length === 0 || combat.allies.every(a => !a || a.hp <= 0);
       if (allAlliesKO) {
         combat.active = false;
         gameManager.run.active = false;
@@ -361,6 +366,7 @@ export default function createCombatRoutes({
         chance,
         enemyAttacks: enemyResult.attacks || [],
         koSwaps,
+        koRemovals,
         combatEnded: allAlliesKO,
         allies: combat.allies,
         enemies: combat.enemies,

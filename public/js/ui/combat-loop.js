@@ -45,7 +45,7 @@ import {
 import { showBanner } from '../pixi/banners.js';
 import { playStatusApplied, clearStatusVfx, clearAllStatusVfx } from '../pixi/status-vfx.js';
 import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, syncPixiStatusLabels, clearAllPixiStatusLabels, showNpcSprite as pixiSlideInNpc, hideNpcSprite as pixiSlideOutNpc } from '../pixi/formation.js';
-import { showNpcInDisplay, hideEnemy } from './scene.js';
+import { showNpcInDisplay, hideEnemy, showFormation } from './scene.js';
 import { setScrollState } from '../pixi/parallax.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
@@ -2119,8 +2119,10 @@ async function showNpcSkillAttacksAnimated(result, allyHpMap) {
  * @param {Object} result - Combat cycle result from server
  */
 async function showKoSwapAnimations(result) {
-  if (!result.koSwaps?.length) return;
-  for (const swap of result.koSwaps) {
+  if (!result.koSwaps?.length && !result.koRemovals?.length) return;
+
+  // Swaps: dead creature replaced by reserve
+  for (const swap of (result.koSwaps || [])) {
     // Animate the KO'd creature dying
     const koIndex = swap.slot ?? -1;
     if (koIndex >= 0) {
@@ -2166,6 +2168,32 @@ async function showKoSwapAnimations(result) {
       }
     }
     await delay(800);
+  }
+
+  // Removals: dead creature with no reserve — permanently gone
+  if (result.koRemovals?.length) {
+    for (const removal of result.koRemovals) {
+      const koIndex = removal.slot ?? -1;
+      if (koIndex >= 0) {
+        const slots = document.querySelectorAll('#player-formation .formation-slot');
+        const dyingSlot = slots[koIndex];
+        if (dyingSlot) {
+          dyingSlot.classList.add('creature-dying');
+        }
+        animateKO('player', koIndex);
+      }
+
+      const actionArea = document.getElementById('action-area');
+      if (actionArea) {
+        actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #ff5252;">${t('wasDefeated', removal.name)}</div>`;
+      }
+      await delay(800);
+    }
+
+    // Re-render formation with surviving creatures
+    if (result.creatureParty?.active) {
+      await showFormation('player', result.creatureParty.active, { force: true });
+    }
   }
 }
 

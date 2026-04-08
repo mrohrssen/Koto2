@@ -1361,7 +1361,11 @@ export function awardBattleXp(creatureParty, metaMults = null, itemBuffs = null)
 }
 
 export function handleCreatureKO(creatureParty, koCreatureIndex) {
-  if (creatureParty.reserves.length === 0) return null;
+  if (creatureParty.reserves.length === 0) {
+    // No reserve — permanently remove dead creature from party
+    creatureParty.active[koCreatureIndex] = null;
+    return null;
+  }
   const replacement = creatureParty.reserves.shift();
   creatureParty.active[koCreatureIndex] = replacement;
   resetStatStages(replacement);
@@ -1405,19 +1409,24 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
       combat.enemies, combat.allies, false, gameManager.run?.itemBuffs
     );
 
-    // Handle KO'd allies
+    // Handle KO'd allies — swap reserves in or permanently remove
     const koSwaps = [];
+    const koRemovals = [];
     for (let i = 0; i < combat.allies.length; i++) {
       if (combat.allies[i] && combat.allies[i].hp <= 0) {
+        const deadName = combat.allies[i].nameEn || combat.allies[i].name;
         const replacement = handleCreatureKO(gameManager.run.creatureParty, i);
         if (replacement) {
           koSwaps.push({ slot: i, replacement: replacement.nameEn });
+        } else {
+          koRemovals.push({ slot: i, name: deadName });
         }
       }
     }
+    gameManager.run.creatureParty.active = gameManager.run.creatureParty.active.filter(c => c != null);
     combat.allies = gameManager.run.creatureParty.active;
 
-    const allAlliesKO = combat.allies.every(a => !a || a.hp <= 0);
+    const allAlliesKO = combat.allies.length === 0 || combat.allies.every(a => !a || a.hp <= 0);
     if (allAlliesKO) {
       combat.active = false;
       gameManager.run.active = false;
@@ -1428,6 +1437,7 @@ export function handleBefriendAnswer(gameManager, { roundIndex, selectedIndex })
       correctIndex: round.correctIndex,
       enemyAttacks: enemyResult.attacks || [],
       koSwaps,
+      koRemovals,
       combatEnded: allAlliesKO,
       victory: false,
       allies: combat.allies,

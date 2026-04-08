@@ -261,29 +261,44 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
   }
 
   const koSwaps = [];
+  const koRemovals = [];
   if (partyA) {
     for (let i = 0; i < sideA.length; i++) {
       if (sideA[i] && sideA[i].hp <= 0) {
+        const deadName = sideA[i].nameEn || sideA[i].name;
         const replacement = handleCreatureKO(partyA, i);
         if (replacement) {
           koSwaps.push({ side: 'sideA', index: i, replacement });
+        } else {
+          koRemovals.push({ side: 'sideA', index: i, name: deadName });
         }
       }
+    }
+    // Compact in-place (sideA === partyA.active)
+    for (let i = sideA.length - 1; i >= 0; i--) {
+      if (sideA[i] === null) sideA.splice(i, 1);
     }
   }
   if (partyB) {
     for (let i = 0; i < sideB.length; i++) {
       if (sideB[i] && sideB[i].hp <= 0) {
+        const deadName = sideB[i].nameEn || sideB[i].name;
         const replacement = handleCreatureKO(partyB, i);
         if (replacement) {
           koSwaps.push({ side: 'sideB', index: i, replacement });
+        } else {
+          koRemovals.push({ side: 'sideB', index: i, name: deadName });
         }
       }
     }
+    // Compact in-place (sideB === partyB.active)
+    for (let i = sideB.length - 1; i >= 0; i--) {
+      if (sideB[i] === null) sideB.splice(i, 1);
+    }
   }
 
-  const allADead = sideA.every(c => c.hp <= 0);
-  const allBDead = sideB.every(c => c.hp <= 0);
+  const allADead = sideA.length === 0 || sideA.every(c => !c || c.hp <= 0);
+  const allBDead = sideB.length === 0 || sideB.every(c => !c || c.hp <= 0);
   let winner = null;
   if (allADead && allBDead) winner = 'draw';
   else if (allBDead) winner = 'sideA';
@@ -295,6 +310,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     roundStartEvents,
     counterAttacks,
     koSwaps,
+    koRemovals,
     mpRegens,
     winner,
     sideA,
