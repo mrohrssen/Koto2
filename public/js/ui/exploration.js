@@ -1114,6 +1114,7 @@ let friendlyNpcState = {
   roomId: null,
   fetched: false,
   offered: null,
+  greeting: null,
   choosing: false
 };
 
@@ -1132,6 +1133,7 @@ export async function renderFriendlyNpc() {
       roomId,
       fetched: false,
       offered: null,
+      greeting: null,
       choosing: false
     };
   }
@@ -1186,6 +1188,7 @@ export async function renderFriendlyNpc() {
     }
 
     friendlyNpcState.offered = offered;
+    friendlyNpcState.greeting = resp?.greeting || null;
     if (resp?.state) {
       updateGameState(resp.state);
     }
@@ -1195,15 +1198,25 @@ export async function renderFriendlyNpc() {
   const npc = room?.npc;
   const tutorialStep = getGameState()?.meta?.tutorialStep;
 
+  // Shared word dictionary for token rendering
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+
   // NPC greeting first (blocking during tutorial so player sees it before items)
   if (npc && sceneModule?.showNarration) {
-    const greetings = npc.shopGreetings || ['こんにちは！'];
-    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-    if (tutorialStep === 2) {
-      await sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });
+    const greetingTokens = friendlyNpcState.greeting?.tokens;
+    let greetingContent;
+    if (greetingTokens?.length) {
+      greetingContent = renderJpSentence(greetingTokens, getKnownWords(), wordDict, {}, false);
     } else {
-      // Non-tutorial: non-blocking overlay as before
-      sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });
+      greetingContent = npc.shopGreetings?.[0] || 'こんにちは！';
+    }
+    const narrationOpts = greetingTokens?.length
+      ? { html: true, speaker: npc.nameEn || npc.name }
+      : { speaker: npc.nameEn || npc.name };
+    if (tutorialStep === 2) {
+      await sceneModule.showNarration(greetingContent, narrationOpts);
+    } else {
+      sceneModule.showNarration(greetingContent, narrationOpts);
     }
   }
 
@@ -1211,7 +1224,9 @@ export async function renderFriendlyNpc() {
   renderChoices({
     cards: offers.map(item => ({
       sprite: itemSpriteHtml(item.id, item.word),
-      title: `${item.word} (${item.reading})`,
+      title: item.nameToken
+        ? renderJpSentence([item.nameToken], getKnownWords(), wordDict, {}, false)
+        : `${item.word} (${item.reading})`,
       subtitle: item.nameEn,
       pills: buildItemEffectPills(item),
     })),
