@@ -55,6 +55,7 @@ const strings = {
   dealsHalved:      { en: '{0} deals {1} (halved)',  ja: '{0}が{1}（半減）',
                       tagged: '{0} deals {1} ({halved|半減|はんげん})' },
   swapsIn:          { en: '{0} swaps in!',           ja: '{0}が交代！' },
+  wasDefeated:      { en: '{0} was defeated!',       ja: '{0}が倒れた！' },
   befriended:       { en: 'BEFRIENDED {0}!',         ja: '{0}と友達になった！',
                       tagged: '{BEFRIENDED|友達になった|ともだちになった} {0}!' },
   letItGo:          { en: 'Let it go...',             ja: '見送った…',
