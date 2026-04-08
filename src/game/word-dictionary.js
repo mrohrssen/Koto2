@@ -1,7 +1,7 @@
 /**
  * Loads the word dictionary at server startup.
  * 1. Load base dictionary (data/dictionary.json, 30-50k entries from JMdict)
- * 2. Overlay game data: creatures, moves, items, npcs, npc-skills, areas, glue-words, grammar-words, creature-speech
+ * 2. Overlay game data: creatures, moves, items, npcs, npc-skills, areas, glue-words, grammar-words
  * 3. Game entries replace base entries for their words
  * Returns Map<baseForm, { reading: string, definitions: [{ en: string, primary?: boolean }] }>
  */
@@ -62,13 +62,7 @@ function overlayGameData(dict, filePath, config) {
   if (!existsSync(filePath)) return;
   try {
     const raw = JSON.parse(readFileSync(filePath, 'utf-8'));
-    let entries;
-    if (config.nested) {
-      // creature-speech.json: { trigger: [{ jp, reading, en }] }
-      entries = Object.values(raw).flat();
-    } else {
-      entries = Array.isArray(raw) ? raw : Object.values(raw);
-    }
+    const entries = Array.isArray(raw) ? raw : Object.values(raw);
     for (const entry of entries) {
       const word = entry[config.wordField];
       const reading = entry[config.readingField];
