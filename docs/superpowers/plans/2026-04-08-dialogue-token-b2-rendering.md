@@ -257,6 +257,7 @@ Insert after line 5697 in `game.css`:
   padding: 0 2px;
 }
 
+/* Row 1: romaji — uniform size/weight everywhere, only color varies */
 .jp-dlg-romaji {
   font-size: 8px;
   font-weight: 400;
@@ -267,6 +268,7 @@ Insert after line 5697 in `game.css`:
   line-height: 12px;
 }
 
+/* Row 2: JP text — uniform size/weight everywhere, only color varies */
 .jp-dlg-text {
   font-size: clamp(15px, 4vw, 17px);
   font-weight: 500;
@@ -275,25 +277,29 @@ Insert after line 5697 in `game.css`:
   white-space: nowrap;
 }
 
-/* Reserve consistent height even when empty */
+/* Row 3: English below — uniform size/weight, reserve height even when empty */
 .jp-dlg-en {
+  font-size: 9.5px;
+  font-weight: 500;
+  font-family: 'Inter', 'Pretendard', var(--font-family);
+  letter-spacing: 0.01em;
+  color: transparent;
   height: 16px;
   line-height: 16px;
+  margin-top: 1px;
 }
 
-/* Punctuation/particles — dim text, no romaji visible */
+/* Punctuation/particles — color only */
 .jp-dlg-punct .jp-dlg-text {
-  font-size: clamp(14px, 3.5vw, 16px);
   color: rgba(47, 58, 69, 0.35);
 }
 
-/* ── Unknown/teaching word — amber accent ── */
+/* ── Unknown/teaching word — amber color accent only ── */
 .jp-dlg-unknown .jp-dlg-romaji {
   color: rgba(170, 130, 40, 0.5);
 }
 
 .jp-dlg-unknown .jp-dlg-text {
-  font-weight: 600;
   color: #2f3a45;
   position: relative;
 }
@@ -310,21 +316,15 @@ Insert after line 5697 in `game.css`:
 }
 
 .jp-dlg-unknown .jp-dlg-en {
-  font-size: 9.5px;
-  font-weight: 500;
   color: rgba(170, 130, 40, 0.75);
-  font-family: 'Inter', 'Pretendard', var(--font-family);
-  letter-spacing: 0.01em;
-  margin-top: 1px;
 }
 
-/* ── Entity word (item/creature name) — blue accent ── */
+/* ── Entity word (item/creature name) — blue color accent only ── */
 .jp-dlg-entity .jp-dlg-romaji {
   color: rgba(74, 130, 200, 0.45);
 }
 
 .jp-dlg-entity .jp-dlg-text {
-  font-weight: 600;
   color: var(--accent-blue, #4a9eff);
   position: relative;
 }
@@ -341,12 +341,7 @@ Insert after line 5697 in `game.css`:
 }
 
 .jp-dlg-entity .jp-dlg-en {
-  font-size: 9.5px;
-  font-weight: 500;
   color: rgba(74, 130, 200, 0.65);
-  font-family: 'Inter', 'Pretendard', var(--font-family);
-  letter-spacing: 0.01em;
-  margin-top: 1px;
 }
 ```
 

@@ -14,12 +14,14 @@ Inspired by miHoYo / Genshin Impact UI. Natural sentence flow with clean typogra
 
 ### Visual Treatment Per Word Type
 
-| Type | Romaji | JP Text | English Below | Accent |
-|------|--------|---------|---------------|--------|
-| Known | dim, small | normal weight, slightly muted | empty (height reserved) | none |
-| Unknown (teaching) | amber-tinted | bold, full white | gold, 9.5px | amber underline glow |
-| Entity | blue-tinted | blue-tinted | blue, 9.5px | blue underline glow |
-| Particle/Punct | spacer (no text) | dim, small | empty (height reserved) | none |
+| Type | Romaji color | JP Text color | English Below color | Underline |
+|------|-------------|--------------|--------------------| --------- |
+| Known | dim gray | slightly muted | transparent (height reserved) | none |
+| Unknown (teaching) | amber | dark | amber/gold | amber glow |
+| Entity | blue | blue | blue | blue glow |
+| Particle/Punct | (empty) | dim gray | transparent (height reserved) | none |
+
+**Font size and weight are uniform per row** — romaji is always 8px/400, JP text is always clamp(15-17px)/500, English is always 9.5px/500. Only color changes by word type.
 
 ### HTML Structure (new function output)
 
