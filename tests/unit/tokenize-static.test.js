@@ -71,4 +71,43 @@ describe('tokenize-static output (frames.json)', () => {
     const arigatou = thanks.tokens.find(t => t.base === 'ありがとうございます');
     assert.ok(arigatou, 'should merge ありがとう+ございます into ありがとうございます');
   });
+
+  it('greeting frames have no slot tokens', () => {
+    const greetings = frames.filter(f => f.category === 'greeting');
+    assert.ok(greetings.length >= 5, `expected at least 5 greeting frames, got ${greetings.length}`);
+    for (const frame of greetings) {
+      const slots = frame.tokens.filter(t => t.slot);
+      assert.equal(slots.length, 0, `greeting frame ${frame.id} should have no slots`);
+    }
+  });
+
+  it('greeting i+1 chain: greet_hello has exactly 1 content word', () => {
+    const frame = frames.find(f => f.id === 'greet_hello');
+    assert.ok(frame, 'greet_hello frame should exist');
+    assert.deepEqual(frame.words, ['こんにちは']);
+  });
+
+  it('greeting i+1 chain: greet_hello_please has 2 content words', () => {
+    const frame = frames.find(f => f.id === 'greet_hello_please');
+    assert.ok(frame, 'greet_hello_please frame should exist');
+    assert.ok(frame.words.includes('こんにちは'), 'should have こんにちは');
+    assert.ok(frame.words.includes('どうぞ'), 'should have どうぞ');
+    assert.equal(frame.words.length, 2);
+  });
+
+  it('greeting i+1 chain: greet_welcome_browse has 見る and くださる', () => {
+    const frame = frames.find(f => f.id === 'greet_welcome_browse');
+    assert.ok(frame, 'greet_welcome_browse frame should exist');
+    assert.ok(frame.words.includes('見る'), 'should have 見る');
+    assert.ok(frame.words.includes('くださる'), 'should have くださる');
+  });
+
+  it('いらっしゃいませ is merged into a single token', () => {
+    const frame = frames.find(f => f.id === 'greet_welcome_please');
+    assert.ok(frame, 'greet_welcome_please frame should exist');
+    const irasshaimase = frame.tokens.find(t => t.base === 'いらっしゃいませ');
+    assert.ok(irasshaimase, 'いらっしゃいませ should be a single merged content token');
+    assert.ok(irasshaimase.reading, 'should have reading');
+    assert.ok(irasshaimase.meaning, 'should have meaning');
+  });
 });

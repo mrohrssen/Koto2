@@ -198,3 +198,35 @@ describe('scoreCandidate', () => {
     assert.ok(scoreCandidate(tokensLong, known) > scoreCandidate(tokensShort, known));
   });
 });
+
+describe('greeting selection (no slots)', () => {
+  it('selects eligible greeting frame via isEligible + scoreCandidate', () => {
+    const greet1 = {
+      tokens: [
+        { surface: 'こんにちは', base: 'こんにちは', reading: 'こんにちは', meaning: 'hello' },
+        { surface: '！' },
+      ],
+      words: ['こんにちは'],
+    };
+    const greet2 = {
+      tokens: [
+        { surface: 'こんにちは', base: 'こんにちは', reading: 'こんにちは', meaning: 'hello' },
+        { surface: '、' },
+        { surface: 'どうぞ', base: 'どうぞ', reading: 'どうぞ', meaning: 'please' },
+        { surface: '！' },
+      ],
+      words: ['こんにちは', 'どうぞ'],
+    };
+
+    const knownSet = new Set(['こんにちは']);
+    const frames = [greet1, greet2];
+
+    // Both are eligible (greet1: 0 unknowns, greet2: 1 unknown)
+    const eligible = frames.filter(f => isEligible(f.tokens, knownSet));
+    assert.equal(eligible.length, 2);
+
+    // greet2 scores higher (1 unknown > 0 unknowns)
+    eligible.sort((a, b) => scoreCandidate(b.tokens, knownSet) - scoreCandidate(a.tokens, knownSet));
+    assert.deepEqual(eligible[0].words, ['こんにちは', 'どうぞ']);
+  });
+});
