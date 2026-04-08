@@ -15,7 +15,7 @@ import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswe
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
 import { applyItem } from '../../game/services/item-service.js';
-import { assembleFrame, isEligible, scoreCandidate } from '../../game/token-format.js';
+import { assembleFrame, entityToToken, isEligible, scoreCandidate } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 
@@ -38,6 +38,16 @@ function getShopFrames() {
     _shopFrames = allFrames.filter(f => f.category === 'shop');
   }
   return _shopFrames;
+}
+
+let _greetingFrames = null;
+function getGreetingFrames() {
+  if (!_greetingFrames) {
+    const framesPath = join(__dirname, '../../../data/dialogue/frames.json');
+    const allFrames = JSON.parse(readFileSync(framesPath, 'utf-8'));
+    _greetingFrames = allFrames.filter(f => f.category === 'greeting');
+  }
+  return _greetingFrames;
 }
 
 function loadQuizQuestions() {
@@ -657,16 +667,43 @@ export default function createRunRoutes({
           }
         }
 
+        // Select best greeting frame via i+1
+        const greetingFrames = getGreetingFrames();
+        const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}));
+        const eligibleGreetings = greetingCandidates.filter(c => isEligible(c.tokens, knownSet));
+        if (eligibleGreetings.length > 0) {
+          eligibleGreetings.sort((a, b) => scoreCandidate(b.tokens, knownSet) - scoreCandidate(a.tokens, knownSet));
+          room.friendlyNpc.greeting = eligibleGreetings[0];
+        } else {
+          room.friendlyNpc.greeting = greetingCandidates[0] || null;
+        }
+
+        // Attach entity token for each item's card display
+        for (const item of room.friendlyNpc.offered) {
+          if (!item.word) continue;
+          item.nameToken = entityToToken(item);
+        }
+
         req.saveGame();
-        // Expose item words to SRS
+        // Expose item words + greeting words to SRS
         const itemWords = room.friendlyNpc.offered
           .filter(item => item.word)
           .map(item => ({ word: item.word, meaning: item.nameEn || '' }));
-        if (itemWords.length > 0) {
-          req.gameManager.exposeWords(itemWords);
+        const greetingWords = (room.friendlyNpc.greeting?.words || [])
+          .map(word => {
+            const token = (room.friendlyNpc.greeting?.tokens || []).find(t => t.base === word);
+            return { word, meaning: token?.meaning || '' };
+          });
+        const allExposures = [...itemWords, ...greetingWords];
+        if (allExposures.length > 0) {
+          req.gameManager.exposeWords(allExposures);
         }
       }
-      res.json({ offered: room.friendlyNpc.offered, state: req.getEnrichedGameState() });
+      res.json({
+        offered: room.friendlyNpc.offered,
+        greeting: room.friendlyNpc.greeting || null,
+        state: req.getEnrichedGameState(),
+      });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
