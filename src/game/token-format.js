@@ -39,3 +39,50 @@ export function assembleFrame(frame, entities) {
   }
   return { tokens, words: [...frame.words, ...extraWords] };
 }
+
+const SENTENCE_ENDERS = '。！？!?';
+
+/**
+ * Per-sentence i+1 eligibility check.
+ *
+ * - Sentence without entity token: max 1 unknown content word
+ * - Sentence with entity token:    max 2 unknown content words
+ * - Sentence boundaries: 。！？!?
+ * - Tokens without a `base` field are punctuation/particles (skipped)
+ */
+export function isEligible(tokens, knownWords) {
+  let unknowns = 0;
+  let hasEntity = false;
+  for (const token of tokens) {
+    if (!token.base) {
+      if (SENTENCE_ENDERS.includes(token.surface)) {
+        const max = hasEntity ? 2 : 1;
+        if (unknowns > max) return false;
+        unknowns = 0;
+        hasEntity = false;
+      }
+      continue;
+    }
+    if (token.entity) hasEntity = true;
+    if (!knownWords.has(token.base)) unknowns++;
+  }
+  const max = hasEntity ? 2 : 1;
+  return unknowns <= max;
+}
+
+/**
+ * Score assembled tokens for candidate ranking.  Higher = better.
+ * Priority: more unknowns → has entity → more content tokens.
+ */
+export function scoreCandidate(tokens, knownWords) {
+  let unknowns = 0;
+  let hasEntity = false;
+  let contentCount = 0;
+  for (const token of tokens) {
+    if (!token.base) continue;
+    contentCount++;
+    if (token.entity) hasEntity = true;
+    if (!knownWords.has(token.base)) unknowns++;
+  }
+  return unknowns * 1000 + (hasEntity ? 100 : 0) + contentCount;
+}
