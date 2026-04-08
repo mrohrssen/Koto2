@@ -5680,14 +5680,15 @@ textarea,
 }
 
 /* ── Sentence renderer (B2 token display) ─────────────────────── */
-.jp-word { display: inline-block; margin: 0 1px; }
+.jp-word { display: inline-block; margin: 0; }
 .jp-known { /* blends into sentence flow */ }
 .jp-unknown, .jp-entity {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 2px;
-  margin: 0 2px;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
 }
 .jp-word ruby rt {
   font-size: 8px;
