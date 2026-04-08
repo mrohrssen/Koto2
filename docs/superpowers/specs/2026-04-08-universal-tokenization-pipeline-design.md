@@ -274,3 +274,23 @@ Sudachi only runs in the daily batch job and the deploy-time build script — ne
 - Entity JSON structure (items, creatures, moves, NPCs) — fields already have what we need
 - Exposure tracking (`exposeWords()`) — same interface, fed `words` arrays from TokenizedText
 - Forge skills — already produce the entity fields needed for `entityToToken()`
+
+## Implementation Scope
+
+**Phase 1 (implement now): Shop item purchase proof-of-concept.**
+
+Prove the full pipeline end-to-end using the existing shop system (`{item}をください` and similar shop frames). This is the narrowest slice that exercises every layer:
+
+- Universal token format
+- Entity-to-token mapping (items only)
+- Frame tokenization via Sudachi (shop buy-frames only)
+- Frame + entity assembly
+- Per-sentence eligibility checking with entity-aware scoring
+- Rendering via `renderJpSentence()` from assembled tokens
+- Exposure tracking on view
+
+The shop system already has a working prototype of this pattern (shopTokens, shopContentWords, shopOverrides). Phase 1 replaces that ad-hoc implementation with the universal system.
+
+**Phase 2+ (later): Roll out to other systems.**
+
+Once Phase 1 proves the architecture works, extend to combat barks, NPC greetings, creature names, AI-generated dialogue, and other game text. The token format and runtime operations are designed for this — Phase 2+ is content migration, not architecture work.
