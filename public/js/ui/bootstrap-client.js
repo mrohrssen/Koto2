@@ -133,7 +133,8 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
       || dictEntry?.definitions?.[0]?.en
       || '';
 
-    return `<span class="jp-word jp-unknown">`
+    const typeClass = token.entity ? 'jp-entity' : 'jp-unknown';
+    return `<span class="jp-word ${typeClass}">`
       + `<ruby>${esc(displayReading)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
       + `<span class="jp-stack-en">${esc(enDef)}</span>`
       + `</span>`;

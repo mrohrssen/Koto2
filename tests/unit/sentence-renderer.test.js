@@ -103,12 +103,13 @@ describe('renderJpSentence — universal token format', () => {
     assert.ok(html.includes('を'));
   });
 
-  it('renders entity tokens the same as content words', () => {
+  it('renders entity tokens with jp-entity class', () => {
     const tokens = [
       { surface: '火竜', base: '火竜', reading: 'かりゅう', meaning: 'Fire Dragon', entity: true },
     ];
     const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
-    assert.ok(html.includes('jp-unknown'));
+    assert.ok(html.includes('jp-entity'), 'should have jp-entity class');
+    assert.ok(!html.includes('jp-unknown'), 'should NOT have jp-unknown class');
     assert.ok(html.includes('Fire Dragon'));
   });
 });
