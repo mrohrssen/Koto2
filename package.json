@@ -9,7 +9,7 @@
     "dev": "npx concurrently --names server,vite --prefix-colors blue,green \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "node --watch server.js",
     "dev:client": "vite",
-    "build": "vite build",
+    "build": "node scripts/tokenize-static.js && vite build",
     "preview": "vite preview",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "c8 node --experimental-test-module-mocks --test 'tests/unit/**/*.test.js'",
