@@ -58,27 +58,26 @@ describe('tokenize-static output (frames.json)', () => {
     }
   });
 
-  it('demotes です, ます, する to surface-only', () => {
+  it('demotes です to surface-only when not merged', () => {
     const buyWant = frames.find(f => f.id === 'buy_want');
     const desu = buyWant.tokens.find(t => t.surface === 'です');
     assert.ok(desu, 'should have です token');
     assert.equal(desu.base, undefined, 'です should be surface-only (demoted)');
-
-    const buyPlease = frames.find(f => f.id === 'buy_please_give');
-    const masu = buyPlease.tokens.find(t => t.surface === 'ます');
-    assert.ok(masu, 'should have ます token');
-    assert.equal(masu.base, undefined, 'ます should be surface-only (demoted)');
   });
 
-  it('demotes counter suffixes and honorific prefixes', () => {
+  it('merges adjacent tokens into dictionary entries (一つ, お願いします, すみません)', () => {
     const buyCount = frames.find(f => f.id === 'buy_counting');
-    const tsu = buyCount.tokens.find(t => t.surface === 'つ');
-    assert.ok(tsu, 'should have つ token');
-    assert.equal(tsu.base, undefined, 'counter suffix つ should be surface-only');
+    const hitotsu = buyCount.tokens.find(t => t.base === '一つ');
+    assert.ok(hitotsu, 'should merge 一+つ into 一つ');
+    assert.equal(hitotsu.surface, '一つ');
 
     const buyPlease = frames.find(f => f.id === 'buy_please_give');
-    const o = buyPlease.tokens.find(t => t.surface === 'お');
-    assert.ok(o, 'should have お token');
-    assert.equal(o.base, undefined, 'honorific prefix お should be surface-only');
+    const onegai = buyPlease.tokens.find(t => t.base === 'お願いします');
+    assert.ok(onegai, 'should merge お+願い+し+ます into お願いします');
+
+    const buyExcuse = frames.find(f => f.id === 'buy_excuse_me');
+    const sumimasen = buyExcuse.tokens.find(t => t.base === 'すみません');
+    assert.ok(sumimasen, 'should merge すみ+ませ+ん into すみません');
+    assert.equal(sumimasen.meaning, 'excuse me/sorry');
   });
 });

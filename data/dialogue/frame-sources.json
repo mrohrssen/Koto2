@@ -28,5 +28,11 @@
     "category": "shop",
     "raw": "{item}をお願いします",
     "slots": ["item"]
+  },
+  {
+    "id": "buy_excuse_me",
+    "category": "shop",
+    "raw": "すみません、{item}をください",
+    "slots": ["item"]
   }
 ]

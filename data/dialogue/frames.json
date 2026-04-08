@@ -55,13 +55,10 @@
         "surface": "を"
       },
       {
-        "surface": "一",
-        "base": "一",
-        "reading": "ひと",
-        "meaning": "one / 1"
-      },
-      {
-        "surface": "つ"
+        "surface": "一つ",
+        "base": "一つ",
+        "reading": "ひとつ",
+        "meaning": "one"
       },
       {
         "surface": "ください",
@@ -71,7 +68,7 @@
       }
     ],
     "words": [
-      "一",
+      "一つ",
       "くださる"
     ]
   },
@@ -112,23 +109,46 @@
         "surface": "を"
       },
       {
-        "surface": "お"
-      },
-      {
-        "surface": "願い",
-        "base": "願う",
-        "reading": "ねがい",
-        "meaning": "to desire / to wish / to hope"
-      },
-      {
-        "surface": "し"
-      },
-      {
-        "surface": "ます"
+        "surface": "お願いします",
+        "base": "お願いします",
+        "reading": "おねがいします",
+        "meaning": "please"
       }
     ],
     "words": [
-      "願う"
+      "お願いします"
+    ]
+  },
+  {
+    "id": "buy_excuse_me",
+    "category": "shop",
+    "raw": "すみません、{item}をください",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "すみません",
+        "base": "すみません",
+        "reading": "すみません",
+        "meaning": "excuse me/sorry"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      }
+    ],
+    "words": [
+      "すみません",
+      "くださる"
     ]
   }
 ]

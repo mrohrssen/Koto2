@@ -34,6 +34,7 @@ const DEMOTED_BASE_FORMS = new Set([
 ]);
 
 function isDemoted(sudachiToken) {
+  if (sudachiToken.pos === '_merged') return false; // dictionary-merged tokens are always content
   if (DEMOTED_POS.has(sudachiToken.pos)) return true;
   if (DEMOTED_BASE_FORMS.has(sudachiToken.baseForm)) return true;
   if (/^[\p{P}\p{S}\s]+$/u.test(sudachiToken.surface)) return true;
@@ -96,6 +97,40 @@ function main() {
   const textsToTokenize = segmentMap.map(s => s.segmentText);
   const allSegmentTokens = tokenizeBatch(textsToTokenize);
 
+  // Merge adjacent Sudachi tokens that form dictionary entries.
+  // Sudachi splits morphologically (すみません → すむ+ます+ぬ) but learners
+  // treat these as single vocabulary units. The dictionary has them as entries.
+  // Greedy longest-match: try 4, 3, 2 adjacent tokens, take first dictionary hit.
+  const MAX_MERGE = 5;
+
+  function mergeSudachiTokens(sudachiTokens) {
+    const merged = [];
+    let i = 0;
+    while (i < sudachiTokens.length) {
+      let matched = false;
+      for (let len = Math.min(MAX_MERGE, sudachiTokens.length - i); len >= 2; len--) {
+        const combined = sudachiTokens.slice(i, i + len).map(t => t.surface).join('');
+        const dictEntry = wordDict.get(combined);
+        if (dictEntry) {
+          merged.push({
+            surface: combined,
+            baseForm: combined,
+            pos: '_merged',  // signals this was merged from dictionary — skip demotion
+            reading: dictEntry.reading || combined,
+          });
+          i += len;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        merged.push(sudachiTokens[i]);
+        i++;
+      }
+    }
+    return merged;
+  }
+
   // Reassemble frames from tokenized segments
   const frameTokens = sources.map(() => ({ tokens: [], words: [] }));
 
@@ -108,8 +143,9 @@ function main() {
       frame.tokens.push({ slot: slotBefore });
     }
 
-    // Process Sudachi tokens for this segment
-    for (const st of allSegmentTokens[i]) {
+    // Merge adjacent tokens that form dictionary entries, then convert
+    const mergedTokens = mergeSudachiTokens(allSegmentTokens[i]);
+    for (const st of mergedTokens) {
       const { token, isContent } = toUniversalToken(st, wordDict);
       frame.tokens.push(token);
       if (isContent) frame.words.push(token.base);
