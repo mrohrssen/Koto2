@@ -29,35 +29,35 @@ Every word gets a consistent 3-row flex column:
 
 ```html
 <!-- Known word -->
-<span class="jp-dlg jp-dlg-known">
-  <span class="jp-dlg-romaji">kudasai</span>
-  <span class="jp-dlg-text">ください</span>
-  <span class="jp-dlg-en"></span>
+<span class="jp-word jp-known">
+  <span class="jp-romaji">kudasai</span>
+  <span class="jp-text">ください</span>
+  <span class="jp-en"></span>
 </span>
 
 <!-- Unknown/teaching word -->
-<span class="jp-dlg jp-dlg-unknown">
-  <span class="jp-dlg-romaji">yukkuri</span>
-  <span class="jp-dlg-text">ゆっくり</span>
-  <span class="jp-dlg-en">slowly</span>
+<span class="jp-word jp-unknown">
+  <span class="jp-romaji">yukkuri</span>
+  <span class="jp-text">ゆっくり</span>
+  <span class="jp-en">slowly</span>
 </span>
 
 <!-- Entity word (item/creature name) -->
-<span class="jp-dlg jp-dlg-entity">
-  <span class="jp-dlg-romaji">yakusou</span>
-  <span class="jp-dlg-text">やくそう</span>
-  <span class="jp-dlg-en">Medicinal Herb</span>
+<span class="jp-word jp-entity">
+  <span class="jp-romaji">yakusou</span>
+  <span class="jp-text">やくそう</span>
+  <span class="jp-en">Medicinal Herb</span>
 </span>
 
 <!-- Punctuation/particle -->
-<span class="jp-dlg jp-dlg-punct">
-  <span class="jp-dlg-romaji"></span>
-  <span class="jp-dlg-text">、</span>
-  <span class="jp-dlg-en"></span>
+<span class="jp-word jp-punct">
+  <span class="jp-romaji"></span>
+  <span class="jp-text">、</span>
+  <span class="jp-en"></span>
 </span>
 ```
 
-Uses `jp-dlg-*` prefix to avoid collision with existing `jp-word`/`jp-unknown` classes.
+Reuses existing parent classes (`jp-word`, `jp-known`, `jp-unknown`, `jp-punct`), adds `jp-entity`. Child spans (`jp-romaji`, `jp-text`, `jp-en`) replace `<ruby>` and `jp-stack-en`.
 
 ## Approach
 
@@ -65,13 +65,13 @@ Uses `jp-dlg-*` prefix to avoid collision with existing `jp-word`/`jp-unknown` c
 
 Rewrite the HTML output of `renderJpSentence` in `bootstrap-client.js`. Same function, same signature, same callers. No new function needed.
 
-Token classification logic (known/unknown/entity/punct) stays identical. Only the HTML output changes — drops `<ruby>` tags, uses 3-row flex column structure with `jp-dlg-*` classes.
+Token classification logic (known/unknown/entity/punct) stays identical. Only the HTML output changes — drops `<ruby>` tags, uses 3-row flex column structure with existing class names + new child spans.
 
 Entity detection: `token.entity === true` (already set by `entityToToken()` on the server).
 
-### CSS: Base `jp-dlg-*` styles (no scoping)
+### CSS: Rewrite existing class styles (no scoping)
 
-Replace old `jp-word`/`jp-unknown` CSS block in `game.css` with `jp-dlg-*` base styles. No scoping to `.narration-text` — same styles apply everywhere (narration, speech bubbles, item cards). Future context-specific overrides can be added later.
+Rewrite the `jp-word`/`jp-unknown`/`jp-punct` CSS block in `game.css` for the new 3-row structure. Same class names, new layout. Add `jp-entity`, `jp-romaji`, `jp-text`, `jp-en`. No scoping — same styles apply everywhere. Future context-specific overrides can be added later.
 
 - Uniform font-size/weight per row, only color varies by word type
 - Consistent height slots: romaji row 12px, en-below row 16px
@@ -100,7 +100,7 @@ All existing callers of `renderJpSentence` get the new output automatically:
 | File | Change |
 |------|--------|
 | `public/js/ui/bootstrap-client.js` | Rewrite `renderJpSentence` HTML output (same function, new structure) |
-| `public/game.css` | Replace `jp-word`/`jp-unknown` CSS with `jp-dlg-*` base styles |
+| `public/game.css` | Rewrite `jp-word`/`jp-unknown`/`jp-punct` CSS for new structure |
 | `tests/unit/sentence-renderer.test.js` | Update assertions for new HTML structure |
 
 ## Testing
