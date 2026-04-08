@@ -16,5 +16,35 @@
     "category": "shop",
     "raw": "{item}をください。ありがとうございます。",
     "slots": ["item"]
+  },
+  {
+    "id": "greet_hello",
+    "category": "greeting",
+    "raw": "こんにちは！",
+    "slots": []
+  },
+  {
+    "id": "greet_hello_please",
+    "category": "greeting",
+    "raw": "こんにちは、どうぞ！",
+    "slots": []
+  },
+  {
+    "id": "greet_welcome_please",
+    "category": "greeting",
+    "raw": "いらっしゃいませ、どうぞ！",
+    "slots": []
+  },
+  {
+    "id": "greet_welcome_slow",
+    "category": "greeting",
+    "raw": "いらっしゃいませ、ゆっくりどうぞ！",
+    "slots": []
+  },
+  {
+    "id": "greet_welcome_browse",
+    "category": "greeting",
+    "raw": "いらっしゃいませ、ゆっくり見てください！",
+    "slots": []
   }
 ]

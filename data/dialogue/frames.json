@@ -87,5 +87,161 @@
       "くださる",
       "ありがとうございます"
     ]
+  },
+  {
+    "id": "greet_hello",
+    "category": "greeting",
+    "raw": "こんにちは！",
+    "tokens": [
+      {
+        "surface": "こんにちは",
+        "base": "こんにちは",
+        "reading": "こんにちは",
+        "meaning": "hello"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "こんにちは"
+    ]
+  },
+  {
+    "id": "greet_hello_please",
+    "category": "greeting",
+    "raw": "こんにちは、どうぞ！",
+    "tokens": [
+      {
+        "surface": "こんにちは",
+        "base": "こんにちは",
+        "reading": "こんにちは",
+        "meaning": "hello"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "どうぞ",
+        "base": "どうぞ",
+        "reading": "どうぞ",
+        "meaning": "please / kindly / pray / I beg (of you)"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "こんにちは",
+      "どうぞ"
+    ]
+  },
+  {
+    "id": "greet_welcome_please",
+    "category": "greeting",
+    "raw": "いらっしゃいませ、どうぞ！",
+    "tokens": [
+      {
+        "surface": "いらっしゃいませ",
+        "base": "いらっしゃいませ",
+        "reading": "いらっしゃいませ",
+        "meaning": "welcome"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "どうぞ",
+        "base": "どうぞ",
+        "reading": "どうぞ",
+        "meaning": "please / kindly / pray / I beg (of you)"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いらっしゃいませ",
+      "どうぞ"
+    ]
+  },
+  {
+    "id": "greet_welcome_slow",
+    "category": "greeting",
+    "raw": "いらっしゃいませ、ゆっくりどうぞ！",
+    "tokens": [
+      {
+        "surface": "いらっしゃいませ",
+        "base": "いらっしゃいませ",
+        "reading": "いらっしゃいませ",
+        "meaning": "welcome"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "ゆっくり",
+        "base": "ゆっくり",
+        "reading": "ゆっくり",
+        "meaning": "slowly / unhurriedly / without haste / leisurely / at one's leisure"
+      },
+      {
+        "surface": "どうぞ",
+        "base": "どうぞ",
+        "reading": "どうぞ",
+        "meaning": "please / kindly / pray / I beg (of you)"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いらっしゃいませ",
+      "ゆっくり",
+      "どうぞ"
+    ]
+  },
+  {
+    "id": "greet_welcome_browse",
+    "category": "greeting",
+    "raw": "いらっしゃいませ、ゆっくり見てください！",
+    "tokens": [
+      {
+        "surface": "いらっしゃいませ",
+        "base": "いらっしゃいませ",
+        "reading": "いらっしゃいませ",
+        "meaning": "welcome"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "ゆっくり",
+        "base": "ゆっくり",
+        "reading": "ゆっくり",
+        "meaning": "slowly / unhurriedly / without haste / leisurely / at one's leisure"
+      },
+      {
+        "surface": "見て",
+        "base": "見て",
+        "reading": "みて",
+        "meaning": "Look!"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いらっしゃいませ",
+      "ゆっくり",
+      "見て",
+      "くださる"
+    ]
   }
 ]
