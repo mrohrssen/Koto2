@@ -76,3 +76,39 @@ describe('renderJpSentence', () => {
     assert.equal(renderJpSentence(null, new Set(), wordDict), '');
   });
 });
+
+describe('renderJpSentence — universal token format', () => {
+  it('renders known content word with ruby (new format)', () => {
+    const tokens = [
+      { surface: 'お茶', base: 'お茶', reading: 'おちゃ', meaning: 'Tea' },
+    ];
+    const html = renderJpSentence(tokens, new Set(['お茶']), new Map(), {}, false);
+    assert.ok(html.includes('jp-known'));
+    assert.ok(html.includes('おちゃ'));
+  });
+
+  it('renders unknown content word with meaning from token (new format)', () => {
+    const tokens = [
+      { surface: 'お茶', base: 'お茶', reading: 'おちゃ', meaning: 'Tea' },
+    ];
+    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    assert.ok(html.includes('jp-unknown'));
+    assert.ok(html.includes('Tea'));
+  });
+
+  it('renders surface-only token as punctuation (new format)', () => {
+    const tokens = [{ surface: 'を' }];
+    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    assert.ok(html.includes('jp-punct'));
+    assert.ok(html.includes('を'));
+  });
+
+  it('renders entity tokens the same as content words', () => {
+    const tokens = [
+      { surface: '火竜', base: '火竜', reading: 'かりゅう', meaning: 'Fire Dragon', entity: true },
+    ];
+    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    assert.ok(html.includes('jp-unknown'));
+    assert.ok(html.includes('Fire Dragon'));
+  });
+});

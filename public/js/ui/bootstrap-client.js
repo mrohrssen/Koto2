@@ -98,16 +98,23 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
   if (!tokens || tokens.length === 0) return '';
 
   return tokens.map(token => {
-    const { surface, baseForm, pos, reading } = token;
+    const { surface } = token;
 
-    // Punctuation: render as-is
-    if (PUNCT_POS.has(pos) || /^[\p{P}\p{S}\s]+$/u.test(surface)) {
+    // Detect format: universal uses `base`, legacy uses `baseForm`
+    const baseForm = token.base || token.baseForm;
+    const reading = token.reading;
+
+    // Non-content token: no base field → render as punctuation
+    // (universal format) OR legacy POS-based detection
+    const isNonContent = !baseForm
+      || (token.pos && (PUNCT_POS.has(token.pos) || /^[\p{P}\p{S}\s]+$/u.test(surface)));
+
+    if (isNonContent) {
       return `<span class="jp-punct">${esc(surface)}</span>`;
     }
 
     const isKnown = knownWords.has(baseForm);
-    const dictEntry = wordDict.get(baseForm);
-    const displayReading = reading || dictEntry?.reading || surface;
+    const displayReading = reading || surface;
 
     if (isKnown) {
       const display = useKanji ? surface : displayReading;
@@ -116,8 +123,12 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
         + `</span>`;
     }
 
-    // Unknown word: vertical stack with English
-    const enDef = overrides[baseForm]
+    // Unknown word: get English definition
+    // Universal format: meaning baked into token
+    // Legacy format: overrides → wordDict lookup
+    const dictEntry = wordDict.get(baseForm);
+    const enDef = token.meaning
+      || overrides[baseForm]
       || dictEntry?.definitions?.find(d => d.primary)?.en
       || dictEntry?.definitions?.[0]?.en
       || '';
