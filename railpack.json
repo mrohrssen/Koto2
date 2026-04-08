@@ -1,0 +1,21 @@
+{
+  "provider": "node",
+  "packages": {
+    "node": "20",
+    "python": "3.13"
+  },
+  "steps": {
+    "python-deps": {
+      "commands": ["pip install -r requirements.txt"]
+    },
+    "install": {
+      "commands": ["npm ci"]
+    },
+    "build": {
+      "commands": ["npm run build"]
+    }
+  },
+  "deploy": {
+    "startCommand": "npm start"
+  }
+}
