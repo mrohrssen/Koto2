@@ -4,9 +4,15 @@
 
 ## Problem
 
-The game shows Japanese text everywhere — NPC dialogue, item names, creature names, combat barks, AI narration. Each of these currently handles tokenization, vocab checking, and rendering differently. The shop system tokenizes at offer time via Sudachi. The dialogue filter calls JPDB `/parse` at runtime. AI narration goes through vocab-repair. Creature/item names are rendered ad-hoc.
+The game shows Japanese text everywhere — NPC dialogue, item names, creature names, combat barks, AI narration. Each of these currently handles tokenization, vocab checking, and rendering differently. The shop system tokenized at offer time via Sudachi. The dialogue filter calls JPDB `/parse` at runtime. AI narration goes through vocab-repair. Creature/item names are rendered ad-hoc.
 
 We need a unified system where every piece of Japanese text the player sees is pre-tokenized into the same format, enabling consistent i+1 selection, rendering, and exposure tracking regardless of the text's origin.
+
+## Status
+
+**Phase 1 (Shop proof-of-concept): COMPLETE and TESTED.**
+
+Validated locally on 2026-04-08 with live playtesting. The shop system uses pre-tokenized frames with i+1 selection, universal token rendering, and base-form exposure tracking. All 1183 unit tests + 17 integration tests passing.
 
 ## Universal Token Format
 
@@ -15,12 +21,13 @@ Every piece of Japanese text — handwritten or AI-generated — is stored as a 
 ```json
 {
   "tokens": [
+    {"surface": "すみません", "base": "すみません", "reading": "すみません", "meaning": "excuse me/sorry"},
+    {"surface": "、"},
     {"surface": "薬草", "base": "薬草", "reading": "やくそう", "meaning": "Medicinal Herb", "entity": true},
     {"surface": "を"},
-    {"surface": "一つ", "base": "一つ", "reading": "ひとつ", "meaning": "one (thing)"},
-    {"surface": "ください", "base": "くださる", "reading": "ください", "meaning": "please give"}
+    {"surface": "ください", "base": "くださる", "reading": "ください", "meaning": "to give / to confer / to bestow"}
   ],
-  "words": ["薬草", "一つ", "くださる"]
+  "words": ["すみません", "薬草", "くださる"]
 }
 ```
 
@@ -37,7 +44,7 @@ Every piece of Japanese text — handwritten or AI-generated — is stored as a 
 
 - **Content words:** All four fields required. `base` is the dictionary form (what gets tracked for exposure). `reading` is the surface form's pronunciation in hiragana (converted from Sudachi's katakana). `meaning` comes from game entity override first, then JP→EN dictionary.
 - **Punctuation and particles:** `surface` only. Absence of `base` means "not a trackable word." Particles (が, を, に, て, etc.) are treated the same as punctuation in this format.
-- **Grammatical demotions:** Certain words that Sudachi tokenizes with a base form are demoted to surface-only (non-content) because they function as grammar, not vocabulary. The tokenizer post-processing step demotes: auxiliary verbs in compound constructions (いる/ある/しまう in ている/てある/てしまう), copulas (だ, です), and other grammatical auxiliaries (ます, ない, た, etc.). These are always-known grammar the player doesn't need to "learn" as vocabulary.
+- **Grammatical demotions:** Certain words that Sudachi tokenizes with a base form are demoted to surface-only because they function as grammar, not vocabulary. The tokenizer post-processing step demotes: auxiliary verbs in compound constructions (いる/ある/しまう in ている/てある/てしまう), copulas (だ, です), grammatical auxiliaries (ます, ない, た, する, etc.), counter suffixes (接尾辞 like つ in 一つ), and honorific prefixes (接頭辞 like お in お願い).
 - **Game entities:** Same as content words plus `entity: true`. Used by the selection logic to allow 2 unknowns per sentence instead of 1.
 - **Slot tokens:** Only appear in frame templates before assembly. Replaced with entity tokens at runtime.
 - **`words` array:** Pre-extracted base forms of all content words (including entities). Flat list — no sentence grouping. Used for exposure tracking.
@@ -53,6 +60,64 @@ Surface form may differ from base form for conjugated verbs/adjectives. The rend
 | 買いたい | 買う | かいたい | buy |
 | 強い | 強い | つよい | strong |
 
+## Tokenization Pipeline: Sudachi + Dictionary Merge
+
+### Why not Sudachi alone?
+
+Sudachi is a morphological analyzer — it correctly decomposes Japanese morphology, but language learners think in vocabulary units, not morphemes. Sudachi Mode A splits:
+
+| Phrase | Sudachi output | Learner expects |
+|--------|---------------|----------------|
+| すみません | すむ + ます + ぬ | すみません (excuse me) |
+| お茶 | お + 茶 | お茶 (tea) |
+| 一つ | 一 + つ | 一つ (one thing) |
+| おはようございます | おはよう + ござる + ます | おはようございます (good morning) |
+| お願いします | お + 願い + し + ます | お願いします (please) |
+| ありがとうございます | ありがとう + ござい + ます | ありがとうございます (thank you) |
+
+**All three Sudachi modes (A, B, C) produce the same splits** for these phrases — switching modes does not fix the problem. Only Mode C improves おはようございます.
+
+### The merge step
+
+After Sudachi tokenizes, we scan adjacent tokens and check if their concatenated surfaces match a dictionary entry. If so, merge them into a single token with the dictionary's reading and meaning. Greedy longest-match, up to 5 adjacent tokens.
+
+The dictionary (`data/dictionary.json`, 38k entries from JPDB data) serves as the merge lookup. Any compound that a learner treats as one word should be a dictionary entry.
+
+**Validated merges in production:**
+- すみ + ませ + ん → すみません (3 tokens merged)
+- ありがとう + ござい + ます → ありがとうございます (3 tokens merged)
+- お + 願い + し + ます → お願いします (4 tokens merged)
+- 一 + つ → 一つ (2 tokens merged)
+- お + 茶 → お茶 (2 tokens merged)
+
+Merged tokens are marked with `pos: '_merged'` internally so they skip the demotion step (they're always content words by definition — they matched a dictionary entry).
+
+### Comparison: Sudachi+Merge vs JPDB `/parse`
+
+Tested 20 sentences ranging from beginner to advanced, including slang, keigo, Kansai dialect, and edge cases:
+
+| Category | Sudachi+Merge | JPDB |
+|----------|--------------|------|
+| Common set phrases (すみません, ありがとう, etc.) | Correct (via merge) | Correct |
+| Compounds in dictionary (外国人, 参政権, かもしれない) | Correct (via merge) | Correct |
+| Compounds NOT in dictionary (申し訳ございません) | Fails — stays split | Correct |
+| Slang (マジパネェ, あざっす) | Correct | Partially fails |
+| Half-width katakana (ｱﾘｶﾞﾄｺﾞｻﾞｲﾏｽ) | Correct | Fails (empty result) |
+| Kansai dialect (行かへんかったら) | Partially correct | Fails |
+| Grammar stripping (ている, させられる) | Keeps morphemes visible | Aggressively collapses |
+
+**For our use case** (handwritten game dialogue for beginners), Sudachi+Merge is sufficient. The cases where JPDB is better (keigo, advanced compounds) won't appear in early game content.
+
+### Planned upgrade: JMDict dictionary
+
+Our current `dictionary.json` has 38k entries. JMDict (the open-source Japanese-English dictionary that JPDB itself builds on) has **216k entries / 458k unique surface forms**. CC-BY-SA licensed, updated daily.
+
+Every compound we tested that our dictionary missed (申し訳ございません, 東日本, etc.) exists in JMDict. Upgrading the merge lookup from 38k to 458k surface forms would dramatically improve compound coverage.
+
+JMDict has meanings + readings but no frequency data. Combine with the JPDB v2.2 frequency CSV (274k entries with frequency ranks) for the complete picture.
+
+**Status:** Design in progress. Will replace `dictionary.json` with JMDict + JPDB frequency after Phase 1 is validated on Railway.
+
 ## Three Tokenization Pipelines
 
 All three pipelines produce the same `TokenizedText` format. The renderer and exposure tracker don't know which pipeline produced it.
@@ -63,56 +128,39 @@ Items, creatures, moves, and NPCs already contain all token data in their JSON d
 
 ```js
 function entityToToken(entity) {
-  return {
-    surface: entity.word,     // or baseWord, name — varies by entity type
-    base: entity.word,
-    reading: entity.reading,  // or baseReading
-    meaning: entity.nameEn,   // or baseMeaning
-    entity: true
-  };
+  const surface = entity.word || entity.baseWord || entity.name;
+  const reading = entity.reading || entity.baseReading;
+  const meaning = entity.nameEn || entity.baseMeaning;
+  return { surface, base: surface, reading, meaning, entity: true };
 }
 ```
-
-This runs at the point of use (assembly time). Entity JSON fields are the source of truth — forge skills (`/creature-forge`, `/item-forge`, etc.) already produce these fields at creation time.
 
 ### Pipeline 2: Handwritten Frames (Sudachi at build time)
 
-Dialogue frames are templates with slot markers for entities. The frame text (everything except the slot) is tokenized by Sudachi at build/deploy time.
+Dialogue frames are hand-curated templates with slot markers for entities. The frame text is tokenized by Sudachi + dictionary merge at build/deploy time.
 
-**Example source frame:**
-```
-"{item}を一つください"
-```
+**Current shop frames (hand-curated):**
 
-**Tokenized output (stored in `data/dialogue/frames.json`):**
-```json
-{
-  "id": "buy_polite_counting",
-  "category": "shop",
-  "raw": "{item}を一つください",
-  "tokens": [
-    {"slot": "item"},
-    {"surface": "を"},
-    {"surface": "一つ", "base": "一つ", "reading": "ひとつ", "meaning": "one (thing)"},
-    {"surface": "ください", "base": "くださる", "reading": "ください", "meaning": "please give"}
-  ],
-  "words": ["一つ", "くださる"]
-}
-```
+| ID | Raw | Content words |
+|----|-----|---------------|
+| buy_polite | `{item}をください` | くださる |
+| buy_excuse_me | `すみません、{item}をください` | すみません, くださる |
+| buy_thanks | `{item}をください。ありがとうございます。` | くださる, ありがとうございます |
 
-A build script (`scripts/tokenize-static.js`) reads all frame sources, runs them through Sudachi, enriches with meanings, and writes the tokenized JSON. A content-hash cache makes re-runs fast and idempotent — unchanged frames skip re-tokenization.
+Build script (`scripts/tokenize-static.js`) reads `data/dialogue/frame-sources.json`, splits at slot markers, batch-tokenizes segments via Sudachi, merges adjacent tokens against the dictionary, enriches with meanings, and writes `data/dialogue/frames.json`.
 
 **Why Sudachi for handwritten frames:** Consistency. If the handwritten base form for ください is "くださる" but Sudachi would produce something different for the same word in AI-generated text, exposure counters diverge. Sudachi as the single authority for all base forms prevents this.
 
 ### Pipeline 3: AI-Generated Dialogue (Sudachi in daily batch)
 
-AI dialogue is generated per-user once every 24 hours. After generation, the raw text is tokenized by Sudachi and enriched with meanings:
+AI dialogue is generated per-user once every 24 hours. After generation, the raw text is tokenized by Sudachi + dictionary merge and enriched with meanings:
 
 1. Daily batch generates raw Japanese text per user (NPC lines, narration, descriptions)
-2. Batch pipes generated text through Sudachi → gets `{surface, base, reading}` per token
-3. Enrichment adds `meaning`: entity override table first, then JP→EN dictionary
-4. Tokenized output stored per-user alongside the raw text
-5. At runtime, fetch pre-tokenized version — no tokenization needed
+2. Batch pipes generated text through Sudachi → dictionary merge → meaning enrichment
+3. Tokenized output stored per-user alongside the raw text
+4. At runtime, fetch pre-tokenized version — no tokenization needed
+
+**Status:** Not yet implemented. Designed for Phase 2+.
 
 ## Runtime Operations
 
@@ -135,34 +183,32 @@ For each dialogue point, evaluate all candidate lines against the user's known w
 
 ```js
 function isEligible(tokens, knownWords) {
-  let unknownsInSentence = 0;
+  let unknowns = 0;
   let hasEntity = false;
   for (const token of tokens) {
     if (!token.base) {
-      if ('。！？'.includes(token.surface)) {
+      if (SENTENCE_ENDERS.includes(token.surface)) {
         const max = hasEntity ? 2 : 1;
-        if (unknownsInSentence > max) return false;
-        unknownsInSentence = 0;
+        if (unknowns > max) return false;
+        unknowns = 0;
         hasEntity = false;
       }
       continue;
     }
     if (token.entity) hasEntity = true;
-    if (!knownWords.has(token.base)) unknownsInSentence++;
+    if (!knownWords.has(token.base)) unknowns++;
   }
   const max = hasEntity ? 2 : 1;
-  return unknownsInSentence <= max;
+  return unknowns <= max;
 }
 ```
 
 **Per-sentence rules:**
 - Sentence with a game entity: max 2 unknowns (entity has visual context support)
 - Sentence without entity: max 1 unknown (standard i+1)
-- Sentence boundaries: 。！？
+- Sentence boundaries: 。！？!?
 
-Selection is pure set math on pre-computed data — microseconds per candidate, can evaluate hundreds of lines instantly.
-
-**Scoring preference:** Score = total unknown content words across all sentences. Among eligible lines, prefer highest score (teaches the most). Tiebreakers: prefer lines containing entity tokens (reinforces game vocabulary), then prefer longer lines (more context). Fall back to 0 unknowns (pure reinforcement) if no i+1 candidates exist.
+**Scoring:** Score = total unknown content words across all sentences. Among eligible lines, prefer highest score (teaches the most). Tiebreakers: prefer lines containing entity tokens (reinforces game vocabulary), then prefer longer lines (more context). Fall back to 0 unknowns (pure reinforcement) if no i+1 candidates exist.
 
 ### Rendering
 
@@ -172,125 +218,132 @@ The client receives the assembled token array + user's known words set. For each
 - **`base` exists, word is known** → show surface with furigana reading above (reinforcement)
 - **`base` exists, word is unknown** → show surface with reading above and meaning below (teaching)
 
-Same `renderJpSentence()` pattern currently used by the shop system, generalized to all game text.
+`renderJpSentence()` supports both the universal token format (uses `base` field) and legacy format (uses `baseForm` + `pos` fields) for backwards compatibility with in-progress game states.
 
 ### Exposure Tracking
 
-When the user **actually views** a line, its `words` array is sent to `exposeWords()`. Same system as today — increment exposure count per base form, create FSRS card at threshold (5 exposures). Exposure is tracked on view, not on generation or selection.
+When the user **actually views** a line, its content tokens are sent to `exposeWords()` with meanings preserved from the tokens:
 
-## Concrete Examples
-
-### Example 1: Shop — buying 薬草
-
-**User knows:** 一つ, くださる. **Doesn't know:** 薬草.
-
-Item: `{word: "薬草", reading: "やくそう", nameEn: "Medicinal Herb"}`
-
-Three candidate frames evaluated:
-
-| Frame | Assembled words | Unknowns | Entity? | Max | Eligible? |
-|-------|----------------|----------|---------|-----|-----------|
-| `{item}をください` | 薬草, くださる | 1 (薬草) | yes | 2 | yes |
-| `{item}を一つください` | 薬草, 一つ, くださる | 1 (薬草) | yes | 2 | yes |
-| `{item}を買いたいのですが` | 薬草, 買う | 2 (薬草, 買う) | yes | 2 | yes |
-
-All three are eligible (entity allows 2 unknowns). Scoring prefers the one teaching the most — frame 3 teaches 買う alongside the item name.
-
-### Example 2: Combat bark with conjugation
-
-**User knows:** 火竜, 逃げる. **Doesn't know:** 怒る.
-
-Creature: `{baseWord: "火竜", baseReading: "かりゅう", baseMeaning: "Fire Dragon"}`
-
-Frame: `"{creature}が怒っている！逃げろ！"`
-
-Assembled tokens:
-```json
-{
-  "tokens": [
-    {"surface": "火竜", "base": "火竜", "reading": "かりゅう", "meaning": "Fire Dragon", "entity": true},
-    {"surface": "が"},
-    {"surface": "怒っ", "base": "怒る", "reading": "おこっ", "meaning": "get angry"},
-    {"surface": "て"},
-    {"surface": "いる"},
-    {"surface": "！"},
-    {"surface": "逃げろ", "base": "逃げる", "reading": "にげろ", "meaning": "run away"},
-    {"surface": "！"}
-  ],
-  "words": ["火竜", "怒る", "逃げる"]
-}
+```js
+const exposures = item.tokens
+  .filter(t => t.base)
+  .map(t => ({ word: t.base, meaning: t.meaning || '' }));
+req.gameManager.exposeWords(exposures);
 ```
 
-Sentence 1 `火竜が怒っている！` → 1 unknown (怒る), has entity → max 2 → eligible
-Sentence 2 `逃げろ！` → 0 unknowns → eligible
+Same system as before — increment exposure count per base form, create FSRS card at threshold (5 exposures). Exposure is tracked on view, not on generation or selection.
 
-Overall: eligible. Teaches 怒る. Renderer shows 怒っ with "get angry" beneath it, everything else as reinforcement.
+**Note:** Offer-time exposure (when items are shown to the user) still uses the old code path — exposes `item.word` directly. Purchase-time exposure uses the new token-based path with meanings preserved.
 
-### Example 3: i+1 selection across candidates
+## Test Results (2026-04-08)
 
-**User knows:** 強い, 火竜. **Doesn't know:** 気, つける, 暴れる, 危険.
+### Automated Tests
 
-| Line | Sentence analysis | Eligible? |
-|------|-------------------|-----------|
-| `{creature}は強い！気をつけろ！` | S1: 0 unknown (entity+強い known), S2: 2 unknown (気, つける), no entity → max 1 | **no** |
-| `{creature}が暴れている！危険だ！` | S1: 1 unknown (暴れる), has entity → max 2. S2: 1 unknown (危険), no entity → max 1 | **yes** |
-| `敵だ！戦え！` | S1: 1 unknown (敵), S2: 1 unknown (戦う), no entity → max 1 each | **yes** |
+- **1183 unit tests passing**, 0 failures
+- **17 integration tests passing**, 0 failures
+- Test files: `tests/unit/token-format.test.js` (18 tests), `tests/unit/tokenize-static.test.js` (7 tests), `tests/unit/sentence-renderer.test.js` (11 tests)
 
-Lines B and C are eligible. Both teach 2 unknown words (score = 2). Tiebreaker: B contains an entity token (火竜), C does not → B wins.
+### Live Playtest Results
 
-## Infrastructure: Python on Railway
+Two playtest sessions on local dev server, user played through multiple shop encounters.
 
-The Railway deployment currently runs Node.js only. Sudachi requires Python.
+**Session 1 (initial validation):**
+- Bought items: 刀 (katana), 卵 (egg)
+- Frame word `くださる` tracked correctly as base form (not surface `ください`)
+- Entity words (刀, 鏡, 教科書, リュック, 辞書, 卵) tracked correctly
+- Offer-time exposure works (items exposed when shown, not just when purchased)
 
-**Approach:** Add Python + SudachiPy to the Railway build. Modify the Dockerfile (or Nixpacks config) to install:
-- Python 3.x
-- SudachiPy + SudachiDict-core (~100MB)
+**Session 2 (after curated frames):**
+- 3 curated frames deployed: buy_polite, buy_excuse_me, buy_thanks
+- `ありがとうございます` tracked as single merged token (6 exposures after multiple purchases)
+- `くださる` accumulated to 9 exposures across sessions
+- `すみません` at 0 — i+1 selector correctly waited until user knew enough words
+- Dictionary merge confirmed working: すみません and ありがとうございます both merged from Sudachi fragments
 
-Sudachi only runs in the daily batch job and the deploy-time build script — never on the request path. The extra image size does not affect request performance.
+**Final exposure counts (session 2):**
 
-## Integration with Existing Code
+| Word | Exposures | Source |
+|------|-----------|--------|
+| 叩く | 57 | Combat (pre-existing) |
+| 火 | 28 | Combat (pre-existing) |
+| くださる | 9 | Shop frames (new pipeline) |
+| ありがとうございます | 6 | Shop frames (new pipeline, merged) |
+| すみません | 0 | Not yet selected by i+1 |
 
-### Modified files
+### i+1 Selection Validation
 
-| File | Change |
-|------|--------|
-| `src/tokenizer.js` | Add post-processing: katakana→hiragana reading conversion, meaning enrichment (entity overrides → dictionary), output universal token format |
-| `src/game/dialogue-filter.js` | Replace runtime JPDB `/parse` calls with pre-computed token eligibility checks (set math on `words` arrays) |
-| `public/js/ui/bootstrap-client.js` | Adapt `renderJpSentence()` to universal format: check `base` field presence instead of POS, handle `entity` flag |
-| `Dockerfile` / Railway config | Add Python + SudachiPy layer |
+The selector correctly chose frames based on the user's vocabulary:
+- Early purchases: `buy_polite` ({item}をください) — simplest frame, only teaches くださる
+- After くださる was learned: `buy_thanks` ({item}をください。ありがとうございます。) — adds ありがとうございます as the +1
+- `buy_excuse_me` (すみません、{item}をください) eligible once くださる is known (entity + すみません = 2 unknowns, entity present → max 2)
 
-### New files
+## Infrastructure
+
+### Python on Railway
+
+The Railway deployment needs Python + SudachiPy for the build script (runs at deploy time).
+
+- `requirements.txt` added with `sudachipy>=0.6.8` and `sudachidict-core>=20240109`
+- Build script chained in `package.json`: `"build": "node scripts/tokenize-static.js && vite build"`
+- SudachiPy + dictionary adds ~100MB to the build image
+- Sudachi never runs on the request path — only at build time
+
+**Status:** Configured but not yet deployed to Railway.
+
+## Files
+
+### New files (Phase 1)
 
 | File | Purpose |
 |------|---------|
-| `scripts/tokenize-static.js` | Build script: tokenizes all handwritten frames via Sudachi, writes tokenized JSON. Content-hash cache for idempotency. |
-| `src/game/dialogue-assembly.js` | Frame + entity assembly: splice entity tokens into slots, merge word sets, return `TokenizedText` |
-| `data/dialogue/frames.json` | Tokenized frame templates (output of build script) |
+| `src/game/token-format.js` | Core pipeline: `entityToToken()`, `assembleFrame()`, `isEligible()`, `scoreCandidate()` |
+| `data/dialogue/frame-sources.json` | Hand-curated frame templates (3 shop frames) |
+| `data/dialogue/frames.json` | Tokenized frame output (generated by build script) |
+| `scripts/tokenize-static.js` | Build script: Sudachi + dictionary merge + meaning enrichment |
+| `tests/unit/token-format.test.js` | 18 tests for core pipeline functions |
+| `tests/unit/tokenize-static.test.js` | 7 tests for build script output validation |
+| `requirements.txt` | Python dependencies for Railway |
+
+### Modified files (Phase 1)
+
+| File | Change |
+|------|--------|
+| `src/tokenizer.js` | Added `tokenizeBatch(texts)` export |
+| `src/routes/game/run.js` | Replaced inline Sudachi with frame assembly + i+1 selection |
+| `public/js/ui/bootstrap-client.js` | `renderJpSentence()` supports both universal and legacy token formats |
+| `public/js/ui/exploration.js` | Client reads `item.tokens` (new) with `item.shopTokens` fallback (legacy) |
+| `tests/unit/sentence-renderer.test.js` | Added 4 tests for universal token format |
+| `package.json` | Build script chained before vite build |
 
 ### Unchanged systems
 
 - JPDB integration for word states / FSRS — untouched
 - Vocab manager / suggestion system — untouched
 - Entity JSON structure (items, creatures, moves, NPCs) — fields already have what we need
-- Exposure tracking (`exposeWords()`) — same interface, fed `words` arrays from TokenizedText
+- Exposure tracking (`exposeWords()`) — same interface, fed from tokens
 - Forge skills — already produce the entity fields needed for `entityToToken()`
+
+## Known Limitations
+
+### Exposure tracking key collisions
+Exposure is tracked by base form string only. If two words share the same base form but different meanings (e.g., はし = bridge vs chopsticks), they collide. Low risk for Phase 1 (shop items are unique words). For Phase 2+, consider compound key `word::meaning` or JPDB vocabulary IDs.
+
+### Dictionary coverage
+Current `dictionary.json` has 38k entries. Some learner-friendly compounds are missing (申し訳ございません, 東日本). Planned upgrade to JMDict (458k surface forms) will address this.
+
+### Offer-time vs purchase-time exposure
+Items get exposed twice — once at offer time (old code, `item.word` only) and once at purchase time (new code, all content tokens with meanings). The double-exposure is intentional (seeing the item name in the offer list is a real exposure), but the offer-time path doesn't use the universal token format yet.
 
 ## Implementation Scope
 
-**Phase 1 (implement now): Shop item purchase proof-of-concept.**
+**Phase 1 (COMPLETE): Shop item purchase proof-of-concept.**
 
-Prove the full pipeline end-to-end using the existing shop system (`{item}をください` and similar shop frames). This is the narrowest slice that exercises every layer:
+Proves the full pipeline end-to-end: pre-tokenized frames, entity-to-token mapping, frame assembly, i+1 selection, rendering, and exposure tracking.
 
-- Universal token format
-- Entity-to-token mapping (items only)
-- Frame tokenization via Sudachi (shop buy-frames only)
-- Frame + entity assembly
-- Per-sentence eligibility checking with entity-aware scoring
-- Rendering via `renderJpSentence()` from assembled tokens
-- Exposure tracking on view
+**Phase 2 (planned): Dictionary upgrade to JMDict + JPDB frequency.**
 
-The shop system already has a working prototype of this pattern (shopTokens, shopContentWords, shopOverrides). Phase 1 replaces that ad-hoc implementation with the universal system.
+Replace `dictionary.json` with JMDict (458k surface forms, CC-BY-SA) for dramatically better merge coverage. Add JPDB v2.2 frequency CSV (274k entries) for word ranking. Rename current dictionary to `old-jpdb-dictionary.json`.
 
-**Phase 2+ (later): Roll out to other systems.**
+**Phase 3+ (future): Roll out to other systems.**
 
-Once Phase 1 proves the architecture works, extend to combat barks, NPC greetings, creature names, AI-generated dialogue, and other game text. The token format and runtime operations are designed for this — Phase 2+ is content migration, not architecture work.
+Extend to combat barks, NPC greetings, creature names, AI-generated dialogue, and other game text. The token format and runtime operations are designed for this — Phase 3+ is content migration, not architecture work.
