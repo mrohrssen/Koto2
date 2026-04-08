@@ -32,7 +32,6 @@ export function loadWordDictionary(dataDir) {
     { file: 'npcs.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
     { file: 'npc-skills.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
     { file: 'areas.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
-    { file: 'creature-speech.json', wordField: 'jp', readingField: 'reading', meaningField: 'en', nested: true },
   ];
 
   for (const config of overlayConfigs) {

@@ -222,10 +222,13 @@
         "meaning": "slowly / unhurriedly / without haste / leisurely / at one's leisure"
       },
       {
-        "surface": "見て",
-        "base": "見て",
-        "reading": "みて",
-        "meaning": "Look!"
+        "surface": "見",
+        "base": "見る",
+        "reading": "み",
+        "meaning": "to see / to look / to watch / to view / to observe"
+      },
+      {
+        "surface": "て"
       },
       {
         "surface": "ください",
@@ -240,7 +243,7 @@
     "words": [
       "いらっしゃいませ",
       "ゆっくり",
-      "見て",
+      "見る",
       "くださる"
     ]
   }
