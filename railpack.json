@@ -5,14 +5,11 @@
     "python": "3.13"
   },
   "steps": {
-    "python-deps": {
-      "commands": ["pip install -r requirements.txt"]
-    },
     "install": {
-      "commands": ["npm ci"]
+      "commands": ["...", "pip install -r requirements.txt"]
     },
     "build": {
-      "commands": ["npm run build"]
+      "commands": ["...", "npm run build"]
     }
   },
   "deploy": {
