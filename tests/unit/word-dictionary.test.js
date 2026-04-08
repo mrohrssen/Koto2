@@ -53,12 +53,11 @@ describe('word-dictionary', () => {
     assert.equal(dict.get('わたし').definitions[0].en, 'I/me');
   });
 
-  it('loads creature-speech nested overlay', () => {
+  it('does not load creature-speech (dialogue, not entity data)', () => {
     writeFileSync(join(tmpDir.path, 'creature-speech.json'), JSON.stringify({
       onHit: [{ jp: '痛い', reading: 'いたい', en: 'Ouch!', romaji: 'itai' }]
     }));
     const dict = loadWordDictionary(tmpDir.path);
-    assert.ok(dict.has('痛い'));
-    assert.equal(dict.get('痛い').definitions[0].en, 'Ouch!');
+    assert.ok(!dict.has('痛い'), 'creature-speech entries should not be in word dictionary');
   });
 });
