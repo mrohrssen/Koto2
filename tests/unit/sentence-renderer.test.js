@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { renderJpSentence } from '../../public/js/ui/bootstrap-client.js';
+import { renderJpSentence, entityToToken } from '../../public/js/ui/bootstrap-client.js';
 
 const wordDict = new Map([
   ['こんにちは', { reading: 'こんにちは', definitions: [{ en: 'hello', primary: true }] }],
@@ -111,5 +111,22 @@ describe('renderJpSentence — universal token format', () => {
     assert.ok(html.includes('jp-entity'), 'should have jp-entity class');
     assert.ok(!html.includes('jp-unknown'), 'should NOT have jp-unknown class');
     assert.ok(html.includes('Fire Dragon'));
+  });
+});
+
+describe('renderJpSentence — attack card entity tokens via entityToToken', () => {
+  it('renders unknown attack base word with English gloss', () => {
+    const token = entityToToken({ baseWord: '迷う', baseReading: 'まよう', baseMeaning: 'get lost / hesitate' });
+    const html = renderJpSentence([token], new Set(), new Map());
+    assert.ok(html.includes('jp-entity'), 'unknown entity should have jp-entity class');
+    assert.ok(html.includes('get lost / hesitate'), 'unknown entity should show English gloss');
+    assert.ok(html.includes('まよう'), 'should show reading');
+  });
+
+  it('renders known attack base word WITHOUT English gloss', () => {
+    const token = entityToToken({ baseWord: '迷う', baseReading: 'まよう', baseMeaning: 'get lost / hesitate' });
+    const html = renderJpSentence([token], new Set(['迷う']), new Map());
+    assert.ok(html.includes('jp-known'), 'known entity should have jp-known class');
+    assert.ok(!html.includes('get lost / hesitate'), 'known entity should NOT show English gloss');
   });
 });
