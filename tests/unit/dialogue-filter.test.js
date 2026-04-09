@@ -9,12 +9,12 @@ import {
 } from '../../src/game/dialogue-filter.js';
 
 describe('dialogue-filter', () => {
-  const tok = (surface, baseForm, pos = '名詞') => ({ surface, baseForm, pos, reading: '' });
-  const punct = (ch) => ({ surface: ch, baseForm: ch, pos: '記号', reading: '' });
+  const tok = (surface, base) => ({ surface, base, reading: '', meaning: '' });
+  const punct = (ch) => ({ surface: ch });
   const line = (text, tokenDefs) => ({
-    text,
-    _tokens: tokenDefs,
-    _contentWords: tokenDefs.filter(t => t.pos !== '記号').map(t => t.baseForm),
+    raw: text,
+    tokens: tokenDefs,
+    words: tokenDefs.filter(t => t.base).map(t => t.base),
   });
 
   describe('isLineEligible', () => {
@@ -25,23 +25,23 @@ describe('dialogue-filter', () => {
 
     it('passes a single-sentence line with exactly 1 unknown (i+1)', () => {
       const l = line('いっしょに いく？', [
-        tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('行く', '行く', '動詞'), punct('？'),
+        tok('一緒', '一緒'), punct('に'), tok('行く', '行く'), punct('？'),
       ]);
-      assert.equal(isLineEligible(l, new Set(['に', '行く'])), true);
+      assert.equal(isLineEligible(l, new Set(['行く'])), true);
     });
 
     it('checks i+1 per sentence — two sentences each with 1 unknown passes', () => {
       const l = line('こんにちは！いっしょに いく？', [
-        tok('こんにちは', 'こんにちは', '感動詞'), punct('！'),
-        tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('行く', '行く', '動詞'), punct('？'),
+        tok('こんにちは', 'こんにちは'), punct('！'),
+        tok('一緒', '一緒'), punct('に'), tok('行く', '行く'), punct('？'),
       ]);
-      assert.equal(isLineEligible(l, new Set(['に', '行く'])), true);
+      assert.equal(isLineEligible(l, new Set(['行く'])), true);
     });
 
     it('rejects when any sentence has 2+ unknown words', () => {
       const l = line('こんにちは！いっしょに いく？', [
-        tok('こんにちは', 'こんにちは', '感動詞'), punct('！'),
-        tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('行く', '行く', '動詞'), punct('？'),
+        tok('こんにちは', 'こんにちは'), punct('！'),
+        tok('一緒', '一緒'), punct('に'), tok('行く', '行く'), punct('？'),
       ]);
       assert.equal(isLineEligible(l, new Set()), false);
     });
@@ -55,21 +55,21 @@ describe('dialogue-filter', () => {
   describe('filterEligibleScripts', () => {
     it('returns only scripts where ALL lines are eligible', () => {
       const scripts = [
-        { id: 's0', lines: [line('こんにちは！', [tok('こんにちは', 'こんにちは', '感動詞'), punct('！')])] },
+        { id: 's0', lines: [line('こんにちは！', [tok('こんにちは', 'こんにちは'), punct('！')])] },
         { id: 's1', lines: [
-          line('こんにちは！', [tok('こんにちは', 'こんにちは', '感動詞'), punct('！')]),
-          line('いっしょに いく？', [tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('行く', '行く', '動詞'), punct('？')]),
+          line('こんにちは！', [tok('こんにちは', 'こんにちは'), punct('！')]),
+          line('いっしょに いく？', [tok('一緒', '一緒'), punct('に'), tok('行く', '行く'), punct('？')]),
         ]},
       ];
-      const known = new Set(['こんにちは', '行く', 'に']);
+      const known = new Set(['こんにちは', '行く']);
       const eligible = filterEligibleScripts(scripts, known);
       assert.equal(eligible.length, 2);
     });
 
     it('at 0 known, only single-word-per-sentence scripts eligible', () => {
       const scripts = [
-        { id: 's0', lines: [line('こんにちは！', [tok('こんにちは', 'こんにちは', '感動詞'), punct('！')])] },
-        { id: 's1', lines: [line('いっしょに いく？', [tok('一緒', '一緒'), tok('に', 'に', '助詞'), tok('行く', '行く', '動詞'), punct('？')])] },
+        { id: 's0', lines: [line('こんにちは！', [tok('こんにちは', 'こんにちは'), punct('！')])] },
+        { id: 's1', lines: [line('いっしょに いく？', [tok('一緒', '一緒'), punct('に'), tok('行く', '行く'), punct('？')])] },
       ];
       const eligible = filterEligibleScripts(scripts, new Set());
       assert.equal(eligible.length, 1);
@@ -95,11 +95,11 @@ describe('dialogue-filter', () => {
   describe('selectNpcLine', () => {
     it('returns an eligible line', () => {
       const lines = [
-        line('こんにちは！', [tok('こんにちは', 'こんにちは', '感動詞'), punct('！')]),
+        line('こんにちは！', [tok('こんにちは', 'こんにちは'), punct('！')]),
       ];
       const selected = selectNpcLine(lines, new Set());
       assert.ok(selected);
-      assert.equal(selected.text, 'こんにちは！');
+      assert.equal(selected.raw, 'こんにちは！');
     });
 
     it('returns null when no lines eligible', () => {

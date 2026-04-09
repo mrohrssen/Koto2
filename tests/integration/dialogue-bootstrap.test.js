@@ -26,7 +26,14 @@ describe('dialogue bootstrap integration', () => {
       .filter(t => !/^[\p{P}\p{S}\s]+$/u.test(t.surface))
       .map(t => t.baseForm);
 
-    const line = { text: 'こんにちは！', _tokens: tokens, _contentWords: contentWords };
+    const line = {
+      raw: 'こんにちは！',
+      tokens: tokens.map(t => {
+        if (/^[\p{P}\p{S}\s]+$/u.test(t.surface)) return { surface: t.surface };
+        return { surface: t.surface, base: t.baseForm, reading: t.reading, meaning: '' };
+      }),
+      words: contentWords,
+    };
 
     // At 0 known words, a single-word line should be eligible (i+1)
     assert.equal(isLineEligible(line, new Set()), true);
@@ -63,10 +70,14 @@ describe('dialogue bootstrap integration', () => {
 
     // A two-sentence line: "こんにちは！いっしょに いく？"
     const tokens = tokenize('こんにちは！一緒に行く？');
+    const universalTokens = tokens.map(t => {
+      if (/^[\p{P}\p{S}\s]+$/u.test(t.surface)) return { surface: t.surface };
+      return { surface: t.surface, base: t.baseForm, reading: t.reading, meaning: '' };
+    });
     const line = {
-      text: 'こんにちは！一緒に行く？',
-      _tokens: tokens,
-      _contentWords: tokens.filter(t => !/^[\p{P}\p{S}\s]+$/u.test(t.surface)).map(t => t.baseForm),
+      raw: 'こんにちは！一緒に行く？',
+      tokens: universalTokens,
+      words: universalTokens.filter(t => t.base).map(t => t.base),
     };
 
     // With only particles known, sentence 1 has 1 unknown (こんにちは) — OK
