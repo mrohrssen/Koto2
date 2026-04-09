@@ -175,15 +175,12 @@ function actionIconPath(nameEn) {
   return slug ? `/assets/sprites/actions/${slug}.webp?v=20260322` : '';
 }
 
-function primaryMeaning(english) {
-  if (!english) return '';
-  const first = english.split(/[;,/]/)[0].trim();
-  return first.charAt(0).toUpperCase() + first.slice(1);
-}
-
-function vocabStackHtml(reading, english) {
-  const token = entityToToken({ name: reading, reading, nameEn: english });
-  return `<div class="sac-vocab-stack">${renderJpSentence([token], getKnownWords(), new Map())}</div>`;
+function escHtml(text) {
+  return String(text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function wrapWithRuby(word, reading, englishReading) {
@@ -240,12 +237,12 @@ function buildSplitAttackCard(atk, isEnemy) {
     <div class="sac-right">
       <div class="sac-row" data-row="0">
         ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${vocabStackHtml(atk.attackerBaseReading, atk.attackerBaseMeaning)}
+        ${renderJpSentence([entityToToken({ baseWord: atk.attackerBaseWord, baseReading: atk.attackerBaseReading, baseMeaning: atk.attackerBaseMeaning })], getKnownWords(), new Map())}
         <span class="sac-tag sac-tag-base">BASE</span>
       </div>
       <div class="sac-row" data-row="1">
         ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${vocabStackHtml(atk.attackerSkillReading, atk.attackerSkillEn)}
+        ${renderJpSentence([entityToToken({ name: atk.attackerSkillName || atk.moveName, reading: atk.attackerSkillReading, nameEn: atk.attackerSkillEn })], getKnownWords(), new Map())}
         <span class="sac-tag ${tagClass}">${tagLabel}</span>
       </div>
       <div class="sac-row sac-impact" data-row="2">
@@ -335,12 +332,12 @@ function insertNpcAttackCard(atk) {
     <div class="sac-right">
       <div class="sac-row" data-row="0">
         ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${vocabStackHtml(atk.attackerBaseReading, atk.attackerBaseMeaning)}
+        ${renderJpSentence([entityToToken({ baseWord: atk.attackerBaseWord, baseReading: atk.attackerBaseReading, baseMeaning: atk.attackerBaseMeaning })], getKnownWords(), new Map())}
         <span class="sac-tag sac-tag-base">BASE</span>
       </div>
       <div class="sac-row" data-row="1">
         ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${vocabStackHtml(atk.attackerSkillReading, atk.attackerSkillEn)}
+        ${renderJpSentence([entityToToken({ name: atk.attackerSkillName || atk.moveName, reading: atk.attackerSkillReading, nameEn: atk.attackerSkillEn })], getKnownWords(), new Map())}
         <span class="sac-tag ${tagClass}">${tagLabel}</span>
       </div>
       <div class="sac-row sac-impact" data-row="2">
