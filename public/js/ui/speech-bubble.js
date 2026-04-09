@@ -92,7 +92,7 @@ export function resetCombatBarks() {
 
 /**
  * Find a server bark matching the trigger type from current round barks.
- * Returns { text, _tokens, _contentWords, isTokenized: true } or null.
+ * Returns a bark object { trigger, raw, tokens, words, ... } or null.
  */
 function findServerBark(triggerType) {
   const barks = getCurrentBarks();
