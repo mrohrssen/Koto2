@@ -182,12 +182,8 @@ function primaryMeaning(english) {
 }
 
 function vocabStackHtml(reading, english) {
-  const romaji = reading ? toRomaji(reading) : '';
-  return `<div class="sac-vocab-stack">
-    <span class="sac-romaji">${romaji}</span>
-    <span class="sac-kana">${reading || ''}</span>
-    <span class="sac-english">${primaryMeaning(english)}</span>
-  </div>`;
+  const token = entityToToken({ name: reading, reading, nameEn: english });
+  return `<div class="sac-vocab-stack">${renderJpSentence([token], getKnownWords(), new Map())}</div>`;
 }
 
 function wrapWithRuby(word, reading, englishReading) {
