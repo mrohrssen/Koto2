@@ -110,4 +110,56 @@ describe('tokenize-static output (frames.json)', () => {
     assert.ok(irasshaimase.reading, 'should have reading');
     assert.ok(irasshaimase.meaning, 'should have meaning');
   });
+
+  it('bark frames have correct category prefix and no slots', () => {
+    const barks = frames.filter(f => f.category.startsWith('bark_'));
+    assert.ok(barks.length >= 60, `expected at least 60 bark frames, got ${barks.length}`);
+    for (const frame of barks) {
+      const slots = frame.tokens.filter(t => t.slot);
+      assert.equal(slots.length, 0, `bark frame ${frame.id} should have no slots`);
+    }
+  });
+
+  it('CID frames have group field matching script ID', () => {
+    const cids = frames.filter(f => f.category === 'cid');
+    assert.ok(cids.length >= 45, `expected at least 45 CID frames, got ${cids.length}`);
+    for (const frame of cids) {
+      assert.ok(frame.group, `CID frame ${frame.id} should have group`);
+      assert.ok(frame.id.startsWith('cid_'), `CID frame ${frame.id} should start with cid_`);
+    }
+  });
+
+  it('NPC frames have group field matching npc_slot pattern', () => {
+    const npcs = frames.filter(f => f.category === 'npc');
+    assert.ok(npcs.length >= 50, `expected at least 50 NPC frames, got ${npcs.length}`);
+    for (const frame of npcs) {
+      assert.ok(frame.group, `NPC frame ${frame.id} should have group`);
+      assert.ok(frame.group.includes('_'), `NPC frame group ${frame.group} should have npcId_slot format`);
+    }
+  });
+
+  it('befriend_wait has 5 i+1 ladder frames', () => {
+    const waits = frames.filter(f => f.category === 'befriend_wait');
+    assert.equal(waits.length, 5, `expected 5 befriend_wait frames, got ${waits.length}`);
+    for (let i = 1; i < waits.length; i++) {
+      assert.ok(waits[i].words.length >= waits[i - 1].words.length,
+        `befriend_wait_${i} should have >= words than befriend_wait_${i - 1}`);
+    }
+  });
+
+  it('befriend_name has 5 i+1 ladder frames', () => {
+    const names = frames.filter(f => f.category === 'befriend_name');
+    assert.equal(names.length, 5, `expected 5 befriend_name frames, got ${names.length}`);
+  });
+
+  it('preserves group field on CID and NPC frames', () => {
+    const cidFrame = frames.find(f => f.category === 'cid');
+    if (cidFrame) {
+      assert.ok(cidFrame.group, `CID frame ${cidFrame.id} should have group field`);
+    }
+    const npcFrame = frames.find(f => f.category === 'npc');
+    if (npcFrame) {
+      assert.ok(npcFrame.group, `NPC frame ${npcFrame.id} should have group field`);
+    }
+  });
 });

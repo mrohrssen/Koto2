@@ -155,13 +155,17 @@ function main() {
   }
 
   // Build final output
-  const frames = sources.map((source, idx) => ({
-    id: source.id,
-    category: source.category,
-    raw: source.raw,
-    tokens: frameTokens[idx].tokens,
-    words: frameTokens[idx].words,
-  }));
+  const frames = sources.map((source, idx) => {
+    const frame = {
+      id: source.id,
+      category: source.category,
+      raw: source.raw,
+      tokens: frameTokens[idx].tokens,
+      words: frameTokens[idx].words,
+    };
+    if (source.group) frame.group = source.group;
+    return frame;
+  });
 
   writeFileSync(OUTPUT_PATH, JSON.stringify(frames, null, 2) + '\n', 'utf-8');
   console.log(`Wrote ${frames.length} frames to ${OUTPUT_PATH}`);
