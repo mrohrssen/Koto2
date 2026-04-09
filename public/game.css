@@ -4320,17 +4320,6 @@ textarea,
   color: var(--text-primary);
 }
 
-/* Move labels are single-word action names: keep JP centered with icon and
-   suppress stacked English gloss used in sentence/dialogue contexts. */
-.move-name-jp .jp-unknown,
-.move-name-jp .jp-entity {
-  margin-bottom: 0;
-}
-
-.move-name-jp .jp-stack-en {
-  display: none;
-}
-
 /* Stats row — small, secondary, underneath */
 .move-stats {
   display: flex;
