@@ -864,15 +864,16 @@ export class GameManager {
           const befriendKnownSet = new Set(getKnownWordsFromFsrs(this.userId));
           const waitPrompt = selectBestFrame(befriendFrames.wait, befriendKnownSet);
           const namePrompt = selectBestFrame(befriendFrames.name, befriendKnownSet);
+          const successPrompt = selectBestFrame(befriendFrames.success, befriendKnownSet);
+          const wrongPrompt = selectBestFrame(befriendFrames.wrong, befriendKnownSet);
 
           // Expose befriend prompt words to SRS
-          const befriendPromptWords = [
-            ...(waitPrompt?.words || []),
-            ...(namePrompt?.words || []),
-          ].map(w => {
-            const token = [...(waitPrompt?.tokens || []), ...(namePrompt?.tokens || [])].find(t => t.base === w);
-            return { word: w, meaning: token?.meaning || '' };
-          });
+          const allPrompts = [waitPrompt, namePrompt, successPrompt, wrongPrompt];
+          const befriendPromptWords = allPrompts
+            .flatMap(p => (p?.words || []).map(w => {
+              const token = (p?.tokens || []).find(t => t.base === w);
+              return { word: w, meaning: token?.meaning || '' };
+            }));
           if (befriendPromptWords.length > 0) this.exposeWords(befriendPromptWords);
 
           this.emitState();
@@ -895,6 +896,8 @@ export class GameManager {
               options: quiz.options.map(o => ({ id: o.id, name: o.name })), // Don't send correct flag
               waitPrompt: waitPrompt ? { tokens: waitPrompt.tokens, words: waitPrompt.words } : null,
               namePrompt: namePrompt ? { tokens: namePrompt.tokens, words: namePrompt.words } : null,
+              successPrompt: successPrompt ? { tokens: successPrompt.tokens, words: successPrompt.words } : null,
+              wrongPrompt: wrongPrompt ? { tokens: wrongPrompt.tokens, words: wrongPrompt.words } : null,
             },
             combatEnded: false,
             allies: this.combat.allies,

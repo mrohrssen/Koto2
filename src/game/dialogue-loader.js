@@ -56,10 +56,12 @@ export function loadDialoguePools(dataDir) {
     _npcLines[npcId][slot].push(f);
   }
 
-  // Befriend frames: category "befriend_wait" and "befriend_name"
+  // Befriend frames: category "befriend_wait", "befriend_name", "befriend_success", "befriend_wrong"
   _befriendFrames = {
     wait: _frames.filter(f => f.category === 'befriend_wait'),
     name: _frames.filter(f => f.category === 'befriend_name'),
+    success: _frames.filter(f => f.category === 'befriend_success'),
+    wrong: _frames.filter(f => f.category === 'befriend_wrong'),
   };
 }
 

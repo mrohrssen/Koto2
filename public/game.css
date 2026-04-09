@@ -699,7 +699,7 @@ textarea,
   backdrop-filter: blur(6px) saturate(110%);
   -webkit-backdrop-filter: blur(6px) saturate(110%);
   border-radius: 14px;
-  padding: 16px 18px 18px;
+  padding: 10px 14px 8px;
   border: 1px solid rgba(137, 225, 248, 0.72);
   box-shadow:
     0 10px 26px rgba(118, 163, 186, 0.3),
@@ -710,7 +710,8 @@ textarea,
   transition: opacity var(--transition-med), transform var(--transition-med);
   pointer-events: none;
   z-index: 10;
-  overflow: hidden;
+  /* Allow i+1 English gloss to extend past the card edge when needed */
+  overflow: visible;
   container-type: inline-size;
 }
 
@@ -741,10 +742,23 @@ textarea,
   font-style: italic;
   font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', var(--font-family);
   color: #33c5eb;
-  margin-bottom: 8px;
-  line-height: 1;
+  /* Tight to body: teaching word margins must not apply here (they reserve gloss space for dialogue). */
+  margin: 0 0 8px;
+  /* Room under name for entity gloss; keep small so title + body don’t feel cramped. */
+  padding-bottom: 0.35rem;
+  line-height: 1.05;
   letter-spacing: 0.01em;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.narration-speaker .jp-unknown,
+.narration-speaker .jp-entity {
+  margin-bottom: 0;
+}
+
+/* Name line uses ruby/rt — keep annotations compact so they don’t balloon the header. */
+.narration-speaker .jp-word ruby rt {
+  font-size: 7px;
 }
 
 .narration-text {
@@ -752,12 +766,18 @@ textarea,
   z-index: 1;
   color: #2f3a45;
   font-size: clamp(16px, 4.25vw, 24px);
-  line-height: 1.65;
+  line-height: 1.45;
   font-weight: 500;
   font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', var(--font-family);
   white-space: pre-wrap;
   letter-spacing: 0.01em;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Teaching words: global margin uses rem; narration box is tight — less clearance here. */
+.narration-text .jp-unknown,
+.narration-text .jp-entity {
+  margin-bottom: 0.95rem;
 }
 
 /* Bootstrap language scaffolding (legacy class names) */
@@ -816,8 +836,8 @@ textarea,
 .narration-indicator {
   position: absolute;
   z-index: 1;
-  bottom: 8px;
-  right: 16px;
+  bottom: 4px;
+  right: 12px;
   color: rgba(49, 183, 224, 0.75);
   font-size: 11px;
   font-weight: 700;
@@ -5682,13 +5702,18 @@ textarea,
 /* ── Sentence renderer (B2 token display) ─────────────────────── */
 .jp-word { display: inline-block; margin: 0; }
 .jp-known { /* blends into sentence flow */ }
+/* Unknown/entity: inline-flex made the box as wide as the English gloss, pushing
+   following Japanese (e.g. まっ … て！) apart. Inline layout width follows the ruby
+   only; gloss is absolutely positioned so it can be wider than the Japanese and
+   still sit below, centered (max-width uses viewport so it is not ruby-limited). */
 .jp-unknown, .jp-entity {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
+  display: inline-block;
+  position: relative;
   padding: 0;
-  margin: 0;
-  vertical-align: top;
+  /* Reserve space for gloss below ruby. Use rem (not em): narration text is large clamp()
+     so em-based margin was ~32–48px per word and blew up the dialogue box. */
+  margin: 0 0.08em 1.65rem 0;
+  vertical-align: baseline;
 }
 .jp-word ruby rt {
   font-size: 8px;
@@ -5702,11 +5727,32 @@ textarea,
   font-weight: 500;
   font-family: 'Inter', 'Pretendard', var(--font-family);
   letter-spacing: 0.01em;
-  margin-top: 1px;
+  margin-top: 0;
+}
+.jp-unknown .jp-stack-en,
+.jp-entity .jp-stack-en {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  bottom: auto;
+  transform: translateX(-50%);
+  margin-top: 0.2em;
+  width: max-content;
+  max-width: min(92vw, 24rem);
+  z-index: 1;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.35;
+  overflow-wrap: break-word;
 }
 .jp-punct { display: inline; }
 
 /* Unknown/teaching word — amber accent */
+.jp-unknown ruby,
+.jp-entity ruby {
+  line-height: 1.35;
+  ruby-position: over;
+}
 .jp-unknown ruby rt { color: rgba(170, 130, 40, 0.5); }
 .jp-unknown .jp-stack-en { color: rgba(170, 130, 40, 0.75); }
 .jp-unknown ruby {

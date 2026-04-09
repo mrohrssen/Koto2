@@ -2995,7 +2995,12 @@ async function renderBefriendQuiz(quizData, result) {
   if (answerResult.correct) {
     // Befriended!
     playSFX('creature-skill');
-    await narration.showNarration('じゃあ、友達になろう！', { speaker: creatureSpeaker });
+    if (quizData.successPrompt) {
+      const successHtml = renderJpSentence(quizData.successPrompt.tokens, getKnownWords(), new Map());
+      await narration.showNarration(successHtml, { speaker: creatureSpeaker, html: true });
+    } else {
+      await narration.showNarration('じゃあ、友達になろう！', { speaker: creatureSpeaker });
+    }
 
     const capturedId = answerResult.capturedId;
     const capturedIdx = answerResult.capturedIndex;
@@ -3037,7 +3042,12 @@ async function renderBefriendQuiz(quizData, result) {
   }
 
   // Wrong answer — creature fights back
-  await narration.showNarration('ちがう！', { speaker: creatureSpeaker });
+  if (quizData.wrongPrompt) {
+    const wrongHtml = renderJpSentence(quizData.wrongPrompt.tokens, getKnownWords(), new Map());
+    await narration.showNarration(wrongHtml, { speaker: creatureSpeaker, html: true });
+  } else {
+    await narration.showNarration('ちがう！', { speaker: creatureSpeaker });
+  }
 
   // Show counter-attack
   if (answerResult.counterAttack?.length > 0) {
