@@ -36,7 +36,7 @@ Grows with new categories:
 
 - `"bark_onHit"`, `"bark_onVictory"`, `"bark_onLowHP"`, etc. — one entry per bark text, extracted from current `barks.json`
 - `"befriend_wait"` — 5 i+1 ladder variants for the "wait!" prompt
-- `"befriend_name_question"` — 5 i+1 ladder variants for the "what's my name?" prompt
+- `"befriend_name"` — 5 i+1 ladder variants for the "what's my name?" prompt
 - `"cid_<scriptId>"` — CID script lines, each line as a frame entry
 - `"npc_<npcId>_<slot>"` — NPC lines grouped by NPC and dialogue slot
 
@@ -183,7 +183,7 @@ No changes — already uses `renderJpSentence()`.
 **"Wait" ladder** (befriend_wait):
 5 variants building from simple to complex, teaching common useful words.
 
-**"What's my name?" ladder** (befriend_name_question):
+**"What's my name?" ladder** (befriend_name):
 5 variants building from simple to complex, teaching common useful words.
 
 Specific word choices to be finalized during implementation with JPDB frequency data.
