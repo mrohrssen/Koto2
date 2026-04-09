@@ -3,19 +3,25 @@
     "id": "buy_polite",
     "category": "shop",
     "raw": "{item}をください",
-    "slots": ["item"]
+    "slots": [
+      "item"
+    ]
   },
   {
     "id": "buy_excuse_me",
     "category": "shop",
     "raw": "すみません、{item}をください",
-    "slots": ["item"]
+    "slots": [
+      "item"
+    ]
   },
   {
     "id": "buy_thanks",
     "category": "shop",
     "raw": "{item}をください。ありがとうございます。",
-    "slots": ["item"]
+    "slots": [
+      "item"
+    ]
   },
   {
     "id": "greet_hello",
@@ -45,6 +51,1123 @@
     "id": "greet_welcome_browse",
     "category": "greeting",
     "raw": "いらっしゃいませ、ゆっくり見てください！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_0",
+    "category": "bark_onHit",
+    "raw": "いたい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_1",
+    "category": "bark_onHit",
+    "raw": "つよい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_2",
+    "category": "bark_onHit",
+    "raw": "いやだ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_3",
+    "category": "bark_onHit",
+    "raw": "うわ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_4",
+    "category": "bark_onHit",
+    "raw": "くっ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_5",
+    "category": "bark_onHit",
+    "raw": "ああ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_6",
+    "category": "bark_onHit",
+    "raw": "いたた！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_7",
+    "category": "bark_onHit",
+    "raw": "やめて！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_8",
+    "category": "bark_onHit",
+    "raw": "つらい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHit_9",
+    "category": "bark_onHit",
+    "raw": "ひどい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_0",
+    "category": "bark_onVictory",
+    "raw": "すごい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_1",
+    "category": "bark_onVictory",
+    "raw": "かった！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_2",
+    "category": "bark_onVictory",
+    "raw": "やった！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_3",
+    "category": "bark_onVictory",
+    "raw": "よかった！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_4",
+    "category": "bark_onVictory",
+    "raw": "つよい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_5",
+    "category": "bark_onVictory",
+    "raw": "うれしい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_6",
+    "category": "bark_onVictory",
+    "raw": "やったね！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_7",
+    "category": "bark_onVictory",
+    "raw": "すばらしい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_8",
+    "category": "bark_onVictory",
+    "raw": "かちだ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onVictory_9",
+    "category": "bark_onVictory",
+    "raw": "いえーい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_0",
+    "category": "bark_onExplore",
+    "raw": "たのしい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_1",
+    "category": "bark_onExplore",
+    "raw": "いくよ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_2",
+    "category": "bark_onExplore",
+    "raw": "みて！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_3",
+    "category": "bark_onExplore",
+    "raw": "きれい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_4",
+    "category": "bark_onExplore",
+    "raw": "すごい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_5",
+    "category": "bark_onExplore",
+    "raw": "ここ すき！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_6",
+    "category": "bark_onExplore",
+    "raw": "なにか ある！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_7",
+    "category": "bark_onExplore",
+    "raw": "いこう！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_8",
+    "category": "bark_onExplore",
+    "raw": "あたらしい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onExplore_9",
+    "category": "bark_onExplore",
+    "raw": "おもしろい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHeal_0",
+    "category": "bark_onHeal",
+    "raw": "ありがとう！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHeal_1",
+    "category": "bark_onHeal",
+    "raw": "たすかる！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHeal_2",
+    "category": "bark_onHeal",
+    "raw": "だいじょうぶ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHeal_3",
+    "category": "bark_onHeal",
+    "raw": "げんき！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHeal_4",
+    "category": "bark_onHeal",
+    "raw": "うれしい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onHeal_5",
+    "category": "bark_onHeal",
+    "raw": "よかった！",
+    "slots": []
+  },
+  {
+    "id": "bark_onKO_0",
+    "category": "bark_onKO",
+    "raw": "ごめん…",
+    "slots": []
+  },
+  {
+    "id": "bark_onKO_1",
+    "category": "bark_onKO",
+    "raw": "むり…",
+    "slots": []
+  },
+  {
+    "id": "bark_onKO_2",
+    "category": "bark_onKO",
+    "raw": "まけた…",
+    "slots": []
+  },
+  {
+    "id": "bark_onKO_3",
+    "category": "bark_onKO",
+    "raw": "つかれた…",
+    "slots": []
+  },
+  {
+    "id": "bark_onKO_4",
+    "category": "bark_onKO",
+    "raw": "だめだ…",
+    "slots": []
+  },
+  {
+    "id": "bark_onKO_5",
+    "category": "bark_onKO",
+    "raw": "くやしい…",
+    "slots": []
+  },
+  {
+    "id": "bark_onStatusEffect_0",
+    "category": "bark_onStatusEffect",
+    "raw": "しまった！",
+    "slots": []
+  },
+  {
+    "id": "bark_onStatusEffect_1",
+    "category": "bark_onStatusEffect",
+    "raw": "まって！",
+    "slots": []
+  },
+  {
+    "id": "bark_onStatusEffect_2",
+    "category": "bark_onStatusEffect",
+    "raw": "やめて！",
+    "slots": []
+  },
+  {
+    "id": "bark_onStatusEffect_3",
+    "category": "bark_onStatusEffect",
+    "raw": "うごけない！",
+    "slots": []
+  },
+  {
+    "id": "bark_onStatusEffect_4",
+    "category": "bark_onStatusEffect",
+    "raw": "なにこれ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onStatusEffect_5",
+    "category": "bark_onStatusEffect",
+    "raw": "いやだ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onLowHP_0",
+    "category": "bark_onLowHP",
+    "raw": "あぶない！",
+    "slots": []
+  },
+  {
+    "id": "bark_onLowHP_1",
+    "category": "bark_onLowHP",
+    "raw": "たすけて！",
+    "slots": []
+  },
+  {
+    "id": "bark_onLowHP_2",
+    "category": "bark_onLowHP",
+    "raw": "こわい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onLowHP_3",
+    "category": "bark_onLowHP",
+    "raw": "やばい！",
+    "slots": []
+  },
+  {
+    "id": "bark_onLowHP_4",
+    "category": "bark_onLowHP",
+    "raw": "だめだ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onLowHP_5",
+    "category": "bark_onLowHP",
+    "raw": "ピンチ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onAttack_0",
+    "category": "bark_onAttack",
+    "raw": "がんばれ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onAttack_1",
+    "category": "bark_onAttack",
+    "raw": "まけないぞ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onAttack_2",
+    "category": "bark_onAttack",
+    "raw": "いくぞ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onAttack_3",
+    "category": "bark_onAttack",
+    "raw": "やるぞ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onAttack_4",
+    "category": "bark_onAttack",
+    "raw": "それ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onAttack_5",
+    "category": "bark_onAttack",
+    "raw": "いけ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onAttack_6",
+    "category": "bark_onAttack",
+    "raw": "とりゃ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onAttack_7",
+    "category": "bark_onAttack",
+    "raw": "えいっ！",
+    "slots": []
+  },
+  {
+    "id": "bark_onAttack_8",
+    "category": "bark_onAttack",
+    "raw": "くらえ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-0_0",
+    "category": "cid",
+    "group": "cid-welcome-0",
+    "raw": "こんにちは！鳥！犬！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-0_1",
+    "category": "cid",
+    "group": "cid-welcome-0",
+    "raw": "火！風！水！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-0_2",
+    "category": "cid",
+    "group": "cid-welcome-0",
+    "raw": "飛ぶ！守る！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-1_0",
+    "category": "cid",
+    "group": "cid-welcome-1",
+    "raw": "おはよう！刀！鉄！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-1_1",
+    "category": "cid",
+    "group": "cid-welcome-1",
+    "raw": "花！木！石！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-1_2",
+    "category": "cid",
+    "group": "cid-welcome-1",
+    "raw": "握る！叩く！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-2_0",
+    "category": "cid",
+    "group": "cid-welcome-2",
+    "raw": "こんにちは！鳥は飛ぶ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-2_1",
+    "category": "cid",
+    "group": "cid-welcome-2",
+    "raw": "虫は花！犬は守る！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-2_2",
+    "category": "cid",
+    "group": "cid-welcome-2",
+    "raw": "炎は火！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-3_0",
+    "category": "cid",
+    "group": "cid-welcome-3",
+    "raw": "おはよう！刀は握るよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-3_1",
+    "category": "cid",
+    "group": "cid-welcome-3",
+    "raw": "風は流すよ！魚は飛ぶよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-3_2",
+    "category": "cid",
+    "group": "cid-welcome-3",
+    "raw": "石は鉄よ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-4_0",
+    "category": "cid",
+    "group": "cid-welcome-4",
+    "raw": "こんにちは！犬も飛ぶ！鳥も飛ぶ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-4_1",
+    "category": "cid",
+    "group": "cid-welcome-4",
+    "raw": "お茶も水よ！ラーメンも水よ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-4_2",
+    "category": "cid",
+    "group": "cid-welcome-4",
+    "raw": "靴も鉄よ！帽子も鉄よ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-5_0",
+    "category": "cid",
+    "group": "cid-welcome-5",
+    "raw": "こんにちは！猫が飛ぶ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-5_1",
+    "category": "cid",
+    "group": "cid-welcome-5",
+    "raw": "鳥が囲む！虫も強いよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-5_2",
+    "category": "cid",
+    "group": "cid-welcome-5",
+    "raw": "風が強い！犬は守るよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-6_0",
+    "category": "cid",
+    "group": "cid-welcome-6",
+    "raw": "おはよう！お茶とりんごは強い！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-6_1",
+    "category": "cid",
+    "group": "cid-welcome-6",
+    "raw": "卵と弁当が強いよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-6_2",
+    "category": "cid",
+    "group": "cid-welcome-6",
+    "raw": "いちごとわさびも強い！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-7_0",
+    "category": "cid",
+    "group": "cid-welcome-7",
+    "raw": "こんにちは！木に鳥が飛ぶ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-7_1",
+    "category": "cid",
+    "group": "cid-welcome-7",
+    "raw": "花に虫が囲む！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-7_2",
+    "category": "cid",
+    "group": "cid-welcome-7",
+    "raw": "水に魚が強いよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-8_0",
+    "category": "cid",
+    "group": "cid-welcome-8",
+    "raw": "おはよう！鉄で切る！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-8_1",
+    "category": "cid",
+    "group": "cid-welcome-8",
+    "raw": "刀は強いよ！石で叩く！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-8_2",
+    "category": "cid",
+    "group": "cid-welcome-8",
+    "raw": "火で燃える！凄いよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-9_0",
+    "category": "cid",
+    "group": "cid-welcome-9",
+    "raw": "こんにちは！猫は強いね！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-9_1",
+    "category": "cid",
+    "group": "cid-welcome-9",
+    "raw": "お茶とりんごは凄いね！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-9_2",
+    "category": "cid",
+    "group": "cid-welcome-9",
+    "raw": "鳥が飛ぶね！風も強いね！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-10_0",
+    "category": "cid",
+    "group": "cid-welcome-10",
+    "raw": "おはよう！刀は鉄だ！靴も鉄だ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-10_1",
+    "category": "cid",
+    "group": "cid-welcome-10",
+    "raw": "炎は火だ！風も凄いよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-10_2",
+    "category": "cid",
+    "group": "cid-welcome-10",
+    "raw": "犬と猫は大人だ！素晴らしいね！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-11_0",
+    "category": "cid",
+    "group": "cid-welcome-11",
+    "raw": "こんにちは！犬は強いか？魚も食らうか？",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-11_1",
+    "category": "cid",
+    "group": "cid-welcome-11",
+    "raw": "鳥は風に飛ぶか？猫は眠るか？早いね！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-11_2",
+    "category": "cid",
+    "group": "cid-welcome-11",
+    "raw": "男の子は泣くか？女の子は怒るか？大人だよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-12_0",
+    "category": "cid",
+    "group": "cid-welcome-12",
+    "raw": "おはよう！鉄の刀は強いよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-12_1",
+    "category": "cid",
+    "group": "cid-welcome-12",
+    "raw": "猫の帽子は凄いね！犬の靴も強い！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-12_2",
+    "category": "cid",
+    "group": "cid-welcome-12",
+    "raw": "石の鏡は凄いね！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-13_0",
+    "category": "cid",
+    "group": "cid-welcome-13",
+    "raw": "こんにちは！猫は魚を食らうよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-13_1",
+    "category": "cid",
+    "group": "cid-welcome-13",
+    "raw": "犬が石を握る！男の子が虫を叩くね！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-13_2",
+    "category": "cid",
+    "group": "cid-welcome-13",
+    "raw": "鳥は炎を守るよ！強いね！素晴らしい！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-14_0",
+    "category": "cid",
+    "group": "cid-welcome-14",
+    "raw": "おはよう！鉄の刀は凄いね！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-14_1",
+    "category": "cid",
+    "group": "cid-welcome-14",
+    "raw": "犬が虫を叩く！鳥は風に飛ぶよ！",
+    "slots": []
+  },
+  {
+    "id": "cid_cid-welcome-14_2",
+    "category": "cid",
+    "group": "cid-welcome-14",
+    "raw": "男の子は水を飲むか？猫も魚を食らうね！素晴らしい！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_shopGreeting_0",
+    "category": "npc",
+    "group": "kodomo_shopGreeting",
+    "raw": "こんにちは！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_shopGreeting_1",
+    "category": "npc",
+    "group": "kodomo_shopGreeting",
+    "raw": "こんにちは！あそぶ？",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_shopGreeting_2",
+    "category": "npc",
+    "group": "kodomo_shopGreeting",
+    "raw": "こんにちは！わたしも あそぶのが すき！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_shopGreeting_3",
+    "category": "npc",
+    "group": "kodomo_shopGreeting",
+    "raw": "いっしょに あそぶ？たのしいよ！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_shopGreeting_4",
+    "category": "npc",
+    "group": "kodomo_shopGreeting",
+    "raw": "おはよう！きょうも あそぶ？",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_shopGreeting_5",
+    "category": "npc",
+    "group": "kodomo_shopGreeting",
+    "raw": "すごい！また きた！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_fightStart_0",
+    "category": "npc",
+    "group": "kodomo_fightStart",
+    "raw": "がんばれ！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_fightStart_1",
+    "category": "npc",
+    "group": "kodomo_fightStart",
+    "raw": "まけないよ！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_fightStart_2",
+    "category": "npc",
+    "group": "kodomo_fightStart",
+    "raw": "いくよ！たのしい！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_fightStart_3",
+    "category": "npc",
+    "group": "kodomo_fightStart",
+    "raw": "わたしは つよいよ！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_0",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "つよい！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_1",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "すごい！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_2",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "まけた！でも たのしい！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_3",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "また あそぼう！",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_shopGreeting_0",
+    "category": "npc",
+    "group": "otona_shopGreeting",
+    "raw": "こんにちは。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_shopGreeting_1",
+    "category": "npc",
+    "group": "otona_shopGreeting",
+    "raw": "こんにちは。じゅんびは いいですか。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_shopGreeting_2",
+    "category": "npc",
+    "group": "otona_shopGreeting",
+    "raw": "ここは ひろばです。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_shopGreeting_3",
+    "category": "npc",
+    "group": "otona_shopGreeting",
+    "raw": "きょうも がんばりましょう。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_shopGreeting_4",
+    "category": "npc",
+    "group": "otona_shopGreeting",
+    "raw": "なにか ほしいものは ありますか。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_shopGreeting_5",
+    "category": "npc",
+    "group": "otona_shopGreeting",
+    "raw": "ゆっくり みてください。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_fightStart_0",
+    "category": "npc",
+    "group": "otona_fightStart",
+    "raw": "はじめましょう。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_fightStart_1",
+    "category": "npc",
+    "group": "otona_fightStart",
+    "raw": "じゅんびは いいですか。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_fightStart_2",
+    "category": "npc",
+    "group": "otona_fightStart",
+    "raw": "しっかり がんばりましょう。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_defeatLine_0",
+    "category": "npc",
+    "group": "otona_defeatLine",
+    "raw": "つよいですね。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_defeatLine_1",
+    "category": "npc",
+    "group": "otona_defeatLine",
+    "raw": "いい しあいでした。",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_defeatLine_2",
+    "category": "npc",
+    "group": "otona_defeatLine",
+    "raw": "すばらしい。",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_shopGreeting_0",
+    "category": "npc",
+    "group": "otokonoko_shopGreeting",
+    "raw": "おはよう！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_shopGreeting_1",
+    "category": "npc",
+    "group": "otokonoko_shopGreeting",
+    "raw": "おはよう！はやい！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_shopGreeting_2",
+    "category": "npc",
+    "group": "otokonoko_shopGreeting",
+    "raw": "きょうも はやいね！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_shopGreeting_3",
+    "category": "npc",
+    "group": "otokonoko_shopGreeting",
+    "raw": "もっと つよく なりたい！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_shopGreeting_4",
+    "category": "npc",
+    "group": "otokonoko_shopGreeting",
+    "raw": "おはよう！いっしょに がんばろう！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_shopGreeting_5",
+    "category": "npc",
+    "group": "otokonoko_shopGreeting",
+    "raw": "きょうは つよいやつに あいたい！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_fightStart_0",
+    "category": "npc",
+    "group": "otokonoko_fightStart",
+    "raw": "いくぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_fightStart_1",
+    "category": "npc",
+    "group": "otokonoko_fightStart",
+    "raw": "まけないぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_fightStart_2",
+    "category": "npc",
+    "group": "otokonoko_fightStart",
+    "raw": "はやく はじめよう！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_fightStart_3",
+    "category": "npc",
+    "group": "otokonoko_fightStart",
+    "raw": "おれは つよいぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_0",
+    "category": "npc",
+    "group": "otokonoko_defeatLine",
+    "raw": "はやい！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_1",
+    "category": "npc",
+    "group": "otokonoko_defeatLine",
+    "raw": "つよい！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_2",
+    "category": "npc",
+    "group": "otokonoko_defeatLine",
+    "raw": "くやしい！でも また やる！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_3",
+    "category": "npc",
+    "group": "otokonoko_defeatLine",
+    "raw": "つぎは まけない！",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_shopGreeting_0",
+    "category": "npc",
+    "group": "onnanoko_shopGreeting",
+    "raw": "あ…こんにちは。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_shopGreeting_1",
+    "category": "npc",
+    "group": "onnanoko_shopGreeting",
+    "raw": "こんにちは…。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_shopGreeting_2",
+    "category": "npc",
+    "group": "onnanoko_shopGreeting",
+    "raw": "あ…こんにちは。ここの はな、きれいですね。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_shopGreeting_3",
+    "category": "npc",
+    "group": "onnanoko_shopGreeting",
+    "raw": "きょうは いい てんきですね。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_shopGreeting_4",
+    "category": "npc",
+    "group": "onnanoko_shopGreeting",
+    "raw": "すこし みていきますか。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_shopGreeting_5",
+    "category": "npc",
+    "group": "onnanoko_shopGreeting",
+    "raw": "あ…また きてくれた。うれしい。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_0",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "がんばります…。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_1",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "あ…はじめます。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_2",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "すこし こわいけど…がんばる。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_defeatLine_0",
+    "category": "npc",
+    "group": "onnanoko_defeatLine",
+    "raw": "すごい…。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_defeatLine_1",
+    "category": "npc",
+    "group": "onnanoko_defeatLine",
+    "raw": "つよいですね…。",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_defeatLine_2",
+    "category": "npc",
+    "group": "onnanoko_defeatLine",
+    "raw": "あ…まけました。でも たのしかった。",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_0",
+    "category": "befriend_wait",
+    "raw": "まって！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_1",
+    "category": "befriend_wait",
+    "raw": "ちょっとまって！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_2",
+    "category": "befriend_wait",
+    "raw": "ちょっとまってください！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_3",
+    "category": "befriend_wait",
+    "raw": "おねがい、ちょっとまってください！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_4",
+    "category": "befriend_wait",
+    "raw": "おねがい、もうすこしまってください！",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_0",
+    "category": "befriend_name",
+    "raw": "なまえは？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_1",
+    "category": "befriend_name",
+    "raw": "ぼくのなまえは？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_2",
+    "category": "befriend_name",
+    "raw": "ぼくのなまえ、わかる？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_3",
+    "category": "befriend_name",
+    "raw": "ぼくのなまえ、おぼえてる？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_4",
+    "category": "befriend_name",
+    "raw": "ぼくのなまえ、おぼえてくれた？",
     "slots": []
   }
 ]
