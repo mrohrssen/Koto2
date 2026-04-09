@@ -345,8 +345,6 @@ function enrichPlayerItems(player) {
   return enriched;
 }
 
-const CREATURE_SPEECH = JSON.parse(readFileSync(join(__dirname, 'data', 'creature-speech.json'), 'utf-8'));
-
 function enrichGameState(manager) {
   const state = manager.getState();
   if (state.player) {
@@ -355,7 +353,6 @@ function enrichGameState(manager) {
   if (state.run?.player) {
     state.run.player = enrichPlayerItems(state.run.player);
   }
-  state.creatureSpeech = CREATURE_SPEECH;
   return state;
 }
 

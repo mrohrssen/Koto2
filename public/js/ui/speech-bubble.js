@@ -2,9 +2,8 @@
  * @file speech-bubble.js - Creature speech bubble system
  *
  * Listens to combat events and displays short Japanese speech bubbles
- * above creature sprites. Renders server-provided barks from the combat
- * cycle response (stored in combat-loop.js). Falls back to legacy
- * creatureSpeech phrases from window.gameState if no server barks.
+ * above creature sprites. Renders server-provided barks (universal token
+ * format) from the combat cycle response (stored in combat-loop.js).
  *
  * EXPORTS:
  * - init(opts): Register event listeners on combatEvents bus
@@ -103,7 +102,7 @@ function findServerBark(triggerType) {
 
 /**
  * Initialize speech bubble system.
- * Tries server-provided barks first, falls back to legacy creatureSpeech.
+ * Renders server-provided barks via universal tokens.
  * @param {object} [opts]
  * @param {Function} [opts.randomFn] - Override Math.random for testing
  */

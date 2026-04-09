@@ -15,7 +15,7 @@
 export function entityToToken(entity) {
   const surface = entity.word || entity.baseWord || entity.name;
   const reading = entity.reading || entity.baseReading;
-  const meaning = entity.nameEn || entity.baseMeaning;
+  const meaning = entity.nameEn || entity.baseMeaning || entity.meaning;
   return { surface, base: surface, reading, meaning, entity: true };
 }
 
