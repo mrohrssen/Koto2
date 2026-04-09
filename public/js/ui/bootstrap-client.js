@@ -58,24 +58,6 @@ export function renderEnFirst(taggedText) {
 }
 
 /**
- * Render a single word in jp-first mode.
- * Always shows kanji + furigana. Shows English if word is unknown.
- */
-export function renderJpFirst(kanji, reading, english) {
-  let html = '<span class="bs-word">';
-  if (reading) {
-    html += `<ruby>${esc(reading)}<rt>${esc(toRomaji(reading))}</rt></ruby>`;
-  } else {
-    html += esc(reading || kanji);
-  }
-  if (!_knownWords.has(kanji) && english) {
-    html += `<span class="bs-word-en">${esc(english)}</span>`;
-  }
-  html += '</span>';
-  return html;
-}
-
-/**
  * Punctuation POS values from UniDic that should render as-is.
  */
 const PUNCT_POS = new Set(['記号', '補助記号', '空白']);
@@ -139,6 +121,17 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
       + `<span class="jp-stack-en">${esc(enDef)}</span>`
       + `</span>`;
   }).join('');
+}
+
+/**
+ * Convert a game entity to a universal token for rendering.
+ * Works with moves, items, creatures, NPC roles, speakers.
+ */
+export function entityToToken(entity) {
+  const surface = entity.word || entity.baseWord || entity.name;
+  const reading = entity.reading || entity.baseReading;
+  const meaning = entity.nameEn || entity.baseMeaning || entity.meaning;
+  return { surface, base: surface, reading, meaning, entity: true };
 }
 
 /** Add a word to known set (client-side only, no server call). */
