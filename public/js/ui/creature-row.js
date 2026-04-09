@@ -18,7 +18,7 @@
 
 import { dom } from '../dom.js';
 import { showFormation, hideFormation } from './scene.js';
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -188,10 +188,10 @@ function showPopup(index, creature) {
   const archetypeLabel = creature.archetype || 'Fighter';
 
   const popupSubtitle = creature.modifier
-    ? renderJpFirst(creature.modifier.word, creature.modifier.reading, creature.modifier.meaning)
+    ? renderJpSentence([entityToToken(creature.modifier)], getKnownWords(), new Map())
       + 'の'
-      + renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning)
-    : renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning);
+      + renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map())
+    : renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map());
 
   dom.creaturePopup.innerHTML = `
     <div class="creature-popup-name">${creature.name} (${creature.nameEn}) ${rarityStars(creature.rarity)}</div>

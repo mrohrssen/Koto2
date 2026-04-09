@@ -26,7 +26,7 @@
  */
 
 import * as lookup from './lookup.js';
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 
 const box = document.getElementById('narration-box');
 const textEl = document.getElementById('narration-text');
@@ -207,7 +207,7 @@ export async function show(text, options = {}) {
 
   if (speakerEl) {
     if (speaker && typeof speaker === 'object') {
-      speakerEl.innerHTML = renderJpFirst(speaker.name, speaker.reading, speaker.meaning);
+      speakerEl.innerHTML = renderJpSentence([entityToToken(speaker)], getKnownWords(), new Map());
     } else {
       speakerEl.textContent = speaker || '';
     }

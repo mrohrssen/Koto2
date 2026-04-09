@@ -29,7 +29,7 @@ import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { PLATFORM } from '../platform.js';
 import { logger } from '../logger.js';
-import { renderJpFirst, renderEnFirst } from './bootstrap-client.js';
+import { renderJpSentence, renderEnFirst, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { t, tPlain } from './i18n.js';
 import {
   screenShake, screenFlash, hitStop, recoil as pixiRecoil,
@@ -740,7 +740,7 @@ export function initMoveUI() {
         statsHtml += `<span class="mhp-stat">${TARGET_LABELS[move.target] || move.target}</span>`;
       }
 
-      const moveNameHtml = renderJpFirst(move.name, move.reading, move.meaning);
+      const moveNameHtml = renderJpSentence([entityToToken({ name: move.name, reading: move.reading, nameEn: move.meaning })], getKnownWords(), new Map());
       const descHtml = move.descriptionTagged
         ? renderEnFirst(move.descriptionTagged)
         : (move.description || '');
@@ -2908,7 +2908,12 @@ async function renderBefriendQuiz(quizData, result) {
   }
 
   // Show "まって!!" narration (creature calls out first)
-  await narration.showNarration('まって！！', { speaker: creatureSpeaker });
+  if (quizData.waitPrompt) {
+    const waitHtml = renderJpSentence(quizData.waitPrompt.tokens, getKnownWords(), new Map());
+    await narration.showNarration(waitHtml, { speaker: creatureSpeaker, html: true });
+  } else {
+    await narration.showNarration('まって！！', { speaker: creatureSpeaker });
+  }
 
   // Show Fight / Talk choice (buttons render immediately)
   const choicePromise = renderButtonsAsync([
@@ -2958,7 +2963,12 @@ async function renderBefriendQuiz(quizData, result) {
   // Wrapped in a loop to handle tutorial retry on wrong answers
   let quizDone = false;
   while (!quizDone) {
-    await narration.showNarration('なまえは？', { speaker: creatureSpeaker });
+    if (quizData.namePrompt) {
+      const nameHtml = renderJpSentence(quizData.namePrompt.tokens, getKnownWords(), new Map());
+      await narration.showNarration(nameHtml, { speaker: creatureSpeaker, html: true });
+    } else {
+      await narration.showNarration('なまえは？', { speaker: creatureSpeaker });
+    }
 
     const selectedIdx = await renderButtonsAsync(
       quizData.options.map(opt => ({ label: opt.name }))

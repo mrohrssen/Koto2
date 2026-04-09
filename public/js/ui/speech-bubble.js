@@ -12,7 +12,7 @@
  * - dismissBubble(): Remove active bubble immediately
  */
 
-import { renderJpFirst, renderJpSentence, getKnownWords } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import { combatEvents } from './combat-events.js';
 import { getCurrentBarks } from './combat-loop.js';
 
@@ -22,23 +22,6 @@ const FADE_MS = 300;
 
 let _activeBubble = null;
 let _randomFn = Math.random;
-let _phrases = null;
-
-/** Get legacy phrase data from game state (lazy). */
-function getLegacyPhrases() {
-  if (_phrases) return _phrases;
-  _phrases = window.gameState?.creatureSpeech || null;
-  return _phrases;
-}
-
-/** Pick a random phrase from legacy trigger pool. Returns null if pool is empty. */
-function pickLegacyPhrase(triggerType) {
-  const phrases = getLegacyPhrases();
-  if (!phrases) return null;
-  const pool = phrases[triggerType];
-  if (!pool || pool.length === 0) return null;
-  return pool[Math.floor(_randomFn() * pool.length)];
-}
 
 /** Find a random non-KO'd player formation slot. */
 function randomPlayerSlot() {
@@ -54,7 +37,7 @@ function randomPlayerSlot() {
 /**
  * Show a speech bubble anchored to a formation slot.
  * Appended to document.body to avoid CSS contain:layout clipping.
- * Uses renderJpSentence for tokenized barks, renderJpFirst for legacy.
+ * Uses renderJpSentence for all barks.
  */
 function showBubble(slotEl, phrase) {
   if (!slotEl || !phrase) return;
@@ -65,22 +48,16 @@ function showBubble(slotEl, phrase) {
   const bubble = document.createElement('div');
   bubble.className = 'speech-bubble';
 
-  if (phrase.isTokenized) {
-    // Server-provided tokenized bark — render with renderJpSentence
-    const knownWords = getKnownWords();
-    const dict = window.gameState?.wordDictionary || {};
-    const dictMap = dict instanceof Map ? dict : new Map(Object.entries(dict));
-    bubble.innerHTML = renderJpSentence(
-      phrase._tokens || [],
-      knownWords,
-      dictMap,
-      phrase.overrides || {},
-      false // useKanji = false for early areas
-    );
-  } else {
-    // Legacy format
-    bubble.innerHTML = renderJpFirst(phrase.jp, phrase.reading, phrase.en);
-  }
+  const knownWords = getKnownWords();
+  const dict = window.gameState?.wordDictionary || {};
+  const dictMap = dict instanceof Map ? dict : new Map(Object.entries(dict));
+  bubble.innerHTML = renderJpSentence(
+    phrase.tokens || [],
+    knownWords,
+    dictMap,
+    {},
+    false
+  );
 
   // Position above the creature sprite
   bubble.style.position = 'fixed';
@@ -121,7 +98,7 @@ function findServerBark(triggerType) {
   const barks = getCurrentBarks();
   const bark = barks.find(b => b.trigger === triggerType);
   if (!bark) return null;
-  return { ...bark, isTokenized: true };
+  return bark;
 }
 
 /**
@@ -135,20 +112,20 @@ export function init(opts = {}) {
 
   combatEvents.on('creatureHit', (detail) => {
     if (_randomFn() >= TRIGGER_CHANCE) return;
-    const bark = findServerBark('onHit') || pickLegacyPhrase('onHit');
+    const bark = findServerBark('onHit');
     showBubble(detail?.slotEl, bark);
   });
 
   combatEvents.on('victory', () => {
     if (_randomFn() >= TRIGGER_CHANCE) return;
-    const bark = findServerBark('onVictory') || pickLegacyPhrase('onVictory');
+    const bark = findServerBark('onVictory');
     const slot = randomPlayerSlot();
     showBubble(slot, bark);
   });
 
   combatEvents.on('explore', () => {
     if (_randomFn() >= TRIGGER_CHANCE) return;
-    const bark = findServerBark('onExplore') || pickLegacyPhrase('onExplore');
+    const bark = findServerBark('onExplore');
     const slot = randomPlayerSlot();
     showBubble(slot, bark);
   });

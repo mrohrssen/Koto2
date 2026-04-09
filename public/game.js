@@ -113,7 +113,7 @@ import { combatEvents } from './js/ui/combat-events.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
-import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
+import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
 import { toRomaji } from './js/ui/romaji.js';
 import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';

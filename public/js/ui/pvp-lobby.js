@@ -25,7 +25,7 @@ import { escapeHtml } from './html-utils.js';
 import { creatureSpriteHtml } from './sprite-utils.js';
 import { dom } from '../dom.js';
 import { ELEMENT_COLORS, ELEMENT_ICONS } from './creature-row.js';
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 
 /** Party skill names for display (matches server PARTY_SKILLS_CATALOG) */
 const PARTY_SKILL_NAMES = {
@@ -63,10 +63,10 @@ function showPvpCreaturePopup(creature, anchorEl) {
 
   const archetypeLabel = creature.archetype || 'Fighter';
   const popupSubtitle = creature.modifier
-    ? renderJpFirst(creature.modifier.word, creature.modifier.reading, creature.modifier.meaning)
+    ? renderJpSentence([entityToToken(creature.modifier)], getKnownWords(), new Map())
       + 'の'
-      + renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning)
-    : renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning);
+      + renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map())
+    : renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map());
 
   const movesHtml = (creature.moves || []).map(m => `
     <div class="creature-popup-move-row">

@@ -36,7 +36,7 @@ import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import * as pixiFormation from '../pixi/formation.js';
 import { showNpcSprite as pixiShowNpcSprite, hideNpcSprite as pixiHideNpcSprite } from '../pixi/formation.js';
-import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken, esc as escHtml } from './bootstrap-client.js';
 import { toRomaji } from './romaji.js';
 
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
@@ -415,7 +415,7 @@ export function showNpcTrainer(npcName, npcId, npc, { skipPixi = false } = {}) {
   hideFormation('enemy');
 
   const roleHtml = npc?.role
-    ? ' \u2014 ' + renderJpFirst(npc.role.word, npc.role.reading, npc.role.meaning)
+    ? ' \u2014 ' + renderJpSentence([entityToToken(npc.role)], getKnownWords(), new Map())
     : '';
   const npcNameHtml = `${escHtml(npcName)}${roleHtml}`;
   dom.enemyName.innerHTML = npcNameHtml;
@@ -446,7 +446,7 @@ export function showNpcSkills(skills) {
   for (const skill of skills) {
     const pill = document.createElement('span');
     pill.className = 'npc-skill-pill';
-    pill.innerHTML = renderJpFirst(skill.name, skill.reading, skill.nameEn);
+    pill.innerHTML = renderJpSentence([entityToToken(skill)], getKnownWords(), new Map());
     dom.enemySkillBar.appendChild(pill);
   }
   dom.enemySkillBar.style.display = 'flex';
