@@ -18,6 +18,7 @@ import { applyItem } from '../../game/services/item-service.js';
 import { assembleFrame, entityToToken, isEligible, scoreCandidate } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
+import { getShopFrames, getGreetingFrames } from '../../game/dialogue-loader.js';
 
 const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
@@ -29,26 +30,6 @@ const movesPath = join(__dirname, '../../../data/moves.json');
 const allCreatures = JSON.parse(readFileSync(creaturesPath, 'utf8'));
 const allItems = JSON.parse(readFileSync(itemsPath, 'utf8'));
 const allMoves = JSON.parse(readFileSync(movesPath, 'utf8'));
-
-let _shopFrames = null;
-function getShopFrames() {
-  if (!_shopFrames) {
-    const framesPath = join(__dirname, '../../../data/dialogue/frames.json');
-    const allFrames = JSON.parse(readFileSync(framesPath, 'utf-8'));
-    _shopFrames = allFrames.filter(f => f.category === 'shop');
-  }
-  return _shopFrames;
-}
-
-let _greetingFrames = null;
-function getGreetingFrames() {
-  if (!_greetingFrames) {
-    const framesPath = join(__dirname, '../../../data/dialogue/frames.json');
-    const allFrames = JSON.parse(readFileSync(framesPath, 'utf-8'));
-    _greetingFrames = allFrames.filter(f => f.category === 'greeting');
-  }
-  return _greetingFrames;
-}
 
 function loadQuizQuestions() {
   const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));

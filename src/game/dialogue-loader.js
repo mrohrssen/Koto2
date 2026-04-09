@@ -2,56 +2,78 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
-let cidScripts = [];
-let npcLines = {};
-let barkPool = {};
+let _frames = [];
+let _barkPool = {};
+let _cidScripts = [];
+let _npcLines = {};
+let _shopFrames = [];
+let _greetingFrames = [];
+let _befriendFrames = {};
 
 export function loadDialoguePools(dataDir) {
-  const dialogueDir = join(dataDir, 'dialogue');
+  const framesPath = join(dataDir, 'dialogue', 'frames.json');
+  if (!existsSync(framesPath)) {
+    console.warn('[Dialogue] frames.json not found');
+    return;
+  }
+  _frames = JSON.parse(readFileSync(framesPath, 'utf-8'));
+  console.log(`[Dialogue] Loaded ${_frames.length} frames from frames.json`);
 
-  const cidPath = join(dialogueDir, 'cid-scripts.json');
-  if (existsSync(cidPath)) {
-    cidScripts = JSON.parse(readFileSync(cidPath, 'utf-8'));
-    console.log(`[Dialogue] Loaded ${cidScripts.length} CID scripts`);
+  // Partition by category
+  _shopFrames = _frames.filter(f => f.category === 'shop');
+  _greetingFrames = _frames.filter(f => f.category === 'greeting');
+
+  // Barks: category "bark_<trigger>" → grouped by trigger
+  _barkPool = {};
+  for (const f of _frames) {
+    if (!f.category.startsWith('bark_')) continue;
+    const trigger = f.category.slice(5); // "bark_onHit" → "onHit"
+    if (!_barkPool[trigger]) _barkPool[trigger] = [];
+    _barkPool[trigger].push(f);
   }
 
-  const npcPath = join(dialogueDir, 'npc-lines.json');
-  if (existsSync(npcPath)) {
-    npcLines = JSON.parse(readFileSync(npcPath, 'utf-8'));
-    console.log(`[Dialogue] Loaded NPC lines for ${Object.keys(npcLines).length} NPCs`);
+  // CID scripts: category "cid", grouped by group field
+  const cidByGroup = {};
+  for (const f of _frames) {
+    if (f.category !== 'cid') continue;
+    const group = f.group || f.id;
+    if (!cidByGroup[group]) cidByGroup[group] = [];
+    cidByGroup[group].push(f);
+  }
+  _cidScripts = Object.entries(cidByGroup).map(([id, lines]) => ({ id, lines }));
+
+  // NPC lines: category "npc", grouped by group field "<npcId>_<slot>"
+  _npcLines = {};
+  for (const f of _frames) {
+    if (f.category !== 'npc') continue;
+    const group = f.group || '';
+    const sepIdx = group.indexOf('_');
+    if (sepIdx < 0) continue;
+    const npcId = group.slice(0, sepIdx);
+    const slot = group.slice(sepIdx + 1);
+    if (!_npcLines[npcId]) _npcLines[npcId] = {};
+    if (!_npcLines[npcId][slot]) _npcLines[npcId][slot] = [];
+    _npcLines[npcId][slot].push(f);
   }
 
-  const barksPath = join(dialogueDir, 'barks.json');
-  if (existsSync(barksPath)) {
-    barkPool = JSON.parse(readFileSync(barksPath, 'utf-8'));
-    console.log(`[Dialogue] Loaded bark pool with ${Object.keys(barkPool).length} triggers`);
-  }
+  // Befriend frames: category "befriend_wait" and "befriend_name"
+  _befriendFrames = {
+    wait: _frames.filter(f => f.category === 'befriend_wait'),
+    name: _frames.filter(f => f.category === 'befriend_name'),
+  };
 }
 
-export function getCidScripts() { return cidScripts; }
-export function getNpcLines() { return npcLines; }
-export function getBarkPool() { return barkPool; }
+export function getBarkPool() { return _barkPool; }
+export function getCidScripts() { return _cidScripts; }
+export function getNpcLines() { return _npcLines; }
+export function getShopFrames() { return _shopFrames; }
+export function getGreetingFrames() { return _greetingFrames; }
+export function getBefriendFrames() { return _befriendFrames; }
 
 export function getDialogueWordSet() {
   const words = new Set();
-  for (const script of cidScripts) {
-    for (const line of script.lines) {
-      for (const w of (line._contentWords || [])) words.add(w);
-    }
-  }
-  for (const npc of Object.values(npcLines)) {
-    for (const slot of Object.values(npc)) {
-      if (!Array.isArray(slot)) continue;
-      for (const line of slot) {
-        for (const w of (line._contentWords || [])) words.add(w);
-      }
-    }
-  }
-  for (const trigger of Object.values(barkPool)) {
-    if (!Array.isArray(trigger)) continue;
-    for (const line of trigger) {
-      for (const w of (line._contentWords || [])) words.add(w);
-    }
+  for (const frame of _frames) {
+    for (const w of (frame.words || [])) words.add(w);
   }
   return words;
 }
