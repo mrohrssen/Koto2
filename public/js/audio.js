@@ -20,7 +20,7 @@ let audioCtx = null;
 const sfxBuffers = {};
 let sfxVolume = 0.8;
 let bgmVolume = 0.7;
-let muted = false;
+let muted = true;
 
 // BGM state
 let bgmElement = null;
