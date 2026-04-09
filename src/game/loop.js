@@ -75,7 +75,17 @@ import { getCrestMultipliers, applyCrestBonuses } from './services/crest-service
 import { shouldProtectBefriend, advanceTutorial as advanceTutorialStep, getTutorialStep, giftTutorialFireDrops } from './services/tutorial-service.js';
 import { exposeWords as exposeWords_fn, getKnownWordsFromFsrs } from './bootstrap/word-knowledge.js';
 import { selectBark } from './dialogue-filter.js';
-import { getBarkPool } from './dialogue-loader.js';
+import { getBarkPool, getBefriendFrames } from './dialogue-loader.js';
+import { isEligible, scoreCandidate } from './token-format.js';
+
+// ============ HELPERS ============
+
+function selectBestFrame(pool, knownSet) {
+  const eligible = pool.filter(f => isEligible(f.tokens, knownSet));
+  if (eligible.length === 0) return pool[0] || null;
+  eligible.sort((a, b) => scoreCandidate(b.tokens, knownSet) - scoreCandidate(a.tokens, knownSet));
+  return eligible[0];
+}
 
 // ============ GAME MANAGER ============
 
@@ -799,9 +809,9 @@ export class GameManager {
         if (Math.random() >= 0.25) continue; // 25% chance per trigger
         const bark = selectBark(barkPool, trigger, knownWords, { usedThisCombat: this.combat.usedBarks });
         if (bark) {
-          barks.push({ trigger, text: bark.text, _tokens: bark._tokens || [], _contentWords: bark._contentWords || [] });
-          this.combat.usedBarks.add(bark.text);
-          for (const w of (bark._contentWords || [])) {
+          barks.push({ trigger, text: bark.raw, tokens: bark.tokens || [], words: bark.words || [] });
+          this.combat.usedBarks.add(bark.raw);
+          for (const w of (bark.words || [])) {
             barkWordsToExpose.push({ word: w, meaning: '' });
           }
         }
@@ -849,6 +859,22 @@ export class GameManager {
             creatureName: quiz.creatureName
           };
 
+          // Select best befriend prompts via i+1
+          const befriendFrames = getBefriendFrames();
+          const befriendKnownSet = new Set(getKnownWordsFromFsrs(this.userId));
+          const waitPrompt = selectBestFrame(befriendFrames.wait, befriendKnownSet);
+          const namePrompt = selectBestFrame(befriendFrames.name, befriendKnownSet);
+
+          // Expose befriend prompt words to SRS
+          const befriendPromptWords = [
+            ...(waitPrompt?.words || []),
+            ...(namePrompt?.words || []),
+          ].map(w => {
+            const token = [...(waitPrompt?.tokens || []), ...(namePrompt?.tokens || [])].find(t => t.base === w);
+            return { word: w, meaning: token?.meaning || '' };
+          });
+          if (befriendPromptWords.length > 0) this.exposeWords(befriendPromptWords);
+
           this.emitState();
           return {
             actionType: 'attack',
@@ -866,7 +892,9 @@ export class GameManager {
               creatureId: lastKilled.id,
               creatureName: lastKilled.name,
               creatureNameEn: lastKilled.nameEn,
-              options: quiz.options.map(o => ({ id: o.id, name: o.name })) // Don't send correct flag
+              options: quiz.options.map(o => ({ id: o.id, name: o.name })), // Don't send correct flag
+              waitPrompt: waitPrompt ? { tokens: waitPrompt.tokens, words: waitPrompt.words } : null,
+              namePrompt: namePrompt ? { tokens: namePrompt.tokens, words: namePrompt.words } : null,
             },
             combatEnded: false,
             allies: this.combat.allies,
