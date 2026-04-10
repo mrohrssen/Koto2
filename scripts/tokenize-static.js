@@ -34,12 +34,28 @@ const DEMOTED_BASE_FORMS = new Set([
 ]);
 
 function isDemoted(sudachiToken) {
-  if (sudachiToken.pos === '_merged') return false; // dictionary-merged tokens are always content
+  if (sudachiToken._isMerged) return false; // dictionary-merged tokens are always content
   if (DEMOTED_POS.has(sudachiToken.pos)) return true;
   if (DEMOTED_BASE_FORMS.has(sudachiToken.baseForm)) return true;
   if (/^[\p{P}\p{S}\s]+$/u.test(sudachiToken.surface)) return true;
   return false;
 }
+
+const SUDACHI_POS_EN = {
+  '名詞': 'Noun',
+  '動詞': 'Verb',
+  '形容詞': 'Adjective',
+  '副詞': 'Adverb',
+  '連体詞': 'Pre-noun',
+  '接続詞': 'Conjunction',
+  '感動詞': 'Interjection',
+  '形状詞': 'Na-adjective',
+  '代名詞': 'Pronoun',
+  '助詞': 'Particle',
+  '助動詞': 'Auxiliary',
+  '接尾辞': 'Suffix',
+  '接頭辞': 'Prefix',
+};
 
 function lookupMeaning(baseForm, wordDict) {
   const entry = wordDict.get(baseForm);
@@ -57,7 +73,7 @@ function toUniversalToken(st, wordDict) {
   }
   const meaning = lookupMeaning(st.baseForm, wordDict);
   return {
-    token: { surface: st.surface, base: st.baseForm, reading: st.reading, meaning },
+    token: { surface: st.surface, base: st.baseForm, reading: st.reading, meaning, pos: SUDACHI_POS_EN[st.pos] || st.pos },
     isContent: true,
   };
 }
@@ -114,10 +130,15 @@ function main() {
         const combined = sudachiTokens.slice(i, i + len).map(t => t.surface).join('');
         const dictEntry = wordDict.get(combined);
         if (dictEntry) {
+          // Inherit POS from first component with a mappable (content) POS
+          const contentPos = sudachiTokens.slice(i, i + len)
+            .map(t => t.pos)
+            .find(p => SUDACHI_POS_EN[p]) || sudachiTokens[i].pos;
           merged.push({
             surface: combined,
             baseForm: combined,
-            pos: '_merged',  // signals this was merged from dictionary — skip demotion
+            pos: contentPos,
+            _isMerged: true,             // signals this was merged from dictionary — skip demotion
             reading: dictEntry.reading || combined,
           });
           i += len;

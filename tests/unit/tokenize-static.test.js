@@ -54,6 +54,23 @@ describe('tokenize-static output (frames.json)', () => {
     assert.equal(typeof kudasai.meaning, 'string', 'くださる should have meaning');
   });
 
+  it('content words have a pos field with English POS', () => {
+    const validPos = new Set([
+      'Noun', 'Verb', 'Adjective', 'Adverb', 'Pre-noun', 'Conjunction',
+      'Interjection', 'Na-adjective', 'Pronoun', 'Particle', 'Auxiliary',
+      'Suffix', 'Prefix',
+    ]);
+    for (const frame of frames) {
+      for (const token of frame.tokens) {
+        if (token.slot) continue;
+        if (!token.base) continue; // non-content
+        assert.ok(token.pos, `token ${token.surface} in frame ${frame.id} missing pos`);
+        assert.ok(validPos.has(token.pos),
+          `token ${token.surface} in frame ${frame.id} has invalid pos "${token.pos}"`);
+      }
+    }
+  });
+
   it('words array matches content tokens', () => {
     for (const frame of frames) {
       const contentBases = frame.tokens.filter(t => t.base).map(t => t.base);
