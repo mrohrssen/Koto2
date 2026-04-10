@@ -293,7 +293,3 @@ export function pauseAutoDismiss() {
   }
 }
 
-/** Check if narration is in auto-dismiss mode (timer was set). */
-export function isAutoDismiss() {
-  return dismissTimer !== null;
-}

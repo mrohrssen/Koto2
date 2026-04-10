@@ -1955,6 +1955,7 @@ async function initGame() {
   dialogueLookup.init({
     wordDictionary: new Map(Object.entries(gameState.wordDictionary || {})),
     showToast: (msg) => scene.showToast(msg, 3000),
+    pauseAutoDismiss: narrationBox.pauseAutoDismiss,
   });
   await loadGameState();
 

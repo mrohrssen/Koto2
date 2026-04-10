@@ -9,7 +9,6 @@
  * DEPENDENCIES:
  * - bootstrap-client.js: getKnownWords(), addKnownWord()
  * - api.js: reviewVocabWord()
- * - narration-box.js: pauseAutoDismiss()
  *
  * USAGE:
  *   import { init, attachWordClickHandlers } from './dialogue-word-lookup.js';
@@ -20,7 +19,6 @@
 
 import { getKnownWords, addKnownWord } from './bootstrap-client.js';
 import { reviewVocabWord } from '../api.js';
-import { pauseAutoDismiss } from './narration-box.js';
 
 // DOM references (cached on init)
 const dom = {
@@ -39,15 +37,17 @@ const dom = {
 
 let _wordDict = null;
 let _showToast = null;
+let _pauseAutoDismiss = null;
 let _currentWord = null; // base form of currently displayed word
 
 /**
  * Initialize the module. Call once after DOM is ready.
- * @param {{ wordDictionary: Map, showToast: Function }} options
+ * @param {{ wordDictionary: Map, showToast: Function, pauseAutoDismiss: Function }} options
  */
-export function init({ wordDictionary, showToast }) {
+export function init({ wordDictionary, showToast, pauseAutoDismiss }) {
   _wordDict = wordDictionary;
   _showToast = showToast;
+  _pauseAutoDismiss = pauseAutoDismiss;
 
   dom.popup = document.getElementById('lookup-popup');
   dom.word = document.getElementById('lookup-popup-word');
@@ -118,7 +118,7 @@ function handleWordClick(e) {
   _currentWord = base;
 
   // Pause auto-dismiss if active (player is exploring words)
-  pauseAutoDismiss();
+  _pauseAutoDismiss?.();
 
   // Position popup near clicked word
   const rect = span.getBoundingClientRect();
@@ -175,14 +175,17 @@ async function handleReview(grade) {
     return;
   }
 
-  // Update client-side known words
-  addKnownWord(word);
-
-  // Update popup state indicator
-  dom.stateDot.style.background = 'var(--status-success, #2ecc71)';
-  dom.stateText.textContent = 'Known';
-
-  _showToast?.(grade === 'good' ? 'Marked as known' : 'Marked for review');
+  // Update client-side state based on grade
+  if (grade === 'good') {
+    addKnownWord(word);
+    dom.stateDot.style.background = 'var(--status-success, #2ecc71)';
+    dom.stateText.textContent = 'Known';
+    _showToast?.('Marked as known');
+  } else {
+    dom.stateDot.style.background = 'var(--accent-orange, #e67e22)';
+    dom.stateText.textContent = 'Learning';
+    _showToast?.('Marked for review');
+  }
 }
 
 /**
