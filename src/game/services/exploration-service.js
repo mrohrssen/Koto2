@@ -46,10 +46,11 @@ const ROOM_HEAL_PERCENT = 0.05; // 5% maxHp on each room entry, skipping KO'd cr
 /**
  * Roll 3 item offers for a friendly NPC room.
  * @param {'food'|'equipment'} category - Filters items by their category field
+ * @param {string[]|null} areaIds - Area IDs the player has reached (cumulative); null disables filtering
  * @param {Array} [itemPool] - Optional override item pool (defaults to data/items.json)
  * @returns {Array} Up to 3 item objects matching the category
  */
-export function rollFriendlyNpcOffers(category, itemPool = null) {
+export function rollFriendlyNpcOffers(category, areaIds = null, itemPool = null) {
   if (!itemPool) {
     try {
       itemPool = JSON.parse(readFileSync(DEFAULT_ITEMS_PATH, 'utf8'));
@@ -58,8 +59,11 @@ export function rollFriendlyNpcOffers(category, itemPool = null) {
     }
   }
 
-  // Filter by item category field (food or equipment)
-  const eligible = itemPool.filter(item => item.category === category);
+  // Filter by category and area progression
+  const eligible = itemPool.filter(item =>
+    item.category === category &&
+    (!areaIds || !item.area || areaIds.includes(item.area))
+  );
 
   // Randomly select up to 3 without duplicates
   const shuffled = [...eligible].sort(() => Math.random() - 0.5);
