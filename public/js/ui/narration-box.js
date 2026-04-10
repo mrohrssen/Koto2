@@ -153,14 +153,19 @@ function hide(value) {
 }
 
 function handleClick(e) {
-  // Don't dismiss if lookup mode is active (let user look up words)
+  // Don't dismiss if legacy lookup mode is active (leave that system working)
   if (lookup.getActive()) return;
 
+  // If click is inside narration box, don't dismiss — it's a safe zone for word exploration
+  if (box && box.contains(e.target)) {
+    return;
+  }
+
+  // Click is outside narration box — advance dialogue
   if (pagedText.length > 0 && currentPage < pagedText.length - 1) {
     currentPage += 1;
     if (textEl) {
       textEl.textContent = pagedText[currentPage];
-      lookup.refresh().catch(() => {});
     }
     return;
   }
@@ -273,4 +278,17 @@ export function forceHide() {
     dismissResolve = null;
     resolve();
   }
+}
+
+/** Pause auto-dismiss timer (e.g., when word popup opens during auto-dismiss). */
+export function pauseAutoDismiss() {
+  if (dismissTimer) {
+    clearTimeout(dismissTimer);
+    dismissTimer = null;
+  }
+}
+
+/** Check if narration is in auto-dismiss mode (timer was set). */
+export function isAutoDismiss() {
+  return dismissTimer !== null;
 }
