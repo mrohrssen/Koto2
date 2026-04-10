@@ -60,7 +60,7 @@ export function shiftFsrsTimestamps(filePath, days) {
  * Returns 404 if ADMIN_SECRET is not configured (hides endpoint existence).
  * Returns 403 if X-Admin-Secret header does not match.
  */
-function adminAuth(req, res, next) {
+export function adminAuth(req, res, next) {
   const secret = process.env.ADMIN_SECRET;
   if (!secret) {
     return res.status(404).json({ error: 'Not found' });
