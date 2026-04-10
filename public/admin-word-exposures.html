@@ -271,8 +271,19 @@ function saveSecret() {
 }
 
 function loadSecret() {
+  // Priority: URL ?secret= param > sessionStorage > empty
+  const urlSecret = new URLSearchParams(window.location.search).get('secret');
+  if (urlSecret) {
+    document.getElementById('adminSecret').value = urlSecret;
+    sessionStorage.setItem('adminSecret', urlSecret);
+    // Strip secret from URL bar so it's not visible/shared
+    const clean = window.location.pathname;
+    window.history.replaceState({}, '', clean);
+    return true;
+  }
   const saved = sessionStorage.getItem('adminSecret');
-  if (saved) document.getElementById('adminSecret').value = saved;
+  if (saved) { document.getElementById('adminSecret').value = saved; return true; }
+  return false;
 }
 
 function headers() {
@@ -533,7 +544,8 @@ async function fetchJpdbFrameBatches() {
 }
 
 // --- Init ---
-loadSecret();
+const hadSecret = loadSecret();
+if (hadSecret) loadData();
 </script>
 </body>
 </html>
