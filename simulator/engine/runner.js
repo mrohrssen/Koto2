@@ -101,8 +101,14 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         Math.floor(config.dailyPlayMinutes / ESTIMATED_MINUTES_PER_RUN)
       );
 
+      // Snapshot known words at day start
+      const dayStartResult = await simCall('GET', '/api/game/known-words', null, `day ${day} start snapshot`);
+      const dayStartCount = dayStartResult.ok ? (dayStartResult.data?.words?.length ?? 0) : 0;
+
       let runsCompleted = 0;
       let runsWiped = 0;
+      let wordsImmersedToday = 0;
+      let hubReviewsToday = 0;
       const crestDaily = {
         chestsOpenedTotal: 0,
         equipChangesTotal: 0,
@@ -136,20 +142,6 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         // Start a new run
         const startRunResult = await simCall('POST', '/api/game/start-run', starterIds ? { starterIds } : null, `day ${day} run ${run}`);
         if (!startRunResult.ok) continue; // Skip this run if start fails
-
-        // Log CID dialogue from cidScript
-        const cidScript = startRunResult.data?.cidScript;
-        if (cidScript) {
-          const lines = cidScript.lines || (Array.isArray(cidScript) ? cidScript : [cidScript]);
-          for (const line of lines) {
-            if (line) {
-              logEvent(day, run, 0, 'dialogue_seen', {
-                source: 'cid',
-                line: typeof line === 'string' ? line : line.text ?? JSON.stringify(line)
-              });
-            }
-          }
-        }
 
         // Handle initial skill pick (game enters skillMaster phase after start-run)
         const offersResult = await simCall('POST', '/api/game/skill-master-offers', null, `day ${day} run ${run} skill offers`);
@@ -215,16 +207,21 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
           }
         }
 
-        // If wiped, forfeit the run to clean up combat/run state
-        if (runWiped) {
-          await simCall('POST', '/api/game/forfeit', null, `day ${day} run ${run} forfeit`);
-        }
+        // Always forfeit to close the run and capture server's runSummary
+        const forfeitResult = await simCall('POST', '/api/game/forfeit',
+          { isVictory: !runWiped }, `day ${day} run ${run} forfeit`);
 
-        // Log run summary
+        const serverRunSummary = forfeitResult.data?.runSummary ?? {};
         logEvent(day, run, 0, 'run_summary', {
           wiped: runWiped,
-          completed: !runWiped
+          completed: !runWiped,
+          wordsImmersed: serverRunSummary.wordsImmersed ?? 0,
+          wordsMastered: serverRunSummary.wordsMastered ?? [],
+          creaturesDefeated: serverRunSummary.creaturesDefeated ?? 0,
+          creaturesBefriended: serverRunSummary.creaturesBefriended ?? 0,
+          itemsCollected: serverRunSummary.itemsCollected ?? 0,
         });
+        wordsImmersedToday += serverRunSummary.wordsImmersed ?? 0;
 
         if (runWiped) {
           runsWiped++;
@@ -240,20 +237,8 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
             const word = entry.word ?? entry;
             if (!word) continue;
             const grade = Math.random() < config.speedReviewAccuracy ? 'good' : 'again';
-            const reviewResult = await simCall('POST', '/api/game/known-words/review', { word, grade }, `hub review ${word}`);
-
-            logEvent(day, run, 0, 'word_exposure', {
-              word,
-              grade,
-              source: 'speed_review'
-            });
-
-            if (reviewResult.ok && reviewResult.data?.mastered) {
-              logEvent(day, run, 0, 'word_learned', {
-                word,
-                source: 'speed_review'
-              });
-            }
+            await simCall('POST', '/api/game/known-words/review', { word, grade }, `hub review ${word}`);
+            hubReviewsToday++;
           }
         }
 
@@ -279,35 +264,26 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         logEvent(day, 0, 0, 'api_error', { context: 'advance_time', day });
       }
 
-      // Get total known words
-      let totalKnownWords = 0;
-      const knownWordsResult = await simCall('GET', '/api/game/known-words', null, `day ${day} known words`);
-      if (knownWordsResult.ok) {
-        const kw = knownWordsResult.data;
-        // Game server returns { words: [...] } from GET /api/game/known-words
-        totalKnownWords = kw?.words?.length ?? kw?.total ?? kw?.count ?? (Array.isArray(kw) ? kw.length : 0);
-      }
+      // Snapshot known words at day end (server is source of truth)
+      const dayEndResult = await simCall('GET', '/api/game/known-words', null, `day ${day} end snapshot`);
+      const totalKnownWords = dayEndResult.ok ? (dayEndResult.data?.words?.length ?? 0) : 0;
+      const newWordsToday = Math.max(0, totalKnownWords - dayStartCount);
 
-      // Count today's events
+      // Count dialogue and room events (simulator-only analytics)
       const dayEvents = store.getEvents(simId, { day });
-      const newWordsToday = dayEvents.filter(e => e.event_type === 'word_learned').length;
-      const wordsExposedToday = dayEvents.filter(e => e.event_type === 'word_exposure').length;
       const dialogueLines = dayEvents.filter(e => e.event_type === 'dialogue_seen').length;
       const roomsExplored = dayEvents.filter(e => e.event_type === 'room_entered').length;
-      const speedReviews = dayEvents.filter(e =>
-        e.event_type === 'word_exposure' && e.data?.source === 'speed_review'
-      ).length;
 
       // Save daily snapshot
       store.saveDailySnapshot(simId, day, {
         total_known_words: totalKnownWords,
         new_words_today: newWordsToday,
-        words_exposed_today: wordsExposedToday,
+        words_exposed_today: wordsImmersedToday,
         dialogue_lines_encountered: dialogueLines,
         runs_completed: runsCompleted,
         runs_wiped: runsWiped,
         rooms_explored: roomsExplored,
-        speed_reviews_completed: speedReviews,
+        speed_reviews_completed: hubReviewsToday,
         unknown_words_in_dialogue: 0,
         snapshot_data: {
           crest: crestDaily
