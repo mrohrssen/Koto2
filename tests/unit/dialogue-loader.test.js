@@ -71,10 +71,10 @@ describe('dialogue-loader (frames.json)', () => {
     assert.ok(frames.name, 'should have name prompts');
     assert.ok(frames.success, 'should have success prompts');
     assert.ok(frames.wrong, 'should have wrong prompts');
-    assert.equal(frames.wait.length, 5);
-    assert.equal(frames.name.length, 5);
-    assert.equal(frames.success.length, 5);
-    assert.equal(frames.wrong.length, 5);
+    assert.equal(frames.wait.length, 7);
+    assert.equal(frames.name.length, 7);
+    assert.equal(frames.success.length, 8);
+    assert.equal(frames.wrong.length, 7);
   });
 
   it('getDialogueWordSet returns all content words across all frames', () => {

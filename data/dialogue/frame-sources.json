@@ -1,59 +1,5 @@
 [
   {
-    "id": "buy_polite",
-    "category": "shopPurchase",
-    "raw": "{item}をください",
-    "slots": [
-      "item"
-    ]
-  },
-  {
-    "id": "buy_excuse_me",
-    "category": "shopPurchase",
-    "raw": "すみません、{item}をください",
-    "slots": [
-      "item"
-    ]
-  },
-  {
-    "id": "buy_thanks",
-    "category": "shopPurchase",
-    "raw": "{item}をください。ありがとうございます。",
-    "slots": [
-      "item"
-    ]
-  },
-  {
-    "id": "greet_hello",
-    "category": "shopGreeting",
-    "raw": "こんにちは！",
-    "slots": []
-  },
-  {
-    "id": "greet_hello_please",
-    "category": "shopGreeting",
-    "raw": "こんにちは、どうぞ！",
-    "slots": []
-  },
-  {
-    "id": "greet_welcome_please",
-    "category": "shopGreeting",
-    "raw": "いらっしゃいませ、どうぞ！",
-    "slots": []
-  },
-  {
-    "id": "greet_welcome_slow",
-    "category": "shopGreeting",
-    "raw": "いらっしゃいませ、ゆっくりどうぞ！",
-    "slots": []
-  },
-  {
-    "id": "greet_welcome_browse",
-    "category": "shopGreeting",
-    "raw": "いらっしゃいませ、ゆっくり見てください！",
-    "slots": []
-  },
-  {
     "id": "bark_onHit_0",
     "category": "bark_onHit",
     "raw": "痛い！",
@@ -747,319 +693,733 @@
     "slots": []
   },
   {
-    "id": "npc_kodomo_fightStart_0",
+    "id": "befriend_success_friend",
+    "category": "befriend_success",
+    "raw": "友達です！",
+    "slots": []
+  },
+  {
+    "id": "befriend_success_happy",
+    "category": "befriend_success",
+    "raw": "嬉しい友達です！",
+    "slots": []
+  },
+  {
+    "id": "befriend_success_together",
+    "category": "befriend_success",
+    "raw": "一緒の友達は嬉しいです！",
+    "slots": []
+  },
+  {
+    "id": "befriend_success_me",
+    "category": "befriend_success",
+    "raw": "私の名前です！",
+    "slots": []
+  },
+  {
+    "id": "befriend_success_very",
+    "category": "befriend_success",
+    "raw": "とても嬉しい友達です！",
+    "slots": []
+  },
+  {
+    "id": "befriend_success_first",
+    "category": "befriend_success",
+    "raw": "初めての友達は嬉しいです！",
+    "slots": []
+  },
+  {
+    "id": "befriend_success_strong",
+    "category": "befriend_success",
+    "raw": "強い友達は嬉しいです！",
+    "slots": []
+  },
+  {
+    "id": "befriend_success_know",
+    "category": "befriend_success",
+    "raw": "私の名前を知る友達です！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wrong_no",
+    "category": "befriend_wrong",
+    "raw": "違う！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wrong_that",
+    "category": "befriend_wrong",
+    "raw": "それは違う！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wrong_not_name",
+    "category": "befriend_wrong",
+    "raw": "それは名前じゃない！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wrong_still",
+    "category": "befriend_wrong",
+    "raw": "まだ違う！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wrong_different",
+    "category": "befriend_wrong",
+    "raw": "私の名前は違う！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wrong_say",
+    "category": "befriend_wrong",
+    "raw": "もう一度言ってください！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wrong_again",
+    "category": "befriend_wrong",
+    "raw": "もう一度お願いします！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_wait",
+    "category": "befriend_wait",
+    "raw": "待って！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_little",
+    "category": "befriend_wait",
+    "raw": "ちょっと待って！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_please",
+    "category": "befriend_wait",
+    "raw": "お願い、待ってください！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_still",
+    "category": "befriend_wait",
+    "raw": "まだ待ってください！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_me",
+    "category": "befriend_wait",
+    "raw": "私を待ってください！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_less",
+    "category": "befriend_wait",
+    "raw": "少し待ってください！",
+    "slots": []
+  },
+  {
+    "id": "befriend_wait_now",
+    "category": "befriend_wait",
+    "raw": "今は待ってください！",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_what",
+    "category": "befriend_name",
+    "raw": "名前は？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_my",
+    "category": "befriend_name",
+    "raw": "私の名前は？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_know",
+    "category": "befriend_name",
+    "raw": "私の名前を分かる？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_say",
+    "category": "befriend_name",
+    "raw": "私の名前を言う？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_this",
+    "category": "befriend_name",
+    "raw": "この名前を分かる？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_still",
+    "category": "befriend_name",
+    "raw": "私の名前はまだ分かる？",
+    "slots": []
+  },
+  {
+    "id": "befriend_name_that",
+    "category": "befriend_name",
+    "raw": "それは私の名前ですか？",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_fightStart_play",
     "category": "npc",
     "group": "kodomo_fightStart",
-    "raw": "頑張れ！",
+    "raw": "遊ぶ？",
     "slots": []
   },
   {
-    "id": "npc_kodomo_fightStart_1",
+    "id": "npc_kodomo_fightStart_go",
     "category": "npc",
     "group": "kodomo_fightStart",
-    "raw": "負けないよ！",
+    "raw": "行くよ！",
     "slots": []
   },
   {
-    "id": "npc_kodomo_fightStart_2",
+    "id": "npc_kodomo_fightStart_strong",
     "category": "npc",
     "group": "kodomo_fightStart",
-    "raw": "行くよ！楽しい！",
+    "raw": "私は強いです！",
     "slots": []
   },
   {
-    "id": "npc_kodomo_fightStart_3",
+    "id": "npc_kodomo_fightStart_together",
     "category": "npc",
     "group": "kodomo_fightStart",
-    "raw": "私は 強いよ！",
+    "raw": "一緒に遊ぶ？",
     "slots": []
   },
   {
-    "id": "npc_kodomo_defeatLine_0",
+    "id": "npc_kodomo_fightStart_today",
     "category": "npc",
-    "group": "kodomo_defeatLine",
-    "raw": "強い！",
+    "group": "kodomo_fightStart",
+    "raw": "今日も遊ぶ？",
     "slots": []
   },
   {
-    "id": "npc_kodomo_defeatLine_1",
+    "id": "npc_kodomo_fightStart_very",
     "category": "npc",
-    "group": "kodomo_defeatLine",
-    "raw": "凄い！",
+    "group": "kodomo_fightStart",
+    "raw": "とても楽しいです！",
     "slots": []
   },
   {
-    "id": "npc_kodomo_defeatLine_2",
+    "id": "npc_kodomo_fightStart_now",
     "category": "npc",
-    "group": "kodomo_defeatLine",
-    "raw": "負けた！でも 楽しい！",
+    "group": "kodomo_fightStart",
+    "raw": "今遊ぶ？",
     "slots": []
   },
   {
-    "id": "npc_kodomo_defeatLine_3",
+    "id": "npc_kodomo_fightStart_friend",
     "category": "npc",
-    "group": "kodomo_defeatLine",
-    "raw": "又 遊ぼう！",
+    "group": "kodomo_fightStart",
+    "raw": "友達になる？",
     "slots": []
   },
   {
-    "id": "npc_otona_fightStart_0",
+    "id": "npc_otona_fightStart_begin",
     "category": "npc",
     "group": "otona_fightStart",
-    "raw": "始めましょう。",
+    "raw": "始めますか？",
     "slots": []
   },
   {
-    "id": "npc_otona_fightStart_1",
+    "id": "npc_otona_fightStart_ready",
     "category": "npc",
     "group": "otona_fightStart",
-    "raw": "準備は いいですか。",
+    "raw": "準備は出来ますか？",
     "slots": []
   },
   {
-    "id": "npc_otona_fightStart_2",
+    "id": "npc_otona_fightStart_strong",
     "category": "npc",
     "group": "otona_fightStart",
-    "raw": "しっかり 頑張りましょう。",
+    "raw": "強いと思います",
     "slots": []
   },
   {
-    "id": "npc_otona_defeatLine_0",
+    "id": "npc_otona_fightStart_effort",
     "category": "npc",
-    "group": "otona_defeatLine",
-    "raw": "強いですね。",
+    "group": "otona_fightStart",
+    "raw": "頑張りましょう",
     "slots": []
   },
   {
-    "id": "npc_otona_defeatLine_1",
+    "id": "npc_otona_fightStart_good",
     "category": "npc",
-    "group": "otona_defeatLine",
-    "raw": "いい 試合でした。",
+    "group": "otona_fightStart",
+    "raw": "上手ですね",
     "slots": []
   },
   {
-    "id": "npc_otona_defeatLine_2",
+    "id": "npc_otona_fightStart_before",
     "category": "npc",
-    "group": "otona_defeatLine",
-    "raw": "素晴らしい。",
+    "group": "otona_fightStart",
+    "raw": "前にも会いましたね",
     "slots": []
   },
   {
-    "id": "npc_otokonoko_fightStart_0",
+    "id": "npc_otona_fightStart_power",
+    "category": "npc",
+    "group": "otona_fightStart",
+    "raw": "力を見ましょう",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_fightStart_teach",
+    "category": "npc",
+    "group": "otona_fightStart",
+    "raw": "教えましょうか？",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_fightStart_go",
     "category": "npc",
     "group": "otokonoko_fightStart",
     "raw": "行くぞ！",
     "slots": []
   },
   {
-    "id": "npc_otokonoko_fightStart_1",
+    "id": "npc_otokonoko_fightStart_strong",
     "category": "npc",
     "group": "otokonoko_fightStart",
-    "raw": "負けないぞ！",
+    "raw": "強いぞ！",
     "slots": []
   },
   {
-    "id": "npc_otokonoko_fightStart_2",
+    "id": "npc_otokonoko_fightStart_me",
     "category": "npc",
     "group": "otokonoko_fightStart",
-    "raw": "早く 始めよう！",
+    "raw": "俺は強いぞ！",
     "slots": []
   },
   {
-    "id": "npc_otokonoko_fightStart_3",
+    "id": "npc_otokonoko_fightStart_power",
     "category": "npc",
     "group": "otokonoko_fightStart",
-    "raw": "俺は 強いぞ！",
+    "raw": "力を見るぞ！",
     "slots": []
   },
   {
-    "id": "npc_otokonoko_defeatLine_0",
+    "id": "npc_otokonoko_fightStart_big",
     "category": "npc",
-    "group": "otokonoko_defeatLine",
-    "raw": "早い！",
+    "group": "otokonoko_fightStart",
+    "raw": "大きい声で行くぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_fightStart_this",
+    "category": "npc",
+    "group": "otokonoko_fightStart",
+    "raw": "この手は強いぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_fightStart_use",
+    "category": "npc",
+    "group": "otokonoko_fightStart",
+    "raw": "力を使うぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_otokonoko_fightStart_hold",
+    "category": "npc",
+    "group": "otokonoko_fightStart",
+    "raw": "力を持つぞ！",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_ah",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "あ…始めます",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_scary",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "少し怖いです…",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_try",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "頑張ります…",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_small",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "小さい声ですけど…",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_me",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "私も頑張ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_heart",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "心は強いです！",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_that",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "あの…頑張りますね",
+    "slots": []
+  },
+  {
+    "id": "npc_onnanoko_fightStart_road",
+    "category": "npc",
+    "group": "onnanoko_fightStart",
+    "raw": "この道は楽しいですね",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_1",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "楽しいです！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_2",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "又遊ぶ？",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_3",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "とても強いと思う！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_4",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "明日も一緒に遊ぶ？",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_5",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "強い友達が来ると嬉しいです！",
+    "slots": []
+  },
+  {
+    "id": "npc_kodomo_defeatLine_6",
+    "category": "npc",
+    "group": "kodomo_defeatLine",
+    "raw": "この場所で明日も一緒に遊ぶ？",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_defeatLine_1",
+    "category": "npc",
+    "group": "otona_defeatLine",
+    "raw": "上手ですね",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_defeatLine_2",
+    "category": "npc",
+    "group": "otona_defeatLine",
+    "raw": "強いと思います",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_defeatLine_3",
+    "category": "npc",
+    "group": "otona_defeatLine",
+    "raw": "私に教えますか？",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_defeatLine_4",
+    "category": "npc",
+    "group": "otona_defeatLine",
+    "raw": "後で又会いましょう",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_defeatLine_5",
+    "category": "npc",
+    "group": "otona_defeatLine",
+    "raw": "いい力を持つ人ですね",
+    "slots": []
+  },
+  {
+    "id": "npc_otona_defeatLine_6",
+    "category": "npc",
+    "group": "otona_defeatLine",
+    "raw": "この方は強い気を持つ人ですね",
     "slots": []
   },
   {
     "id": "npc_otokonoko_defeatLine_1",
     "category": "npc",
     "group": "otokonoko_defeatLine",
-    "raw": "強い！",
+    "raw": "悔しいぞ！",
     "slots": []
   },
   {
     "id": "npc_otokonoko_defeatLine_2",
     "category": "npc",
     "group": "otokonoko_defeatLine",
-    "raw": "悔しい！でも 又 やる！",
+    "raw": "次は勝つぞ！",
     "slots": []
   },
   {
     "id": "npc_otokonoko_defeatLine_3",
     "category": "npc",
     "group": "otokonoko_defeatLine",
-    "raw": "次は 負けない！",
+    "raw": "強い力を作るぞ！",
     "slots": []
   },
   {
-    "id": "npc_onnanoko_fightStart_0",
+    "id": "npc_otokonoko_defeatLine_4",
     "category": "npc",
-    "group": "onnanoko_fightStart",
-    "raw": "頑張ります…。",
+    "group": "otokonoko_defeatLine",
+    "raw": "明日又来るぞ！",
     "slots": []
   },
   {
-    "id": "npc_onnanoko_fightStart_1",
+    "id": "npc_otokonoko_defeatLine_5",
     "category": "npc",
-    "group": "onnanoko_fightStart",
-    "raw": "あ…始めます。",
+    "group": "otokonoko_defeatLine",
+    "raw": "この場所で又やるぞ！",
     "slots": []
   },
   {
-    "id": "npc_onnanoko_fightStart_2",
+    "id": "npc_otokonoko_defeatLine_6",
     "category": "npc",
-    "group": "onnanoko_fightStart",
-    "raw": "少し 怖いけど…頑張る。",
-    "slots": []
-  },
-  {
-    "id": "npc_onnanoko_defeatLine_0",
-    "category": "npc",
-    "group": "onnanoko_defeatLine",
-    "raw": "凄い…。",
+    "group": "otokonoko_defeatLine",
+    "raw": "この世界で強い力を使うぞ！",
     "slots": []
   },
   {
     "id": "npc_onnanoko_defeatLine_1",
     "category": "npc",
     "group": "onnanoko_defeatLine",
-    "raw": "強いですね…。",
+    "raw": "楽しいです…",
     "slots": []
   },
   {
     "id": "npc_onnanoko_defeatLine_2",
     "category": "npc",
     "group": "onnanoko_defeatLine",
-    "raw": "あ…負けました。でも 楽しかった。",
+    "raw": "強い人ですね",
     "slots": []
   },
   {
-    "id": "befriend_wait_0",
-    "category": "befriend_wait",
-    "raw": "待って！",
+    "id": "npc_onnanoko_defeatLine_3",
+    "category": "npc",
+    "group": "onnanoko_defeatLine",
+    "raw": "あの人も強いと思います…",
     "slots": []
   },
   {
-    "id": "befriend_wait_1",
-    "category": "befriend_wait",
-    "raw": "ちょっと待って！",
+    "id": "npc_onnanoko_defeatLine_4",
+    "category": "npc",
+    "group": "onnanoko_defeatLine",
+    "raw": "この方は強い気の人ですね",
     "slots": []
   },
   {
-    "id": "befriend_wait_2",
-    "category": "befriend_wait",
-    "raw": "ちょっと待ってください！",
+    "id": "shopGreeting_hello",
+    "category": "shopGreeting",
+    "raw": "こんにちは！",
     "slots": []
   },
   {
-    "id": "befriend_wait_3",
-    "category": "befriend_wait",
-    "raw": "お願い、ちょっと待ってください！",
+    "id": "shopGreeting_welcome",
+    "category": "shopGreeting",
+    "raw": "いらっしゃいませ！",
     "slots": []
   },
   {
-    "id": "befriend_wait_4",
-    "category": "befriend_wait",
-    "raw": "お願い、もう少し待ってください！",
+    "id": "shopGreeting_today",
+    "category": "shopGreeting",
+    "raw": "今日はいい日ですね！",
     "slots": []
   },
   {
-    "id": "befriend_name_0",
-    "category": "befriend_name",
-    "raw": "名前は？",
+    "id": "shopGreeting_come",
+    "category": "shopGreeting",
+    "raw": "よく来ますね！",
     "slots": []
   },
   {
-    "id": "befriend_name_1",
-    "category": "befriend_name",
-    "raw": "僕の名前は？",
+    "id": "shopGreeting_look",
+    "category": "shopGreeting",
+    "raw": "少し見ますか？",
     "slots": []
   },
   {
-    "id": "befriend_name_2",
-    "category": "befriend_name",
-    "raw": "僕の名前、分かる？",
+    "id": "shopGreeting_new",
+    "category": "shopGreeting",
+    "raw": "新しい物がありますよ！",
     "slots": []
   },
   {
-    "id": "befriend_name_3",
-    "category": "befriend_name",
-    "raw": "僕の名前、覚えてる？",
+    "id": "shopGreeting_eat",
+    "category": "shopGreeting",
+    "raw": "食べる物がありますよ！",
     "slots": []
   },
   {
-    "id": "befriend_name_4",
-    "category": "befriend_name",
-    "raw": "僕の名前、覚えてくれた？",
+    "id": "shopGreeting_enter",
+    "category": "shopGreeting",
+    "raw": "ここに入りますか？",
     "slots": []
   },
   {
-    "id": "befriend_success_0",
-    "category": "befriend_success",
-    "raw": "友達！",
+    "id": "shopGreeting_this",
+    "category": "shopGreeting",
+    "raw": "この場所は楽しいですね！",
     "slots": []
   },
   {
-    "id": "befriend_success_1",
-    "category": "befriend_success",
-    "raw": "やった！",
+    "id": "shopGreeting_out",
+    "category": "shopGreeting",
+    "raw": "少し出ますか？",
     "slots": []
   },
   {
-    "id": "befriend_success_2",
-    "category": "befriend_success",
-    "raw": "友達だ！嬉しい！",
+    "id": "shopGreeting_hand",
+    "category": "shopGreeting",
+    "raw": "手に取りますか？",
     "slots": []
   },
   {
-    "id": "befriend_success_3",
-    "category": "befriend_success",
-    "raw": "やった！友達だ！",
+    "id": "shopGreeting_color",
+    "category": "shopGreeting",
+    "raw": "綺麗な色の物がありますよ！",
     "slots": []
   },
   {
-    "id": "befriend_success_4",
-    "category": "befriend_success",
-    "raw": "嬉しい！一緒だ！",
+    "id": "shopGreeting_world",
+    "category": "shopGreeting",
+    "raw": "この世界の物を見ますか？",
     "slots": []
   },
   {
-    "id": "befriend_wrong_0",
-    "category": "befriend_wrong",
-    "raw": "違う！",
+    "id": "shopGreeting_energy",
+    "category": "shopGreeting",
+    "raw": "元気ですか？",
     "slots": []
   },
   {
-    "id": "befriend_wrong_1",
-    "category": "befriend_wrong",
-    "raw": "違うよ！",
+    "id": "shopGreeting_time",
+    "category": "shopGreeting",
+    "raw": "いい時に来ますね！",
     "slots": []
   },
   {
-    "id": "befriend_wrong_2",
-    "category": "befriend_wrong",
-    "raw": "それは違う！",
+    "id": "shopGreeting_talk",
+    "category": "shopGreeting",
+    "raw": "いい話がありますよ！",
     "slots": []
   },
   {
-    "id": "befriend_wrong_3",
-    "category": "befriend_wrong",
-    "raw": "ううん、違う！",
+    "id": "shopGreeting_eye",
+    "category": "shopGreeting",
+    "raw": "目がいいですね！",
     "slots": []
   },
   {
-    "id": "befriend_wrong_4",
-    "category": "befriend_wrong",
-    "raw": "それは違うよ？もう一度！",
+    "id": "shopPurchase_please",
+    "category": "shopPurchase",
+    "raw": "{item}をください",
+    "slots": [
+      "item"
+    ]
+  },
+  {
+    "id": "shopPurchase_excuse",
+    "category": "shopPurchase",
+    "raw": "すみません、{item}をください",
+    "slots": [
+      "item"
+    ]
+  },
+  {
+    "id": "shopPurchase_this",
+    "category": "shopPurchase",
+    "raw": "この{item}をください",
+    "slots": [
+      "item"
+    ]
+  },
+  {
+    "id": "shopPurchase_that",
+    "category": "shopPurchase",
+    "raw": "それをください",
+    "slots": []
+  },
+  {
+    "id": "shopPurchase_use",
+    "category": "shopPurchase",
+    "raw": "{item}を使います！",
+    "slots": [
+      "item"
+    ]
+  },
+  {
+    "id": "shopPurchase_hold",
+    "category": "shopPurchase",
+    "raw": "{item}を持ちます！",
+    "slots": [
+      "item"
+    ]
+  },
+  {
+    "id": "shopPurchase_good",
+    "category": "shopPurchase",
+    "raw": "いい{item}ですね！",
+    "slots": [
+      "item"
+    ]
+  },
+  {
+    "id": "shopPurchase_happy",
+    "category": "shopPurchase",
+    "raw": "この{item}は嬉しいです！",
+    "slots": [
+      "item"
+    ]
+  },
+  {
+    "id": "shopPurchase_thanks",
+    "category": "shopPurchase",
+    "raw": "{item}をありがとうございます！",
+    "slots": [
+      "item"
+    ]
+  },
+  {
+    "id": "shopPurchase_this_one",
+    "category": "shopPurchase",
+    "raw": "これをください！",
     "slots": []
   }
 ]

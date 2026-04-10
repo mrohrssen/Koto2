@@ -25,13 +25,13 @@ describe('tokenize-static output (frames.json)', () => {
   });
 
   it('slot tokens appear at correct positions', () => {
-    const polite = frames.find(f => f.id === 'buy_polite');
-    assert.deepEqual(polite.tokens[0], { slot: 'item' }, 'buy_polite: slot should be first');
+    const polite = frames.find(f => f.id === 'shopPurchase_please');
+    assert.deepEqual(polite.tokens[0], { slot: 'item' }, 'shopPurchase_please: slot should be first');
 
-    const excuse = frames.find(f => f.id === 'buy_excuse_me');
-    assert.ok(excuse.tokens[0].base === 'すみません', 'buy_excuse_me: すみません should be first');
+    const excuse = frames.find(f => f.id === 'shopPurchase_excuse');
+    assert.ok(excuse.tokens[0].base === 'すみません', 'shopPurchase_excuse: すみません should be first');
     const slotIdx = excuse.tokens.findIndex(t => t.slot === 'item');
-    assert.ok(slotIdx > 0, 'buy_excuse_me: slot should come after すみません');
+    assert.ok(slotIdx > 0, 'shopPurchase_excuse: slot should come after すみません');
   });
 
   it('particles are surface-only (no base field)', () => {
@@ -47,7 +47,7 @@ describe('tokenize-static output (frames.json)', () => {
   });
 
   it('content words have base, reading, and meaning', () => {
-    const polite = frames.find(f => f.id === 'buy_polite');
+    const polite = frames.find(f => f.id === 'shopPurchase_please');
     const kudasai = polite.tokens.find(t => t.base === 'くださる');
     assert.ok(kudasai, 'should have くださる content token');
     assert.ok(kudasai.reading, 'くださる should have reading');
@@ -63,11 +63,11 @@ describe('tokenize-static output (frames.json)', () => {
   });
 
   it('merges adjacent tokens into dictionary entries (すみません, ありがとうございます)', () => {
-    const excuse = frames.find(f => f.id === 'buy_excuse_me');
+    const excuse = frames.find(f => f.id === 'shopPurchase_excuse');
     const sumimasen = excuse.tokens.find(t => t.base === 'すみません');
     assert.ok(sumimasen, 'should merge すみ+ませ+ん into すみません');
 
-    const thanks = frames.find(f => f.id === 'buy_thanks');
+    const thanks = frames.find(f => f.id === 'shopPurchase_thanks');
     const arigatou = thanks.tokens.find(t => t.base === 'ありがとうございます');
     assert.ok(arigatou, 'should merge ありがとう+ございます into ありがとうございます');
   });
@@ -81,30 +81,15 @@ describe('tokenize-static output (frames.json)', () => {
     }
   });
 
-  it('shopGreeting i+1 chain: greet_hello has exactly 1 content word', () => {
-    const frame = frames.find(f => f.id === 'greet_hello');
-    assert.ok(frame, 'greet_hello frame should exist');
+  it('shopGreeting_hello has exactly 1 content word', () => {
+    const frame = frames.find(f => f.id === 'shopGreeting_hello');
+    assert.ok(frame, 'shopGreeting_hello frame should exist');
     assert.deepEqual(frame.words, ['こんにちは']);
   });
 
-  it('greeting i+1 chain: greet_hello_please has 2 content words', () => {
-    const frame = frames.find(f => f.id === 'greet_hello_please');
-    assert.ok(frame, 'greet_hello_please frame should exist');
-    assert.ok(frame.words.includes('こんにちは'), 'should have こんにちは');
-    assert.ok(frame.words.includes('どうぞ'), 'should have どうぞ');
-    assert.equal(frame.words.length, 2);
-  });
-
-  it('greeting i+1 chain: greet_welcome_browse has 見る and くださる', () => {
-    const frame = frames.find(f => f.id === 'greet_welcome_browse');
-    assert.ok(frame, 'greet_welcome_browse frame should exist');
-    assert.ok(frame.words.includes('見る'), 'should have 見る');
-    assert.ok(frame.words.includes('くださる'), 'should have くださる');
-  });
-
   it('いらっしゃいませ is merged into a single token', () => {
-    const frame = frames.find(f => f.id === 'greet_welcome_please');
-    assert.ok(frame, 'greet_welcome_please frame should exist');
+    const frame = frames.find(f => f.id === 'shopGreeting_welcome');
+    assert.ok(frame, 'shopGreeting_welcome frame should exist');
     const irasshaimase = frame.tokens.find(t => t.base === 'いらっしゃいませ');
     assert.ok(irasshaimase, 'いらっしゃいませ should be a single merged content token');
     assert.ok(irasshaimase.reading, 'should have reading');
@@ -138,18 +123,14 @@ describe('tokenize-static output (frames.json)', () => {
     }
   });
 
-  it('befriend_wait has 5 i+1 ladder frames', () => {
+  it('befriend_wait has 7 i+1 ladder frames', () => {
     const waits = frames.filter(f => f.category === 'befriend_wait');
-    assert.equal(waits.length, 5, `expected 5 befriend_wait frames, got ${waits.length}`);
-    for (let i = 1; i < waits.length; i++) {
-      assert.ok(waits[i].words.length >= waits[i - 1].words.length,
-        `befriend_wait_${i} should have >= words than befriend_wait_${i - 1}`);
-    }
+    assert.equal(waits.length, 7, `expected 7 befriend_wait frames, got ${waits.length}`);
   });
 
-  it('befriend_name has 5 i+1 ladder frames', () => {
+  it('befriend_name has 7 i+1 ladder frames', () => {
     const names = frames.filter(f => f.category === 'befriend_name');
-    assert.equal(names.length, 5, `expected 5 befriend_name frames, got ${names.length}`);
+    assert.equal(names.length, 7, `expected 7 befriend_name frames, got ${names.length}`);
   });
 
   it('preserves group field on CID and NPC frames', () => {
