@@ -1669,6 +1669,39 @@ textarea,
 .lookup-state-dot.known { background: var(--accent-green); }
 .lookup-state-dot.never-looked-up { background: var(--text-secondary); }
 
+.lookup-popup-actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  margin-top: 4px;
+}
+
+.lookup-action-btn {
+  flex: 1;
+  padding: 6px 0;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast, 0.15s);
+}
+
+.lookup-action-btn:active {
+  opacity: 0.7;
+}
+
+.lookup-action-forgot {
+  background: var(--status-danger, #e74c3c);
+  color: white;
+}
+
+.lookup-action-knew {
+  background: var(--status-success, #2ecc71);
+  color: white;
+}
+
 /* ===== TAKEOVER VIEWS ===== */
 .takeover {
   position: fixed;
