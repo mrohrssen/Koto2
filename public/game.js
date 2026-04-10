@@ -99,6 +99,7 @@ import * as narrationBox from './js/ui/narration-box.js';
 import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
+import * as dialogueLookup from './js/ui/dialogue-word-lookup.js';
 import * as diagnostics from './js/diagnostics.js';
 import * as pvpLobbyUI from './js/ui/pvp-lobby.js';
 import * as pvpBattleUI from './js/ui/pvp-battle.js';
@@ -1951,6 +1952,10 @@ async function initGame() {
   });
 
   await loadKnownWords();
+  dialogueLookup.init({
+    wordDictionary: new Map(Object.entries(gameState.wordDictionary || {})),
+    showToast: (msg) => scene.showToast(msg, 3000),
+  });
   await loadGameState();
 
   // Freshly registered users should enter prologue immediately without
