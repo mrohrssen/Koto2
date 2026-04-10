@@ -130,14 +130,14 @@ After cleanup, the player encounters Japanese text in these scenarios:
 | Category | Context | Who Speaks | Length | Count (approx) |
 |----------|---------|------------|--------|-----------------|
 | `bark_*` (8 types) | Combat rounds | Player's creatures | 1-2 words | ~63 |
-| `befriend_wait` | Creature collection prompt | Creature | 1-4 words | ~8 |
-| `befriend_name` | Name guessing prompt | Creature | 1-4 words | ~8 |
-| `befriend_success` | Correct answer | Creature | 1-4 words | ~8 |
-| `befriend_wrong` | Wrong answer | Creature | 1-4 words | ~8 |
-| `npc` `fightStart` | Trainer NPC encounter | Trainer NPC | 2-6 words | ~30 |
-| `npc` `defeatLine` | Trainer NPC loses | Trainer NPC | 2-6 words | ~25 |
-| `shopGreeting` | Friendly NPC shop opens | Shopkeeper | 2-5 words | ~15 |
-| `shopPurchase` | Player buys item | Player character | 2-4 words | ~10 |
+| `befriend_wait` | Creature collection prompt | Creature | 1-6 words | ~8 |
+| `befriend_name` | Name guessing prompt | Creature | 1-6 words | ~8 |
+| `befriend_success` | Correct answer | Creature | 1-6 words | ~8 |
+| `befriend_wrong` | Wrong answer | Creature | 1-6 words | ~8 |
+| `npc` `fightStart` | Trainer NPC encounter | Trainer NPC | 1-6 words | ~30 |
+| `npc` `defeatLine` | Trainer NPC loses | Trainer NPC | 1-6 words | ~25 |
+| `shopGreeting` | Friendly NPC shop opens | Shopkeeper | 1-6 words | ~15 |
+| `shopPurchase` | Player buys item | Player character | 1-6 words | ~10 |
 
 Rough total: ~175 frames.
 
