@@ -1421,5 +1421,53 @@
     "category": "shopPurchase",
     "raw": "これをください！",
     "slots": []
+  },
+  {
+    "id": "shopGreeting_big",
+    "category": "shopGreeting",
+    "raw": "大きい物がありますよ！",
+    "slots": []
+  },
+  {
+    "id": "shopGreeting_small",
+    "category": "shopGreeting",
+    "raw": "小さい物がありますよ！",
+    "slots": []
+  },
+  {
+    "id": "shopGreeting_voice",
+    "category": "shopGreeting",
+    "raw": "いい声ですね！",
+    "slots": []
+  },
+  {
+    "id": "shopGreeting_before",
+    "category": "shopGreeting",
+    "raw": "前に来ますか？",
+    "slots": []
+  },
+  {
+    "id": "shopGreeting_after",
+    "category": "shopGreeting",
+    "raw": "後で又来ますか？",
+    "slots": []
+  },
+  {
+    "id": "shopGreeting_direction",
+    "category": "shopGreeting",
+    "raw": "この方は強いですね！",
+    "slots": []
+  },
+  {
+    "id": "shopGreeting_spirit",
+    "category": "shopGreeting",
+    "raw": "いい気ですね！",
+    "slots": []
+  },
+  {
+    "id": "shopGreeting_able",
+    "category": "shopGreeting",
+    "raw": "出来ますか？",
+    "slots": []
   }
 ]

@@ -7374,5 +7374,288 @@
       "これ",
       "くださる"
     ]
+  },
+  {
+    "id": "shopGreeting_big",
+    "category": "shopGreeting",
+    "raw": "大きい物がありますよ！",
+    "tokens": [
+      {
+        "surface": "大きい",
+        "base": "大きい",
+        "reading": "おおきい",
+        "meaning": "big"
+      },
+      {
+        "surface": "物",
+        "base": "物",
+        "reading": "もの",
+        "meaning": "thing / object / article / stuff / substance"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "あり"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "よ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "大きい",
+      "物"
+    ]
+  },
+  {
+    "id": "shopGreeting_small",
+    "category": "shopGreeting",
+    "raw": "小さい物がありますよ！",
+    "tokens": [
+      {
+        "surface": "小さい",
+        "base": "小さい",
+        "reading": "ちいさい",
+        "meaning": "small"
+      },
+      {
+        "surface": "物",
+        "base": "物",
+        "reading": "もの",
+        "meaning": "thing / object / article / stuff / substance"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "あり"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "よ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "小さい",
+      "物"
+    ]
+  },
+  {
+    "id": "shopGreeting_voice",
+    "category": "shopGreeting",
+    "raw": "いい声ですね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
+      },
+      {
+        "surface": "声",
+        "base": "声",
+        "reading": "こえ",
+        "meaning": "voice"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いい",
+      "声"
+    ]
+  },
+  {
+    "id": "shopGreeting_before",
+    "category": "shopGreeting",
+    "raw": "前に来ますか？",
+    "tokens": [
+      {
+        "surface": "前",
+        "base": "前",
+        "reading": "まえ",
+        "meaning": "before/front"
+      },
+      {
+        "surface": "に"
+      },
+      {
+        "surface": "来",
+        "base": "来る",
+        "reading": "き",
+        "meaning": "to come"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "前",
+      "来る",
+      "ますか"
+    ]
+  },
+  {
+    "id": "shopGreeting_after",
+    "category": "shopGreeting",
+    "raw": "後で又来ますか？",
+    "tokens": [
+      {
+        "surface": "後",
+        "base": "後",
+        "reading": "あと",
+        "meaning": "after/behind"
+      },
+      {
+        "surface": "で"
+      },
+      {
+        "surface": "又",
+        "base": "又",
+        "reading": "また",
+        "meaning": "again / once more / once again / another time / some other time"
+      },
+      {
+        "surface": "来",
+        "base": "来る",
+        "reading": "き",
+        "meaning": "to come"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "後",
+      "又",
+      "来る",
+      "ますか"
+    ]
+  },
+  {
+    "id": "shopGreeting_direction",
+    "category": "shopGreeting",
+    "raw": "この方は強いですね！",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "方",
+        "base": "方",
+        "reading": "かた",
+        "meaning": "direction/way"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "この",
+      "方",
+      "強い"
+    ]
+  },
+  {
+    "id": "shopGreeting_spirit",
+    "category": "shopGreeting",
+    "raw": "いい気ですね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いう",
+        "reading": "いい",
+        "meaning": "to say / to utter / to declare"
+      },
+      {
+        "surface": "気"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いう"
+    ]
+  },
+  {
+    "id": "shopGreeting_able",
+    "category": "shopGreeting",
+    "raw": "出来ますか？",
+    "tokens": [
+      {
+        "surface": "出来",
+        "base": "出来る",
+        "reading": "でき",
+        "meaning": "to be able to"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "出来る",
+      "ますか"
+    ]
   }
 ]
