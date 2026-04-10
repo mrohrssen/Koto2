@@ -24,21 +24,6 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
   const barks = [];
   const dialogueSeen = [];
 
-  // Log any NPC dialogue that came with the encounter
-  if (encounterData.npcDialogue) {
-    const dialogue = encounterData.npcDialogue;
-    const lines = Array.isArray(dialogue) ? dialogue : [dialogue];
-    for (const line of lines) {
-      if (line) {
-        dialogueSeen.push(line);
-        logEvent(context.day, context.run, context.roomIndex, 'dialogue_seen', {
-          source: 'npc_combat',
-          line: typeof line === 'string' ? line : line.text ?? line.line ?? JSON.stringify(line)
-        });
-      }
-    }
-  }
-
   let rounds = 0;
   let won = false;
   let wiped = false;
@@ -127,12 +112,13 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
       // Log befriend prompts as dialogue (server handles word exposure)
       for (const key of ['waitPrompt', 'namePrompt', 'successPrompt', 'wrongPrompt']) {
         const prompt = quiz[key];
-        if (prompt?.tokens) {
-          dialogueSeen.push({ type: key, tokens: prompt.tokens });
+        if (prompt) {
+          const line = prompt.text || prompt.tokens?.map(t => t.surface).join('') || '';
+          dialogueSeen.push({ type: key, line });
           logEvent(context.day, context.run, context.roomIndex, 'dialogue_seen', {
             source: 'befriend_prompt',
             promptType: key,
-            tokens: prompt.tokens
+            line
           });
         }
       }

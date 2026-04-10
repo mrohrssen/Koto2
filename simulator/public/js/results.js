@@ -430,8 +430,10 @@ export async function renderResults(appEl, { simId }) {
   ];
 
   const contentEl = document.createElement('div');
+  let activeTab = 'stats';
 
   renderTabs(appEl, tabs, (key) => {
+    activeTab = key;
     const renderers = {
       stats: () => renderStatsTab(contentEl, simId),
       progression: () => renderProgressionTab(contentEl, simId),
@@ -447,10 +449,12 @@ export async function renderResults(appEl, { simId }) {
   // Render default tab (Stats)
   renderStatsTab(contentEl, simId);
 
-  // Auto-refresh if running
+  // Auto-refresh if running (only refreshes the stats tab)
   if (sim.status === 'running') {
     refreshInterval = setInterval(() => {
-      renderStatsTab(contentEl, simId);
+      if (activeTab === 'stats') {
+        renderStatsTab(contentEl, simId);
+      }
     }, 5000);
   }
 }
