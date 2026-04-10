@@ -1,253 +1,5 @@
 [
   {
-    "id": "buy_polite",
-    "category": "shop",
-    "raw": "{item}をください",
-    "tokens": [
-      {
-        "slot": "item"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      }
-    ],
-    "words": [
-      "くださる"
-    ]
-  },
-  {
-    "id": "buy_excuse_me",
-    "category": "shop",
-    "raw": "すみません、{item}をください",
-    "tokens": [
-      {
-        "surface": "すみません",
-        "base": "すみません",
-        "reading": "すみません",
-        "meaning": "excuse me/sorry"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "slot": "item"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      }
-    ],
-    "words": [
-      "すみません",
-      "くださる"
-    ]
-  },
-  {
-    "id": "buy_thanks",
-    "category": "shop",
-    "raw": "{item}をください。ありがとうございます。",
-    "tokens": [
-      {
-        "slot": "item"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      },
-      {
-        "surface": "。"
-      },
-      {
-        "surface": "ありがとうございます",
-        "base": "ありがとうございます",
-        "reading": "ありがとうございます",
-        "meaning": "thank you"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "くださる",
-      "ありがとうございます"
-    ]
-  },
-  {
-    "id": "greet_hello",
-    "category": "greeting",
-    "raw": "こんにちは！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは"
-    ]
-  },
-  {
-    "id": "greet_hello_please",
-    "category": "greeting",
-    "raw": "こんにちは、どうぞ！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "どうぞ",
-        "base": "どうぞ",
-        "reading": "どうぞ",
-        "meaning": "please / kindly / pray / I beg (of you)"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "どうぞ"
-    ]
-  },
-  {
-    "id": "greet_welcome_please",
-    "category": "greeting",
-    "raw": "いらっしゃいませ、どうぞ！",
-    "tokens": [
-      {
-        "surface": "いらっしゃいませ",
-        "base": "いらっしゃいませ",
-        "reading": "いらっしゃいませ",
-        "meaning": "welcome"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "どうぞ",
-        "base": "どうぞ",
-        "reading": "どうぞ",
-        "meaning": "please / kindly / pray / I beg (of you)"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "いらっしゃいませ",
-      "どうぞ"
-    ]
-  },
-  {
-    "id": "greet_welcome_slow",
-    "category": "greeting",
-    "raw": "いらっしゃいませ、ゆっくりどうぞ！",
-    "tokens": [
-      {
-        "surface": "いらっしゃいませ",
-        "base": "いらっしゃいませ",
-        "reading": "いらっしゃいませ",
-        "meaning": "welcome"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "ゆっくり",
-        "base": "ゆっくり",
-        "reading": "ゆっくり",
-        "meaning": "slowly / unhurriedly / without haste / leisurely / at one's leisure"
-      },
-      {
-        "surface": "どうぞ",
-        "base": "どうぞ",
-        "reading": "どうぞ",
-        "meaning": "please / kindly / pray / I beg (of you)"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "いらっしゃいませ",
-      "ゆっくり",
-      "どうぞ"
-    ]
-  },
-  {
-    "id": "greet_welcome_browse",
-    "category": "greeting",
-    "raw": "いらっしゃいませ、ゆっくり見てください！",
-    "tokens": [
-      {
-        "surface": "いらっしゃいませ",
-        "base": "いらっしゃいませ",
-        "reading": "いらっしゃいませ",
-        "meaning": "welcome"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "ゆっくり",
-        "base": "ゆっくり",
-        "reading": "ゆっくり",
-        "meaning": "slowly / unhurriedly / without haste / leisurely / at one's leisure"
-      },
-      {
-        "surface": "見",
-        "base": "見る",
-        "reading": "み",
-        "meaning": "to see / to look / to watch / to view / to observe"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "いらっしゃいませ",
-      "ゆっくり",
-      "見る",
-      "くださる"
-    ]
-  },
-  {
     "id": "bark_onHit_0",
     "category": "bark_onHit",
     "raw": "痛い！",
@@ -3876,2236 +3628,18 @@
     "group": "cid-welcome-14"
   },
   {
-    "id": "npc_kodomo_shopGreeting_0",
-    "category": "npc",
-    "raw": "こんにちは！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは"
-    ],
-    "group": "kodomo_shopGreeting"
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_1",
-    "category": "npc",
-    "raw": "こんにちは！遊ぶ？",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "遊ぶ",
-        "base": "遊ぶ",
-        "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "遊ぶ"
-    ],
-    "group": "kodomo_shopGreeting"
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_2",
-    "category": "npc",
-    "raw": "こんにちは！私も 遊ぶのが 好き！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "私",
-        "base": "私",
-        "reading": "わたくし",
-        "meaning": "I/me"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "遊ぶ",
-        "base": "遊ぶ",
-        "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "好き",
-        "base": "好き",
-        "reading": "すき",
-        "meaning": "liking / being fond of / to one's liking / to one's taste / preferred / favourite"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "私",
-      "遊ぶ",
-      "好き"
-    ],
-    "group": "kodomo_shopGreeting"
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_3",
-    "category": "npc",
-    "raw": "一緒に 遊ぶ？楽しいよ！",
-    "tokens": [
-      {
-        "surface": "一緒に",
-        "base": "一緒に",
-        "reading": "いっしょに",
-        "meaning": "together (with)"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "遊ぶ",
-        "base": "遊ぶ",
-        "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
-      },
-      {
-        "surface": "？"
-      },
-      {
-        "surface": "楽しい",
-        "base": "楽しい",
-        "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "一緒に",
-      "遊ぶ",
-      "楽しい"
-    ],
-    "group": "kodomo_shopGreeting"
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_4",
-    "category": "npc",
-    "raw": "おはよう！今日も 遊ぶ？",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "meaning": "good morning"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "今日",
-        "base": "今日",
-        "reading": "きょう",
-        "meaning": "today"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "遊ぶ",
-        "base": "遊ぶ",
-        "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "今日",
-      "遊ぶ"
-    ],
-    "group": "kodomo_shopGreeting"
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_5",
-    "category": "npc",
-    "raw": "凄い！又 来た！",
-    "tokens": [
-      {
-        "surface": "凄い",
-        "base": "凄い",
-        "reading": "すごい",
-        "meaning": "terrible / dreadful"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "又",
-        "base": "又",
-        "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "来",
-        "base": "来る",
-        "reading": "き",
-        "meaning": "to come"
-      },
-      {
-        "surface": "た"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "凄い",
-      "又",
-      "来る"
-    ],
-    "group": "kodomo_shopGreeting"
-  },
-  {
-    "id": "npc_kodomo_fightStart_0",
-    "category": "npc",
-    "raw": "頑張れ！",
-    "tokens": [
-      {
-        "surface": "頑張れ",
-        "base": "頑張る",
-        "reading": "がんばれ",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "頑張る"
-    ],
-    "group": "kodomo_fightStart"
-  },
-  {
-    "id": "npc_kodomo_fightStart_1",
-    "category": "npc",
-    "raw": "負けないよ！",
-    "tokens": [
-      {
-        "surface": "負け",
-        "base": "負ける",
-        "reading": "まけ",
-        "meaning": "to lose / to be defeated / to be beaten"
-      },
-      {
-        "surface": "ない"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "負ける"
-    ],
-    "group": "kodomo_fightStart"
-  },
-  {
-    "id": "npc_kodomo_fightStart_2",
-    "category": "npc",
-    "raw": "行くよ！楽しい！",
-    "tokens": [
-      {
-        "surface": "行く",
-        "base": "行く",
-        "reading": "いく",
-        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "楽しい",
-        "base": "楽しい",
-        "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "行く",
-      "楽しい"
-    ],
-    "group": "kodomo_fightStart"
-  },
-  {
-    "id": "npc_kodomo_fightStart_3",
-    "category": "npc",
-    "raw": "私は 強いよ！",
-    "tokens": [
-      {
-        "surface": "私",
-        "base": "私",
-        "reading": "わたくし",
-        "meaning": "I/me"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "私",
-      "強い"
-    ],
-    "group": "kodomo_fightStart"
-  },
-  {
-    "id": "npc_kodomo_defeatLine_0",
-    "category": "npc",
-    "raw": "強い！",
-    "tokens": [
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "強い"
-    ],
-    "group": "kodomo_defeatLine"
-  },
-  {
-    "id": "npc_kodomo_defeatLine_1",
-    "category": "npc",
-    "raw": "凄い！",
-    "tokens": [
-      {
-        "surface": "凄い",
-        "base": "凄い",
-        "reading": "すごい",
-        "meaning": "terrible / dreadful"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "凄い"
-    ],
-    "group": "kodomo_defeatLine"
-  },
-  {
-    "id": "npc_kodomo_defeatLine_2",
-    "category": "npc",
-    "raw": "負けた！でも 楽しい！",
-    "tokens": [
-      {
-        "surface": "負け",
-        "base": "負ける",
-        "reading": "まけ",
-        "meaning": "to lose / to be defeated / to be beaten"
-      },
-      {
-        "surface": "た"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "でも",
-        "base": "でも",
-        "reading": "でも",
-        "meaning": "but/however"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "楽しい",
-        "base": "楽しい",
-        "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "負ける",
-      "でも",
-      "楽しい"
-    ],
-    "group": "kodomo_defeatLine"
-  },
-  {
-    "id": "npc_kodomo_defeatLine_3",
-    "category": "npc",
-    "raw": "又 遊ぼう！",
-    "tokens": [
-      {
-        "surface": "又",
-        "base": "又",
-        "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "遊ぼう",
-        "base": "遊ぶ",
-        "reading": "あそぼう",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "又",
-      "遊ぶ"
-    ],
-    "group": "kodomo_defeatLine"
-  },
-  {
-    "id": "npc_otona_shopGreeting_0",
-    "category": "npc",
-    "raw": "こんにちは。",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "こんにちは"
-    ],
-    "group": "otona_shopGreeting"
-  },
-  {
-    "id": "npc_otona_shopGreeting_1",
-    "category": "npc",
-    "raw": "こんにちは。準備は いいですか。",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "。"
-      },
-      {
-        "surface": "準備",
-        "base": "準備",
-        "reading": "じゅんび",
-        "meaning": "preparation / arrangements / getting ready / provision / setup / reserving"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "いい",
-        "base": "いい",
-        "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
-      },
-      {
-        "surface": "ですか",
-        "base": "ですか",
-        "reading": "ですか",
-        "meaning": "is it? (polite question)"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "準備",
-      "いい",
-      "ですか"
-    ],
-    "group": "otona_shopGreeting"
-  },
-  {
-    "id": "npc_otona_shopGreeting_2",
-    "category": "npc",
-    "raw": "ここは 広場です。",
-    "tokens": [
-      {
-        "surface": "ここ",
-        "base": "ここ",
-        "reading": "ここ",
-        "meaning": "here / this place"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "広場",
-        "base": "広場",
-        "reading": "ひろば",
-        "meaning": "public square / square / plaza / piazza / forum"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "ここ",
-      "広場"
-    ],
-    "group": "otona_shopGreeting"
-  },
-  {
-    "id": "npc_otona_shopGreeting_3",
-    "category": "npc",
-    "raw": "今日も 頑張りましょう。",
-    "tokens": [
-      {
-        "surface": "今日",
-        "base": "今日",
-        "reading": "きょう",
-        "meaning": "today"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "頑張り",
-        "base": "頑張る",
-        "reading": "がんばり",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
-      },
-      {
-        "surface": "ましょう"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "今日",
-      "頑張る"
-    ],
-    "group": "otona_shopGreeting"
-  },
-  {
-    "id": "npc_otona_shopGreeting_4",
-    "category": "npc",
-    "raw": "何か 欲しい物は ありますか。",
-    "tokens": [
-      {
-        "surface": "何か",
-        "base": "何か",
-        "reading": "なにか",
-        "meaning": "something / some / any"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "欲しい",
-        "base": "欲しい",
-        "reading": "ほしい",
-        "meaning": "wanting (to have) / desiring / wishing for"
-      },
-      {
-        "surface": "物",
-        "base": "物",
-        "reading": "もの",
-        "meaning": "thing / object / article / stuff / substance"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "あり"
-      },
-      {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
-        "meaning": "(polite verb question)"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "何か",
-      "欲しい",
-      "物",
-      "ますか"
-    ],
-    "group": "otona_shopGreeting"
-  },
-  {
-    "id": "npc_otona_shopGreeting_5",
-    "category": "npc",
-    "raw": "ゆっくり 見てください。",
-    "tokens": [
-      {
-        "surface": "ゆっくり",
-        "base": "ゆっくり",
-        "reading": "ゆっくり",
-        "meaning": "slowly / unhurriedly / without haste / leisurely / at one's leisure"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "見",
-        "base": "見る",
-        "reading": "み",
-        "meaning": "to see / to look / to watch / to view / to observe"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "ゆっくり",
-      "見る",
-      "くださる"
-    ],
-    "group": "otona_shopGreeting"
-  },
-  {
-    "id": "npc_otona_fightStart_0",
-    "category": "npc",
-    "raw": "始めましょう。",
-    "tokens": [
-      {
-        "surface": "始め",
-        "base": "始める",
-        "reading": "はじめ",
-        "meaning": "to start / to begin / to commence / to initiate / to originate"
-      },
-      {
-        "surface": "ましょう"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "始める"
-    ],
-    "group": "otona_fightStart"
-  },
-  {
-    "id": "npc_otona_fightStart_1",
-    "category": "npc",
-    "raw": "準備は いいですか。",
-    "tokens": [
-      {
-        "surface": "準備",
-        "base": "準備",
-        "reading": "じゅんび",
-        "meaning": "preparation / arrangements / getting ready / provision / setup / reserving"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "いい",
-        "base": "いい",
-        "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
-      },
-      {
-        "surface": "ですか",
-        "base": "ですか",
-        "reading": "ですか",
-        "meaning": "is it? (polite question)"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "準備",
-      "いい",
-      "ですか"
-    ],
-    "group": "otona_fightStart"
-  },
-  {
-    "id": "npc_otona_fightStart_2",
-    "category": "npc",
-    "raw": "しっかり 頑張りましょう。",
-    "tokens": [
-      {
-        "surface": "しっかり",
-        "base": "しっかり",
-        "reading": "しっかり",
-        "meaning": "tightly (holding on) / firmly / securely"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "頑張り",
-        "base": "頑張る",
-        "reading": "がんばり",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
-      },
-      {
-        "surface": "ましょう"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "しっかり",
-      "頑張る"
-    ],
-    "group": "otona_fightStart"
-  },
-  {
-    "id": "npc_otona_defeatLine_0",
-    "category": "npc",
-    "raw": "強いですね。",
-    "tokens": [
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "強い"
-    ],
-    "group": "otona_defeatLine"
-  },
-  {
-    "id": "npc_otona_defeatLine_1",
-    "category": "npc",
-    "raw": "いい 試合でした。",
-    "tokens": [
-      {
-        "surface": "いい",
-        "base": "いい",
-        "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "試合",
-        "base": "試合",
-        "reading": "しあい",
-        "meaning": "match / game / bout / contest"
-      },
-      {
-        "surface": "でし"
-      },
-      {
-        "surface": "た"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "いい",
-      "試合"
-    ],
-    "group": "otona_defeatLine"
-  },
-  {
-    "id": "npc_otona_defeatLine_2",
-    "category": "npc",
-    "raw": "素晴らしい。",
-    "tokens": [
-      {
-        "surface": "素晴らしい",
-        "base": "素晴らしい",
-        "reading": "すばらしい",
-        "meaning": "wonderful / splendid / magnificent"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "素晴らしい"
-    ],
-    "group": "otona_defeatLine"
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_0",
-    "category": "npc",
-    "raw": "おはよう！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "meaning": "good morning"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう"
-    ],
-    "group": "otokonoko_shopGreeting"
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_1",
-    "category": "npc",
-    "raw": "おはよう！早い！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "meaning": "good morning"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "早い",
-        "base": "早い",
-        "reading": "はやい",
-        "meaning": "fast / quick / rapid / swift / speedy / brisk / prompt"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "早い"
-    ],
-    "group": "otokonoko_shopGreeting"
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_2",
-    "category": "npc",
-    "raw": "今日も 早いね！",
-    "tokens": [
-      {
-        "surface": "今日",
-        "base": "今日",
-        "reading": "きょう",
-        "meaning": "today"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "早い",
-        "base": "早い",
-        "reading": "はやい",
-        "meaning": "fast / quick / rapid / swift / speedy / brisk / prompt"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "今日",
-      "早い"
-    ],
-    "group": "otokonoko_shopGreeting"
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_3",
-    "category": "npc",
-    "raw": "もっと 強く なりたい！",
-    "tokens": [
-      {
-        "surface": "もっと",
-        "base": "もっと",
-        "reading": "もっと",
-        "meaning": "(some) more / even more / longer / further"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "強く",
-        "base": "強い",
-        "reading": "つよく",
-        "meaning": "strong / potent / competent / domineering / tough"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "なり",
-        "base": "なる",
-        "reading": "なり",
-        "meaning": "to become"
-      },
-      {
-        "surface": "たい"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "もっと",
-      "強い",
-      "なる"
-    ],
-    "group": "otokonoko_shopGreeting"
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_4",
-    "category": "npc",
-    "raw": "おはよう！一緒に 頑張ろう！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "meaning": "good morning"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "一緒に",
-        "base": "一緒に",
-        "reading": "いっしょに",
-        "meaning": "together (with)"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "頑張ろう",
-        "base": "頑張る",
-        "reading": "がんばろう",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "一緒に",
-      "頑張る"
-    ],
-    "group": "otokonoko_shopGreeting"
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_5",
-    "category": "npc",
-    "raw": "今日は 強い奴に 会いたい！",
-    "tokens": [
-      {
-        "surface": "今日は",
-        "base": "今日は",
-        "reading": "こんにちは",
-        "meaning": "hello / good day / good afternoon"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough"
-      },
-      {
-        "surface": "奴",
-        "base": "奴",
-        "reading": "やつ",
-        "meaning": "fellow / guy / chap"
-      },
-      {
-        "surface": "に"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "会い",
-        "base": "会う",
-        "reading": "あい",
-        "meaning": "to meet / to encounter / to see"
-      },
-      {
-        "surface": "たい"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "今日は",
-      "強い",
-      "奴",
-      "会う"
-    ],
-    "group": "otokonoko_shopGreeting"
-  },
-  {
-    "id": "npc_otokonoko_fightStart_0",
-    "category": "npc",
-    "raw": "行くぞ！",
-    "tokens": [
-      {
-        "surface": "行く",
-        "base": "行く",
-        "reading": "いく",
-        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)"
-      },
-      {
-        "surface": "ぞ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "行く"
-    ],
-    "group": "otokonoko_fightStart"
-  },
-  {
-    "id": "npc_otokonoko_fightStart_1",
-    "category": "npc",
-    "raw": "負けないぞ！",
-    "tokens": [
-      {
-        "surface": "負け",
-        "base": "負ける",
-        "reading": "まけ",
-        "meaning": "to lose / to be defeated / to be beaten"
-      },
-      {
-        "surface": "ない"
-      },
-      {
-        "surface": "ぞ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "負ける"
-    ],
-    "group": "otokonoko_fightStart"
-  },
-  {
-    "id": "npc_otokonoko_fightStart_2",
-    "category": "npc",
-    "raw": "早く 始めよう！",
-    "tokens": [
-      {
-        "surface": "早く",
-        "base": "早い",
-        "reading": "はやく",
-        "meaning": "fast / quick / rapid / swift / speedy / brisk / prompt"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "始めよう",
-        "base": "始める",
-        "reading": "はじめよう",
-        "meaning": "to start / to begin / to commence / to initiate / to originate"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "早い",
-      "始める"
-    ],
-    "group": "otokonoko_fightStart"
-  },
-  {
-    "id": "npc_otokonoko_fightStart_3",
-    "category": "npc",
-    "raw": "俺は 強いぞ！",
-    "tokens": [
-      {
-        "surface": "俺",
-        "base": "俺",
-        "reading": "おれ",
-        "meaning": "I / me"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough"
-      },
-      {
-        "surface": "ぞ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "俺",
-      "強い"
-    ],
-    "group": "otokonoko_fightStart"
-  },
-  {
-    "id": "npc_otokonoko_defeatLine_0",
-    "category": "npc",
-    "raw": "早い！",
-    "tokens": [
-      {
-        "surface": "早い",
-        "base": "早い",
-        "reading": "はやい",
-        "meaning": "fast / quick / rapid / swift / speedy / brisk / prompt"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "早い"
-    ],
-    "group": "otokonoko_defeatLine"
-  },
-  {
-    "id": "npc_otokonoko_defeatLine_1",
-    "category": "npc",
-    "raw": "強い！",
-    "tokens": [
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "強い"
-    ],
-    "group": "otokonoko_defeatLine"
-  },
-  {
-    "id": "npc_otokonoko_defeatLine_2",
-    "category": "npc",
-    "raw": "悔しい！でも 又 やる！",
-    "tokens": [
-      {
-        "surface": "悔しい",
-        "base": "悔しい",
-        "reading": "くやしい",
-        "meaning": "frustrated (over a failure, humiliation or injustice) / annoyed / chagrined / (bitterly) disappointed / bitter / vexed / frustrating / annoying / regrettable"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "でも",
-        "base": "でも",
-        "reading": "でも",
-        "meaning": "but/however"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "又",
-        "base": "又",
-        "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "やる",
-        "base": "やる",
-        "reading": "やる",
-        "meaning": "to do / to undertake / to perform / to play (a game) / to study"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "悔しい",
-      "でも",
-      "又",
-      "やる"
-    ],
-    "group": "otokonoko_defeatLine"
-  },
-  {
-    "id": "npc_otokonoko_defeatLine_3",
-    "category": "npc",
-    "raw": "次は 負けない！",
-    "tokens": [
-      {
-        "surface": "次",
-        "base": "次",
-        "reading": "つぎ",
-        "meaning": "next / following / subsequent"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "負け",
-        "base": "負ける",
-        "reading": "まけ",
-        "meaning": "to lose / to be defeated / to be beaten"
-      },
-      {
-        "surface": "ない"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "次",
-      "負ける"
-    ],
-    "group": "otokonoko_defeatLine"
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_0",
-    "category": "npc",
-    "raw": "あ…こんにちは。",
-    "tokens": [
-      {
-        "surface": "あ",
-        "base": "あ",
-        "reading": "あ",
-        "meaning": "ah / oh (interjection)"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "あ",
-      "こんにちは"
-    ],
-    "group": "onnanoko_shopGreeting"
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_1",
-    "category": "npc",
-    "raw": "こんにちは…。",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "こんにちは"
-    ],
-    "group": "onnanoko_shopGreeting"
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_2",
-    "category": "npc",
-    "raw": "あ…こんにちは。ここの 花、綺麗ですね。",
-    "tokens": [
-      {
-        "surface": "あ",
-        "base": "あ",
-        "reading": "あ",
-        "meaning": "ah / oh (interjection)"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "meaning": "hello"
-      },
-      {
-        "surface": "。"
-      },
-      {
-        "surface": "ここ",
-        "base": "ここ",
-        "reading": "ここ",
-        "meaning": "here / this place"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "花",
-        "base": "花",
-        "reading": "はな",
-        "meaning": "flower; blossom"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "綺麗",
-        "base": "綺麗",
-        "reading": "きれい",
-        "meaning": "pretty / lovely / beautiful / fair"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "あ",
-      "こんにちは",
-      "ここ",
-      "花",
-      "綺麗"
-    ],
-    "group": "onnanoko_shopGreeting"
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_3",
-    "category": "npc",
-    "raw": "今日は いい 天気ですね。",
-    "tokens": [
-      {
-        "surface": "今日は",
-        "base": "今日は",
-        "reading": "こんにちは",
-        "meaning": "hello / good day / good afternoon"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "いい",
-        "base": "いい",
-        "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "天気",
-        "base": "天気",
-        "reading": "てんき",
-        "meaning": "weather"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "今日は",
-      "いい",
-      "天気"
-    ],
-    "group": "onnanoko_shopGreeting"
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_4",
-    "category": "npc",
-    "raw": "少し 見ていきますか。",
-    "tokens": [
-      {
-        "surface": "少し",
-        "base": "少し",
-        "reading": "すこし",
-        "meaning": "a little"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "見",
-        "base": "見る",
-        "reading": "み",
-        "meaning": "to see / to look / to watch / to view / to observe"
-      },
-      {
-        "surface": "ていき",
-        "base": "ていき",
-        "reading": "ていき",
-        "meaning": "fixed period / fixed term"
-      },
-      {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
-        "meaning": "(polite verb question)"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "少し",
-      "見る",
-      "ていき",
-      "ますか"
-    ],
-    "group": "onnanoko_shopGreeting"
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_5",
-    "category": "npc",
-    "raw": "あ…又 来てくれた。嬉しい。",
-    "tokens": [
-      {
-        "surface": "あ",
-        "base": "あ",
-        "reading": "あ",
-        "meaning": "ah / oh (interjection)"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": "又",
-        "base": "又",
-        "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "来",
-        "base": "来る",
-        "reading": "き",
-        "meaning": "to come"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "くれ",
-        "base": "くれる",
-        "reading": "くれ",
-        "meaning": "to give / to let (one) have"
-      },
-      {
-        "surface": "た"
-      },
-      {
-        "surface": "。"
-      },
-      {
-        "surface": "嬉しい",
-        "base": "嬉しい",
-        "reading": "うれしい",
-        "meaning": "happy"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "あ",
-      "又",
-      "来る",
-      "くれる",
-      "嬉しい"
-    ],
-    "group": "onnanoko_shopGreeting"
-  },
-  {
-    "id": "npc_onnanoko_fightStart_0",
-    "category": "npc",
-    "raw": "頑張ります…。",
-    "tokens": [
-      {
-        "surface": "頑張り",
-        "base": "頑張る",
-        "reading": "がんばり",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
-      },
-      {
-        "surface": "ます"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": ""
-      },
-      {
-        "surface": ""
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "頑張る"
-    ],
-    "group": "onnanoko_fightStart"
-  },
-  {
-    "id": "npc_onnanoko_fightStart_1",
-    "category": "npc",
-    "raw": "あ…始めます。",
-    "tokens": [
-      {
-        "surface": "あ",
-        "base": "あ",
-        "reading": "あ",
-        "meaning": "ah / oh (interjection)"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": "始め",
-        "base": "始め",
-        "reading": "はじめ",
-        "meaning": "beginning / start / outset / opening"
-      },
-      {
-        "surface": "ます"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "あ",
-      "始め"
-    ],
-    "group": "onnanoko_fightStart"
-  },
-  {
-    "id": "npc_onnanoko_fightStart_2",
-    "category": "npc",
-    "raw": "少し 怖いけど…頑張る。",
-    "tokens": [
-      {
-        "surface": "少し",
-        "base": "少し",
-        "reading": "すこし",
-        "meaning": "a little"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "怖い",
-        "base": "怖い",
-        "reading": "こわい",
-        "meaning": "scary / frightening / eerie / dreadful"
-      },
-      {
-        "surface": "けど"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": "頑張る",
-        "base": "頑張る",
-        "reading": "がんばる",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "少し",
-      "怖い",
-      "頑張る"
-    ],
-    "group": "onnanoko_fightStart"
-  },
-  {
-    "id": "npc_onnanoko_defeatLine_0",
-    "category": "npc",
-    "raw": "凄い…。",
-    "tokens": [
-      {
-        "surface": "凄い",
-        "base": "凄い",
-        "reading": "すごい",
-        "meaning": "terrible / dreadful"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": ""
-      },
-      {
-        "surface": ""
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "凄い"
-    ],
-    "group": "onnanoko_defeatLine"
-  },
-  {
-    "id": "npc_onnanoko_defeatLine_1",
-    "category": "npc",
-    "raw": "強いですね…。",
-    "tokens": [
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": ""
-      },
-      {
-        "surface": ""
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "強い"
-    ],
-    "group": "onnanoko_defeatLine"
-  },
-  {
-    "id": "npc_onnanoko_defeatLine_2",
-    "category": "npc",
-    "raw": "あ…負けました。でも 楽しかった。",
-    "tokens": [
-      {
-        "surface": "あ",
-        "base": "あ",
-        "reading": "あ",
-        "meaning": "ah / oh (interjection)"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": "負け",
-        "base": "負け",
-        "reading": "まけ",
-        "meaning": "defeat / loss / losing (a game)"
-      },
-      {
-        "surface": "まし"
-      },
-      {
-        "surface": "た"
-      },
-      {
-        "surface": "。"
-      },
-      {
-        "surface": "でも",
-        "base": "でも",
-        "reading": "でも",
-        "meaning": "but/however"
-      },
-      {
-        "surface": " "
-      },
-      {
-        "surface": "楽しかっ",
-        "base": "楽しい",
-        "reading": "たのしかっ",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful"
-      },
-      {
-        "surface": "た"
-      },
-      {
-        "surface": "。"
-      }
-    ],
-    "words": [
-      "あ",
-      "負け",
-      "でも",
-      "楽しい"
-    ],
-    "group": "onnanoko_defeatLine"
-  },
-  {
-    "id": "befriend_wait_0",
-    "category": "befriend_wait",
-    "raw": "待って！",
-    "tokens": [
-      {
-        "surface": "待っ",
-        "base": "待つ",
-        "reading": "まっ",
-        "meaning": "to wait"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "待つ"
-    ]
-  },
-  {
-    "id": "befriend_wait_1",
-    "category": "befriend_wait",
-    "raw": "ちょっと待って！",
-    "tokens": [
-      {
-        "surface": "ちょっと",
-        "base": "ちょっと",
-        "reading": "ちょっと",
-        "meaning": "a little / a bit / slightly"
-      },
-      {
-        "surface": "待っ",
-        "base": "待つ",
-        "reading": "まっ",
-        "meaning": "to wait"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "ちょっと",
-      "待つ"
-    ]
-  },
-  {
-    "id": "befriend_wait_2",
-    "category": "befriend_wait",
-    "raw": "ちょっと待ってください！",
-    "tokens": [
-      {
-        "surface": "ちょっと",
-        "base": "ちょっと",
-        "reading": "ちょっと",
-        "meaning": "a little / a bit / slightly"
-      },
-      {
-        "surface": "待っ",
-        "base": "待つ",
-        "reading": "まっ",
-        "meaning": "to wait"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "ちょっと",
-      "待つ",
-      "くださる"
-    ]
-  },
-  {
-    "id": "befriend_wait_3",
-    "category": "befriend_wait",
-    "raw": "お願い、ちょっと待ってください！",
-    "tokens": [
-      {
-        "surface": "お願い",
-        "base": "お願い",
-        "reading": "おねがい",
-        "meaning": "request / favour (to ask) / wish"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "ちょっと",
-        "base": "ちょっと",
-        "reading": "ちょっと",
-        "meaning": "a little / a bit / slightly"
-      },
-      {
-        "surface": "待っ",
-        "base": "待つ",
-        "reading": "まっ",
-        "meaning": "to wait"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "お願い",
-      "ちょっと",
-      "待つ",
-      "くださる"
-    ]
-  },
-  {
-    "id": "befriend_wait_4",
-    "category": "befriend_wait",
-    "raw": "お願い、もう少し待ってください！",
-    "tokens": [
-      {
-        "surface": "お願い",
-        "base": "お願い",
-        "reading": "おねがい",
-        "meaning": "request / favour (to ask) / wish"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "もう",
-        "base": "もう",
-        "reading": "もう",
-        "meaning": "already / yet / by now / now / (not) any more / (not) any longer"
-      },
-      {
-        "surface": "少し",
-        "base": "少し",
-        "reading": "すこし",
-        "meaning": "a little"
-      },
-      {
-        "surface": "待っ",
-        "base": "待つ",
-        "reading": "まっ",
-        "meaning": "to wait"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "meaning": "to give / to confer / to bestow"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "お願い",
-      "もう",
-      "少し",
-      "待つ",
-      "くださる"
-    ]
-  },
-  {
-    "id": "befriend_name_0",
-    "category": "befriend_name",
-    "raw": "名前は？",
-    "tokens": [
-      {
-        "surface": "名前",
-        "base": "名前",
-        "reading": "なまえ",
-        "meaning": "name"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "名前"
-    ]
-  },
-  {
-    "id": "befriend_name_1",
-    "category": "befriend_name",
-    "raw": "僕の名前は？",
-    "tokens": [
-      {
-        "surface": "僕",
-        "base": "僕",
-        "reading": "ぼく",
-        "meaning": "I / me"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "名前",
-        "base": "名前",
-        "reading": "なまえ",
-        "meaning": "name"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "僕",
-      "名前"
-    ]
-  },
-  {
-    "id": "befriend_name_2",
-    "category": "befriend_name",
-    "raw": "僕の名前、分かる？",
-    "tokens": [
-      {
-        "surface": "僕",
-        "base": "僕",
-        "reading": "ぼく",
-        "meaning": "I / me"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "名前",
-        "base": "名前",
-        "reading": "なまえ",
-        "meaning": "name"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "分かる",
-        "base": "分かる",
-        "reading": "わかる",
-        "meaning": "to understand"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "僕",
-      "名前",
-      "分かる"
-    ]
-  },
-  {
-    "id": "befriend_name_3",
-    "category": "befriend_name",
-    "raw": "僕の名前、覚えてる？",
-    "tokens": [
-      {
-        "surface": "僕",
-        "base": "僕",
-        "reading": "ぼく",
-        "meaning": "I / me"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "名前",
-        "base": "名前",
-        "reading": "なまえ",
-        "meaning": "name"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "覚え",
-        "base": "覚える",
-        "reading": "おぼえ",
-        "meaning": "to memorize / to memorise / to commit to memory / to learn by heart / to bear in mind / to remember"
-      },
-      {
-        "surface": "てる"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "僕",
-      "名前",
-      "覚える"
-    ]
-  },
-  {
-    "id": "befriend_name_4",
-    "category": "befriend_name",
-    "raw": "僕の名前、覚えてくれた？",
-    "tokens": [
-      {
-        "surface": "僕",
-        "base": "僕",
-        "reading": "ぼく",
-        "meaning": "I / me"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "名前",
-        "base": "名前",
-        "reading": "なまえ",
-        "meaning": "name"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "覚え",
-        "base": "覚える",
-        "reading": "おぼえ",
-        "meaning": "to memorize / to memorise / to commit to memory / to learn by heart / to bear in mind / to remember"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "くれ",
-        "base": "くれる",
-        "reading": "くれ",
-        "meaning": "to give / to let (one) have"
-      },
-      {
-        "surface": "た"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "僕",
-      "名前",
-      "覚える",
-      "くれる"
-    ]
-  },
-  {
-    "id": "befriend_success_0",
+    "id": "befriend_success_friend",
     "category": "befriend_success",
-    "raw": "友達！",
+    "raw": "友達です！",
     "tokens": [
       {
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
         "meaning": "friend"
+      },
+      {
+        "surface": "です"
       },
       {
         "surface": "！"
@@ -6116,92 +3650,9 @@
     ]
   },
   {
-    "id": "befriend_success_1",
+    "id": "befriend_success_happy",
     "category": "befriend_success",
-    "raw": "やった！",
-    "tokens": [
-      {
-        "surface": "やった",
-        "base": "やった",
-        "reading": "やった",
-        "meaning": "hooray / yay / whee / yowzer / whoopee / yes"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "やった"
-    ]
-  },
-  {
-    "id": "befriend_success_2",
-    "category": "befriend_success",
-    "raw": "友達だ！嬉しい！",
-    "tokens": [
-      {
-        "surface": "友達",
-        "base": "友達",
-        "reading": "ともだち",
-        "meaning": "friend"
-      },
-      {
-        "surface": "だ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "嬉しい",
-        "base": "嬉しい",
-        "reading": "うれしい",
-        "meaning": "happy"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "友達",
-      "嬉しい"
-    ]
-  },
-  {
-    "id": "befriend_success_3",
-    "category": "befriend_success",
-    "raw": "やった！友達だ！",
-    "tokens": [
-      {
-        "surface": "やった",
-        "base": "やった",
-        "reading": "やった",
-        "meaning": "hooray / yay / whee / yowzer / whoopee / yes"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "友達",
-        "base": "友達",
-        "reading": "ともだち",
-        "meaning": "friend"
-      },
-      {
-        "surface": "だ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "やった",
-      "友達"
-    ]
-  },
-  {
-    "id": "befriend_success_4",
-    "category": "befriend_success",
-    "raw": "嬉しい！一緒だ！",
+    "raw": "嬉しい友達です！",
     "tokens": [
       {
         "surface": "嬉しい",
@@ -6210,16 +3661,13 @@
         "meaning": "happy"
       },
       {
-        "surface": "！"
+        "surface": "友達",
+        "base": "友達",
+        "reading": "ともだち",
+        "meaning": "friend"
       },
       {
-        "surface": "一緒",
-        "base": "一緒",
-        "reading": "いっしょ",
-        "meaning": "together"
-      },
-      {
-        "surface": "だ"
+        "surface": "です"
       },
       {
         "surface": "！"
@@ -6227,11 +3675,251 @@
     ],
     "words": [
       "嬉しい",
-      "一緒"
+      "友達"
     ]
   },
   {
-    "id": "befriend_wrong_0",
+    "id": "befriend_success_together",
+    "category": "befriend_success",
+    "raw": "一緒の友達は嬉しいです！",
+    "tokens": [
+      {
+        "surface": "一緒",
+        "base": "一緒",
+        "reading": "いっしょ",
+        "meaning": "together"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "友達",
+        "base": "友達",
+        "reading": "ともだち",
+        "meaning": "friend"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "嬉しい",
+        "base": "嬉しい",
+        "reading": "うれしい",
+        "meaning": "happy"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "一緒",
+      "友達",
+      "嬉しい"
+    ]
+  },
+  {
+    "id": "befriend_success_me",
+    "category": "befriend_success",
+    "raw": "私の名前です！",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "私",
+      "名前"
+    ]
+  },
+  {
+    "id": "befriend_success_very",
+    "category": "befriend_success",
+    "raw": "とても嬉しい友達です！",
+    "tokens": [
+      {
+        "surface": "とても",
+        "base": "とても",
+        "reading": "とても",
+        "meaning": "very"
+      },
+      {
+        "surface": "嬉しい",
+        "base": "嬉しい",
+        "reading": "うれしい",
+        "meaning": "happy"
+      },
+      {
+        "surface": "友達",
+        "base": "友達",
+        "reading": "ともだち",
+        "meaning": "friend"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "とても",
+      "嬉しい",
+      "友達"
+    ]
+  },
+  {
+    "id": "befriend_success_first",
+    "category": "befriend_success",
+    "raw": "初めての友達は嬉しいです！",
+    "tokens": [
+      {
+        "surface": "初めて",
+        "base": "初めて",
+        "reading": "はじめて",
+        "meaning": "first time"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "友達",
+        "base": "友達",
+        "reading": "ともだち",
+        "meaning": "friend"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "嬉しい",
+        "base": "嬉しい",
+        "reading": "うれしい",
+        "meaning": "happy"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "初めて",
+      "友達",
+      "嬉しい"
+    ]
+  },
+  {
+    "id": "befriend_success_strong",
+    "category": "befriend_success",
+    "raw": "強い友達は嬉しいです！",
+    "tokens": [
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "友達",
+        "base": "友達",
+        "reading": "ともだち",
+        "meaning": "friend"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "嬉しい",
+        "base": "嬉しい",
+        "reading": "うれしい",
+        "meaning": "happy"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "強い",
+      "友達",
+      "嬉しい"
+    ]
+  },
+  {
+    "id": "befriend_success_know",
+    "category": "befriend_success",
+    "raw": "私の名前を知る友達です！",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "知る",
+        "base": "知る",
+        "reading": "しる",
+        "meaning": "to know"
+      },
+      {
+        "surface": "友達",
+        "base": "友達",
+        "reading": "ともだち",
+        "meaning": "friend"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "私",
+      "名前",
+      "知る",
+      "友達"
+    ]
+  },
+  {
+    "id": "befriend_wrong_no",
     "category": "befriend_wrong",
     "raw": "違う！",
     "tokens": [
@@ -6250,29 +3938,7 @@
     ]
   },
   {
-    "id": "befriend_wrong_1",
-    "category": "befriend_wrong",
-    "raw": "違うよ！",
-    "tokens": [
-      {
-        "surface": "違う",
-        "base": "違う",
-        "reading": "ちがう",
-        "meaning": "to differ (from) / to be different / to be distinct / to be unlike / to vary / to disagree (with)"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "違う"
-    ]
-  },
-  {
-    "id": "befriend_wrong_2",
+    "id": "befriend_wrong_that",
     "category": "befriend_wrong",
     "raw": "それは違う！",
     "tokens": [
@@ -6301,38 +3967,9 @@
     ]
   },
   {
-    "id": "befriend_wrong_3",
+    "id": "befriend_wrong_not_name",
     "category": "befriend_wrong",
-    "raw": "ううん、違う！",
-    "tokens": [
-      {
-        "surface": "ううん",
-        "base": "ううん",
-        "reading": "ううん",
-        "meaning": "um / er / well"
-      },
-      {
-        "surface": "、"
-      },
-      {
-        "surface": "違う",
-        "base": "違う",
-        "reading": "ちがう",
-        "meaning": "to differ (from) / to be different / to be distinct / to be unlike / to vary / to disagree (with)"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "ううん",
-      "違う"
-    ]
-  },
-  {
-    "id": "befriend_wrong_4",
-    "category": "befriend_wrong",
-    "raw": "それは違うよ？もう一度！",
+    "raw": "それは名前じゃない！",
     "tokens": [
       {
         "surface": "それ",
@@ -6344,22 +3981,16 @@
         "surface": "は"
       },
       {
-        "surface": "違う",
-        "base": "違う",
-        "reading": "ちがう",
-        "meaning": "to differ (from) / to be different / to be distinct / to be unlike / to vary / to disagree (with)"
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
       },
       {
-        "surface": "よ"
-      },
-      {
-        "surface": "？"
-      },
-      {
-        "surface": "もう一度",
-        "base": "もう一度",
-        "reading": "もういちど",
-        "meaning": "once more / again"
+        "surface": "じゃない",
+        "base": "じゃない",
+        "reading": "じゃない",
+        "meaning": "is not / am not / are not"
       },
       {
         "surface": "！"
@@ -6367,8 +3998,3664 @@
     ],
     "words": [
       "それ",
-      "違う",
-      "もう一度"
+      "名前",
+      "じゃない"
+    ]
+  },
+  {
+    "id": "befriend_wrong_still",
+    "category": "befriend_wrong",
+    "raw": "まだ違う！",
+    "tokens": [
+      {
+        "surface": "まだ",
+        "base": "まだ",
+        "reading": "まだ",
+        "meaning": "still/yet"
+      },
+      {
+        "surface": "違う",
+        "base": "違う",
+        "reading": "ちがう",
+        "meaning": "to differ (from) / to be different / to be distinct / to be unlike / to vary / to disagree (with)"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "まだ",
+      "違う"
+    ]
+  },
+  {
+    "id": "befriend_wrong_different",
+    "category": "befriend_wrong",
+    "raw": "私の名前は違う！",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "違う",
+        "base": "違う",
+        "reading": "ちがう",
+        "meaning": "to differ (from) / to be different / to be distinct / to be unlike / to vary / to disagree (with)"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "私",
+      "名前",
+      "違う"
+    ]
+  },
+  {
+    "id": "befriend_wrong_say",
+    "category": "befriend_wrong",
+    "raw": "もう一度言ってください！",
+    "tokens": [
+      {
+        "surface": "もう一度",
+        "base": "もう一度",
+        "reading": "もういちど",
+        "meaning": "once more / again"
+      },
+      {
+        "surface": "言っ",
+        "base": "言う",
+        "reading": "いっ",
+        "meaning": "to say"
+      },
+      {
+        "surface": "て"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "もう一度",
+      "言う",
+      "くださる"
+    ]
+  },
+  {
+    "id": "befriend_wrong_again",
+    "category": "befriend_wrong",
+    "raw": "もう一度お願いします！",
+    "tokens": [
+      {
+        "surface": "もう一度",
+        "base": "もう一度",
+        "reading": "もういちど",
+        "meaning": "once more / again"
+      },
+      {
+        "surface": "お願いします",
+        "base": "お願いします",
+        "reading": "おねがいします",
+        "meaning": "please"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "もう一度",
+      "お願いします"
+    ]
+  },
+  {
+    "id": "befriend_wait_wait",
+    "category": "befriend_wait",
+    "raw": "待って！",
+    "tokens": [
+      {
+        "surface": "待っ",
+        "base": "待つ",
+        "reading": "まっ",
+        "meaning": "to wait"
+      },
+      {
+        "surface": "て"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "待つ"
+    ]
+  },
+  {
+    "id": "befriend_wait_little",
+    "category": "befriend_wait",
+    "raw": "ちょっと待って！",
+    "tokens": [
+      {
+        "surface": "ちょっと",
+        "base": "ちょっと",
+        "reading": "ちょっと",
+        "meaning": "a little / a bit / slightly"
+      },
+      {
+        "surface": "待っ",
+        "base": "待つ",
+        "reading": "まっ",
+        "meaning": "to wait"
+      },
+      {
+        "surface": "て"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "ちょっと",
+      "待つ"
+    ]
+  },
+  {
+    "id": "befriend_wait_please",
+    "category": "befriend_wait",
+    "raw": "お願い、待ってください！",
+    "tokens": [
+      {
+        "surface": "お願い",
+        "base": "お願い",
+        "reading": "おねがい",
+        "meaning": "request / favour (to ask) / wish"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "待っ",
+        "base": "待つ",
+        "reading": "まっ",
+        "meaning": "to wait"
+      },
+      {
+        "surface": "て"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "お願い",
+      "待つ",
+      "くださる"
+    ]
+  },
+  {
+    "id": "befriend_wait_still",
+    "category": "befriend_wait",
+    "raw": "まだ待ってください！",
+    "tokens": [
+      {
+        "surface": "まだ",
+        "base": "まだ",
+        "reading": "まだ",
+        "meaning": "still/yet"
+      },
+      {
+        "surface": "待っ",
+        "base": "待つ",
+        "reading": "まっ",
+        "meaning": "to wait"
+      },
+      {
+        "surface": "て"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "まだ",
+      "待つ",
+      "くださる"
+    ]
+  },
+  {
+    "id": "befriend_wait_me",
+    "category": "befriend_wait",
+    "raw": "私を待ってください！",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "待っ",
+        "base": "待つ",
+        "reading": "まっ",
+        "meaning": "to wait"
+      },
+      {
+        "surface": "て"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "私",
+      "待つ",
+      "くださる"
+    ]
+  },
+  {
+    "id": "befriend_wait_less",
+    "category": "befriend_wait",
+    "raw": "少し待ってください！",
+    "tokens": [
+      {
+        "surface": "少し",
+        "base": "少し",
+        "reading": "すこし",
+        "meaning": "a little"
+      },
+      {
+        "surface": "待っ",
+        "base": "待つ",
+        "reading": "まっ",
+        "meaning": "to wait"
+      },
+      {
+        "surface": "て"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "少し",
+      "待つ",
+      "くださる"
+    ]
+  },
+  {
+    "id": "befriend_wait_now",
+    "category": "befriend_wait",
+    "raw": "今は待ってください！",
+    "tokens": [
+      {
+        "surface": "今",
+        "base": "今",
+        "reading": "いま",
+        "meaning": "now"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "待っ",
+        "base": "待つ",
+        "reading": "まっ",
+        "meaning": "to wait"
+      },
+      {
+        "surface": "て"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "今",
+      "待つ",
+      "くださる"
+    ]
+  },
+  {
+    "id": "befriend_name_what",
+    "category": "befriend_name",
+    "raw": "名前は？",
+    "tokens": [
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "名前"
+    ]
+  },
+  {
+    "id": "befriend_name_my",
+    "category": "befriend_name",
+    "raw": "私の名前は？",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "私",
+      "名前"
+    ]
+  },
+  {
+    "id": "befriend_name_know",
+    "category": "befriend_name",
+    "raw": "私の名前を分かる？",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "分かる",
+        "base": "分かる",
+        "reading": "わかる",
+        "meaning": "to understand"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "私",
+      "名前",
+      "分かる"
+    ]
+  },
+  {
+    "id": "befriend_name_say",
+    "category": "befriend_name",
+    "raw": "私の名前を言う？",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "言う",
+        "base": "言う",
+        "reading": "ゆう",
+        "meaning": "to say"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "私",
+      "名前",
+      "言う"
+    ]
+  },
+  {
+    "id": "befriend_name_this",
+    "category": "befriend_name",
+    "raw": "この名前を分かる？",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "分かる",
+        "base": "分かる",
+        "reading": "わかる",
+        "meaning": "to understand"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "この",
+      "名前",
+      "分かる"
+    ]
+  },
+  {
+    "id": "befriend_name_still",
+    "category": "befriend_name",
+    "raw": "私の名前はまだ分かる？",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "まだ",
+        "base": "まだ",
+        "reading": "まだ",
+        "meaning": "still/yet"
+      },
+      {
+        "surface": "分かる",
+        "base": "分かる",
+        "reading": "わかる",
+        "meaning": "to understand"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "私",
+      "名前",
+      "まだ",
+      "分かる"
+    ]
+  },
+  {
+    "id": "befriend_name_that",
+    "category": "befriend_name",
+    "raw": "それは私の名前ですか？",
+    "tokens": [
+      {
+        "surface": "それ",
+        "base": "それ",
+        "reading": "それ",
+        "meaning": "that"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "名前",
+        "base": "名前",
+        "reading": "なまえ",
+        "meaning": "name"
+      },
+      {
+        "surface": "ですか",
+        "base": "ですか",
+        "reading": "ですか",
+        "meaning": "is it? (polite question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "それ",
+      "私",
+      "名前",
+      "ですか"
+    ]
+  },
+  {
+    "id": "npc_kodomo_fightStart_play",
+    "category": "npc",
+    "raw": "遊ぶ？",
+    "tokens": [
+      {
+        "surface": "遊ぶ",
+        "base": "遊ぶ",
+        "reading": "あそぶ",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "遊ぶ"
+    ],
+    "group": "kodomo_fightStart"
+  },
+  {
+    "id": "npc_kodomo_fightStart_go",
+    "category": "npc",
+    "raw": "行くよ！",
+    "tokens": [
+      {
+        "surface": "行く",
+        "base": "行く",
+        "reading": "いく",
+        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)"
+      },
+      {
+        "surface": "よ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "行く"
+    ],
+    "group": "kodomo_fightStart"
+  },
+  {
+    "id": "npc_kodomo_fightStart_strong",
+    "category": "npc",
+    "raw": "私は強いです！",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "私",
+      "強い"
+    ],
+    "group": "kodomo_fightStart"
+  },
+  {
+    "id": "npc_kodomo_fightStart_together",
+    "category": "npc",
+    "raw": "一緒に遊ぶ？",
+    "tokens": [
+      {
+        "surface": "一緒に",
+        "base": "一緒に",
+        "reading": "いっしょに",
+        "meaning": "together (with)"
+      },
+      {
+        "surface": "遊ぶ",
+        "base": "遊ぶ",
+        "reading": "あそぶ",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "一緒に",
+      "遊ぶ"
+    ],
+    "group": "kodomo_fightStart"
+  },
+  {
+    "id": "npc_kodomo_fightStart_today",
+    "category": "npc",
+    "raw": "今日も遊ぶ？",
+    "tokens": [
+      {
+        "surface": "今日",
+        "base": "今日",
+        "reading": "きょう",
+        "meaning": "today"
+      },
+      {
+        "surface": "も"
+      },
+      {
+        "surface": "遊ぶ",
+        "base": "遊ぶ",
+        "reading": "あそぶ",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "今日",
+      "遊ぶ"
+    ],
+    "group": "kodomo_fightStart"
+  },
+  {
+    "id": "npc_kodomo_fightStart_very",
+    "category": "npc",
+    "raw": "とても楽しいです！",
+    "tokens": [
+      {
+        "surface": "とても",
+        "base": "とても",
+        "reading": "とても",
+        "meaning": "very"
+      },
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "とても",
+      "楽しい"
+    ],
+    "group": "kodomo_fightStart"
+  },
+  {
+    "id": "npc_kodomo_fightStart_now",
+    "category": "npc",
+    "raw": "今遊ぶ？",
+    "tokens": [
+      {
+        "surface": "今",
+        "base": "今",
+        "reading": "いま",
+        "meaning": "now"
+      },
+      {
+        "surface": "遊ぶ",
+        "base": "遊ぶ",
+        "reading": "あそぶ",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "今",
+      "遊ぶ"
+    ],
+    "group": "kodomo_fightStart"
+  },
+  {
+    "id": "npc_kodomo_fightStart_friend",
+    "category": "npc",
+    "raw": "友達になる？",
+    "tokens": [
+      {
+        "surface": "友達",
+        "base": "友達",
+        "reading": "ともだち",
+        "meaning": "friend"
+      },
+      {
+        "surface": "に"
+      },
+      {
+        "surface": "なる",
+        "base": "なる",
+        "reading": "なる",
+        "meaning": "to become"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "友達",
+      "なる"
+    ],
+    "group": "kodomo_fightStart"
+  },
+  {
+    "id": "npc_otona_fightStart_begin",
+    "category": "npc",
+    "raw": "始めますか？",
+    "tokens": [
+      {
+        "surface": "始め",
+        "base": "始める",
+        "reading": "はじめ",
+        "meaning": "to start / to begin / to commence / to initiate / to originate"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "始める",
+      "ますか"
+    ],
+    "group": "otona_fightStart"
+  },
+  {
+    "id": "npc_otona_fightStart_ready",
+    "category": "npc",
+    "raw": "準備は出来ますか？",
+    "tokens": [
+      {
+        "surface": "準備",
+        "base": "準備",
+        "reading": "じゅんび",
+        "meaning": "preparation / arrangements / getting ready / provision / setup / reserving"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "出来",
+        "base": "出来る",
+        "reading": "でき",
+        "meaning": "to be able to"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "準備",
+      "出来る",
+      "ますか"
+    ],
+    "group": "otona_fightStart"
+  },
+  {
+    "id": "npc_otona_fightStart_strong",
+    "category": "npc",
+    "raw": "強いと思います",
+    "tokens": [
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "と"
+      },
+      {
+        "surface": "思い",
+        "base": "思う",
+        "reading": "おもい",
+        "meaning": "to think"
+      },
+      {
+        "surface": "ます"
+      }
+    ],
+    "words": [
+      "強い",
+      "思う"
+    ],
+    "group": "otona_fightStart"
+  },
+  {
+    "id": "npc_otona_fightStart_effort",
+    "category": "npc",
+    "raw": "頑張りましょう",
+    "tokens": [
+      {
+        "surface": "頑張り",
+        "base": "頑張る",
+        "reading": "がんばり",
+        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
+      },
+      {
+        "surface": "ましょう"
+      }
+    ],
+    "words": [
+      "頑張る"
+    ],
+    "group": "otona_fightStart"
+  },
+  {
+    "id": "npc_otona_fightStart_good",
+    "category": "npc",
+    "raw": "上手ですね",
+    "tokens": [
+      {
+        "surface": "上手",
+        "base": "上手",
+        "reading": "じょうず",
+        "meaning": "skilled"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      }
+    ],
+    "words": [
+      "上手"
+    ],
+    "group": "otona_fightStart"
+  },
+  {
+    "id": "npc_otona_fightStart_before",
+    "category": "npc",
+    "raw": "前にも会いましたね",
+    "tokens": [
+      {
+        "surface": "前",
+        "base": "前",
+        "reading": "まえ",
+        "meaning": "before/front"
+      },
+      {
+        "surface": "にも",
+        "base": "にも",
+        "reading": "にも",
+        "meaning": "also / too / not ... either / as well / even"
+      },
+      {
+        "surface": "会い",
+        "base": "会う",
+        "reading": "あい",
+        "meaning": "to meet / to encounter / to see"
+      },
+      {
+        "surface": "まし"
+      },
+      {
+        "surface": "たね",
+        "base": "たね",
+        "reading": "たね",
+        "meaning": "seed (e.g. of a plant) / pip / kernel / stone (e.g. of a peach)"
+      }
+    ],
+    "words": [
+      "前",
+      "にも",
+      "会う",
+      "たね"
+    ],
+    "group": "otona_fightStart"
+  },
+  {
+    "id": "npc_otona_fightStart_power",
+    "category": "npc",
+    "raw": "力を見ましょう",
+    "tokens": [
+      {
+        "surface": "力",
+        "base": "力",
+        "reading": "ちから",
+        "meaning": "power/strength"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "見",
+        "base": "見る",
+        "reading": "み",
+        "meaning": "to see / to look / to watch / to view / to observe"
+      },
+      {
+        "surface": "ましょう"
+      }
+    ],
+    "words": [
+      "力",
+      "見る"
+    ],
+    "group": "otona_fightStart"
+  },
+  {
+    "id": "npc_otona_fightStart_teach",
+    "category": "npc",
+    "raw": "教えましょうか？",
+    "tokens": [
+      {
+        "surface": "教え",
+        "base": "教える",
+        "reading": "おしえ",
+        "meaning": "to teach"
+      },
+      {
+        "surface": "ましょうか",
+        "base": "ましょうか",
+        "reading": "ましょうか",
+        "meaning": "shall I?"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "教える",
+      "ましょうか"
+    ],
+    "group": "otona_fightStart"
+  },
+  {
+    "id": "npc_otokonoko_fightStart_go",
+    "category": "npc",
+    "raw": "行くぞ！",
+    "tokens": [
+      {
+        "surface": "行く",
+        "base": "行く",
+        "reading": "いく",
+        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "行く"
+    ],
+    "group": "otokonoko_fightStart"
+  },
+  {
+    "id": "npc_otokonoko_fightStart_strong",
+    "category": "npc",
+    "raw": "強いぞ！",
+    "tokens": [
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "強い"
+    ],
+    "group": "otokonoko_fightStart"
+  },
+  {
+    "id": "npc_otokonoko_fightStart_me",
+    "category": "npc",
+    "raw": "俺は強いぞ！",
+    "tokens": [
+      {
+        "surface": "俺",
+        "base": "俺",
+        "reading": "おれ",
+        "meaning": "I / me"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "俺",
+      "強い"
+    ],
+    "group": "otokonoko_fightStart"
+  },
+  {
+    "id": "npc_otokonoko_fightStart_power",
+    "category": "npc",
+    "raw": "力を見るぞ！",
+    "tokens": [
+      {
+        "surface": "力",
+        "base": "力",
+        "reading": "ちから",
+        "meaning": "power/strength"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "見る",
+        "base": "見る",
+        "reading": "みる",
+        "meaning": "to see / to look / to watch / to view / to observe"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "力",
+      "見る"
+    ],
+    "group": "otokonoko_fightStart"
+  },
+  {
+    "id": "npc_otokonoko_fightStart_big",
+    "category": "npc",
+    "raw": "大きい声で行くぞ！",
+    "tokens": [
+      {
+        "surface": "大きい",
+        "base": "大きい",
+        "reading": "おおきい",
+        "meaning": "big"
+      },
+      {
+        "surface": "声",
+        "base": "声",
+        "reading": "こえ",
+        "meaning": "voice"
+      },
+      {
+        "surface": "で"
+      },
+      {
+        "surface": "行く",
+        "base": "行く",
+        "reading": "いく",
+        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "大きい",
+      "声",
+      "行く"
+    ],
+    "group": "otokonoko_fightStart"
+  },
+  {
+    "id": "npc_otokonoko_fightStart_this",
+    "category": "npc",
+    "raw": "この手は強いぞ！",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "手",
+        "base": "手",
+        "reading": "て",
+        "meaning": "hand"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "この",
+      "手",
+      "強い"
+    ],
+    "group": "otokonoko_fightStart"
+  },
+  {
+    "id": "npc_otokonoko_fightStart_use",
+    "category": "npc",
+    "raw": "力を使うぞ！",
+    "tokens": [
+      {
+        "surface": "力",
+        "base": "力",
+        "reading": "ちから",
+        "meaning": "power/strength"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "使う",
+        "base": "使う",
+        "reading": "つかう",
+        "meaning": "to use"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "力",
+      "使う"
+    ],
+    "group": "otokonoko_fightStart"
+  },
+  {
+    "id": "npc_otokonoko_fightStart_hold",
+    "category": "npc",
+    "raw": "力を持つぞ！",
+    "tokens": [
+      {
+        "surface": "力",
+        "base": "力",
+        "reading": "ちから",
+        "meaning": "power/strength"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "持つ",
+        "base": "持つ",
+        "reading": "もつ",
+        "meaning": "to hold/have"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "力",
+      "持つ"
+    ],
+    "group": "otokonoko_fightStart"
+  },
+  {
+    "id": "npc_onnanoko_fightStart_ah",
+    "category": "npc",
+    "raw": "あ…始めます",
+    "tokens": [
+      {
+        "surface": "あ",
+        "base": "あ",
+        "reading": "あ",
+        "meaning": "ah / oh (interjection)"
+      },
+      {
+        "surface": "…"
+      },
+      {
+        "surface": "始め",
+        "base": "始め",
+        "reading": "はじめ",
+        "meaning": "beginning / start / outset / opening"
+      },
+      {
+        "surface": "ます"
+      }
+    ],
+    "words": [
+      "あ",
+      "始め"
+    ],
+    "group": "onnanoko_fightStart"
+  },
+  {
+    "id": "npc_onnanoko_fightStart_scary",
+    "category": "npc",
+    "raw": "少し怖いです…",
+    "tokens": [
+      {
+        "surface": "少し",
+        "base": "少し",
+        "reading": "すこし",
+        "meaning": "a little"
+      },
+      {
+        "surface": "怖い",
+        "base": "怖い",
+        "reading": "こわい",
+        "meaning": "scary / frightening / eerie / dreadful"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "…"
+      },
+      {
+        "surface": ""
+      },
+      {
+        "surface": ""
+      }
+    ],
+    "words": [
+      "少し",
+      "怖い"
+    ],
+    "group": "onnanoko_fightStart"
+  },
+  {
+    "id": "npc_onnanoko_fightStart_try",
+    "category": "npc",
+    "raw": "頑張ります…",
+    "tokens": [
+      {
+        "surface": "頑張り",
+        "base": "頑張る",
+        "reading": "がんばり",
+        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "…"
+      },
+      {
+        "surface": ""
+      },
+      {
+        "surface": ""
+      }
+    ],
+    "words": [
+      "頑張る"
+    ],
+    "group": "onnanoko_fightStart"
+  },
+  {
+    "id": "npc_onnanoko_fightStart_small",
+    "category": "npc",
+    "raw": "小さい声ですけど…",
+    "tokens": [
+      {
+        "surface": "小さい",
+        "base": "小さい",
+        "reading": "ちいさい",
+        "meaning": "small"
+      },
+      {
+        "surface": "声",
+        "base": "声",
+        "reading": "こえ",
+        "meaning": "voice"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "けど"
+      },
+      {
+        "surface": "…"
+      },
+      {
+        "surface": ""
+      },
+      {
+        "surface": ""
+      }
+    ],
+    "words": [
+      "小さい",
+      "声"
+    ],
+    "group": "onnanoko_fightStart"
+  },
+  {
+    "id": "npc_onnanoko_fightStart_me",
+    "category": "npc",
+    "raw": "私も頑張ります！",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "も"
+      },
+      {
+        "surface": "頑張り",
+        "base": "頑張る",
+        "reading": "がんばり",
+        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "私",
+      "頑張る"
+    ],
+    "group": "onnanoko_fightStart"
+  },
+  {
+    "id": "npc_onnanoko_fightStart_heart",
+    "category": "npc",
+    "raw": "心は強いです！",
+    "tokens": [
+      {
+        "surface": "心",
+        "base": "心",
+        "reading": "こころ",
+        "meaning": "heart/mind"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "心",
+      "強い"
+    ],
+    "group": "onnanoko_fightStart"
+  },
+  {
+    "id": "npc_onnanoko_fightStart_that",
+    "category": "npc",
+    "raw": "あの…頑張りますね",
+    "tokens": [
+      {
+        "surface": "あの",
+        "base": "あの",
+        "reading": "あの",
+        "meaning": "that (adj)"
+      },
+      {
+        "surface": "…"
+      },
+      {
+        "surface": "頑張り",
+        "base": "頑張る",
+        "reading": "がんばり",
+        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "ね"
+      }
+    ],
+    "words": [
+      "あの",
+      "頑張る"
+    ],
+    "group": "onnanoko_fightStart"
+  },
+  {
+    "id": "npc_onnanoko_fightStart_road",
+    "category": "npc",
+    "raw": "この道は楽しいですね",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "道",
+        "base": "道",
+        "reading": "みち",
+        "meaning": "road/path"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      }
+    ],
+    "words": [
+      "この",
+      "道",
+      "楽しい"
+    ],
+    "group": "onnanoko_fightStart"
+  },
+  {
+    "id": "npc_kodomo_defeatLine_1",
+    "category": "npc",
+    "raw": "楽しいです！",
+    "tokens": [
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "楽しい"
+    ],
+    "group": "kodomo_defeatLine"
+  },
+  {
+    "id": "npc_kodomo_defeatLine_2",
+    "category": "npc",
+    "raw": "又遊ぶ？",
+    "tokens": [
+      {
+        "surface": "又",
+        "base": "又",
+        "reading": "また",
+        "meaning": "again / once more / once again / another time / some other time"
+      },
+      {
+        "surface": "遊ぶ",
+        "base": "遊ぶ",
+        "reading": "あそぶ",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "又",
+      "遊ぶ"
+    ],
+    "group": "kodomo_defeatLine"
+  },
+  {
+    "id": "npc_kodomo_defeatLine_3",
+    "category": "npc",
+    "raw": "とても強いと思う！",
+    "tokens": [
+      {
+        "surface": "とても",
+        "base": "とても",
+        "reading": "とても",
+        "meaning": "very"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "と"
+      },
+      {
+        "surface": "思う",
+        "base": "思う",
+        "reading": "おもう",
+        "meaning": "to think"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "とても",
+      "強い",
+      "思う"
+    ],
+    "group": "kodomo_defeatLine"
+  },
+  {
+    "id": "npc_kodomo_defeatLine_4",
+    "category": "npc",
+    "raw": "明日も一緒に遊ぶ？",
+    "tokens": [
+      {
+        "surface": "明日",
+        "base": "明日",
+        "reading": "あす",
+        "meaning": "tomorrow"
+      },
+      {
+        "surface": "も"
+      },
+      {
+        "surface": "一緒に",
+        "base": "一緒に",
+        "reading": "いっしょに",
+        "meaning": "together (with)"
+      },
+      {
+        "surface": "遊ぶ",
+        "base": "遊ぶ",
+        "reading": "あそぶ",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "明日",
+      "一緒に",
+      "遊ぶ"
+    ],
+    "group": "kodomo_defeatLine"
+  },
+  {
+    "id": "npc_kodomo_defeatLine_5",
+    "category": "npc",
+    "raw": "強い友達が来ると嬉しいです！",
+    "tokens": [
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "友達",
+        "base": "友達",
+        "reading": "ともだち",
+        "meaning": "friend"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "来る",
+        "base": "来る",
+        "reading": "くる",
+        "meaning": "to come"
+      },
+      {
+        "surface": "と"
+      },
+      {
+        "surface": "嬉しい",
+        "base": "嬉しい",
+        "reading": "うれしい",
+        "meaning": "happy"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "強い",
+      "友達",
+      "来る",
+      "嬉しい"
+    ],
+    "group": "kodomo_defeatLine"
+  },
+  {
+    "id": "npc_kodomo_defeatLine_6",
+    "category": "npc",
+    "raw": "この場所で明日も一緒に遊ぶ？",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "場所",
+        "base": "場所",
+        "reading": "ばしょ",
+        "meaning": "place"
+      },
+      {
+        "surface": "で"
+      },
+      {
+        "surface": "明日",
+        "base": "明日",
+        "reading": "あす",
+        "meaning": "tomorrow"
+      },
+      {
+        "surface": "も"
+      },
+      {
+        "surface": "一緒に",
+        "base": "一緒に",
+        "reading": "いっしょに",
+        "meaning": "together (with)"
+      },
+      {
+        "surface": "遊ぶ",
+        "base": "遊ぶ",
+        "reading": "あそぶ",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "この",
+      "場所",
+      "明日",
+      "一緒に",
+      "遊ぶ"
+    ],
+    "group": "kodomo_defeatLine"
+  },
+  {
+    "id": "npc_otona_defeatLine_1",
+    "category": "npc",
+    "raw": "上手ですね",
+    "tokens": [
+      {
+        "surface": "上手",
+        "base": "上手",
+        "reading": "じょうず",
+        "meaning": "skilled"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      }
+    ],
+    "words": [
+      "上手"
+    ],
+    "group": "otona_defeatLine"
+  },
+  {
+    "id": "npc_otona_defeatLine_2",
+    "category": "npc",
+    "raw": "強いと思います",
+    "tokens": [
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "と"
+      },
+      {
+        "surface": "思い",
+        "base": "思う",
+        "reading": "おもい",
+        "meaning": "to think"
+      },
+      {
+        "surface": "ます"
+      }
+    ],
+    "words": [
+      "強い",
+      "思う"
+    ],
+    "group": "otona_defeatLine"
+  },
+  {
+    "id": "npc_otona_defeatLine_3",
+    "category": "npc",
+    "raw": "私に教えますか？",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me"
+      },
+      {
+        "surface": "に"
+      },
+      {
+        "surface": "教え",
+        "base": "教える",
+        "reading": "おしえ",
+        "meaning": "to teach"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "私",
+      "教える",
+      "ますか"
+    ],
+    "group": "otona_defeatLine"
+  },
+  {
+    "id": "npc_otona_defeatLine_4",
+    "category": "npc",
+    "raw": "後で又会いましょう",
+    "tokens": [
+      {
+        "surface": "後",
+        "base": "後",
+        "reading": "あと",
+        "meaning": "after/behind"
+      },
+      {
+        "surface": "で"
+      },
+      {
+        "surface": "又",
+        "base": "又",
+        "reading": "また",
+        "meaning": "again / once more / once again / another time / some other time"
+      },
+      {
+        "surface": "会い",
+        "base": "会う",
+        "reading": "あい",
+        "meaning": "to meet / to encounter / to see"
+      },
+      {
+        "surface": "ましょう"
+      }
+    ],
+    "words": [
+      "後",
+      "又",
+      "会う"
+    ],
+    "group": "otona_defeatLine"
+  },
+  {
+    "id": "npc_otona_defeatLine_5",
+    "category": "npc",
+    "raw": "いい力を持つ人ですね",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
+      },
+      {
+        "surface": "力",
+        "base": "力",
+        "reading": "ちから",
+        "meaning": "power/strength"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "持つ",
+        "base": "持つ",
+        "reading": "もつ",
+        "meaning": "to hold/have"
+      },
+      {
+        "surface": "人",
+        "base": "人",
+        "reading": "ひと",
+        "meaning": "person"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      }
+    ],
+    "words": [
+      "いい",
+      "力",
+      "持つ",
+      "人"
+    ],
+    "group": "otona_defeatLine"
+  },
+  {
+    "id": "npc_otona_defeatLine_6",
+    "category": "npc",
+    "raw": "この方は強い気を持つ人ですね",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "方",
+        "base": "方",
+        "reading": "かた",
+        "meaning": "direction/way"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "気",
+        "base": "気",
+        "reading": "き",
+        "meaning": "spirit/feeling"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "持つ",
+        "base": "持つ",
+        "reading": "もつ",
+        "meaning": "to hold/have"
+      },
+      {
+        "surface": "人",
+        "base": "人",
+        "reading": "ひと",
+        "meaning": "person"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      }
+    ],
+    "words": [
+      "この",
+      "方",
+      "強い",
+      "気",
+      "持つ",
+      "人"
+    ],
+    "group": "otona_defeatLine"
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_1",
+    "category": "npc",
+    "raw": "悔しいぞ！",
+    "tokens": [
+      {
+        "surface": "悔しい",
+        "base": "悔しい",
+        "reading": "くやしい",
+        "meaning": "frustrated (over a failure, humiliation or injustice) / annoyed / chagrined / (bitterly) disappointed / bitter / vexed / frustrating / annoying / regrettable"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "悔しい"
+    ],
+    "group": "otokonoko_defeatLine"
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_2",
+    "category": "npc",
+    "raw": "次は勝つぞ！",
+    "tokens": [
+      {
+        "surface": "次",
+        "base": "次",
+        "reading": "つぎ",
+        "meaning": "next / following / subsequent"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "勝つ",
+        "base": "勝つ",
+        "reading": "かつ",
+        "meaning": "to win / to gain victory"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "次",
+      "勝つ"
+    ],
+    "group": "otokonoko_defeatLine"
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_3",
+    "category": "npc",
+    "raw": "強い力を作るぞ！",
+    "tokens": [
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "力",
+        "base": "力",
+        "reading": "ちから",
+        "meaning": "power/strength"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "作る",
+        "base": "作る",
+        "reading": "つくる",
+        "meaning": "to make"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "強い",
+      "力",
+      "作る"
+    ],
+    "group": "otokonoko_defeatLine"
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_4",
+    "category": "npc",
+    "raw": "明日又来るぞ！",
+    "tokens": [
+      {
+        "surface": "明日",
+        "base": "明日",
+        "reading": "あす",
+        "meaning": "tomorrow"
+      },
+      {
+        "surface": "又",
+        "base": "又",
+        "reading": "また",
+        "meaning": "again / once more / once again / another time / some other time"
+      },
+      {
+        "surface": "来る",
+        "base": "来る",
+        "reading": "くる",
+        "meaning": "to come"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "明日",
+      "又",
+      "来る"
+    ],
+    "group": "otokonoko_defeatLine"
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_5",
+    "category": "npc",
+    "raw": "この場所で又やるぞ！",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "場所",
+        "base": "場所",
+        "reading": "ばしょ",
+        "meaning": "place"
+      },
+      {
+        "surface": "で"
+      },
+      {
+        "surface": "又",
+        "base": "又",
+        "reading": "また",
+        "meaning": "again / once more / once again / another time / some other time"
+      },
+      {
+        "surface": "やる",
+        "base": "やる",
+        "reading": "やる",
+        "meaning": "to do / to undertake / to perform / to play (a game) / to study"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "この",
+      "場所",
+      "又",
+      "やる"
+    ],
+    "group": "otokonoko_defeatLine"
+  },
+  {
+    "id": "npc_otokonoko_defeatLine_6",
+    "category": "npc",
+    "raw": "この世界で強い力を使うぞ！",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "世界",
+        "base": "世界",
+        "reading": "せかい",
+        "meaning": "world"
+      },
+      {
+        "surface": "で"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "力",
+        "base": "力",
+        "reading": "ちから",
+        "meaning": "power/strength"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "使う",
+        "base": "使う",
+        "reading": "つかう",
+        "meaning": "to use"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "この",
+      "世界",
+      "強い",
+      "力",
+      "使う"
+    ],
+    "group": "otokonoko_defeatLine"
+  },
+  {
+    "id": "npc_onnanoko_defeatLine_1",
+    "category": "npc",
+    "raw": "楽しいです…",
+    "tokens": [
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "…"
+      },
+      {
+        "surface": ""
+      },
+      {
+        "surface": ""
+      }
+    ],
+    "words": [
+      "楽しい"
+    ],
+    "group": "onnanoko_defeatLine"
+  },
+  {
+    "id": "npc_onnanoko_defeatLine_2",
+    "category": "npc",
+    "raw": "強い人ですね",
+    "tokens": [
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "人",
+        "base": "人",
+        "reading": "ひと",
+        "meaning": "person"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      }
+    ],
+    "words": [
+      "強い",
+      "人"
+    ],
+    "group": "onnanoko_defeatLine"
+  },
+  {
+    "id": "npc_onnanoko_defeatLine_3",
+    "category": "npc",
+    "raw": "あの人も強いと思います…",
+    "tokens": [
+      {
+        "surface": "あの人",
+        "base": "あの人",
+        "reading": "あのひと",
+        "meaning": "he / she / that person"
+      },
+      {
+        "surface": "も"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "と"
+      },
+      {
+        "surface": "思い",
+        "base": "思う",
+        "reading": "おもい",
+        "meaning": "to think"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "…"
+      },
+      {
+        "surface": ""
+      },
+      {
+        "surface": ""
+      }
+    ],
+    "words": [
+      "あの人",
+      "強い",
+      "思う"
+    ],
+    "group": "onnanoko_defeatLine"
+  },
+  {
+    "id": "npc_onnanoko_defeatLine_4",
+    "category": "npc",
+    "raw": "この方は強い気の人ですね",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "方",
+        "base": "方",
+        "reading": "かた",
+        "meaning": "direction/way"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "気",
+        "base": "気",
+        "reading": "き",
+        "meaning": "spirit/feeling"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "人",
+        "base": "人",
+        "reading": "ひと",
+        "meaning": "person"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      }
+    ],
+    "words": [
+      "この",
+      "方",
+      "強い",
+      "気",
+      "人"
+    ],
+    "group": "onnanoko_defeatLine"
+  },
+  {
+    "id": "shopGreeting_hello",
+    "category": "shopGreeting",
+    "raw": "こんにちは！",
+    "tokens": [
+      {
+        "surface": "こんにちは",
+        "base": "こんにちは",
+        "reading": "こんにちは",
+        "meaning": "hello"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "こんにちは"
+    ]
+  },
+  {
+    "id": "shopGreeting_welcome",
+    "category": "shopGreeting",
+    "raw": "いらっしゃいませ！",
+    "tokens": [
+      {
+        "surface": "いらっしゃいませ",
+        "base": "いらっしゃいませ",
+        "reading": "いらっしゃいませ",
+        "meaning": "welcome"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いらっしゃいませ"
+    ]
+  },
+  {
+    "id": "shopGreeting_today",
+    "category": "shopGreeting",
+    "raw": "今日はいい日ですね！",
+    "tokens": [
+      {
+        "surface": "今日は",
+        "base": "今日は",
+        "reading": "こんにちは",
+        "meaning": "hello / good day / good afternoon"
+      },
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
+      },
+      {
+        "surface": "日",
+        "base": "日",
+        "reading": "ひ",
+        "meaning": "day / days"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "今日は",
+      "いい",
+      "日"
+    ]
+  },
+  {
+    "id": "shopGreeting_come",
+    "category": "shopGreeting",
+    "raw": "よく来ますね！",
+    "tokens": [
+      {
+        "surface": "よく",
+        "base": "よく",
+        "reading": "よく",
+        "meaning": "greed / craving / desire / appetite / hunger / avarice / wants"
+      },
+      {
+        "surface": "来",
+        "base": "来る",
+        "reading": "き",
+        "meaning": "to come"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "よく",
+      "来る"
+    ]
+  },
+  {
+    "id": "shopGreeting_look",
+    "category": "shopGreeting",
+    "raw": "少し見ますか？",
+    "tokens": [
+      {
+        "surface": "少し",
+        "base": "少し",
+        "reading": "すこし",
+        "meaning": "a little"
+      },
+      {
+        "surface": "見",
+        "base": "見る",
+        "reading": "み",
+        "meaning": "to see / to look / to watch / to view / to observe"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "少し",
+      "見る",
+      "ますか"
+    ]
+  },
+  {
+    "id": "shopGreeting_new",
+    "category": "shopGreeting",
+    "raw": "新しい物がありますよ！",
+    "tokens": [
+      {
+        "surface": "新しい",
+        "base": "新しい",
+        "reading": "あたらしい",
+        "meaning": "new"
+      },
+      {
+        "surface": "物",
+        "base": "物",
+        "reading": "もの",
+        "meaning": "thing / object / article / stuff / substance"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "あり"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "よ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "新しい",
+      "物"
+    ]
+  },
+  {
+    "id": "shopGreeting_eat",
+    "category": "shopGreeting",
+    "raw": "食べる物がありますよ！",
+    "tokens": [
+      {
+        "surface": "食べる",
+        "base": "食べる",
+        "reading": "たべる",
+        "meaning": "to eat"
+      },
+      {
+        "surface": "物",
+        "base": "物",
+        "reading": "もの",
+        "meaning": "thing / object / article / stuff / substance"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "あり"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "よ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "食べる",
+      "物"
+    ]
+  },
+  {
+    "id": "shopGreeting_enter",
+    "category": "shopGreeting",
+    "raw": "ここに入りますか？",
+    "tokens": [
+      {
+        "surface": "ここ",
+        "base": "ここ",
+        "reading": "ここ",
+        "meaning": "here / this place"
+      },
+      {
+        "surface": "に"
+      },
+      {
+        "surface": "入り",
+        "base": "入る",
+        "reading": "はいり",
+        "meaning": "to enter"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "ここ",
+      "入る",
+      "ますか"
+    ]
+  },
+  {
+    "id": "shopGreeting_this",
+    "category": "shopGreeting",
+    "raw": "この場所は楽しいですね！",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "場所",
+        "base": "場所",
+        "reading": "ばしょ",
+        "meaning": "place"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "この",
+      "場所",
+      "楽しい"
+    ]
+  },
+  {
+    "id": "shopGreeting_out",
+    "category": "shopGreeting",
+    "raw": "少し出ますか？",
+    "tokens": [
+      {
+        "surface": "少し",
+        "base": "少し",
+        "reading": "すこし",
+        "meaning": "a little"
+      },
+      {
+        "surface": "出",
+        "base": "出る",
+        "reading": "で",
+        "meaning": "to go out"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "少し",
+      "出る",
+      "ますか"
+    ]
+  },
+  {
+    "id": "shopGreeting_hand",
+    "category": "shopGreeting",
+    "raw": "手に取りますか？",
+    "tokens": [
+      {
+        "surface": "手",
+        "base": "手",
+        "reading": "て",
+        "meaning": "hand"
+      },
+      {
+        "surface": "に"
+      },
+      {
+        "surface": "取り",
+        "base": "取る",
+        "reading": "とり",
+        "meaning": "to take / to pick up / to grab / to catch / to hold"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "手",
+      "取る",
+      "ますか"
+    ]
+  },
+  {
+    "id": "shopGreeting_color",
+    "category": "shopGreeting",
+    "raw": "綺麗な色の物がありますよ！",
+    "tokens": [
+      {
+        "surface": "綺麗",
+        "base": "綺麗",
+        "reading": "きれい",
+        "meaning": "pretty / lovely / beautiful / fair"
+      },
+      {
+        "surface": "な"
+      },
+      {
+        "surface": "色",
+        "base": "色",
+        "reading": "いろ",
+        "meaning": "color"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "物",
+        "base": "物",
+        "reading": "もの",
+        "meaning": "thing / object / article / stuff / substance"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "あり"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "よ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "綺麗",
+      "色",
+      "物"
+    ]
+  },
+  {
+    "id": "shopGreeting_world",
+    "category": "shopGreeting",
+    "raw": "この世界の物を見ますか？",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "世界",
+        "base": "世界",
+        "reading": "せかい",
+        "meaning": "world"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "物",
+        "base": "物",
+        "reading": "もの",
+        "meaning": "thing / object / article / stuff / substance"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "見",
+        "base": "見る",
+        "reading": "み",
+        "meaning": "to see / to look / to watch / to view / to observe"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "この",
+      "世界",
+      "物",
+      "見る",
+      "ますか"
+    ]
+  },
+  {
+    "id": "shopGreeting_energy",
+    "category": "shopGreeting",
+    "raw": "元気ですか？",
+    "tokens": [
+      {
+        "surface": "元気",
+        "base": "元気",
+        "reading": "げんき",
+        "meaning": "healthy/energetic"
+      },
+      {
+        "surface": "ですか",
+        "base": "ですか",
+        "reading": "ですか",
+        "meaning": "is it? (polite question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "元気",
+      "ですか"
+    ]
+  },
+  {
+    "id": "shopGreeting_time",
+    "category": "shopGreeting",
+    "raw": "いい時に来ますね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
+      },
+      {
+        "surface": "時",
+        "base": "時",
+        "reading": "とき",
+        "meaning": "when/time"
+      },
+      {
+        "surface": "に"
+      },
+      {
+        "surface": "来",
+        "base": "来る",
+        "reading": "き",
+        "meaning": "to come"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いい",
+      "時",
+      "来る"
+    ]
+  },
+  {
+    "id": "shopGreeting_talk",
+    "category": "shopGreeting",
+    "raw": "いい話がありますよ！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
+      },
+      {
+        "surface": "話",
+        "base": "話",
+        "reading": "はなし",
+        "meaning": "story/talk"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "あり"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "よ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いい",
+      "話"
+    ]
+  },
+  {
+    "id": "shopGreeting_eye",
+    "category": "shopGreeting",
+    "raw": "目がいいですね！",
+    "tokens": [
+      {
+        "surface": "目",
+        "base": "目",
+        "reading": "め",
+        "meaning": "eye"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "目",
+      "いい"
+    ]
+  },
+  {
+    "id": "shopPurchase_please",
+    "category": "shopPurchase",
+    "raw": "{item}をください",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      }
+    ],
+    "words": [
+      "くださる"
+    ]
+  },
+  {
+    "id": "shopPurchase_excuse",
+    "category": "shopPurchase",
+    "raw": "すみません、{item}をください",
+    "tokens": [
+      {
+        "surface": "すみません",
+        "base": "すみません",
+        "reading": "すみません",
+        "meaning": "excuse me/sorry"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      }
+    ],
+    "words": [
+      "すみません",
+      "くださる"
+    ]
+  },
+  {
+    "id": "shopPurchase_this",
+    "category": "shopPurchase",
+    "raw": "この{item}をください",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      }
+    ],
+    "words": [
+      "この",
+      "くださる"
+    ]
+  },
+  {
+    "id": "shopPurchase_that",
+    "category": "shopPurchase",
+    "raw": "それをください",
+    "tokens": [
+      {
+        "surface": "それ",
+        "base": "それ",
+        "reading": "それ",
+        "meaning": "that"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      }
+    ],
+    "words": [
+      "それ",
+      "くださる"
+    ]
+  },
+  {
+    "id": "shopPurchase_use",
+    "category": "shopPurchase",
+    "raw": "{item}を使います！",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "使い",
+        "base": "使う",
+        "reading": "つかい",
+        "meaning": "to use"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "使う"
+    ]
+  },
+  {
+    "id": "shopPurchase_hold",
+    "category": "shopPurchase",
+    "raw": "{item}を持ちます！",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "持ち",
+        "base": "持つ",
+        "reading": "もち",
+        "meaning": "to hold/have"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "持つ"
+    ]
+  },
+  {
+    "id": "shopPurchase_good",
+    "category": "shopPurchase",
+    "raw": "いい{item}ですね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
+      },
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いい"
+    ]
+  },
+  {
+    "id": "shopPurchase_happy",
+    "category": "shopPurchase",
+    "raw": "この{item}は嬉しいです！",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "嬉しい",
+        "base": "嬉しい",
+        "reading": "うれしい",
+        "meaning": "happy"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "この",
+      "嬉しい"
+    ]
+  },
+  {
+    "id": "shopPurchase_thanks",
+    "category": "shopPurchase",
+    "raw": "{item}をありがとうございます！",
+    "tokens": [
+      {
+        "slot": "item"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "ありがとうございます",
+        "base": "ありがとうございます",
+        "reading": "ありがとうございます",
+        "meaning": "thank you"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "ありがとうございます"
+    ]
+  },
+  {
+    "id": "shopPurchase_this_one",
+    "category": "shopPurchase",
+    "raw": "これをください！",
+    "tokens": [
+      {
+        "surface": "これ",
+        "base": "これ",
+        "reading": "これ",
+        "meaning": "this"
+      },
+      {
+        "surface": "を"
+      },
+      {
+        "surface": "ください",
+        "base": "くださる",
+        "reading": "ください",
+        "meaning": "to give / to confer / to bestow"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "これ",
+      "くださる"
+    ]
+  },
+  {
+    "id": "shopGreeting_big",
+    "category": "shopGreeting",
+    "raw": "大きい物がありますよ！",
+    "tokens": [
+      {
+        "surface": "大きい",
+        "base": "大きい",
+        "reading": "おおきい",
+        "meaning": "big"
+      },
+      {
+        "surface": "物",
+        "base": "物",
+        "reading": "もの",
+        "meaning": "thing / object / article / stuff / substance"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "あり"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "よ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "大きい",
+      "物"
+    ]
+  },
+  {
+    "id": "shopGreeting_small",
+    "category": "shopGreeting",
+    "raw": "小さい物がありますよ！",
+    "tokens": [
+      {
+        "surface": "小さい",
+        "base": "小さい",
+        "reading": "ちいさい",
+        "meaning": "small"
+      },
+      {
+        "surface": "物",
+        "base": "物",
+        "reading": "もの",
+        "meaning": "thing / object / article / stuff / substance"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "あり"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "よ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "小さい",
+      "物"
+    ]
+  },
+  {
+    "id": "shopGreeting_voice",
+    "category": "shopGreeting",
+    "raw": "いい声ですね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable"
+      },
+      {
+        "surface": "声",
+        "base": "声",
+        "reading": "こえ",
+        "meaning": "voice"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いい",
+      "声"
+    ]
+  },
+  {
+    "id": "shopGreeting_before",
+    "category": "shopGreeting",
+    "raw": "前に来ますか？",
+    "tokens": [
+      {
+        "surface": "前",
+        "base": "前",
+        "reading": "まえ",
+        "meaning": "before/front"
+      },
+      {
+        "surface": "に"
+      },
+      {
+        "surface": "来",
+        "base": "来る",
+        "reading": "き",
+        "meaning": "to come"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "前",
+      "来る",
+      "ますか"
+    ]
+  },
+  {
+    "id": "shopGreeting_after",
+    "category": "shopGreeting",
+    "raw": "後で又来ますか？",
+    "tokens": [
+      {
+        "surface": "後",
+        "base": "後",
+        "reading": "あと",
+        "meaning": "after/behind"
+      },
+      {
+        "surface": "で"
+      },
+      {
+        "surface": "又",
+        "base": "又",
+        "reading": "また",
+        "meaning": "again / once more / once again / another time / some other time"
+      },
+      {
+        "surface": "来",
+        "base": "来る",
+        "reading": "き",
+        "meaning": "to come"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "後",
+      "又",
+      "来る",
+      "ますか"
+    ]
+  },
+  {
+    "id": "shopGreeting_direction",
+    "category": "shopGreeting",
+    "raw": "この方は強いですね！",
+    "tokens": [
+      {
+        "surface": "この",
+        "base": "この",
+        "reading": "この",
+        "meaning": "this (adj)"
+      },
+      {
+        "surface": "方",
+        "base": "方",
+        "reading": "かた",
+        "meaning": "direction/way"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "この",
+      "方",
+      "強い"
+    ]
+  },
+  {
+    "id": "shopGreeting_spirit",
+    "category": "shopGreeting",
+    "raw": "いい気ですね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いう",
+        "reading": "いい",
+        "meaning": "to say / to utter / to declare"
+      },
+      {
+        "surface": "気"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いう"
+    ]
+  },
+  {
+    "id": "shopGreeting_able",
+    "category": "shopGreeting",
+    "raw": "出来ますか？",
+    "tokens": [
+      {
+        "surface": "出来",
+        "base": "出来る",
+        "reading": "でき",
+        "meaning": "to be able to"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "出来る",
+      "ますか"
     ]
   }
 ]

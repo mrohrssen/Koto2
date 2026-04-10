@@ -18,7 +18,7 @@ import { applyItem } from '../../game/services/item-service.js';
 import { assembleFrame, entityToToken, isEligible, scoreCandidate } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
-import { getShopFrames, getGreetingFrames } from '../../game/dialogue-loader.js';
+import { getShopPurchaseFrames, getShopGreetingFrames } from '../../game/dialogue-loader.js';
 
 const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
@@ -633,7 +633,7 @@ export default function createRunRoutes({
         // Assemble pre-tokenized frames with items and select best per i+1
         const knownWords = getKnownWordsFromFsrs(req.user.id);
         const knownSet = new Set(knownWords);
-        const shopFrames = getShopFrames();
+        const shopFrames = getShopPurchaseFrames();
 
         for (const item of room.friendlyNpc.offered) {
           if (!item.word) continue;
@@ -652,7 +652,7 @@ export default function createRunRoutes({
         }
 
         // Select best greeting frame via i+1
-        const greetingFrames = getGreetingFrames();
+        const greetingFrames = getShopGreetingFrames();
         const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}));
         const eligibleGreetings = greetingCandidates.filter(c => isEligible(c.tokens, knownSet));
         if (eligibleGreetings.length > 0) {

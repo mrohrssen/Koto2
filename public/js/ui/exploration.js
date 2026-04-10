@@ -1208,7 +1208,7 @@ export async function renderFriendlyNpc() {
     if (greetingTokens?.length) {
       greetingContent = renderJpSentence(greetingTokens, getKnownWords(), wordDict, {}, false);
     } else {
-      greetingContent = npc.shopGreetings?.[0] || 'こんにちは！';
+      greetingContent = 'こんにちは！';
     }
     const narrationOpts = greetingTokens?.length
       ? { html: true, speaker: npc.nameEn || npc.name }

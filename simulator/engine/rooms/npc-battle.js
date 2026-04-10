@@ -23,9 +23,9 @@ export async function handleNpcBattle(simCall, room, context, logEvent) {
 
   const data = startResult.data;
 
-  // Log NPC dialogue lines (greeting, fightStart, defeatLine)
+  // Log NPC dialogue lines (fightStart, defeatLine)
   const npcDialogue = data.npcDialogue ?? data.npc ?? {};
-  const dialogueKeys = ['greeting', 'fightStart', 'defeatLine'];
+  const dialogueKeys = ['fightStart', 'defeatLine'];
   for (const key of dialogueKeys) {
     const line = npcDialogue[key];
     if (line) {

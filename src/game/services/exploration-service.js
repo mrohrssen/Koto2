@@ -347,7 +347,7 @@ export class ExplorationService {
         const areaNpcs = Object.values(npcs).filter(n => !npcAreaId || n.area === npcAreaId || !n.area);
         if (areaNpcs.length > 0) {
           const picked = areaNpcs[Math.floor(Math.random() * areaNpcs.length)];
-          room.npc = { id: picked.id, name: picked.name, nameEn: picked.nameEn, shopGreetings: picked.shopGreetings || ['こんにちは！'] };
+          room.npc = { id: picked.id, name: picked.name, nameEn: picked.nameEn };
         }
       } catch (err) {
         logger.error('[Exploration] Failed to assign NPC to friendlyNpc room:', err.message);
