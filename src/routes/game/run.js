@@ -625,7 +625,10 @@ export default function createRunRoutes({
       }
       // Generate offers if not already generated (idempotent)
       if (!room.friendlyNpc.offered) {
-        room.friendlyNpc.offered = rollFriendlyNpcOffers(room.friendlyNpc.offerCategory, allItems);
+        const areaPath = gm.run.areaPath || [];
+        const currentAreaId = gm.run.currentArea?.id;
+        const areaIds = [...new Set([...areaPath, currentAreaId].filter(Boolean))];
+        room.friendlyNpc.offered = rollFriendlyNpcOffers(room.friendlyNpc.offerCategory, areaIds, allItems);
 
         // Assemble pre-tokenized frames with items and select best per i+1
         const knownWords = getKnownWordsFromFsrs(req.user.id);
