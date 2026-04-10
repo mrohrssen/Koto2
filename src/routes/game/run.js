@@ -14,6 +14,7 @@ import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
+import { getAreaById } from '../../game/rooms.js';
 import { applyItem } from '../../game/services/item-service.js';
 import { assembleFrame, entityToToken, isEligible, scoreCandidate } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
@@ -564,7 +565,26 @@ export default function createRunRoutes({
   // Whack-a-Mole: get random pool of creatures + items + skills for matching game
   router.get('/whack-a-mole-pool', (req, res) => {
     try {
-      const creaturePool = allCreatures.map(c => ({
+      // Filter by area progression (same pattern as friendly NPC shop)
+      const gm = req.gameManager;
+      const areaPath = gm.run.areaPath || [];
+      const currentAreaId = gm.run.currentArea?.id;
+      const areaIds = [...new Set([...areaPath, currentAreaId].filter(Boolean))];
+
+      // Build set of creature IDs belonging to reached areas
+      const areaCreatureIds = new Set();
+      for (const areaId of areaIds) {
+        const area = getAreaById(areaId);
+        if (area?.creatures) {
+          for (const cId of area.creatures) areaCreatureIds.add(cId);
+        }
+      }
+
+      const filteredCreatures = areaCreatureIds.size > 0
+        ? allCreatures.filter(c => areaCreatureIds.has(c.id))
+        : allCreatures;
+
+      const creaturePool = filteredCreatures.map(c => ({
         id: c.id,
         type: 'creature',
         word: c.baseWord,
@@ -574,7 +594,12 @@ export default function createRunRoutes({
         sprite: `/assets/sprites/creatures/${c.id}.webp?v=${SPRITE_VERSION}`
       }));
 
-      const itemPool = allItems.map(i => ({
+      // Filter items by area (same as friendly NPC shop)
+      const filteredItems = areaIds.length > 0
+        ? allItems.filter(i => !i.area || areaIds.includes(i.area))
+        : allItems;
+
+      const itemPool = filteredItems.map(i => ({
         id: i.id,
         type: 'item',
         word: i.word,
@@ -583,8 +608,19 @@ export default function createRunRoutes({
         sprite: `/assets/sprites/items/${i.id}.webp?v=${SPRITE_VERSION}`
       }));
 
-      // Moves from moves.json — action icon tiles
-      const skillPool = allMoves.map(m => {
+      // Filter moves to those in learnsets of area creatures
+      const areaMovesIds = new Set();
+      for (const c of filteredCreatures) {
+        if (c.learnset) {
+          for (const entry of c.learnset) areaMovesIds.add(entry.moveId);
+        }
+      }
+
+      const filteredMoves = areaMovesIds.size > 0
+        ? allMoves.filter(m => areaMovesIds.has(m.id))
+        : allMoves;
+
+      const skillPool = filteredMoves.map(m => {
         const slug = (m.nameEn || '').toLowerCase().replace(/ /g, '-');
         return {
           id: `move-${m.id}`,
