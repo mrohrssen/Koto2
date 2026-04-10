@@ -14,7 +14,7 @@ const MAX_ROUNDS = 100;
  * @param {number} combatSkill - 0-1 probability of optimal move selection
  * @param {Object} context - { day, run, roomIndex }
  * @param {Function} logEvent - (day, run, room, eventType, data)
- * @returns {{ rounds: number, won: boolean, wiped: boolean, barks: Array, wordsExposed: Array, dialogueSeen: Array }}
+ * @returns {{ rounds: number, won: boolean, wiped: boolean, barks: Array, dialogueSeen: Array }}
  */
 export async function runCombat(simCall, encounterData, combatSkill, context, logEvent) {
   // Extract allies/enemies — handle different response shapes
@@ -22,7 +22,6 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
   let enemies = encounterData.encounter?.enemies ?? encounterData.enemies ?? [];
 
   const barks = [];
-  const wordsExposed = [];
   const dialogueSeen = [];
 
   // Log any NPC dialogue that came with the encounter
@@ -102,40 +101,18 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
       attacks: cycle.playerAttacks ?? cycle.attacks ?? cycle.results ?? []
     });
 
-    // Extract word exposures from attack data
-    const allAttacks = [...(cycle.playerAttacks ?? []), ...(cycle.enemyAttacks ?? [])];
-    for (const atk of allAttacks) {
-      if (atk.attackerBaseWord) {
-        const word = atk.attackerBaseWord;
-        if (!wordsExposed.includes(word)) {
-          wordsExposed.push(word);
-          logEvent(context.day, context.run, context.roomIndex, 'word_exposure', {
-            word,
-            reading: atk.attackerBaseReading,
-            meaning: atk.attackerBaseMeaning,
-            source: 'combat_creature'
-          });
-        }
-      }
-      if (atk.moveName && atk.moveName !== atk.attackerBaseWord) {
-        const word = atk.moveName;
-        if (!wordsExposed.includes(word)) {
-          wordsExposed.push(word);
-          logEvent(context.day, context.run, context.roomIndex, 'word_exposure', {
-            word,
-            reading: atk.attackerSkillReading,
-            meaning: atk.attackerSkillEn,
-            source: 'combat_move'
-          });
-        }
-      }
-    }
-
-    // Collect barks (legacy field)
+    // Log barks as dialogue (server handles word exposure)
     if (cycle.barks) {
       for (const bark of cycle.barks) {
         barks.push(bark);
-        if (bark.word) wordsExposed.push(bark.word);
+        if (bark.text) {
+          dialogueSeen.push(bark);
+          logEvent(context.day, context.run, context.roomIndex, 'dialogue_seen', {
+            source: 'combat_bark',
+            trigger: bark.trigger,
+            line: bark.text
+          });
+        }
       }
     }
 
@@ -146,6 +123,20 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
     // Handle befriend quiz — the game pauses combat to offer befriending
     if (cycle.befriendQuizTriggered && cycle.befriendQuiz) {
       const quiz = cycle.befriendQuiz;
+
+      // Log befriend prompts as dialogue (server handles word exposure)
+      for (const key of ['waitPrompt', 'namePrompt', 'successPrompt', 'wrongPrompt']) {
+        const prompt = quiz[key];
+        if (prompt?.tokens) {
+          dialogueSeen.push({ type: key, tokens: prompt.tokens });
+          logEvent(context.day, context.run, context.roomIndex, 'dialogue_seen', {
+            source: 'befriend_prompt',
+            promptType: key,
+            tokens: prompt.tokens
+          });
+        }
+      }
+
       // Pick the correct answer (matching the creature being befriended)
       const correctOption = quiz.options?.find(o => o.id === quiz.creatureId);
       const answerId = correctOption?.id ?? quiz.options?.[0]?.id ?? quiz.creatureId;
@@ -214,5 +205,5 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
     wiped = true;
   }
 
-  return { rounds, won, wiped, barks, wordsExposed, dialogueSeen };
+  return { rounds, won, wiped, barks, dialogueSeen };
 }
