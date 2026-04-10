@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Exposure Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    padding: 16px;
+  }
+  h1 {
+    color: #7fdbca;
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+  .controls {
+    background: #16213e;
+    padding: 12px;
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .controls label {
+    color: #aaa;
+    font-size: 12px;
+  }
+  .controls input[type="password"],
+  .controls input[type="text"] {
+    background: #0f3460;
+    border: 1px solid #333;
+    color: #e0e0e0;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .controls input[type="password"] { width: 220px; }
+  .controls input[type="text"] { width: 180px; }
+  .controls select {
+    background: #0f3460;
+    border: 1px solid #333;
+    color: #e0e0e0;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  button {
+    background: #0f3460;
+    color: #7fdbca;
+    border: 1px solid #7fdbca;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  button:hover { background: #16213e; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .controls .checkbox-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .controls .checkbox-wrap input { cursor: pointer; }
+  .controls .checkbox-wrap label { cursor: pointer; }
+  .stats {
+    color: #7fdbca;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .progress {
+    font-size: 12px;
+    color: #f0a500;
+    margin-bottom: 10px;
+    min-height: 16px;
+  }
+  .progress span { margin-right: 16px; }
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+  }
+  .tab-btn {
+    background: #16213e;
+    border: 1px solid #333;
+    border-bottom: none;
+    color: #aaa;
+    padding: 8px 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    border-radius: 6px 6px 0 0;
+  }
+  .tab-btn.active {
+    background: #0f3460;
+    color: #7fdbca;
+    border-color: #7fdbca;
+  }
+  .tab-panel {
+    display: none;
+    background: #0f3460;
+    border: 1px solid #333;
+    border-radius: 0 6px 6px 6px;
+    padding: 0;
+    overflow-x: auto;
+  }
+  .tab-panel.active { display: block; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: #16213e;
+    color: #7fdbca;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 2px solid #333;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    white-space: nowrap;
+  }
+  thead th.sortable { cursor: pointer; }
+  thead th.sortable:hover { color: #f0a500; }
+  tbody td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #222;
+    vertical-align: top;
+  }
+  tbody tr:hover { background: rgba(127, 219, 202, 0.05); }
+  tbody tr.different { background: #2a1a1a; }
+  tbody tr.different:hover { background: #3a2020; }
+  .diff-yes {
+    background: #a83232;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .diff-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    margin: 1px 2px;
+    white-space: nowrap;
+  }
+  .diff-merge { background: #a86b32; color: #fff; }
+  .diff-split { background: #3264a8; color: #fff; }
+  .diff-spelling { background: #a83264; color: #fff; }
+  .loading { color: #666; }
+  .empty-msg {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+  }
+  .category-filter { display: none; }
+  .category-filter.visible { display: flex; align-items: center; gap: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Word Exposure Dashboard</h1>
+
+<div class="controls">
+  <div>
+    <label>Admin Secret</label><br>
+    <input type="password" id="adminSecret" placeholder="Enter admin secret">
+  </div>
+  <button id="loadBtn" onclick="load()">Load</button>
+  <div class="checkbox-wrap">
+    <input type="checkbox" id="diffOnly" onchange="renderAll()">
+    <label for="diffOnly">Show only differences</label>
+  </div>
+  <div>
+    <label>Search</label><br>
+    <input type="text" id="search" placeholder="Filter..." oninput="renderAll()">
+  </div>
+  <div class="category-filter" id="categoryFilterWrap">
+    <label>Category</label>
+    <select id="categoryFilter" onchange="renderAll()">
+      <option value="">All</option>
+    </select>
+  </div>
+</div>
+
+<div class="stats" id="stats"></div>
+<div class="progress">
+  <span id="wordProgress"></span>
+  <span id="frameProgress"></span>
+</div>
+
+<div class="tabs">
+  <div class="tab-btn active" onclick="switchTab('words')">Word Exposures</div>
+  <div class="tab-btn" onclick="switchTab('frames')">Frame Comparison</div>
+</div>
+
+<div class="tab-panel active" id="panel-words">
+  <div class="empty-msg" id="words-empty">Click Load to fetch data</div>
+  <table id="words-table" style="display:none">
+    <thead>
+      <tr>
+        <th class="sortable" onclick="sortWords('#')">#</th>
+        <th class="sortable" onclick="sortWords('word')">Word</th>
+        <th class="sortable" onclick="sortWords('reading')">Reading</th>
+        <th class="sortable" onclick="sortWords('definition')">Our Definition</th>
+        <th class="sortable" onclick="sortWords('totalExposures')">Exposures</th>
+        <th class="sortable" onclick="sortWords('userCount')">Users</th>
+        <th>JPDB Spelling</th>
+        <th>JPDB Reading</th>
+        <th>JPDB Definition</th>
+        <th>Different?</th>
+      </tr>
+    </thead>
+    <tbody id="words-body"></tbody>
+  </table>
+</div>
+
+<div class="tab-panel" id="panel-frames">
+  <div class="empty-msg" id="frames-empty">Click Load to fetch data</div>
+  <table id="frames-table" style="display:none">
+    <thead>
+      <tr>
+        <th>Frame ID</th>
+        <th>Category</th>
+        <th>Raw Text</th>
+        <th>Sudachi Tokens</th>
+        <th>JPDB Tokens</th>
+        <th>Diffs</th>
+      </tr>
+    </thead>
+    <tbody id="frames-body"></tbody>
+  </table>
+</div>
+
+<script>
+// --- State ---
+let wordsData = [];
+let framesData = [];
+let jpdbWordResults = {};
+let jpdbFrameResults = {};
+let sortCol = 'totalExposures';
+let sortDir = -1; // -1 = desc
+let activeTab = 'words';
+
+// --- Helpers ---
+function esc(str) {
+  if (str == null) return '';
+  const el = document.createElement('span');
+  el.textContent = String(str);
+  return el.innerHTML;
+}
+
+function getSecret() {
+  return document.getElementById('adminSecret').value.trim();
+}
+
+function saveSecret() {
+  sessionStorage.setItem('adminSecret', getSecret());
+}
+
+function loadSecret() {
+  const saved = sessionStorage.getItem('adminSecret');
+  if (saved) document.getElementById('adminSecret').value = saved;
+}
+
+function headers() {
+  return { 'Content-Type': 'application/json', 'X-Admin-Secret': getSecret() };
+}
+
+// --- Tabs ---
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && tab === 'words') || (i === 1 && tab === 'frames'));
+  });
+  document.getElementById('panel-words').classList.toggle('active', tab === 'words');
+  document.getElementById('panel-frames').classList.toggle('active', tab === 'frames');
+  document.getElementById('categoryFilterWrap').classList.toggle('visible', tab === 'frames');
+}
+
+// --- Sorting ---
+function sortWords(col) {
+  if (sortCol === col) {
+    sortDir *= -1;
+  } else {
+    sortCol = col;
+    sortDir = col === 'totalExposures' || col === 'userCount' ? -1 : 1;
+  }
+  renderAll();
+}
+
+function getSortedWords() {
+  const sorted = [...wordsData];
+  sorted.sort((a, b) => {
+    if (sortCol === '#') return 0; // original order
+    let va = a[sortCol] ?? '';
+    let vb = b[sortCol] ?? '';
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sortDir;
+    return String(va).localeCompare(String(vb)) * sortDir;
+  });
+  return sorted;
+}
+
+// --- Rendering ---
+function renderAll() {
+  renderWords();
+  renderFrames();
+}
+
+function renderWords() {
+  const tbody = document.getElementById('words-body');
+  const diffOnly = document.getElementById('diffOnly').checked;
+  const search = document.getElementById('search').value.toLowerCase().trim();
+  const sorted = getSortedWords();
+
+  let html = '';
+  let idx = 0;
+  for (const w of sorted) {
+    const jpdb = jpdbWordResults[w.word];
+    const isDiff = jpdb ? jpdb.isDifferent : null;
+
+    if (diffOnly && jpdb != null && !isDiff) continue;
+    if (search) {
+      const hay = [w.word, w.reading, w.definition].join(' ').toLowerCase();
+      if (!hay.includes(search)) continue;
+    }
+
+    idx++;
+    const rowClass = isDiff ? ' class="different"' : '';
+    const jpdbSpelling = jpdb ? esc(jpdb.jpdbSpelling) : '<span class="loading">...</span>';
+    const jpdbReading = jpdb ? esc(jpdb.jpdbReading) : '<span class="loading">...</span>';
+    const jpdbDef = jpdb ? esc(jpdb.jpdbDefinition) : '<span class="loading">...</span>';
+    let diffCell = '<span class="loading">...</span>';
+    if (jpdb != null) {
+      diffCell = isDiff ? '<span class="diff-yes">YES</span>' : 'no';
+    }
+
+    html += '<tr' + rowClass + '>'
+      + '<td>' + idx + '</td>'
+      + '<td>' + esc(w.word) + '</td>'
+      + '<td>' + esc(w.reading) + '</td>'
+      + '<td>' + esc(w.definition) + '</td>'
+      + '<td>' + w.totalExposures + '</td>'
+      + '<td>' + w.userCount + '</td>'
+      + '<td>' + jpdbSpelling + '</td>'
+      + '<td>' + jpdbReading + '</td>'
+      + '<td>' + jpdbDef + '</td>'
+      + '<td>' + diffCell + '</td>'
+      + '</tr>';
+  }
+
+  tbody.innerHTML = html;
+  document.getElementById('words-table').style.display = wordsData.length ? '' : 'none';
+  document.getElementById('words-empty').style.display = wordsData.length ? 'none' : '';
+}
+
+function renderFrames() {
+  const tbody = document.getElementById('frames-body');
+  const diffOnly = document.getElementById('diffOnly').checked;
+  const search = document.getElementById('search').value.toLowerCase().trim();
+  const catFilter = document.getElementById('categoryFilter').value;
+
+  let html = '';
+  for (const f of framesData) {
+    const cmp = jpdbFrameResults[f.id];
+    const isDiff = cmp ? cmp.isDifferent : null;
+
+    if (diffOnly && cmp != null && !isDiff) continue;
+    if (catFilter && f.category !== catFilter) continue;
+    if (search) {
+      const hay = [f.id, f.category, f.raw].join(' ').toLowerCase();
+      if (!hay.includes(search)) continue;
+    }
+
+    const rowClass = isDiff ? ' class="different"' : '';
+
+    let sudachiCol = '<span class="loading">...</span>';
+    let jpdbCol = '<span class="loading">...</span>';
+    let diffCol = '<span class="loading">...</span>';
+
+    if (cmp) {
+      sudachiCol = esc((cmp.sudachiTokens || []).map(t => t.base || t.surface).join('\u00B7'));
+      jpdbCol = esc((cmp.jpdbTokens || []).map(t => t.spelling).join('\u00B7'));
+      if (cmp.diffs && cmp.diffs.length > 0) {
+        diffCol = cmp.diffs.map(d => {
+          const cls = 'diff-badge diff-' + (d.type || 'spelling');
+          const sud = formatDiffPart(d.sudachi);
+          const jpd = formatDiffPart(d.jpdb);
+          return '<span class="' + cls + '">' + esc(d.type) + ': ' + esc(sud) + ' \u2192 ' + esc(jpd) + '</span>';
+        }).join(' ');
+      } else {
+        diffCol = isDiff ? '<span class="diff-yes">differs</span>' : '';
+      }
+    }
+
+    html += '<tr' + rowClass + '>'
+      + '<td>' + esc(f.id) + '</td>'
+      + '<td>' + esc(f.category) + '</td>'
+      + '<td>' + esc(f.raw) + '</td>'
+      + '<td>' + sudachiCol + '</td>'
+      + '<td>' + jpdbCol + '</td>'
+      + '<td>' + diffCol + '</td>'
+      + '</tr>';
+  }
+
+  tbody.innerHTML = html;
+  document.getElementById('frames-table').style.display = framesData.length ? '' : 'none';
+  document.getElementById('frames-empty').style.display = framesData.length ? 'none' : '';
+}
+
+function formatDiffPart(val) {
+  if (val == null) return '\u2205';
+  if (Array.isArray(val)) return val.join('+');
+  return String(val);
+}
+
+function updateStats() {
+  const parts = [];
+  if (wordsData.length) parts.push(wordsData.length + ' unique words');
+  if (window._totalUsers != null) parts.push(window._totalUsers + ' users');
+  if (framesData.length) parts.push(framesData.length + ' frames');
+  document.getElementById('stats').textContent = parts.join(' | ');
+}
+
+function populateCategories() {
+  const sel = document.getElementById('categoryFilter');
+  const cats = [...new Set(framesData.map(f => f.category))].sort();
+  sel.innerHTML = '<option value="">All</option>' + cats.map(c => '<option value="' + esc(c) + '">' + esc(c) + '</option>').join('');
+}
+
+// --- Loading ---
+async function load() {
+  const btn = document.getElementById('loadBtn');
+  btn.textContent = 'Loading...';
+  btn.disabled = true;
+  saveSecret();
+
+  try {
+    // Phase 1: fetch word-exposures and frames in parallel
+    const [wordsRes, framesRes] = await Promise.all([
+      fetch('/api/admin/word-exposures', { headers: headers() }).then(r => r.json()),
+      fetch('/api/admin/frames', { headers: headers() }).then(r => r.json())
+    ]);
+
+    wordsData = wordsRes.words || [];
+    window._totalUsers = wordsRes.totalUsers;
+    framesData = framesRes.frames || [];
+
+    jpdbWordResults = {};
+    jpdbFrameResults = {};
+
+    updateStats();
+    populateCategories();
+    renderAll();
+
+    // Phase 2: JPDB comparisons in batches (concurrent)
+    fetchJpdbWordBatches();
+    fetchJpdbFrameBatches();
+  } catch (err) {
+    alert('Error loading data: ' + err.message);
+  } finally {
+    btn.textContent = 'Load';
+    btn.disabled = false;
+  }
+}
+
+async function fetchJpdbWordBatches() {
+  const BATCH = 50;
+  const allWords = wordsData.map(w => w.word);
+  const total = allWords.length;
+
+  for (let i = 0; i < total; i += BATCH) {
+    const batch = allWords.slice(i, i + BATCH);
+    document.getElementById('wordProgress').textContent =
+      'Words: comparing ' + Math.min(i + BATCH, total) + '/' + total + '...';
+
+    try {
+      const res = await fetch('/api/admin/word-exposures/jpdb-compare', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ words: batch })
+      });
+      const data = await res.json();
+      Object.assign(jpdbWordResults, data.results || {});
+      renderWords();
+    } catch (err) {
+      console.error('JPDB word batch error:', err);
+    }
+  }
+
+  document.getElementById('wordProgress').textContent =
+    'Words: ' + total + '/' + total + ' compared';
+}
+
+async function fetchJpdbFrameBatches() {
+  const BATCH = 30;
+  const allIds = framesData.map(f => f.id);
+  const total = allIds.length;
+
+  for (let i = 0; i < total; i += BATCH) {
+    const batch = allIds.slice(i, i + BATCH);
+    document.getElementById('frameProgress').textContent =
+      'Frames: comparing ' + Math.min(i + BATCH, total) + '/' + total + '...';
+
+    try {
+      const res = await fetch('/api/admin/word-exposures/frame-compare', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ frameIds: batch })
+      });
+      const data = await res.json();
+      Object.assign(jpdbFrameResults, data.results || {});
+      renderFrames();
+    } catch (err) {
+      console.error('JPDB frame batch error:', err);
+    }
+  }
+
+  document.getElementById('frameProgress').textContent =
+    'Frames: ' + total + '/' + total + ' compared';
+}
+
+// --- Init ---
+loadSecret();
+</script>
+</body>
+</html>
