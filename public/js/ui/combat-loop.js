@@ -3078,7 +3078,14 @@ async function renderBefriendQuiz(quizData, result) {
           run: { ...gs.run, creatureParty: answerResult.creatureParty }
         })
       });
-      updateUI();
+      // Sync HP bars in-place — don't call updateUI() which re-renders
+      // formations and resurrects KO-animated dead enemy sprites as ghosts
+      if (answerResult.enemies?.length > 1) {
+        answerResult.enemies.forEach((e, i) => characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
+      } else if (answerResult.enemies?.[0]) {
+        characterUI.updateEnemyHPBar({ current: answerResult.enemies[0].hp, max: answerResult.enemies[0].maxHp });
+      }
+      updateCreatureHpBars(answerResult.creatureParty?.active || getGameState().run?.creatureParty?.active, null);
       if (updateCreatureRowData) {
         const updated = getGameState();
         updateCreatureRowData(updated.run?.creatureParty, updated.combat);
