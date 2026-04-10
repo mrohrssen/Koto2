@@ -243,3 +243,203 @@ export function loadJpdbCache(cachePath) {
 export function saveJpdbCache(cachePath, cache) {
   writeFileSync(cachePath, JSON.stringify(cache, null, 2));
 }
+
+// ---------------------------------------------------------------------------
+// JPDB API helpers
+// ---------------------------------------------------------------------------
+
+const JPDB_API_BASE = 'https://jpdb.io/api/v1';
+
+async function jpdbParse(apiKey, text) {
+  const response = await fetch(`${JPDB_API_BASE}/parse`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      text,
+      token_fields: ['vocabulary_index', 'position', 'length'],
+      vocabulary_fields: ['spelling', 'reading', 'vid', 'sid'],
+    }),
+  });
+  if (!response.ok) throw new Error(`JPDB parse failed: ${response.status}`);
+  return response.json();
+}
+
+async function jpdbLookupDefinitions(apiKey, vidSidPairs) {
+  if (vidSidPairs.length === 0) return {};
+  const response = await fetch(`${JPDB_API_BASE}/lookup-vocabulary`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({ list: vidSidPairs, fields: ['spelling', 'reading', 'meanings'] }),
+  });
+  if (!response.ok) return {};
+  const data = await response.json();
+  const defMap = {};
+  for (let i = 0; i < (data.vocabulary_info || []).length; i++) {
+    const info = data.vocabulary_info[i];
+    if (!info) continue;
+    const [, , meanings] = info;
+    let defStr;
+    if (Array.isArray(meanings) && meanings.length > 0) {
+      defStr = typeof meanings[0] === 'string'
+        ? meanings.join('; ')
+        : meanings.map(m => (m.glosses || []).join(', ')).join('; ');
+    }
+    const [vid, sid] = vidSidPairs[i];
+    defMap[`${vid}:${sid}`] = defStr || null;
+  }
+  return defMap;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function stripSlots(text) { return text.replace(/\{[^}]+\}/g, ''); }
+
+// ---------------------------------------------------------------------------
+// Route factory
+// ---------------------------------------------------------------------------
+
+/**
+ * Create admin word exposure routes.
+ * @param {{ dataDir: string, framesPath: string }} options
+ * @returns {Router}
+ */
+export default function createWordExposureRoutes({ dataDir, framesPath }) {
+  const router = Router();
+  router.use(adminAuth);
+
+  let dictionary = null;
+  function getDictionary() {
+    if (!dictionary) dictionary = loadWordDictionary(dataDir);
+    return dictionary;
+  }
+
+  const jpdbCachePath = join(dataDir, 'jpdb-tokenization-cache.json');
+  const frameCachePath = join(dataDir, 'jpdb-frame-compare-cache.json');
+
+  // GET /word-exposures
+  router.get('/word-exposures', (req, res) => {
+    try {
+      res.json(aggregateWordExposures(dataDir, getDictionary()));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /word-exposures/jpdb-compare
+  router.post('/word-exposures/jpdb-compare', async (req, res) => {
+    const apiKey = process.env.JPDB_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'JPDB API key not configured' });
+    const { words } = req.body;
+    if (!Array.isArray(words) || words.length === 0) {
+      return res.status(400).json({ error: 'words (string[]) required' });
+    }
+    try {
+      const cache = loadJpdbCache(jpdbCachePath);
+      const results = {};
+      let cached = 0, fetched = 0;
+
+      for (const word of words) {
+        if (cache[word]) { results[word] = cache[word]; cached++; continue; }
+        try {
+          const jpdbResp = await jpdbParse(apiKey, word);
+          const comparison = buildJpdbComparison(word, jpdbResp);
+
+          // Fetch definition for single-token results
+          if (comparison.jpdbSpelling && !comparison.jpdbSpelling.includes('+')) {
+            const wordTokens = jpdbResp.tokens.filter(t => t[0] !== null && jpdbResp.vocabulary[t[0]]);
+            if (wordTokens.length === 1) {
+              const vocab = jpdbResp.vocabulary[wordTokens[0][0]];
+              await sleep(500);
+              const defMap = await jpdbLookupDefinitions(apiKey, [[vocab[2], vocab[3]]]);
+              comparison.jpdbDefinition = defMap[`${vocab[2]}:${vocab[3]}`] || null;
+            }
+          }
+
+          cache[word] = comparison;
+          results[word] = comparison;
+          fetched++;
+          await sleep(500);
+        } catch (err) {
+          results[word] = { jpdbSpelling: null, jpdbReading: null, jpdbDefinition: null, isDifferent: true, error: err.message };
+        }
+      }
+
+      if (fetched > 0) saveJpdbCache(jpdbCachePath, cache);
+      res.json({ results, cached, fetched });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // GET /frames
+  router.get('/frames', (req, res) => {
+    try {
+      const frames = JSON.parse(readFileSync(framesPath, 'utf-8'));
+      res.json({ frames: frames.map(f => ({ id: f.id, category: f.category, raw: f.raw })) });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /word-exposures/frame-compare
+  router.post('/word-exposures/frame-compare', async (req, res) => {
+    const apiKey = process.env.JPDB_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'JPDB API key not configured' });
+    const { frameIds } = req.body;
+    if (!Array.isArray(frameIds) || frameIds.length === 0) {
+      return res.status(400).json({ error: 'frameIds (string[]) required' });
+    }
+    try {
+      const allFrames = JSON.parse(readFileSync(framesPath, 'utf-8'));
+      const frameMap = new Map(allFrames.map(f => [f.id, f]));
+      const cache = loadJpdbCache(frameCachePath);
+      const results = {};
+      let cached = 0, fetched = 0;
+
+      for (const frameId of frameIds) {
+        const frame = frameMap.get(frameId);
+        if (!frame) continue;
+        if (cache[frameId]) { results[frameId] = cache[frameId]; cached++; continue; }
+
+        try {
+          const textForJpdb = stripSlots(frame.raw);
+          if (!textForJpdb.trim()) continue;
+          const jpdbResp = await jpdbParse(apiKey, textForJpdb);
+          const comparison = buildFrameComparison(frame, jpdbResp);
+
+          // Fetch definitions for JPDB tokens
+          const wordTokens = (jpdbResp.tokens || []).filter(t => t[0] !== null && jpdbResp.vocabulary[t[0]]);
+          const vidSidPairs = wordTokens.map(t => {
+            const v = jpdbResp.vocabulary[t[0]];
+            return [v[2], v[3]];
+          });
+          if (vidSidPairs.length > 0) {
+            await sleep(500);
+            const defMap = await jpdbLookupDefinitions(apiKey, vidSidPairs);
+            for (const jt of comparison.jpdbTokens) {
+              const matchingToken = wordTokens.find(t => jpdbResp.vocabulary[t[0]][0] === jt.spelling);
+              if (matchingToken) {
+                const v = jpdbResp.vocabulary[matchingToken[0]];
+                jt.definition = defMap[`${v[2]}:${v[3]}`] || null;
+              }
+            }
+          }
+
+          cache[frameId] = comparison;
+          results[frameId] = comparison;
+          fetched++;
+          await sleep(500);
+        } catch (err) {
+          results[frameId] = { raw: frame.raw, isDifferent: true, diffs: [], error: err.message };
+        }
+      }
+
+      if (fetched > 0) saveJpdbCache(frameCachePath, cache);
+      res.json({ results, cached, fetched });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  return router;
+}

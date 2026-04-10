@@ -132,6 +132,7 @@ import { createDevRouter } from './src/routes/dev.js';
 import { createForgeRouter } from './src/routes/forge.js';
 import { createSpriteForgeRouter } from './src/routes/sprite-forge.js';
 import createAdminRoutes from './src/routes/admin.js';
+import createWordExposureRoutes from './src/routes/admin-word-exposures.js';
 import { dataPath } from './src/data-dir.js';
 import { loadDialoguePools } from './src/game/dialogue-loader.js';
 import { logger } from './src/logger.js';
@@ -593,6 +594,10 @@ app.use('/api/sprite-forge', createSpriteForgeRouter({
 
 // ============ Admin (simulator) ============
 app.use('/api/admin', createAdminRoutes({ dataDir: dataPath('') }));
+app.use('/api/admin', createWordExposureRoutes({
+  dataDir: dataPath(''),
+  framesPath: dataPath('dialogue/frames.json'),
+}));
 
 // Serve game page
 app.get('/', (req, res) => {
