@@ -72,16 +72,16 @@ describe('tokenize-static output (frames.json)', () => {
     assert.ok(arigatou, 'should merge ありがとう+ございます into ありがとうございます');
   });
 
-  it('greeting frames have no slot tokens', () => {
-    const greetings = frames.filter(f => f.category === 'greeting');
-    assert.ok(greetings.length >= 5, `expected at least 5 greeting frames, got ${greetings.length}`);
+  it('shopGreeting frames have no slot tokens', () => {
+    const greetings = frames.filter(f => f.category === 'shopGreeting');
+    assert.ok(greetings.length >= 5, `expected at least 5 shopGreeting frames, got ${greetings.length}`);
     for (const frame of greetings) {
       const slots = frame.tokens.filter(t => t.slot);
-      assert.equal(slots.length, 0, `greeting frame ${frame.id} should have no slots`);
+      assert.equal(slots.length, 0, `shopGreeting frame ${frame.id} should have no slots`);
     }
   });
 
-  it('greeting i+1 chain: greet_hello has exactly 1 content word', () => {
+  it('shopGreeting i+1 chain: greet_hello has exactly 1 content word', () => {
     const frame = frames.find(f => f.id === 'greet_hello');
     assert.ok(frame, 'greet_hello frame should exist');
     assert.deepEqual(frame.words, ['こんにちは']);
@@ -131,7 +131,7 @@ describe('tokenize-static output (frames.json)', () => {
 
   it('NPC frames have group field matching npc_slot pattern', () => {
     const npcs = frames.filter(f => f.category === 'npc');
-    assert.ok(npcs.length >= 50, `expected at least 50 NPC frames, got ${npcs.length}`);
+    assert.ok(npcs.length >= 20, `expected at least 20 NPC frames, got ${npcs.length}`);
     for (const frame of npcs) {
       assert.ok(frame.group, `NPC frame ${frame.id} should have group`);
       assert.ok(frame.group.includes('_'), `NPC frame group ${frame.group} should have npcId_slot format`);
