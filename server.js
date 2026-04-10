@@ -595,8 +595,8 @@ app.use('/api/sprite-forge', createSpriteForgeRouter({
 // ============ Admin (simulator) ============
 app.use('/api/admin', createAdminRoutes({ dataDir: dataPath('') }));
 app.use('/api/admin', createWordExposureRoutes({
-  dataDir: dataPath(''),
-  framesPath: dataPath('dialogue/frames.json'),
+  dataDir: join(__dirname, 'data'),
+  framesPath: join(__dirname, 'data', 'dialogue', 'frames.json'),
 }));
 
 // Serve game page
