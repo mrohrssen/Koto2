@@ -1,0 +1,253 @@
+// tests/unit/admin-word-exposures.test.js
+import { describe, it, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, writeFileSync, readFileSync, rmSync, mkdirSync } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
+
+let aggregateWordExposures, buildJpdbComparison, buildFrameComparison, loadJpdbCache, saveJpdbCache;
+
+before(async () => {
+  const mod = await import('../../src/routes/admin-word-exposures.js');
+  aggregateWordExposures = mod.aggregateWordExposures;
+  buildJpdbComparison = mod.buildJpdbComparison;
+  buildFrameComparison = mod.buildFrameComparison;
+  loadJpdbCache = mod.loadJpdbCache;
+  saveJpdbCache = mod.saveJpdbCache;
+});
+
+describe('aggregateWordExposures', () => {
+  let tempDir;
+
+  before(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'word-exp-'));
+  });
+
+  after(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it('aggregates exposures across multiple user files', () => {
+    writeFileSync(join(tempDir, 'word-knowledge-user1.json'), JSON.stringify({
+      userId: 'user1',
+      seen: {
+        '木': { exposures: 10, firstSeen: '2026-01-01T00:00:00Z' },
+        '水': { exposures: 5, firstSeen: '2026-01-01T00:00:00Z' },
+      },
+    }));
+    writeFileSync(join(tempDir, 'word-knowledge-user2.json'), JSON.stringify({
+      userId: 'user2',
+      seen: {
+        '木': { exposures: 20, firstSeen: '2026-01-02T00:00:00Z' },
+        '火': { exposures: 3, firstSeen: '2026-01-02T00:00:00Z' },
+      },
+    }));
+
+    const dictionary = new Map();
+    dictionary.set('木', { reading: 'き', definitions: [{ en: 'tree', primary: true }] });
+    dictionary.set('水', { reading: 'みず', definitions: [{ en: 'water', primary: true }] });
+    // '火' not in dictionary — should still appear with null reading/definition
+
+    const result = aggregateWordExposures(tempDir, dictionary);
+
+    assert.equal(result.totalUsers, 2);
+    assert.equal(result.totalUniqueWords, 3);
+
+    // Sorted descending by totalExposures: 木(30), 水(5), 火(3)
+    assert.equal(result.words[0].word, '木');
+    assert.equal(result.words[0].totalExposures, 30);
+    assert.equal(result.words[0].userCount, 2);
+    assert.equal(result.words[0].reading, 'き');
+    assert.equal(result.words[0].definition, 'tree');
+
+    assert.equal(result.words[1].word, '水');
+    assert.equal(result.words[1].totalExposures, 5);
+    assert.equal(result.words[1].userCount, 1);
+
+    assert.equal(result.words[2].word, '火');
+    assert.equal(result.words[2].totalExposures, 3);
+    assert.equal(result.words[2].reading, null);
+    assert.equal(result.words[2].definition, null);
+  });
+
+  it('returns empty result when no files exist', () => {
+    const emptyDir = mkdtempSync(join(tmpdir(), 'word-exp-empty-'));
+    try {
+      const result = aggregateWordExposures(emptyDir, new Map());
+      assert.equal(result.totalUsers, 0);
+      assert.equal(result.totalUniqueWords, 0);
+      assert.deepEqual(result.words, []);
+    } finally {
+      rmSync(emptyDir, { recursive: true, force: true });
+    }
+  });
+
+  it('handles malformed JSON files gracefully', () => {
+    const mixedDir = mkdtempSync(join(tmpdir(), 'word-exp-mixed-'));
+    try {
+      // Malformed file
+      writeFileSync(join(mixedDir, 'word-knowledge-bad.json'), 'NOT JSON{{{');
+      // Good file
+      writeFileSync(join(mixedDir, 'word-knowledge-good.json'), JSON.stringify({
+        userId: 'good',
+        seen: { '山': { exposures: 7 } },
+      }));
+
+      const result = aggregateWordExposures(mixedDir, new Map());
+      assert.equal(result.totalUsers, 1);
+      assert.equal(result.totalUniqueWords, 1);
+      assert.equal(result.words[0].word, '山');
+      assert.equal(result.words[0].totalExposures, 7);
+    } finally {
+      rmSync(mixedDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('buildJpdbComparison', () => {
+  it('returns isDifferent: false when single token matches our word', () => {
+    const result = buildJpdbComparison('食べる', {
+      tokens: [[0, 0, 9]],
+      vocabulary: [['食べる', 'たべる', 123, 456]],
+    });
+
+    assert.equal(result.isDifferent, false);
+    assert.equal(result.jpdbSpelling, '食べる');
+    assert.equal(result.jpdbReading, 'たべる');
+  });
+
+  it('returns isDifferent: true when headword differs', () => {
+    const result = buildJpdbComparison('いらっしゃいませ', {
+      tokens: [[0, 0, 27]],
+      vocabulary: [['いらっしゃる', 'いらっしゃる', 100, 200]],
+    });
+
+    assert.equal(result.isDifferent, true);
+    assert.equal(result.jpdbSpelling, 'いらっしゃる');
+    assert.equal(result.jpdbReading, 'いらっしゃる');
+  });
+
+  it('returns isDifferent: true with joined spelling for multi-token split', () => {
+    const result = buildJpdbComparison('食べ物', {
+      tokens: [[0, 0, 9], [1, 9, 3]],
+      vocabulary: [['食べる', 'たべる', 1, 1], ['物', 'もの', 2, 2]],
+    });
+
+    assert.equal(result.isDifferent, true);
+    assert.equal(result.jpdbSpelling, '食べる+物');
+  });
+
+  it('returns isDifferent: true with null spelling for empty response', () => {
+    const result = buildJpdbComparison('テスト', {
+      tokens: [],
+      vocabulary: [],
+    });
+
+    assert.equal(result.isDifferent, true);
+    assert.equal(result.jpdbSpelling, null);
+    assert.equal(result.jpdbReading, null);
+    assert.equal(result.jpdbDefinition, null);
+  });
+});
+
+describe('buildFrameComparison', () => {
+  it('detects spelling difference between Sudachi and JPDB tokens', () => {
+    const frame = {
+      raw: 'テスト',
+      tokens: [
+        { surface: 'すみません', base: 'すみません', reading: 'すみません' },
+      ],
+    };
+    // JPDB parses the same word with a different spelling
+    const jpdbResponse = {
+      tokens: [[0, 0, 15]],
+      vocabulary: [['済みません', 'すみません', 1, 1]],
+    };
+
+    const result = buildFrameComparison(frame, jpdbResponse);
+    assert.equal(result.isDifferent, true);
+    assert.ok(result.diffs.length > 0);
+    assert.equal(result.diffs[0].type, 'spelling');
+  });
+
+  it('returns no diffs when tokens match', () => {
+    const frame = {
+      raw: 'テスト',
+      tokens: [
+        { surface: '食べる', base: '食べる', reading: 'たべる' },
+      ],
+    };
+    const jpdbResponse = {
+      tokens: [[0, 0, 9]],
+      vocabulary: [['食べる', 'たべる', 1, 1]],
+    };
+
+    const result = buildFrameComparison(frame, jpdbResponse);
+    assert.equal(result.isDifferent, false);
+    assert.equal(result.diffs.length, 0);
+  });
+
+  it('detects merge diff when Sudachi has more content tokens than JPDB', () => {
+    // Sudachi splits into 2 content tokens, JPDB keeps as 1
+    const frame = {
+      raw: 'テスト',
+      tokens: [
+        { surface: '食べ', base: '食べる', reading: 'たべ' },
+        { surface: '物', base: '物', reading: 'もの' },
+      ],
+    };
+    const jpdbResponse = {
+      tokens: [[0, 0, 9]],
+      vocabulary: [['食べ物', 'たべもの', 1, 1]],
+    };
+
+    const result = buildFrameComparison(frame, jpdbResponse);
+    assert.equal(result.isDifferent, true);
+    const mergeDiffs = result.diffs.filter(d => d.type === 'merge');
+    assert.ok(mergeDiffs.length > 0, 'Should have at least one merge diff');
+  });
+
+  it('skips slot tokens in comparison', () => {
+    const frame = {
+      raw: '{item}をください',
+      tokens: [
+        { slot: 'item' },
+        { surface: 'を' },
+        { surface: 'ください', base: 'くださる', reading: 'ください' },
+      ],
+    };
+    const jpdbResponse = {
+      tokens: [[0, 0, 21]],
+      vocabulary: [['くださる', 'くださる', 1, 1]],
+    };
+
+    const result = buildFrameComparison(frame, jpdbResponse);
+    assert.equal(result.isDifferent, false);
+    assert.equal(result.diffs.length, 0);
+  });
+});
+
+describe('JPDB cache', () => {
+  let tempDir;
+
+  before(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'jpdb-cache-'));
+  });
+
+  after(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it('returns empty object for missing cache file', () => {
+    const result = loadJpdbCache(join(tempDir, 'nonexistent.json'));
+    assert.deepEqual(result, {});
+  });
+
+  it('round-trips write then read', () => {
+    const cachePath = join(tempDir, 'test-cache.json');
+    const data = { 'word1': { spelling: 'a' }, 'word2': { spelling: 'b' } };
+    saveJpdbCache(cachePath, data);
+    const loaded = loadJpdbCache(cachePath);
+    assert.deepEqual(loaded, data);
+  });
+});
