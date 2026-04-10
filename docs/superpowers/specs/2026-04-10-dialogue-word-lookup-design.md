@@ -64,9 +64,11 @@ Reuse the existing `#lookup-popup` HTML element and CSS from `lookup.js`. Modify
 - **SRS state** — "New" or "Known" (derived from existing `getKnownWords()` set, no bootstrap changes needed)
 - **Two buttons:** "I forgot" / "I knew it"
 
-**Positioning:** Reuse `positionPopup(wordRect)` from `lookup.js:466`. Center on tapped word, prefer above, flip below if no space.
+**Positioning:** Extract `positionPopup(wordRect)` from `lookup.js:466` into a shared utility (it's currently not exported). Center on tapped word, prefer above, flip below if no space.
 
 **Dismissal:** Tap outside the popup (but still inside the narration box) closes it. Tap outside the narration box closes the popup AND advances dialogue.
+
+**Known word meanings:** `renderJpSentence` currently skips meaning lookup for known words. The `data-meaning` attribute must be populated for all words by looking up `wordDict.get(baseForm)` for known words too (falling back to `token.meaning`).
 
 ### SRS Review Buttons
 
@@ -74,7 +76,7 @@ Two buttons at the bottom of the popup: "I forgot" and "I knew it."
 
 **Uses existing `POST /api/game/known-words/review`** with the existing client function `reviewVocabWord(word, grade)` from `api.js:537`. Grade is `"again"` for "I forgot" and `"good"` for "I knew it."
 
-**One small server change:** If no vocab SRS card exists for the word, create one before grading (bypasses the 5-exposure threshold). This lets players fast-track words they already know.
+**One small server change:** If no vocab SRS card exists for the word, create one before grading (bypasses the 5-exposure threshold). This lets players fast-track words they already know. The endpoint looks up the word in the server-side word dictionary (`loadWordDictionary`) to get `meaning` and `reading` for the `createCard(userId, 'vocab', word, { word, meaning, reading })` call.
 
 After review, the popup's state indicator updates immediately from the response. The local `knownWords` set is updated client-side via `addKnownWord()`.
 
@@ -88,8 +90,8 @@ Tapping a word to view the popup is purely informational — no SRS side effect.
 | Client review function | `reviewVocabWord(word, grade)` | `public/js/api.js:537` |
 | Known words set | `getKnownWords()` / `addKnownWord()` | `public/js/ui/bootstrap-client.js` |
 | Word dictionary | `window.gameState.wordDictionary` | `bootstrap-client.js` |
-| Popup HTML/CSS | `#lookup-popup` element + styles | `index.html:123`, `game.css:1573` |
-| Popup positioning | `positionPopup(wordRect)` | `public/js/ui/lookup.js:466` |
+| Popup HTML/CSS | `#lookup-popup` element + styles | `index.html:123`, `game.css:1584` |
+| Popup positioning | `positionPopup(wordRect)` logic | `public/js/ui/lookup.js:466` (not exported — extract) |
 | Toast feedback | `showToast(message, duration)` | `public/js/ui/scene.js:479` |
 | Rendering | `renderJpSentence(tokens, knownWords, ...)` | `bootstrap-client.js:79` |
 
@@ -101,6 +103,18 @@ Tapping a word to view the popup is purely informational — no SRS side effect.
 4. **Word click → populate existing popup** — click handler on `.jp-word` reads `data-*` attrs + `wordDictionary`, fills `#lookup-popup`
 5. **Add two buttons to popup HTML** — "I forgot" / "I knew it" calling existing `reviewVocabWord()`
 6. **Auto-create card on review** — small change to existing endpoint in `known-words.js`
+
+## Scope & Edge Cases
+
+**In scope:** Dialogue rendered via `renderJpSentence` (produces `.jp-word` spans). This covers NPC dialogue, narration, shop lines, and all pre-tokenized frame content.
+
+**Out of scope:** Dialogue rendered via `renderEnFirst` (produces `.bs-word` spans — bootstrap/teaching format). These are a different rendering path and can be addressed in a follow-up.
+
+**Auto-dismiss narrations** (`autoDismiss` option): These self-dismiss via timeout and already hide the `▼` indicator. Word click handlers still apply — if a player taps a word before the auto-dismiss fires, the popup opens and the auto-dismiss should be paused/cancelled. If the popup is closed, the auto-dismiss resumes or the narration dismisses.
+
+**Garbled text** (`garbled` option): Word click handlers should NOT apply to garbled narrations — the text is intentionally unreadable.
+
+**Persistent narrations** (`persistent` option): These stay until `forceHide()` — word clicks work normally, no dismiss behavior needed.
 
 ## What We Don't Touch
 
