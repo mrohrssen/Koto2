@@ -756,6 +756,7 @@ textarea,
   margin-bottom: 0;
 }
 
+
 /* Name line uses ruby/rt — keep annotations compact so they don’t balloon the header. */
 .narration-speaker .jp-word ruby rt {
   font-size: 7px;
@@ -774,7 +775,7 @@ textarea,
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* Teaching words: global margin uses rem; narration box is tight — less clearance here. */
+/* Reserve space below teaching words so the next line doesn't overlap the English gloss. */
 .narration-text .jp-unknown,
 .narration-text .jp-entity {
   margin-bottom: 0.95rem;
@@ -4320,16 +4321,6 @@ textarea,
   color: var(--text-primary);
 }
 
-/* Move labels are single-word action names: keep JP centered with icon and
-   suppress stacked English gloss used in sentence/dialogue contexts. */
-.move-name-jp .jp-unknown,
-.move-name-jp .jp-entity {
-  margin-bottom: 0;
-}
-
-.move-name-jp .jp-stack-en {
-  display: none;
-}
 
 /* Stats row — small, secondary, underneath */
 .move-stats {
@@ -5428,6 +5419,11 @@ textarea,
   color: var(--text-primary);
 }
 
+.ui-choice__title .jp-unknown,
+.ui-choice__title .jp-entity {
+  margin-bottom: 0.7rem;
+}
+
 .ui-choice__subtitle {
   margin-top: 2px;
   font-size: 12px;
@@ -5667,10 +5663,12 @@ textarea,
   display: inline-block;
   position: relative;
   padding: 0;
-  /* Reserve space for gloss below ruby. Use rem (not em): narration text is large clamp()
-     so em-based margin was ~32–48px per word and blew up the dialogue box. */
-  margin: 0 0.08em 1.65rem 0;
+  margin: 0 0.08em 0 0;
   vertical-align: baseline;
+}
+.jp-word ruby {
+  line-height: 1.35;
+  ruby-position: over;
 }
 .jp-word ruby rt {
   font-size: 8px;
@@ -5705,11 +5703,6 @@ textarea,
 .jp-punct { display: inline; }
 
 /* Unknown/teaching word — amber accent */
-.jp-unknown ruby,
-.jp-entity ruby {
-  line-height: 1.35;
-  ruby-position: over;
-}
 .jp-unknown ruby rt { color: rgba(170, 130, 40, 0.5); }
 .jp-unknown .jp-stack-en { color: rgba(170, 130, 40, 0.75); }
 .jp-unknown ruby {

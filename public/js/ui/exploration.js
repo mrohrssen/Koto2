@@ -1227,7 +1227,6 @@ export async function renderFriendlyNpc() {
       title: item.nameToken
         ? renderJpSentence([item.nameToken], getKnownWords(), wordDict, {}, false)
         : `${item.word} (${item.reading})`,
-      subtitle: item.nameEn,
       pills: buildItemEffectPills(item),
     })),
     onSelect: async (index) => {
