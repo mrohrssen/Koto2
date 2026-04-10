@@ -27,6 +27,7 @@
 
 import * as lookup from './lookup.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
+import * as dialogueLookup from './dialogue-word-lookup.js';
 
 const box = document.getElementById('narration-box');
 const textEl = document.getElementById('narration-text');
@@ -138,6 +139,7 @@ function paginateForTwoLines(text) {
 }
 
 function hide(value) {
+  dialogueLookup.hidePopup();
   if (box) box.classList.remove('visible');
   clearPagination();
   if (textEl) textEl.classList.remove('garbled');
@@ -222,16 +224,19 @@ export async function show(text, options = {}) {
   if (autoDismiss) {
     setText(textEl, displayText);
     if (textEl) lookup.refresh().catch(() => {});
+    if (html && textEl && !garbled) dialogueLookup.attachWordClickHandlers(textEl);
   } else if (persistent) {
     // Persistent: truncate to 2 lines (no click-to-advance available)
     const pages = html ? [displayText] : paginateForTwoLines(displayText);
     setText(textEl, pages[0] || '');
     if (textEl) lookup.refresh().catch(() => {});
+    if (html && textEl && !garbled) dialogueLookup.attachWordClickHandlers(textEl);
   } else {
     pagedText = html ? [displayText] : paginateForTwoLines(displayText);
     currentPage = 0;
     setText(textEl, pagedText[0] || '');
     if (textEl) lookup.refresh().catch(() => {});
+    if (html && textEl && !garbled) dialogueLookup.attachWordClickHandlers(textEl);
   }
   if (textEl) textEl.classList.toggle('garbled', !!garbled);
   if (indicatorEl) indicatorEl.style.display = (autoDismiss || persistent) ? 'none' : '';
