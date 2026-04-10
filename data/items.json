@@ -13,6 +13,7 @@
     },
     "description": "Restores 20% MP to all creatures.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -30,6 +31,7 @@
     },
     "description": "Boosts party attack by 2%.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -46,6 +48,7 @@
     },
     "description": "Heals the most damaged creature for 15% of max HP.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -63,6 +66,7 @@
     },
     "description": "Boosts party attack by 5%.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -79,6 +83,7 @@
     },
     "description": "Revives a fallen creature at full HP.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -104,6 +109,7 @@
     },
     "description": "+5% attack, -5% max HP to one creature.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -120,6 +126,7 @@
     },
     "description": "Heals all living creatures for 10% of max HP.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -137,6 +144,7 @@
     },
     "description": "+5% max HP to one creature.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -154,6 +162,7 @@
     },
     "description": "+3% max HP to one creature.",
     "stage": 2,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -171,6 +180,7 @@
     },
     "description": "5% super effective damage bonus.",
     "stage": 3,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -188,6 +198,7 @@
     },
     "description": "+5 base attack (scales with level).",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -205,6 +216,7 @@
     },
     "description": "+10 base HP (scales with level).",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -222,6 +234,7 @@
     },
     "description": "+10 base MP (scales with level).",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -239,6 +252,7 @@
     },
     "description": "-3 incoming damage per hit.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -264,6 +278,7 @@
     },
     "description": "+5 base HP, +5 base MP (scales with level).",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -280,6 +295,7 @@
     },
     "description": "Light snack for the whole team.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -296,6 +312,7 @@
     },
     "description": "Sugar rush — grants XP equal to one enemy kill.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07",
     "_note": "NEEDS NEW CODE: xpGrant killEquivalent effect type"
   },
@@ -313,6 +330,7 @@
     },
     "description": "Sweet pick-me-up restores 15% MP.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -329,6 +347,7 @@
     },
     "description": "Hearty rice ball, big single heal.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -354,6 +373,7 @@
     },
     "description": "Balanced meal, balanced boost.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -371,6 +391,7 @@
     },
     "description": "A sharp point helps in a pinch.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -388,6 +409,7 @@
     },
     "description": "Precise strokes exploit elemental weakness.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -405,6 +427,7 @@
     },
     "description": "Extra pages, extra mental stamina.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -422,6 +445,7 @@
     },
     "description": "Study hard, learn faster — 10% more XP.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -447,6 +471,7 @@
     },
     "description": "Knowledge is power.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -472,6 +497,7 @@
     },
     "description": "Carries everything you need.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   },
   {
@@ -489,6 +515,7 @@
     },
     "description": "Good timing means fewer clean hits.",
     "stage": 1,
+    "area": "school",
     "createdAt": "2026-04-07"
   }
 ]
