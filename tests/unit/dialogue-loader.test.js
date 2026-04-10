@@ -5,8 +5,8 @@ import {
   getBarkPool,
   getCidScripts,
   getNpcLines,
-  getShopFrames,
-  getGreetingFrames,
+  getShopPurchaseFrames,
+  getShopGreetingFrames,
   getBefriendFrames,
   getDialogueWordSet,
 } from '../../src/game/dialogue-loader.js';
@@ -43,25 +43,26 @@ describe('dialogue-loader (frames.json)', () => {
   it('getNpcLines returns lines grouped by NPC and slot', () => {
     const npcLines = getNpcLines();
     assert.ok(npcLines.kodomo, 'should have kodomo NPC');
-    assert.ok(npcLines.kodomo.shopGreeting, 'kodomo should have shopGreeting');
-    assert.ok(Array.isArray(npcLines.kodomo.shopGreeting));
-    const line = npcLines.kodomo.shopGreeting[0];
+    assert.ok(npcLines.kodomo.fightStart, 'kodomo should have fightStart');
+    assert.ok(Array.isArray(npcLines.kodomo.fightStart));
+    assert.ok(!npcLines.kodomo.shopGreeting, 'kodomo should NOT have shopGreeting');
+    const line = npcLines.kodomo.fightStart[0];
     assert.ok(Array.isArray(line.tokens), 'line should have tokens');
     assert.ok(Array.isArray(line.words), 'line should have words');
   });
 
-  it('getShopFrames returns shop category frames', () => {
-    const frames = getShopFrames();
+  it('getShopPurchaseFrames returns shopPurchase category frames', () => {
+    const frames = getShopPurchaseFrames();
     assert.ok(Array.isArray(frames));
     assert.ok(frames.length >= 3);
-    assert.ok(frames.every(f => f.category === 'shop'));
+    assert.ok(frames.every(f => f.category === 'shopPurchase'));
   });
 
-  it('getGreetingFrames returns greeting category frames', () => {
-    const frames = getGreetingFrames();
+  it('getShopGreetingFrames returns shopGreeting category frames', () => {
+    const frames = getShopGreetingFrames();
     assert.ok(Array.isArray(frames));
     assert.ok(frames.length >= 5);
-    assert.ok(frames.every(f => f.category === 'greeting'));
+    assert.ok(frames.every(f => f.category === 'shopGreeting'));
   });
 
   it('getBefriendFrames returns frames grouped by prompt type', () => {

@@ -6,8 +6,8 @@ let _frames = [];
 let _barkPool = {};
 let _cidScripts = [];
 let _npcLines = {};
-let _shopFrames = [];
-let _greetingFrames = [];
+let _shopPurchaseFrames = [];
+let _shopGreetingFrames = [];
 let _befriendFrames = {};
 
 export function loadDialoguePools(dataDir) {
@@ -20,8 +20,8 @@ export function loadDialoguePools(dataDir) {
   console.log(`[Dialogue] Loaded ${_frames.length} frames from frames.json`);
 
   // Partition by category
-  _shopFrames = _frames.filter(f => f.category === 'shop');
-  _greetingFrames = _frames.filter(f => f.category === 'greeting');
+  _shopPurchaseFrames = _frames.filter(f => f.category === 'shopPurchase');
+  _shopGreetingFrames = _frames.filter(f => f.category === 'shopGreeting');
 
   // Barks: category "bark_<trigger>" → grouped by trigger
   _barkPool = {};
@@ -68,8 +68,8 @@ export function loadDialoguePools(dataDir) {
 export function getBarkPool() { return _barkPool; }
 export function getCidScripts() { return _cidScripts; }
 export function getNpcLines() { return _npcLines; }
-export function getShopFrames() { return _shopFrames; }
-export function getGreetingFrames() { return _greetingFrames; }
+export function getShopPurchaseFrames() { return _shopPurchaseFrames; }
+export function getShopGreetingFrames() { return _shopGreetingFrames; }
 export function getBefriendFrames() { return _befriendFrames; }
 
 export function getDialogueWordSet() {
