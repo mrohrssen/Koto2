@@ -25,6 +25,8 @@ data/npc-dialogue-cache-test-*.json
 # Runtime-generated caches (rebuilt automatically per user)
 data/vocab-cache-*.json
 data/word-knowledge-*.json
+data/jpdb-tokenization-cache.json
+data/jpdb-frame-compare-cache.json
 # Per-user dialogue TTS audio (runtime-generated)
 data/tts-dialogue/
 # Word tracker (per-user, runtime-generated)
