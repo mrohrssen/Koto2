@@ -98,27 +98,29 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     const isKnown = knownWords.has(baseForm);
     const displayReading = reading || surface;
 
-    if (isKnown) {
-      const display = useKanji ? surface : displayReading;
-      return `<span class="jp-word jp-known">`
-        + `<ruby>${esc(display)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
-        + `</span>`;
-    }
-
-    // Unknown word: get English definition
-    // Universal format: meaning baked into token
-    // Legacy format: overrides → wordDict lookup
+    // Look up meaning for data attribute (needed for both known and unknown)
     const dictEntry = wordDict.get(baseForm);
-    const enDef = token.meaning
+    const meaning = token.meaning
       || overrides[baseForm]
       || dictEntry?.definitions?.find(d => d.primary)?.en
       || dictEntry?.definitions?.[0]?.en
       || '';
 
+    const pos = token.pos || '';
+    const dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;
+
+    if (isKnown) {
+      const display = useKanji ? surface : displayReading;
+      return `<span class="jp-word jp-known"${dataAttrs}>`
+        + `<ruby>${esc(display)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
+        + `</span>`;
+    }
+
+    // Unknown word
     const typeClass = token.entity ? 'jp-entity' : 'jp-unknown';
-    return `<span class="jp-word ${typeClass}">`
+    return `<span class="jp-word ${typeClass}"${dataAttrs}>`
       + `<ruby>${esc(displayReading)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
-      + `<span class="jp-stack-en">${esc(enDef)}</span>`
+      + `<span class="jp-stack-en">${esc(meaning)}</span>`
       + `</span>`;
   }).join('');
 }

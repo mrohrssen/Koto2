@@ -127,6 +127,38 @@ describe('renderJpSentence — attack card entity tokens via entityToToken', () 
     const token = entityToToken({ baseWord: '迷う', baseReading: 'まよう', baseMeaning: 'get lost / hesitate' });
     const html = renderJpSentence([token], new Set(['迷う']), new Map());
     assert.ok(html.includes('jp-known'), 'known entity should have jp-known class');
-    assert.ok(!html.includes('get lost / hesitate'), 'known entity should NOT show English gloss');
+    assert.ok(!html.includes('jp-stack-en'), 'known entity should NOT have jp-stack-en gloss span');
+  });
+});
+
+describe('renderJpSentence — data attributes for word lookup', () => {
+  it('adds data-base, data-reading, data-meaning, data-pos to known words', () => {
+    const tokens = [{ surface: 'こんにちは', base: 'こんにちは', reading: 'こんにちは', meaning: 'hello', pos: 'Interjection' }];
+    const html = renderJpSentence(tokens, new Set(['こんにちは']), wordDict, {}, false);
+    assert.ok(html.includes('data-base="こんにちは"'), 'missing data-base');
+    assert.ok(html.includes('data-reading="こんにちは"'), 'missing data-reading');
+    assert.ok(html.includes('data-pos="Interjection"'), 'missing data-pos');
+    assert.ok(html.includes('data-meaning="hello"'), 'missing data-meaning');
+  });
+
+  it('adds data attributes to unknown words', () => {
+    const tokens = [{ surface: '遊ぶ', base: '遊ぶ', reading: 'あそぶ', meaning: 'to play', pos: 'Verb' }];
+    const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
+    assert.ok(html.includes('data-base="遊ぶ"'), 'missing data-base');
+    assert.ok(html.includes('data-reading="あそぶ"'), 'missing data-reading');
+    assert.ok(html.includes('data-meaning="to play"'), 'missing data-meaning');
+    assert.ok(html.includes('data-pos="Verb"'), 'missing data-pos');
+  });
+
+  it('does NOT add data attributes to punctuation', () => {
+    const tokens = [{ surface: '！' }];
+    const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
+    assert.ok(!html.includes('data-base'), 'punctuation should not have data-base');
+  });
+
+  it('looks up meaning from wordDict for known words without token meaning', () => {
+    const tokens = [{ surface: 'こんにちは', base: 'こんにちは', reading: 'こんにちは', pos: 'Interjection' }];
+    const html = renderJpSentence(tokens, new Set(['こんにちは']), wordDict, {}, false);
+    assert.ok(html.includes('data-meaning="hello"'), 'should fall back to wordDict for known word meaning');
   });
 });
