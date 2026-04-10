@@ -174,11 +174,7 @@
 <h1>Word Exposure Dashboard</h1>
 
 <div class="controls">
-  <div>
-    <label>Admin Secret</label><br>
-    <input type="password" id="adminSecret" placeholder="Enter admin secret">
-  </div>
-  <button id="loadBtn" onclick="load()">Load</button>
+  <button id="loadBtn" onclick="load()">Reload</button>
   <div class="checkbox-wrap">
     <input type="checkbox" id="diffOnly" onchange="renderAll()">
     <label for="diffOnly">Show only differences</label>
@@ -262,28 +258,20 @@ function esc(str) {
   return el.innerHTML;
 }
 
+let adminSecret = '';
+
+async function fetchAdminSecret() {
+  try {
+    const res = await fetch('/api/admin/secret');
+    if (res.ok) {
+      const data = await res.json();
+      adminSecret = data.secret;
+    }
+  } catch { /* server will reject admin calls anyway */ }
+}
+
 function getSecret() {
-  return document.getElementById('adminSecret').value.trim();
-}
-
-function saveSecret() {
-  sessionStorage.setItem('adminSecret', getSecret());
-}
-
-function loadSecret() {
-  // Priority: URL ?secret= param > sessionStorage > empty
-  const urlSecret = new URLSearchParams(window.location.search).get('secret');
-  if (urlSecret) {
-    document.getElementById('adminSecret').value = urlSecret;
-    sessionStorage.setItem('adminSecret', urlSecret);
-    // Strip secret from URL bar so it's not visible/shared
-    const clean = window.location.pathname;
-    window.history.replaceState({}, '', clean);
-    return true;
-  }
-  const saved = sessionStorage.getItem('adminSecret');
-  if (saved) { document.getElementById('adminSecret').value = saved; return true; }
-  return false;
+  return adminSecret;
 }
 
 function headers() {
@@ -456,7 +444,6 @@ async function load() {
   const btn = document.getElementById('loadBtn');
   btn.textContent = 'Loading...';
   btn.disabled = true;
-  saveSecret();
 
   try {
     // Phase 1: fetch word-exposures and frames in parallel
@@ -544,8 +531,7 @@ async function fetchJpdbFrameBatches() {
 }
 
 // --- Init ---
-const hadSecret = loadSecret();
-if (hadSecret) loadData();
+fetchAdminSecret().then(() => load());
 </script>
 </body>
 </html>
