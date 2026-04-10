@@ -40,22 +40,8 @@ export async function handleSpeedReview(simCall, room, context, logEvent) {
     const word = wordData.word;
     const grade = Math.random() < context.speedReviewAccuracy ? 'good' : 'again';
 
-    // Submit review
-    const reviewResult = await simCall('POST', '/api/game/known-words/review', { word, grade }, `speed review grade ${i}`);
-
-    logEvent(context.day, context.run, context.roomIndex, 'word_exposure', {
-      word,
-      grade,
-      source: 'speed_review'
-    });
-
-    // Check if word was mastered
-    if (reviewResult.ok && reviewResult.data?.mastered) {
-      logEvent(context.day, context.run, context.roomIndex, 'word_learned', {
-        word,
-        source: 'speed_review'
-      });
-    }
+    // Submit review — server handles exposure/mastery tracking
+    await simCall('POST', '/api/game/known-words/review', { word, grade }, `speed review grade ${i}`);
 
     reviewed++;
   }

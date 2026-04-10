@@ -22,26 +22,9 @@ export async function handleWordDiscovery(simCall, room, context, logEvent) {
   const words = wordsResult.data?.words ?? wordsResult.data ?? [];
   const wordList = Array.isArray(words) ? words : [];
 
-  // Log exposure for each word
-  for (const word of wordList) {
-    logEvent(context.day, context.run, context.roomIndex, 'word_exposure', {
-      word: word.word ?? word.spelling ?? word,
-      source: 'discovery'
-    });
-  }
-
-  // Simulate player accuracy
+  // Simulate player accuracy — server handles exposure tracking
   if (Math.random() < context.wordDiscoveryAccuracy) {
-    const completeResult = await simCall('POST', '/api/game/complete-discovery', null, 'word discovery complete');
-
-    if (completeResult.ok) {
-      for (const word of wordList) {
-        logEvent(context.day, context.run, context.roomIndex, 'word_learned', {
-          word: word.word ?? word.spelling ?? word,
-          source: 'discovery'
-        });
-      }
-    }
+    await simCall('POST', '/api/game/complete-discovery', null, 'word discovery complete');
   }
 
   return { outcome: 'cleared', wordsOffered: wordList.length };

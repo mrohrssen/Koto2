@@ -2,7 +2,7 @@
  * Handler for friendly NPC rooms.
  * Gets item/equipment offers and picks the first one (everything is free).
  * Selects a target creature: lowest-HP for heals, first active for everything else.
- * Tracks all offered item words as exposures (mirrors frontend behavior).
+ * Server handles word exposure natively.
  */
 export async function handleFriendlyNpc(simCall, room, context, logEvent) {
   logEvent(context.day, context.run, context.roomIndex, 'room_entered', {
@@ -17,32 +17,6 @@ export async function handleFriendlyNpc(simCall, room, context, logEvent) {
   }
 
   const offered = offersResult.data.offered;
-
-  // Track word exposures for ALL offered items (player sees all 3)
-  const exposedWords = [];
-  for (const item of offered) {
-    if (item.word) {
-      logEvent(context.day, context.run, context.roomIndex, 'word_exposure', {
-        word: item.word,
-        reading: item.reading || '',
-        meaning: item.nameEn || '',
-        source: 'npc_shop_item'
-      });
-      exposedWords.push({ word: item.word, meaning: item.nameEn || '' });
-    }
-  }
-
-  // Track NPC name as word exposure
-  const npc = offersResult.data.state?.room?.npc;
-  if (npc?.name && npc?.nameEn) {
-    logEvent(context.day, context.run, context.roomIndex, 'word_exposure', {
-      word: npc.name,
-      reading: '',
-      meaning: npc.nameEn,
-      source: 'npc_name'
-    });
-    exposedWords.push({ word: npc.name, meaning: npc.nameEn });
-  }
 
   const chosen = offered[0];
 
