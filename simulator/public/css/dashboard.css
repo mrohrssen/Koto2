@@ -464,3 +464,49 @@ input[type="range"] {
 }
 
 .sim-header h2 { font-size: 15px; }
+
+/* Vocabulary table */
+.vocab-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: auto;
+  max-height: 600px;
+}
+
+.vocab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.vocab-table thead { position: sticky; top: 0; z-index: 1; }
+
+.vocab-table th {
+  text-align: left;
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  user-select: none;
+}
+
+.vocab-table th:hover { color: var(--text); }
+
+.vocab-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(30, 45, 74, 0.3);
+}
+
+.vocab-table tr:last-child td { border-bottom: none; }
+.vocab-table tbody tr:hover { background: var(--surface-hover); }
+
+.vocab-word { font-weight: 600; color: var(--text); }
+.vocab-reading { color: var(--text-dim); }
+.vocab-meaning { color: var(--text); }
+.vocab-exposures { text-align: right; font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 600; }
+.vocab-known { text-align: center; color: var(--success); }

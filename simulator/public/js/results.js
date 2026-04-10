@@ -356,6 +356,117 @@ async function renderDialogueTab(contentEl, simId) {
   }
 }
 
+async function renderVocabularyTab(contentEl, simId) {
+  contentEl.innerHTML = '<div class="empty-state">Loading vocabulary...</div>';
+
+  let data;
+  try {
+    data = await results.vocabulary(simId);
+  } catch (err) {
+    contentEl.innerHTML = `<div class="empty-state">Error: ${esc(err.message)}</div>`;
+    return;
+  }
+
+  const words = data?.words || [];
+  if (words.length === 0) {
+    contentEl.innerHTML = '<div class="empty-state">No vocabulary data yet.</div>';
+    return;
+  }
+
+  const knownCount = words.filter(w => w.known).length;
+  const totalExposures = words.reduce((s, w) => s + w.exposures, 0);
+
+  contentEl.innerHTML = '';
+
+  // Summary stats
+  const statsHtml = `
+    <div class="summary-stats">
+      <div class="stat-card">
+        <div class="stat-value">${words.length}</div>
+        <div class="stat-label">Words Seen</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${knownCount}</div>
+        <div class="stat-label">Words Known</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${totalExposures}</div>
+        <div class="stat-label">Total Exposures</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${words.length > 0 ? (totalExposures / words.length).toFixed(1) : 0}</div>
+        <div class="stat-label">Avg Exp/Word</div>
+      </div>
+    </div>
+  `;
+  contentEl.insertAdjacentHTML('beforeend', statsHtml);
+
+  // Sort state
+  let sortKey = 'exposures';
+  let sortAsc = false;
+
+  function renderTable() {
+    const sorted = [...words].sort((a, b) => {
+      let va = a[sortKey], vb = b[sortKey];
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      if (va < vb) return sortAsc ? -1 : 1;
+      if (va > vb) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+    const arrow = (key) => sortKey === key ? (sortAsc ? ' ▲' : ' ▼') : '';
+
+    let tableEl = contentEl.querySelector('.vocab-table-wrap');
+    if (!tableEl) {
+      tableEl = document.createElement('div');
+      tableEl.className = 'vocab-table-wrap';
+      contentEl.appendChild(tableEl);
+    }
+
+    tableEl.innerHTML = `
+      <table class="vocab-table">
+        <thead>
+          <tr>
+            <th data-sort="word">Word${arrow('word')}</th>
+            <th data-sort="reading">Reading${arrow('reading')}</th>
+            <th data-sort="meaning">Meaning${arrow('meaning')}</th>
+            <th data-sort="exposures">Exposures${arrow('exposures')}</th>
+            <th data-sort="known">Known${arrow('known')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sorted.map(w => `
+            <tr>
+              <td class="vocab-word">${esc(w.word)}</td>
+              <td class="vocab-reading">${esc(w.reading)}</td>
+              <td class="vocab-meaning">${esc(w.meaning)}</td>
+              <td class="vocab-exposures">${w.exposures}</td>
+              <td class="vocab-known">${w.known ? '✓' : ''}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+
+    tableEl.querySelectorAll('th[data-sort]').forEach(th => {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (sortKey === key) {
+          sortAsc = !sortAsc;
+        } else {
+          sortKey = key;
+          sortAsc = key === 'word' || key === 'reading' || key === 'meaning';
+        }
+        renderTable();
+      });
+    });
+  }
+
+  renderTable();
+}
+
 async function renderErrorsTab(contentEl, simId) {
   contentEl.innerHTML = '<div class="empty-state">Loading errors...</div>';
 
@@ -425,6 +536,7 @@ export async function renderResults(appEl, { simId }) {
     { key: 'stats', label: 'Stats' },
     { key: 'progression', label: 'Progression' },
     { key: 'daily', label: 'Daily Detail' },
+    { key: 'vocabulary', label: 'Vocabulary' },
     { key: 'dialogue', label: 'Dialogue' },
     { key: 'errors', label: 'Errors' },
   ];
@@ -438,6 +550,7 @@ export async function renderResults(appEl, { simId }) {
       stats: () => renderStatsTab(contentEl, simId),
       progression: () => renderProgressionTab(contentEl, simId),
       daily: () => renderDailyDetailTab(contentEl, simId),
+      vocabulary: () => renderVocabularyTab(contentEl, simId),
       dialogue: () => renderDialogueTab(contentEl, simId),
       errors: () => renderErrorsTab(contentEl, simId),
     };

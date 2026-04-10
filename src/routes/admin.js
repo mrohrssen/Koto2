@@ -14,6 +14,8 @@ import { Router } from 'express';
 import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync } from 'fs';
 import { join, basename } from 'path';
 import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
+import { loadWordDictionary } from '../game/word-dictionary.js';
+import { getKnownWordsFromFsrs } from '../game/bootstrap/word-knowledge.js';
 
 /**
  * Shift all FSRS card timestamps backward by a number of days.
@@ -153,6 +155,43 @@ export default function createAdminRoutes({ dataDir }) {
 
       clearSrsCache(userId);
       res.json({ deleted });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // GET /word-knowledge/:userId — return word exposure data + definitions
+  router.get('/word-knowledge/:userId', (req, res) => {
+    try {
+      const { userId } = req.params;
+      const dataSub = join(dataDir, 'data');
+      const wkPath = join(dataSub, `word-knowledge-${userId}.json`);
+
+      if (!existsSync(wkPath)) {
+        return res.json({ words: [] });
+      }
+
+      const wk = JSON.parse(readFileSync(wkPath, 'utf-8'));
+      const dict = loadWordDictionary(dataSub);
+      const knownSet = new Set(getKnownWordsFromFsrs(userId));
+
+      const words = [];
+      for (const [word, info] of Object.entries(wk.seen || {})) {
+        const entry = dict.get(word);
+        const primaryDef = entry?.definitions?.find(d => d.primary);
+        const meaning = primaryDef?.en || entry?.definitions?.[0]?.en || '';
+        words.push({
+          word,
+          reading: entry?.reading || word,
+          meaning,
+          exposures: info.exposures || 0,
+          known: knownSet.has(word),
+        });
+      }
+
+      // Sort by exposures descending
+      words.sort((a, b) => b.exposures - a.exposures);
+      res.json({ words });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

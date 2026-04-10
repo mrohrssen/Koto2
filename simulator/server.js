@@ -35,7 +35,7 @@ app.use(express.static(join(__dirname, 'public'), { etag: false, lastModified: f
 // --- API routes ---
 app.use('/api/profiles', createProfileRoutes(store));
 app.use('/api/simulations', createSimulationRoutes(store, GAME_SERVER_URL, ADMIN_SECRET));
-app.use('/api/results', createResultRoutes(store));
+app.use('/api/results', createResultRoutes(store, GAME_SERVER_URL, ADMIN_SECRET));
 
 // Health check
 app.get('/api/health', (req, res) => {
