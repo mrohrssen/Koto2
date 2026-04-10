@@ -59,22 +59,23 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
     : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
   await showNpcSprite(spritePath, { slideIn: true });
 
-  // Prefer bootstrap word-gated greeting over legacy AI greeting
-  const bootstrapGreeting = npcDialogue?.greeting;
-  if (bootstrapGreeting?.tokens?.length) {
+  // Show bootstrap word-gated fightStart line, fall back to legacy AI greeting
+  const bootstrapLine = npcDialogue?.fightStart;
+  if (bootstrapLine?.tokens?.length) {
     await new Promise(r => setTimeout(r, 100));
     narrationBox.forceHide();
     const knownWords = getKnownWords();
     const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
     const html = renderJpSentence(
-      bootstrapGreeting.tokens,
+      bootstrapLine.tokens,
       knownWords,
       wordDict,
-      bootstrapGreeting.overrides || {},
+      bootstrapLine.overrides || {},
       npcDialogue.useKanji || false
     );
     await narrationBox.show(html, { speaker: npcName, html: true });
   } else if (npcData.greeting) {
+    // Legacy fallback for AI-generated greetings
     await new Promise(r => setTimeout(r, 100));
     narrationBox.forceHide();
     speakText(npcData.greeting);

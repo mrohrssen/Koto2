@@ -85,13 +85,12 @@ export default function createCombatRoutes({
             overrides: {},
           } : null;
 
-          const greeting = selectNpcLine(npcPool.shopGreeting || [], knownWords);
           const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords);
           const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords);
 
           // Expose NPC dialogue content words to SRS
           const dialogueWords = [];
-          for (const line of [greeting, fightStart, defeatLine]) {
+          for (const line of [fightStart, defeatLine]) {
             if (line && line.words) {
               for (const w of line.words) {
                 const token = (line.tokens || []).find(t => t.base === w);
@@ -104,7 +103,6 @@ export default function createCombatRoutes({
           }
 
           npcDialogue = {
-            greeting: mapLine(greeting),
             fightStart: mapLine(fightStart),
             defeatLine: mapLine(defeatLine),
             useKanji: false,
