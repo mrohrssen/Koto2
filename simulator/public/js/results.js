@@ -98,18 +98,7 @@ async function renderStatsTab(contentEl, simId) {
   const avgRoomsPerRun = totalAttempts > 0 ? (totalRooms / totalAttempts).toFixed(1) : 0;
 
   const itemsAcquired = eventCounts.item_acquired || 0;
-  // Count new event type + legacy (befriends were logged as word_learned with source:befriend)
-  let creaturesBefriended = eventCounts.creature_befriended || 0;
-  if (creaturesBefriended === 0 && eventCounts.word_learned) {
-    // Fall back: count word_learned events with befriend source
-    try {
-      const wlEvents = await results.events(simId, { type: 'word_learned', limit: 1000 });
-      creaturesBefriended = wlEvents.filter(e => {
-        const d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-        return d.source === 'befriend';
-      }).length;
-    } catch { /* ignore */ }
-  }
+  const creaturesBefriended = eventCounts.creature_befriended || 0;
 
   contentEl.innerHTML = `
     <div class="stats-overview">
