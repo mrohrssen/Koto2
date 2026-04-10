@@ -1,7 +1,7 @@
 [
   {
     "id": "buy_polite",
-    "category": "shop",
+    "category": "shopPurchase",
     "raw": "{item}をください",
     "slots": [
       "item"
@@ -9,7 +9,7 @@
   },
   {
     "id": "buy_excuse_me",
-    "category": "shop",
+    "category": "shopPurchase",
     "raw": "すみません、{item}をください",
     "slots": [
       "item"
@@ -17,7 +17,7 @@
   },
   {
     "id": "buy_thanks",
-    "category": "shop",
+    "category": "shopPurchase",
     "raw": "{item}をください。ありがとうございます。",
     "slots": [
       "item"
@@ -25,31 +25,31 @@
   },
   {
     "id": "greet_hello",
-    "category": "greeting",
+    "category": "shopGreeting",
     "raw": "こんにちは！",
     "slots": []
   },
   {
     "id": "greet_hello_please",
-    "category": "greeting",
+    "category": "shopGreeting",
     "raw": "こんにちは、どうぞ！",
     "slots": []
   },
   {
     "id": "greet_welcome_please",
-    "category": "greeting",
+    "category": "shopGreeting",
     "raw": "いらっしゃいませ、どうぞ！",
     "slots": []
   },
   {
     "id": "greet_welcome_slow",
-    "category": "greeting",
+    "category": "shopGreeting",
     "raw": "いらっしゃいませ、ゆっくりどうぞ！",
     "slots": []
   },
   {
     "id": "greet_welcome_browse",
-    "category": "greeting",
+    "category": "shopGreeting",
     "raw": "いらっしゃいませ、ゆっくり見てください！",
     "slots": []
   },
@@ -747,48 +747,6 @@
     "slots": []
   },
   {
-    "id": "npc_kodomo_shopGreeting_0",
-    "category": "npc",
-    "group": "kodomo_shopGreeting",
-    "raw": "こんにちは！",
-    "slots": []
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_1",
-    "category": "npc",
-    "group": "kodomo_shopGreeting",
-    "raw": "こんにちは！遊ぶ？",
-    "slots": []
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_2",
-    "category": "npc",
-    "group": "kodomo_shopGreeting",
-    "raw": "こんにちは！私も 遊ぶのが 好き！",
-    "slots": []
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_3",
-    "category": "npc",
-    "group": "kodomo_shopGreeting",
-    "raw": "一緒に 遊ぶ？楽しいよ！",
-    "slots": []
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_4",
-    "category": "npc",
-    "group": "kodomo_shopGreeting",
-    "raw": "おはよう！今日も 遊ぶ？",
-    "slots": []
-  },
-  {
-    "id": "npc_kodomo_shopGreeting_5",
-    "category": "npc",
-    "group": "kodomo_shopGreeting",
-    "raw": "凄い！又 来た！",
-    "slots": []
-  },
-  {
     "id": "npc_kodomo_fightStart_0",
     "category": "npc",
     "group": "kodomo_fightStart",
@@ -845,48 +803,6 @@
     "slots": []
   },
   {
-    "id": "npc_otona_shopGreeting_0",
-    "category": "npc",
-    "group": "otona_shopGreeting",
-    "raw": "こんにちは。",
-    "slots": []
-  },
-  {
-    "id": "npc_otona_shopGreeting_1",
-    "category": "npc",
-    "group": "otona_shopGreeting",
-    "raw": "こんにちは。準備は いいですか。",
-    "slots": []
-  },
-  {
-    "id": "npc_otona_shopGreeting_2",
-    "category": "npc",
-    "group": "otona_shopGreeting",
-    "raw": "ここは 広場です。",
-    "slots": []
-  },
-  {
-    "id": "npc_otona_shopGreeting_3",
-    "category": "npc",
-    "group": "otona_shopGreeting",
-    "raw": "今日も 頑張りましょう。",
-    "slots": []
-  },
-  {
-    "id": "npc_otona_shopGreeting_4",
-    "category": "npc",
-    "group": "otona_shopGreeting",
-    "raw": "何か 欲しい物は ありますか。",
-    "slots": []
-  },
-  {
-    "id": "npc_otona_shopGreeting_5",
-    "category": "npc",
-    "group": "otona_shopGreeting",
-    "raw": "ゆっくり 見てください。",
-    "slots": []
-  },
-  {
     "id": "npc_otona_fightStart_0",
     "category": "npc",
     "group": "otona_fightStart",
@@ -926,48 +842,6 @@
     "category": "npc",
     "group": "otona_defeatLine",
     "raw": "素晴らしい。",
-    "slots": []
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_0",
-    "category": "npc",
-    "group": "otokonoko_shopGreeting",
-    "raw": "おはよう！",
-    "slots": []
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_1",
-    "category": "npc",
-    "group": "otokonoko_shopGreeting",
-    "raw": "おはよう！早い！",
-    "slots": []
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_2",
-    "category": "npc",
-    "group": "otokonoko_shopGreeting",
-    "raw": "今日も 早いね！",
-    "slots": []
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_3",
-    "category": "npc",
-    "group": "otokonoko_shopGreeting",
-    "raw": "もっと 強く なりたい！",
-    "slots": []
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_4",
-    "category": "npc",
-    "group": "otokonoko_shopGreeting",
-    "raw": "おはよう！一緒に 頑張ろう！",
-    "slots": []
-  },
-  {
-    "id": "npc_otokonoko_shopGreeting_5",
-    "category": "npc",
-    "group": "otokonoko_shopGreeting",
-    "raw": "今日は 強い奴に 会いたい！",
     "slots": []
   },
   {
@@ -1024,48 +898,6 @@
     "category": "npc",
     "group": "otokonoko_defeatLine",
     "raw": "次は 負けない！",
-    "slots": []
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_0",
-    "category": "npc",
-    "group": "onnanoko_shopGreeting",
-    "raw": "あ…こんにちは。",
-    "slots": []
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_1",
-    "category": "npc",
-    "group": "onnanoko_shopGreeting",
-    "raw": "こんにちは…。",
-    "slots": []
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_2",
-    "category": "npc",
-    "group": "onnanoko_shopGreeting",
-    "raw": "あ…こんにちは。ここの 花、綺麗ですね。",
-    "slots": []
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_3",
-    "category": "npc",
-    "group": "onnanoko_shopGreeting",
-    "raw": "今日は いい 天気ですね。",
-    "slots": []
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_4",
-    "category": "npc",
-    "group": "onnanoko_shopGreeting",
-    "raw": "少し 見ていきますか。",
-    "slots": []
-  },
-  {
-    "id": "npc_onnanoko_shopGreeting_5",
-    "category": "npc",
-    "group": "onnanoko_shopGreeting",
-    "raw": "あ…又 来てくれた。嬉しい。",
     "slots": []
   },
   {
