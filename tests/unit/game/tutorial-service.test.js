@@ -9,9 +9,6 @@ import {
   shouldOverrideSkillOffers,
   shouldProtectBefriend,
   shouldFixRoomSequence,
-  shouldGiftFireDrops,
-  shouldHardcodeCrestReward,
-  giftTutorialFireDrops,
   getFormationNarration,
   resetTutorial,
   TUTORIAL_STEPS
@@ -24,13 +21,13 @@ describe('tutorial state', () => {
     assert.equal(meta.tutorialFireDropsGifted, false);
   });
 
-  it('existing saves without tutorialStep get migrated to 7', () => {
+  it('existing saves without tutorialStep get migrated to 6', () => {
     const oldMeta = { prologueComplete: true, lifetimeStats: { totalRuns: 5 } };
     if (oldMeta.tutorialStep === undefined) {
-      oldMeta.tutorialStep = 7;
+      oldMeta.tutorialStep = 6;
       oldMeta.tutorialFireDropsGifted = false;
     }
-    assert.equal(oldMeta.tutorialStep, 7);
+    assert.equal(oldMeta.tutorialStep, 6);
     assert.equal(oldMeta.tutorialFireDropsGifted, false);
   });
 });
@@ -40,8 +37,8 @@ describe('tutorial-service', () => {
     it('returns tutorialStep from meta', () => {
       assert.equal(getTutorialStep({ tutorialStep: 3 }), 3);
     });
-    it('returns 7 if missing', () => {
-      assert.equal(getTutorialStep({}), 7);
+    it('returns 6 if missing', () => {
+      assert.equal(getTutorialStep({}), 6);
     });
   });
 
@@ -51,32 +48,32 @@ describe('tutorial-service', () => {
       assert.equal(advanceTutorial(meta), 1);
       assert.equal(meta.tutorialStep, 1);
     });
-    it('does not go past 7', () => {
-      const meta = { tutorialStep: 7 };
-      assert.equal(advanceTutorial(meta), 7);
+    it('does not go past 6', () => {
+      const meta = { tutorialStep: 6 };
+      assert.equal(advanceTutorial(meta), 6);
     });
   });
 
   describe('isTutorialActive', () => {
-    it('true when step < 7', () => {
+    it('true when step < 6', () => {
       assert.equal(isTutorialActive({ tutorialStep: 0 }), true);
-      assert.equal(isTutorialActive({ tutorialStep: 6 }), true);
+      assert.equal(isTutorialActive({ tutorialStep: 5 }), true);
     });
-    it('false when step >= 7', () => {
-      assert.equal(isTutorialActive({ tutorialStep: 7 }), false);
+    it('false when step >= 6', () => {
+      assert.equal(isTutorialActive({ tutorialStep: 6 }), false);
     });
   });
 
   describe('getTutorialNarration', () => {
     it('returns array of strings for each step', () => {
-      for (let i = 0; i <= 6; i++) {
+      for (let i = 0; i <= 5; i++) {
         const narration = getTutorialNarration(i);
         assert.ok(Array.isArray(narration), `step ${i} should return array`);
         assert.ok(narration.every(s => typeof s === 'string'), `step ${i} pages should be strings`);
       }
     });
-    it('returns empty array for step 7', () => {
-      assert.deepEqual(getTutorialNarration(7), []);
+    it('returns empty array for step 6', () => {
+      assert.deepEqual(getTutorialNarration(6), []);
     });
   });
 
@@ -93,31 +90,6 @@ describe('tutorial-service', () => {
       assert.equal(shouldFixRoomSequence({ tutorialStep: 0 }), true);
       assert.equal(shouldFixRoomSequence({ tutorialStep: 2 }), true);
       assert.equal(shouldFixRoomSequence({ tutorialStep: 3 }), false);
-    });
-    it('shouldGiftFireDrops at step 3 when not yet gifted', () => {
-      assert.equal(shouldGiftFireDrops({ tutorialStep: 3, tutorialFireDropsGifted: false }), true);
-      assert.equal(shouldGiftFireDrops({ tutorialStep: 3, tutorialFireDropsGifted: true }), false);
-      assert.equal(shouldGiftFireDrops({ tutorialStep: 4, tutorialFireDropsGifted: false }), false);
-    });
-    it('shouldHardcodeCrestReward at step 4 only', () => {
-      assert.equal(shouldHardcodeCrestReward({ tutorialStep: 4 }), true);
-      assert.equal(shouldHardcodeCrestReward({ tutorialStep: 5 }), false);
-    });
-  });
-
-  describe('giftTutorialFireDrops', () => {
-    it('adds 3 fire drops and sets flag', () => {
-      const meta = { tutorialStep: 3, tutorialFireDropsGifted: false, elementDrops: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 } };
-      const result = giftTutorialFireDrops(meta);
-      assert.equal(result, true);
-      assert.equal(meta.elementDrops.fire, 3);
-      assert.equal(meta.tutorialFireDropsGifted, true);
-    });
-    it('is idempotent — does not double-gift', () => {
-      const meta = { tutorialStep: 3, tutorialFireDropsGifted: true, elementDrops: { fire: 3, water: 0, earth: 0, wood: 0, metal: 0 } };
-      const result = giftTutorialFireDrops(meta);
-      assert.equal(result, false);
-      assert.equal(meta.elementDrops.fire, 3);
     });
   });
 
@@ -141,7 +113,7 @@ describe('tutorial-service', () => {
 
     it('preserves other meta fields', () => {
       const meta = createMetaProgression();
-      meta.tutorialStep = 7;
+      meta.tutorialStep = 6;
       meta.prologueComplete = true;
       meta.lifetimeStats = { totalRuns: 5 };
       resetTutorial(meta);
@@ -214,37 +186,3 @@ describe('tutorial room generation', () => {
   });
 });
 
-import { openChest } from '../../../src/game/services/crest-service.js';
-
-describe('tutorial chest override', () => {
-  it('openChest returns common fire crest when tutorialStep is 4', () => {
-    const meta = {
-      tutorialStep: 4,
-      tutorialFireDropsGifted: true,
-      elementDrops: { fire: 3, water: 0, earth: 0, wood: 0, metal: 0 },
-      crests: []
-    };
-    const result = openChest(meta, 'fire');
-    assert.equal(result.success, true);
-    assert.equal(result.crest.element, 'fire');
-    assert.equal(result.crest.rarity, 'common');
-  });
-
-  it('openChest returns random rarity when tutorial is complete', () => {
-    // Run many times, should get at least one non-common
-    let gotNonCommon = false;
-    for (let i = 0; i < 100; i++) {
-      const meta = {
-        tutorialStep: 7,
-        elementDrops: { fire: 3, water: 0, earth: 0, wood: 0, metal: 0 },
-        crests: []
-      };
-      const result = openChest(meta, 'fire');
-      if (result.crest.rarity !== 'common') {
-        gotNonCommon = true;
-        break;
-      }
-    }
-    assert.ok(gotNonCommon, 'Should get non-common rarity when tutorial complete');
-  });
-});

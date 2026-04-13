@@ -72,7 +72,7 @@ import { rollShopItems, applyItem, createItemBuffs } from './services/item-servi
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
 import { getCrestMultipliers, applyCrestBonuses } from './services/crest-service.js';
-import { shouldProtectBefriend, advanceTutorial as advanceTutorialStep, getTutorialStep, giftTutorialFireDrops } from './services/tutorial-service.js';
+import { shouldProtectBefriend, advanceTutorial as advanceTutorialStep, getTutorialStep } from './services/tutorial-service.js';
 import { exposeWords as exposeWords_fn, getKnownWordsFromFsrs } from './bootstrap/word-knowledge.js';
 import { selectBark } from './dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from './dialogue-loader.js';
@@ -175,10 +175,10 @@ export class GameManager {
   }
 
   _onRunDefeat() {
-    // Tutorial: advance to step 3 (death → hub) and gift fire drops
+    // Tutorial: advance to step 3 (death → hub)
     if (getTutorialStep(this.meta) === 2) {
       advanceTutorialStep(this.meta);
-      giftTutorialFireDrops(this.meta);
+      // giftTutorialFireDrops(this.meta); // Deprecated: elements are no longer a thing
     }
   }
 
