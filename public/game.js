@@ -131,6 +131,7 @@ import {
   getGameState as apiGetGameState,
   createPlayer as apiCreatePlayer,
   startRun as apiStartRun,
+  confirmCreatures as apiConfirmCreatures,
   forfeitRun as apiForfeitRun,
   getAreaOptions as apiGetAreaOptions,
   selectArea as apiSelectArea,

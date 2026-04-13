@@ -207,6 +207,15 @@ async function startRun(body = null) {
 }
 
 /**
+ * Confirm creature selection after area is chosen
+ * @param {string[]} starterIds - Selected creature IDs
+ * @returns {Promise<object>} Result with state
+ */
+async function confirmCreatures(starterIds) {
+  return apiCall('/confirm-creatures', 'POST', { starterIds });
+}
+
+/**
  * Forfeit the current run
  * @returns {Promise<object>} Result
  */
@@ -716,6 +725,7 @@ export {
   createPlayer,
   // Run management endpoints
   startRun,
+  confirmCreatures,
   forfeitRun,
   getAreaOptions,
   selectArea,
