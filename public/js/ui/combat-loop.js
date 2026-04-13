@@ -2376,7 +2376,7 @@ async function executeCreatureMovesTurn(choices) {
         if (npcData) {
           await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
             await showNpcSkillAttacksAnimated(result, allyHpMap);
-          }, getCombatEnemies());
+          }, result.enemies);
         } else {
           await delay(400);
           await showNpcSkillAttacksAnimated(result, allyHpMap);
@@ -2493,7 +2493,7 @@ async function executeCreaturePlayerAttack() {
         if (npcData) {
           await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
             await showNpcSkillAttacksAnimated(result, allyHpMap);
-          }, getCombatEnemies());
+          }, result.enemies);
         } else {
           await delay(400);
           await showNpcSkillAttacksAnimated(result, allyHpMap);
@@ -3644,9 +3644,9 @@ export async function runNpcDialogue() {
 
       if (showNpcSprite) showNpcSprite(npcName, npc.id, npc);
 
-      // Build display text from tokens
-      const displayText = line.tokens.map(t => t.surface || '').join('');
-      await narration.showNarration(displayText, { speaker: npcName });
+      // Render tokenized defeat line (same as all other NPC dialogue)
+      const html = renderJpSentence(line.tokens, getKnownWords(), new Map(), line.overrides || {}, dialogueData.useKanji || false);
+      await narration.showNarration(html, { speaker: npcName, html: true });
 
       if (hideNpcSprite) hideNpcSprite();
       // Re-render scene after hiding NPC sprite (same as showNpcGreeting pattern)
