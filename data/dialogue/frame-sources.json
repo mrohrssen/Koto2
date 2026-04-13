@@ -1601,5 +1601,23 @@
     "category": "npcDefeat",
     "raw": "良い勝負、又会う時は絶対に勝つ！",
     "slots": []
+  },
+  {
+    "id": "skill_select_prompt",
+    "category": "skill_select",
+    "raw": "どの能力？",
+    "slots": []
+  },
+  {
+    "id": "gm_yes",
+    "category": "gameMaster_yes",
+    "raw": "はい",
+    "slots": []
+  },
+  {
+    "id": "gm_no",
+    "category": "gameMaster_no",
+    "raw": "いいえ",
+    "slots": []
   }
 ]

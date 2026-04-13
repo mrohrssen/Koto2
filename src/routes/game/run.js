@@ -19,7 +19,7 @@ import { applyItem } from '../../game/services/item-service.js';
 import { assembleFrame, entityToToken, isEligible, scoreCandidate } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
-import { getShopPurchaseFrames, getShopGreetingFrames, getGameMasterAskFrames } from '../../game/dialogue-loader.js';
+import { getShopPurchaseFrames, getShopGreetingFrames, getGameMasterAskFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 
 const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
@@ -223,7 +223,8 @@ export default function createRunRoutes({
     try {
       const { offered } = req.gameManager.explorationService.getSkillMasterOffers();
       req.saveGame();
-      res.json({ offered, state: req.getEnrichedGameState() });
+      const skillSelectFrame = getSkillSelectFrame();
+      res.json({ offered, skillSelectPrompt: skillSelectFrame?.tokens, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -266,7 +267,8 @@ export default function createRunRoutes({
         .map(id => getPartySkillDisplay(id))
         .filter(Boolean);
 
-      res.json({ offered, state: req.getEnrichedGameState() });
+      const skillSelectFrame = getSkillSelectFrame();
+      res.json({ offered, skillSelectPrompt: skillSelectFrame?.tokens, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -699,7 +701,9 @@ export default function createRunRoutes({
         dialogue = candidates[0] || { tokens: [], words: [] };
       }
 
-      res.json({ dialogue });
+      const yesFrame = getGameMasterYesFrame();
+      const noFrame = getGameMasterNoFrame();
+      res.json({ dialogue, yesTokens: yesFrame?.tokens, noTokens: noFrame?.tokens });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }

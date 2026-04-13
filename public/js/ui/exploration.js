@@ -8,7 +8,7 @@
  *
  * KEY EXPORTS:
  * - init(callbacks): Initialize with game state and API callbacks
- * - renderHub(): Show hub phase (Equip Bots + Infiltrate buttons)
+ * - renderHub(): Show hub phase (Equip Bots + Explore buttons)
  * - renderAreaSelection(): Show area picker cards
  * - renderExploring(): Show Proceed/Fight buttons for room navigation
  * - renderAreaComplete(): Show Continue button after area cleared
@@ -220,7 +220,8 @@ let skillMasterState = {
   fetched: false,
   offered: null,
   chosenId: null,
-  catalogById: { ...PARTY_SKILL_CATALOG_FALLBACK }
+  catalogById: { ...PARTY_SKILL_CATALOG_FALLBACK },
+  promptTokens: null
 };
 
 function getActiveRoomFromRun(run) {
@@ -370,7 +371,7 @@ function closeInventory() {
   }
 }
 
-/** Hub phase — show Speed Review + PvP + Infiltrate buttons */
+/** Hub phase — show Speed Review + PvP + Explore buttons */
 export async function renderHub() {
   const gameState = getGameState();
 
@@ -397,7 +398,7 @@ export async function renderHub() {
       gs.phase = 'pvp_lobby';
       updateUI();
     }, disabled: !hasPvpTeams },
-    { label: '⚡ Infiltrate', onClick: () => startNewRun(), primary: true },
+    { label: '⚡ Explore', onClick: () => startNewRun(), primary: true },
   ]);
 
   let tutorialStep = gameState.meta?.tutorialStep;
@@ -441,7 +442,7 @@ export async function renderHub() {
     ]);
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
-      if (btn.textContent.includes('Infiltrate')) {
+      if (btn.textContent.includes('Explore')) {
         btn.classList.add('tutorial-highlight');
       } else {
         btn.classList.add('tutorial-dimmed');
@@ -1003,6 +1004,14 @@ export async function renderWhackAMole() {
   ]);
 }
 
+/** Show the どの能力？ prompt in the narration box */
+function showSkillSelectPrompt(tokens) {
+  if (!tokens?.length || !sceneModule?.showNarration) return;
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+  const html = renderJpSentence(tokens, getKnownWords(), wordDict, {}, false);
+  sceneModule.showNarration(html, { html: true, persistent: true });
+}
+
 /** Skill Master room — placeholder UI (to be expanded in later task) */
 export async function renderSkillMaster() {
   const gameState = getGameState();
@@ -1102,6 +1111,7 @@ export async function renderSkillMaster() {
     }
 
     skillMasterState.offered = offered;
+    skillMasterState.promptTokens = resp?.skillSelectPrompt || null;
     for (const s of offered) {
       if (!s?.id) continue;
       skillMasterState.catalogById[s.id] = {
@@ -1118,6 +1128,8 @@ export async function renderSkillMaster() {
   if (tutorialStep === 0) {
     renderTutorialSkillMaster(offers);
   } else {
+    showSkillSelectPrompt(skillMasterState.promptTokens);
+
     renderChoices({
       cards: offers.slice(0, 3).map(s => ({
         title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
@@ -1426,7 +1438,8 @@ let npcBattleSkillState = {
   roomId: null,
   fetched: false,
   offered: null,
-  choosing: false
+  choosing: false,
+  promptTokens: null
 };
 
 /**
@@ -1445,7 +1458,8 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       roomId,
       fetched: false,
       offered: null,
-      choosing: false
+      choosing: false,
+      promptTokens: null
     };
   }
 
@@ -1516,9 +1530,12 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     }
 
     npcBattleSkillState.offered = offered;
+    npcBattleSkillState.promptTokens = resp?.skillSelectPrompt || null;
   }
 
   const offers = npcBattleSkillState.offered || [];
+
+  showSkillSelectPrompt(npcBattleSkillState.promptTokens);
 
   renderChoices({
     cards: offers.slice(0, 3).map(s => ({

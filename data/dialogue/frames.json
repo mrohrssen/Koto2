@@ -9047,5 +9047,67 @@
       "絶対に",
       "勝つ"
     ]
+  },
+  {
+    "id": "skill_select_prompt",
+    "category": "skill_select",
+    "raw": "どの能力？",
+    "tokens": [
+      {
+        "surface": "どの",
+        "base": "どの",
+        "reading": "どの",
+        "meaning": "Mr. / Mrs. / Miss / Ms.",
+        "pos": "Pre-noun"
+      },
+      {
+        "surface": "能力",
+        "base": "能力",
+        "reading": "のうりょく",
+        "meaning": "ability / faculty",
+        "pos": "Noun"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "どの",
+      "能力"
+    ]
+  },
+  {
+    "id": "gm_yes",
+    "category": "gameMaster_yes",
+    "raw": "はい",
+    "tokens": [
+      {
+        "surface": "はい",
+        "base": "はい",
+        "reading": "はい",
+        "meaning": "yes",
+        "pos": "Interjection"
+      }
+    ],
+    "words": [
+      "はい"
+    ]
+  },
+  {
+    "id": "gm_no",
+    "category": "gameMaster_no",
+    "raw": "いいえ",
+    "tokens": [
+      {
+        "surface": "いいえ",
+        "base": "いいえ",
+        "reading": "いいえ",
+        "meaning": "no",
+        "pos": "Interjection"
+      }
+    ],
+    "words": [
+      "いいえ"
+    ]
   }
 ]

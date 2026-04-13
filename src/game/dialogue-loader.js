@@ -11,6 +11,9 @@ let _shopGreetingFrames = [];
 let _gameMasterAskFrames = [];
 let _befriendFrames = {};
 let _npcDefeatFrames = [];
+let _skillSelectFrame = null;
+let _gameMasterYesFrame = null;
+let _gameMasterNoFrame = null;
 
 export function loadDialoguePools(dataDir) {
   const framesPath = join(dataDir, 'dialogue', 'frames.json');
@@ -26,6 +29,9 @@ export function loadDialoguePools(dataDir) {
   _shopGreetingFrames = _frames.filter(f => f.category === 'shopGreeting');
   _gameMasterAskFrames = _frames.filter(f => f.category === 'gameMaster_ask');
   _npcDefeatFrames = _frames.filter(f => f.category === 'npcDefeat');
+  _skillSelectFrame = _frames.find(f => f.category === 'skill_select') || null;
+  _gameMasterYesFrame = _frames.find(f => f.category === 'gameMaster_yes') || null;
+  _gameMasterNoFrame = _frames.find(f => f.category === 'gameMaster_no') || null;
 
   // Barks: category "bark_<trigger>" → grouped by trigger
   _barkPool = {};
@@ -77,6 +83,9 @@ export function getShopGreetingFrames() { return _shopGreetingFrames; }
 export function getGameMasterAskFrames() { return _gameMasterAskFrames; }
 export function getBefriendFrames() { return _befriendFrames; }
 export function getNpcDefeatFrames() { return _npcDefeatFrames; }
+export function getSkillSelectFrame() { return _skillSelectFrame; }
+export function getGameMasterYesFrame() { return _gameMasterYesFrame; }
+export function getGameMasterNoFrame() { return _gameMasterNoFrame; }
 
 export function getDialogueWordSet() {
   const words = new Set();
