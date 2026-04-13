@@ -962,11 +962,9 @@ export async function renderWhackAMole() {
     await sceneModule.showNarration(html, { html: true, speaker: 'Game Master' });
   }
 
-  // Show yes/no buttons from tokenized frames (fallback to inline for safety)
-  const yesTokens = gmYesTokens || [{ surface: 'はい', base: 'はい', reading: 'はい', meaning: 'yes' }];
-  const noTokens = gmNoTokens || [{ surface: 'いいえ', base: 'いいえ', reading: 'いいえ', meaning: 'no' }];
-  const yesLabel = renderJpSentence(yesTokens, getKnownWords(), wordDict, {}, false);
-  const noLabel = renderJpSentence(noTokens, getKnownWords(), wordDict, {}, false);
+  // Show yes/no buttons from tokenized frames
+  const yesLabel = gmYesTokens ? renderJpSentence(gmYesTokens, getKnownWords(), wordDict, {}, false) : 'Yes';
+  const noLabel = gmNoTokens ? renderJpSentence(gmNoTokens, getKnownWords(), wordDict, {}, false) : 'No';
 
   renderButtons([
     {
