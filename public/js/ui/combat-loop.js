@@ -75,7 +75,7 @@ const effectDelay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
  * PixiJS replacement for the old DOM-based impactEnemyEffect.
  * Fires tiered hit-stop, particles, shake, flash, damage number, and recoil.
  */
-async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, element = 'neutral', effectivenessType = 'normal') {
+async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, element = 'neutral', effectivenessType = 'normal', onImpact) {
   const tier = getDamageTier(damage, enemyMaxHp);
   const effects = TIER_EFFECTS[tier];
   const pos = spritePos(targetSide, targetIndex);
@@ -101,6 +101,7 @@ async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, element
   }
 
   pixiDamageNumber(damage, pos, { tier, type: effectivenessType });
+  if (onImpact) onImpact();
 
   if (sprite) {
     const recoilDir = targetSide === 'enemy' ? 'right' : 'left';
