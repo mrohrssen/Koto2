@@ -480,8 +480,9 @@ function updateScene() {
 }
 
 function updateCreatureRow() {
-  // Hide row on hub and non-run phases
-  if (!gameState.run && (gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'area_selection')) {
+  // Hide row on hub, no-save, and area selection (bare run has no creatures yet)
+  const hidePhases = ['hub', 'no_save', 'area_selection'];
+  if (hidePhases.includes(gameState.phase)) {
     scene.hideFormation('player');
     return;
   }
