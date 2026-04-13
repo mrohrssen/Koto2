@@ -854,13 +854,13 @@ async function startNewRun() {
     updateGameState(result.state);
     updateUI();
 
-    // Tutorial: advance step 6→7 (tutorial complete)
-    if (gameState?.meta?.tutorialStep === 6) {
+    // Tutorial: advance step 5→6 (tutorial complete)
+    if (gameState?.meta?.tutorialStep === 5) {
       try {
         await fetch(apiUrl('/api/game/tutorial-advance'), {
           method: 'POST',
           headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ expectedStep: 6 })
+          body: JSON.stringify({ expectedStep: 5 })
         });
       } catch (e) { console.warn('[Tutorial] advance failed:', e); }
     }
@@ -1828,7 +1828,7 @@ async function initGame() {
       await playChestAnimation(element, crest);
     },
     showNarration: (text, opts) => narrationBox.show(text, opts),
-    getTutorialStep: () => gameState?.meta?.tutorialStep ?? 7,
+    getTutorialStep: () => gameState?.meta?.tutorialStep ?? 6,
     onBack: () => {
       scene.setBackground('/assets/backgrounds/hub.webp');
       explorationUI.renderHub();
@@ -1839,7 +1839,7 @@ async function initGame() {
     getAuthHeaders,
     apiUrl,
     showNarration: (text, opts) => narrationBox.show(text, opts),
-    getTutorialStep: () => gameState?.meta?.tutorialStep ?? 7,
+    getTutorialStep: () => gameState?.meta?.tutorialStep ?? 6,
     onBack: () => {
       scene.setBackground('/assets/backgrounds/hub.webp');
       explorationUI.renderHub();

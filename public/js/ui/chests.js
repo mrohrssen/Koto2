@@ -42,16 +42,6 @@ export async function show() {
 
   renderScene(selectedElement);
   renderActions(state);
-
-  // Tutorial step 4: Cid explains chests
-  if ((state.tutorialStep ?? 7) === 4 && callbacks.showNarration) {
-    selectedElement = 'fire';
-    renderScene('fire');
-    renderActions(state);
-    await callbacks.showNarration('Every run you can use your resources to get stronger.', { speaker: 'Cid' });
-    await callbacks.showNarration("I'll give you 3 Fire Elements.", { speaker: 'Cid' });
-    await callbacks.showNarration("Let's open that fire chest!", { speaker: 'Cid' });
-  }
 }
 
 function renderScene(element) {
@@ -126,17 +116,6 @@ function renderActions(state) {
         });
         const data = await res.json();
         if (data.error) return;
-
-        // Tutorial: advance step 4→5
-        if (callbacks.getTutorialStep?.() === 4) {
-          try {
-            await fetch(apiUrl('/api/game/tutorial-advance'), {
-              method: 'POST',
-              headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-              body: JSON.stringify({ expectedStep: 4 })
-            });
-          } catch (e) { console.warn('[Tutorial] advance failed:', e); }
-        }
 
         if (onChestOpened) {
           await onChestOpened(selectedElement, data.crest);

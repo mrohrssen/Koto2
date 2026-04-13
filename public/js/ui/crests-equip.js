@@ -46,11 +46,6 @@ export async function show() {
   currentFilter = 'all';
   renderScene(state);
   renderActions(state);
-
-  // Tutorial step 5: Cid guides crest equip
-  if ((state.tutorialStep ?? 7) === 5 && callbacks.showNarration) {
-    await callbacks.showNarration("Now let's equip that crest to power up!", { speaker: 'Cid' });
-  }
 }
 
 function renderScene(state) {
