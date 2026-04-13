@@ -585,6 +585,22 @@ export class ExplorationService {
     return { type: 'whack_a_mole_complete', score: clampedScore, creditsAwarded, xpGrants, levelUps };
   }
 
+  skipWhackAMole() {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'whackAMole') {
+      throw new Error('No whack-a-mole room here');
+    }
+
+    if (room.interacted) {
+      return { type: 'whack_a_mole_skipped', alreadySkipped: true };
+    }
+
+    room.interacted = true;
+
+    const proceedResult = this.proceedToNextRoom();
+    return { type: 'whack_a_mole_skipped', ...proceedResult };
+  }
+
   // ============ SKILL MASTER ROOM ============
 
   getSkillMasterOffers() {

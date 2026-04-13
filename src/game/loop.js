@@ -544,6 +544,10 @@ export class GameManager {
     return this.explorationService.completeWhackAMole(score);
   }
 
+  skipWhackAMole() {
+    return this.explorationService.skipWhackAMole();
+  }
+
   // Dealer room delegates
   getDealerState() {
     return this.explorationService.getDealerState();

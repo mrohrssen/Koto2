@@ -329,3 +329,73 @@ describe('Whack-a-Mole Completion', () => {
     assert.strictEqual(result2.score, 5, 'should return original score');
   });
 });
+
+// ============ SKIP (DECLINE) ============
+
+describe('Whack-a-Mole Skip', () => {
+  it('should mark room interacted and advance to next room', () => {
+    const gm = new GameManager('test-wam-skip');
+    gm.createPlayer('TestPlayer');
+    gm.startRun({ areaId: 'okunomori' });
+
+    const run = gm.run;
+    const roomIdx = run.currentRoom;
+    // Provide two rooms so proceedToNextRoom doesn't trigger area-clear
+    run.rooms = [
+      {
+        type: 'whackAMole',
+        interacted: false,
+        whackAMole: { score: 0, completed: false },
+        roomNumber: 1,
+        totalRooms: 2
+      },
+      {
+        type: 'encounter',
+        interacted: false,
+        roomNumber: 2,
+        totalRooms: 2
+      }
+    ];
+
+    const result = gm.skipWhackAMole();
+
+    assert.strictEqual(result.type, 'whack_a_mole_skipped');
+    assert.strictEqual(run.rooms[roomIdx].interacted, true);
+    assert.strictEqual(run.currentRoom, roomIdx + 1);
+  });
+
+  it('should reject skip for non-whackAMole rooms', () => {
+    const gm = new GameManager('test-wam-skip2');
+    gm.createPlayer('TestPlayer');
+    gm.startRun({ areaId: 'okunomori' });
+
+    const run = gm.run;
+    run.rooms[run.currentRoom] = {
+      type: 'encounter',
+      interacted: false,
+      roomNumber: 1,
+      totalRooms: 5
+    };
+
+    assert.throws(() => gm.skipWhackAMole(), /No whack-a-mole room here/);
+  });
+
+  it('should return alreadySkipped for already-interacted rooms', () => {
+    const gm = new GameManager('test-wam-skip3');
+    gm.createPlayer('TestPlayer');
+    gm.startRun({ areaId: 'okunomori' });
+
+    const run = gm.run;
+    const roomIdx = run.currentRoom;
+    run.rooms[roomIdx] = {
+      type: 'whackAMole',
+      interacted: true,
+      whackAMole: { score: 0, completed: false },
+      roomNumber: 1,
+      totalRooms: 5
+    };
+
+    const result = gm.skipWhackAMole();
+    assert.strictEqual(result.alreadySkipped, true);
+  });
+});
