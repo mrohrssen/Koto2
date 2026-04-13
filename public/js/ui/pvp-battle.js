@@ -301,10 +301,21 @@ async function showAttackSummary(attacks) {
     const targetMaxHp = hpTracker.map[atk.targetIndex]?.maxHp || 100;
 
     // Shared display: card, sound, effects, damage number, STAB, effectiveness, tap
-    await showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp, allies: pvpState.allies, enemies: pvpState.enemies });
+    let hpUpdated = false;
+    await showAttackDisplay(atk, {
+      isEnemy, sourceEl, targetEl, targetMaxHp,
+      allies: pvpState.allies, enemies: pvpState.enemies,
+      onImpact: () => {
+        if (atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
+          hpTracker.map[atk.targetIndex].hp = Math.max(0, hpTracker.map[atk.targetIndex].hp - atk.damage);
+          updateSlotHp(hpTracker.formation, atk.targetIndex, hpTracker.map[atk.targetIndex].hp, hpTracker.map[atk.targetIndex].maxHp);
+          hpUpdated = true;
+        }
+      }
+    });
 
-    // Progressive HP bar drain (PvP-specific: server sends final state, we animate incrementally)
-    if (atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
+    // Fallback: if onImpact didn't fire (no sprite/element), update HP now
+    if (!hpUpdated && atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
       hpTracker.map[atk.targetIndex].hp = Math.max(0, hpTracker.map[atk.targetIndex].hp - atk.damage);
       updateSlotHp(hpTracker.formation, atk.targetIndex, hpTracker.map[atk.targetIndex].hp, hpTracker.map[atk.targetIndex].maxHp);
     }
