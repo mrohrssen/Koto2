@@ -843,56 +843,52 @@ function removeCollectionOverlay() {
 
 async function startNewRun() {
   diagnostics.logAction('start_run');
-  // Note: clearWordCache() moved to returnToHub() for earlier prefetching
 
-  // Fetch creature collection for team select
+  const result = await apiStartRun({});
+
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
+
+    // Tutorial: advance step 6→7 (tutorial complete)
+    if (gameState?.meta?.tutorialStep === 6) {
+      try {
+        await fetch(apiUrl('/api/game/tutorial-advance'), {
+          method: 'POST',
+          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expectedStep: 6 })
+        });
+      } catch (e) { console.warn('[Tutorial] advance failed:', e); }
+    }
+  }
+}
+
+async function triggerCreatureSelect() {
   const collectionResult = await apiGetCreatureCollection();
   const catalog = collectionResult?.catalog;
   const collection = collectionResult?.collection;
 
-  if (catalog && catalog.length > 0) {
-    const starterIds = await showCollectionSelect(catalog, collection);
-    if (!starterIds || starterIds.length === 0) {
-      removeCollectionOverlay();
-      return;
-    }
+  if (!catalog || catalog.length === 0) return;
 
-    const result = await apiStartRun({ starterIds });
-
+  const starterIds = await showCollectionSelect(catalog, collection);
+  if (!starterIds || starterIds.length === 0) {
     removeCollectionOverlay();
-    if (result?.state) {
-      updateGameState(result.state);
+    // Player cancelled — forfeit the bare run and return to hub
+    await apiForfeitRun();
+    const state = await apiGetGameState();
+    if (state) {
+      updateGameState(state);
       updateUI();
-
-      // Tutorial: advance step 6→7 (tutorial complete)
-      if (gameState?.meta?.tutorialStep === 6) {
-        try {
-          await fetch(apiUrl('/api/game/tutorial-advance'), {
-            method: 'POST',
-            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ expectedStep: 6 })
-          });
-        } catch (e) { console.warn('[Tutorial] advance failed:', e); }
-      }
-
-      // Show CID dialogue if server returned a script
-      if (result.cidScript?.lines?.length) {
-        const knownWords = getKnownWords();
-        const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-        for (const line of result.cidScript.lines) {
-          const html = renderJpSentence(
-            line.tokens || [],
-            knownWords,
-            wordDict,
-            line.overrides || {},
-            result.useKanji || false
-          );
-          if (html) {
-            await narrationBox.show(html, { speaker: 'CID', html: true });
-          }
-        }
-      }
     }
+    return;
+  }
+
+  removeCollectionOverlay();
+
+  const result = await apiConfirmCreatures(starterIds);
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
   }
 }
 
