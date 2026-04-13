@@ -68,7 +68,7 @@ import {
 import { processInterleavedPvERound, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, applyAfterEnemyAttacks, applyRoundStartSkills, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
 import { resetStatStages } from './combat/effects.js';
 import { buildRunSummary } from './adventure-report.js';
-import { rollShopItems, applyItem } from './services/item-service.js';
+import { rollShopItems, applyItem, createItemBuffs } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
 import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
 import { getCrestMultipliers, applyCrestBonuses } from './services/crest-service.js';
@@ -88,6 +88,19 @@ function selectBestFrame(pool, knownSet) {
 }
 
 // ============ GAME MANAGER ============
+
+/**
+ * Apply +100 baseAttackBonus to all creatures that haven't received it yet.
+ * Uses a _debugAtkApplied flag to prevent stacking across combats.
+ */
+export function applyDebugSuperAttack(creatures) {
+  for (const c of creatures) {
+    if (!c || c._debugAtkApplied) continue;
+    if (!c.itemBuffs) c.itemBuffs = createItemBuffs();
+    c.itemBuffs.baseAttackBonus = (c.itemBuffs.baseAttackBonus || 0) + 100;
+    c._debugAtkApplied = true;
+  }
+}
 
 export class GameManager {
   constructor() {
@@ -631,6 +644,11 @@ export class GameManager {
     // Reset stat stages for all combatants at battle start
     for (const c of [...this.combat.allies, ...this.combat.enemies]) {
       if (c) resetStatStages(c);
+    }
+
+    // Debug: +100 ATK mode
+    if (this._debugSuperAttack) {
+      applyDebugSuperAttack(this.combat.allies);
     }
 
     // NPC Battle rooms: always assign an NPC from the area's roster

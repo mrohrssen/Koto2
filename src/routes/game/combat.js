@@ -59,6 +59,8 @@ export default function createCombatRoutes({
   router.post('/start-creature-encounter', async (req, res) => {
     const gameManager = req.gameManager;
     try {
+      const settings = req.getSettings?.() || {};
+      gameManager._debugSuperAttack = !!settings.debugSuperAttack;
       const encounter = gameManager.startCreatureEncounter();
       req.saveGame();
 
