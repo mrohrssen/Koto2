@@ -381,9 +381,13 @@ export async function renderHub() {
 
   renderButtons([
     { label: `📚 速習${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
+      // Tutorial step 4→5: advance when player clicks speed review
+      if (getGameState().meta?.tutorialStep === 4) {
+        await apiTutorialAdvance?.(4);
+      }
       const result = await apiGetDueWords();
       if (result?.words?.length > 0) {
-        speedReview.start(result.words);
+        speedReview.start(result.words, { kanaMode: getGameState()?.meta?.kanaMode });
       } else {
         sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
       }
@@ -396,10 +400,39 @@ export async function renderHub() {
     { label: '⚡ 潜入', onClick: () => startNewRun(), primary: true },
   ]);
 
-  const tutorialStep = gameState.meta?.tutorialStep;
+  let tutorialStep = gameState.meta?.tutorialStep;
 
-  // Tutorial step 6: guide to formation and re-enter
-  if (tutorialStep === 6) {
+  // Tutorial step 3: encourage after first death, then auto-advance to 4
+  if (tutorialStep === 3) {
+    await showTutorialNarration([
+      'That was tough huh?',
+      "Don't worry, you'll get stronger each run!"
+    ]);
+    await apiTutorialAdvance?.(3);
+    tutorialStep = getGameState().meta?.tutorialStep;
+  }
+
+  // Tutorial step 4: introduce speed review (condition-gated on dueCount > 0)
+  if (tutorialStep === 4 && dueCount > 0) {
+    await showTutorialNarration([
+      'Hey! It looks like you\'re starting to learn some Japanese.',
+      `The Translator detected ${dueCount} words for you to review.`,
+      'If you pass the review, you\'ll just see the Japanese for these words from now on.',
+      'But don\'t worry, you can always click them to see the full translation.',
+      'Keep exploring and watch your Japanese grow!'
+    ]);
+    const buttons = document.querySelectorAll('.action-btn');
+    buttons.forEach(btn => {
+      if (btn.textContent.includes('速習')) {
+        btn.classList.add('tutorial-highlight');
+      } else {
+        btn.classList.add('tutorial-dimmed');
+      }
+    });
+  }
+
+  // Tutorial step 5: guide to formation and re-enter
+  if (tutorialStep === 5) {
     const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
     await showTutorialNarration([
       `Now you have ${creatureCount} creatures!`,
@@ -845,6 +878,7 @@ export async function renderSpeedReviewRoom() {
       mode: 'room',
       maxCards: 10,
       canCloseEarly: false,
+      kanaMode: getGameState()?.meta?.kanaMode,
       onCommittedReview: async ({ word, commitIndex }) => {
         speedReviewRoomCommitChain = speedReviewRoomCommitChain.then(async () => {
           let lastError = null;
