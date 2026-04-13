@@ -2928,9 +2928,12 @@ async function renderBefriendQuiz(quizData, result) {
     { label: 'はなす (Talk)' },
   ]);
 
-  // Tutorial step 1: Cid encourages befriending AFTER buttons are visible
+  // Tutorial step 1: lock to Talk with glow, then Cid encourages befriending
   const tutorialStep = getGameState()?.meta?.tutorialStep;
   if (tutorialStep === 1) {
+    const btns = document.querySelectorAll('#action-area .ui-btn');
+    if (btns[0]) btns[0].classList.add('tutorial-dimmed');   // Fight — faded, unclickable
+    if (btns[1]) btns[1].classList.add('tutorial-highlight'); // Talk — gold glow
     const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
     await pixiSlideInNpc(cidSprite, { slideIn: true });
