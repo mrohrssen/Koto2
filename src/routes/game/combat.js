@@ -10,9 +10,10 @@ import { MOVES_BY_ID } from '../../game/creatures.js';
 import { getCollectionCatalog } from '../../game/services/creature-collection-service.js';
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
 import { buildVocabConfig, buildBefriendDialogueVocabConfig } from './route-helpers.js';
-import { getNpcLines } from '../../game/dialogue-loader.js';
+import { getNpcLines, getNpcDefeatFrames } from '../../game/dialogue-loader.js';
 import { selectNpcLine } from '../../game/dialogue-filter.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { assembleFrame, isEligible, scoreCandidate } from '../../game/token-format.js';
 
 export default function createCombatRoutes({
   getUserVocabulary,
@@ -541,93 +542,53 @@ export default function createCombatRoutes({
       return res.status(400).json({ error: 'NPC not found' });
     }
 
-    // Try AI-generated dialogue from cache first
-    const cached = getNpcDialogueFromCache?.(req.user.id, combat.npcId);
+    // --- v1: defeat line from shared npcDefeat pool ---
+    const defeatFrames = getNpcDefeatFrames();
+    const knownWords = new Set(getKnownWordsFromFsrs(req.user.id));
 
-    // Use cached data if available, otherwise fall back to a safe default.
-    // Many NPCs in `data/npcs.json` currently only define `greeting`/`defeatLine` (no `postCombat`),
-    // so we must guard against missing fields here to avoid crashing (500).
-    const greeting =
-      cached?.greeting ||
-      // Prefer an English-only fallback when cache is missing.
-      'Nice work. Let’s talk after the battle.';
+    // Pick a random active party creature for {randomPlayerCreature} slot
+    const activeParty = gameManager.run.creatureParty?.active || [];
+    const randomCreature = activeParty.length > 0
+      ? activeParty[Math.floor(Math.random() * activeParty.length)]
+      : null;
+    const entities = randomCreature
+      ? { randomPlayerCreature: randomCreature }
+      : {};
 
-    const freed =
-      cached?.freedLine ||
-      // Avoid relying on missing npc.postCombat.freed
-      'Good training. We’ll see how you do next time.';
-
-    const sourceRounds =
-      cached?.rounds ||
-      npc.postCombat?.rounds ||
-      null;
-
-    const defaultRounds = [
-      {
-        npcLine: 'You are really getting stronger.',
-        options: [
-          { text: 'That’s true.', tone: 'positive' },
-          { text: 'Maybe…', tone: 'neutral' },
-          { text: 'Leave me alone.', tone: 'negative' }
-        ]
-      },
-      {
-        npcLine: 'We can train together if you want.',
-        options: [
-          { text: 'Yes, let’s train.', tone: 'positive' },
-          { text: 'Not now.', tone: 'neutral' },
-          { text: 'No thanks.', tone: 'negative' }
-        ]
-      },
-      {
-        npcLine: 'I trust your choices.',
-        options: [
-          { text: 'Thank you!', tone: 'positive' },
-          { text: 'Okay.', tone: 'neutral' },
-          { text: 'Never!', tone: 'negative' }
-        ]
-      }
-    ];
-
-    const roundsToPrepare = Array.isArray(sourceRounds) && sourceRounds.length > 0
-      ? sourceRounds
-      : defaultRounds;
-
-    const preparedRounds = roundsToPrepare.map(round => {
-      const { shuffled, toneMap } = shuffleOptions(round.options || []);
-      return {
-        npcLine: round.npcLine,
-        npcLineTts: round.npcLineTts || null,
-        options: shuffled,
-        _toneMap: toneMap
-      };
+    // Assemble frames (fills slots), then filter by i+1 and score
+    // Same pattern as shop-flow in run.js (assembleFrame + isEligible + scoreCandidate)
+    const candidates = defeatFrames.map(frame => {
+      const assembled = assembleFrame(frame, entities);
+      return { ...assembled, raw: frame.raw, id: frame.id };
     });
+    const eligible = candidates.filter(c => isEligible(c.tokens, knownWords));
 
-    gameManager.run.npcDialogue = {
-      active: true,
-      npcId: npc.id,
-      npcData: { id: npc.id, name: npc.name, nameEn: npc.nameEn },
-      currentRound: 0,
-      totalDelta: 0,
-      rounds: preparedRounds
-    };
+    let selectedLine;
+    if (eligible.length > 0) {
+      // Pre-compute scores to avoid redundant calls
+      const scored = eligible.map(c => ({ ...c, _score: scoreCandidate(c.tokens, knownWords) }));
+      scored.sort((a, b) => b._score - a._score);
+      // Pick randomly among top-scoring (all with same score as best)
+      const topTier = scored.filter(c => c._score === scored[0]._score);
+      selectedLine = topTier[Math.floor(Math.random() * topTier.length)];
+    } else {
+      // Fallback: simplest frame even if not eligible
+      selectedLine = candidates[0] || { tokens: [], raw: '', words: [] };
+    }
+
+    // Do NOT set gameManager.run.npcDialogue — that traps phase machine in NPC_DIALOGUE.
+    // Set skillSelectionPending directly for immediate phase transition.
+    const currentRoom = gameManager.getCurrentRoom();
+    if (currentRoom?.npcBattle) {
+      currentRoom.npcBattle.skillSelectionPending = true;
+    }
 
     req.saveGame();
 
-    const clientRounds = preparedRounds.map(r => ({
-      npcLine: r.npcLine,
-      npcLineTts: r.npcLineTts || undefined,
-      options: r.options
-    }));
-
     res.json({
-      userId: req.user.id,
-      npc: { id: npc.id, name: npc.name, nameEn: npc.nameEn },
-      greeting,
-      greetingTts: cached?.greetingTts || undefined,
-      freed,
-      freedTts: cached?.freedLineTts || undefined,
-      rounds: clientRounds
+      mode: 'defeat_line',
+      npc: { id: npc.id, name: npc.name, nameEn: npc.nameEn, speakerId: npc.speakerId }, // speakerId for future TTS
+      line: { tokens: selectedLine.tokens, raw: selectedLine.raw },
     });
   });
 
