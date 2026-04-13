@@ -380,7 +380,7 @@ export async function renderHub() {
   const dueCount = apiGetVocabDueCount ? (await apiGetVocabDueCount().catch(() => ({ count: 0 }))).count : 0;
 
   renderButtons([
-    { label: `📚 速習${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
+    { label: `📚 Speed Review${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
       // Tutorial step 4→5: advance when player clicks speed review
       if (getGameState().meta?.tutorialStep === 4) {
         await apiTutorialAdvance?.(4);
@@ -389,7 +389,7 @@ export async function renderHub() {
       if (result?.words?.length > 0) {
         speedReview.start(result.words, { kanaMode: getGameState()?.meta?.kanaMode });
       } else {
-        sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
+        sceneModule.showNarration('No words to review', { autoDismiss: 2000 });
       }
     }},
     { label: '⚔️ Multiplayer Battle', onClick: () => {
@@ -397,7 +397,7 @@ export async function renderHub() {
       gs.phase = 'pvp_lobby';
       updateUI();
     }, disabled: !hasPvpTeams },
-    { label: '⚡ 潜入', onClick: () => startNewRun(), primary: true },
+    { label: '⚡ Infiltrate', onClick: () => startNewRun(), primary: true },
   ]);
 
   let tutorialStep = gameState.meta?.tutorialStep;
@@ -423,7 +423,7 @@ export async function renderHub() {
     ]);
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
-      if (btn.textContent.includes('速習')) {
+      if (btn.textContent.includes('Speed Review')) {
         btn.classList.add('tutorial-highlight');
       } else {
         btn.classList.add('tutorial-dimmed');
@@ -441,7 +441,7 @@ export async function renderHub() {
     ]);
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
-      if (btn.textContent.includes('潜入')) {
+      if (btn.textContent.includes('Infiltrate')) {
         btn.classList.add('tutorial-highlight');
       } else {
         btn.classList.add('tutorial-dimmed');

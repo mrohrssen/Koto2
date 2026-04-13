@@ -96,8 +96,7 @@ const strings = {
   // ── Collection / team select ──
   selectTeam:       { en: 'Select Your Team', ja: 'チーム選択',
                       tagged: '{Select|選択|せんたく} Your Team' },
-  startRun:         { en: 'Start Run ({0} monster{1})', ja: '出撃（{0}体）',
-                      tagged: 'Start {Run|出撃|しゅつげき} ({0} monster{1})' },
+  startRun:         { en: 'Start Run ({0} monster{1})', ja: '出撃（{0}体）' },
   newCreature:      { en: 'New: {0}!',       ja: '新規: {0}！',
                       tagged: '{New|新規|しんき}: {0}!' },
 
