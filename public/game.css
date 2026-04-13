@@ -5287,7 +5287,7 @@ textarea,
   z-index: 1000;
   pointer-events: none;
   transform: translate(-50%, -100%);
-  max-width: min(180px, 45vw);
+  max-width: min(300px, 75vw);
   padding: 6px 10px;
   background: rgba(255, 255, 255, 0.92);
   border-radius: 10px;
