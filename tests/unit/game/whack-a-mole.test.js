@@ -179,6 +179,37 @@ describe('Whack-a-Mole Pool', () => {
     assert.strictEqual(ids.length, uniqueIds.size, 'all pool entry ids should be unique');
   });
 
+  it('GET /whack-a-mole-dialogue should return dialogue tokens', () => {
+    const handler = getHandler(router, 'get', '/whack-a-mole-dialogue');
+    assert.ok(handler, 'GET /whack-a-mole-dialogue handler should exist');
+
+    const req = {
+      gameManager: {
+        run: {
+          areaPath: [],
+          currentArea: { id: 'hajimari-no-hiroba' }
+        },
+        getCurrentRoom() {
+          return { type: 'whackAMole', interacted: false, whackAMole: { score: 0, completed: false } };
+        }
+      },
+      user: { id: 'test-gm-dialogue' }
+    };
+    const res = {
+      statusCode: 200,
+      body: null,
+      status(c) { this.statusCode = c; return this; },
+      json(d) { this.body = d; return this; }
+    };
+
+    handler(req, res);
+
+    assert.strictEqual(res.statusCode, 200);
+    assert.ok(res.body.dialogue, 'response should have dialogue');
+    assert.ok(Array.isArray(res.body.dialogue.tokens), 'dialogue should have tokens array');
+    assert.ok(Array.isArray(res.body.dialogue.words), 'dialogue should have words array');
+  });
+
   it('should only include creatures and items from the current area', () => {
     const handler = getHandler(router, 'get', '/whack-a-mole-pool');
     const req = mockReq();

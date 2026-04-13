@@ -19,7 +19,7 @@ import { applyItem } from '../../game/services/item-service.js';
 import { assembleFrame, entityToToken, isEligible, scoreCandidate } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
-import { getShopPurchaseFrames, getShopGreetingFrames } from '../../game/dialogue-loader.js';
+import { getShopPurchaseFrames, getShopGreetingFrames, getGameMasterAskFrames } from '../../game/dialogue-loader.js';
 
 const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
@@ -675,6 +675,40 @@ export default function createRunRoutes({
     try {
       const { score } = req.body;
       const result = req.gameManager.completeWhackAMole(score);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // Whack-a-Mole: get GM dialogue (i+1 selected greeting)
+  router.get('/whack-a-mole-dialogue', (req, res) => {
+    try {
+      const knownWords = getKnownWordsFromFsrs(req.user.id);
+      const knownSet = new Set(knownWords);
+      const askFrames = getGameMasterAskFrames();
+      const candidates = askFrames.map(frame => assembleFrame(frame, {}));
+      const eligible = candidates.filter(c => isEligible(c.tokens, knownSet));
+
+      let dialogue;
+      if (eligible.length > 0) {
+        eligible.sort((a, b) => scoreCandidate(b.tokens, knownSet) - scoreCandidate(a.tokens, knownSet));
+        dialogue = eligible[0];
+      } else {
+        dialogue = candidates[0] || { tokens: [], words: [] };
+      }
+
+      res.json({ dialogue });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // Whack-a-Mole: skip (player declined)
+  router.post('/whack-a-mole-skip', (req, res) => {
+    try {
+      const result = req.gameManager.skipWhackAMole();
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (err) {
