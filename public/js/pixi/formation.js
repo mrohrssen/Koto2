@@ -468,6 +468,11 @@ export async function hideNpcSprite({ slideOut = false } = {}) {
   }
 }
 
+/** Check if an NPC sprite is currently displayed. */
+export function hasNpcSprite() {
+  return npcSprite != null;
+}
+
 /**
  * Ticker update — walking wobble animation.
  * @param {number} delta - PixiJS ticker deltaTime

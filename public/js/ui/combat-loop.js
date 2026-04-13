@@ -3648,9 +3648,8 @@ export async function runNpcDialogue() {
       const html = renderJpSentence(line.tokens, getKnownWords(), new Map(), line.overrides || {}, dialogueData.useKanji || false);
       await narration.showNarration(html, { speaker: npcName, html: true });
 
-      if (hideNpcSprite) hideNpcSprite();
-      // Re-render scene after hiding NPC sprite (same as showNpcGreeting pattern)
-      if (updateUI) updateUI();
+      // Keep NPC sprite visible — skill selection phase will show it,
+      // and it slides out after the player picks a skill.
     } else {
       // Future: quiz mode — original flow preserved here
       const { npc, freed, rounds, userId, greetingTts, freedTts } = dialogueData;

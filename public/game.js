@@ -124,7 +124,7 @@ import { showOffline, showOnline } from './js/ui/connection-banner.js';
 // PixiJS battle stage imports
 import { initBattleStage } from './js/pixi/battle-stage.js';
 import { loadParallax, setScrollState } from './js/pixi/parallax.js';
-import { showFormation as pixiShowFormation, setWalking } from './js/pixi/formation.js';
+import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite } from './js/pixi/formation.js';
 
 // API imports - these are the server communication functions
 import {
@@ -272,7 +272,8 @@ function syncParallaxScrollWithPhase() {
   const prev = lastPhaseForParallax;
   lastPhaseForParallax = p;
 
-  if (p === 'room' && prev === 'combat') {
+  const stoppedPhases = ['combat', 'room_encounter', 'friendlyNpc', 'npc_dialogue', 'dealer', 'skillMaster', 'whackAMole', 'speedReviewRoom'];
+  if ((p === 'room' || p === 'exploring') && stoppedPhases.includes(prev)) {
     setScrollState('accelerating');
     setWalking(true);
     return;
@@ -281,16 +282,16 @@ function syncParallaxScrollWithPhase() {
   switch (p) {
     case 'exploring':
     case 'room':
+    case 'wordDiscovery':
+      setScrollState('scrolling');
+      setWalking(true);
+      break;
     case 'friendlyNpc':
     case 'npc_dialogue':
-    case 'wordDiscovery':
     case 'dealer':
     case 'skillMaster':
     case 'whackAMole':
     case 'speedReviewRoom':
-      setScrollState('scrolling');
-      setWalking(true);
-      break;
     case 'room_encounter':
       setScrollState('decelerating');
       setWalking(false);
@@ -455,6 +456,16 @@ function updateScene() {
     }
   } else if (gameState.phase === 'whackAMole') {
     scene.showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`);
+  } else if (gameState.phase === 'npc_skill_selection') {
+    // NPC sprite stays visible during skill selection — don't hideEnemies().
+    // On page reload the pixi sprite is lost, so recreate it.
+    if (!hasNpcSprite()) {
+      const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
+      const npc = room?.npcBattle?.npc || room?.npc;
+      if (npc) {
+        scene.showNpcTrainer(npc.nameEn || npc.name, npc.id, npc);
+      }
+    }
   } else {
     scene.hideEnemies();
   }
@@ -563,6 +574,9 @@ function updateGameContent() {
           if (!result?.state) {
             throw new Error(result?.error || 'No game state from server');
           }
+          // Slide NPC out before transitioning to next phase
+          await pixiHideNpcSprite({ slideOut: true });
+          scene.hideNpcTrainer();
           updateGameState(result.state);
           updateUI();
         },
