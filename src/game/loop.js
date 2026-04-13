@@ -384,29 +384,22 @@ export class GameManager {
     // Area selection is required at start
     this.run.areaSelectionRequired = true;
 
-    // Initialize creature starter(s) if provided
-    // If the player explicitly selected `starterIds` for this run, honor that.
-    // Only fall back to the prologue-chosen starter stored in meta when no
-    // explicit starter selection was provided.
-    const metaStarterId = this.meta?.starterCreatureId;
+    // Creature initialization is deferred until after area selection.
+    // If starterIds are provided (legacy/test path), initialize immediately.
+    // NOTE: the old metaStarterId fallback is intentionally removed — creature
+    // selection now always happens explicitly after area selection.
     const ids = starterIds || (starterId ? [starterId] : null);
-    if (ids && ids.length > 0) {
-      this.run.creatureParty.active = ids.map(id => instantiateCreature(id));
-    } else if (metaStarterId) {
-      this.run.creatureParty.active = [instantiateCreature(metaStarterId, 5)];
-    }
-
-    // Apply crest progression bonuses
     const crestMults = getCrestMultipliers(this.meta);
     this.run.crestMults = crestMults;
-
-    // Apply stat bonuses to starting creatures
-    for (const creature of this.run.creatureParty.active) {
-      applyCrestBonuses(creature, crestMults);
-    }
-
-    // Fold XP bonus into itemBuffs base
     this.run.itemBuffs.xpMultiplier = crestMults.xpMult;
+
+    if (ids && ids.length > 0) {
+      this.run.creatureParty.active = ids.map(id => instantiateCreature(id));
+      for (const creature of this.run.creatureParty.active) {
+        applyCrestBonuses(creature, crestMults);
+      }
+    }
+    // else: bare run — creatures will be confirmed via confirmCreatures() after area selection
 
     this.emitState();
 

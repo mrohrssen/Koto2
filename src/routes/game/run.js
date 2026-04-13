@@ -134,7 +134,11 @@ export default function createRunRoutes({
 
       req.saveGame();
 
-      queueBackgroundDialogues(req);
+      // Only queue dialogues if creatures were provided (legacy path).
+      // For bare runs, dialogues are queued in /confirm-creatures instead.
+      if (ids) {
+        queueBackgroundDialogues(req);
+      }
 
       res.json({
         state: req.getEnrichedGameState(),
