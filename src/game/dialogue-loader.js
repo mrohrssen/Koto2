@@ -10,6 +10,7 @@ let _shopPurchaseFrames = [];
 let _shopGreetingFrames = [];
 let _gameMasterAskFrames = [];
 let _befriendFrames = {};
+let _npcDefeatFrames = [];
 
 export function loadDialoguePools(dataDir) {
   const framesPath = join(dataDir, 'dialogue', 'frames.json');
@@ -24,6 +25,7 @@ export function loadDialoguePools(dataDir) {
   _shopPurchaseFrames = _frames.filter(f => f.category === 'shopPurchase');
   _shopGreetingFrames = _frames.filter(f => f.category === 'shopGreeting');
   _gameMasterAskFrames = _frames.filter(f => f.category === 'gameMaster_ask');
+  _npcDefeatFrames = _frames.filter(f => f.category === 'npcDefeat');
 
   // Barks: category "bark_<trigger>" → grouped by trigger
   _barkPool = {};
@@ -74,6 +76,7 @@ export function getShopPurchaseFrames() { return _shopPurchaseFrames; }
 export function getShopGreetingFrames() { return _shopGreetingFrames; }
 export function getGameMasterAskFrames() { return _gameMasterAskFrames; }
 export function getBefriendFrames() { return _befriendFrames; }
+export function getNpcDefeatFrames() { return _npcDefeatFrames; }
 
 export function getDialogueWordSet() {
   const words = new Set();
