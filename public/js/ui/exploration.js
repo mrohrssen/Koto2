@@ -906,36 +906,68 @@ export async function renderWhackAMole() {
     return;
   }
 
-  // Fetch pool from server
-  let pool;
+  // Fetch GM dialogue tokens (before pool — no wasted request on decline)
+  let dialogue = null;
   try {
-    const resp = await apiGetWhackAMolePool();
-    pool = resp.pool;
+    const resp = await apiGetWhackAMoleDialogue();
+    dialogue = resp?.dialogue;
   } catch (err) {
-    actions.setContent('<div class="wam-error">Failed to load game data</div>');
-    return;
+    // Fallback: proceed without dialogue
   }
 
-  if (!pool || pool.length < 9) {
-    actions.setContent('<div class="wam-error">Not enough creatures/items for game</div>');
-    return;
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+
+  // Show GM greeting in narration box
+  if (dialogue?.tokens?.length && sceneModule?.showNarration) {
+    const html = renderJpSentence(dialogue.tokens, getKnownWords(), wordDict, {}, false);
+    await sceneModule.showNarration(html, { html: true, speaker: 'Game Master' });
   }
 
-  // Show start screen
-  actions.setContent(`
-    <div class="wam-container">
-      <div class="wam-start">
-        <div class="wam-start-title">ワードマッチ!</div>
-        <div class="wam-start-desc">Match the word to the correct creature or item</div>
-      </div>
-    </div>
-  `);
+  // Show yes/no buttons with renderJpSentence labels
+  const yesTokens = [{ surface: 'はい', base: 'はい', reading: 'はい', meaning: 'yes' }];
+  const noTokens = [{ surface: 'いいえ', base: 'いいえ', reading: 'いいえ', meaning: 'no' }];
+  const yesLabel = renderJpSentence(yesTokens, getKnownWords(), wordDict, {}, false);
+  const noLabel = renderJpSentence(noTokens, getKnownWords(), wordDict, {}, false);
 
-  const startBtnContainer = document.createElement('div');
-  document.querySelector('.wam-start')?.appendChild(startBtnContainer);
   renderButtons([
-    { label: 'プレイ', onClick: () => startWhackAMoleGame(pool), primary: true },
-  ], { container: startBtnContainer });
+    {
+      label: yesLabel,
+      primary: true,
+      onClick: async () => {
+        // Fetch pool and start game directly (no intermediate start screen)
+        let pool;
+        try {
+          const resp = await apiGetWhackAMolePool();
+          pool = resp.pool;
+        } catch (err) {
+          actions.setContent('<div class="wam-error">Failed to load game data</div>');
+          return;
+        }
+
+        if (!pool || pool.length < 9) {
+          actions.setContent('<div class="wam-error">Not enough creatures/items for game</div>');
+          return;
+        }
+
+        startWhackAMoleGame(pool);
+      }
+    },
+    {
+      label: noLabel,
+      onClick: async () => {
+        await hideNpcSprite({ slideOut: true });
+        try {
+          const result = await apiSkipWhackAMole();
+          if (result?.state) {
+            updateGameState(result.state);
+          }
+        } catch (err) {
+          // Fallback: just update UI
+        }
+        updateUI();
+      }
+    }
+  ]);
 }
 
 /** Skill Master room — placeholder UI (to be expanded in later task) */
