@@ -21,6 +21,8 @@ Thread an `onImpact` callback through the attack effect chain. Fire it synchrono
 6. **PvE enemy attack flow** (`showOneEnemyAttackAnimated`, combat-loop.js:~2032) — pass `updateCreatureHpBars` call as `onImpact`, remove post-await call
 7. **PvP flow** (`showAttackSummary`, pvp-battle.js:~304) — pass `updateSlotHp` call as `onImpact` in showAttackDisplay opts, remove post-await call
 
+8. **`enemyCreatureAttackEffect()`** (combat-loop.js:137) — remove `showVignette(200)` call (red screen-edge flash on player creature hit). Clean up unused import if no other callers.
+
 ## What doesn't change
 
 - HP update functions themselves (`updateCreatureHpBars`, `characterUI.updateEnemyHPBar`, PvP's `updateSlotHp`) stay as-is
