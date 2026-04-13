@@ -61,7 +61,8 @@ export const VALID_TRANSITIONS = {
 
   [PHASES.AREA_SELECTION]: [
     PHASES.EXPLORING,
-    PHASES.ROOM
+    PHASES.ROOM,
+    PHASES.SKILL_MASTER
   ],
 
   [PHASES.EXPLORING]: [
@@ -172,6 +173,11 @@ export function derivePhase(state) {
   if (!run.active) return PHASES.RUN_ENDED;
 
   if (run.areaSelectionRequired) return PHASES.AREA_SELECTION;
+  // Creature selection pending — area chosen but no creatures yet.
+  // Frontend shows creature select modal; server stays in area_selection.
+  if (run.currentArea && run.creatureParty?.active?.length === 0) {
+    return PHASES.AREA_SELECTION;
+  }
   if (run.pendingBranch) {
     // Migration: auto-select first door for saves created before door removal.
     run.pendingBranch = false;
