@@ -210,7 +210,8 @@ function loadSettings() {
     // Word Review Settings
     reviewType: 'typing',
     // Word Discovery Settings
-    dailyWordLimit: 10  // 0-50, 0 = skip discovery rooms
+    dailyWordLimit: 10,  // 0-50, 0 = skip discovery rooms
+    debugSuperAttack: false
   };
 
   if (existsSync(SETTINGS_FILE)) {
