@@ -428,7 +428,7 @@ function showAttackCardAndWait(atk, isEnemy) {
  * @param {Array} [opts.enemies] - Override enemy list (PvP passes its own state)
  * @returns {Promise<Element|null>} The attack card element
  */
-export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp = 100, allies: overrideAllies, enemies: overrideEnemies }) {
+export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp = 100, allies: overrideAllies, enemies: overrideEnemies, onImpact }) {
   const attackCard = insertAttackCard(atk, isEnemy);
 
   playSFX('attack');
@@ -445,9 +445,9 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   if (atk.damage > 0 && (sourceEl || getCreatureSprite(sourceSide, attackerIndex))) {
     playAttackSound(element);
     if (isEnemy) {
-      await enemyCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType);
+      await enemyCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType, onImpact);
     } else {
-      await fireCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType);
+      await fireCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType, onImpact);
     }
   }
 
