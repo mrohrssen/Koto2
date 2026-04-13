@@ -193,8 +193,9 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
       if (match) {
         const hp = match.currentHp ?? match.hp ?? 1;
         if (hp <= 0) {
-          sprite.alpha = 0.3;
           sprite.tint = 0x888888;
+          // Don't increase alpha — preserve animateKO fade-out (alpha=0)
+          if (sprite.alpha > 0.3) sprite.alpha = 0.3;
         } else {
           sprite.alpha = 1;
           sprite.tint = 0xFFFFFF;
