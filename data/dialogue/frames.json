@@ -8338,5 +8338,714 @@
       "遊ぶ",
       "ますか"
     ]
+  },
+  {
+    "id": "npcDefeat_0",
+    "category": "npcDefeat",
+    "raw": "すごい！",
+    "tokens": [
+      {
+        "surface": "すごい",
+        "base": "すごい",
+        "reading": "すごい",
+        "meaning": "terrible / dreadful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "すごい"
+    ]
+  },
+  {
+    "id": "npcDefeat_1",
+    "category": "npcDefeat",
+    "raw": "強い！",
+    "tokens": [
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "強い"
+    ]
+  },
+  {
+    "id": "npcDefeat_2",
+    "category": "npcDefeat",
+    "raw": "負ける！",
+    "tokens": [
+      {
+        "surface": "負ける",
+        "base": "負ける",
+        "reading": "まける",
+        "meaning": "to lose / to be defeated / to be beaten",
+        "pos": "Verb"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "負ける"
+    ]
+  },
+  {
+    "id": "npcDefeat_3",
+    "category": "npcDefeat",
+    "raw": "やるね！",
+    "tokens": [
+      {
+        "surface": "やる",
+        "base": "やる",
+        "reading": "やる",
+        "meaning": "to do / to undertake / to perform / to play (a game) / to study",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "やる"
+    ]
+  },
+  {
+    "id": "npcDefeat_4",
+    "category": "npcDefeat",
+    "raw": "本当にすごい！",
+    "tokens": [
+      {
+        "surface": "本当に",
+        "base": "本当に",
+        "reading": "ほんとうに",
+        "meaning": "really / truly",
+        "pos": "Noun"
+      },
+      {
+        "surface": "すごい",
+        "base": "すごい",
+        "reading": "すごい",
+        "meaning": "terrible / dreadful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "本当に",
+      "すごい"
+    ]
+  },
+  {
+    "id": "npcDefeat_5",
+    "category": "npcDefeat",
+    "raw": "{randomPlayerCreature}、強い！",
+    "tokens": [
+      {
+        "slot": "randomPlayerCreature"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "強い"
+    ]
+  },
+  {
+    "id": "npcDefeat_6",
+    "category": "npcDefeat",
+    "raw": "完全に負ける！",
+    "tokens": [
+      {
+        "surface": "完全",
+        "base": "完全",
+        "reading": "かんぜん",
+        "meaning": "perfect / complete",
+        "pos": "Na-adjective"
+      },
+      {
+        "surface": "に"
+      },
+      {
+        "surface": "負ける",
+        "base": "負ける",
+        "reading": "まける",
+        "meaning": "to lose / to be defeated / to be beaten",
+        "pos": "Verb"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "完全",
+      "負ける"
+    ]
+  },
+  {
+    "id": "npcDefeat_7",
+    "category": "npcDefeat",
+    "raw": "楽しい戦い！",
+    "tokens": [
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "戦い",
+        "base": "戦い",
+        "reading": "たたかい",
+        "meaning": "battle / war / fight / conflict",
+        "pos": "Noun"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "楽しい",
+      "戦い"
+    ]
+  },
+  {
+    "id": "npcDefeat_8",
+    "category": "npcDefeat",
+    "raw": "すごい、{randomPlayerCreature}は強い！",
+    "tokens": [
+      {
+        "surface": "すごい",
+        "base": "すごい",
+        "reading": "すごい",
+        "meaning": "terrible / dreadful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "slot": "randomPlayerCreature"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "すごい",
+      "強い"
+    ]
+  },
+  {
+    "id": "npcDefeat_9",
+    "category": "npcDefeat",
+    "raw": "良い勝負、私は負ける！",
+    "tokens": [
+      {
+        "surface": "良い",
+        "base": "良い",
+        "reading": "よい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "勝負",
+        "base": "勝負",
+        "reading": "しょうぶ",
+        "meaning": "victory or defeat",
+        "pos": "Noun"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me",
+        "pos": "Pronoun"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "負ける",
+        "base": "負ける",
+        "reading": "まける",
+        "meaning": "to lose / to be defeated / to be beaten",
+        "pos": "Verb"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "良い",
+      "勝負",
+      "私",
+      "負ける"
+    ]
+  },
+  {
+    "id": "npcDefeat_10",
+    "category": "npcDefeat",
+    "raw": "{randomPlayerCreature}はとても強い！",
+    "tokens": [
+      {
+        "slot": "randomPlayerCreature"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "とても",
+        "base": "とても",
+        "reading": "とても",
+        "meaning": "very",
+        "pos": "Adverb"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "とても",
+      "強い"
+    ]
+  },
+  {
+    "id": "npcDefeat_11",
+    "category": "npcDefeat",
+    "raw": "次は絶対に勝つ！",
+    "tokens": [
+      {
+        "surface": "次",
+        "base": "次",
+        "reading": "つぎ",
+        "meaning": "next / following / subsequent",
+        "pos": "Noun"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "絶対に",
+        "base": "絶対に",
+        "reading": "ぜったいに",
+        "meaning": "absolutely / definitely / unconditionally",
+        "pos": "Noun"
+      },
+      {
+        "surface": "勝つ",
+        "base": "勝つ",
+        "reading": "かつ",
+        "meaning": "to win / to gain victory",
+        "pos": "Verb"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "次",
+      "絶対に",
+      "勝つ"
+    ]
+  },
+  {
+    "id": "npcDefeat_12",
+    "category": "npcDefeat",
+    "raw": "あなたと{randomPlayerCreature}は本当にすごい！",
+    "tokens": [
+      {
+        "surface": "あなた",
+        "base": "あなた",
+        "reading": "あなた",
+        "meaning": "you",
+        "pos": "Pronoun"
+      },
+      {
+        "surface": "と"
+      },
+      {
+        "slot": "randomPlayerCreature"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "本当に",
+        "base": "本当に",
+        "reading": "ほんとうに",
+        "meaning": "really / truly",
+        "pos": "Noun"
+      },
+      {
+        "surface": "すごい",
+        "base": "すごい",
+        "reading": "すごい",
+        "meaning": "terrible / dreadful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "あなた",
+      "本当に",
+      "すごい"
+    ]
+  },
+  {
+    "id": "npcDefeat_13",
+    "category": "npcDefeat",
+    "raw": "私も強い、また戦う！",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me",
+        "pos": "Pronoun"
+      },
+      {
+        "surface": "も"
+      },
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "meaning": "strong / potent / competent / domineering / tough",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "また",
+        "base": "また",
+        "reading": "また",
+        "meaning": "groin / thigh / crotch / crutch",
+        "pos": "Adverb"
+      },
+      {
+        "surface": "戦う",
+        "base": "戦う",
+        "reading": "たたかう",
+        "meaning": "to make war (on) / to wage war (against) / to go to war (with) / to fight (with) / to do battle (against)",
+        "pos": "Verb"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "私",
+      "強い",
+      "また",
+      "戦う"
+    ]
+  },
+  {
+    "id": "npcDefeat_14",
+    "category": "npcDefeat",
+    "raw": "一緒に練習する、友達になる！",
+    "tokens": [
+      {
+        "surface": "一緒に",
+        "base": "一緒に",
+        "reading": "いっしょに",
+        "meaning": "together (with)",
+        "pos": "Noun"
+      },
+      {
+        "surface": "練習",
+        "base": "練習",
+        "reading": "れんしゅう",
+        "meaning": "practice / training / drill / (an) exercise / workout",
+        "pos": "Noun"
+      },
+      {
+        "surface": "する"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "友達",
+        "base": "友達",
+        "reading": "ともだち",
+        "meaning": "friend",
+        "pos": "Noun"
+      },
+      {
+        "surface": "に"
+      },
+      {
+        "surface": "なる",
+        "base": "なる",
+        "reading": "なる",
+        "meaning": "to become",
+        "pos": "Verb"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "一緒に",
+      "練習",
+      "友達",
+      "なる"
+    ]
+  },
+  {
+    "id": "npcDefeat_15",
+    "category": "npcDefeat",
+    "raw": "{randomPlayerCreature}の力はすごい、私も頑張る！",
+    "tokens": [
+      {
+        "slot": "randomPlayerCreature"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "力",
+        "base": "力",
+        "reading": "ちから",
+        "meaning": "power/strength",
+        "pos": "Noun"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "すごい",
+        "base": "すごい",
+        "reading": "すごい",
+        "meaning": "terrible / dreadful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me",
+        "pos": "Pronoun"
+      },
+      {
+        "surface": "も"
+      },
+      {
+        "surface": "頑張る",
+        "base": "頑張る",
+        "reading": "がんばる",
+        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best",
+        "pos": "Verb"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "力",
+      "すごい",
+      "私",
+      "頑張る"
+    ]
+  },
+  {
+    "id": "npcDefeat_16",
+    "category": "npcDefeat",
+    "raw": "あなたは本当に上手、次は私が勝つ！",
+    "tokens": [
+      {
+        "surface": "あなた",
+        "base": "あなた",
+        "reading": "あなた",
+        "meaning": "you",
+        "pos": "Pronoun"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "本当に",
+        "base": "本当に",
+        "reading": "ほんとうに",
+        "meaning": "really / truly",
+        "pos": "Noun"
+      },
+      {
+        "surface": "上手",
+        "base": "上手",
+        "reading": "かみて",
+        "meaning": "skilled",
+        "pos": "Noun"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "次",
+        "base": "次",
+        "reading": "つぎ",
+        "meaning": "next / following / subsequent",
+        "pos": "Noun"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me",
+        "pos": "Pronoun"
+      },
+      {
+        "surface": "が"
+      },
+      {
+        "surface": "勝つ",
+        "base": "勝つ",
+        "reading": "かつ",
+        "meaning": "to win / to gain victory",
+        "pos": "Verb"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "あなた",
+      "本当に",
+      "上手",
+      "次",
+      "私",
+      "勝つ"
+    ]
+  },
+  {
+    "id": "npcDefeat_17",
+    "category": "npcDefeat",
+    "raw": "良い勝負、また会う時は絶対に勝つ！",
+    "tokens": [
+      {
+        "surface": "良い",
+        "base": "良い",
+        "reading": "よい",
+        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "勝負",
+        "base": "勝負",
+        "reading": "しょうぶ",
+        "meaning": "victory or defeat",
+        "pos": "Noun"
+      },
+      {
+        "surface": "、"
+      },
+      {
+        "surface": "また",
+        "base": "また",
+        "reading": "また",
+        "meaning": "groin / thigh / crotch / crutch",
+        "pos": "Adverb"
+      },
+      {
+        "surface": "会う",
+        "base": "会う",
+        "reading": "あう",
+        "meaning": "to meet / to encounter / to see",
+        "pos": "Verb"
+      },
+      {
+        "surface": "時",
+        "base": "時",
+        "reading": "とき",
+        "meaning": "when/time",
+        "pos": "Noun"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "絶対に",
+        "base": "絶対に",
+        "reading": "ぜったいに",
+        "meaning": "absolutely / definitely / unconditionally",
+        "pos": "Noun"
+      },
+      {
+        "surface": "勝つ",
+        "base": "勝つ",
+        "reading": "かつ",
+        "meaning": "to win / to gain victory",
+        "pos": "Verb"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "良い",
+      "勝負",
+      "また",
+      "会う",
+      "時",
+      "絶対に",
+      "勝つ"
+    ]
   }
 ]

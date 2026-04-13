@@ -1493,5 +1493,113 @@
     "category": "gameMaster_ask",
     "raw": "私と一緒に言葉で遊びますか？",
     "slots": []
+  },
+  {
+    "id": "npcDefeat_0",
+    "category": "npcDefeat",
+    "raw": "すごい！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_1",
+    "category": "npcDefeat",
+    "raw": "強い！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_2",
+    "category": "npcDefeat",
+    "raw": "負ける！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_3",
+    "category": "npcDefeat",
+    "raw": "やるね！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_4",
+    "category": "npcDefeat",
+    "raw": "本当にすごい！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_5",
+    "category": "npcDefeat",
+    "raw": "{randomPlayerCreature}、強い！",
+    "slots": ["randomPlayerCreature"]
+  },
+  {
+    "id": "npcDefeat_6",
+    "category": "npcDefeat",
+    "raw": "完全に負ける！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_7",
+    "category": "npcDefeat",
+    "raw": "楽しい戦い！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_8",
+    "category": "npcDefeat",
+    "raw": "すごい、{randomPlayerCreature}は強い！",
+    "slots": ["randomPlayerCreature"]
+  },
+  {
+    "id": "npcDefeat_9",
+    "category": "npcDefeat",
+    "raw": "良い勝負、私は負ける！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_10",
+    "category": "npcDefeat",
+    "raw": "{randomPlayerCreature}はとても強い！",
+    "slots": ["randomPlayerCreature"]
+  },
+  {
+    "id": "npcDefeat_11",
+    "category": "npcDefeat",
+    "raw": "次は絶対に勝つ！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_12",
+    "category": "npcDefeat",
+    "raw": "あなたと{randomPlayerCreature}は本当にすごい！",
+    "slots": ["randomPlayerCreature"]
+  },
+  {
+    "id": "npcDefeat_13",
+    "category": "npcDefeat",
+    "raw": "私も強い、また戦う！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_14",
+    "category": "npcDefeat",
+    "raw": "一緒に練習する、友達になる！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_15",
+    "category": "npcDefeat",
+    "raw": "{randomPlayerCreature}の力はすごい、私も頑張る！",
+    "slots": ["randomPlayerCreature"]
+  },
+  {
+    "id": "npcDefeat_16",
+    "category": "npcDefeat",
+    "raw": "あなたは本当に上手、次は私が勝つ！",
+    "slots": []
+  },
+  {
+    "id": "npcDefeat_17",
+    "category": "npcDefeat",
+    "raw": "良い勝負、また会う時は絶対に勝つ！",
+    "slots": []
   }
 ]
