@@ -33,7 +33,7 @@ import { renderJpSentence, renderEnFirst, getKnownWords, entityToToken } from '.
 import { t, tPlain } from './i18n.js';
 import {
   screenShake, screenFlash, hitStop, recoil as pixiRecoil,
-  lunge as pixiLunge, burstParticles, flowParticles, showVignette,
+  lunge as pixiLunge, burstParticles, flowParticles,
   ELEMENT_COLORS
 } from '../pixi/effects.js';
 import { fireElementBlast } from '../pixi/element-blasts.js';
@@ -135,7 +135,6 @@ async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, da
   const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: -20, duration: 200 }) : Promise.resolve();
   const blastP = fireElementBlast(fromPos, toPos, element, () => {
     impactEffect(damage, 'player', targetIndex, playerMaxHp, element, effectivenessType, onImpact);
-    showVignette(200);
   });
   await Promise.all([lungeP, blastP]);
 }
