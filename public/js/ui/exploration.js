@@ -26,6 +26,7 @@
 import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
+import { hapticLight } from '../native/index.js';
 import { creatureBgUrl, itemSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { showNpcInDisplay, hideEnemy } from './scene.js';
 import { showNpcSprite, hideNpcSprite } from '../pixi/formation.js';
@@ -1041,30 +1042,100 @@ export async function renderSkillMaster() {
 
   // Don't wait for Cid narration — render skills immediately so the player
   // can see them while Cid is still talking.
-  renderChoices({
-    cards: offers.slice(0, 3).map(s => ({
-      title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
-      subtitle: s.desc || skillMasterState.catalogById?.[s.id]?.desc || '',
-    })),
-    onSelect: async (index) => {
-      const skillId = offers[index].id;
-      let result;
-      try {
-        result = await apiSkillMasterChoose?.(skillId);
-      } catch (err) {
-        sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
-        renderSkillMaster();
-        return;
-      }
-      if (result?.state) {
-        updateGameState(result.state);
-        updateUI();
-      } else {
-        sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
-        renderSkillMaster();
-      }
-    },
+  if (tutorialStep === 0) {
+    renderTutorialSkillMaster(offers);
+  } else {
+    renderChoices({
+      cards: offers.slice(0, 3).map(s => ({
+        title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
+        subtitle: s.desc || skillMasterState.catalogById?.[s.id]?.desc || '',
+      })),
+      onSelect: async (index) => {
+        const skillId = offers[index].id;
+        let result;
+        try {
+          result = await apiSkillMasterChoose?.(skillId);
+        } catch (err) {
+          sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+          renderSkillMaster();
+          return;
+        }
+        if (result?.state) {
+          updateGameState(result.state);
+          updateUI();
+        } else {
+          sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
+          renderSkillMaster();
+        }
+      },
+    });
+  }
+}
+
+/** Tutorial step 0: show all 3 skills but only the first is clickable (glows). */
+function renderTutorialSkillMaster(offers) {
+  const el = document.getElementById('action-area');
+  el.innerHTML = '';
+
+  const list = document.createElement('div');
+  list.className = 'ui-choice-list';
+
+  offers.slice(0, 3).forEach((s, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'ui-choice';
+    btn.setAttribute('role', 'button');
+    btn.tabIndex = 0;
+
+    if (i === 0) {
+      btn.classList.add('tutorial-highlight');
+    } else {
+      btn.classList.add('tutorial-dimmed');
+    }
+
+    const name = s.name || skillMasterState.catalogById?.[s.id]?.name || s.id;
+    const desc = s.desc || skillMasterState.catalogById?.[s.id]?.desc || '';
+    btn.innerHTML = `
+      <div class="ui-choice__info">
+        <div class="ui-choice__title">${name}</div>
+        <div class="ui-choice__subtitle">${desc}</div>
+      </div>
+    `;
+
+    if (i === 0) {
+      let clicked = false;
+      btn.addEventListener('click', async () => {
+        if (clicked) return;
+        clicked = true;
+        playSFX('button-tap');
+        hapticLight();
+        btn.classList.remove('tutorial-highlight');
+        btn.classList.add('ui-choice--selected');
+        list.querySelectorAll('.ui-choice').forEach(c => {
+          c.style.pointerEvents = 'none';
+        });
+
+        let result;
+        try {
+          result = await apiSkillMasterChoose?.(s.id);
+        } catch {
+          sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+          renderSkillMaster();
+          return;
+        }
+        if (result?.state) {
+          updateGameState(result.state);
+          updateUI();
+        } else {
+          sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
+          renderSkillMaster();
+        }
+      });
+    }
+
+    list.appendChild(btn);
   });
+
+  el.appendChild(list);
 }
 
 // ============ FRIENDLY NPC ROOM ============
