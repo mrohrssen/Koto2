@@ -363,7 +363,7 @@ function closeInventory() {
   }
 }
 
-/** Hub phase — show Speed Review + Chests + Crests + PvP + Infiltrate buttons */
+/** Hub phase — show Speed Review + PvP + Infiltrate buttons */
 export async function renderHub() {
   const gameState = getGameState();
 
@@ -381,13 +381,6 @@ export async function renderHub() {
         sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
       }
     }},
-    { label: '🎁 Chests', onClick: async () => {
-      if (gameState.meta?.tutorialStep === 3) {
-        await apiTutorialAdvance?.(3);
-      }
-      chestsUI.show();
-    }},
-    { label: '🔮 Crests', onClick: () => crestsEquipUI.show() },
     { label: '⚔️ Multiplayer Battle', onClick: () => {
       const gs = getGameState();
       gs.phase = 'pvp_lobby';
@@ -396,40 +389,7 @@ export async function renderHub() {
     { label: '⚡ 潜入', onClick: () => startNewRun(), primary: true },
   ]);
 
-  // Tutorial step 3: Cid guides to chests after death
   const tutorialStep = gameState.meta?.tutorialStep;
-  if (tutorialStep === 3) {
-    await showTutorialNarration([
-      'That was tough huh?',
-      "Don't worry, no one gets past the Starting Meadow on their first try.",
-      'We need to get stronger.',
-      'Here, let me show you how. Click Chests!'
-    ], { showSprite: true });
-    // Highlight Chests button, dim others
-    const buttons = document.querySelectorAll('.action-btn');
-    buttons.forEach(btn => {
-      if (btn.textContent.includes('Chests')) {
-        btn.classList.add('tutorial-highlight');
-      } else {
-        btn.classList.add('tutorial-dimmed');
-      }
-    });
-  }
-
-  // Tutorial step 5: guide to equip crests
-  if (tutorialStep === 5) {
-    await showTutorialNarration([
-      "Now let's equip that crest to power up!"
-    ]);
-    const buttons = document.querySelectorAll('.action-btn');
-    buttons.forEach(btn => {
-      if (btn.textContent.includes('Crests')) {
-        btn.classList.add('tutorial-highlight');
-      } else {
-        btn.classList.add('tutorial-dimmed');
-      }
-    });
-  }
 
   // Tutorial step 6: guide to formation and re-enter
   if (tutorialStep === 6) {
