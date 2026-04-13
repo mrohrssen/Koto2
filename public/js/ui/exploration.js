@@ -105,6 +105,8 @@ let apiPostCombatRefresh = null;
 // Whack-a-Mole API
 let apiGetWhackAMolePool = null;
 let apiCompleteWhackAMole = null;
+let apiGetWhackAMoleDialogue = null;
+let apiSkipWhackAMole = null;
 
 // Speed review API
 let apiGetDueWords = null;
@@ -169,6 +171,8 @@ export function init(callbacks) {
   triggerCreatureSelect = callbacks.triggerCreatureSelect;
   apiGetWhackAMolePool = callbacks.apiGetWhackAMolePool;
   apiCompleteWhackAMole = callbacks.apiCompleteWhackAMole;
+  apiGetWhackAMoleDialogue = callbacks.apiGetWhackAMoleDialogue;
+  apiSkipWhackAMole = callbacks.apiSkipWhackAMole;
   apiSkillMasterOffers = callbacks.apiSkillMasterOffers;
   apiSkillMasterChoose = callbacks.apiSkillMasterChoose;
   apiGetFriendlyNpcOffers = callbacks.apiGetFriendlyNpcOffers;
