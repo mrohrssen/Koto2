@@ -1842,24 +1842,30 @@ async function showRoundStartEvents(result) {
 /**
  * Show a single counter attack animation (used inline in initiative playback).
  * @param {Object} counter - Counter attack record from server
+ * @param {Object} enemyHpMap - Mutable HP map keyed by enemy slot index
+ * @param {Array} enemies - Enemy list for pandemic proc targeting
  */
-async function showOneCounterAttackAnimated(counter) {
+async function showOneCounterAttackAnimated(counter, enemyHpMap, enemies) {
   const defenderPos = spritePos('player', counter.defenderIndex);
   popupSkillProc('COUNTER!', defenderPos);
 
-  const defenderSprite = getCreatureSprite('player', counter.defenderIndex);
-  if (defenderSprite) await pixiLunge(defenderSprite, { distance: 40, duration: 300 });
-
   if (counter.damage > 0) {
-    const counterFrom = spritePos('player', counter.defenderIndex);
-    const counterTo = spritePos('enemy', counter.targetIndex);
-    await fireElementBlast(counterFrom, counterTo, 'neutral', () => {
-      pixiDamageNumber(counter.damage, counterTo, { tier: 1 });
-      screenShake('light');
+    const targetMaxHp = enemyHpMap?.[counter.targetIndex]?.maxHp || 100;
+    await fireCreatureAttackEffect(counter.defenderIndex, counter.targetIndex, 'neutral', counter.damage, targetMaxHp, 'normal', () => {
+      if (enemyHpMap?.[counter.targetIndex]) {
+        enemyHpMap[counter.targetIndex].hp = Math.max(0, enemyHpMap[counter.targetIndex].hp - counter.damage);
+        const entry = enemyHpMap[counter.targetIndex];
+        if (Object.keys(enemyHpMap).length > 1) {
+          characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+        } else {
+          characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+        }
+      }
     });
   }
 
   if (counter.procs?.length) {
+    const enemyList = enemies || getCombatEnemies() || [];
     for (const proc of counter.procs) {
       if (proc.type === 'stageChange') {
         const SC_NAMES2 = { atk: 'ATK', def: 'DEF' };
@@ -1874,8 +1880,7 @@ async function showOneCounterAttackAnimated(counter) {
         popupSkillProc('SPREAD!', pos);
         burstParticles(pos, { count: 4, color: 0x9C27B0 });
       } else if (proc.type === 'pandemic') {
-        const enemies = getCombatEnemies() || [];
-        enemies.forEach((enemy, i) => {
+        enemyList.forEach((enemy, i) => {
           if (enemy && enemy.hp > 0) {
             const pos = spritePos('enemy', i);
             popupSkillProc('PANDEMIC!', pos);
@@ -1897,61 +1902,12 @@ async function showOneCounterAttackAnimated(counter) {
 /**
  * Show counter attack animations after enemy attacks.
  * @param {Object} result - Combat cycle result from server
+ * @param {Object} enemyHpMap - Mutable HP map keyed by enemy slot index
  */
-async function showCounterAttacks(result) {
+async function showCounterAttacks(result, enemyHpMap) {
   if (!result.counterAttacks?.length) return;
-
   for (const counter of result.counterAttacks) {
-    const defenderPos = spritePos('player', counter.defenderIndex);
-    popupSkillProc('COUNTER!', defenderPos);
-
-    // Lunge toward enemy (positive X = right = toward enemy side)
-    const defenderSprite = getCreatureSprite('player', counter.defenderIndex);
-    if (defenderSprite) await pixiLunge(defenderSprite, { distance: 40, duration: 300 });
-
-    if (counter.damage > 0) {
-      const counterFrom = spritePos('player', counter.defenderIndex);
-      const counterTo = spritePos('enemy', counter.targetIndex);
-      await fireElementBlast(counterFrom, counterTo, 'neutral', () => {
-        pixiDamageNumber(counter.damage, counterTo, { tier: 1 });
-        screenShake('light');
-      });
-    }
-
-    // Show Vengeful Mark and other counter procs
-    if (counter.procs?.length) {
-      for (const proc of counter.procs) {
-        if (proc.type === 'stageChange') {
-          const SC_NAMES2 = { atk: 'ATK', def: 'DEF' };
-          const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
-          const text = `${SC_NAMES2[proc.stat] || proc.stat} ${dir}`;
-          const side = proc.targetSide === 'enemy' ? 'enemy' : 'player';
-          const pos = spritePos(side, proc.targetIndex);
-          if (proc.delta > 0) popupBuff(text, pos);
-          else popupDebuff(text, pos);
-        } else if (proc.type === 'spread') {
-          const pos = spritePos('enemy', proc.targetIndex);
-          popupSkillProc('SPREAD!', pos);
-          burstParticles(pos, { count: 4, color: 0x9C27B0 });
-        } else if (proc.type === 'pandemic') {
-          const enemies = result.enemies || [];
-          enemies.forEach((enemy, i) => {
-            if (enemy && enemy.hp > 0) {
-              const pos = spritePos('enemy', i);
-              popupSkillProc('PANDEMIC!', pos);
-              burstParticles(pos, { count: 6, color: 0x9C27B0 });
-            }
-          });
-        } else if (proc.type === 'burst') {
-          const pos = spritePos('enemy', proc.targetIndex);
-          popupSkillProc('AFFLICTION BURST!', pos);
-          pixiDamageNumber(proc.damage, pos, { tier: 1 });
-          burstParticles(pos, { count: 10, color: 0xE91E63 });
-        }
-      }
-    }
-
-    await effectDelay(600);
+    await showOneCounterAttackAnimated(counter, enemyHpMap, result.enemies);
   }
 }
 
@@ -2389,7 +2345,7 @@ async function executeCreatureMovesTurn(choices) {
       if (merged.length > 0) {
         for (const { side, atk } of merged) {
           if (side === 'player' && atk.type === 'counter') {
-            await showOneCounterAttackAnimated(atk);
+            await showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
           } else if (side === 'player') {
             await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn);
           } else {
@@ -2431,7 +2387,7 @@ async function executeCreatureMovesTurn(choices) {
       // Counter attack animations — only if not already shown in initiative merge
       const countersShownInMerge = merged.some(e => e.side === 'player' && e.atk.type === 'counter');
       if (!countersShownInMerge) {
-        await showCounterAttacks(result);
+        await showCounterAttacks(result, enemyHpMap);
       }
 
       // KO swap animations
@@ -2515,7 +2471,7 @@ async function executeCreaturePlayerAttack() {
       if (mergedLegacy.length > 0) {
         for (const { side, atk } of mergedLegacy) {
           if (side === 'player' && atk.type === 'counter') {
-            await showOneCounterAttackAnimated(atk);
+            await showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
           } else if (side === 'player') {
             await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn2);
           } else {
@@ -2547,7 +2503,7 @@ async function executeCreaturePlayerAttack() {
       // Counter attack animations — only if not already shown in initiative merge
       const countersShownInMergeLegacy = mergedLegacy.some(e => e.side === 'player' && e.atk.type === 'counter');
       if (!countersShownInMergeLegacy) {
-        await showCounterAttacks(result);
+        await showCounterAttacks(result, enemyHpMap);
       }
 
       // KO swap animations
@@ -2643,7 +2599,11 @@ async function executeCreatureDefendThenPause() {
       await showEnemyAttacksAnimated(result, allyHpMap, true);
 
       // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
-      await showCounterAttacks(result);
+      const enemyHpMap = {};
+      (result.enemies || []).forEach((e, i) => {
+        if (e) enemyHpMap[i] = { hp: e.hp, maxHp: e.maxHp, index: i };
+      });
+      await showCounterAttacks(result, enemyHpMap);
 
       // KO swap animations
       await showKoSwapAnimations(result);
