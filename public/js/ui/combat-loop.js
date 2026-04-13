@@ -2272,13 +2272,20 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
     const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
       ? enemyHpMap[tIdx].maxHp
       : (result.enemies?.[0]?.maxHp ?? 100);
-    await fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp, atkEffectivenessType);
+    await fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp, atkEffectivenessType, () => {
+      if (typeof tIdx === 'number' && enemyHpMap[tIdx]) {
+        enemyHpMap[tIdx].hp = Math.max(0, enemyHpMap[tIdx].hp - atk.damage);
+        const entry = enemyHpMap[tIdx];
+        if (result.enemies.length > 1) {
+          characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+        } else {
+          characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+        }
+      }
+    });
     if (enemyEl) combatEvents.emit('creatureHit', { slotEl: enemyEl, side: 'enemy' });
   } else if (atk.damage > 0) {
     animateEnemyHurt();
-  }
-
-  if (atk.damage > 0) {
     const tIdx = atk.targetIndex;
     if (typeof tIdx === 'number' && enemyHpMap[tIdx]) {
       enemyHpMap[tIdx].hp = Math.max(0, enemyHpMap[tIdx].hp - atk.damage);
