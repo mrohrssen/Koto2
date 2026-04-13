@@ -2931,6 +2931,40 @@ textarea,
   z-index: 10001;
 }
 
+/* ===== WORD LEVEL-UP ANIMATION ===== */
+.word-level-up-text {
+  position: fixed;
+  transform: translateX(-50%);
+  color: #FFD700;
+  font: bold 18px monospace;
+  -webkit-text-stroke: 1px #000;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+  pointer-events: none;
+  z-index: 10002;
+  animation: wordLevelUpFloat 1s ease-out forwards;
+}
+
+@keyframes wordLevelUpFloat {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  20%  { transform: translateX(-50%) translateY(-8px) scale(1.15); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-45px) scale(1); }
+}
+
+.word-level-up-spark {
+  position: fixed;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10002;
+  animation: wordLevelUpSpark 350ms ease-out forwards;
+}
+
+@keyframes wordLevelUpSpark {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1.2); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
+}
+
 .creature-sprite-icon {
   width: 110px;
   height: 110px;

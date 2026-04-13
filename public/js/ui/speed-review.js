@@ -12,6 +12,7 @@ import * as takeover from './takeover.js';
 import { animate as anime } from 'animejs';
 import { setKnownWords } from './bootstrap-client.js';
 import { escapeHtml } from './html-utils.js';
+import { showWordLevelUp } from './word-level-up.js';
 
 // Module state
 let state = {
@@ -57,6 +58,7 @@ function resolveSessionOptions(options = {}) {
     onCommittedReview: typeof options.onCommittedReview === 'function' ? options.onCommittedReview : null,
     onComplete: typeof options.onComplete === 'function' ? options.onComplete : null,
     canCloseEarly: typeof options.canCloseEarly === 'boolean' ? options.canCloseEarly : mode === 'hub',
+    kanaMode: !!options.kanaMode,
     committedReviews: 0,
     completionTriggered: false,
     commitDeliveryChain: Promise.resolve(),
@@ -633,6 +635,12 @@ async function gradeCard(slotIndex, word, direction) {
   // Spawn sparks effect
   const sparkColor = direction === 'right' ? '#0f0' : '#f44';
   spawnSparks(card, sparkColor, direction === 'right' ? 8 : 5);
+
+  // "Word leveled up!" animation on successful recall
+  if (direction === 'right') {
+    const displayWord = state.session.kanaMode && word.reading ? word.reading : word.word;
+    showWordLevelUp(card, displayWord);
+  }
 
   // Queue review (will send after 5s unless undone or new review)
   queueReview(slotIndex, word, grade, direction);

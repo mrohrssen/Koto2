@@ -19,6 +19,7 @@
 
 import { getKnownWords, addKnownWord } from './bootstrap-client.js';
 import { reviewVocabWord } from '../api.js';
+import { showWordLevelUp } from './word-level-up.js';
 
 // DOM references (cached on init)
 const dom = {
@@ -39,15 +40,18 @@ let _wordDict = null;
 let _showToast = null;
 let _pauseAutoDismiss = null;
 let _currentWord = null; // base form of currently displayed word
+let _currentReading = null; // hiragana reading of current word
+let _getKanaMode = null; // () => boolean, injected via init
 
 /**
  * Initialize the module. Call once after DOM is ready.
- * @param {{ wordDictionary: Map, showToast: Function, pauseAutoDismiss: Function }} options
+ * @param {{ wordDictionary: Map, showToast: Function, pauseAutoDismiss: Function, getKanaMode: Function }} options
  */
-export function init({ wordDictionary, showToast, pauseAutoDismiss }) {
+export function init({ wordDictionary, showToast, pauseAutoDismiss, getKanaMode }) {
   _wordDict = wordDictionary;
   _showToast = showToast;
   _pauseAutoDismiss = pauseAutoDismiss;
+  _getKanaMode = getKanaMode || null;
 
   dom.popup = document.getElementById('lookup-popup');
   dom.word = document.getElementById('lookup-popup-word');
@@ -116,6 +120,7 @@ function handleWordClick(e) {
   if (!base) return;
 
   _currentWord = base;
+  _currentReading = span.dataset.reading || null;
 
   // Pause auto-dismiss if active (player is exploring words)
   _pauseAutoDismiss?.();
@@ -181,6 +186,11 @@ async function handleReview(grade) {
     dom.stateDot.style.background = 'var(--status-success, #2ecc71)';
     dom.stateText.textContent = 'Known';
     _showToast?.('Marked as known');
+
+    // "Word leveled up!" animation
+    const kana = _getKanaMode?.() ?? false;
+    const displayWord = kana && _currentReading ? _currentReading : word;
+    showWordLevelUp(dom.popup, displayWord);
   } else {
     dom.stateDot.style.background = 'var(--accent-orange, #e67e22)';
     dom.stateText.textContent = 'Learning';
