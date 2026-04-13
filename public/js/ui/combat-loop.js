@@ -2264,7 +2264,13 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
   const killKey = typeof atk.targetIndex === 'number' ? `idx:${atk.targetIndex}` : `id:${atk.targetId}`;
   if (atk.targetDefeated && !killedEnemies.has(killKey)) {
     killedEnemies.add(killKey);
-    animateKO('enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
+    // Skip KO animation if this creature is the befriend quiz target (it survived at 1 HP)
+    const isBefriendTarget = result.befriendQuizTriggered
+      && typeof result.befriendQuiz?.targetIndex === 'number'
+      && result.befriendQuiz.targetIndex === atk.targetIndex;
+    if (!isBefriendTarget) {
+      animateKO('enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
+    }
     if (result.xpEvents) {
       const xpEvent = result.xpEvents.find(ev =>
         (typeof atk.targetIndex === 'number' && ev.enemyIndex === atk.targetIndex)
@@ -2865,13 +2871,12 @@ async function renderBefriendQuiz(quizData, result) {
   const reading = quizData.creatureBaseReading || quizData.creatureName || '';
   const creatureSpeaker = { name: reading, reading: toRomaji(reading), meaning: '' };
 
-  // Restore the enemy sprite — animateKO faded it to alpha 0 and halved its
-  // scale, but the creature survived the killing blow and is initiating conversation.
-  const enemySprite = getCreatureSprite('enemy', 0);
+  // Ensure the befriend target sprite is fully visible (KO animation is now
+  // skipped for befriend targets, but reset alpha/tint as a safety fallback).
+  const enemySprite = getCreatureSprite('enemy', quizData.targetIndex ?? 0);
   if (enemySprite) {
     enemySprite.alpha = 1;
     enemySprite.tint = 0xFFFFFF;
-    enemySprite.scale.set(enemySprite.scale.x * 2, enemySprite.scale.y * 2);
   }
 
   // Show "まって!!" narration (creature calls out first)
