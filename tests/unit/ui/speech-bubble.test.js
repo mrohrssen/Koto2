@@ -163,3 +163,66 @@ describe('speech-bubble logic', () => {
     assert.strictEqual(exposures.size, 1);
   });
 });
+
+// ============ BUBBLE AUTO-FIT ============
+
+describe('calcBubbleOverflow', async () => {
+  let calcBubbleOverflow;
+  try {
+    const mod = await import('../../../public/js/ui/speech-bubble.js');
+    calcBubbleOverflow = mod.calcBubbleOverflow;
+  } catch {
+    calcBubbleOverflow = null;
+  }
+
+  it('returns zero padding when no glosses', () => {
+    if (!calcBubbleOverflow) return;
+    const result = calcBubbleOverflow(
+      { top: 100, bottom: 130, left: 50, right: 230 },
+      []
+    );
+    assert.deepStrictEqual(result, { bottom: 0, left: 0, right: 0 });
+  });
+
+  it('returns zero padding when gloss fits inside bubble', () => {
+    if (!calcBubbleOverflow) return;
+    const result = calcBubbleOverflow(
+      { top: 100, bottom: 140, left: 50, right: 230 },
+      [{ top: 110, bottom: 135, left: 80, right: 150 }]
+    );
+    assert.deepStrictEqual(result, { bottom: 0, left: 0, right: 0 });
+  });
+
+  it('detects vertical overflow below bubble', () => {
+    if (!calcBubbleOverflow) return;
+    const result = calcBubbleOverflow(
+      { top: 100, bottom: 130, left: 50, right: 230 },
+      [{ top: 125, bottom: 145, left: 80, right: 150 }]
+    );
+    assert.strictEqual(result.bottom, 15); // 145 - 130
+  });
+
+  it('detects horizontal overflow on both sides', () => {
+    if (!calcBubbleOverflow) return;
+    const result = calcBubbleOverflow(
+      { top: 100, bottom: 130, left: 50, right: 230 },
+      [{ top: 110, bottom: 125, left: 30, right: 250 }]
+    );
+    assert.strictEqual(result.left, 20);  // 50 - 30
+    assert.strictEqual(result.right, 20); // 250 - 230
+  });
+
+  it('takes max overflow across multiple glosses', () => {
+    if (!calcBubbleOverflow) return;
+    const result = calcBubbleOverflow(
+      { top: 100, bottom: 130, left: 50, right: 230 },
+      [
+        { top: 125, bottom: 140, left: 60, right: 200 },
+        { top: 125, bottom: 150, left: 40, right: 260 }
+      ]
+    );
+    assert.strictEqual(result.bottom, 20); // max(10, 20)
+    assert.strictEqual(result.left, 10);   // max(0, 10)
+    assert.strictEqual(result.right, 30);  // max(0, 30)
+  });
+});
