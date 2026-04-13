@@ -1469,5 +1469,29 @@
     "category": "shopGreeting",
     "raw": "出来ますか？",
     "slots": []
+  },
+  {
+    "id": "gm_ask_1",
+    "category": "gameMaster_ask",
+    "raw": "遊びますか？",
+    "slots": []
+  },
+  {
+    "id": "gm_ask_2",
+    "category": "gameMaster_ask",
+    "raw": "一緒に遊びますか？",
+    "slots": []
+  },
+  {
+    "id": "gm_ask_3",
+    "category": "gameMaster_ask",
+    "raw": "楽しい言葉の遊びです！",
+    "slots": []
+  },
+  {
+    "id": "gm_ask_4",
+    "category": "gameMaster_ask",
+    "raw": "私と一緒に言葉で遊びますか？",
+    "slots": []
   }
 ]

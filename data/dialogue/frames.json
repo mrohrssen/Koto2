@@ -8174,5 +8174,169 @@
       "出来る",
       "ますか"
     ]
+  },
+  {
+    "id": "gm_ask_1",
+    "category": "gameMaster_ask",
+    "raw": "遊びますか？",
+    "tokens": [
+      {
+        "surface": "遊び",
+        "base": "遊ぶ",
+        "reading": "あそび",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)",
+        "pos": "Auxiliary"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "遊ぶ",
+      "ますか"
+    ]
+  },
+  {
+    "id": "gm_ask_2",
+    "category": "gameMaster_ask",
+    "raw": "一緒に遊びますか？",
+    "tokens": [
+      {
+        "surface": "一緒に",
+        "base": "一緒に",
+        "reading": "いっしょに",
+        "meaning": "together (with)",
+        "pos": "Noun"
+      },
+      {
+        "surface": "遊び",
+        "base": "遊ぶ",
+        "reading": "あそび",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)",
+        "pos": "Auxiliary"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "一緒に",
+      "遊ぶ",
+      "ますか"
+    ]
+  },
+  {
+    "id": "gm_ask_3",
+    "category": "gameMaster_ask",
+    "raw": "楽しい言葉の遊びです！",
+    "tokens": [
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "言葉",
+        "base": "言葉",
+        "reading": "ことば",
+        "meaning": "language / dialect",
+        "pos": "Noun"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "遊び",
+        "base": "遊び",
+        "reading": "あそび",
+        "meaning": "play / playing / game",
+        "pos": "Noun"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "楽しい",
+      "言葉",
+      "遊び"
+    ]
+  },
+  {
+    "id": "gm_ask_4",
+    "category": "gameMaster_ask",
+    "raw": "私と一緒に言葉で遊びますか？",
+    "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "meaning": "I/me",
+        "pos": "Pronoun"
+      },
+      {
+        "surface": "と"
+      },
+      {
+        "surface": "一緒に",
+        "base": "一緒に",
+        "reading": "いっしょに",
+        "meaning": "together (with)",
+        "pos": "Noun"
+      },
+      {
+        "surface": "言葉",
+        "base": "言葉",
+        "reading": "ことば",
+        "meaning": "language / dialect",
+        "pos": "Noun"
+      },
+      {
+        "surface": "で"
+      },
+      {
+        "surface": "遊び",
+        "base": "遊ぶ",
+        "reading": "あそび",
+        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "meaning": "(polite verb question)",
+        "pos": "Auxiliary"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "私",
+      "一緒に",
+      "言葉",
+      "遊ぶ",
+      "ますか"
+    ]
   }
 ]
