@@ -31,6 +31,8 @@ export class MatchManager {
     this._roundTimers = new Map();
     /** @type {string|null} */
     this._dataDir = options.dataDir || null;
+    /** @type {Function|null} */
+    this._getSettings = options.getSettings || null;
   }
 
   /**
@@ -437,6 +439,16 @@ export class MatchManager {
         c.hp = c.maxHp;
         c.mp = c.maxMp;
         c.activeEffects = [];
+      }
+    }
+
+    // Debug: +100 ATK mode
+    if (this._getSettings?.()?.debugSuperAttack) {
+      for (const creatures of [sideA, sideB]) {
+        for (const c of creatures) {
+          if (!c.itemBuffs) c.itemBuffs = { attackMult: 1.0, hpMult: 1.0, elementEdge: 0, flatDamageReduction: 0, xpMultiplier: 1.0, xpBalanceStacks: 0, baseAttackBonus: 0, baseHpBonus: 0, baseMpBonus: 0 };
+          c.itemBuffs.baseAttackBonus = (c.itemBuffs.baseAttackBonus || 0) + 100;
+        }
       }
     }
 

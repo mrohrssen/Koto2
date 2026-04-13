@@ -186,7 +186,7 @@ const io = new SocketIOServer(httpServer, {
     methods: ['GET', 'POST']
   }
 });
-setupPvpSockets(io);
+setupPvpSockets(io, { getSettings: () => settings });
 const gameManager = new GameManager();
 
 // Debug mode - disables AI narration only (JPDB vocab calls still work)
