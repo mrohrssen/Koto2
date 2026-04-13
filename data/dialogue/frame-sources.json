@@ -1575,7 +1575,7 @@
   {
     "id": "npcDefeat_13",
     "category": "npcDefeat",
-    "raw": "私も強い、また戦う！",
+    "raw": "私も強い、又戦う！",
     "slots": []
   },
   {
@@ -1599,7 +1599,7 @@
   {
     "id": "npcDefeat_17",
     "category": "npcDefeat",
-    "raw": "良い勝負、また会う時は絶対に勝つ！",
+    "raw": "良い勝負、又会う時は絶対に勝つ！",
     "slots": []
   }
 ]
