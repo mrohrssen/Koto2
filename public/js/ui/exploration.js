@@ -966,7 +966,6 @@ export async function renderWhackAMole() {
   renderButtons([
     {
       label: yesLabel,
-      primary: true,
       onClick: async () => {
         // Fetch pool and start game directly (no intermediate start screen)
         let pool;
