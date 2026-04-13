@@ -3625,73 +3625,79 @@ export function isNpcDialogueActive() { return npcDialogueActive; }
  */
 export async function runNpcDialogue() {
   if (npcDialogueActive) return;
-  if (!apiStartNpcDialogue || !apiRespondNpcDialogue) return;
+  if (!apiStartNpcDialogue) return;
   npcDialogueActive = true;
 
   try {
     const dialogueData = await apiStartNpcDialogue();
     if (!dialogueData) return;
 
-    const { npc, freed, rounds, userId, greetingTts, freedTts } = dialogueData;
-    const npcName = npc.nameEn || npc.name;
+    if (dialogueData.mode === 'defeat_line') {
+      // v1: single i+1 defeat line — show in narration, tap to dismiss
+      const { npc, line } = dialogueData;
+      const npcName = npc.nameEn || npc.name;
 
-    // Show NPC sprite in scene area
-    if (showNpcSprite) showNpcSprite(npcName, npc.id, npc);
+      if (showNpcSprite) showNpcSprite(npcName, npc.id, npc);
 
-    // Play freed narration audio if available (fire-and-forget)
-    if (freedTts && userId) {
-      playDialogueAudio(userId, freedTts);
-    }
-    // Show freed narration (click to dismiss)
-    await narration.showNarration(renderEnFirst(freed), { speaker: npcName, html: true });
+      // Build display text from tokens
+      const displayText = line.tokens.map(t => t.surface || '').join('');
+      await narration.showNarration(displayText, { speaker: npcName });
 
-    let totalDelta = 0;
+      if (hideNpcSprite) hideNpcSprite();
+      // Re-render scene after hiding NPC sprite (same as showNpcGreeting pattern)
+      if (updateUI) updateUI();
+    } else {
+      // Future: quiz mode — original flow preserved here
+      const { npc, freed, rounds, userId, greetingTts, freedTts } = dialogueData;
+      const npcName = npc.nameEn || npc.name;
 
-    for (let i = 0; i < rounds.length; i++) {
-      const round = rounds[i];
+      if (showNpcSprite) showNpcSprite(npcName, npc.id, npc);
 
-      // Play NPC line audio if available (fire-and-forget)
-      if (round.npcLineTts && userId) {
-        playDialogueAudio(userId, round.npcLineTts);
+      if (freedTts && userId) {
+        playDialogueAudio(userId, freedTts);
       }
-      // Show NPC line (persistent so player can read while choosing)
-      await narration.showNarration(renderEnFirst(round.npcLine), { speaker: npcName, persistent: true, html: true });
+      await narration.showNarration(renderEnFirst(freed), { speaker: npcName, html: true });
 
-      // Show 3 response buttons (reuses befriend dialogue styling)
-      const selectedIndex = await renderButtonsAsync(
-        round.options.map(o => ({
-          label: renderEnFirst(typeof o === 'string' ? o : o.text),
-        }))
-      );
+      let totalDelta = 0;
 
-      // Play selected option audio if available (fire-and-forget)
-      if (round.options[selectedIndex]?.tts && userId) {
-        playDialogueAudio(userId, round.options[selectedIndex].tts);
-      }
+      for (let i = 0; i < rounds.length; i++) {
+        const round = rounds[i];
 
-      // Hide narration
-      if (narration.forceHideNarration) narration.forceHideNarration();
-
-      // Submit to server
-      const result = await apiRespondNpcDialogue(i, selectedIndex);
-      if (!result) break;
-
-      if (result.dialogueComplete) {
-        totalDelta = result.totalDelta;
-        if (result.state) {
-          updateGameState(result.state);
+        if (round.npcLineTts && userId) {
+          playDialogueAudio(userId, round.npcLineTts);
         }
-        break;
+        await narration.showNarration(renderEnFirst(round.npcLine), { speaker: npcName, persistent: true, html: true });
+
+        const selectedIndex = await renderButtonsAsync(
+          round.options.map(o => ({
+            label: renderEnFirst(typeof o === 'string' ? o : o.text),
+          }))
+        );
+
+        if (round.options[selectedIndex]?.tts && userId) {
+          playDialogueAudio(userId, round.options[selectedIndex].tts);
+        }
+
+        if (narration.forceHideNarration) narration.forceHideNarration();
+
+        const result = await apiRespondNpcDialogue(i, selectedIndex);
+        if (!result) break;
+
+        if (result.dialogueComplete) {
+          totalDelta = result.totalDelta;
+          if (result.state) {
+            updateGameState(result.state);
+          }
+          break;
+        }
       }
+
+      if (hideNpcSprite) hideNpcSprite();
+
+      showBondSummary(npcName, totalDelta);
+      await delay(2200);
+      document.querySelector('.bond-summary')?.remove();
     }
-
-    // Hide NPC sprite
-    if (hideNpcSprite) hideNpcSprite();
-
-    // Show bond summary toast (server clamps to +1/0/-1)
-    showBondSummary(npcName, totalDelta);
-    await delay(2200);
-    document.querySelector('.bond-summary')?.remove();
   } finally {
     npcDialogueActive = false;
   }
