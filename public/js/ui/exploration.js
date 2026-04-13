@@ -943,9 +943,13 @@ export async function renderWhackAMole() {
 
   // Fetch GM dialogue tokens (before pool — no wasted request on decline)
   let dialogue = null;
+  let gmYesTokens = null;
+  let gmNoTokens = null;
   try {
     const resp = await apiGetWhackAMoleDialogue();
     dialogue = resp?.dialogue;
+    gmYesTokens = resp?.yesTokens;
+    gmNoTokens = resp?.noTokens;
   } catch (err) {
     // Fallback: proceed without dialogue
   }
@@ -958,9 +962,9 @@ export async function renderWhackAMole() {
     await sceneModule.showNarration(html, { html: true, speaker: 'Game Master' });
   }
 
-  // Show yes/no buttons with renderJpSentence labels
-  const yesTokens = [{ surface: 'はい', base: 'はい', reading: 'はい', meaning: 'yes' }];
-  const noTokens = [{ surface: 'いいえ', base: 'いいえ', reading: 'いいえ', meaning: 'no' }];
+  // Show yes/no buttons from tokenized frames (fallback to inline for safety)
+  const yesTokens = gmYesTokens || [{ surface: 'はい', base: 'はい', reading: 'はい', meaning: 'yes' }];
+  const noTokens = gmNoTokens || [{ surface: 'いいえ', base: 'いいえ', reading: 'いいえ', meaning: 'no' }];
   const yesLabel = renderJpSentence(yesTokens, getKnownWords(), wordDict, {}, false);
   const noLabel = renderJpSentence(noTokens, getKnownWords(), wordDict, {}, false);
 
