@@ -2033,19 +2033,21 @@ async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved) {
   const targetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
   const targetMaxHp = result.allies?.[targetIdx]?.maxHp || 100;
   const enemyEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
+  const hpUpdate = () => {
+    const damagedAlly = typeof atk.targetIndex === 'number' ? result.allies?.[atk.targetIndex] : null;
+    const hpMapKey = damagedAlly?.id ?? atk.targetId;
+    if (hpMapKey && allyHpMap[hpMapKey]) {
+      allyHpMap[hpMapKey].hp = Math.max(0, allyHpMap[hpMapKey].hp - atk.damage);
+    }
+    updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
+  };
   if (atk.attackerElement) {
     playAttackSound(atk.attackerElement);
-    await enemyCreatureAttackEffect(attackerIdx, targetIdx, atk.attackerElement, atk.damage, targetMaxHp, enemyEffectivenessType);
+    await enemyCreatureAttackEffect(attackerIdx, targetIdx, atk.attackerElement, atk.damage, targetMaxHp, enemyEffectivenessType, hpUpdate);
   } else {
     animatePlayerHurt();
+    hpUpdate();
   }
-
-  const damagedAlly = typeof atk.targetIndex === 'number' ? result.allies?.[atk.targetIndex] : null;
-  const hpMapKey = damagedAlly?.id ?? atk.targetId;
-  if (hpMapKey && allyHpMap[hpMapKey]) {
-    allyHpMap[hpMapKey].hp = Math.max(0, allyHpMap[hpMapKey].hp - atk.damage);
-  }
-  updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
 
   const element = atk.attackerElement || atk.moveElement || 'neutral';
   if (atk.elementMultiplier > 1) {
