@@ -375,6 +375,16 @@ async function completeWhackAMole(score) {
   return apiCall('/whack-a-mole-complete', 'POST', { score });
 }
 
+/** Get GM dialogue tokens for whack-a-mole room */
+async function getWhackAMoleDialogue() {
+  return apiCall('/whack-a-mole-dialogue', 'GET');
+}
+
+/** Skip whack-a-mole room (player declined) */
+async function skipWhackAMole() {
+  return apiCall('/whack-a-mole-skip', 'POST');
+}
+
 // ============ VOCAB/JPDB ENDPOINTS ============
 
 /** Send JPDB review
@@ -764,6 +774,8 @@ export {
   // Whack-a-mole endpoints
   getWhackAMolePool,
   completeWhackAMole,
+  getWhackAMoleDialogue,
+  skipWhackAMole,
   // Vocab/JPDB endpoints
   sendJpdbReview,
   parseJpdbText,
