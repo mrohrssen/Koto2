@@ -113,13 +113,13 @@ async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, element
  * PixiJS replacement for DOM fireCreatureAttackEffect.
  * Lunges the attacker, then impacts the target.
  */
-async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, damage, enemyMaxHp, effectivenessType = 'normal') {
+async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, damage, enemyMaxHp, effectivenessType = 'normal', onImpact) {
   const attackerSprite = getCreatureSprite('player', attackerIndex);
   const fromPos = spritePos('player', attackerIndex);
   const toPos = spritePos('enemy', targetIndex);
   const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: 20, duration: 200 }) : Promise.resolve();
   const blastP = fireElementBlast(fromPos, toPos, element, () => {
-    impactEffect(damage, 'enemy', targetIndex, enemyMaxHp, element, effectivenessType);
+    impactEffect(damage, 'enemy', targetIndex, enemyMaxHp, element, effectivenessType, onImpact);
   });
   await Promise.all([lungeP, blastP]);
 }
@@ -128,13 +128,13 @@ async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, dam
  * PixiJS replacement for DOM enemyCreatureAttackEffect.
  * Lunges the enemy attacker, then impacts the player target.
  */
-async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, damage, playerMaxHp = 0, effectivenessType = 'normal') {
+async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, damage, playerMaxHp = 0, effectivenessType = 'normal', onImpact) {
   const attackerSprite = getCreatureSprite('enemy', attackerIndex);
   const fromPos = spritePos('enemy', attackerIndex);
   const toPos = spritePos('player', targetIndex);
   const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: -20, duration: 200 }) : Promise.resolve();
   const blastP = fireElementBlast(fromPos, toPos, element, () => {
-    impactEffect(damage, 'player', targetIndex, playerMaxHp, element, effectivenessType);
+    impactEffect(damage, 'player', targetIndex, playerMaxHp, element, effectivenessType, onImpact);
     showVignette(200);
   });
   await Promise.all([lungeP, blastP]);
