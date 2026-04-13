@@ -2902,7 +2902,6 @@ async function renderBefriendQuiz(quizData, result) {
     await narration.showNarration("Let's try to befriend them.", { speaker: 'Cid' });
 
     await pixiSlideOutNpc({ slideOut: true });
-    hideEnemy();
   }
 
   const choiceIdx = await choicePromise;
