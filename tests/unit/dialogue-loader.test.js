@@ -9,6 +9,7 @@ import {
   getShopGreetingFrames,
   getBefriendFrames,
   getDialogueWordSet,
+  getGameMasterAskFrames,
 } from '../../src/game/dialogue-loader.js';
 
 describe('dialogue-loader (frames.json)', () => {
@@ -81,5 +82,16 @@ describe('dialogue-loader (frames.json)', () => {
     const words = getDialogueWordSet();
     assert.ok(words instanceof Set);
     assert.ok(words.size > 0);
+  });
+
+  it('getGameMasterAskFrames returns gameMaster_ask category frames', () => {
+    const frames = getGameMasterAskFrames();
+    assert.ok(Array.isArray(frames));
+    assert.ok(frames.length >= 4, `expected at least 4 gameMaster_ask frames, got ${frames.length}`);
+    assert.ok(frames.every(f => f.category === 'gameMaster_ask'));
+    for (const f of frames) {
+      assert.ok(Array.isArray(f.tokens), `frame ${f.id} should have tokens`);
+      assert.ok(Array.isArray(f.words), `frame ${f.id} should have words`);
+    }
   });
 });

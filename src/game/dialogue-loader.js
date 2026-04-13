@@ -8,6 +8,7 @@ let _cidScripts = [];
 let _npcLines = {};
 let _shopPurchaseFrames = [];
 let _shopGreetingFrames = [];
+let _gameMasterAskFrames = [];
 let _befriendFrames = {};
 
 export function loadDialoguePools(dataDir) {
@@ -22,6 +23,7 @@ export function loadDialoguePools(dataDir) {
   // Partition by category
   _shopPurchaseFrames = _frames.filter(f => f.category === 'shopPurchase');
   _shopGreetingFrames = _frames.filter(f => f.category === 'shopGreeting');
+  _gameMasterAskFrames = _frames.filter(f => f.category === 'gameMaster_ask');
 
   // Barks: category "bark_<trigger>" → grouped by trigger
   _barkPool = {};
@@ -70,6 +72,7 @@ export function getCidScripts() { return _cidScripts; }
 export function getNpcLines() { return _npcLines; }
 export function getShopPurchaseFrames() { return _shopPurchaseFrames; }
 export function getShopGreetingFrames() { return _shopGreetingFrames; }
+export function getGameMasterAskFrames() { return _gameMasterAskFrames; }
 export function getBefriendFrames() { return _befriendFrames; }
 
 export function getDialogueWordSet() {
