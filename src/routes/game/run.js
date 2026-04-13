@@ -176,6 +176,33 @@ export default function createRunRoutes({
     }
   });
 
+  // Confirm creature selection (after area is chosen)
+  router.post('/confirm-creatures', async (req, res) => {
+    const gameManager = req.gameManager;
+    const { starterIds } = req.body;
+    try {
+      if (!starterIds || starterIds.length === 0) {
+        return res.status(400).json({ error: 'No creatures selected' });
+      }
+      const meta = gameManager.getMeta();
+      const collection = meta.creatureCollection || [];
+      const validation = validateTeamSelection(collection, starterIds);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.reason });
+      }
+
+      gameManager.confirmCreatures(starterIds);
+      req.saveGame();
+
+      // Queue background dialogues now that party is finalized
+      queueBackgroundDialogues(req);
+
+      res.json({ state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   router.post('/proceed', async (req, res) => {
     const gameManager = req.gameManager;
     try {

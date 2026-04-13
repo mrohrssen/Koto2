@@ -410,6 +410,35 @@ export class GameManager {
     };
   }
 
+  /**
+   * Confirm creature selection after area has been chosen.
+   * Initializes the creature party for the current run.
+   */
+  confirmCreatures(starterIds) {
+    if (!this.run) {
+      throw new Error('No active run');
+    }
+    if (!this.run.currentArea) {
+      throw new Error('No area selected — select an area first');
+    }
+    if (this.run.creatureParty.active.length > 0) {
+      throw new Error('Creatures already confirmed');
+    }
+    if (!starterIds || starterIds.length === 0) {
+      throw new Error('No creatures selected');
+    }
+
+    this.run.creatureParty.active = starterIds.map(id => instantiateCreature(id));
+
+    // Apply crest bonuses (crestMults was set during startRun)
+    for (const creature of this.run.creatureParty.active) {
+      applyCrestBonuses(creature, this.run.crestMults);
+    }
+
+    this.emitState();
+    return { success: true };
+  }
+
   // ============ AREA SELECTION ============
 
   getAreaOptions() {
