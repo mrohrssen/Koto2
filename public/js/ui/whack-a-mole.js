@@ -370,7 +370,6 @@ export class WhackAMoleGame {
           <div class="wam-results-score">\u2605 ${this.score}</div>
           ${xpPerCreature > 0 ? `<div class="wam-results-xp">+${xpPerCreature} XP to party</div>` : ''}
           ${levelUpHtml}
-          <div class="wam-results-credits">${this.score} credits earned</div>
           <button class="ui-btn ui-btn--primary wam-continue-btn">Continue</button>
         </div>
       </div>
