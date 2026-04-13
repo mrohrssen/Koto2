@@ -5415,6 +5415,10 @@ textarea,
   pointer-events: none;
 }
 
+.ui-btn .jp-word ruby {
+  font-size: clamp(16px, 4.25vw, 24px);
+}
+
 /* ========== UI COMPONENTS: CHOICE CARDS ========== */
 
 .ui-choice-list {
