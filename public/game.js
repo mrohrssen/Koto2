@@ -1747,6 +1747,7 @@ async function initGame() {
     returnToHub,
     apiGetAreaOptions,
     apiSelectArea,
+    triggerCreatureSelect,
     apiReturnToHub: returnToHub,
     apiProceed,
     apiRoomEncounter,

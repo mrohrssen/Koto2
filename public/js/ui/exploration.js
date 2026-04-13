@@ -115,6 +115,7 @@ let apiCompleteSpeedReviewRoom = null;
 
 let apiGetCreatureCollection = null;
 let showCollectionSelect = null;
+let triggerCreatureSelect = null;
 
 let speedReviewRoomLaunchState = {
   roomId: null,
@@ -165,6 +166,7 @@ export function init(callbacks) {
   apiCompleteSpeedReviewRoom = callbacks.apiCompleteSpeedReviewRoom;
   apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
+  triggerCreatureSelect = callbacks.triggerCreatureSelect;
   apiGetWhackAMolePool = callbacks.apiGetWhackAMolePool;
   apiCompleteWhackAMole = callbacks.apiCompleteWhackAMole;
   apiSkillMasterOffers = callbacks.apiSkillMasterOffers;
@@ -445,7 +447,9 @@ export async function renderAreaSelection() {
       const result = await apiSelectArea(areas[index].id);
       if (result?.state) {
         updateGameState(result.state);
-        updateUI();
+        // Don't call updateUI() — trigger creature selection first.
+        // The area selection UI stays visible underneath the modal overlay.
+        await triggerCreatureSelect();
       }
     },
     container: choiceContainer,
