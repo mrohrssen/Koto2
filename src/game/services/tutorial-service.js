@@ -103,3 +103,9 @@ export function getFormationNarration(creatureCount) {
     "Select your best party and let's go back to the Starting Meadow!"
   ];
 }
+
+/** Reset tutorial state so it replays from the beginning. */
+export function resetTutorial(meta) {
+  meta.tutorialStep = 0;
+  meta.tutorialFireDropsGifted = false;
+}

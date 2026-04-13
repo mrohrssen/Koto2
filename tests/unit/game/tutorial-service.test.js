@@ -13,6 +13,7 @@ import {
   shouldHardcodeCrestReward,
   giftTutorialFireDrops,
   getFormationNarration,
+  resetTutorial,
   TUTORIAL_STEPS
 } from '../../../src/game/services/tutorial-service.js';
 
@@ -125,6 +126,27 @@ describe('tutorial-service', () => {
       const pages = getFormationNarration(2);
       assert.equal(pages.length, 3);
       assert.ok(pages[0].includes('2'));
+    });
+  });
+
+  describe('resetTutorial', () => {
+    it('resets tutorialStep to 0 and tutorialFireDropsGifted to false', () => {
+      const meta = createMetaProgression();
+      meta.tutorialStep = 5;
+      meta.tutorialFireDropsGifted = true;
+      resetTutorial(meta);
+      assert.equal(meta.tutorialStep, 0);
+      assert.equal(meta.tutorialFireDropsGifted, false);
+    });
+
+    it('preserves other meta fields', () => {
+      const meta = createMetaProgression();
+      meta.tutorialStep = 7;
+      meta.prologueComplete = true;
+      meta.lifetimeStats = { totalRuns: 5 };
+      resetTutorial(meta);
+      assert.equal(meta.prologueComplete, true);
+      assert.deepEqual(meta.lifetimeStats, { totalRuns: 5 });
     });
   });
 });

@@ -17,6 +17,7 @@ import {
   performFullParse,
   updateWordStates
 } from '../../game/vocab-manager.js';
+import { resetTutorial } from '../../game/services/tutorial-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -397,6 +398,15 @@ export default function createMiscRoutes({
     const gameManager = req.gameManager;
     const meta = gameManager.getMeta();
     meta.prologueComplete = false;
+    req.saveGame();
+    res.json({ ok: true });
+  });
+
+  // Reset tutorial so it replays from scratch
+  router.post('/tutorial-reset', (req, res) => {
+    const gameManager = req.gameManager;
+    const meta = gameManager.getMeta();
+    resetTutorial(meta);
     req.saveGame();
     res.json({ ok: true });
   });
