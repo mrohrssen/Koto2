@@ -1490,12 +1490,17 @@ export async function executePlayerAttack() {
           if (enemySlot) combatEvents.emit('creatureHit', { slotEl: enemySlot, side: 'enemy' });
 
           // Visual effects for enemy damage (PixiJS impact with tier-based effects)
-          await impactEffect(pa.damage, 'enemy', 0, enemyMaxHp);
+          await impactEffect(pa.damage, 'enemy', 0, enemyMaxHp, undefined, undefined, () => {
+            characterUI.updateEnemyHPBar(result.enemyHp);
+          });
         }
       }
 
-      // Update HP bars
-      characterUI.updateEnemyHPBar(result.enemyHp);
+      // Sync HP bars for dodge/miss (no impactEffect fires, but server state may have changed)
+      if (!result.playerAttack?.damage) {
+        characterUI.updateEnemyHPBar(result.enemyHp);
+      }
+      // Update player HP bar (player doesn't take damage during their own attack animation)
       characterUI.updatePlayerHPBar(result.playerHp);
 
       // Show glitching dialogue when enemy HP drops below 30%
