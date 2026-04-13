@@ -35,7 +35,7 @@ Replace the post-combat quiz with a single i+1-validated defeat line from a new 
 - Resolved at assembly time via `assembleFrame()` + `entityToToken()`, same as `{item}` in shopPurchase.
 - Entity words get the +1 allowance (2 unknowns instead of 1 per sentence).
 
-The existing i+1 filter (`selectNpcLine()`) automatically selects the right complexity per player. Early players see 1-word lines; as vocab grows, longer lines become eligible.
+The i+1 filter automatically selects the right complexity per player. Early players see 1-word lines; as vocab grows, longer lines become eligible.
 
 ### Route: `/api/game/npc-dialogue-start` — The Gateway
 
@@ -45,17 +45,31 @@ This route stays as the post-combat entry point. Its behavior changes now but is
 
 1. Load shared `npcDefeat` pool via new `getNpcDefeatFrames()` accessor in dialogue-loader.
 2. Get player's known words from FSRS.
-3. Pick a random creature from the player's active party for `{randomPlayerCreature}` slot assembly.
-4. Assemble frames that have the slot via `assembleFrame()`. Non-slot frames pass through as-is.
-5. Run `selectNpcLine(assembledFrames, knownWords)` for i+1 filtering.
-6. Set `currentRoom.npcBattle.skillSelectionPending = true` directly.
-7. Return `{ mode: 'defeat_line', line: { tokens, raw } }`.
+3. Pick a random creature from the player's active party (not reserve) for `{randomPlayerCreature}` slot.
+4. For each frame in the pool: call `assembleFrame(frame, { randomPlayerCreature: creatureEntity })`. Frames without the slot pass through unchanged (assembleFrame skips unfilled slots). Spread the source frame's `raw` and `id` onto the assembled result so filtering/dedup works.
+5. Filter assembled candidates using `isEligible(candidate.tokens, knownWords)` — the same pattern used by the shop flow in `run.js:707-718`. Score eligible candidates with `scoreCandidate()`. Pick from top-scoring candidates randomly.
+6. **Do NOT set `gameManager.run.npcDialogue`.** The defeat line bypasses the npcDialogue state entirely. Setting it would trap the phase machine in `NPC_DIALOGUE` (phase-machine.js:190 checks `run.npcDialogue?.active` before `skillSelectionPending`).
+7. Set `currentRoom.npcBattle.skillSelectionPending = true` directly.
+8. Return response:
+```json
+{
+  "mode": "defeat_line",
+  "npc": { "id": "...", "name": "...", "nameEn": "...", "speakerId": "..." },
+  "line": { "tokens": [...], "raw": "..." }
+}
+```
+
+**New imports needed in combat.js:**
+- `getNpcDefeatFrames` from `dialogue-loader.js`
+- `assembleFrame`, `isEligible`, `scoreCandidate` from `token-format.js`
 
 **Future behavior (v2 — quiz graduation):**
 
 1. Same route checks if player qualifies for AI dialogue.
-2. If yes: return `{ mode: 'quiz', rounds: [...] }` (reactivate current quiz system).
+2. If yes: set `run.npcDialogue` as before, return `{ mode: 'quiz', rounds: [...] }` (reactivate current quiz system).
 3. If no: return defeat line as v1.
+
+**Bond system note:** Bond changes are deferred until quiz graduation. NPC defeats with v1 defeat lines do not modify bond values or record encounters.
 
 ### Frontend: `runNpcDialogue()` in combat-loop.js
 
@@ -72,7 +86,7 @@ In `src/game/dialogue-loader.js`:
 
 ### Phase Machine
 
-No changes needed. The `npc_dialogue` → `npc_skill_selection` transition already works based on `skillSelectionPending`. We just set that flag earlier (in the route) instead of after 3 quiz rounds.
+No changes needed. By NOT setting `run.npcDialogue`, the phase machine skips the `NPC_DIALOGUE` check (phase-machine.js:190) and falls through to the `NPC_SKILL_SELECTION` check (phase-machine.js:209) which triggers on `skillSelectionPending = true`.
 
 ### What Stays Dormant (Not Deleted)
 
