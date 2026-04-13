@@ -13,35 +13,6 @@ export const TUTORIAL_STEPS = {
   COMPLETE: 6
 };
 
-const NARRATIONS = {
-  [TUTORIAL_STEPS.SKILL_SELECTION]: [
-    'Each run you can get skills to make your party stronger.',
-    "Let's just pick the first one."
-  ],
-  [TUTORIAL_STEPS.BEFRIEND]: [
-    'Wow! This creature wants to talk!',
-    "Let's try to befriend them."
-  ],
-  [TUTORIAL_STEPS.ITEM_SHOP]: [
-    "Here you'll be offered items to power up. Choose wisely!"
-  ],
-  [TUTORIAL_STEPS.DEATH_HUB]: [
-    'That was tough huh?',
-    "Don't worry, you'll get stronger each run!"
-  ],
-  [TUTORIAL_STEPS.SPEED_REVIEW]: [
-    'Hey! It looks like you\'re starting to learn some Japanese.',
-    'The Translator detected {dueCount} words for you to review.',
-    'If you pass the review, you\'ll just see the Japanese for these words from now on.',
-    'But don\'t worry, you can always click them to see the full translation.',
-    'Keep exploring and watch your Japanese grow!'
-  ],
-  [TUTORIAL_STEPS.CREATURE_FORMATION]: [],
-  [TUTORIAL_STEPS.COMPLETE]: []
-};
-
-const BEFRIEND_WRONG_NARRATION = "No, I don't think that's it... try again.";
-
 export function getTutorialStep(meta) {
   return meta?.tutorialStep ?? 6;
 }
@@ -54,14 +25,6 @@ export function advanceTutorial(meta) {
 
 export function isTutorialActive(meta) {
   return getTutorialStep(meta) < TUTORIAL_STEPS.COMPLETE;
-}
-
-export function getTutorialNarration(step) {
-  return NARRATIONS[step] || [];
-}
-
-export function getBefriendWrongNarration() {
-  return BEFRIEND_WRONG_NARRATION;
 }
 
 export function shouldOverrideSkillOffers(meta) {
@@ -94,14 +57,6 @@ export function shouldFixRoomSequence(meta) {
 //   meta.tutorialFireDropsGifted = true;
 //   return true;
 // }
-
-export function getFormationNarration(creatureCount) {
-  return [
-    `Now you have ${creatureCount} creatures!`,
-    'Each creature costs points.',
-    "Select your best party and let's go back to the Starting Meadow!"
-  ];
-}
 
 /** Reset tutorial state so it replays from the beginning. */
 export function resetTutorial(meta) {

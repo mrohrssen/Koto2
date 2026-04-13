@@ -24,6 +24,7 @@ import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
 import { showAttackDisplay } from './combat-loop.js';
 import { syncPixiStatusLabels, clearAllPixiStatusLabels } from '../pixi/formation.js';
+import { getHpColor } from './combat-ui-utils.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -333,7 +334,7 @@ function updateSlotHp(formationId, index, hp, maxHp) {
   const fill = slot.querySelector('.formation-hp-fill');
   if (fill) {
     fill.style.width = `${hpPct}%`;
-    fill.style.backgroundColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+    fill.style.backgroundColor = getHpColor(hpPct);
   }
   const sprite = slot.querySelector('.formation-sprite');
   if (sprite) {

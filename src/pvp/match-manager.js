@@ -10,6 +10,7 @@
 import { writeFileSync, readFileSync, readdirSync, unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
 import { resolveRound } from './pvp-combat.js';
+import { applyDebugSuperAttack } from '../game/loop.js';
 
 // Characters excluding easily confused ones (no I, O, 0, 1)
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -442,14 +443,9 @@ export class MatchManager {
       }
     }
 
-    // Debug: +100 ATK mode
     if (this._getSettings?.()?.debugSuperAttack) {
-      for (const creatures of [sideA, sideB]) {
-        for (const c of creatures) {
-          if (!c.itemBuffs) c.itemBuffs = { attackMult: 1.0, hpMult: 1.0, elementEdge: 0, flatDamageReduction: 0, xpMultiplier: 1.0, xpBalanceStacks: 0, baseAttackBonus: 0, baseHpBonus: 0, baseMpBonus: 0 };
-          c.itemBuffs.baseAttackBonus = (c.itemBuffs.baseAttackBonus || 0) + 100;
-        }
-      }
+      applyDebugSuperAttack(sideA);
+      applyDebugSuperAttack(sideB);
     }
 
     match.phase = 'battle';

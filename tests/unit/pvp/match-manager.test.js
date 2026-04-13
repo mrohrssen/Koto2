@@ -169,6 +169,41 @@ describe('MatchManager', () => {
       // Should be a deep clone (not the same reference)
       assert.notStrictEqual(combatCreature, team.creatureParty.active[0]);
     });
+
+    it('_startBattle applies applyDebugSuperAttack when debugSuperAttack setting is on', () => {
+      const getSettings = mock.fn(() => ({ debugSuperAttack: true }));
+      const mm = new MatchManager({ resolveRoundFn: mockResolve, getSettings });
+      const battleCode = mm.createMatch('user1', 'sock1');
+      mm.joinMatch(battleCode, 'user2', 'sock2');
+      mm.selectTeam(battleCode, 'user1', makeTeam());
+      mm.selectTeam(battleCode, 'user2', makeTeam());
+      mm.setReady(battleCode, 'user1');
+      mm.setReady(battleCode, 'user2');
+
+      const match = mm.getMatch(battleCode);
+      for (const creature of [...match.combat.sideA, ...match.combat.sideB]) {
+        assert.strictEqual(creature.itemBuffs.baseAttackBonus, 100);
+        assert.strictEqual(creature._debugAtkApplied, true);
+      }
+      assert.ok(getSettings.mock.calls.length >= 1);
+    });
+
+    it('_startBattle does not apply debug super attack when setting is off', () => {
+      const getSettings = mock.fn(() => ({ debugSuperAttack: false }));
+      const mm = new MatchManager({ resolveRoundFn: mockResolve, getSettings });
+      const battleCode = mm.createMatch('user1', 'sock1');
+      mm.joinMatch(battleCode, 'user2', 'sock2');
+      mm.selectTeam(battleCode, 'user1', makeTeam());
+      mm.selectTeam(battleCode, 'user2', makeTeam());
+      mm.setReady(battleCode, 'user1');
+      mm.setReady(battleCode, 'user2');
+
+      const match = mm.getMatch(battleCode);
+      for (const creature of [...match.combat.sideA, ...match.combat.sideB]) {
+        assert.strictEqual(creature._debugAtkApplied, undefined);
+        assert.strictEqual(creature.itemBuffs?.baseAttackBonus ?? 0, 0);
+      }
+    });
   });
 
   describe('submitMoves', () => {

@@ -54,6 +54,8 @@ import { playAttackSound } from './combat-audio.js';
 import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
+import { getHpColor } from './combat-ui-utils.js';
+import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 
 // ============ SERVER-PROVIDED BARKS ============
 let _currentRoundBarks = [];
@@ -196,8 +198,19 @@ function wrapWithRuby(word, reading, englishReading) {
   return word || '';
 }
 
-function buildSplitAttackCard(atk, isEnemy) {
-  const theme = ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
+/**
+ * @param {Object} atk - Attack payload
+ * @param {boolean} isEnemy - Target column sprite flip (enemy attacking player)
+ * @param {Object} [options]
+ * @param {Object} [options.theme] - Override theme; default ELEMENT_THEME[atk.attackerElement]
+ * @param {string} [options.leftHtml] - Full inner HTML for .sac-left (e.g. NPC sprite column)
+ * @param {Object} [options.tagLabelsByCategory] - Merge overrides for row-1 tag text (e.g. drain: 'NPC')
+ * @param {string} [options.defaultCategoryTagLabel] - Fallback when category has no tag (default 'ATK')
+ */
+function buildSplitAttackCard(atk, isEnemy, options = {}) {
+  const theme = options.theme != null
+    ? options.theme
+    : (ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' });
 
   // Creature names: use English name as furigana for katakana (not teaching targets)
   const attackerNameJp = atk.attackerNameJp || atk.attackerName;
@@ -219,7 +232,9 @@ function buildSplitAttackCard(atk, isEnemy) {
   const skillIcon = actionIconPath(atk.attackerSkillEn);
 
   const cat = atk.category || 'damage';
-  const tagLabel = { heal: 'HEAL', buff: 'BUFF', shield: 'DEF', debuff: 'DBF', drain: 'ATK' }[cat] || 'ATK';
+  const defaultTagByCat = { heal: 'HEAL', buff: 'BUFF', shield: 'DEF', debuff: 'DBF', drain: 'ATK' };
+  const tagByCat = { ...defaultTagByCat, ...(options.tagLabelsByCategory || {}) };
+  const tagLabel = tagByCat[cat] ?? options.defaultCategoryTagLabel ?? 'ATK';
   const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
   const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
 
@@ -229,10 +244,14 @@ function buildSplitAttackCard(atk, isEnemy) {
   // Flip target enemy sprite to face left when player attacks
   const targetSpriteClass = isEnemy ? 'sac-creature-sprite' : 'sac-creature-sprite sac-sprite-enemy';
 
+  const leftColumnInner = options.leftHtml !== undefined
+    ? options.leftHtml
+    : `${creatureSpriteHtml(atk.attackerId, attackerWord, atk.attackerElement, 'sac-creature-sprite')}
+      <div class="sac-attacker-name">${attackerNameHtml}</div>`;
+
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
     <div class="sac-left">
-      ${creatureSpriteHtml(atk.attackerId, attackerWord, atk.attackerElement, 'sac-creature-sprite')}
-      <div class="sac-attacker-name">${attackerNameHtml}</div>
+      ${leftColumnInner}
     </div>
     <div class="sac-right">
       <div class="sac-row" data-row="0">
@@ -290,7 +309,7 @@ export function insertAttackCard(atk, isEnemy) {
 
 /**
  * Build and insert a split attack card for an NPC skill hit.
- * Uses NPC sprite instead of creature sprite.
+ * Uses NPC sprite instead of creature sprite (left column supplied via options.leftHtml).
  */
 function insertNpcAttackCard(atk) {
   const actionArea = document.getElementById('action-area');
@@ -298,59 +317,18 @@ function insertNpcAttackCard(atk) {
 
   const theme = ELEMENT_THEME[atk.moveElement] || ELEMENT_THEME['neutral'] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
   const spriteUrl = npcSpritePath(atk.attackerId);
-
   const attackerNameJp = atk.attackerNameJp || atk.attackerName;
   const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
+  const leftHtml = `<img class="sac-sprite" src="${escHtml(spriteUrl)}" alt=""><div class="sac-attacker-name">${attackerNameHtml}</div>`;
 
-  let damageSign;
-  if (atk.healAmount > 0) damageSign = `+${atk.healAmount}`;
-  else if (atk.damage > 0) damageSign = `-${atk.damage}`;
-  else if (atk.effectApplied) damageSign = atk.effectApplied;
-  else if (atk.statChangesApplied) {
-    const SC_NAMES = { atk: 'ATK', def: 'DEF' };
-    damageSign = Object.entries(atk.statChangesApplied).map(([s, v]) => `${SC_NAMES[s] || s} ${v > 0 ? '+' : ''}${v}`).join(' ');
-  }
-  else damageSign = '0';
-  const targetDisplayName = atk.targetNameJp || atk.targetName || '';
-  const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
+  // isEnemy true: target uses ally-facing sprite (same as enemy creature attacking player)
+  actionArea.innerHTML = buildSplitAttackCard(atk, true, {
+    theme,
+    leftHtml,
+    tagLabelsByCategory: { drain: 'NPC' },
+    defaultCategoryTagLabel: 'NPC',
+  });
 
-  const baseIcon = actionIconPath(atk.attackerBaseMeaning);
-  const skillIcon = actionIconPath(atk.attackerSkillEn);
-
-  const cat = atk.category || 'damage';
-  const tagLabel = { heal: 'HEAL', buff: 'BUFF', shield: 'DEF', debuff: 'DBF', drain: 'NPC' }[cat] || 'NPC';
-  const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
-  const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
-
-  const targetWord = atk.targetBaseWord || atk.targetName || '？';
-
-  const html = `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
-    <div class="sac-left">
-      <img class="sac-sprite" src="${spriteUrl}" alt="">
-      <div class="sac-attacker-name">${attackerNameHtml}</div>
-    </div>
-    <div class="sac-right">
-      <div class="sac-row" data-row="0">
-        ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${renderJpSentence([entityToToken({ baseWord: atk.attackerBaseWord, baseReading: atk.attackerBaseReading, baseMeaning: atk.attackerBaseMeaning })], getKnownWords(), new Map())}
-        <span class="sac-tag sac-tag-base">BASE</span>
-      </div>
-      <div class="sac-row" data-row="1">
-        ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${renderJpSentence([entityToToken({ name: atk.attackerSkillName || atk.moveName, reading: atk.attackerSkillReading, nameEn: atk.attackerSkillEn })], getKnownWords(), new Map())}
-        <span class="sac-tag ${tagClass}">${tagLabel}</span>
-      </div>
-      <div class="sac-row sac-impact" data-row="2">
-        <span class="sac-impact-arrow">\u2192</span>
-        ${creatureSpriteHtml(atk.targetId, targetWord, atk.targetElement, 'sac-creature-sprite')}
-        <span class="sac-impact-name">${targetNameHtml}</span>
-        <span class="${damageClass}">${damageSign}</span>
-      </div>
-    </div>
-    <span class="sac-continue" style="display:none">\u25BC</span>
-  </div>`;
-
-  actionArea.innerHTML = html;
   const card = actionArea.querySelector('.split-attack-card');
   if (!card) return null;
 
@@ -414,6 +392,90 @@ function showAttackCardAndWait(atk, isEnemy) {
 }
 
 /**
+ * Party-skill proc visuals shared by attack-display and inline move-turn playback.
+ * Callers supply resolveAllies/resolveEnemies and indices so PvP overrides stay correct.
+ */
+async function showAttackPartySkillProcs(atk, {
+  sourceSide,
+  attackerIndex,
+  targetSide,
+  targetIndex,
+  element,
+  resolveAllies,
+  resolveEnemies
+}) {
+  if (!atk.partySkillProcs?.length) return;
+
+  for (const proc of atk.partySkillProcs) {
+    let detail = '';
+    if (proc.type === 'bonusDamage') detail = ` +${proc.bonusDamage}`;
+    else if (proc.type === 'healAll') detail = ` +${proc.healAmount} HP`;
+
+    const attackerPos = spritePos(sourceSide, attackerIndex);
+    popupSkillProc(`${proc.skillName}!${detail}`, attackerPos);
+
+    if (proc.type === 'bonusDamage') {
+      burstParticles(spritePos(targetSide, targetIndex), { count: 6, color: 0xFFB74D });
+    } else if (proc.type === 'healAll') {
+      resolveAllies().forEach((ally, i) => {
+        if (ally && ally.hp > 0) {
+          const pos = spritePos('player', i);
+          burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
+          showHealPopup(proc.healAmount, pos);
+        }
+      });
+    } else if (proc.type === 'haste') {
+      burstParticles(attackerPos, { count: 8, color: 0x4FC3F7 });
+    } else if (proc.type === 'teamShield') {
+      resolveAllies().forEach((ally, i) => {
+        if (ally && ally.hp > 0) {
+          burstParticles(spritePos('player', i), { count: 6, color: 0x42A5F5 });
+        }
+      });
+    } else if (proc.type === 'chainHit') {
+      const chainFrom = spritePos('enemy', proc.sourceIndex ?? atk.targetIndex);
+      const chainTo = spritePos('enemy', proc.targetIndex);
+      const chainElement = proc.element || element;
+      await fireElementBlast(chainFrom, chainTo, chainElement, () => {
+        pixiDamageNumber(proc.damage, chainTo, { tier: 1 });
+        screenShake('light');
+      });
+    } else if (proc.type === 'stageChange') {
+      const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+      const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
+      const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
+      const pos = spritePos(proc.targetSide === 'enemy' ? 'enemy' : 'player', proc.targetIndex);
+      if (proc.delta > 0) popupBuff(text, pos);
+      else popupDebuff(text, pos);
+    } else if (proc.type === 'spread') {
+      const pos = spritePos('enemy', proc.targetIndex);
+      popupSkillProc('SPREAD!', pos);
+      burstParticles(pos, { count: 4, color: 0x9C27B0 });
+    } else if (proc.type === 'teamBuff') {
+      const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+      resolveAllies().forEach((ally, i) => {
+        if (ally) popupBuff(`${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`, spritePos('player', i));
+      });
+    } else if (proc.type === 'burst') {
+      const pos = spritePos('enemy', proc.targetIndex);
+      popupSkillProc('AFFLICTION BURST!', pos);
+      pixiDamageNumber(proc.damage, pos, { tier: 1 });
+      burstParticles(pos, { count: 10, color: 0xE91E63 });
+    } else if (proc.type === 'pandemic') {
+      resolveEnemies().forEach((enemy, i) => {
+        if (enemy && enemy.hp > 0) {
+          const pos = spritePos('enemy', i);
+          popupSkillProc('PANDEMIC!', pos);
+          burstParticles(pos, { count: 6, color: 0x9C27B0 });
+        }
+      });
+    }
+
+    await effectDelay(600);
+  }
+}
+
+/**
  * Shared attack display sequence used by both PvE and PvP.
  * Shows: card → sound → effects → damage → STAB → effectiveness → party skill procs → tap.
  *
@@ -473,78 +535,17 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   }
 
   // Party skill procs (bonus damage, heals, haste, shields)
-  if (atk.partySkillProcs?.length) {
-    const resolveAllies = () => overrideAllies || getGameState()?.combat?.allies || getGameState()?.run?.creatureParty?.active || [];
-    const resolveEnemies = () => overrideEnemies || getGameState()?.combat?.enemies || [];
-
-    for (const proc of atk.partySkillProcs) {
-      let detail = '';
-      if (proc.type === 'bonusDamage') detail = ` +${proc.bonusDamage}`;
-      else if (proc.type === 'healAll') detail = ` +${proc.healAmount} HP`;
-
-      const attackerPos = spritePos(sourceSide, attackerIndex);
-      popupSkillProc(`${proc.skillName}!${detail}`, attackerPos);
-
-      if (proc.type === 'bonusDamage') {
-        burstParticles(spritePos(targetSide, targetIndex), { count: 6, color: 0xFFB74D });
-      } else if (proc.type === 'healAll') {
-        resolveAllies().forEach((ally, i) => {
-          if (ally && ally.hp > 0) {
-            const pos = spritePos('player', i);
-            burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
-            showHealPopup(proc.healAmount, pos);
-          }
-        });
-      } else if (proc.type === 'haste') {
-        burstParticles(attackerPos, { count: 8, color: 0x4FC3F7 });
-      } else if (proc.type === 'teamShield') {
-        resolveAllies().forEach((ally, i) => {
-          if (ally && ally.hp > 0) {
-            burstParticles(spritePos('player', i), { count: 6, color: 0x42A5F5 });
-          }
-        });
-      } else if (proc.type === 'chainHit') {
-        const chainFrom = spritePos('enemy', proc.sourceIndex ?? atk.targetIndex);
-        const chainTo = spritePos('enemy', proc.targetIndex);
-        const chainElement = proc.element || element;
-        await fireElementBlast(chainFrom, chainTo, chainElement, () => {
-          pixiDamageNumber(proc.damage, chainTo, { tier: 1 });
-          screenShake('light');
-        });
-      } else if (proc.type === 'stageChange') {
-        const SC_NAMES = { atk: 'ATK', def: 'DEF' };
-        const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
-        const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
-        const pos = spritePos(proc.targetSide === 'enemy' ? 'enemy' : 'player', proc.targetIndex);
-        if (proc.delta > 0) popupBuff(text, pos);
-        else popupDebuff(text, pos);
-      } else if (proc.type === 'spread') {
-        const pos = spritePos('enemy', proc.targetIndex);
-        popupSkillProc('SPREAD!', pos);
-        burstParticles(pos, { count: 4, color: 0x9C27B0 });
-      } else if (proc.type === 'teamBuff') {
-        const SC_NAMES = { atk: 'ATK', def: 'DEF' };
-        resolveAllies().forEach((ally, i) => {
-          if (ally) popupBuff(`${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`, spritePos('player', i));
-        });
-      } else if (proc.type === 'burst') {
-        const pos = spritePos('enemy', proc.targetIndex);
-        popupSkillProc('AFFLICTION BURST!', pos);
-        pixiDamageNumber(proc.damage, pos, { tier: 1 });
-        burstParticles(pos, { count: 10, color: 0xE91E63 });
-      } else if (proc.type === 'pandemic') {
-        resolveEnemies().forEach((enemy, i) => {
-          if (enemy && enemy.hp > 0) {
-            const pos = spritePos('enemy', i);
-            popupSkillProc('PANDEMIC!', pos);
-            burstParticles(pos, { count: 6, color: 0x9C27B0 });
-          }
-        });
-      }
-
-      await effectDelay(600);
-    }
-  }
+  const resolveAllies = () => overrideAllies || getGameState()?.combat?.allies || getGameState()?.run?.creatureParty?.active || [];
+  const resolveEnemies = () => overrideEnemies || getGameState()?.combat?.enemies || [];
+  await showAttackPartySkillProcs(atk, {
+    sourceSide,
+    attackerIndex,
+    targetSide,
+    targetIndex,
+    element,
+    resolveAllies,
+    resolveEnemies
+  });
 
   // Tap to continue
   if (attackCard) {
@@ -923,6 +924,37 @@ function resumeMoveSelectionAfterBefriendSpend(actingSlot) {
   promptNextCreature();
 }
 
+/**
+ * Ally HP map for befriend counter-attack playback — keyed by ally.id (see showOneEnemyAttackAnimated).
+ * When `attacks` is set, adds each strike's damage back onto snapshot HP so the map reflects pre-strike
+ * values (API allies are usually post-attack); matches buildAllyHpMap semantics.
+ */
+function buildLiveAllyHpMap(allies, attacks) {
+  return buildAllyHpMap({ allies: allies || [], enemyAttacks: attacks || [] });
+}
+
+/**
+ * Play befriend-related enemy strikes through the shared attack animation path.
+ * @param {Array} attacks - enemyAttacks or counterAttack from API
+ * @param {Array|undefined} alliesSnapshot - post-attack allies from response; falls back to live combat then party
+ */
+async function showBefriendEnemyAttacksAnimated(attacks, alliesSnapshot) {
+  if (!attacks?.length) return;
+  const gs = getGameState();
+  let allies = alliesSnapshot?.length
+    ? alliesSnapshot
+    : (gs.combat?.allies?.length ? gs.combat.allies : []);
+  if (!allies?.length) {
+    allies = gs.run?.creatureParty?.active || [];
+  }
+  const resultLike = { allies, creatureParty: { active: allies } };
+  const allyHpMap = buildLiveAllyHpMap(allies, attacks);
+
+  for (const atk of attacks) {
+    await showOneEnemyAttackAnimated(resultLike, atk, allyHpMap, false);
+  }
+}
+
 /** Handle the player tapping the はなす (Talk) button during move selection. */
 async function handleBefriendTalk() {
   if (!combatActive) return;
@@ -969,22 +1001,10 @@ async function handleBefriendTalk() {
         narration.showNarration(`${creatureName} refused to talk!`, { persistent: false });
         if (delay) await delay(600);
 
-        // Show enemy counter-attacks as split attack cards
-        if (result.enemyAttacks?.length) {
-          for (const atk of result.enemyAttacks) {
-            const card = insertAttackCard(atk, true);
-            if (atk.damage > 0) {
-              playSFX('player-hit');
-              if (animatePlayerHurt) animatePlayerHurt(atk.targetIndex ?? 0);
-              if (showDamageNumber) showDamageNumber(atk.damage, true, false);
-            }
-            if (card) {
-              await waitForCardTap(card);
-            } else {
-              if (delay) await delay(400);
-            }
-          }
-        }
+        await showBefriendEnemyAttacksAnimated(
+          result.enemyAttacks,
+          result.allies || getGameState()?.combat?.allies || []
+        );
 
         // Update state with new HP values
         if (result.allies || result.enemies) {
@@ -1233,12 +1253,6 @@ function findEnemyTargetElement(targetId, enemies, enemyIndex = null) {
  * @param {Array} creatures - The creature party active array (with final HP from server)
  * @param {Object} allyHpMap - Map of creatureId -> { hp, maxHp } with running HP values
  */
-function getHpColor(pct) {
-  if (pct > 60) return 'var(--hp-green)';
-  if (pct > 30) return 'var(--hp-yellow)';
-  return 'var(--hp-red)';
-}
-
 function updateCreatureHpBars(creatures, allyHpMap) {
   if (!creatures) return;
   const slots = document.querySelectorAll('#player-formation .formation-slot');
@@ -1723,89 +1737,23 @@ const STATUS_EFFECT_LABELS = {
  * @param {Object} atk - The attack record with optional partySkillProcs array
  */
 async function showPartySkillProcs(atk) {
-  if (!atk.partySkillProcs?.length) return;
-
-  // Resolve attacker index for PixiJS positioning
   const state = getGameState();
   const activeCreatures = state.run?.creatureParty?.active || [];
-  const attackerIdx = atk.attackerId ? activeCreatures.findIndex(r => r && r.id === atk.attackerId) : 0;
-  const attackerPos = spritePos('player', Math.max(0, attackerIdx));
+  const attackerIndex = atk.attackerId
+    ? activeCreatures.findIndex(r => r && r.id === atk.attackerId)
+    : 0;
+  const safeAttackerIndex = Math.max(0, attackerIndex);
+  const targetIndex = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
 
-  for (const proc of atk.partySkillProcs) {
-    let detail = '';
-    if (proc.type === 'bonusDamage') {
-      detail = ` +${proc.bonusDamage}`;
-    } else if (proc.type === 'healAll') {
-      detail = ` +${proc.healAmount} HP`;
-    }
-
-    popupSkillProc(`${proc.skillName}!${detail}`, attackerPos);
-
-    if (proc.type === 'bonusDamage') {
-      const targetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
-      burstParticles(spritePos('enemy', targetIdx), { count: 6, color: 0xFFB74D });
-    } else if (proc.type === 'healAll') {
-      const allies = state.combat?.allies || activeCreatures;
-      allies.forEach((ally, i) => {
-        if (ally && ally.hp > 0) {
-          const pos = spritePos('player', i);
-          burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
-          showHealPopup(proc.healAmount, pos);
-        }
-      });
-    } else if (proc.type === 'haste') {
-      burstParticles(attackerPos, { count: 8, color: 0x4FC3F7 });
-    } else if (proc.type === 'teamShield') {
-      const allies = state.combat?.allies || activeCreatures;
-      allies.forEach((ally, i) => {
-        if (ally && ally.hp > 0) {
-          burstParticles(spritePos('player', i), { count: 6, color: 0x42A5F5 });
-        }
-      });
-    } else if (proc.type === 'chainHit') {
-      const chainFrom = spritePos('enemy', proc.sourceIndex ?? atk.targetIndex);
-      const chainTo = spritePos('enemy', proc.targetIndex);
-      const chainElement = proc.element || 'neutral';
-      await fireElementBlast(chainFrom, chainTo, chainElement, () => {
-        pixiDamageNumber(proc.damage, chainTo, { tier: 1 });
-        screenShake('light');
-      });
-    } else if (proc.type === 'stageChange') {
-      const SC_NAMES = { atk: 'ATK', def: 'DEF' };
-      const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
-      const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
-      const side = proc.targetSide === 'enemy' ? 'enemy' : 'player';
-      const pos = spritePos(side, proc.targetIndex);
-      if (proc.delta > 0) popupBuff(text, pos);
-      else popupDebuff(text, pos);
-    } else if (proc.type === 'spread') {
-      const pos = spritePos('enemy', proc.targetIndex);
-      popupSkillProc('SPREAD!', pos);
-      burstParticles(pos, { count: 4, color: 0x9C27B0 });
-    } else if (proc.type === 'teamBuff') {
-      const SC_NAMES = { atk: 'ATK', def: 'DEF' };
-      const allies = state.combat?.allies || activeCreatures;
-      allies.forEach((ally, i) => {
-        if (ally) popupBuff(`${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`, spritePos('player', i));
-      });
-    } else if (proc.type === 'burst') {
-      const pos = spritePos('enemy', proc.targetIndex);
-      popupSkillProc('AFFLICTION BURST!', pos);
-      pixiDamageNumber(proc.damage, pos, { tier: 1 });
-      burstParticles(pos, { count: 10, color: 0xE91E63 });
-    } else if (proc.type === 'pandemic') {
-      const enemies = state.combat?.enemies || [];
-      enemies.forEach((enemy, i) => {
-        if (enemy && enemy.hp > 0) {
-          const pos = spritePos('enemy', i);
-          popupSkillProc('PANDEMIC!', pos);
-          burstParticles(pos, { count: 6, color: 0x9C27B0 });
-        }
-      });
-    }
-
-    await effectDelay(600);
-  }
+  await showAttackPartySkillProcs(atk, {
+    sourceSide: 'player',
+    attackerIndex: safeAttackerIndex,
+    targetSide: 'enemy',
+    targetIndex,
+    element: 'neutral',
+    resolveAllies: () => state.combat?.allies || activeCreatures,
+    resolveEnemies: () => state.combat?.enemies || []
+  });
 }
 
 /**
@@ -2115,7 +2063,7 @@ async function showKoSwapAnimations(result) {
           if (hpFill) {
             const pct = Math.max(0, (newCreature.hp / newCreature.maxHp) * 100);
             hpFill.style.width = `${pct}%`;
-            hpFill.style.backgroundColor = pct > 60 ? 'var(--hp-green)' : pct > 30 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+            hpFill.style.backgroundColor = getHpColor(pct);
           }
           const koIcon = swapSlot.querySelector('.formation-sprite');
           if (koIcon) koIcon.classList.remove('ko');
@@ -2306,7 +2254,6 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
 
 /**
  * Execute a full turn of creature moves — calls /creature-combat-cycle with 'attack' + moveChoices.
- * Replaces the old executeCreaturePlayerAttack() for move-based flow.
  * @param {Array} choices - Array of { creatureIndex, moveId, targetIndex }
  */
 async function executeCreatureMovesTurn(choices) {
@@ -2424,125 +2371,6 @@ async function executeCreatureMovesTurn(choices) {
       playerAttackPending = false;
       if (combatActive) {
         startMoveSelection();
-      }
-    }
-  });
-}
-
-/**
- * Execute creature player attack — calls /creature-combat-cycle with 'attack'
- * The backend processes both player and enemy phases in one call.
- * @deprecated Use executeCreatureMovesTurn instead for move-based combat
- */
-async function executeCreaturePlayerAttack() {
-  if (!combatActive || playerAttackPending || combatPausedForVocab || getEnemyDialogueActive()) return;
-
-  playerAttackPending = true;
-
-  return withAnimationActive(async () => {
-    try {
-      const response = await fetch(`${API_BASE}/api/game/creature-combat-cycle`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ actionType: 'attack' })
-      });
-      const result = await response.json();
-      logger.info('[CombatLoop] Creature attack result:', { attacks: result.playerAttacks?.length });
-
-      if (result.error) {
-        if (result.error === 'No active combat') {
-          combatActive = false;
-          return;
-        }
-        console.error('Creature attack error:', result.error);
-        playerAttackPending = false;
-        return;
-      }
-
-      // Store server-provided barks for speech bubbles
-      _currentRoundBarks = result.barks || [];
-
-      // Show poison/effect ticks
-      await showEffectEvents(result);
-
-      // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
-      await showRoundStartEvents(result);
-
-      const enemyHpMap = buildEnemyHpMapForPlayerAttacks(result);
-      const allyHpMap = buildAllyHpMap(result);
-      const mergedLegacy = buildMergedInitiativeAttacks(result);
-      const allPendingMoveLearn2 = [];
-      const killedEnemies = new Set();
-
-      if (mergedLegacy.length > 0) {
-        for (const { side, atk } of mergedLegacy) {
-          if (side === 'player' && atk.type === 'counter') {
-            await showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
-          } else if (side === 'player') {
-            await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn2);
-          } else {
-            await showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
-          }
-        }
-      }
-      syncStatusIconsFromResult(result);
-
-      // === NPC Skill Phase ===
-      if (result.npcSkillAttacks?.length > 0) {
-        const npcData = getCombatNpcData();
-        if (npcData) {
-          await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
-            await showNpcSkillAttacksAnimated(result, allyHpMap);
-          }, result.enemies);
-        } else {
-          await delay(400);
-          await showNpcSkillAttacksAnimated(result, allyHpMap);
-        }
-      }
-
-      const enemyShownInMergeLegacy = mergedLegacy.some(e => e.side === 'enemy');
-      if (!enemyShownInMergeLegacy && result.enemyAttacks?.length > 0) {
-        await delay(400);
-        await showEnemyAttacksAnimated(result, allyHpMap, false);
-      }
-
-      // Counter attack animations — only if not already shown in initiative merge
-      const countersShownInMergeLegacy = mergedLegacy.some(e => e.side === 'player' && e.atk.type === 'counter');
-      if (!countersShownInMergeLegacy) {
-        await showCounterAttacks(result, enemyHpMap);
-      }
-
-      // KO swap animations
-      await showKoSwapAnimations(result);
-
-      // Sync authoritative state from server
-      syncFinalState(result);
-
-      // Handle pending move learns (after state sync so creature data is current)
-      if (allPendingMoveLearn2.length > 0) {
-        await processPendingMoveLearn(allPendingMoveLearn2);
-      }
-
-      // Check combat end
-      if (result.combatEnded) {
-        if (result.victory) await delay(500); // Let HP bar drain animation be visible
-        stopCombatLoop(result);
-        return;
-      }
-
-      playerAttackPending = false;
-
-      // Pause for next vocab review
-      combatPausedForVocab = true;
-      await delay(1440);
-      showNextDualCardsFromQueue();
-
-    } catch (error) {
-      console.error('Creature attack error:', error);
-      playerAttackPending = false;
-      if (combatActive) {
-        combatPausedForVocab = true;
-        showNextDualCardsFromQueue();
       }
     }
   });
@@ -2754,7 +2582,7 @@ export function resumeCombatAfterVocab(grade, actionType = 'attack') {
     if (actionType === 'defend') {
       executeCreatureDefendThenPause();
     } else {
-      executeCreaturePlayerAttack();
+      executeCreatureMovesTurn([]);
     }
   } else {
     // Legacy combat: use original functions
@@ -2903,8 +2731,9 @@ async function renderBefriendQuiz(quizData, result) {
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
     await pixiSlideInNpc(cidSprite, { slideIn: true });
 
-    await narration.showNarration('Wow! This creature wants to talk!', { speaker: 'Cid' });
-    await narration.showNarration("Let's try to befriend them.", { speaker: 'Cid' });
+    for (const line of getTutorialNarration(1)) {
+      await narration.showNarration(line, { speaker: 'Cid' });
+    }
 
     await pixiSlideOutNpc({ slideOut: true });
   }
@@ -2963,7 +2792,7 @@ async function renderBefriendQuiz(quizData, result) {
       const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
       showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
       await pixiSlideInNpc(cidSprite, { slideIn: true });
-      await narration.showNarration("No, I don't think that's it... try again.", { speaker: 'Cid' });
+      await narration.showNarration(getBefriendWrongNarration(), { speaker: 'Cid' });
       await pixiSlideOutNpc({ slideOut: true });
       hideEnemy();
       continue;
@@ -3027,22 +2856,10 @@ async function renderBefriendQuiz(quizData, result) {
     await narration.showNarration('ちがう！', { speaker: creatureSpeaker });
   }
 
-  // Show counter-attack
-  if (answerResult.counterAttack?.length > 0) {
-    for (const atk of answerResult.counterAttack) {
-      const card = insertAttackCard(atk, true);
-      if (atk.damage > 0) {
-        playSFX('player-hit');
-        if (animatePlayerHurt) animatePlayerHurt(atk.targetIndex ?? 0);
-        if (showDamageNumber) showDamageNumber(atk.damage, true, false);
-      }
-      if (card) {
-        await waitForCardTap(card);
-      } else {
-        if (delay) await delay(400);
-      }
-    }
-  }
+  await showBefriendEnemyAttacksAnimated(
+    answerResult.counterAttack,
+    answerResult.allies || getGameState()?.combat?.allies || []
+  );
 
   // Update state after counter-attack
   if (answerResult.allies || answerResult.enemies) {
@@ -3278,17 +3095,10 @@ async function executeBefriendAction(actingCreatureSlot = null) {
           setTimeout(() => targetSlot.classList.remove('shake-animation'), 500);
         }
 
-        // Show enemy attack damage
-        if (answerResult.enemyAttacks?.length > 0) {
-          for (const atk of answerResult.enemyAttacks) {
-            if (atk.damage > 0) {
-              showDamageNumber(atk.damage, true, false);
-              animatePlayerHurt();
-              playSFX('player-hit');
-              await delay(400);
-            }
-          }
-        }
+        await showBefriendEnemyAttacksAnimated(
+          answerResult.enemyAttacks,
+          answerResult.allies || getGameState()?.combat?.allies || []
+        );
 
         // Update game state with post-attack HP
         if (answerResult.allies || answerResult.enemies) {

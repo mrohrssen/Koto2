@@ -40,6 +40,7 @@ import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
 import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
+import { getTutorialNarration, getFormationNarration } from './tutorial-copy.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -405,23 +406,14 @@ export async function renderHub() {
 
   // Tutorial step 3: encourage after first death, then auto-advance to 4
   if (tutorialStep === 3) {
-    await showTutorialNarration([
-      'That was tough huh?',
-      "Don't worry, you'll get stronger each run!"
-    ]);
+    await showTutorialNarration(getTutorialNarration(3));
     await apiTutorialAdvance?.(3);
     tutorialStep = getGameState().meta?.tutorialStep;
   }
 
   // Tutorial step 4: introduce speed review (condition-gated on dueCount > 0)
   if (tutorialStep === 4 && dueCount > 0) {
-    await showTutorialNarration([
-      'Hey! It looks like you\'re starting to learn some Japanese.',
-      `The Translator detected ${dueCount} words for you to review.`,
-      'If you pass the review, you\'ll just see the Japanese for these words from now on.',
-      'But don\'t worry, you can always click them to see the full translation.',
-      'Keep exploring and watch your Japanese grow!'
-    ]);
+    await showTutorialNarration(getTutorialNarration(4, { dueCount }));
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
       if (btn.textContent.includes('Speed Review')) {
@@ -435,11 +427,7 @@ export async function renderHub() {
   // Tutorial step 5: guide to formation and re-enter
   if (tutorialStep === 5) {
     const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
-    await showTutorialNarration([
-      `Now you have ${creatureCount} creatures!`,
-      'Each creature costs points.',
-      "Select your best party and let's go back to the Starting Meadow!"
-    ]);
+    await showTutorialNarration(getFormationNarration(creatureCount));
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
       if (btn.textContent.includes('Explore')) {
@@ -1049,10 +1037,7 @@ export async function renderSkillMaster() {
   // Tutorial step 0: start Cid narration early so it runs while offers load
   const tutorialStep = getGameState()?.meta?.tutorialStep;
   const cidNarrationPromise = tutorialStep === 0
-    ? showTutorialNarration([
-        'Each run you can get skills to make your party stronger.',
-        "Let's just pick the first one."
-      ], { showSprite: true })
+    ? showTutorialNarration(getTutorialNarration(0), { showSprite: true })
     : null;
 
   // Render loading state immediately to avoid flashing old buttons
@@ -1408,7 +1393,8 @@ export async function renderFriendlyNpc() {
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
     await showNpcSprite(cidSprite, { slideIn: true });
 
-    await sceneModule.showNarration("Here you'll be offered items to power up. Choose wisely!", { speaker: 'Cid' });
+    const [itemShopCidLine] = getTutorialNarration(2);
+    await sceneModule.showNarration(itemShopCidLine, { speaker: 'Cid' });
 
     await hideNpcSprite({ slideOut: true });
 

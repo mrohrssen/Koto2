@@ -5,13 +5,10 @@ import {
   getTutorialStep,
   advanceTutorial,
   isTutorialActive,
-  getTutorialNarration,
   shouldOverrideSkillOffers,
   shouldProtectBefriend,
   shouldFixRoomSequence,
-  getFormationNarration,
-  resetTutorial,
-  TUTORIAL_STEPS
+  resetTutorial
 } from '../../../src/game/services/tutorial-service.js';
 
 describe('tutorial state', () => {
@@ -64,19 +61,6 @@ describe('tutorial-service', () => {
     });
   });
 
-  describe('getTutorialNarration', () => {
-    it('returns array of strings for each step', () => {
-      for (let i = 0; i <= 5; i++) {
-        const narration = getTutorialNarration(i);
-        assert.ok(Array.isArray(narration), `step ${i} should return array`);
-        assert.ok(narration.every(s => typeof s === 'string'), `step ${i} pages should be strings`);
-      }
-    });
-    it('returns empty array for step 6', () => {
-      assert.deepEqual(getTutorialNarration(6), []);
-    });
-  });
-
   describe('condition helpers', () => {
     it('shouldOverrideSkillOffers at step 0 only', () => {
       assert.equal(shouldOverrideSkillOffers({ tutorialStep: 0 }), true);
@@ -90,14 +74,6 @@ describe('tutorial-service', () => {
       assert.equal(shouldFixRoomSequence({ tutorialStep: 0 }), true);
       assert.equal(shouldFixRoomSequence({ tutorialStep: 2 }), true);
       assert.equal(shouldFixRoomSequence({ tutorialStep: 3 }), false);
-    });
-  });
-
-  describe('getFormationNarration', () => {
-    it('includes creature count in first page', () => {
-      const pages = getFormationNarration(2);
-      assert.equal(pages.length, 3);
-      assert.ok(pages[0].includes('2'));
     });
   });
 

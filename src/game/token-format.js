@@ -4,8 +4,9 @@
  * Every piece of Japanese shown to the player flows through this module:
  *   entityToToken   – game entity → universal token
  *   assembleFrame   – frame template + entities → ready-to-render tokens
- *   isEligible      – per-sentence i+1 gate
- *   scoreCandidate  – rank assembled candidates for selection
+ *   isEligible       – per-sentence i+1 gate
+ *   scoreCandidate   – rank assembled candidates for selection
+ *   selectBestFrame  – pick best eligible assembled candidate (optional tie randomization)
  */
 
 /**
@@ -71,6 +72,15 @@ export function isEligible(tokens, knownWords) {
 }
 
 /**
+ * Return a frame's tokens only when the frame passes the i+1 gate.
+ * Used for singleton prompts such as skill-select and yes/no buttons.
+ */
+export function getEligibleFrameTokens(frame, knownWords) {
+  if (!frame?.tokens?.length) return null;
+  return isEligible(frame.tokens, knownWords) ? [...frame.tokens] : null;
+}
+
+/**
  * Score assembled tokens for candidate ranking.  Higher = better.
  * Priority: more unknowns → has entity → more content tokens.
  */
@@ -85,4 +95,35 @@ export function scoreCandidate(tokens, knownWords) {
     if (!knownWords.has(token.base)) unknowns++;
   }
   return unknowns * 1000 + (hasEntity ? 100 : 0) + contentCount;
+}
+
+/**
+ * Choose the highest-scoring i+1-eligible candidate from an assembled pool.
+ * Candidates must already have `.tokens` (e.g. from assembleFrame).
+ *
+ * @param {Array<{ tokens: Array }>} candidates
+ * @param {Set<string>} knownWords
+ * @param {{ randomizeTies?: boolean }} [options]
+ * @returns {object|null} The winning candidate, or the first candidate if none are
+ * eligible. Returns null only for an empty input list.
+ */
+export function selectBestFrame(candidates, knownWords, { randomizeTies = false } = {}) {
+  if (!candidates.length) return null;
+  const eligible = candidates.filter(c => isEligible(c.tokens, knownWords));
+  if (eligible.length === 0) return candidates[0];
+
+  if (randomizeTies) {
+    const scored = eligible.map(c => ({
+      c,
+      score: scoreCandidate(c.tokens, knownWords),
+    }));
+    const bestScore = Math.max(...scored.map(s => s.score));
+    const topTier = scored.filter(s => s.score === bestScore);
+    return topTier[Math.floor(Math.random() * topTier.length)].c;
+  }
+
+  eligible.sort(
+    (a, b) => scoreCandidate(b.tokens, knownWords) - scoreCandidate(a.tokens, knownWords)
+  );
+  return eligible[0];
 }

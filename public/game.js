@@ -111,6 +111,7 @@ import * as crestsEquipUI from './js/ui/crests-equip.js';
 import { playChestAnimation } from './js/pixi/chest-animation.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERSION } from './js/ui/sprite-utils.js';
 import { combatEvents } from './js/ui/combat-events.js';
+import { getHpColor } from './js/ui/combat-ui-utils.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
@@ -236,12 +237,6 @@ function shuffleArray(array) {
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function getHpColor(pct) {
-  if (pct > 60) return 'var(--hp-green)';
-  if (pct > 30) return 'var(--hp-yellow)';
-  return 'var(--hp-red)';
 }
 
 // ============ UI UPDATES ============

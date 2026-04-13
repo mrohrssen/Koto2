@@ -16,7 +16,12 @@ import { validateTeamSelection } from '../../game/services/creature-collection-s
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
 import { getAreaById } from '../../game/rooms.js';
 import { applyItem } from '../../game/services/item-service.js';
-import { assembleFrame, entityToToken, isEligible, scoreCandidate } from '../../game/token-format.js';
+import {
+  assembleFrame,
+  entityToToken,
+  getEligibleFrameTokens,
+  selectBestFrame,
+} from '../../game/token-format.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getGameMasterAskFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
@@ -223,8 +228,9 @@ export default function createRunRoutes({
     try {
       const { offered } = req.gameManager.explorationService.getSkillMasterOffers();
       req.saveGame();
-      const skillSelectFrame = getSkillSelectFrame();
-      res.json({ offered, skillSelectPrompt: skillSelectFrame?.tokens, state: req.getEnrichedGameState() });
+      const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
+      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet);
+      res.json({ offered, skillSelectPrompt, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -267,8 +273,9 @@ export default function createRunRoutes({
         .map(id => getPartySkillDisplay(id))
         .filter(Boolean);
 
-      const skillSelectFrame = getSkillSelectFrame();
-      res.json({ offered, skillSelectPrompt: skillSelectFrame?.tokens, state: req.getEnrichedGameState() });
+      const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
+      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet);
+      res.json({ offered, skillSelectPrompt, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -691,19 +698,11 @@ export default function createRunRoutes({
       const knownSet = new Set(knownWords);
       const askFrames = getGameMasterAskFrames();
       const candidates = askFrames.map(frame => assembleFrame(frame, {}));
-      const eligible = candidates.filter(c => isEligible(c.tokens, knownSet));
+      const dialogue = selectBestFrame(candidates, knownSet) || { tokens: [], words: [] };
 
-      let dialogue;
-      if (eligible.length > 0) {
-        eligible.sort((a, b) => scoreCandidate(b.tokens, knownSet) - scoreCandidate(a.tokens, knownSet));
-        dialogue = eligible[0];
-      } else {
-        dialogue = candidates[0] || { tokens: [], words: [] };
-      }
-
-      const yesFrame = getGameMasterYesFrame();
-      const noFrame = getGameMasterNoFrame();
-      res.json({ dialogue, yesTokens: yesFrame?.tokens, noTokens: noFrame?.tokens });
+      const yesTokens = getEligibleFrameTokens(getGameMasterYesFrame(), knownSet);
+      const noTokens = getEligibleFrameTokens(getGameMasterNoFrame(), knownSet);
+      res.json({ dialogue, yesTokens, noTokens });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
@@ -743,29 +742,15 @@ export default function createRunRoutes({
         for (const item of room.friendlyNpc.offered) {
           if (!item.word) continue;
           const candidates = shopFrames.map(frame => assembleFrame(frame, { item }));
-          const eligible = candidates.filter(c => isEligible(c.tokens, knownSet));
-
-          if (eligible.length > 0) {
-            eligible.sort((a, b) => scoreCandidate(b.tokens, knownSet) - scoreCandidate(a.tokens, knownSet));
-            item.tokens = eligible[0].tokens;
-            item.words = eligible[0].words;
-          } else {
-            // Fallback: use simplest frame even if not eligible
-            item.tokens = candidates[0]?.tokens || [];
-            item.words = candidates[0]?.words || [];
-          }
+          const best = selectBestFrame(candidates, knownSet);
+          item.tokens = best?.tokens || [];
+          item.words = best?.words || [];
         }
 
         // Select best greeting frame via i+1
         const greetingFrames = getShopGreetingFrames();
         const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}));
-        const eligibleGreetings = greetingCandidates.filter(c => isEligible(c.tokens, knownSet));
-        if (eligibleGreetings.length > 0) {
-          eligibleGreetings.sort((a, b) => scoreCandidate(b.tokens, knownSet) - scoreCandidate(a.tokens, knownSet));
-          room.friendlyNpc.greeting = eligibleGreetings[0];
-        } else {
-          room.friendlyNpc.greeting = greetingCandidates[0] || null;
-        }
+        room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet);
 
         // Attach entity token for each item's card display
         for (const item of room.friendlyNpc.offered) {

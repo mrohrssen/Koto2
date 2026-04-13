@@ -13,7 +13,7 @@ import { buildVocabConfig, buildBefriendDialogueVocabConfig } from './route-help
 import { getNpcLines, getNpcDefeatFrames } from '../../game/dialogue-loader.js';
 import { selectNpcLine } from '../../game/dialogue-filter.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
-import { assembleFrame, isEligible, scoreCandidate } from '../../game/token-format.js';
+import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
 
 export default function createCombatRoutes({
   getUserVocabulary,
@@ -555,26 +555,14 @@ export default function createCombatRoutes({
       ? { randomPlayerCreature: randomCreature }
       : {};
 
-    // Assemble frames (fills slots), then filter by i+1 and score
-    // Same pattern as shop-flow in run.js (assembleFrame + isEligible + scoreCandidate)
+    // Assemble frames (fills slots), then filter by i+1 and score (random tie-break)
     const candidates = defeatFrames.map(frame => {
       const assembled = assembleFrame(frame, entities);
       return { ...assembled, raw: frame.raw, id: frame.id };
     });
-    const eligible = candidates.filter(c => isEligible(c.tokens, knownWords));
-
-    let selectedLine;
-    if (eligible.length > 0) {
-      // Pre-compute scores to avoid redundant calls
-      const scored = eligible.map(c => ({ ...c, _score: scoreCandidate(c.tokens, knownWords) }));
-      scored.sort((a, b) => b._score - a._score);
-      // Pick randomly among top-scoring (all with same score as best)
-      const topTier = scored.filter(c => c._score === scored[0]._score);
-      selectedLine = topTier[Math.floor(Math.random() * topTier.length)];
-    } else {
-      // Fallback: simplest frame even if not eligible
-      selectedLine = candidates[0] || { tokens: [], raw: '', words: [] };
-    }
+    const selectedLine =
+      selectBestFrame(candidates, knownWords, { randomizeTies: true }) ||
+      { tokens: [], raw: '', words: [] };
 
     // Do NOT set gameManager.run.npcDialogue — that traps phase machine in NPC_DIALOGUE.
     // Set skillSelectionPending directly for immediate phase transition.

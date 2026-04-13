@@ -4,7 +4,9 @@ import {
   entityToToken,
   assembleFrame,
   isEligible,
+  getEligibleFrameTokens,
   scoreCandidate,
+  selectBestFrame,
 } from '../../src/game/token-format.js';
 
 describe('entityToToken', () => {
@@ -196,6 +198,69 @@ describe('scoreCandidate', () => {
     const known = new Set(['猫', '犬']);
     // Both have 0 unknowns, no entity, but tokensLong has more content tokens
     assert.ok(scoreCandidate(tokensLong, known) > scoreCandidate(tokensShort, known));
+  });
+});
+
+describe('getEligibleFrameTokens', () => {
+  it('returns tokens when the frame is i+1-eligible', () => {
+    const frame = {
+      tokens: [w('はい', 'はい')],
+      words: ['はい'],
+    };
+    const result = getEligibleFrameTokens(frame, new Set());
+    assert.notStrictEqual(result, frame.tokens);
+    assert.deepStrictEqual(result, frame.tokens);
+  });
+
+  it('returns null when the frame exceeds i+1', () => {
+    const frame = {
+      tokens: [w('どの', 'どの'), w('能力', '能力'), p('？')],
+      words: ['どの', '能力'],
+    };
+    assert.equal(getEligibleFrameTokens(frame, new Set()), null);
+  });
+
+  it('returns null for a missing frame', () => {
+    assert.equal(getEligibleFrameTokens(null, new Set()), null);
+  });
+});
+
+describe('selectBestFrame', () => {
+  it('returns the top eligible candidate', () => {
+    const known = new Set(['猫']);
+    const result = selectBestFrame([
+      { id: 'a', tokens: [w('猫', '猫'), p('。')], words: ['猫'] },
+      { id: 'b', tokens: [w('猫', '猫'), w('犬', '犬'), p('。')], words: ['猫', '犬'] }
+    ], known);
+    assert.equal(result.id, 'b');
+  });
+
+  it('falls back to the first candidate when none are eligible', () => {
+    const result = selectBestFrame([
+      { id: 'a', tokens: [w('猫', '猫'), w('犬', '犬'), w('鳥', '鳥'), p('。')], words: ['猫', '犬', '鳥'] }
+    ], new Set(['猫']));
+    assert.equal(result.id, 'a');
+  });
+
+  it('randomizes among top-scoring ties when requested', () => {
+    const known = new Set(['猫']);
+    const candidates = [
+      { id: 'a', tokens: [w('猫', '猫'), w('犬', '犬'), p('。')], words: ['猫', '犬'] },
+      { id: 'b', tokens: [w('猫', '猫'), w('鳥', '鳥'), p('。')], words: ['猫', '鳥'] },
+      { id: 'c', tokens: [w('猫', '猫'), p('。')], words: ['猫'] },
+    ];
+    const originalRandom = Math.random;
+    Math.random = () => 0.75;
+    try {
+      const result = selectBestFrame(candidates, known, { randomizeTies: true });
+      assert.equal(result.id, 'b');
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+
+  it('returns null for an empty list', () => {
+    assert.equal(selectBestFrame([], new Set()), null);
   });
 });
 

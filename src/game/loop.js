@@ -76,16 +76,7 @@ import { shouldProtectBefriend, advanceTutorial as advanceTutorialStep, getTutor
 import { exposeWords as exposeWords_fn, getKnownWordsFromFsrs } from './bootstrap/word-knowledge.js';
 import { selectBark } from './dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from './dialogue-loader.js';
-import { isEligible, scoreCandidate } from './token-format.js';
-
-// ============ HELPERS ============
-
-function selectBestFrame(pool, knownSet) {
-  const eligible = pool.filter(f => isEligible(f.tokens, knownSet));
-  if (eligible.length === 0) return pool[0] || null;
-  eligible.sort((a, b) => scoreCandidate(b.tokens, knownSet) - scoreCandidate(a.tokens, knownSet));
-  return eligible[0];
-}
+import { selectBestFrame } from './token-format.js';
 
 // ============ GAME MANAGER ============
 
