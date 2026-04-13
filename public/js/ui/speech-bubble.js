@@ -22,6 +22,21 @@ const FADE_MS = 300;
 let _activeBubble = null;
 let _randomFn = Math.random;
 
+/**
+ * Compute how far gloss elements overflow a bubble's bounding rect.
+ * Returns { bottom, left, right } — extra pixels needed in each direction.
+ * Pure function: takes DOMRect-like objects, no DOM access.
+ */
+export function calcBubbleOverflow(bubbleRect, glossRects) {
+  let bottom = 0, left = 0, right = 0;
+  for (const g of glossRects) {
+    bottom = Math.max(bottom, g.bottom - bubbleRect.bottom);
+    left = Math.max(left, bubbleRect.left - g.left);
+    right = Math.max(right, g.right - bubbleRect.right);
+  }
+  return { bottom: Math.max(0, bottom), left: Math.max(0, left), right: Math.max(0, right) };
+}
+
 /** Find a random non-KO'd player formation slot. */
 function randomPlayerSlot() {
   const slots = document.querySelectorAll('#player-formation .formation-slot');
@@ -64,6 +79,23 @@ function showBubble(slotEl, phrase) {
   bubble.style.top = `${rect.top - 8}px`;
 
   document.body.appendChild(bubble);
+
+  // Auto-fit: grow bubble to contain absolute-positioned glosses
+  const glossEls = bubble.querySelectorAll('.jp-stack-en');
+  if (glossEls.length > 0) {
+    const bRect = bubble.getBoundingClientRect();
+    const glossRects = [...glossEls].map(g => g.getBoundingClientRect());
+    const overflow = calcBubbleOverflow(bRect, glossRects);
+    if (overflow.bottom > 0) {
+      bubble.style.paddingBottom = (6 + overflow.bottom) + 'px';
+    }
+    if (overflow.left > 0 || overflow.right > 0) {
+      bubble.style.paddingLeft = (10 + overflow.left) + 'px';
+      bubble.style.paddingRight = (10 + overflow.right) + 'px';
+      bubble.style.maxWidth = 'none';
+    }
+  }
+
   _activeBubble = bubble;
 
   // Auto-dismiss
