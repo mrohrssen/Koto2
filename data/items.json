@@ -9,9 +9,9 @@
     "rarity": "common",
     "type": "mpRestore",
     "effect": {
-      "mpRestorePercent": 1.8
+      "mpRestorePercent": 0.9
     },
-    "description": "Restores 60% MP to all creatures.",
+    "description": "Restores 30% MP to all creatures.",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
@@ -27,9 +27,9 @@
     "type": "boost",
     "effect": {
       "field": "attackMult",
-      "value": 0.18
+      "value": 0.09
     },
-    "description": "Boosts party attack by 6%.",
+    "description": "Boosts party attack by 3%.",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
@@ -44,9 +44,9 @@
     "rarity": "common",
     "type": "heal",
     "effect": {
-      "healPercent": 1.35
+      "healPercent": 0.675
     },
-    "description": "Heals one creature for 45% of max HP.",
+    "description": "Heals one creature for 22% of max HP.",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
@@ -62,9 +62,9 @@
     "type": "boost",
     "effect": {
       "field": "attackMult",
-      "value": 0.45
+      "value": 0.225
     },
-    "description": "Boosts party attack by 15%.",
+    "description": "Boosts party attack by 7%.",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
@@ -79,9 +79,9 @@
     "rarity": "uncommon",
     "type": "revive",
     "effect": {
-      "revivePercent": 1
+      "revivePercent": 0.5
     },
-    "description": "Revives one fallen creature at full HP.",
+    "description": "Revives one fallen creature at 50% HP.",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
@@ -99,15 +99,15 @@
       "stats": [
         {
           "field": "attackMult",
-          "value": 0.45
+          "value": 0.225
         },
         {
           "field": "hpMult",
-          "value": -0.05
+          "value": -0.025
         }
       ]
     },
-    "description": "+15% attack, -5% max HP to one creature.",
+    "description": "+7% attack, -2% max HP to one creature.",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
@@ -122,9 +122,9 @@
     "rarity": "common",
     "type": "heal",
     "effect": {
-      "healAllPercent": 0.9
+      "healAllPercent": 0.45
     },
-    "description": "Heals all living creatures for 30% of max HP.",
+    "description": "Heals all living creatures for 15% of max HP.",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
@@ -140,9 +140,9 @@
     "type": "boost",
     "effect": {
       "field": "hpMult",
-      "value": 0.45
+      "value": 0.225
     },
-    "description": "+15% max HP to one creature.",
+    "description": "+7% max HP to one creature.",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
@@ -158,9 +158,9 @@
     "type": "boost",
     "effect": {
       "field": "hpMult",
-      "value": 0.27
+      "value": 0.135
     },
-    "description": "+9% max HP to one creature.",
+    "description": "+4% max HP to one creature.",
     "stage": 2,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
@@ -176,9 +176,9 @@
     "type": "boost",
     "effect": {
       "field": "elementEdge",
-      "value": 0.45
+      "value": 0.225
     },
-    "description": "15% super effective damage bonus.",
+    "description": "7% super effective damage bonus.",
     "stage": 3,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
@@ -194,9 +194,9 @@
     "type": "boost",
     "effect": {
       "field": "baseAttackBonus",
-      "value": 45
+      "value": 22
     },
-    "description": "+15 base attack (scales with level).",
+    "description": "+7 base attack (scales with level).",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
@@ -212,9 +212,9 @@
     "type": "boost",
     "effect": {
       "field": "baseHpBonus",
-      "value": 90
+      "value": 45
     },
-    "description": "+30 base HP (scales with level).",
+    "description": "+15 base HP (scales with level).",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
@@ -230,9 +230,9 @@
     "type": "boost",
     "effect": {
       "field": "baseMpBonus",
-      "value": 90
+      "value": 45
     },
-    "description": "+30 base MP (scales with level).",
+    "description": "+15 base MP (scales with level).",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
@@ -248,9 +248,9 @@
     "type": "boost",
     "effect": {
       "field": "flatDamageReduction",
-      "value": 27
+      "value": 14
     },
-    "description": "-9 incoming damage per hit.",
+    "description": "-4 incoming damage per hit.",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
@@ -268,15 +268,15 @@
       "stats": [
         {
           "field": "baseHpBonus",
-          "value": 45
+          "value": 22
         },
         {
           "field": "baseMpBonus",
-          "value": 45
+          "value": 22
         }
       ]
     },
-    "description": "+15 base HP, +15 base MP (scales with level).",
+    "description": "+7 base HP, +7 base MP (scales with level).",
     "stage": 1,
     "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
@@ -291,7 +291,7 @@
     "rarity": "common",
     "type": "heal",
     "effect": {
-      "healAllPercent": 0.72
+      "healAllPercent": 0.36
     },
     "description": "Light snack for the whole team.",
     "stage": 1,
@@ -326,9 +326,9 @@
     "rarity": "common",
     "type": "mpRestore",
     "effect": {
-      "mpRestorePercent": 1.35
+      "mpRestorePercent": 0.675
     },
-    "description": "Sweet pick-me-up restores 45% MP.",
+    "description": "Sweet pick-me-up restores 22% MP.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -343,9 +343,9 @@
     "rarity": "uncommon",
     "type": "heal",
     "effect": {
-      "healPercent": 2.25
+      "healPercent": 1.125
     },
-    "description": "Hearty rice ball, heals one creature for 75% HP.",
+    "description": "Hearty rice ball, heals one creature for 37% HP.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -363,11 +363,11 @@
       "stats": [
         {
           "field": "attackMult",
-          "value": 0.27
+          "value": 0.135
         },
         {
           "field": "hpMult",
-          "value": 0.27
+          "value": 0.135
         }
       ]
     },
@@ -387,7 +387,7 @@
     "type": "boost",
     "effect": {
       "field": "baseAttackBonus",
-      "value": 18
+      "value": 9
     },
     "description": "A sharp point helps in a pinch.",
     "stage": 1,
@@ -405,7 +405,7 @@
     "type": "boost",
     "effect": {
       "field": "elementEdge",
-      "value": 0.27
+      "value": 0.135
     },
     "description": "Precise strokes exploit elemental weakness.",
     "stage": 1,
@@ -423,7 +423,7 @@
     "type": "boost",
     "effect": {
       "field": "baseMpBonus",
-      "value": 72
+      "value": 36
     },
     "description": "Extra pages, extra mental stamina.",
     "stage": 1,
@@ -441,9 +441,9 @@
     "type": "boost",
     "effect": {
       "field": "xpMultiplier",
-      "value": 0.9
+      "value": 0.45
     },
-    "description": "Study hard, learn faster — 30% more XP.",
+    "description": "Study hard, learn faster — 15% more XP.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -461,11 +461,11 @@
       "stats": [
         {
           "field": "baseMpBonus",
-          "value": 90
+          "value": 45
         },
         {
           "field": "baseAttackBonus",
-          "value": 18
+          "value": 9
         }
       ]
     },
@@ -487,11 +487,11 @@
       "stats": [
         {
           "field": "baseHpBonus",
-          "value": 72
+          "value": 36
         },
         {
           "field": "baseMpBonus",
-          "value": 72
+          "value": 36
         }
       ]
     },
@@ -511,7 +511,7 @@
     "type": "boost",
     "effect": {
       "field": "flatDamageReduction",
-      "value": 18
+      "value": 9
     },
     "description": "Good timing means fewer clean hits.",
     "stage": 1,
