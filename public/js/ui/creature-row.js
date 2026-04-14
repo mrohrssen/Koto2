@@ -130,6 +130,16 @@ export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemB
   onRearrangeCreature = rearrangeCreatureCallback || null;
   getItemBuffs = typeof getBuffs === 'function' ? getBuffs : null;
   getEquippedItems = typeof getEquip === 'function' ? getEquip : null;
+
+  // Event delegation: single click handler on the formation container
+  // (avoids leaking per-slot listeners when render() is called repeatedly)
+  dom.playerFormation.addEventListener('click', (e) => {
+    const slot = e.target.closest('.formation-slot');
+    if (!slot) return;
+    const idx = parseInt(slot.dataset.index, 10);
+    if (_creatures[idx]) togglePopup(idx);
+  });
+
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.formation-slot') && !e.target.closest('.creature-popup')) {
       hidePopup();
@@ -153,15 +163,6 @@ export function render(creatures) {
   _creatures = creatures;
   currentActiveCreatures = creatures || [];
   showFormation('player', creatures);
-
-  // Attach popup click handlers to formation slots
-  const slots = dom.playerFormation.querySelectorAll('.formation-slot');
-  slots.forEach(slot => {
-    const idx = parseInt(slot.dataset.index, 10);
-    slot.addEventListener('click', () => {
-      if (_creatures[idx]) togglePopup(idx);
-    });
-  });
 }
 
 function togglePopup(index) {
