@@ -52,7 +52,7 @@ import {
   BASE_STARTING_CREDITS
 } from './state.js';
 
-import { getRoomActions, getAreaSelectionOptions, ROOM_TYPES } from './rooms.js';
+import { getRoomActions, getAreaSelectionOptions, ROOM_TYPES, AREAS } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
 import { ExplorationService } from './services/index.js';
 import { logger } from '../logger.js';
@@ -152,6 +152,15 @@ export class GameManager {
     const areasCleared = this.run.areasCompleted || 0;
     if (areasCleared > (stats.highestAreasCleared || 0)) {
       stats.highestAreasCleared = areasCleared;
+    }
+
+    // Unlock next area on victory
+    if (isVictory && this.meta.levels && this.run.currentArea?.id) {
+      const areaIndex = AREAS.findIndex(a => a.id === this.run.currentArea.id);
+      if (areaIndex >= 0) {
+        const unlock = areaIndex + 2; // 1-based: beating area 0 unlocks level 2 (areas 0+1)
+        this.meta.levels.highestUnlocked = Math.max(this.meta.levels.highestUnlocked || 1, unlock);
+      }
     }
 
     // Play time
@@ -410,7 +419,7 @@ export class GameManager {
     return {
       run: this.run,
       areaSelectionRequired: true,
-      areaOptions: getAreaSelectionOptions(null, this.run.areasCompleted || 0)
+      areaOptions: getAreaSelectionOptions(null, this.meta?.levels?.highestUnlocked || 1)
     };
   }
 

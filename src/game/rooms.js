@@ -77,11 +77,10 @@ for (const area of AREAS) {
 /**
  * Get 2 random area options, excluding the current area
  */
-export function getAreaSelectionOptions(excludeAreaId = null, areasCompleted = 0) {
-  // Linear progression: return the next area in the list
-  const nextArea = AREAS[areasCompleted];
-  if (!nextArea) return [];
-  return [nextArea];
+export function getAreaSelectionOptions(excludeAreaId = null, highestUnlocked = 1) {
+  // Return all unlocked areas (highestUnlocked is 1-based: 1 = area 0 only, 2 = areas 0+1)
+  return AREAS.filter((_, i) => i < highestUnlocked)
+              .filter(a => a.id !== excludeAreaId);
 }
 
 /**

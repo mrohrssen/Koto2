@@ -142,8 +142,8 @@ export class ExplorationService {
    */
   getAreaOptions() {
     const excludeId = this.gm.run?.currentArea?.id || null;
-    const areasCompleted = this.gm.run?.areasCompleted || 0;
-    return getAreaSelectionOptions(excludeId, areasCompleted);
+    const highestUnlocked = this.gm.meta?.levels?.highestUnlocked || 1;
+    return getAreaSelectionOptions(excludeId, highestUnlocked);
   }
 
   /**
@@ -273,17 +273,24 @@ export class ExplorationService {
       this.gm.run.areasCompleted++;
       this.gm.run.stats.areasCleared = this.gm.run.areasCompleted;
 
-      // Check win condition
-      if (this.gm.run.areasCompleted >= this.gm.run.areasToWin) {
-        this.gm.run.gameVictoryPending = true;
-      }
-
       const areaName = this.gm.run.currentArea?.nameEn || 'Unknown';
       this.gm.narrate(`${areaName}を制覇した！`);
 
       logger.info('[Exploration] Area cleared:', { areasCompleted: this.gm.run.areasCompleted });
 
-      // Auto-select when only one area option is available (MVP: single area)
+      // Check win condition — run ends, show run-complete screen
+      if (this.gm.run.areasCompleted >= this.gm.run.areasToWin) {
+        this.gm.run.gameVictoryPending = true;
+        this.gm.emitState();
+        return {
+          areaCleared: true,
+          areasCompleted: this.gm.run.areasCompleted,
+          areasToWin: this.gm.run.areasToWin,
+          gameVictory: true
+        };
+      }
+
+      // Run continues — auto-select when only one area option available
       const areaOptions = this.getAreaOptions();
       if (areaOptions.length === 1) {
         logger.info('[Exploration] Single area available — auto-selecting:', { areaId: areaOptions[0].id });
@@ -292,7 +299,7 @@ export class ExplorationService {
           areaCleared: true,
           areasCompleted: this.gm.run.areasCompleted,
           areasToWin: this.gm.run.areasToWin,
-          gameVictory: this.gm.run.areasCompleted >= this.gm.run.areasToWin,
+          gameVictory: false,
           autoSelectedArea: areaOptions[0].id
         };
       }
@@ -304,7 +311,7 @@ export class ExplorationService {
         areaCleared: true,
         areasCompleted: this.gm.run.areasCompleted,
         areasToWin: this.gm.run.areasToWin,
-        gameVictory: this.gm.run.areasCompleted >= this.gm.run.areasToWin
+        gameVictory: false
       };
     }
 
