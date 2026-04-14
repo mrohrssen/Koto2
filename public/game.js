@@ -1310,11 +1310,12 @@ async function showPostCombatShopFlow() {
     return new Promise((resolve) => {
       postCombatShop.init({
         itemSelectedCallback: async (itemIdx) => {
-          // Show creature target picker
+          const selectedItem = shopResult.items[itemIdx];
+          const isPartyWide = selectedItem?.effect?.healAllPercent || selectedItem?.effect?.mpRestorePercent;
           const active = gameState.run?.creatureParty?.active?.filter(Boolean) || [];
-          if (active.length <= 1) {
-            // Only one creature — auto-target
-            const selectResult = await apiSelectShopItem(itemIdx, 0);
+
+          const finalize = async (targetIdx) => {
+            const selectResult = await apiSelectShopItem(itemIdx, targetIdx);
             if (selectResult?.state) updateGameState(selectResult.state);
             const selectedCard = document.querySelector('.shop-item-card.selected');
             if (selectedCard) {
@@ -1325,20 +1326,12 @@ async function showPostCombatShopFlow() {
             }
             postCombatShop.hide();
             resolve();
+          };
+
+          if (isPartyWide || active.length <= 1) {
+            await finalize(0);
           } else {
-            postCombatShop.showTargetPicker(active, async (targetIdx) => {
-              const selectResult = await apiSelectShopItem(itemIdx, targetIdx);
-              if (selectResult?.state) updateGameState(selectResult.state);
-              const selectedCard = document.querySelector('.shop-item-card.selected');
-              if (selectedCard) {
-                const itemName = selectedCard.querySelector('.shop-item-name')?.textContent || 'Item';
-                pop(selectedCard, 1.15);
-                itemGained(selectedCard, `+${itemName}`);
-                await new Promise(r => setTimeout(r, 600));
-              }
-              postCombatShop.hide();
-              resolve();
-            });
+            postCombatShop.showTargetPicker(active, finalize);
           }
         }
       });

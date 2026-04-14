@@ -1353,36 +1353,43 @@ export async function renderFriendlyNpc() {
 
       const gameState = getGameState();
       const party = gameState.run?.creatureParty?.active || [];
+      const isPartyWide = item.effect?.healAllPercent || item.effect?.mpRestorePercent;
 
-      renderChoices({
-        cards: party.filter(Boolean).map(creature => ({
-          sprite: `<img src="${creatureStaticPath(creature.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`,
-          title: `${creature.name} (${creature.nameEn})`,
-          subtitle: `Lv.${creature.level} · HP: ${creature.hp}/${creature.maxHp}`,
-        })),
-        onSelect: async (creatureIndex) => {
-          let result;
-          try {
-            result = await apiChooseFriendlyNpcItem?.(item.id, creatureIndex);
-          } catch (err) {
-            friendlyNpcState.choosing = false;
-            actions.clear();
-            sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
-            renderFriendlyNpc();
-            return;
-          }
-          if (result?.state) {
-            updateGameState(result.state);
-            friendlyNpcState.choosing = false;
-            actions.clear();
-            updateUI();
-          } else {
-            friendlyNpcState.choosing = false;
-            sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
-            renderFriendlyNpc();
-          }
-        },
-      });
+      const applyItem = async (creatureIndex) => {
+        let result;
+        try {
+          result = await apiChooseFriendlyNpcItem?.(item.id, creatureIndex);
+        } catch (err) {
+          friendlyNpcState.choosing = false;
+          actions.clear();
+          sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
+          renderFriendlyNpc();
+          return;
+        }
+        if (result?.state) {
+          updateGameState(result.state);
+          friendlyNpcState.choosing = false;
+          actions.clear();
+          updateUI();
+        } else {
+          friendlyNpcState.choosing = false;
+          sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
+          renderFriendlyNpc();
+        }
+      };
+
+      if (isPartyWide || party.filter(Boolean).length <= 1) {
+        await applyItem(0);
+      } else {
+        renderChoices({
+          cards: party.filter(Boolean).map(creature => ({
+            sprite: `<img src="${creatureStaticPath(creature.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`,
+            title: `${creature.name} (${creature.nameEn})`,
+            subtitle: `Lv.${creature.level} · HP: ${creature.hp}/${creature.maxHp}`,
+          })),
+          onSelect: (creatureIndex) => applyItem(creatureIndex),
+        });
+      }
     },
   });
 
