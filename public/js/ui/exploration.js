@@ -1008,10 +1008,21 @@ export async function renderSkillMaster() {
   const run = gameState.run;
   const isInitialPick = run?.initialSkillPick && !run.initialSkillPick.chosenId;
   const room = isInitialPick ? null : (gameState.room || getActiveRoomFromRun(run));
-  const roomId = isInitialPick ? 'initialSkillPick' : (room?.id || room?.type || 'unknown');
+  // Detect initial pick on the server side: phase is skillMaster but the
+  // current room is NOT a skillMaster room (initialSkillPick is not sent
+  // to the frontend, so we infer it).
+  const isServerInitialPick = !isInitialPick
+    && gameState.phase === 'skillMaster'
+    && (!room || room.type !== 'skillMaster');
+  const roomId = (isInitialPick || isServerInitialPick)
+    ? 'initialSkillPick'
+    : (room?.id || room?.type || 'unknown');
 
   // Reset per-room cache
-  if (skillMasterState.roomId !== roomId) {
+  // For the initial skill pick, always reset — room IDs are deterministic per
+  // area so the cache key collides across runs, serving stale offers that the
+  // server no longer recognizes (causes "Invalid Skill Master offer" 400).
+  if (skillMasterState.roomId !== roomId || isServerInitialPick) {
     skillMasterState.roomId = roomId;
     skillMasterState.fetched = false;
     skillMasterState.offered = null;
