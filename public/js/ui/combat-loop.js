@@ -54,7 +54,7 @@ import { playAttackSound } from './combat-audio.js';
 import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
-import { getHpColor } from './combat-ui-utils.js';
+import { getHpColor, SC_NAMES, getCreatureStatusKeys } from './combat-ui-utils.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 
 // ============ SERVER-PROVIDED BARKS ============
@@ -221,7 +221,7 @@ function buildSplitAttackCard(atk, isEnemy, options = {}) {
   else if (atk.damage > 0) damageSign = `-${atk.damage}`;
   else if (atk.effectApplied) damageSign = atk.effectApplied;
   else if (atk.statChangesApplied) {
-    const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+
     damageSign = Object.entries(atk.statChangesApplied).map(([s, v]) => `${SC_NAMES[s] || s} ${v > 0 ? '+' : ''}${v}`).join(' ');
   }
   else damageSign = '0';
@@ -441,7 +441,7 @@ async function showAttackPartySkillProcs(atk, {
         screenShake('light');
       });
     } else if (proc.type === 'stageChange') {
-      const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+  
       const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
       const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
       const pos = spritePos(proc.targetSide === 'enemy' ? 'enemy' : 'player', proc.targetIndex);
@@ -452,7 +452,7 @@ async function showAttackPartySkillProcs(atk, {
       popupSkillProc('SPREAD!', pos);
       burstParticles(pos, { count: 4, color: 0x9C27B0 });
     } else if (proc.type === 'teamBuff') {
-      const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+  
       resolveAllies().forEach((ally, i) => {
         if (ally) popupBuff(`${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`, spritePos('player', i));
       });
@@ -523,7 +523,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
 
   // Stat stage change popups
   if (atk.statChangesApplied) {
-    const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+
     for (const [stat, change] of Object.entries(atk.statChangesApplied)) {
       if (change === 0) continue;
       const dir = change > 0 ? `+${change}` : `${change}`;
@@ -702,7 +702,6 @@ export function initMoveUI() {
         shield: 'Shield', team_shield: 'Team Shield',
         haste: 'Haste'
       };
-      const STAT_NAMES = { atk: 'ATK', def: 'DEF' };
       const CAT_LABELS = {
         damage: 'Attack', drain: 'Drain', heal: 'Heal',
         shield: 'Shield', buff: 'Buff', debuff: 'Debuff'
@@ -722,7 +721,7 @@ export function initMoveUI() {
       if (move.statChanges) {
         for (const [stat, amount] of Object.entries(move.statChanges)) {
           const dir = amount > 0 ? `+${amount}` : `${amount}`;
-          statsHtml += `<span class="mhp-stat">${STAT_NAMES[stat] || stat} ${dir}</span>`;
+          statsHtml += `<span class="mhp-stat">${SC_NAMES[stat] || stat} ${dir}</span>`;
         }
       }
       if (move.statusEffect) {
@@ -1199,14 +1198,6 @@ function showNextDualCardsFromQueue() {
   }
 }
 
-// Keep old function for backwards compatibility / fallback
-function showNextFlashCardFromQueue() {
-  const word = wordPractice.getNextCombatWord?.();
-  if (word && showFlashCards) {
-    showFlashCards([word]);
-  }
-}
-
 
 /**
  * Find a creature slot element by creature ID (matches against game state).
@@ -1638,22 +1629,7 @@ async function showEffectEvents(result) {
   }
 }
 
-/** Derive status icon keys from a creature's activeEffects + statStages. */
-function getCreatureStatusKeys(creature) {
-  const keys = [];
-  if (creature.activeEffects) {
-    for (const e of creature.activeEffects) {
-      if (!keys.includes(e.type)) keys.push(e.type);
-    }
-  }
-  if (creature.statStages) {
-    for (const [stat, stage] of Object.entries(creature.statStages)) {
-      if (stage > 0) keys.push(`${stat}_up`);
-      else if (stage < 0) keys.push(`${stat}_down`);
-    }
-  }
-  return keys;
-}
+// getCreatureStatusKeys imported from combat-ui-utils.js
 
 function syncStatusIconsFromResult(result) {
   if (result.allies) {
@@ -1704,7 +1680,7 @@ async function showMoveEffectsApplied(atk, targetSide, targetIndex, result) {
   }
 
   if (atk.statChangesApplied) {
-    const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+
     for (const [stat, change] of Object.entries(atk.statChangesApplied)) {
       if (change === 0) continue;
       const dir = change > 0 ? `+${change}` : `${change}`;
@@ -1763,7 +1739,6 @@ async function showPartySkillProcs(atk) {
  */
 async function showRoundStartEvents(result) {
   if (!result.roundStartEvents?.length) return;
-  const SC_NAMES = { atk: 'ATK', def: 'DEF' };
 
   for (const event of result.roundStartEvents) {
     if (event.type === 'erosion') {
@@ -1816,9 +1791,8 @@ async function showOneCounterAttackAnimated(counter, enemyHpMap, enemies) {
     const enemyList = enemies || getCombatEnemies() || [];
     for (const proc of counter.procs) {
       if (proc.type === 'stageChange') {
-        const SC_NAMES2 = { atk: 'ATK', def: 'DEF' };
         const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
-        const text = `${SC_NAMES2[proc.stat] || proc.stat} ${dir}`;
+        const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
         const side = proc.targetSide === 'enemy' ? 'enemy' : 'player';
         const pos = spritePos(side, proc.targetIndex);
         if (proc.delta > 0) popupBuff(text, pos);
@@ -2822,7 +2796,7 @@ async function renderBefriendQuiz(quizData, result) {
 
     const actionArea = document.getElementById('action-area');
     if (actionArea) {
-      actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', answerResult.capturedName || creatureName)}</div>`;
+      actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', answerResult.capturedName || quizData.creatureNameEn || quizData.creatureName || '')}</div>`;
     }
     await delay(1200);
 
