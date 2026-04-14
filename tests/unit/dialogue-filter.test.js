@@ -102,11 +102,13 @@ describe('dialogue-filter', () => {
       assert.equal(selected.raw, 'こんにちは！');
     });
 
-    it('returns null when no lines eligible', () => {
+    it('falls back to line with fewest unknowns when none eligible', () => {
       const lines = [
         line('a b c', [tok('a', 'a'), tok('b', 'b'), tok('c', 'c')]),
       ];
-      assert.equal(selectNpcLine(lines, new Set()), null);
+      const result = selectNpcLine(lines, new Set());
+      assert.ok(result);
+      assert.equal(result.raw, 'a b c');
     });
   });
 

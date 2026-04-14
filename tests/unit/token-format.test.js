@@ -212,12 +212,14 @@ describe('getEligibleFrameTokens', () => {
     assert.deepStrictEqual(result, frame.tokens);
   });
 
-  it('returns null when the frame exceeds i+1', () => {
+  it('falls back to tokens when the frame exceeds i+1', () => {
     const frame = {
       tokens: [w('どの', 'どの'), w('能力', '能力'), p('？')],
       words: ['どの', '能力'],
     };
-    assert.equal(getEligibleFrameTokens(frame, new Set()), null);
+    const result = getEligibleFrameTokens(frame, new Set());
+    assert.ok(Array.isArray(result));
+    assert.equal(result.length, 3);
   });
 
   it('returns null for a missing frame', () => {

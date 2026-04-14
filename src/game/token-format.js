@@ -71,13 +71,36 @@ export function isEligible(tokens, knownWords) {
   return unknowns <= max;
 }
 
+/** Count unknown content words in a token list. */
+export function countUnknowns(tokens, knownWords) {
+  let n = 0;
+  for (const t of tokens) {
+    if (t.base && !knownWords.has(t.base)) n++;
+  }
+  return n;
+}
+
 /**
- * Return a frame's tokens only when the frame passes the i+1 gate.
- * Used for singleton prompts such as skill-select and yes/no buttons.
+ * The single i+1 filter for all candidate lists.
+ * Returns the eligible subset, or if nothing passes, the candidate with
+ * the fewest unknowns (always returns at least one for non-empty input).
+ */
+export function filterEligible(candidates, knownWords) {
+  if (!candidates.length) return [];
+  const eligible = candidates.filter(c => isEligible(c.tokens || [], knownWords));
+  if (eligible.length > 0) return eligible;
+  return [candidates.reduce((best, c) =>
+    countUnknowns(c.tokens || [], knownWords) < countUnknowns(best.tokens || [], knownWords) ? c : best
+  )];
+}
+
+/**
+ * Return a frame's tokens for rendering.  Singleton wrapper around filterEligible —
+ * a single frame always comes back (never null for a valid frame).
  */
 export function getEligibleFrameTokens(frame, knownWords) {
   if (!frame?.tokens?.length) return null;
-  return isEligible(frame.tokens, knownWords) ? [...frame.tokens] : null;
+  return [...filterEligible([frame], knownWords)[0].tokens];
 }
 
 /**
@@ -109,8 +132,7 @@ export function scoreCandidate(tokens, knownWords) {
  */
 export function selectBestFrame(candidates, knownWords, { randomizeTies = false } = {}) {
   if (!candidates.length) return null;
-  const eligible = candidates.filter(c => isEligible(c.tokens, knownWords));
-  if (eligible.length === 0) return candidates[0];
+  const eligible = filterEligible(candidates, knownWords);
 
   if (randomizeTies) {
     const scored = eligible.map(c => ({

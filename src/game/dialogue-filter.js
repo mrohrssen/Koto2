@@ -1,24 +1,25 @@
 /**
  * Word-gated dialogue filtering and selection.
- * Uses isEligible from token-format.js for i+1 rule.
+ * All i+1 filtering goes through filterEligible from token-format.js.
  */
-import { isEligible } from './token-format.js';
+import { isEligible, filterEligible, countUnknowns } from './token-format.js';
 
 export function isLineEligible(line, knownWords) {
   return isEligible(line.tokens || [], knownWords);
 }
 
-function teachingWordCount(line, knownWords) {
-  return (line.tokens || [])
-    .filter(t => t.base)
-    .filter(t => !knownWords.has(t.base))
-    .length;
-}
-
 export function filterEligibleScripts(scripts, knownWords) {
-  return scripts.filter(script =>
-    script.lines.every(line => isLineEligible(line, knownWords))
+  if (scripts.length === 0) return [];
+  const eligible = scripts.filter(script =>
+    script.lines.every(line => isEligible(line.tokens || [], knownWords))
   );
+  if (eligible.length > 0) return eligible;
+  // Fallback: script with fewest total unknowns
+  return [scripts.reduce((a, b) => {
+    const aCount = a.lines.reduce((s, l) => s + countUnknowns(l.tokens || [], knownWords), 0);
+    const bCount = b.lines.reduce((s, l) => s + countUnknowns(l.tokens || [], knownWords), 0);
+    return bCount < aCount ? b : a;
+  })];
 }
 
 export function selectCidScript(eligible, knownWords, seenScriptIds = []) {
@@ -26,7 +27,7 @@ export function selectCidScript(eligible, knownWords, seenScriptIds = []) {
   const seenSet = new Set(seenScriptIds);
   const scored = eligible.map(script => {
     const totalTeaching = script.lines.reduce(
-      (sum, line) => sum + teachingWordCount(line, knownWords), 0
+      (sum, line) => sum + countUnknowns(line.tokens || [], knownWords), 0
     );
     const wasSeen = seenSet.has(script.id);
     const seenIndex = seenScriptIds.indexOf(script.id);
@@ -43,8 +44,7 @@ export function selectCidScript(eligible, knownWords, seenScriptIds = []) {
 
 export function selectNpcLine(lines, knownWords, options = {}) {
   const { lastSeenText, curriculumWords = [] } = options;
-  const eligible = lines.filter(line => isLineEligible(line, knownWords));
-  if (eligible.length === 0) return null;
+  const eligible = filterEligible(lines, knownWords);
   const curriculumSet = new Set(curriculumWords);
   const teaching = eligible.filter(line =>
     (line.tokens || []).filter(t => t.base).some(t => !knownWords.has(t.base) && curriculumSet.has(t.base))
@@ -59,8 +59,7 @@ export function selectBark(barkPool, trigger, knownWords, options = {}) {
   const { usedThisCombat = new Set() } = options;
   const pool = barkPool[trigger];
   if (!pool || pool.length === 0) return null;
-  const eligible = pool.filter(line => isLineEligible(line, knownWords));
-  if (eligible.length === 0) return null;
+  const eligible = filterEligible(pool, knownWords);
   const getContentTokens = (line) => (line.tokens || []).filter(t => t.base);
   const reinforcement = eligible.filter(line =>
     getContentTokens(line).every(t => knownWords.has(t.base))
