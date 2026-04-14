@@ -867,7 +867,7 @@ export class GameManager {
 
     // Check if all enemies defeated after player attack
     if (playerResult.allEnemiesDefeated) {
-      // Befriend quiz trigger: 50% chance when killing blow would end combat
+      // Befriend quiz trigger: 25% chance when killing blow would end combat
       // Not for boss fights or NPC battles
       // New player protection: guarantee befriend when player only has 1 creature
       const totalOwnedCreatures = this.run.creatureParty.active.length + (this.run.creatureParty.reserves?.length || 0);
