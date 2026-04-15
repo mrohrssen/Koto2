@@ -67,6 +67,55 @@ export function createTestRun(overrides = {}) {
 }
 
 /**
+ * Creates a mock TTS cache that returns empty audio.
+ */
+export function createMockTTS() {
+  return {
+    load() {},
+    generateIfMissing() {},
+    get() { return null; },
+    set() {},
+    has() { return false; }
+  };
+}
+
+/**
+ * Creates a mock TTS dialogue cache.
+ */
+export function createMockTTSDialogue() {
+  const cache = new Map();
+  return {
+    get(key) { return cache.get(key) || null; },
+    set(key, val) { cache.set(key, val); },
+    has(key) { return cache.has(key); },
+    delete(key) { cache.delete(key); }
+  };
+}
+
+/**
+ * No-op functions for narration engine deps that need AI.
+ * Integration tests don't test AI generation — they test route + state logic.
+ */
+export function createNoOpNarration() {
+  return {
+    queueMissingCreatureDialoguesFn: async () => {},
+    regenCreatureDialogueFn: async () => {},
+    queueMissingNpcDialoguesFn: async () => {},
+    regenNpcDialogueFn: async () => {},
+    getCreatureDialogueFromCache: () => null,
+    getAllCreatureDialogueCache: () => ({}),
+    getNpcDialogueFromCache: () => null,
+    getAllNpcDialogueCache: () => ({}),
+    clearNpcDialogueCache: () => {},
+    clearCreatureDialogueCache: () => {},
+    logNpcEncounterFn: () => {},
+    setNpcMemoryFlagFn: () => {},
+    updateNpcMemoryBondFn: () => {},
+    checkSentenceViolations: () => []
+  };
+}
+
+/**
  * Creates a mock Express request object.
  */
 export function createMockReq(overrides = {}) {
