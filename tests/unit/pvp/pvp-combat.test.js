@@ -335,4 +335,21 @@ describe('resolveRound', () => {
       Math.random = origRandom;
     }
   });
+
+  it('no-reserve KO produces koRemovals and correct winner', () => {
+    // Side B has 1 HP, no reserves — should be KO'd and removed
+    sideB[0].hp = 1;
+    const partyB = { active: sideB, reserves: [] };
+
+    const result = resolveRound(sideA, sideB, movesA, movesB, { partyB });
+
+    // Side B creature should be KO'd
+    assert.equal(result.koRemovals.length, 1, 'Should have 1 KO removal');
+    assert.equal(result.koRemovals[0].side, 'sideB', 'KO should be on sideB');
+    assert.equal(result.koRemovals[0].name, 'Test', 'Should report creature name');
+    // Side B array should be compacted (empty after removal)
+    assert.equal(sideB.length, 0, 'Side B should be empty after compaction');
+    // Side A wins
+    assert.equal(result.winner, 'sideA', 'Side A should win when all of side B is KO');
+  });
 });
