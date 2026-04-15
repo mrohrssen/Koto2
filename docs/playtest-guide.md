@@ -152,29 +152,68 @@ await page.evaluate(async () => {
 
 ---
 
-### Phase 3: Exploration → Encounter Start
+### Phase 3: Team Select → Skill Master → First Combat
 
-**Trigger:** Exploration map loaded after ward selection.
+**Trigger:** After tapping area card in area selection.
+
+**Phase 3a: Team Selection**
 
 **Expected screen:**
-- Branch selection or room navigation UI
-- Rooms may include: encounter, shrine, quiz, wordDiscovery, speedReviewRoom, shop
+- "せんたく / Your Team" header with "X / 10 pts" counter
+- Grid of creature silhouettes (unowned show as dark silhouettes with `???`)
+- Owned creatures show sprite, name, element, and level
+- "Start Run (N monsters)" button at bottom — disabled until ≥1 creature selected
 
-**Interactions:** Navigate until reaching a creature encounter room. Select it.
+**Interactions:**
+1. Tap an owned creature → stats panel appears at top (HP, ATK, DEF, MP, moves list)
+2. Creature gets selected (yellow highlight), point cost deducted from budget
+3. Tap "Start Run (N monsters)" when ready
 
-**Expected screen — Combat Start:**
-- **Top area:** 1-3 enemy creatures in a horizontal row. Each enemy shows: element icon (56px colored circle), name, level badge, HP bar. If only 1 enemy, shows single sprite instead of row.
-- **Bottom area:** 3 ally creature slots. Each shows: element icon with colored border, HP bar (green-to-red gradient), charge bar (5 empty segments), level badge. Empty slots (if party < 3) should be visually distinct.
-- **Middle area:** Vocab flashcards should appear shortly — dual cards (attack / defend).
+**Key detail:** The creature grid uses `.collection-cell` elements. Owned creatures lack the `.unowned` class. To select a creature programmatically: `document.querySelector('.collection-cell:not(.unowned)').click()`
+
+**Phase 3b: Initial Party Skill Pick (phase: `skillMaster`)**
+
+**Expected screen:**
+- Area background with Cid NPC visible
+- Narration: "Each run you can get skills to make your party stronger."
+- Three party skill cards below (e.g., Retaliation Strike, Arc Strike, Shared Vigor)
+
+**Interactions:**
+1. Dismiss Cid narration (click outside)
+2. Tap a skill card to select it
+3. Tutorial auto-selects the first skill for you if at tutorial step 0
+
+**Phase 3c: First Combat Entry (phase: `combat`)**
+
+**Expected screen:**
+- PixiJS battle scene: ally creature sprite on left, enemy creature sprite on right
+- DOM HP/MP bars overlaid on sprites (ally: HP + MP bars, enemy: HP bar)
+- Cid NPC in background center
+- **Move selection cards** in action area below scene: move name in Japanese + English, element, damage, MP cost
+- Room counter in header (e.g., "1/30")
+
+**Interactions:**
+- Tap a move card to select it → attack executes
+- After attack: a **split-attack-card** (SAC) shows the result (attacker, move, target, damage)
+- The SAC has a timed reveal animation. After animation completes, a `▼` continue indicator appears
+- **Tap the action area** (not the card itself) to dismiss the SAC and continue
+- Enemy turn follows automatically, then next move selection appears
+
+**Known issue (tween crash):** If a Pixi tween runs on a null/destroyed sprite at combat start, the SAC animation gets stuck and never shows the continue indicator. Check console for `TypeError: null is not an object (evaluating 'this._position.x')`. If stuck, force-clear: `document.getElementById('action-area').innerHTML = ''`
+
+**Inspector verification during combat:**
+```javascript
+// Check state-DOM-Pixi consistency
+window.__inspector.fullScan()
+// Expected: { ok: true, summary: { allies: { state: N, dom: N, pixi: N }, enemies: { state: M, dom: M, pixi: M } } }
+```
 
 **What could go wrong:**
-- 0 enemies generated (empty top area)
-- Enemy count exceeds 3
-- Ally slots don't match starter picks (wrong creatures)
-- HP bars show wrong values or are missing
-- Charge bars pre-filled instead of empty
-- Multi-enemy layout overlapping or broken
-- Vocab cards never appear
+- No enemy sprite appears (Pixi loading failure)
+- HP bars don't match creature count
+- Move cards empty or missing
+- SAC animation stuck (tween crash — see known issue)
+- Inspector reports DOM_GHOST (stale sprite/HP bar from previous phase)
 
 ---
 
