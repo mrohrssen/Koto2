@@ -117,6 +117,7 @@ import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
 import { toRomaji } from './js/ui/romaji.js';
+import { resetClientSessionState } from './js/ui/session-reset.js';
 import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
@@ -410,6 +411,24 @@ function updateStatusBar() {
 let npcDialogueRecoveryDone = false;
 let combatRecoveryDone = false;
 let postCombatShopRecoveryDone = false;
+
+function clearClientSessionState() {
+  const nextState = resetClientSessionState(gameState, {
+    cleanupCombat: () => combatLoopUI.cleanupCombat(),
+    clearActions: () => actions.clear(),
+    hideNarration: () => narrationBox.forceHide(),
+    hideEnemies: () => scene.hideEnemies(),
+    hidePlayerFormation: () => scene.hideFormation('player'),
+    resetFlags: () => {
+      npcDialogueRecoveryDone = false;
+      combatRecoveryDone = false;
+      postCombatShopRecoveryDone = false;
+      sceneTransitionActive = false;
+      encounterStarting = false;
+    }
+  });
+  updateGameState(nextState);
+}
 
 function updateScene() {
   if (gameState.phase !== 'npc_dialogue') npcDialogueRecoveryDone = false;
@@ -1583,6 +1602,10 @@ async function initGame() {
   // Initialize PixiJS battle stage (canvas overlay for combat animations)
   await initBattleStage();
 
+  // A fresh auth session should never inherit transient combat UI from the
+  // previous user/session (e.g. stale combatActive or room transition flags).
+  clearClientSessionState();
+
   takeover.init();
   leaderboard.init();
   bugReport.init();
@@ -1987,6 +2010,7 @@ async function initGame() {
   // Wire logout button (in menu sheet — menu auto-closes via delegation)
   document.getElementById('logout-btn')?.addEventListener('click', () => {
     if (confirm('Are you sure you want to log out?')) {
+      clearClientSessionState();
       auth.logout();
       auth.showAuthScreen();
     }
