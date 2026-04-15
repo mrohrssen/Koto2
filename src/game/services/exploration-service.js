@@ -7,7 +7,8 @@ import {
   getAreaSelectionOptions,
   getAreaById,
   createRoom,
-  ROOM_TYPES
+  ROOM_TYPES,
+  popTestRoomType
 } from '../rooms.js';
 
 import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPrice, getCreatureSellPrice, generateDealerCreatures } from '../creatures.js';
@@ -299,6 +300,15 @@ export class ExplorationService {
     }
 
     const nextRoom = this.gm.run.rooms[this.gm.run.currentRoom];
+
+    // Test queue override — pop queued room type (NODE_ENV=test or debug mode)
+    const queuedType = popTestRoomType();
+    if (queuedType && ROOM_TYPES[queuedType] && nextRoom.type !== queuedType) {
+      const areaId = this.gm.run.currentArea?.id || 'unknown';
+      const replaced = createRoom(queuedType, areaId, nextRoom.roomNumber, nextRoom.totalRooms);
+      if (nextRoom.subArea) replaced.subArea = nextRoom.subArea;
+      this.gm.run.rooms[this.gm.run.currentRoom] = replaced;
+    }
 
     // Single room - override type if forceRoomType is set
     if (forceRoomType && ROOM_TYPES[forceRoomType] && nextRoom.type !== forceRoomType) {

@@ -197,6 +197,44 @@ export default function createMiscRoutes({
     res.json({ success: true, enemyHp: hp });
   });
 
+  // Debug: Override creature collection (for testing)
+  router.post('/debug-set-collection', (req, res) => {
+    if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
+      return res.status(403).json({ error: 'Only available in test mode or debug mode' });
+    }
+
+    const { creatureIds } = req.body;
+    if (!Array.isArray(creatureIds)) {
+      return res.status(400).json({ error: 'creatureIds must be an array' });
+    }
+
+    const gameManager = req.gameManager;
+    const meta = gameManager.getMeta();
+    meta.creatureCollection = creatureIds;
+
+    req.saveGame();
+    res.json({ success: true, collection: creatureIds });
+  });
+
+  // Debug: Mark the current room as interacted (for testing proceed)
+  router.post('/debug-skip-room', (req, res) => {
+    if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
+      return res.status(403).json({ error: 'Only available in test mode or debug mode' });
+    }
+
+    const gameManager = req.gameManager;
+    const room = gameManager.run?.rooms?.[gameManager.run?.currentRoom];
+    if (!room) {
+      return res.status(400).json({ error: 'No current room' });
+    }
+
+    room.interacted = true;
+    if (room.skillMaster) room.skillMaster.completed = true;
+
+    req.saveGame();
+    res.json({ success: true, roomType: room.type });
+  });
+
   // Debug: Queue room types for testing
   router.post('/debug-queue-rooms', async (req, res) => {
     if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
