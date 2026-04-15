@@ -1595,6 +1595,8 @@ async function initGame() {
 
   window.__intentLog = intentLog;
   window.__inspector = inspector;
+  window.__gameState = () => window.__inspector?.getState?.() || null;
+  window.__gamePhase = () => window.__inspector?.getPhase?.() || 'unknown';
 
   // Initialize i18n language from settings
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');

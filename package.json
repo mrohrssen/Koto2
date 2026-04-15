@@ -14,7 +14,9 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "c8 node --experimental-test-module-mocks --test 'tests/unit/**/*.test.js'",
     "test:integration": "node --test 'tests/integration/**/*.test.js'",
-    "test:smoke": "node --test 'tests/smoke/**/*.test.js'",
+    "test:visual": "npx playwright test --config tests/visual/playwright.config.js tests/visual/screens",
+    "test:smoke": "npx playwright test --config tests/visual/playwright.config.js tests/smoke --workers=1",
+    "test:smoke:node": "node --test 'tests/smoke/**/*.test.js'",
     "test:coverage": "c8 report --reporter=text --reporter=html",
     "optimize-images": "node scripts/optimize-images.js"
   },
