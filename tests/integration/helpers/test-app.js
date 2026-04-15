@@ -30,6 +30,10 @@ export async function createTestApp() {
 
   const narration = createNoOpNarration();
 
+  // Mutable state closures for debug/stats endpoints
+  let debugMode = false;
+  let gameStats = {};
+
   const app = createApp({
     dataDir: tmp.path,
     usersFile: join(tmp.path, '.jrpg-users.json'),
@@ -40,6 +44,12 @@ export async function createTestApp() {
       ttsCache: createMockTTS(),
       ttsDialogueCache: createMockTTSDialogue(),
       getUserVocabulary: () => ({ words: [], vidSet: new Set() }),
+      getDebugMode: () => debugMode,
+      setDebugMode: (val) => { debugMode = val; },
+      updateGameStatsWithEvent: () => {},
+      saveGameStats: () => {},
+      getGameStats: () => gameStats,
+      setGameStats: (s) => { gameStats = s; },
       ...narration
     }
   });
