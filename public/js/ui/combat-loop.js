@@ -9,25 +9,22 @@ import {
   lunge as pixiLunge, burstParticles, flowParticles,
   ELEMENT_COLORS
 } from '../pixi/effects.js';
-import { fireElementBlast } from '../pixi/element-blasts.js';
 import {
   showDamageNumber as pixiDamageNumber, popupBuff, popupDebuff, popupSkillProc,
   showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup,
   showHealPopup, showPoisonTick
 } from '../pixi/text.js';
 import { showBanner } from '../pixi/banners.js';
-import { playStatusApplied, clearStatusVfx, clearAllStatusVfx } from '../pixi/status-vfx.js';
-import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, syncPixiStatusLabels, clearAllPixiStatusLabels, showNpcSprite as pixiSlideInNpc, hideNpcSprite as pixiSlideOutNpc } from '../pixi/formation.js';
-import { showNpcInDisplay, hideEnemy, showFormation } from './scene.js';
+import { clearAllStatusVfx } from '../pixi/status-vfx.js';
+import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, clearAllPixiStatusLabels } from '../pixi/formation.js';
+import { showFormation } from './scene.js';
 import { setScrollState } from '../pixi/parallax.js';
-import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
-import { hapticDamageTier } from '../native/index.js';
 import { playAttackSound } from './combat-audio.js';
-import { replaceWithTextSprite, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
+
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
-import { getHpColor, SC_NAMES, getCreatureStatusKeys } from './combat-ui-utils.js';
+import { SC_NAMES } from './combat-ui-utils.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -40,84 +37,6 @@ let _currentRoundBarks = [];
 /** Get the barks returned by the latest combat cycle response. */
 export function getCurrentBarks() { return _currentRoundBarks; }
 
-// ============ PIXI ADAPTER FUNCTIONS ============
-
-function spritePos(side, index) {
-  const sprite = getCreatureSprite(side, index);
-  if (!sprite) return { x: 0, y: 0 };
-  return { x: sprite.x, y: sprite.y };
-}
-
-const effectDelay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-/**
- * PixiJS replacement for the old DOM-based impactEnemyEffect.
- * Fires tiered hit-stop, particles, shake, flash, damage number, and recoil.
- */
-async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, element = 'neutral', effectivenessType = 'normal', onImpact) {
-  const tier = getDamageTier(damage, enemyMaxHp);
-  const effects = TIER_EFFECTS[tier];
-  const pos = spritePos(targetSide, targetIndex);
-  const sprite = getCreatureSprite(targetSide, targetIndex);
-  const elemColor = ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral;
-  hapticDamageTier(tier);
-
-  if (effects.hitStop > 0) await hitStop(effects.hitStop);
-
-  if (effects.shake !== 'none') {
-    screenShake(effects.shake);
-    if (tier === 4) { await wait(100); screenShake('medium'); }
-  }
-
-  if (effects.flash === 'element') {
-    screenFlash({ color: elemColor, duration: 100 });
-  } else if (effects.flash === 'both') {
-    screenFlash({ color: elemColor, duration: 80 });
-    await wait(50);
-    screenFlash({ color: 0xFFFFFF, duration: 100 });
-  } else if (effects.flash === 'screen2x') {
-    screenFlash({ color: 0xFFFFFF, duration: 80, count: 2 });
-  }
-
-  pixiDamageNumber(damage, pos, { tier, type: effectivenessType });
-  if (onImpact) onImpact();
-
-  if (sprite) {
-    const recoilDir = targetSide === 'enemy' ? 'right' : 'left';
-    pixiRecoil(sprite, { distance: TIER_RECOIL[tier], direction: recoilDir });
-  }
-}
-
-/**
- * PixiJS replacement for DOM fireCreatureAttackEffect.
- * Lunges the attacker, then impacts the target.
- */
-async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, damage, enemyMaxHp, effectivenessType = 'normal', onImpact) {
-  const attackerSprite = getCreatureSprite('player', attackerIndex);
-  const fromPos = spritePos('player', attackerIndex);
-  const toPos = spritePos('enemy', targetIndex);
-  const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: 20, duration: 200 }) : Promise.resolve();
-  const blastP = fireElementBlast(fromPos, toPos, element, () => {
-    impactEffect(damage, 'enemy', targetIndex, enemyMaxHp, element, effectivenessType, onImpact);
-  });
-  await Promise.all([lungeP, blastP]);
-}
-
-/**
- * PixiJS replacement for DOM enemyCreatureAttackEffect.
- * Lunges the enemy attacker, then impacts the player target.
- */
-async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, damage, playerMaxHp = 0, effectivenessType = 'normal', onImpact) {
-  const attackerSprite = getCreatureSprite('enemy', attackerIndex);
-  const fromPos = spritePos('enemy', attackerIndex);
-  const toPos = spritePos('player', targetIndex);
-  const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: -20, duration: 200 }) : Promise.resolve();
-  const blastP = fireElementBlast(fromPos, toPos, element, () => {
-    impactEffect(damage, 'player', targetIndex, playerMaxHp, element, effectivenessType, onImpact);
-  });
-  await Promise.all([lungeP, blastP]);
-}
-
 import { playDialogueAudio } from '../tts.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
@@ -126,6 +45,7 @@ import { renderButtonsAsync } from './ui-components.js';
 import { playNpcSkillAnimation } from './room-transition.js';
 import * as befriend from './befriend.js';
 import * as kanaCombat from './kana-combat.js';
+import * as vfx from './combat-vfx.js';
 import {
   insertAttackCard, insertNpcAttackCard, waitForCardTap,
   showAttackCardAndWait, ATTACK_CARD_TIMING, ELEMENT_THEME,
@@ -134,104 +54,6 @@ import {
 // Re-export for barrel compatibility (index.js → combatLoop.insertAttackCard)
 export { insertAttackCard, waitForCardTap } from './attack-card.js';
 
-/**
- * Party-skill proc visuals shared by attack-display and inline move-turn playback.
- * Callers supply resolveAllies/resolveEnemies and indices so PvP overrides stay correct.
- */
-async function showAttackPartySkillProcs(atk, {
-  sourceSide,
-  attackerIndex,
-  targetSide,
-  targetIndex,
-  element,
-  resolveAllies,
-  resolveEnemies
-}) {
-  if (!atk.partySkillProcs?.length) return;
-
-  for (const proc of atk.partySkillProcs) {
-    let detail = '';
-    if (proc.type === 'bonusDamage') detail = ` +${proc.bonusDamage}`;
-    else if (proc.type === 'healAll') detail = ` +${proc.healAmount} HP`;
-
-    const attackerPos = spritePos(sourceSide, attackerIndex);
-    popupSkillProc(`${proc.skillName}!${detail}`, attackerPos);
-
-    if (proc.type === 'bonusDamage') {
-      burstParticles(spritePos(targetSide, targetIndex), { count: 6, color: 0xFFB74D });
-    } else if (proc.type === 'healAll') {
-      resolveAllies().forEach((ally, i) => {
-        if (ally && ally.hp > 0) {
-          const pos = spritePos('player', i);
-          burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
-          showHealPopup(proc.healAmount, pos);
-        }
-      });
-    } else if (proc.type === 'haste') {
-      burstParticles(attackerPos, { count: 8, color: 0x4FC3F7 });
-    } else if (proc.type === 'teamShield') {
-      resolveAllies().forEach((ally, i) => {
-        if (ally && ally.hp > 0) {
-          burstParticles(spritePos('player', i), { count: 6, color: 0x42A5F5 });
-        }
-      });
-    } else if (proc.type === 'chainHit') {
-      const chainFrom = spritePos('enemy', proc.sourceIndex ?? atk.targetIndex);
-      const chainTo = spritePos('enemy', proc.targetIndex);
-      const chainElement = proc.element || element;
-      await fireElementBlast(chainFrom, chainTo, chainElement, () => {
-        pixiDamageNumber(proc.damage, chainTo, { tier: 1 });
-        screenShake('light');
-      });
-    } else if (proc.type === 'stageChange') {
-  
-      const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
-      const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
-      const pos = spritePos(proc.targetSide === 'enemy' ? 'enemy' : 'player', proc.targetIndex);
-      if (proc.delta > 0) popupBuff(text, pos);
-      else popupDebuff(text, pos);
-    } else if (proc.type === 'spread') {
-      const pos = spritePos('enemy', proc.targetIndex);
-      popupSkillProc('SPREAD!', pos);
-      burstParticles(pos, { count: 4, color: 0x9C27B0 });
-    } else if (proc.type === 'teamBuff') {
-  
-      resolveAllies().forEach((ally, i) => {
-        if (ally) popupBuff(`${SC_NAMES[proc.stat] || proc.stat} +${proc.delta}`, spritePos('player', i));
-      });
-    } else if (proc.type === 'burst') {
-      const pos = spritePos('enemy', proc.targetIndex);
-      popupSkillProc('AFFLICTION BURST!', pos);
-      pixiDamageNumber(proc.damage, pos, { tier: 1 });
-      burstParticles(pos, { count: 10, color: 0xE91E63 });
-    } else if (proc.type === 'pandemic') {
-      resolveEnemies().forEach((enemy, i) => {
-        if (enemy && enemy.hp > 0) {
-          const pos = spritePos('enemy', i);
-          popupSkillProc('PANDEMIC!', pos);
-          burstParticles(pos, { count: 6, color: 0x9C27B0 });
-        }
-      });
-    }
-
-    await effectDelay(600);
-  }
-}
-
-/**
- * Shared attack display sequence used by both PvE and PvP.
- * Shows: card → sound → effects → damage → STAB → effectiveness → party skill procs → tap.
- *
- * @param {Object} atk - Attack object from server
- * @param {Object} opts
- * @param {boolean} opts.isEnemy - Whether this attack is from the enemy's perspective
- * @param {Element|null} opts.sourceEl - Attacker's formation slot element
- * @param {Element|null} opts.targetEl - Target's formation slot element
- * @param {number} [opts.targetMaxHp=100] - Target's max HP (for tiered impact effects)
- * @param {Array} [opts.allies] - Override ally list (PvP passes its own state)
- * @param {Array} [opts.enemies] - Override enemy list (PvP passes its own state)
- * @returns {Promise<Element|null>} The attack card element
- */
 export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp = 100, allies: overrideAllies, enemies: overrideEnemies, onImpact }) {
   const attackCard = insertAttackCard(atk, isEnemy);
 
@@ -249,13 +71,13 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   if (atk.damage > 0 && (sourceEl || getCreatureSprite(sourceSide, attackerIndex))) {
     playAttackSound(element);
     if (isEnemy) {
-      await enemyCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType, onImpact);
+      await vfx.enemyCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType, onImpact);
     } else {
-      await fireCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType, onImpact);
+      await vfx.fireCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType, onImpact);
     }
   }
 
-  // Damage number on the target (already rendered by impactEffect inside the attack effect functions)
+  // Damage number on the target (already rendered by vfx.impactEffect inside the attack effect functions)
 
   // Type effectiveness popup (STAB has no separate visual; its boost feeds into the tier system)
   if (atk.elementMultiplier > 1) {
@@ -271,7 +93,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
       if (change === 0) continue;
       const dir = change > 0 ? `+${change}` : `${change}`;
       const text = `${SC_NAMES[stat] || stat} ${dir}`;
-      const pos = spritePos(targetSide, targetIndex);
+      const pos = vfx.spritePos(targetSide, targetIndex);
       if (change > 0) popupBuff(text, pos);
       else popupDebuff(text, pos);
     }
@@ -280,7 +102,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   // Party skill procs (bonus damage, heals, haste, shields)
   const resolveAllies = () => overrideAllies || getGameState()?.combat?.allies || getGameState()?.run?.creatureParty?.active || [];
   const resolveEnemies = () => overrideEnemies || getGameState()?.combat?.enemies || [];
-  await showAttackPartySkillProcs(atk, {
+  await vfx.showAttackPartySkillProcs(atk, {
     sourceSide,
     attackerIndex,
     targetSide,
@@ -294,7 +116,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   if (attackCard) {
     await waitForCardTap(attackCard);
   } else {
-    await effectDelay(800);
+    await vfx.effectDelay(800);
   }
 
   return attackCard;
@@ -437,10 +259,10 @@ export function init(callbacks) {
     showGameOverModal,
     updateCreatureRowData,
     syncFinalState,
-    showOneEnemyAttackAnimated,
-    buildAllyHpMap,
-    updateCreatureHpBars,
-    spritePos,
+    showOneEnemyAttackAnimated: vfx.showOneEnemyAttackAnimated,
+    buildAllyHpMap: vfx.buildAllyHpMap,
+    updateCreatureHpBars: vfx.updateCreatureHpBars,
+    spritePos: vfx.spritePos,
     apiBefriendReplace: callbacks.apiBefriendReplace,
     apiGetBefriendConversation: callbacks.apiGetBefriendConversation,
     apiSubmitBefriendAnswer: callbacks.apiSubmitBefriendAnswer,
@@ -450,6 +272,14 @@ export function init(callbacks) {
     getGameState: () => getGameState(),
     showFlashCards,
     executeCreatureMovesTurn,
+  });
+
+  vfx.init({
+    getGameState: () => getGameState(),
+    delay,
+    characterUI,
+    animatePlayerHurt,
+    showDamageNumber,
   });
 }
 
@@ -724,109 +554,6 @@ function showNextDualCardsFromQueue() {
  * @param {string} creatureId - The creature's ID
  * @returns {Element|null} The .formation-slot DOM element, or null
  */
-function findCreatureSlotByAttackerId(creatureId, allyIndex = null) {
-  const state = getGameState();
-  const activeCreatures = state.run?.creatureParty?.active;
-  if (!activeCreatures) return null;
-
-  let index = -1;
-  if (typeof allyIndex === 'number' && allyIndex >= 0 && allyIndex < activeCreatures.length) {
-    index = allyIndex;
-  } else if (creatureId) {
-    index = activeCreatures.findIndex(r => r && r.id === creatureId);
-  }
-  if (index < 0) return null;
-
-  const slots = document.querySelectorAll('#player-formation .formation-slot');
-  return slots[index] || null;
-}
-
-/**
- * Find the enemy slot element for a specific target in formation-based combat.
- * Falls back to npc-display or the whole enemy-formation container.
- * @param {string} targetId - Enemy template id (fallback when enemyIndex missing)
- * @param {Array} enemies - The enemies array from the result
- * @param {number|null} enemyIndex - Slot in `enemies` (authoritative when duplicate species)
- * @returns {Element} The specific enemy slot element or the container
- */
-function findEnemyTargetElement(targetId, enemies, enemyIndex = null) {
-  const slot = document.querySelector(`#enemy-formation .formation-slot[data-index="${enemyIndex}"]`);
-  if (slot) return slot;
-  const npcDisplay = document.getElementById('npc-display');
-  if (npcDisplay && npcDisplay.classList.contains('visible')) return npcDisplay;
-  return document.getElementById('enemy-formation');
-}
-
-/**
- * Directly update creature HP bar widths in the DOM without triggering full updateUI.
- * This avoids resetting enemy HP bars from stale game state during animations.
- * @param {Array} creatures - The creature party active array (with final HP from server)
- * @param {Object} allyHpMap - Map of creatureId -> { hp, maxHp } with running HP values
- */
-function updateCreatureHpBars(creatures, allyHpMap) {
-  if (!creatures) return;
-  const slots = document.querySelectorAll('#player-formation .formation-slot');
-  creatures.forEach((creature, i) => {
-    const slot = slots[i];
-    if (!slot || !creature) return;
-    const currentHp = allyHpMap?.[creature.id] ? allyHpMap[creature.id].hp : creature.hp;
-    const hpPct = Math.max(0, (currentHp / creature.maxHp) * 100);
-    const fill = slot.querySelector('.formation-hp-fill');
-    if (fill) {
-      fill.style.width = `${hpPct}%`;
-      fill.style.backgroundColor = getHpColor(hpPct);
-    }
-    // Update KO state (DOM + Pixi)
-    const icon = slot.querySelector('.formation-sprite');
-    if (icon) {
-      if (currentHp <= 0) {
-        icon.classList.add('ko');
-      } else {
-        icon.classList.remove('ko');
-      }
-    }
-    const pixiSprite = getCreatureSprite('player', i);
-    if (pixiSprite) {
-      if (currentHp <= 0) {
-        pixiSprite.alpha = 0.3;
-        pixiSprite.tint = 0x888888;
-      } else {
-        pixiSprite.alpha = 1;
-        pixiSprite.tint = 0xFFFFFF;
-      }
-    }
-    // Update MP bar
-    const mpFill = slot.querySelector('.formation-mp-fill');
-    const mpText = slot.querySelector('.formation-mp-text');
-    if (mpFill && creature.maxMp > 0) {
-      const curMp = creature.currentMp ?? creature.mp ?? 0;
-      const mpPct = Math.max(0, (curMp / creature.maxMp) * 100);
-      mpFill.style.width = `${mpPct}%`;
-      if (mpText) mpText.textContent = `${curMp}/${creature.maxMp}`;
-    }
-  });
-}
-
-/**
- * Show enemy damage to player in big red text in the action area
- * @param {Object} enemyAttack - The enemy attack result
- */
-function showEnemyDamageDisplay(enemyAttack) {
-  const actionArea = document.getElementById('action-area');
-  if (!actionArea) return;
-
-  if (enemyAttack.perfectDodge) {
-    actionArea.innerHTML = `<div class="combat-enemy-damage dodge">${t('perfectDodge')}</div>`;
-  } else if (enemyAttack.dodged) {
-    actionArea.innerHTML = `<div class="combat-enemy-damage dodge">${t('dodged')}</div>`;
-  } else if (enemyAttack.miss) {
-    actionArea.innerHTML = `<div class="combat-enemy-damage miss">${t('miss')}</div>`;
-  } else {
-    const crit = enemyAttack.critical ? `<div class="combat-enemy-crit">${t('critical')}</div>` : '';
-    actionArea.innerHTML = `<div class="combat-enemy-damage">${crit}<span class="enemy-damage-number">-${enemyAttack.damage}</span></div>`;
-  }
-}
-
 // ============ XP EVENT HANDLING ============
 
 /**
@@ -850,7 +577,7 @@ function showXpEvents(xpEvents) {
       for (const grant of event.xpGrants) {
         const index = activeCreatures.findIndex(r => r && r.id === grant.creatureId);
         if (index >= 0 && slots[index]) {
-          pixiXpPopup(grant.xp, spritePos('player', index));
+          pixiXpPopup(grant.xp, vfx.spritePos('player', index));
         }
       }
     }
@@ -861,7 +588,7 @@ function showXpEvents(xpEvents) {
         const index = activeCreatures.findIndex(r => r && r.id === lu.creatureId);
         if (index >= 0 && slots[index]) {
           // Slight delay so it appears after XP popup
-          setTimeout(() => pixiLevelUpPopup(lu.newLevel, spritePos('player', index)), 400);
+          setTimeout(() => pixiLevelUpPopup(lu.newLevel, vfx.spritePos('player', index)), 400);
           // PixiJS level-up burst + flash
           setTimeout(() => animateLevelUp('player', index), 400);
         }
@@ -1013,13 +740,13 @@ export async function executePlayerAttack() {
           if (enemySlot) combatEvents.emit('creatureHit', { slotEl: enemySlot, side: 'enemy' });
 
           // Visual effects for enemy damage (PixiJS impact with tier-based effects)
-          await impactEffect(pa.damage, 'enemy', 0, enemyMaxHp, undefined, undefined, () => {
+          await vfx.impactEffect(pa.damage, 'enemy', 0, enemyMaxHp, undefined, undefined, () => {
             characterUI.updateEnemyHPBar(result.enemyHp);
           });
         }
       }
 
-      // Sync HP bars for dodge/miss (no impactEffect fires, but server state may have changed)
+      // Sync HP bars for dodge/miss (no vfx.impactEffect fires, but server state may have changed)
       if (!result.playerAttack?.damage) {
         characterUI.updateEnemyHPBar(result.enemyHp);
       }
@@ -1076,530 +803,6 @@ export async function executePlayerAttack() {
 // ============ SHARED CREATURE COMBAT HELPERS ============
 
 /** Show a floating text label above a target element (for status effects) */
-function showFloatingText(targetEl, text) {
-  const rect = targetEl.getBoundingClientRect();
-  const popup = document.createElement('div');
-  popup.className = 'floating-effect-text';
-  popup.innerHTML = text;
-  popup.style.left = `${rect.left + rect.width / 2}px`;
-  popup.style.top = `${rect.top}px`;
-  document.body.appendChild(popup);
-  popup.addEventListener('animationend', () => popup.remove());
-}
-
-/**
- * Show status effect events from start-of-round effect processing.
- * Handles poison ticks with damage animation AND all other status effects
- * (confuse, stun, sleep, buffs, shields) with floating text labels.
- * Used by both attack and defend paths.
- * @param {Object} result - Combat cycle result from server
- */
-async function showEffectEvents(result) {
-  if (!result.effectEvents?.length) return;
-  const affectedCreatures = new Set();
-  for (const event of result.effectEvents) {
-    // Resolve side and index for PixiJS positioning
-    const side = event.targetSide === 'ally' ? 'player' : 'enemy';
-    const index = typeof event.targetIndex === 'number' ? event.targetIndex : 0;
-    affectedCreatures.add(`${side}:${index}`);
-
-    if (event.type === 'poison' && event.damage > 0) {
-      const pos = spritePos(side, index);
-      burstParticles(pos, { count: 4, color: 0x9C27B0, speed: 40, life: 300, element: 'neutral' });
-      showPoisonTick(event.damage, pos);
-      playStatusApplied(side, index, 'poison');
-      if (event.remainingTurns === 0) {
-        clearStatusVfx(side, index, 'poison');
-      }
-    } else if (event.type !== 'poison') {
-      const EFFECT_LABELS = {
-        confuse: t('effectConfuse'),
-        stun: t('effectStun'),
-        sleep: t('effectSleep'),
-        haste: t('effectHaste'),
-        shield: t('effectShield'),
-        team_shield: t('effectShield'),
-        taunt: 'Taunt'
-      };
-      const baseType = event.type.replace(/_tick$/, '');
-      const label = EFFECT_LABELS[baseType] || event.type;
-      const pos = spritePos(side, index);
-      const BUFF_TYPES = new Set(['haste', 'shield', 'team_shield']);
-      const DEBUFF_TYPES = new Set(['confuse', 'stun', 'sleep', 'taunt']);
-      if (DEBUFF_TYPES.has(baseType)) {
-        popupDebuff(label, pos);
-        playStatusApplied(side, index, baseType);
-      } else if (BUFF_TYPES.has(baseType)) {
-        popupBuff(label, pos);
-        playStatusApplied(side, index, baseType);
-      } else {
-        showFloatingText(document.body, label);
-      }
-      if (event.remainingTurns === 0) {
-        clearStatusVfx(side, index, baseType);
-      }
-      await delay(400);
-    }
-  }
-  // Only sync pills for creatures that had effect events (avoid premature sync from final state)
-  for (const key of affectedCreatures) {
-    const [side, idx] = key.split(':');
-    syncStatusForCreature(result, side, Number(idx));
-  }
-}
-
-// getCreatureStatusKeys imported from combat-ui-utils.js
-
-function syncStatusIconsFromResult(result) {
-  if (result.allies) {
-    result.allies.forEach((ally, i) => {
-      if (!ally) return;
-      const keys = getCreatureStatusKeys(ally);
-      syncPixiStatusLabels('player', i, keys, ally.statStages);
-    });
-  }
-  if (result.enemies) {
-    result.enemies.forEach((enemy, i) => {
-      if (!enemy) return;
-      const keys = getCreatureStatusKeys(enemy);
-      syncPixiStatusLabels('enemy', i, keys, enemy.statStages);
-    });
-  }
-}
-
-function syncStatusForCreature(result, side, index) {
-  const creatures = side === 'player' ? result.allies : result.enemies;
-  const creature = creatures?.[index];
-  if (!creature) return;
-  const keys = getCreatureStatusKeys(creature);
-  syncPixiStatusLabels(side, index, keys, creature.statStages);
-}
-
-const BUFF_EFFECTS = new Set(['haste', 'shield', 'team_shield']);
-const DEBUFF_EFFECTS = new Set(['poison', 'sleep', 'stun', 'confuse', 'taunt']);
-
-/**
- * Show VFX + popup + pill sync when a move applies an effect or stat changes.
- * Called after each individual attack animation so indicators appear in real time.
- */
-async function showMoveEffectsApplied(atk, targetSide, targetIndex, result) {
-  const pos = spritePos(targetSide, targetIndex);
-  let shown = false;
-
-  if (atk.effectApplied) {
-    const effect = atk.effectApplied;
-    if (DEBUFF_EFFECTS.has(effect)) {
-      popupDebuff(STATUS_EFFECT_LABELS[effect] || effect, pos);
-      playStatusApplied(targetSide, targetIndex, effect);
-    } else if (BUFF_EFFECTS.has(effect)) {
-      popupBuff(STATUS_EFFECT_LABELS[effect] || effect, pos);
-      playStatusApplied(targetSide, targetIndex, effect);
-    }
-    shown = true;
-  }
-
-  if (atk.statChangesApplied) {
-
-    for (const [stat, change] of Object.entries(atk.statChangesApplied)) {
-      if (change === 0) continue;
-      const dir = change > 0 ? `+${change}` : `${change}`;
-      const text = `${SC_NAMES[stat] || stat} ${dir}`;
-      if (change > 0) popupBuff(text, pos);
-      else popupDebuff(text, pos);
-    }
-    shown = true;
-  }
-
-  if (shown) {
-    syncStatusForCreature(result, targetSide, targetIndex);
-    await delay(300);
-  }
-}
-
-const STATUS_EFFECT_LABELS = {
-  poison: 'Poisoned!',
-  sleep: 'Sleep!',
-  stun: 'Stunned!',
-  confuse: 'Confused!',
-  haste: 'Haste!',
-  shield: 'Shield!',
-  team_shield: 'Shield!',
-  taunt: 'Taunt!'
-};
-
-/**
- * Show party skill proc visuals inline after a player attack.
- * @param {Object} atk - The attack record with optional partySkillProcs array
- */
-async function showPartySkillProcs(atk) {
-  const state = getGameState();
-  const activeCreatures = state.run?.creatureParty?.active || [];
-  const attackerIndex = atk.attackerId
-    ? activeCreatures.findIndex(r => r && r.id === atk.attackerId)
-    : 0;
-  const safeAttackerIndex = Math.max(0, attackerIndex);
-  const targetIndex = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
-
-  await showAttackPartySkillProcs(atk, {
-    sourceSide: 'player',
-    attackerIndex: safeAttackerIndex,
-    targetSide: 'enemy',
-    targetIndex,
-    element: 'neutral',
-    resolveAllies: () => state.combat?.allies || activeCreatures,
-    resolveEnemies: () => state.combat?.enemies || []
-  });
-}
-
-/**
- * Show round-start skill events (Erosion, Momentum, Overflow Vitality).
- * These fire at the start of each round before any actions.
- * @param {Object} result - Combat cycle result from server
- */
-async function showRoundStartEvents(result) {
-  if (!result.roundStartEvents?.length) return;
-
-  for (const event of result.roundStartEvents) {
-    if (event.type === 'erosion') {
-      const pos = spritePos('enemy', event.targetIndex);
-      const text = `${SC_NAMES[event.stat] || event.stat} ${event.delta}`;
-      popupDebuff(text, pos);
-      burstParticles(pos, { count: 3, color: 0xFF5722 });
-      syncStatusForCreature(result, 'enemy', event.targetIndex);
-    } else if (event.type === 'momentum') {
-      const pos = spritePos('player', event.targetIndex);
-      const text = `${SC_NAMES[event.stat] || event.stat} +${event.delta}`;
-      popupBuff(text, pos);
-      burstParticles(pos, { count: 3, color: 0x4CAF50 });
-      syncStatusForCreature(result, 'player', event.targetIndex);
-    } else if (event.type === 'overflowVitality') {
-      const pos = spritePos('player', event.targetIndex);
-      burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
-      showHealPopup(event.healAmount, pos);
-    }
-    await effectDelay(400);
-  }
-}
-
-/**
- * Show a single counter attack animation (used inline in initiative playback).
- * @param {Object} counter - Counter attack record from server
- * @param {Object} enemyHpMap - Mutable HP map keyed by enemy slot index
- * @param {Array} enemies - Enemy list for pandemic proc targeting
- */
-async function showOneCounterAttackAnimated(counter, enemyHpMap, enemies) {
-  const defenderPos = spritePos('player', counter.defenderIndex);
-  popupSkillProc('COUNTER!', defenderPos);
-
-  if (counter.damage > 0) {
-    const targetMaxHp = enemyHpMap?.[counter.targetIndex]?.maxHp || 100;
-    await fireCreatureAttackEffect(counter.defenderIndex, counter.targetIndex, 'neutral', counter.damage, targetMaxHp, 'normal', () => {
-      if (enemyHpMap?.[counter.targetIndex]) {
-        enemyHpMap[counter.targetIndex].hp = Math.max(0, enemyHpMap[counter.targetIndex].hp - counter.damage);
-        const entry = enemyHpMap[counter.targetIndex];
-        if (Object.keys(enemyHpMap).length > 1) {
-          characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
-        } else {
-          characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
-        }
-      }
-    });
-  }
-
-  if (counter.procs?.length) {
-    const enemyList = enemies || getCombatEnemies() || [];
-    for (const proc of counter.procs) {
-      if (proc.type === 'stageChange') {
-        const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
-        const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
-        const side = proc.targetSide === 'enemy' ? 'enemy' : 'player';
-        const pos = spritePos(side, proc.targetIndex);
-        if (proc.delta > 0) popupBuff(text, pos);
-        else popupDebuff(text, pos);
-      } else if (proc.type === 'spread') {
-        const pos = spritePos('enemy', proc.targetIndex);
-        popupSkillProc('SPREAD!', pos);
-        burstParticles(pos, { count: 4, color: 0x9C27B0 });
-      } else if (proc.type === 'pandemic') {
-        enemyList.forEach((enemy, i) => {
-          if (enemy && enemy.hp > 0) {
-            const pos = spritePos('enemy', i);
-            popupSkillProc('PANDEMIC!', pos);
-            burstParticles(pos, { count: 6, color: 0x9C27B0 });
-          }
-        });
-      } else if (proc.type === 'burst') {
-        const pos = spritePos('enemy', proc.targetIndex);
-        popupSkillProc('AFFLICTION BURST!', pos);
-        pixiDamageNumber(proc.damage, pos, { tier: 1 });
-        burstParticles(pos, { count: 10, color: 0xE91E63 });
-      }
-    }
-  }
-
-  await effectDelay(600);
-}
-
-/**
- * Show counter attack animations after enemy attacks.
- * @param {Object} result - Combat cycle result from server
- * @param {Object} enemyHpMap - Mutable HP map keyed by enemy slot index
- */
-async function showCounterAttacks(result, enemyHpMap) {
-  if (!result.counterAttacks?.length) return;
-  for (const counter of result.counterAttacks) {
-    await showOneCounterAttackAnimated(counter, enemyHpMap, result.enemies);
-  }
-}
-
-/**
- * Build a map of ally HP before enemy attacks for progressive DOM updates.
- * Reconstructs pre-enemy-attack HP by adding back damage dealt to each ally.
- * @param {Object} result - Combat cycle result from server
- * @returns {Object} Map of creatureId -> { hp, maxHp }
- */
-function buildAllyHpMap(result) {
-  const allyHpMap = {};
-  if (result.allies) {
-    result.allies.forEach((ally, i) => {
-      if (!ally) return;
-      const dmgToThisAlly = (result.enemyAttacks || [])
-        .filter(a => (typeof a.targetIndex === 'number' ? a.targetIndex === i : a.targetId === ally.id))
-        .reduce((sum, a) => sum + a.damage, 0);
-      allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
-    });
-  }
-  return allyHpMap;
-}
-
-/** Pre-player-attack enemy HP for animating bars — keyed by enemy slot index (not template id). */
-function buildEnemyHpMapForPlayerAttacks(result) {
-  const map = {};
-  const enemies = result.enemies || [];
-  const attacks = result.playerAttacks || [];
-  enemies.forEach((enemy, i) => {
-    if (!enemy) return;
-    const dmgToThisEnemy = attacks
-      .filter(a => (typeof a.targetIndex === 'number' ? a.targetIndex === i : a.targetId === enemy.id))
-      .reduce((sum, a) => sum + (a.damage || 0), 0);
-    map[i] = {
-      hp: Math.min(enemy.hp + dmgToThisEnemy, enemy.maxHp),
-      maxHp: enemy.maxHp,
-      index: i
-    };
-  });
-  return map;
-}
-
-/**
- * Player + enemy attacks in server initiative order (playbackIndex). If absent, player phase then enemy.
- * @returns {Array<{ side: 'player'|'enemy', atk: object }>}
- */
-function buildMergedInitiativeAttacks(result) {
-  const player = (result.playerAttacks || []).map(atk => ({ side: 'player', atk }));
-  const enemy = (result.enemyAttacks || []).map(atk => ({ side: 'enemy', atk }));
-  const combined = [...player, ...enemy];
-  if (combined.length === 0) return [];
-  if (combined.some(x => typeof x.atk.playbackIndex === 'number')) {
-    combined.sort((a, b) => (a.atk.playbackIndex ?? 0) - (b.atk.playbackIndex ?? 0));
-  }
-  return combined;
-}
-
-/**
- * One enemy strike animation (used by full enemy phase and initiative merge).
- */
-async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved) {
-  const effectKey = halved ? 'dealsHalved' :
-    atk.elementMultiplier > 1 ? 'dealsStrong' :
-    atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
-  let attackCard = null;
-  if (atk.attackerNameJp) {
-    attackCard = insertAttackCard(atk, true);
-  } else {
-    const actionArea = document.getElementById('action-area');
-    if (actionArea) {
-      actionArea.innerHTML = `<div class="combat-creature-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
-    }
-  }
-
-  playSFX('player-hit');
-
-  const attackerIdx = typeof atk.attackerIndex === 'number' ? atk.attackerIndex : 0;
-  const targetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
-  const targetMaxHp = result.allies?.[targetIdx]?.maxHp || 100;
-  const enemyEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
-  const hpUpdate = () => {
-    const damagedAlly = typeof atk.targetIndex === 'number' ? result.allies?.[atk.targetIndex] : null;
-    const hpMapKey = damagedAlly?.id ?? atk.targetId;
-    if (hpMapKey && allyHpMap[hpMapKey]) {
-      allyHpMap[hpMapKey].hp = Math.max(0, allyHpMap[hpMapKey].hp - atk.damage);
-    }
-    updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
-  };
-  if (atk.attackerElement) {
-    playAttackSound(atk.attackerElement);
-    await enemyCreatureAttackEffect(attackerIdx, targetIdx, atk.attackerElement, atk.damage, targetMaxHp, enemyEffectivenessType, hpUpdate);
-  } else {
-    animatePlayerHurt();
-    hpUpdate();
-  }
-
-  const element = atk.attackerElement || atk.moveElement || 'neutral';
-  if (atk.elementMultiplier > 1) {
-    setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral }), 400);
-  } else if (atk.elementMultiplier < 1) {
-    setTimeout(() => showBanner('Resisted...', 'weak'), 400);
-  }
-
-  // Real-time buff/debuff indicators for enemy-applied effects
-  if (atk.effectApplied || atk.statChangesApplied) {
-    await showMoveEffectsApplied(atk, 'player', targetIdx, result);
-  }
-
-  if (attackCard) {
-    await waitForCardTap(attackCard);
-  } else {
-    await delay(400);
-  }
-}
-
-/**
- * Animate enemy attacks against player creatures with real-time HP bar updates.
- * @param {Object} result - Combat cycle result from server
- * @param {Object} allyHpMap - Running ally HP map (mutated in place)
- * @param {boolean} halved - If true, show "halved" damage text (defend mode)
- */
-async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
-  if (!result.enemyAttacks?.length) return;
-  for (const atk of result.enemyAttacks) {
-    await showOneEnemyAttackAnimated(result, atk, allyHpMap, halved);
-  }
-  syncStatusIconsFromResult(result);
-}
-
-/**
- * Show NPC skill attack cards sequentially (one per target).
- * Each card is a vocab review opportunity showing NPC base word + skill name + target.
- */
-async function showNpcSkillAttacksAnimated(result, allyHpMap) {
-  if (!result.npcSkillAttacks?.length) return;
-
-  for (const atk of result.npcSkillAttacks) {
-    let attackCard = null;
-
-    attackCard = insertNpcAttackCard(atk);
-
-    // Sound + visual effects for damage
-    if (atk.damage > 0) {
-      playSFX('player-hit');
-      showDamageNumber(atk.damage, true, false);
-      animatePlayerHurt();
-    }
-
-    // Update ally HP after NPC damage
-    if (atk.damage > 0 && allyHpMap && allyHpMap[atk.targetId]) {
-      allyHpMap[atk.targetId].hp = Math.max(0, allyHpMap[atk.targetId].hp - atk.damage);
-      updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
-    }
-
-    if (attackCard) {
-      await waitForCardTap(attackCard);
-    } else {
-      await delay(800);
-    }
-  }
-}
-
-/**
- * Show KO swap messages with death/swap-in animations (Bug F).
- * @param {Object} result - Combat cycle result from server
- */
-async function showKoSwapAnimations(result) {
-  if (!result.koSwaps?.length && !result.koRemovals?.length) return;
-
-  // Swaps: dead creature replaced by reserve
-  for (const swap of (result.koSwaps || [])) {
-    // Animate the KO'd creature dying
-    const koIndex = swap.slot ?? -1;
-    if (koIndex >= 0) {
-      const slots = document.querySelectorAll('#player-formation .formation-slot');
-      const dyingSlot = slots[koIndex];
-      if (dyingSlot) {
-        dyingSlot.classList.add('creature-dying');
-      }
-      // PixiJS KO animation (runs alongside CSS animation)
-      animateKO('player', koIndex);
-      await delay(600);
-    }
-
-    const actionArea = document.getElementById('action-area');
-    if (actionArea) {
-      actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
-    }
-
-    // Update sprite and HP for the new creature with swap-in animation
-    if (result.creatureParty?.active && koIndex >= 0) {
-      const slots = document.querySelectorAll('#player-formation .formation-slot');
-      const swapSlot = slots[koIndex];
-      if (swapSlot) {
-        swapSlot.classList.remove('creature-dying');
-        swapSlot.classList.add('creature-swapping-in');
-        const newCreature = result.creatureParty.active[koIndex];
-        if (newCreature) {
-          const icon = swapSlot.querySelector('.formation-sprite img');
-          if (icon) {
-            icon.src = creatureStaticPath(newCreature.id);
-            icon.alt = newCreature.baseWord || newCreature.name || '';
-          }
-          const hpFill = swapSlot.querySelector('.formation-hp-fill');
-          if (hpFill) {
-            const pct = Math.max(0, (newCreature.hp / newCreature.maxHp) * 100);
-            hpFill.style.width = `${pct}%`;
-            hpFill.style.backgroundColor = getHpColor(pct);
-          }
-          const koIcon = swapSlot.querySelector('.formation-sprite');
-          if (koIcon) koIcon.classList.remove('ko');
-        }
-        setTimeout(() => swapSlot.classList.remove('creature-swapping-in'), 500);
-      }
-    }
-    await delay(800);
-  }
-
-  // Removals: dead creature with no reserve — permanently gone
-  if (result.koRemovals?.length) {
-    for (const removal of result.koRemovals) {
-      const koIndex = removal.slot ?? -1;
-      if (koIndex >= 0) {
-        const slots = document.querySelectorAll('#player-formation .formation-slot');
-        const dyingSlot = slots[koIndex];
-        if (dyingSlot) {
-          dyingSlot.classList.add('creature-dying');
-        }
-        animateKO('player', koIndex);
-      }
-
-      const actionArea = document.getElementById('action-area');
-      if (actionArea) {
-        actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #ff5252;">${t('wasDefeated', removal.name)}</div>`;
-      }
-      await delay(800);
-    }
-
-    // Re-render formation with surviving creatures
-    if (result.creatureParty?.active) {
-      await showFormation('player', result.creatureParty.active, { force: true });
-    }
-  }
-}
-
-/**
- * Sync final combat state with server-authoritative values.
- * Updates game state, creature row popup data, enemy HP bars, and ally HP bars.
- * Avoids full updateUI to prevent DOM rebuild flicker.
- * @param {Object} result - Combat cycle result from server
- */
 function syncFinalState(result) {
   if (!result.creatureParty && !result.enemies) return;
 
@@ -1628,7 +831,7 @@ function syncFinalState(result) {
   } else if (result.enemies?.[0]) {
     characterUI.updateEnemyHPBar({ current: result.enemies[0].hp, max: result.enemies[0].maxHp });
   }
-  updateCreatureHpBars(result.creatureParty?.active, null);
+  vfx.updateCreatureHpBars(result.creatureParty?.active, null);
 
   // No-op: PixiJS sprites don't leave stale inline transforms
 }
@@ -1652,8 +855,8 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
   }
 
   playSFX('attack');
-  const creatureSlotEl = findCreatureSlotByAttackerId(atk.attackerId);
-  const enemyEl = findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
+  const creatureSlotEl = vfx.findCreatureSlotByAttackerId(atk.attackerId);
+  const enemyEl = vfx.findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
 
   const atkElement = atk.moveElement || atk.attackerElement || 'neutral';
   const atkState = getGameState();
@@ -1668,7 +871,7 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
     const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
       ? enemyHpMap[tIdx].maxHp
       : (result.enemies?.[0]?.maxHp ?? 100);
-    await fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp, atkEffectivenessType, () => {
+    await vfx.fireCreatureAttackEffect(Math.max(0, atkAttackerIdx), atkTargetIdx, atkElement, atk.damage, targetMaxHp, atkEffectivenessType, () => {
       if (typeof tIdx === 'number' && enemyHpMap[tIdx]) {
         enemyHpMap[tIdx].hp = Math.max(0, enemyHpMap[tIdx].hp - atk.damage);
         const entry = enemyHpMap[tIdx];
@@ -1695,8 +898,8 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
   }
 
   if (atk.healAmount > 0) {
-    const drainTargetPos = spritePos('enemy', atkTargetIdx);
-    const drainAttackerPos = spritePos('player', Math.max(0, atkAttackerIdx));
+    const drainTargetPos = vfx.spritePos('enemy', atkTargetIdx);
+    const drainAttackerPos = vfx.spritePos('player', Math.max(0, atkAttackerIdx));
     flowParticles(drainTargetPos, drainAttackerPos, { count: 8, color: 0x4CAF50, duration: 600 });
     await wait(600);
     showHealPopup(atk.healAmount, drainAttackerPos);
@@ -1733,10 +936,10 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
   // Real-time buff/debuff indicators — show immediately when a move applies effects
   if (atk.effectApplied || atk.statChangesApplied) {
     const targetSide = (atk.category === 'buff' || atk.category === 'shield') ? 'player' : 'enemy';
-    await showMoveEffectsApplied(atk, targetSide, atkTargetIdx, result);
+    await vfx.showMoveEffectsApplied(atk, targetSide, atkTargetIdx, result);
   }
 
-  await showPartySkillProcs(atk);
+  await vfx.showPartySkillProcs(atk);
 
   if (attackCard) {
     await waitForCardTap(attackCard);
@@ -1817,30 +1020,30 @@ async function executeCreatureMovesTurn(choices) {
       _currentRoundBarks = result.barks || [];
 
       // Show poison/effect ticks
-      await showEffectEvents(result);
+      await vfx.showEffectEvents(result);
 
       // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
-      await showRoundStartEvents(result);
+      await vfx.showRoundStartEvents(result);
 
       // Track enemy HP for progressive updates (slot index — duplicate species share id)
-      const enemyHpMap = buildEnemyHpMapForPlayerAttacks(result);
-      const allyHpMap = buildAllyHpMap(result);
-      const merged = buildMergedInitiativeAttacks(result);
+      const enemyHpMap = vfx.buildEnemyHpMapForPlayerAttacks(result);
+      const allyHpMap = vfx.buildAllyHpMap(result);
+      const merged = vfx.buildMergedInitiativeAttacks(result);
       const allPendingMoveLearn = [];
       const killedEnemies = new Set();
 
       if (merged.length > 0) {
         for (const { side, atk } of merged) {
           if (side === 'player' && atk.type === 'counter') {
-            await showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
+            await vfx.showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
           } else if (side === 'player') {
             await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn);
           } else {
-            await showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
+            await vfx.showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
           }
         }
       }
-      syncStatusIconsFromResult(result);
+      vfx.syncStatusIconsFromResult(result);
 
       // === BEFRIEND NAME QUIZ CHECK ===
       // If the killing blow triggered the befriend quiz, show it instead of continuing combat
@@ -1856,11 +1059,11 @@ async function executeCreatureMovesTurn(choices) {
         const npcData = getCombatNpcData();
         if (npcData) {
           await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
-            await showNpcSkillAttacksAnimated(result, allyHpMap);
+            await vfx.showNpcSkillAttacksAnimated(result, allyHpMap);
           }, result.enemies);
         } else {
           await delay(400);
-          await showNpcSkillAttacksAnimated(result, allyHpMap);
+          await vfx.showNpcSkillAttacksAnimated(result, allyHpMap);
         }
       }
 
@@ -1868,17 +1071,17 @@ async function executeCreatureMovesTurn(choices) {
       const enemyShownInMerge = merged.some(e => e.side === 'enemy');
       if (!enemyShownInMerge && result.enemyAttacks?.length > 0) {
         await delay(400);
-        await showEnemyAttacksAnimated(result, allyHpMap, false);
+        await vfx.showEnemyAttacksAnimated(result, allyHpMap, false);
       }
 
       // Counter attack animations — only if not already shown in initiative merge
       const countersShownInMerge = merged.some(e => e.side === 'player' && e.atk.type === 'counter');
       if (!countersShownInMerge) {
-        await showCounterAttacks(result, enemyHpMap);
+        await vfx.showCounterAttacks(result, enemyHpMap);
       }
 
       // KO swap animations
-      await showKoSwapAnimations(result);
+      await vfx.showKoSwapAnimations(result);
 
       // Sync state
       syncFinalState(result);
@@ -1987,10 +1190,10 @@ async function executeCreatureDefendThenPause() {
       _currentRoundBarks = result.barks || [];
 
       // Show poison/effect ticks
-      await showEffectEvents(result);
+      await vfx.showEffectEvents(result);
 
       // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
-      await showRoundStartEvents(result);
+      await vfx.showRoundStartEvents(result);
 
       // Show defend indicator
       const actionArea = document.getElementById('action-area');
@@ -2000,23 +1203,23 @@ async function executeCreatureDefendThenPause() {
 
       // Update charge bars immediately for defend (BUG A fix)
       if (result.creatureParty?.active) {
-        updateCreatureHpBars(result.creatureParty.active, null);
+        vfx.updateCreatureHpBars(result.creatureParty.active, null);
       }
       await delay(600);
 
       // Enemy attacks phase (50% damage already applied server-side)
-      const allyHpMap = buildAllyHpMap(result);
-      await showEnemyAttacksAnimated(result, allyHpMap, true);
+      const allyHpMap = vfx.buildAllyHpMap(result);
+      await vfx.showEnemyAttacksAnimated(result, allyHpMap, true);
 
       // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
       const enemyHpMap = {};
       (result.enemies || []).forEach((e, i) => {
         if (e) enemyHpMap[i] = { hp: e.hp, maxHp: e.maxHp, index: i };
       });
-      await showCounterAttacks(result, enemyHpMap);
+      await vfx.showCounterAttacks(result, enemyHpMap);
 
       // KO swap animations
-      await showKoSwapAnimations(result);
+      await vfx.showKoSwapAnimations(result);
 
       // Sync authoritative state from server
       syncFinalState(result);
@@ -2110,7 +1313,7 @@ export async function executeEnemyAttackThenPause() {
           playSFX('player-hit');
         }
         // Show enemy damage in action area (big red text)
-        showEnemyDamageDisplay(ea);
+        vfx.showEnemyDamageDisplay(ea);
       }
 
       // Update HP bars
@@ -2242,7 +1445,7 @@ async function executeDefendThenPause() {
           animatePlayerHurt();
           playSFX('player-hit');
         }
-        showEnemyDamageDisplay(ea);
+        vfx.showEnemyDamageDisplay(ea);
       }
 
       // Update HP bars
