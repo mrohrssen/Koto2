@@ -20,8 +20,16 @@ import {
   syncCreatureDefense,
   CREATURES_BY_ID
 } from './creatures.js';
-import { processInterleavedPvERound, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, applyAfterEnemyAttacks, applyRoundStartSkills, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
+import { processInterleavedPvERound, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, applyAfterEnemyAttacks, applyRoundStartSkills, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
 import { resetStatStages } from './combat/effects.js';
+import {
+  checkAllDefeated,
+  processKOSwaps,
+  collectElementDrops,
+  getElementDropList,
+  finalizeCombatVictory,
+  resolveDefeat
+} from './combat/resolution.js';
 import { buildRunSummary } from './adventure-report.js';
 import { rollShopItems, applyItem, createItemBuffs } from './services/item-service.js';
 import { addToCollection } from './services/creature-collection-service.js';
@@ -909,45 +917,8 @@ export class GameManager {
       // XP already awarded per-kill during the interleaved round
       const newCollectionAdditions = this._flushPendingCaptures();
 
-      // Collect element drops from defeated enemies
-      if (this.meta) {
-        if (!this.meta.elementDrops) {
-          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
-        }
-        for (const enemy of this.combat.enemies || []) {
-          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
-            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
-          }
-          // Track for adventure report
-          if (enemy.hp <= 0 && this.run?.runSummary) {
-            this.run.runSummary.creaturesDefeated++;
-            if (enemy.element && enemy.element !== 'neutral') {
-              this.run.runSummary.elementsCollected[enemy.element] =
-                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
-            }
-          }
-        }
-      }
-
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) {
-        currentRoom.interacted = true;
-      }
-
-      // Boss defeat: dialogue + track for befriend-on-rematch
-      if (this.combat.isBoss && this.combat.enemies?.[0]?.id) {
-        const bossId = this.combat.enemies[0].id;
-        const bossTemplate = CREATURES_BY_ID[bossId];
-        if (bossTemplate?.bossDialogue?.defeat) {
-          this.narrate(bossTemplate.bossDialogue.defeat);
-        }
-        if (!this.run.bossesDefeated) this.run.bossesDefeated = [];
-        if (!this.run.bossesDefeated.includes(bossId)) {
-          this.run.bossesDefeated.push(bossId);
-        }
-      }
+      collectElementDrops(this.meta, this.combat.enemies, this.run?.runSummary);
+      finalizeCombatVictory(this.combat, this.run, { narrate: (t) => this.narrate(t) });
 
       this.emitState();
       return {
@@ -965,9 +936,7 @@ export class GameManager {
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
         newCollectionAdditions,
-        elementDropsCollected: (this.combat.enemies || [])
-          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
-          .map(e => e.element)
+        elementDropsCollected: getElementDropList(this.combat.enemies)
       };
     }
 
@@ -1005,11 +974,9 @@ export class GameManager {
 
     // Check if NPC skill KO'd all player creatures
     if (npcSkillAttacks.length > 0) {
-      const allAlliesKOAfterNpc = this.combat.allies.every(a => !a || a.hp <= 0);
+      const allAlliesKOAfterNpc = checkAllDefeated(this.combat.allies);
       if (allAlliesKOAfterNpc) {
-        this.combat.active = false;
-        this.run.active = false;
-        this._onRunDefeat();
+        resolveDefeat(this.combat, this.run, this.meta, { onDefeat: () => this._onRunDefeat() });
         this.emitState();
         return {
           actionType: 'attack',
@@ -1043,53 +1010,18 @@ export class GameManager {
     const counterAttacks = playerResult.inlineCounters || [];
 
     // Handle KO'd allies — swap reserves in or permanently remove
-    const koSwaps = [];
-    const koRemovals = [];
-    for (let i = 0; i < this.combat.allies.length; i++) {
-      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const deadName = this.combat.allies[i].nameEn || this.combat.allies[i].name;
-        const replacement = handleCreatureKO(this.run.creatureParty, i);
-        if (replacement) {
-          koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
-        } else {
-          koRemovals.push({ slot: i, name: deadName });
-          logger.info('[CreatureCombat] KO removed: slot', i, deadName, '(no reserves)');
-        }
-      }
-    }
-    this.run.creatureParty.active = this.run.creatureParty.active.filter(c => c != null);
+    const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(this.combat.allies, this.run.creatureParty);
+    const koSwaps = rawKoSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
+    const koRemovals = rawKoRemovals.map(r => ({ slot: r.index, name: r.name }));
     this.combat.allies = this.run.creatureParty.active;
 
     // Check if all enemies died during enemy phase (e.g. confusion self-hit)
-    const allEnemiesDown = this.combat.enemies.every(e => e.hp <= 0 || e.befriended);
+    const allEnemiesDown = checkAllDefeated(this.combat.enemies);
     if (allEnemiesDown) {
       const newCollectionAdditions = this._flushPendingCaptures();
+      collectElementDrops(this.meta, this.combat.enemies, this.run?.runSummary);
+      finalizeCombatVictory(this.combat, this.run, { narrate: (t) => this.narrate(t) });
 
-      // Collect element drops from defeated enemies
-      if (this.meta) {
-        if (!this.meta.elementDrops) {
-          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
-        }
-        for (const enemy of this.combat.enemies || []) {
-          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
-            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
-          }
-          // Track for adventure report
-          if (enemy.hp <= 0 && this.run?.runSummary) {
-            this.run.runSummary.creaturesDefeated++;
-            if (enemy.element && enemy.element !== 'neutral') {
-              this.run.runSummary.elementsCollected[enemy.element] =
-                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
-            }
-          }
-        }
-      }
-
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) currentRoom.interacted = true;
       this.emitState();
       return {
         actionType: 'attack',
@@ -1110,30 +1042,13 @@ export class GameManager {
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
         newCollectionAdditions,
-        elementDropsCollected: (this.combat.enemies || [])
-          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
-          .map(e => e.element)
+        elementDropsCollected: getElementDropList(this.combat.enemies)
       };
     }
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
-    const allAlliesKO = this.combat.allies.length === 0 || this.combat.allies.every(a => !a || a.hp <= 0);
-    if (allAlliesKO) {
-      // Save any befriended creatures to permanent collection before defeat
-      const pending = this.run.creatureParty.pendingCaptures || [];
-      for (const creature of pending) {
-        if (this.meta && !creature.temporary) {
-          const result = addToCollection(this.meta.creatureCollection || [], creature.id);
-          if (result.added) {
-            this.meta.creatureCollection = result.collection;
-          }
-        }
-      }
-      this.run.creatureParty.pendingCaptures = [];
-
-      this.combat.active = false;
-      this.run.active = false;
-      this._onRunDefeat();
+    if (checkAllDefeated(this.combat.allies)) {
+      resolveDefeat(this.combat, this.run, this.meta, { onDefeat: () => this._onRunDefeat() });
       this.emitState();
       return {
         actionType: 'attack',
@@ -1216,42 +1131,14 @@ export class GameManager {
     }) || [];
 
     // Handle KO'd allies — swap reserves in or permanently remove
-    const koSwaps = [];
-    const koRemovals = [];
-    for (let i = 0; i < this.combat.allies.length; i++) {
-      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const deadName = this.combat.allies[i].nameEn || this.combat.allies[i].name;
-        const replacement = handleCreatureKO(this.run.creatureParty, i);
-        if (replacement) {
-          koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
-        } else {
-          koRemovals.push({ slot: i, name: deadName });
-          logger.info('[CreatureCombat] KO removed: slot', i, deadName, '(no reserves)');
-        }
-      }
-    }
-    this.run.creatureParty.active = this.run.creatureParty.active.filter(c => c != null);
+    const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(this.combat.allies, this.run.creatureParty);
+    const koSwaps = rawKoSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
+    const koRemovals = rawKoRemovals.map(r => ({ slot: r.index, name: r.name }));
     this.combat.allies = this.run.creatureParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
-    const allAlliesKO = this.combat.allies.length === 0 || this.combat.allies.every(a => !a || a.hp <= 0);
-    if (allAlliesKO) {
-      // Save any befriended creatures to permanent collection before defeat
-      const pending = this.run.creatureParty.pendingCaptures || [];
-      for (const creature of pending) {
-        if (this.meta && !creature.temporary) {
-          const result = addToCollection(this.meta.creatureCollection || [], creature.id);
-          if (result.added) {
-            this.meta.creatureCollection = result.collection;
-          }
-        }
-      }
-      this.run.creatureParty.pendingCaptures = [];
-
-      this.combat.active = false;
-      this.run.active = false;
-      this._onRunDefeat();
+    if (checkAllDefeated(this.combat.allies)) {
+      resolveDefeat(this.combat, this.run, this.meta, { onDefeat: () => this._onRunDefeat() });
       this.emitState();
       return {
         actionType: 'defend',
@@ -1340,32 +1227,9 @@ export class GameManager {
       awardBattleXp(this.run.creatureParty, this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.run.itemBuffs);
       const newCollectionAdditions = this._flushPendingCaptures();
 
-      // Collect element drops from defeated enemies
-      if (this.meta) {
-        if (!this.meta.elementDrops) {
-          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
-        }
-        for (const enemy of this.combat.enemies || []) {
-          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
-            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
-          }
-          // Track for adventure report
-          if (enemy.hp <= 0 && this.run?.runSummary) {
-            this.run.runSummary.creaturesDefeated++;
-            if (enemy.element && enemy.element !== 'neutral') {
-              this.run.runSummary.elementsCollected[enemy.element] =
-                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
-            }
-          }
-        }
-      }
+      collectElementDrops(this.meta, this.combat.enemies, this.run?.runSummary);
+      finalizeCombatVictory(this.combat, this.run, { narrate: (t) => this.narrate(t) });
 
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) {
-        currentRoom.interacted = true;
-      }
       this.emitState();
       return {
         actionType: 'befriend',
@@ -1377,9 +1241,7 @@ export class GameManager {
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
         newCollectionAdditions,
-        elementDropsCollected: (this.combat.enemies || [])
-          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
-          .map(e => e.element)
+        elementDropsCollected: getElementDropList(this.combat.enemies)
       };
     }
 
@@ -1396,42 +1258,14 @@ export class GameManager {
     }) || [];
 
     // Handle KO'd allies — swap reserves in or permanently remove
-    const koSwaps = [];
-    const koRemovals = [];
-    for (let i = 0; i < this.combat.allies.length; i++) {
-      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const deadName = this.combat.allies[i].nameEn || this.combat.allies[i].name;
-        const replacement = handleCreatureKO(this.run.creatureParty, i);
-        if (replacement) {
-          koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
-        } else {
-          koRemovals.push({ slot: i, name: deadName });
-          logger.info('[CreatureCombat] KO removed: slot', i, deadName, '(no reserves)');
-        }
-      }
-    }
-    this.run.creatureParty.active = this.run.creatureParty.active.filter(c => c != null);
+    const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(this.combat.allies, this.run.creatureParty);
+    const koSwaps = rawKoSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
+    const koRemovals = rawKoRemovals.map(r => ({ slot: r.index, name: r.name }));
     this.combat.allies = this.run.creatureParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
-    const allAlliesKO = this.combat.allies.length === 0 || this.combat.allies.every(a => !a || a.hp <= 0);
-    if (allAlliesKO) {
-      // Save any befriended creatures to permanent collection before defeat
-      const pending = this.run.creatureParty.pendingCaptures || [];
-      for (const creature of pending) {
-        if (this.meta && !creature.temporary) {
-          const result = addToCollection(this.meta.creatureCollection || [], creature.id);
-          if (result.added) {
-            this.meta.creatureCollection = result.collection;
-          }
-        }
-      }
-      this.run.creatureParty.pendingCaptures = [];
-
-      this.combat.active = false;
-      this.run.active = false;
-      this._onRunDefeat();
+    if (checkAllDefeated(this.combat.allies)) {
+      resolveDefeat(this.combat, this.run, this.meta, { onDefeat: () => this._onRunDefeat() });
       this.emitState();
       return {
         actionType: 'befriend',
@@ -1557,19 +1391,13 @@ export class GameManager {
       );
 
       // Handle KO'd allies after enemy attack
-      for (let i = 0; i < this.combat.allies.length; i++) {
-        if (this.combat.allies[i].hp <= 0) {
-          handleCreatureKO(this.run.creatureParty, i);
-        }
-      }
+      processKOSwaps(this.combat.allies, this.run.creatureParty);
       this.combat.allies = this.run.creatureParty.active;
 
       // Check defeat
-      const allAlliesKO = this.combat.allies.every(a => a.hp <= 0);
+      const allAlliesKO = checkAllDefeated(this.combat.allies);
       if (allAlliesKO) {
-        this.combat.active = false;
-        this.run.active = false;
-        this._onRunDefeat();
+        resolveDefeat(this.combat, this.run, this.meta, { onDefeat: () => this._onRunDefeat() });
       }
 
       this.combat.turnCount++;
@@ -1715,34 +1543,8 @@ export class GameManager {
     if (allEnemiesDefeated) {
       awardBattleXp(party, this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.run.itemBuffs);
       newCollectionAdditions = this._flushPendingCaptures();
-
-      // Collect element drops from defeated enemies
-      if (this.meta) {
-        if (!this.meta.elementDrops) {
-          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
-        }
-        for (const enemy of enemies || []) {
-          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
-            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
-          }
-          // Track for adventure report
-          if (enemy.hp <= 0 && this.run?.runSummary) {
-            this.run.runSummary.creaturesDefeated++;
-            if (enemy.element && enemy.element !== 'neutral') {
-              this.run.runSummary.elementsCollected[enemy.element] =
-                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
-            }
-          }
-        }
-      }
-
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      // Mark room as interacted
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) {
-        currentRoom.interacted = true;
-      }
+      collectElementDrops(this.meta, enemies, this.run?.runSummary);
+      finalizeCombatVictory(this.combat, this.run, { narrate: (t) => this.narrate(t) });
     }
 
     this.emitState();
@@ -1756,9 +1558,7 @@ export class GameManager {
       creatureParty: party,
       enemies,
       newCollectionAdditions,
-      elementDropsCollected: allEnemiesDefeated
-        ? (enemies || []).filter(e => e.hp <= 0 && e.element && e.element !== 'neutral').map(e => e.element)
-        : []
+      elementDropsCollected: allEnemiesDefeated ? getElementDropList(enemies) : []
     };
   }
 
@@ -1801,30 +1601,8 @@ export class GameManager {
       awardBattleXp(this.run.creatureParty, this.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.run.itemBuffs);
       const newCollectionAdditions = this._flushPendingCaptures();
 
-      // Collect element drops from defeated enemies
-      if (this.meta) {
-        if (!this.meta.elementDrops) {
-          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
-        }
-        for (const enemy of this.combat.enemies || []) {
-          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
-            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
-          }
-          // Track for adventure report
-          if (enemy.hp <= 0 && this.run?.runSummary) {
-            this.run.runSummary.creaturesDefeated++;
-            if (enemy.element && enemy.element !== 'neutral') {
-              this.run.runSummary.elementsCollected[enemy.element] =
-                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
-            }
-          }
-        }
-      }
-
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) currentRoom.interacted = true;
+      collectElementDrops(this.meta, this.combat.enemies, this.run?.runSummary);
+      finalizeCombatVictory(this.combat, this.run, { narrate: (t) => this.narrate(t) });
 
       this.emitState();
       return {
@@ -1834,37 +1612,27 @@ export class GameManager {
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
         newCollectionAdditions,
-        elementDropsCollected: (this.combat.enemies || [])
-          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
-          .map(e => e.element)
+        elementDropsCollected: getElementDropList(this.combat.enemies)
       };
     }
 
     if (!result.correct) {
-      // Wrong answer: handle KO swaps from counter-attack
-      const koSwaps = [];
-      for (let i = 0; i < this.combat.allies.length; i++) {
-        if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-          const replacement = handleCreatureKO(this.run.creatureParty, i);
-          if (replacement) {
-            koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          }
-        }
-      }
+      // Wrong answer: handle KO swaps from counter-attack (intentional fix: now tracks koRemovals and compacts nulls)
+      const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(this.combat.allies, this.run.creatureParty);
+      const koSwaps = rawKoSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
+      const koRemovals = rawKoRemovals.map(r => ({ slot: r.index, name: r.name }));
       this.combat.allies = this.run.creatureParty.active;
 
-      const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
-      if (allAlliesKO) {
-        this.combat.active = false;
-        this.run.active = false;
-        this._onRunDefeat();
+      if (checkAllDefeated(this.combat.allies)) {
+        resolveDefeat(this.combat, this.run, this.meta, { onDefeat: () => this._onRunDefeat() });
       }
 
       this.emitState();
       return {
         ...result,
         koSwaps,
-        combatEnded: allAlliesKO,
+        koRemovals,
+        combatEnded: !this.combat.active,
         victory: false,
         allies: this.combat.allies,
         enemies: this.combat.enemies,
@@ -1889,38 +1657,9 @@ export class GameManager {
     const result = resolveBefriendFight(this.combat);
 
     if (result.allEnemiesDefeated) {
-      // Award XP for the kill that was deferred
-      const target = this.combat.enemies.find(e => e.hp <= 0 && !e.befriended);
-      // Note: XP was already awarded for other kills in the original processMoveTurn;
-      // the last creature's XP was revoked. Re-award it now would double-count since
-      // the target is already dead. The kill XP from the original turn was stripped.
-      // For simplicity, we just end combat as victory.
       const newCollectionAdditions = this._flushPendingCaptures();
-
-      // Collect element drops from defeated enemies
-      if (this.meta) {
-        if (!this.meta.elementDrops) {
-          this.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
-        }
-        for (const enemy of this.combat.enemies || []) {
-          if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
-            this.meta.elementDrops[enemy.element] = (this.meta.elementDrops[enemy.element] || 0) + 1;
-          }
-          // Track for adventure report
-          if (enemy.hp <= 0 && this.run?.runSummary) {
-            this.run.runSummary.creaturesDefeated++;
-            if (enemy.element && enemy.element !== 'neutral') {
-              this.run.runSummary.elementsCollected[enemy.element] =
-                (this.run.runSummary.elementsCollected[enemy.element] || 0) + 1;
-            }
-          }
-        }
-      }
-
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) currentRoom.interacted = true;
+      collectElementDrops(this.meta, this.combat.enemies, this.run?.runSummary);
+      finalizeCombatVictory(this.combat, this.run, { narrate: (t) => this.narrate(t) });
 
       this.emitState();
       return {
@@ -1930,9 +1669,7 @@ export class GameManager {
         creatureParty: this.run.creatureParty,
         enemies: this.combat.enemies,
         newCollectionAdditions,
-        elementDropsCollected: (this.combat.enemies || [])
-          .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
-          .map(e => e.element)
+        elementDropsCollected: getElementDropList(this.combat.enemies)
       };
     }
 
