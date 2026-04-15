@@ -70,6 +70,13 @@ export function setBackground(imagePath) {
  * @param {Array} creatures - array of 1-3 creature objects
  */
 export async function showFormation(side, creatures, { isBoss = false, force = false } = {}) {
+  const log = window.__intentLog;
+  if (log) {
+    const alive = creatures.filter(c => c.hp > 0 && !c.befriended);
+    log.act(`Show ${side} formation: ${creatures.length} total, ${alive.length} alive`);
+    log.expect(`${side}: ${alive.length} visible sprites, ${alive.length} HP bars`);
+  }
+
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
 
   // Skip redundant rebuilds: if the same creatures are already rendered,
@@ -105,6 +112,10 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
       await pixiFormation.showFormation(side, creatures, { isBoss, skipEnter: true }).catch((err) => {
         console.warn('[Scene] Pixi showFormation failed:', err);
       });
+      if (window.__inspector && window.__intentLog) {
+        const scan = window.__inspector.checkCreatures();
+        window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
+      }
       return;
     }
   }
@@ -218,6 +229,10 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
   await pixiFormation.showFormation(side, creatures, { isBoss }).catch((err) => {
     console.warn('[Scene] Pixi showFormation failed:', err);
   });
+  if (window.__inspector && window.__intentLog) {
+    const scan = window.__inspector.checkCreatures();
+    window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
+  }
 }
 
 export function showPlayerFormation(creatures) {
@@ -225,10 +240,21 @@ export function showPlayerFormation(creatures) {
 }
 
 export function hideFormation(side) {
+  const log = window.__intentLog;
+  if (log) {
+    log.act(`Hide ${side} formation`);
+    log.expect(`${side}: 0 sprites, 0 HP bars after hide`);
+  }
+
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
   container.innerHTML = '';
   container.style.opacity = '';
   pixiFormation.hideFormation(side);
+
+  if (window.__inspector && window.__intentLog) {
+    const scan = window.__inspector.checkCreatures();
+    window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
+  }
 }
 
 /* ------------------------------------------------------------------ */
