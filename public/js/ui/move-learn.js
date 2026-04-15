@@ -1,8 +1,3 @@
-// public/js/ui/move-learn.js
-// Shows when a creature levels up and learns a new move
-// If < 3 moves: shows "Learned [move]!" confirmation
-// If 3 moves: shows new move + current 3 moves, player picks one to replace or skips
-
 import { dom } from '../dom.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 

@@ -1,21 +1,3 @@
-/**
- * @file creature-row.js - Creature Slots Display
- *
- * PURPOSE:
- * Renders the player formation in the scene area using showFormation() from scene.js,
- * then attaches popup click handlers to the resulting .formation-slot elements.
- * Shows creature details in a popup: element icons, HP/MP stats, move list, swap buttons.
- *
- * KEY EXPORTS:
- * - init({ swapCreatureCallback, rearrangeCreatureCallback }): Setup callbacks
- * - render(creatures): Draw all 3 creature slots via scene.js formation
- * - isPopupVisible(): Check if a creature popup is currently open
- *
- * DEPENDENCIES:
- * - ../dom.js: DOM element references (playerFormation, creaturePopup)
- * - ./scene.js: showFormation(), hideFormation()
- */
-
 import { dom } from '../dom.js';
 import { showFormation, hideFormation } from './scene.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';

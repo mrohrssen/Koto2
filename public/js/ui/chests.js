@@ -1,8 +1,3 @@
-/**
- * @fileoverview Chests screen — pentagon element selector + dramatic chest scene.
- * Renders into .scene-area (pedestal visual) and #action-area (selector + open button).
- */
-
 let callbacks = {};
 
 const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal'];

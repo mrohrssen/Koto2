@@ -1,8 +1,3 @@
-// scripts/migrate-word-knowledge-to-fsrs.js
-/**
- * Migrates word-knowledge known entries into FSRS vocab deck cards.
- * Usage: node scripts/migrate-word-knowledge-to-fsrs.js
- */
 import { readdirSync } from 'fs';
 import { join } from 'path';
 import { loadWordKnowledge } from '../src/game/bootstrap/word-knowledge.js';

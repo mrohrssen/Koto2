@@ -1,17 +1,3 @@
-/**
- * @file post-combat-shop.js - Post-Combat Item Shop
- *
- * PURPOSE:
- * Shows 3 random items after each creature combat victory. Player picks one.
- * Each item teaches a Japanese vocabulary word.
- * Stat boosts stack permanently for the run. Heals apply immediately.
- *
- * KEY EXPORTS:
- * - init({ itemSelectedCallback }): Setup with selection callback
- * - show(items): Display 3 item cards
- * - hide(): Clear the shop display
- */
-
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import { prefetchWord, playWord } from '../tts.js';

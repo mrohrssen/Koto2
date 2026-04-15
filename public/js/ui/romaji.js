@@ -1,10 +1,3 @@
-/**
- * Hiragana to romaji converter.
- * Handles basic hiragana, dakuten, handakuten, combo characters,
- * small tsu (っ), long vowel mark (ー), and ん.
- * Passes through non-hiragana characters unchanged.
- */
-
 const COMBOS = {
   'きゃ': 'kya', 'きゅ': 'kyu', 'きょ': 'kyo',
   'しゃ': 'sha', 'しゅ': 'shu', 'しょ': 'sho',

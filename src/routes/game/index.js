@@ -1,10 +1,3 @@
-/**
- * @fileoverview Game routes aggregator
- *
- * Applies requireAuth middleware and per-user GameManager injection,
- * then mounts all game-related route modules under /api/game/*
- */
-
 import { Router } from 'express';
 import { requireAuth } from '../../auth/middleware.js';
 import { getManager, saveManager } from '../../game/manager-registry.js';

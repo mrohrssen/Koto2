@@ -1,26 +1,3 @@
-/**
- * @fileoverview Forge Workbench API routes
- *
- * Provides endpoints for the Forge dashboard to manage theme-based content
- * generation. Handles theme listing, job queuing, result review, and
- * approval/discard workflows.
- *
- * API ENDPOINTS:
- *   GET  /themes       - List themes with progress stats
- *   GET  /theme/:id    - Full theme pool JSON
- *   GET  /queue        - Read forge queue
- *   POST /queue        - Append jobs to queue
- *   GET  /results      - Read forge results
- *   POST /approve      - Approve result: stage, mark assigned, remove result
- *   POST /discard      - Discard result: remove from results, update job status
- *
- * DEPENDENCIES:
- *   - ../forge/forge-data.js - Data read/write operations
- *   - language/themes/*.json - Theme pool files
- *   - data/forge-queue.json  - Job queue
- *   - data/forge-results.json - Generation results
- */
-
 import { Router } from 'express';
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';

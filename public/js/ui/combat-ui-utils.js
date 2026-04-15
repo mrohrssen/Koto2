@@ -1,8 +1,3 @@
-/**
- * Shared combat UI helpers (HP bar colors, status keys, etc.).
- * Used by both PvE (combat-loop.js) and PvP (pvp-battle.js).
- */
-
 /** Display names for stat stages (used in stat-change labels). */
 export const SC_NAMES = { atk: 'ATK', def: 'DEF' };
 

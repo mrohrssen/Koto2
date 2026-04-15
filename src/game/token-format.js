@@ -1,15 +1,4 @@
 /**
- * Universal token format for Japanese text rendering and vocabulary tracking.
- *
- * Every piece of Japanese shown to the player flows through this module:
- *   entityToToken   – game entity → universal token
- *   assembleFrame   – frame template + entities → ready-to-render tokens
- *   isEligible       – per-sentence i+1 gate
- *   scoreCandidate   – rank assembled candidates for selection
- *   selectBestFrame  – pick best eligible assembled candidate (optional tie randomization)
- */
-
-/**
  * Convert a game entity (item, creature, move, NPC) to a universal token.
  * Entities use different field names; this normalises them.
  */

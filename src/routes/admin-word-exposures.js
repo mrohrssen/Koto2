@@ -1,13 +1,3 @@
-/**
- * @fileoverview Admin word-exposure dashboard logic.
- *
- * Provides:
- *   - aggregateWordExposures() — sum exposures across all users, enrich with dictionary
- *   - buildJpdbComparison()    — compare our Sudachi base form against JPDB parse
- *   - buildFrameComparison()   — compare a dialogue frame's tokens against JPDB sentence parse
- *   - loadJpdbCache / saveJpdbCache — simple JSON cache persistence
- */
-
 import { Router } from 'express';
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';

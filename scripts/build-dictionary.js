@@ -1,11 +1,3 @@
-// scripts/build-dictionary.js
-/**
- * Converts jmdict-simplified JSON into the game's runtime word dictionary.
- * Usage: node scripts/build-dictionary.js <path-to-jmdict-eng.json>
- * Output: data/dictionary.json (~30-50k entries)
- * Filtering: includes entries where at least one kanji or kana form is marked common.
- * Each entry maps baseForm → { reading, definitions[] }.
- */
 import { readFileSync, writeFileSync } from 'fs';
 
 const inputPath = process.argv[2];

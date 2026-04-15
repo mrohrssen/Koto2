@@ -1,5 +1,3 @@
-// public/js/ui/bootstrap-client.js
-
 import { toRomaji } from './romaji.js';
 
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;

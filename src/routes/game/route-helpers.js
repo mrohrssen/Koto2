@@ -1,7 +1,3 @@
-/**
- * Build vocabulary config object from request for dialogue generation.
- * Shared by combat and run routes.
- */
 export function buildVocabConfig(req, getUserVocabulary, checkSentenceViolations) {
   const userKeys = req.userKeys || {};
   if (!userKeys.aiApiKey || !userKeys.aiProvider || !getUserVocabulary) return null;

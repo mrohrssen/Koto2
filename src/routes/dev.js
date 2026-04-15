@@ -1,26 +1,3 @@
-/**
- * @fileoverview Dev tools routes - sprite review dashboard backend
- *
- * Provides authentication, sprite manifest, and feedback APIs for the
- * dev sprite review dashboard. Protected by DEV_DASHBOARD_PASSWORD env var
- * in production; open access in development when no password is set.
- *
- * API ENDPOINTS:
- *   POST /dev/auth       - Authenticate with password, receive session cookie
- *   GET  /dev/manifest   - Sprite manifest (all entities + sprite file status)
- *   GET  /dev/feedback   - Load saved feedback data
- *   POST /dev/feedback   - Save feedback data
- *
- * DEPENDENCIES:
- *   - express-rate-limit  - Rate limiting for auth endpoint
- *   - data/creatures.json - Creature definitions
- *   - data/moves.json     - Move definitions (action icons)
- *   - data/items.json     - Item definitions
- *   - data/enemies.json   - Enemy definitions
- *   - data/bosses.json    - Boss definitions
- *   - data/npcs.json      - NPC definitions
- */
-
 import express, { Router } from 'express';
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'fs';
 import { join } from 'path';

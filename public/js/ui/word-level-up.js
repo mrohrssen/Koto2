@@ -1,11 +1,4 @@
 /**
- * @file word-level-up.js - "Word leveled up!" animation
- *
- * Gold text float-up + spark burst, triggered on every successful "knew it".
- * DOM-based (no PixiJS dependency).
- */
-
-/**
  * Show a "[word] leveled up!" animation anchored to an element.
  * @param {HTMLElement} anchorEl - Element to position the animation over
  * @param {string} wordText - Japanese word to display

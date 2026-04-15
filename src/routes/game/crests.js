@@ -1,12 +1,3 @@
-/**
- * @fileoverview Crest meta-progression routes
- *
- * GET  /crests       — crest state (drops, inventory, equipped)
- * POST /crests/open  — open a chest (element required)
- * POST /crests/equip — equip a crest (crestId required)
- * POST /crests/unequip — unequip a slot (element required)
- */
-
 import { Router } from 'express';
 import { getCrestState, openChest, equipCrest, unequipCrest } from '../../game/services/crest-service.js';
 

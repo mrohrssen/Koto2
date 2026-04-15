@@ -1,35 +1,3 @@
-/**
- * @fileoverview Player, run, combat, and meta-progression state management
- * @module src/game/state
- *
- * PURPOSE:
- * State factory functions for all game objects. Defines player stats (simplified
- * to attack/maxHp), run state with area progression, combat state, and meta-
- * progression system for cross-run upgrades.
- *
- * KEY EXPORTS:
- * State Factories:
- * - createNewPlayer(name) - Player with attack, maxHp, credits
- * - createNewRun(player) - Run state: area loop, rooms, encounters
- * - createCombatState(enemy) - Combat instance for battle
- * - createMetaProgression() - Meta-save: upgrades, achievements
- *
- * Meta-Progression:
- * - ACHIEVEMENTS - Achievement definitions and unlock conditions
- *
- * Persistence:
- * - saveGame(fs, player, completedRuns) - Save to .jrpg-save.json
- * - loadGame(fs) - Load from .jrpg-save.json
- * - deleteSave(fs) - Delete save file
- *
- * Utilities:
- * - generateEncounterCount() - Random rooms per area (8-12)
- *
- * ARCHITECTURE NOTES:
- * - Player stats: attack and maxHp (no STR/AGI/VIT/INT/DEX/LUK)
- * - Meta-progression persists across runs via separate save
- */
-
 // ============ META-PROGRESSION STATE ============
 
 /**

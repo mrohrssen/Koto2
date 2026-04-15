@@ -1,4 +1,3 @@
-// src/game/bootstrap/word-knowledge.js
 import fs from 'fs';
 import path from 'path';
 import { getDeckCards, createCard } from '../internal-srs.js';

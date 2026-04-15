@@ -1,9 +1,3 @@
-/**
- * @fileoverview Vocab and JPDB routes
- *
- * Handles /api/vocab/* and /api/jpdb/* endpoints for vocabulary integration
- */
-
 import { Router } from 'express';
 import {
   parseText,

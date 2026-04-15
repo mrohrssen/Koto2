@@ -1,9 +1,3 @@
-// scripts/pre-tokenize-dialogue.js
-/**
- * Pre-tokenizes all dialogue JSON files.
- * Adds _tokens and _contentWords to each dialogue line.
- * Usage: node scripts/pre-tokenize-dialogue.js
- */
 import { readFileSync, writeFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { tokenize } from '../src/tokenizer.js';

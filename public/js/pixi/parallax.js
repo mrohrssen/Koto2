@@ -1,11 +1,3 @@
-/**
- * @file parallax.js — 4-layer TilingSprite parallax background
- *
- * Fixed layer structure: sky (0.1x), far (0.3x), mid (0.6x), ground (1.0x).
- * Layers auto-scroll during exploration and decelerate/stop for encounters.
- * In 'encounter' state, sky drifts while all other layers are frozen.
- */
-
 import { TilingSprite, Assets } from 'pixi.js';
 import { getStage } from './battle-stage.js';
 

@@ -1,9 +1,3 @@
-/**
- * @fileoverview Run routes
- *
- * Handles run lifecycle: start-run, forfeit, area selection, room navigation
- */
-
 import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';

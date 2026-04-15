@@ -1,37 +1,3 @@
-/**
- * @file scene.js - Scene Area Rendering
- *
- * PURPOSE:
- * Manages the main scene area including background images, enemy/NPC sprites,
- * formation rendering, HP bars, toast notifications, and floating damage numbers.
- * Provides the visual context for combat and exploration phases.
- *
- * KEY EXPORTS:
- * - setBackground(imagePath): Set scene background image
- * - showFormation(side, creatures): DOM slot anchors (HUD/bars) + Pixi creature sprites
- * - showPlayerFormation(creatures): Render player party into player formation
- * - hideFormation(side): Clear a formation container
- * - showEnemy(enemy): Display enemy (creature via formation, NPC via npc-display)
- * - hideEnemy(): Remove enemy from scene
- * - showEnemies(enemies): Display multiple enemy creatures via formation
- * - hideEnemies(): Remove all enemies from scene
- * - showShrineFox(): Display shrine fox NPC (no HP bar)
- * - showQuizMaster(): Display quiz master NPC (no HP bar)
- * - showWordDiscoveryNpc(): Display knowledge spirit NPC (no HP bar)
- * - showDealer(): Display creature dealer NPC (no HP bar)
- * - updateEnemyHP(current, max): Update enemy HP bar fill
- * - showToast(message, durationMs): Show auto-dismissing notification
- * - showDamageNumber(amount, { isCrit, isHeal, tierClass, targetEl }): Floating damage text
- *
- * DEPENDENCIES:
- * - ../dom.js: DOM element references (sceneBackground, enemySprite, etc.)
- *
- * SPRITE LOADING:
- * - NPC sprites load from /assets/sprites/enemies/{id}.webp or /assets/sprites/npcs/{id}.webp
- * - Creature sprites use text-sprite placeholders (baseWord + element color)
- * - Falls back to emoji placeholder based on enemy personality if load fails
- */
-
 import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import * as pixiFormation from '../pixi/formation.js';

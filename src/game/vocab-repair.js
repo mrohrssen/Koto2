@@ -1,19 +1,3 @@
-/**
- * Vocabulary Repair System
- *
- * This module enforces vocabulary constraints on AI-generated Japanese narration.
- * It ensures each sentence contains at most 1 unknown word, implementing the
- * "comprehensible input" (i+1) approach to language learning.
- *
- * The system works in three phases:
- * 1. PARSE: Split narration into sentences and parse each with JPDB
- * 2. CHECK: Count unknown words (excluding particles and game terms)
- * 3. REPAIR: If violations found, rewrite sentence using known vocabulary
- *
- * @module vocab-repair
- * @see docs/VOCAB-SYSTEM.md for detailed documentation
- */
-
 import { parseText } from '../jpdb.js';
 
 // ============================================================================

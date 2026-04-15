@@ -1,11 +1,3 @@
-/**
- * API Client Module
- *
- * Centralized server communication for the JRPG frontend.
- * All API calls go through this module to ensure consistent
- * handling of auth tokens, loading states, and error handling.
- */
-
 import { logger } from './logger.js';
 export { apiUrl } from './platform.js';
 import { apiUrl, PLATFORM } from './platform.js';

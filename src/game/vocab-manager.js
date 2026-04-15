@@ -1,10 +1,3 @@
-/**
- * Vocabulary Suggestion Manager
- *
- * Manages word suggestions for narration to improve vocabulary variety
- * and prioritize "due" words for spaced repetition learning.
- */
-
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { lookupWordStates, parseWordBatches } from '../jpdb.js';
 

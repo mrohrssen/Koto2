@@ -1,8 +1,3 @@
-/**
- * Native Capacitor plugin integration.
- * All functions are no-ops on web — safe to call from any context.
- */
-
 import { PLATFORM } from '../platform.js';
 
 let StatusBar, Style, Haptics, ImpactStyle, Keyboard, App;

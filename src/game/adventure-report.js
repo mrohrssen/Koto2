@@ -1,6 +1,3 @@
-// src/game/adventure-report.js
-// Builds the adventure report summary from run and meta state.
-
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';

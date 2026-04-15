@@ -1,7 +1,3 @@
-/**
- * Word-gated dialogue filtering and selection.
- * All i+1 filtering goes through filterEligible from token-format.js.
- */
 import { isEligible, filterEligible, countUnknowns } from './token-format.js';
 
 export function isLineEligible(line, knownWords) {

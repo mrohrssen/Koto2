@@ -1,12 +1,4 @@
 #!/usr/bin/env node
-/**
- * Validates that all 50 glue words are reachable through i+1 progression.
- *
- * Simulates a player starting from 0 known words, progressively learning
- * through gameplay (creatures, items, barks) and dialogue frames.
- *
- * Uses the real frames.json and isEligible filter — no manual tagging.
- */
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

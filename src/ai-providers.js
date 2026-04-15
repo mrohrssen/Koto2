@@ -1,15 +1,3 @@
-/**
- * AI Provider Integration Module
- *
- * Provides a unified interface for multiple AI providers:
- * - OpenAI (GPT-4o, GPT-4o-mini, GPT-5 series)
- * - Anthropic Claude (Sonnet 4)
- * - Google Gemini (1.5 Flash)
- * - OpenRouter (any model via API gateway)
- *
- * @module @jchat/shared/ai/providers
- */
-
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';

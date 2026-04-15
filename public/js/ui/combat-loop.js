@@ -1,30 +1,3 @@
-/**
- * @file combat-loop.js - Turn-Based Combat Orchestration
- *
- * PURPOSE:
- * Manages the vocab-pause turn-based combat system. Each turn requires the
- * player to review a vocabulary word before attacking. Combat flow:
- * word review -> player attack -> 400ms delay -> enemy attack -> pause -> repeat
- *
- * KEY EXPORTS:
- * - init(callbacks): Setup with game state, UI, and API callbacks
- * - startCombatLoop(): Begin combat, show first flash card
- * - executePlayerAttack(): Process player attack
- * - executeEnemyAttackThenPause(): Enemy attacks then pauses for vocab
- * - resumeCombatAfterVocab(): Continue combat after word review
- * - stopCombatLoop(result): End combat, show narration and victory/defeat
- * - isCombatActive(), isCombatPausedForVocab(): State getters
- * - cleanupCombat(): Reset state without showing results
- *
- * DEPENDENCIES:
- * - ../audio.js: Sound effects (attack, player-hit, victory)
- * - ../api.js: getAuthHeaders for authenticated requests
- * - Callbacks: wordPractice, characterUI, settings, narration modules
- *
- * COMBAT MATH DISPLAY:
- * Shows damage numbers with tiered visual feedback.
- */
-
 import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { PLATFORM } from '../platform.js';

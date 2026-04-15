@@ -1,15 +1,3 @@
-/**
- * JPDB API Integration Module
- *
- * Interfaces with jpdb.io (Japanese Dictionary Database) to:
- * - Fetch user's known vocabulary from their decks
- * - Parse Japanese text into component words
- * - Look up word learning states (new, learning, known, due, etc.)
- * - Submit vocabulary reviews
- *
- * @module @jchat/shared/jpdb
- */
-
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { logger } from './logger.js';
 import { invalidateWordByVid } from './game/vocab-manager.js';

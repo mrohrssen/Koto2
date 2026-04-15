@@ -1,8 +1,3 @@
-/**
- * @fileoverview Crests equip screen — pentagon loadout scene + inventory grid.
- * Renders into .scene-area (equipped pentagon) and #action-area (inventory).
- */
-
 let callbacks = {};
 
 const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal'];

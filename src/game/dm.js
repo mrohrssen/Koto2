@@ -1,30 +1,3 @@
-/**
- * Dungeon Master (DM) AI Narration System
- *
- * This module generates immersive Japanese narrative text for game events.
- * It acts as the game's narrator, describing combat, exploration, victories,
- * defeats, and all other game moments in engaging prose.
- *
- * Architecture inspired by SillyTavern's character card system:
- * - Character identity ("System" - the guiding voice)
- * - Narration memory to prevent repetition
- * - Sample narrations to demonstrate desired style
- *
- * The DM system integrates with:
- * - vocab-repair.js: Post-generation vocabulary enforcement
- * - ai-providers.js: Multi-provider AI abstraction
- *
- * Key design decisions:
- * 1. Prompts written in Japanese for better Japanese output
- * 2. Explicit length requirements (4-6 sentences) to prevent too-short output
- * 3. Enemy dialogue required in 「」quotes for immersion
- * 4. Sensory focus rotates to add variety
- * 5. Memory system tracks recent narrations to avoid repetition
- *
- * @module dm
- * @see docs/ARCHITECTURE.md for system overview
- */
-
 // ============================================================================
 // NARRATION MEMORY SYSTEM
 // ============================================================================

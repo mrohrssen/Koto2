@@ -1,16 +1,3 @@
-/**
- * @file speech-bubble.js - Creature speech bubble system
- *
- * Listens to combat events and displays short Japanese speech bubbles
- * above creature sprites. Renders server-provided barks (universal token
- * format) from the combat cycle response (stored in combat-loop.js).
- *
- * EXPORTS:
- * - init(opts): Register event listeners on combatEvents bus
- * - resetCombatBarks(): No-op (kept for API compatibility)
- * - dismissBubble(): Remove active bubble immediately
- */
-
 import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import { combatEvents } from './combat-events.js';
 import { getCurrentBarks } from './combat-loop.js';

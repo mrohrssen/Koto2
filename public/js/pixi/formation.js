@@ -1,10 +1,3 @@
-/**
- * @file formation.js — Creature sprite positioning + walking animation
- *
- * Renders creature formations (player and enemy) as PixiJS Sprites.
- * Handles diagonal stagger, depth scaling, walking wobble, and state transitions.
- */
-
 import { Sprite, Assets, Container, Texture, Graphics, Text } from 'pixi.js';
 import { getStage } from './battle-stage.js';
 import { tween } from './tween.js';

@@ -1,20 +1,3 @@
-/**
- * Party Skill Engine — processes all party skill hooks during combat.
- *
- * Hook points:
- * 1. applyRoundStartSkills()   — Erosion, Momentum (start of each round)
- * 2. applyAfterPlayerAttacks() — Chain loop skills (after player moves)
- * 3. applyAfterEnemyAttacks()  — Counter loop skills (after enemy moves)
- *
- * Spread skills (Contagion, Shared Vigor) are triggered inline by the
- * chain/counter/buff/debuff hooks when they apply effects.
- *
- * IMPORTANT RULE: Erosion/Momentum round-start ticks are passive deepening,
- * NOT new applications. They must NEVER call tryContagion() or trySharedVigor().
- * Only active applications (from moves, Chain Surge, Vengeful Mark, etc.)
- * trigger spread skills. See spec: "Stat Stage Interaction Rules".
- */
-
 import { applyStatChange, applyHeal, getDamageReduction, getStageMultiplier, breakSleep, initStatStages } from './effects.js';
 import { getElementMultiplier } from '../creatures.js';
 import { PARTY_SKILLS_CATALOG } from '../party-skills.js';

@@ -1,11 +1,4 @@
 #!/usr/bin/env node
-// scripts/tokenize-static.js
-//
-// Reads data/dialogue/frame-sources.json, tokenizes frame text via Sudachi,
-// enriches with meanings, and writes data/dialogue/frames.json.
-//
-// Usage: node scripts/tokenize-static.js
-
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tokenizeBatch } from '../src/tokenizer.js';

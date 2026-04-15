@@ -1,32 +1,3 @@
-/**
- * @fileoverview Observable Store for reactive state management
- * @module public/js/store
- *
- * PURPOSE:
- * Provides a centralized, observable state container for the game frontend.
- * Replaces direct gameState mutations with a pub/sub pattern that automatically
- * triggers UI updates when state changes.
- *
- * KEY EXPORTS:
- * - Store (class) - Observable state container
- * - store (singleton) - Shared instance for the application
- *
- * USAGE:
- *   import { store } from './js/store.js';
- *
- *   // Subscribe to state changes
- *   store.subscribe((state, key) => {
- *     console.log(`${key} changed:`, state[key]);
- *     updateUI();
- *   });
- *
- *   // Update state (triggers subscribers)
- *   store.set('gameState', newState);
- *
- *   // Read state
- *   const current = store.get('gameState');
- */
-
 class Store {
   constructor(initialState = {}) {
     this.state = initialState;

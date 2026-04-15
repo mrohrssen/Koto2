@@ -1,24 +1,3 @@
-/**
- * @file character.js - HP Bar Coordinator
- *
- * PURPOSE:
- * Thin wrapper that delegates HP bar updates to scene.js (enemy).
- * Provides a unified interface for combat-loop.js to update HP bars
- * without importing multiple modules.
- *
- * KEY EXPORTS:
- * - init(callbacks): Setup with scene module reference
- * - updateEnemyHPBar(hp): Update enemy HP via scene module
- * - updatePlayerHPBar(hp): No-op (player HP now shown via creature HP bars)
- *
- * DEPENDENCIES:
- * - Callbacks injected via init(): getGameState, scene
- *
- * HP FORMAT:
- * Update functions accept either a number (current HP, max from state)
- * or an object { current, max } from combat-cycle API responses.
- */
-
 let getGameState = null;
 let sceneModule = null;
 

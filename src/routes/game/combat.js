@@ -1,9 +1,3 @@
-/**
- * @fileoverview Combat routes
- *
- * Handles creature combat, befriending, and NPC dialogue
- */
-
 import { Router } from 'express';
 import { processEnemyTurn, handleCreatureKO, handleBefriendAnswer, rollTalkAcceptance } from '../../game/services/creature-combat-service.js';
 import { MOVES_BY_ID } from '../../game/creatures.js';

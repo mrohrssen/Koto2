@@ -1,22 +1,3 @@
-/**
- * @file dialogue-word-lookup.js - Always-on word lookup for dialogue
- *
- * PURPOSE:
- * Makes every Japanese word in dialogue clickable. Tapping a word shows the
- * definition popup populated from pre-tokenized data (no API calls). Includes
- * SRS review buttons ("I forgot" / "I knew it").
- *
- * DEPENDENCIES:
- * - bootstrap-client.js: getKnownWords(), addKnownWord()
- * - api.js: reviewVocabWord()
- *
- * USAGE:
- *   import { init, attachWordClickHandlers } from './dialogue-word-lookup.js';
- *   init({ wordDictionary, showToast });
- *   // After rendering dialogue HTML into a container:
- *   attachWordClickHandlers(container);
- */
-
 import { getKnownWords, addKnownWord } from './bootstrap-client.js';
 import { reviewVocabWord } from '../api.js';
 import { showWordLevelUp } from './word-level-up.js';

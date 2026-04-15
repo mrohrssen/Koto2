@@ -1,22 +1,3 @@
-/**
- * @file pvp-battle.js - PvP Battle UI
- *
- * PURPOSE:
- * Renders the PvP battle screen: formations, move selection, round results,
- * and end screen. Driven by socket events from the PvP match.
- *
- * KEY EXPORTS:
- * - init(callbacks): Initialize with game state and UI callbacks
- * - startPvpBattle(data): Begin a PvP battle with match-start data
- *
- * DEPENDENCIES:
- * - ../pvp-socket.js: Socket.IO PvP client
- * - ../audio.js: playSFX for sounds
- * - ./actions.js: setContent for rendering
- * - ./scene.js: setBackground, showFormation
- * - ./sprite-utils.js: creatureStaticPath, createTextSprite
- */
-
 import * as pvpSocket from '../pvp-socket.js';
 import { playSFX } from '../audio.js';
 import { showMoves, setActiveLabel } from './move-select.js';

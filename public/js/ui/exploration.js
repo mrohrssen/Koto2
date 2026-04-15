@@ -1,28 +1,3 @@
-/**
- * @file exploration.js - Non-Combat Navigation UI
- *
- * PURPOSE:
- * Handles all non-combat game phases: hub, area selection, room exploration,
- * shrine upgrades, and quiz encounters. Renders appropriate buttons and
- * manages phase-specific interactions.
- *
- * KEY EXPORTS:
- * - init(callbacks): Initialize with game state and API callbacks
- * - renderHub(): Show hub phase (Equip Bots + Explore buttons)
- * - renderAreaSelection(): Show area picker cards
- * - renderExploring(): Show Proceed/Fight buttons for room navigation
- * - renderAreaComplete(): Show Continue button after area cleared
- * - renderRunEnded(): Show Return to Hub button
- * - renderShrine(): Show creature level-up selection
- * - renderQuiz(): Show quiz question and reward selection
- *
- * DEPENDENCIES:
- * - Callbacks injected via init(): getGameState, updateGameState, updateUI
- * - API functions: apiGetAreaOptions, apiSelectArea, apiProceed, etc.
- * - actions module: For button rendering
- * - scene module: For narration display
- */
-
 import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';

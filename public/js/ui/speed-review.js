@@ -1,10 +1,3 @@
-/**
- * @file speed-review.js - Speed Review Mode
- *
- * Rapid vocabulary review with three stacked flashcards.
- * Entry from hub, full-screen takeover.
- */
-
 import { apiUrl } from '../api.js';
 import { dom } from '../dom.js';
 import { playSFX, playBGMRandomStart, playBGM } from '../audio.js';

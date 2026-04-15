@@ -1,23 +1,3 @@
-/**
- * @file pvp-socket.js - Socket.IO Client for PvP
- *
- * PURPOSE:
- * Manages the Socket.IO connection for PvP multiplayer battles.
- * Handles match lifecycle events (create, join, ready, moves, rematch).
- * Authenticates via JWT token from localStorage.
- *
- * KEY EXPORTS:
- * - connect(): Establish Socket.IO connection with auth
- * - disconnect(): Tear down connection
- * - on(event, fn) / off(event): Register/unregister event handlers
- * - createMatch(), joinMatch(code), selectTeam(), ready(), submitMoves(), etc.
- * - getMatchCode(): Get current match code
- * - enterLobby(): Connect and signal lobby entry
- *
- * DEPENDENCIES:
- * - Socket.IO client from socket.io-client npm package (bundled by Vite)
- */
-
 import { io } from 'socket.io-client';
 
 let socket = null;

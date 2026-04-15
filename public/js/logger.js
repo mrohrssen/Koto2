@@ -1,15 +1,3 @@
-/**
- * Client Logger Module
- *
- * Configurable console logging with level hierarchy.
- * Persists level preference in localStorage.
- *
- * Usage:
- *   import { logger } from './logger.js';
- *   logger.info('[Combat] Word reviewed', { word: '食べる' });
- *   logger.setLevel('debug'); // Show all logs, persists across reloads
- */
-
 const LEVELS = {
   debug: 0,
   info: 1,

@@ -1,10 +1,3 @@
-/**
- * VOICEVOX TTS Integration
- * Connects to local VOICEVOX Engine for Japanese text-to-speech
- *
- * @module @jchat/shared/tts
- */
-
 // Default URL, can be configured via configure()
 let voicevoxUrl = process.env.VOICEVOX_URL || 'http://localhost:50021';
 

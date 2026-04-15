@@ -1,10 +1,3 @@
-/**
- * Audio Module - BGM & SFX Manager
- *
- * SFX: Web Audio API (low latency, overlap support)
- * BGM: HTMLAudioElement (streaming, looping)
- */
-
 const SFX_PATH = '/assets/audio/sfx/';
 const BGM_PATH = '/assets/audio/bgm/';
 const AUDIO_VERSION = '20260212';

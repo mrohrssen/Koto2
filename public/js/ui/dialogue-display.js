@@ -1,7 +1,3 @@
-/**
- * Renders and displays dialogue lines (CID scripts, NPC greetings, etc.)
- * using the sentence renderer and narration box.
- */
 import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import * as narrationBox from './narration-box.js';
 

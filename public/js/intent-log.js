@@ -1,20 +1,3 @@
-// public/js/intent-log.js
-
-/**
- * Intent Log — narrates every game action with expectations and checks.
- *
- * Usage:
- *   const log = createIntentLog({ output: console.log, getErrorCount: () => diagnostics.errorCount() });
- *   log.act('Player attacks Enemy #0');
- *   log.expect('Enemy #0 HP: 20→5');
- *   log.check({ ok: true });
- *
- * Output:
- *   [ACT] Player attacks Enemy #0
- *   [EXP] Enemy #0 HP: 20→5
- *   [CHK] ✓
- */
-
 export function createIntentLog({ output, getErrorCount, onFailure } = {}) {
   const write = output || console.log;
   const errCount = getErrorCount || (() => 0);

@@ -1,7 +1,3 @@
-/**
- * @fileoverview Player routes - /api/game/create-player
- */
-
 import { Router } from 'express';
 
 export default function createPlayerRoutes() {

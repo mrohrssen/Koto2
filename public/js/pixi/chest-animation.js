@@ -1,8 +1,3 @@
-/**
- * @fileoverview PixiJS gacha animation for chest opening.
- * Creates a temporary fullscreen overlay with particle effects.
- */
-
 import { Application, Container, Graphics, Text } from 'pixi.js';
 
 const RARITY_COLORS = {

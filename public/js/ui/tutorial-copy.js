@@ -1,8 +1,3 @@
-/**
- * @fileoverview Frontend-owned Cid tutorial narration copy (first-run guided experience).
- * Step indices match meta.tutorialStep / TUTORIAL_STEPS on the server; progression stays server-side.
- */
-
 /** @type {Record<number, string[]>} */
 const TUTORIAL_NARRATION_BY_STEP = {
   0: [

@@ -1,10 +1,3 @@
-/**
- * @file adventure-report.js — End-of-Run Adventure Report
- *
- * Renders a positive, stats-rich report when a run ends (defeat or victory).
- * Replaces the old skull-emoji defeat screen and minimal victory screen.
- */
-
 function formatDuration(ms) {
   const totalSec = Math.floor((ms || 0) / 1000);
   const min = Math.floor(totalSec / 60);

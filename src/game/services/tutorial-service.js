@@ -1,8 +1,3 @@
-/**
- * @fileoverview Tutorial state machine for the first-run guided experience.
- * Pure functions — no side effects, no imports beyond constants.
- */
-
 export const TUTORIAL_STEPS = {
   SKILL_SELECTION: 0,
   BEFRIEND: 1,

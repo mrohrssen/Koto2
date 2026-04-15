@@ -1,8 +1,3 @@
-// scripts/validate-dialogue.js
-/**
- * Validates dialogue frames against the word dictionary and authoring constraints.
- * Usage: node scripts/validate-dialogue.js
- */
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { loadWordDictionary } from '../src/game/word-dictionary.js';

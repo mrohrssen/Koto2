@@ -1,9 +1,3 @@
-/**
- * @fileoverview Settings routes
- *
- * Handles /api/config and /api/settings endpoints
- */
-
 import { Router } from 'express';
 import { getProviders, getJLPTLevels } from '../ai-providers.js';
 import { clearVocabCache } from '../jpdb.js';

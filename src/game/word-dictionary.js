@@ -1,10 +1,3 @@
-/**
- * Loads the word dictionary at server startup.
- * 1. Load base dictionary (data/dictionary.json, 30-50k entries from JMdict)
- * 2. Overlay game data: creatures, moves, items, npcs, npc-skills, areas, glue-words, grammar-words
- * 3. Game entries replace base entries for their words
- * Returns Map<baseForm, { reading: string, definitions: [{ en: string, primary?: boolean }] }>
- */
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 

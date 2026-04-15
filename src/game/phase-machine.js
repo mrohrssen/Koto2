@@ -1,21 +1,3 @@
-/**
- * @fileoverview Phase State Machine for game state transitions
- * @module src/game/phase-machine
- *
- * PURPOSE:
- * Centralizes game phase logic into an explicit state machine with valid
- * transitions. Extracts phase derivation from GameManager to enable:
- * - Clear documentation of all game phases
- * - Validation of phase transitions
- * - Easier testing of phase logic
- *
- * KEY EXPORTS:
- * - PHASES (object) - All valid game phase constants
- * - VALID_TRANSITIONS (object) - Map of phase -> valid next phases
- * - canTransition(from, to) - Check if transition is valid
- * - derivePhase(state) - Derive current phase from game state
- */
-
 export const PHASES = {
   NO_SAVE: 'no_save',
   HUB: 'hub',

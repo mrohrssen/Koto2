@@ -1,15 +1,3 @@
-// public/js/inspector.js
-
-/**
- * Inspector — cross-checks game state vs DOM vs PixiJS.
- *
- * Accepts query functions as dependencies for testability:
- *   getState()          → { combat: { allies, enemies }, run, ... }
- *   getPhase()          → string (current phase name)
- *   countDomBars(side)  → number of visible HP bars for 'player'|'enemy'
- *   getPixiSprites(side)→ array of { alpha } objects for each sprite slot
- */
-
 export function createInspector({ getState, getPhase, countDomBars, getPixiSprites } = {}) {
 
   function getAliveCount(creatures) {

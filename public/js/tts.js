@@ -1,20 +1,3 @@
-/**
- * @fileoverview TTS (Text-to-Speech) Module for VOICEVOX integration
- * @module public/js/tts
- *
- * PURPOSE:
- * Provides text-to-speech functionality via VOICEVOX API. Handles audio
- * synthesis, playback, caching, and speaker/voice management.
- *
- * KEY EXPORTS:
- * - State: isEnabled(), getSpeed(), getVolume(), getSpeakerId()
- * - Setters: setEnabled(), setSpeed(), setVolume(), setSpeakerId()
- * - Playback: speakNarration(), speakText(), speakWithVoice(), stop()
- * - Word Audio: prefetchWord(), playWord(), isWordAudioEnabled()
- * - Status: checkStatus(), loadSpeakers()
- * - Constants: PERSONALITY_SPEAKERS
- */
-
 import { PLATFORM } from './platform.js';
 const API_BASE = PLATFORM.apiBase;
 

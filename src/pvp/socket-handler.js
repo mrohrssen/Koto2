@@ -1,11 +1,3 @@
-/**
- * @fileoverview PvP Socket.IO event handler
- *
- * Bridges Socket.IO events to the MatchManager. Authenticates connections
- * via JWT and routes match lifecycle events (create, join, team select,
- * ready, submit moves, rematch, leave, reconnect, disconnect).
- */
-
 import { MatchManager } from './match-manager.js';
 import { verifyToken } from '../auth/middleware.js';
 import { DATA_DIR } from '../data-dir.js';

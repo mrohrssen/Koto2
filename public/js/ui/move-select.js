@@ -1,5 +1,3 @@
-// public/js/ui/move-select.js
-// Renders a 2x2 grid of the active creature's moves
 import { dom } from '../dom.js';
 import { prefetchWord, playWord } from '../tts.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';

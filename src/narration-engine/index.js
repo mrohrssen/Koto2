@@ -1,13 +1,3 @@
-/**
- * Narration Engine - Public Interface
- *
- * The engine does not know what an "NPC" is. It knows character cards,
- * memories, vocab lists, and generation tasks. Game-layer code maps
- * NPC-specific concepts to this generic interface.
- *
- * Dependencies flow one direction: game/ -> narration-engine/ (never reverse).
- */
-
 import { getCharacterCard, loadCharacterCards } from './character-cards.js';
 import { flattenSystemBlocks } from './prompt-assembler.js';
 import { generateDialogue } from './generation.js';

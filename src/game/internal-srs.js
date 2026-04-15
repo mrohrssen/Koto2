@@ -1,13 +1,3 @@
-// src/game/internal-srs.js
-
-/**
- * Internal SRS (Spaced Repetition System) service using FSRS algorithm.
- * Manages hiragana flashcard scheduling with row-based progressive unlock.
- *
- * Persistence: per-user JSON files in data/srs-{userId}.json
- * Pattern follows src/game/vocab-manager.js
- */
-
 import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync } from 'fs';
 import { createEmptyCard, fsrs, Rating, State } from 'ts-fsrs';
 import { HIRAGANA_DECK, getRowCards } from './hiragana-deck.js';

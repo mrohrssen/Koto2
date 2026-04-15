@@ -1,10 +1,3 @@
-/**
- * @file text.js — Floating damage numbers and event popups on the PixiJS canvas
- *
- * Color-coded damage numbers that pop from the target and float up with fade.
- * Generic popup presets for buffs, debuffs, skill procs, XP, level-ups, heals, poison.
- */
-
 import { Text } from 'pixi.js';
 import { getStage } from './battle-stage.js';
 import { tween } from './tween.js';

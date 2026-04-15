@@ -1,17 +1,3 @@
-/**
- * @fileoverview Settings Module for user preferences and API key management
- * @module public/js/settings
- *
- * PURPOSE:
- * Centralizes user settings and API key management. Handles localStorage
- * persistence and provides a unified interface for the application.
- *
- * KEY EXPORTS:
- * - API Keys: getApiKeys(), saveApiKeys(), hasRequiredApiKeys(), hasJpdbApiKey()
- * - Debug Mode: isDebugMode(), setDebugMode()
- * - Server Settings: loadServerSettings(), saveServerSettings()
- */
-
 // ============ LOCAL STORAGE KEYS ============
 
 const STORAGE_KEYS = {

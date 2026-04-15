@@ -1,14 +1,3 @@
-/**
- * Word Practice module - JPDB vocabulary review during combat
- *
- * Handles:
- * - Fetching due words from JPDB
- * - Word card display and selection
- * - Answer checking (typing mode and self-grade mode)
- * - JPDB review submission
- * - Word cache management
- */
-
 import * as tts from './tts.js';
 import * as settings from './settings.js';
 import { getAuthHeaders } from './api.js';

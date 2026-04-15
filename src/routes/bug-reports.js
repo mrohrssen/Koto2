@@ -1,10 +1,3 @@
-/**
- * Bug Report Routes
- *
- * Handles screenshot + metadata capture for mobile testing.
- * Reports stored in bug-reports/<name>/
- */
-
 import { Router } from 'express';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';

@@ -1,4 +1,3 @@
-// src/routes/tts.js — TTS routes with disk cache support
 import { Router } from 'express';
 import {
   isVoicevoxRunning,

@@ -1,9 +1,3 @@
-/**
- * Connection status banner.
- * Shows "Connection lost, retrying..." after 2+ consecutive API failures.
- * Auto-dismisses on next successful API call.
- */
-
 let bannerEl = null;
 let hideTimer = null;
 

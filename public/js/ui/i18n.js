@@ -1,22 +1,3 @@
-/**
- * @file i18n.js - Japanify UI Translation Module
- *
- * PURPOSE:
- * Provides a simple translation layer for UI strings. When "Japanify UI" is
- * enabled in settings, gameplay text displays in Japanese instead of English.
- *
- * KEY EXPORTS:
- * - setLang('en'|'ja'): Set the active language
- * - t(key, ...args): Get translated string with optional interpolation
- * - isJapanified(): Check if Japanese mode is active
- *
- * SCOPE:
- * Japanified: combat, collection, equip, shrine, quiz, game
- *   over, item popups, buff overlay, flash card hints
- * Always English: auth, settings, bug report, speed review, menu sheet,
- *   leaderboard, error messages, stat abbreviations, creature/enemy names
- */
-
 import { renderEnFirst } from './bootstrap-client.js';
 
 let lang = 'en';

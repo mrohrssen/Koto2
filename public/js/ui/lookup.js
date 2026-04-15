@@ -1,30 +1,3 @@
-/**
- * @file lookup.js - Japanese Word Lookup Mode
- *
- * PURPOSE:
- * Provides tap-to-lookup functionality for Japanese text. When activated,
- * parses all visible Japanese text via JPDB API, wraps words in clickable
- * spans, and shows definition popups on tap. Integrates with JPDB vocabulary
- * states (new, learning, known, due).
- *
- * KEY EXPORTS:
- * - init(callbacks): Setup with API functions and toast display
- * - getActive(): Check if lookup mode is currently active
- * - toggle(): Activate or deactivate lookup mode
- * - refresh(): Re-parse text after content changes
- *
- * DEPENDENCIES:
- * - ../dom.js: DOM element references (lookupBtn, lookupPopup elements)
- * - API callbacks: parseText, lookupWord, lookupBatch, hasJpdbKey
- *
- * BEHAVIOR:
- * - Activation: Gathers Japanese text, sends to JPDB for parsing
- * - Prefetches definitions in background for instant display
- * - Popup shows: word, reading, part of speech, meanings, JPDB card state
- * - Blocks game clicks while active (prevents accidental progression)
- * - BLOCKED_SELECTORS prevent parsing quiz answers and flash cards (anti-cheat)
- */
-
 import { dom } from '../dom.js';
 import { escapeHtml } from './html-utils.js';
 

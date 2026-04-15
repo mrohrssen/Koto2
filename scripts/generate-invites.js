@@ -1,8 +1,4 @@
 #!/usr/bin/env node
-/**
- * Generate invite codes for friends
- * Usage: ADMIN_SECRET=your-secret node scripts/generate-invites.js [count]
- */
 import { createInviteCode } from '../src/auth/users.js';
 
 const count = parseInt(process.argv[2]) || 5;

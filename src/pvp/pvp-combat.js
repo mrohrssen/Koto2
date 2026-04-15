@@ -1,12 +1,3 @@
-/**
- * PvP Combat Resolver
- *
- * Orchestrates two-player combat using the existing creature combat engine.
- * Both sides submit moves; creatures act in level-descending initiative order
- * (ties random). Damage and HP updates happen in that same order so playback
- * matches mechanical resolution.
- */
-
 import {
   tickAllEffects,
   handleCreatureKO,

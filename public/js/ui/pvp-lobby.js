@@ -1,22 +1,3 @@
-/**
- * @file pvp-lobby.js - PvP Lobby UI
- *
- * PURPOSE:
- * Renders the PvP lobby screens: lobby (create/join), waiting room,
- * and team selection. Handles socket events for match lifecycle.
- *
- * KEY EXPORTS:
- * - init(callbacks): Initialize with game state and UI callbacks
- * - renderPvpLobby(): Show the lobby screen (create/join)
- * - renderPvpTeamSelect(): Show team selection screen
- *
- * DEPENDENCIES:
- * - ../pvp-socket.js: Socket.IO PvP client
- * - ../api.js: getPvpTeams for loading saved teams
- * - ../audio.js: playSFX for button sounds
- * - ./actions.js: setContent for rendering into action area
- */
-
 import * as pvpSocket from '../pvp-socket.js';
 import { getPvpTeams } from '../api.js';
 import { playSFX } from '../audio.js';

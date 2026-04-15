@@ -1,11 +1,3 @@
-// src/tokenizer.js
-/**
- * Wraps SudachiPy for Japanese tokenization.
- * Returns: [{ surface, baseForm, pos, reading }]
- *
- * Uses dictionary_form (not normalized_form) for baseForm.
- * Calls Python helper via child_process.
- */
 import { execFileSync } from 'child_process';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';

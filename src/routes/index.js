@@ -1,12 +1,3 @@
-/**
- * @fileoverview Main router aggregator
- *
- * Collects all route modules and exports a factory function
- * that server.js uses to create the combined router.
- *
- * Dependencies are passed through to route modules that need them.
- */
-
 import { Router } from 'express';
 import createSettingsRoutes from './settings.js';
 import createTTSRoutes from './tts.js';

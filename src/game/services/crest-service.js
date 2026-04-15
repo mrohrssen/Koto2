@@ -1,10 +1,3 @@
-/**
- * @fileoverview Crest meta-progression service
- *
- * Handles crest generation (gacha), chest opening, equip/unequip,
- * and multiplier calculation. Pure functions — no side effects.
- */
-
 import { randomBytes } from 'crypto';
 
 const VALID_ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal'];

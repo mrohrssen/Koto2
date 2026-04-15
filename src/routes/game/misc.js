@@ -1,9 +1,3 @@
-/**
- * @fileoverview Miscellaneous game routes
- *
- * Handles debug, session-start, post-combat-refresh, due-words, NPC cache
- */
-
 import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';

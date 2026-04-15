@@ -1,20 +1,3 @@
-/**
- * @fileoverview Sprite Forge API routes
- *
- * Provides endpoints for scanning missing sprites, queuing image generation
- * jobs (via Gemini or ComfyUI), and managing generated variants through
- * approval/discard workflows.
- *
- * API ENDPOINTS:
- *   GET  /missing              - Scan for data entries missing sprites
- *   GET  /jobs                 - List all generation jobs with status
- *   GET  /jobs/:id/variant/:v  - Serve a variant image file
- *   POST /generate             - Queue sprite generation for data entries
- *   POST /generate-freeform    - Queue sprite generation for ad-hoc items
- *   POST /approve              - Approve a variant and deploy to production
- *   POST /discard              - Discard a job and clean up staging files
- */
-
 import { Router } from 'express';
 import {
   readdirSync, readFileSync, existsSync, mkdirSync, writeFileSync,

@@ -1,31 +1,3 @@
-/**
- * @fileoverview Room generation, area system, and exploration mechanics
- * @module src/game/rooms
- *
- * PURPOSE:
- * Manages dungeon exploration through themed areas. Generates room sequences
- * for each area with encounters, optional shrine, quiz, word discovery, and
- * dealer rooms. Areas are loaded from data/areas.json and selected
- * randomly (excluding the current area) when the player completes an area.
- *
- * KEY EXPORTS:
- * Area System:
- * - AREAS - All area definitions loaded from JSON
- * - getAreaSelectionOptions(excludeAreaId) - Get 2 random area choices
- * - getAreaById(areaId) - Look up area by ID
- *
- * Room Generation:
- * - generateAreaRooms(areaId, roomCount) - Create room sequence for area
- * - getRoomEntryNarration(room) - Get narrative text for room type
- * - getRoomActions(room) - Get available actions for current room
- * Constants:
- * - ROOM_TYPES - Encounter, shrine, quiz, wordDiscovery, dealer, boss
- *
- * ROOM SEQUENCE:
- * Each area: N rooms (encounters + special rooms). Boss room appended if area has bossCreatureId.
- * Post-combat shop appears after enemy defeats.
- */
-
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';

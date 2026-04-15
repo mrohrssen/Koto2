@@ -1,18 +1,3 @@
-/**
- * @file economy.js - Dealer Room UI
- *
- * PURPOSE:
- * Manages the dealer room interface where players can buy and sell creatures.
- *
- * KEY EXPORTS:
- * - init(callbacks): Setup with game state and API callbacks
- * - renderDealerRoom(actionsModule): Show dealer room UI
- *
- * DEPENDENCIES:
- * - ./sprite-utils.js: Creature sprite paths
- * - ./narration-box.js: Dealer greeting narration
- */
-
 import { creatureSpriteHtml } from './sprite-utils.js';
 import * as narrationBox from './narration-box.js';
 import { t } from './i18n.js';

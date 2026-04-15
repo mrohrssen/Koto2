@@ -1,20 +1,3 @@
-/**
- * @fileoverview ExplorationService - Dungeon exploration and room interaction
- * @module src/game/services/exploration-service
- *
- * PURPOSE:
- * Handles dungeon exploration logic including area selection,
- * room navigation, shrine interaction, and post-combat shop.
- *
- * KEY EXPORTS:
- * - ExplorationService (class) - Exploration and room interaction service
- *
- * DEPENDENCIES:
- * - GameManager reference (this.gm) for state access and cross-service calls
- * - rooms.js for area/room generation and utilities
- */
-
-
 import { generateEncounterCount } from '../state.js';
 
 import {

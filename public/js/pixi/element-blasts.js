@@ -1,14 +1,3 @@
-/**
- * @file element-blasts.js — Element-themed projectile blasts
- *
- * Fires a projectile from attacker to target with element-specific visuals.
- * Neutral Energy Bolt is the baseline; element stubs fall back to it until
- * their full implementations are ported.
- *
- * Public API:
- *   fireElementBlast(from, to, element, onImpact) → Promise<void>
- */
-
 import { Container, Graphics } from 'pixi.js';
 import { getStage } from './battle-stage.js';
 

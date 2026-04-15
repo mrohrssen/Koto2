@@ -1,22 +1,3 @@
-/**
- * @file combat-audio.js - Element-Typed Combat Sound Effects via Web Audio API
- *
- * PURPOSE:
- * Synthesizes element-appropriate attack and ultimate sounds using oscillators,
- * noise generators, and filters. No audio files needed.
- *
- * USAGE:
- *   import { playAttackSound, playUltimateSound } from './combat-audio.js';
- *   playAttackSound('fire');    // Short crackling burst
- *   playUltimateSound('fire');  // Roaring explosion
- *
- * ELEMENTS: fire, water, earth, metal, wood
- *
- * Each element has:
- *   - Attack sound (0.3-0.8s): quick, punchy
- *   - Ultimate sound (0.5-1.5s): big, impactful, layered
- */
-
 // ============ AUDIO CONTEXT ============
 
 let ctx = null;

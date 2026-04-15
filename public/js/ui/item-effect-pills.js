@@ -1,7 +1,3 @@
-/**
- * HTML stat pills for item cards (post-combat shop, friendly NPC, etc.)
- */
-
 export function buildItemEffectPills(item) {
   const effect = item.effect || {};
   const pills = [];

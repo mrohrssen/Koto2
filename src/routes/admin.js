@@ -1,15 +1,3 @@
-/**
- * @fileoverview Admin API routes for the learning simulator.
- *
- * Provides endpoints to advance time (shift FSRS timestamps), seed vocab,
- * and clean up simulator test users. All endpoints require ADMIN_SECRET.
- *
- * API ENDPOINTS:
- *   POST /advance-time       - Shift FSRS due/last_review timestamps backward
- *   POST /seed-vocab          - Bulk seed vocab cards for a user
- *   POST /cleanup-sim-user    - Delete all data files for a simulator user
- */
-
 import { Router } from 'express';
 import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync } from 'fs';
 import { join, basename } from 'path';

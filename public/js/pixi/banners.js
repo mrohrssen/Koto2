@@ -1,11 +1,3 @@
-/**
- * @file banners.js — Center-screen effectiveness banners
- *
- * Banners slam in from the top of the screen with optional shake and flash.
- * Three styles: super-effective (gold, heavy shake), weak (grey, quiet),
- * and level-up (gold, celebratory).
- */
-
 import { Text } from 'pixi.js';
 import { getStage } from './battle-stage.js';
 import { tween, wait } from './tween.js';

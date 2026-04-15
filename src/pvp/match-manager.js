@@ -1,12 +1,3 @@
-/**
- * PvP Match Manager
- *
- * Manages the full lifecycle of PvP matches: create, join, team select,
- * move submission, round resolution, rematch, and cleanup.
- * When configured with a dataDir, matches are persisted to disk and
- * restored on startup so they survive server restarts.
- */
-
 import { writeFileSync, readFileSync, readdirSync, unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
 import { resolveRound } from './pvp-combat.js';
