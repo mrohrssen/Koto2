@@ -2416,6 +2416,13 @@ async function executeCreatureDefendThenPause() {
 
   return withAnimationActive(async () => {
     try {
+      // --- Intent Log: record the defend action ---
+      const log = getLog();
+      if (log) {
+        log.act('Defend: all creatures defend this turn');
+        log.expect('Enemy attacks only. No ally attacks this turn.');
+      }
+
       const response = await fetch(`${API_BASE}/api/game/creature-combat-cycle`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -2473,6 +2480,20 @@ async function executeCreatureDefendThenPause() {
 
       // Sync authoritative state from server
       syncFinalState(result);
+
+      // --- Intent Log: check UI consistency after defend animations ---
+      if (window.__inspector) {
+        const scanResult = window.__inspector.checkCreatures();
+        const log = getLog();
+        if (log) {
+          if (scanResult.ok) {
+            log.check({ ok: true });
+          } else {
+            const first = scanResult.mismatches[0];
+            log.check({ ok: false, tag: first.type, detail: first.detail });
+          }
+        }
+      }
 
       // Check combat end
       if (result.combatEnded) {
