@@ -130,7 +130,6 @@ let combatActive = false;
 let playerAttackPending = false;
 let enemyAttackPending = false;
 let combatPausedForVocab = false;
-let pendingActionType = null; // 'attack' or 'defend' - set when card selected
 let playerAttackTimer = null;
 let enemyAttackTimer = null;
 
@@ -150,12 +149,10 @@ let characterUI = null;
 
 // Combat UI functions
 let showDamageNumber = null;
-let showDotDamage = null;
 let animateEnemyHurt = null;
 let animatePlayerHurt = null;
 let animateEnemyDefeat = null;
 let updateActionPanel = null;
-let playNarrationAudio = null;
 let showVictoryModal = null;
 let showGameOverModal = null;
 let showEnemyDialogue = null;
@@ -214,12 +211,10 @@ export function init(callbacks) {
 
   // Combat UI functions
   showDamageNumber = callbacks.showDamageNumber;
-  showDotDamage = callbacks.showDotDamage;
   animateEnemyHurt = callbacks.animateEnemyHurt;
   animatePlayerHurt = callbacks.animatePlayerHurt;
   animateEnemyDefeat = callbacks.animateEnemyDefeat;
   updateActionPanel = callbacks.updateActionPanel;
-  playNarrationAudio = callbacks.playNarrationAudio;
   showVictoryModal = callbacks.showVictoryModal;
   showGameOverModal = callbacks.showGameOverModal;
   showEnemyDialogue = callbacks.showEnemyDialogue;
@@ -541,7 +536,6 @@ function showNextDualCardsFromQueue() {
     // Fallback: not enough words, use single card flow
     const word = wordPractice.getNextCombatWord?.();
     if (word && showFlashCards) {
-      pendingActionType = 'attack'; // Default to attack if single card
       showFlashCards([word]);
     }
     return;
@@ -1366,7 +1360,6 @@ export function resumeCombatAfterVocab(grade, actionType = 'attack') {
 
   logger.info('[CombatLoop] Word reviewed, continuing:', { grade, actionType });
   combatPausedForVocab = false;
-  pendingActionType = actionType;
 
   const state = getGameState();
   const isCreatureCombat = state.combat?.isCreatureCombat;

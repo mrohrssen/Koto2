@@ -111,24 +111,6 @@ export async function runNpcDialogue() {
   }
 }
 
-function showBondFeedback(tone, delta) {
-  const existing = document.querySelector('.bond-feedback');
-  if (existing) existing.remove();
-
-  const el = document.createElement('div');
-  el.className = `bond-feedback ${tone}`;
-
-  const heart = tone === 'positive' ? '\u2764\uFE0F' : tone === 'negative' ? '\uD83D\uDC94' : '\uD83E\uDD0D';
-  const deltaText = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : '';
-
-  el.innerHTML = `${heart}${deltaText ? `<span class="bond-delta">${deltaText}</span>` : ''}`;
-
-  const sceneArea = document.getElementById('scene-area') || document.querySelector('.scene-area');
-  if (sceneArea) {
-    sceneArea.appendChild(el);
-  }
-}
-
 function showBondSummary(npcName, totalDelta) {
   const el = document.createElement('div');
   el.className = 'bond-summary';
