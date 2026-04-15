@@ -121,11 +121,13 @@ import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
+import { createIntentLog } from './js/intent-log.js';
+import { createInspector } from './js/inspector.js';
 
 // PixiJS battle stage imports
 import { initBattleStage } from './js/pixi/battle-stage.js';
 import { loadParallax, setScrollState } from './js/pixi/parallax.js';
-import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite } from './js/pixi/formation.js';
+import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite, getCreatureSprite } from './js/pixi/formation.js';
 
 // API imports - these are the server communication functions
 import {
@@ -1540,6 +1542,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initGame() {
   // Must be first — captures console/fetch before other code runs
   diagnostics.init();
+
+  // Initialize intent log and inspector for debugging combat state
+  const intentLog = createIntentLog({
+    output: console.log,
+    getErrorCount: () => diagnostics.snapshot().consoleErrors.length,
+    onFailure: (failure) => diagnostics.pushFailure(failure),
+  });
+
+  const inspector = createInspector({
+    getState: () => store.get('gameState'),
+    getPhase: () => {
+      const gs = store.get('gameState');
+      return gs?.phase || 'unknown';
+    },
+    countDomBars: (side) => {
+      const container = side === 'player'
+        ? document.querySelector('.player-formation')
+        : document.querySelector('.enemy-formation');
+      if (!container) return 0;
+      return container.querySelectorAll('.formation-slot:not(.defeated):not(.befriended) .formation-hp-fill').length;
+    },
+    getPixiSprites: (side) => {
+      const sprites = [];
+      for (let i = 0; i < 3; i++) {
+        const s = getCreatureSprite(side, i);
+        if (s) sprites.push({ alpha: s.alpha, tint: s.tint });
+        else sprites.push(null);
+      }
+      return sprites.filter(Boolean);
+    },
+  });
+
+  window.__intentLog = intentLog;
+  window.__inspector = inspector;
 
   // Initialize i18n language from settings
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
