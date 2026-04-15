@@ -13,9 +13,6 @@ import {
  * These tests authenticate via HTTP, seed a player + run via API calls,
  * then navigate to the game and assert the exploration UI renders correctly.
  */
-
-const API_HEADERS = { 'Content-Type': 'application/json' };
-
 /** Common creature IDs that exist in data/creatures.json */
 const TEST_TEAM = ['hi', 'mizu', 'ki'];
 
