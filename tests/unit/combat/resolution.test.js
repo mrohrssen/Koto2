@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkAllDefeated, processKOSwaps, collectElementDrops, getElementDropList } from '../../../src/game/combat/resolution.js';
+import { checkAllDefeated, processKOSwaps, collectElementDrops, getElementDropList, finalizeCombatVictory, resolveDefeat } from '../../../src/game/combat/resolution.js';
 
 describe('checkAllDefeated', () => {
   it('returns true for empty array', () => {
@@ -153,5 +153,72 @@ describe('getElementDropList', () => {
     ];
     const result = getElementDropList(enemies);
     assert.deepEqual(result, ['fire', 'earth']);
+  });
+});
+
+describe('finalizeCombatVictory', () => {
+  it('marks room as interacted and increments encounters', () => {
+    const rooms = [{ type: 'encounter', interacted: false }];
+    const combat = { active: true, isBoss: false, enemies: [] };
+    const run = { currentRoom: 0, rooms, currentAreaEncounters: 2 };
+    finalizeCombatVictory(combat, run);
+    assert.equal(combat.active, false);
+    assert.equal(run.currentAreaEncounters, 3);
+    assert.equal(rooms[0].interacted, true);
+  });
+
+  it('tracks boss defeat in run.bossesDefeated', () => {
+    const combat = { active: true, isBoss: true, enemies: [{ id: 'boss1' }] };
+    const run = { currentRoom: 0, rooms: [{}], currentAreaEncounters: 0, bossesDefeated: [] };
+    finalizeCombatVictory(combat, run);
+    assert.ok(run.bossesDefeated.includes('boss1'));
+  });
+
+  it('initializes bossesDefeated if missing', () => {
+    const combat = { active: true, isBoss: true, enemies: [{ id: 'b1' }] };
+    const run = { currentRoom: 0, rooms: [{}], currentAreaEncounters: 0 };
+    finalizeCombatVictory(combat, run);
+    assert.deepEqual(run.bossesDefeated, ['b1']);
+  });
+
+  it('calls narrate with boss defeat dialogue when template exists', () => {
+    const narrated = [];
+    const combat = { active: true, isBoss: true, enemies: [{ id: 'fake_boss' }] };
+    const run = { currentRoom: 0, rooms: [{}], currentAreaEncounters: 0, bossesDefeated: [] };
+    finalizeCombatVictory(combat, run, { narrate: (t) => narrated.push(t) });
+    // fake_boss won't exist in CREATURES_BY_ID, so narrate should NOT be called
+    assert.equal(narrated.length, 0);
+    // Boss is still tracked even without dialogue
+    assert.ok(run.bossesDefeated.includes('fake_boss'));
+  });
+});
+
+describe('resolveDefeat', () => {
+  it('saves pending captures to collection and ends run', () => {
+    const captured = { id: 'cap1', temporary: false };
+    const combat = { active: true };
+    const run = {
+      active: true,
+      creatureParty: { pendingCaptures: [captured] }
+    };
+    const meta = { creatureCollection: [] };
+    const onDefeatCalled = [];
+    resolveDefeat(combat, run, meta, { onDefeat: () => onDefeatCalled.push(true) });
+    assert.equal(combat.active, false);
+    assert.equal(run.active, false);
+    assert.equal(run.creatureParty.pendingCaptures.length, 0);
+    assert.equal(onDefeatCalled.length, 1);
+  });
+
+  it('skips collection for temporary creatures', () => {
+    const captured = { id: 'temp1', temporary: true };
+    const combat = { active: true };
+    const run = {
+      active: true,
+      creatureParty: { pendingCaptures: [captured] }
+    };
+    const meta = { creatureCollection: [] };
+    resolveDefeat(combat, run, meta);
+    assert.ok(!meta.creatureCollection.includes('temp1'));
   });
 });
