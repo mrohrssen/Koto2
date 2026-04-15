@@ -98,5 +98,48 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
     return { ok: creatureResult.ok, mismatches: creatureResult.mismatches, summary, phase };
   }
 
-  return { checkCreatures, fullScan };
+  function checkGameRules(result) {
+    const mismatches = [];
+    if (!result) return { ok: true, mismatches };
+
+    // Rule: KO'd creatures cannot attack
+    for (const atk of [...(result.playerAttacks || []), ...(result.enemyAttacks || [])]) {
+      if (atk.attackerHpBefore !== undefined && atk.attackerHpBefore <= 0) {
+        mismatches.push({
+          type: 'LOGIC_BUG',
+          detail: `KO creature attacked: ${atk.attackerSide}[${atk.attackerIndex}] had HP=${atk.attackerHpBefore}`,
+        });
+      }
+    }
+
+    // Rule: HP must never go below 0
+    for (const creatures of [result.allies || [], result.enemies || []]) {
+      for (const c of creatures) {
+        if (c.hp < 0) {
+          mismatches.push({
+            type: 'LOGIC_BUG',
+            detail: `HP below 0: creature has hp=${c.hp}`,
+          });
+        }
+      }
+    }
+
+    // Rule: Expired effects should be removed
+    for (const creatures of [result.allies || [], result.enemies || []]) {
+      for (const c of creatures) {
+        for (const eff of (c.activeEffects || [])) {
+          if (eff.remainingTurns !== undefined && eff.remainingTurns <= 0) {
+            mismatches.push({
+              type: 'LOGIC_BUG',
+              detail: `Expired effect still active: ${eff.type} with remainingTurns=${eff.remainingTurns}`,
+            });
+          }
+        }
+      }
+    }
+
+    return { ok: mismatches.length === 0, mismatches };
+  }
+
+  return { checkCreatures, fullScan, checkGameRules };
 }

@@ -92,6 +92,59 @@ describe('Inspector', () => {
     });
   });
 
+  describe('checkGameRules', () => {
+    it('detects KO creature in attack results', () => {
+      const inspector = createInspector(mockQueries({ phase: 'combat', stateEnemies: [{ hp: 0 }] }));
+      const result = {
+        playerAttacks: [{ attackerSide: 'enemy', attackerIndex: 0, attackerHpBefore: 0, damage: 5 }],
+        enemyAttacks: [],
+        enemies: [{ hp: 0 }],
+        allies: [{ hp: 30 }],
+      };
+      const check = inspector.checkGameRules(result);
+      assert.equal(check.ok, false);
+      assert.equal(check.mismatches[0].type, 'LOGIC_BUG');
+    });
+
+    it('detects HP below 0', () => {
+      const inspector = createInspector(mockQueries({ phase: 'combat' }));
+      const result = {
+        playerAttacks: [],
+        enemyAttacks: [],
+        enemies: [{ hp: -5 }],
+        allies: [{ hp: 30 }],
+      };
+      const check = inspector.checkGameRules(result);
+      assert.equal(check.ok, false);
+      assert.match(check.mismatches[0].detail, /HP.*below.*0/i);
+    });
+
+    it('detects expired effect still in activeEffects', () => {
+      const inspector = createInspector(mockQueries({ phase: 'combat' }));
+      const result = {
+        playerAttacks: [],
+        enemyAttacks: [],
+        enemies: [{ hp: 10, activeEffects: [{ type: 'poison', remainingTurns: 0 }] }],
+        allies: [{ hp: 30 }],
+      };
+      const check = inspector.checkGameRules(result);
+      assert.equal(check.ok, false);
+      assert.match(check.mismatches[0].detail, /expired.*effect/i);
+    });
+
+    it('returns ok when no violations', () => {
+      const inspector = createInspector(mockQueries({ phase: 'combat' }));
+      const result = {
+        playerAttacks: [{ attackerSide: 'player', attackerIndex: 0, attackerHpBefore: 30, damage: 10 }],
+        enemyAttacks: [],
+        enemies: [{ hp: 5 }],
+        allies: [{ hp: 30 }],
+      };
+      const check = inspector.checkGameRules(result);
+      assert.equal(check.ok, true);
+    });
+  });
+
   describe('fullScan', () => {
     it('returns structured report with summary', () => {
       const inspector = createInspector(mockQueries({

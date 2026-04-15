@@ -2285,6 +2285,18 @@ async function executeCreatureMovesTurn(choices) {
         }
       }
 
+      // --- Game Rule Validation: check server result for logic invariants ---
+      if (window.__inspector?.checkGameRules) {
+        const ruleCheck = window.__inspector.checkGameRules(result);
+        if (!ruleCheck.ok) {
+          const log = getLog();
+          for (const m of ruleCheck.mismatches) {
+            if (log) log.expect(`RULE VIOLATION: ${m.detail}`);
+            console.warn(`[RULE] ${m.type}: ${m.detail}`);
+          }
+        }
+      }
+
       // Store server-provided barks for speech bubbles
       _currentRoundBarks = result.barks || [];
 
@@ -2441,6 +2453,18 @@ async function executeCreatureDefendThenPause() {
           stopCombatLoop({ combatEnded: true, victory: false, error: true });
         }
         return;
+      }
+
+      // --- Game Rule Validation: check server result for logic invariants ---
+      if (window.__inspector?.checkGameRules) {
+        const ruleCheck = window.__inspector.checkGameRules(result);
+        if (!ruleCheck.ok) {
+          const log = getLog();
+          for (const m of ruleCheck.mismatches) {
+            if (log) log.expect(`RULE VIOLATION: ${m.detail}`);
+            console.warn(`[RULE] ${m.type}: ${m.detail}`);
+          }
+        }
       }
 
       // Store server-provided barks for speech bubbles
