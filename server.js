@@ -1,12 +1,12 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import cors from 'cors';
-import compression from 'compression';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import dotenv from 'dotenv';
+
+import { createApp, enrichGameState } from './src/app.js';
 
 // Local module imports
 import {
@@ -66,8 +66,6 @@ import {
   setMemoryFlag as setNpcMemoryFlag,
   updateMemoryBond as updateNpcMemoryBond
 } from './src/narration-engine/index.js';
-import createRoutes from './src/routes/index.js';
-import createAuthRoutes from './src/auth/routes.js';
 import { createDevRouter } from './src/routes/dev.js';
 import { createForgeRouter } from './src/routes/forge.js';
 import { createSpriteForgeRouter } from './src/routes/sprite-forge.js';
@@ -118,15 +116,6 @@ if (existsSync(wordListPath)) {
 // Load hardcoded dialogue pools (CID scripts, NPC lines, barks)
 loadDialoguePools(join(process.cwd(), 'data'));
 
-const app = express();
-const httpServer = createServer(app);
-const io = new SocketIOServer(httpServer, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-});
-setupPvpSockets(io, { getSettings: () => settings });
 const gameManager = new GameManager();
 
 // Debug mode - disables AI narration only (JPDB vocab calls still work)
@@ -174,55 +163,10 @@ function saveSettings(settings) {
   }
 }
 
-// Middleware
-const ALLOWED_ORIGINS = [
-  'https://jrpg-production.up.railway.app',
-  'https://jrpg-dev.up.railway.app',
-  'capacitor://localhost',      // iOS Capacitor WebView
-  'https://localhost',          // Android Capacitor WebView
-  'http://localhost:5173',      // Vite dev server
-  'http://localhost:3000',      // Express dev server
-];
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, server-to-server)
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(null, true); // TODO: tighten to callback(new Error('CORS')) after testing
-    }
-  },
-  credentials: true
-}));
-// Prevent WebView from caching stale API responses
-app.use('/api', (req, res, next) => {
-  res.set('Cache-Control', 'no-store');
-  next();
-});
-app.use(compression()); // Gzip/Brotli compression for all responses
-app.use(express.json({ limit: '10mb' })); // Increased for bug report screenshots
-
 // Static files - serve from dist/ (Vite build) in production, public/ in dev
 const staticDir = process.env.NODE_ENV === 'production' && existsSync(join(__dirname, 'dist'))
   ? join(__dirname, 'dist')
   : join(__dirname, 'public');
-
-app.use(express.static(staticDir, {
-  maxAge: 0,              // No caching by default
-  etag: false,            // Disable ETags for fresh loads
-  lastModified: false,    // Disable Last-Modified for fresh loads
-  setHeaders: (res, filePath) => {
-    // Only cache webp images and mp3 audio (sprites, backgrounds, music)
-    if (filePath.endsWith('.webp') || filePath.endsWith('.mp3')) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
-    } else {
-      // Everything else loads fresh (JS, CSS, HTML, other assets)
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-    }
-  }
-}));
 
 // Load persisted data
 let settings = loadSettings();
@@ -274,35 +218,6 @@ if (gameSave?.meta && gameSave?.version >= SAVE_VERSION) {
   console.log(`Loaded meta-progression`);
 }
 
-// Helper to enrich player data for frontend display
-function enrichPlayerItems(player) {
-  if (!player) return player;
-
-  const enriched = { ...player };
-
-  enriched.derivedStats = {
-    atk: enriched.attack || 15
-  };
-
-  return enriched;
-}
-
-function enrichGameState(manager) {
-  const state = manager.getState();
-  if (state.player) {
-    state.player = enrichPlayerItems(state.player);
-  }
-  if (state.run?.player) {
-    state.run.player = enrichPlayerItems(state.run.player);
-  }
-  return state;
-}
-
-// ============ API Routes ============
-
-// Mount auth routes (public, no auth required)
-app.use('/api/auth', createAuthRoutes());
-
 // TTS disk cache — loads existing manifest, or auto-generates on first boot
 const ttsCache = new TtsCache(join(__dirname, 'data', 'tts-cache'));
 ttsCache.load();
@@ -345,49 +260,80 @@ function buildTtsOptions() {
   };
 }
 
-// Mount extracted route modules
-app.use('/api', createRoutes({
-  getSettings: () => settings,
-  saveSettings: saveSettings,
-  ttsCache,
-  ttsDialogueCache,
-  enrichGameState,
-  cancelPendingPrefetches,
-  clearPrefetchCache,
-  updateGameStatsWithEvent,
-  saveGameStats,
-  getGameStats: () => gameStats,
-  setGameStats: (newStats) => { gameStats = newStats; },
-  getDebugMode: () => debugMode,
-  setDebugMode: (val) => { debugMode = val; },
-  vocabCacheFile: VOCAB_CACHE_FILE,
-  staticWordList,
-  getUserVocabulary: getUserNarrationVocabulary,
-  getCreatureDialogueFromCache: (userId, creatureId) =>
-    getNpcDialogueFromCache(userId, creatureId, 'creature'),
-  getAllCreatureDialogueCache: (userId) =>
-    getAllNpcDialogueCache(userId, 'creature'),
-  queueMissingCreatureDialoguesFn: async (userId, aiConfig, vocabContext) =>
-    queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
-  regenCreatureDialogueFn: async (userId, creatureId, aiConfig, vocabContext) =>
-    regenNpcDialogue(userId, creatureId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
-  // NPC narration engine deps
-  getNpcDialogueFromCache,
-  getAllNpcDialogueCache,
-  clearNpcDialogueCache,
-  clearCreatureDialogueCache: (userId) =>
-    clearNpcDialogueCache(userId, 'creature'),
-  queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabContext) => {
-    return queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
-  },
-  logNpcEncounterFn: logNpcEncounter,
-  regenNpcDialogueFn: async (userId, npcId, aiConfig, vocabContext) => {
-    return regenNpcDialogue(userId, npcId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
-  },
-  setNpcMemoryFlagFn: setNpcMemoryFlag,
-  updateNpcMemoryBondFn: updateNpcMemoryBond,
-  checkSentenceViolations
+// ============ Build shared app ============
+
+const app = createApp({
+  routeOverrides: {
+    getSettings: () => settings,
+    saveSettings: saveSettings,
+    ttsCache,
+    ttsDialogueCache,
+    enrichGameState,
+    cancelPendingPrefetches,
+    clearPrefetchCache,
+    updateGameStatsWithEvent,
+    saveGameStats,
+    getGameStats: () => gameStats,
+    setGameStats: (newStats) => { gameStats = newStats; },
+    getDebugMode: () => debugMode,
+    setDebugMode: (val) => { debugMode = val; },
+    vocabCacheFile: VOCAB_CACHE_FILE,
+    staticWordList,
+    getUserVocabulary: getUserNarrationVocabulary,
+    getCreatureDialogueFromCache: (userId, creatureId) =>
+      getNpcDialogueFromCache(userId, creatureId, 'creature'),
+    getAllCreatureDialogueCache: (userId) =>
+      getAllNpcDialogueCache(userId, 'creature'),
+    queueMissingCreatureDialoguesFn: async (userId, aiConfig, vocabContext) =>
+      queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
+    regenCreatureDialogueFn: async (userId, creatureId, aiConfig, vocabContext) =>
+      regenNpcDialogue(userId, creatureId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
+    // NPC narration engine deps
+    getNpcDialogueFromCache,
+    getAllNpcDialogueCache,
+    clearNpcDialogueCache,
+    clearCreatureDialogueCache: (userId) =>
+      clearNpcDialogueCache(userId, 'creature'),
+    queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabContext) => {
+      return queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
+    },
+    logNpcEncounterFn: logNpcEncounter,
+    regenNpcDialogueFn: async (userId, npcId, aiConfig, vocabContext) => {
+      return regenNpcDialogue(userId, npcId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
+    },
+    setNpcMemoryFlagFn: setNpcMemoryFlag,
+    updateNpcMemoryBondFn: updateNpcMemoryBond,
+    checkSentenceViolations
+  }
+});
+
+// Static file serving
+app.use(express.static(staticDir, {
+  maxAge: 0,              // No caching by default
+  etag: false,            // Disable ETags for fresh loads
+  lastModified: false,    // Disable Last-Modified for fresh loads
+  setHeaders: (res, filePath) => {
+    // Only cache webp images and mp3 audio (sprites, backgrounds, music)
+    if (filePath.endsWith('.webp') || filePath.endsWith('.mp3')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
+    } else {
+      // Everything else loads fresh (JS, CSS, HTML, other assets)
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
 }));
+
+// HTTP server + Socket.IO
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+setupPvpSockets(io, { getSettings: () => settings });
 
 // Dev tools (sprite review dashboard)
 const devPassword = process.env.DEV_DASHBOARD_PASSWORD || '';
