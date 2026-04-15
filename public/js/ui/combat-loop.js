@@ -57,6 +57,9 @@ import { combatEvents } from './combat-events.js';
 import { getHpColor, SC_NAMES, getCreatureStatusKeys } from './combat-ui-utils.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 
+// ============ INTENT LOG HELPER ============
+function getLog() { return window.__intentLog; }
+
 // ============ SERVER-PROVIDED BARKS ============
 let _currentRoundBarks = [];
 
@@ -2236,6 +2239,21 @@ async function executeCreatureMovesTurn(choices) {
 
   return withAnimationActive(async () => {
     try {
+      // --- Intent Log: record the action about to be taken ---
+      const _log = getLog();
+      if (_log) {
+        const gs = getGameState();
+        const allies = gs?.combat?.allies || gs?.run?.creatureParty?.active || [];
+        const enemies = gs?.combat?.enemies || [];
+        const moveDesc = choices.map(c => {
+          const creature = allies[c.creatureIndex];
+          const moveName = creature?.moves?.find(m => m.id === c.moveId)?.nameEn || '?';
+          const target = c.targetIndex >= 0 ? (enemies[c.targetIndex]?.nameEn || '?') : 'AoE/Self';
+          return `${creature?.nameEn || '?'}→${moveName}→${target}`;
+        }).join(', ');
+        _log.act(`Attack: ${moveDesc}`);
+      }
+
       const response = await fetch(`${API_BASE}/api/game/creature-combat-cycle`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -2251,6 +2269,20 @@ async function executeCreatureMovesTurn(choices) {
         console.error('Move turn error:', result.error);
         playerAttackPending = false;
         return;
+      }
+
+      // --- Intent Log: record expected outcome from server response ---
+      if (_log) {
+        const aliveEnemies = (result.enemies || []).filter(e => e.hp > 0 && !e.befriended).length;
+        const aliveAllies = (result.allies || []).filter(a => a.hp > 0).length;
+        _log.expect(`Enemies alive: ${aliveEnemies}/${(result.enemies || []).length}. Allies alive: ${aliveAllies}/${(result.allies || []).length}`);
+
+        for (const atk of [...(result.playerAttacks || []), ...(result.enemyAttacks || [])]) {
+          if (atk.targetDefeated) {
+            const side = result.playerAttacks?.includes(atk) ? 'enemy' : 'ally';
+            _log.expect(`KO: ${side}[${atk.targetIndex}] — sprite fade, HP bar zero`);
+          }
+        }
       }
 
       // Store server-provided barks for speech bubbles
@@ -2328,7 +2360,30 @@ async function executeCreatureMovesTurn(choices) {
         await processPendingMoveLearn(allPendingMoveLearn);
       }
 
+      // --- Intent Log: check UI consistency after all animations ---
+      if (window.__inspector) {
+        const scanResult = window.__inspector.checkCreatures();
+        const __log = getLog();
+        if (__log) {
+          if (scanResult.ok) {
+            __log.check({ ok: true });
+          } else {
+            const first = scanResult.mismatches[0];
+            __log.check({ ok: false, tag: first.type, detail: first.detail });
+            for (const m of scanResult.mismatches.slice(1)) {
+              console.warn(`[CHK] additional: ${m.type}: ${m.detail}`);
+            }
+          }
+        }
+      }
+
       if (result.combatEnded) {
+        // --- Intent Log: combat ended ---
+        const __logEnd = getLog();
+        if (__logEnd) {
+          __logEnd.act(`Combat ended: ${result.victory ? 'VICTORY' : 'DEFEAT'}`);
+          __logEnd.expect('All combat sprites cleared. Combat UI removed.');
+        }
         if (result.victory) await delay(500);
         stopCombatLoop(result);
         return;
@@ -3322,6 +3377,23 @@ export async function stopCombatLoop(result) {
   // recreate Pixi sprites. The 720ms delay above lets damage numbers finish.
   const enemyFormationEl = document.getElementById('enemy-formation');
   if (enemyFormationEl) enemyFormationEl.innerHTML = '';
+
+  // --- Intent Log: post-combat cleanup check ---
+  if (window.__inspector) {
+    const postScan = window.__inspector.checkCreatures();
+    const postLog = getLog();
+    if (postLog) {
+      if (postScan.ok) {
+        postLog.check({ ok: true });
+      } else {
+        const first = postScan.mismatches[0];
+        postLog.check({ ok: false, tag: first.type, detail: first.detail });
+        for (const m of postScan.mismatches.slice(1)) {
+          console.warn(`[CHK] post-combat: ${m.type}: ${m.detail}`);
+        }
+      }
+    }
+  }
 
   // Wait for enemy dialogue to be dismissed (e.g., liberated dialogue on victory)
   const dialogueDismissPromise = getDialogueDismissPromise();
