@@ -590,6 +590,8 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
 
     const { rounds, targetEnemy, targetEnemyIndex, userId: convoUserId } = convoResult;
     const creatureName = targetEnemy?.nameEn || targetEnemy?.name || 'Creature';
+    const reading = targetEnemy?.name || creatureName;
+    const creatureSpeaker = { name: reading, reading: toRomaji(reading), meaning: '' };
 
     // 3-round conversation loop
     for (let i = 0; i < rounds.length; i++) {

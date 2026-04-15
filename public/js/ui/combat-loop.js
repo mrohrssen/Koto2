@@ -577,9 +577,7 @@ let showFlashCards = null;
 let setCombatAnimationActive = null;
 let apiCreatureCombatCycle = null;
 let showPostCombatShop = null;
-let apiBefriendReplace = null;
-let apiGetBefriendConversation = null;
-let apiSubmitBefriendAnswer = null;
+
 let apiStartNpcDialogue = null;
 let apiRespondNpcDialogue = null;
 let showNpcSprite = null;
@@ -650,9 +648,6 @@ export function init(callbacks) {
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
   apiCreatureCombatCycle = callbacks.apiCreatureCombatCycle;
   showPostCombatShop = callbacks.showPostCombatShop;
-  apiBefriendReplace = callbacks.apiBefriendReplace;
-  apiGetBefriendConversation = callbacks.apiGetBefriendConversation;
-  apiSubmitBefriendAnswer = callbacks.apiSubmitBefriendAnswer;
   apiStartNpcDialogue = callbacks.apiStartNpcDialogue;
   apiRespondNpcDialogue = callbacks.apiRespondNpcDialogue;
   showNpcSprite = callbacks.showNpcSprite;
@@ -682,9 +677,9 @@ export function init(callbacks) {
     buildAllyHpMap,
     updateCreatureHpBars,
     spritePos,
-    apiBefriendReplace,
-    apiGetBefriendConversation,
-    apiSubmitBefriendAnswer,
+    apiBefriendReplace: callbacks.apiBefriendReplace,
+    apiGetBefriendConversation: callbacks.apiGetBefriendConversation,
+    apiSubmitBefriendAnswer: callbacks.apiSubmitBefriendAnswer,
   });
 }
 
