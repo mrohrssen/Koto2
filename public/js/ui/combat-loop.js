@@ -56,6 +56,7 @@ import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
 import { getHpColor, SC_NAMES, getCreatureStatusKeys } from './combat-ui-utils.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
+import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
 // ============ INTENT LOG HELPER ============
 function getLog() { return window.__intentLog; }
@@ -2810,6 +2811,13 @@ async function renderBefriendQuiz(quizData, result) {
     }
 
     await pixiSlideOutNpc({ slideOut: true });
+    restoreBefriendQuizEnemyUi({
+      quizData,
+      result,
+      gameState: getGameState(),
+      hideEnemy,
+      showFormation,
+    });
   }
 
   const choiceIdx = await choicePromise;
@@ -2868,7 +2876,13 @@ async function renderBefriendQuiz(quizData, result) {
       await pixiSlideInNpc(cidSprite, { slideIn: true });
       await narration.showNarration(getBefriendWrongNarration(), { speaker: 'Cid' });
       await pixiSlideOutNpc({ slideOut: true });
-      hideEnemy();
+      restoreBefriendQuizEnemyUi({
+        quizData,
+        result: answerResult,
+        gameState: getGameState(),
+        hideEnemy,
+        showFormation,
+      });
       continue;
     }
     quizDone = true;
