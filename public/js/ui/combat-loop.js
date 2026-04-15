@@ -172,9 +172,6 @@ let showNpcSprite = null;
 let hideNpcSprite = null;
 let updateCreatureRowData = null;
 
-// Kana mode state
-
-
 // Utility
 let delay = null;
 
@@ -811,9 +808,6 @@ export async function executePlayerAttack() {
   });
 }
 
-// ============ SHARED CREATURE COMBAT HELPERS ============
-
-/** Show a floating text label above a target element (for status effects) */
 function syncFinalState(result) {
   if (!result.creatureParty && !result.enemies) return;
 
