@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Extract `public/js/ui/combat-loop.js` (3,653 lines, 6 concerns) into 6 focused modules using incremental Strangler Fig extraction, reducing coordinator to ~1,440 lines doing one job.
+**Goal:** Extract `public/js/ui/combat-loop.js` (3,626 lines, 6 concerns) into 6 focused modules using incremental Strangler Fig extraction, reducing coordinator to ~1,400 lines doing one job.
 
 **Architecture:** Each extraction is two commits — a pure move (cut-paste + wire delegation) then a simplify (clean up the isolated code). Extracted modules receive dependencies as function arguments, never reaching into shared module state. The coordinator remains the only file with mutable state.
 
@@ -14,7 +14,7 @@
 
 ## Chunk 1: Extract befriend.js
 
-The befriend flow is the largest extraction (~750 lines) and the most independent. Functions are scattered across two regions of combat-loop.js (884–1048 and 2763–3363) but only call each other and shared callbacks.
+The befriend flow is the largest extraction (~750 lines) and the most independent. Functions are scattered across two regions of combat-loop.js (857–1021 and 2736–3336) but only call each other and shared callbacks.
 
 ### Task 1: Move befriend functions to new module
 
@@ -26,23 +26,23 @@ The befriend flow is the largest extraction (~750 lines) and the most independen
 
 Cut these functions from `combat-loop.js` and paste into `befriend.js`:
 
-From lines 884–1048:
-- `isBefriendSlotBlocked` (884)
-- `isBefriendAvailableForSlot` (889)
-- `getMoveSelectBefriendOpts` (899)
-- `mergeBefriendSlotsFromTalkResponse` (908)
-- `resumeMoveSelectionAfterBefriendSpend` (921)
-- `buildLiveAllyHpMap` (935)
-- `showBefriendEnemyAttacksAnimated` (944)
-- `handleBefriendTalk` (962)
+From lines 857–1021:
+- `isBefriendSlotBlocked` (857)
+- `isBefriendAvailableForSlot` (862)
+- `getMoveSelectBefriendOpts` (872)
+- `mergeBefriendSlotsFromTalkResponse` (881)
+- `resumeMoveSelectionAfterBefriendSpend` (894)
+- `buildLiveAllyHpMap` (908)
+- `showBefriendEnemyAttacksAnimated` (917)
+- `handleBefriendTalk` (935)
 
-From lines 2763–3363:
-- `renderBefriendQuiz` (2773)
-- `showBefriendReleasePrompt` (3000)
-- `showBefriendTargetSelect` (3048)
-- `showConversationRound` (3075)
-- `showAnswerFeedback` (3092)
-- `executeBefriendAction` (3111)
+From lines 2736–3336:
+- `renderBefriendQuiz` (2746)
+- `showBefriendReleasePrompt` (2973)
+- `showBefriendTargetSelect` (3021)
+- `showConversationRound` (3048)
+- `showAnswerFeedback` (3065)
+- `executeBefriendAction` (3084)
 - Helper: `renderButtonsAsync` (used only by befriend — check if defined elsewhere or inline)
 - Helper: `playDialogueAudio` (used only by befriend conversation — check location)
 
@@ -126,7 +126,6 @@ Now that the code is isolated, look for:
 - Dead code: conditional branches that can never execute now that befriend doesn't share state with the turn loop
 - Overly defensive null checks on values that are always passed via `ctx`
 - Duplicate patterns (e.g., multiple functions building the same speaker object from `quizData`)
-- Delete the `@file` JSDoc header if one was carried over
 - Remove any `// ============` section markers that no longer make sense
 
 - [ ] **Step 2: Clean up combat-loop.js**
@@ -134,7 +133,8 @@ Now that the code is isolated, look for:
 Remove:
 - Dead `let` declarations for variables that only befriend used
 - Any `// ============ END KANA MODE COMBAT ============` markers that are now orphaned by the gap where befriend functions were
-- Update the `@file` header if still present (or delete it — it's stale)
+
+Note: `@file` JSDoc headers were already removed in a prior commit.
 
 - [ ] **Step 3: Syntax check + test**
 
@@ -213,15 +213,15 @@ The smallest extraction — 90 lines, entirely self-contained, with its own stat
 
 - [ ] **Step 1: Create `kana-combat.js`**
 
-Cut these functions from `combat-loop.js` (lines 789–882):
-- `startKanaCombatRound` (803)
-- `fetchKanaCard` (850)
-- `submitKanaReview` (863)
-- `pickCheapestMove` (875)
+Cut these functions from `combat-loop.js` (lines 762–855):
+- `startKanaCombatRound` (776)
+- `fetchKanaCard` (823)
+- `submitKanaReview` (836)
+- `pickCheapestMove` (848)
 
 Move these state variables from the module state section:
-- `kanaSwipeResolve` (616)
-- `kanaSwipeDirection` (617)
+- `kanaSwipeResolve` (589)
+- `kanaSwipeDirection` (590)
 
 Keep the exported wrapper functions in `combat-loop.js` but delegate:
 ```js
@@ -308,18 +308,18 @@ Pure UI rendering — 400 lines of card building, no game logic.
 
 - [ ] **Step 1: Create `attack-card.js`**
 
-Cut these functions from `combat-loop.js` (lines 158–563):
-- Constants: `ATTACK_CARD_TIMING` (160), `ELEMENT_THEME` (166), `KANJI_RE` (174), `KATAKANA_RE` (175)
-- `actionIconPath` (178)
-- `escHtml` (184)
-- `wrapWithRuby` (192)
-- `buildSplitAttackCard` (214)
-- `insertAttackCard` (288) — currently exported
-- `insertNpcAttackCard` (318)
-- `waitForCardTap` (361) — currently exported
-- `showAttackCardAndWait` (393)
-- `showAttackPartySkillProcs` (402)
-- `showAttackDisplay` (496) — currently exported, imported by `pvp-battle.js`
+Cut these functions from `combat-loop.js` (lines 131–536):
+- Constants: `ATTACK_CARD_TIMING` (133), `ELEMENT_THEME` (139), `KANJI_RE` (147), `KATAKANA_RE` (148)
+- `actionIconPath` (151)
+- `escHtml` (157)
+- `wrapWithRuby` (165)
+- `buildSplitAttackCard` (187)
+- `insertAttackCard` (261) — currently exported
+- `insertNpcAttackCard` (291)
+- `waitForCardTap` (334) — currently exported
+- `showAttackCardAndWait` (366)
+- `showAttackPartySkillProcs` (375)
+- `showAttackDisplay` (469) — currently exported, imported by `pvp-battle.js`
 
 These functions use some combat-loop state:
 - `showAttackDisplay` uses `impactEffect`, `fireCreatureAttackEffect`, `enemyCreatureAttackEffect` — these will move to `combat-vfx.js` in Task 8. For now, pass them as function arguments or import from combat-loop.
@@ -392,7 +392,7 @@ git commit -m "refactor: extract attack-card.js from combat-loop (pure move)"
 
 - [ ] **Step 1: Clean up attack-card.js**
 
-- Delete stale headers/comments
+- Delete stale comments
 - Check if `escHtml` duplicates anything in the codebase (it likely does — search for other HTML escape utils)
 - Look for dead branches in `buildSplitAttackCard` that handle cases no longer possible
 - Check if `ELEMENT_THEME` is duplicated elsewhere (there's `ELEMENT_COLORS` in `pixi/effects.js`)
@@ -430,38 +430,38 @@ The biggest structural change — pulls together the Pixi adapter layer, HP sync
 
 Cut these functions from `combat-loop.js`:
 
-From lines 62–157 (Pixi adapters):
-- `spritePos` (72)
-- `effectDelay` (78)
-- `impactEffect` (84)
-- `fireCreatureAttackEffect` (122)
-- `enemyCreatureAttackEffect` (137)
-- `npcSpritePath` (148)
+From lines 35–121 (Pixi adapters):
+- `spritePos` (45)
+- `effectDelay` (51)
+- `impactEffect` (57)
+- `fireCreatureAttackEffect` (95)
+- `enemyCreatureAttackEffect` (110)
+- `npcSpritePath` (121)
 
-From lines 1212–1314 (slot-finding + HP helpers):
-- `findCreatureSlotByAttackerId` (1212)
-- `findEnemyTargetElement` (1237)
-- `updateCreatureHpBars` (1251)
-- `showEnemyDamageDisplay` (1299)
+From lines 1185–1287 (slot-finding + HP helpers):
+- `findCreatureSlotByAttackerId` (1185)
+- `findEnemyTargetElement` (1210)
+- `updateCreatureHpBars` (1224)
+- `showEnemyDamageDisplay` (1272)
 
-From lines 1561–2120 (shared combat helpers):
-- `showFloatingText` (1564)
-- `showEffectEvents` (1582)
-- `syncStatusIconsFromResult` (1638)
-- `syncStatusForCreature` (1655)
-- `showMoveEffectsApplied` (1670)
-- `showPartySkillProcs` (1719)
-- `showRoundStartEvents` (1744)
-- `showOneCounterAttackAnimated` (1775)
-- `showCounterAttacks` (1833)
-- `buildAllyHpMap` (1846)
-- `buildEnemyHpMapForPlayerAttacks` (1861)
-- `buildMergedInitiativeAttacks` (1883) — **check**: this may belong in the coordinator since it's orchestration logic, not VFX. Move it only if it's purely data transformation.
-- `showOneEnemyAttackAnimated` (1897)
-- `showEnemyAttacksAnimated` (1958)
-- `showNpcSkillAttacksAnimated` (1970)
-- `showKoSwapAnimations` (2003)
-- `syncFinalState` (2088) — **check**: this updates game state, which is coordinator logic. Keep in combat-loop.js if it mutates module state.
+From lines 1534–2093 (shared combat helpers):
+- `showFloatingText` (1537)
+- `showEffectEvents` (1555)
+- `syncStatusIconsFromResult` (1611)
+- `syncStatusForCreature` (1628)
+- `showMoveEffectsApplied` (1643)
+- `showPartySkillProcs` (1692)
+- `showRoundStartEvents` (1717)
+- `showOneCounterAttackAnimated` (1748)
+- `showCounterAttacks` (1806)
+- `buildAllyHpMap` (1819)
+- `buildEnemyHpMapForPlayerAttacks` (1834)
+- `buildMergedInitiativeAttacks` (1856) — **check**: this may belong in the coordinator since it's orchestration logic, not VFX. Move it only if it's purely data transformation.
+- `showOneEnemyAttackAnimated` (1870)
+- `showEnemyAttacksAnimated` (1931)
+- `showNpcSkillAttacksAnimated` (1943)
+- `showKoSwapAnimations` (1976)
+- `syncFinalState` (2061) — **check**: this updates game state, which is coordinator logic. Keep in combat-loop.js if it mutates module state.
 
 **Critical decision per function:** If a function mutates `combat-loop.js` module state (e.g., calls `updateGameState`), it must either:
 1. Stay in the coordinator, or
@@ -510,7 +510,7 @@ git commit -m "refactor: extract combat-vfx.js from combat-loop (pure move)"
 
 - [ ] **Step 1: Clean up combat-vfx.js**
 
-- Delete stale headers and section markers
+- Delete stale comments and section markers
 - Look for duplicate HP map construction patterns (`buildAllyHpMap` vs `buildEnemyHpMapForPlayerAttacks` vs `buildLiveAllyHpMap` in befriend.js) — can any of these share a single utility?
 - Check if `findCreatureSlotByAttackerId` and `findEnemyTargetElement` have similar DOM query patterns that can be unified
 - Verify `effectDelay` isn't duplicated elsewhere (there's a `wait` from `pixi/tween.js` that may do the same thing)
@@ -520,7 +520,7 @@ git commit -m "refactor: extract combat-vfx.js from combat-loop (pure move)"
 - Remove `// ============ PIXI ADAPTER FUNCTIONS ============` marker
 - Remove `// ============ SHARED CREATURE COMBAT HELPERS ============` marker
 - Remove orphaned `let` declarations for state only VFX functions used
-- The `getLog()` intent log helper (line 62) stays — it's used across the coordinator
+- The `getLog()` intent log helper (line 35) stays — it's used across the coordinator
 
 - [ ] **Step 3: Syntax check + test**
 
@@ -574,12 +574,14 @@ Take a screenshot at each phase. Delete screenshots after viewing (per CLAUDE.md
 
 - [ ] **Step 1: Create `npc-dialogue-ui.js`**
 
-Cut from `combat-loop.js` (lines 3525–3653):
-- `showNpcGreeting` (3525) — currently exported
-- `isNpcDialogueActive` (3540) — currently exported
-- `runNpcDialogue` (3546) — currently exported
-- `showBondFeedback` (3625)
-- `showBondSummary` (3643)
+Cut from `combat-loop.js` (lines 3498–3626):
+- `showNpcGreeting` (3498) — currently exported
+- `isNpcDialogueActive` (3513) — currently exported
+- `runNpcDialogue` (3519) — currently exported
+- `showBondFeedback` (3598)
+- `showBondSummary` (3616)
+
+Move `npcDialogueActive` (3512) from the module state.
 
 Move the `npcDialogueActive` state variable (find its `let` declaration in the module state section).
 
@@ -627,13 +629,12 @@ git commit -m "refactor: extract npc-dialogue-ui.js from combat-loop (pure move)
 
 - [ ] **Step 1: Clean up npc-dialogue-ui.js**
 
-- Delete stale headers
+- Delete stale comments
 - Check if `showBondFeedback` and `showBondSummary` can be inlined into `runNpcDialogue` (they may only be called once)
 
 - [ ] **Step 2: Final coordinator cleanup**
 
 Now that all 5 extractions are done, clean up `combat-loop.js`:
-- Delete the stale `@file` JSDoc header entirely
 - Remove all orphaned `// ============` section markers
 - Audit remaining `let` declarations — how many of the original 55 are left? Remove any that are now unused.
 - Remove orphaned callback variables that were only used by extracted functions
@@ -644,7 +645,7 @@ Now that all 5 extractions are done, clean up `combat-loop.js`:
 ```bash
 wc -l public/js/ui/combat-loop.js public/js/ui/befriend.js public/js/ui/kana-combat.js public/js/ui/attack-card.js public/js/ui/combat-vfx.js public/js/ui/npc-dialogue-ui.js
 ```
-Expected: combat-loop.js around 1,400 lines. Total may be slightly less than 3,653 due to simplification.
+Expected: combat-loop.js around 1,400 lines. Total may be slightly less than 3,626 due to simplification.
 
 - [ ] **Step 4: Syntax check + full test suite**
 
