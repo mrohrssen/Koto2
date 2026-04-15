@@ -38,10 +38,11 @@ Game Action (combat turn, item use, phase transition, etc.)
 
 ### Component 1: Intent Log
 
-Always-on console logging on every game action. Three prefixes:
+Always-on console logging on every game action. Four prefixes:
 
 - `[ACT]` — what happened (action name, targets, values)
 - `[EXP]` — what should result (state changes, UI changes, derived from rules)
+- `[ERR]` — console error captured between action and check
 - `[CHK]` — pass/fail comparison of expected vs actual
 
 Format is single-line, grep-friendly. Example:
@@ -61,12 +62,17 @@ Format is single-line, grep-friendly. Example:
 [CHK] ✗ ERROR_THROWN: action produced console error
 ```
 
-**Hook points** — the intent log wraps existing action dispatch in:
+**Where the code lives: client-side only.** The intent log runs entirely in the browser. Server-side game logic (GameManager, services) is observed indirectly — the client calls an API endpoint, receives the updated state, and the intent log fires based on what changed in the response. There is no server-side logging component.
 
-- `src/game/loop.js` (GameManager action methods)
-- `public/js/ui/combat-loop.js` (combat turn execution)
-- `public/js/ui/scene.js` (formation/sprite management)
-- Any service that mutates game state (items, skills, creatures, buffs)
+**Instrumentation strategy:** There is no centralized action dispatch to wrap. Instead, intent log calls are added at each client-side call site — the functions in `combat-loop.js`, `scene.js`, and the API-calling functions in `game.js` that trigger state changes. Each call site gets a small `intentLog.act(...)` / `intentLog.expect(...)` / `intentLog.check(...)` sequence around the action. This is manual per-action instrumentation, not middleware.
+
+**Key call sites to instrument:**
+
+- `public/js/ui/combat-loop.js` — combat turn execution, KOs, victory/defeat
+- `public/js/ui/scene.js` — formation rendering, sprite show/hide
+- `public/js/game.js` — API calls that mutate state (use item, learn skill, befriend, phase transitions)
+- `public/js/ui/move-select.js` — move selection and skill learning
+- `public/js/ui/exploration.js` — room entry, encounters
 
 **What gets logged:**
 
@@ -111,7 +117,7 @@ window.__inspector.fullScan()
 
 | Layer | How to query | What to check |
 |-------|-------------|---------------|
-| Game state | `window.__gameState` / store | Source of truth: alive creatures, buffs, inventory, phase |
+| Game state | `window.gameState` / `store.get('gameState')` | Source of truth: alive creatures, buffs, inventory, phase |
 | DOM | Formation slots, `.formation-info--hidden`, HP bar elements | HP bars, status indicators, phase-specific UI presence |
 | PixiJS | `window.__pixiStage()` layers + `getCreatureSprite(side, index)` for alpha/tint | Sprite visibility (alpha > 0, tint !== KO color), sprite count in creatures layer |
 
@@ -196,9 +202,50 @@ These tests accumulate in CI over time, grown from real bugs, not speculation.
 | `getCreatureSprite(side, index)` | Query sprite alpha/tint for KO detection |
 | `diagnostics.js` ring buffers | Console error detection (50), network failures (20), action log (30) |
 | `phase-machine.js` | VALID_TRANSITIONS used for phase transition assertions |
-| `store.js` observable | Subscribe to state changes to trigger intent log |
-| Bug report system | `[CHK] ✗` entries feed into bug reports automatically |
-| Playwright 1.57 | Already installed, Test Agents (planner/generator/healer) available |
+| `store.js` observable | State change notifications (not used to trigger intent log — see instrumentation strategy) |
+| `diagnostics.js` action buffer | Intent log `[CHK] ✗` failures pushed into the action ring buffer so they appear in bug report snapshots |
+| Playwright 1.57 | Already installed; used for exploratory QA and regression tests |
+
+### fullScan Behavior Per Phase
+
+The inspector's `fullScan()` adapts to the current game phase:
+
+| Phase | What fullScan checks |
+|-------|---------------------|
+| `combat` | Ally/enemy counts across state/DOM/Pixi, buff durations, turn order validity, status effects |
+| `hub` | No combat UI present, no stale creature sprites, phase-appropriate UI visible |
+| `exploring` / `room` | No combat UI, no stale sprites from previous encounters |
+| `victory` / `defeat` | Combat UI teardown in progress, no active turn order |
+| `shop` / `post_combat_shop` | Inventory consistency, no combat sprites |
+| Other phases | Phase-appropriate UI presence, no elements from other phases |
+
+The `summary` field shape stays the same but `allies`/`enemies` fields read `{ state: 0, dom: 0, pixi: 0 }` outside combat.
+
+### Implementation Phasing
+
+Components have dependencies and should be built in order:
+
+**Phase 1: Intent Log core + Inspector (foundation)**
+- Build the `intentLog` module with `act()`, `expect()`, `check()` methods
+- Build `window.__inspector` with `fullScan()` — UI consistency layer only (state vs DOM vs Pixi counts)
+- Instrument combat actions first (highest bug density)
+- Console error detection via diagnostics ring buffer
+- Push `[CHK] ✗` failures into diagnostics action buffer for bug reports
+
+**Phase 2: Combat rule invariants (user-validated)**
+- Claude drafts combat rule assertions (turn order, damage, buffs, KO handling)
+- User reviews and corrects
+- Implement validated rules into inspector
+- Instrument remaining combat-adjacent actions (items, skills, befriending)
+
+**Phase 3: Exploratory QA + first regression tests**
+- Claude playtests with Phase 1+2 running
+- Bugs found become regression tests
+- Instrument non-combat actions (exploration, shops, NPC dialogue, phase transitions)
+
+**Phase 4: Expand invariants to all systems**
+- Draft + validate rules for remaining domains (party skills, NPC skills, crafting, etc.)
+- Regression test suite grows organically from QA findings
 
 ### What This Enables
 
