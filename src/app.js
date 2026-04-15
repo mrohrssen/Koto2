@@ -3,6 +3,7 @@ import cors from 'cors';
 import compression from 'compression';
 import createRoutes from './routes/index.js';
 import createAuthRoutes from './auth/routes.js';
+import { setDataDirForTest } from './data-dir.js';
 
 // --- Shared helpers (reused by production and tests) ---
 
@@ -92,6 +93,7 @@ export function createApp({
   routeOverrides = {},
   authBypass = false
 } = {}) {
+  if (dataDir) setDataDirForTest(dataDir);
   if (authBypass) process.env.SKIP_AUTH = 'true';
 
   const app = express();

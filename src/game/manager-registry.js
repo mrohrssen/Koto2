@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { GameManager } from './loop.js';
-import { DATA_DIR } from '../data-dir.js';
+import { getDataDir } from '../data-dir.js';
 import { CREATURES_BY_ID } from './creatures.js';
 import { DEFAULT_COLLECTION } from './services/creature-collection-service.js';
 
@@ -23,7 +23,7 @@ export function getManager(userId) {
   manager.userId = userId;
   // Ensure meta always exists (routes may touch gm.meta before a save file exists).
   manager.initMeta();
-  const saveFile = join(DATA_DIR, `.jrpg-save-${userId}.json`);
+  const saveFile = join(getDataDir(), `.jrpg-save-${userId}.json`);
   let needsSave = false;
 
   if (existsSync(saveFile)) {
@@ -115,7 +115,7 @@ export function saveManager(userId) {
   const manager = managers.get(userId);
   if (!manager) return;
 
-  const saveFile = join(DATA_DIR, `.jrpg-save-${userId}.json`);
+  const saveFile = join(getDataDir(), `.jrpg-save-${userId}.json`);
   const state = {
     version: SAVE_VERSION,
     player: manager.player,
@@ -136,10 +136,17 @@ export function removeManager(userId) {
 }
 
 /**
+ * Remove all managers from the registry (for test isolation)
+ */
+export function clearManagersForTest() {
+  managers.clear();
+}
+
+/**
  * Get the save file path for a user
  * @param {string} userId
  * @returns {string}
  */
 export function getSaveFilePath(userId) {
-  return join(DATA_DIR, `.jrpg-save-${userId}.json`);
+  return join(getDataDir(), `.jrpg-save-${userId}.json`);
 }

@@ -1,6 +1,6 @@
 import { MatchManager } from './match-manager.js';
 import { verifyToken } from '../auth/middleware.js';
-import { DATA_DIR } from '../data-dir.js';
+import { getDataDir } from '../data-dir.js';
 
 const ROUND_TIMEOUT_MS = 60000;
 
@@ -10,7 +10,7 @@ const ROUND_TIMEOUT_MS = 60000;
  * @returns {{ mm: MatchManager, io: import('socket.io').Server }}
  */
 export function setupPvpSockets(io, { getSettings } = {}) {
-  const mm = new MatchManager({ dataDir: DATA_DIR, getSettings });
+  const mm = new MatchManager({ dataDir: getDataDir(), getSettings });
 
   const restored = mm.restoreMatches();
   if (restored > 0) console.log(`[PvP] Restored ${restored} active match(es) from disk`);

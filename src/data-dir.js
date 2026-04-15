@@ -8,11 +8,23 @@ const PROJECT_ROOT = join(__dirname, '..');
 // Railway volume mount point - use if exists, otherwise project root
 const RAILWAY_DATA_DIR = '/app/persist';
 
-export const DATA_DIR = existsSync(RAILWAY_DATA_DIR) ? RAILWAY_DATA_DIR : PROJECT_ROOT;
+const DEFAULT_DATA_DIR = existsSync(RAILWAY_DATA_DIR) ? RAILWAY_DATA_DIR : PROJECT_ROOT;
+let testDataDir = null;
 
-// Ensure directory exists
-if (!existsSync(DATA_DIR)) {
-  mkdirSync(DATA_DIR, { recursive: true });
+/** Get current data directory (respects test overrides). */
+export function getDataDir() {
+  return testDataDir || DEFAULT_DATA_DIR;
+}
+
+/** Test-only: override the data directory. */
+export function setDataDirForTest(dir) {
+  testDataDir = dir;
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+}
+
+/** Clear any test override after each test/app cleanup. */
+export function resetDataDirForTest() {
+  testDataDir = null;
 }
 
 /**
@@ -21,5 +33,5 @@ if (!existsSync(DATA_DIR)) {
  * @returns {string}
  */
 export function dataPath(filename) {
-  return join(DATA_DIR, filename);
+  return join(getDataDir(), filename);
 }
