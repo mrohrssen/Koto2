@@ -96,12 +96,16 @@ async function navigateToEncounterRoom(client) {
 }
 
 /**
- * Win a single combat by attacking with HP set to 1 each round.
+ * Win a single combat by setting enemy HP to 1 once, then looping attacks.
+ * Sets HP only once at the start to avoid reviving already-dead enemies.
  * Handles befriend quiz interruptions and multiple enemies.
  */
 async function winCombat(client) {
+  // Set all enemy HP to 1 exactly once (debug-set-enemy-hp sets ALL enemies,
+  // including dead ones, so calling it each round would revive killed enemies)
+  await client.post('/api/game/debug-set-enemy-hp', { hp: 1 });
+
   for (let round = 0; round < 10; round++) {
-    await client.post('/api/game/debug-set-enemy-hp', { hp: 1 });
     const stateRes = await client.getState();
     if (!stateRes.body?.combat?.active) return { combatEnded: true, victory: true };
 
