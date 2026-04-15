@@ -389,12 +389,6 @@ export function initMoveUI() {
  * Replaces the old pauseForNextVocab flow for creature combat.
  */
 export function startMoveSelection() {
-  const state = getGameState();
-  // Kana combat mode disabled — move-based combat always runs (Task 8.1)
-  // if (state.meta?.kanaMode) {
-  //   kanaCombat.startRound();
-  //   return;
-  // }
   moveChoices = [];
   currentCreatureIndex = 0;
   promptNextCreature();
@@ -1598,36 +1592,6 @@ export async function stopCombatLoop(result) {
   if (dialogueDismissPromise) {
     await dialogueDismissPromise;
   }
-
-  // Kana graduation check disabled — kana combat mode disabled (Task 8.1)
-  // if (result?.victory) {
-  //   const currentState = getGameState();
-  //   if (currentState.meta?.kanaMode) {
-  //     try {
-  //       const statsResp = await fetch(`${API_BASE}/api/game/kana-stats`, {
-  //         headers: getAuthHeaders()
-  //       });
-  //       const stats = await statsResp.json();
-  //       if (stats.graduated) {
-  //         await fetch(`${API_BASE}/api/game/kana-mode`, {
-  //           method: 'POST',
-  //           headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-  //           body: JSON.stringify({ enabled: false })
-  //         });
-  //         const current = getGameState();
-  //         updateGameState({ ...current, meta: { ...current.meta, kanaMode: false } });
-  //         await narration.showNarration(
-  //           "Incredible progress! You've learned the entire Hiragana alphabet. " +
-  //           "I've upgraded your Translator — from now on, you'll be able to command " +
-  //           "your creatures directly using Japanese vocabulary!",
-  //           { speaker: 'Cid' }
-  //         );
-  //       }
-  //     } catch (e) {
-  //       console.error('[KanaMode] Graduation check failed:', e);
-  //     }
-  //   }
-  // }
 
   // Animate enemy defeat
   if (result.victory) {
