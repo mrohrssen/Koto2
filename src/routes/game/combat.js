@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { processEnemyTurn, handleCreatureKO, handleBefriendAnswer, rollTalkAcceptance } from '../../game/services/creature-combat-service.js';
+import { handleBefriendAnswer, rollTalkAcceptance } from '../../game/services/creature-combat-service.js';
 import { MOVES_BY_ID } from '../../game/creatures.js';
 import { getCollectionCatalog } from '../../game/services/creature-collection-service.js';
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
@@ -56,7 +56,7 @@ export default function createCombatRoutes({
     try {
       const settings = req.getSettings?.() || {};
       gameManager._debugSuperAttack = !!settings.debugSuperAttack;
-      const encounter = gameManager.startCreatureEncounter();
+      const encounter = gameManager.combatCycleService.startCreatureEncounter();
       req.saveGame();
 
       // Enrich NPC data with TTS greeting from dialogue cache
@@ -123,7 +123,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { actionType, moveChoices } = req.body;
     try {
-      const result = gameManager.creatureCombatCycle(actionType || 'attack', moveChoices || []);
+      const result = gameManager.combatCycleService.creatureCombatCycle(actionType || 'attack', moveChoices || []);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -175,7 +175,7 @@ export default function createCombatRoutes({
   router.post('/creature-shop-roll', (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const result = gameManager.rollPostCombatShop();
+      const result = gameManager.combatCycleService.rollPostCombatShop();
       req.saveGame();
       res.json(result);
     } catch (error) {
@@ -187,7 +187,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { itemIndex, targetIndex } = req.body;
     try {
-      const result = gameManager.selectShopItem(itemIndex, targetIndex ?? 0);
+      const result = gameManager.combatCycleService.selectShopItem(itemIndex, targetIndex ?? 0);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -200,7 +200,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { activeIndex, reserveIndex } = req.body;
     try {
-      const result = gameManager.swapCreature(activeIndex, reserveIndex);
+      const result = gameManager.combatCycleService.swapCreature(activeIndex, reserveIndex);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -213,7 +213,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { indexA, indexB } = req.body;
     try {
-      const result = gameManager.rearrangeCreatures(indexA, indexB);
+      const result = gameManager.combatCycleService.rearrangeCreatures(indexA, indexB);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -226,7 +226,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { activeIndex, reserveIndex } = req.body;
     try {
-      const result = gameManager.swapCreatureOutOfCombat(activeIndex, reserveIndex);
+      const result = gameManager.combatCycleService.swapCreatureOutOfCombat(activeIndex, reserveIndex);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -239,7 +239,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { releaseCreatureId } = req.body;
     try {
-      const result = gameManager.befriendReplace(releaseCreatureId);
+      const result = gameManager.combatCycleService.befriendReplace(releaseCreatureId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -252,7 +252,7 @@ export default function createCombatRoutes({
   // Get current befriend quiz state
   router.post('/befriend-quiz', (req, res) => {
     const gm = req.gameManager;
-    const quiz = gm.getBefriendQuiz();
+    const quiz = gm.combatCycleService.getBefriendQuiz();
     if (!quiz) {
       return res.status(400).json({ error: 'No active befriend quiz' });
     }
@@ -265,7 +265,7 @@ export default function createCombatRoutes({
     const gm = req.gameManager;
 
     if (action === 'fight') {
-      const result = gm.handleBefriendFight();
+      const result = gm.combatCycleService.handleBefriendFight();
       if (result.error) {
         return res.status(400).json({ error: result.error });
       }
@@ -277,7 +277,7 @@ export default function createCombatRoutes({
       if (!answerId) {
         return res.status(400).json({ error: 'answerId required for talk action' });
       }
-      const result = gm.handleBefriendQuizAnswer(answerId);
+      const result = gm.combatCycleService.handleBefriendQuizAnswer(answerId);
       if (result.error) {
         return res.status(400).json({ error: result.error });
       }
@@ -328,44 +328,12 @@ export default function createCombatRoutes({
     const { accepted, chance } = rollTalkAcceptance(target);
 
     if (!accepted) {
-      // Rejection: enemy attacks (mirrors handleBefriendAnswer wrong-answer path)
-      const enemyResult = processEnemyTurn(
-        combat.enemies, combat.allies, false, gameManager.run?.itemBuffs
-      );
-
-      const koSwaps = [];
-      const koRemovals = [];
-      for (let i = 0; i < combat.allies.length; i++) {
-        if (combat.allies[i] && combat.allies[i].hp <= 0) {
-          const deadName = combat.allies[i].nameEn || combat.allies[i].name;
-          const replacement = handleCreatureKO(gameManager.run.creatureParty, i);
-          if (replacement) {
-            koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          } else {
-            koRemovals.push({ slot: i, name: deadName });
-          }
-        }
-      }
-      gameManager.run.creatureParty.active = gameManager.run.creatureParty.active.filter(c => c != null);
-      combat.allies = gameManager.run.creatureParty.active;
-
-      const allAlliesKO = combat.allies.length === 0 || combat.allies.every(a => !a || a.hp <= 0);
-      if (allAlliesKO) {
-        combat.active = false;
-        gameManager.run.active = false;
-      }
-
+      const rejection = gameManager.combatCycleService.handleBefriendTalkRejection();
       req.saveGame();
-
       return res.json({
         accepted: false,
         chance,
-        enemyAttacks: enemyResult.attacks || [],
-        koSwaps,
-        koRemovals,
-        combatEnded: allAlliesKO,
-        allies: combat.allies,
-        enemies: combat.enemies,
+        ...rejection,
         befriendAttemptedSlots: { ...combat.befriendAttemptedSlots }
       });
     }

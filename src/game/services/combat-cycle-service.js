@@ -1184,4 +1184,34 @@ export class CombatCycleService {
     this.gm.emitState();
     return result;
   }
+
+  /**
+   * Handle befriend-talk rejection: enemy attacks, KO handling, defeat check.
+   * Absorbs inline logic from combat.js befriend-talk route.
+   * @returns {object} Rejection result with enemyAttacks, koSwaps, koRemovals, combatEnded
+   */
+  handleBefriendTalkRejection() {
+    const combat = this.gm.combat;
+    const run = this.gm.run;
+    const enemyResult = processEnemyTurn(combat.enemies, combat.allies, false, run?.itemBuffs);
+    const { koSwaps: rawSwaps, koRemovals: rawRemovals } = processKOSwaps(combat.allies, run.creatureParty);
+    const koSwaps = rawSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
+    const koRemovals = rawRemovals.map(r => ({ slot: r.index, name: r.name }));
+    combat.allies = run.creatureParty.active;
+
+    let combatEnded = false;
+    if (checkAllDefeated(combat.allies)) {
+      resolveDefeat(combat, run, this.gm.meta, { onDefeat: () => this.gm._onRunDefeat() });
+      combatEnded = true;
+    }
+
+    return {
+      enemyAttacks: enemyResult.attacks || [],
+      koSwaps,
+      koRemovals,
+      combatEnded,
+      allies: combat.allies,
+      enemies: combat.enemies
+    };
+  }
 }
