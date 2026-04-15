@@ -46,6 +46,7 @@ import { playNpcSkillAnimation } from './room-transition.js';
 import * as befriend from './befriend.js';
 import * as kanaCombat from './kana-combat.js';
 import * as vfx from './combat-vfx.js';
+import * as npcDialogueUI from './npc-dialogue-ui.js';
 import {
   insertAttackCard, insertNpcAttackCard, waitForCardTap,
   showAttackCardAndWait, ATTACK_CARD_TIMING, ELEMENT_THEME,
@@ -281,7 +282,23 @@ export function init(callbacks) {
     animatePlayerHurt,
     showDamageNumber,
   });
+
+  npcDialogueUI.init({
+    narration,
+    delay,
+    showNpcSprite,
+    hideNpcSprite,
+    updateUI: () => updateUI(),
+    updateGameState: (s) => updateGameState(s),
+    apiStartNpcDialogue,
+    apiRespondNpcDialogue,
+  });
 }
+
+// Re-export NPC dialogue for barrel compatibility
+export const showNpcGreeting = (...args) => npcDialogueUI.showNpcGreeting(...args);
+export const isNpcDialogueActive = () => npcDialogueUI.isNpcDialogueActive();
+export const runNpcDialogue = (...args) => npcDialogueUI.runNpcDialogue(...args);
 
 /**
  * Initialize move/target selection UI callbacks.
@@ -1624,7 +1641,7 @@ export async function stopCombatLoop(result) {
     const gs = getGameState();
     const isCreatureCombat = gs?.combat?.isCreatureCombat;
     if (isCreatureCombat && gs?.combat?.npcId) {
-      await runNpcDialogue();
+      await npcDialogueUI.runNpcDialogue();
     }
     if (isCreatureCombat && showPostCombatShop) {
       await showPostCombatShop();
@@ -1644,132 +1661,3 @@ export async function stopCombatLoop(result) {
 /**
  * Show NPC greeting before combat
  */
-export async function showNpcGreeting(npcData) {
-  if (!npcData?.greeting) return;
-  const npcName = npcData.nameEn || npcData.name;
-  if (showNpcSprite) showNpcSprite(npcName, npcData.id, npcData);
-  // Play greeting audio if available (fire-and-forget, don't block narration)
-  if (npcData.greetingTts && npcData.userId) {
-    playDialogueAudio(npcData.userId, npcData.greetingTts);
-  }
-  await narration.showNarration(renderEnFirst(npcData.greeting), { speaker: npcName, html: true });
-  if (hideNpcSprite) hideNpcSprite();
-  // Re-render combat scene — hideNpcSprite clears the enemy sprite area
-  if (updateUI) updateUI();
-}
-
-let npcDialogueActive = false;
-export function isNpcDialogueActive() { return npcDialogueActive; }
-
-/**
- * Run the full NPC post-combat dialogue flow.
- * Called from combat victory and also from updateScene() on page reload recovery.
- */
-export async function runNpcDialogue() {
-  if (npcDialogueActive) return;
-  if (!apiStartNpcDialogue) return;
-  npcDialogueActive = true;
-
-  try {
-    const dialogueData = await apiStartNpcDialogue();
-    if (!dialogueData) return;
-
-    if (dialogueData.mode === 'defeat_line') {
-      // v1: single i+1 defeat line — show in narration, tap to dismiss
-      const { npc, line } = dialogueData;
-      const npcName = npc.nameEn || npc.name;
-
-      if (showNpcSprite) showNpcSprite(npcName, npc.id, npc);
-
-      // Render tokenized defeat line (same as all other NPC dialogue)
-      const html = renderJpSentence(line.tokens, getKnownWords(), new Map(), line.overrides || {}, dialogueData.useKanji || false);
-      await narration.showNarration(html, { speaker: npcName, html: true });
-
-      // Keep NPC sprite visible — skill selection phase will show it,
-      // and it slides out after the player picks a skill.
-    } else {
-      // Future: quiz mode — original flow preserved here
-      const { npc, freed, rounds, userId, greetingTts, freedTts } = dialogueData;
-      const npcName = npc.nameEn || npc.name;
-
-      if (showNpcSprite) showNpcSprite(npcName, npc.id, npc);
-
-      if (freedTts && userId) {
-        playDialogueAudio(userId, freedTts);
-      }
-      await narration.showNarration(renderEnFirst(freed), { speaker: npcName, html: true });
-
-      let totalDelta = 0;
-
-      for (let i = 0; i < rounds.length; i++) {
-        const round = rounds[i];
-
-        if (round.npcLineTts && userId) {
-          playDialogueAudio(userId, round.npcLineTts);
-        }
-        await narration.showNarration(renderEnFirst(round.npcLine), { speaker: npcName, persistent: true, html: true });
-
-        const selectedIndex = await renderButtonsAsync(
-          round.options.map(o => ({
-            label: renderEnFirst(typeof o === 'string' ? o : o.text),
-          }))
-        );
-
-        if (round.options[selectedIndex]?.tts && userId) {
-          playDialogueAudio(userId, round.options[selectedIndex].tts);
-        }
-
-        if (narration.forceHideNarration) narration.forceHideNarration();
-
-        const result = await apiRespondNpcDialogue(i, selectedIndex);
-        if (!result) break;
-
-        if (result.dialogueComplete) {
-          totalDelta = result.totalDelta;
-          if (result.state) {
-            updateGameState(result.state);
-          }
-          break;
-        }
-      }
-
-      if (hideNpcSprite) hideNpcSprite();
-
-      showBondSummary(npcName, totalDelta);
-      await delay(2200);
-      document.querySelector('.bond-summary')?.remove();
-    }
-  } finally {
-    npcDialogueActive = false;
-  }
-}
-
-function showBondFeedback(tone, delta) {
-  const existing = document.querySelector('.bond-feedback');
-  if (existing) existing.remove();
-
-  const el = document.createElement('div');
-  el.className = `bond-feedback ${tone}`;
-
-  const heart = tone === 'positive' ? '\u2764\uFE0F' : tone === 'negative' ? '\uD83D\uDC94' : '\uD83E\uDD0D';
-  const deltaText = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : '';
-
-  el.innerHTML = `${heart}${deltaText ? `<span class="bond-delta">${deltaText}</span>` : ''}`;
-
-  const sceneArea = document.getElementById('scene-area') || document.querySelector('.scene-area');
-  if (sceneArea) {
-    sceneArea.appendChild(el);
-  }
-}
-
-function showBondSummary(npcName, totalDelta) {
-  const el = document.createElement('div');
-  el.className = 'bond-summary';
-
-  const sign = totalDelta > 0 ? '+' : '';
-  const cls = totalDelta > 0 ? 'positive' : totalDelta < 0 ? 'negative' : 'neutral';
-
-  el.innerHTML = `${npcName}\u3068\u306E\u7D46 <span class="bond-value ${cls}">${sign}${totalDelta}</span>`;
-  document.body.appendChild(el);
-}
-
