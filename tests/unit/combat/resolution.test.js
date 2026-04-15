@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkAllDefeated, processKOSwaps } from '../../../src/game/combat/resolution.js';
+import { checkAllDefeated, processKOSwaps, collectElementDrops, getElementDropList } from '../../../src/game/combat/resolution.js';
 
 describe('checkAllDefeated', () => {
   it('returns true for empty array', () => {
@@ -97,5 +97,61 @@ describe('processKOSwaps', () => {
     processKOSwaps(allies, party);
     // handleCreatureKO calls resetStatStages on the replacement
     assert.deepEqual(reserve.statStages, { atk: 0, def: 0 });
+  });
+});
+
+describe('collectElementDrops', () => {
+  it('increments element counts for defeated non-neutral enemies', () => {
+    const meta = { elementDrops: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 } };
+    const enemies = [
+      { hp: 0, maxHp: 50, element: 'fire' },
+      { hp: 0, maxHp: 50, element: 'water' },
+      { hp: 30, maxHp: 50, element: 'earth' } // alive, skip
+    ];
+    collectElementDrops(meta, enemies, null);
+    assert.equal(meta.elementDrops.fire, 1);
+    assert.equal(meta.elementDrops.water, 1);
+    assert.equal(meta.elementDrops.earth, 0);
+  });
+
+  it('skips neutral elements', () => {
+    const meta = { elementDrops: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 } };
+    const enemies = [{ hp: 0, maxHp: 50, element: 'neutral' }];
+    collectElementDrops(meta, enemies, null);
+    assert.deepEqual(meta.elementDrops, { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 });
+  });
+
+  it('initializes elementDrops if missing', () => {
+    const meta = {};
+    const enemies = [{ hp: 0, maxHp: 50, element: 'fire' }];
+    collectElementDrops(meta, enemies, null);
+    assert.equal(meta.elementDrops.fire, 1);
+  });
+
+  it('no-ops when meta is null', () => {
+    // Should not throw
+    collectElementDrops(null, [{ hp: 0, element: 'fire' }], null);
+  });
+
+  it('updates runSummary when provided', () => {
+    const meta = { elementDrops: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 } };
+    const summary = { creaturesDefeated: 0, elementsCollected: {} };
+    const enemies = [{ hp: 0, maxHp: 50, element: 'fire' }];
+    collectElementDrops(meta, enemies, summary);
+    assert.equal(summary.creaturesDefeated, 1);
+    assert.equal(summary.elementsCollected.fire, 1);
+  });
+});
+
+describe('getElementDropList', () => {
+  it('returns element names of defeated non-neutral enemies', () => {
+    const enemies = [
+      { hp: 0, element: 'fire' },
+      { hp: 30, element: 'water' }, // alive
+      { hp: 0, element: 'neutral' }, // neutral
+      { hp: 0, element: 'earth' }
+    ];
+    const result = getElementDropList(enemies);
+    assert.deepEqual(result, ['fire', 'earth']);
   });
 });

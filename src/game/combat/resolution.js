@@ -47,3 +47,41 @@ export function processKOSwaps(allies, party) {
 
   return { koSwaps, koRemovals };
 }
+
+/**
+ * Collect element drops from defeated enemies into meta-progression and run summary.
+ * No-op if meta is null.
+ * @param {object|null} meta
+ * @param {object[]} enemies
+ * @param {object|null} runSummary
+ */
+export function collectElementDrops(meta, enemies, runSummary) {
+  if (!meta) return;
+  if (!meta.elementDrops) {
+    meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
+  }
+  for (const enemy of enemies) {
+    if (enemy.hp <= 0 && enemy.element && enemy.element !== 'neutral') {
+      meta.elementDrops[enemy.element] = (meta.elementDrops[enemy.element] || 0) + 1;
+    }
+    if (enemy.hp <= 0 && runSummary) {
+      runSummary.creaturesDefeated = (runSummary.creaturesDefeated || 0) + 1;
+      if (enemy.element && enemy.element !== 'neutral') {
+        if (!runSummary.elementsCollected) runSummary.elementsCollected = {};
+        runSummary.elementsCollected[enemy.element] =
+          (runSummary.elementsCollected[enemy.element] || 0) + 1;
+      }
+    }
+  }
+}
+
+/**
+ * Build the elementDropsCollected array for combat result payloads.
+ * @param {object[]} enemies
+ * @returns {string[]}
+ */
+export function getElementDropList(enemies) {
+  return (enemies || [])
+    .filter(e => e.hp <= 0 && e.element && e.element !== 'neutral')
+    .map(e => e.element);
+}
