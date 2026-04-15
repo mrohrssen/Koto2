@@ -157,11 +157,14 @@ await page.addStyleTag({ path: 'public/dev-safe-area.css' });
 
 **Keep the browser open.** Don't close/reopen between phases — the user may be watching on a second screen. Just navigate or reload as needed.
 
-**Narration boxes** have an animated `▼` arrow that Playwright considers "not stable", so clicking by ref often times out. Instead use:
+**Narration boxes** must be dismissed by clicking **OUTSIDE** the box, not inside it. Clicking inside the narration box does nothing — the interior is a safe zone for word exploration/lookup. Click the `.scene-area` behind it or any area outside the box:
 ```js
-await page.evaluate(() => document.querySelector('.narration-box')?.click());
+await page.evaluate(() => {
+  const scene = document.querySelector('.scene-area');
+  if (scene) scene.click();
+});
 ```
-Some narrations have multiple pages — keep clicking until they dismiss or buttons become enabled.
+Some narrations have multiple pages (shown by a `▼` indicator) — keep clicking outside with ~600ms delays between clicks until the box disappears or buttons become enabled.
 
 **Vocab cards (combat):** Cards must be **clicked first** to flip (reveals word + meaning), then **swiped** to register the action. Swipe right = "knew it" (attack), swipe left = "didn't know" (defend). Use mouse gestures:
 ```js
