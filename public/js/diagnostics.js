@@ -109,6 +109,10 @@ export function logAction(type, detail = null) {
   } catch { /* silent */ }
 }
 
+export function pushFailure({ tag, detail }) {
+  logAction('intent_check_fail', `${tag}: ${detail}`);
+}
+
 function initActionTracking() {
   let lastPhase = null;
   store.subscribe((state) => {
