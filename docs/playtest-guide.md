@@ -111,53 +111,44 @@ await page.evaluate(async () => {
 
 ---
 
-### Phase 1: Starter Selection (Creature Combat)
+### Phase 1: Tutorial — Cid's Intro + Starter Selection
 
-**Trigger:** Starting a new creature combat run.
+**Trigger:** New account, first run started (phase `area_selection`, tutorial step 0).
 
-**Expected screen:**
-- Title: "Choose 2 Starters"
-- Subtitle: "Pick your active creature, then a reserve"
-- Grid of creature cards (subset of 25 templates from `data/creatures.json`)
-- Each card: creature name, element icon (wood/fire/earth/metal/water), HP, ATK stats
+**What happens:**
+1. Cid narration appears with `?????????` garbled Japanese text — this is CORRECT (player has no known words yet, i+1 renders unknowns as `?`)
+2. Click **outside** the narration box (on `.scene-area`) to advance to next page
+3. Cid switches to English: "Oh wait... I don't think you can understand a word I'm saying. ...Do you understand me NOW?"
+4. **Response button appears:** "Yes, I understand!" — must click this button (clicking outside does nothing while response buttons are visible)
+5. Cid says "Ha! I knew it — you're the new recruit. Here, take this — it's called the Translator."
+6. More narration pages (click outside to advance) until Cid says "Every adventurer needs a companion. Choose yours wisely."
+7. **Three starter buttons appear:** "ひ (Fire)", "みず (Water)", "き (Wood)" — pick one element
 
 **Interactions:**
-1. Tap first creature card → highlights, subtitle changes to "Now pick a reserve creature"
-2. Tap second creature card → highlights, subtitle changes to "Ready!"
-3. Confirm button appears → tap it
+- Alternate between clicking outside narration box (to advance pages) and clicking response buttons (when they appear)
+- Always screenshot before clicking — if you see buttons below the narration, click the button, not the scene
 
 **What could go wrong:**
-- Empty grid (no creature cards rendered)
-- Subtitle doesn't update after each pick
-- Can pick the same creature twice
-- Confirm button doesn't appear after two picks
-- Element icons or color coding missing
-- Stats show NaN or 0
+- Narration doesn't advance — you're clicking inside the box instead of outside
+- Narration stuck — response buttons are present but not visible (scroll down)
+- Starter buttons don't appear after Cid's "choose wisely" line
 
 ---
 
-### Phase 2: Level Select and Ward Select
+### Phase 2: Area Selection
 
-**Trigger:** After confirming starters.
+**Trigger:** After choosing a starter creature.
 
-**Expected screen — Level Select:**
-- 10 level buttons
-- Level 1 unlocked with "NEW" tag
-- Levels 2-10 locked/greyed
+**Expected screen:**
+- Background image of an area
+- "Area 1 / 1" label
+- Area card with name and description (e.g., "Starting Meadow — A bright, open meadow where new adventurers begin their journey.")
 
-**Interactions:** Tap Level 1.
-
-**Expected screen — Ward Select:**
-- Ward options displayed (e.g., Nerima / Setagaya)
-- Each ward shows name and description
-
-**Interactions:** Tap any ward. Exploration map loads.
+**Interactions:** Tap the area card to enter it.
 
 **What could go wrong:**
-- No levels shown, or all locked
-- Level 1 tap doesn't respond
-- Ward select doesn't appear after level pick
-- Exploration map fails to load
+- No area card rendered
+- Area card tap doesn't respond
 
 ---
 
