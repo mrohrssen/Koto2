@@ -29,9 +29,9 @@ Recurring bug patterns in combat-loop.js:
 
 Easiest and most independent first, working inward toward the core:
 
-### Extraction 1: `befriend.js` (~590 lines)
+### Extraction 1: `befriend.js` (~750 lines)
 
-**Source lines:** 2763–3110 (`renderBefriendQuiz` + helpers) and 3111–3363 (`executeBefriendAction` + conversation flow)
+**Source lines:** 884–1048 (befriend helpers in move-select zone) + 2763–3110 (`renderBefriendQuiz` + helpers) + 3111–3363 (`executeBefriendAction` + conversation flow)
 
 **Contains:**
 - `renderBefriendQuiz` — Fight/Talk choice, name quiz, tutorial Cid overlay
@@ -39,8 +39,12 @@ Easiest and most independent first, working inward toward the core:
 - `showBefriendReleasePrompt`, `showBefriendTargetSelect`
 - `showConversationRound`, `showAnswerFeedback`
 - Befriend enemy attack retaliation on wrong answer
+- `isBefriendSlotBlocked`, `isBefriendAvailableForSlot`, `getMoveSelectBefriendOpts` — befriend eligibility checks used during move selection
+- `mergeBefriendSlotsFromTalkResponse`, `resumeMoveSelectionAfterBefriendSpend` — state transitions between befriend and move selection
+- `buildLiveAllyHpMap`, `showBefriendEnemyAttacksAnimated` — enemy retaliation helpers
+- `handleBefriendTalk` — entry point called from move selection when player picks Talk
 
-**Why first:** Nearly self-contained. Shares narration callbacks and game state getters with the rest, but doesn't participate in the turn loop or attack card system. The quiz and conversation are two phases of the same feature — splitting them would create unnecessary cross-imports.
+**Why first:** Nearly self-contained. Shares narration callbacks and game state getters with the rest, but doesn't participate in the turn loop or attack card system. The quiz, conversation, and move-select helpers are all part of the same befriend flow — the helpers at 884–1048 are only called by befriend functions, they just got physically separated in the file.
 
 **State ownership:** Stateless. Receives everything via function arguments.
 
@@ -72,9 +76,11 @@ Easiest and most independent first, working inward toward the core:
 
 **State ownership:** None. Pure functions that build HTML and return elements.
 
-### Extraction 4: `combat-vfx.js` (~560 lines)
+### Extraction 4: `combat-vfx.js` (~660 lines)
 
-**Source lines:** 60–157 (Pixi adapter functions) and 1561–2120 (shared combat helpers)
+**Source lines:** 60–157 (Pixi adapter functions) + 1212–1314 (slot-finding and HP bar helpers) + 1561–2120 (shared combat helpers)
+
+Note: The slot-finding helpers (`findCreatureSlotByAttackerId` at 1212, `findEnemyTargetElement` at 1237) and `updateCreatureHpBars` (1251) sit in the coordinator zone physically but are only used by VFX functions. They move with the VFX extraction.
 
 **Contains:**
 - `impactEffect`, `fireCreatureAttackEffect`, `enemyCreatureAttackEffect`
@@ -83,6 +89,7 @@ Easiest and most independent first, working inward toward the core:
 - `showOneCounterAttackAnimated`, `showCounterAttacks`
 - `showKoSwapAnimations`
 - `showEffectEvents`, `showMoveEffectsApplied`
+- `findCreatureSlotByAttackerId`, `findEnemyTargetElement` — DOM element lookup for targeting effects
 - HP bar sync helpers (`updateCreatureHpBars`, `buildAllyHpMap`, `buildEnemyHpMapForPlayerAttacks`)
 - Status icon sync (`syncStatusIconsFromResult`, `syncStatusForCreature`)
 - `showFloatingText`, `showRoundStartEvents`
@@ -205,6 +212,7 @@ These exercise the coordinator's wiring across module boundaries — the exact s
 | **KO + swap** | Ally dies → KO animation → reserve swaps in → combat continues. The dead-sprites-reappear bug pattern. |
 | **Combat end** | Last enemy defeated → victory narration → XP → post-combat shop. Verifies stopCombatLoop transitions out correctly. |
 | **NPC skill + counter** | NPC fires skill → counter procs → HP syncs for both. The counter-fires-twice bug pattern. |
+| **Kana mode round** | Enter kana mode → fetch card → swipe right → move selected → attack fires. Verifies kana-combat.js wires back to coordinator for move execution. |
 
 Integration tests import `combat-loop.js` with lightweight stubs for DOM and PixiJS. Assertion pattern: after a sequence of actions, verify functions were called in the correct order with correct arguments.
 
@@ -225,10 +233,10 @@ Full combat encounter in Playwright after extractions #1 (befriend — biggest m
 
 ```
 public/js/ui/
-  combat-loop.js        ~1,600 lines  (turn sequencing coordinator)
-  befriend.js           ~590 lines    (befriend quiz + conversation)
+  combat-loop.js        ~1,440 lines  (turn sequencing coordinator)
+  befriend.js           ~750 lines    (befriend quiz + conversation + move-select helpers)
   attack-card.js        ~400 lines    (card rendering)
-  combat-vfx.js         ~560 lines    (effects + HP sync)
+  combat-vfx.js         ~660 lines    (effects + HP sync + slot-finding)
   kana-combat.js        ~90 lines     (kana combat mode)
   npc-dialogue-ui.js    ~130 lines    (post-combat NPC dialogue)
 ```
