@@ -19,18 +19,28 @@ Playtesting with Playwright MCP fails when you improvise. You lose track of what
 
 ## Pre-Playtest Setup
 
-```bash
-# 1. Start the server (use the correct worktree/directory)
-cd <worktree-or-repo-path>
-pkill -f "node server.js" 2>/dev/null
-npm start &
-sleep 3
+**CRITICAL: Use `npm run dev` (Vite + Express), NOT `npm start` (Express only).**
+Bare module imports like `animejs` only resolve through Vite. Without Vite, the entire JS module graph fails to load silently — the game appears to load but nothing works.
 
-# 2. Verify server is up
-curl -s http://localhost:3000 | head -c 100
+```bash
+# 1. Kill any stale processes on game ports
+lsof -ti :3000 2>/dev/null | xargs kill -9 2>/dev/null
+lsof -ti :5173 2>/dev/null | xargs kill -9 2>/dev/null
+
+# 2. Start both servers (Express on :3000 + Vite on :5173)
+cd <worktree-or-repo-path>
+npm run dev > /tmp/koto-dev.log 2>&1 &
+sleep 5
+
+# 3. Verify BOTH servers are up
+curl -s -o /dev/null -w "%{http_code}" http://localhost:5173  # Vite — should be 200
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000  # Express — should be 200
 ```
 
-Then open browser: `browser_navigate` to `http://localhost:3000`.
+**Navigate to Vite's port:** `browser_navigate` to `http://localhost:5173` (NOT `:3000`).
+Vite proxies `/api` requests to Express. Loading `:3000` directly skips Vite's module resolution.
+
+If Vite picks a different port (e.g., 5174 because 5173 is busy), check `cat /tmp/koto-dev.log | grep "Local:"` for the actual URL.
 
 ## How to Swipe Cards
 
@@ -63,19 +73,41 @@ When a new feature is added:
 
 ### Phase 0: Login / New Game
 
-**Trigger:** Navigate to `http://localhost:3000`
+**Trigger:** Navigate to `http://localhost:5173`
 
 **Expected screen:**
 - Login form with username/password fields
-- Register option
+- Login / Register tab buttons
+
+**Auth details:**
+- Auth token is stored in `localStorage` under key `authToken` (NOT `token`)
+- Registration requires an invite code: `neo-tokyo-friends`
+- To register via API: `POST /api/auth/register` with `{ username, password, inviteCode: "neo-tokyo-friends" }`
+- To login via API: `POST /api/auth/login` with `{ username, password }` — returns `{ token }`
+- After API login, set `localStorage.setItem('authToken', token)` and reload
+
+**Quick login via evaluate (fastest for playtesting):**
+```javascript
+await page.evaluate(async () => {
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'playtest_' + Date.now(), password: 'test123', inviteCode: 'neo-tokyo-friends' })
+  });
+  const { token } = await res.json();
+  localStorage.setItem('authToken', token);
+});
+// Then reload: browser_navigate to http://localhost:5173
+```
 
 **Interactions:**
 - Log in with test account, or register a new one
-- Start a new game (or continue existing)
+- After login, game loads to hub (new account) or continues existing run
 
 **What could go wrong:**
-- Login fails silently
-- New game button missing or unresponsive
+- Login fails silently (check console for 401 on `/api/auth/me`)
+- `authToken` key wrong — must be `authToken`, not `token`
+- Game JS fails to load — if `window.__inspector` is undefined after login, Vite is not running (see Pre-Playtest Setup)
 
 ---
 

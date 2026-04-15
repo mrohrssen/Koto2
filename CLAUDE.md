@@ -181,7 +181,8 @@ await page.evaluate(() => window.__gameState?.phase);
 **General tips:**
 - Always `browser_snapshot` before interacting — refs change after every DOM update
 - Use `browser_take_screenshot` at checkpoints so the user can see visual state. **Delete screenshots after** they've been shown — run `rm <filename>` to avoid cluttering the repo
-- After server restart, wait 3s then verify with `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000`
+- **Use `npm run dev` (Vite + Express), NOT `npm start`.** Navigate to `http://localhost:5173` (Vite), NOT `:3000` (Express). Without Vite, bare module imports like `animejs` fail and the game JS module graph silently breaks.
+- After server restart, wait 5s then verify with `curl -s -o /dev/null -w "%{http_code}" http://localhost:5173`
 - Creature popups can accidentally open if you click a creature slot — dismiss with `page.evaluate(() => document.querySelector('.creature-popup')?.remove())`
 
 Update the guide when adding new features or discovering new interaction patterns.
