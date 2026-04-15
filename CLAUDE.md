@@ -164,7 +164,7 @@ await page.evaluate(() => {
   if (scene) scene.click();
 });
 ```
-Some narrations have multiple pages (shown by a `▼` indicator) — keep clicking outside with ~600ms delays between clicks until the box disappears or buttons become enabled.
+Some narrations have multiple pages (shown by a `▼` indicator) — keep clicking outside with ~600ms delays between clicks until the box disappears or buttons become enabled. **Some narrations have response buttons** (e.g., "Yes, I understand!") that appear below the narration box. When these are present, clicking outside does nothing — you must click the button to proceed. Always screenshot or snapshot to check for buttons before assuming a click-outside loop will work.
 
 **Vocab cards (combat):** Cards must be **clicked first** to flip (reveals word + meaning), then **swiped** to register the action. Swipe right = "knew it" (attack), swipe left = "didn't know" (defend). Use mouse gestures:
 ```js
