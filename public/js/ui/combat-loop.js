@@ -24,7 +24,7 @@ import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects
 import { wait } from '../pixi/tween.js';
 import { hapticDamageTier } from '../native/index.js';
 import { playAttackSound } from './combat-audio.js';
-import { replaceWithTextSprite, creatureSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
+import { replaceWithTextSprite, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
 import { getHpColor, SC_NAMES, getCreatureStatusKeys } from './combat-ui-utils.js';
@@ -118,10 +118,7 @@ async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, da
   await Promise.all([lungeP, blastP]);
 }
 
-function npcSpritePath(npcId) {
-  return `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`;
-}
-import { prefetchWord, playWordPair, playDialogueAudio } from '../tts.js';
+import { playDialogueAudio } from '../tts.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
 import { showLearnPrompt } from './move-learn.js';
@@ -129,246 +126,13 @@ import { renderButtonsAsync } from './ui-components.js';
 import { playNpcSkillAnimation } from './room-transition.js';
 import * as befriend from './befriend.js';
 import * as kanaCombat from './kana-combat.js';
+import {
+  insertAttackCard, insertNpcAttackCard, waitForCardTap,
+  showAttackCardAndWait, ATTACK_CARD_TIMING, ELEMENT_THEME,
+} from './attack-card.js';
 
-// ============ SPLIT ATTACK CARD ============
-
-const ATTACK_CARD_TIMING = {
-  ROW_STAGGER: 50,
-  ROW_ANIM_DURATION: 100,
-  FADE_OUT_DURATION: 100
-};
-
-const ELEMENT_THEME = {
-  water:  { border: 'rgba(33,150,243,0.35)',  bg: '#e8f4fd',  accent: '#1976D2' },
-  fire:   { border: 'rgba(244,67,54,0.35)',   bg: '#fdecea',  accent: '#D32F2F' },
-  earth:  { border: 'rgba(141,110,99,0.35)',  bg: '#f0ebe8',  accent: '#6D4C41' },
-  metal:  { border: 'rgba(158,158,158,0.35)', bg: '#eeeeee',  accent: '#616161' },
-  wood:   { border: 'rgba(76,175,80,0.35)',   bg: '#e8f5e9',  accent: '#388E3C' }
-};
-
-const KANJI_RE = /[\u4e00-\u9faf\u3400-\u4dbf]/;
-const KATAKANA_RE = /[\u30A0-\u30FF]/;
-
-/** Map an English skill/base name to the action icon sprite path. */
-function actionIconPath(nameEn) {
-  if (!nameEn) return '';
-  const slug = nameEn.split(';')[0].trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  return slug ? `/assets/sprites/actions/${slug}.webp?v=20260322` : '';
-}
-
-function escHtml(text) {
-  return String(text || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function wrapWithRuby(word, reading, englishReading) {
-  if (!word || !reading) return word || '';
-  // Kanji: show hiragana reading
-  if (KANJI_RE.test(word) && word !== reading) {
-    return `<ruby>${word}<rt>${reading}</rt></ruby>`;
-  }
-  // Katakana creature names: show English reading if provided
-  if (englishReading && KATAKANA_RE.test(word)) {
-    return `<ruby>${word}<rt>${englishReading}</rt></ruby>`;
-  }
-  return word || '';
-}
-
-/**
- * @param {Object} atk - Attack payload
- * @param {boolean} isEnemy - Target column sprite flip (enemy attacking player)
- * @param {Object} [options]
- * @param {Object} [options.theme] - Override theme; default ELEMENT_THEME[atk.attackerElement]
- * @param {string} [options.leftHtml] - Full inner HTML for .sac-left (e.g. NPC sprite column)
- * @param {Object} [options.tagLabelsByCategory] - Merge overrides for row-1 tag text (e.g. drain: 'NPC')
- * @param {string} [options.defaultCategoryTagLabel] - Fallback when category has no tag (default 'ATK')
- */
-function buildSplitAttackCard(atk, isEnemy, options = {}) {
-  const theme = options.theme != null
-    ? options.theme
-    : (ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' });
-
-  // Creature names: use English name as furigana for katakana (not teaching targets)
-  const attackerNameJp = atk.attackerNameJp || atk.attackerName;
-  const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
-
-  let damageSign;
-  if (atk.healAmount > 0) damageSign = `+${atk.healAmount}`;
-  else if (atk.damage > 0) damageSign = `-${atk.damage}`;
-  else if (atk.effectApplied) damageSign = atk.effectApplied;
-  else if (atk.statChangesApplied) {
-
-    damageSign = Object.entries(atk.statChangesApplied).map(([s, v]) => `${SC_NAMES[s] || s} ${v > 0 ? '+' : ''}${v}`).join(' ');
-  }
-  else damageSign = '0';
-  const targetDisplayName = atk.targetNameJp || atk.targetName || '';
-  const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
-
-  const baseIcon = actionIconPath(atk.attackerBaseMeaning);
-  const skillIcon = actionIconPath(atk.attackerSkillEn);
-
-  const cat = atk.category || 'damage';
-  const defaultTagByCat = { heal: 'HEAL', buff: 'BUFF', shield: 'DEF', debuff: 'DBF', drain: 'ATK' };
-  const tagByCat = { ...defaultTagByCat, ...(options.tagLabelsByCategory || {}) };
-  const tagLabel = tagByCat[cat] ?? options.defaultCategoryTagLabel ?? 'ATK';
-  const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
-  const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
-
-  const attackerWord = atk.attackerBaseWord || atk.attackerName || '？';
-  const targetWord = atk.targetBaseWord || atk.targetName || '？';
-
-  // Flip target enemy sprite to face left when player attacks
-  const targetSpriteClass = isEnemy ? 'sac-creature-sprite' : 'sac-creature-sprite sac-sprite-enemy';
-
-  const leftColumnInner = options.leftHtml !== undefined
-    ? options.leftHtml
-    : `${creatureSpriteHtml(atk.attackerId, attackerWord, atk.attackerElement, 'sac-creature-sprite')}
-      <div class="sac-attacker-name">${attackerNameHtml}</div>`;
-
-  return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
-    <div class="sac-left">
-      ${leftColumnInner}
-    </div>
-    <div class="sac-right">
-      <div class="sac-row" data-row="0">
-        ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${renderJpSentence([entityToToken({ baseWord: atk.attackerBaseWord, baseReading: atk.attackerBaseReading, baseMeaning: atk.attackerBaseMeaning })], getKnownWords(), new Map())}
-        <span class="sac-tag sac-tag-base">BASE</span>
-      </div>
-      <div class="sac-row" data-row="1">
-        ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${renderJpSentence([entityToToken({ name: atk.attackerSkillName || atk.moveName, reading: atk.attackerSkillReading, nameEn: atk.attackerSkillEn })], getKnownWords(), new Map())}
-        <span class="sac-tag ${tagClass}">${tagLabel}</span>
-      </div>
-      <div class="sac-row sac-impact" data-row="2">
-        <span class="sac-impact-arrow">\u2192</span>
-        ${creatureSpriteHtml(atk.targetId, targetWord, atk.targetElement, targetSpriteClass)}
-        <span class="sac-impact-name">${targetNameHtml}</span>
-        <span class="${damageClass}">${damageSign}</span>
-      </div>
-    </div>
-    <span class="sac-continue" style="display:none">\u25BC</span>
-  </div>`;
-}
-
-/**
- * Insert the split attack card into the action area and start staggered reveal.
- * @param {Object} atk - Attack object from server
- * @param {boolean} isEnemy - Whether this is an enemy attack
- * @returns {Element|null} The card element, or null if action-area not found
- */
-export function insertAttackCard(atk, isEnemy) {
-  const actionArea = document.getElementById('action-area');
-  if (!actionArea) return null;
-
-  actionArea.innerHTML = buildSplitAttackCard(atk, isEnemy);
-
-  const card = actionArea.querySelector('.split-attack-card');
-  if (!card) return null;
-
-  // Staggered row reveal
-  const rows = card.querySelectorAll('.sac-row');
-  rows.forEach((row, i) => {
-    setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
-  });
-
-  // Prefetch and play base word + move name audio with a tiny gap
-  const baseWord = atk.attackerBaseWord;
-  const skillName = atk.attackerSkillName || atk.moveName;
-  if (baseWord) prefetchWord(baseWord);
-  if (skillName) prefetchWord(skillName);
-  // Play after a brief delay to let prefetch start (cached words resolve near-instantly)
-  setTimeout(() => playWordPair(baseWord, skillName), 50);
-
-  return card;
-}
-
-/**
- * Build and insert a split attack card for an NPC skill hit.
- * Uses NPC sprite instead of creature sprite (left column supplied via options.leftHtml).
- */
-function insertNpcAttackCard(atk) {
-  const actionArea = document.getElementById('action-area');
-  if (!actionArea) return null;
-
-  const theme = ELEMENT_THEME[atk.moveElement] || ELEMENT_THEME['neutral'] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
-  const spriteUrl = npcSpritePath(atk.attackerId);
-  const attackerNameJp = atk.attackerNameJp || atk.attackerName;
-  const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
-  const leftHtml = `<img class="sac-sprite" src="${escHtml(spriteUrl)}" alt=""><div class="sac-attacker-name">${attackerNameHtml}</div>`;
-
-  // isEnemy true: target uses ally-facing sprite (same as enemy creature attacking player)
-  actionArea.innerHTML = buildSplitAttackCard(atk, true, {
-    theme,
-    leftHtml,
-    tagLabelsByCategory: { drain: 'NPC' },
-    defaultCategoryTagLabel: 'NPC',
-  });
-
-  const card = actionArea.querySelector('.split-attack-card');
-  if (!card) return null;
-
-  // Staggered row reveal (same as regular attack cards)
-  const rows = card.querySelectorAll('.sac-row');
-  rows.forEach((row, i) => {
-    setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
-  });
-
-  // TTS for NPC base word + skill name
-  const baseWord = atk.attackerBaseWord;
-  const skillName = atk.attackerSkillName || atk.moveName;
-  if (baseWord) prefetchWord(baseWord);
-  if (skillName) prefetchWord(skillName);
-  setTimeout(() => playWordPair(baseWord, skillName), 50);
-
-  return card;
-}
-
-/**
- * Wait for the player to tap the attack card to continue.
- * Shows the continue indicator, resolves on click, fades out card.
- * @param {Element} card - The .split-attack-card element
- * @returns {Promise<void>}
- */
-export function waitForCardTap(card) {
-  return new Promise((resolve) => {
-    if (!card) { resolve(); return; }
-
-    const actionArea = card.closest('#action-area') || card.parentElement;
-
-    // Show continue indicator
-    const indicator = card.querySelector('.sac-continue');
-    if (indicator) indicator.style.display = '';
-
-    let resolved = false;
-    const onTap = () => {
-      if (resolved) return;
-      resolved = true;
-      if (actionArea) actionArea.removeEventListener('click', onTap);
-
-      card.classList.add('sac-fading-out');
-      setTimeout(() => resolve(), ATTACK_CARD_TIMING.FADE_OUT_DURATION);
-    };
-
-    // Listen on action-area (larger tap target) or card itself
-    (actionArea || card).addEventListener('click', onTap);
-  });
-}
-
-/**
- * Convenience: show card and immediately wait for tap.
- * Use when there are no effects to fire between card display and tap.
- * @param {Object} atk - Attack object from server
- * @param {boolean} isEnemy - Whether this is an enemy attack
- * @returns {Promise<void>}
- */
-function showAttackCardAndWait(atk, isEnemy) {
-  const card = insertAttackCard(atk, isEnemy);
-  return waitForCardTap(card);
-}
+// Re-export for barrel compatibility (index.js → combatLoop.insertAttackCard)
+export { insertAttackCard, waitForCardTap } from './attack-card.js';
 
 /**
  * Party-skill proc visuals shared by attack-display and inline move-turn playback.
