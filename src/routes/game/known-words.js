@@ -4,6 +4,8 @@ import { exposeWords, getKnownWordsFromFsrs } from '../../game/bootstrap/word-kn
 import { gradeCard, getDueCards, getDueCount, createCard, getDeckCards } from '../../game/internal-srs.js';
 import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
+import { incrementDiscoveryCount, getDiscoveryStatus } from '../../word-tracking.js';
+import { addReview } from '../../auth/users.js';
 
 let _wordDict = null;
 function getWordDict() {
@@ -33,10 +35,23 @@ export function createKnownWordsRoutes() {
 
   // POST /api/game/known-words/review
   router.post('/review', (req, res) => {
-    const { word, grade } = req.body || {};
+    const { word, grade, isDiscovery } = req.body || {};
     if (!word || !['good', 'again'].includes(grade)) {
       return res.status(400).json({ error: 'word and grade (good|again) required' });
     }
+
+    const userId = req.user?.id || 'default';
+    const settings = req.getSettings?.() || {};
+    const dailyLimit = settings.dailyWordLimit ?? 10;
+
+    // If discovery mode, check limit before processing
+    if (isDiscovery) {
+      const status = getDiscoveryStatus(userId, dailyLimit);
+      if (status.atLimit) {
+        return res.json({ ok: false, atLimit: true, todayCount: status.todayCount });
+      }
+    }
+
     try {
       // Auto-create card if it doesn't exist (allows fast-tracking words)
       const existingCards = getDeckCards(req.user.id, 'vocab');
@@ -49,6 +64,22 @@ export function createKnownWordsRoutes() {
         createCard(req.user.id, 'vocab', word, { word, meaning, reading });
       }
       const updatedCard = gradeCard(req.user.id, 'vocab', word, grade);
+
+      // Track review for leaderboard
+      addReview(userId);
+
+      // If discovery mode, increment counter and return discovery-specific fields
+      if (isDiscovery) {
+        const counts = incrementDiscoveryCount(userId, dailyLimit);
+        return res.json({
+          ok: true,
+          mastered: grade === 'good',
+          card: { state: updatedCard.state, due: updatedCard.due, lapses: updatedCard.lapses },
+          todayCount: counts.todayCount,
+          atLimit: counts.atLimit
+        });
+      }
+
       res.json({
         ok: true,
         mastered: grade === 'good',

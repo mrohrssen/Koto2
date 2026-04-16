@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
-import { lookupVocabularyBatch } from '../../jpdb.js';
+import { loadWordDictionary } from '../../game/word-dictionary.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
@@ -467,32 +467,22 @@ export default function createRunRoutes({
   });
 
   // Get words for discovery room
-  router.get('/discovery-words', async (req, res) => {
+  router.get('/discovery-words', (req, res) => {
     try {
       const limit = parseInt(req.query.limit) || 2;
       const result = getNewWordsForDiscovery(limit, req.user.id);
       console.log(`[Discovery] Fetched ${result.words.length} new words (available: ${result.available})`);
 
-      // Enrich words with meanings from JPDB
+      // Enrich words with meanings from local dictionary
       if (result.words.length > 0) {
-        const jpdbApiKey = req.userKeys?.jpdbApiKey;
-        if (jpdbApiKey) {
-          const vocabList = result.words.map(w => [w.vid, w.sid]);
-          try {
-            const definitions = await lookupVocabularyBatch(jpdbApiKey, vocabList);
-            // Merge meanings into words
-            for (const word of result.words) {
-              const key = `${word.vid}:${word.sid}`;
-              const def = definitions[key];
-              if (def && def.meanings) {
-                word.meanings = def.meanings;
-                word.reading = def.reading || word.reading;
-              }
+        const dict = req.app.locals.wordDictionary || loadWordDictionary(join(process.cwd(), 'data'));
+        for (const word of result.words) {
+          if (!word.meanings?.length) {
+            const entry = dict.get(word.word);
+            if (entry) {
+              word.meanings = entry.definitions?.map(d => d.en).filter(Boolean) || [];
+              word.reading = word.reading || entry.reading || word.word;
             }
-            console.log(`[Discovery] Enriched ${result.words.length} words with meanings`);
-          } catch (lookupError) {
-            console.warn('[Discovery] Failed to fetch meanings:', lookupError.message);
-            // Continue with words without meanings
           }
         }
       }

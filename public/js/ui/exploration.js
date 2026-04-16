@@ -744,11 +744,11 @@ export async function renderWordDiscovery() {
   // The actions module was initialized with cardSwipe callback, but we need discovery-specific behavior
   // Store original and override temporarily
   const handleDiscoverySwipe = async (direction) => {
-    console.log(`[Discovery] Swiped ${direction} on "${currentWord.word}" (vid=${currentWord.vid}, sid=${currentWord.sid})`);
+    console.log(`[Discovery] Swiped ${direction} on "${currentWord.word}"`);
     try {
-      // Pass isDiscovery: true to track the discovery
-      const reviewResult = await apiSwipeWord(currentWord.vid, currentWord.sid, 1, true);
-      console.log(`[Discovery] Review sent: vid=${currentWord.vid}, grade=1 (learning)`);
+      // Grade as 'again' (first exposure — learning)
+      const reviewResult = await apiSwipeWord(currentWord.word, 'again', true);
+      console.log(`[Discovery] Review sent: word="${currentWord.word}", grade=again`);
 
       // Check if we hit the limit
       if (reviewResult.atLimit) {

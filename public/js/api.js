@@ -545,12 +545,14 @@ export async function getVocabDueCount() {
  * @param {string} grade - 'good' or 'again'
  * @returns {Promise<Object>} { ok, mastered, card }
  */
-export async function reviewVocabWord(word, grade) {
+export async function reviewVocabWord(word, grade, isDiscovery = false) {
   try {
+    const body = { word, grade };
+    if (isDiscovery) body.isDiscovery = true;
     const response = await fetch(apiUrl('/api/game/known-words/review'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      body: JSON.stringify({ word, grade })
+      body: JSON.stringify(body)
     });
     return await response.json();
   } catch (error) {

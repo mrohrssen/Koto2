@@ -1824,7 +1824,7 @@ async function initGame() {
     apiGetDiscoveryWords,
     apiGetDiscoveryStatus,
     apiCompleteDiscovery,
-    apiSwipeWord: (vid, sid, grade, isDiscovery) => apiSendJpdbReview(vid, sid, grade, isDiscovery),
+    apiSwipeWord: (word, grade, isDiscovery) => reviewVocabWord(word, grade, isDiscovery),
     apiPostCombatRefresh: (words) => fetch(apiUrl('/api/game/post-combat-refresh'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
