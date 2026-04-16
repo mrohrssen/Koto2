@@ -7,14 +7,12 @@ import { t, tPlain } from './i18n.js';
 import {
   screenShake, screenFlash, hitStop, recoil as pixiRecoil,
   lunge as pixiLunge, burstParticles, flowParticles,
-  ELEMENT_COLORS
 } from '../pixi/effects.js';
 import {
   showDamageNumber as pixiDamageNumber, popupBuff, popupDebuff, popupSkillProc,
   showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup,
   showHealPopup, showPoisonTick
 } from '../pixi/text.js';
-import { showBanner } from '../pixi/banners.js';
 import { clearAllStatusVfx } from '../pixi/status-vfx.js';
 import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, clearAllPixiStatusLabels, setWalking } from '../pixi/formation.js';
 import { showFormation } from './scene.js';
@@ -78,13 +76,6 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   }
 
   // Damage number on the target (already rendered by vfx.impactEffect inside the attack effect functions)
-
-  // Type effectiveness popup (STAB has no separate visual; its boost feeds into the tier system)
-  if (atk.elementMultiplier > 1) {
-    setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral }), 400);
-  } else if (atk.elementMultiplier < 1) {
-    setTimeout(() => showBanner('Resisted...', 'weak'), 400);
-  }
 
   // Stat stage change popups
   if (atk.statChangesApplied) {
@@ -882,12 +873,6 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
         if (pending?.length) allPendingMoveLearn.push(...pending);
       }
     }
-  }
-
-  if (atk.elementMultiplier > 1) {
-    setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[atkElement] || ELEMENT_COLORS.neutral }), 400);
-  } else if (atk.elementMultiplier < 1) {
-    setTimeout(() => showBanner('Resisted...', 'weak'), 400);
   }
 
   // Real-time buff/debuff indicators — show immediately when a move applies effects

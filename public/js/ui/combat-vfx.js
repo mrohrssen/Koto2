@@ -110,6 +110,12 @@ export async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, 
   }
 
   pixiDamageNumber(damage, pos, { tier, type: effectivenessType });
+  if (effectivenessType === 'superEffective') {
+    const elemColor = ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral;
+    setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: elemColor }), 50);
+  } else if (effectivenessType === 'resisted') {
+    setTimeout(() => showBanner('Resisted...', 'weak'), 50);
+  }
   if (onImpact) onImpact();
 
   if (sprite) {
@@ -675,13 +681,6 @@ export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved)
   } else {
     ctx.animatePlayerHurt();
     hpUpdate();
-  }
-
-  const element = atk.attackerElement || atk.moveElement || 'neutral';
-  if (atk.elementMultiplier > 1) {
-    setTimeout(() => showBanner('Super Effective!', 'super', { elementColor: ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral }), 400);
-  } else if (atk.elementMultiplier < 1) {
-    setTimeout(() => showBanner('Resisted...', 'weak'), 400);
   }
 
   // Real-time buff/debuff indicators for enemy-applied effects
