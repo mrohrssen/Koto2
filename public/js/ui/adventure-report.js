@@ -15,7 +15,7 @@ function renderMasteredList(words) {
   return `<ul class="ar-mastered-list">${words.map(w => `
     <li class="ar-mastered-word">
       <div class="ar-mastered-dot"></div>
-      <div class="ar-mastered-jp">${w.word || ''}</div>
+      <div class="ar-mastered-jp">${w.reading || w.word || ''}</div>
       <div class="ar-mastered-meaning">${w.meaning || ''}</div>
       <div class="ar-mastered-exp">${w.exposures || 0}x</div>
     </li>

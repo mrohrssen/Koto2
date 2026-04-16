@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync } from
 import { join, basename } from 'path';
 import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
-import { getKnownWordsFromFsrs } from '../game/bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs, lookupReading } from '../game/bootstrap/word-knowledge.js';
 
 /**
  * Shift all FSRS card timestamps backward by a number of days.
@@ -103,7 +103,7 @@ export default function createAdminRoutes({ dataDir }) {
 
       let seeded = 0;
       for (const word of words) {
-        createCard(userId, 'vocab', word, { word, meaning: '', reading: word });
+        createCard(userId, 'vocab', word, { word, meaning: '', reading: lookupReading(word) });
         gradeCard(userId, 'vocab', word, 'good');
         seeded++;
       }
