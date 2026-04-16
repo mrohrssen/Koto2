@@ -741,19 +741,6 @@ async function loadGameState() {
   }
 }
 
-// Warm JPDB cache on session start (uses server-side key like /api/jpdb/parse)
-async function warmJpdbCache() {
-  try {
-    const response = await fetch(`${API_BASE}/api/game/session-start`, {
-      method: 'POST',
-      headers: getAuthHeaders()
-    });
-    const data = await response.json();
-    console.log(`[Game] Session cache: ${data.warmed ? data.cachedWords + ' words' : data.reason || data.error}`);
-  } catch (e) {
-    console.warn('[Game] Failed to warm session cache:', e);
-  }
-}
 
 // ============ PROLOGUE ============
 let _prologueCache = null;
@@ -1926,9 +1913,6 @@ async function initGame() {
   if (gameState.player && !gameState.meta?.prologueComplete) {
     await playPrologue();
   }
-
-  // Warm JPDB cache on session start
-  warmJpdbCache();
 
   updateUI();
 
