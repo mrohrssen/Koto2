@@ -415,7 +415,7 @@ export default function createCombatRoutes({
       if (!rounds) {
         console.error(`[BefriendConversation] Generation produced no cache for ${target.id} (AI error, vocab repair, or missing creature data)`);
         return res.status(503).json({
-          error: 'Creature dialogue generation failed. Check server logs; try again or ensure JPDB + AI keys work.'
+          error: 'Creature dialogue generation failed. Check server logs; try again or ensure AI keys are configured.'
         });
       }
 

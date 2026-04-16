@@ -377,7 +377,7 @@ async function skipWhackAMole() {
   return apiCall('/whack-a-mole-skip', 'POST');
 }
 
-// ============ VOCAB/JPDB ENDPOINTS ============
+// ============ VOCAB ENDPOINTS ============
 
 /** Parse text into clickable tokens via Sudachi + local dictionary
  * @param {string} text - Text to parse
@@ -464,7 +464,7 @@ export async function getDueWords(reviewedWords = []) {
 }
 
 /**
- * Get due vocab words from internal FSRS (not JPDB).
+ * Get due vocab words from internal FSRS.
  * @returns {Promise<Object>} { words: Array }
  */
 export async function getVocabDueWords() {

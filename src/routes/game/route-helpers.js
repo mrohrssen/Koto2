@@ -24,7 +24,7 @@ export function buildVocabConfig(req, getUserVocabulary, checkSentenceViolations
 
 /**
  * Like buildVocabConfig but falls back to server .env AI keys when the user has not
- * saved keys in Settings (common for local dev). JPDB: user key or JPDB_API_KEY env.
+ * saved keys in Settings (common for local dev).
  */
 export function buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSentenceViolations) {
   const fromUser = buildVocabConfig(req, getUserVocabulary, checkSentenceViolations);

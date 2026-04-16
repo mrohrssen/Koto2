@@ -41,7 +41,7 @@ export function getApiKeys() {
 
 /**
  * Save a single API key to localStorage
- * @param {string} key - Key name (e.g., 'jpdbApiKey', 'aiApiKey')
+ * @param {string} key - Key name (e.g., 'aiApiKey')
  * @param {string} value - Value to save
  */
 export function saveApiKey(key, value) {
