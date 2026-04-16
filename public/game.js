@@ -802,36 +802,34 @@ async function playPrologue() {
       await narrationBox.show(html, showOpts);
     }
 
-    // if (prologueScene.id === 'prologue-hiragana-question' && result === 'kana-no') {
-    //   await fetch('/api/game/kana-mode', {
-    //     method: 'POST',
-    //     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ enabled: true })
-    //   });
-    // }
-
-    if (prologueScene.id === 'prologue-starter-selection' && result) {
-      const resp = await fetch(apiUrl('/api/game/select-starter'), {
-        method: 'POST',
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ starterId: result })
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data?.state) updateGameState(data.state);
-      }
-    }
-
   }
 
   scene.hideCid();
 
+  // Auto-select fire starter
+  await fetch(apiUrl('/api/game/select-starter'), {
+    method: 'POST',
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ starterId: 'starter-fire' })
+  });
+
   // Mark prologue as complete on server
-  const completeResp = await fetch(apiUrl('/api/game/prologue-complete'), {
+  await fetch(apiUrl('/api/game/prologue-complete'), {
     method: 'POST',
     headers: getAuthHeaders()
   });
-  if (completeResp.ok) {
+
+  // First run ever: skip hub/area/team selection — go straight to Starting Meadow
+  const isFirstRun = (gameState.meta?.lifetimeStats?.totalRuns ?? 0) === 0 && !gameState.run;
+  if (isFirstRun) {
+    const runResult = await apiStartRun({});
+    if (runResult?.state) updateGameState(runResult.state);
+    const areaResult = await apiSelectArea('hajimari-no-hiroba');
+    if (areaResult?.state) updateGameState(areaResult.state);
+    const confirmResult = await apiConfirmCreatures(['hi']);
+    if (confirmResult?.state) updateGameState(confirmResult.state);
+  } else {
+    // Replaying prologue — just update meta and return to hub
     updateGameState({
       ...gameState,
       meta: {
@@ -1494,6 +1492,40 @@ function setupEventListeners() {
     }
   });
 }
+
+// ============ CLICK DIAGNOSTIC ============
+// Temporary: capture-phase listener registered before all others.
+// Logs click target + element stack so we can identify what blocks clicks.
+// Remove once the "clicks stop working" regression is diagnosed.
+let _clickDiagBubbled = false;
+document.addEventListener('click', (e) => {
+  _clickDiagBubbled = false;
+  const stack = document.elementsFromPoint(e.clientX, e.clientY)
+    .slice(0, 8)
+    .map(el => {
+      const tag = el.tagName.toLowerCase();
+      const id = el.id ? '#' + el.id : '';
+      const cls = el.className && typeof el.className === 'string' ? '.' + el.className.split(' ')[0] : '';
+      const pe = getComputedStyle(el).pointerEvents;
+      return tag + id + cls + (pe === 'none' ? '[pe:none]' : '');
+    });
+  // Check known blocker states
+  const blockers = [];
+  if (document.querySelector('.lookup-active')) blockers.push('lookup-active');
+  if (document.querySelector('.move-help-backdrop')) blockers.push('move-help-backdrop');
+  if (document.querySelector('#chest-anim-overlay')) blockers.push('chest-overlay');
+  if (document.querySelector('.menu-backdrop.visible')) blockers.push('menu-backdrop');
+  if (document.querySelector('.narration-box.visible')) blockers.push('narration-visible');
+  console.log('[click-diag] target:', e.target.tagName + (e.target.id ? '#' + e.target.id : ''),
+    '| stack:', stack.join(' > '),
+    '| prevented:', e.defaultPrevented,
+    blockers.length ? '| BLOCKERS: ' + blockers.join(', ') : '');
+  // Check if event actually reaches bubble phase (logged after all handlers run)
+  requestAnimationFrame(() => {
+    if (!_clickDiagBubbled) console.warn('[click-diag] EVENT SWALLOWED — did not reach bubble phase');
+  });
+}, true);
+document.addEventListener('click', () => { _clickDiagBubbled = true; });
 
 // ============ INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', async () => {
