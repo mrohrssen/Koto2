@@ -99,6 +99,8 @@ export function renderChoices({ cards, onSelect, disableAfterSelect = true, cont
     if (card.pills) html += `<div class="ui-choice__pills">${card.pills}</div>`;
     html += '</div>';
 
+    if (card.suffix) html += card.suffix;
+
     btn.innerHTML = html;
 
     btn.addEventListener('click', (e) => {
