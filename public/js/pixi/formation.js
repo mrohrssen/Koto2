@@ -345,6 +345,17 @@ export function hideFormation(side) {
 }
 
 /**
+ * Toggle visibility of a formation's Pixi container without destroying sprites.
+ * Used during NPC skill animations to hide enemies while the NPC is on screen.
+ * @param {'player'|'enemy'} side
+ * @param {boolean} visible
+ */
+export function setFormationVisible(side, visible) {
+  const container = side === 'player' ? playerContainer : enemyContainer;
+  if (container) container.visible = visible;
+}
+
+/**
  * Enable/disable walking wobble.
  */
 export function setWalking(enabled) {
