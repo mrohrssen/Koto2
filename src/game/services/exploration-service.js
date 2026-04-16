@@ -81,8 +81,8 @@ function calculateDiscoveryXpForRun(run) {
   return Math.floor(BASE_KILL_XP * highestLevel * (run?.itemBuffs?.xpMultiplier || 1.0) * 0.2);
 }
 
-function buildSpeedReviewWordKey(vid, sid) {
-  return `${String(vid)}:${String(sid)}`;
+function buildSpeedReviewWordKey(word) {
+  return String(word);
 }
 
 /**
@@ -951,9 +951,7 @@ export class ExplorationService {
     return {
       word: word.word,
       reading: word.reading,
-      meanings: Array.isArray(word.meanings) ? word.meanings : [],
-      vid: word.vid,
-      sid: word.sid
+      meanings: Array.isArray(word.meanings) ? word.meanings : []
     };
   }
 
@@ -1082,7 +1080,7 @@ export class ExplorationService {
 
     const snapshotWords = dueWords.slice(0, targetCards).map(word => this._sanitizeSpeedReviewWord(word));
     roomState.snapshotWords = snapshotWords;
-    roomState.snapshotWordKeys = snapshotWords.map(word => buildSpeedReviewWordKey(word.vid, word.sid));
+    roomState.snapshotWordKeys = snapshotWords.map(word => buildSpeedReviewWordKey(word.word));
     roomState.snapshotInitialized = true;
     roomState.reviewedCards = Math.max(0, Number(roomState.reviewedCards) || 0);
     roomState.awardedReviewKeys = Array.isArray(roomState.awardedReviewKeys) ? roomState.awardedReviewKeys : [];
@@ -1095,7 +1093,7 @@ export class ExplorationService {
     return this._buildSpeedReviewRoomResponse(room, { reusedSnapshot: false });
   }
 
-  recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex } = {}) {
+  recordSpeedReviewRoomCommit({ roomId, word, commitIndex } = {}) {
     if (!roomId) {
       throw new Error('roomId is required');
     }
@@ -1117,12 +1115,12 @@ export class ExplorationService {
     }
 
     const expectedWordKey = roomState.snapshotWordKeys[commitIndex];
-    const committedWordKey = buildSpeedReviewWordKey(vid, sid);
+    const committedWordKey = buildSpeedReviewWordKey(word);
     if (expectedWordKey !== committedWordKey) {
       throw new Error('Commit does not match server snapshot order');
     }
 
-    const reviewKey = `${room.id}:${commitIndex}:${String(vid)}:${String(sid)}`;
+    const reviewKey = `${room.id}:${commitIndex}:${word}`;
     if (roomState.awardedReviewKeys.includes(reviewKey) || roomState.pendingReviewKeys.includes(reviewKey)) {
       this._syncSpeedReviewCompletion(room);
       return this._buildSpeedReviewRoomResponse(room, {

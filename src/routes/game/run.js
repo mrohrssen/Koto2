@@ -544,15 +544,12 @@ export default function createRunRoutes({
   });
 
   router.post('/speed-review-room/progress', (req, res) => {
-    const { roomId, vid, sid, commitIndex } = req.body || {};
+    const { roomId, word, commitIndex } = req.body || {};
     if (!roomId) {
       return res.status(400).json({ error: 'roomId is required' });
     }
-    if (vid === undefined || vid === null) {
-      return res.status(400).json({ error: 'vid is required' });
-    }
-    if (sid === undefined || sid === null) {
-      return res.status(400).json({ error: 'sid is required' });
+    if (!word || typeof word !== 'string') {
+      return res.status(400).json({ error: 'word (string) is required' });
     }
     if (!Number.isInteger(commitIndex) || commitIndex < 0) {
       return res.status(400).json({ error: 'commitIndex must be an integer >= 0' });
@@ -560,7 +557,7 @@ export default function createRunRoutes({
 
     try {
       const gameManager = req.gameManager;
-      const result = gameManager.recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex });
+      const result = gameManager.recordSpeedReviewRoomCommit({ roomId, word, commitIndex });
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {

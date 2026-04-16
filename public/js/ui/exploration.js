@@ -848,7 +848,7 @@ export async function renderSpeedReviewRoom() {
           let lastError = null;
           for (let attempt = 1; attempt <= 3; attempt++) {
             try {
-              const progressResult = await apiProgressSpeedReviewRoom(room.id, word.vid, word.sid, commitIndex);
+              const progressResult = await apiProgressSpeedReviewRoom(room.id, word.word, commitIndex);
               if (!progressResult || progressResult.error) {
                 throw new Error(progressResult?.error || 'No response from speed review room progress API');
               }

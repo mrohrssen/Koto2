@@ -574,11 +574,11 @@ async function startSpeedReviewRoom(roomId) {
 }
 
 /** Record one committed review card in speed review room */
-async function progressSpeedReviewRoom(roomId, vid, sid, commitIndex) {
+async function progressSpeedReviewRoom(roomId, word, commitIndex) {
   return apiCall(
     '/speed-review-room/progress',
     'POST',
-    { roomId, vid, sid, commitIndex },
+    { roomId, word, commitIndex },
     null,
     { bypassLoadingGate: true }
   );

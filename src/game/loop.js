@@ -472,8 +472,8 @@ export class GameManager {
     return this.explorationService.startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider });
   }
 
-  recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex } = {}) {
-    return this.explorationService.recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex });
+  recordSpeedReviewRoomCommit({ roomId, word, commitIndex } = {}) {
+    return this.explorationService.recordSpeedReviewRoomCommit({ roomId, word, commitIndex });
   }
 
   completeSpeedReviewRoom({ roomId } = {}) {

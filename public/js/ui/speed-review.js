@@ -109,7 +109,7 @@ function showRoomCompletionError(errorMessage) {
 }
 
 /**
- * Flush any pending review (send to JPDB immediately)
+ * Flush any pending review (send to internal FSRS)
  */
 function flushPendingReview() {
   if (!state.pendingReview) return null;
@@ -121,8 +121,8 @@ function flushPendingReview() {
   if (timerId) clearTimeout(timerId);
 
   const tasks = [];
-  if ((word.vid !== undefined && word.sid !== undefined) || word.source === 'internal') {
-    tasks.push(Promise.resolve(state.callbacks?.sendReview(word.vid, word.sid, grade, word.word)));
+  if (word.word) {
+    tasks.push(Promise.resolve(state.callbacks?.sendReview(undefined, undefined, grade, word.word)));
     if (state.session.onCommittedReview) {
       const enqueueCommit = async () => {
         const commitIndex = state.session.committedReviews;
@@ -384,7 +384,7 @@ function prefetchQueueAudio(count) {
 
 /**
  * Start Speed Review mode
- * @param {Array} words - Array of word objects { word, reading, meanings, vid, sid }
+ * @param {Array} words - Array of word objects { word, reading, meanings }
  */
 export function start(words, options = {}) {
   if (!words || words.length === 0) {
@@ -664,28 +664,25 @@ async function gradeCard(slotIndex, word, direction) {
 }
 
 /**
- * Trigger batch refresh - fetch fresh queue from JPDB
+ * Trigger batch refresh - fetch fresh due words from FSRS
  */
 async function triggerBatchRefresh() {
   if (state.session.mode !== 'hub') return;
   if (!state.callbacks?.refreshQueue) return;
 
   console.log('[SpeedReview] Triggering batch refresh...');
-
-  // Capture reviewed words BEFORE clearing
-  const reviewedWords = state.reviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
   state.reviewedBatch = [];
 
   try {
-    const freshWords = await state.callbacks.refreshQueue(reviewedWords);
+    const freshWords = await state.callbacks.refreshQueue();
     if (freshWords && freshWords.length > 0) {
       // Filter out words currently displayed
-      const displayedVids = new Set(
-        state.activeCards.filter(c => c).map(c => c.vid)
+      const displayedWords = new Set(
+        state.activeCards.filter(c => c).map(c => c.word)
       );
-      const newWords = freshWords.filter(w => !displayedVids.has(w.vid));
+      const newWords = freshWords.filter(w => !displayedWords.has(w.word));
 
-      // Replace queue with fresh words (respects JPDB priority)
+      // Replace queue with fresh words
       state.queue = newWords;
       console.log(`[SpeedReview] Refreshed queue: ${newWords.length} words`);
 

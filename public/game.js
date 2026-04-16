@@ -1636,7 +1636,7 @@ async function initGame() {
       return result;
     },
     commitRoomReview: async ({ roomId, word, commitIndex }) => {
-      const result = await apiProgressSpeedReviewRoom(roomId, word.vid, word.sid, commitIndex);
+      const result = await apiProgressSpeedReviewRoom(roomId, word.word, commitIndex);
       if (result?.state) updateGameState(result.state);
       return result;
     },
