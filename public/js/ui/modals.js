@@ -79,11 +79,6 @@ export async function openSettings() {
     <h3 style="margin:16px">Settings</h3>
     <div style="padding:0 16px">
       <label class="settings-label">
-        JPDB API Key
-        <input type="password" id="settings-jpdb-key" class="settings-input"
-          placeholder="${keyInfo.hasJpdbKey ? '••••••••' : 'Enter JPDB API key'}">
-      </label>
-      <label class="settings-label" style="margin-top:12px">
         Bunpro Token
         <input type="password" id="settings-bunpro-token" class="settings-input"
           placeholder="${keyInfo.hasBunproToken ? '••••••••' : 'Enter Bunpro token'}">
@@ -329,7 +324,6 @@ export async function openSettings() {
   });
 
   document.getElementById('settings-save-btn')?.addEventListener('click', async () => {
-    const jpdbKey = document.getElementById('settings-jpdb-key')?.value?.trim();
     const bunproToken = document.getElementById('settings-bunpro-token')?.value?.trim();
     const aiKey = document.getElementById('settings-ai-key')?.value?.trim();
     const aiProvider = document.getElementById('settings-ai-provider')?.value;
@@ -368,7 +362,6 @@ export async function openSettings() {
 
     // Save API keys to server (only send non-empty values)
     const keysToSave = {};
-    if (jpdbKey) keysToSave.jpdbApiKey = jpdbKey;
     if (bunproToken) keysToSave.bunproToken = bunproToken;
     if (aiKey) keysToSave.aiApiKey = aiKey;
     if (aiProvider) keysToSave.aiProvider = aiProvider;

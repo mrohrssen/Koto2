@@ -1,7 +1,6 @@
 // ============ LOCAL STORAGE KEYS ============
 
 const STORAGE_KEYS = {
-  jpdbApiKey: 'jrpg_jpdbApiKey',
   aiApiKey: 'jrpg_aiApiKey',
   aiProvider: 'jrpg_aiProvider',
   openaiModel: 'jrpg_openaiModel',
@@ -17,7 +16,6 @@ const STORAGE_KEYS = {
 // ============ API KEY DEFAULTS ============
 
 const API_KEY_DEFAULTS = {
-  jpdbApiKey: '',
   aiApiKey: '',
   aiProvider: '',
   openaiModel: '',
@@ -33,7 +31,6 @@ const API_KEY_DEFAULTS = {
  */
 export function getApiKeys() {
   return {
-    jpdbApiKey: localStorage.getItem(STORAGE_KEYS.jpdbApiKey) || API_KEY_DEFAULTS.jpdbApiKey,
     aiApiKey: localStorage.getItem(STORAGE_KEYS.aiApiKey) || API_KEY_DEFAULTS.aiApiKey,
     aiProvider: localStorage.getItem(STORAGE_KEYS.aiProvider) || API_KEY_DEFAULTS.aiProvider,
     openaiModel: localStorage.getItem(STORAGE_KEYS.openaiModel) || API_KEY_DEFAULTS.openaiModel,
@@ -58,7 +55,6 @@ export function saveApiKey(key, value) {
  * @param {object} keys - Object with API key values to save
  */
 export function saveApiKeys(keys) {
-  if (keys.jpdbApiKey !== undefined) localStorage.setItem(STORAGE_KEYS.jpdbApiKey, keys.jpdbApiKey);
   if (keys.aiApiKey !== undefined) localStorage.setItem(STORAGE_KEYS.aiApiKey, keys.aiApiKey);
   if (keys.aiProvider !== undefined) localStorage.setItem(STORAGE_KEYS.aiProvider, keys.aiProvider);
   if (keys.openaiModel !== undefined) localStorage.setItem(STORAGE_KEYS.openaiModel, keys.openaiModel);
@@ -73,15 +69,6 @@ export function saveApiKeys(keys) {
 export function hasRequiredApiKeys() {
   const keys = getApiKeys();
   return keys.aiApiKey && keys.aiApiKey.length > 0;
-}
-
-/**
- * Check if JPDB key is configured
- * @returns {boolean} True if JPDB API key is configured
- */
-export function hasJpdbApiKey() {
-  const keys = getApiKeys();
-  return keys.jpdbApiKey && keys.jpdbApiKey.length > 0;
 }
 
 // ============ BUNPRO TOKEN ============

@@ -59,7 +59,7 @@ const DEFAULT_ROUTE_DEPS = {
   setDebugMode: () => {},
   vocabCacheFile: '',
   staticWordList: [],
-  getUserVocabulary: () => ({ words: [], vidSet: new Set() }),
+  getUserVocabulary: () => ({ words: [] }),
   getCreatureDialogueFromCache: () => null,
   getAllCreatureDialogueCache: () => ({}),
   queueMissingCreatureDialoguesFn: async () => {},

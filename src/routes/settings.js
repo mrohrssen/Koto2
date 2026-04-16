@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { getProviders, getJLPTLevels } from '../ai-providers.js';
-import { clearVocabCache } from '../jpdb.js';
 import { updateTTSConfig } from '../game/prefetch.js';
 
 /**
@@ -32,7 +31,6 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     });
 
     res.json({
-      jpdbDeckId: settings.jpdbDeckId || '',
       jlptLevel: settings.jlptLevel || 'N4',
       gameTtsEnabled: settings.gameTtsEnabled ?? true,
       gameTtsSpeakerId: settings.gameTtsSpeakerId || 13,
@@ -48,14 +46,10 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
   // Settings - POST update settings
   router.post('/settings', (req, res) => {
     const settings = getSettings();
-    const { jpdbDeckId, jlptLevel,
+    const { jlptLevel,
             gameTtsEnabled, gameTtsSpeakerId, gameTtsSpeed, gameTtsVolume,
             reviewType, dailyWordLimit } = req.body;
 
-    if (jpdbDeckId !== undefined) {
-      settings.jpdbDeckId = jpdbDeckId;
-      clearVocabCache();
-    }
     if (jlptLevel) settings.jlptLevel = jlptLevel;
 
     if (gameTtsEnabled !== undefined) settings.gameTtsEnabled = gameTtsEnabled;

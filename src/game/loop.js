@@ -468,8 +468,8 @@ export class GameManager {
     return this.explorationService.completeWordDiscovery();
   }
 
-  async startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider } = {}) {
-    return this.explorationService.startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider });
+  async startSpeedReviewRoom({ roomId, userId, dueWordsProvider } = {}) {
+    return this.explorationService.startSpeedReviewRoom({ roomId, userId, dueWordsProvider });
   }
 
   recordSpeedReviewRoomCommit({ roomId, word, commitIndex } = {}) {

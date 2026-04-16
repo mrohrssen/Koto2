@@ -140,7 +140,6 @@ export default function createAuthRoutes(options = {}) {
       openaiModel: '',
       openrouterModel: '',
       jlptLevel: 'N4',
-      hasJpdbKey: false,
       hasAiKey: false,
       hasBunproToken: false
     };
@@ -152,7 +151,6 @@ export default function createAuthRoutes(options = {}) {
           openaiModel: keys.openaiModel || '',
           openrouterModel: keys.openrouterModel || '',
           jlptLevel: keys.jlptLevel || 'N4',
-          hasJpdbKey: !!keys.jpdbApiKey,
           hasAiKey: !!keys.aiApiKey,
           hasBunproToken: !!keys.bunproToken
         };
@@ -166,9 +164,8 @@ export default function createAuthRoutes(options = {}) {
 
   // PUT /api/auth/api-keys
   function updateKeys(req, res) {
-    const { jpdbApiKey, aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel, bunproToken } = req.body;
+    const { aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel, bunproToken } = req.body;
     const keys = {};
-    if (jpdbApiKey !== undefined) keys.jpdbApiKey = jpdbApiKey;
     if (aiApiKey !== undefined) keys.aiApiKey = aiApiKey;
     if (aiProvider !== undefined) keys.aiProvider = aiProvider;
     if (openaiModel !== undefined) keys.openaiModel = openaiModel;

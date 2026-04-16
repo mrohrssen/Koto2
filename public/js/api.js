@@ -379,30 +379,6 @@ async function skipWhackAMole() {
 
 // ============ VOCAB/JPDB ENDPOINTS ============
 
-/** Send JPDB review
- * @param {number} vid - Vocabulary ID
- * @param {number} sid - Sense ID
- * @param {number} grade - Review grade (1-5)
- * @param {string} [wordText] - The Japanese word text (for bootstrap word-knowledge tracking)
- * @param {boolean} isDiscovery - Whether this is a discovery room review
- */
-async function sendJpdbReview(vid, sid, grade, wordText = null, isDiscovery = false) {
-  console.log('[JPDB Review API] sendJpdbReview called:', { vid, sid, grade, isDiscovery });
-  try {
-    const response = await fetch(apiUrl('/api/jpdb/review'), {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ vid, sid, grade, isDiscovery, wordText })
-    });
-    const result = await response.json();
-    console.log('[JPDB Review API] Response:', result);
-    return result;
-  } catch (error) {
-    logger.error('[API] Failed to send JPDB review:', error.message);
-    return { error: 'Network error' };
-  }
-}
-
 /** Parse text into clickable tokens via Sudachi + local dictionary
  * @param {string} text - Text to parse
  */
@@ -750,8 +726,7 @@ export {
   completeWhackAMole,
   getWhackAMoleDialogue,
   skipWhackAMole,
-  // Vocab/JPDB endpoints
-  sendJpdbReview,
+  // Vocab endpoints
   parseLocalText,
   lookupLocalWord,
   getDiscoveryWords,

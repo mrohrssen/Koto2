@@ -79,7 +79,6 @@ window.forceRefresh = async function() {
 import { store } from './js/store.js';
 import * as tts from './js/tts.js';
 import * as settings from './js/settings.js';
-import * as wordPractice from './js/word-practice.js';
 import * as explorationUI from './js/ui/exploration.js';
 import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
@@ -143,7 +142,6 @@ import {
   roomEncounter as apiRoomEncounter,
   startEncounter as apiStartEncounter,
   shopSkip as apiShopSkip,
-  sendJpdbReview as apiSendJpdbReview,
   getDueWords as apiGetDueWords,
   getVocabDueWords,
   getVocabDueCount,
@@ -223,8 +221,6 @@ let combatAnimationActive = false;
 // Flash card state
 let currentFlashCardWord = null;
 
-// Combat batch tracking for JPDB refresh
-let combatReviewedBatch = [];
 
 // ============ UTILITY ============
 
@@ -1256,9 +1252,6 @@ async function returnToHub() {
   await apiForfeitRun();
   await loadGameState();
   updateUI();
-  // Prefetch words now so they're ready when user starts next run
-  wordPractice.clearWordCache();
-  wordPractice.prefetchCombatWords();
 }
 
 // ============ COMBAT ============
@@ -1273,11 +1266,6 @@ function showVictoryModal(result) {
     showCollectionToast(result.newCollectionAdditions);
   }
 
-  if (combatReviewedBatch.length > 0) {
-    const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
-    combatReviewedBatch = [];
-    apiGetDueWords(reviewedWords).catch(e => console.warn('[Combat] End batch refresh failed:', e));
-  }
   setTimeout(async () => {
     await loadGameState();
     updateUI();
@@ -1293,8 +1281,6 @@ async function showAdventureReport(isVictory) {
     takeover.close('gameover');
     await loadGameState();
     updateUI();
-    wordPractice.clearWordCache();
-    wordPractice.prefetchCombatWords();
   };
   renderAdventureReport(content, summary, isVictory, returnToHubCb);
 }
@@ -1303,12 +1289,6 @@ function showGameOverModal(result) {
   audio.stopBGM();
   audio.playSFX('defeat');
   actions.clear();
-
-  if (combatReviewedBatch.length > 0) {
-    const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
-    combatReviewedBatch = [];
-    apiGetDueWords(reviewedWords).catch(e => console.warn('[Combat] End batch refresh failed:', e));
-  }
 
   updateCreatureRow();
   showAdventureReport(false);
@@ -1612,16 +1592,11 @@ async function initGame() {
   bugReport.init();
   speedReview.init({
     sendReview: async (vid, sid, grade, wordText) => {
-      // Internal FSRS cards: grade via internal review endpoint
-      if (vid === undefined) {
-        const internalGrade = grade >= 3 ? 'good' : 'again';
-        const result = await reviewVocabWord(wordText, internalGrade);
-        if (result?.mastered) addKnownWord(wordText);
-        else if (result && !result.mastered) removeKnownWord(wordText);
-        return result;
-      }
-      // JPDB cards: use existing JPDB review
-      return apiSendJpdbReview(vid, sid, grade, wordText);
+      const internalGrade = grade >= 3 ? 'good' : 'again';
+      const result = await reviewVocabWord(wordText, internalGrade);
+      if (result?.mastered) addKnownWord(wordText);
+      else if (result && !result.mastered) removeKnownWord(wordText);
+      return result;
     },
     playTTS: (word) => tts.playWord(word),
     prefetchTTS: (word) => tts.prefetchWord(word),
@@ -1668,68 +1643,8 @@ async function initGame() {
         document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: direction }));
         return;
       }
-
-      // Kana mode: route to kana handler, skip JPDB review
-      if (combatLoopUI.isKanaRoundInProgress()) {
-        combatLoopUI.handleKanaSwipe(direction);
-        return;
-      }
-
-      // Combat mode: grade based on swipe direction and pass action type
-      const grade = direction === 'right' ? 4 : 1;
-      const actionType = window._pendingCombatAction || 'attack';
-      const reviewWord = window._pendingCombatWord;
-      window._pendingCombatAction = null;
-      window._pendingCombatWord = null;
-
-      // Send JPDB review for the word that was just graded
-      console.log('[JPDB Review] cardSwipe called:', { direction, grade, actionType, reviewWord });
-      if (reviewWord?.vid !== undefined && reviewWord?.sid !== undefined) {
-        console.log('[JPDB Review] Sending review:', { vid: reviewWord.vid, sid: reviewWord.sid, grade });
-        apiSendJpdbReview(reviewWord.vid, reviewWord.sid, grade);
-
-        // Track reviews for batch refresh
-        combatReviewedBatch.push(reviewWord);
-
-        // Check for batch refresh (every 50 reviews)
-        if (combatReviewedBatch.length >= 50) {
-          // Fire and forget - refresh queue in background
-          const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
-          combatReviewedBatch = [];
-          apiGetDueWords(reviewedWords).then(result => {
-            if (result?.words) {
-              console.log('[Combat] Batch refresh: got', result.words.length, 'fresh words');
-            }
-          }).catch(e => console.warn('[Combat] Batch refresh failed:', e));
-        }
-      } else {
-        console.warn('[JPDB Review] Missing vid/sid, cannot send review:', reviewWord);
-      }
-
-      // Play TTS for the reviewed word
-      if (reviewWord?.word) {
-        tts.playWord(reviewWord.word);
-      }
-
-      combatLoopUI.resumeCombatAfterVocab(grade, actionType);
     },
     cardFlip: handleCardFlip,
-    dualCardSelect: (actionType, selectedWord) => {
-      // Store the action type and word for when review completes
-      window._pendingCombatAction = actionType;
-      window._pendingCombatWord = selectedWord;
-      console.log('[JPDB Review] dualCardSelect - stored word:', { actionType, selectedWord, hasVid: selectedWord?.vid !== undefined, hasSid: selectedWord?.sid !== undefined });
-
-      // Return unchosen words to pool
-      const words = wordPractice.getTwoCombatWords();
-      if (actionType !== 'attack' && words?.attackWord) wordPractice.returnWordToPool(words.attackWord);
-      if (actionType !== 'defend' && words?.defendWord) wordPractice.returnWordToPool(words.defendWord);
-
-      // Remove selected word from queue
-      wordPractice.removeWordFromCombatQueue(selectedWord);
-
-      // Dual card flips in place - no separate flash card needed
-    },
   });
 
   creatureRow.init({
@@ -1775,28 +1690,6 @@ async function initGame() {
       creatureRow.setReserves(result?.creatureParty?.reserves || []);
       creatureRow.render(result?.creatureParty?.active || []);
     },
-  });
-
-  wordPractice.init({
-    apiBase: API_BASE,
-    getGameState: () => gameState,
-    showToast: (msg) => scene.showToast(msg),
-    escapeHtml: escapeHtml,
-    updatePlayerHPBar: (hp) => {
-      if (gameState.player) {
-        gameState.player.hp = hp;
-      }
-    },
-    showDamageNumber: (dmg, isPlayer, isCrit) => {
-      const formation = isPlayer ? dom.playerFormation : dom.enemyFormation;
-      const targetEl = formation.querySelector('.formation-slot') || formation;
-      scene.showDamageNumber(dmg, { isCrit, targetEl });
-    },
-    resumeCombatAfterVocab: () => resumeCombatAfterVocab(),
-    isCombatActive: () => combatLoopUI.isCombatActive(),
-    isEnemyDialogueActive: () => enemyDialogueActive,
-    shuffleArray: shuffleArray,
-    sendJpdbReview: apiSendJpdbReview,
   });
 
   explorationUI.init({
@@ -1936,7 +1829,6 @@ async function initGame() {
     updateUI,
     settings,
     narration: { showNarration: (text, opts) => narrationBox.show(text, opts), forceHideNarration: () => narrationBox.forceHide() },
-    wordPractice,
     characterUI,
     showDamageNumber: (dmg, isPlayer, isCrit, isDot, isHeal, specialType, tierClass) => {
       const formation = isPlayer ? dom.playerFormation : dom.enemyFormation;
@@ -2040,17 +1932,11 @@ async function initGame() {
 
   updateUI();
 
-  // Prefetch words if in hub (ready for when user starts a run)
-  if (gameState.phase === 'hub') {
-    wordPractice.prefetchCombatWords();
-  }
-
-  // Initialize TTS and review type from server settings
+  // Initialize TTS from server settings
   const serverSettings = await settings.loadServerSettings();
   tts.initSettings(serverSettings);
   const savedTtsVol = localStorage.getItem('jrpg_ttsVolume');
   if (savedTtsVol !== null) tts.setVolume(parseFloat(savedTtsVol));
-  wordPractice.setReviewType?.(serverSettings.reviewType || 'flash-card');
 
   // Initialize audio on first user interaction (browser autoplay policy)
   let audioInitialized = false;

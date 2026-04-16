@@ -21,7 +21,7 @@ export function extractDialogueStrings(dialogue, entityType = 'npc') {
  * @param {object} dialogue - The dialogue JSON object
  * @param {Function|null} checkFn - async (text) => { unknownWords: string[], count: number }
  *   Injected from vocab-repair.js's checkSentenceViolations with bound params.
- *   If null, validation is skipped (no JPDB API key available).
+ *   If null, validation is skipped.
  * @returns {Array<{ path: string, text: string, unknowns: string[] }>} Violations (empty = clean)
  */
 export async function validateDialogueVocab(dialogue, checkFn, entityType = 'npc') {
@@ -76,7 +76,7 @@ export async function enforceDialogueVocab({
   maxAttempts = 3,
   entityType = 'npc'
 }) {
-  // No checker = skip validation (no JPDB API key)
+  // No checker = skip validation
   if (!checkViolationsFn) {
     return { dialogue, repaired: false, attempts: 0, violations: [] };
   }

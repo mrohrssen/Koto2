@@ -2,10 +2,10 @@ export function buildVocabConfig(req, getUserVocabulary, checkSentenceViolations
   const userKeys = req.userKeys || {};
   if (!userKeys.aiApiKey || !userKeys.aiProvider || !getUserVocabulary) return null;
 
-  const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+  const { words: vocabulary } = getUserVocabulary(req.user.id);
   const vocabSet = new Set(vocabulary);
-  const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
-    ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
+  const checkViolationsFn = checkSentenceViolations
+    ? async (text) => checkSentenceViolations(text, vocabSet, new Set())
     : null;
 
   return {
@@ -17,7 +17,6 @@ export function buildVocabConfig(req, getUserVocabulary, checkSentenceViolations
       jlptLevel: userKeys.jlptLevel || 'N4'
     },
     vocabulary,
-    vidSet,
     vocabSet,
     checkViolationsFn
   };
@@ -53,11 +52,10 @@ export function buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSe
   }
 
   const userKeys = req.userKeys || {};
-  const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+  const { words: vocabulary } = getUserVocabulary(req.user.id);
   const vocabSet = new Set(vocabulary);
-  const jpdbKey = userKeys.jpdbApiKey || process.env.JPDB_API_KEY;
-  const checkViolationsFn = jpdbKey && checkSentenceViolations
-    ? async (text) => checkSentenceViolations(text, vocabSet, jpdbKey, new Set(), vidSet)
+  const checkViolationsFn = checkSentenceViolations
+    ? async (text) => checkSentenceViolations(text, vocabSet, new Set())
     : null;
 
   return {
@@ -69,7 +67,6 @@ export function buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSe
       jlptLevel: userKeys.jlptLevel || 'N4'
     },
     vocabulary,
-    vidSet,
     vocabSet,
     checkViolationsFn
   };

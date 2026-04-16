@@ -572,7 +572,6 @@ export default function createCombatRoutes({
         if (vocabConfig) {
           regenNpcDialogueFn(req.user.id, npcId, vocabConfig.aiConfig, {
             words: vocabConfig.vocabulary,
-            vidSet: vocabConfig.vidSet,
             checkViolationsFn: vocabConfig.checkViolationsFn
           }).catch(e => {
             console.error('[NpcDialogue] Background regen failed:', e.message);

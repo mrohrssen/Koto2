@@ -44,7 +44,6 @@ import { showLearnPrompt } from './move-learn.js';
 import { renderButtonsAsync } from './ui-components.js';
 import { playNpcSkillAnimation } from './room-transition.js';
 import * as befriend from './befriend.js';
-import * as kanaCombat from './kana-combat.js';
 import * as vfx from './combat-vfx.js';
 import * as npcDialogueUI from './npc-dialogue-ui.js';
 import {
@@ -144,7 +143,6 @@ let updateGameState = null;
 let updateUI = null;
 let settings = null;
 let narration = null;
-let wordPractice = null;
 let characterUI = null;
 
 // Combat UI functions
@@ -206,7 +204,6 @@ export function init(callbacks) {
   updateUI = callbacks.updateUI;
   settings = callbacks.settings;
   narration = callbacks.narration;
-  wordPractice = callbacks.wordPractice;
   characterUI = callbacks.characterUI;
 
   // Combat UI functions
@@ -259,12 +256,6 @@ export function init(callbacks) {
     apiBefriendReplace: callbacks.apiBefriendReplace,
     apiGetBefriendConversation: callbacks.apiGetBefriendConversation,
     apiSubmitBefriendAnswer: callbacks.apiSubmitBefriendAnswer,
-  });
-
-  kanaCombat.init({
-    getGameState: () => getGameState(),
-    showFlashCards,
-    executeCreatureMovesTurn,
   });
 
   vfx.init({
@@ -384,14 +375,6 @@ export function startMoveSelection() {
   moveChoices = [];
   currentCreatureIndex = 0;
   promptNextCreature();
-}
-
-export function handleKanaSwipe(direction) {
-  kanaCombat.handleSwipe(direction);
-}
-
-export function isKanaRoundInProgress() {
-  return kanaCombat.isRoundInProgress();
 }
 
 function promptNextCreature() {
@@ -524,31 +507,8 @@ export function pauseForNextVocab() {
   const isCreatureCombat = state.combat?.isCreatureCombat;
   if (isCreatureCombat) {
     startMoveSelection();
-  } else {
-    combatPausedForVocab = true;
-    showNextDualCardsFromQueue();
   }
 }
-
-function showNextDualCardsFromQueue() {
-  const words = wordPractice.getTwoCombatWords?.();
-  if (!words || !words.attackWord) {
-    // Fallback: not enough words, use single card flow
-    const word = wordPractice.getNextCombatWord?.();
-    if (word && showFlashCards) {
-      showFlashCards([word]);
-    }
-    return;
-  }
-
-  // Old befriend flash-card path disabled — befriend now triggers via 10% kill roll (Task 8.2)
-  // const anyEnemyBefriendable = enemies.some(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5);
-  // const befriendAvailable = isCreatureCombat && anyEnemyBefriendable && party && !state.combat?.npcId;
-  if (showFlashCards) {
-    showFlashCards([words.attackWord, words.defendWord]);
-  }
-}
-
 
 /**
  * Find a creature slot element by creature ID (matches against game state).
@@ -792,11 +752,9 @@ export async function executePlayerAttack() {
       // Don't trigger defeat for errors - recover by showing next flashcard
       playerAttackPending = false;
 
-      // Recovery: pause for vocab and show dual cards so player can continue
+      // Recovery: restart move selection so player can continue
       if (combatActive) {
-        combatPausedForVocab = true;
-        showNextDualCardsFromQueue();
-        logger.warn('[CombatLoop] Recovered from player attack error, showing dual cards');
+        logger.warn('[CombatLoop] Recovered from player attack error, restarting move selection');
       }
     }
   });
@@ -1326,26 +1284,11 @@ export async function executeEnemyAttackThenPause() {
         return;
       }
 
-      // Pause combat - wait for vocab review before next cycle
       enemyAttackPending = false;
-      combatPausedForVocab = true;
-      // Delay before showing dual cards so player can see the damage
-      await delay(1440);
-      // Show next dual cards for the next review
-      showNextDualCardsFromQueue();
-      console.log('[Combat] Paused for vocab review. Review a word to continue.');
 
     } catch (error) {
       console.error('Enemy attack error:', error);
-      // Don't trigger defeat for errors - recover by showing dual cards
       enemyAttackPending = false;
-
-      // Recovery: pause for vocab and show dual cards so player can continue
-      if (combatActive) {
-        combatPausedForVocab = true;
-        showNextDualCardsFromQueue();
-        logger.warn('[CombatLoop] Recovered from enemy attack error, showing dual cards');
-      }
     }
   });
 }
@@ -1458,20 +1401,10 @@ async function executeDefendThenPause() {
       }
 
       enemyAttackPending = false;
-      combatPausedForVocab = true;
-      await delay(1440);
-      showNextDualCardsFromQueue();
-      logger.info('[Combat] Defend complete. Paused for vocab review.');
 
     } catch (error) {
       console.error('Defend action error:', error);
       enemyAttackPending = false;
-
-      if (combatActive) {
-        combatPausedForVocab = true;
-        showNextDualCardsFromQueue();
-        logger.warn('[CombatLoop] Recovered from defend error, showing dual cards');
-      }
     }
   });
 }
@@ -1524,29 +1457,6 @@ export async function stopCombatLoop(result) {
   setScrollState('accelerating');
   pixiHideFormation('enemy');
 
-  // Hide word practice cards and close modal
-  wordPractice.hideWordCards();
-  wordPractice.closeWordInputModal();
-
-  // Post-combat refresh: update cache with fresh states for reviewed words
-  const reviewedWords = wordPractice.getReviewedWordsThisCombat();
-  if (reviewedWords.length > 0) {
-    const apiKeys = settings.getApiKeys();
-    fetch(`${API_BASE}/api/game/post-combat-refresh`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        words: reviewedWords,
-        jpdbApiKey: apiKeys.jpdbApiKey
-      })
-    }).then(r => r.json()).then(data => {
-      console.log(`[Combat] Post-combat refresh: ${data.refreshed} words updated`);
-    }).catch(err => {
-      console.warn('[Combat] Post-combat refresh failed:', err);
-    });
-    wordPractice.clearReviewedWordsThisCombat();
-  }
-
   // Brief pause before narration (let final damage numbers display)
   await delay(720);
 
@@ -1598,7 +1508,6 @@ export async function stopCombatLoop(result) {
       await showPostCombatShop();
     }
     showVictoryModal(result);
-    wordPractice.prefetchCombatWords();
   } else {
     showGameOverModal(result);
   }

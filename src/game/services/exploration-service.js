@@ -13,7 +13,7 @@ import {
 
 import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPrice, getCreatureSellPrice, generateDealerCreatures } from '../creatures.js';
 import { logger } from '../../logger.js';
-import { getDueWordsWithMeanings } from '../../jpdb.js';
+import { getDueCards } from '../internal-srs.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
 import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
@@ -1054,7 +1054,7 @@ export class ExplorationService {
     };
   }
 
-  async startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider } = {}) {
+  async startSpeedReviewRoom({ roomId, userId, dueWordsProvider } = {}) {
     if (!roomId) {
       throw new Error('roomId is required');
     }
@@ -1070,12 +1070,18 @@ export class ExplorationService {
     }
 
     const targetCards = Math.max(0, Number(roomState.targetCards) || 10);
-    const fetchDueWords = dueWordsProvider || getDueWordsWithMeanings;
     let dueWords = [];
 
-    if (jpdbApiKey && userId) {
-      const result = await fetchDueWords(jpdbApiKey, 1000, [], userId, []);
-      dueWords = Array.isArray(result?.words) ? result.words : [];
+    if (dueWordsProvider) {
+      const result = await dueWordsProvider(userId);
+      dueWords = Array.isArray(result?.words) ? result.words : (Array.isArray(result) ? result : []);
+    } else if (userId) {
+      const dueCards = getDueCards(userId, 'vocab');
+      dueWords = dueCards.map(c => ({
+        word: c.word || c.id,
+        reading: c.reading || c.word || c.id,
+        meanings: c.meaning ? [c.meaning] : []
+      }));
     }
 
     const snapshotWords = dueWords.slice(0, targetCards).map(word => this._sanitizeSpeedReviewWord(word));

@@ -32,7 +32,7 @@ export default function createRoutes(deps) {
     ttsDialogueCache: deps.ttsDialogueCache
   }));
 
-  // Vocab/JPDB routes: /api/vocab/*, /api/jpdb/*
+  // Vocab routes: /api/vocab/*
   router.use(createVocabRoutes({
     getSettings: deps.getSettings
   }));
