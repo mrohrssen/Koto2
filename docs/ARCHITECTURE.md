@@ -10,7 +10,6 @@ This document describes the technical architecture of Koto. It covers the game f
 4. [Creature Combat (Core Mechanic)](#creature-combat-core-mechanic)
 5. [Combat System](#combat-system)
 6. [Area System (Exploration)](#area-system-exploration)
-6. [Vocabulary Integration (JPDB)](#vocabulary-integration-jpdb)
 7. [AI Narration and TTS](#ai-narration-and-tts)
 8. [Meta-Progression](#meta-progression)
 9. [Logging System](#logging-system)
@@ -29,7 +28,7 @@ Koto is a Japanese vocabulary learning RPG set in a vibrant fantasy world inspir
 - Backend: Express.js (Node.js ES modules)
 - Frontend: Vanilla HTML/CSS/JS (no framework)
 - Data: Local JSON files for persistence
-- APIs: JPDB (vocabulary), OpenAI/Anthropic/Google (narration), VOICEVOX (TTS)
+- APIs: OpenAI/Anthropic/Google (narration), VOICEVOX (TTS)
 
 **Design Philosophy:**
 The game intentionally simplifies traditional RPG mechanics to keep focus on Japanese language learning. Combat uses only attack and HP stats, removing the cognitive overhead of complex builds.
@@ -83,7 +82,7 @@ Object nouns for creatures tend to include **katakana loanwords** (ハンマー,
 
 ### Data Source
 
-The word list lives in `data/jpdb-wordlist.json`, sourced from JPDB deck 81 (~9,500 words). At session start, the server parses this list against each user's JPDB account to determine word states (due, learning, known, new) and caches the result per-user.
+The word list lives in `data/jpdb-wordlist.json`, sourced from JPDB deck 81 (~9,500 words). Word states (due, learning, known, new) are managed by the FSRS spaced repetition system, stored per-user in the save file.
 
 ---
 
@@ -305,54 +304,6 @@ The game takes place across 7 Tokyo wards, each representing a dungeon floor.
 
 ---
 
-## Vocabulary Integration (JPDB)
-
-JPDB (Japanese Dictionary Database) provides vocabulary data with spaced repetition learning states.
-
-### Lookup Mode
-
-Click any Japanese word to see a popup with:
-- Definition
-- Reading (furigana)
-- Card state (new, learning, known)
-- JPDB link
-
-**Implementation:**
-1. User activates lookup mode
-2. All visible Japanese text is tokenized
-3. Words are prefetched from JPDB
-4. Clicking a word shows cached definition
-
-**Cheating Prevention:** Lookup is blocked on quiz answers.
-
-### Word Suggestions for AI
-
-When generating narration, the system suggests vocabulary at the user's level:
-
-```javascript
-// Word selection distribution
-60% - Due words (need review)
-25% - Learning words (in progress)
-15% - Known words (mastered)
-```
-
-A ring buffer of last 50 used words prevents repetition.
-
-### Caching
-
-| Cache | Purpose | File |
-|-------|---------|------|
-| Deck vocabulary | Full JPDB deck | `.jrpg-vocab-cache.json` |
-| Definition cache | In-memory | Runtime only |
-
-**Files:**
-- `src/jpdb.js` - JPDB API client with rate limiting
-- `src/vocab-manager.js` - Word suggestion logic
-- `public/js/ui/lookup.js` - Frontend lookup UI
-- `public/js/word-practice.js` - Optional vocab review during combat
-
----
-
 ## AI Narration and TTS
 
 ### AI Providers
@@ -541,7 +492,6 @@ store.set('combat', newCombatState);
 |-----------|---------|
 | `/api/auth/*` | Login, register, API key management |
 | `/api/game/*` | Game state, combat, exploration, meta-progression |
-| `/api/jpdb/*` | JPDB vocabulary integration |
 | `/api/tts/*` | VOICEVOX text-to-speech |
 | `/api/vocab/*` | Word suggestions |
 | `/api/settings` | User preferences |
@@ -577,7 +527,6 @@ store.set('combat', newCombatState);
 |------|----------|
 | `.jrpg-save-{userId}.json` | Player state + meta-progression |
 | `.jrpg-settings.json` | Server settings |
-| `.jrpg-vocab-cache.json` | JPDB vocabulary cache |
 
 **Files:**
 - `server.js` - Express server and routes
@@ -645,7 +594,6 @@ store.set('combat', newCombatState);
 
 | File | Purpose |
 |------|---------|
-| `src/jpdb.js` | JPDB API client |
 | `src/ai-providers.js` | Multi-provider AI abstraction |
 | `src/voicevox.js` | VOICEVOX TTS client |
 | `src/vocab-manager.js` | Word suggestion logic |

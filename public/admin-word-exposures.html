@@ -65,25 +65,11 @@
   }
   button:hover { background: #16213e; }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .controls .checkbox-wrap {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .controls .checkbox-wrap input { cursor: pointer; }
-  .controls .checkbox-wrap label { cursor: pointer; }
   .stats {
     color: #7fdbca;
     font-size: 13px;
-    margin-bottom: 4px;
-  }
-  .progress {
-    font-size: 12px;
-    color: #f0a500;
     margin-bottom: 10px;
-    min-height: 16px;
   }
-  .progress span { margin-right: 16px; }
   .tabs {
     display: flex;
     gap: 0;
@@ -138,27 +124,6 @@
     vertical-align: top;
   }
   tbody tr:hover { background: rgba(127, 219, 202, 0.05); }
-  tbody tr.different { background: #2a1a1a; }
-  tbody tr.different:hover { background: #3a2020; }
-  .diff-yes {
-    background: #a83232;
-    color: #fff;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: bold;
-  }
-  .diff-badge {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 11px;
-    margin: 1px 2px;
-    white-space: nowrap;
-  }
-  .diff-merge { background: #a86b32; color: #fff; }
-  .diff-split { background: #3264a8; color: #fff; }
-  .diff-spelling { background: #a83264; color: #fff; }
   .loading { color: #666; }
   .empty-msg {
     text-align: center;
@@ -175,10 +140,6 @@
 
 <div class="controls">
   <button id="loadBtn" onclick="load()">Reload</button>
-  <div class="checkbox-wrap">
-    <input type="checkbox" id="diffOnly" onchange="renderAll()">
-    <label for="diffOnly">Show only differences</label>
-  </div>
   <div>
     <label>Search</label><br>
     <input type="text" id="search" placeholder="Filter..." oninput="renderAll()">
@@ -192,10 +153,6 @@
 </div>
 
 <div class="stats" id="stats"></div>
-<div class="progress">
-  <span id="wordProgress"></span>
-  <span id="frameProgress"></span>
-</div>
 
 <div class="tabs">
   <div class="tab-btn active" onclick="switchTab('words')">Word Exposures</div>
@@ -213,10 +170,6 @@
         <th class="sortable" onclick="sortWords('definition')">Our Definition</th>
         <th class="sortable" onclick="sortWords('totalExposures')">Exposures</th>
         <th class="sortable" onclick="sortWords('userCount')">Users</th>
-        <th>JPDB Spelling</th>
-        <th>JPDB Reading</th>
-        <th>JPDB Definition</th>
-        <th>Different?</th>
       </tr>
     </thead>
     <tbody id="words-body"></tbody>
@@ -232,8 +185,6 @@
         <th>Category</th>
         <th>Raw Text</th>
         <th>Sudachi Tokens</th>
-        <th>JPDB Tokens</th>
-        <th>Diffs</th>
       </tr>
     </thead>
     <tbody id="frames-body"></tbody>
@@ -244,8 +195,6 @@
 // --- State ---
 let wordsData = [];
 let framesData = [];
-let jpdbWordResults = {};
-let jpdbFrameResults = {};
 let sortCol = 'totalExposures';
 let sortDir = -1; // -1 = desc
 let activeTab = 'words';
@@ -320,43 +269,25 @@ function renderAll() {
 
 function renderWords() {
   const tbody = document.getElementById('words-body');
-  const diffOnly = document.getElementById('diffOnly').checked;
   const search = document.getElementById('search').value.toLowerCase().trim();
   const sorted = getSortedWords();
 
   let html = '';
   let idx = 0;
   for (const w of sorted) {
-    const jpdb = jpdbWordResults[w.word];
-    const isDiff = jpdb ? jpdb.isDifferent : null;
-
-    if (diffOnly && jpdb != null && !isDiff) continue;
     if (search) {
       const hay = [w.word, w.reading, w.definition].join(' ').toLowerCase();
       if (!hay.includes(search)) continue;
     }
 
     idx++;
-    const rowClass = isDiff ? ' class="different"' : '';
-    const jpdbSpelling = jpdb ? esc(jpdb.jpdbSpelling) : '<span class="loading">...</span>';
-    const jpdbReading = jpdb ? esc(jpdb.jpdbReading) : '<span class="loading">...</span>';
-    const jpdbDef = jpdb ? esc(jpdb.jpdbDefinition) : '<span class="loading">...</span>';
-    let diffCell = '<span class="loading">...</span>';
-    if (jpdb != null) {
-      diffCell = isDiff ? '<span class="diff-yes">YES</span>' : 'no';
-    }
-
-    html += '<tr' + rowClass + '>'
+    html += '<tr>'
       + '<td>' + idx + '</td>'
       + '<td>' + esc(w.word) + '</td>'
       + '<td>' + esc(w.reading) + '</td>'
       + '<td>' + esc(w.definition) + '</td>'
       + '<td>' + w.totalExposures + '</td>'
       + '<td>' + w.userCount + '</td>'
-      + '<td>' + jpdbSpelling + '</td>'
-      + '<td>' + jpdbReading + '</td>'
-      + '<td>' + jpdbDef + '</td>'
-      + '<td>' + diffCell + '</td>'
       + '</tr>';
   }
 
@@ -367,62 +298,32 @@ function renderWords() {
 
 function renderFrames() {
   const tbody = document.getElementById('frames-body');
-  const diffOnly = document.getElementById('diffOnly').checked;
   const search = document.getElementById('search').value.toLowerCase().trim();
   const catFilter = document.getElementById('categoryFilter').value;
 
   let html = '';
   for (const f of framesData) {
-    const cmp = jpdbFrameResults[f.id];
-    const isDiff = cmp ? cmp.isDifferent : null;
-
-    if (diffOnly && cmp != null && !isDiff) continue;
     if (catFilter && f.category !== catFilter) continue;
     if (search) {
       const hay = [f.id, f.category, f.raw].join(' ').toLowerCase();
       if (!hay.includes(search)) continue;
     }
 
-    const rowClass = isDiff ? ' class="different"' : '';
+    const sudachiCol = f.tokens
+      ? esc(f.tokens.map(t => t.base || t.surface).join('\u00B7'))
+      : '';
 
-    let sudachiCol = '<span class="loading">...</span>';
-    let jpdbCol = '<span class="loading">...</span>';
-    let diffCol = '<span class="loading">...</span>';
-
-    if (cmp) {
-      sudachiCol = esc((cmp.sudachiTokens || []).map(t => t.base || t.surface).join('\u00B7'));
-      jpdbCol = esc((cmp.jpdbTokens || []).map(t => t.spelling).join('\u00B7'));
-      if (cmp.diffs && cmp.diffs.length > 0) {
-        diffCol = cmp.diffs.map(d => {
-          const cls = 'diff-badge diff-' + (d.type || 'spelling');
-          const sud = formatDiffPart(d.sudachi);
-          const jpd = formatDiffPart(d.jpdb);
-          return '<span class="' + cls + '">' + esc(d.type) + ': ' + esc(sud) + ' \u2192 ' + esc(jpd) + '</span>';
-        }).join(' ');
-      } else {
-        diffCol = isDiff ? '<span class="diff-yes">differs</span>' : '';
-      }
-    }
-
-    html += '<tr' + rowClass + '>'
+    html += '<tr>'
       + '<td>' + esc(f.id) + '</td>'
       + '<td>' + esc(f.category) + '</td>'
       + '<td>' + esc(f.raw) + '</td>'
       + '<td>' + sudachiCol + '</td>'
-      + '<td>' + jpdbCol + '</td>'
-      + '<td>' + diffCol + '</td>'
       + '</tr>';
   }
 
   tbody.innerHTML = html;
   document.getElementById('frames-table').style.display = framesData.length ? '' : 'none';
   document.getElementById('frames-empty').style.display = framesData.length ? 'none' : '';
-}
-
-function formatDiffPart(val) {
-  if (val == null) return '\u2205';
-  if (Array.isArray(val)) return val.join('+');
-  return String(val);
 }
 
 function updateStats() {
@@ -446,7 +347,6 @@ async function load() {
   btn.disabled = true;
 
   try {
-    // Phase 1: fetch word-exposures and frames in parallel
     const [wordsRes, framesRes] = await Promise.all([
       fetch('/api/admin/word-exposures', { headers: headers() }).then(r => r.json()),
       fetch('/api/admin/frames', { headers: headers() }).then(r => r.json())
@@ -456,78 +356,15 @@ async function load() {
     window._totalUsers = wordsRes.totalUsers;
     framesData = framesRes.frames || [];
 
-    jpdbWordResults = {};
-    jpdbFrameResults = {};
-
     updateStats();
     populateCategories();
     renderAll();
-
-    // Phase 2: JPDB comparisons in batches (concurrent)
-    fetchJpdbWordBatches();
-    fetchJpdbFrameBatches();
   } catch (err) {
     alert('Error loading data: ' + err.message);
   } finally {
     btn.textContent = 'Load';
     btn.disabled = false;
   }
-}
-
-async function fetchJpdbWordBatches() {
-  const BATCH = 50;
-  const allWords = wordsData.map(w => w.word);
-  const total = allWords.length;
-
-  for (let i = 0; i < total; i += BATCH) {
-    const batch = allWords.slice(i, i + BATCH);
-    document.getElementById('wordProgress').textContent =
-      'Words: comparing ' + Math.min(i + BATCH, total) + '/' + total + '...';
-
-    try {
-      const res = await fetch('/api/admin/word-exposures/jpdb-compare', {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({ words: batch })
-      });
-      const data = await res.json();
-      Object.assign(jpdbWordResults, data.results || {});
-      renderWords();
-    } catch (err) {
-      console.error('JPDB word batch error:', err);
-    }
-  }
-
-  document.getElementById('wordProgress').textContent =
-    'Words: ' + total + '/' + total + ' compared';
-}
-
-async function fetchJpdbFrameBatches() {
-  const BATCH = 30;
-  const allIds = framesData.map(f => f.id);
-  const total = allIds.length;
-
-  for (let i = 0; i < total; i += BATCH) {
-    const batch = allIds.slice(i, i + BATCH);
-    document.getElementById('frameProgress').textContent =
-      'Frames: comparing ' + Math.min(i + BATCH, total) + '/' + total + '...';
-
-    try {
-      const res = await fetch('/api/admin/word-exposures/frame-compare', {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({ frameIds: batch })
-      });
-      const data = await res.json();
-      Object.assign(jpdbFrameResults, data.results || {});
-      renderFrames();
-    } catch (err) {
-      console.error('JPDB frame batch error:', err);
-    }
-  }
-
-  document.getElementById('frameProgress').textContent =
-    'Frames: ' + total + '/' + total + ' compared';
 }
 
 // --- Init ---

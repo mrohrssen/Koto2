@@ -22,7 +22,6 @@ describe('auth/crypto', () => {
   describe('API key encryption', () => {
     it('encrypts and decrypts keys round-trip', () => {
       const keys = {
-        jpdbApiKey: 'jpdb-key-123',
         aiApiKey: 'ai-key-456',
         aiProvider: 'openai',
         openaiModel: 'gpt-4o'

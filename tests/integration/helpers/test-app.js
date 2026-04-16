@@ -43,7 +43,7 @@ export async function createTestApp() {
       saveSettings: (nextSettings) => { Object.assign(settings, nextSettings); },
       ttsCache: createMockTTS(),
       ttsDialogueCache: createMockTTSDialogue(),
-      getUserVocabulary: () => ({ words: [], vidSet: new Set() }),
+      getUserVocabulary: () => ({ words: [] }),
       getDebugMode: () => debugMode,
       setDebugMode: (val) => { debugMode = val; },
       updateGameStatsWithEvent: () => {},

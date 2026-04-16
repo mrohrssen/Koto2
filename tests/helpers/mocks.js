@@ -19,37 +19,6 @@ export function createMockAIProvider(responses = ['{"line":"テスト","emotion"
 }
 
 /**
- * Creates a mock fetch that intercepts JPDB API calls.
- * Non-JPDB URLs pass through (or throw).
- */
-export function createMockJPDB({ vocabList = [], parseResults = [] } = {}) {
-  const calls = [];
-
-  function mockFetch(url, opts) {
-    calls.push({ url, opts });
-
-    if (url.includes('/api/v1/list-vocabulary')) {
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ vocabulary: vocabList }),
-      });
-    }
-    if (url.includes('/api/v1/parse')) {
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(parseResults.shift() || { tokens: [] }),
-      });
-    }
-
-    return Promise.reject(new Error(`Unmocked URL: ${url}`));
-  }
-
-  return { mockFetch, calls };
-}
-
-/**
  * Creates a test player state with optional overrides.
  */
 export function createTestPlayer(overrides = {}) {

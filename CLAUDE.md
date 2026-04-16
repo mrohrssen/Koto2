@@ -25,7 +25,6 @@ Japanese vocabulary learning RPG — bright sci-fi fantasy where creatures and h
 - **Transitivity matters:** 狂う means "go mad" (intransitive), NOT "drive mad" (transitive/causative). 迷う means "get lost / hesitate," NOT "bewilder." Never flip a word's transitivity to make it sound cooler.
 - **Use primary dictionary definitions:** Present the most common meaning first. If a word has multiple senses, show them separated by `/` (e.g., "invite / tempt").
 - **No embellishment:** Don't upgrade "scatter" to "shatter," "invite" to "lure," or "go mad" to "drive mad." If the accurate translation feels underwhelming for a game ability name, pick a different word — don't bend the translation.
-- **Show raw JPDB definitions:** When suggesting Japanese words, always show the exact `meanings` array from the JPDB API response. Do not paraphrase or summarize. The user must be able to verify every translation against the source data.
 - **When in doubt, check a dictionary.** If you're unsure whether an English gloss is accurate, say so rather than guessing.
 
 ## Commands
@@ -111,7 +110,6 @@ public/
   game.html            # Main game template
   assets/              # Sprites, backgrounds
 src/
-  jpdb.js              # JPDB API integration
   ai-providers.js      # Multi-provider AI abstraction
   game/
     loop.js            # GameManager class (central coordinator)
@@ -139,7 +137,6 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 - `/api/auth/` - Authentication (login, register, API keys)
 - `/api/game/` - Game state, combat, exploration, meta-progression
-- `/api/jpdb/` - JPDB vocabulary integration
 - `/api/vocab/` - Word suggestion system
 - `/api/tts/` - VOICEVOX text-to-speech
 - `/api/settings` - User preferences
@@ -309,17 +306,6 @@ Each bug report includes:
 - `devicePixelRatio` - Screen density (3 for Retina)
 - `userAgent` - Browser/device info
 - `gameState` - Current game phase, floor, combat status
-
-## Migration Notes
-
-### 2026-02-05: Per-User Vocab Cache
-- Old shared cache `data/.jrpg-vocab-suggestions.json` is deprecated
-- New per-user caches: `data/vocab-cache-{userId}.json`
-- Delete old cache on deploy: `rm -f data/.jrpg-vocab-suggestions.json`
-- Each user's JPDB word states are now isolated
-- First speed review after deploy will rebuild the cache for each user
-
-
 
 ## ComfyUI (Image Generation)
 

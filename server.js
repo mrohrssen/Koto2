@@ -31,7 +31,7 @@ import {
 } from './src/game-stats.js';
 import {
   configureVocabManager,
-  refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache as invalidateVocabManagerCache,
+  getVocabManagerStats,
   getNarrationVocabularyForUser
 } from './src/game/vocab-manager.js';
 import {

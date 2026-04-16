@@ -75,7 +75,7 @@ describe('speed review room flow', () => {
   it('start/complete cycle with empty vocab auto-completes the room', async () => {
     const room = await enterSpeedReviewRoom(client);
 
-    // Start the review — no JPDB key / empty vocab from mock -> empty snapshot
+    // Start the review — empty vocab from mock -> empty snapshot
     const startRes = await client.post('/api/game/speed-review-room/start', {
       roomId: room.id
     });
@@ -115,8 +115,7 @@ describe('speed review room flow', () => {
     // commitIndex 0 is out of bounds when completionTarget is 0
     const progressRes = await client.post('/api/game/speed-review-room/progress', {
       roomId: room.id,
-      vid: 1000,
-      sid: 1,
+      word: '単語テスト',
       commitIndex: 0
     });
     // 409 — classified as a transition error by the route handler
@@ -162,25 +161,18 @@ describe('speed review room flow', () => {
     assert.equal(r3.status, 400);
     assert.ok(r3.body.error.includes('roomId'));
 
-    // progress: has roomId but missing vid
+    // progress: has roomId but missing word
     const r4 = await client.post('/api/game/speed-review-room/progress', {
-      roomId: 'x', sid: 1, commitIndex: 0
+      roomId: 'x', commitIndex: 0
     });
     assert.equal(r4.status, 400);
-    assert.ok(r4.body.error.includes('vid'));
-
-    // progress: has roomId+vid but missing sid
-    const r5 = await client.post('/api/game/speed-review-room/progress', {
-      roomId: 'x', vid: 1, commitIndex: 0
-    });
-    assert.equal(r5.status, 400);
-    assert.ok(r5.body.error.includes('sid'));
+    assert.ok(r4.body.error.includes('word'));
 
     // progress: negative commitIndex
-    const r6 = await client.post('/api/game/speed-review-room/progress', {
-      roomId: 'x', vid: 1, sid: 1, commitIndex: -1
+    const r5 = await client.post('/api/game/speed-review-room/progress', {
+      roomId: 'x', word: '単語', commitIndex: -1
     });
-    assert.equal(r6.status, 400);
-    assert.ok(r6.body.error.includes('commitIndex'));
+    assert.equal(r5.status, 400);
+    assert.ok(r5.body.error.includes('commitIndex'));
   });
 });
