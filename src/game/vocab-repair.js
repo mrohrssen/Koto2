@@ -1,4 +1,5 @@
-import { parseText } from '../jpdb.js';
+// TODO(jpdb-removal): Rewire to Sudachi tokenizer — see Task 17 in Chunk 3
+const parseText = async () => [];
 
 // ============================================================================
 // CONFIGURATION

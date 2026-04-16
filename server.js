@@ -8,23 +8,6 @@ import dotenv from 'dotenv';
 
 import { createApp, enrichGameState } from './src/app.js';
 
-// Local module imports
-import {
-  configure as configureJpdb,
-  initialize as initializeJpdb,
-  getVocabulary,
-  clearVocabCache,
-  testConnection,
-  parseText,
-  lookupWordStates,
-  CARD_STATES,
-  reviewVocabulary,
-  REVIEW_GRADES,
-  getDueWordsWithMeanings,
-  getWordState,
-  invalidateWordStateCache,
-  lookupVocabularyMeaning
-} from './src/jpdb.js';
 
 import {
   chat,
@@ -87,38 +70,15 @@ const PORT = process.env.PORT || 3000;
 // File paths - use persistent data directory on Railway
 const SETTINGS_FILE = dataPath('.jrpg-settings.json');
 const GAME_SAVE_FILE = dataPath('.jrpg-save.json');
-const VOCAB_CACHE_FILE = dataPath('.jrpg-vocab-cache.json');
-// Use persistent data directory for per-user vocab suggestion caches
-const VOCAB_CACHE_DIR = dataPath('data/');
-
-// Configure JPDB with file paths
-configureJpdb({
-  vocabCacheFile: VOCAB_CACHE_FILE,
-  vocabCacheDir: VOCAB_CACHE_DIR
-});
-initializeJpdb();
-
-// Configure vocab manager with cache directory for per-user files
-configureVocabManager({ cacheDir: VOCAB_CACHE_DIR });
-
-// Load static word list for JPDB batch parsing
-let staticWordList = [];
-const wordListPath = join(__dirname, 'data/jpdb-wordlist.json');
-if (existsSync(wordListPath)) {
-  try {
-    staticWordList = JSON.parse(readFileSync(wordListPath, 'utf-8'));
-    console.log(`Loaded ${staticWordList.length} words from static word list`);
-  } catch (e) {
-    console.warn('Failed to load static word list:', e.message);
-  }
-}
+// Configure vocab manager
+configureVocabManager({});
 
 // Load hardcoded dialogue pools (CID scripts, NPC lines, barks)
 loadDialoguePools(join(process.cwd(), 'data'));
 
 const gameManager = new GameManager();
 
-// Debug mode - disables AI narration only (JPDB vocab calls still work)
+// Debug mode - disables AI narration only
 let debugMode = false;
 
 // Vocab manager is now initialized per-user when they first access vocab features
@@ -127,7 +87,6 @@ let debugMode = false;
 function loadSettings() {
   // API keys are now stored client-side in localStorage, not server-side
   const defaults = {
-    jpdbDeckId: 'all',
     jlptLevel: 'N5',
     // Game TTS Settings (narrator voice)
     gameTtsEnabled: true,
@@ -277,8 +236,6 @@ const app = createApp({
     setGameStats: (newStats) => { gameStats = newStats; },
     getDebugMode: () => debugMode,
     setDebugMode: (val) => { debugMode = val; },
-    vocabCacheFile: VOCAB_CACHE_FILE,
-    staticWordList,
     getUserVocabulary: getUserNarrationVocabulary,
     getCreatureDialogueFromCache: (userId, creatureId) =>
       getNpcDialogueFromCache(userId, creatureId, 'creature'),
@@ -344,9 +301,7 @@ if (devPassword) {
 }
 
 function getUserNarrationVocabulary(userId) {
-  const vocabResult = getVocabulary();
-  const fallbackVocabulary = Array.isArray(vocabResult?.words) ? vocabResult.words : [];
-  return getNarrationVocabularyForUser(userId, fallbackVocabulary);
+  return getNarrationVocabularyForUser(userId);
 }
 
 // ============ Theme Pool Submit ============
@@ -377,7 +332,7 @@ app.post('/api/theme-pool/submit', async (req, res) => {
       await import('./scripts/lib/theme-pool-helpers.mjs');
     const { saveTheme, validateTheme } = await import('./scripts/lib/theme-utils.mjs');
 
-    // Map JPDB short POS tags to the longer form expected by assignRoles
+    // Map short POS tags to the longer form expected by assignRoles
     const wordsWithPosTag = words.map(w => {
       let posTag = 'noun'; // default fallback
       const pos = (w.pos || '').toLowerCase();
