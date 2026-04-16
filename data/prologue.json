@@ -68,13 +68,13 @@
     "narration": "But enough talking, let's get started on your first adventure."
   },
   {
-    "id": "prologue-starter-selection",
+    "id": "prologue-starter-gift",
     "speaker": "Cid",
-    "narration": "Every adventurer needs a companion. Choose yours wisely.",
-    "choices": [
-      { "id": "starter-fire", "text": "ひ (Fire)" },
-      { "id": "starter-water", "text": "みず (Water)" },
-      { "id": "starter-wood", "text": "き (Wood)" }
-    ]
+    "narration": "Every adventurer needs a companion. Here, take this Fire creature."
+  },
+  {
+    "id": "prologue-lets-go",
+    "speaker": "Cid",
+    "narration": "Now let's head to the Starting Meadow for your first exploration!"
   }
 ]
