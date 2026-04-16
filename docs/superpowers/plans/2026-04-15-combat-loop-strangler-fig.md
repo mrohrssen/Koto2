@@ -4,11 +4,13 @@
 
 **Goal:** Extract `public/js/ui/combat-loop.js` (3,626 lines, 6 concerns) into 6 focused modules using incremental Strangler Fig extraction, reducing coordinator to ~1,400 lines doing one job.
 
-**Architecture:** Each extraction is two commits — a pure move (cut-paste + wire delegation) then a simplify (clean up the isolated code). Extracted modules receive dependencies as function arguments, never reaching into shared module state. The coordinator remains the only file with mutable state.
+**Architecture:** Each extraction is two commits — a pure move (cut-paste + wire delegation) then a simplify (clean up the isolated code). Extracted modules receive dependencies as function arguments, never reaching into shared module state. The coordinator remains the only file with mutable turn-loop state, and extracted modules do not import one another.
 
 **Tech Stack:** ES6 modules, Node.js test runner with c8 coverage, PixiJS v8 (mocked in tests)
 
 **Spec:** `docs/superpowers/specs/2026-04-15-combat-loop-strangler-fig-design.md`
+
+**Line-number note:** Function names are the source of truth. The line numbers below are checkpoints from the 2026-04-15 snapshot and must be re-verified before each move.
 
 ---
 
@@ -46,7 +48,12 @@ From lines 2736–3336:
 - Helper: `renderButtonsAsync` (used only by befriend — check if defined elsewhere or inline)
 - Helper: `playDialogueAudio` (used only by befriend conversation — check location)
 
-Each function that currently reads module-level variables (`getGameState`, `narration`, `combatActive`, etc.) must be converted to accept a `ctx` object parameter. The coordinator will pass these when calling.
+Do **not** mechanically thread one giant ambient `ctx` through every local helper. Keep internal helpers direct and local. Only exported async entry points should receive a narrow dependency object, and anything that can change during a long-running flow must be passed as a getter or callback, not as a by-value snapshot.
+
+Examples:
+- Pass `isCombatActive: () => combatActive`, not `combatActive`
+- Pass `syncFinalState(result)` as a callback, not raw state internals
+- Keep pure helpers like `isBefriendSlotBlocked()` pure if possible by giving them explicit state inputs
 
 Export the public API:
 ```js
@@ -71,25 +78,40 @@ Replace every internal call to the moved functions with delegation. Examples:
 handleBefriendTalk();
 
 // After:
-befriend.handleBefriendTalk(buildBefriendCtx());
+befriend.handleBefriendTalk(buildBefriendDeps());
 ```
 
-Add a helper in `combat-loop.js` to build the context object:
+Add a helper in `combat-loop.js` to build the dependency bundle for exported befriend entry points:
 ```js
-function buildBefriendCtx() {
+function buildBefriendDeps() {
   return {
-    getGameState, updateGameState, narration, characterUI, settings,
-    delay, showFormation, hideEnemy, showNpcInDisplay,
-    showDamageNumber, animatePlayerHurt, updateCreatureRowData,
-    combatActive, startMoveSelection, stopCombatLoop,
+    getGameState,
+    updateGameState,
+    isCombatActive: () => combatActive,
+    narration,
+    characterUI,
+    settings,
+    delay,
+    showFormation,
+    hideEnemy,
+    showNpcInDisplay,
+    showDamageNumber,
+    animatePlayerHurt,
+    updateCreatureRowData,
+    startMoveSelection,
+    stopCombatLoop,
+    syncFinalState,
+    updateUI,
+    showGameOverModal,
     apiGetBefriendConversation, apiSubmitBefriendAnswer, apiBefriendReplace,
     insertAttackCard, waitForCardTap, showAttackDisplay,
-    API_BASE, getAuthHeaders: () => getAuthHeaders(),
+    API_BASE,
+    getAuthHeaders,
   };
 }
 ```
 
-The exact contents of `ctx` depend on what each befriend function actually accesses. Audit each function during the move.
+The exact contents of the dependency bundle depend on what the exported befriend entry points actually access. Audit each function during the move. If a helper only needs 2 values, pass 2 values. Avoid a mega-context that turns the extraction into a hidden global.
 
 - [ ] **Step 3: Syntax check both files**
 
@@ -124,7 +146,7 @@ git commit -m "refactor: extract befriend.js from combat-loop (pure move)"
 
 Now that the code is isolated, look for:
 - Dead code: conditional branches that can never execute now that befriend doesn't share state with the turn loop
-- Overly defensive null checks on values that are always passed via `ctx`
+- Overly defensive null checks on values that are always passed via explicit deps
 - Duplicate patterns (e.g., multiple functions building the same speaker object from `quizData`)
 - Remove any `// ============` section markers that no longer make sense
 
@@ -158,34 +180,41 @@ git commit -m "refactor: simplify befriend.js — remove dead code and stale hea
 
 - [ ] **Step 1: Write tests for befriend eligibility helpers**
 
-These are pure functions that can be tested without mocking:
+Only add tests for helpers that remain live after extraction. Do **not** add tests that assume the old move-select Talk button is active if `getMoveSelectBefriendOpts()` still intentionally hard-disables it.
+
+These are good candidates if they remain explicit-input helpers after extraction:
 
 ```js
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-// Import the functions (adjust path if they take ctx)
+// Import the functions (adjust path/signatures after extraction)
 import {
   isBefriendSlotBlocked,
   isBefriendAvailableForSlot,
-  getMoveSelectBefriendOpts,
 } from '../../../public/js/ui/befriend.js';
 
 describe('befriend eligibility', () => {
-  it('blocks befriend when slot has no befriend data', () => {
-    // Test with a slot that has no befriendChance
-    const slot = { creature: { id: 'test' } };
-    assert.equal(isBefriendSlotBlocked(slot), true);
+  it('blocks a slot already recorded in befriendAttemptedSlots', () => {
+    const state = { combat: { befriendAttemptedSlots: { 0: true } } };
+    assert.equal(isBefriendSlotBlocked(state, 0), true);
   });
 
-  it('allows befriend when enemy is below 50% HP with befriend data', () => {
-    // Test with eligible slot
-    // ... (exact assertions depend on function signatures after extraction)
+  it('marks a slot eligible only when exactly one living enemy is below 50% HP', () => {
+    const state = {
+      combat: {
+        isCreatureCombat: true,
+        npcId: null,
+        befriendAttemptedSlots: {},
+        enemies: [{ hp: 4, maxHp: 10, befriended: false }],
+      },
+    };
+    assert.equal(isBefriendAvailableForSlot(state, 0), true);
   });
 });
 ```
 
-Adapt the exact test cases to the actual function signatures after extraction. The key is to test the eligibility logic with direct inputs.
+If `getMoveSelectBefriendOpts()` remains a compatibility wrapper returning `befriendAvailable: false`, either skip it or add a regression test that asserts it stays disabled until product behavior changes. Do not write a failing test that tries to re-enable an intentionally retired UI path.
 
 - [ ] **Step 2: Run tests to verify they pass**
 
@@ -295,16 +324,48 @@ git add public/js/ui/kana-combat.js public/js/ui/combat-loop.js
 git commit -m "refactor: simplify kana-combat.js — clean up markers and state"
 ```
 
+### Task 5A: Add early coordinator seam tests before card/VFX extraction
+
+**Files:**
+- Create or modify: `tests/integration/combat-flow.test.js`
+
+- [ ] **Step 1: Add a minimal basic attack-cycle seam test**
+
+Before extracting attack-card/VFX, add one thin integration test that exercises the existing coordinator wiring:
+- start combat
+- select a move
+- verify attack-card/VFX callbacks fire in the expected order
+- verify the turn advances cleanly
+
+- [ ] **Step 2: Add a minimal befriend return-to-move-selection test**
+
+Cover the seam most likely to regress after `befriend.js` extraction:
+- trigger befriend entry
+- resolve one success/failure path with canned API responses
+- verify control returns to move selection or combat end as expected
+
+- [ ] **Step 3: Run tests**
+
+```bash
+npm test
+```
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add tests/integration/combat-flow.test.js
+git commit -m "test: add early combat-loop seam coverage before card and VFX extraction"
+```
+
 ## Chunk 3: Extract attack-card.js
 
-Pure UI rendering — 400 lines of card building, no game logic.
+Card rendering and tap affordances only. The attack sequence orchestration stays in `combat-loop.js`.
 
 ### Task 6: Move attack card functions to new module
 
 **Files:**
 - Create: `public/js/ui/attack-card.js`
 - Modify: `public/js/ui/combat-loop.js`
-- Modify: `public/js/ui/pvp-battle.js` (imports `showAttackDisplay` from combat-loop)
 
 - [ ] **Step 1: Create `attack-card.js`**
 
@@ -318,19 +379,14 @@ Cut these functions from `combat-loop.js` (lines 131–536):
 - `insertNpcAttackCard` (291)
 - `waitForCardTap` (334) — currently exported
 - `showAttackCardAndWait` (366)
-- `showAttackPartySkillProcs` (375)
-- `showAttackDisplay` (469) — currently exported, imported by `pvp-battle.js`
 
-These functions use some combat-loop state:
-- `showAttackDisplay` uses `impactEffect`, `fireCreatureAttackEffect`, `enemyCreatureAttackEffect` — these will move to `combat-vfx.js` in Task 8. For now, pass them as function arguments or import from combat-loop.
-- `showAttackPartySkillProcs` uses `getGameState`, `characterUI`, `narration` — pass via `ctx`.
+`showAttackDisplay()` and `showAttackPartySkillProcs()` stay in `combat-loop.js` for now. They are not pure card rendering; they orchestrate audio, VFX, live state reads, and PvE/PvP shared sequencing. Revisit them only after the card and VFX seams are proven stable.
 
 Exports:
 ```js
 export {
   buildSplitAttackCard, insertAttackCard, insertNpcAttackCard,
-  waitForCardTap, showAttackCardAndWait, showAttackDisplay,
-  showAttackPartySkillProcs,
+  waitForCardTap, showAttackCardAndWait,
   ATTACK_CARD_TIMING, ELEMENT_THEME,
 };
 ```
@@ -340,47 +396,32 @@ export {
 ```js
 import {
   insertAttackCard, insertNpcAttackCard, waitForCardTap,
-  showAttackCardAndWait, showAttackDisplay, showAttackPartySkillProcs,
+  showAttackCardAndWait,
 } from './attack-card.js';
 ```
 
-Remove the cut functions. Keep re-exporting what external consumers need:
+Remove only the cut functions. Keep `showAttackDisplay()` in `combat-loop.js` so external consumers such as `pvp-battle.js` do not change during this extraction:
 ```js
-// Re-export for pvp-battle.js and other consumers
-export { insertAttackCard, waitForCardTap, showAttackDisplay } from './attack-card.js';
+export { insertAttackCard, waitForCardTap } from './attack-card.js';
 ```
 
-- [ ] **Step 3: Update pvp-battle.js import**
-
-Change:
-```js
-import { showAttackDisplay } from './combat-loop.js';
-```
-To:
-```js
-import { showAttackDisplay } from './attack-card.js';
-```
-
-Or keep the re-export from combat-loop.js so pvp-battle.js doesn't need to change. Prefer the direct import if it's a clean one-line change.
-
-- [ ] **Step 4: Syntax check all affected files**
+- [ ] **Step 3: Syntax check all affected files**
 
 ```bash
 node --check public/js/ui/attack-card.js && \
-node --check public/js/ui/combat-loop.js && \
-node --check public/js/ui/pvp-battle.js && echo "OK"
+node --check public/js/ui/combat-loop.js && echo "OK"
 ```
 
-- [ ] **Step 5: Run full test suite**
+- [ ] **Step 4: Run full test suite**
 
 ```bash
 npm test
 ```
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add public/js/ui/attack-card.js public/js/ui/combat-loop.js public/js/ui/pvp-battle.js
+git add public/js/ui/attack-card.js public/js/ui/combat-loop.js
 git commit -m "refactor: extract attack-card.js from combat-loop (pure move)"
 ```
 
@@ -415,6 +456,34 @@ npm test
 git add public/js/ui/attack-card.js public/js/ui/combat-loop.js
 git commit -m "refactor: simplify attack-card.js — remove dead code and duplication"
 ```
+
+### Task 7A: Playwright smoke after befriend + attack-card extraction
+
+This is the first mandatory visual checkpoint. Do not wait for `combat-vfx.js` before verifying the most failure-prone seams.
+
+**Precondition:** Ask user before opening Playwright (per `CLAUDE.md` rules).
+
+- [ ] **Step 1: Start dev server**
+
+```bash
+npm run dev &
+sleep 5
+curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
+```
+
+Expected: `200`
+
+- [ ] **Step 2: Play through one combat encounter**
+
+Verify:
+- move selection still renders after `befriend.js` extraction
+- attack cards render and dismiss cleanly after `attack-card.js` extraction
+- PvE attack flow still advances after tap-to-continue
+- if a befriend/name-quiz path appears, it returns cleanly to combat or combat end
+
+- [ ] **Step 3: Screenshot evidence**
+
+Take screenshots for move selection, attack card display, and one post-attack state. Delete screenshots after viewing.
 
 ## Chunk 4: Extract combat-vfx.js
 
@@ -479,7 +548,7 @@ import * as vfx from './combat-vfx.js';
 
 Replace internal calls. The orchestrator functions (`playOnePlayerAttackInMoveTurn`, `executeMoveTurn`, etc.) now call `vfx.impactEffect(...)`, `vfx.showEnemyAttacksAnimated(...)`, etc.
 
-If `showAttackDisplay` in `attack-card.js` needs VFX functions, update it to import from `combat-vfx.js` directly (this is allowed — extracted modules can import other extracted modules if the dependency is one-directional and doesn't create cycles. The spec says "no extracted module imports another" but attack-card calling VFX is a legitimate one-way dependency).
+Keep `showAttackDisplay()` in `combat-loop.js` and update it to call `vfx.*`. Do not introduce extracted-module-to-extracted-module imports here; the coordinator remains the single orchestration layer.
 
 - [ ] **Step 3: Syntax check all files**
 
@@ -536,9 +605,9 @@ git add public/js/ui/combat-vfx.js public/js/ui/combat-loop.js
 git commit -m "refactor: simplify combat-vfx.js — deduplicate HP map builders, remove stale code"
 ```
 
-### Task 10: Playwright playtest milestone
+### Task 10: Playwright regression sweep after VFX extraction
 
-After extracting the 4 biggest modules (befriend, kana, attack-card, VFX), verify the game still works visually.
+After extracting VFX, run a second visual sweep focused on animation and HP-sync regressions.
 
 **Precondition:** Ask user before opening Playwright (per CLAUDE.md rules).
 
@@ -557,7 +626,7 @@ Using Playwright, navigate to `http://localhost:5173`, start a run, enter combat
 - Move selection renders correctly
 - Player attacks show attack cards + VFX
 - Enemy attacks animate with HP bar sync
-- Befriend quiz triggers on low-HP enemy (if encountered)
+- Befriend/name-quiz flow still resolves cleanly if it appears in the current build
 - Combat ends cleanly with victory narration
 
 - [ ] **Step 3: Screenshot evidence**
@@ -670,11 +739,11 @@ Write integration tests for the cross-module flows where recurring bugs lived.
 ### Task 13: Add integration tests for combat flows
 
 **Files:**
-- Create: `tests/integration/combat-flow.test.js`
+- Modify: `tests/integration/combat-flow.test.js`
 
 - [ ] **Step 1: Set up test harness with stubs**
 
-Create the test file with minimal DOM and PixiJS stubs. The coordinator needs:
+Extend the early seam test file with a fuller harness using minimal DOM and PixiJS stubs. The coordinator needs:
 - A fake `document` with `getElementById` and `querySelector` (use jsdom or minimal stubs)
 - Stub PixiJS formation functions that record calls
 - Stub narration that records calls and auto-resolves
@@ -738,7 +807,10 @@ it('swaps reserve creature after KO without ghost sprites', async () => {
 
 - [ ] **Step 4: Write befriend flow test**
 
-Test: enemy below 50% → quiz triggers → Talk → name quiz → creature joins.
+Test the live befriend/name-quiz path in the extracted codebase:
+- trigger the current befriend entry path
+- resolve Talk / answer flow with canned responses
+- verify the creature joins or combat resumes cleanly
 
 - [ ] **Step 5: Write combat end test**
 
@@ -801,7 +873,7 @@ npm test
 
 ```bash
 # Quick check: each extracted module should NOT import combat-loop.js
-grep -l "combat-loop" public/js/ui/befriend.js public/js/ui/kana-combat.js public/js/ui/attack-card.js public/js/ui/combat-vfx.js public/js/ui/npc-dialogue-ui.js 2>/dev/null
+rg -l "combat-loop" public/js/ui/befriend.js public/js/ui/kana-combat.js public/js/ui/attack-card.js public/js/ui/combat-vfx.js public/js/ui/npc-dialogue-ui.js
 ```
 Expected: No output (no extracted module imports the coordinator).
 

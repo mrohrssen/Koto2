@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Break up the 2,026-line `GameManager` god class into shared combat resolution helpers + a `CombatCycleService`, reducing it to a ~470-line thin coordinator. Fix PvE/PvP parity by having both consume the same resolution helpers.
+**Goal:** Break up the 2,026-line `GameManager` god class into shared combat resolution helpers + a `CombatCycleService`, reducing it to a thin coordinator. The combat extraction does the real work; an optional follow-up cleanup can push the file closer to ~470 lines.
 
-**Architecture:** Phase 1 extracts duplicated combat resolution patterns (element drops, KO handling, victory/defeat cleanup) into `src/game/combat/resolution.js` — pure functions consumed by both PvE and PvP. Phase 2 moves all combat methods into `src/game/services/combat-cycle-service.js` using the same delegation pattern as `ExplorationService`. Phase 3 removes exploration pass-throughs and updates routes to call services directly.
+**Architecture:** Phase 1 extracts duplicated combat resolution patterns (element drops, KO handling, victory/defeat cleanup) into `src/game/combat/resolution.js` — pure functions consumed by both PvE and PvP. Phase 2 moves combat methods into `src/game/services/combat-cycle-service.js` using the same delegation pattern as `ExplorationService`, while keeping temporary `GameManager` delegators so the tree never goes red mid-refactor. Phase 3 is optional follow-up cleanup: remove exploration pass-throughs and direct callers only if the extra churn is worth the additional line-count reduction.
 
 **Tech Stack:** ES6 modules, Node.js `node:test` runner, `node:assert/strict`, `c8` coverage
 
@@ -39,8 +39,18 @@ src/routes/game/
   economy.js                 ← MODIFY: call explorationService directly
   misc.js                    ← MODIFY: call explorationService directly, remove dead route
 
+tests/integration/flows/
+  combat.test.js             ← MODIFY: regression coverage for route-level combat fixes
+
 tests/unit/combat/
   resolution.test.js         ← NEW: unit tests for resolution helpers
+
+tests/unit/game/
+  speed-review-room.test.js  ← MODIFY IF Chunk 3 executes: direct GameManager caller migration
+  whack-a-mole.test.js       ← MODIFY IF Chunk 3 executes: direct GameManager caller migration
+
+tests/unit/pvp/
+  pvp-combat.test.js         ← MODIFY: parity coverage for KO removal + winner detection
 ```
 
 ## Intentional Behavior Changes
@@ -57,6 +67,28 @@ This refactor is not purely mechanical — several inconsistencies in the origin
 - `src/pvp/pvp-combat.js:254-296` — PvP KO handling + win check to replace
 - `src/routes/game/combat.js:330-370` — inline KO handling in befriend-talk to absorb
 - `src/game/services/creature-combat-service.js` — low-level combat functions (unchanged, consumed by both services)
+
+## Shipping Constraints
+
+1. **Do not create intentionally broken commits.** No task in this plan is allowed to land with `npm test` red just because the next task will fix it. If methods move before callers move, keep temporary one-line `GameManager` delegators until the caller migration is complete, then delete them in a later passing commit.
+2. **Treat direct test callers as real callers.** `tests/unit/game/speed-review-room.test.js` and `tests/unit/game/whack-a-mole.test.js` call `GameManager` exploration pass-throughs directly today. If Chunk 3 removes those pass-throughs, those tests must be migrated in the same chunk or the pass-throughs must stay.
+3. **`skipShop()` stays on `GameManager`.** It is a 6-line coordinator method, already isolated, and not worth moving just to keep all shop-related code together. This matches the spec and avoids gratuitous route churn.
+4. **Chunk 3 is optional.** After Chunk 2, stop and assess the diff. If the combat breakup already delivered the maintainability win, ship it and spin exploration pass-through cleanup into a separate plan.
+
+## Required Regression Coverage
+
+These behavior fixes are part of the refactor and are not complete until they are covered by tests:
+
+- `tests/integration/flows/combat.test.js`
+  - Add a regression that proves route-driven combat still works after the `CombatCycleService` extraction.
+  - Add a focused regression for the befriend-talk rejection path: if the rejection enemy turn wipes the party, the response reports `combatEnded: true` and the saved state shows the run/combat ended cleanly.
+- `tests/unit/pvp/pvp-combat.test.js`
+  - Add a no-reserves KO case that verifies `koRemovals` is populated and the side array compacts before winner calculation.
+- `tests/unit/game/combat-breakup-regressions.test.js` (NEW)
+  - Add a regression for the NPC-skill KO defeat path proving pending captures are flushed to collection before defeat cleanup completes.
+  - Add a regression for the befriend quiz wrong-answer path proving null slots are compacted and `koRemovals` is surfaced when no reserve exists.
+- `tests/unit/combat/resolution.test.js`
+  - Keep helper-unit coverage, but do not rely on helper-unit coverage alone for the four intentional behavior fixes above.
 
 ---
 
@@ -598,6 +630,48 @@ git commit -m "feat: add finalizeCombatVictory and resolveDefeat to resolution h
 
 ---
 
+### Task 4A: Add regression coverage for intentional behavior fixes
+
+**Files:**
+- Create: `tests/unit/game/combat-breakup-regressions.test.js`
+- Modify: `tests/integration/flows/combat.test.js`
+- Modify: `tests/unit/pvp/pvp-combat.test.js`
+
+- [ ] **Step 1: Add the failing regressions**
+
+Add targeted tests for the behavior changes called out earlier:
+
+- `tests/unit/game/combat-breakup-regressions.test.js`
+  - NPC skill KO defeat preserves pending captures in `meta.creatureCollection`
+  - Befriend quiz wrong-answer path emits `koRemovals` and compacts `run.creatureParty.active`
+- `tests/unit/pvp/pvp-combat.test.js`
+  - No-reserve KO produces `koRemovals` and correct `winner`
+- `tests/integration/flows/combat.test.js`
+  - Route-level combat still completes normally after service extraction
+
+- [ ] **Step 2: Run only the new/updated regressions**
+
+Run:
+
+```bash
+node --test tests/unit/game/combat-breakup-regressions.test.js tests/unit/pvp/pvp-combat.test.js tests/integration/flows/combat.test.js
+```
+
+Expected: FAIL — assertions expose the pre-refactor inconsistencies
+
+- [ ] **Step 3: Keep these regressions green as the mechanical refactor proceeds**
+
+Do not delete or weaken these tests during extraction. They are the guardrails for the intentional behavior changes in this plan.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add tests/unit/game/combat-breakup-regressions.test.js tests/unit/pvp/pvp-combat.test.js tests/integration/flows/combat.test.js
+git commit -m "test: lock regression coverage for loop.js breakup behavior fixes"
+```
+
+---
+
 ### Task 5: Wire PvE `loop.js` to use resolution helpers
 
 **Files:**
@@ -829,14 +903,14 @@ git commit -m "refactor: PvP uses shared processKOSwaps and checkAllDefeated fro
 
 ## Chunk 2: Extract CombatCycleService
 
-### Task 7: Create `CombatCycleService` with combat methods — pure move
+### Task 7: Create `CombatCycleService` with combat methods — pure move plus temporary delegators
 
 **Files:**
 - Create: `src/game/services/combat-cycle-service.js`
 - Modify: `src/game/services/index.js`
 - Modify: `src/game/loop.js`
 
-This is a pure mechanical move. All combat methods leave `GameManager` and land in `CombatCycleService`. References to `this.X` become `this.gm.X`.
+This is a pure mechanical move. All combat methods leave `GameManager` and land in `CombatCycleService`. References to `this.X` become `this.gm.X`. Public `GameManager` entrypoints remain as temporary one-line delegators in this task so routes and tests keep passing while caller migration catches up.
 
 - [ ] **Step 1: Create `combat-cycle-service.js` with all moved methods**
 
@@ -857,7 +931,6 @@ Create `src/game/services/combat-cycle-service.js`. Move these methods from `Gam
 - `_flushPendingCaptures` (loop.js:668)
 - `rollPostCombatShop` (loop.js:1483)
 - `selectShopItem` (loop.js:1497)
-- `skipShop` (loop.js:449) — keeps all shop ops on one service
 
 The class shape:
 
@@ -901,7 +974,30 @@ import { CombatCycleService } from './services/combat-cycle-service.js';
 this.combatCycleService = new CombatCycleService(this);
 ```
 
-Remove all moved methods from the GameManager class. Remove the `completeNpcDialogue` dead method (line 655) at the same time.
+Move the implementation bodies out of `GameManager`, but keep temporary public delegators on `GameManager` for anything still called outside the class:
+
+```js
+startCreatureEncounter() {
+  return this.combatCycleService.startCreatureEncounter();
+}
+
+creatureCombatCycle(actionType = 'attack', moveChoices = []) {
+  return this.combatCycleService.creatureCombatCycle(actionType, moveChoices);
+}
+```
+
+Do the same for the other public combat entrypoints still called by routes/tests:
+- `rollPostCombatShop`
+- `selectShopItem`
+- `swapCreature`
+- `rearrangeCreatures`
+- `swapCreatureOutOfCombat`
+- `befriendReplace`
+- `getBefriendQuiz`
+- `handleBefriendFight`
+- `handleBefriendQuizAnswer`
+
+Remove only private helpers that no longer need to live on `GameManager`, plus the dead `completeNpcDialogue` method.
 
 - [ ] **Step 4: Syntax check both files**
 
@@ -911,13 +1007,13 @@ Expected: OK
 - [ ] **Step 5: Run full test suite**
 
 Run: `npm test`
-Expected: FAIL — routes still call `gameManager.startCreatureEncounter()` etc., which no longer exist on GameManager. This is expected; Task 8 fixes it.
+Expected: all PASS — temporary `GameManager` delegators keep routes/tests green while the caller migration happens
 
-- [ ] **Step 6: Commit (WIP — routes broken until Task 8)**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add src/game/loop.js src/game/services/combat-cycle-service.js src/game/services/index.js
-git commit -m "refactor: extract CombatCycleService from GameManager — pure move (routes need update)"
+git commit -m "refactor: extract CombatCycleService from GameManager with temporary delegators"
 ```
 
 ---
@@ -991,6 +1087,8 @@ Then in `combat.js` line ~330, replace the inline block with:
     }
 ```
 
+Keep the temporary `GameManager` delegators from Task 7 for now. Delete them only after every route/test caller has moved or after you explicitly decide to keep them as stable facade methods.
+
 - [ ] **Step 3: Remove now-unused imports from `combat.js`**
 
 Remove `processEnemyTurn` and `handleCreatureKO` from the import at line 1.
@@ -1014,7 +1112,9 @@ git commit -m "refactor: combat routes delegate to CombatCycleService, absorb in
 
 ---
 
-## Chunk 3: Remove exploration pass-throughs and cleanup
+## Optional Chunk 3: Remove exploration pass-throughs and cleanup
+
+Stop after Chunk 2 and assess the diff before doing this chunk. If the combat breakup already made `loop.js` understandable again, defer this chunk to a separate follow-up plan.
 
 ### Task 9: Remove exploration pass-throughs, update routes
 
@@ -1024,6 +1124,8 @@ git commit -m "refactor: combat routes delegate to CombatCycleService, absorb in
 - Modify: `src/routes/game/economy.js`
 - Modify: `src/routes/game/combat.js`
 - Modify: `src/routes/game/misc.js`
+- Modify: `tests/unit/game/speed-review-room.test.js`
+- Modify: `tests/unit/game/whack-a-mole.test.js`
 
 - [ ] **Step 1: Update `run.js` route calls**
 
@@ -1054,25 +1156,44 @@ Note: lines 223 and 238 already use `explorationService` directly — no change 
 
 | Line | Method | Target service |
 |------|--------|----------------|
-| 10 | `skipShop()` | `combatCycleService` |
 | 22 | `getDealerState()` | `explorationService` |
 | 34 | `dealerSell(...)` | `explorationService` |
 | 47 | `dealerBuy(...)` | `explorationService` |
 | 59 | `leaveDealer()` | `explorationService` |
 
-- [ ] **Step 3: Update `combat.js:563`**
+- [ ] **Step 3: Leave `shop-skip` alone**
+
+Do not move `economy.js:10` off `gameManager.skipShop()`. `skipShop()` stays on `GameManager`.
+
+- [ ] **Step 4: Update `combat.js:563`**
 
 Change `gameManager.getCurrentRoom()` → `gameManager.explorationService.getCurrentRoom()`.
 
-- [ ] **Step 4: Update `misc.js` selectArea calls**
+- [ ] **Step 5: Update `misc.js` selectArea calls**
 
 Change lines 81, 94, 106, 137: `gameManager.selectArea(...)` → `gameManager.explorationService.selectArea(...)`.
 
-- [ ] **Step 5: Remove dead `debugForceCombat` route in `misc.js:47`**
+- [ ] **Step 6: Update direct GameManager test callers**
+
+If you remove exploration pass-throughs from `GameManager`, update the existing direct test callers in:
+
+- `tests/unit/game/speed-review-room.test.js`
+  - `gm.selectArea(...)` → `gm.explorationService.selectArea(...)`
+  - `gm.proceedToNextRoom()` → `gm.explorationService.proceedToNextRoom()`
+  - `gm.startSpeedReviewRoom(...)` → `gm.explorationService.startSpeedReviewRoom(...)`
+  - `gm.recordSpeedReviewRoomCommit(...)` → `gm.explorationService.recordSpeedReviewRoomCommit(...)`
+  - `gm.completeSpeedReviewRoom(...)` → `gm.explorationService.completeSpeedReviewRoom(...)`
+- `tests/unit/game/whack-a-mole.test.js`
+  - `gm.completeWhackAMole(...)` → `gm.explorationService.completeWhackAMole(...)`
+  - `gm.skipWhackAMole()` → `gm.explorationService.skipWhackAMole()`
+
+If that migration feels too noisy relative to the payoff, stop and keep the pass-throughs.
+
+- [ ] **Step 7: Remove dead `debugForceCombat` route in `misc.js:47`**
 
 This calls a nonexistent `gameManager.debugForceCombat()`. Remove the entire dead route handler.
 
-- [ ] **Step 6: Remove exploration pass-throughs from `loop.js`**
+- [ ] **Step 8: Remove exploration pass-throughs from `loop.js`**
 
 Delete the following methods from `GameManager` (lines ~410-528):
 - `getAreaOptions`, `selectArea`
@@ -1084,7 +1205,7 @@ Delete the following methods from `GameManager` (lines ~410-528):
 - `getDealerState`, `dealerSell`, `dealerBuy`, `leaveDealer`
 - `startRoomEncounter`
 
-- [ ] **Step 7: Update `getState()` internal call**
+- [ ] **Step 9: Update `getState()` internal call**
 
 In `getState()` at line ~213, change:
 ```js
@@ -1095,20 +1216,20 @@ to:
 this.explorationService.settleSpeedReviewRoomPendingRewards();
 ```
 
-- [ ] **Step 8: Syntax check all modified files**
+- [ ] **Step 10: Syntax check all modified files**
 
 Run: `node --check src/game/loop.js && node --check src/routes/game/run.js && node --check src/routes/game/economy.js && node --check src/routes/game/combat.js && node --check src/routes/game/misc.js && echo "OK"`
 Expected: OK
 
-- [ ] **Step 9: Run full test suite**
+- [ ] **Step 11: Run full test suite**
 
 Run: `npm test`
 Expected: all PASS
 
-- [ ] **Step 10: Commit**
+- [ ] **Step 12: Commit**
 
 ```bash
-git add src/game/loop.js src/routes/game/run.js src/routes/game/economy.js src/routes/game/combat.js src/routes/game/misc.js
+git add src/game/loop.js src/routes/game/run.js src/routes/game/economy.js src/routes/game/combat.js src/routes/game/misc.js tests/unit/game/speed-review-room.test.js tests/unit/game/whack-a-mole.test.js
 git commit -m "refactor: remove exploration pass-throughs, routes call services directly"
 ```
 
@@ -1122,7 +1243,9 @@ git commit -m "refactor: remove exploration pass-throughs, routes call services 
 - [ ] **Step 1: Check final line count**
 
 Run: `wc -l src/game/loop.js`
-Expected: ~470 lines (±30)
+Expected:
+- If Chunk 3 was skipped: roughly `580-650` lines is fine
+- If Chunk 3 landed too: ~`470` lines (±30)
 
 - [ ] **Step 2: Remove unused imports**
 

@@ -4,11 +4,206 @@
 
 **Goal:** Remove JPDB as a runtime SRS backend. FSRS (`internal-srs.js`) is already the source of truth — JPDB is a parallel system that duplicates it. Remove ~3,500 lines of JPDB code, rewire vocab-manager to FSRS, rewire vocab-repair to Sudachi.
 
-**Architecture:** Delete-first approach. Remove all JPDB files and imports, then fix the two modules that need rewiring (vocab-manager → FSRS, vocab-repair → Sudachi). FSRS already handles known words, due cards, and review scheduling. Sudachi (via `src/tokenizer.js`) already handles morphological analysis for the static frames pipeline.
+**Architecture:** Contract-first for live UX, then delete-first for dead runtime code. First migrate the still-live JPDB-backed contracts (discovery review, speed-review room commits, lookup parsing/definitions) onto FSRS + local dictionary/Sudachi paths. Once those user-visible flows are stable, delete JPDB files/imports and rewire the two core modules that still depend on them (`vocab-manager` → FSRS, `vocab-repair` → Sudachi).
 
 **Tech Stack:** Node.js, ES6 modules, FSRS via `ts-fsrs` package, Sudachi tokenizer via `src/tokenizer.js`
 
 **Spec:** `docs/superpowers/specs/2026-04-16-jpdb-removal-design.md`
+
+---
+
+## Chunk 0: Replace Live JPDB Contracts Before Deletion
+
+### Task 0A: Migrate Word Discovery Off `/api/jpdb/review`
+
+Discovery is not dead JPDB plumbing. The current discovery room still renders with `actions.showFlashCards()` and still persists progress by posting `vid`/`sid` to `/api/jpdb/review` with `isDiscovery: true`. That contract must be replaced before JPDB route deletion.
+
+**Files:**
+- Modify: `public/game.js`
+- Modify: `public/js/ui/exploration.js`
+- Modify: `public/js/api.js`
+- Modify: `src/routes/game/known-words.js`
+- Modify: `src/routes/game/run.js`
+- Verify: `src/word-tracking.js`
+
+- [ ] **Step 1: Rewire discovery review to internal word strings**
+
+Replace the discovery review callback in `public/game.js` so discovery cards submit `{ word, grade: 'again'|'good', isDiscovery: true }` to an FSRS-backed route instead of calling `apiSendJpdbReview(vid, sid, grade, ...)`.
+
+Do **not** remove `actions.showFlashCards()` here. Discovery still uses it for a single-card renderer.
+
+- [ ] **Step 2: Extend the internal known-words review endpoint**
+
+Update `src/routes/game/known-words.js` so `POST /api/game/known-words/review` can accept an optional `isDiscovery` flag and:
+- auto-create the FSRS card if needed (already supported)
+- apply the grade via `gradeCard()`
+- increment discovery counts using the existing `src/word-tracking.js` helpers
+- record leaderboard review counts if discovery/room review should still count
+- return `{ ok, mastered, card, todayCount, atLimit }` when `isDiscovery` is set
+
+This preserves the current discovery-room behavior without JPDB.
+
+- [ ] **Step 3: Change discovery word payloads to string-based cards only**
+
+Update `getNewWordsForDiscovery()` callers so discovery words are treated as:
+
+```javascript
+{ word, reading, meanings }
+```
+
+Remove frontend assumptions that discovery words carry `vid` / `sid`.
+
+- [ ] **Step 4: Verify the discovery room no longer depends on JPDB IDs**
+
+```bash
+rg -n "isDiscovery|apiSwipeWord|\\.vid\\b|\\.sid\\b" public/js/ui/exploration.js public/game.js src/routes/game/known-words.js src/routes/game/run.js
+```
+
+Expected: discovery flow uses `word` strings and internal review endpoints only.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add public/game.js public/js/ui/exploration.js public/js/api.js src/routes/game/known-words.js src/routes/game/run.js
+git commit -m "refactor: migrate word discovery review from JPDB ids to internal FSRS words"
+```
+
+---
+
+### Task 0B: Migrate Speed Review Contracts to Word Strings
+
+The current plan assumes speed review is already string-based, but the live room/hub contract is mixed. `speed-review.js`, `public/game.js`, `public/js/api.js`, `src/routes/game/run.js`, and `src/game/services/exploration-service.js` still use `vid`/`sid` for commits and queue identity in multiple places.
+
+**Files:**
+- Modify: `public/js/api.js`
+- Modify: `public/game.js`
+- Modify: `public/js/ui/speed-review.js`
+- Modify: `src/routes/game/run.js`
+- Modify: `src/game/loop.js`
+- Modify: `src/game/services/exploration-service.js`
+
+- [ ] **Step 1: Change room progress API to accept `word` instead of `vid`/`sid`**
+
+Update the client and server contract:
+
+```javascript
+// old
+progressSpeedReviewRoom(roomId, vid, sid, commitIndex)
+
+// new
+progressSpeedReviewRoom(roomId, word, commitIndex)
+```
+
+The request body for `/api/game/speed-review-room/progress` should become:
+
+```json
+{ "roomId": "...", "word": "洞窟", "commitIndex": 0 }
+```
+
+- [ ] **Step 2: Rebuild room snapshot keys from strings**
+
+In `src/game/services/exploration-service.js`:
+- source room cards from FSRS/internal due-word data
+- store snapshot identity as `word`
+- replace `buildSpeedReviewWordKey(word.vid, word.sid)` style identity with a string-based key
+- compare committed room progress against the snapshot using the `word` string
+
+Do **not** leave a hybrid `vid`/`sid` + string path behind unless a test proves it is still needed.
+
+- [ ] **Step 3: Simplify hub speed review to internal cards only**
+
+In `public/js/ui/speed-review.js`, remove the JPDB branch in `flushPendingReview()` / `triggerBatchRefresh()` after the room/hub contract is migrated. The steady state should be internal FSRS cards with:
+
+```javascript
+{ word, reading, meanings, source: 'internal' }
+```
+
+Queue refresh should use `getVocabDueWords()` and de-dupe by `word`, not by `vid`.
+
+- [ ] **Step 4: Verify room + hub flows are fully string-based**
+
+```bash
+rg -n "speed-review-room|commitRoomReview|progressSpeedReviewRoom|\\.vid\\b|\\.sid\\b" public/game.js public/js/ui/speed-review.js public/js/api.js src/routes/game/run.js src/game/services/exploration-service.js
+```
+
+Expected: no runtime speed-review path depends on `vid`/`sid`.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add public/js/api.js public/game.js public/js/ui/speed-review.js src/routes/game/run.js src/game/loop.js src/game/services/exploration-service.js
+git commit -m "refactor: migrate speed review contracts from JPDB ids to word strings"
+```
+
+---
+
+### Task 0C: Replace Lookup Mode with Sudachi + Local Dictionary
+
+Lookup mode is still live and fully JPDB-backed today. Do not delete `/api/jpdb/parse`, `/api/jpdb/lookup`, `parseJpdbText()`, `lookupJpdbWord()`, `lookupJpdbBatch()`, or the `lookup.js` `vid`/`sid` path until a replacement contract exists.
+
+**Files:**
+- Modify: `public/game.js`
+- Modify: `public/js/api.js`
+- Modify: `public/js/ui/lookup.js`
+- Modify: `src/routes/game/known-words.js` or create a small dedicated game lookup route if cleaner
+- Reuse: `src/tokenizer.js`
+- Reuse: `src/game/word-dictionary.js`
+
+- [ ] **Step 1: Define the replacement lookup contract explicitly**
+
+The replacement should be:
+- parse text on the server with Sudachi
+- enrich tokens from `word-dictionary.js`
+- send tokens to the client keyed by word string, not JPDB ids
+
+Target token shape:
+
+```javascript
+{
+  surface: '洞窟',
+  word: '洞窟',
+  reading: 'どうくつ',
+  meaning: 'cave',
+  lookupable: true
+}
+```
+
+- [ ] **Step 2: Add local parse + batch lookup endpoints**
+
+Implement a local route that replaces the JPDB parse/lookup pair. Minimal acceptable surface:
+- `POST /api/game/known-words/parse-text`
+- optional `POST /api/game/known-words/lookup-batch`
+
+The route should use `tokenize()` + `loadWordDictionary()` and return enough data for `lookup.js` to render clickable spans without `vid` / `sid`.
+
+- [ ] **Step 3: Rewrite `lookup.js` around `data-word` instead of `data-vid` / `data-sid`**
+
+Replace:
+- `"vid:sid"` cache keys
+- `data-vid` / `data-sid` DOM attributes
+- JPDB-key gating copy
+
+With:
+- string word cache keys
+- `data-word`
+- local lookup availability messaging
+
+- [ ] **Step 4: Only after the replacement works, delete the old JPDB lookup calls**
+
+Once the local route is wired and verified, remove:
+- `parseJpdbText()`
+- `lookupJpdbWord()`
+- `lookupJpdbBatch()`
+- `/api/jpdb/parse`
+- `/api/jpdb/lookup`
+- `/api/jpdb/lookup-batch`
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add public/game.js public/js/api.js public/js/ui/lookup.js src/routes/game/known-words.js
+git commit -m "refactor: replace JPDB lookup with Sudachi and local dictionary lookup"
+```
 
 ---
 
@@ -95,9 +290,9 @@ Remove `jpdbDeckId: 'all'` from the default settings object.
 
 The audit found a second copy of the particle/grammar exclusion list. Remove it. If server.js still needs it, it can import from `vocab-repair.js` where the canonical copy lives.
 
-- [ ] **Step 7: Remove admin-word-exposures import and route registration**
+- [ ] **Step 7: Keep admin-word-exposures route registration**
 
-Remove the import of `createWordExposureRoutes` from `src/routes/admin-word-exposures.js` and its `app.use()` call. The route file will be gutted in a later task.
+Do **not** remove the import of `createWordExposureRoutes` from `src/routes/admin-word-exposures.js` or its `app.use()` call. Task 13 only removes the JPDB comparison endpoints inside that route file; `/api/admin/word-exposures` and `/api/admin/frames` stay live.
 
 - [ ] **Step 8: Verify server.js has no remaining jpdb references**
 
@@ -229,7 +424,7 @@ Record which tests fail — these will be fixed in later tasks.
 - Modify: `src/routes/vocab.js` — remove all `/api/jpdb/*` routes and JPDB imports
 - Modify: `src/routes/index.js` — remove JPDB route comment
 
-- [ ] **Step 1: Rewrite vocab.js to remove all JPDB routes**
+- [ ] **Step 1: Rewrite vocab.js to remove or shim JPDB routes after Chunk 0 lands**
 
 Remove the imports from `jpdb.js` (lines 2–8). Remove these route handlers:
 - `POST /jpdb/parse` (lines 48–62)
@@ -237,6 +432,11 @@ Remove the imports from `jpdb.js` (lines 2–8). Remove these route handlers:
 - `POST /jpdb/lookup` (lines 116–143)
 - `POST /jpdb/lookup-batch` (lines 146–164)
 - `POST /vocab/due-words` (lines 28–45) — this calls JPDB's getDueWordsWithMeanings
+
+Critical sequencing:
+- do **not** remove `/jpdb/review` until Task 0A is complete
+- do **not** remove `/jpdb/parse`, `/jpdb/lookup`, or `/jpdb/lookup-batch` until Task 0C is complete
+- if needed, keep temporary shims that forward old callers to the new local/FSRS contracts during the migration window
 
 Keep the Router creation and export. If the file is now empty of routes, just export an empty router.
 
@@ -332,6 +532,7 @@ git commit -m "chore: remove JPDB from all game routes, drop vidSet"
 **Files:**
 - Modify: `src/routes/settings.js` (jpdbDeckId, clearVocabCache)
 - Modify: `src/auth/routes.js` (hasJpdbKey, jpdbApiKey in updateKeys)
+- Modify: `src/auth/users.js` (stale encrypted jpdbApiKey handling)
 - Modify: `src/app.js` (vidSet in default mock)
 
 - [ ] **Step 1: Clean settings.js**
@@ -344,6 +545,14 @@ Remove `clearVocabCache()` import and call.
 Remove `hasJpdbKey: false` from apiKeysInfo default (line 143).
 Remove `hasJpdbKey: !!keys.jpdbApiKey` (line 155).
 Remove `if (jpdbApiKey !== undefined) keys.jpdbApiKey = jpdbApiKey` from updateKeys (line 171).
+
+- [ ] **Step 2b: Decide how to handle stored encrypted JPDB keys**
+
+Update `src/auth/users.js` / key merge logic so old encrypted `jpdbApiKey` values are either:
+- explicitly dropped on the next save/update, or
+- intentionally tolerated but ignored forever
+
+Do not leave this ambiguous in the implementation. Pick one and document it in code/tests.
 
 - [ ] **Step 3: Clean app.js**
 
@@ -391,7 +600,7 @@ Remove vid/sid properties from returned word objects.
 - In `startSpeedReviewRoom()`: the word snapshot should store `word` (string) instead of `{ vid, sid }`. The room's word list comes from FSRS `getDueCards(userId, 'vocab')` which already returns cards with string IDs.
 - In `recordSpeedReviewRoomCommit()`: accept `word` (string) instead of `{ vid, sid }` for identifying which word was committed.
 - Update any loop that iterates room words to use string comparison instead of vid matching.
-- Frontend speed-review.js already works with FSRS strings — verify the API contract matches (the frontend sends `word` instead of `vid`/`sid`).
+- Do **not** assume `public/js/ui/speed-review.js` is already migrated. It still has `vid`/`sid` branches today, so Task 0B must land first or be completed as part of this task.
 
 - [ ] **Step 3: Update dialogue-repair.js**
 
@@ -416,7 +625,7 @@ git commit -m "chore: remove JPDB from game loop, exploration, and dialogue repa
 - Delete: `public/js/ui/kana-combat.js`
 - Modify: `public/game.js` (remove wordPractice import and all calls)
 - Modify: `public/js/ui/combat-loop.js` (remove showNextDualCardsFromQueue, kana combat, word-practice calls)
-- Modify: `public/js/ui/actions.js` (remove showFlashCards)
+- Modify: `public/js/ui/actions.js` (preserve single-card discovery renderer, remove combat-only behavior)
 
 - [ ] **Step 1: Delete word-practice.js and kana-combat.js**
 
@@ -442,9 +651,14 @@ Remove `showNextDualCardsFromQueue()` function.
 Remove kana combat references.
 Remove all word-practice calls and imports.
 
-- [ ] **Step 4: Remove showFlashCards from actions.js**
+- [ ] **Step 4: Keep discovery flash cards, remove combat-only flash card behavior from actions.js**
 
-Remove the `showFlashCards(words, options)` function and its touch/swipe handlers that are ONLY used by combat (not speed review). Speed review has its own card rendering in `speed-review.js`.
+Do **not** delete `showFlashCards(words, { discoveryMode })` while discovery still depends on it.
+
+Instead:
+- remove combat-only dependencies from `actions.js`
+- preserve the single-card discovery renderer and swipe handlers until discovery gets its own dedicated renderer or keeps using this module intentionally
+- if you later split discovery rendering into its own module, do that first, then delete the unused path
 
 - [ ] **Step 5: Verify speed review still has its own card rendering**
 
@@ -477,13 +691,20 @@ git commit -m "chore: remove flash card combat and kana combat systems"
 - Modify: `public/js/api.js` (JPDB API functions)
 - Modify: `public/js/settings.js` (jpdbApiKey storage)
 - Modify: `public/js/ui/modals.js` (JPDB key input)
-- Modify: `public/js/ui/lookup.js` (vid/sid cache)
+- Modify: `public/js/ui/lookup.js` (replace vid/sid cache with string-word cache)
 - Modify: `public/js/ui/exploration.js` (vid/sid logging)
 - Modify: `public/js/ui/speed-review.js` (vid/sid mapping)
 
-- [ ] **Step 1: Remove JPDB functions from api.js**
+- [ ] **Step 1: Replace JPDB API functions in api.js only after new callers exist**
 
-Remove: `sendJpdbReview()`, `parseJpdbText()`, `lookupJpdbWord()`, `lookupJpdbBatch()`.
+Remove:
+- `sendJpdbReview()` once Task 0A and Task 0B are complete
+- `parseJpdbText()`, `lookupJpdbWord()`, `lookupJpdbBatch()` once Task 0C is complete
+
+Add/keep explicit replacements for:
+- internal vocab review
+- local parse-text / lookup batch
+- string-based speed-review room progress
 
 - [ ] **Step 2: Remove JPDB from settings.js**
 
@@ -493,10 +714,11 @@ Remove: `jrpg_jpdbApiKey` localStorage key, `hasJpdbApiKey()` function, JPDB por
 
 Remove the password input field for JPDB API key and its label.
 
-- [ ] **Step 4: Remove vid/sid from lookup.js**
+- [ ] **Step 4: Rewrite lookup.js around string keys**
 
 Replace the `"vid:sid"` cache key pattern with string-based word lookup.
-Remove `data-vid`/`data-sid` DOM attribute reads.
+Replace `data-vid`/`data-sid` DOM attribute reads with `data-word`.
+Update activation/gating copy so lookup no longer claims a JPDB key is required.
 
 - [ ] **Step 5: Remove vid/sid from exploration.js**
 
@@ -504,7 +726,7 @@ Remove vid/sid logging in discovery interactions (lines 747, 751).
 
 - [ ] **Step 6: Remove vid/sid mapping from speed-review.js**
 
-Remove the vid/sid mapping at line 676. The FSRS-backed speed review uses word strings.
+Remove the remaining vid/sid mapping branches after Task 0B lands. The final speed-review contract should de-dupe, refresh, and commit by `word`.
 
 - [ ] **Step 7: Syntax-check all modified files**
 
@@ -1022,6 +1244,7 @@ git commit -m "chore: delete JPDB-only test files"
 - Modify: `tests/helpers/mocks.js` (remove createMockJPDB)
 - Modify: `tests/unit/vocab/manager-per-user.test.js` (rewrite for FSRS-backed vocab-manager)
 - Modify: `tests/unit/game/speed-review-room.test.js` (remove JPDB mocks)
+- Modify: `tests/unit/vocab/phase-word-discovery.test.js` (discovery review contract migration)
 - Modify: `tests/unit/auth/crypto.test.js` (remove jpdbApiKey from fixtures)
 - Modify: `tests/unit/auth/users.test.js` (remove jpdbApiKey from assertions)
 - Modify: `tests/integration/flows/vocab-review.test.js` (remove JPDB logic)
@@ -1053,6 +1276,8 @@ In `users.test.js`: remove `jpdbApiKey: 'test-key'` from test assertions.
 In `vocab-review.test.js`: remove JPDB-related comments and logic.
 In `narration-live.test.js`: remove JPDB todo reference.
 In `stage-utils.test.js`: update "JPDB rank" references in test names (keep tests, just rename).
+In `phase-word-discovery.test.js`: verify discovery reviews use `word` strings and the internal review endpoint behavior, including daily-limit tracking.
+Add at least one focused lookup test for the new Sudachi + local dictionary parse/lookup contract so lookup removal is not untested.
 
 - [ ] **Step 5b: Check for additional affected test files**
 
@@ -1161,9 +1386,10 @@ git commit -m "chore: final JPDB removal cleanup"
 
 | Chunk | Tasks | What it does |
 |-------|-------|-------------|
+| **0** | 0A–0C | Replace live discovery, speed-review, and lookup contracts before deletion |
 | **1** | 1–5 | Delete JPDB core files, fix server boot with temporary stubs |
-| **2** | 6–15 | Delete all JPDB routes, frontend, flash card combat, settings, auth, config |
+| **2** | 6–15 | Delete JPDB routes/frontend paths once replacements exist, clean settings/auth/config |
 | **3** | 16–18 | Rewire vocab-manager to FSRS, vocab-repair to Sudachi, update all callers |
 | **4** | 19–22 | Fix tests, update docs, final verification |
 
-**Expected outcome:** ~3,500+ lines removed, ~1.2MB of data files deleted, FSRS as sole word state system, Sudachi as sole tokenizer, speed review intact, dev-time forge tools unaffected.
+**Expected outcome:** ~3,500+ lines removed, ~1.2MB of data files deleted, FSRS as sole word state system, Sudachi as sole tokenizer, discovery + speed review + lookup preserved on local/internal contracts, dev-time forge tools unaffected.

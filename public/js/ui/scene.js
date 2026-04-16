@@ -404,7 +404,10 @@ export function hideChippy() {
 /** Show NPC trainer in scene (no HP bar) */
 export function showNpcTrainer(npcName, npcId, npc, { skipPixi = false } = {}) {
   dom.npcDisplay.classList.add('visible');
-  hideFormation('enemy');
+  // When skipPixi is true (NPC skill mid-combat), the caller manages enemy
+  // formation visibility via opacity toggle — don't destroy Pixi sprites here
+  // or dead creatures will be rebuilt as ghost sprites.
+  if (!skipPixi) hideFormation('enemy');
 
   const roleHtml = npc?.role
     ? ' \u2014 ' + renderJpSentence([entityToToken(npc.role)], getKnownWords(), new Map())

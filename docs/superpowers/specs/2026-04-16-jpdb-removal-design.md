@@ -7,11 +7,18 @@
 
 ---
 
-## Approach: Delete-First
+## Approach: Contract-First for Live UX, Then Delete-First
 
-Delete all JPDB code, let things break, fix the two spots that need rewiring (vocab-manager → FSRS, vocab-repair → Sudachi). The test suite catches what breaks.
+Delete-first is only safe for dead runtime code. It is **not** safe for the still-live JPDB-backed UX contracts:
+- discovery review persistence
+- speed-review room commit identity
+- lookup parsing / definition fetch
 
-Rationale: The codebase is already 90% on FSRS. Deleting first gives the clearest picture of what actually needs rewiring vs. what's just dead weight.
+So the sequence is:
+1. Replace those live contracts with FSRS + Sudachi + local dictionary equivalents
+2. Then delete JPDB files/imports and rewire the remaining core modules (`vocab-manager` → FSRS, `vocab-repair` → Sudachi)
+
+Rationale: The codebase is already mostly on FSRS, but a few user-visible flows still lean on JPDB IDs and JPDB routes. Replacing those contracts first keeps behavior intact while still enabling a large delete-first cleanup afterward.
 
 ---
 
@@ -42,7 +49,7 @@ Rationale: The codebase is already 90% on FSRS. Deleting first gives the cleares
 - Remove: `ALLOWED_WORDS` duplicate (import from `vocab-repair.js` if still needed)
 - Remove: `jpdb-wordlist.json` loading
 - Remove: `jpdbDeckId` default in settings
-- Remove: Import of `createWordExposureRoutes` from `admin-word-exposures.js` and its `app.use()` call
+- Keep: Import of `createWordExposureRoutes` from `admin-word-exposures.js` and its `app.use()` call. Only the JPDB comparison endpoints inside that route file are removed.
 
 **`src/app.js`**
 - Remove: `vidSet` from default `getUserVocabulary` mock return value
@@ -60,6 +67,7 @@ Rationale: The codebase is already 90% on FSRS. Deleting first gives the cleares
 - Remove: All `/api/jpdb/*` routes (parse, review, lookup, lookup-batch)
 - Remove: JPDB imports
 - Keep: `/api/vocab/due-words` if it serves FSRS due words (or remove if redundant with `/api/game/known-words/due-words`)
+- Sequencing note: `/jpdb/review` cannot be deleted until discovery review is migrated. `/jpdb/parse` + `/jpdb/lookup*` cannot be deleted until lookup mode has a Sudachi/local-dictionary replacement.
 
 **`src/routes/game/misc.js`**
 - Remove: `POST /api/game/due-words` endpoint
@@ -77,6 +85,7 @@ Rationale: The codebase is already 90% on FSRS. Deleting first gives the cleares
 - Remove: vid/sid validation in speed review room commits
 - Remove: `lookupVocabularyBatch` import from `jpdb.js` and discovery-words JPDB enrichment code (~20 lines)
 - Update: Speed review to use FSRS string-based word IDs
+- Critical note: the current client/server room flow is not fully migrated yet. Treat this as a real API contract migration, not cleanup.
 
 **`src/routes/game/combat.js`**
 - Remove: `vidSet: vocabConfig.vidSet` passing to combat system
@@ -132,24 +141,24 @@ Rationale: The codebase is already 90% on FSRS. Deleting first gives the cleares
 - Remove: All word-practice calls
 
 **`public/js/ui/actions.js`**
-- Remove: `showFlashCards()` — only called from `combat-loop.js` flash card flow which is being removed. Speed review has its own card rendering in `speed-review.js`.
+- Keep or split: `showFlashCards()` is still used by discovery today. Remove the combat-only usage first; only delete the function after discovery is migrated or moved to its own renderer.
 
 **`public/game.js`** (note: file is at `public/game.js`, NOT `public/js/game.js`)
 - Remove: All `wordPractice.*` calls (`getTwoCombatWords`, `prefetchCombatWords`, `clearWordCache`, `setReviewType`, `init`)
 - Remove: Flash card callbacks (`dualCardSelect`, `cardFlip`)
-- Remove: `parseJpdbText` lookup initialization
+- Replace: `parseJpdbText` / `lookupJpdbWord` / `lookupJpdbBatch` lookup initialization with a local lookup contract backed by Sudachi + `word-dictionary.js`
 - Remove: word-practice import
 
 **`public/js/ui/lookup.js`**
 - Remove: vid/sid-based definition cache (`"vid:sid"` keys)
 - Remove: `data-vid` / `data-sid` DOM attribute reads
-- Update: Use string-based word lookup if lookup feature stays
+- Update: Keep lookup feature, but move it to string-based word lookup using a local parse-text + dictionary-backed endpoint. Do not just delete the feature without an explicit product decision.
 
 **`public/js/ui/exploration.js`**
 - Remove: vid/sid logging in discovery interactions
 
 **`public/js/ui/speed-review.js`**
-- Remove: vid/sid mapping (line 676) — already works with FSRS strings
+- Remove: remaining vid/sid mapping branches after the room/hub contract migration. Do not assume the file is already fully FSRS-string-based today.
 
 **`public/game.css`**
 - Keep: Base `.flash-card` CSS classes (`.flash-card-container`, `.flash-card`, `.flash-card-front`, `.flash-card-back`, `.flash-card-word`, `.flash-card-meaning`, `.flash-card-hint`) — **speed review uses these exact classes** (lines 318-325, 468-475 of `speed-review.js`). The `.speed-review-slot .flash-card` overrides (game.css lines 2861-2883) depend on the base rules existing.
@@ -200,6 +209,24 @@ Similarly, `checkSentenceViolations` signature changes from `(sentence, vocabSet
 - All test files that call checkSentenceViolations
 
 ## Files to Rewire
+
+### Live Contract Replacements Required First
+
+Before runtime JPDB deletion, these user-visible contracts must move:
+
+1. **Discovery review**
+   - Current: `public/js/ui/exploration.js` posts `vid` / `sid` to `/api/jpdb/review`
+   - Target: internal FSRS review by `word` string, preserving daily discovery limits
+
+2. **Speed-review room commits**
+   - Current: room snapshots and commit APIs are keyed by `vid` / `sid`
+   - Target: string-based `word` identity end-to-end
+
+3. **Lookup mode**
+   - Current: `lookup.js` uses `/api/jpdb/parse`, `/api/jpdb/lookup`, and `vid` / `sid` DOM attributes
+   - Target: Sudachi tokenization + local dictionary enrichment, keyed by word strings
+
+Without these replacements, JPDB removal would delete still-live gameplay/UX.
 
 ### `src/game/vocab-manager.js` (717 lines → rewire to FSRS)
 

@@ -313,9 +313,9 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
     sprite._side = side;
     sprite._dataIndex = dataIndex;
 
-    // KO state
+    // KO state — fully invisible on rebuild (animateKO already ran)
     if ((creature.currentHp ?? creature.hp ?? 1) <= 0) {
-      sprite.alpha = 0.3;
+      sprite.alpha = 0;
       sprite.tint = 0x888888;
     }
 
