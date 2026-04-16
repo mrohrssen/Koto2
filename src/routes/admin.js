@@ -4,6 +4,7 @@ import { join, basename } from 'path';
 import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
 import { getKnownWordsFromFsrs, lookupReading } from '../game/bootstrap/word-knowledge.js';
+import { loadUsers, saveUsers } from '../auth/users.js';
 
 /**
  * Shift all FSRS card timestamps backward by a number of days.
@@ -143,6 +144,69 @@ export default function createAdminRoutes({ dataDir }) {
 
       clearSrsCache(userId);
       res.json({ deleted });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // GET /list-users — list all users (id + username + createdAt)
+  router.get('/list-users', (req, res) => {
+    try {
+      const usersFile = join(dataDir, '.jrpg-users.json');
+      const data = loadUsers(usersFile);
+      const users = data.users.map(u => ({
+        id: u.id, username: u.username, createdAt: u.createdAt
+      }));
+      res.json({ count: users.length, users });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /delete-user — delete a real user and all their data
+  router.post('/delete-user', (req, res) => {
+    try {
+      const { username } = req.body;
+      if (!username || typeof username !== 'string') {
+        return res.status(400).json({ error: 'username (string) required' });
+      }
+
+      // Find user in the users file
+      const usersFile = join(dataDir, '.jrpg-users.json');
+      const data = loadUsers(usersFile);
+      const userIndex = data.users.findIndex(u => u.username === username);
+      if (userIndex === -1) {
+        return res.status(404).json({ error: `User "${username}" not found` });
+      }
+
+      const user = data.users[userIndex];
+      const userId = user.id;
+
+      // Delete all data files containing the userId
+      const deleted = [];
+      // Check root data dir (save files, npc-memory)
+      for (const file of readdirSync(dataDir)) {
+        if (file.includes(userId)) {
+          try { unlinkSync(join(dataDir, file)); deleted.push(file); } catch (e) { /* skip */ }
+        }
+      }
+      // Check data/ subdirectory (srs, word-knowledge, dialogue caches, creature memory)
+      const dataSub = join(dataDir, 'data');
+      if (existsSync(dataSub)) {
+        for (const file of readdirSync(dataSub)) {
+          if (file.includes(userId)) {
+            try { unlinkSync(join(dataSub, file)); deleted.push(`data/${file}`); } catch (e) { /* skip */ }
+          }
+        }
+      }
+
+      // Remove user from users file
+      data.users.splice(userIndex, 1);
+      saveUsers(data, usersFile);
+
+      clearSrsCache(userId);
+
+      res.json({ deleted, userId, username, message: `User "${username}" and all data removed` });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
