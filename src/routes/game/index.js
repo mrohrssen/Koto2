@@ -1,10 +1,3 @@
-/**
- * @fileoverview Game routes aggregator
- *
- * Applies requireAuth middleware and per-user GameManager injection,
- * then mounts all game-related route modules under /api/game/*
- */
-
 import { Router } from 'express';
 import { requireAuth } from '../../auth/middleware.js';
 import { getManager, saveManager } from '../../game/manager-registry.js';
@@ -17,7 +10,8 @@ import createCombatRoutes from './combat.js';
 import createEconomyRoutes from './economy.js';
 import createMiscRoutes from './misc.js';
 import { createKnownWordsRoutes } from './known-words.js';
-import createMetaShopRoutes from './meta-shop.js';
+import createCrestRoutes from './crests.js';
+import createTutorialRoutes from './tutorial.js';
 import createKanaRoutes from './kana.js';
 import { createPvpRoutes } from './pvp.js';
 
@@ -102,8 +96,11 @@ export default function createGameRoutes(deps) {
   // Mount economy routes
   router.use(createEconomyRoutes());
 
-  // Mount meta shop routes
-  router.use(createMetaShopRoutes());
+  // Mount crest routes
+  router.use(createCrestRoutes());
+
+  // Mount tutorial routes
+  router.use(createTutorialRoutes());
 
   // Mount misc routes
   router.use(createMiscRoutes({

@@ -1,12 +1,8 @@
-// public/js/ui/bootstrap-client.js
-
-import { apiUrl } from '../platform.js';
 import { toRomaji } from './romaji.js';
 
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
 
 let _knownWords = new Set();
-const _pendingExposures = new Set();
 
 /** Set the player's known words (called on game load). */
 export function setKnownWords(words) {
@@ -50,7 +46,6 @@ export function renderEnFirst(taggedText) {
       }
       if (!isKnown) {
         html += `<span class="bs-word-en">${esc(english)}</span>`;
-        _pendingExposures.add(kanji);
       }
       html += '</span>';
       return html;
@@ -61,46 +56,92 @@ export function renderEnFirst(taggedText) {
 }
 
 /**
- * Render a single word in jp-first mode.
- * Always shows kanji + furigana. Shows English if word is unknown.
+ * Punctuation POS values from UniDic that should render as-is.
  */
-export function renderJpFirst(kanji, reading, english) {
-  let html = '<span class="bs-word">';
-  if (reading) {
-    html += `<ruby>${esc(reading)}<rt>${esc(toRomaji(reading))}</rt></ruby>`;
-  } else {
-    html += esc(reading || kanji);
-  }
-  if (!_knownWords.has(kanji) && english) {
-    html += `<span class="bs-word-en">${esc(english)}</span>`;
-  }
-  html += '</span>';
-  return html;
-}
+const PUNCT_POS = new Set(['記号', '補助記号', '空白']);
 
-/** Add a word to the pending exposure queue (used by speech bubbles). */
-export function addExposure(word) {
-  _pendingExposures.add(word);
+/**
+ * Render a tokenized Japanese sentence with known/unknown word display.
+ *
+ * Known words: inline hiragana (Areas 1-3) or kanji (Area 4+).
+ * Unknown words: vertical stack — hiragana reading on top, English below.
+ * Punctuation: rendered as-is.
+ *
+ * @param {Array<{surface: string, baseForm: string, pos: string, reading: string}>} tokens
+ * @param {Set<string>} knownWords - baseForm strings the player knows
+ * @param {Map<string, {reading: string, definitions: Array<{en: string, primary?: boolean}>}>} wordDict
+ * @param {Object<string, string>} overrides - baseForm → English override
+ * @param {boolean} useKanji - false for Areas 1-3 (hiragana), true for Area 4+
+ * @returns {string} HTML string
+ */
+export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, useKanji = false) {
+  if (!tokens || tokens.length === 0) return '';
+
+  return tokens.map(token => {
+    const { surface } = token;
+
+    // Detect format: universal uses `base`, legacy uses `baseForm`
+    const baseForm = token.base || token.baseForm;
+    const reading = token.reading;
+
+    // Non-content token: no base field → render as punctuation
+    // (universal format) OR legacy POS-based detection
+    const isNonContent = !baseForm
+      || (token.pos && (PUNCT_POS.has(token.pos) || /^[\p{P}\p{S}\s]+$/u.test(surface)));
+
+    if (isNonContent) {
+      return `<span class="jp-punct">${esc(surface)}</span>`;
+    }
+
+    const isKnown = knownWords.has(baseForm);
+    const displayReading = reading || surface;
+
+    // Look up meaning for data attribute (needed for both known and unknown)
+    const dictEntry = wordDict.get(baseForm);
+    const meaning = token.meaning
+      || overrides[baseForm]
+      || dictEntry?.definitions?.find(d => d.primary)?.en
+      || dictEntry?.definitions?.[0]?.en
+      || '';
+
+    const pos = token.pos || '';
+    const dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;
+
+    if (isKnown) {
+      const display = useKanji ? surface : displayReading;
+      return `<span class="jp-word jp-known"${dataAttrs}>`
+        + `<ruby>${esc(display)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
+        + `</span>`;
+    }
+
+    // Unknown word
+    const typeClass = token.entity ? 'jp-entity' : 'jp-unknown';
+    return `<span class="jp-word ${typeClass}"${dataAttrs}>`
+      + `<ruby>${esc(displayReading)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
+      + `<span class="jp-stack-en">${esc(meaning.split('/')[0].trim())}</span>`
+      + `</span>`;
+  }).join('');
 }
 
 /**
- * Flush pending i+1 word exposures to the server.
- * Call after rendering a batch of UI (e.g. after shop items are displayed).
+ * Convert a game entity to a universal token for rendering.
+ * Works with moves, items, creatures, NPC roles, speakers.
  */
-export function flushExposures() {
-  if (_pendingExposures.size === 0) return;
-  const words = [..._pendingExposures];
-  _pendingExposures.clear();
-  const token = localStorage.getItem('authToken');
-  if (!token) return;
-  fetch(apiUrl('/api/game/known-words/expose'), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify({ words })
-  }).catch(() => {});
+export function entityToToken(entity) {
+  const surface = entity.word || entity.baseWord || entity.name;
+  const reading = entity.reading || entity.baseReading;
+  const meaning = entity.nameEn || entity.baseMeaning || entity.meaning;
+  return { surface, base: surface, reading, meaning, entity: true };
+}
+
+/** Add a word to known set (client-side only, no server call). */
+export function addKnownWord(word) {
+  _knownWords.add(word);
+}
+
+/** Remove a word from known set (client-side only, no server call). */
+export function removeKnownWord(word) {
+  _knownWords.delete(word);
 }
 
 /** HTML-escape a string. Exported for use by other UI modules. */

@@ -1,10 +1,3 @@
-/**
- * DOM Reference Module - Central element cache for mobile UI
- *
- * All UI modules import element references from here.
- * Elements are lazily cached on first access.
- */
-
 const cache = {};
 
 function el(id) {

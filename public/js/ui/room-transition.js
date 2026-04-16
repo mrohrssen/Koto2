@@ -1,9 +1,9 @@
 import { showNpcTrainer, showNpcInDisplay, showDealer, showFormation, hideFormation } from './scene.js';
-import { showNpcSprite, hideNpcSprite } from '../pixi/formation.js';
+import { showNpcSprite, hideNpcSprite, setFormationVisible } from '../pixi/formation.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { speakText } from '../tts.js';
 import * as narrationBox from './narration-box.js';
-import { renderEnFirst } from './bootstrap-client.js';
+import { renderEnFirst, renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import { combatEvents } from './combat-events.js';
 
 /**
@@ -43,7 +43,7 @@ export async function playRoomTransition(gameState) {
 /**
  * Play NPC battle intro: NPC slides in, says greeting, slides out.
  */
-export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSpriteFn) {
+export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSpriteFn, npcDialogue) {
   if (!npcData) return;
 
   const npcName = npcData.nameEn || npcData.name;
@@ -59,7 +59,23 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
     : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
   await showNpcSprite(spritePath, { slideIn: true });
 
-  if (npcData.greeting) {
+  // Show bootstrap word-gated fightStart line, fall back to legacy AI greeting
+  const bootstrapLine = npcDialogue?.fightStart;
+  if (bootstrapLine?.tokens?.length) {
+    await new Promise(r => setTimeout(r, 100));
+    narrationBox.forceHide();
+    const knownWords = getKnownWords();
+    const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+    const html = renderJpSentence(
+      bootstrapLine.tokens,
+      knownWords,
+      wordDict,
+      bootstrapLine.overrides || {},
+      npcDialogue.useKanji || false
+    );
+    await narrationBox.show(html, { speaker: npcName, html: true });
+  } else if (npcData.greeting) {
+    // Legacy fallback for AI-generated greetings
     await new Promise(r => setTimeout(r, 100));
     narrationBox.forceHide();
     speakText(npcData.greeting);
@@ -77,7 +93,9 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   const enemyFormation = document.getElementById('enemy-formation');
   const npcName = npcData?.nameEn || npcData?.name;
 
+  // Hide both DOM formation (opacity) and Pixi sprites (container.visible)
   if (enemyFormation) enemyFormation.style.opacity = '0';
+  setFormationVisible('enemy', false);
 
   if (npcData && showNpcSpriteFn) {
     showNpcSpriteFn(npcName, npcData.id, npcData, { skipPixi: true });
@@ -93,9 +111,22 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   if (hideNpcSpriteFn) hideNpcSpriteFn();
 
   if (enemies?.length) {
-    showFormation('enemy', enemies);
+    await showFormation('enemy', enemies);
   }
 
+  // Mark already-dead enemy slots as defeated before making formation visible,
+  // so their HP bars don't flash in during the opacity restore
   const freshFormation = document.getElementById('enemy-formation');
+  if (freshFormation) {
+    freshFormation.querySelectorAll('.formation-slot').forEach(slot => {
+      const hp = Number(slot.dataset.hp);
+      if (hp <= 0 && !slot.classList.contains('defeated')) {
+        slot.classList.add('defeated');
+      }
+    });
+  }
+
+  // Restore both DOM and Pixi visibility
+  setFormationVisible('enemy', true);
   if (freshFormation) freshFormation.style.opacity = '1';
 }

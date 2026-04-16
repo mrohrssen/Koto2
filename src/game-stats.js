@@ -1,7 +1,3 @@
-// Game Statistics Module
-// Tracks Japanese language stats from game narrations
-// Separate from chat stats but uses the same structure
-
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { dataPath } from './data-dir.js';
 

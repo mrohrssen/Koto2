@@ -183,6 +183,60 @@ test('Arc Strike chain uses attacker element', () => {
   assert.equal(chainProc.element, 'wood');
 });
 
+test('Arc Strike chainHit proc includes sourceIndex of original target', () => {
+  const combat = makeCombat();
+  const record = makeDmgRecord({ targetIndex: 0, damage: 100 });
+  const allies = [makeAlly({ element: 'fire' })];
+  const enemies = [
+    makeEnemy({ id: 'e1', hp: 100, maxHp: 100, element: 'fire' }),
+    makeEnemy({ id: 'e2', hp: 100, maxHp: 100, element: 'fire' })
+  ];
+
+  withStubbedRandom(0.01, () => {
+    applyAfterPlayerAttacks({
+      attacks: [record],
+      allies,
+      enemies,
+      runPartySkills: ['arcStrike'],
+      combat
+    });
+  });
+
+  const chainProc = record.partySkillProcs.find(p => p.type === 'chainHit');
+  assert.ok(chainProc, 'arc strike chain proc should exist');
+  assert.strictEqual(chainProc.sourceIndex, 0, 'sourceIndex should match original targetIndex');
+});
+
+test('Forked Arc bounce procs include sourceIndex tracking bounce chain', () => {
+  const combat = makeCombat();
+  const record = makeDmgRecord({ targetIndex: 0, damage: 100 });
+  const allies = [makeAlly({ element: 'fire' })];
+  const enemies = [
+    makeEnemy({ id: 'e1', hp: 100, maxHp: 100, element: 'fire' }),
+    makeEnemy({ id: 'e2', hp: 100, maxHp: 100, element: 'fire' }),
+    makeEnemy({ id: 'e3', hp: 100, maxHp: 100, element: 'fire' })
+  ];
+
+  withStubbedRandom(0.01, () => {
+    applyAfterPlayerAttacks({
+      attacks: [record],
+      allies,
+      enemies,
+      runPartySkills: ['arcStrike', 'forkedArc'],
+      combat
+    });
+  });
+
+  const chainProcs = record.partySkillProcs.filter(p => p.type === 'chainHit');
+  assert.ok(chainProcs.length >= 2, `expected at least 2 chain hits, got ${chainProcs.length}`);
+  // Every chain hit proc should have a sourceIndex
+  for (const proc of chainProcs) {
+    assert.notStrictEqual(proc.sourceIndex, undefined, `proc ${proc.skillId} bounce ${proc.bounceNum || 'initial'} should have sourceIndex`);
+  }
+  // First arc strike should originate from the original target
+  assert.strictEqual(chainProcs[0].sourceIndex, 0, 'arc strike sourceIndex should be original targetIndex');
+});
+
 // ── Forked Arc + Resonant Arc ──
 
 test('Forked Arc bounces continue with 50% chance (all succeed)', () => {
@@ -1281,4 +1335,47 @@ test('Widening Gyre: 3 rounds of Erosion + Momentum grow stages cumulatively', (
   applyRoundStartSkills({ allies, enemies, runPartySkills: skills, combat });
   assert.equal(allies[0].statStages.atk, 4);
   assert.equal(enemies[0].statStages.atk, -4);
+});
+
+// ── Regression: Arc Strike chain kill should be detectable for attack pruning ──
+
+test('arc strike chain kill sets enemy HP to 0 (verifiable for attack pruning)', () => {
+  // Simulate: player attacks enemy1 (40 dmg), arc strike chains to enemy2 (12 dmg).
+  // enemy2 has only 10 HP — chain should kill it.
+  const allies = [makeAlly({ attack: 20 })];
+  const enemies = [
+    makeEnemy({ id: 'target', hp: 100, maxHp: 100 }),
+    makeEnemy({ id: 'chain-victim', hp: 10, maxHp: 100 })
+  ];
+  const attacks = [makeDmgRecord({ attackerIndex: 0, targetIndex: 0, damage: 40 })];
+  const combat = makeCombat();
+
+  const hpBefore = enemies.map(e => e.hp);
+
+  withStubbedRandom(0.99, () => {
+    applyAfterPlayerAttacks({
+      attacks, allies, enemies, runPartySkills: ['arcStrike'], combat
+    });
+  });
+
+  // Chain killed enemy2
+  assert.equal(enemies[1].hp, 0, 'chain victim should be dead (hp=0)');
+  assert.ok(hpBefore[1] > 0, 'chain victim was alive before party skills');
+
+  // The chain proc exists on the attack record
+  const chainProc = attacks[0].partySkillProcs.find(p => p.skillId === 'arcStrike');
+  assert.ok(chainProc, 'arc strike proc should exist');
+  assert.equal(chainProc.targetIndex, 1, 'chain should target enemy index 1');
+
+  // Server-side pruning logic: enemyAttacks from enemies killed by party skills
+  // should be filtered out (enemy was alive during initiative but dead after party skills)
+  const fakeEnemyAttacks = [
+    { attackerIndex: 1, damage: 5, attackerName: 'chain-victim' }
+  ];
+  const pruned = fakeEnemyAttacks.filter(atk => {
+    const idx = atk.attackerIndex;
+    const enemy = enemies[idx];
+    return !enemy || enemy.hp > 0 || hpBefore[idx] <= 0;
+  });
+  assert.equal(pruned.length, 0, 'attack from chain-killed enemy should be pruned');
 });

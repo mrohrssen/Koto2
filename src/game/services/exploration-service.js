@@ -1,20 +1,3 @@
-/**
- * @fileoverview ExplorationService - Dungeon exploration and room interaction
- * @module src/game/services/exploration-service
- *
- * PURPOSE:
- * Handles dungeon exploration logic including area selection,
- * room navigation, shrine interaction, and post-combat shop.
- *
- * KEY EXPORTS:
- * - ExplorationService (class) - Exploration and room interaction service
- *
- * DEPENDENCIES:
- * - GameManager reference (this.gm) for state access and cross-service calls
- * - rooms.js for area/room generation and utilities
- */
-
-
 import { generateEncounterCount } from '../state.js';
 
 import {
@@ -24,15 +7,18 @@ import {
   getAreaSelectionOptions,
   getAreaById,
   createRoom,
-  ROOM_TYPES
+  ROOM_TYPES,
+  popTestRoomType
 } from '../rooms.js';
 
 import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPrice, getCreatureSellPrice, generateDealerCreatures } from '../creatures.js';
 import { logger } from '../../logger.js';
-import { getDueWordsWithMeanings } from '../../jpdb.js';
+import { getDueCards } from '../internal-srs.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
 import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
+import { applyCrestBonuses } from './crest-service.js';
+import { shouldOverrideSkillOffers, advanceTutorial, shouldFixRoomSequence } from './tutorial-service.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -44,10 +30,11 @@ const ROOM_HEAL_PERCENT = 0.05; // 5% maxHp on each room entry, skipping KO'd cr
 /**
  * Roll 3 item offers for a friendly NPC room.
  * @param {'food'|'equipment'} category - Filters items by their category field
+ * @param {string[]|null} areaIds - Area IDs the player has reached (cumulative); null disables filtering
  * @param {Array} [itemPool] - Optional override item pool (defaults to data/items.json)
  * @returns {Array} Up to 3 item objects matching the category
  */
-export function rollFriendlyNpcOffers(category, itemPool = null) {
+export function rollFriendlyNpcOffers(category, areaIds = null, itemPool = null) {
   if (!itemPool) {
     try {
       itemPool = JSON.parse(readFileSync(DEFAULT_ITEMS_PATH, 'utf8'));
@@ -56,8 +43,11 @@ export function rollFriendlyNpcOffers(category, itemPool = null) {
     }
   }
 
-  // Filter by item category field (food or equipment)
-  const eligible = itemPool.filter(item => item.category === category);
+  // Filter by category and area progression
+  const eligible = itemPool.filter(item =>
+    item.category === category &&
+    (!areaIds || !item.area || areaIds.includes(item.area))
+  );
 
   // Randomly select up to 3 without duplicates
   const shuffled = [...eligible].sort(() => Math.random() - 0.5);
@@ -91,8 +81,8 @@ function calculateDiscoveryXpForRun(run) {
   return Math.floor(BASE_KILL_XP * highestLevel * (run?.itemBuffs?.xpMultiplier || 1.0) * 0.2);
 }
 
-function buildSpeedReviewWordKey(vid, sid) {
-  return `${String(vid)}:${String(sid)}`;
+function buildSpeedReviewWordKey(word) {
+  return String(word);
 }
 
 /**
@@ -136,7 +126,8 @@ export class ExplorationService {
    */
   getAreaOptions() {
     const excludeId = this.gm.run?.currentArea?.id || null;
-    return getAreaSelectionOptions(excludeId);
+    const highestUnlocked = this.gm.meta?.levels?.highestUnlocked || 1;
+    return getAreaSelectionOptions(excludeId, highestUnlocked);
   }
 
   /**
@@ -187,7 +178,8 @@ export class ExplorationService {
     this.gm.run.areaCleared = false;
 
     // Generate rooms for this area (fixed 30-room structure for Koto2)
-    this.gm.run.rooms = generateAreaRooms(areaId);
+    const tutorialMode = shouldFixRoomSequence(this.gm.meta);
+    this.gm.run.rooms = generateAreaRooms(areaId, undefined, undefined, undefined, undefined, tutorialMode);
     this.gm.run.currentRoom = 0;
     this.gm.run.roomsExplored = 0;
 
@@ -265,17 +257,24 @@ export class ExplorationService {
       this.gm.run.areasCompleted++;
       this.gm.run.stats.areasCleared = this.gm.run.areasCompleted;
 
-      // Check win condition
-      if (this.gm.run.areasCompleted >= this.gm.run.areasToWin) {
-        this.gm.run.gameVictoryPending = true;
-      }
-
       const areaName = this.gm.run.currentArea?.nameEn || 'Unknown';
       this.gm.narrate(`${areaName}を制覇した！`);
 
       logger.info('[Exploration] Area cleared:', { areasCompleted: this.gm.run.areasCompleted });
 
-      // Auto-select when only one area option is available (MVP: single area)
+      // Check win condition — run ends, show run-complete screen
+      if (this.gm.run.areasCompleted >= this.gm.run.areasToWin) {
+        this.gm.run.gameVictoryPending = true;
+        this.gm.emitState();
+        return {
+          areaCleared: true,
+          areasCompleted: this.gm.run.areasCompleted,
+          areasToWin: this.gm.run.areasToWin,
+          gameVictory: true
+        };
+      }
+
+      // Run continues — auto-select when only one area option available
       const areaOptions = this.getAreaOptions();
       if (areaOptions.length === 1) {
         logger.info('[Exploration] Single area available — auto-selecting:', { areaId: areaOptions[0].id });
@@ -284,7 +283,7 @@ export class ExplorationService {
           areaCleared: true,
           areasCompleted: this.gm.run.areasCompleted,
           areasToWin: this.gm.run.areasToWin,
-          gameVictory: this.gm.run.areasCompleted >= this.gm.run.areasToWin,
+          gameVictory: false,
           autoSelectedArea: areaOptions[0].id
         };
       }
@@ -296,11 +295,20 @@ export class ExplorationService {
         areaCleared: true,
         areasCompleted: this.gm.run.areasCompleted,
         areasToWin: this.gm.run.areasToWin,
-        gameVictory: this.gm.run.areasCompleted >= this.gm.run.areasToWin
+        gameVictory: false
       };
     }
 
     const nextRoom = this.gm.run.rooms[this.gm.run.currentRoom];
+
+    // Test queue override — pop queued room type (NODE_ENV=test or debug mode)
+    const queuedType = popTestRoomType();
+    if (queuedType && ROOM_TYPES[queuedType] && nextRoom.type !== queuedType) {
+      const areaId = this.gm.run.currentArea?.id || 'unknown';
+      const replaced = createRoom(queuedType, areaId, nextRoom.roomNumber, nextRoom.totalRooms);
+      if (nextRoom.subArea) replaced.subArea = nextRoom.subArea;
+      this.gm.run.rooms[this.gm.run.currentRoom] = replaced;
+    }
 
     // Single room - override type if forceRoomType is set
     if (forceRoomType && ROOM_TYPES[forceRoomType] && nextRoom.type !== forceRoomType) {
@@ -339,7 +347,7 @@ export class ExplorationService {
         const areaNpcs = Object.values(npcs).filter(n => !npcAreaId || n.area === npcAreaId || !n.area);
         if (areaNpcs.length > 0) {
           const picked = areaNpcs[Math.floor(Math.random() * areaNpcs.length)];
-          room.npc = { id: picked.id, name: picked.name, nameEn: picked.nameEn, shopGreetings: picked.shopGreetings || ['こんにちは！'] };
+          room.npc = { id: picked.id, name: picked.name, nameEn: picked.nameEn };
         }
       } catch (err) {
         logger.error('[Exploration] Failed to assign NPC to friendlyNpc room:', err.message);
@@ -577,6 +585,22 @@ export class ExplorationService {
     return { type: 'whack_a_mole_complete', score: clampedScore, creditsAwarded, xpGrants, levelUps };
   }
 
+  skipWhackAMole() {
+    const room = this.getCurrentRoom();
+    if (!room || room.type !== 'whackAMole') {
+      throw new Error('No whack-a-mole room here');
+    }
+
+    if (room.interacted) {
+      return { type: 'whack_a_mole_skipped', alreadySkipped: true };
+    }
+
+    room.interacted = true;
+
+    const proceedResult = this.proceedToNextRoom();
+    return { type: 'whack_a_mole_skipped', ...proceedResult };
+  }
+
   // ============ SKILL MASTER ROOM ============
 
   getSkillMasterOffers() {
@@ -585,6 +609,13 @@ export class ExplorationService {
     const isInitialPick = pick && !pick.chosenId;
 
     if (isInitialPick) {
+      // Tutorial step 0: offer 3 hardcoded skills (counter first)
+      if (shouldOverrideSkillOffers(this.gm.meta)) {
+        pick.offered = ['retaliationStrike', 'arcStrike', 'sharedVigor'];
+        const offered = pick.offered.map(id => getPartySkillDisplay(id)).filter(Boolean);
+        this.gm.emitState();
+        return { offered };
+      }
       if (!Array.isArray(pick.offered)) {
         const ownedSkillIds = (this.gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
         pick.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
@@ -632,6 +663,10 @@ export class ExplorationService {
       if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
       this.gm.run.partySkills.push({ id: skillId });
       pick.chosenId = skillId;
+      // Tutorial step 0 → 1: advance after first skill pick
+      if (shouldOverrideSkillOffers(this.gm.meta)) {
+        advanceTutorial(this.gm.meta);
+      }
       this.gm.emitState();
       return { chosenId: skillId, partySkills: this.gm.run.partySkills };
     }
@@ -840,14 +875,8 @@ export class ExplorationService {
       this.gm.run.creatureParty.reserves.push(newCreature);
     }
 
-    // Apply meta progression bonuses to purchased creature
-    if (this.gm.run.metaHpMult > 1) {
-      newCreature.maxHp = Math.floor(newCreature.maxHp * this.gm.run.metaHpMult);
-      newCreature.hp = newCreature.maxHp;
-    }
-    if (this.gm.run.metaAtkMult > 1) {
-      newCreature.attack = Math.floor(newCreature.attack * this.gm.run.metaAtkMult);
-    }
+    // Apply crest progression bonuses to purchased creature
+    applyCrestBonuses(newCreature, this.gm.run.crestMults);
 
     room.dealer.purchasedCreature = creatureId;
 
@@ -922,9 +951,7 @@ export class ExplorationService {
     return {
       word: word.word,
       reading: word.reading,
-      meanings: Array.isArray(word.meanings) ? word.meanings : [],
-      vid: word.vid,
-      sid: word.sid
+      meanings: Array.isArray(word.meanings) ? word.meanings : []
     };
   }
 
@@ -1027,7 +1054,7 @@ export class ExplorationService {
     };
   }
 
-  async startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider } = {}) {
+  async startSpeedReviewRoom({ roomId, userId, dueWordsProvider } = {}) {
     if (!roomId) {
       throw new Error('roomId is required');
     }
@@ -1043,17 +1070,23 @@ export class ExplorationService {
     }
 
     const targetCards = Math.max(0, Number(roomState.targetCards) || 10);
-    const fetchDueWords = dueWordsProvider || getDueWordsWithMeanings;
     let dueWords = [];
 
-    if (jpdbApiKey && userId) {
-      const result = await fetchDueWords(jpdbApiKey, 1000, [], userId, []);
-      dueWords = Array.isArray(result?.words) ? result.words : [];
+    if (dueWordsProvider) {
+      const result = await dueWordsProvider(userId);
+      dueWords = Array.isArray(result?.words) ? result.words : (Array.isArray(result) ? result : []);
+    } else if (userId) {
+      const dueCards = getDueCards(userId, 'vocab');
+      dueWords = dueCards.map(c => ({
+        word: c.word || c.id,
+        reading: c.reading || c.word || c.id,
+        meanings: c.meaning ? [c.meaning] : []
+      }));
     }
 
     const snapshotWords = dueWords.slice(0, targetCards).map(word => this._sanitizeSpeedReviewWord(word));
     roomState.snapshotWords = snapshotWords;
-    roomState.snapshotWordKeys = snapshotWords.map(word => buildSpeedReviewWordKey(word.vid, word.sid));
+    roomState.snapshotWordKeys = snapshotWords.map(word => buildSpeedReviewWordKey(word.word));
     roomState.snapshotInitialized = true;
     roomState.reviewedCards = Math.max(0, Number(roomState.reviewedCards) || 0);
     roomState.awardedReviewKeys = Array.isArray(roomState.awardedReviewKeys) ? roomState.awardedReviewKeys : [];
@@ -1066,7 +1099,7 @@ export class ExplorationService {
     return this._buildSpeedReviewRoomResponse(room, { reusedSnapshot: false });
   }
 
-  recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex } = {}) {
+  recordSpeedReviewRoomCommit({ roomId, word, commitIndex } = {}) {
     if (!roomId) {
       throw new Error('roomId is required');
     }
@@ -1088,12 +1121,12 @@ export class ExplorationService {
     }
 
     const expectedWordKey = roomState.snapshotWordKeys[commitIndex];
-    const committedWordKey = buildSpeedReviewWordKey(vid, sid);
+    const committedWordKey = buildSpeedReviewWordKey(word);
     if (expectedWordKey !== committedWordKey) {
       throw new Error('Commit does not match server snapshot order');
     }
 
-    const reviewKey = `${room.id}:${commitIndex}:${String(vid)}:${String(sid)}`;
+    const reviewKey = `${room.id}:${commitIndex}:${word}`;
     if (roomState.awardedReviewKeys.includes(reviewKey) || roomState.pendingReviewKeys.includes(reviewKey)) {
       this._syncSpeedReviewCompletion(room);
       return this._buildSpeedReviewRoomResponse(room, {

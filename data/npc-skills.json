@@ -62,5 +62,73 @@
     "statusEffect": null,
     "statusChance": 0,
     "statusDuration": 0
+  },
+  {
+    "id": "benkyou",
+    "name": "勉強",
+    "nameEn": "Study",
+    "reading": "べんきょう",
+    "meaning": "study; diligence",
+    "element": "neutral",
+    "category": "damage",
+    "target": "all_enemies",
+    "power": 10,
+    "mpCost": 0,
+    "description": "Attacks all enemies with focused determination.",
+    "statusEffect": null,
+    "statusChance": 0,
+    "statusDuration": 0
+  },
+  {
+    "id": "tamesu",
+    "name": "試す",
+    "nameEn": "Test",
+    "reading": "ためす",
+    "meaning": "to attempt; to test; to try out",
+    "element": "neutral",
+    "category": "damage",
+    "target": "all_enemies",
+    "power": 10,
+    "mpCost": 0,
+    "description": "Puts enemies to the test with a sudden quiz.",
+    "statusEffect": "stun",
+    "statusChance": 30,
+    "statusDuration": 1
+  },
+  {
+    "id": "yomu-npc",
+    "name": "読む",
+    "nameEn": "Read",
+    "reading": "よむ",
+    "meaning": "to read / to predict",
+    "element": "neutral",
+    "category": "heal",
+    "target": "all_allies",
+    "power": 10,
+    "mpCost": 0,
+    "description": "Reads aloud, soothing allies with knowledge.",
+    "statusEffect": null,
+    "statusChance": 0,
+    "statusDuration": 0
+  },
+  {
+    "id": "oboeru",
+    "name": "覚える",
+    "nameEn": "Memorize",
+    "reading": "おぼえる",
+    "meaning": "to memorize; to learn by heart",
+    "element": "neutral",
+    "category": "buff",
+    "target": "single_ally",
+    "power": 0,
+    "mpCost": 0,
+    "statChanges": {
+      "atk": 2
+    },
+    "description": "Recalls a key lesson, sharply boosting one creature's attack.",
+    "statusEffect": null,
+    "statusChance": 0,
+    "statusDuration": 0,
+    "_note": "NEEDS CODE: executeNpcSkill passes targetIndex=0, need random alive ally selection for NPC buff skills"
   }
 ]

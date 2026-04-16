@@ -1,19 +1,3 @@
-/**
- * @file actions.js - Action Area Coordinator
- *
- * PURPOSE:
- * Manages the #action-area div lifecycle. Provides content management
- * (setContent, clear) and flash card display for word discovery.
- * Button rendering has moved to ui-components.js.
- *
- * KEY EXPORTS:
- * - init({ equipBots, contextAction, cardSwipe, cardFlip }): Set up callbacks
- * - showFlashCards(words, options): Display single swipeable vocabulary card
- * - triggerEquipBots(): Programmatically trigger equip callback
- * - clear(): Empty the action area
- * - setContent(html): Set custom HTML content
- */
-
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import { t } from './i18n.js';

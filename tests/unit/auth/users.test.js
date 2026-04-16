@@ -68,7 +68,7 @@ describe('auth/users', () => {
   it('updates user API keys', async () => {
     const user = await createUser('takeshi', 'pass123', TEST_FILE);
     const encryptionKey = 'b'.repeat(64);
-    updateUserKeys(user.id, { jpdbApiKey: 'test-key' }, encryptionKey, TEST_FILE);
+    updateUserKeys(user.id, { aiApiKey: 'test-key' }, encryptionKey, TEST_FILE);
 
     const updated = findUserById(user.id, TEST_FILE);
     assert.ok(updated.encryptedApiKeys);

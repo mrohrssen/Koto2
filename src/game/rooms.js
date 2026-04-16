@@ -1,31 +1,3 @@
-/**
- * @fileoverview Room generation, area system, and exploration mechanics
- * @module src/game/rooms
- *
- * PURPOSE:
- * Manages dungeon exploration through themed areas. Generates room sequences
- * for each area with encounters, optional shrine, quiz, word discovery, and
- * dealer rooms. Areas are loaded from data/areas.json and selected
- * randomly (excluding the current area) when the player completes an area.
- *
- * KEY EXPORTS:
- * Area System:
- * - AREAS - All area definitions loaded from JSON
- * - getAreaSelectionOptions(excludeAreaId) - Get 2 random area choices
- * - getAreaById(areaId) - Look up area by ID
- *
- * Room Generation:
- * - generateAreaRooms(areaId, roomCount) - Create room sequence for area
- * - getRoomEntryNarration(room) - Get narrative text for room type
- * - getRoomActions(room) - Get available actions for current room
- * Constants:
- * - ROOM_TYPES - Encounter, shrine, quiz, wordDiscovery, dealer, boss
- *
- * ROOM SEQUENCE:
- * Each area: N rooms (encounters + special rooms). Boss room appended if area has bossCreatureId.
- * Post-combat shop appears after enemy defeats.
- */
-
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -77,10 +49,10 @@ for (const area of AREAS) {
 /**
  * Get 2 random area options, excluding the current area
  */
-export function getAreaSelectionOptions(excludeAreaId = null) {
-  // TODO: MVP lock — only offer the Starting Meadow area. Remove this to restore full area selection.
-  const meadow = AREAS.find(a => a.id === 'hajimari-no-hiroba');
-  return meadow ? [meadow] : [];
+export function getAreaSelectionOptions(excludeAreaId = null, highestUnlocked = 1) {
+  // Return all unlocked areas (highestUnlocked is 1-based: 1 = area 0 only, 2 = areas 0+1)
+  return AREAS.filter((_, i) => i < highestUnlocked)
+              .filter(a => a.id !== excludeAreaId);
 }
 
 /**
@@ -181,7 +153,7 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
  * @param {boolean} [_encountersOnly] - Ignored
  * @param {*} [_forceRoomType] - Ignored
  */
-export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encountersOnly, _forceRoomType) {
+export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encountersOnly, _forceRoomType, tutorialMode = false) {
   const TOTAL_ROOMS = 30;
   const NPC_BATTLE_INDICES = new Set([5, 11, 17, 23]);
   const BOSS_INDEX = 29;
@@ -215,6 +187,18 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
     if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
 
     rooms.push(room);
+  }
+
+  // Tutorial override: force first 2 rooms for guaranteed befriend + item shop
+  if (tutorialMode) {
+    if (rooms[0]) rooms[0].type = ROOM_TYPES.encounter;
+    if (rooms[1]) {
+      rooms[1].type = ROOM_TYPES.friendlyNpc;
+      if (!rooms[1].friendlyNpc) {
+        const offerCategory = Math.random() < 0.5 ? 'food' : 'equipment';
+        rooms[1].friendlyNpc = { offerCategory, offered: null, chosenId: null, completed: false };
+      }
+    }
   }
 
   // Attach boss creature if area has one

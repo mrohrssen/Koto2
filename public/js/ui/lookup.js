@@ -1,43 +1,14 @@
-/**
- * @file lookup.js - Japanese Word Lookup Mode
- *
- * PURPOSE:
- * Provides tap-to-lookup functionality for Japanese text. When activated,
- * parses all visible Japanese text via JPDB API, wraps words in clickable
- * spans, and shows definition popups on tap. Integrates with JPDB vocabulary
- * states (new, learning, known, due).
- *
- * KEY EXPORTS:
- * - init(callbacks): Setup with API functions and toast display
- * - getActive(): Check if lookup mode is currently active
- * - toggle(): Activate or deactivate lookup mode
- * - refresh(): Re-parse text after content changes
- *
- * DEPENDENCIES:
- * - ../dom.js: DOM element references (lookupBtn, lookupPopup elements)
- * - API callbacks: parseText, lookupWord, lookupBatch, hasJpdbKey
- *
- * BEHAVIOR:
- * - Activation: Gathers Japanese text, sends to JPDB for parsing
- * - Prefetches definitions in background for instant display
- * - Popup shows: word, reading, part of speech, meanings, JPDB card state
- * - Blocks game clicks while active (prevents accidental progression)
- * - BLOCKED_SELECTORS prevent parsing quiz answers and flash cards (anti-cheat)
- */
-
 import { dom } from '../dom.js';
 import { escapeHtml } from './html-utils.js';
 
 let isActive = false;
 let isLoading = false;
 let originalTextMap = new WeakMap(); // Store original text per element
-let definitionCache = new Map(); // Cache prefetched definitions: "vid:sid" -> definition
+let definitionCache = new Map(); // Cache definitions by word string
 let api = {
   parseText: null,
   lookupWord: null,
-  lookupBatch: null,
-  showToast: null,
-  hasJpdbKey: null
+  showToast: null
 };
 
 // Selectors to EXCLUDE from parsing (cheating prevention + UI elements)
@@ -87,9 +58,7 @@ function blockGameClicks(e) {
 export function init(callbacks) {
   api.parseText = callbacks.parseText;
   api.lookupWord = callbacks.lookupWord;
-  api.lookupBatch = callbacks.lookupBatch;
   api.showToast = callbacks.showToast;
-  api.hasJpdbKey = callbacks.hasJpdbKey;
 
   // Block game clicks when lookup mode is active (capture phase runs first)
   // Also handles activation clicks on the lookup button (see blockGameClicks)
@@ -133,12 +102,6 @@ export async function toggle() {
 
 /** Activate lookup mode */
 async function activate() {
-  // Check for JPDB API key
-  if (api.hasJpdbKey && !api.hasJpdbKey()) {
-    api.showToast?.('Set JPDB API key in settings to use lookup');
-    return;
-  }
-
   // Clear any residual transform on .game-app (e.g. from screen shake)
   // so that position:fixed popup is positioned relative to viewport, not the container
   const gameApp = document.querySelector('.game-app');
@@ -168,10 +131,7 @@ async function activate() {
       return;
     }
 
-    // Collect all vocab IDs for prefetching
-    const vocabToFetch = new Map(); // "vid:sid" -> [vid, sid]
-
-    // Parse each text element SEPARATELY to avoid JPDB confusion with mixed languages
+    // Parse each text element via Sudachi + local dictionary
     for (const { el, text } of elementsToProcess) {
       const result = await api.parseText(text);
 
@@ -179,13 +139,10 @@ async function activate() {
         continue; // Skip this element but continue with others
       }
 
-      // Collect vocab IDs from tokens
+      // Cache definitions inline from parse response (tokens include meanings)
       for (const token of result.tokens) {
-        if (token.vid && token.sid !== undefined) {
-          const key = `${token.vid}:${token.sid}`;
-          if (!vocabToFetch.has(key)) {
-            vocabToFetch.set(key, [token.vid, token.sid]);
-          }
+        if (token.lookupable && token.word) {
+          definitionCache.set(token.word, token);
         }
       }
 
@@ -200,18 +157,6 @@ async function activate() {
     isActive = true;
     dom.lookupBtn?.classList.remove('lookup-loading');
     dom.lookupBtn?.classList.add('lookup-active');
-
-    // Prefetch definitions in the background (don't await)
-    if (api.lookupBatch && vocabToFetch.size > 0) {
-      const vocabList = Array.from(vocabToFetch.values());
-      api.lookupBatch(vocabList).then(definitions => {
-        for (const [key, def] of Object.entries(definitions)) {
-          definitionCache.set(key, def);
-        }
-      }).catch(err => {
-        console.warn('Definition prefetch failed:', err);
-      });
-    }
 
   } catch (err) {
     console.error('Lookup activation failed:', err);
@@ -368,11 +313,11 @@ function buildHtmlFromTokens(tokens, targetText) {
     const originalSpelling = targetText.substring(idx, idx + length);
 
     // Add the token
-    if (token.vid && token.sid !== undefined) {
-      // Lookupable word
-      html += `<span class="lookup-word" data-vid="${token.vid}" data-sid="${token.sid}">${escapeHtml(originalSpelling)}</span>`;
+    if (token.lookupable && token.word) {
+      // Lookupable word — keyed by dictionary form
+      html += `<span class="lookup-word" data-word="${escapeHtml(token.word)}">${escapeHtml(originalSpelling)}</span>`;
     } else {
-      // Not lookupable (punctuation, particles without vid)
+      // Not lookupable (punctuation, particles)
       html += escapeHtml(originalSpelling);
     }
 
@@ -392,21 +337,18 @@ function buildHtmlFromTokens(tokens, targetText) {
 async function handleWordClick(e) {
   e.stopPropagation();
   const span = e.target;
-  const vid = parseInt(span.dataset.vid, 10);
-  const sid = parseInt(span.dataset.sid, 10);
+  const word = span.dataset.word;
 
-  if (isNaN(vid) || isNaN(sid)) return;
+  if (!word) return;
 
   // Position popup near clicked word
   const rect = span.getBoundingClientRect();
   positionPopup(rect);
 
   // Check cache first
-  const cacheKey = `${vid}:${sid}`;
-  const cached = definitionCache.get(cacheKey);
+  const cached = definitionCache.get(word);
 
   if (cached) {
-    // Instant display from cache
     populatePopup(cached, span.textContent);
     return;
   }
@@ -419,8 +361,8 @@ async function handleWordClick(e) {
   dom.lookupPopupState.style.display = 'none';
   dom.lookupPopup?.classList.add('visible');
 
-  // Fetch definition
-  const result = await api.lookupWord(vid, sid);
+  // Fetch definition from local dictionary
+  const result = await api.lookupWord(word);
 
   if (result.error) {
     dom.lookupPopupPos.textContent = 'Couldn\'t load definition';
@@ -428,7 +370,7 @@ async function handleWordClick(e) {
   }
 
   // Cache the result
-  definitionCache.set(cacheKey, result);
+  definitionCache.set(word, result);
   populatePopup(result, span.textContent);
 }
 

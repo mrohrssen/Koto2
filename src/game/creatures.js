@@ -194,6 +194,12 @@ export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = nul
       if (metaMults.atkMult > 1) {
         creature.attack = Math.floor(creature.attack * metaMults.atkMult);
       }
+      if (metaMults.mpMult > 1) {
+        creature.maxMp = Math.floor(creature.maxMp * metaMults.mpMult);
+      }
+      if (metaMults.defMult > 1) {
+        creature.defense = Math.max(1, Math.round(creature.defense * metaMults.defMult));
+      }
     }
     if (creature.hp > 0) {
       creature.hp += hpDiff;

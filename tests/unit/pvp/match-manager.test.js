@@ -1,5 +1,8 @@
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, existsSync, rmSync } from 'fs';
+import { join } from 'path';
+import os from 'os';
 import { MatchManager } from '../../../src/pvp/match-manager.js';
 
 function makeTeam() {
@@ -166,6 +169,41 @@ describe('MatchManager', () => {
       // Should be a deep clone (not the same reference)
       assert.notStrictEqual(combatCreature, team.creatureParty.active[0]);
     });
+
+    it('_startBattle applies applyDebugSuperAttack when debugSuperAttack setting is on', () => {
+      const getSettings = mock.fn(() => ({ debugSuperAttack: true }));
+      const mm = new MatchManager({ resolveRoundFn: mockResolve, getSettings });
+      const battleCode = mm.createMatch('user1', 'sock1');
+      mm.joinMatch(battleCode, 'user2', 'sock2');
+      mm.selectTeam(battleCode, 'user1', makeTeam());
+      mm.selectTeam(battleCode, 'user2', makeTeam());
+      mm.setReady(battleCode, 'user1');
+      mm.setReady(battleCode, 'user2');
+
+      const match = mm.getMatch(battleCode);
+      for (const creature of [...match.combat.sideA, ...match.combat.sideB]) {
+        assert.strictEqual(creature.itemBuffs.baseAttackBonus, 100);
+        assert.strictEqual(creature._debugAtkApplied, true);
+      }
+      assert.ok(getSettings.mock.calls.length >= 1);
+    });
+
+    it('_startBattle does not apply debug super attack when setting is off', () => {
+      const getSettings = mock.fn(() => ({ debugSuperAttack: false }));
+      const mm = new MatchManager({ resolveRoundFn: mockResolve, getSettings });
+      const battleCode = mm.createMatch('user1', 'sock1');
+      mm.joinMatch(battleCode, 'user2', 'sock2');
+      mm.selectTeam(battleCode, 'user1', makeTeam());
+      mm.selectTeam(battleCode, 'user2', makeTeam());
+      mm.setReady(battleCode, 'user1');
+      mm.setReady(battleCode, 'user2');
+
+      const match = mm.getMatch(battleCode);
+      for (const creature of [...match.combat.sideA, ...match.combat.sideB]) {
+        assert.strictEqual(creature._debugAtkApplied, undefined);
+        assert.strictEqual(creature.itemBuffs?.baseAttackBonus ?? 0, 0);
+      }
+    });
   });
 
   describe('submitMoves', () => {
@@ -331,6 +369,53 @@ describe('MatchManager', () => {
     });
   });
 
+  describe('forfeitMatch', () => {
+    it('forfeitMatch awards victory to remaining player and cleans up', () => {
+      const code = mgr.createMatch('user1', 'sock1');
+      mgr.joinMatch(code, 'user2', 'sock2');
+
+      const result = mgr.forfeitMatch(code, 'user1');
+
+      assert.equal(result.winnerId, 'user2');
+      assert.equal(result.loserId, 'user1');
+      assert.equal(result.reason, 'forfeit');
+      // Match should be cleaned up
+      assert.equal(mgr.getMatch(code), null);
+    });
+
+    it('forfeitMatch returns null for unknown match', () => {
+      const result = mgr.forfeitMatch('XXXX', 'user1');
+      assert.equal(result, null);
+    });
+  });
+
+  describe('round timer', () => {
+    it('startRoundTimer calls onTimeout after specified duration', async () => {
+      const mm = new MatchManager({ resolveRoundFn: () => {} });
+      const code = mm.createMatch('user1', 'socket1');
+
+      let timedOutCode = null;
+      mm.startRoundTimer(code, 50, (c) => { timedOutCode = c; });
+
+      assert.equal(timedOutCode, null);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+      assert.equal(timedOutCode, code);
+    });
+
+    it('clearRoundTimer cancels pending timeout', async () => {
+      const mm = new MatchManager({ resolveRoundFn: () => {} });
+      const code = mm.createMatch('user1', 'socket1');
+
+      let called = false;
+      mm.startRoundTimer(code, 50, () => { called = true; });
+      mm.clearRoundTimer(code);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+      assert.equal(called, false);
+    });
+  });
+
   describe('findMatchBySocket', () => {
     it('finds match by player1 socket', () => {
       const code = mgr.createMatch('user1', 'sock1');
@@ -380,6 +465,57 @@ describe('MatchManager', () => {
     it('returns false for unknown user', () => {
       const code = mgr.createMatch('user1', 'sock1');
       assert.strictEqual(mgr.reconnect(code, 'unknown', 'sock-new'), false);
+    });
+  });
+
+  describe('match persistence', () => {
+    it('saveMatch persists and restoreMatches loads match state', () => {
+      const tmpDir = mkdtempSync(join(os.tmpdir(), 'pvp-test-'));
+      try {
+        const mm = new MatchManager({ resolveRoundFn: () => {}, dataDir: tmpDir });
+        const code = mm.createMatch('user1', 'socket1');
+        mm.joinMatch(code, 'user2', 'socket2');
+
+        mm.saveMatch(code);
+
+        const matchFile = join(tmpDir, `.pvp-match-${code}.json`);
+        assert.ok(existsSync(matchFile));
+
+        // Create fresh manager and restore
+        const mm2 = new MatchManager({ resolveRoundFn: () => {}, dataDir: tmpDir });
+        const count = mm2.restoreMatches();
+        assert.strictEqual(count, 1);
+        const restored = mm2.getMatch(code);
+        assert.ok(restored);
+        assert.strictEqual(restored.player1.userId, 'user1');
+        assert.strictEqual(restored.player2.userId, 'user2');
+      } finally {
+        rmSync(tmpDir, { recursive: true });
+      }
+    });
+
+    it('deleteMatchFile removes the file', () => {
+      const tmpDir = mkdtempSync(join(os.tmpdir(), 'pvp-test-'));
+      try {
+        const mm = new MatchManager({ resolveRoundFn: () => {}, dataDir: tmpDir });
+        const code = mm.createMatch('user1', 'socket1');
+        mm.saveMatch(code);
+
+        const matchFile = join(tmpDir, `.pvp-match-${code}.json`);
+        assert.ok(existsSync(matchFile));
+
+        mm.deleteMatchFile(code);
+        assert.ok(!existsSync(matchFile));
+      } finally {
+        rmSync(tmpDir, { recursive: true });
+      }
+    });
+
+    it('saveMatch is a no-op without dataDir', () => {
+      const mm = new MatchManager({ resolveRoundFn: () => {} });
+      const code = mm.createMatch('user1', 'socket1');
+      // Should not throw
+      mm.saveMatch(code);
     });
   });
 });

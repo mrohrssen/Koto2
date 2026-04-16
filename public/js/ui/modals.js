@@ -1,30 +1,3 @@
-/**
- * @file modals.js - Settings Panel UI
- *
- * PURPOSE:
- * Renders the settings takeover panel with API key configuration, audio
- * controls, and user preferences. Handles saving settings to server and
- * local storage.
- *
- * KEY EXPORTS:
- * - init(callbacks): Setup with takeover, scene, and settings module refs
- * - openSettings(): Open settings takeover and render content
- * - closeSettings(): Close settings takeover
- *
- * DEPENDENCIES:
- * - ../audio.js: BGM/SFX volume control, mute toggle
- * - ../tts.js: TTS volume control
- * - Callbacks: takeover (panel management), scene (toast), settings (API keys)
- *
- * SETTINGS AVAILABLE:
- * - JPDB API Key (server-stored)
- * - AI API Key + Provider + Model (server-stored)
- * - JLPT Level (server-stored)
- * - TTS enabled toggle (local)
- * - BGM/SFX/TTS volume sliders (local)
- * - Mute all audio toggle (local)
- */
-
 import * as audio from '../audio.js';
 import * as tts from '../tts.js';
 import { setLang } from './i18n.js';
@@ -106,11 +79,6 @@ export async function openSettings() {
     <h3 style="margin:16px">Settings</h3>
     <div style="padding:0 16px">
       <label class="settings-label">
-        JPDB API Key
-        <input type="password" id="settings-jpdb-key" class="settings-input"
-          placeholder="${keyInfo.hasJpdbKey ? '••••••••' : 'Enter JPDB API key'}">
-      </label>
-      <label class="settings-label" style="margin-top:12px">
         Bunpro Token
         <input type="password" id="settings-bunpro-token" class="settings-input"
           placeholder="${keyInfo.hasBunproToken ? '••••••••' : 'Enter Bunpro token'}">
@@ -227,6 +195,18 @@ export async function openSettings() {
         style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Reset Prologue</button>
       <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Replay the intro prologue on next page load.</small>
 
+      <button class="ui-btn" id="settings-reset-tutorial-btn"
+        style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Reset Tutorial</button>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Replay the tutorial on next run.</small>
+
+      <h4 style="margin:20px 0 8px;color:var(--accent)">Debug</h4>
+      <label class="settings-label" style="margin-top:8px">
+        <input type="checkbox" id="settings-debug-super-attack"
+          ${serverSettings.debugSuperAttack ? 'checked' : ''}>
+        100 ATK (Debug)
+      </label>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">All your creatures get +100 ATK in combat.</small>
+
       <button class="ui-btn ui-btn--primary" id="settings-save-btn"
         style="margin-top:20px;width:100%">Save</button>
     </div>
@@ -324,8 +304,26 @@ export async function openSettings() {
     }
   });
 
+  document.getElementById('settings-reset-tutorial-btn')?.addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Resetting...';
+    try {
+      const resp = await fetch(apiUrl('/api/game/tutorial-reset'), { method: 'POST', headers: getAuthHeaders() });
+      if (resp.ok) {
+        btn.textContent = 'Done — start a new run to replay';
+        setTimeout(() => { btn.textContent = 'Reset Tutorial'; btn.disabled = false; }, 3000);
+      } else {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Reset Tutorial'; btn.disabled = false; }, 2000);
+      }
+    } catch {
+      btn.textContent = 'Error';
+      setTimeout(() => { btn.textContent = 'Reset Tutorial'; btn.disabled = false; }, 2000);
+    }
+  });
+
   document.getElementById('settings-save-btn')?.addEventListener('click', async () => {
-    const jpdbKey = document.getElementById('settings-jpdb-key')?.value?.trim();
     const bunproToken = document.getElementById('settings-bunpro-token')?.value?.trim();
     const aiKey = document.getElementById('settings-ai-key')?.value?.trim();
     const aiProvider = document.getElementById('settings-ai-provider')?.value;
@@ -364,7 +362,6 @@ export async function openSettings() {
 
     // Save API keys to server (only send non-empty values)
     const keysToSave = {};
-    if (jpdbKey) keysToSave.jpdbApiKey = jpdbKey;
     if (bunproToken) keysToSave.bunproToken = bunproToken;
     if (aiKey) keysToSave.aiApiKey = aiKey;
     if (aiProvider) keysToSave.aiProvider = aiProvider;
@@ -408,6 +405,12 @@ export async function openSettings() {
     // Save voice gender to server settings
     if (selectedVoiceGender !== voiceGender) {
       await saveServerSettings({ voiceGender: selectedVoiceGender });
+    }
+
+    // Save debug super attack toggle
+    const debugSuperAttack = document.getElementById('settings-debug-super-attack')?.checked ?? false;
+    if (debugSuperAttack !== (serverSettings.debugSuperAttack ?? false)) {
+      await saveServerSettings({ debugSuperAttack });
     }
 
     // Save kana mode to server (updates meta.kanaMode)

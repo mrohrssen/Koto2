@@ -1,90 +1,13 @@
-/**
- * @fileoverview Express server - API endpoints, game orchestration, AI integration
- * @module server
- *
- * PURPOSE:
- * Main Express.js server providing REST API for the JRPG frontend. Handles game
- * state management, AI narration generation, JPDB vocabulary integration, TTS
- * synthesis via VOICEVOX, and all game actions. Uses GameManager for game logic.
- *
- * KEY EXPORTS: (None - this is the server entry point)
- *
- * API ENDPOINT GROUPS:
- * /api/settings - Server settings (GET/POST, non-sensitive only)
- * /api/tts/* - VOICEVOX TTS (status, speakers, synthesize, cached)
- * /api/vocab/* - Vocabulary (status, words, fetch from JPDB)
- * /api/jpdb/* - JPDB integration (parse, review, lookup)
- * /api/game/* - Game actions (~40 endpoints)
- *
- * GAME ENDPOINTS:
- * State: /game/state, /game/meta, /game/achievements, /game/lifetime-stats
- * Player: /game/create-player
- * Run: /game/start-run, /game/forfeit, /game/select-area, /game/proceed
- * Room: /game/room, /game/proceed, /game/room-encounter, /game/door-hints
- * Combat: /game/start-creature-encounter, /game/creature-combat-cycle, /game/combat-end-narration
- * Economy: /game/shop-skip, /game/dealer-state, /game/dealer-sell, /game/dealer-buy
- * Creatures: /game/creature-collection, /game/swap-creature, /game/befriend-conversation
- * Meta: /game/achievements, /game/lifetime-stats
- *
- * DEPENDENCIES:
- * - ./src/jpdb.js - JPDB API integration
- * - ./src/ai-providers.js - OpenAI/Anthropic/Google AI
- * - ./src/voicevox.js - TTS synthesis
- * - ./src/game/loop.js - GameManager class
- * - ./src/game/dm.js - AI narration generation
- * - ./src/game/state.js - State factories, achievements
- * - ./src/game-stats.js - Statistics tracking
- *
- * KEY INTERNAL FUNCTIONS:
- * - loadSettings() / saveSettings() - Settings persistence
- * - getEnrichedGameState() - Add computed fields to game state
- *
- * STATE:
- * - gameManager - GameManager singleton instance
- * - settings - Server settings (non-sensitive, persisted to file)
- * - gameStats - Usage statistics
- *
- * ARCHITECTURE NOTES:
- * - API keys now in request body (per-user via localStorage)
- * - GameManager instantiated once, persists game state
- * - Prefetch system disabled (requires server-side keys)
- * - TTS proxied to VOICEVOX_URL environment variable
- * - Game data saved to .jrpg-*.json files
- *
- * CLAUDE HINTS:
- * - For game logic, trace through GameManager methods in loop.js
- * - JPDB endpoints extract jpdbApiKey from req.body
- * - Game endpoints pass req.body as userKeys to helper functions
- * - Settings split: API keys in client localStorage, TTS/JLPT on server
- */
-
 import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import cors from 'cors';
-import compression from 'compression';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
 import dotenv from 'dotenv';
 
-// Local module imports
-import {
-  configure as configureJpdb,
-  initialize as initializeJpdb,
-  getVocabulary,
-  clearVocabCache,
-  testConnection,
-  parseText,
-  lookupWordStates,
-  CARD_STATES,
-  reviewVocabulary,
-  REVIEW_GRADES,
-  getDueWordsWithMeanings,
-  getWordState,
-  invalidateWordStateCache,
-  lookupVocabularyMeaning
-} from './src/jpdb.js';
+import { createApp, enrichGameState } from './src/app.js';
+
 
 import {
   chat,
@@ -108,7 +31,7 @@ import {
 } from './src/game-stats.js';
 import {
   configureVocabManager,
-  refreshWordStateCache, getVocabManagerStats, invalidateWordStateCache as invalidateVocabManagerCache,
+  getVocabManagerStats,
   getNarrationVocabularyForUser
 } from './src/game/vocab-manager.js';
 import {
@@ -126,12 +49,13 @@ import {
   setMemoryFlag as setNpcMemoryFlag,
   updateMemoryBond as updateNpcMemoryBond
 } from './src/narration-engine/index.js';
-import createRoutes from './src/routes/index.js';
-import createAuthRoutes from './src/auth/routes.js';
 import { createDevRouter } from './src/routes/dev.js';
 import { createForgeRouter } from './src/routes/forge.js';
 import { createSpriteForgeRouter } from './src/routes/sprite-forge.js';
+import createAdminRoutes from './src/routes/admin.js';
+import createWordExposureRoutes from './src/routes/admin-word-exposures.js';
 import { dataPath } from './src/data-dir.js';
+import { loadDialoguePools } from './src/game/dialogue-loader.js';
 import { logger } from './src/logger.js';
 import { TtsCache } from './src/services/tts-cache.js';
 import { TtsDialogueCache } from './src/services/tts-dialogue-cache.js';
@@ -146,44 +70,15 @@ const PORT = process.env.PORT || 3000;
 // File paths - use persistent data directory on Railway
 const SETTINGS_FILE = dataPath('.jrpg-settings.json');
 const GAME_SAVE_FILE = dataPath('.jrpg-save.json');
-const VOCAB_CACHE_FILE = dataPath('.jrpg-vocab-cache.json');
-// Use persistent data directory for per-user vocab suggestion caches
-const VOCAB_CACHE_DIR = dataPath('data/');
+// Configure vocab manager
+configureVocabManager({});
 
-// Configure JPDB with file paths
-configureJpdb({
-  vocabCacheFile: VOCAB_CACHE_FILE,
-  vocabCacheDir: VOCAB_CACHE_DIR
-});
-initializeJpdb();
+// Load hardcoded dialogue pools (CID scripts, NPC lines, barks)
+loadDialoguePools(join(process.cwd(), 'data'));
 
-// Configure vocab manager with cache directory for per-user files
-configureVocabManager({ cacheDir: VOCAB_CACHE_DIR });
-
-// Load static word list for JPDB batch parsing
-let staticWordList = [];
-const wordListPath = join(__dirname, 'data/jpdb-wordlist.json');
-if (existsSync(wordListPath)) {
-  try {
-    staticWordList = JSON.parse(readFileSync(wordListPath, 'utf-8'));
-    console.log(`Loaded ${staticWordList.length} words from static word list`);
-  } catch (e) {
-    console.warn('Failed to load static word list:', e.message);
-  }
-}
-
-const app = express();
-const httpServer = createServer(app);
-const io = new SocketIOServer(httpServer, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-});
-setupPvpSockets(io);
 const gameManager = new GameManager();
 
-// Debug mode - disables AI narration only (JPDB vocab calls still work)
+// Debug mode - disables AI narration only
 let debugMode = false;
 
 // Vocab manager is now initialized per-user when they first access vocab features
@@ -192,7 +87,6 @@ let debugMode = false;
 function loadSettings() {
   // API keys are now stored client-side in localStorage, not server-side
   const defaults = {
-    jpdbDeckId: 'all',
     jlptLevel: 'N5',
     // Game TTS Settings (narrator voice)
     gameTtsEnabled: true,
@@ -204,7 +98,8 @@ function loadSettings() {
     // Word Review Settings
     reviewType: 'typing',
     // Word Discovery Settings
-    dailyWordLimit: 10  // 0-50, 0 = skip discovery rooms
+    dailyWordLimit: 10,  // 0-50, 0 = skip discovery rooms
+    debugSuperAttack: false
   };
 
   if (existsSync(SETTINGS_FILE)) {
@@ -227,55 +122,10 @@ function saveSettings(settings) {
   }
 }
 
-// Middleware
-const ALLOWED_ORIGINS = [
-  'https://jrpg-production.up.railway.app',
-  'https://jrpg-dev.up.railway.app',
-  'capacitor://localhost',      // iOS Capacitor WebView
-  'https://localhost',          // Android Capacitor WebView
-  'http://localhost:5173',      // Vite dev server
-  'http://localhost:3000',      // Express dev server
-];
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, server-to-server)
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(null, true); // TODO: tighten to callback(new Error('CORS')) after testing
-    }
-  },
-  credentials: true
-}));
-// Prevent WebView from caching stale API responses
-app.use('/api', (req, res, next) => {
-  res.set('Cache-Control', 'no-store');
-  next();
-});
-app.use(compression()); // Gzip/Brotli compression for all responses
-app.use(express.json({ limit: '10mb' })); // Increased for bug report screenshots
-
 // Static files - serve from dist/ (Vite build) in production, public/ in dev
 const staticDir = process.env.NODE_ENV === 'production' && existsSync(join(__dirname, 'dist'))
   ? join(__dirname, 'dist')
   : join(__dirname, 'public');
-
-app.use(express.static(staticDir, {
-  maxAge: 0,              // No caching by default
-  etag: false,            // Disable ETags for fresh loads
-  lastModified: false,    // Disable Last-Modified for fresh loads
-  setHeaders: (res, filePath) => {
-    // Only cache webp images and mp3 audio (sprites, backgrounds, music)
-    if (filePath.endsWith('.webp') || filePath.endsWith('.mp3')) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
-    } else {
-      // Everything else loads fresh (JS, CSS, HTML, other assets)
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-    }
-  }
-}));
 
 // Load persisted data
 let settings = loadSettings();
@@ -327,38 +177,6 @@ if (gameSave?.meta && gameSave?.version >= SAVE_VERSION) {
   console.log(`Loaded meta-progression`);
 }
 
-// Helper to enrich player data for frontend display
-function enrichPlayerItems(player) {
-  if (!player) return player;
-
-  const enriched = { ...player };
-
-  enriched.derivedStats = {
-    atk: enriched.attack || 15
-  };
-
-  return enriched;
-}
-
-const CREATURE_SPEECH = JSON.parse(readFileSync(join(__dirname, 'data', 'creature-speech.json'), 'utf-8'));
-
-function enrichGameState(manager) {
-  const state = manager.getState();
-  if (state.player) {
-    state.player = enrichPlayerItems(state.player);
-  }
-  if (state.run?.player) {
-    state.run.player = enrichPlayerItems(state.run.player);
-  }
-  state.creatureSpeech = CREATURE_SPEECH;
-  return state;
-}
-
-// ============ API Routes ============
-
-// Mount auth routes (public, no auth required)
-app.use('/api/auth', createAuthRoutes());
-
 // TTS disk cache — loads existing manifest, or auto-generates on first boot
 const ttsCache = new TtsCache(join(__dirname, 'data', 'tts-cache'));
 ttsCache.load();
@@ -401,49 +219,78 @@ function buildTtsOptions() {
   };
 }
 
-// Mount extracted route modules
-app.use('/api', createRoutes({
-  getSettings: () => settings,
-  saveSettings: saveSettings,
-  ttsCache,
-  ttsDialogueCache,
-  enrichGameState,
-  cancelPendingPrefetches,
-  clearPrefetchCache,
-  updateGameStatsWithEvent,
-  saveGameStats,
-  getGameStats: () => gameStats,
-  setGameStats: (newStats) => { gameStats = newStats; },
-  getDebugMode: () => debugMode,
-  setDebugMode: (val) => { debugMode = val; },
-  vocabCacheFile: VOCAB_CACHE_FILE,
-  staticWordList,
-  getUserVocabulary: getUserNarrationVocabulary,
-  getCreatureDialogueFromCache: (userId, creatureId) =>
-    getNpcDialogueFromCache(userId, creatureId, 'creature'),
-  getAllCreatureDialogueCache: (userId) =>
-    getAllNpcDialogueCache(userId, 'creature'),
-  queueMissingCreatureDialoguesFn: async (userId, aiConfig, vocabContext) =>
-    queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
-  regenCreatureDialogueFn: async (userId, creatureId, aiConfig, vocabContext) =>
-    regenNpcDialogue(userId, creatureId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
-  // NPC narration engine deps
-  getNpcDialogueFromCache,
-  getAllNpcDialogueCache,
-  clearNpcDialogueCache,
-  clearCreatureDialogueCache: (userId) =>
-    clearNpcDialogueCache(userId, 'creature'),
-  queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabContext) => {
-    return queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
-  },
-  logNpcEncounterFn: logNpcEncounter,
-  regenNpcDialogueFn: async (userId, npcId, aiConfig, vocabContext) => {
-    return regenNpcDialogue(userId, npcId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
-  },
-  setNpcMemoryFlagFn: setNpcMemoryFlag,
-  updateNpcMemoryBondFn: updateNpcMemoryBond,
-  checkSentenceViolations
+// ============ Build shared app ============
+
+const app = createApp({
+  routeOverrides: {
+    getSettings: () => settings,
+    saveSettings: saveSettings,
+    ttsCache,
+    ttsDialogueCache,
+    enrichGameState,
+    cancelPendingPrefetches,
+    clearPrefetchCache,
+    updateGameStatsWithEvent,
+    saveGameStats,
+    getGameStats: () => gameStats,
+    setGameStats: (newStats) => { gameStats = newStats; },
+    getDebugMode: () => debugMode,
+    setDebugMode: (val) => { debugMode = val; },
+    getUserVocabulary: getUserNarrationVocabulary,
+    getCreatureDialogueFromCache: (userId, creatureId) =>
+      getNpcDialogueFromCache(userId, creatureId, 'creature'),
+    getAllCreatureDialogueCache: (userId) =>
+      getAllNpcDialogueCache(userId, 'creature'),
+    queueMissingCreatureDialoguesFn: async (userId, aiConfig, vocabContext) =>
+      queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
+    regenCreatureDialogueFn: async (userId, creatureId, aiConfig, vocabContext) =>
+      regenNpcDialogue(userId, creatureId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
+    // NPC narration engine deps
+    getNpcDialogueFromCache,
+    getAllNpcDialogueCache,
+    clearNpcDialogueCache,
+    clearCreatureDialogueCache: (userId) =>
+      clearNpcDialogueCache(userId, 'creature'),
+    queueMissingNpcDialoguesFn: async (userId, aiConfig, vocabContext) => {
+      return queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
+    },
+    logNpcEncounterFn: logNpcEncounter,
+    regenNpcDialogueFn: async (userId, npcId, aiConfig, vocabContext) => {
+      return regenNpcDialogue(userId, npcId, chat, aiConfig, vocabContext, 'npc', buildTtsOptions());
+    },
+    setNpcMemoryFlagFn: setNpcMemoryFlag,
+    updateNpcMemoryBondFn: updateNpcMemoryBond,
+    checkSentenceViolations
+  }
+});
+
+// Static file serving
+app.use(express.static(staticDir, {
+  maxAge: 0,              // No caching by default
+  etag: false,            // Disable ETags for fresh loads
+  lastModified: false,    // Disable Last-Modified for fresh loads
+  setHeaders: (res, filePath) => {
+    // Only cache webp images and mp3 audio (sprites, backgrounds, music)
+    if (filePath.endsWith('.webp') || filePath.endsWith('.mp3')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
+    } else {
+      // Everything else loads fresh (JS, CSS, HTML, other assets)
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
 }));
+
+// HTTP server + Socket.IO
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+setupPvpSockets(io, { getSettings: () => settings });
 
 // Dev tools (sprite review dashboard)
 const devPassword = process.env.DEV_DASHBOARD_PASSWORD || '';
@@ -454,9 +301,7 @@ if (devPassword) {
 }
 
 function getUserNarrationVocabulary(userId) {
-  const vocabResult = getVocabulary();
-  const fallbackVocabulary = Array.isArray(vocabResult?.words) ? vocabResult.words : [];
-  return getNarrationVocabularyForUser(userId, fallbackVocabulary);
+  return getNarrationVocabularyForUser(userId);
 }
 
 // ============ Theme Pool Submit ============
@@ -487,7 +332,7 @@ app.post('/api/theme-pool/submit', async (req, res) => {
       await import('./scripts/lib/theme-pool-helpers.mjs');
     const { saveTheme, validateTheme } = await import('./scripts/lib/theme-utils.mjs');
 
-    // Map JPDB short POS tags to the longer form expected by assignRoles
+    // Map short POS tags to the longer form expected by assignRoles
     const wordsWithPosTag = words.map(w => {
       let posTag = 'noun'; // default fallback
       const pos = (w.pos || '').toLowerCase();
@@ -587,6 +432,14 @@ app.use('/api/forge', createForgeRouter({
 // ============ Sprite Forge ============
 app.use('/api/sprite-forge', createSpriteForgeRouter({
   projectRoot: __dirname
+}));
+
+// ============ Admin (simulator) ============
+app.get('/api/admin/secret', (req, res) => res.json({ secret: process.env.ADMIN_SECRET || '' }));
+app.use('/api/admin', createAdminRoutes({ dataDir: dataPath('') }));
+app.use('/api/admin', createWordExposureRoutes({
+  dataDir: join(__dirname, 'data'),
+  framesPath: join(__dirname, 'data', 'dialogue', 'frames.json'),
 }));
 
 // Serve game page

@@ -779,4 +779,101 @@ describe('Dead creature cannot attack', () => {
     assert.strictEqual(result.attacks.length, 0, 'dead enemy should not attack');
     assert.strictEqual(ally.hp, 50, 'ally HP should be unchanged');
   });
+
+  it('enemy killed mid-round by higher-level ally should not attack in interleaved initiative', () => {
+    // Ally is high level (acts first in initiative) and will one-shot the enemy
+    const ally = instantiateCreature('hi');
+    ally.level = 50;
+    ally.attack = 999;
+    ally.hp = 500;
+    ally.maxHp = 500;
+
+    // Enemy is low level (acts after ally) with low HP — will die from ally's attack
+    const enemy = instantiateCreature('ki');
+    enemy.level = 1;
+    enemy.hp = 1;
+    enemy.maxHp = 1;
+    enemy.attack = 50;
+
+    const allyHpBefore = ally.hp;
+    const moveChoices = [{ creatureIndex: 0, moveId: ally.moves[0].id, targetIndex: 0 }];
+    const r = processInterleavedPvERound([ally], [enemy], moveChoices);
+
+    // Ally should have attacked
+    assert.ok(r.playerAttacks.length > 0, 'ally should have attacked');
+    // Enemy should be dead
+    assert.strictEqual(enemy.hp, 0, 'enemy should be dead');
+    // Enemy should NOT have attacked (dead before its turn)
+    assert.strictEqual(r.enemyAttacks.length, 0, 'dead enemy should produce no attacks');
+    // Ally HP should be unchanged (enemy never got to attack)
+    assert.strictEqual(ally.hp, allyHpBefore, 'ally HP should be unchanged since enemy was dead');
+  });
+
+  it('ally killed mid-round by higher-level enemy should not attack in interleaved initiative', () => {
+    // Enemy is high level (acts first) and will one-shot the ally
+    const enemy = instantiateCreature('ki');
+    enemy.level = 50;
+    enemy.attack = 999;
+    enemy.hp = 500;
+    enemy.maxHp = 500;
+
+    // Ally is low level (acts after enemy) with low HP
+    const ally = instantiateCreature('hi');
+    ally.level = 1;
+    ally.hp = 1;
+    ally.maxHp = 1;
+
+    const enemyHpBefore = enemy.hp;
+    const moveChoices = [{ creatureIndex: 0, moveId: ally.moves[0].id, targetIndex: 0 }];
+    const r = processInterleavedPvERound([ally], [enemy], moveChoices);
+
+    // Enemy should have attacked first
+    assert.ok(r.enemyAttacks.length > 0, 'enemy should have attacked');
+    // Ally should be dead
+    assert.strictEqual(ally.hp, 0, 'ally should be dead');
+    // Ally should NOT have attacked (dead before its turn)
+    assert.strictEqual(r.playerAttacks.length, 0, 'dead ally should produce no attacks');
+    // Enemy HP should be unchanged
+    assert.strictEqual(enemy.hp, enemyHpBefore, 'enemy HP unchanged since ally was dead');
+  });
+});
+
+describe('executeNpcSkill — single_ally random target', () => {
+  it('does not always target index 0 for single_ally skills', () => {
+    const npcData = {
+      id: 'senpai', name: '先輩', nameEn: 'Older Student',
+      attack: 15, element: 'neutral',
+      baseWord: '先輩', baseReading: 'せんぱい', baseMeaning: 'senior'
+    };
+    const buffSkill = {
+      id: 'oboeru', name: '覚える', nameEn: 'Memorize',
+      element: 'neutral', category: 'buff', target: 'single_ally',
+      power: 0, mpCost: 0, statChanges: { atk: 2 },
+      statusEffect: null, statusChance: 0, statusDuration: 0
+    };
+
+    // 3 alive enemies (NPC's allies from player perspective)
+    const enemies = [
+      { id: 'e0', hp: 50, maxHp: 50, attack: 10, defense: 5, element: 'fire', level: 3, activeEffects: [], statStages: { atk: 0, def: 0 } },
+      { id: 'e1', hp: 50, maxHp: 50, attack: 10, defense: 5, element: 'fire', level: 3, activeEffects: [], statStages: { atk: 0, def: 0 } },
+      { id: 'e2', hp: 50, maxHp: 50, attack: 10, defense: 5, element: 'fire', level: 3, activeEffects: [], statStages: { atk: 0, def: 0 } },
+    ];
+    const allies = [
+      { id: 'a0', hp: 50, maxHp: 50, attack: 10, defense: 5, element: 'water', level: 3, activeEffects: [], statStages: { atk: 0, def: 0 } },
+    ];
+
+    // Run 30 times, track which enemy got buffed
+    const buffedIndices = new Set();
+    for (let i = 0; i < 30; i++) {
+      // Reset stat stages
+      enemies.forEach(e => e.statStages = { atk: 0, def: 0 });
+      executeNpcSkill(npcData, buffSkill, allies, enemies);
+      enemies.forEach((e, idx) => {
+        if (e.statStages.atk > 0) buffedIndices.add(idx);
+      });
+    }
+
+    // With 3 targets and 30 trials, should hit more than just index 0
+    assert.ok(buffedIndices.size > 1, `Expected random targeting, but only hit indices: ${[...buffedIndices]}`);
+  });
 });

@@ -1,10 +1,3 @@
-/**
- * AI Metrics Tracking
- * Tracks all AI API calls for cost/performance analysis
- *
- * @module @jchat/shared/ai/metrics
- */
-
 // Approximate costs per 1M tokens (input/output)
 const MODEL_COSTS = {
   // OpenAI

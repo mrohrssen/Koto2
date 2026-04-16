@@ -1,9 +1,3 @@
-/**
- * @fileoverview Economy routes
- *
- * Handles shop-skip and dealer room
- */
-
 import { Router } from 'express';
 
 export default function createEconomyRoutes() {

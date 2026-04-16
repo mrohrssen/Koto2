@@ -1,9 +1,3 @@
-/**
- * @fileoverview Prefetch routes
- *
- * Handles /api/prefetch/* endpoints for narration/audio prefetch management
- */
-
 import { Router } from 'express';
 import {
   getStats as getPrefetchStats,

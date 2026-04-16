@@ -1,21 +1,24 @@
-/**
- * @fileoverview Run routes
- *
- * Handles run lifecycle: start-run, forfeit, area selection, room navigation
- */
-
 import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
-import { lookupVocabularyBatch } from '../../jpdb.js';
+import { loadWordDictionary } from '../../game/word-dictionary.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
+import { getAreaById } from '../../game/rooms.js';
 import { applyItem } from '../../game/services/item-service.js';
+import {
+  assembleFrame,
+  entityToToken,
+  getEligibleFrameTokens,
+  selectBestFrame,
+} from '../../game/token-format.js';
+import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
+import { getShopPurchaseFrames, getShopGreetingFrames, getGameMasterAskFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 
 const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
@@ -83,23 +86,23 @@ export default function createRunRoutes({
     };
 
     if (queueMissingCreatureDialoguesFn && getUserVocabulary) {
-      const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+      const { words: vocabulary } = getUserVocabulary(req.user.id);
       const vocabSet = new Set(vocabulary);
-      const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
-        ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
+      const checkViolationsFn = checkSentenceViolations
+        ? (text) => checkSentenceViolations(text, vocabSet, new Set())
         : null;
-      queueMissingCreatureDialoguesFn(req.user.id, aiConfig, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
+      queueMissingCreatureDialoguesFn(req.user.id, aiConfig, { words: vocabulary, checkViolationsFn }).catch(e => {
         console.error('[CreatureDialogue] Background generation failed:', e.message);
       });
     }
 
     if (queueMissingNpcDialoguesFn && getUserVocabulary) {
-      const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+      const { words: vocabulary } = getUserVocabulary(req.user.id);
       const vocabSet = new Set(vocabulary);
-      const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
-        ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
+      const checkViolationsFn = checkSentenceViolations
+        ? (text) => checkSentenceViolations(text, vocabSet, new Set())
         : null;
-      queueMissingNpcDialoguesFn(req.user.id, aiConfig, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
+      queueMissingNpcDialoguesFn(req.user.id, aiConfig, { words: vocabulary, checkViolationsFn }).catch(e => {
         console.error('[NpcDialogue] Background generation failed:', e.message);
       });
     }
@@ -125,13 +128,22 @@ export default function createRunRoutes({
 
       const narration = null; // DM narration disabled — frontend discards this
 
+      // CID pre-run scripts disabled
+      const cidScript = null;
+
       req.saveGame();
 
-      queueBackgroundDialogues(req);
+      // Only queue dialogues if creatures were provided (legacy path).
+      // For bare runs, dialogues are queued in /confirm-creatures instead.
+      if (ids) {
+        queueBackgroundDialogues(req);
+      }
 
       res.json({
         state: req.getEnrichedGameState(),
-        narration
+        narration,
+        cidScript,
+        useKanji: false,
       });
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -163,6 +175,33 @@ export default function createRunRoutes({
     }
   });
 
+  // Confirm creature selection (after area is chosen)
+  router.post('/confirm-creatures', async (req, res) => {
+    const gameManager = req.gameManager;
+    const { starterIds } = req.body;
+    try {
+      if (!starterIds || starterIds.length === 0) {
+        return res.status(400).json({ error: 'No creatures selected' });
+      }
+      const meta = gameManager.getMeta();
+      const collection = meta.creatureCollection || [];
+      const validation = validateTeamSelection(collection, starterIds);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.reason });
+      }
+
+      gameManager.confirmCreatures(starterIds);
+      req.saveGame();
+
+      // Queue background dialogues now that party is finalized
+      queueBackgroundDialogues(req);
+
+      res.json({ state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   router.post('/proceed', async (req, res) => {
     const gameManager = req.gameManager;
     try {
@@ -183,7 +222,9 @@ export default function createRunRoutes({
     try {
       const { offered } = req.gameManager.explorationService.getSkillMasterOffers();
       req.saveGame();
-      res.json({ offered, state: req.getEnrichedGameState() });
+      const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
+      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet);
+      res.json({ offered, skillSelectPrompt, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -226,7 +267,9 @@ export default function createRunRoutes({
         .map(id => getPartySkillDisplay(id))
         .filter(Boolean);
 
-      res.json({ offered, state: req.getEnrichedGameState() });
+      const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
+      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet);
+      res.json({ offered, skillSelectPrompt, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -250,8 +293,19 @@ export default function createRunRoutes({
         return res.status(400).json({ error: 'Skill already chosen for this room' });
       }
 
-      const offeredIds = Array.isArray(room.npcBattle.offered) ? room.npcBattle.offered : [];
+      // Generate offers if they were never set (race: client used fallback data)
+      if (!Array.isArray(room.npcBattle.offered)) {
+        console.warn('[npc-battle-skill-choose] offered not set — generating on demand',
+          { skillId, npcBattle: JSON.stringify(room.npcBattle) });
+        const ownedSkillIds = (gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
+        room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
+        req.saveGame();
+      }
+
+      const offeredIds = room.npcBattle.offered;
       if (!offeredIds.includes(skillId)) {
+        console.warn('[npc-battle-skill-choose] skillId not in offered',
+          { skillId, offeredIds, typeof_skillId: typeof skillId });
         return res.status(400).json({ error: 'Invalid skill choice' });
       }
 
@@ -415,7 +469,8 @@ export default function createRunRoutes({
 
   // Forfeit run
   router.post('/forfeit', (req, res) => {
-    const result = req.gameManager.forfeitRun();
+    const isVictory = req.body?.isVictory === true;
+    const result = req.gameManager.forfeitRun(isVictory);
     cancelPendingPrefetches();
     clearPrefetchCache();
     req.saveGame();
@@ -423,32 +478,22 @@ export default function createRunRoutes({
   });
 
   // Get words for discovery room
-  router.get('/discovery-words', async (req, res) => {
+  router.get('/discovery-words', (req, res) => {
     try {
       const limit = parseInt(req.query.limit) || 2;
       const result = getNewWordsForDiscovery(limit, req.user.id);
       console.log(`[Discovery] Fetched ${result.words.length} new words (available: ${result.available})`);
 
-      // Enrich words with meanings from JPDB
+      // Enrich words with meanings from local dictionary
       if (result.words.length > 0) {
-        const jpdbApiKey = req.userKeys?.jpdbApiKey;
-        if (jpdbApiKey) {
-          const vocabList = result.words.map(w => [w.vid, w.sid]);
-          try {
-            const definitions = await lookupVocabularyBatch(jpdbApiKey, vocabList);
-            // Merge meanings into words
-            for (const word of result.words) {
-              const key = `${word.vid}:${word.sid}`;
-              const def = definitions[key];
-              if (def && def.meanings) {
-                word.meanings = def.meanings;
-                word.reading = def.reading || word.reading;
-              }
+        const dict = req.app.locals.wordDictionary || loadWordDictionary(join(process.cwd(), 'data'));
+        for (const word of result.words) {
+          if (!word.meanings?.length) {
+            const entry = dict.get(word.word);
+            if (entry) {
+              word.meanings = entry.definitions?.map(d => d.en).filter(Boolean) || [];
+              word.reading = word.reading || entry.reading || word.word;
             }
-            console.log(`[Discovery] Enriched ${result.words.length} words with meanings`);
-          } catch (lookupError) {
-            console.warn('[Discovery] Failed to fetch meanings:', lookupError.message);
-            // Continue with words without meanings
           }
         }
       }
@@ -498,8 +543,7 @@ export default function createRunRoutes({
       const gameManager = req.gameManager;
       const result = await gameManager.startSpeedReviewRoom({
         roomId,
-        userId: req.user?.id,
-        jpdbApiKey: req.userKeys?.jpdbApiKey
+        userId: req.user?.id
       });
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
@@ -510,15 +554,12 @@ export default function createRunRoutes({
   });
 
   router.post('/speed-review-room/progress', (req, res) => {
-    const { roomId, vid, sid, commitIndex } = req.body || {};
+    const { roomId, word, commitIndex } = req.body || {};
     if (!roomId) {
       return res.status(400).json({ error: 'roomId is required' });
     }
-    if (vid === undefined || vid === null) {
-      return res.status(400).json({ error: 'vid is required' });
-    }
-    if (sid === undefined || sid === null) {
-      return res.status(400).json({ error: 'sid is required' });
+    if (!word || typeof word !== 'string') {
+      return res.status(400).json({ error: 'word (string) is required' });
     }
     if (!Number.isInteger(commitIndex) || commitIndex < 0) {
       return res.status(400).json({ error: 'commitIndex must be an integer >= 0' });
@@ -526,7 +567,7 @@ export default function createRunRoutes({
 
     try {
       const gameManager = req.gameManager;
-      const result = gameManager.recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex });
+      const result = gameManager.recordSpeedReviewRoomCommit({ roomId, word, commitIndex });
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -555,7 +596,26 @@ export default function createRunRoutes({
   // Whack-a-Mole: get random pool of creatures + items + skills for matching game
   router.get('/whack-a-mole-pool', (req, res) => {
     try {
-      const creaturePool = allCreatures.map(c => ({
+      // Filter by area progression (same pattern as friendly NPC shop)
+      const gm = req.gameManager;
+      const areaPath = gm.run.areaPath || [];
+      const currentAreaId = gm.run.currentArea?.id;
+      const areaIds = [...new Set([...areaPath, currentAreaId].filter(Boolean))];
+
+      // Build set of creature IDs belonging to reached areas
+      const areaCreatureIds = new Set();
+      for (const areaId of areaIds) {
+        const area = getAreaById(areaId);
+        if (area?.creatures) {
+          for (const cId of area.creatures) areaCreatureIds.add(cId);
+        }
+      }
+
+      const filteredCreatures = areaCreatureIds.size > 0
+        ? allCreatures.filter(c => areaCreatureIds.has(c.id))
+        : allCreatures;
+
+      const creaturePool = filteredCreatures.map(c => ({
         id: c.id,
         type: 'creature',
         word: c.baseWord,
@@ -565,7 +625,12 @@ export default function createRunRoutes({
         sprite: `/assets/sprites/creatures/${c.id}.webp?v=${SPRITE_VERSION}`
       }));
 
-      const itemPool = allItems.map(i => ({
+      // Filter items by area (same as friendly NPC shop)
+      const filteredItems = areaIds.length > 0
+        ? allItems.filter(i => !i.area || areaIds.includes(i.area))
+        : allItems;
+
+      const itemPool = filteredItems.map(i => ({
         id: i.id,
         type: 'item',
         word: i.word,
@@ -574,8 +639,19 @@ export default function createRunRoutes({
         sprite: `/assets/sprites/items/${i.id}.webp?v=${SPRITE_VERSION}`
       }));
 
-      // Moves from moves.json — action icon tiles
-      const skillPool = allMoves.map(m => {
+      // Filter moves to those in learnsets of area creatures
+      const areaMovesIds = new Set();
+      for (const c of filteredCreatures) {
+        if (c.learnset) {
+          for (const entry of c.learnset) areaMovesIds.add(entry.moveId);
+        }
+      }
+
+      const filteredMoves = areaMovesIds.size > 0
+        ? allMoves.filter(m => areaMovesIds.has(m.id))
+        : allMoves;
+
+      const skillPool = filteredMoves.map(m => {
         const slug = (m.nameEn || '').toLowerCase().replace(/ /g, '-');
         return {
           id: `move-${m.id}`,
@@ -606,6 +682,34 @@ export default function createRunRoutes({
     }
   });
 
+  // Whack-a-Mole: get GM dialogue (i+1 selected greeting)
+  router.get('/whack-a-mole-dialogue', (req, res) => {
+    try {
+      const knownWords = getKnownWordsFromFsrs(req.user.id);
+      const knownSet = new Set(knownWords);
+      const askFrames = getGameMasterAskFrames();
+      const candidates = askFrames.map(frame => assembleFrame(frame, {}));
+      const dialogue = selectBestFrame(candidates, knownSet) || { tokens: [], words: [] };
+
+      const yesTokens = getEligibleFrameTokens(getGameMasterYesFrame(), knownSet);
+      const noTokens = getEligibleFrameTokens(getGameMasterNoFrame(), knownSet);
+      res.json({ dialogue, yesTokens, noTokens });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  // Whack-a-Mole: skip (player declined)
+  router.post('/whack-a-mole-skip', (req, res) => {
+    try {
+      const result = req.gameManager.skipWhackAMole();
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
   // Friendly NPC: get item offers (idempotent per room)
   router.post('/friendly-npc-offers', async (req, res) => {
     try {
@@ -616,10 +720,55 @@ export default function createRunRoutes({
       }
       // Generate offers if not already generated (idempotent)
       if (!room.friendlyNpc.offered) {
-        room.friendlyNpc.offered = rollFriendlyNpcOffers(room.friendlyNpc.offerCategory, allItems);
+        const areaPath = gm.run.areaPath || [];
+        const currentAreaId = gm.run.currentArea?.id;
+        const areaIds = [...new Set([...areaPath, currentAreaId].filter(Boolean))];
+        room.friendlyNpc.offered = rollFriendlyNpcOffers(room.friendlyNpc.offerCategory, areaIds, allItems);
+
+        // Assemble pre-tokenized frames with items and select best per i+1
+        const knownWords = getKnownWordsFromFsrs(req.user.id);
+        const knownSet = new Set(knownWords);
+        const shopFrames = getShopPurchaseFrames();
+
+        for (const item of room.friendlyNpc.offered) {
+          if (!item.word) continue;
+          const candidates = shopFrames.map(frame => assembleFrame(frame, { item }));
+          const best = selectBestFrame(candidates, knownSet);
+          item.tokens = best?.tokens || [];
+          item.words = best?.words || [];
+        }
+
+        // Select best greeting frame via i+1
+        const greetingFrames = getShopGreetingFrames();
+        const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}));
+        room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet);
+
+        // Attach entity token for each item's card display
+        for (const item of room.friendlyNpc.offered) {
+          if (!item.word) continue;
+          item.nameToken = entityToToken(item);
+        }
+
         req.saveGame();
+        // Expose item words + greeting words to SRS
+        const itemWords = room.friendlyNpc.offered
+          .filter(item => item.word)
+          .map(item => ({ word: item.word, meaning: item.nameEn || '' }));
+        const greetingWords = (room.friendlyNpc.greeting?.words || [])
+          .map(word => {
+            const token = (room.friendlyNpc.greeting?.tokens || []).find(t => t.base === word);
+            return { word, meaning: token?.meaning || '' };
+          });
+        const allExposures = [...itemWords, ...greetingWords];
+        if (allExposures.length > 0) {
+          req.gameManager.exposeWords(allExposures);
+        }
       }
-      res.json({ offered: room.friendlyNpc.offered, state: req.getEnrichedGameState() });
+      res.json({
+        offered: room.friendlyNpc.offered,
+        greeting: room.friendlyNpc.greeting || null,
+        state: req.getEnrichedGameState(),
+      });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
@@ -650,9 +799,25 @@ export default function createRunRoutes({
       // Apply item effect to run state
       const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;
       applyItem(item, gm.run.creatureParty, gm.run.itemBuffs, targetIdx);
+      // Track for adventure report
+      if (gm.run?.runSummary) {
+        gm.run.runSummary.itemsCollected++;
+      }
+      if (gm.meta && item?.id) {
+        if (!gm.meta.itemsDiscovered) gm.meta.itemsDiscovered = [];
+        if (!gm.meta.itemsDiscovered.includes(item.id)) {
+          gm.meta.itemsDiscovered.push(item.id);
+        }
+      }
       room.friendlyNpc.chosenId = itemId;
       room.friendlyNpc.completed = true;
       room.interacted = true;
+      if (item.tokens?.length) {
+        const exposures = item.tokens
+          .filter(t => t.base)
+          .map(t => ({ word: t.base, meaning: t.meaning || '' }));
+        req.gameManager.exposeWords(exposures);
+      }
       req.saveGame();
       res.json({ chosen: item, state: req.getEnrichedGameState() });
     } catch (err) {

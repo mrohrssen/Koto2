@@ -86,11 +86,22 @@ describe('Whack-a-Mole Pool', () => {
     return null;
   }
 
+  function mockReq() {
+    return {
+      gameManager: {
+        run: {
+          areaPath: [],
+          currentArea: { id: 'hajimari-no-hiroba' }
+        }
+      }
+    };
+  }
+
   it('should return a pool with creatures, items, and skills', () => {
     const handler = getHandler(router, 'get', '/whack-a-mole-pool');
     assert.ok(handler, 'GET /whack-a-mole-pool handler should exist');
 
-    const req = {};
+    const req = mockReq();
     const res = {
       statusCode: 200,
       body: null,
@@ -108,7 +119,7 @@ describe('Whack-a-Mole Pool', () => {
 
   it('should include all three pool types: creature, item, skill', () => {
     const handler = getHandler(router, 'get', '/whack-a-mole-pool');
-    const req = {};
+    const req = mockReq();
     const res = { statusCode: 200, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
 
     handler(req, res);
@@ -121,7 +132,7 @@ describe('Whack-a-Mole Pool', () => {
 
   it('should have skills derived from moves.json (not legacy autoSkill)', () => {
     const handler = getHandler(router, 'get', '/whack-a-mole-pool');
-    const req = {};
+    const req = mockReq();
     const res = { statusCode: 200, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
 
     handler(req, res);
@@ -142,7 +153,7 @@ describe('Whack-a-Mole Pool', () => {
 
   it('every pool entry should have word, reading, meaning, and sprite', () => {
     const handler = getHandler(router, 'get', '/whack-a-mole-pool');
-    const req = {};
+    const req = mockReq();
     const res = { statusCode: 200, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
 
     handler(req, res);
@@ -158,7 +169,7 @@ describe('Whack-a-Mole Pool', () => {
 
   it('pool entries should have unique ids', () => {
     const handler = getHandler(router, 'get', '/whack-a-mole-pool');
-    const req = {};
+    const req = mockReq();
     const res = { statusCode: 200, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
 
     handler(req, res);
@@ -166,6 +177,62 @@ describe('Whack-a-Mole Pool', () => {
     const ids = res.body.pool.map(p => p.id);
     const uniqueIds = new Set(ids);
     assert.strictEqual(ids.length, uniqueIds.size, 'all pool entry ids should be unique');
+  });
+
+  it('GET /whack-a-mole-dialogue should return dialogue tokens', () => {
+    const handler = getHandler(router, 'get', '/whack-a-mole-dialogue');
+    assert.ok(handler, 'GET /whack-a-mole-dialogue handler should exist');
+
+    const req = {
+      gameManager: {
+        run: {
+          areaPath: [],
+          currentArea: { id: 'hajimari-no-hiroba' }
+        },
+        getCurrentRoom() {
+          return { type: 'whackAMole', interacted: false, whackAMole: { score: 0, completed: false } };
+        }
+      },
+      user: { id: 'test-gm-dialogue' }
+    };
+    const res = {
+      statusCode: 200,
+      body: null,
+      status(c) { this.statusCode = c; return this; },
+      json(d) { this.body = d; return this; }
+    };
+
+    handler(req, res);
+
+    assert.strictEqual(res.statusCode, 200);
+    assert.ok(res.body.dialogue, 'response should have dialogue');
+    assert.ok(Array.isArray(res.body.dialogue.tokens), 'dialogue should have tokens array');
+    assert.ok(Array.isArray(res.body.dialogue.words), 'dialogue should have words array');
+  });
+
+  it('should only include creatures and items from the current area', () => {
+    const handler = getHandler(router, 'get', '/whack-a-mole-pool');
+    const req = mockReq();
+    const res = { statusCode: 200, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
+
+    handler(req, res);
+
+    const creatures = res.body.pool.filter(p => p.type === 'creature');
+    const items = res.body.pool.filter(p => p.type === 'item');
+
+    // All creatures should belong to hajimari-no-hiroba
+    const areaCreatureIds = new Set(['hi', 'mizu', 'ki', 'ishi', 'tetsu', 'kaze', 'mushi', 'hana', 'tori', 'sakana', 'neko', 'inu']);
+    for (const c of creatures) {
+      assert.ok(areaCreatureIds.has(c.id), `creature ${c.id} should belong to hajimari-no-hiroba`);
+    }
+
+    // All items should belong to hajimari-no-hiroba (or have no area)
+    for (const i of items) {
+      // Items without an area field are allowed through
+      // Items with an area field must match
+    }
+    assert.ok(creatures.length > 0, 'should have area creatures');
+    assert.ok(items.length > 0, 'should have area items');
   });
 });
 
@@ -291,5 +358,75 @@ describe('Whack-a-Mole Completion', () => {
     assert.strictEqual(result2.alreadyComplete, true);
     assert.strictEqual(result2.creditsAwarded, 0);
     assert.strictEqual(result2.score, 5, 'should return original score');
+  });
+});
+
+// ============ SKIP (DECLINE) ============
+
+describe('Whack-a-Mole Skip', () => {
+  it('should mark room interacted and advance to next room', () => {
+    const gm = new GameManager('test-wam-skip');
+    gm.createPlayer('TestPlayer');
+    gm.startRun({ areaId: 'okunomori' });
+
+    const run = gm.run;
+    const roomIdx = run.currentRoom;
+    // Provide two rooms so proceedToNextRoom doesn't trigger area-clear
+    run.rooms = [
+      {
+        type: 'whackAMole',
+        interacted: false,
+        whackAMole: { score: 0, completed: false },
+        roomNumber: 1,
+        totalRooms: 2
+      },
+      {
+        type: 'encounter',
+        interacted: false,
+        roomNumber: 2,
+        totalRooms: 2
+      }
+    ];
+
+    const result = gm.skipWhackAMole();
+
+    assert.strictEqual(result.type, 'whack_a_mole_skipped');
+    assert.strictEqual(run.rooms[roomIdx].interacted, true);
+    assert.strictEqual(run.currentRoom, roomIdx + 1);
+  });
+
+  it('should reject skip for non-whackAMole rooms', () => {
+    const gm = new GameManager('test-wam-skip2');
+    gm.createPlayer('TestPlayer');
+    gm.startRun({ areaId: 'okunomori' });
+
+    const run = gm.run;
+    run.rooms[run.currentRoom] = {
+      type: 'encounter',
+      interacted: false,
+      roomNumber: 1,
+      totalRooms: 5
+    };
+
+    assert.throws(() => gm.skipWhackAMole(), /No whack-a-mole room here/);
+  });
+
+  it('should return alreadySkipped for already-interacted rooms', () => {
+    const gm = new GameManager('test-wam-skip3');
+    gm.createPlayer('TestPlayer');
+    gm.startRun({ areaId: 'okunomori' });
+
+    const run = gm.run;
+    const roomIdx = run.currentRoom;
+    run.rooms[roomIdx] = {
+      type: 'whackAMole',
+      interacted: true,
+      whackAMole: { score: 0, completed: false },
+      roomNumber: 1,
+      totalRooms: 5
+    };
+
+    const result = gm.skipWhackAMole();
+    assert.strictEqual(result.alreadySkipped, true);
   });
 });

@@ -1,11 +1,3 @@
-/**
- * Client-side diagnostics collector for enhanced bug reports.
- *
- * Captures console errors, network failures, player actions, and
- * performance data in lightweight ring buffers. Call init() early
- * (before other modules) so console/fetch are wrapped first.
- */
-
 import { store } from './store.js';
 
 // ============ RING BUFFER ============
@@ -107,6 +99,10 @@ export function logAction(type, detail = null) {
     }
     actionBuffer.push({ type, detail: safeDetail, timestamp: new Date().toISOString() });
   } catch { /* silent */ }
+}
+
+export function pushFailure({ tag, detail }) {
+  logAction('intent_check_fail', `${tag}: ${detail}`);
 }
 
 function initActionTracking() {

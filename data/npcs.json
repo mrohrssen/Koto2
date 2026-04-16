@@ -11,14 +11,21 @@
     "baseMeaning": "child",
     "baseRank": 836,
     "attack": 10,
-    "skills": ["asobu"],
+    "skills": [
+      "asobu"
+    ],
     "personality": {
-      "traits": ["fun-loving", "curious"],
+      "traits": [
+        "fun-loving",
+        "curious"
+      ],
       "speechStyle": "Cheerful and playful.",
       "quirk": "Always looking for a game."
     },
     "greeting": "こんにちわ!",
-    "shopGreetings": ["こんにちは！"],
+    "shopGreetings": [
+      "こんにちは！"
+    ],
     "defeatLine": "いいね!",
     "createdAt": "2026-03-20"
   },
@@ -34,14 +41,21 @@
     "baseMeaning": "adult",
     "baseRank": 1263,
     "attack": 10,
-    "skills": ["hataraku"],
+    "skills": [
+      "hataraku"
+    ],
     "personality": {
-      "traits": ["mature", "composed"],
+      "traits": [
+        "mature",
+        "composed"
+      ],
       "speechStyle": "Calm and measured.",
       "quirk": "Always busy with something."
     },
     "greeting": "こんにちわ!",
-    "shopGreetings": ["こんにちは！"],
+    "shopGreetings": [
+      "こんにちは！"
+    ],
     "defeatLine": "いいね!",
     "createdAt": "2026-03-20"
   },
@@ -57,14 +71,21 @@
     "baseMeaning": "boy",
     "baseRank": 2500,
     "attack": 10,
-    "skills": ["hashiru"],
+    "skills": [
+      "hashiru"
+    ],
     "personality": {
-      "traits": ["energetic", "restless"],
+      "traits": [
+        "energetic",
+        "restless"
+      ],
       "speechStyle": "Fast-talking and excited.",
       "quirk": "Can never stand still."
     },
     "greeting": "こんにちわ!",
-    "shopGreetings": ["こんにちは！"],
+    "shopGreetings": [
+      "こんにちは！"
+    ],
     "defeatLine": "いいね!",
     "createdAt": "2026-03-20"
   },
@@ -80,15 +101,138 @@
     "baseMeaning": "girl",
     "baseRank": 2300,
     "attack": 10,
-    "skills": ["utau"],
+    "skills": [
+      "utau"
+    ],
     "personality": {
-      "traits": ["shy", "gentle"],
+      "traits": [
+        "shy",
+        "gentle"
+      ],
       "speechStyle": "Soft-spoken and careful.",
       "quirk": "Hums to herself."
     },
     "greeting": "こんにちわ!",
-    "shopGreetings": ["こんにちは！"],
+    "shopGreetings": [
+      "こんにちは！"
+    ],
     "defeatLine": "いいね!",
     "createdAt": "2026-03-20"
+  },
+  "sensei": {
+    "id": "sensei",
+    "name": "先生",
+    "nameEn": "Teacher",
+    "speakerId": null,
+    "area": "school",
+    "baseWord": "先生",
+    "baseReading": "せんせい",
+    "baseMeaning": "teacher; instructor",
+    "baseRank": 500,
+    "attack": 14,
+    "skills": [
+      "yomu-npc"
+    ],
+    "personality": {
+      "traits": [
+        "patient",
+        "encouraging"
+      ],
+      "speechStyle": "Warm and instructive.",
+      "quirk": "Praises effort over results."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": [
+      "こんにちは！"
+    ],
+    "defeatLine": "よくできました！",
+    "createdAt": "2026-04-07"
+  },
+  "kyouju": {
+    "id": "kyouju",
+    "name": "教授",
+    "nameEn": "Professor",
+    "speakerId": null,
+    "area": "school",
+    "baseWord": "教授",
+    "baseReading": "きょうじゅ",
+    "baseMeaning": "professor; teaching",
+    "baseRank": 4200,
+    "attack": 18,
+    "skills": [
+      "tamesu"
+    ],
+    "personality": {
+      "traits": [
+        "scholarly",
+        "intense"
+      ],
+      "speechStyle": "Formal and precise.",
+      "quirk": "Corrects everyone's grammar."
+    },
+    "greeting": "こんにちは。",
+    "shopGreetings": [
+      "こんにちは。"
+    ],
+    "defeatLine": "なるほど…",
+    "createdAt": "2026-04-07"
+  },
+  "seito": {
+    "id": "seito",
+    "name": "生徒",
+    "nameEn": "Student",
+    "speakerId": null,
+    "area": "school",
+    "baseWord": "生徒",
+    "baseReading": "せいと",
+    "baseMeaning": "pupil; student; schoolchild",
+    "baseRank": 1500,
+    "attack": 10,
+    "skills": [
+      "benkyou"
+    ],
+    "personality": {
+      "traits": [
+        "eager",
+        "clumsy"
+      ],
+      "speechStyle": "Excited and stumbling.",
+      "quirk": "Always raising their hand."
+    },
+    "greeting": "こんにちは！",
+    "shopGreetings": [
+      "こんにちは！"
+    ],
+    "defeatLine": "すごい！",
+    "createdAt": "2026-04-07"
+  },
+  "senpai": {
+    "id": "senpai",
+    "name": "先輩",
+    "nameEn": "Older Student",
+    "speakerId": null,
+    "area": "school",
+    "baseWord": "先輩",
+    "baseReading": "せんぱい",
+    "baseMeaning": "senior (at school); elder",
+    "baseRank": 1400,
+    "attack": 15,
+    "skills": [
+      "oboeru"
+    ],
+    "personality": {
+      "traits": [
+        "confident",
+        "cool"
+      ],
+      "speechStyle": "Casual but authoritative.",
+      "quirk": "Calls everyone 後輩."
+    },
+    "greeting": "よう。",
+    "shopGreetings": [
+      "よう。"
+    ],
+    "defeatLine": "やるじゃん。",
+    "createdAt": "2026-04-07"
   }
 }

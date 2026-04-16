@@ -1,35 +1,3 @@
-/**
- * @fileoverview Player, run, combat, and meta-progression state management
- * @module src/game/state
- *
- * PURPOSE:
- * State factory functions for all game objects. Defines player stats (simplified
- * to attack/maxHp), run state with area progression, combat state, and meta-
- * progression system for cross-run upgrades.
- *
- * KEY EXPORTS:
- * State Factories:
- * - createNewPlayer(name) - Player with attack, maxHp, credits
- * - createNewRun(player) - Run state: area loop, rooms, encounters
- * - createCombatState(enemy) - Combat instance for battle
- * - createMetaProgression() - Meta-save: upgrades, achievements
- *
- * Meta-Progression:
- * - ACHIEVEMENTS - Achievement definitions and unlock conditions
- *
- * Persistence:
- * - saveGame(fs, player, completedRuns) - Save to .jrpg-save.json
- * - loadGame(fs) - Load from .jrpg-save.json
- * - deleteSave(fs) - Delete save file
- *
- * Utilities:
- * - generateEncounterCount() - Random rooms per area (8-12)
- *
- * ARCHITECTURE NOTES:
- * - Player stats: attack and maxHp (no STR/AGI/VIT/INT/DEX/LUK)
- * - Meta-progression persists across runs via separate save
- */
-
 // ============ META-PROGRESSION STATE ============
 
 /**
@@ -38,12 +6,6 @@
  */
 export function createMetaProgression() {
   return {
-    // Purchased upgrades (key: upgrade ID, value: level purchased)
-    upgrades: {},
-
-    // Progression tokens earned from boss defeats/befriends
-    progressionTokens: 0,
-
     // Lifetime statistics
     lifetimeStats: {
       totalRuns: 0,
@@ -79,7 +41,26 @@ export function createMetaProgression() {
     // Whether the player is in hiragana learning mode
     kanaMode: false,
 
-    pvpTeams: [null, null, null]  // 3 saved PvP team slots
+    pvpTeams: [null, null, null],  // 3 saved PvP team slots
+
+    // CID scripts already shown (avoid repeats across runs)
+    seenCidScripts: [],
+
+    // Element drops collected from defeating enemies (persistent)
+    elementDrops: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
+
+    // All owned crests
+    crests: [],
+
+    // Equipped crest IDs (one per element slot)
+    equippedCrests: { fire: null, water: null, earth: null, wood: null, metal: null },
+
+    // Lifetime discovery tracking
+    itemsDiscovered: [],   // array of item IDs ever obtained
+
+    // Tutorial state (first-run guided experience)
+    tutorialStep: 0,
+    tutorialFireDropsGifted: false
   };
 }
 
@@ -147,7 +128,7 @@ export function createNewRun(player) {
     // Area loop system
     currentArea: null,           // full area object from staging JSON
     areasCompleted: 0,           // number of areas cleared
-    areasToWin: 1,               // win condition threshold
+    areasToWin: 1,               // win condition: 1 area per run
     areaPath: [],                // array of area IDs visited (for history)
     areaSelectionRequired: true, // true at start and after each area
     areaCleared: false,          // true when all rooms in current area are done
@@ -223,6 +204,16 @@ export function createNewRun(player) {
       roomsCleared: 0,
       damageDealt: 0,
       damageHealed: 0
+    },
+
+    // Adventure report tracking (populated during run, snapshot on end)
+    runSummary: {
+      creaturesBefriended: 0,
+      creaturesDefeated: 0,
+      itemsCollected: 0,
+      elementsCollected: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
+      wordsExposed: [],       // unique word strings seen this run
+      wordsMastered: [],      // { word, meaning, exposures } for words crossing threshold
     }
   };
 

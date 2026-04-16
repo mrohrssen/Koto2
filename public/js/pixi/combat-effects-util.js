@@ -1,9 +1,3 @@
-/**
- * @file combat-effects-util.js — Pure logic for damage tier configuration
- *
- * Maps damage percentages to visual effect tiers. No DOM or PixiJS dependencies.
- */
-
 const TIER_THRESHOLDS = [10, 20, 35, 50];
 
 /**

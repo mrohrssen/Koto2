@@ -1,40 +1,21 @@
-/**
- * @file exploration.js - Non-Combat Navigation UI
- *
- * PURPOSE:
- * Handles all non-combat game phases: hub, area selection, room exploration,
- * shrine upgrades, and quiz encounters. Renders appropriate buttons and
- * manages phase-specific interactions.
- *
- * KEY EXPORTS:
- * - init(callbacks): Initialize with game state and API callbacks
- * - renderHub(): Show hub phase (Equip Bots + Infiltrate buttons)
- * - renderAreaSelection(): Show area picker cards
- * - renderExploring(): Show Proceed/Fight buttons for room navigation
- * - renderAreaComplete(): Show Continue button after area cleared
- * - renderRunEnded(): Show Return to Hub button
- * - renderShrine(): Show creature level-up selection
- * - renderQuiz(): Show quiz question and reward selection
- *
- * DEPENDENCIES:
- * - Callbacks injected via init(): getGameState, updateGameState, updateUI
- * - API functions: apiGetAreaOptions, apiSelectArea, apiProceed, etc.
- * - actions module: For button rendering
- * - scene module: For narration display
- */
-
 import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
-import { creatureBgUrl, itemSpriteHtml, creatureStaticPath } from './sprite-utils.js';
+import { hapticLight } from '../native/index.js';
+import { creatureBgUrl, itemSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
+import { showNpcInDisplay, hideEnemy } from './scene.js';
+import { showNpcSprite, hideNpcSprite } from '../pixi/formation.js';
 import { t, isJapanified } from './i18n.js';
-import * as metaShop from './meta-shop.js';
+import * as chestsUI from './chests.js';
+import * as crestsEquipUI from './crests-equip.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
+import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
+import { getTutorialNarration, getFormationNarration } from './tutorial-copy.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -44,6 +25,7 @@ let sceneModule = null;
 let startEncounter = null;
 let startNewRun = null;
 let returnToHub = null;
+let showAdventureReport = null;
 
 // Module-level guard to prevent multiple shrine clicks across re-renders
 let shrineInProgress = false;
@@ -60,6 +42,24 @@ let discoveryState = {
   todayCount: 0,
   dailyLimit: 10
 };
+
+/** Show multi-page Cid tutorial narration. Optionally slides her sprite in/out. */
+async function showTutorialNarration(pages, { showSprite = false } = {}) {
+  if (showSprite) {
+    const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+    showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+    await showNpcSprite(cidSprite, { slideIn: true });
+  }
+
+  for (const page of pages) {
+    await sceneModule.showNarration(page, { speaker: 'Cid' });
+  }
+
+  if (showSprite) {
+    await hideNpcSprite({ slideOut: true });
+    hideEnemy();
+  }
+}
 
 // API functions
 let apiGetAreaOptions = null;
@@ -81,15 +81,19 @@ let apiPostCombatRefresh = null;
 // Whack-a-Mole API
 let apiGetWhackAMolePool = null;
 let apiCompleteWhackAMole = null;
+let apiGetWhackAMoleDialogue = null;
+let apiSkipWhackAMole = null;
 
 // Speed review API
 let apiGetDueWords = null;
+let apiGetVocabDueCount = null;
 let apiStartSpeedReviewRoom = null;
 let apiProgressSpeedReviewRoom = null;
 let apiCompleteSpeedReviewRoom = null;
 
 let apiGetCreatureCollection = null;
 let showCollectionSelect = null;
+let triggerCreatureSelect = null;
 
 let speedReviewRoomLaunchState = {
   roomId: null,
@@ -103,6 +107,12 @@ let apiSkillMasterChoose = null;
 // Friendly NPC API
 let apiGetFriendlyNpcOffers = null;
 let apiChooseFriendlyNpcItem = null;
+
+// Track whether CID's item-shop tutorial has already been shown this session
+let cidItemShopTutorialShown = false;
+
+// Tutorial API
+let apiTutorialAdvance = null;
 
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
@@ -128,17 +138,23 @@ export function init(callbacks) {
   apiSwipeWord = callbacks.apiSwipeWord;
   apiPostCombatRefresh = callbacks.apiPostCombatRefresh;
   apiGetDueWords = callbacks.apiGetDueWords;
+  apiGetVocabDueCount = callbacks.apiGetVocabDueCount;
   apiStartSpeedReviewRoom = callbacks.apiStartSpeedReviewRoom;
   apiProgressSpeedReviewRoom = callbacks.apiProgressSpeedReviewRoom;
   apiCompleteSpeedReviewRoom = callbacks.apiCompleteSpeedReviewRoom;
   apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
+  triggerCreatureSelect = callbacks.triggerCreatureSelect;
   apiGetWhackAMolePool = callbacks.apiGetWhackAMolePool;
   apiCompleteWhackAMole = callbacks.apiCompleteWhackAMole;
+  apiGetWhackAMoleDialogue = callbacks.apiGetWhackAMoleDialogue;
+  apiSkipWhackAMole = callbacks.apiSkipWhackAMole;
   apiSkillMasterOffers = callbacks.apiSkillMasterOffers;
   apiSkillMasterChoose = callbacks.apiSkillMasterChoose;
   apiGetFriendlyNpcOffers = callbacks.apiGetFriendlyNpcOffers;
   apiChooseFriendlyNpcItem = callbacks.apiChooseFriendlyNpcItem;
+  apiTutorialAdvance = callbacks.apiTutorialAdvance;
+  showAdventureReport = callbacks.showAdventureReport;
 }
 
 // ============ INVENTORY OVERLAY ============
@@ -180,7 +196,8 @@ let skillMasterState = {
   fetched: false,
   offered: null,
   chosenId: null,
-  catalogById: { ...PARTY_SKILL_CATALOG_FALLBACK }
+  catalogById: { ...PARTY_SKILL_CATALOG_FALLBACK },
+  promptTokens: null
 };
 
 function getActiveRoomFromRun(run) {
@@ -330,31 +347,71 @@ function closeInventory() {
   }
 }
 
-/** Hub phase — show Speed Review + Upgrades + Infiltrate buttons */
-export function renderHub() {
+/** Hub phase — show Speed Review + PvP + Explore buttons */
+export async function renderHub() {
   const gameState = getGameState();
-  const tokens = gameState.meta?.progressionTokens || 0;
 
   const pvpTeams = gameState.meta?.pvpTeams || [null, null, null];
   const hasPvpTeams = pvpTeams.some(t => t !== null);
 
+  const dueCount = apiGetVocabDueCount ? (await apiGetVocabDueCount().catch(() => ({ count: 0 }))).count : 0;
+
   renderButtons([
-    { label: '📚 速習', onClick: async () => {
+    { label: `📚 Speed Review${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
+      // Tutorial step 4→5: advance when player clicks speed review
+      if (getGameState().meta?.tutorialStep === 4) {
+        await apiTutorialAdvance?.(4);
+      }
       const result = await apiGetDueWords();
       if (result?.words?.length > 0) {
         speedReview.start(result.words);
       } else {
-        sceneModule.showNarration('復習する言葉がありません', { autoDismiss: 2000 });
+        sceneModule.showNarration('No words to review', { autoDismiss: 2000 });
       }
     }},
-    { label: `⬆️ 強化${tokens > 0 ? ` (${tokens})` : ''}`, onClick: () => metaShop.show() },
     { label: '⚔️ Multiplayer Battle', onClick: () => {
       const gs = getGameState();
       gs.phase = 'pvp_lobby';
       updateUI();
     }, disabled: !hasPvpTeams },
-    { label: '⚡ 潜入', onClick: () => startNewRun(), primary: true },
+    { label: '⚡ Explore', onClick: () => startNewRun(), primary: true },
   ]);
+
+  let tutorialStep = gameState.meta?.tutorialStep;
+
+  // Tutorial step 3: encourage after first death, then auto-advance to 4
+  if (tutorialStep === 3) {
+    await showTutorialNarration(getTutorialNarration(3));
+    await apiTutorialAdvance?.(3);
+    tutorialStep = getGameState().meta?.tutorialStep;
+  }
+
+  // Tutorial step 4: introduce speed review (condition-gated on dueCount > 0)
+  if (tutorialStep === 4 && dueCount > 0) {
+    await showTutorialNarration(getTutorialNarration(4, { dueCount }));
+    const buttons = document.querySelectorAll('.action-btn');
+    buttons.forEach(btn => {
+      if (btn.textContent.includes('Speed Review')) {
+        btn.classList.add('tutorial-highlight');
+      } else {
+        btn.classList.add('tutorial-dimmed');
+      }
+    });
+  }
+
+  // Tutorial step 5: guide to formation and re-enter
+  if (tutorialStep === 5) {
+    const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
+    await showTutorialNarration(getFormationNarration(creatureCount));
+    const buttons = document.querySelectorAll('.action-btn');
+    buttons.forEach(btn => {
+      if (btn.textContent.includes('Explore')) {
+        btn.classList.add('tutorial-highlight');
+      } else {
+        btn.classList.add('tutorial-dimmed');
+      }
+    });
+  }
 }
 
 /** Area selection — show area cards, proceed button */
@@ -391,7 +448,9 @@ export async function renderAreaSelection() {
       const result = await apiSelectArea(areas[index].id);
       if (result?.state) {
         updateGameState(result.state);
-        updateUI();
+        // Don't call updateUI() — trigger creature selection first.
+        // The area selection UI stays visible underneath the modal overlay.
+        await triggerCreatureSelect();
       }
     },
     container: choiceContainer,
@@ -446,21 +505,14 @@ export function renderAreaComplete() {
   ], { container: btnContainer });
 }
 
-/** Run complete (game victory) — show Return to Hub */
+/** Run complete (game victory) — offer PvP save, then show adventure report */
 export function renderRunComplete() {
-  actions.setContent(`
-    <p style="text-align:center;color:var(--accent-primary);margin-bottom:0.5rem">
-      ゲームクリア！おめでとう！
-    </p>
-  `);
-
-  const actionArea = document.getElementById('action-area');
-  const btnContainer = document.createElement('div');
-  actionArea.appendChild(btnContainer);
+  if (!showAdventureReport) return;
+  // Offer PvP team save before forfeit destroys run data
   renderButtons([
-    { label: 'ハブに戻る', onClick: () => apiReturnToHub(), primary: true },
     { label: 'Save Team for PvP', onClick: () => showPvpTeamSaveSlots() },
-  ], { container: btnContainer });
+    { label: 'View Report', onClick: () => showAdventureReport(true), primary: true },
+  ]);
 }
 
 async function showPvpTeamSaveSlots() {
@@ -488,11 +540,15 @@ async function showPvpTeamSaveSlots() {
   renderButtons(slots);
 }
 
-/** Run ended — show Return to Hub */
+/** Run ended — show adventure report (or fallback to simple button) */
 export function renderRunEnded() {
-  renderButtons([
-    { label: 'ハブに戻る', onClick: () => returnToHub(), primary: true },
-  ]);
+  if (showAdventureReport) {
+    showAdventureReport(false);
+  } else {
+    renderButtons([
+      { label: 'ハブに戻る', onClick: () => returnToHub(), primary: true },
+    ]);
+  }
 }
 
 /** Shrine phase - show creature roster for level-up */
@@ -688,11 +744,11 @@ export async function renderWordDiscovery() {
   // The actions module was initialized with cardSwipe callback, but we need discovery-specific behavior
   // Store original and override temporarily
   const handleDiscoverySwipe = async (direction) => {
-    console.log(`[Discovery] Swiped ${direction} on "${currentWord.word}" (vid=${currentWord.vid}, sid=${currentWord.sid})`);
+    console.log(`[Discovery] Swiped ${direction} on "${currentWord.word}"`);
     try {
-      // Pass isDiscovery: true to track the discovery
-      const reviewResult = await apiSwipeWord(currentWord.vid, currentWord.sid, 1, true);
-      console.log(`[Discovery] Review sent: vid=${currentWord.vid}, grade=1 (learning)`);
+      // Grade as 'again' (first exposure — learning)
+      const reviewResult = await apiSwipeWord(currentWord.word, 'again', true);
+      console.log(`[Discovery] Review sent: word="${currentWord.word}", grade=again`);
 
       // Check if we hit the limit
       if (reviewResult.atLimit) {
@@ -791,7 +847,7 @@ export async function renderSpeedReviewRoom() {
           let lastError = null;
           for (let attempt = 1; attempt <= 3; attempt++) {
             try {
-              const progressResult = await apiProgressSpeedReviewRoom(room.id, word.vid, word.sid, commitIndex);
+              const progressResult = await apiProgressSpeedReviewRoom(room.id, word.word, commitIndex);
               if (!progressResult || progressResult.error) {
                 throw new Error(progressResult?.error || 'No response from speed review room progress API');
               }
@@ -847,36 +903,77 @@ export async function renderWhackAMole() {
     return;
   }
 
-  // Fetch pool from server
-  let pool;
+  // Fetch GM dialogue tokens (before pool — no wasted request on decline)
+  let dialogue = null;
+  let gmYesTokens = null;
+  let gmNoTokens = null;
   try {
-    const resp = await apiGetWhackAMolePool();
-    pool = resp.pool;
+    const resp = await apiGetWhackAMoleDialogue();
+    dialogue = resp?.dialogue;
+    gmYesTokens = resp?.yesTokens;
+    gmNoTokens = resp?.noTokens;
   } catch (err) {
-    actions.setContent('<div class="wam-error">Failed to load game data</div>');
-    return;
+    // Fallback: proceed without dialogue
   }
 
-  if (!pool || pool.length < 9) {
-    actions.setContent('<div class="wam-error">Not enough creatures/items for game</div>');
-    return;
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+
+  // Show GM greeting in narration box
+  if (dialogue?.tokens?.length && sceneModule?.showNarration) {
+    const html = renderJpSentence(dialogue.tokens, getKnownWords(), wordDict, {}, false);
+    await sceneModule.showNarration(html, { html: true, speaker: 'Game Master' });
   }
 
-  // Show start screen
-  actions.setContent(`
-    <div class="wam-container">
-      <div class="wam-start">
-        <div class="wam-start-title">ワードマッチ!</div>
-        <div class="wam-start-desc">Match the word to the correct creature or item</div>
-      </div>
-    </div>
-  `);
+  // Show yes/no buttons from tokenized frames
+  const yesLabel = gmYesTokens ? renderJpSentence(gmYesTokens, getKnownWords(), wordDict, {}, false) : 'Yes';
+  const noLabel = gmNoTokens ? renderJpSentence(gmNoTokens, getKnownWords(), wordDict, {}, false) : 'No';
 
-  const startBtnContainer = document.createElement('div');
-  document.querySelector('.wam-start')?.appendChild(startBtnContainer);
   renderButtons([
-    { label: 'プレイ', onClick: () => startWhackAMoleGame(pool), primary: true },
-  ], { container: startBtnContainer });
+    {
+      label: yesLabel,
+      onClick: async () => {
+        // Fetch pool and start game directly (no intermediate start screen)
+        let pool;
+        try {
+          const resp = await apiGetWhackAMolePool();
+          pool = resp.pool;
+        } catch (err) {
+          actions.setContent('<div class="wam-error">Failed to load game data</div>');
+          return;
+        }
+
+        if (!pool || pool.length < 9) {
+          actions.setContent('<div class="wam-error">Not enough creatures/items for game</div>');
+          return;
+        }
+
+        startWhackAMoleGame(pool);
+      }
+    },
+    {
+      label: noLabel,
+      onClick: async () => {
+        await hideNpcSprite({ slideOut: true });
+        try {
+          const result = await apiSkipWhackAMole();
+          if (result?.state) {
+            updateGameState(result.state);
+          }
+        } catch (err) {
+          // Fallback: just update UI
+        }
+        updateUI();
+      }
+    }
+  ]);
+}
+
+/** Show the どの能力？ prompt in the narration box */
+function showSkillSelectPrompt(tokens) {
+  if (!tokens?.length || !sceneModule?.showNarration) return;
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+  const html = renderJpSentence(tokens, getKnownWords(), wordDict, {}, false);
+  sceneModule.showNarration(html, { html: true, persistent: true });
 }
 
 /** Skill Master room — placeholder UI (to be expanded in later task) */
@@ -885,10 +982,21 @@ export async function renderSkillMaster() {
   const run = gameState.run;
   const isInitialPick = run?.initialSkillPick && !run.initialSkillPick.chosenId;
   const room = isInitialPick ? null : (gameState.room || getActiveRoomFromRun(run));
-  const roomId = isInitialPick ? 'initialSkillPick' : (room?.id || room?.type || 'unknown');
+  // Detect initial pick on the server side: phase is skillMaster but the
+  // current room is NOT a skillMaster room (initialSkillPick is not sent
+  // to the frontend, so we infer it).
+  const isServerInitialPick = !isInitialPick
+    && gameState.phase === 'skillMaster'
+    && (!room || room.type !== 'skillMaster');
+  const roomId = (isInitialPick || isServerInitialPick)
+    ? 'initialSkillPick'
+    : (room?.id || room?.type || 'unknown');
 
   // Reset per-room cache
-  if (skillMasterState.roomId !== roomId) {
+  // For the initial skill pick, always reset — room IDs are deterministic per
+  // area so the cache key collides across runs, serving stale offers that the
+  // server no longer recognizes (causes "Invalid Skill Master offer" 400).
+  if (skillMasterState.roomId !== roomId || isServerInitialPick) {
     skillMasterState.roomId = roomId;
     skillMasterState.fetched = false;
     skillMasterState.offered = null;
@@ -910,6 +1018,12 @@ export async function renderSkillMaster() {
     `);
     return;
   }
+
+  // Tutorial step 0: start Cid narration early so it runs while offers load
+  const tutorialStep = getGameState()?.meta?.tutorialStep;
+  const cidNarrationPromise = tutorialStep === 0
+    ? showTutorialNarration(getTutorialNarration(0), { showSprite: true })
+    : null;
 
   // Render loading state immediately to avoid flashing old buttons
   actions.setContent(`
@@ -969,6 +1083,7 @@ export async function renderSkillMaster() {
     }
 
     skillMasterState.offered = offered;
+    skillMasterState.promptTokens = resp?.skillSelectPrompt || null;
     for (const s of offered) {
       if (!s?.id) continue;
       skillMasterState.catalogById[s.id] = {
@@ -980,30 +1095,104 @@ export async function renderSkillMaster() {
 
   const offers = skillMasterState.offered || room?.skillMaster?.offered || [];
 
-  renderChoices({
-    cards: offers.slice(0, 3).map(s => ({
-      title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
-      subtitle: s.desc || skillMasterState.catalogById?.[s.id]?.desc || '',
-    })),
-    onSelect: async (index) => {
-      const skillId = offers[index].id;
-      let result;
-      try {
-        result = await apiSkillMasterChoose?.(skillId);
-      } catch (err) {
-        sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
-        renderSkillMaster();
-        return;
-      }
-      if (result?.state) {
-        updateGameState(result.state);
-        updateUI();
-      } else {
-        sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
-        renderSkillMaster();
-      }
-    },
+  // Don't wait for Cid narration — render skills immediately so the player
+  // can see them while Cid is still talking.
+  if (tutorialStep === 0) {
+    renderTutorialSkillMaster(offers);
+  } else {
+    showSkillSelectPrompt(skillMasterState.promptTokens);
+
+    renderChoices({
+      cards: offers.slice(0, 3).map(s => ({
+        title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
+        subtitle: s.desc || skillMasterState.catalogById?.[s.id]?.desc || '',
+      })),
+      onSelect: async (index) => {
+        const skillId = offers[index].id;
+        let result;
+        try {
+          result = await apiSkillMasterChoose?.(skillId);
+        } catch (err) {
+          sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+          renderSkillMaster();
+          return;
+        }
+        if (result?.state) {
+          updateGameState(result.state);
+          updateUI();
+        } else {
+          sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
+          renderSkillMaster();
+        }
+      },
+    });
+  }
+}
+
+/** Tutorial step 0: show all 3 skills but only the first is clickable (glows). */
+function renderTutorialSkillMaster(offers) {
+  const el = document.getElementById('action-area');
+  el.innerHTML = '';
+
+  const list = document.createElement('div');
+  list.className = 'ui-choice-list';
+
+  offers.slice(0, 3).forEach((s, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'ui-choice';
+    btn.setAttribute('role', 'button');
+    btn.tabIndex = 0;
+
+    if (i === 0) {
+      btn.classList.add('tutorial-highlight');
+    } else {
+      btn.classList.add('tutorial-dimmed');
+    }
+
+    const name = s.name || skillMasterState.catalogById?.[s.id]?.name || s.id;
+    const desc = s.desc || skillMasterState.catalogById?.[s.id]?.desc || '';
+    btn.innerHTML = `
+      <div class="ui-choice__info">
+        <div class="ui-choice__title">${name}</div>
+        <div class="ui-choice__subtitle">${desc}</div>
+      </div>
+    `;
+
+    if (i === 0) {
+      let clicked = false;
+      btn.addEventListener('click', async () => {
+        if (clicked) return;
+        clicked = true;
+        playSFX('button-tap');
+        hapticLight();
+        btn.classList.remove('tutorial-highlight');
+        btn.classList.add('ui-choice--selected');
+        list.querySelectorAll('.ui-choice').forEach(c => {
+          c.style.pointerEvents = 'none';
+        });
+
+        let result;
+        try {
+          result = await apiSkillMasterChoose?.(s.id);
+        } catch {
+          sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+          renderSkillMaster();
+          return;
+        }
+        if (result?.state) {
+          updateGameState(result.state);
+          updateUI();
+        } else {
+          sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
+          renderSkillMaster();
+        }
+      });
+    }
+
+    list.appendChild(btn);
   });
+
+  el.appendChild(list);
 }
 
 // ============ FRIENDLY NPC ROOM ============
@@ -1013,6 +1202,7 @@ let friendlyNpcState = {
   roomId: null,
   fetched: false,
   offered: null,
+  greeting: null,
   choosing: false
 };
 
@@ -1031,6 +1221,7 @@ export async function renderFriendlyNpc() {
       roomId,
       fetched: false,
       offered: null,
+      greeting: null,
       choosing: false
     };
   }
@@ -1085,69 +1276,128 @@ export async function renderFriendlyNpc() {
     }
 
     friendlyNpcState.offered = offered;
+    friendlyNpcState.greeting = resp?.greeting || null;
     if (resp?.state) {
       updateGameState(resp.state);
     }
   }
 
   const offers = friendlyNpcState.offered || [];
+  const npc = room?.npc;
+  const tutorialStep = getGameState()?.meta?.tutorialStep;
 
-  // Render item cards first so they're visible immediately
+  // Shared word dictionary for token rendering
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+
+  // NPC greeting first (blocking during tutorial so player sees it before items)
+  if (npc && sceneModule?.showNarration) {
+    const greetingTokens = friendlyNpcState.greeting?.tokens;
+    let greetingContent;
+    if (greetingTokens?.length) {
+      greetingContent = renderJpSentence(greetingTokens, getKnownWords(), wordDict, {}, false);
+    } else {
+      greetingContent = 'こんにちは！';
+    }
+    const narrationOpts = greetingTokens?.length
+      ? { html: true, speaker: npc.nameEn || npc.name }
+      : { speaker: npc.nameEn || npc.name };
+    if (tutorialStep === 2) {
+      await sceneModule.showNarration(greetingContent, narrationOpts);
+    } else {
+      sceneModule.showNarration(greetingContent, narrationOpts);
+    }
+  }
+
+  // Render item cards so they're visible
   renderChoices({
     cards: offers.map(item => ({
       sprite: itemSpriteHtml(item.id, item.word),
-      title: `${item.word} (${item.reading})`,
-      subtitle: item.nameEn,
+      title: item.nameToken
+        ? renderJpSentence([item.nameToken], getKnownWords(), wordDict, {}, false)
+        : `${item.word} (${item.reading})`,
       pills: buildItemEffectPills(item),
     })),
     onSelect: async (index) => {
       if (friendlyNpcState.choosing) return;
       friendlyNpcState.choosing = true;
-      const itemId = offers[index].id;
+      const item = offers[index];
       playSFX('creature-equip');
 
-      // Phase 2: creature targeting
+      if (item.tokens?.length && sceneModule?.showNarration) {
+        const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+        const html = renderJpSentence(item.tokens, getKnownWords(), wordDict, {}, false);
+        await sceneModule.showNarration(html, { html: true, speaker: 'You' });
+      } else if (item.shopTokens?.length && sceneModule?.showNarration) {
+        // Legacy fallback for in-progress game states
+        const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+        const html = renderJpSentence(item.shopTokens, getKnownWords(), wordDict, item.shopOverrides || {}, false);
+        await sceneModule.showNarration(html, { html: true, speaker: 'You' });
+      } else if (item.word && sceneModule?.showNarration) {
+        await sceneModule.showNarration(`${item.word}、ください`, { speaker: 'You' });
+      }
+
       const gameState = getGameState();
       const party = gameState.run?.creatureParty?.active || [];
+      const isPartyWide = item.effect?.healAllPercent || item.effect?.mpRestorePercent;
 
-      renderChoices({
-        cards: party.filter(Boolean).map(creature => ({
-          sprite: `<img src="${creatureStaticPath(creature.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`,
-          title: `${creature.name} (${creature.nameEn})`,
-          subtitle: `Lv.${creature.level} · HP: ${creature.hp}/${creature.maxHp}`,
-        })),
-        onSelect: async (creatureIndex) => {
-          let result;
-          try {
-            result = await apiChooseFriendlyNpcItem?.(itemId, creatureIndex);
-          } catch (err) {
-            friendlyNpcState.choosing = false;
-            actions.clear();
-            sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
-            renderFriendlyNpc();
-            return;
-          }
-          if (result?.state) {
-            updateGameState(result.state);
-            friendlyNpcState.choosing = false;
-            actions.clear();
-            updateUI();
-          } else {
-            friendlyNpcState.choosing = false;
-            sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
-            renderFriendlyNpc();
-          }
-        },
-      });
+      const applyItem = async (creatureIndex) => {
+        let result;
+        try {
+          result = await apiChooseFriendlyNpcItem?.(item.id, creatureIndex);
+        } catch (err) {
+          friendlyNpcState.choosing = false;
+          actions.clear();
+          sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
+          renderFriendlyNpc();
+          return;
+        }
+        if (result?.state) {
+          updateGameState(result.state);
+          friendlyNpcState.choosing = false;
+          actions.clear();
+          updateUI();
+        } else {
+          friendlyNpcState.choosing = false;
+          sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
+          renderFriendlyNpc();
+        }
+      };
+
+      if (isPartyWide || party.filter(Boolean).length <= 1) {
+        await applyItem(0);
+      } else {
+        renderChoices({
+          cards: party.filter(Boolean).map(creature => ({
+            sprite: `<img src="${creatureStaticPath(creature.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`,
+            title: `${creature.name} (${creature.nameEn})`,
+            subtitle: `Lv.${creature.level} · HP: ${creature.hp}/${creature.maxHp}`,
+          })),
+          onSelect: (creatureIndex) => applyItem(creatureIndex),
+        });
+      }
     },
   });
 
-  // Show NPC greeting as non-blocking overlay (items already visible behind it)
-  const npc = room?.npc;
-  if (npc && sceneModule?.showNarration) {
-    const greetings = npc.shopGreetings || ['こんにちは！'];
-    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-    sceneModule.showNarration(greeting, { speaker: npc.nameEn || npc.name });
+  // Tutorial step 2: Cid explains items AFTER cards are visible (once per session)
+  if (tutorialStep === 2 && !cidItemShopTutorialShown) {
+    cidItemShopTutorialShown = true;
+    const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+    showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+    await showNpcSprite(cidSprite, { slideIn: true });
+
+    const [itemShopCidLine] = getTutorialNarration(2);
+    await sceneModule.showNarration(itemShopCidLine, { speaker: 'Cid' });
+
+    await hideNpcSprite({ slideOut: true });
+
+    // Restore NPC sprite so they're visible during item selection
+    if (npc) {
+      const npcSprite = npc.id
+        ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
+        : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+      showNpcInDisplay(npc.nameEn || npc.name, npcSprite, { skipPixi: true });
+      await showNpcSprite(npcSprite, { slideIn: true });
+    }
   }
 }
 
@@ -1168,7 +1418,8 @@ let npcBattleSkillState = {
   roomId: null,
   fetched: false,
   offered: null,
-  choosing: false
+  choosing: false,
+  promptTokens: null
 };
 
 /**
@@ -1187,7 +1438,8 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       roomId,
       fetched: false,
       offered: null,
-      choosing: false
+      choosing: false,
+      promptTokens: null
     };
   }
 
@@ -1242,7 +1494,26 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     // Stale async guard: room changed while awaiting
     if (npcBattleSkillState.roomId !== fetchRoomId) return;
 
-    const offered = resp?.offered || resp?.offers || resp?.skills || room?.npcBattle?.offered;
+    // If fetch returned null (dedup or network), show retry instead of using stale
+    // room fallback. room.npcBattle.offered contains raw IDs, not display objects.
+    if (!resp) {
+      npcBattleSkillState.fetched = false;
+      npcBattleSkillState.offered = null;
+      actions.setContent(`
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
+          <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle Reward</div>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Loading offers…</div>
+        </div>
+      `);
+      const retryContainer = document.createElement('div');
+      document.getElementById('action-area').appendChild(retryContainer);
+      renderButtons([
+        { label: 'Retry', onClick: () => { npcBattleSkillState.fetched = false; npcBattleSkillState.offered = null; renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers }); }, primary: true },
+      ], { container: retryContainer });
+      return;
+    }
+
+    let offered = resp?.offered || resp?.offers || resp?.skills;
     if (!Array.isArray(offered) || offered.length === 0) {
       npcBattleSkillState.fetched = false;
       npcBattleSkillState.offered = null;
@@ -1258,9 +1529,12 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     }
 
     npcBattleSkillState.offered = offered;
+    npcBattleSkillState.promptTokens = resp?.skillSelectPrompt || null;
   }
 
   const offers = npcBattleSkillState.offered || [];
+
+  showSkillSelectPrompt(npcBattleSkillState.promptTokens);
 
   renderChoices({
     cards: offers.slice(0, 3).map(s => ({

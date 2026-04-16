@@ -1,24 +1,6 @@
-/**
- * @file creature-row.js - Creature Slots Display
- *
- * PURPOSE:
- * Renders the player formation in the scene area using showFormation() from scene.js,
- * then attaches popup click handlers to the resulting .formation-slot elements.
- * Shows creature details in a popup: element icons, HP/MP stats, move list, swap buttons.
- *
- * KEY EXPORTS:
- * - init({ swapCreatureCallback, rearrangeCreatureCallback }): Setup callbacks
- * - render(creatures): Draw all 3 creature slots via scene.js formation
- * - isPopupVisible(): Check if a creature popup is currently open
- *
- * DEPENDENCIES:
- * - ../dom.js: DOM element references (playerFormation, creaturePopup)
- * - ./scene.js: showFormation(), hideFormation()
- */
-
 import { dom } from '../dom.js';
 import { showFormation, hideFormation } from './scene.js';
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -130,6 +112,16 @@ export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemB
   onRearrangeCreature = rearrangeCreatureCallback || null;
   getItemBuffs = typeof getBuffs === 'function' ? getBuffs : null;
   getEquippedItems = typeof getEquip === 'function' ? getEquip : null;
+
+  // Event delegation: single click handler on the formation container
+  // (avoids leaking per-slot listeners when render() is called repeatedly)
+  dom.playerFormation.addEventListener('click', (e) => {
+    const slot = e.target.closest('.formation-slot');
+    if (!slot) return;
+    const idx = parseInt(slot.dataset.index, 10);
+    if (_creatures[idx]) togglePopup(idx);
+  });
+
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.formation-slot') && !e.target.closest('.creature-popup')) {
       hidePopup();
@@ -153,15 +145,6 @@ export function render(creatures) {
   _creatures = creatures;
   currentActiveCreatures = creatures || [];
   showFormation('player', creatures);
-
-  // Attach popup click handlers to formation slots
-  const slots = dom.playerFormation.querySelectorAll('.formation-slot');
-  slots.forEach(slot => {
-    const idx = parseInt(slot.dataset.index, 10);
-    slot.addEventListener('click', () => {
-      if (_creatures[idx]) togglePopup(idx);
-    });
-  });
 }
 
 function togglePopup(index) {
@@ -188,10 +171,10 @@ function showPopup(index, creature) {
   const archetypeLabel = creature.archetype || 'Fighter';
 
   const popupSubtitle = creature.modifier
-    ? renderJpFirst(creature.modifier.word, creature.modifier.reading, creature.modifier.meaning)
+    ? renderJpSentence([entityToToken(creature.modifier)], getKnownWords(), new Map())
       + 'の'
-      + renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning)
-    : renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning);
+      + renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map())
+    : renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map());
 
   dom.creaturePopup.innerHTML = `
     <div class="creature-popup-name">${creature.name} (${creature.nameEn}) ${rarityStars(creature.rarity)}</div>

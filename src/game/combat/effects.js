@@ -1,10 +1,4 @@
 /**
- * Combat effects system — poison ticks, healing, effect application.
- * Foundation for Layer 2 archetype combat (used by moves that inflict
- * status effects or restore HP).
- */
-
-/**
  * Process all active effects on a creature at start of a combat round.
  * - Poison: deals damagePerTurn (never reduces HP below 1), decrements remainingTurns
  * - Expired effects (remainingTurns <= 0 after decrement) are removed

@@ -20,13 +20,62 @@
       "rank": 4200
     },
     "theme": "A bright, open meadow where new adventurers begin their journey.",
-    "creatures": ["hi", "mizu", "ki", "ishi", "tetsu", "kaze", "mushi", "hana", "tori", "sakana", "neko", "inu"],
+    "creatures": [
+      "hi",
+      "mizu",
+      "ki",
+      "ishi",
+      "tetsu",
+      "kaze",
+      "mushi",
+      "hana",
+      "tori",
+      "sakana",
+      "neko",
+      "inu"
+    ],
     "bossCreatureId": "hineko",
     "description": "A peaceful meadow at the edge of town, where creatures roam freely.",
-    "tags": ["meadow", "starter", "open"],
+    "tags": [
+      "meadow",
+      "starter",
+      "open"
+    ],
     "subAreas": [],
     "background": "areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp",
     "stage": 1,
     "createdAt": "2026-03-20"
+  },
+  {
+    "id": "school",
+    "name": "学校",
+    "nameEn": "School",
+    "reading": "がっこう",
+    "rank": 700,
+    "particle": "",
+    "parallaxId": "school",
+    "modifierWord": "",
+    "modifierReading": "",
+    "modifierMeaning": "",
+    "modifierRank": null,
+    "locationWord": "学校",
+    "locationReading": "がっこう",
+    "locationMeaning": "school",
+    "locationRank": 700,
+    "theme": "A bustling school where students learn the basics of creature collecting and battling",
+    "creatures": [
+      "tsukue",
+      "isu",
+      "fukurou",
+      "chou",
+      "hachi",
+      "ari"
+    ],
+    "bossCreatureId": "fukurou",
+    "description": "A bright, lively school filled with eager young trainers and their first companions",
+    "tags": "school, indoor, beginner, trainer",
+    "background": "areas/school/school_01.webp",
+    "stage": 1,
+    "createdAt": "2026-04-07"
   }
 ]

@@ -5,10 +5,13 @@ import {
   createWordKnowledge,
   registerExposure,
   markKnown,
+  unmarkKnown,
   isWordKnown,
   getKnownWords,
   getSeenWords,
-  seedKnownWords
+  seedKnownWords,
+  exposeWords,
+  lookupMeaning
 } from '../../src/game/bootstrap/word-knowledge.js';
 
 describe('word-knowledge', () => {
@@ -52,5 +55,27 @@ describe('word-knowledge', () => {
     seedKnownWords(wk, ['森']);
     const known = getKnownWords(wk);
     assert.ok(known instanceof Set);
+  });
+
+  it('unmarkKnown removes word from known', () => {
+    markKnown(wk, '森');
+    assert.ok(isWordKnown(wk, '森'));
+    unmarkKnown(wk, '森');
+    assert.ok(!isWordKnown(wk, '森'));
+  });
+
+  it('unmarkKnown is safe on unknown word', () => {
+    unmarkKnown(wk, '森'); // should not throw
+    assert.ok(!isWordKnown(wk, '森'));
+  });
+
+  it('exposeWords is exported and callable', () => {
+    assert.equal(typeof exposeWords, 'function');
+  });
+
+  it('lookupMeaning returns primary definition from dictionary', () => {
+    const meaning = lookupMeaning('ください');
+    assert.ok(meaning.length > 0, 'should find a meaning for ください');
+    assert.ok(meaning.includes('please'), `meaning should contain "please", got: ${meaning}`);
   });
 });

@@ -1,9 +1,3 @@
-/**
- * Bug Report UI Module
- *
- * Allows users to attach screenshots and submit bug reports.
- */
-
 import { apiUrl, getAuthHeaders } from '../api.js';
 import { dom } from '../dom.js';
 import { store } from '../store.js';

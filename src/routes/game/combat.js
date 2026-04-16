@@ -1,15 +1,13 @@
-/**
- * @fileoverview Combat routes
- *
- * Handles creature combat, befriending, and NPC dialogue
- */
-
 import { Router } from 'express';
-import { processEnemyTurn, handleCreatureKO, handleBefriendAnswer, rollTalkAcceptance } from '../../game/services/creature-combat-service.js';
+import { handleBefriendAnswer, rollTalkAcceptance } from '../../game/services/creature-combat-service.js';
 import { MOVES_BY_ID } from '../../game/creatures.js';
 import { getCollectionCatalog } from '../../game/services/creature-collection-service.js';
 import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogueResponse } from '../../game/services/npc-service.js';
 import { buildVocabConfig, buildBefriendDialogueVocabConfig } from './route-helpers.js';
+import { getNpcLines, getNpcDefeatFrames } from '../../game/dialogue-loader.js';
+import { selectNpcLine } from '../../game/dialogue-filter.js';
+import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
 
 export default function createCombatRoutes({
   getUserVocabulary,
@@ -56,7 +54,9 @@ export default function createCombatRoutes({
   router.post('/start-creature-encounter', async (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const encounter = gameManager.startCreatureEncounter();
+      const settings = req.getSettings?.() || {};
+      gameManager._debugSuperAttack = !!settings.debugSuperAttack;
+      const encounter = gameManager.combatCycleService.startCreatureEncounter();
       req.saveGame();
 
       // Enrich NPC data with TTS greeting from dialogue cache
@@ -68,7 +68,48 @@ export default function createCombatRoutes({
         }
       }
 
-      res.json({ ...encounter, state: req.getEnrichedGameState() });
+      // Word-gated bootstrap dialogue for NPC encounters
+      let npcDialogue = null;
+      const npcData = encounter.npc;
+      if (npcData && getNpcLines()[npcData.id]) {
+        try {
+          const knownWords = new Set(getKnownWordsFromFsrs(req.user.id));
+          const npcPool = getNpcLines()[npcData.id];
+
+          const mapLine = (l) => l ? {
+            text: l.raw,
+            tokens: l.tokens || [],
+            overrides: {},
+          } : null;
+
+          const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords);
+          const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords);
+
+          // Expose NPC dialogue content words to SRS
+          const dialogueWords = [];
+          for (const line of [fightStart, defeatLine]) {
+            if (line && line.words) {
+              for (const w of line.words) {
+                const token = (line.tokens || []).find(t => t.base === w);
+                dialogueWords.push({ word: w, meaning: token?.meaning || '' });
+              }
+            }
+          }
+          if (dialogueWords.length > 0) {
+            gameManager.exposeWords(dialogueWords);
+          }
+
+          npcDialogue = {
+            fightStart: mapLine(fightStart),
+            defeatLine: mapLine(defeatLine),
+            useKanji: false,
+          };
+        } catch (e) {
+          console.warn('[NPC] Bootstrap dialogue selection failed:', e.message);
+        }
+      }
+
+      res.json({ ...encounter, npcDialogue, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -82,7 +123,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { actionType, moveChoices } = req.body;
     try {
-      const result = gameManager.creatureCombatCycle(actionType || 'attack', moveChoices || []);
+      const result = gameManager.combatCycleService.creatureCombatCycle(actionType || 'attack', moveChoices || []);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -134,7 +175,7 @@ export default function createCombatRoutes({
   router.post('/creature-shop-roll', (req, res) => {
     const gameManager = req.gameManager;
     try {
-      const result = gameManager.rollPostCombatShop();
+      const result = gameManager.combatCycleService.rollPostCombatShop();
       req.saveGame();
       res.json(result);
     } catch (error) {
@@ -146,7 +187,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { itemIndex, targetIndex } = req.body;
     try {
-      const result = gameManager.selectShopItem(itemIndex, targetIndex ?? 0);
+      const result = gameManager.combatCycleService.selectShopItem(itemIndex, targetIndex ?? 0);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -159,7 +200,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { activeIndex, reserveIndex } = req.body;
     try {
-      const result = gameManager.swapCreature(activeIndex, reserveIndex);
+      const result = gameManager.combatCycleService.swapCreature(activeIndex, reserveIndex);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -172,7 +213,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { indexA, indexB } = req.body;
     try {
-      const result = gameManager.rearrangeCreatures(indexA, indexB);
+      const result = gameManager.combatCycleService.rearrangeCreatures(indexA, indexB);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -185,7 +226,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { activeIndex, reserveIndex } = req.body;
     try {
-      const result = gameManager.swapCreatureOutOfCombat(activeIndex, reserveIndex);
+      const result = gameManager.combatCycleService.swapCreatureOutOfCombat(activeIndex, reserveIndex);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -198,7 +239,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     const { releaseCreatureId } = req.body;
     try {
-      const result = gameManager.befriendReplace(releaseCreatureId);
+      const result = gameManager.combatCycleService.befriendReplace(releaseCreatureId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -211,7 +252,7 @@ export default function createCombatRoutes({
   // Get current befriend quiz state
   router.post('/befriend-quiz', (req, res) => {
     const gm = req.gameManager;
-    const quiz = gm.getBefriendQuiz();
+    const quiz = gm.combatCycleService.getBefriendQuiz();
     if (!quiz) {
       return res.status(400).json({ error: 'No active befriend quiz' });
     }
@@ -224,7 +265,7 @@ export default function createCombatRoutes({
     const gm = req.gameManager;
 
     if (action === 'fight') {
-      const result = gm.handleBefriendFight();
+      const result = gm.combatCycleService.handleBefriendFight();
       if (result.error) {
         return res.status(400).json({ error: result.error });
       }
@@ -236,7 +277,7 @@ export default function createCombatRoutes({
       if (!answerId) {
         return res.status(400).json({ error: 'answerId required for talk action' });
       }
-      const result = gm.handleBefriendQuizAnswer(answerId);
+      const result = gm.combatCycleService.handleBefriendQuizAnswer(answerId);
       if (result.error) {
         return res.status(400).json({ error: result.error });
       }
@@ -287,38 +328,12 @@ export default function createCombatRoutes({
     const { accepted, chance } = rollTalkAcceptance(target);
 
     if (!accepted) {
-      // Rejection: enemy attacks (mirrors handleBefriendAnswer wrong-answer path)
-      const enemyResult = processEnemyTurn(
-        combat.enemies, combat.allies, false, gameManager.run?.itemBuffs
-      );
-
-      const koSwaps = [];
-      for (let i = 0; i < combat.allies.length; i++) {
-        if (combat.allies[i] && combat.allies[i].hp <= 0) {
-          const replacement = handleCreatureKO(gameManager.run.creatureParty, i);
-          if (replacement) {
-            koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          }
-        }
-      }
-      combat.allies = gameManager.run.creatureParty.active;
-
-      const allAlliesKO = combat.allies.every(a => !a || a.hp <= 0);
-      if (allAlliesKO) {
-        combat.active = false;
-        gameManager.run.active = false;
-      }
-
+      const rejection = gameManager.combatCycleService.handleBefriendTalkRejection();
       req.saveGame();
-
       return res.json({
         accepted: false,
         chance,
-        enemyAttacks: enemyResult.attacks || [],
-        koSwaps,
-        combatEnded: allAlliesKO,
-        allies: combat.allies,
-        enemies: combat.enemies,
+        ...rejection,
         befriendAttemptedSlots: { ...combat.befriendAttemptedSlots }
       });
     }
@@ -400,7 +415,7 @@ export default function createCombatRoutes({
       if (!rounds) {
         console.error(`[BefriendConversation] Generation produced no cache for ${target.id} (AI error, vocab repair, or missing creature data)`);
         return res.status(503).json({
-          error: 'Creature dialogue generation failed. Check server logs; try again or ensure JPDB + AI keys work.'
+          error: 'Creature dialogue generation failed. Check server logs; try again or ensure AI keys are configured.'
         });
       }
 
@@ -489,93 +504,41 @@ export default function createCombatRoutes({
       return res.status(400).json({ error: 'NPC not found' });
     }
 
-    // Try AI-generated dialogue from cache first
-    const cached = getNpcDialogueFromCache?.(req.user.id, combat.npcId);
+    // --- v1: defeat line from shared npcDefeat pool ---
+    const defeatFrames = getNpcDefeatFrames();
+    const knownWords = new Set(getKnownWordsFromFsrs(req.user.id));
 
-    // Use cached data if available, otherwise fall back to a safe default.
-    // Many NPCs in `data/npcs.json` currently only define `greeting`/`defeatLine` (no `postCombat`),
-    // so we must guard against missing fields here to avoid crashing (500).
-    const greeting =
-      cached?.greeting ||
-      // Prefer an English-only fallback when cache is missing.
-      'Nice work. Let’s talk after the battle.';
+    // Pick a random active party creature for {randomPlayerCreature} slot
+    const activeParty = gameManager.run.creatureParty?.active || [];
+    const randomCreature = activeParty.length > 0
+      ? activeParty[Math.floor(Math.random() * activeParty.length)]
+      : null;
+    const entities = randomCreature
+      ? { randomPlayerCreature: randomCreature }
+      : {};
 
-    const freed =
-      cached?.freedLine ||
-      // Avoid relying on missing npc.postCombat.freed
-      'Good training. We’ll see how you do next time.';
-
-    const sourceRounds =
-      cached?.rounds ||
-      npc.postCombat?.rounds ||
-      null;
-
-    const defaultRounds = [
-      {
-        npcLine: 'You are really getting stronger.',
-        options: [
-          { text: 'That’s true.', tone: 'positive' },
-          { text: 'Maybe…', tone: 'neutral' },
-          { text: 'Leave me alone.', tone: 'negative' }
-        ]
-      },
-      {
-        npcLine: 'We can train together if you want.',
-        options: [
-          { text: 'Yes, let’s train.', tone: 'positive' },
-          { text: 'Not now.', tone: 'neutral' },
-          { text: 'No thanks.', tone: 'negative' }
-        ]
-      },
-      {
-        npcLine: 'I trust your choices.',
-        options: [
-          { text: 'Thank you!', tone: 'positive' },
-          { text: 'Okay.', tone: 'neutral' },
-          { text: 'Never!', tone: 'negative' }
-        ]
-      }
-    ];
-
-    const roundsToPrepare = Array.isArray(sourceRounds) && sourceRounds.length > 0
-      ? sourceRounds
-      : defaultRounds;
-
-    const preparedRounds = roundsToPrepare.map(round => {
-      const { shuffled, toneMap } = shuffleOptions(round.options || []);
-      return {
-        npcLine: round.npcLine,
-        npcLineTts: round.npcLineTts || null,
-        options: shuffled,
-        _toneMap: toneMap
-      };
+    // Assemble frames (fills slots), then filter by i+1 and score (random tie-break)
+    const candidates = defeatFrames.map(frame => {
+      const assembled = assembleFrame(frame, entities);
+      return { ...assembled, raw: frame.raw, id: frame.id };
     });
+    const selectedLine =
+      selectBestFrame(candidates, knownWords, { randomizeTies: true }) ||
+      { tokens: [], raw: '', words: [] };
 
-    gameManager.run.npcDialogue = {
-      active: true,
-      npcId: npc.id,
-      npcData: { id: npc.id, name: npc.name, nameEn: npc.nameEn },
-      currentRound: 0,
-      totalDelta: 0,
-      rounds: preparedRounds
-    };
+    // Do NOT set gameManager.run.npcDialogue — that traps phase machine in NPC_DIALOGUE.
+    // Set skillSelectionPending directly for immediate phase transition.
+    const currentRoom = gameManager.getCurrentRoom();
+    if (currentRoom?.npcBattle) {
+      currentRoom.npcBattle.skillSelectionPending = true;
+    }
 
     req.saveGame();
 
-    const clientRounds = preparedRounds.map(r => ({
-      npcLine: r.npcLine,
-      npcLineTts: r.npcLineTts || undefined,
-      options: r.options
-    }));
-
     res.json({
-      userId: req.user.id,
-      npc: { id: npc.id, name: npc.name, nameEn: npc.nameEn },
-      greeting,
-      greetingTts: cached?.greetingTts || undefined,
-      freed,
-      freedTts: cached?.freedLineTts || undefined,
-      rounds: clientRounds
+      mode: 'defeat_line',
+      npc: { id: npc.id, name: npc.name, nameEn: npc.nameEn, speakerId: npc.speakerId }, // speakerId for future TTS
+      line: { tokens: selectedLine.tokens, raw: selectedLine.raw },
     });
   });
 
@@ -609,7 +572,6 @@ export default function createCombatRoutes({
         if (vocabConfig) {
           regenNpcDialogueFn(req.user.id, npcId, vocabConfig.aiConfig, {
             words: vocabConfig.vocabulary,
-            vidSet: vocabConfig.vidSet,
             checkViolationsFn: vocabConfig.checkViolationsFn
           }).catch(e => {
             console.error('[NpcDialogue] Background regen failed:', e.message);

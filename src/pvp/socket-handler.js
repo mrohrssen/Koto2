@@ -1,21 +1,19 @@
-/**
- * @fileoverview PvP Socket.IO event handler
- *
- * Bridges Socket.IO events to the MatchManager. Authenticates connections
- * via JWT and routes match lifecycle events (create, join, team select,
- * ready, submit moves, rematch, leave, reconnect, disconnect).
- */
-
 import { MatchManager } from './match-manager.js';
 import { verifyToken } from '../auth/middleware.js';
+import { getDataDir } from '../data-dir.js';
+
+const ROUND_TIMEOUT_MS = 60000;
 
 /**
  * Set up all PvP Socket.IO event handlers.
  * @param {import('socket.io').Server} io
  * @returns {{ mm: MatchManager, io: import('socket.io').Server }}
  */
-export function setupPvpSockets(io) {
-  const mm = new MatchManager();
+export function setupPvpSockets(io, { getSettings } = {}) {
+  const mm = new MatchManager({ dataDir: getDataDir(), getSettings });
+
+  const restored = mm.restoreMatches();
+  if (restored > 0) console.log(`[PvP] Restored ${restored} active match(es) from disk`);
 
   // Map<userId, { timeout: NodeJS.Timeout, matchCode: string }>
   const disconnectTimers = new Map();
@@ -128,6 +126,9 @@ export function setupPvpSockets(io) {
       const found = mm.findMatchBySocket(socket.id);
       if (!found) return;
 
+      // Clear round timer before resolving (safe no-op if no timer)
+      mm.clearRoundTimer(found.code);
+
       const result = mm.submitMoves(found.code, socket.userId, moveChoices);
 
       if (result === null) {
@@ -171,6 +172,9 @@ export function setupPvpSockets(io) {
         });
       }
 
+      // Persist updated match state after round resolution
+      mm.saveMatch(found.code);
+
       // If there's a winner, emit match-end to the room
       if (result.winner) {
         const winnerId = match.winnerId;
@@ -181,6 +185,40 @@ export function setupPvpSockets(io) {
           winnerName = match.player2.username;
         }
         io.to(found.code).emit('pvp:match-end', { winnerId, winnerName });
+      } else if (match.phase === 'battle') {
+        // Start timer for next round's move submission
+        mm.startRoundTimer(found.code, ROUND_TIMEOUT_MS, (timedOutCode) => {
+          const m = mm.getMatch(timedOutCode);
+          if (!m || m.phase !== 'battle') return;
+
+          // Find who hasn't submitted
+          const p1Submitted = !!m.player1?.movesSubmitted;
+          const p2Submitted = !!m.player2?.movesSubmitted;
+          let forfeitUserId;
+          if (!p1Submitted && !p2Submitted) {
+            // Both timed out — forfeit the one who joined second
+            forfeitUserId = m.player2?.userId;
+          } else if (!p1Submitted) {
+            forfeitUserId = m.player1?.userId;
+          } else {
+            forfeitUserId = m.player2?.userId;
+          }
+          if (!forfeitUserId) return;
+
+          // Read player refs before forfeit deletes the match
+          const player1 = m.player1;
+          const player2 = m.player2;
+
+          const forfeitResult = mm.forfeitMatch(timedOutCode, forfeitUserId);
+          if (!forfeitResult) return;
+
+          // Notify both players
+          [player1, player2].forEach(p => {
+            if (!p) return;
+            const s = io.sockets.sockets.get(p.socketId);
+            if (s) s.emit('pvp:match-forfeit', { winnerId: forfeitResult.winnerId, reason: 'timeout' });
+          });
+        });
       }
     });
 
@@ -269,22 +307,25 @@ export function setupPvpSockets(io) {
       const timeout = setTimeout(() => {
         disconnectTimers.delete(socket.userId);
 
-        const matchFound = mm.findMatchBySocket(socket.id);
-        // After timeout, find match by code since socket id may differ
+        // Read match BEFORE forfeit deletes it (need otherPlayer reference)
         const match = mm.getMatch(code);
         if (!match) return;
 
-        // Notify the other player
+        // Award victory to the remaining player
+        const forfeitResult = mm.forfeitMatch(code, socket.userId);
+
+        // Notify the remaining player they won by forfeit
         const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
         const otherPlayer = match[otherPlayerKey];
-        if (otherPlayer) {
+        if (otherPlayer && forfeitResult) {
           const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
           if (otherSocket) {
-            otherSocket.emit('pvp:opponent-disconnected');
+            otherSocket.emit('pvp:match-forfeit', {
+              winnerId: forfeitResult.winnerId,
+              reason: 'opponent_disconnected'
+            });
           }
         }
-
-        mm.leaveMatch(code, socket.userId);
       }, 30000);
 
       disconnectTimers.set(socket.userId, { timeout, matchCode: code });

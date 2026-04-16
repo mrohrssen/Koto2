@@ -1,8 +1,73 @@
-// src/game/bootstrap/word-knowledge.js
 import fs from 'fs';
 import path from 'path';
+import { getDeckCards, createCard } from '../internal-srs.js';
+import { State } from 'ts-fsrs';
+import { loadWordDictionary } from '../word-dictionary.js';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
+
+let _wordDict = null;
+function getWordDict() {
+  if (!_wordDict) _wordDict = loadWordDictionary(DATA_DIR);
+  return _wordDict;
+}
+
+/**
+ * Look up the primary English meaning for a Japanese word.
+ * @param {string} baseForm
+ * @returns {string} English meaning or empty string
+ */
+export function lookupMeaning(baseForm) {
+  const dict = getWordDict();
+  const entry = dict.get(baseForm);
+  if (!entry?.definitions?.length) return '';
+  const primary = entry.definitions.find(d => d.primary);
+  return primary?.en || entry.definitions[0]?.en || '';
+}
+
+const EXPOSURE_THRESHOLD = 5;
+
+/**
+ * Expose words to the FSRS SRS system.
+ * Registers exposure for each word. Creates a vocab SRS card after
+ * EXPOSURE_THRESHOLD exposures (matching the route handler logic).
+ *
+ * @param {string} userId
+ * @param {Array<{word: string, meaning?: string}>} words
+ * @returns {Array<{word: string, meaning: string, exposures: number}>} Newly mastered words (crossed threshold this call)
+ */
+export function exposeWords(userId, words) {
+  if (!Array.isArray(words) || words.length === 0) return [];
+
+  const wk = loadWordKnowledge(userId) || createWordKnowledge(userId);
+  const newlyMastered = [];
+
+  for (const entry of words) {
+    const word = typeof entry === 'string' ? entry : entry?.word;
+    const meaning = typeof entry === 'string' ? '' : (entry?.meaning || '');
+    if (typeof word !== 'string' || word.length === 0) continue;
+
+    const wasBelowThreshold = !wk.seen[word] || wk.seen[word].exposures < EXPOSURE_THRESHOLD;
+
+    registerExposure(wk, word);
+
+    if (wk.seen[word].exposures >= EXPOSURE_THRESHOLD) {
+      if (wasBelowThreshold) {
+        newlyMastered.push({ word, meaning, exposures: wk.seen[word].exposures });
+      }
+      const existingCards = getDeckCards(userId, 'vocab');
+      if (!existingCards.find(c => c.id === word)) {
+        const dictMeaning = lookupMeaning(word);
+        createCard(userId, 'vocab', word, {
+          word, meaning: dictMeaning || meaning, reading: word
+        });
+      }
+    }
+  }
+
+  saveWordKnowledge(wk);
+  return newlyMastered;
+}
 
 export function createWordKnowledge(userId) {
   return {
@@ -23,6 +88,10 @@ export function markKnown(wk, wordId) {
   if (!wk.known[wordId]) {
     wk.known[wordId] = { knownSince: new Date().toISOString() };
   }
+}
+
+export function unmarkKnown(wk, wordId) {
+  delete wk.known[wordId];
 }
 
 export function isWordKnown(wk, wordId) {
@@ -58,4 +127,18 @@ export function loadWordKnowledge(userId) {
 export function saveWordKnowledge(wk) {
   const filePath = path.join(DATA_DIR, `word-knowledge-${wk.userId}.json`);
   fs.writeFileSync(filePath, JSON.stringify(wk, null, 2));
+}
+
+/**
+ * Get known words from FSRS vocab deck.
+ * A word is "known" when its FSRS card is in Learning or Review state
+ * (i.e. any card that has been reviewed at least once).
+ * @param {string} userId
+ * @returns {string[]}
+ */
+export function getKnownWordsFromFsrs(userId) {
+  const cards = getDeckCards(userId, 'vocab');
+  return cards
+    .filter(c => c.state === State.Learning || c.state === State.Review || c.state === State.Relearning)
+    .map(c => c.id);
 }

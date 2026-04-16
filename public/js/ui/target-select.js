@@ -1,4 +1,3 @@
-// public/js/ui/target-select.js
 import { dom } from '../dom.js';
 import { ELEMENT_COLORS } from './creature-row.js';
 import { creatureStaticPath } from './sprite-utils.js';

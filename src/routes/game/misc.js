@@ -1,22 +1,8 @@
-/**
- * @fileoverview Miscellaneous game routes
- *
- * Handles debug, session-start, post-combat-refresh, due-words, NPC cache
- */
-
 import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import {
-  getDueWordsWithMeanings,
-  fetchDueWordsDirectly,
-  parseWordBatch
-} from '../../jpdb.js';
-import {
-  performFullParse,
-  updateWordStates
-} from '../../game/vocab-manager.js';
+import { resetTutorial } from '../../game/services/tutorial-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,7 +10,6 @@ const __dirname = dirname(__filename);
 export default function createMiscRoutes({
   getDebugMode,
   setDebugMode,
-  staticWordList,
   getAllNpcDialogueCache,
   getAllCreatureDialogueCache,
   clearNpcDialogueCache,
@@ -202,6 +187,44 @@ export default function createMiscRoutes({
     res.json({ success: true, enemyHp: hp });
   });
 
+  // Debug: Override creature collection (for testing)
+  router.post('/debug-set-collection', (req, res) => {
+    if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
+      return res.status(403).json({ error: 'Only available in test mode or debug mode' });
+    }
+
+    const { creatureIds } = req.body;
+    if (!Array.isArray(creatureIds)) {
+      return res.status(400).json({ error: 'creatureIds must be an array' });
+    }
+
+    const gameManager = req.gameManager;
+    const meta = gameManager.getMeta();
+    meta.creatureCollection = creatureIds;
+
+    req.saveGame();
+    res.json({ success: true, collection: creatureIds });
+  });
+
+  // Debug: Mark the current room as interacted (for testing proceed)
+  router.post('/debug-skip-room', (req, res) => {
+    if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
+      return res.status(403).json({ error: 'Only available in test mode or debug mode' });
+    }
+
+    const gameManager = req.gameManager;
+    const room = gameManager.run?.rooms?.[gameManager.run?.currentRoom];
+    if (!room) {
+      return res.status(400).json({ error: 'No current room' });
+    }
+
+    room.interacted = true;
+    if (room.skillMaster) room.skillMaster.completed = true;
+
+    req.saveGame();
+    res.json({ success: true, roomType: room.type });
+  });
+
   // Debug: Queue room types for testing
   router.post('/debug-queue-rooms', async (req, res) => {
     if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
@@ -273,106 +296,6 @@ export default function createMiscRoutes({
     }
   });
 
-  // Session start - warm cache with full parse if needed
-  router.post('/session-start', async (req, res) => {
-    // Use userKeys from middleware (same as /api/jpdb/parse)
-    const jpdbApiKey = req.userKeys?.jpdbApiKey;
-
-    console.log('[Session Start] req.userKeys?.jpdbApiKey:', jpdbApiKey ? 'present' : 'missing');
-
-    if (!jpdbApiKey) {
-      console.log('[Session Start] No JPDB API key found');
-      return res.json({
-        warmed: false,
-        reason: 'No JPDB API key configured'
-      });
-    }
-
-    if (!staticWordList || staticWordList.length === 0) {
-      console.log('[Session Start] Static word list empty or not loaded');
-      return res.json({
-        warmed: false,
-        reason: 'Static word list not loaded'
-      });
-    }
-
-    console.log(`[Session Start] Static word list has ${staticWordList.length} words, starting parse...`);
-
-    try {
-      const cache = await performFullParse(jpdbApiKey, staticWordList, req.user.id);
-      console.log(`[Session Start] Parse complete, cached ${Object.keys(cache).length} words`);
-      res.json({
-        warmed: true,
-        cachedWords: Object.keys(cache).length,
-        message: 'Session cache ready'
-      });
-    } catch (error) {
-      console.error('[Session Start] Error:', error.message);
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Post-combat refresh - update cache for reviewed words
-  router.post('/post-combat-refresh', async (req, res) => {
-    const jpdbApiKey = req.userKeys?.jpdbApiKey;
-    const { words } = req.body;
-
-    if (!jpdbApiKey) {
-      return res.json({ refreshed: 0, reason: 'No API key' });
-    }
-
-    if (!words || words.length === 0) {
-      return res.json({ refreshed: 0, reason: 'No words to refresh' });
-    }
-
-    try {
-      // Parse the reviewed words to get fresh states
-      const results = await parseWordBatch(jpdbApiKey, words);
-
-      // Update local cache with new states
-      const refreshed = updateWordStates(results, req.user.id);
-
-      res.json({
-        refreshed,
-        message: 'Cache updated with fresh word states'
-      });
-    } catch (error) {
-      console.error('[Post-Combat Refresh] Error:', error.message);
-      res.json({ refreshed: 0, error: error.message });
-    }
-  });
-
-  // Due words
-  router.post('/due-words', async (req, res) => {
-    const jpdbApiKey = req.userKeys?.jpdbApiKey;
-    console.log('[Due Words] Request received, apiKey:', jpdbApiKey ? 'present' : 'missing');
-    if (!jpdbApiKey) {
-      return res.status(400).json({ error: 'JPDB API key not configured' });
-    }
-
-    try {
-      const { limit: bodyLimit, exclude, bypassCache } = req.body;
-      const limit = parseInt(bodyLimit) || 10;
-      const excludeVids = exclude
-        ? (Array.isArray(exclude) ? exclude.map(v => parseInt(v, 10)) : exclude.split(',').map(v => parseInt(v, 10)))
-        : [];
-
-      console.log(`[Due Words] limit=${limit}, excludeVids=${excludeVids.length}, bypassCache=${bypassCache}`);
-
-      let result;
-      if (bypassCache) {
-        result = await fetchDueWordsDirectly(jpdbApiKey, limit, excludeVids, req.user.id);
-      } else {
-        result = await getDueWordsWithMeanings(jpdbApiKey, limit, excludeVids, req.user.id);
-      }
-      console.log(`[Due Words] Returning ${result.words.length} words, source: ${result.source}`);
-      res.json({ words: result.words, count: result.words.length, source: result.source });
-    } catch (error) {
-      console.error('[Due Words] Error:', error.message);
-      res.status(500).json({ error: error.message });
-    }
-  });
-
   // Get prologue scenes
   let _prologueCache = null;
   router.get('/prologue', (_req, res) => {
@@ -397,6 +320,15 @@ export default function createMiscRoutes({
     const gameManager = req.gameManager;
     const meta = gameManager.getMeta();
     meta.prologueComplete = false;
+    req.saveGame();
+    res.json({ ok: true });
+  });
+
+  // Reset tutorial so it replays from scratch
+  router.post('/tutorial-reset', (req, res) => {
+    const gameManager = req.gameManager;
+    const meta = gameManager.getMeta();
+    resetTutorial(meta);
     req.saveGame();
     res.json({ ok: true });
   });

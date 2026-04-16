@@ -1,22 +1,3 @@
-/**
- * @file i18n.js - Japanify UI Translation Module
- *
- * PURPOSE:
- * Provides a simple translation layer for UI strings. When "Japanify UI" is
- * enabled in settings, gameplay text displays in Japanese instead of English.
- *
- * KEY EXPORTS:
- * - setLang('en'|'ja'): Set the active language
- * - t(key, ...args): Get translated string with optional interpolation
- * - isJapanified(): Check if Japanese mode is active
- *
- * SCOPE:
- * Japanified: combat, collection, equip, shrine, quiz, game
- *   over, item popups, buff overlay, flash card hints
- * Always English: auth, settings, bug report, speed review, menu sheet,
- *   leaderboard, error messages, stat abbreviations, creature/enemy names
- */
-
 import { renderEnFirst } from './bootstrap-client.js';
 
 let lang = 'en';
@@ -55,6 +36,7 @@ const strings = {
   dealsHalved:      { en: '{0} deals {1} (halved)',  ja: '{0}が{1}（半減）',
                       tagged: '{0} deals {1} ({halved|半減|はんげん})' },
   swapsIn:          { en: '{0} swaps in!',           ja: '{0}が交代！' },
+  wasDefeated:      { en: '{0} was defeated!',       ja: '{0}が倒れた！' },
   befriended:       { en: 'BEFRIENDED {0}!',         ja: '{0}と友達になった！',
                       tagged: '{BEFRIENDED|友達になった|ともだちになった} {0}!' },
   letItGo:          { en: 'Let it go...',             ja: '見送った…',
@@ -95,8 +77,7 @@ const strings = {
   // ── Collection / team select ──
   selectTeam:       { en: 'Select Your Team', ja: 'チーム選択',
                       tagged: '{Select|選択|せんたく} Your Team' },
-  startRun:         { en: 'Start Run ({0} monster{1})', ja: '出撃（{0}体）',
-                      tagged: 'Start {Run|出撃|しゅつげき} ({0} monster{1})' },
+  startRun:         { en: 'Start Run ({0} monster{1})', ja: '出撃（{0}体）' },
   newCreature:      { en: 'New: {0}!',       ja: '新規: {0}！',
                       tagged: '{New|新規|しんき}: {0}!' },
 

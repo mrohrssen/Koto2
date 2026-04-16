@@ -1,12 +1,5 @@
-/**
- * @fileoverview Settings routes
- *
- * Handles /api/config and /api/settings endpoints
- */
-
 import { Router } from 'express';
 import { getProviders, getJLPTLevels } from '../ai-providers.js';
-import { clearVocabCache } from '../jpdb.js';
 import { updateTTSConfig } from '../game/prefetch.js';
 
 /**
@@ -38,7 +31,6 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     });
 
     res.json({
-      jpdbDeckId: settings.jpdbDeckId || '',
       jlptLevel: settings.jlptLevel || 'N4',
       gameTtsEnabled: settings.gameTtsEnabled ?? true,
       gameTtsSpeakerId: settings.gameTtsSpeakerId || 13,
@@ -46,21 +38,18 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       gameTtsVolume: settings.gameTtsVolume || 1.0,
       voiceGender: settings.voiceGender || 'boy',
       reviewType: settings.reviewType || 'dialog',
-      dailyWordLimit: settings.dailyWordLimit ?? 10
+      dailyWordLimit: settings.dailyWordLimit ?? 10,
+      debugSuperAttack: settings.debugSuperAttack ?? false
     });
   });
 
   // Settings - POST update settings
   router.post('/settings', (req, res) => {
     const settings = getSettings();
-    const { jpdbDeckId, jlptLevel,
+    const { jlptLevel,
             gameTtsEnabled, gameTtsSpeakerId, gameTtsSpeed, gameTtsVolume,
             reviewType, dailyWordLimit } = req.body;
 
-    if (jpdbDeckId !== undefined) {
-      settings.jpdbDeckId = jpdbDeckId;
-      clearVocabCache();
-    }
     if (jlptLevel) settings.jlptLevel = jlptLevel;
 
     if (gameTtsEnabled !== undefined) settings.gameTtsEnabled = gameTtsEnabled;
@@ -82,6 +71,10 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       if (!isNaN(limit) && limit >= 0 && limit <= 50) {
         settings.dailyWordLimit = limit;
       }
+    }
+
+    if (req.body.debugSuperAttack !== undefined) {
+      settings.debugSuperAttack = !!req.body.debugSuperAttack;
     }
 
     if (gameTtsEnabled !== undefined || gameTtsSpeakerId !== undefined ||

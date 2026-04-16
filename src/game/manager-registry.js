@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { GameManager } from './loop.js';
-import { DATA_DIR } from '../data-dir.js';
+import { getDataDir } from '../data-dir.js';
 import { CREATURES_BY_ID } from './creatures.js';
 import { DEFAULT_COLLECTION } from './services/creature-collection-service.js';
 
@@ -20,9 +20,10 @@ export function getManager(userId) {
   if (managers.has(userId)) return managers.get(userId);
 
   const manager = new GameManager();
+  manager.userId = userId;
   // Ensure meta always exists (routes may touch gm.meta before a save file exists).
   manager.initMeta();
-  const saveFile = join(DATA_DIR, `.jrpg-save-${userId}.json`);
+  const saveFile = join(getDataDir(), `.jrpg-save-${userId}.json`);
   let needsSave = false;
 
   if (existsSync(saveFile)) {
@@ -45,12 +46,26 @@ export function getManager(userId) {
             delete data.meta.robotCollection;
             needsSave = true;
           }
-          // Migrate: add progressionTokens and upgrades if missing from old saves
-          if (data.meta.progressionTokens === undefined) {
-            data.meta.progressionTokens = 0;
+          // Migrate: remove old meta-upgrade fields, add crest fields
+          delete data.meta.progressionTokens;
+          delete data.meta.upgrades;
+          if (!data.meta.elementDrops) {
+            data.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
           }
-          if (!data.meta.upgrades) {
-            data.meta.upgrades = {};
+          if (!data.meta.crests) {
+            data.meta.crests = [];
+          }
+          if (!data.meta.equippedCrests) {
+            data.meta.equippedCrests = { fire: null, water: null, earth: null, wood: null, metal: null };
+          }
+          if (!data.meta.itemsDiscovered) {
+            data.meta.itemsDiscovered = [];
+          }
+          // Migrate: add tutorial fields for existing accounts
+          if (data.meta.tutorialStep === undefined) {
+            data.meta.tutorialStep = 7;
+            data.meta.tutorialFireDropsGifted = false;
+            needsSave = true;
           }
           // Migrate: remove stale creature IDs and ensure defaults
           if (data.meta.creatureCollection) {
@@ -66,6 +81,17 @@ export function getManager(userId) {
             }
           }
           manager.initMeta(data.meta);
+        }
+        if (data.run) manager.run = data.run;
+        if (data.combat) {
+          manager.combat = data.combat;
+          // Re-sync combat.allies → run.creatureParty.active after deserialization.
+          // JSON round-trip breaks the shared reference that combat.allies normally
+          // holds to run.creatureParty.active, causing mid-round HP mutations on
+          // combat.allies to silently diverge from the party state.
+          if (manager.run?.creatureParty?.active && manager.combat.allies) {
+            manager.combat.allies = manager.run.creatureParty.active;
+          }
         }
       }
       if (needsSave) {
@@ -89,11 +115,13 @@ export function saveManager(userId) {
   const manager = managers.get(userId);
   if (!manager) return;
 
-  const saveFile = join(DATA_DIR, `.jrpg-save-${userId}.json`);
+  const saveFile = join(getDataDir(), `.jrpg-save-${userId}.json`);
   const state = {
     version: SAVE_VERSION,
     player: manager.player,
     meta: manager.getMeta(),
+    run: manager.run || null,
+    combat: manager.combat || null,
     savedAt: new Date().toISOString()
   };
   writeFileSync(saveFile, JSON.stringify(state, null, 2));
@@ -108,10 +136,17 @@ export function removeManager(userId) {
 }
 
 /**
+ * Remove all managers from the registry (for test isolation)
+ */
+export function clearManagersForTest() {
+  managers.clear();
+}
+
+/**
  * Get the save file path for a user
  * @param {string} userId
  * @returns {string}
  */
 export function getSaveFilePath(userId) {
-  return join(DATA_DIR, `.jrpg-save-${userId}.json`);
+  return join(getDataDir(), `.jrpg-save-${userId}.json`);
 }

@@ -1,10 +1,3 @@
-/**
- * @file dom-effects.js — DOM-only animation utilities
- *
- * Extracted from combat-effects.js for non-combat modules (exploration, economy, game).
- * Uses anime.js for simple DOM animations. Combat effects have moved to PixiJS.
- */
-
 import { animate as anime } from 'animejs';
 
 /** Pop scale animation */

@@ -94,9 +94,7 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     return {
       word: `単語${idx}`,
       reading: `たんご${idx}`,
-      meanings: [`word-${idx}`],
-      vid: 1000 + idx,
-      sid: 2000 + idx
+      meanings: [`word-${idx}`]
     };
   }
 
@@ -108,7 +106,6 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     const started = await gm.startSpeedReviewRoom({
       roomId: room.id,
       userId: 'task2-user',
-      jpdbApiKey: 'task2-key',
       dueWordsProvider: async () => ({ words: firstBatch, source: 'test' })
     });
 
@@ -116,13 +113,12 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     assert.strictEqual(started.snapshotWords.length, 10);
     assert.deepStrictEqual(
       started.snapshotWordKeys,
-      firstBatch.slice(0, 10).map(word => `${word.vid}:${word.sid}`)
+      firstBatch.slice(0, 10).map(w => w.word)
     );
 
     const restarted = await gm.startSpeedReviewRoom({
       roomId: room.id,
       userId: 'task2-user',
-      jpdbApiKey: 'task2-key',
       dueWordsProvider: async () => ({ words: secondBatch, source: 'test' })
     });
 
@@ -154,7 +150,6 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     await gm.startSpeedReviewRoom({
       roomId: room.id,
       userId: 'task2-user',
-      jpdbApiKey: 'task2-key',
       dueWordsProvider: async () => ({ words, source: 'test' })
     });
 
@@ -162,8 +157,7 @@ describe('Speed Review Room - Task 2 service behavior', () => {
       () => gm.recordSpeedReviewRoomCommit({
         roomId: room.id,
         commitIndex: 0,
-        vid: words[1].vid,
-        sid: words[1].sid
+        word: words[1].word
       }),
       /snapshot order/
     );
@@ -171,10 +165,9 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     const first = gm.recordSpeedReviewRoomCommit({
       roomId: room.id,
       commitIndex: 0,
-      vid: words[0].vid,
-      sid: words[0].sid
+      word: words[0].word
     });
-    assert.strictEqual(first.reviewKey, `${room.id}:0:${words[0].vid}:${words[0].sid}`);
+    assert.strictEqual(first.reviewKey, `${room.id}:0:${words[0].word}`);
     assert.strictEqual(first.alreadyCommitted, false);
     assert.strictEqual(c1.xp, 10, 'highest living level=5 => discovery XP should be 10');
     assert.strictEqual(c2.xp, 10);
@@ -183,8 +176,7 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     const second = gm.recordSpeedReviewRoomCommit({
       roomId: room.id,
       commitIndex: 0,
-      vid: words[0].vid,
-      sid: words[0].sid
+      word: words[0].word
     });
     assert.strictEqual(second.alreadyCommitted, true);
     assert.strictEqual(c1.xp, 10, 'idempotent retry should not double-award XP');
@@ -200,15 +192,14 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     const started = await gm.startSpeedReviewRoom({
       roomId: room.id,
       userId: 'task2-user',
-      jpdbApiKey: 'task2-key',
       dueWordsProvider: async () => ({ words, source: 'test' })
     });
     assert.strictEqual(started.requiredCards, 3);
     assert.strictEqual(gm.run.rooms[gm.run.currentRoom].interacted, false);
 
-    gm.recordSpeedReviewRoomCommit({ roomId: room.id, commitIndex: 0, vid: words[0].vid, sid: words[0].sid });
-    gm.recordSpeedReviewRoomCommit({ roomId: room.id, commitIndex: 1, vid: words[1].vid, sid: words[1].sid });
-    const third = gm.recordSpeedReviewRoomCommit({ roomId: room.id, commitIndex: 2, vid: words[2].vid, sid: words[2].sid });
+    gm.recordSpeedReviewRoomCommit({ roomId: room.id, commitIndex: 0, word: words[0].word });
+    gm.recordSpeedReviewRoomCommit({ roomId: room.id, commitIndex: 1, word: words[1].word });
+    const third = gm.recordSpeedReviewRoomCommit({ roomId: room.id, commitIndex: 2, word: words[2].word });
 
     assert.strictEqual(third.reviewedCards, 3);
     assert.strictEqual(third.completed, true);
@@ -223,7 +214,6 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     await gm.startSpeedReviewRoom({
       roomId: room.id,
       userId: 'task2-user',
-      jpdbApiKey: 'task2-key',
       dueWordsProvider: async () => ({ words, source: 'test' })
     });
 
@@ -238,8 +228,7 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     const pendingResult = gm.recordSpeedReviewRoomCommit({
       roomId: room.id,
       commitIndex: 0,
-      vid: words[0].vid,
-      sid: words[0].sid
+      word: words[0].word
     });
 
     assert.strictEqual(pendingResult.completed, true, 'completion should not block on settlement');
@@ -267,7 +256,6 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     await gm.startSpeedReviewRoom({
       roomId: room.id,
       userId: 'task2-user',
-      jpdbApiKey: 'task2-key',
       dueWordsProvider: async () => ({ words, source: 'test' })
     });
 
@@ -282,8 +270,7 @@ describe('Speed Review Room - Task 2 service behavior', () => {
     gm.recordSpeedReviewRoomCommit({
       roomId: room.id,
       commitIndex: 0,
-      vid: words[0].vid,
-      sid: words[0].sid
+      word: words[0].word
     });
 
     assert.strictEqual(room.speedReviewRoom.pendingReviewKeys.length, 1);

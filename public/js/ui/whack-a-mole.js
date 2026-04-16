@@ -1,24 +1,6 @@
 import { animate as anime } from 'animejs';
 import { toRomaji } from './romaji.js';
 
-/**
- * @file whack-a-mole.js - Word-Match Mini Game
- *
- * PURPOSE:
- * Implements the Whack-a-Mole style mini game where players match Japanese
- * words to creature/item sprites on a 3x3 grid of flipping tiles.
- *
- * EXTRACTED FROM:
- * exploration.js startWhackAMoleGame() - was a 287-line function with 8
- * nested closures sharing mutable state via closure variables.
- *
- * KEY EXPORT:
- * - WhackAMoleGame: Class encapsulating all game state and logic
- *
- * USAGE:
- *   new WhackAMoleGame(pool, { actions, apiCompleteWhackAMole, updateGameState, updateUI, playSFX }).start();
- */
-
 export class WhackAMoleGame {
   /**
    * @param {Array} pool - Array of { id, word, reading, sprite } objects (min 9)
@@ -370,7 +352,6 @@ export class WhackAMoleGame {
           <div class="wam-results-score">\u2605 ${this.score}</div>
           ${xpPerCreature > 0 ? `<div class="wam-results-xp">+${xpPerCreature} XP to party</div>` : ''}
           ${levelUpHtml}
-          <div class="wam-results-credits">${this.score} credits earned</div>
           <button class="ui-btn ui-btn--primary wam-continue-btn">Continue</button>
         </div>
       </div>

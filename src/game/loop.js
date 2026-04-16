@@ -1,88 +1,38 @@
-/**
- * @fileoverview GameManager - Game Coordinator
- * @module src/game/loop
- *
- * PURPOSE:
- * Central coordinator for the game. Delegates domain logic to specialized services
- * while managing cross-cutting concerns like state assembly, run lifecycle, and
- * meta-progression. This is the main interface between server endpoints and game logic.
- *
- * ARCHITECTURE:
- * GameManager coordinates:
- * - ExplorationService (~950 lines) - Room navigation, shops, inventory
- *
- * GameManager retains:
- * - State assembly (getState, getPhase)
- * - Run lifecycle (startRun, forfeitRun)
- * - Meta-progression (achievements) - cross-cutting concern
- * - Player management (createPlayer, loadPlayer)
- * - API surface (delegate methods for server compatibility)
- *
- * KEY EXPORTS:
- * - GameManager (class) - Main coordinator, singleton instance used by server
- * - gameManager (instance) - Pre-instantiated singleton
- *
- * STATE STRUCTURE:
- * - this.player - Base player (persists between runs)
- * - this.run - Current run state (null when in hub)
- * - this.combat - Current combat (null when not fighting)
- * - this.meta - Meta-progression (achievements, creature collection)
- *
- * GAME PHASES (via phase-machine.js):
- * - 'no_save' - No player exists
- * - 'hub' - In town between runs
- * - 'area_selection' - Choosing area
- * - 'exploring' / 'room' / 'room_encounter' - Dungeon navigation
- * - 'combat' / 'victory' / 'defeat' - Battle states
- * - 'post_combat_shop' - Buying drops after combat
- * - 'area_complete' / 'run_complete' - Victory states
- *
- * DEPENDENCIES:
- * - ./services/exploration-service.js - Exploration logic
- * - ./phase-machine.js - Phase derivation
- * - ./state.js - State factories and meta-progression
- */
-
 import {
   createNewPlayer,
   createNewRun,
-  createCombatState,
   createMetaProgression,
   ACHIEVEMENTS,
   BASE_STARTING_CREDITS
 } from './state.js';
 
-import { getRoomActions, getAreaSelectionOptions, ROOM_TYPES } from './rooms.js';
+import { getRoomActions, getAreaSelectionOptions, ROOM_TYPES, AREAS } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
-import { ExplorationService } from './services/index.js';
+import { ExplorationService, CombatCycleService } from './services/index.js';
 import { logger } from '../logger.js';
 import {
   instantiateCreature,
-  generateEnemyCreature,
-  generateEnemyCreatures,
-  getEnemyLevel,
   syncPartyCreatureDefense,
-  syncCreatureDefense,
-  CREATURES_BY_ID
+  syncCreatureDefense
 } from './creatures.js';
-import { processInterleavedPvERound, processDefendTurn, processEnemyTurn, processBefriend, awardBattleXp, handleCreatureKO, tickAllEffects, executeNpcSkill, CREDITS_PER_KILL, applyPartySkillsAfterPlayerAttacks, applyAfterEnemyAttacks, applyRoundStartSkills, shouldTriggerBefriendQuiz, generateBefriendQuiz, processBefriendQuizAnswer, resolveBefriendFight } from './services/creature-combat-service.js';
-import { resetStatStages } from './combat/effects.js';
-import { rollShopItems, applyItem } from './services/item-service.js';
-import { addToCollection } from './services/creature-collection-service.js';
-import { selectNpcForEncounter, updateBond, recordEncounter, loadNpcs, rollNpcSkill, getNpcSkillsForNpc } from './services/npc-service.js';
-import { getMetaMultipliers } from './services/meta-shop-service.js';
+import { buildRunSummary } from './adventure-report.js';
+import { createItemBuffs } from './services/item-service.js';
+import { getCrestMultipliers, applyCrestBonuses } from './services/crest-service.js';
+import { getTutorialStep, advanceTutorial as advanceTutorialStep } from './services/tutorial-service.js';
+import { exposeWords as exposeWords_fn } from './bootstrap/word-knowledge.js';
 
 // ============ GAME MANAGER ============
 
-/** Apply meta progression HP/ATK bonuses to a creature using run multipliers */
-function applyMetaBonuses(creature, run) {
-  if (!creature || !run) return;
-  if (run.metaHpMult > 1) {
-    creature.maxHp = Math.floor(creature.maxHp * run.metaHpMult);
-    creature.hp = creature.maxHp;
-  }
-  if (run.metaAtkMult > 1) {
-    creature.attack = Math.floor(creature.attack * run.metaAtkMult);
+/**
+ * Apply +100 baseAttackBonus to all creatures that haven't received it yet.
+ * Uses a _debugAtkApplied flag to prevent stacking across combats.
+ */
+export function applyDebugSuperAttack(creatures) {
+  for (const c of creatures) {
+    if (!c || c._debugAtkApplied) continue;
+    if (!c.itemBuffs) c.itemBuffs = createItemBuffs();
+    c.itemBuffs.baseAttackBonus = (c.itemBuffs.baseAttackBonus || 0) + 100;
+    c._debugAtkApplied = true;
   }
 }
 
@@ -94,9 +44,11 @@ export class GameManager {
     this.meta = null;               // Meta-progression (persists across runs)
     this.narrationCallback = null;  // Called with narration text
     this.stateCallback = null;      // Called when state changes
+    this.userId = null;             // Set by manager-registry after construction
 
     // Services (extracted from monolithic GameManager)
     this.explorationService = new ExplorationService(this);
+    this.combatCycleService = new CombatCycleService(this);
   }
 
   // ============ META-PROGRESSION ============
@@ -146,6 +98,15 @@ export class GameManager {
       stats.highestAreasCleared = areasCleared;
     }
 
+    // Unlock next area on victory
+    if (isVictory && this.meta.levels && this.run.currentArea?.id) {
+      const areaIndex = AREAS.findIndex(a => a.id === this.run.currentArea.id);
+      if (areaIndex >= 0) {
+        const unlock = areaIndex + 2; // 1-based: beating area 0 unlocks level 2 (areas 0+1)
+        this.meta.levels.highestUnlocked = Math.max(this.meta.levels.highestUnlocked || 1, unlock);
+      }
+    }
+
     // Play time
     if (runStats.startTime && runStats.endTime) {
       stats.totalPlayTime += (runStats.endTime - runStats.startTime);
@@ -154,6 +115,14 @@ export class GameManager {
     stats.lastPlayDate = new Date().toISOString();
     if (!stats.firstPlayDate) {
       stats.firstPlayDate = stats.lastPlayDate;
+    }
+  }
+
+  _onRunDefeat() {
+    // Tutorial: advance to step 3 (death → hub)
+    if (getTutorialStep(this.meta) === 2) {
+      advanceTutorialStep(this.meta);
+      // giftTutorialFireDrops(this.meta); // Deprecated: elements are no longer a thing
     }
   }
 
@@ -276,7 +245,7 @@ export class GameManager {
         partySkills: this.run.partySkills || [],
         itemBuffs: this.run.itemBuffs || null,
         npcDialogue: this.run?.npcDialogue || null,
-        postCombatShop: null
+        postCombatShop: this.run.postCombatShop || null
       } : null,
       room: currentRoom ? {
         ...currentRoom,
@@ -301,10 +270,12 @@ export class GameManager {
         achievements: this.meta.achievements,
         levels: this.meta.levels || { highestUnlocked: 1, completed: [], current: null },
         prologueComplete: this.meta.prologueComplete || false,
-        progressionTokens: this.meta.progressionTokens || 0,
-        upgrades: this.meta.upgrades || {},
+        elementDrops: this.meta.elementDrops || { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
+        crests: this.meta.crests || [],
+        equippedCrests: this.meta.equippedCrests || { fire: null, water: null, earth: null, wood: null, metal: null },
         kanaMode: this.meta.kanaMode || false,
-        pvpTeams: this.meta.pvpTeams || [null, null, null]
+        pvpTeams: this.meta.pvpTeams || [null, null, null],
+        tutorialStep: this.meta.tutorialStep ?? 7
       } : null,
       phase: this.getPhase()
     };
@@ -370,38 +341,59 @@ export class GameManager {
     // Area selection is required at start
     this.run.areaSelectionRequired = true;
 
-    // Initialize creature starter(s) if provided
-    // If the player explicitly selected `starterIds` for this run, honor that.
-    // Only fall back to the prologue-chosen starter stored in meta when no
-    // explicit starter selection was provided.
-    const metaStarterId = this.meta?.starterCreatureId;
+    // Creature initialization is deferred until after area selection.
+    // If starterIds are provided (legacy/test path), initialize immediately.
+    // NOTE: the old metaStarterId fallback is intentionally removed — creature
+    // selection now always happens explicitly after area selection.
     const ids = starterIds || (starterId ? [starterId] : null);
+    const crestMults = getCrestMultipliers(this.meta);
+    this.run.crestMults = crestMults;
+    this.run.itemBuffs.xpMultiplier = crestMults.xpMult;
+
     if (ids && ids.length > 0) {
       this.run.creatureParty.active = ids.map(id => instantiateCreature(id));
-    } else if (metaStarterId) {
-      this.run.creatureParty.active = [instantiateCreature(metaStarterId, 5)];
+      for (const creature of this.run.creatureParty.active) {
+        applyCrestBonuses(creature, crestMults);
+      }
     }
-
-    // Apply meta progression bonuses
-    const metaMults = getMetaMultipliers(this.meta);
-    this.run.metaHpMult = metaMults.hpMult;
-    this.run.metaAtkMult = metaMults.atkMult;
-
-    // Apply HP/ATK bonuses to starting creatures
-    for (const creature of this.run.creatureParty.active) {
-      applyMetaBonuses(creature, this.run);
-    }
-
-    // Fold XP bonus into itemBuffs base
-    this.run.itemBuffs.xpMultiplier = metaMults.xpMult;
+    // else: bare run — creatures will be confirmed via confirmCreatures() after area selection
 
     this.emitState();
 
     return {
       run: this.run,
       areaSelectionRequired: true,
-      areaOptions: getAreaSelectionOptions()
+      areaOptions: getAreaSelectionOptions(null, this.meta?.levels?.highestUnlocked || 1)
     };
+  }
+
+  /**
+   * Confirm creature selection after area has been chosen.
+   * Initializes the creature party for the current run.
+   */
+  confirmCreatures(starterIds) {
+    if (!this.run) {
+      throw new Error('No active run');
+    }
+    if (!this.run.currentArea) {
+      throw new Error('No area selected — select an area first');
+    }
+    if (this.run.creatureParty.active.length > 0) {
+      throw new Error('Creatures already confirmed');
+    }
+    if (!starterIds || starterIds.length === 0) {
+      throw new Error('No creatures selected');
+    }
+
+    this.run.creatureParty.active = starterIds.map(id => instantiateCreature(id));
+
+    // Apply crest bonuses (crestMults was set during startRun)
+    for (const creature of this.run.creatureParty.active) {
+      applyCrestBonuses(creature, this.run.crestMults);
+    }
+
+    this.emitState();
+    return { success: true };
   }
 
   // ============ AREA SELECTION ============
@@ -444,7 +436,11 @@ export class GameManager {
    * Skip the post-combat shop without buying
    */
   skipShop() {
-    return this.explorationService.skipShop();
+    if (!this.run) throw new Error('No run');
+    this.run._pendingShopItems = null;
+    this.run.postCombatShop = null;
+    this.emitState();
+    return { skipped: true };
   }
 
   /**
@@ -472,12 +468,12 @@ export class GameManager {
     return this.explorationService.completeWordDiscovery();
   }
 
-  async startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider } = {}) {
-    return this.explorationService.startSpeedReviewRoom({ roomId, userId, jpdbApiKey, dueWordsProvider });
+  async startSpeedReviewRoom({ roomId, userId, dueWordsProvider } = {}) {
+    return this.explorationService.startSpeedReviewRoom({ roomId, userId, dueWordsProvider });
   }
 
-  recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex } = {}) {
-    return this.explorationService.recordSpeedReviewRoomCommit({ roomId, vid, sid, commitIndex });
+  recordSpeedReviewRoomCommit({ roomId, word, commitIndex } = {}) {
+    return this.explorationService.recordSpeedReviewRoomCommit({ roomId, word, commitIndex });
   }
 
   completeSpeedReviewRoom({ roomId } = {}) {
@@ -490,6 +486,10 @@ export class GameManager {
 
   completeWhackAMole(score) {
     return this.explorationService.completeWhackAMole(score);
+  }
+
+  skipWhackAMole() {
+    return this.explorationService.skipWhackAMole();
   }
 
   // Dealer room delegates
@@ -517,1148 +517,75 @@ export class GameManager {
   }
 
 
-  // ============ CREATURE COMBAT ============
-
-  /**
-   * Start a creature encounter
-   * Generates an enemy creature and sets up combat state
-   */
-  startCreatureEncounter() {
-    if (!this.run || !this.run.active) {
-      throw new Error('No active run');
-    }
-    if (this.combat?.active) {
-      throw new Error('Combat already active');
-    }
-
-    // Check if current room is a boss room or npcBattle room
-    const currentRoom = this.run.rooms?.[this.run.currentRoom];
-    const isBoss = currentRoom?.type === 'boss' && !!currentRoom?.boss?.creatureId;
-    const isNpcBattle = currentRoom?.type === 'npcBattle';
-
-    const highestLevel = Math.max(...this.run.creatureParty.active.map(r => r.level), 1);
-    const isFirstBattle = (this.run.currentAreaEncounters || 0) === 0;
-    const creaturePool = this.run.currentArea?.creatures || null;
-    const stage = this.run.currentArea?.stage || null;
-    const encounterIndex = this.run.currentAreaEncounters || 0;
-    const totalEncounters = this.run.totalEncounters || 0;
-
-    let enemyCreatures;
-    if (isBoss) {
-      // Boss: solo creature, level × 1.25, double HP
-      const bossLevel = Math.round(
-        getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25
-      );
-      const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
-      bossCreature.hp = bossCreature.maxHp *= 2;
-      enemyCreatures = [bossCreature];
-    } else if (isNpcBattle) {
-      // NPC Battle: always 3 enemies at level × 1.1
-      const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3 });
-      const npcBattleLevel = Math.round(baseLevel * 1.1);
-      enemyCreatures = [
-        generateEnemyCreature(npcBattleLevel, creaturePool, stage),
-        generateEnemyCreature(npcBattleLevel, creaturePool, stage),
-        generateEnemyCreature(npcBattleLevel, creaturePool, stage)
-      ];
-    } else {
-      // New player protection: if player only has 1 creature, force 1 enemy
-      const totalCreatures = this.run.creatureParty.active.length + (this.run.creatureParty.reserves?.length || 0);
-      const isStarterOnly = totalCreatures <= 1;
-      enemyCreatures = generateEnemyCreatures(highestLevel, {
-        maxEnemies: isStarterOnly ? 1 : (isFirstBattle ? 2 : undefined),
-        creaturePool,
-        stage,
-        encounterIndex,
-        totalEncounters
-      });
-    }
-
-    this.combat = createCombatState(enemyCreatures[0]);
-    this.combat.allies = this.run.creatureParty.active;
-    this.combat.enemies = enemyCreatures;
-    this.combat.isCreatureCombat = true;
-    this.combat.isBoss = isBoss;
-    this.combat.swapPhase = true; // Free swap available before first action
-
-    // Reset stat stages for all combatants at battle start
-    for (const c of [...this.combat.allies, ...this.combat.enemies]) {
-      if (c) resetStatStages(c);
-    }
-
-    // NPC Battle rooms: always assign an NPC from the area's roster
-    if (isNpcBattle) {
-      const areaId = this.run.currentArea?.id || null;
-      const allNpcs = loadNpcs();
-      const areaEntries = Object.values(allNpcs).filter(npc => !areaId || npc.area === areaId || !npc.area);
-      const fallbackEntries = areaEntries.length > 0 ? areaEntries : Object.values(allNpcs);
-      if (fallbackEntries.length > 0) {
-        const npc = fallbackEntries[Math.floor(Math.random() * fallbackEntries.length)];
-        this.combat.npcId = npc.id;
-        this.combat.npcData = {
-          id: npc.id, name: npc.name, nameEn: npc.nameEn,
-          greeting: npc.greeting, speakerId: npc.speakerId
-        };
-      }
-    }
-    // Note: for regular encounters, random NPC overlay is disabled (Koto2 MVP).
-    // NPCs only appear in deterministic npcBattle rooms.
-
-    // Boss speaks on encounter
-    if (isBoss && enemyCreatures[0]) {
-      const bossTemplate = CREATURES_BY_ID[currentRoom.boss.creatureId];
-      if (bossTemplate?.bossDialogue?.appear) {
-        this.narrate(bossTemplate.bossDialogue.appear);
-      }
-    }
-
-    this.emitState();
-
-    return {
-      enemy: enemyCreatures[0],
-      enemies: enemyCreatures,
-      allies: this.run.creatureParty.active,
-      playerGoesFirst: true,
-      npc: this.combat.npcData,
-      isBoss,
-      isNpcBattle
-    };
-  }
-
-  /**
-   * Complete NPC dialogue and update bond
-   */
-  completeNpcDialogue() {
-    if (!this.run?.npcDialogue) return;
-    const { npcId, totalDelta } = this.run.npcDialogue;
-    updateBond(this.meta, npcId, totalDelta);
-    recordEncounter(this.meta, npcId);
-    this.run.npcDialogue = null;
-    this.emitState();
-  }
-
-  /**
-   * Move pending captures into party and collection after victory.
-   * @returns {Array} New collection additions
-   */
-  _flushPendingCaptures() {
-    const pending = this.run.creatureParty.pendingCaptures || [];
-    const newAdditions = [];
-    for (const creature of pending) {
-      const total = this.run.creatureParty.active.length + this.run.creatureParty.reserves.length;
-      if (total >= this.run.creatureParty.maxTotal) break;
-      if (this.run.creatureParty.active.length < 3) {
-        this.run.creatureParty.active.push(creature);
-      } else {
-        this.run.creatureParty.reserves.push(creature);
-      }
-      applyMetaBonuses(creature, this.run);
-      if (this.meta && !creature.temporary) {
-        // Increment befriend counter (always, even if already owned)
-        if (!this.meta.befriendCount) this.meta.befriendCount = {};
-        this.meta.befriendCount[creature.id] = (this.meta.befriendCount[creature.id] || 0) + 1;
-
-        const result = addToCollection(this.meta.creatureCollection || [], creature.id);
-        if (result.added) {
-          this.meta.creatureCollection = result.collection;
-          newAdditions.push({ id: creature.id, name: creature.name, nameEn: creature.nameEn, element: creature.element, rarity: creature.rarity });
-        }
-      }
-    }
-    this.run.creatureParty.pendingCaptures = [];
-    return newAdditions;
-  }
-
-  /**
-   * Execute one creature combat cycle
-   * @param {string} actionType - 'attack' | 'defend' | 'befriend'
-   */
-  creatureCombatCycle(actionType = 'attack', moveChoices = []) {
-    if (!this.combat?.active) {
-      throw new Error('No active combat');
-    }
-
-    // Once an action is committed, free swap window closes
-    this.combat.swapPhase = false;
-
-    // Tick active effects at start of round (poison damage, etc.)
-    const effectEvents = tickAllEffects(this.combat.allies, this.combat.enemies);
-
-    switch (actionType) {
-      case 'attack':  return this._handleCreatureAttackTurn(effectEvents, moveChoices);
-      case 'defend':  return this._handleCreatureDefendTurn(effectEvents);
-      case 'befriend': return this._handleCreatureBefriendTurn(effectEvents);
-      default: throw new Error(`Unknown action: ${actionType}`);
-    }
-  }
-
-  /**
-   * Handle attack action in creature combat.
-   * Player attacks, checks victory, then enemy turn with defeat/continuation.
-   * @param {Array} effectEvents - Effect tick events from start of round
-   * @returns {Object} Combat cycle result
-   * @private
-   */
-  _handleCreatureAttackTurn(effectEvents, moveChoices) {
-    // New player move round — each creature may try はなす again
-    this.combat.befriendAttemptedSlots = {};
-
-    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
-    const roundStartEvents = applyRoundStartSkills({
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      runPartySkills: this.run.partySkills,
-      combat: this.combat
-    });
-
-    const metaMults = { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 };
-    const playerResult = processInterleavedPvERound(
-      this.combat.allies,
-      this.combat.enemies,
-      moveChoices,
-      this.run.itemBuffs,
-      this.run.creatureParty,
-      metaMults
-    );
-
-    // Party skills proc only on player attack records (post-process round output)
-    applyPartySkillsAfterPlayerAttacks({
-      attacks: playerResult.attacks,
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      runPartySkills: this.run.partySkills,
-      combat: this.combat
-    });
-
-    // Award credits for kills
-    if (playerResult.xpEvents?.length > 0) {
-      const killCredits = playerResult.xpEvents.length * CREDITS_PER_KILL;
-      this.run.player.credits = (this.run.player.credits || 0) + killCredits;
-    }
-
-    // Check if all enemies defeated after player attack
-    if (playerResult.allEnemiesDefeated) {
-      // Befriend quiz trigger: 50% chance when killing blow would end combat
-      // Not for boss fights or NPC battles
-      // New player protection: guarantee befriend when player only has 1 creature
-      const totalOwnedCreatures = this.run.creatureParty.active.length + (this.run.creatureParty.reserves?.length || 0);
-      const guaranteeBefriend = totalOwnedCreatures <= 1;
-      if (!this.combat.isBoss && !this.combat.npcId && shouldTriggerBefriendQuiz(this.combat.enemies, { guaranteed: guaranteeBefriend })) {
-        // Find the creature killed by the player's last killing blow
-        const killingAttacks = (playerResult.attacks || []).filter(a => a.targetDefeated);
-        const lastKillAtk = killingAttacks[killingAttacks.length - 1];
-        const lastKilled = lastKillAtk
-          ? this.combat.enemies[lastKillAtk.targetIndex]
-          : [...this.combat.enemies].reverse().find(e => e.hp <= 0 && !e.befriended);
-        if (lastKilled) {
-          lastKilled.hp = 1;
-          const targetIndex = this.combat.enemies.indexOf(lastKilled);
-
-          // Un-award the XP for this creature (it didn't actually die)
-          // The xpEvents for this creature will be re-awarded if the player fights
-          const revokedXpEvents = playerResult.xpEvents.filter(ev =>
-            (typeof ev.enemyIndex === 'number' ? ev.enemyIndex !== targetIndex : ev.enemyId !== lastKilled.id)
-          );
-
-          // Generate the quiz
-          const quiz = generateBefriendQuiz(lastKilled, this.combat.enemies);
-          this.combat.befriendQuiz = {
-            targetIndex,
-            creatureId: lastKilled.id,
-            triggered: true,
-            options: quiz.options,
-            creatureName: quiz.creatureName
-          };
-
-          this.emitState();
-          return {
-            actionType: 'attack',
-            playerAttacks: playerResult.attacks || [],
-            npcSkillAttacks: [],
-            npcSkillUsed: null,
-            xpEvents: revokedXpEvents,
-            mpRegens: playerResult.mpRegens || [],
-            effectEvents,
-            roundStartEvents,
-            befriendQuizTriggered: true,
-            befriendQuiz: {
-              targetIndex,
-              creatureId: lastKilled.id,
-              creatureName: lastKilled.name,
-              creatureNameEn: lastKilled.nameEn,
-              options: quiz.options.map(o => ({ id: o.id, name: o.name })) // Don't send correct flag
-            },
-            combatEnded: false,
-            allies: this.combat.allies,
-            enemies: this.combat.enemies,
-            creatureParty: this.run.creatureParty
-          };
-        }
-      }
-
-      // XP already awarded per-kill during the interleaved round
-      const newCollectionAdditions = this._flushPendingCaptures();
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) {
-        currentRoom.interacted = true;
-      }
-
-      // Boss defeat: dialogue + track for befriend-on-rematch
-      if (this.combat.isBoss && this.combat.enemies?.[0]?.id) {
-        const bossId = this.combat.enemies[0].id;
-        const bossTemplate = CREATURES_BY_ID[bossId];
-        if (bossTemplate?.bossDialogue?.defeat) {
-          this.narrate(bossTemplate.bossDialogue.defeat);
-        }
-        if (!this.run.bossesDefeated) this.run.bossesDefeated = [];
-        if (!this.run.bossesDefeated.includes(bossId)) {
-          this.run.bossesDefeated.push(bossId);
-          // Award progression token for boss defeat
-          this.meta.progressionTokens = (this.meta.progressionTokens || 0) + 1;
-        }
-      }
-
-      this.emitState();
-      return {
-        actionType: 'attack',
-        playerAttacks: playerResult.attacks || [],
-        npcSkillAttacks: [],
-        npcSkillUsed: null,
-        xpEvents: playerResult.xpEvents || [],
-        mpRegens: playerResult.mpRegens || [],
-        effectEvents,
-        roundStartEvents,
-        combatEnded: true,
-        victory: true,
-        creatureParty: this.run.creatureParty,
-        enemies: this.combat.enemies,
-        newCollectionAdditions
-      };
-    }
-
-    // === NPC SKILL PHASE ===
-    let npcSkillAttacks = [];
-    let npcSkillUsed = null;
-    if (this.combat.npcId && this.combat.npcData) {
-      const fullNpc = loadNpcs()[this.combat.npcId];
-      if (fullNpc) {
-        const skill = rollNpcSkill(fullNpc);
-        if (skill) {
-          const npcCombat = {
-            id: fullNpc.id,
-            name: fullNpc.name,
-            nameEn: fullNpc.nameEn,
-            attack: fullNpc.attack || 10,
-            element: fullNpc.element || 'neutral',
-            baseWord: fullNpc.baseWord || '',
-            baseReading: fullNpc.baseReading || '',
-            baseMeaning: fullNpc.baseMeaning || ''
-          };
-          const skillResult = executeNpcSkill(npcCombat, skill, this.combat.allies, this.combat.enemies);
-          npcSkillAttacks = skillResult.attacks;
-          npcSkillUsed = {
-            skillId: skill.id,
-            skillName: skill.name,
-            skillNameEn: skill.nameEn,
-            npcName: fullNpc.nameEn,
-            npcNameJp: fullNpc.name
-          };
-          logger.info('[CreatureCombat] NPC skill used:', skill.nameEn, '→', npcSkillAttacks.length, 'hits');
-        }
-      }
-    }
-
-    // Check if NPC skill KO'd all player creatures
-    if (npcSkillAttacks.length > 0) {
-      const allAlliesKOAfterNpc = this.combat.allies.every(a => !a || a.hp <= 0);
-      if (allAlliesKOAfterNpc) {
-        this.combat.active = false;
-        this.run.active = false;
-        this.emitState();
-        return {
-          actionType: 'attack',
-          playerAttacks: playerResult.attacks || [],
-          npcSkillAttacks,
-          npcSkillUsed,
-          enemyAttacks: [],
-          xpEvents: playerResult.xpEvents || [],
-          mpRegens: playerResult.mpRegens || [],
-          effectEvents,
-          roundStartEvents,
-          counterAttacks: [],
-          koSwaps: [],
-          combatEnded: true,
-          victory: false,
-          turnCount: this.combat.turnCount,
-          creatureParty: this.run.creatureParty
-        };
-      }
-    }
-
-    // Enemy strikes already resolved in processInterleavedPvERound (level-based initiative with allies)
-    const enemyResult = {
-      attacks: playerResult.enemyAttacks || [],
-      allAlliesDefeated: this.combat.allies.every(a => !a || a.hp <= 0)
-    };
-
-    // Party skills: counter attacks
-    const counterAttacks = applyAfterEnemyAttacks({
-      enemyAttacks: enemyResult.attacks,
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      runPartySkills: this.run.partySkills,
-      combat: this.combat
-    }) || [];
-
-    // Handle KO'd allies — swap reserves in
-    const koSwaps = [];
-    for (let i = 0; i < this.combat.allies.length; i++) {
-      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const replacement = handleCreatureKO(this.run.creatureParty, i);
-        if (replacement) {
-          koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
-        }
-      }
-    }
-    this.combat.allies = this.run.creatureParty.active;
-
-    // Check if all enemies died during enemy phase (e.g. confusion self-hit)
-    const allEnemiesDown = this.combat.enemies.every(e => e.hp <= 0 || e.befriended);
-    if (allEnemiesDown) {
-      const newCollectionAdditions = this._flushPendingCaptures();
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) currentRoom.interacted = true;
-      this.emitState();
-      return {
-        actionType: 'attack',
-        playerAttacks: playerResult.attacks || [],
-        npcSkillAttacks,
-        npcSkillUsed,
-        enemyAttacks: enemyResult.attacks || [],
-        xpEvents: playerResult.xpEvents || [],
-        mpRegens: playerResult.mpRegens || [],
-        effectEvents,
-        roundStartEvents,
-        counterAttacks,
-        koSwaps,
-        combatEnded: true,
-        victory: true,
-        creatureParty: this.run.creatureParty,
-        enemies: this.combat.enemies,
-        newCollectionAdditions
-      };
-    }
-
-    // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
-    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
-    if (allAlliesKO) {
-      // Save any befriended creatures to permanent collection before defeat
-      const pending = this.run.creatureParty.pendingCaptures || [];
-      for (const creature of pending) {
-        if (this.meta && !creature.temporary) {
-          const result = addToCollection(this.meta.creatureCollection || [], creature.id);
-          if (result.added) {
-            this.meta.creatureCollection = result.collection;
-          }
-        }
-      }
-      this.run.creatureParty.pendingCaptures = [];
-
-      this.combat.active = false;
-      this.run.active = false;
-      this.emitState();
-      return {
-        actionType: 'attack',
-        playerAttacks: playerResult.attacks || [],
-        npcSkillAttacks,
-        npcSkillUsed,
-        enemyAttacks: enemyResult.attacks || [],
-        xpEvents: playerResult.xpEvents || [],
-        mpRegens: playerResult.mpRegens || [],
-        effectEvents,
-        roundStartEvents,
-        counterAttacks,
-        koSwaps,
-        combatEnded: true,
-        victory: false,
-        turnCount: this.combat.turnCount,
-        creatureParty: this.run.creatureParty
-      };
-    }
-
-    this.combat.turnCount++;
-    this.combat.swapPhase = true;
-    this.emitState();
-
-    return {
-      actionType: 'attack',
-      playerAttacks: playerResult.attacks || [],
-      npcSkillAttacks,
-      npcSkillUsed,
-      enemyAttacks: enemyResult.attacks || [],
-      xpEvents: playerResult.xpEvents || [],
-      mpRegens: playerResult.mpRegens || [],
-      effectEvents,
-      roundStartEvents,
-      counterAttacks,
-      befriend: null,
-      koSwaps,
-      combatEnded: false,
-      turnCount: this.combat.turnCount,
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      creatureParty: this.run.creatureParty
-    };
-  }
-
-  /**
-   * Handle defend action in creature combat.
-   * Player defends (reduces incoming damage), then enemy turn with defeat/continuation.
-   * @param {Array} effectEvents - Effect tick events from start of round
-   * @returns {Object} Combat cycle result
-   * @private
-   */
-  _handleCreatureDefendTurn(effectEvents) {
-    this.combat.befriendAttemptedSlots = {};
-
-    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
-    const roundStartEvents = applyRoundStartSkills({
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      runPartySkills: this.run.partySkills,
-      combat: this.combat
-    });
-
-    processDefendTurn(this.combat.allies);
-
-    // Enemy phase (defendActive = true reduces damage)
-    const enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, true, this.run.itemBuffs);
-
-    // Party skills: counter attacks
-    const counterAttacks = applyAfterEnemyAttacks({
-      enemyAttacks: enemyResult.attacks,
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      runPartySkills: this.run.partySkills,
-      combat: this.combat
-    }) || [];
-
-    // Handle KO'd allies — swap reserves in
-    const koSwaps = [];
-    for (let i = 0; i < this.combat.allies.length; i++) {
-      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const replacement = handleCreatureKO(this.run.creatureParty, i);
-        if (replacement) {
-          koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
-        }
-      }
-    }
-    this.combat.allies = this.run.creatureParty.active;
-
-    // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
-    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
-    if (allAlliesKO) {
-      // Save any befriended creatures to permanent collection before defeat
-      const pending = this.run.creatureParty.pendingCaptures || [];
-      for (const creature of pending) {
-        if (this.meta && !creature.temporary) {
-          const result = addToCollection(this.meta.creatureCollection || [], creature.id);
-          if (result.added) {
-            this.meta.creatureCollection = result.collection;
-          }
-        }
-      }
-      this.run.creatureParty.pendingCaptures = [];
-
-      this.combat.active = false;
-      this.run.active = false;
-      this.emitState();
-      return {
-        actionType: 'defend',
-        playerAttacks: [],
-        enemyAttacks: enemyResult.attacks || [],
-        xpEvents: [],
-        effectEvents,
-        roundStartEvents,
-        counterAttacks,
-        koSwaps,
-        combatEnded: true,
-        victory: false,
-        turnCount: this.combat.turnCount,
-        creatureParty: this.run.creatureParty
-      };
-    }
-
-    this.combat.turnCount++;
-    this.combat.swapPhase = true;
-    this.emitState();
-
-    return {
-      actionType: 'defend',
-      playerAttacks: [],
-      enemyAttacks: enemyResult.attacks || [],
-      xpEvents: [],
-      effectEvents,
-      roundStartEvents,
-      counterAttacks,
-      befriend: null,
-      koSwaps,
-      combatEnded: false,
-      turnCount: this.combat.turnCount,
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      creatureParty: this.run.creatureParty
-    };
-  }
-
-  /**
-   * Handle befriend action in creature combat.
-   * Attempt to capture an enemy. If last enemy captured, victory.
-   * Otherwise, enemy turn with defeat/continuation.
-   * @param {Array} effectEvents - Effect tick events from start of round
-   * @returns {Object} Combat cycle result
-   * @private
-   */
-  _handleCreatureBefriendTurn(effectEvents) {
-    // Boss can only be befriended on rematch (after first defeat)
-    if (this.combat.isBoss) {
-      const bossId = this.combat.enemies?.[0]?.id;
-      if (!this.run.bossesDefeated?.includes(bossId)) {
-        this.combat.befriendAttemptedSlots = {};
-        return {
-          actionType: 'befriend',
-          befriend: { success: false, reason: 'boss_first_defeat' },
-          effectEvents,
-          roundStartEvents: [],
-          combatEnded: false,
-          allies: this.combat.allies,
-          enemies: this.combat.enemies,
-          creatureParty: this.run.creatureParty
-        };
-      }
-    }
-
-    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
-    const roundStartEvents = applyRoundStartSkills({
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      runPartySkills: this.run.partySkills,
-      combat: this.combat
-    });
-
-    const targetIdx =
-      typeof this.combat.befriendConversation?.targetEnemyIndex === 'number'
-        ? this.combat.befriendConversation.targetEnemyIndex
-        : this.combat.lastBefriendTargetIndex;
-    if (typeof targetIdx === 'number') this.combat.lastBefriendTargetIndex = targetIdx;
-    const befriendResult = processBefriend(this.combat.enemies, this.run.creatureParty, targetIdx);
-
-    // Captured last enemy — immediate victory
-    if (befriendResult.success && befriendResult.allEnemiesDefeated) {
-      awardBattleXp(this.run.creatureParty, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 }, this.run.itemBuffs);
-      const newCollectionAdditions = this._flushPendingCaptures();
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      // Award progression token for boss befriend
-      if (this.combat.isBoss) {
-        this.meta.progressionTokens = (this.meta.progressionTokens || 0) + 1;
-      }
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) {
-        currentRoom.interacted = true;
-      }
-      this.emitState();
-      return {
-        actionType: 'befriend',
-        befriend: befriendResult,
-        effectEvents,
-        roundStartEvents,
-        combatEnded: true,
-        victory: true,
-        creatureParty: this.run.creatureParty,
-        enemies: this.combat.enemies,
-        newCollectionAdditions
-      };
-    }
-
-    // Enemy phase
-    const enemyResult = processEnemyTurn(this.combat.enemies, this.combat.allies, false, this.run.itemBuffs);
-
-    // Party skills: counter attacks
-    const counterAttacks = applyAfterEnemyAttacks({
-      enemyAttacks: enemyResult.attacks,
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      runPartySkills: this.run.partySkills,
-      combat: this.combat
-    }) || [];
-
-    // Handle KO'd allies — swap reserves in
-    const koSwaps = [];
-    for (let i = 0; i < this.combat.allies.length; i++) {
-      if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-        const replacement = handleCreatureKO(this.run.creatureParty, i);
-        if (replacement) {
-          koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          logger.info('[CreatureCombat] KO swap: slot', i, '→', replacement.nameEn);
-        }
-      }
-    }
-    this.combat.allies = this.run.creatureParty.active;
-
-    // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
-    const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
-    if (allAlliesKO) {
-      // Save any befriended creatures to permanent collection before defeat
-      const pending = this.run.creatureParty.pendingCaptures || [];
-      for (const creature of pending) {
-        if (this.meta && !creature.temporary) {
-          const result = addToCollection(this.meta.creatureCollection || [], creature.id);
-          if (result.added) {
-            this.meta.creatureCollection = result.collection;
-          }
-        }
-      }
-      this.run.creatureParty.pendingCaptures = [];
-
-      this.combat.active = false;
-      this.run.active = false;
-      this.emitState();
-      return {
-        actionType: 'befriend',
-        playerAttacks: [],
-        enemyAttacks: enemyResult.attacks || [],
-        xpEvents: [],
-        effectEvents,
-        roundStartEvents,
-        counterAttacks,
-        koSwaps,
-        combatEnded: true,
-        victory: false,
-        turnCount: this.combat.turnCount,
-        creatureParty: this.run.creatureParty
-      };
-    }
-
-    this.combat.turnCount++;
-    this.combat.swapPhase = true;
-    this.combat.befriendAttemptedSlots = {};
-    this.emitState();
-
-    return {
-      actionType: 'befriend',
-      playerAttacks: [],
-      enemyAttacks: enemyResult.attacks || [],
-      xpEvents: [],
-      effectEvents,
-      roundStartEvents,
-      counterAttacks,
-      befriend: befriendResult,
-      koSwaps,
-      combatEnded: false,
-      turnCount: this.combat.turnCount,
-      allies: this.combat.allies,
-      enemies: this.combat.enemies,
-      creatureParty: this.run.creatureParty
-    };
-  }
-
-  /**
-   * Roll 3 random items for the post-combat shop
-   * Koto2 MVP: post-combat shop disabled, friendly NPC rooms replace this
-   */
-  rollPostCombatShop() {
-    return null;
-  }
-
-  /**
-   * Player selects one item from the post-combat shop
-   * @param {number} itemIndex - 0, 1, or 2
-   * @param {number} targetIndex - which active creature receives the item
-   */
-  selectShopItem(itemIndex, targetIndex = 0) {
-    if (!this.run) throw new Error('No run');
-    const items = this.run._pendingShopItems;
-    if (!items || !items[itemIndex]) throw new Error('Invalid shop item');
-
-    const selectedItem = items[itemIndex];
-    applyItem(selectedItem, this.run.creatureParty, null, targetIndex);
-    this.run._pendingShopItems = null;
-
-    this.emitState();
-    return {
-      selected: selectedItem,
-      creatureParty: this.run.creatureParty
-    };
-  }
-
-  /**
-   * Swap an active creature with a reserve
-   * @param {number} activeIndex - Index in creatureParty.active (0-2)
-   * @param {number} reserveIndex - Index in creatureParty.reserves (0-2)
-   * @returns {Object} Result with updated party and whether enemy attacks
-   */
-  swapCreature(activeIndex, reserveIndex) {
-    if (!this.combat?.active) throw new Error('No active combat');
-    if (!this.run?.creatureParty) throw new Error('No creature party');
-
-    const party = this.run.creatureParty;
-    if (!party.active[activeIndex]) throw new Error('Invalid active creature index');
-    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve creature index');
-
-    // Perform the swap
-    const temp = party.active[activeIndex];
-    party.active[activeIndex] = party.reserves[reserveIndex];
-    party.reserves[reserveIndex] = temp;
-
-    // Refresh combat allies reference
-    this.combat.allies = party.active;
-
-    const isFreeSwap = this.combat.swapPhase;
-
-    if (!isFreeSwap) {
-      // Paid swap: enemy attacks, no player action
-      const enemyResult = processEnemyTurn(
-        this.combat.enemies,
-        this.combat.allies,
-        false,
-        this.run.itemBuffs
-      );
-
-      // Handle KO'd allies after enemy attack
-      for (let i = 0; i < this.combat.allies.length; i++) {
-        if (this.combat.allies[i].hp <= 0) {
-          handleCreatureKO(this.run.creatureParty, i);
-        }
-      }
-      this.combat.allies = this.run.creatureParty.active;
-
-      // Check defeat
-      const allAlliesKO = this.combat.allies.every(a => a.hp <= 0);
-      if (allAlliesKO) {
-        this.combat.active = false;
-        this.run.active = false;
-      }
-
-      this.combat.turnCount++;
-      this.emitState();
-
-      return {
-        swapped: true,
-        freeSwap: false,
-        enemyAttacks: enemyResult.attacks,
-        combatEnded: allAlliesKO,
-        victory: false,
-        creatureParty: party,
-        allies: this.combat.allies,
-        enemies: this.combat.enemies
-      };
-    }
-
-    this.emitState();
-    return {
-      swapped: true,
-      freeSwap: true,
-      creatureParty: party,
-      allies: this.combat.allies,
-      enemies: this.combat.enemies
-    };
-  }
-
-  /**
-   * Rearrange two active creatures by swapping their positions (no reserves needed).
-   * Works both in and out of combat.
-   * @param {number} indexA - First active slot index (0-2)
-   * @param {number} indexB - Second active slot index (0-2)
-   * @returns {Object} Result with updated party
-   */
-  rearrangeCreatures(indexA, indexB) {
-    if (!this.run?.creatureParty) throw new Error('No creature party');
-    const party = this.run.creatureParty;
-    if (!party.active[indexA]) throw new Error('Invalid creature index A');
-    if (!party.active[indexB]) throw new Error('Invalid creature index B');
-
-    // Swap positions
-    const temp = party.active[indexA];
-    party.active[indexA] = party.active[indexB];
-    party.active[indexB] = temp;
-
-    // Refresh combat allies reference if in combat
-    if (this.combat?.active) {
-      this.combat.allies = party.active;
-    }
-
-    this.emitState();
-    return {
-      rearranged: true,
-      creatureParty: party
-    };
-  }
-
-  /**
-   * Swap an active creature with a reserve OUTSIDE of combat (equip screen).
-   * @param {number} activeIndex - Index in creatureParty.active (0-2)
-   * @param {number} reserveIndex - Index in creatureParty.reserves (0-2)
-   * @returns {Object} Result with updated party
-   */
-  swapCreatureOutOfCombat(activeIndex, reserveIndex) {
-    if (!this.run?.creatureParty) throw new Error('No creature party');
-    const party = this.run.creatureParty;
-    if (!party.active[activeIndex]) throw new Error('Invalid active creature index');
-    if (!party.reserves[reserveIndex]) throw new Error('Invalid reserve creature index');
-
-    // Perform the swap
-    const temp = party.active[activeIndex];
-    party.active[activeIndex] = party.reserves[reserveIndex];
-    party.reserves[reserveIndex] = temp;
-
-    this.emitState();
-    return {
-      swapped: true,
-      creatureParty: party
-    };
-  }
-
-  /**
-   * Replace an existing creature with a befriended creature when roster is full.
-   * @param {string} releaseCreatureId - ID of creature to release (must be in party)
-   * @param {Object} capturedCreature - The befriended enemy creature to add
-   * @returns {Object} Result with updated party
-   */
-  befriendReplace(releaseCreatureId) {
-    if (!this.combat?.active) throw new Error('No active combat');
-    if (!this.run?.creatureParty) throw new Error('No creature party');
-
-    const party = this.run.creatureParty;
-    const enemies = this.combat.enemies;
-
-    // Use the stored target from the befriend conversation
-    const targetIdx = this.combat.lastBefriendTargetIndex;
-    let captured;
-    if (typeof targetIdx === 'number' && enemies[targetIdx]?.hp > 0 && !enemies[targetIdx]?.befriended) {
-      captured = enemies[targetIdx];
-    } else {
-      // Fallback: find any eligible enemy
-      const eligible = enemies
-        .filter(e => e.hp > 0 && (e.hp / e.maxHp) <= 0.5)
-        .sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
-      if (eligible.length === 0) {
-        return { success: false, reason: 'No enemy at <=50% HP' };
-      }
-      captured = eligible[0];
-    }
-
-    // Find the creature to release
-    let releaseIndex = party.active.findIndex(r => r && r.id === releaseCreatureId);
-    let releaseFrom = 'active';
-    if (releaseIndex === -1) {
-      releaseIndex = party.reserves.findIndex(r => r && r.id === releaseCreatureId);
-      releaseFrom = 'reserves';
-    }
-    if (releaseIndex === -1) {
-      return { success: false, reason: 'Creature to release not found in party' };
-    }
-
-    // Mark enemy as befriended (don't splice — preserve indices for frontend)
-    captured.hp = 0;
-    captured.befriended = true;
-
-    // Create a clean copy for when it joins the party after combat
-    const capturedCopy = { ...captured, hp: captured.maxHp, befriended: false };
-    // Release the old creature and queue the captured one for post-combat
-    if (releaseFrom === 'active') {
-      party.active.splice(releaseIndex, 1);
-    } else {
-      party.reserves.splice(releaseIndex, 1);
-    }
-    if (!party.pendingCaptures) party.pendingCaptures = [];
-    party.pendingCaptures.push(capturedCopy);
-
-    // Refresh combat allies reference
-    this.combat.allies = party.active;
-
-    const allEnemiesDefeated = enemies.filter(e => e.hp > 0 && !e.befriended).length === 0;
-
-    let newCollectionAdditions = [];
-    if (allEnemiesDefeated) {
-      awardBattleXp(party, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 }, this.run.itemBuffs);
-      newCollectionAdditions = this._flushPendingCaptures();
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      // Mark room as interacted
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) {
-        currentRoom.interacted = true;
-      }
-    }
-
-    this.emitState();
-    return {
-      success: true,
-      captured: capturedCopy,
-      released: releaseCreatureId,
-      allEnemiesDefeated,
-      combatEnded: allEnemiesDefeated,
-      victory: allEnemiesDefeated,
-      creatureParty: party,
-      enemies,
-      newCollectionAdditions
-    };
-  }
-
-  // ============ BEFRIEND NAME QUIZ ============
-
-  /**
-   * Get the current befriend quiz state (for the /befriend-quiz route)
-   * @returns {object|null}
-   */
-  getBefriendQuiz() {
-    if (!this.combat?.befriendQuiz) return null;
-    const quiz = this.combat.befriendQuiz;
-    return {
-      creatureId: quiz.creatureId,
-      creatureName: quiz.creatureName,
-      options: quiz.options.map(o => ({ id: o.id, name: o.name })) // Don't expose correct flag
-    };
-  }
-
-  /**
-   * Process a befriend quiz answer (Talk path)
-   * @param {string} answerId - The selected option's id
-   * @returns {object} Result
-   */
-  handleBefriendQuizAnswer(answerId) {
-    if (!this.combat?.befriendQuiz) {
-      return { error: 'No active befriend quiz' };
-    }
-
-    const result = processBefriendQuizAnswer(answerId, this.combat, this.run.creatureParty);
-
-    if (result.correct && result.allEnemiesDefeated) {
-      // Victory via befriend
-      awardBattleXp(this.run.creatureParty, { hpMult: this.run.metaHpMult || 1, atkMult: this.run.metaAtkMult || 1 }, this.run.itemBuffs);
-      const newCollectionAdditions = this._flushPendingCaptures();
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) currentRoom.interacted = true;
-
-      this.emitState();
-      return {
-        ...result,
-        combatEnded: true,
-        victory: true,
-        creatureParty: this.run.creatureParty,
-        enemies: this.combat.enemies,
-        newCollectionAdditions
-      };
-    }
-
-    if (!result.correct) {
-      // Wrong answer: handle KO swaps from counter-attack
-      const koSwaps = [];
-      for (let i = 0; i < this.combat.allies.length; i++) {
-        if (this.combat.allies[i] && this.combat.allies[i].hp <= 0) {
-          const replacement = handleCreatureKO(this.run.creatureParty, i);
-          if (replacement) {
-            koSwaps.push({ slot: i, replacement: replacement.nameEn });
-          }
-        }
-      }
-      this.combat.allies = this.run.creatureParty.active;
-
-      const allAlliesKO = this.combat.allies.every(a => !a || a.hp <= 0);
-      if (allAlliesKO) {
-        this.combat.active = false;
-        this.run.active = false;
-      }
-
-      this.emitState();
-      return {
-        ...result,
-        koSwaps,
-        combatEnded: allAlliesKO,
-        victory: false,
-        allies: this.combat.allies,
-        enemies: this.combat.enemies,
-        creatureParty: this.run.creatureParty
-      };
-    }
-
-    // Correct but not all defeated (shouldn't happen in normal flow, but handle gracefully)
-    this.emitState();
-    return result;
-  }
-
-  /**
-   * Resolve the "Fight" choice — kill the creature and finalize combat
-   * @returns {object} Result
-   */
-  handleBefriendFight() {
-    if (!this.combat?.befriendQuiz) {
-      return { error: 'No active befriend quiz' };
-    }
-
-    const result = resolveBefriendFight(this.combat);
-
-    if (result.allEnemiesDefeated) {
-      // Award XP for the kill that was deferred
-      const target = this.combat.enemies.find(e => e.hp <= 0 && !e.befriended);
-      // Note: XP was already awarded for other kills in the original processMoveTurn;
-      // the last creature's XP was revoked. Re-award it now would double-count since
-      // the target is already dead. The kill XP from the original turn was stripped.
-      // For simplicity, we just end combat as victory.
-      const newCollectionAdditions = this._flushPendingCaptures();
-      this.combat.active = false;
-      this.run.currentAreaEncounters++;
-      const currentRoom = this.run.rooms?.[this.run.currentRoom];
-      if (currentRoom) currentRoom.interacted = true;
-
-      this.emitState();
-      return {
-        killed: true,
-        combatEnded: true,
-        victory: true,
-        creatureParty: this.run.creatureParty,
-        enemies: this.combat.enemies,
-        newCollectionAdditions
-      };
-    }
-
-    this.emitState();
-    return result;
-  }
+  // ============ CREATURE COMBAT (delegated to CombatCycleService) ============
+
+  startCreatureEncounter() { return this.combatCycleService.startCreatureEncounter(); }
+  creatureCombatCycle(actionType = 'attack', moveChoices = []) { return this.combatCycleService.creatureCombatCycle(actionType, moveChoices); }
+  rollPostCombatShop() { return this.combatCycleService.rollPostCombatShop(); }
+  selectShopItem(itemIndex, targetIndex = 0) { return this.combatCycleService.selectShopItem(itemIndex, targetIndex); }
+  swapCreature(activeIndex, reserveIndex) { return this.combatCycleService.swapCreature(activeIndex, reserveIndex); }
+  rearrangeCreatures(indexA, indexB) { return this.combatCycleService.rearrangeCreatures(indexA, indexB); }
+  swapCreatureOutOfCombat(activeIndex, reserveIndex) { return this.combatCycleService.swapCreatureOutOfCombat(activeIndex, reserveIndex); }
+  befriendReplace(releaseCreatureId) { return this.combatCycleService.befriendReplace(releaseCreatureId); }
+  getBefriendQuiz() { return this.combatCycleService.getBefriendQuiz(); }
+  handleBefriendQuizAnswer(answerId) { return this.combatCycleService.handleBefriendQuizAnswer(answerId); }
+  handleBefriendFight() { return this.combatCycleService.handleBefriendFight(); }
 
   // ============ UTILITY ============
 
   /**
+   * Expose words to the SRS system for this user.
+   * No-op if userId is not set (e.g. during tests).
+   * @param {Array<{word: string, meaning?: string}>} words
+   */
+  exposeWords(words) {
+    if (!this.userId) return;
+    const newlyMastered = exposeWords_fn(this.userId, words);
+    if (this.run?.runSummary && Array.isArray(words)) {
+      for (const entry of words) {
+        const word = typeof entry === 'string' ? entry : entry?.word;
+        if (word && !this.run.runSummary.wordsExposed.includes(word)) {
+          this.run.runSummary.wordsExposed.push(word);
+        }
+      }
+      if (Array.isArray(newlyMastered)) {
+        for (const mastered of newlyMastered) {
+          this.run.runSummary.wordsMastered.push(mastered);
+        }
+      }
+    }
+  }
+
+  /**
    * End the current run (forfeit)
    */
-  forfeitRun() {
+  forfeitRun(isVictory = false) {
+    let runSummary = null;
     if (this.run) {
       logger.info('[GameManager] Run forfeited:', { areasCompleted: this.run.areasCompleted, roomsExplored: this.run.roomsExplored });
-      // Only update stats if run was still active (not already ended by combat defeat)
+
+      // Always set endTime if missing (defeat path sets active=false but not endTime)
+      if (!this.run.stats.endTime) {
+        this.run.stats.endTime = Date.now();
+      }
+
       if (this.run.active) {
         this.run.active = false;
-        // Clear current level tracking
         if (this.meta?.levels) {
           this.meta.levels.current = null;
         }
-        this.run.stats.endTime = Date.now();
-        this.updateLifetimeStats(false);
+        this.updateLifetimeStats(isVictory);
         this.checkAchievements(this.run.stats);
       }
+
+      // Capture summary before clearing run
+      runSummary = buildRunSummary(this.run, this.meta);
 
       this.combat = null;
       this.run = null;
     }
     this.emitState();
+    return { runSummary };
   }
 
   /**

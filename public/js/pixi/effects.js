@@ -1,11 +1,3 @@
-/**
- * @file effects.js — Canvas combat effects
- *
- * Particle pool, screen shake, screen flash, recoil, hit stop, vignette,
- * element-aware particles, flow particles for drain moves.
- * All effects render on the PixiJS effects layer.
- */
-
 import { Container, Sprite, Graphics, Texture } from 'pixi.js';
 import { getStage } from './battle-stage.js';
 import { tween, wait } from './tween.js';

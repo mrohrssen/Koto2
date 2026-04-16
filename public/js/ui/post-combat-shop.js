@@ -1,21 +1,7 @@
-/**
- * @file post-combat-shop.js - Post-Combat Item Shop
- *
- * PURPOSE:
- * Shows 3 random items after each creature combat victory. Player picks one.
- * Each item teaches a Japanese vocabulary word.
- * Stat boosts stack permanently for the run. Heals apply immediately.
- *
- * KEY EXPORTS:
- * - init({ itemSelectedCallback }): Setup with selection callback
- * - show(items): Display 3 item cards
- * - hide(): Clear the shop display
- */
-
 import { dom } from '../dom.js';
 import { playSFX } from '../audio.js';
 import { prefetchWord, playWord } from '../tts.js';
-import { renderJpFirst, renderEnFirst, flushExposures } from './bootstrap-client.js';
+import { renderJpSentence, renderEnFirst, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { creatureSpriteHtml, itemSpriteHtml } from './sprite-utils.js';
 import { renderChoices } from './ui-components.js';
@@ -54,7 +40,7 @@ export function show(items) {
       const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
       return {
         sprite: itemSpriteHtml(item.id, item.word),
-        title: renderJpFirst(item.word, item.reading, item.nameEn),
+        title: renderJpSentence([entityToToken(item)], getKnownWords(), new Map()),
         pills: buildItemEffectPills(item),
         badge: { text: (item.rarity || 'common').toUpperCase(), color: rarityColor },
         helpBtn: () => showItemHelpPopup(item),
@@ -63,18 +49,15 @@ export function show(items) {
     onSelect: (index) => {
       playSFX('creature-equip');
       if (items[index]?.word) playWord(items[index].word);
-      flushExposures();
       if (onItemSelected) onItemSelected(index);
     },
     container: actionArea,
   });
-
-  flushExposures();
 }
 
 function showItemHelpPopup(item) {
   document.querySelector('.item-help-backdrop')?.remove();
-  const nameHtml = renderJpFirst(item.word, item.reading, item.nameEn);
+  const nameHtml = renderJpSentence([entityToToken(item)], getKnownWords(), new Map());
   const descHtml = item.descriptionTagged
     ? renderEnFirst(item.descriptionTagged)
     : (item.description || '');

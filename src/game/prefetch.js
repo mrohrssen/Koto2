@@ -1,21 +1,3 @@
-/**
- * @fileoverview TTS audio caching system
- * @module src/game/prefetch
- *
- * Pre-generates TTS voiceovers for narration text to reduce latency.
- * Cache entries are use-once (deleted after retrieval).
- *
- * KEY EXPORTS:
- * - setTTSSynthesizer(fn, config) - Set the TTS synthesis function
- * - updateTTSConfig(config) - Update TTS settings
- * - getCachedAudio(text) - Retrieve cached TTS audio (use-once)
- * - clearCache() - Clear all cached audio
- * - cancelPendingPrefetches() - Cancel queued TTS jobs
- * - getStats() - Get cache hit/miss statistics
- * - resetStats() - Reset statistics
- * - getCacheContents() - Get cache contents for debugging
- */
-
 // ============ CONFIGURATION ============
 
 const CONFIG = {

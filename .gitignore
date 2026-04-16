@@ -4,6 +4,7 @@ node_modules/
 .jrpg-users.json
 .jrpg-save-*.json
 .jchat-*.json
+.pvp-match-*.json
 .DS_Store
 
 # Local work files
@@ -17,11 +18,15 @@ data/*
 !data/vocab-categories/
 !data/bootstrap-narrations/
 !data/bootstrap-narrations/**
+!data/dialogue/
+!data/dialogue/**
 data/npc-memory-test-*.json
 data/npc-dialogue-cache-test-*.json
 # Runtime-generated caches (rebuilt automatically per user)
 data/vocab-cache-*.json
 data/word-knowledge-*.json
+data/jpdb-tokenization-cache.json
+data/jpdb-frame-compare-cache.json
 # Per-user dialogue TTS audio (runtime-generated)
 data/tts-dialogue/
 # Word tracker (per-user, runtime-generated)
@@ -61,3 +66,7 @@ ios/
 android/
 .superpowers/
 .claude/commands/
+.claude/worktrees/
+# Simulator
+simulator/data/
+simulator/node_modules/

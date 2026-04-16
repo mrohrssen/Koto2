@@ -1,10 +1,3 @@
-/**
- * @fileoverview Word discovery tracking
- *
- * Tracks daily, weekly, and lifetime word discoveries per user.
- * Uses Tokyo timezone (JST, UTC+9) for daily reset.
- */
-
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { dataPath } from './data-dir.js';
 

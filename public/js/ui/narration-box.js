@@ -1,32 +1,6 @@
-/**
- * @file narration-box.js - Visual Novel Style Dialogue Box
- *
- * PURPOSE:
- * Renders a semi-transparent text box at the bottom of the scene area for
- * AI-generated dialogue, combat narration, and system messages. Supports
- * click-to-dismiss, auto-dismiss, and persistent modes.
- *
- * KEY EXPORTS:
- * - show(text, options): Display narration, returns Promise that resolves on dismiss
- *   Options: { speaker, autoDismiss (ms), persistent (bool) }
- * - forceHide(): Immediately hide box without waiting for user interaction
- *
- * DEPENDENCIES:
- * - ./lookup.js: Checks if lookup mode is active (blocks click-to-dismiss)
- *
- * USAGE:
- *   await narrationBox.show('The enemy speaks...', { speaker: 'Salaryman' });
- *   await narrationBox.show('Chip acquired!', { autoDismiss: 2000 });
- *   narrationBox.show('Choose wisely...', { persistent: true }); // stays until forceHide()
- *
- * BEHAVIOR:
- * - Click-to-dismiss shows blinking arrow indicator
- * - Auto-dismiss hides indicator and resolves after timeout
- * - Persistent mode resolves immediately but stays visible
- */
-
 import * as lookup from './lookup.js';
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
+import * as dialogueLookup from './dialogue-word-lookup.js';
 
 const box = document.getElementById('narration-box');
 const textEl = document.getElementById('narration-text');
@@ -138,6 +112,7 @@ function paginateForTwoLines(text) {
 }
 
 function hide(value) {
+  dialogueLookup.hidePopup();
   if (box) box.classList.remove('visible');
   clearPagination();
   if (textEl) textEl.classList.remove('garbled');
@@ -153,14 +128,19 @@ function hide(value) {
 }
 
 function handleClick(e) {
-  // Don't dismiss if lookup mode is active (let user look up words)
+  // Don't dismiss if legacy lookup mode is active (leave that system working)
   if (lookup.getActive()) return;
 
+  // If click is inside narration box, don't dismiss — it's a safe zone for word exploration
+  if (box && box.contains(e.target)) {
+    return;
+  }
+
+  // Click is outside narration box — advance dialogue
   if (pagedText.length > 0 && currentPage < pagedText.length - 1) {
     currentPage += 1;
     if (textEl) {
       textEl.textContent = pagedText[currentPage];
-      lookup.refresh().catch(() => {});
     }
     return;
   }
@@ -207,7 +187,7 @@ export async function show(text, options = {}) {
 
   if (speakerEl) {
     if (speaker && typeof speaker === 'object') {
-      speakerEl.innerHTML = renderJpFirst(speaker.name, speaker.reading, speaker.meaning);
+      speakerEl.innerHTML = renderJpSentence([entityToToken(speaker)], getKnownWords(), new Map());
     } else {
       speakerEl.textContent = speaker || '';
     }
@@ -217,16 +197,19 @@ export async function show(text, options = {}) {
   if (autoDismiss) {
     setText(textEl, displayText);
     if (textEl) lookup.refresh().catch(() => {});
+    if (html && textEl && !garbled) dialogueLookup.attachWordClickHandlers(textEl);
   } else if (persistent) {
     // Persistent: truncate to 2 lines (no click-to-advance available)
     const pages = html ? [displayText] : paginateForTwoLines(displayText);
     setText(textEl, pages[0] || '');
     if (textEl) lookup.refresh().catch(() => {});
+    if (html && textEl && !garbled) dialogueLookup.attachWordClickHandlers(textEl);
   } else {
     pagedText = html ? [displayText] : paginateForTwoLines(displayText);
     currentPage = 0;
     setText(textEl, pagedText[0] || '');
     if (textEl) lookup.refresh().catch(() => {});
+    if (html && textEl && !garbled) dialogueLookup.attachWordClickHandlers(textEl);
   }
   if (textEl) textEl.classList.toggle('garbled', !!garbled);
   if (indicatorEl) indicatorEl.style.display = (autoDismiss || persistent) ? 'none' : '';
@@ -274,3 +257,12 @@ export function forceHide() {
     resolve();
   }
 }
+
+/** Pause auto-dismiss timer (e.g., when word popup opens during auto-dismiss). */
+export function pauseAutoDismiss() {
+  if (dismissTimer) {
+    clearTimeout(dismissTimer);
+    dismissTimer = null;
+  }
+}
+

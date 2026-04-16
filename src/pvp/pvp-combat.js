@@ -1,21 +1,15 @@
-/**
- * PvP Combat Resolver
- *
- * Orchestrates two-player combat using the existing creature combat engine.
- * Both sides submit moves; creatures act in level-descending initiative order
- * (ties random). Damage and HP updates happen in that same order so playback
- * matches mechanical resolution.
- */
-
 import {
   tickAllEffects,
-  handleCreatureKO,
   applyPartySkillsAfterPlayerAttacks,
   applyRoundStartSkills,
   applyAfterEnemyAttacks,
-  executeSlotMoveTurn
+  executeSlotMoveTurn,
+  computeInlineCounter,
+  checkAfflictionBurstCounter
 } from '../game/services/creature-combat-service.js';
+import { processKOSwaps, checkAllDefeated } from '../game/combat/resolution.js';
 import { hasHaste, consumeHaste, isIncapacitated } from '../game/combat/effects.js';
+import { toActivePartySkillIdSet } from '../game/combat/party-skill-engine.js';
 
 /**
  * Build a turn-ordered list of creatures from both sides.
@@ -167,47 +161,44 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
   const orderedAttacks = [];
   const defeatedDummy = new Set();
   let playbackCounter = 0;
+  const inlineCountersA = [];
+  const inlineCountersB = [];
 
   for (const slot of initiative) {
-    if (slot.side === 'sideA') {
-      const choices = mapA.get(slot.index);
-      const { attacks: slotAttacks } = executeSlotMoveTurn(
-        sideA,
-        sideB,
-        slot.index,
-        choices,
-        itemBuffsA,
-        null,
-        null,
-        hastedA,
-        defeatedDummy
-      );
-      for (const atk of slotAttacks) {
+    const isA = slot.side === 'sideA';
+    const attackerSide = isA ? sideA : sideB;
+    const defenderSide = isA ? sideB : sideA;
+    const choices = isA ? mapA.get(slot.index) : mapB.get(slot.index);
+    const attackerResult = isA ? resultA : resultB;
+    const sideLabel = isA ? 'sideA' : 'sideB';
+    const defenderPartySkills = isA ? partySkillsB : partySkillsA;
+    const defenderCombat = isA ? combatB : combatA;
+    const defenderCounters = isA ? inlineCountersB : inlineCountersA;
+
+    executeSlotMoveTurn(attackerSide, defenderSide, slot.index, choices, {
+      itemBuffs: isA ? itemBuffsA : itemBuffsB,
+      hastedSlots: isA ? hastedA : hastedB,
+      defeatedIndices: defeatedDummy,
+      onAttack(atk) {
         atk.playbackIndex = playbackCounter++;
-        atk.side = 'sideA';
+        atk.side = sideLabel;
         orderedAttacks.push(atk);
-        resultA.attacks.push(atk);
+        attackerResult.attacks.push(atk);
+
+        // Opposing side counters
+        if (defenderPartySkills && defenderCombat) {
+          const counter = computeInlineCounter(atk, defenderSide, attackerSide, defenderPartySkills, defenderCombat);
+          if (counter) {
+            counter.playbackIndex = playbackCounter++;
+            counter.side = isA ? 'sideB' : 'sideA';
+            orderedAttacks.push(counter);
+            defenderCounters.push(counter);
+          }
+        }
+
+        return attackerSide[slot.index]?.hp > 0;
       }
-    } else {
-      const choices = mapB.get(slot.index);
-      const { attacks: slotAttacks } = executeSlotMoveTurn(
-        sideB,
-        sideA,
-        slot.index,
-        choices,
-        itemBuffsB,
-        null,
-        null,
-        hastedB,
-        defeatedDummy
-      );
-      for (const atk of slotAttacks) {
-        atk.playbackIndex = playbackCounter++;
-        atk.side = 'sideB';
-        orderedAttacks.push(atk);
-        resultB.attacks.push(atk);
-      }
-    }
+    });
   }
 
   if (partySkillsA && combatA) {
@@ -229,31 +220,22 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     });
   }
 
-  // Party skills: counter attacks (after opponent's attacks)
-  // Side A's creatures counter side B's attacks that hit them
-  const counterAttacksA = (partySkillsA && combatA)
-    ? (applyAfterEnemyAttacks({
-        enemyAttacks: resultB.attacks,
-        allies: sideA,
-        enemies: sideB,
-        runPartySkills: partySkillsA,
-        combat: combatA
-      }) || [])
-    : [];
-  // Side B's creatures counter side A's attacks that hit them
-  const counterAttacksB = (partySkillsB && combatB)
-    ? (applyAfterEnemyAttacks({
-        enemyAttacks: resultA.attacks,
-        allies: sideB,
-        enemies: sideA,
-        runPartySkills: partySkillsB,
-        combat: combatB
-      }) || [])
-    : [];
-  const counterAttacks = [
-    ...counterAttacksA.map(c => ({ ...c, pvpSide: 'sideA' })),
-    ...counterAttacksB.map(c => ({ ...c, pvpSide: 'sideB' }))
-  ];
+  // Affliction Burst for inline counters
+  if (partySkillsA && combatA && inlineCountersA.length > 0) {
+    const activeA = toActivePartySkillIdSet(partySkillsA);
+    if (activeA.has('afflictionBurst')) {
+      checkAfflictionBurstCounter(sideB, combatA, inlineCountersA);
+    }
+  }
+  if (partySkillsB && combatB && inlineCountersB.length > 0) {
+    const activeB = toActivePartySkillIdSet(partySkillsB);
+    if (activeB.has('afflictionBurst')) {
+      checkAfflictionBurstCounter(sideA, combatB, inlineCountersB);
+    }
+  }
+
+  // Backward compat: empty counterAttacks array
+  const counterAttacks = [];
 
   const mpRegens = [];
   for (const c of sideA) {
@@ -270,29 +252,20 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
   }
 
   const koSwaps = [];
+  const koRemovals = [];
   if (partyA) {
-    for (let i = 0; i < sideA.length; i++) {
-      if (sideA[i] && sideA[i].hp <= 0) {
-        const replacement = handleCreatureKO(partyA, i);
-        if (replacement) {
-          koSwaps.push({ side: 'sideA', index: i, replacement });
-        }
-      }
-    }
+    const resultA = processKOSwaps(sideA, partyA);
+    koSwaps.push(...resultA.koSwaps.map(s => ({ side: 'sideA', index: s.index, replacement: s.replacement })));
+    koRemovals.push(...resultA.koRemovals.map(r => ({ side: 'sideA', index: r.index, name: r.name })));
   }
   if (partyB) {
-    for (let i = 0; i < sideB.length; i++) {
-      if (sideB[i] && sideB[i].hp <= 0) {
-        const replacement = handleCreatureKO(partyB, i);
-        if (replacement) {
-          koSwaps.push({ side: 'sideB', index: i, replacement });
-        }
-      }
-    }
+    const resultB = processKOSwaps(sideB, partyB);
+    koSwaps.push(...resultB.koSwaps.map(s => ({ side: 'sideB', index: s.index, replacement: s.replacement })));
+    koRemovals.push(...resultB.koRemovals.map(r => ({ side: 'sideB', index: r.index, name: r.name })));
   }
 
-  const allADead = sideA.every(c => c.hp <= 0);
-  const allBDead = sideB.every(c => c.hp <= 0);
+  const allADead = checkAllDefeated(sideA);
+  const allBDead = checkAllDefeated(sideB);
   let winner = null;
   if (allADead && allBDead) winner = 'draw';
   else if (allBDead) winner = 'sideA';
@@ -304,6 +277,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     roundStartEvents,
     counterAttacks,
     koSwaps,
+    koRemovals,
     mpRegens,
     winner,
     sideA,

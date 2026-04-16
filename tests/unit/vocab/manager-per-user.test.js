@@ -1,82 +1,64 @@
 /**
- * Tests for per-user vocab cache isolation
+ * Tests for per-user vocab manager backed by FSRS (internal-srs.js)
  */
-import { describe, it, before, after } from 'node:test';
+import { describe, it, before, after, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'fs';
-import * as jpdb from '../../../src/jpdb.js';
-import { createTestTmpDir } from '../../helpers/tmp.js';
+import { State } from 'ts-fsrs';
 
-let tmp;
+// We mock getDeckCards so the vocab-manager sees controlled card data
+// without needing real FSRS files on disk.
+let getDeckCardsMock;
+let getDueCardsMock;
 
-describe('Per-user vocab cache', () => {
-  // Import fresh module for each test run
+// Register the mock before importing vocab-manager
+before(async () => {
+  getDeckCardsMock = mock.fn(() => []);
+  getDueCardsMock = mock.fn(() => []);
+  await mock.module('../../../src/game/internal-srs.js', {
+    namedExports: {
+      getDeckCards: getDeckCardsMock,
+      getDueCards: getDueCardsMock,
+      // Stubs for other exports that may be imported transitively
+      loadSrsData: () => ({ kana: { cards: [] } }),
+      saveSrsData: () => {},
+      clearSrsData: () => {},
+      clearSrsCache: () => {},
+      configureSrs: () => {},
+      initKanaDeck: () => {},
+      getRowCards: () => [],
+      gradeCard: () => ({}),
+    }
+  });
+});
+
+describe('Per-user vocab manager (FSRS-backed)', () => {
   let vm;
 
   before(async () => {
-    tmp = await createTestTmpDir();
-    // Dynamic import to get fresh module
     vm = await import('../../../src/game/vocab-manager.js');
   });
 
-  after(async () => {
-    await tmp.cleanup();
-  });
-
-  it('should create separate cache files for different users', () => {
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
+  it('should add and retrieve recently used words per user', () => {
     vm.clearVocabManagerCache('user1');
     vm.clearVocabManagerCache('user2');
 
     vm.addUsedWords(['word1', 'word2'], 'user1');
     vm.addUsedWords(['word3', 'word4'], 'user2');
 
-    const user1File = `${tmp.path}/vocab-cache-user1.json`;
-    const user2File = `${tmp.path}/vocab-cache-user2.json`;
+    const user1Words = vm.getRecentlyUsedWords('user1');
+    const user2Words = vm.getRecentlyUsedWords('user2');
 
-    assert.ok(existsSync(user1File), 'User 1 cache file should exist');
-    assert.ok(existsSync(user2File), 'User 2 cache file should exist');
-
-    const user1Data = JSON.parse(readFileSync(user1File, 'utf-8'));
-    const user2Data = JSON.parse(readFileSync(user2File, 'utf-8'));
-
-    assert.ok(user1Data.recentlyUsedWords.includes('word1'));
-    assert.ok(!user1Data.recentlyUsedWords.includes('word3'));
-    assert.ok(user2Data.recentlyUsedWords.includes('word3'));
-    assert.ok(!user2Data.recentlyUsedWords.includes('word1'));
+    assert.deepStrictEqual(user1Words, ['word1', 'word2']);
+    assert.deepStrictEqual(user2Words, ['word3', 'word4']);
   });
 
   it('should throw error when userId is missing', () => {
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
-
     assert.throws(() => {
       vm.addUsedWords(['word'], undefined);
     }, /userId is required/);
   });
 
-  it('should maintain separate word state caches per user', () => {
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
-    vm.clearVocabManagerCache('user1');
-    vm.clearVocabManagerCache('user2');
-
-    // Set up test caches for each user
-    vm.setTestCache({
-      '食べる': { states: ['due'], vid: 1, sid: 0, rank: 100 }
-    }, 'user1');
-
-    vm.setTestCache({
-      '飲む': { states: ['learning'], vid: 2, sid: 0, rank: 50 }
-    }, 'user2');
-
-    const stats1 = vm.getVocabManagerStats('user1');
-    const stats2 = vm.getVocabManagerStats('user2');
-
-    assert.strictEqual(stats1.cachedWordStates, 1);
-    assert.strictEqual(stats2.cachedWordStates, 1);
-  });
-
   it('should isolate getRecentlyUsedWords per user', () => {
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache('user1');
     vm.clearVocabManagerCache('user2');
 
@@ -90,158 +72,101 @@ describe('Per-user vocab cache', () => {
     assert.deepStrictEqual(user2Words, ['cherry', 'date']);
   });
 
-  it('should support legacy cacheFile config with warning', () => {
-    // This tests backward compatibility
-    vm.configureVocabManager({ cacheFile: '/tmp/legacy-cache/vocab.json' });
-    // Should not throw, and should extract directory
-    // The warning is logged but not testable here
-  });
-
-  it('should isolate getNewWordsForDiscovery per user', () => {
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
-    vm.clearVocabManagerCache('user1');
-    vm.clearVocabManagerCache('user2');
-
-    vm.setTestCache({
-      '食べる': { states: ['new'], vid: 1, sid: 0, rank: 100 },
-      '飲む': { states: ['learning'], vid: 2, sid: 0, rank: 50 }
-    }, 'user1');
-
-    vm.setTestCache({
-      '見る': { states: ['new'], vid: 3, sid: 0, rank: 30 }
-    }, 'user2');
-
-    const result1 = vm.getNewWordsForDiscovery(10, 'user1');
-    const result2 = vm.getNewWordsForDiscovery(10, 'user2');
-
-    // User1 should only see their new word (食べる), not user2's
-    assert.strictEqual(result1.words.length, 1);
-    assert.strictEqual(result1.words[0].word, '食べる');
-
-    // User2 should only see their new word (見る)
-    assert.strictEqual(result2.words.length, 1);
-    assert.strictEqual(result2.words[0].word, '見る');
-  });
-
-  it('should build narration vocabulary from allowed states only', () => {
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
+  it('should return known words from getNarrationVocabularyForUser via FSRS cards', () => {
     vm.clearVocabManagerCache('user1');
 
-    vm.setTestCache({
-      '学ぶ': { states: ['due'], vid: 1, sid: 0, rank: 10 },
-      '食べる': { states: ['learning'], vid: 2, sid: 0, rank: 20 },
-      '見る': { states: ['known'], vid: 3, sid: 0, rank: 30 },
-      '新語': { states: ['new'], vid: 4, sid: 0, rank: 1 },
-      '除外': { states: ['blacklisted'], vid: 5, sid: 0, rank: 2 }
-    }, 'user1');
+    // Mock getDeckCards to return FSRS card objects
+    getDeckCardsMock.mock.mockImplementation(() => [
+      { id: '学ぶ', state: State.Relearning, due: new Date(Date.now() - 1000) },
+      { id: '食べる', state: State.Learning, due: new Date(Date.now() - 1000) },
+      { id: '見る', state: State.Review, due: new Date(Date.now() + 100000) },
+      { id: '新語', state: State.New, due: new Date() },
+    ]);
 
     const result = vm.getNarrationVocabularyForUser('user1', ['fallback']);
-    assert.deepStrictEqual(result.words, ['学ぶ', '食べる', '見る']);
+    assert.ok(result.words, 'result should have words property');
+    // Learning, Review, and Relearning cards should be included; New should not
+    assert.ok(result.words.includes('学ぶ'));
+    assert.ok(result.words.includes('食べる'));
+    assert.ok(result.words.includes('見る'));
+    assert.ok(!result.words.includes('新語'));
+    // No vidSet property in new API
+    assert.strictEqual(result.vidSet, undefined);
   });
 
-  it('should fall back to provided vocabulary when user cache has no allowed states', () => {
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
+  it('should fall back to provided vocabulary when user has no known cards', () => {
     vm.clearVocabManagerCache('user1');
 
-    vm.setTestCache({
-      '新語': { states: ['new'], vid: 11, sid: 0, rank: 1 },
-      '除外': { states: ['suspended'], vid: 12, sid: 0, rank: 2 }
-    }, 'user1');
+    getDeckCardsMock.mock.mockImplementation(() => [
+      { id: '新語', state: State.New, due: new Date() },
+    ]);
 
     const result = vm.getNarrationVocabularyForUser('user1', ['fallback', 'fallback', 'known']);
     assert.deepStrictEqual(result.words, ['fallback', 'known']);
   });
 
-  it('should return vidSet alongside words from getNarrationVocabularyForUser', () => {
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
+  it('should return empty words for null userId with deduped fallback', () => {
+    const result = vm.getNarrationVocabularyForUser(null, ['a', 'b', 'a']);
+    assert.deepStrictEqual(result.words, ['a', 'b']);
+  });
+
+  it('selectSuggestedWords returns due/learning/known mix from FSRS cards', () => {
+    const cards = [
+      { id: '走る', state: State.Relearning, due: new Date(Date.now() - 5000) },
+      { id: '泳ぐ', state: State.Learning, due: new Date(Date.now() - 1000) },
+      { id: '読む', state: State.Review, due: new Date(Date.now() - 1000) },
+      { id: '書く', state: State.Review, due: new Date(Date.now() + 100000) },
+      { id: '聞く', state: State.Learning, due: new Date(Date.now() + 100000) },
+      { id: '話す', state: State.New, due: new Date() },
+    ];
+
+    const results = vm.selectSuggestedWords(cards, [], 5);
+    assert.ok(results.length > 0, 'should return some suggested words');
+    // New words should not appear (priority 0)
+    const words = results.map(r => r.word);
+    assert.ok(!words.includes('話す'), 'New state words should not be suggested');
+  });
+
+  it('getNewWordsForDiscovery returns only State.New cards sorted by rank', () => {
+    getDeckCardsMock.mock.mockImplementation(() => [
+      { id: '食べる', state: State.New, reading: 'たべる', meaning: 'to eat', rank: 100 },
+      { id: '飲む', state: State.New, reading: 'のむ', meaning: 'to drink', rank: 50 },
+      { id: '見る', state: State.Learning, reading: 'みる', meaning: 'to see', rank: 30 },
+      { id: '聞く', state: State.New, reading: 'きく', meaning: 'to listen', rank: 200 },
+    ]);
+
+    const result = vm.getNewWordsForDiscovery(2, 'user1');
+    assert.strictEqual(result.words.length, 2);
+    assert.strictEqual(result.words[0].word, '飲む');  // rank 50 first
+    assert.strictEqual(result.words[1].word, '食べる'); // rank 100
+    assert.strictEqual(result.available, true);
+  });
+
+  it('getNewWordsForDiscovery returns empty when no new words', () => {
+    getDeckCardsMock.mock.mockImplementation(() => [
+      { id: '見る', state: State.Learning, reading: 'みる', meaning: 'to see', rank: 30 },
+    ]);
+
+    const result = vm.getNewWordsForDiscovery(2, 'user1');
+    assert.strictEqual(result.words.length, 0);
+    assert.strictEqual(result.available, false);
+  });
+
+  it('getVocabManagerStats returns card counts from FSRS', () => {
+    getDeckCardsMock.mock.mockImplementation(() => [
+      { id: 'a', state: State.Learning, due: new Date() },
+      { id: 'b', state: State.Review, due: new Date() },
+    ]);
+    getDueCardsMock.mock.mockImplementation(() => [
+      { id: 'a', state: State.Learning, due: new Date(Date.now() - 1000) },
+    ]);
+
     vm.clearVocabManagerCache('user1');
+    vm.addUsedWords(['x', 'y'], 'user1');
 
-    vm.setTestCache({
-      '学ぶ': { states: ['due'], vid: 1001, sid: 0, rank: 10 },
-      '食べる': { states: ['learning'], vid: 1002, sid: 0, rank: 20 },
-      '見る': { states: ['known'], vid: 1003, sid: 0, rank: 30 },
-      '新語': { states: ['new'], vid: 1004, sid: 0, rank: 1 },
-      '除外': { states: ['blacklisted'], vid: 1005, sid: 0, rank: 2 }
-    }, 'user1');
-
-    const result = vm.getNarrationVocabularyForUser('user1', ['fallback']);
-    assert.ok(result.words, 'result should have words property');
-    assert.ok(result.vidSet instanceof Set, 'result should have vidSet as a Set');
-    assert.deepStrictEqual(result.words, ['学ぶ', '食べる', '見る']);
-    assert.strictEqual(result.vidSet.size, 3);
-    assert.ok(result.vidSet.has(1001));
-    assert.ok(result.vidSet.has(1002));
-    assert.ok(result.vidSet.has(1003));
-    assert.ok(!result.vidSet.has(1004));
-    assert.ok(!result.vidSet.has(1005));
-  });
-
-  it('should return empty vidSet when falling back to provided vocabulary', () => {
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
-    vm.clearVocabManagerCache('user1');
-
-    vm.setTestCache({
-      '新語': { states: ['new'], vid: 11, sid: 0, rank: 1 }
-    }, 'user1');
-
-    const result = vm.getNarrationVocabularyForUser('user1', ['fallback', 'known']);
-    assert.ok(result.words, 'result should have words property');
-    assert.ok(result.vidSet instanceof Set, 'result should have vidSet as a Set');
-    assert.deepStrictEqual(result.words, ['fallback', 'known']);
-    assert.strictEqual(result.vidSet.size, 0);
-  });
-
-});
-
-describe('JPDB per-user cache', () => {
-  let vm;
-
-  before(async () => {
-    if (!tmp) tmp = await createTestTmpDir();
-    vm = await import('../../../src/game/vocab-manager.js');
-  });
-
-  after(async () => {
-    await tmp.cleanup();
-  });
-
-  it('should invalidate only the specified user cache', () => {
-    jpdb.configure({ vocabCacheDir: tmp.path + '/' });
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
-
-    vm.clearVocabManagerCache('user1');
-    vm.clearVocabManagerCache('user2');
-
-    vm.setTestCache({
-      'テスト': { vid: 123, sid: 1, states: ['due'], dueAt: Date.now() }
-    }, 'user1');
-    vm.setTestCache({
-      'テスト': { vid: 123, sid: 1, states: ['due'], dueAt: Date.now() }
-    }, 'user2');
-
-    // Need to save caches to disk for jpdb to read them
-    vm.addUsedWords(['dummy'], 'user1');
-    vm.addUsedWords(['dummy'], 'user2');
-
-    // Invalidate for user1 only
-    jpdb.invalidateWordStateCache(123, 'user1');
-
-    // Check user2's cache is untouched - word still has 'due'
-    const user2File = `${tmp.path}/vocab-cache-user2.json`;
-    const user2Data = JSON.parse(readFileSync(user2File, 'utf-8'));
-    assert.ok(user2Data.wordStateCache['テスト'].states.includes('due'), 'User2 cache should still have due state');
-
-    // Check user1's cache has 'due' removed
-    const user1File = `${tmp.path}/vocab-cache-user1.json`;
-    const user1Data = JSON.parse(readFileSync(user1File, 'utf-8'));
-    assert.ok(!user1Data.wordStateCache['テスト'].states.includes('due'), 'User1 cache should not have due state');
-  });
-
-  it('should throw error when userId is missing for invalidateWordStateCache', () => {
-    jpdb.configure({ vocabCacheDir: tmp.path + '/' });
-
-    assert.throws(() => {
-      jpdb.invalidateWordStateCache(123, undefined);
-    }, /userId is required/);
+    const stats = vm.getVocabManagerStats('user1');
+    assert.strictEqual(stats.recentWordsCount, 2);
+    assert.strictEqual(stats.totalCards, 2);
+    assert.strictEqual(stats.dueCards, 1);
   });
 });

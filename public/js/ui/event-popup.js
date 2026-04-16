@@ -1,23 +1,3 @@
-/**
- * @file event-popup.js - Event Popup Visual Feedback System
- *
- * PURPOSE:
- * Provides floating text popups for game events (buffs, heals, items, credits, etc.),
- * persistent status icon badges on formation slots, and animated number counters.
- *
- * KEY EXPORTS:
- * - showEventPopup(targetEl, text, options): Floating text popup anchored to an element
- * - animateCounter(el, fromValue, toValue, duration, options): Animated number counter
- *
- * PRESETS (convenience wrappers around showEventPopup):
- * - buff(el, text), debuff(el, text), heal(el, text), itemGained(el, text)
- * - credits(el, amount), effectiveness(el, text), resistedEffectiveness(el, text)
- * - skillProc(el, text)
- *
- * DEPENDENCIES:
- * - ./dom-effects.js: spawnParticles(sourceEl, count, color)
- */
-
 import { spawnParticles } from './dom-effects.js';
 
 // ============ CORE POPUP ============

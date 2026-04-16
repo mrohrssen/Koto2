@@ -1,0 +1,133 @@
+export function createInspector({ getState, getPhase, countDomBars, getPixiSprites } = {}) {
+
+  function getAliveCount(creatures) {
+    if (!creatures) return 0;
+    return creatures.filter(c => c.hp > 0 && !c.befriended).length;
+  }
+
+  function getVisiblePixiCount(sprites) {
+    if (!sprites) return 0;
+    return sprites.filter(s => s.alpha > 0.3).length;
+  }
+
+  function checkCreatures() {
+    const mismatches = [];
+    const phase = getPhase();
+    const state = getState();
+    const inCombat = state?.combat && phase === 'combat';
+
+    if (!inCombat) {
+      return { ok: true, mismatches };
+    }
+
+    for (const side of ['player', 'enemy']) {
+      const creatures = side === 'player' ? state.combat.allies : state.combat.enemies;
+      const aliveCount = getAliveCount(creatures);
+      const domCount = countDomBars(side);
+      const pixiSprites = getPixiSprites(side);
+      const pixiVisibleCount = getVisiblePixiCount(pixiSprites);
+
+      // Per-creature KO checks first so they appear before aggregate count mismatches.
+      if (creatures && pixiSprites) {
+        for (let i = 0; i < creatures.length; i++) {
+          const c = creatures[i];
+          const s = pixiSprites[i];
+          if (c && s && c.hp <= 0 && !c.befriended && s.alpha > 0.3) {
+            mismatches.push({
+              type: 'DOM_GHOST',
+              detail: `${side}[${i}] KO (hp=${c.hp}) but sprite alpha=${s.alpha} — should be ≤0.3`,
+            });
+          }
+        }
+      }
+
+      if (domCount !== aliveCount) {
+        mismatches.push({
+          type: 'DOM_GHOST',
+          detail: `${side} dom=${domCount} but state=${aliveCount} alive`,
+        });
+      }
+
+      if (pixiVisibleCount !== aliveCount) {
+        mismatches.push({
+          type: 'DOM_GHOST',
+          detail: `${side} pixi=${pixiVisibleCount} visible but state=${aliveCount} alive`,
+        });
+      }
+    }
+
+    return { ok: mismatches.length === 0, mismatches };
+  }
+
+  function fullScan() {
+    const phase = getPhase();
+    const state = getState();
+    const inCombat = state?.combat && phase === 'combat';
+    const creatureResult = checkCreatures();
+
+    const summary = {
+      allies: { state: 0, dom: 0, pixi: 0 },
+      enemies: { state: 0, dom: 0, pixi: 0 },
+    };
+
+    if (inCombat) {
+      summary.allies = {
+        state: getAliveCount(state.combat.allies),
+        dom: countDomBars('player'),
+        pixi: getVisiblePixiCount(getPixiSprites('player')),
+      };
+      summary.enemies = {
+        state: getAliveCount(state.combat.enemies),
+        dom: countDomBars('enemy'),
+        pixi: getVisiblePixiCount(getPixiSprites('enemy')),
+      };
+    }
+
+    return { ok: creatureResult.ok, mismatches: creatureResult.mismatches, summary, phase };
+  }
+
+  function checkGameRules(result) {
+    const mismatches = [];
+    if (!result) return { ok: true, mismatches };
+
+    // Rule: KO'd creatures cannot attack
+    for (const atk of [...(result.playerAttacks || []), ...(result.enemyAttacks || [])]) {
+      if (atk.attackerHpBefore !== undefined && atk.attackerHpBefore <= 0) {
+        mismatches.push({
+          type: 'LOGIC_BUG',
+          detail: `KO creature attacked: ${atk.attackerSide}[${atk.attackerIndex}] had HP=${atk.attackerHpBefore}`,
+        });
+      }
+    }
+
+    // Rule: HP must never go below 0
+    for (const creatures of [result.allies || [], result.enemies || []]) {
+      for (const c of creatures) {
+        if (c.hp < 0) {
+          mismatches.push({
+            type: 'LOGIC_BUG',
+            detail: `HP below 0: creature has hp=${c.hp}`,
+          });
+        }
+      }
+    }
+
+    // Rule: Expired effects should be removed
+    for (const creatures of [result.allies || [], result.enemies || []]) {
+      for (const c of creatures) {
+        for (const eff of (c.activeEffects || [])) {
+          if (eff.remainingTurns !== undefined && eff.remainingTurns <= 0) {
+            mismatches.push({
+              type: 'LOGIC_BUG',
+              detail: `Expired effect still active: ${eff.type} with remainingTurns=${eff.remainingTurns}`,
+            });
+          }
+        }
+      }
+    }
+
+    return { ok: mismatches.length === 0, mismatches };
+  }
+
+  return { checkCreatures, fullScan, checkGameRules };
+}

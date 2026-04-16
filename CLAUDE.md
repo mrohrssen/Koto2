@@ -25,7 +25,6 @@ Japanese vocabulary learning RPG — bright sci-fi fantasy where creatures and h
 - **Transitivity matters:** 狂う means "go mad" (intransitive), NOT "drive mad" (transitive/causative). 迷う means "get lost / hesitate," NOT "bewilder." Never flip a word's transitivity to make it sound cooler.
 - **Use primary dictionary definitions:** Present the most common meaning first. If a word has multiple senses, show them separated by `/` (e.g., "invite / tempt").
 - **No embellishment:** Don't upgrade "scatter" to "shatter," "invite" to "lure," or "go mad" to "drive mad." If the accurate translation feels underwhelming for a game ability name, pick a different word — don't bend the translation.
-- **Show raw JPDB definitions:** When suggesting Japanese words, always show the exact `meanings` array from the JPDB API response. Do not paraphrase or summarize. The user must be able to verify every translation against the source data.
 - **When in doubt, check a dictionary.** If you're unsure whether an English gloss is accurate, say so rather than guessing.
 
 ## Commands
@@ -111,7 +110,6 @@ public/
   game.html            # Main game template
   assets/              # Sprites, backgrounds
 src/
-  jpdb.js              # JPDB API integration
   ai-providers.js      # Multi-provider AI abstraction
   game/
     loop.js            # GameManager class (central coordinator)
@@ -139,7 +137,6 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 - `/api/auth/` - Authentication (login, register, API keys)
 - `/api/game/` - Game state, combat, exploration, meta-progression
-- `/api/jpdb/` - JPDB vocabulary integration
 - `/api/vocab/` - Word suggestion system
 - `/api/tts/` - VOICEVOX text-to-speech
 - `/api/settings` - User preferences
@@ -157,11 +154,14 @@ await page.addStyleTag({ path: 'public/dev-safe-area.css' });
 
 **Keep the browser open.** Don't close/reopen between phases — the user may be watching on a second screen. Just navigate or reload as needed.
 
-**Narration boxes** have an animated `▼` arrow that Playwright considers "not stable", so clicking by ref often times out. Instead use:
+**Narration boxes** must be dismissed by clicking **OUTSIDE** the box, not inside it. Clicking inside the narration box does nothing — the interior is a safe zone for word exploration/lookup. Click the `.scene-area` behind it or any area outside the box:
 ```js
-await page.evaluate(() => document.querySelector('.narration-box')?.click());
+await page.evaluate(() => {
+  const scene = document.querySelector('.scene-area');
+  if (scene) scene.click();
+});
 ```
-Some narrations have multiple pages — keep clicking until they dismiss or buttons become enabled.
+Some narrations have multiple pages (shown by a `▼` indicator) — keep clicking outside with ~600ms delays between clicks until the box disappears or buttons become enabled. **Some narrations have response buttons** (e.g., "Yes, I understand!") that appear below the narration box. When these are present, clicking outside does nothing — you must click the button to proceed. Always screenshot or snapshot to check for buttons before assuming a click-outside loop will work.
 
 **Vocab cards (combat):** Cards must be **clicked first** to flip (reveals word + meaning), then **swiped** to register the action. Swipe right = "knew it" (attack), swipe left = "didn't know" (defend). Use mouse gestures:
 ```js
@@ -181,7 +181,8 @@ await page.evaluate(() => window.__gameState?.phase);
 **General tips:**
 - Always `browser_snapshot` before interacting — refs change after every DOM update
 - Use `browser_take_screenshot` at checkpoints so the user can see visual state. **Delete screenshots after** they've been shown — run `rm <filename>` to avoid cluttering the repo
-- After server restart, wait 3s then verify with `curl -s -o /dev/null -w "%{http_code}" http://localhost:3000`
+- **Use `npm run dev` (Vite + Express), NOT `npm start`.** Navigate to `http://localhost:5173` (Vite), NOT `:3000` (Express). Without Vite, bare module imports like `animejs` fail and the game JS module graph silently breaks.
+- After server restart, wait 5s then verify with `curl -s -o /dev/null -w "%{http_code}" http://localhost:5173`
 - Creature popups can accidentally open if you click a creature slot — dismiss with `page.evaluate(() => document.querySelector('.creature-popup')?.remove())`
 
 Update the guide when adding new features or discovering new interaction patterns.
@@ -219,6 +220,40 @@ Skills use `process.cwd()` for project paths and `$CLAUDE_PROJECT_DIR` for sub-s
 
 **All visual/CSS/animation/rendering changes MUST be verified with screenshots before reporting completion.** Never claim a visual fix works based on code reasoning alone — run the dev server, open Playwright, navigate to the affected screen, and take a screenshot proving the change is visible. If the fix involves combat animations, play through to combat. If it involves backgrounds, navigate to where the background renders. Evidence before assertions, always.
 
+## PvE / PvP Parity
+
+**Never modify PvE combat in ways that disconnect it from PvP.** Both battle modes must share the same visual and mechanical systems. When adding or upgrading combat features (animations, effects, damage display, status indicators), the implementation should work for both PvE and PvP automatically. When that's not possible, both attack loops must be updated in the same PR. A feature that works in PvE but not PvP (or vice versa) is incomplete.
+
+## Adding Dialogue (Static Frames Pipeline)
+
+All static Japanese text shown to the player (barks, narration, befriend prompts, shop lines, NPC dialogue, etc.) lives in the **frames pipeline**. Never hand-write tokenizations or meanings — the pipeline generates them from Sudachi + the word dictionary.
+
+**Files:**
+- `data/dialogue/frame-sources.json` — **author here**. Each entry has `id`, `category`, `raw` (Japanese text), and `slots` (template markers).
+- `data/dialogue/frames.json` — **generated output, never edit directly**. Contains tokenized frames with `tokens[]` and `words[]`.
+
+**Workflow:**
+```bash
+# 1. Add your raw Japanese text to frame-sources.json
+#    (id, category, raw, slots — see existing entries for format)
+
+# 2. Run the tokenizer (Sudachi + dictionary enrichment)
+node scripts/tokenize-static.js
+
+# 3. Validate all frames against the dictionary
+node scripts/validate-dialogue.js
+
+# 4. Run tests
+npm test
+```
+
+**Rules:**
+- `frames.json` is a build artifact. If you need to change dialogue, change `frame-sources.json` and regenerate.
+- **Write raw text in kanji** (e.g. `待って！` not `まって！`). Sudachi needs kanji to tokenize correctly — the pipeline outputs hiragana readings, and the renderer decides what to show the player.
+- Every content word must exist in the word dictionary (`data/dictionary.json`). The validator will catch missing entries.
+- Barks (category `bark_*`) must have ≤ 3 content words.
+- Frame categories follow the pattern: `befriend_wait`, `befriend_name`, `bark_onHit`, `shop`, `greeting`, etc.
+
 ## Common Mistakes to Avoid
 
 - **Don't add equipment systems without the plan** - Equipment is designed via `/item-forge --type equipment`. See `docs/plans/2026-03-02-equipment-crafting-town-mvp-design.md`.
@@ -228,7 +263,10 @@ Skills use `process.cwd()` for project paths and `$CLAUDE_PROJECT_DIR` for sub-s
 - **Don't forget to bump `SPRITE_VERSION`** - After regenerating sprites, update it in `public/js/ui/sprite-utils.js` or users will see cached old sprites.
 - **Don't use Read tool to "show" images** - The Read tool's image display does NOT render in the terminal. To show the user images, serve them via a local HTTP server and display in the Playwright MCP browser (e.g., `python3 -m http.server` then `browser_navigate`).
 - **Don't launch Playwright without asking first** - Always ask the user before opening a Playwright browser session. Chrome session conflicts are common and launching blindly breaks things.
+- **Don't break PvE/PvP parity** - Combat features (animations, effects, UI) must work in both PvE and PvP. If you touch one attack loop, update the other.
+- **Don't hand-write frames.json** - `data/dialogue/frames.json` is generated by `node scripts/tokenize-static.js` from `frame-sources.json`. Add raw text to `frame-sources.json` and run the pipeline. Hand-crafted tokenizations will have wrong word boundaries and meanings.
 - **Report non-JSON code changes during forging** - Forge subagents should only produce JSON data for `forge-results.json`. If a forge job requires new code (new effect types, new systems, engine changes), **always report this to the user** before or immediately after. Don't silently add new code paths — the user needs to approve structural changes separately from content.
+- **NEVER modify `data/dictionary.json` without explicit user confirmation** - The dictionary is a curated language-learning resource, not a generic data file. Every definition directly affects what players learn. Always ask the user before adding, changing, or removing any entry — even if it seems like an obvious fix.
 
 ## Session Cleanup Rules
 
@@ -268,17 +306,6 @@ Each bug report includes:
 - `devicePixelRatio` - Screen density (3 for Retina)
 - `userAgent` - Browser/device info
 - `gameState` - Current game phase, floor, combat status
-
-## Migration Notes
-
-### 2026-02-05: Per-User Vocab Cache
-- Old shared cache `data/.jrpg-vocab-suggestions.json` is deprecated
-- New per-user caches: `data/vocab-cache-{userId}.json`
-- Delete old cache on deploy: `rm -f data/.jrpg-vocab-suggestions.json`
-- Each user's JPDB word states are now isolated
-- First speed review after deploy will rebuild the cache for each user
-
-
 
 ## ComfyUI (Image Generation)
 

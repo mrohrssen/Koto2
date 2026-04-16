@@ -1,10 +1,3 @@
-/**
- * @file tween.js — Lightweight promise-based tweening on PixiJS ticker
- *
- * Interpolates any numeric properties on any object over time with easing.
- * Returns a Promise that resolves when the tween completes.
- */
-
 import { getStage } from './battle-stage.js';
 
 const EASING = {

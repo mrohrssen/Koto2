@@ -19,18 +19,28 @@ Playtesting with Playwright MCP fails when you improvise. You lose track of what
 
 ## Pre-Playtest Setup
 
-```bash
-# 1. Start the server (use the correct worktree/directory)
-cd <worktree-or-repo-path>
-pkill -f "node server.js" 2>/dev/null
-npm start &
-sleep 3
+**CRITICAL: Use `npm run dev` (Vite + Express), NOT `npm start` (Express only).**
+Bare module imports like `animejs` only resolve through Vite. Without Vite, the entire JS module graph fails to load silently — the game appears to load but nothing works.
 
-# 2. Verify server is up
-curl -s http://localhost:3000 | head -c 100
+```bash
+# 1. Kill any stale processes on game ports
+lsof -ti :3000 2>/dev/null | xargs kill -9 2>/dev/null
+lsof -ti :5173 2>/dev/null | xargs kill -9 2>/dev/null
+
+# 2. Start both servers (Express on :3000 + Vite on :5173)
+cd <worktree-or-repo-path>
+npm run dev > /tmp/koto-dev.log 2>&1 &
+sleep 5
+
+# 3. Verify BOTH servers are up
+curl -s -o /dev/null -w "%{http_code}" http://localhost:5173  # Vite — should be 200
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000  # Express — should be 200
 ```
 
-Then open browser: `browser_navigate` to `http://localhost:3000`.
+**Navigate to Vite's port:** `browser_navigate` to `http://localhost:5173` (NOT `:3000`).
+Vite proxies `/api` requests to Express. Loading `:3000` directly skips Vite's module resolution.
+
+If Vite picks a different port (e.g., 5174 because 5173 is busy), check `cat /tmp/koto-dev.log | grep "Local:"` for the actual URL.
 
 ## How to Swipe Cards
 
@@ -63,95 +73,147 @@ When a new feature is added:
 
 ### Phase 0: Login / New Game
 
-**Trigger:** Navigate to `http://localhost:3000`
+**Trigger:** Navigate to `http://localhost:5173`
 
 **Expected screen:**
 - Login form with username/password fields
-- Register option
+- Login / Register tab buttons
+
+**Auth details:**
+- Auth token is stored in `localStorage` under key `authToken` (NOT `token`)
+- Registration requires an invite code: `neo-tokyo-friends`
+- To register via API: `POST /api/auth/register` with `{ username, password, inviteCode: "neo-tokyo-friends" }`
+- To login via API: `POST /api/auth/login` with `{ username, password }` — returns `{ token }`
+- After API login, set `localStorage.setItem('authToken', token)` and reload
+
+**Quick login via evaluate (fastest for playtesting):**
+```javascript
+await page.evaluate(async () => {
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'playtest_' + Date.now(), password: 'test123', inviteCode: 'neo-tokyo-friends' })
+  });
+  const { token } = await res.json();
+  localStorage.setItem('authToken', token);
+});
+// Then reload: browser_navigate to http://localhost:5173
+```
 
 **Interactions:**
 - Log in with test account, or register a new one
-- Start a new game (or continue existing)
+- After login, game loads to hub (new account) or continues existing run
 
 **What could go wrong:**
-- Login fails silently
-- New game button missing or unresponsive
+- Login fails silently (check console for 401 on `/api/auth/me`)
+- `authToken` key wrong — must be `authToken`, not `token`
+- Game JS fails to load — if `window.__inspector` is undefined after login, Vite is not running (see Pre-Playtest Setup)
 
 ---
 
-### Phase 1: Starter Selection (Creature Combat)
+### Phase 1: Tutorial — Cid's Intro + Starter Selection
 
-**Trigger:** Starting a new creature combat run.
+**Trigger:** New account, first run started (phase `area_selection`, tutorial step 0).
 
-**Expected screen:**
-- Title: "Choose 2 Starters"
-- Subtitle: "Pick your active creature, then a reserve"
-- Grid of creature cards (subset of 25 templates from `data/creatures.json`)
-- Each card: creature name, element icon (wood/fire/earth/metal/water), HP, ATK stats
+**What happens:**
+1. Cid narration appears with `?????????` garbled Japanese text — this is CORRECT (player has no known words yet, i+1 renders unknowns as `?`)
+2. Click **outside** the narration box (on `.scene-area`) to advance to next page
+3. Cid switches to English: "Oh wait... I don't think you can understand a word I'm saying. ...Do you understand me NOW?"
+4. **Response button appears:** "Yes, I understand!" — must click this button (clicking outside does nothing while response buttons are visible)
+5. Cid says "Ha! I knew it — you're the new recruit. Here, take this — it's called the Translator."
+6. More narration pages (click outside to advance) until Cid says "Every adventurer needs a companion. Choose yours wisely."
+7. **Three starter buttons appear:** "ひ (Fire)", "みず (Water)", "き (Wood)" — pick one element
 
 **Interactions:**
-1. Tap first creature card → highlights, subtitle changes to "Now pick a reserve creature"
-2. Tap second creature card → highlights, subtitle changes to "Ready!"
-3. Confirm button appears → tap it
+- Alternate between clicking outside narration box (to advance pages) and clicking response buttons (when they appear)
+- Always screenshot before clicking — if you see buttons below the narration, click the button, not the scene
 
 **What could go wrong:**
-- Empty grid (no creature cards rendered)
-- Subtitle doesn't update after each pick
-- Can pick the same creature twice
-- Confirm button doesn't appear after two picks
-- Element icons or color coding missing
-- Stats show NaN or 0
+- Narration doesn't advance — you're clicking inside the box instead of outside
+- Narration stuck — response buttons are present but not visible (scroll down)
+- Starter buttons don't appear after Cid's "choose wisely" line
 
 ---
 
-### Phase 2: Level Select and Ward Select
+### Phase 2: Area Selection
 
-**Trigger:** After confirming starters.
-
-**Expected screen — Level Select:**
-- 10 level buttons
-- Level 1 unlocked with "NEW" tag
-- Levels 2-10 locked/greyed
-
-**Interactions:** Tap Level 1.
-
-**Expected screen — Ward Select:**
-- Ward options displayed (e.g., Nerima / Setagaya)
-- Each ward shows name and description
-
-**Interactions:** Tap any ward. Exploration map loads.
-
-**What could go wrong:**
-- No levels shown, or all locked
-- Level 1 tap doesn't respond
-- Ward select doesn't appear after level pick
-- Exploration map fails to load
-
----
-
-### Phase 3: Exploration → Encounter Start
-
-**Trigger:** Exploration map loaded after ward selection.
+**Trigger:** After choosing a starter creature.
 
 **Expected screen:**
-- Branch selection or room navigation UI
-- Rooms may include: encounter, shrine, quiz, wordDiscovery, speedReviewRoom, shop
+- Background image of an area
+- "Area 1 / 1" label
+- Area card with name and description (e.g., "Starting Meadow — A bright, open meadow where new adventurers begin their journey.")
 
-**Interactions:** Navigate until reaching a creature encounter room. Select it.
-
-**Expected screen — Combat Start:**
-- **Top area:** 1-3 enemy creatures in a horizontal row. Each enemy shows: element icon (56px colored circle), name, level badge, HP bar. If only 1 enemy, shows single sprite instead of row.
-- **Bottom area:** 3 ally creature slots. Each shows: element icon with colored border, HP bar (green-to-red gradient), charge bar (5 empty segments), level badge. Empty slots (if party < 3) should be visually distinct.
-- **Middle area:** Vocab flashcards should appear shortly — dual cards (attack / defend).
+**Interactions:** Tap the area card to enter it.
 
 **What could go wrong:**
-- 0 enemies generated (empty top area)
-- Enemy count exceeds 3
-- Ally slots don't match starter picks (wrong creatures)
-- HP bars show wrong values or are missing
-- Charge bars pre-filled instead of empty
-- Multi-enemy layout overlapping or broken
-- Vocab cards never appear
+- No area card rendered
+- Area card tap doesn't respond
+
+---
+
+### Phase 3: Team Select → Skill Master → First Combat
+
+**Trigger:** After tapping area card in area selection.
+
+**Phase 3a: Team Selection**
+
+**Expected screen:**
+- "せんたく / Your Team" header with "X / 10 pts" counter
+- Grid of creature silhouettes (unowned show as dark silhouettes with `???`)
+- Owned creatures show sprite, name, element, and level
+- "Start Run (N monsters)" button at bottom — disabled until ≥1 creature selected
+
+**Interactions:**
+1. Tap an owned creature → stats panel appears at top (HP, ATK, DEF, MP, moves list)
+2. Creature gets selected (yellow highlight), point cost deducted from budget
+3. Tap "Start Run (N monsters)" when ready
+
+**Key detail:** The creature grid uses `.collection-cell` elements. Owned creatures lack the `.unowned` class. To select a creature programmatically: `document.querySelector('.collection-cell:not(.unowned)').click()`
+
+**Phase 3b: Initial Party Skill Pick (phase: `skillMaster`)**
+
+**Expected screen:**
+- Area background with Cid NPC visible
+- Narration: "Each run you can get skills to make your party stronger."
+- Three party skill cards below (e.g., Retaliation Strike, Arc Strike, Shared Vigor)
+
+**Interactions:**
+1. Dismiss Cid narration (click outside)
+2. Tap a skill card to select it
+3. Tutorial auto-selects the first skill for you if at tutorial step 0
+
+**Phase 3c: First Combat Entry (phase: `combat`)**
+
+**Expected screen:**
+- PixiJS battle scene: ally creature sprite on left, enemy creature sprite on right
+- DOM HP/MP bars overlaid on sprites (ally: HP + MP bars, enemy: HP bar)
+- Cid NPC in background center
+- **Move selection cards** in action area below scene: move name in Japanese + English, element, damage, MP cost
+- Room counter in header (e.g., "1/30")
+
+**Interactions:**
+- Tap a move card to select it → attack executes
+- After attack: a **split-attack-card** (SAC) shows the result (attacker, move, target, damage)
+- The SAC has a timed reveal animation. After animation completes, a `▼` continue indicator appears
+- **Tap the action area** (not the card itself) to dismiss the SAC and continue
+- Enemy turn follows automatically, then next move selection appears
+
+**Known issue (tween crash):** If a Pixi tween runs on a null/destroyed sprite at combat start, the SAC animation gets stuck and never shows the continue indicator. Check console for `TypeError: null is not an object (evaluating 'this._position.x')`. If stuck, force-clear: `document.getElementById('action-area').innerHTML = ''`
+
+**Inspector verification during combat:**
+```javascript
+// Check state-DOM-Pixi consistency
+window.__inspector.fullScan()
+// Expected: { ok: true, summary: { allies: { state: N, dom: N, pixi: N }, enemies: { state: M, dom: M, pixi: M } } }
+```
+
+**What could go wrong:**
+- No enemy sprite appears (Pixi loading failure)
+- HP bars don't match creature count
+- Move cards empty or missing
+- SAC animation stuck (tween crash — see known issue)
+- Inspector reports DOM_GHOST (stale sprite/HP bar from previous phase)
 
 ---
 

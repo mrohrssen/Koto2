@@ -1,11 +1,3 @@
-/**
- * Per-user server-side error ring buffer.
- *
- * Stores the last N errors per user in memory. When a bug report is
- * submitted, the server attaches these errors to the report so we can
- * see server-side failures the client never witnessed.
- */
-
 const MAX_ERRORS_PER_USER = 30;
 const MAX_USERS = 200;
 const userErrors = new Map();

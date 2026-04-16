@@ -1,10 +1,3 @@
-/**
- * @file speed-review.js - Speed Review Mode
- *
- * Rapid vocabulary review with three stacked flashcards.
- * Entry from hub, full-screen takeover.
- */
-
 import { apiUrl } from '../api.js';
 import { dom } from '../dom.js';
 import { playSFX, playBGMRandomStart, playBGM } from '../audio.js';
@@ -12,6 +5,7 @@ import * as takeover from './takeover.js';
 import { animate as anime } from 'animejs';
 import { setKnownWords } from './bootstrap-client.js';
 import { escapeHtml } from './html-utils.js';
+import { showWordLevelUp } from './word-level-up.js';
 
 // Module state
 let state = {
@@ -114,7 +108,7 @@ function showRoomCompletionError(errorMessage) {
 }
 
 /**
- * Flush any pending review (send to JPDB immediately)
+ * Flush any pending review (send to internal FSRS)
  */
 function flushPendingReview() {
   if (!state.pendingReview) return null;
@@ -126,8 +120,8 @@ function flushPendingReview() {
   if (timerId) clearTimeout(timerId);
 
   const tasks = [];
-  if (word.vid !== undefined && word.sid !== undefined) {
-    tasks.push(Promise.resolve(state.callbacks?.sendReview(word.vid, word.sid, grade, word.word)));
+  if (word.word) {
+    tasks.push(Promise.resolve(state.callbacks?.sendReview(undefined, undefined, grade, word.word)));
     if (state.session.onCommittedReview) {
       const enqueueCommit = async () => {
         const commitIndex = state.session.committedReviews;
@@ -321,11 +315,9 @@ function restoreCard(slotIndex, word, direction) {
 
   slot.innerHTML = `
     <div class="flash-card flipped" data-slot="${slotIndex}">
-      <div class="flash-card-front">${escapeHtml(word.word)}</div>
+      <div class="flash-card-front">${escapeHtml(displayWord(word))}</div>
       <div class="flash-card-back">
-        <div class="flash-card-word">${word.reading && word.reading !== word.word
-          ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
-          : escapeHtml(word.word)}</div>
+        <div class="flash-card-word">${displayWordHtml(word)}</div>
         <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
         <div class="flash-card-hint">${hintText}</div>
       </div>
@@ -389,7 +381,7 @@ function prefetchQueueAudio(count) {
 
 /**
  * Start Speed Review mode
- * @param {Array} words - Array of word objects { word, reading, meanings, vid, sid }
+ * @param {Array} words - Array of word objects { word, reading, meanings }
  */
 export function start(words, options = {}) {
   if (!words || words.length === 0) {
@@ -471,11 +463,9 @@ function fillSlot(slotIndex) {
 
   slot.innerHTML = `
     <div class="flash-card pop-in" data-slot="${slotIndex}">
-      <div class="flash-card-front">${escapeHtml(word.word)}</div>
+      <div class="flash-card-front">${escapeHtml(displayWord(word))}</div>
       <div class="flash-card-back">
-        <div class="flash-card-word">${word.reading && word.reading !== word.word
-          ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
-          : escapeHtml(word.word)}</div>
+        <div class="flash-card-word">${displayWordHtml(word)}</div>
         <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
         <div class="flash-card-hint">${hintText}</div>
       </div>
@@ -634,6 +624,11 @@ async function gradeCard(slotIndex, word, direction) {
   const sparkColor = direction === 'right' ? '#0f0' : '#f44';
   spawnSparks(card, sparkColor, direction === 'right' ? 8 : 5);
 
+  // "Word leveled up!" animation on successful recall
+  if (direction === 'right') {
+    showWordLevelUp(card, displayWord(word));
+  }
+
   // Queue review (will send after 5s unless undone or new review)
   queueReview(slotIndex, word, grade, direction);
 
@@ -663,28 +658,25 @@ async function gradeCard(slotIndex, word, direction) {
 }
 
 /**
- * Trigger batch refresh - fetch fresh queue from JPDB
+ * Trigger batch refresh - fetch fresh due words from FSRS
  */
 async function triggerBatchRefresh() {
   if (state.session.mode !== 'hub') return;
   if (!state.callbacks?.refreshQueue) return;
 
   console.log('[SpeedReview] Triggering batch refresh...');
-
-  // Capture reviewed words BEFORE clearing
-  const reviewedWords = state.reviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
   state.reviewedBatch = [];
 
   try {
-    const freshWords = await state.callbacks.refreshQueue(reviewedWords);
+    const freshWords = await state.callbacks.refreshQueue();
     if (freshWords && freshWords.length > 0) {
       // Filter out words currently displayed
-      const displayedVids = new Set(
-        state.activeCards.filter(c => c).map(c => c.vid)
+      const displayedWords = new Set(
+        state.activeCards.filter(c => c).map(c => c.word)
       );
-      const newWords = freshWords.filter(w => !displayedVids.has(w.vid));
+      const newWords = freshWords.filter(w => !displayedWords.has(w.word));
 
-      // Replace queue with fresh words (respects JPDB priority)
+      // Replace queue with fresh words
       state.queue = newWords;
       console.log(`[SpeedReview] Refreshed queue: ${newWords.length} words`);
 
@@ -819,6 +811,22 @@ function formatMeanings(meanings) {
   const parts = text.split(', ');
   if (parts.length <= 4) return escapeHtml(text);
   return escapeHtml(parts.slice(0, 4).join(', ')) + ', ...';
+}
+
+/**
+ * Get the display text for a word.
+ * Shows hiragana reading by default (matching the game's dialogue renderer).
+ */
+function displayWord(word) {
+  return word.reading || word.word;
+}
+
+/**
+ * Get the back-of-card word HTML.
+ * Shows hiragana reading by default (matching the game's dialogue renderer).
+ */
+function displayWordHtml(word) {
+  return escapeHtml(word.reading || word.word);
 }
 
 // ============ FUN EFFECTS ============

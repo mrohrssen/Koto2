@@ -1,30 +1,3 @@
-/**
- * @file auth.js - Authentication UI
- *
- * PURPOSE:
- * Manages user authentication interface including login/register forms,
- * JWT token storage, and auth state checking. Shows auth screen on app
- * load if user is not authenticated.
- *
- * KEY EXPORTS:
- * - init({ onAuthenticated }): Setup form handlers and callbacks
- * - checkAuth(): Verify token validity with server, returns boolean
- * - showAuthScreen(): Display the auth overlay
- * - hideAuthScreen(): Hide the auth overlay
- * - getToken(): Retrieve stored JWT from localStorage
- * - logout(): Clear stored token
- *
- * DEPENDENCIES:
- * - None (standalone module)
- *
- * FLOW:
- * 1. On app load, checkAuth() validates existing token
- * 2. If invalid/missing, showAuthScreen() displays login form
- * 3. User submits credentials, server returns JWT
- * 4. Token stored in localStorage, onAuthenticated callback fires
- * 5. Registration requires invite code
- */
-
 import { apiUrl } from '../api.js';
 
 let currentTab = 'login';
@@ -34,6 +7,18 @@ let currentTab = 'login';
  * @param {{ onAuthenticated: function }} callbacks
  */
 export function init(callbacks) {
+  // Show session expired message if redirected from 401
+  const expiredMsg = sessionStorage.getItem('sessionExpiredMsg');
+  if (expiredMsg) {
+    sessionStorage.removeItem('sessionExpiredMsg');
+    const toast = document.createElement('div');
+    toast.className = 'auth-toast';
+    toast.textContent = expiredMsg;
+    const container = document.querySelector('.auth-container') || document.body;
+    container.prepend(toast);
+    setTimeout(() => toast.remove(), 5000);
+  }
+
   const tabs = document.querySelectorAll('.auth-tab');
   const inviteField = document.getElementById('auth-invite');
   const submitBtn = document.getElementById('auth-submit');

@@ -1,19 +1,34 @@
-/**
- * API Client Module
- *
- * Centralized server communication for the JRPG frontend.
- * All API calls go through this module to ensure consistent
- * handling of auth tokens, loading states, and error handling.
- */
-
 import { logger } from './logger.js';
 export { apiUrl } from './platform.js';
 import { apiUrl, PLATFORM } from './platform.js';
 
 // ============ CORE API WRAPPER ============
 
-// Module-level loading state
-let isLoading = false;
+// Per-endpoint deduplication (replaces global isLoading boolean)
+const inFlightRequests = new Set();
+
+// Connection health tracking (used by offline banner)
+let consecutiveFailures = 0;
+let hasRedirectedFor401 = false;
+let connectionCallbacks = { onOffline: null, onOnline: null };
+
+export function setConnectionCallbacks(cbs) {
+  connectionCallbacks = cbs;
+}
+
+function onApiSuccess() {
+  if (consecutiveFailures > 0) {
+    consecutiveFailures = 0;
+    connectionCallbacks.onOnline?.();
+  }
+}
+
+function onApiFailure() {
+  consecutiveFailures++;
+  if (consecutiveFailures >= 2) {
+    connectionCallbacks.onOffline?.();
+  }
+}
 
 /**
  * Get auth headers with JWT token
@@ -40,52 +55,88 @@ export function getAuthHeaders() {
 async function apiCall(endpoint, method = 'POST', body = null, onError = null, opts = {}) {
   logger.debug('[API] Request:', { endpoint, method });
   const bypassGate = opts.bypassLoadingGate === true;
-  if (!bypassGate && isLoading) {
-    logger.warn('[API] Request blocked - loading:', { endpoint });
+
+  // Per-endpoint dedup: block duplicate requests to the same endpoint
+  if (!bypassGate && inFlightRequests.has(endpoint)) {
+    logger.warn('[API] Request deduped - in flight:', { endpoint });
     return null;
   }
-  isLoading = true;
-  const startedAt = performance.now();
 
-  try {
-    const options = {
-      method,
-      headers: getAuthHeaders()
-    };
-    if (method !== 'GET' && body) options.body = JSON.stringify(body);
+  // GETs always retry; POSTs only if caller opts in
+  const maxAttempts = (method === 'GET' || opts.retryable) ? 3 : 1;
+  let lastError = null;
 
-    const response = await fetch(`${PLATFORM.apiBase}/api/game${endpoint}`, options);
-    const data = await response.json();
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) {
+      const baseDelay = 500 * Math.pow(2, attempt - 1);
+      const jitter = baseDelay * (0.8 + Math.random() * 0.4);
+      await new Promise(r => setTimeout(r, jitter));
+      logger.debug('[API] Retry:', { endpoint, attempt });
+    }
 
-    if (!response.ok) {
-      if (opts.returnErrorBody) {
-        return { error: data.error || `HTTP ${response.status}` };
+    if (!bypassGate) inFlightRequests.add(endpoint);
+    const startedAt = performance.now();
+
+    try {
+      const options = { method, headers: getAuthHeaders() };
+      if (method !== 'GET' && body) options.body = JSON.stringify(body);
+
+      const response = await fetch(`${PLATFORM.apiBase}/api/game${endpoint}`, options);
+
+      // 401 handled specifically — don't retry auth errors
+      if (response.status === 401) {
+        if (!hasRedirectedFor401) {
+          hasRedirectedFor401 = true;
+          localStorage.removeItem('authToken');
+          sessionStorage.setItem('sessionExpiredMsg', 'Session expired, please log in again');
+          window.location.href = '/';
+        }
+        onApiSuccess(); // Server responded — connection is fine
+        throw new Error('Session expired');
       }
-      throw new Error(data.error || 'API call failed');
-    }
 
-    const elapsedMs = Math.round(performance.now() - startedAt);
-    console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
+      const data = await response.json();
 
-    return data;
-  } catch (error) {
-    const elapsedMs = Math.round(performance.now() - startedAt);
-    console.log(`[API Timing] ${method} /api/game${endpoint} -> error in ${elapsedMs}ms`);
-    logger.error('[API] Request failed:', { endpoint, error: error.message });
-    if (onError) {
-      onError(error.message);
+      // Any HTTP response (even 4xx/5xx) proves the server is reachable
+      onApiSuccess();
+
+      if (!response.ok) {
+        if (opts.returnErrorBody) {
+          return { error: data.error || `HTTP ${response.status}` };
+        }
+        throw new Error(data.error || 'API call failed');
+      }
+
+      const elapsedMs = Math.round(performance.now() - startedAt);
+      console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
+
+      return data;
+    } catch (error) {
+      const elapsedMs = Math.round(performance.now() - startedAt);
+      console.log(`[API Timing] ${method} /api/game${endpoint} -> error in ${elapsedMs}ms`);
+      lastError = error;
+
+      // Don't retry auth errors
+      if (error.message === 'Session expired') break;
+
+      // Only count as connection failure if fetch itself threw (network error),
+      // not if the server returned an error HTTP status
+      if (error instanceof TypeError) onApiFailure();
+    } finally {
+      inFlightRequests.delete(endpoint);
     }
-    return null;
-  } finally {
-    isLoading = false;
   }
+
+  logger.error('[API] Request failed:', { endpoint, error: lastError?.message });
+  if (onError) onError(lastError?.message);
+  return null;
 }
 
 /**
  * Check if an API call is currently in progress
  */
 function isApiLoading() {
-  return isLoading;
+  return inFlightRequests.size > 0;
 }
 
 // ============ GAME STATE ENDPOINTS ============
@@ -144,15 +195,24 @@ async function createPlayer(name, stats, statPoints) {
  * @returns {Promise<object>} Result with state and narration
  */
 async function startRun(body = null) {
-  return apiCall('/start-run', 'POST', body);
+  return apiCall('/start-run', 'POST', body, null, { retryable: true });
+}
+
+/**
+ * Confirm creature selection after area is chosen
+ * @param {string[]} starterIds - Selected creature IDs
+ * @returns {Promise<object>} Result with state
+ */
+async function confirmCreatures(starterIds) {
+  return apiCall('/confirm-creatures', 'POST', { starterIds });
 }
 
 /**
  * Forfeit the current run
  * @returns {Promise<object>} Result
  */
-async function forfeitRun() {
-  return apiCall('/forfeit', 'POST');
+async function forfeitRun(isVictory = false) {
+  return apiCall('/forfeit', 'POST', { isVictory });
 }
 
 /**
@@ -199,7 +259,7 @@ function getForceRoomType() {
 
 /** Proceed to next room */
 async function proceed() {
-  return apiCall('/proceed', 'POST', { forceRoomType: getForceRoomType() });
+  return apiCall('/proceed', 'POST', { forceRoomType: getForceRoomType() }, null, { retryable: true });
 }
 
 /** Start room encounter */
@@ -307,83 +367,49 @@ async function completeWhackAMole(score) {
   return apiCall('/whack-a-mole-complete', 'POST', { score });
 }
 
-// ============ VOCAB/JPDB ENDPOINTS ============
-
-/** Send JPDB review
- * @param {number} vid - Vocabulary ID
- * @param {number} sid - Sense ID
- * @param {number} grade - Review grade (1-5)
- * @param {string} [wordText] - The Japanese word text (for bootstrap word-knowledge tracking)
- * @param {boolean} isDiscovery - Whether this is a discovery room review
- */
-async function sendJpdbReview(vid, sid, grade, wordText = null, isDiscovery = false) {
-  console.log('[JPDB Review API] sendJpdbReview called:', { vid, sid, grade, isDiscovery });
-  try {
-    const response = await fetch(apiUrl('/api/jpdb/review'), {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ vid, sid, grade, isDiscovery, wordText })
-    });
-    const result = await response.json();
-    console.log('[JPDB Review API] Response:', result);
-    return result;
-  } catch (error) {
-    logger.error('[API] Failed to send JPDB review:', error.message);
-    return { error: 'Network error' };
-  }
+/** Get GM dialogue tokens for whack-a-mole room */
+async function getWhackAMoleDialogue() {
+  return apiCall('/whack-a-mole-dialogue', 'GET');
 }
 
-/** Parse text for clickable words
+/** Skip whack-a-mole room (player declined) */
+async function skipWhackAMole() {
+  return apiCall('/whack-a-mole-skip', 'POST');
+}
+
+// ============ VOCAB ENDPOINTS ============
+
+/** Parse text into clickable tokens via Sudachi + local dictionary
  * @param {string} text - Text to parse
  */
-async function parseJpdbText(text) {
+async function parseLocalText(text) {
   try {
-    const response = await fetch(apiUrl('/api/jpdb/parse'), {
+    const response = await fetch(apiUrl('/api/game/known-words/parse-text'), {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ text })
     });
     return await response.json();
   } catch (error) {
-    logger.error('[API] Failed to parse JPDB text:', error.message);
+    logger.error('[API] Failed to parse text:', error.message);
     return { error: 'Network error' };
   }
 }
 
-/** Lookup word meaning
- * @param {number} vid - Vocabulary ID
- * @param {number} sid - Sense ID
+/** Lookup word meaning from local dictionary
+ * @param {string} word - Dictionary form of the word
  */
-async function lookupJpdbWord(vid, sid) {
+async function lookupLocalWord(word) {
   try {
-    const response = await fetch(apiUrl('/api/jpdb/lookup'), {
+    const response = await fetch(apiUrl('/api/game/known-words/lookup-word'), {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ vid, sid })
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ word })
     });
     return await response.json();
   } catch (error) {
-    logger.error('[API] Failed to lookup JPDB word:', error.message);
+    logger.error('[API] Failed to lookup word:', error.message);
     return { error: 'Network error' };
-  }
-}
-
-/** Batch lookup word meanings (for prefetching)
- * @param {Array<[number, number]>} vocabList - Array of [vid, sid] pairs
- * @returns {Promise<Object>} Map of "vid:sid" -> definition
- */
-async function lookupJpdbBatch(vocabList) {
-  try {
-    const response = await fetch(apiUrl('/api/jpdb/lookup-batch'), {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ vocabList })
-    });
-    const data = await response.json();
-    return data.definitions || {};
-  } catch (error) {
-    logger.error('[API] Failed to batch lookup JPDB words:', error.message);
-    return {};
   }
 }
 
@@ -437,6 +463,60 @@ export async function getDueWords(reviewedWords = []) {
   }
 }
 
+/**
+ * Get due vocab words from internal FSRS.
+ * @returns {Promise<Object>} { words: Array }
+ */
+export async function getVocabDueWords() {
+  try {
+    const response = await fetch(apiUrl('/api/game/known-words/due-words'), {
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('[API] Failed to get vocab due words:', error);
+    return { words: [] };
+  }
+}
+
+/**
+ * Get count of due vocab words from internal FSRS.
+ * @returns {Promise<Object>} { count: number }
+ */
+export async function getVocabDueCount() {
+  try {
+    const response = await fetch(apiUrl('/api/game/known-words/due-count'), {
+      headers: getAuthHeaders()
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('[API] Failed to get vocab due count:', error);
+    return { count: 0 };
+  }
+}
+
+/**
+ * Review a vocab word via internal FSRS.
+ * @param {string} word - The word to review
+ * @param {string} grade - 'good' or 'again'
+ * @returns {Promise<Object>} { ok, mastered, card }
+ */
+export async function reviewVocabWord(word, grade, isDiscovery = false) {
+  try {
+    const body = { word, grade };
+    if (isDiscovery) body.isDiscovery = true;
+    const response = await fetch(apiUrl('/api/game/known-words/review'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(body)
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('[API] Failed to review vocab word:', error);
+    return null;
+  }
+}
+
 /** Mark word discovery room as complete
  * @returns {Promise<Object>} Result with updated state
  */
@@ -450,11 +530,11 @@ async function startSpeedReviewRoom(roomId) {
 }
 
 /** Record one committed review card in speed review room */
-async function progressSpeedReviewRoom(roomId, vid, sid, commitIndex) {
+async function progressSpeedReviewRoom(roomId, word, commitIndex) {
   return apiCall(
     '/speed-review-room/progress',
     'POST',
-    { roomId, vid, sid, commitIndex },
+    { roomId, word, commitIndex },
     null,
     { bypassLoadingGate: true }
   );
@@ -472,7 +552,7 @@ async function startCreatureEncounter() {
 }
 
 async function creatureCombatCycle(actionType, moveChoices = []) {
-  return apiCall('/creature-combat-cycle', 'POST', { actionType, moveChoices });
+  return apiCall('/creature-combat-cycle', 'POST', { actionType, moveChoices }, null, { retryable: true });
 }
 
 async function getCreatureCollection() {
@@ -605,6 +685,7 @@ export {
   createPlayer,
   // Run management endpoints
   startRun,
+  confirmCreatures,
   forfeitRun,
   getAreaOptions,
   selectArea,
@@ -643,11 +724,11 @@ export {
   // Whack-a-mole endpoints
   getWhackAMolePool,
   completeWhackAMole,
-  // Vocab/JPDB endpoints
-  sendJpdbReview,
-  parseJpdbText,
-  lookupJpdbWord,
-  lookupJpdbBatch,
+  getWhackAMoleDialogue,
+  skipWhackAMole,
+  // Vocab endpoints
+  parseLocalText,
+  lookupLocalWord,
   getDiscoveryWords,
   getDiscoveryStatus,
   completeDiscovery,

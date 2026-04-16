@@ -1,13 +1,3 @@
-// src/game/internal-srs.js
-
-/**
- * Internal SRS (Spaced Repetition System) service using FSRS algorithm.
- * Manages hiragana flashcard scheduling with row-based progressive unlock.
- *
- * Persistence: per-user JSON files in data/srs-{userId}.json
- * Pattern follows src/game/vocab-manager.js
- */
-
 import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync } from 'fs';
 import { createEmptyCard, fsrs, Rating, State } from 'ts-fsrs';
 import { HIRAGANA_DECK, getRowCards } from './hiragana-deck.js';
@@ -88,9 +78,11 @@ export function loadSrsData(userId) {
   if (existsSync(filePath)) {
     try {
       const raw = JSON.parse(readFileSync(filePath, 'utf-8'));
-      // Deserialize card dates
-      if (raw.kana && Array.isArray(raw.kana.cards)) {
-        raw.kana.cards = raw.kana.cards.map(deserializeCard);
+      // Deserialize card dates for all decks
+      for (const key of Object.keys(raw)) {
+        if (raw[key] && Array.isArray(raw[key].cards)) {
+          raw[key].cards = raw[key].cards.map(deserializeCard);
+        }
       }
       data = raw;
     } catch (e) {
@@ -117,13 +109,15 @@ export function saveSrsData(userId, data) {
 
   const filePath = getFilePath(userId);
   // Serialize dates before writing
-  const serialized = {
-    ...data,
-    kana: {
-      ...data.kana,
-      cards: data.kana.cards.map(serializeCard),
-    },
-  };
+  const serialized = { ...data };
+  for (const key of Object.keys(serialized)) {
+    if (serialized[key] && Array.isArray(serialized[key].cards)) {
+      serialized[key] = {
+        ...serialized[key],
+        cards: serialized[key].cards.map(serializeCard),
+      };
+    }
+  }
 
   try {
     writeFileSync(filePath, JSON.stringify(serialized, null, 2));
@@ -352,4 +346,111 @@ export function isKanaGraduated(userId) {
   if (cards.length !== 71) return false;
 
   return cards.every((c) => c.state === State.Review);
+}
+
+// ─── Generic deck operations ────────────────────────────────────────
+
+const FSRS_FIELDS = new Set([
+  'due', 'stability', 'difficulty', 'elapsed_days', 'scheduled_days',
+  'reps', 'lapses', 'learning_steps', 'state', 'last_review',
+]);
+
+function buildFsrsCard(card) {
+  const fsrsCard = {
+    due: card.due instanceof Date ? card.due : new Date(card.due || Date.now()),
+    stability: card.stability || 0,
+    difficulty: card.difficulty || 0,
+    elapsed_days: card.elapsed_days || 0,
+    scheduled_days: card.scheduled_days || 0,
+    reps: card.reps || 0,
+    lapses: card.lapses || 0,
+    learning_steps: card.learning_steps || 0,
+    state: card.state || 0,
+  };
+  if (card.last_review) {
+    fsrsCard.last_review = card.last_review instanceof Date
+      ? card.last_review
+      : new Date(card.last_review);
+  }
+  return fsrsCard;
+}
+
+export function getDeckCards(userId, deckName) {
+  const data = loadSrsData(userId);
+  if (!data[deckName]) {
+    data[deckName] = { cards: [] };
+  }
+  return data[deckName].cards;
+}
+
+export function createCard(userId, deckName, cardId, metadata) {
+  const data = loadSrsData(userId);
+  if (!data[deckName]) {
+    data[deckName] = { cards: [] };
+  }
+  const existing = data[deckName].cards.find((c) => c.id === cardId);
+  if (existing) return existing;
+  const emptyCard = createEmptyCard();
+  data[deckName].cards.push({
+    id: cardId,
+    ...metadata,
+    ...emptyCard,
+  });
+  saveSrsData(userId, data);
+}
+
+export function gradeCard(userId, deckName, cardId, grade) {
+  const data = loadSrsData(userId);
+  if (!data[deckName]) {
+    throw new Error(`Card ${cardId} not found in deck '${deckName}'`);
+  }
+  const cardIndex = data[deckName].cards.findIndex((c) => c.id === cardId);
+  if (cardIndex === -1) {
+    throw new Error(`Card ${cardId} not found in deck '${deckName}'`);
+  }
+  const card = data[deckName].cards[cardIndex];
+  const fsrsCard = buildFsrsCard(card);
+  const now = new Date();
+  const rating = GRADE_MAP[grade];
+  if (rating === undefined) {
+    throw new Error(`Invalid grade: ${grade}. Must be 'again' or 'good'.`);
+  }
+  const result = scheduler.repeat(fsrsCard, now);
+  const updatedFsrs = result[rating].card;
+  const { id, ...restCard } = card;
+  const metadataKeys = {};
+  for (const [k, v] of Object.entries(restCard)) {
+    if (!FSRS_FIELDS.has(k)) {
+      metadataKeys[k] = v;
+    }
+  }
+  data[deckName].cards[cardIndex] = {
+    id,
+    ...metadataKeys,
+    due: updatedFsrs.due,
+    stability: updatedFsrs.stability,
+    difficulty: updatedFsrs.difficulty,
+    elapsed_days: updatedFsrs.elapsed_days,
+    scheduled_days: updatedFsrs.scheduled_days,
+    reps: updatedFsrs.reps,
+    lapses: updatedFsrs.lapses,
+    learning_steps: updatedFsrs.learning_steps,
+    state: updatedFsrs.state,
+    last_review: updatedFsrs.last_review,
+  };
+  saveSrsData(userId, data);
+  return data[deckName].cards[cardIndex];
+}
+
+export function getDueCards(userId, deckName) {
+  const cards = getDeckCards(userId, deckName);
+  const now = new Date();
+  return cards.filter((c) => {
+    const dueDate = c.due instanceof Date ? c.due : new Date(c.due);
+    return dueDate <= now;
+  });
+}
+
+export function getDueCount(userId, deckName) {
+  return getDueCards(userId, deckName).length;
 }

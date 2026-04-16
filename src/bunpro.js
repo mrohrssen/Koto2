@@ -1,10 +1,3 @@
-/**
- * Bunpro API Integration Module
- *
- * Fetches grammar review questions from Bunpro and submits results.
- * Uses same rate limiting pattern as jpdb.js.
- */
-
 import { logger } from './logger.js';
 
 const BUNPRO_API_BASE = 'https://api.bunpro.jp';

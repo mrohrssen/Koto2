@@ -1,42 +1,8 @@
-/**
- * @file scene.js - Scene Area Rendering
- *
- * PURPOSE:
- * Manages the main scene area including background images, enemy/NPC sprites,
- * formation rendering, HP bars, toast notifications, and floating damage numbers.
- * Provides the visual context for combat and exploration phases.
- *
- * KEY EXPORTS:
- * - setBackground(imagePath): Set scene background image
- * - showFormation(side, creatures): DOM slot anchors (HUD/bars) + Pixi creature sprites
- * - showPlayerFormation(creatures): Render player party into player formation
- * - hideFormation(side): Clear a formation container
- * - showEnemy(enemy): Display enemy (creature via formation, NPC via npc-display)
- * - hideEnemy(): Remove enemy from scene
- * - showEnemies(enemies): Display multiple enemy creatures via formation
- * - hideEnemies(): Remove all enemies from scene
- * - showShrineFox(): Display shrine fox NPC (no HP bar)
- * - showQuizMaster(): Display quiz master NPC (no HP bar)
- * - showWordDiscoveryNpc(): Display knowledge spirit NPC (no HP bar)
- * - showDealer(): Display creature dealer NPC (no HP bar)
- * - updateEnemyHP(current, max): Update enemy HP bar fill
- * - showToast(message, durationMs): Show auto-dismissing notification
- * - showDamageNumber(amount, { isCrit, isHeal, tierClass, targetEl }): Floating damage text
- *
- * DEPENDENCIES:
- * - ../dom.js: DOM element references (sceneBackground, enemySprite, etc.)
- *
- * SPRITE LOADING:
- * - NPC sprites load from /assets/sprites/enemies/{id}.webp or /assets/sprites/npcs/{id}.webp
- * - Creature sprites use text-sprite placeholders (baseWord + element color)
- * - Falls back to emoji placeholder based on enemy personality if load fails
- */
-
 import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import * as pixiFormation from '../pixi/formation.js';
 import { showNpcSprite as pixiShowNpcSprite, hideNpcSprite as pixiHideNpcSprite } from '../pixi/formation.js';
-import { renderJpFirst, esc as escHtml } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken, esc as escHtml } from './bootstrap-client.js';
 import { toRomaji } from './romaji.js';
 
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
@@ -70,6 +36,13 @@ export function setBackground(imagePath) {
  * @param {Array} creatures - array of 1-3 creature objects
  */
 export async function showFormation(side, creatures, { isBoss = false, force = false } = {}) {
+  const log = window.__intentLog;
+  if (log) {
+    const alive = creatures.filter(c => c.hp > 0 && !c.befriended);
+    log.act(`Show ${side} formation: ${creatures.length} total, ${alive.length} alive`);
+    log.expect(`${side}: ${alive.length} visible sprites, ${alive.length} HP bars`);
+  }
+
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
 
   // Skip redundant rebuilds: if the same creatures are already rendered,
@@ -105,6 +78,10 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
       await pixiFormation.showFormation(side, creatures, { isBoss, skipEnter: true }).catch((err) => {
         console.warn('[Scene] Pixi showFormation failed:', err);
       });
+      if (window.__inspector && window.__intentLog) {
+        const scan = window.__inspector.checkCreatures();
+        window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
+      }
       return;
     }
   }
@@ -212,12 +189,29 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     infoBox.appendChild(barsEl);
     slotEl.appendChild(infoBox);
 
+    // On page refresh / rejoin, dead or befriended enemies must be
+    // immediately hidden.  During active combat the .defeated class is
+    // applied by updateEnemyHPAtIndex() with a delay for the fade
+    // animation, but on a fresh render the creature was already gone —
+    // show it at opacity 0 with no animation.
+    const isDead = (creature.currentHp ?? creature.hp ?? 1) <= 0;
+    if (side === 'enemy' && (isDead || creature.befriended)) {
+      slotEl.classList.add(creature.befriended ? 'befriended' : 'defeated');
+      slotEl.style.animation = 'none';
+      slotEl.style.opacity = '0';
+      slotEl.style.pointerEvents = 'none';
+    }
+
     container.appendChild(slotEl);
   });
 
   await pixiFormation.showFormation(side, creatures, { isBoss }).catch((err) => {
     console.warn('[Scene] Pixi showFormation failed:', err);
   });
+  if (window.__inspector && window.__intentLog) {
+    const scan = window.__inspector.checkCreatures();
+    window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
+  }
 }
 
 export function showPlayerFormation(creatures) {
@@ -225,10 +219,21 @@ export function showPlayerFormation(creatures) {
 }
 
 export function hideFormation(side) {
+  const log = window.__intentLog;
+  if (log) {
+    log.act(`Hide ${side} formation`);
+    log.expect(`${side}: 0 sprites, 0 HP bars after hide`);
+  }
+
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
   container.innerHTML = '';
   container.style.opacity = '';
   pixiFormation.hideFormation(side);
+
+  if (window.__inspector && window.__intentLog) {
+    const scan = window.__inspector.checkCreatures();
+    window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -294,15 +299,28 @@ export function updateEnemyHPAtIndex(index, current, max) {
     console.warn(`[Scene] No enemy slot found at index ${index}, skipping HP update`);
     return;
   }
+  slot.dataset.hp = String(current);
   const fill = slot.querySelector('.formation-hp-fill');
   if (fill) {
     const pct = max > 0 ? Math.max(0, current / max * 100) : 0;
     fill.style.width = pct + '%';
     fill.style.backgroundColor = pct > 50 ? 'var(--hp-green)' : pct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
   }
+  // Revive: undo defeated state when HP is restored (befriend target revived to 1 HP)
+  if (current > 0 && slot.classList.contains('defeated')) {
+    slot.classList.remove('defeated');
+    slot.style.animation = '';
+    slot.style.opacity = '';
+    slot.style.pointerEvents = '';
+  }
   // Delay defeated fade so HP bar drain animation (0.3s) completes first
   if (current <= 0 && !slot.classList.contains('defeated')) {
-    setTimeout(() => slot.classList.add('defeated'), 600);
+    setTimeout(() => {
+      // Guard: HP may have been restored since the timeout was scheduled
+      if (parseInt(slot.dataset.hp || '0', 10) <= 0) {
+        slot.classList.add('defeated');
+      }
+    }, 600);
   }
 }
 
@@ -412,10 +430,13 @@ export function hideChippy() {
 /** Show NPC trainer in scene (no HP bar) */
 export function showNpcTrainer(npcName, npcId, npc, { skipPixi = false } = {}) {
   dom.npcDisplay.classList.add('visible');
-  hideFormation('enemy');
+  // When skipPixi is true (NPC skill mid-combat), the caller manages enemy
+  // formation visibility via opacity toggle — don't destroy Pixi sprites here
+  // or dead creatures will be rebuilt as ghost sprites.
+  if (!skipPixi) hideFormation('enemy');
 
   const roleHtml = npc?.role
-    ? ' \u2014 ' + renderJpFirst(npc.role.word, npc.role.reading, npc.role.meaning)
+    ? ' \u2014 ' + renderJpSentence([entityToToken(npc.role)], getKnownWords(), new Map())
     : '';
   const npcNameHtml = `${escHtml(npcName)}${roleHtml}`;
   dom.enemyName.innerHTML = npcNameHtml;
@@ -446,7 +467,7 @@ export function showNpcSkills(skills) {
   for (const skill of skills) {
     const pill = document.createElement('span');
     pill.className = 'npc-skill-pill';
-    pill.innerHTML = renderJpFirst(skill.name, skill.reading, skill.nameEn);
+    pill.innerHTML = renderJpSentence([entityToToken(skill)], getKnownWords(), new Map());
     dom.enemySkillBar.appendChild(pill);
   }
   dom.enemySkillBar.style.display = 'flex';

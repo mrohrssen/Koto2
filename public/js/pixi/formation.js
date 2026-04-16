@@ -1,10 +1,3 @@
-/**
- * @file formation.js — Creature sprite positioning + walking animation
- *
- * Renders creature formations (player and enemy) as PixiJS Sprites.
- * Handles diagonal stagger, depth scaling, walking wobble, and state transitions.
- */
-
 import { Sprite, Assets, Container, Texture, Graphics, Text } from 'pixi.js';
 import { getStage } from './battle-stage.js';
 import { tween } from './tween.js';
@@ -193,8 +186,9 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
       if (match) {
         const hp = match.currentHp ?? match.hp ?? 1;
         if (hp <= 0) {
-          sprite.alpha = 0.3;
           sprite.tint = 0x888888;
+          // Don't increase alpha — preserve animateKO fade-out (alpha=0)
+          if (sprite.alpha > 0.3) sprite.alpha = 0.3;
         } else {
           sprite.alpha = 1;
           sprite.tint = 0xFFFFFF;
@@ -319,9 +313,9 @@ export async function showFormation(side, creatures, { isBoss = false, skipEnter
     sprite._side = side;
     sprite._dataIndex = dataIndex;
 
-    // KO state
+    // KO state — fully invisible on rebuild (animateKO already ran)
     if ((creature.currentHp ?? creature.hp ?? 1) <= 0) {
-      sprite.alpha = 0.3;
+      sprite.alpha = 0;
       sprite.tint = 0x888888;
     }
 
@@ -348,6 +342,24 @@ export function hideFormation(side) {
   }
   creatureSprites[side].length = 0;
   lastFormationInput[side] = null;
+}
+
+/**
+ * Toggle visibility of a formation's Pixi container without destroying sprites.
+ * Used during NPC skill animations to hide enemies while the NPC is on screen.
+ * @param {'player'|'enemy'} side
+ * @param {boolean} visible
+ */
+export function setFormationVisible(side, visible) {
+  const container = side === 'player' ? playerContainer : enemyContainer;
+  if (container) container.visible = visible;
+  // Also toggle status label pills (they live in layers.labels, not the formation container)
+  for (const sprite of creatureSprites[side] || []) {
+    if (!sprite?.statusLabels) continue;
+    for (const pill of sprite.statusLabels) {
+      pill.visible = visible;
+    }
+  }
 }
 
 /**
@@ -415,9 +427,11 @@ export function clearActiveGlow() {
  * @param {{ slideIn?: boolean }} opts
  */
 export async function showNpcSprite(spritePath, { slideIn = false } = {}) {
-  const { app } = getStage();
+  const { app, layers } = getStage();
   if (!app) return;
-  const container = enemyContainer;
+  // Add NPC to the top-level creatures layer (not enemyContainer)
+  // so it stays visible when enemyContainer is hidden during skill animations
+  const container = layers?.creatures || enemyContainer;
   if (!container) return;
 
   hideNpcSprite();
@@ -465,6 +479,11 @@ export async function hideNpcSprite({ slideOut = false } = {}) {
     npcSprite.destroy();
     npcSprite = null;
   }
+}
+
+/** Check if an NPC sprite is currently displayed. */
+export function hasNpcSprite() {
+  return npcSprite != null;
 }
 
 /**

@@ -103,6 +103,28 @@ html, body {
   touch-action: manipulation;
 }
 
+/* Game UX: prevent accidental text highlighting anywhere in the app shell. */
+body,
+.game-app,
+.game-app *,
+.takeover,
+.takeover *,
+.auth-screen,
+.auth-screen * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Keep form fields editable/selectable so login and report forms still work naturally. */
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
 /* ===== GAME APP - Single Column ===== */
 .game-app {
   display: flex;
@@ -677,7 +699,7 @@ html, body {
   backdrop-filter: blur(6px) saturate(110%);
   -webkit-backdrop-filter: blur(6px) saturate(110%);
   border-radius: 14px;
-  padding: 16px 18px 18px;
+  padding: 10px 14px 8px;
   border: 1px solid rgba(137, 225, 248, 0.72);
   box-shadow:
     0 10px 26px rgba(118, 163, 186, 0.3),
@@ -688,7 +710,8 @@ html, body {
   transition: opacity var(--transition-med), transform var(--transition-med);
   pointer-events: none;
   z-index: 10;
-  overflow: hidden;
+  /* Allow i+1 English gloss to extend past the card edge when needed */
+  overflow: visible;
   container-type: inline-size;
 }
 
@@ -719,10 +742,24 @@ html, body {
   font-style: italic;
   font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', var(--font-family);
   color: #33c5eb;
-  margin-bottom: 8px;
-  line-height: 1;
+  /* Tight to body: teaching word margins must not apply here (they reserve gloss space for dialogue). */
+  margin: 0 0 8px;
+  /* Room under name for entity gloss; keep small so title + body don’t feel cramped. */
+  padding-bottom: 0.35rem;
+  line-height: 1.05;
   letter-spacing: 0.01em;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.narration-speaker .jp-unknown,
+.narration-speaker .jp-entity {
+  margin-bottom: 0;
+}
+
+
+/* Name line uses ruby/rt — keep annotations compact so they don’t balloon the header. */
+.narration-speaker .jp-word ruby rt {
+  font-size: 7px;
 }
 
 .narration-text {
@@ -730,12 +767,18 @@ html, body {
   z-index: 1;
   color: #2f3a45;
   font-size: clamp(16px, 4.25vw, 24px);
-  line-height: 1.65;
+  line-height: 1.45;
   font-weight: 500;
   font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', var(--font-family);
   white-space: pre-wrap;
   letter-spacing: 0.01em;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Reserve space below teaching words so the next line doesn't overlap the English gloss. */
+.narration-text .jp-unknown,
+.narration-text .jp-entity {
+  margin-bottom: 0.95rem;
 }
 
 /* Bootstrap language scaffolding (legacy class names) */
@@ -794,8 +837,8 @@ html, body {
 .narration-indicator {
   position: absolute;
   z-index: 1;
-  bottom: 8px;
-  right: 16px;
+  bottom: 4px;
+  right: 12px;
   color: rgba(49, 183, 224, 0.75);
   font-size: 11px;
   font-weight: 700;
@@ -1257,50 +1300,6 @@ html, body {
   border-top: 1px solid rgba(0,0,0,0.06);
 }
 
-/* Vocab vertical stack: romaji → kana → English */
-.sac-vocab-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  flex: 1;
-  min-width: 0;
-  gap: 1px;
-  line-height: 1.2;
-}
-
-.sac-romaji {
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--text-secondary);
-  text-transform: lowercase;
-}
-
-.sac-kana {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.sac-english {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-/* Legacy inline vocab (kept for non-attack-card uses) */
-.sac-vocab {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
-  white-space: nowrap;
-  line-height: 1.4;
-}
-
-.sac-vocab rt {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-secondary);
-}
 
 .sac-meaning {
   font-size: 12px;
@@ -1670,6 +1669,39 @@ html, body {
 .lookup-state-dot.known { background: var(--accent-green); }
 .lookup-state-dot.never-looked-up { background: var(--text-secondary); }
 
+.lookup-popup-actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  margin-top: 4px;
+}
+
+.lookup-action-btn {
+  flex: 1;
+  padding: 6px 0;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast, 0.15s);
+}
+
+.lookup-action-btn:active {
+  opacity: 0.7;
+}
+
+.lookup-action-forgot {
+  background: var(--status-danger, #e74c3c);
+  color: white;
+}
+
+.lookup-action-knew {
+  background: var(--status-success, #2ecc71);
+  color: white;
+}
+
 /* ===== TAKEOVER VIEWS ===== */
 .takeover {
   position: fixed;
@@ -1995,6 +2027,94 @@ html, body {
   border-radius: var(--card-radius-sm);
   font-size: 14px;
   color: var(--text-primary);
+}
+
+/* ===== ADVENTURE REPORT ===== */
+.adventure-report {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 16px 32px;
+  max-width: 400px;
+  margin: 0 auto;
+  overflow-y: auto;
+  max-height: 100vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ar-header { text-align: center; padding: 20px 0 8px; }
+.ar-icon { font-size: 40px; margin-bottom: 8px; }
+.ar-title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.5px; }
+.ar-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+.ar-flavor { font-size: 14px; color: var(--accent-lavender); font-style: italic; margin-top: 8px; }
+
+.ar-section {
+  background: var(--bg-elevated);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-soft);
+  padding: 16px;
+}
+.ar-section-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px;
+}
+
+.ar-metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ar-metric { background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.ar-metric.featured {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(79,195,247,0.08), rgba(179,157,219,0.08));
+  border: 1px solid rgba(79,195,247,0.15);
+}
+.ar-metric-icon { font-size: 20px; margin-bottom: 4px; }
+.ar-metric-value { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+.ar-metric-total { font-size: 14px; font-weight: 400; color: var(--text-muted); }
+.ar-metric-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.ar-elements-label { font-size: 11px; color: var(--text-muted); text-align: center; margin: 12px 0 8px; }
+.ar-elements-row { display: flex; justify-content: space-around; }
+.ar-element { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ar-element-icon {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 14px; color: white;
+}
+.ar-element-icon.fire { background: linear-gradient(135deg, #ef5350, #ff7043); }
+.ar-element-icon.water { background: linear-gradient(135deg, #42a5f5, #4fc3f7); }
+.ar-element-icon.earth { background: linear-gradient(135deg, #ffb74d, #ffa726); }
+.ar-element-icon.wood { background: linear-gradient(135deg, #66bb6a, #81c784); }
+.ar-element-icon.metal { background: linear-gradient(135deg, #b0b8c4, #90a4ae); }
+.ar-element-count { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+.ar-discovery-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.ar-discovery-row + .ar-discovery-row { border-top: 1px solid var(--border-subtle); }
+.ar-discovery-label { font-size: 13px; color: var(--text-secondary); min-width: 72px; }
+.ar-bar-track { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+.ar-bar-fill { height: 100%; border-radius: 4px; }
+.ar-bar-fill.creatures { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-lavender)); }
+.ar-bar-fill.items { background: linear-gradient(90deg, var(--accent-amber), var(--accent-green)); }
+.ar-discovery-count { font-size: 13px; font-weight: 600; color: var(--text-primary); min-width: 44px; text-align: right; }
+
+.ar-word-summary { display: flex; gap: 12px; margin-bottom: 12px; }
+.ar-word-box { flex: 1; background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.ar-word-value { font-size: 22px; font-weight: 700; }
+.ar-word-value.immersed { color: var(--accent-blue); }
+.ar-word-value.mastered { color: var(--accent-green); }
+.ar-word-label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+.ar-mastered-list { list-style: none; }
+.ar-mastered-word { display: flex; align-items: center; padding: 8px 0; gap: 12px; }
+.ar-mastered-word + .ar-mastered-word { border-top: 1px solid var(--border-subtle); }
+.ar-mastered-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); flex-shrink: 0; }
+.ar-mastered-jp { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.ar-mastered-meaning { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+.ar-mastered-exp { font-size: 11px; color: var(--accent-green); font-weight: 600; flex-shrink: 0; min-width: 20px; text-align: right; }
+
+.ar-btn {
+  display: block; width: 100%; padding: 14px; border: none;
+  border-radius: var(--card-radius);
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  color: white; font-size: 16px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(79,195,247,0.3); letter-spacing: 0.5px;
 }
 
 /* ===== DAMAGE NUMBERS ===== */
@@ -2412,6 +2532,16 @@ html, body {
   margin-top: 4px;
 }
 
+.auth-toast {
+  background: rgba(220, 53, 69, 0.92);
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
 .auth-fields .hidden {
   display: none;
 }
@@ -2799,6 +2929,40 @@ html, body {
   border-radius: 2px;
   pointer-events: none;
   z-index: 10001;
+}
+
+/* ===== WORD LEVEL-UP ANIMATION ===== */
+.word-level-up-text {
+  position: fixed;
+  transform: translateX(-50%);
+  color: #FFD700;
+  font: bold 18px monospace;
+  -webkit-text-stroke: 1px #000;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+  pointer-events: none;
+  z-index: 10002;
+  animation: wordLevelUpFloat 1s ease-out forwards;
+}
+
+@keyframes wordLevelUpFloat {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  20%  { transform: translateX(-50%) translateY(-8px) scale(1.15); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-45px) scale(1); }
+}
+
+.word-level-up-spark {
+  position: fixed;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10002;
+  animation: wordLevelUpSpark 350ms ease-out forwards;
+}
+
+@keyframes wordLevelUpSpark {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1.2); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
 }
 
 .creature-sprite-icon {
@@ -4224,6 +4388,7 @@ html, body {
   color: var(--text-primary);
 }
 
+
 /* Stats row — small, secondary, underneath */
 .move-stats {
   display: flex;
@@ -4610,16 +4775,6 @@ html, body {
   opacity: 0.8;
 }
 
-/* ── Suppress mini-card inside attack cards and move buttons ── */
-.sac-vocab .bs-word:has(.bs-word-en),
-.move-name-jp .bs-word:has(.bs-word-en) {
-  display: inline;
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-.sac-vocab .bs-word-en,
-.move-name-jp .bs-word-en { display: none; }
 
 /* ── Compact mini-card inside floating effect text ── */
 .floating-effect-text .bs-word:has(.bs-word-en) {
@@ -4678,142 +4833,426 @@ html, body {
   line-height: 1.4;
 }
 
-/* ============ META SHOP ============ */
+/* ============ CRESTS & CHESTS ============ */
 
-.meta-shop-panel {
-  position: fixed;
+/* ── Chest Scene (renders inside .scene-area) ── */
+.chest-scene {
+  position: absolute;
   inset: 0;
-  z-index: 1000;
-  background: var(--bg-primary, #0a0a1a);
   display: flex;
   flex-direction: column;
-  padding: 1rem;
-  overflow-y: auto;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.4s ease;
+  overflow: hidden;
 }
 
-.meta-shop-header {
-  text-align: center;
-  margin-bottom: 1rem;
+.chest-scene-bg {
+  position: absolute;
+  inset: 0;
+  transition: background 0.4s ease;
+}
+
+.chest-scene-rays {
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.03) 10%, transparent 20%);
+  animation: chest-rays-spin 30s linear infinite;
+}
+
+@keyframes chest-rays-spin {
+  to { transform: rotate(360deg); }
+}
+
+.chest-scene-icon {
   position: relative;
+  z-index: 1;
+  font-size: 4rem;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  animation: chest-float 3s ease-in-out infinite;
 }
 
-.meta-shop-header h2 {
-  margin: 0;
-  color: var(--text-primary, #fff);
+@keyframes chest-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
-.meta-shop-tokens {
-  color: var(--accent-primary, #ffd700);
-  font-size: 1.1rem;
-  margin-top: 0.25rem;
+.chest-scene-pedestal {
+  position: relative;
+  z-index: 1;
+  width: 80px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  margin-top: 8px;
+  filter: blur(4px);
+  animation: pedestal-pulse 3s ease-in-out infinite;
 }
 
-.meta-shop-close {
+@keyframes pedestal-pulse {
+  0%, 100% { opacity: 0.6; transform: scaleX(1); }
+  50% { opacity: 1; transform: scaleX(1.1); }
+}
+
+.chest-scene-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.chest-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: particle-drift 4s ease-in-out infinite;
+}
+
+@keyframes particle-drift {
+  0% { opacity: 0; transform: translateY(0) scale(0.5); }
+  30% { opacity: 0.8; }
+  100% { opacity: 0; transform: translateY(-60px) scale(0); }
+}
+
+/* ── Pentagon Element Selector (action-area for chests) ── */
+.pentagon-selector {
+  position: relative;
+  width: 240px;
+  height: 200px;
+  margin: 0 auto 16px;
+}
+
+.pentagon-btn {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: var(--bg-panel, rgba(255,255,255,0.06));
-  border-radius: 50%;
-  color: var(--text-secondary, #aaa);
-  font-size: 18px;
+  font-size: 1.5rem;
   cursor: pointer;
-  transition: background var(--transition-fast, 120ms ease);
-  position: fixed;
-  top: calc(16px + env(safe-area-inset-top, var(--safe-area-inset-top, 0px)));
-  right: 16px;
-  z-index: 1001;
+  transition: all 0.25s ease;
+  opacity: 0.7;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.meta-shop-upgrades {
+.pentagon-btn.active {
+  width: 80px;
+  height: 80px;
+  opacity: 1;
+  border: 3px solid #fff;
+  box-shadow: 0 0 20px currentColor;
+  font-size: 1.8rem;
+}
+
+.pentagon-btn:active { transform: scale(0.93); }
+
+/* Pentagon positions (centered in 240x200 container) */
+.pentagon-btn[data-element="fire"]  { top: 0;    left: 50%; transform: translateX(-50%); }
+.pentagon-btn[data-element="water"] { top: 38%;  right: 0; }
+.pentagon-btn[data-element="earth"] { bottom: 0; right: 12%; }
+.pentagon-btn[data-element="metal"] { bottom: 0; left: 12%; }
+.pentagon-btn[data-element="wood"]  { top: 38%;  left: 0; }
+
+.pentagon-btn.active[data-element="fire"]  { top: -8px; margin-left: -8px; }
+.pentagon-btn.active[data-element="water"] { right: -8px; }
+.pentagon-btn.active[data-element="earth"] { bottom: -8px; }
+.pentagon-btn.active[data-element="metal"] { bottom: -8px; }
+.pentagon-btn.active[data-element="wood"]  { left: -8px; }
+
+.chest-info {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.chest-info-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chest-info-drops {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.chest-open-btn {
+  display: block;
+  width: calc(100% - 32px);
+  max-width: 300px;
+  margin: 0 auto 12px;
+  padding: 14px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chest-open-btn:active { transform: scale(0.97); }
+.chest-open-btn.disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+
+.chest-back-link {
+  display: block;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Crest Pentagon Scene (renders inside .scene-area) ── */
+.crest-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a3e, #2d1b4e);
+  overflow: hidden;
+}
+
+.crest-scene-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.crest-pentagon {
+  position: relative;
+  width: 220px;
+  height: 200px;
+}
+
+.crest-pent-slot {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  max-width: 400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.meta-shop-card {
-  background: var(--bg-secondary, #1a1a2e);
-  border: 1px solid var(--border-color, #333);
-  border-radius: 8px;
-  padding: 0.75rem;
-}
-
-.meta-shop-card.maxed {
-  opacity: 0.7;
-}
-
-.meta-shop-card-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.25rem;
-  color: var(--text-primary, #fff);
-}
-
-.meta-shop-current {
-  color: var(--accent-primary, #ffd700);
-  font-size: 0.9rem;
-}
-
-.meta-shop-card-desc {
-  color: var(--text-secondary, #aaa);
-  font-size: 0.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.meta-shop-pips {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 0.5rem;
-}
-
-.meta-shop-pip {
-  width: 20%;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--bg-tertiary, #2a2a3e);
-}
-
-.meta-shop-pip.filled {
-  background: var(--accent-primary, #ffd700);
-}
-
-.meta-shop-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.meta-shop-next {
-  color: var(--text-secondary, #aaa);
-  font-size: 0.8rem;
-}
-
-.meta-shop-maxed {
-  color: var(--accent-primary, #ffd700);
-  font-weight: bold;
-  font-size: 0.9rem;
-}
-
-.meta-shop-buy-btn {
-  background: var(--accent-primary, #ffd700);
-  color: #000;
-  border: none;
-  border-radius: 4px;
-  padding: 0.35rem 0.75rem;
-  font-weight: bold;
+  justify-content: center;
   cursor: pointer;
-  font-size: 0.85rem;
+  transition: all 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.meta-shop-buy-btn.disabled {
+/* Pentagon slot positions */
+.crest-pent-slot[data-element="fire"]  { top: 0;    left: 50%; transform: translateX(-50%); }
+.crest-pent-slot[data-element="water"] { top: 38%;  right: 0; }
+.crest-pent-slot[data-element="earth"] { bottom: 0; right: 12%; }
+.crest-pent-slot[data-element="metal"] { bottom: 0; left: 12%; }
+.crest-pent-slot[data-element="wood"]  { top: 38%;  left: 0; }
+
+.crest-pent-slot.equipped {
+  border: 2px solid currentColor;
+  box-shadow: 0 0 12px currentColor;
+  animation: slot-breathe 3s ease-in-out infinite;
+}
+
+.crest-pent-slot.empty {
+  border: 2px dashed rgba(255,255,255,0.25);
   opacity: 0.4;
-  cursor: not-allowed;
+}
+
+.crest-pent-slot .slot-icon { font-size: 1.2rem; }
+.crest-pent-slot .slot-plus { color: rgba(255,255,255,0.4); font-size: 1.2rem; }
+
+.crest-pent-slot .slot-stat {
+  position: absolute;
+  bottom: -18px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.crest-pent-slot .rarity-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.2);
+}
+
+@keyframes slot-breathe {
+  0%, 100% { box-shadow: 0 0 8px currentColor; }
+  50% { box-shadow: 0 0 18px currentColor; }
+}
+
+/* ── Crest Inventory (action-area) ── */
+.crests-title {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.crests-title h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.crests-title .subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.crests-filter-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.crests-tab {
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.crests-tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.crests-inventory {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.crests-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 24px;
+  font-size: 0.9rem;
+  grid-column: 1 / -1;
+}
+
+.crest-tile {
+  aspect-ratio: 1;
+  background: var(--bg-elevated);
+  border-radius: var(--card-radius);
+  padding: 6px;
+  text-align: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.crest-tile:active { transform: scale(0.95); }
+
+.crest-tile.rarity-common    { border-color: var(--rarity-common); }
+.crest-tile.rarity-uncommon  { border-color: var(--rarity-uncommon); }
+.crest-tile.rarity-rare      { border-color: var(--rarity-rare); }
+.crest-tile.rarity-epic      { border-color: var(--rarity-epic); }
+.crest-tile.rarity-legendary { border-color: var(--rarity-legendary); }
+
+.crest-tile.equipped {
+  opacity: 0.4;
+  pointer-events: none;
+  position: relative;
+}
+
+.crest-tile.equipped::after {
+  content: 'Equipped';
+  position: absolute;
+  bottom: 2px;
+  font-size: 0.5rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.crest-tile.weaker { opacity: 0.5; }
+
+.crest-tile-icon { font-size: 1.4rem; }
+.crest-tile-value { font-size: 0.7rem; font-weight: 600; color: var(--text-primary); }
+
+.chest-back-link,
+.crest-back-link {
+  display: block;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Crest Equip Preview (unchanged — still an overlay modal) ── */
+.crest-preview-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crest-preview-card {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-elevated);
+  min-width: 200px;
+}
+
+.crest-preview-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; }
+.crest-preview-compare { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 8px; }
+.crest-preview-rarity { font-size: 0.75rem; font-weight: 700; margin-bottom: 16px; }
+
+.crest-preview-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.crest-preview-cancel {
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.crest-preview-confirm {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 20px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 /* ============================================================
@@ -4882,7 +5321,7 @@ html, body {
   z-index: 1000;
   pointer-events: none;
   transform: translate(-50%, -100%);
-  max-width: min(180px, 45vw);
+  max-width: min(300px, 75vw);
   padding: 6px 10px;
   background: rgba(255, 255, 255, 0.92);
   border-radius: 10px;
@@ -4976,6 +5415,10 @@ html, body {
   pointer-events: none;
 }
 
+.ui-btn .jp-word ruby {
+  font-size: clamp(16px, 4.25vw, 24px);
+}
+
 /* ========== UI COMPONENTS: CHOICE CARDS ========== */
 
 .ui-choice-list {
@@ -5045,6 +5488,11 @@ html, body {
   font-weight: 700;
   font-size: 14px;
   color: var(--text-primary);
+}
+
+.ui-choice__title .jp-unknown,
+.ui-choice__title .jp-entity {
+  margin-bottom: 0.7rem;
 }
 
 .ui-choice__subtitle {
@@ -5249,4 +5697,129 @@ html, body {
   color: rgba(255,213,79,0.7);
   border: 1px solid rgba(255,213,79,0.15);
   font-weight: 600;
+}
+
+/* ── Connection banner ─────────────────────────────────────── */
+.connection-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgba(220, 53, 69, 0.92);
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+  pointer-events: none;
+}
+.connection-banner.visible {
+  transform: translateY(0);
+}
+.connection-banner.reconnected {
+  background: rgba(40, 167, 69, 0.92);
+}
+
+/* ── Sentence renderer (B2 token display) ─────────────────────── */
+.jp-word { display: inline-block; margin: 0; }
+.jp-known { /* blends into sentence flow */ }
+/* Unknown/entity: inline-flex made the box as wide as the English gloss, pushing
+   following Japanese (e.g. まっ … て！) apart. Inline layout width follows the ruby
+   only; gloss is absolutely positioned so it can be wider than the Japanese and
+   still sit below, centered (max-width uses viewport so it is not ruby-limited). */
+.jp-unknown, .jp-entity {
+  display: inline-block;
+  position: relative;
+  padding: 0;
+  margin: 0 0.08em 0 0;
+  vertical-align: baseline;
+}
+.jp-word ruby {
+  line-height: 1.35;
+  ruby-position: over;
+}
+.jp-word ruby rt {
+  font-size: 8px;
+  font-weight: 400;
+  color: rgba(47, 58, 69, 0.3);
+  letter-spacing: 0.04em;
+  font-family: 'Inter', 'Pretendard', var(--font-family);
+}
+.jp-stack-en {
+  font-size: 9.5px;
+  font-weight: 500;
+  font-family: 'Inter', 'Pretendard', var(--font-family);
+  letter-spacing: 0.01em;
+  margin-top: 0;
+}
+.jp-unknown .jp-stack-en,
+.jp-entity .jp-stack-en {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  bottom: auto;
+  transform: translateX(-50%);
+  margin-top: 0.2em;
+  width: max-content;
+  max-width: min(92vw, 24rem);
+  z-index: 1;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+.jp-punct { display: inline; }
+
+/* Unknown/teaching word — amber accent */
+.jp-unknown ruby rt { color: rgba(170, 130, 40, 0.5); }
+.jp-unknown .jp-stack-en { color: rgba(170, 130, 40, 0.75); }
+.jp-unknown ruby {
+  position: relative;
+}
+.jp-unknown ruby::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(200, 160, 60, 0.5), transparent);
+  border-radius: 1px;
+}
+
+/* Entity word (item/creature name) — blue accent */
+.jp-entity ruby rt { color: rgba(74, 130, 200, 0.45); }
+.jp-entity .jp-stack-en { color: rgba(74, 130, 200, 0.65); }
+.jp-entity ruby {
+  position: relative;
+}
+.jp-entity ruby::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(74, 158, 255, 0.4), transparent);
+  border-radius: 1px;
+}
+
+/* ── Tutorial highlight — pulsing glow on target buttons ── */
+.tutorial-highlight {
+  animation: tutorial-pulse 1.5s ease-in-out infinite;
+  position: relative;
+  z-index: 10;
+}
+
+@keyframes tutorial-pulse {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(255, 215, 0, 0.4); }
+  50% { box-shadow: 0 0 20px 6px rgba(255, 215, 0, 0.8); }
+}
+
+.tutorial-dimmed {
+  opacity: 0.3;
+  pointer-events: none;
 }

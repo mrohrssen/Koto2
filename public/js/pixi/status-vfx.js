@@ -1,11 +1,3 @@
-/**
- * @file status-vfx.js — Status effect applied + ongoing visuals
- *
- * Each status effect has an applied animation (one-shot burst when it lands)
- * and an ongoing visual (persistent while the effect is active).
- * Tracks ongoing VFX per creature sprite and provides cleanup helpers.
- */
-
 import { Graphics, Text, Container } from 'pixi.js';
 import { getStage } from './battle-stage.js';
 import { tween, wait } from './tween.js';

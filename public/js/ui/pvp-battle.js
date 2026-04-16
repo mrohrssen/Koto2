@@ -1,22 +1,3 @@
-/**
- * @file pvp-battle.js - PvP Battle UI
- *
- * PURPOSE:
- * Renders the PvP battle screen: formations, move selection, round results,
- * and end screen. Driven by socket events from the PvP match.
- *
- * KEY EXPORTS:
- * - init(callbacks): Initialize with game state and UI callbacks
- * - startPvpBattle(data): Begin a PvP battle with match-start data
- *
- * DEPENDENCIES:
- * - ../pvp-socket.js: Socket.IO PvP client
- * - ../audio.js: playSFX for sounds
- * - ./actions.js: setContent for rendering
- * - ./scene.js: setBackground, showFormation
- * - ./sprite-utils.js: creatureStaticPath, createTextSprite
- */
-
 import * as pvpSocket from '../pvp-socket.js';
 import { playSFX } from '../audio.js';
 import { showMoves, setActiveLabel } from './move-select.js';
@@ -24,6 +5,7 @@ import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
 import { showAttackDisplay } from './combat-loop.js';
 import { syncPixiStatusLabels, clearAllPixiStatusLabels } from '../pixi/formation.js';
+import { getHpColor, getCreatureStatusKeys } from './combat-ui-utils.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -103,6 +85,11 @@ export function startPvpBattle(data) {
     sceneModule.showFormation('player', pvpState.allies);
     sceneModule.showFormation('enemy', pvpState.enemies);
   }
+
+  // Clean up stale rematch handlers from a previous match's renderResult()
+  pvpSocket.off('pvp:rematch-start');
+  pvpSocket.off('pvp:rematch-cancelled');
+  pvpSocket.off('pvp:opponent-wants-rematch');
 
   // Register socket handlers for battle
   pvpSocket.on('pvp:opponent-submitted', () => {
@@ -301,10 +288,21 @@ async function showAttackSummary(attacks) {
     const targetMaxHp = hpTracker.map[atk.targetIndex]?.maxHp || 100;
 
     // Shared display: card, sound, effects, damage number, STAB, effectiveness, tap
-    await showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp, allies: pvpState.allies, enemies: pvpState.enemies });
+    let hpUpdated = false;
+    await showAttackDisplay(atk, {
+      isEnemy, sourceEl, targetEl, targetMaxHp,
+      allies: pvpState.allies, enemies: pvpState.enemies,
+      onImpact: () => {
+        if (atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
+          hpTracker.map[atk.targetIndex].hp = Math.max(0, hpTracker.map[atk.targetIndex].hp - atk.damage);
+          updateSlotHp(hpTracker.formation, atk.targetIndex, hpTracker.map[atk.targetIndex].hp, hpTracker.map[atk.targetIndex].maxHp);
+          hpUpdated = true;
+        }
+      }
+    });
 
-    // Progressive HP bar drain (PvP-specific: server sends final state, we animate incrementally)
-    if (atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
+    // Fallback: if onImpact didn't fire (no sprite/element), update HP now
+    if (!hpUpdated && atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
       hpTracker.map[atk.targetIndex].hp = Math.max(0, hpTracker.map[atk.targetIndex].hp - atk.damage);
       updateSlotHp(hpTracker.formation, atk.targetIndex, hpTracker.map[atk.targetIndex].hp, hpTracker.map[atk.targetIndex].maxHp);
     }
@@ -322,7 +320,7 @@ function updateSlotHp(formationId, index, hp, maxHp) {
   const fill = slot.querySelector('.formation-hp-fill');
   if (fill) {
     fill.style.width = `${hpPct}%`;
-    fill.style.backgroundColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+    fill.style.backgroundColor = getHpColor(hpPct);
   }
   const sprite = slot.querySelector('.formation-sprite');
   if (sprite) {
@@ -452,25 +450,7 @@ function returnToHub() {
 
 // ============ UTILITIES ============
 
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function getCreatureStatusKeys(creature) {
-  const keys = [];
-  if (creature.activeEffects) {
-    for (const e of creature.activeEffects) {
-      if (!keys.includes(e.type)) keys.push(e.type);
-    }
-  }
-  if (creature.statStages) {
-    for (const [stat, stage] of Object.entries(creature.statStages)) {
-      if (stage > 0) keys.push(`${stat}_up`);
-      else if (stage < 0) keys.push(`${stat}_down`);
-    }
-  }
-  return keys;
-}
+// getCreatureStatusKeys imported from combat-ui-utils.js
 
 function syncAllStatusLabels() {
   if (!pvpState) return;

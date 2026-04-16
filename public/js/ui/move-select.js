@@ -1,8 +1,6 @@
-// public/js/ui/move-select.js
-// Renders a 2x2 grid of the active creature's moves
 import { dom } from '../dom.js';
 import { prefetchWord, playWord } from '../tts.js';
-import { renderJpFirst, flushExposures } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 
 const STATUS_ICONS = {
   poison: '☠', stun: '⚡', confuse: '😵',
@@ -54,7 +52,7 @@ export function buildMoveCell(move, canAfford) {
     statusHtml = `<span class="move-status-pill">${sIcon} ${move.statusEffect.replace('_', ' ')} ${durText}</span>`;
   }
 
-  const moveNameHtml = renderJpFirst(move.name, move.reading, move.nameEn);
+  const moveNameHtml = renderJpSentence([entityToToken(move)], getKnownWords(), new Map());
 
   cell.innerHTML = `
     <div class="move-hero">
@@ -152,8 +150,6 @@ export function showMoves(creature, creatureIndex, opts = {}) {
       grid.appendChild(buildItemsCell());
     }
   }
-
-  flushExposures();
 
   for (const move of creature.moves) {
     if (move.name) prefetchWord(move.name);

@@ -1,9 +1,3 @@
-// src/game/hiragana-deck.js
-
-/**
- * Static hiragana deck data — 71 cards organized by row.
- * Used by internal-srs.js for FSRS card initialization.
- */
 export const HIRAGANA_DECK = [
   // Row 0: vowels
   { char: 'あ', romaji: 'a', row: 0 },

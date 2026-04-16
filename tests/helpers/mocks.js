@@ -19,37 +19,6 @@ export function createMockAIProvider(responses = ['{"line":"テスト","emotion"
 }
 
 /**
- * Creates a mock fetch that intercepts JPDB API calls.
- * Non-JPDB URLs pass through (or throw).
- */
-export function createMockJPDB({ vocabList = [], parseResults = [] } = {}) {
-  const calls = [];
-
-  function mockFetch(url, opts) {
-    calls.push({ url, opts });
-
-    if (url.includes('/api/v1/list-vocabulary')) {
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ vocabulary: vocabList }),
-      });
-    }
-    if (url.includes('/api/v1/parse')) {
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(parseResults.shift() || { tokens: [] }),
-      });
-    }
-
-    return Promise.reject(new Error(`Unmocked URL: ${url}`));
-  }
-
-  return { mockFetch, calls };
-}
-
-/**
  * Creates a test player state with optional overrides.
  */
 export function createTestPlayer(overrides = {}) {
@@ -64,6 +33,55 @@ export function createTestRun(overrides = {}) {
   const player = createTestPlayer();
   const run = createNewRun(player, 'hajimari-no-hiroba');
   return { ...run, ...overrides };
+}
+
+/**
+ * Creates a mock TTS cache that returns empty audio.
+ */
+export function createMockTTS() {
+  return {
+    load() {},
+    generateIfMissing() {},
+    get() { return null; },
+    set() {},
+    has() { return false; }
+  };
+}
+
+/**
+ * Creates a mock TTS dialogue cache.
+ */
+export function createMockTTSDialogue() {
+  const cache = new Map();
+  return {
+    get(key) { return cache.get(key) || null; },
+    set(key, val) { cache.set(key, val); },
+    has(key) { return cache.has(key); },
+    delete(key) { cache.delete(key); }
+  };
+}
+
+/**
+ * No-op functions for narration engine deps that need AI.
+ * Integration tests don't test AI generation — they test route + state logic.
+ */
+export function createNoOpNarration() {
+  return {
+    queueMissingCreatureDialoguesFn: async () => {},
+    regenCreatureDialogueFn: async () => {},
+    queueMissingNpcDialoguesFn: async () => {},
+    regenNpcDialogueFn: async () => {},
+    getCreatureDialogueFromCache: () => null,
+    getAllCreatureDialogueCache: () => ({}),
+    getNpcDialogueFromCache: () => null,
+    getAllNpcDialogueCache: () => ({}),
+    clearNpcDialogueCache: () => {},
+    clearCreatureDialogueCache: () => {},
+    logNpcEncounterFn: () => {},
+    setNpcMemoryFlagFn: () => {},
+    updateNpcMemoryBondFn: () => {},
+    checkSentenceViolations: () => []
+  };
 }
 
 /**

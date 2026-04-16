@@ -1,34 +1,39 @@
-import { describe, it, before, after } from 'node:test';
+import { describe, it, before, mock } from 'node:test';
 import assert from 'node:assert';
-import { createTestTmpDir } from '../../helpers/tmp.js';
+import { State } from 'ts-fsrs';
 
 const TEST_USER_ID = 'test-user';
-let tmp;
+let getDeckCardsMock;
+
+before(async () => {
+  getDeckCardsMock = mock.fn(() => []);
+  await mock.module('../../../src/game/internal-srs.js', {
+    namedExports: {
+      getDeckCards: getDeckCardsMock,
+      getDueCards: mock.fn(() => []),
+      loadSrsData: () => ({ kana: { cards: [] } }),
+      saveSrsData: () => {},
+      clearSrsData: () => {},
+      clearSrsCache: () => {},
+      configureSrs: () => {},
+      initKanaDeck: () => {},
+      getRowCards: () => [],
+      gradeCard: () => ({}),
+    }
+  });
+});
 
 describe('getNewWordsForDiscovery', () => {
-  before(async () => {
-    tmp = await createTestTmpDir();
-  });
-
-  after(async () => {
-    await tmp.cleanup();
-  });
-
   it('should return words with state "new" sorted by rank', async () => {
     const vm = await import('../../../src/game/vocab-manager.js');
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache(TEST_USER_ID);
 
-    // Manually set up cache with test data
-    const testCache = {
-      '食べる': { states: ['new'], vid: 1, sid: 0, rank: 100 },
-      '飲む': { states: ['new'], vid: 2, sid: 0, rank: 50 },
-      '見る': { states: ['learning'], vid: 3, sid: 0, rank: 30 },
-      '聞く': { states: ['new'], vid: 4, sid: 0, rank: 200 }
-    };
-
-    // Inject test cache (internal function for testing)
-    vm.setTestCache(testCache, TEST_USER_ID);
+    getDeckCardsMock.mock.mockImplementation(() => [
+      { id: '食べる', state: State.New, reading: 'たべる', meaning: 'to eat', rank: 100 },
+      { id: '飲む', state: State.New, reading: 'のむ', meaning: 'to drink', rank: 50 },
+      { id: '見る', state: State.Learning, reading: 'みる', meaning: 'to see', rank: 30 },
+      { id: '聞く', state: State.New, reading: 'きく', meaning: 'to listen', rank: 200 }
+    ]);
 
     const result = vm.getNewWordsForDiscovery(2, TEST_USER_ID);
 
@@ -41,13 +46,11 @@ describe('getNewWordsForDiscovery', () => {
 
   it('should return empty array when no new words', async () => {
     const vm = await import('../../../src/game/vocab-manager.js');
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache(TEST_USER_ID);
 
-    const testCache = {
-      '見る': { states: ['learning'], vid: 3, sid: 0, rank: 30 }
-    };
-    vm.setTestCache(testCache, TEST_USER_ID);
+    getDeckCardsMock.mock.mockImplementation(() => [
+      { id: '見る', state: State.Learning, reading: 'みる', meaning: 'to see', rank: 30 }
+    ]);
 
     const result = vm.getNewWordsForDiscovery(2, TEST_USER_ID);
 
@@ -57,13 +60,11 @@ describe('getNewWordsForDiscovery', () => {
 
   it('should return fewer words if not enough available', async () => {
     const vm = await import('../../../src/game/vocab-manager.js');
-    vm.configureVocabManager({ cacheDir: tmp.path + '/' });
     vm.clearVocabManagerCache(TEST_USER_ID);
 
-    const testCache = {
-      '食べる': { states: ['new'], vid: 1, sid: 0, rank: 100 }
-    };
-    vm.setTestCache(testCache, TEST_USER_ID);
+    getDeckCardsMock.mock.mockImplementation(() => [
+      { id: '食べる', state: State.New, reading: 'たべる', meaning: 'to eat', rank: 100 }
+    ]);
 
     const result = vm.getNewWordsForDiscovery(5, TEST_USER_ID);
 

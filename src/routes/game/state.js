@@ -1,9 +1,3 @@
-/**
- * @fileoverview Game state routes
- *
- * Handles /api/game/state
- */
-
 import { Router } from 'express';
 
 /**

@@ -1,13 +1,3 @@
-/**
- * sprite-utils.js - Creature sprite path resolution with animated idle support.
- *
- * Convention: if {creatureId}-idle.webp exists, use it everywhere.
- * Falls back to static {creatureId}.webp when idle file 404s.
- *
- * MVP mode: createTextSprite / replaceWithTextSprite replace image loading with
- * a styled <div> showing the creature's Japanese base word.
- */
-
 const BASE = '/assets/sprites/creatures';
 export const SPRITE_VERSION = '20260322';
 

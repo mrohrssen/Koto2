@@ -8,9 +8,12 @@
     "category": "food",
     "rarity": "common",
     "type": "mpRestore",
-    "effect": { "mpRestorePercent": 0.20 },
-    "description": "Restores 20% MP to all creatures.",
+    "effect": {
+      "mpRestorePercent": 0.9
+    },
+    "description": "Restores 30% MP to all creatures.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -22,9 +25,13 @@
     "category": "food",
     "rarity": "common",
     "type": "boost",
-    "effect": { "field": "attackMult", "value": 0.02 },
-    "description": "Boosts party attack by 2%.",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.09
+    },
+    "description": "Boosts party attack by 3%.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -36,9 +43,12 @@
     "category": "food",
     "rarity": "common",
     "type": "heal",
-    "effect": { "healPercent": 0.15 },
-    "description": "Heals the most damaged creature for 15% of max HP.",
+    "effect": {
+      "healPercent": 0.675
+    },
+    "description": "Heals one creature for 22% of max HP.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -50,9 +60,13 @@
     "category": "food",
     "rarity": "common",
     "type": "boost",
-    "effect": { "field": "attackMult", "value": 0.05 },
-    "description": "Boosts party attack by 5%.",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.225
+    },
+    "description": "Boosts party attack by 7%.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -64,9 +78,12 @@
     "category": "food",
     "rarity": "uncommon",
     "type": "revive",
-    "effect": { "revivePercent": 1.0 },
-    "description": "Revives a fallen creature at full HP.",
+    "effect": {
+      "revivePercent": 0.5
+    },
+    "description": "Revives one fallen creature at 50% HP.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -78,9 +95,21 @@
     "category": "food",
     "rarity": "common",
     "type": "boost",
-    "effect": { "stats": [{ "field": "attackMult", "value": 0.05 }, { "field": "hpMult", "value": -0.05 }] },
-    "description": "+5% attack, -5% max HP to one creature.",
+    "effect": {
+      "stats": [
+        {
+          "field": "attackMult",
+          "value": 0.225
+        },
+        {
+          "field": "hpMult",
+          "value": -0.025
+        }
+      ]
+    },
+    "description": "+7% attack, -2% max HP to one creature.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -92,9 +121,12 @@
     "category": "food",
     "rarity": "common",
     "type": "heal",
-    "effect": { "healAllPercent": 0.10 },
-    "description": "Heals all living creatures for 10% of max HP.",
+    "effect": {
+      "healAllPercent": 0.45
+    },
+    "description": "Heals all living creatures for 15% of max HP.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -106,9 +138,13 @@
     "category": "food",
     "rarity": "uncommon",
     "type": "boost",
-    "effect": { "field": "hpMult", "value": 0.05 },
-    "description": "+5% max HP to one creature.",
+    "effect": {
+      "field": "hpMult",
+      "value": 0.225
+    },
+    "description": "+7% max HP to one creature.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -120,9 +156,13 @@
     "category": "food",
     "rarity": "uncommon",
     "type": "boost",
-    "effect": { "field": "hpMult", "value": 0.03 },
-    "description": "+3% max HP to one creature.",
+    "effect": {
+      "field": "hpMult",
+      "value": 0.135
+    },
+    "description": "+4% max HP to one creature.",
     "stage": 2,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -134,9 +174,13 @@
     "category": "food",
     "rarity": "rare",
     "type": "boost",
-    "effect": { "field": "elementEdge", "value": 0.05 },
-    "description": "5% super effective damage bonus.",
+    "effect": {
+      "field": "elementEdge",
+      "value": 0.225
+    },
+    "description": "7% super effective damage bonus.",
     "stage": 3,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -148,9 +192,13 @@
     "category": "equipment",
     "rarity": "uncommon",
     "type": "boost",
-    "effect": { "field": "baseAttackBonus", "value": 5 },
-    "description": "+5 base attack (scales with level).",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 22
+    },
+    "description": "+7 base attack (scales with level).",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -162,9 +210,13 @@
     "category": "equipment",
     "rarity": "common",
     "type": "boost",
-    "effect": { "field": "baseHpBonus", "value": 10 },
-    "description": "+10 base HP (scales with level).",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 45
+    },
+    "description": "+15 base HP (scales with level).",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -176,9 +228,13 @@
     "category": "equipment",
     "rarity": "common",
     "type": "boost",
-    "effect": { "field": "baseMpBonus", "value": 10 },
-    "description": "+10 base MP (scales with level).",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 45
+    },
+    "description": "+15 base MP (scales with level).",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
   },
   {
@@ -190,9 +246,13 @@
     "category": "equipment",
     "rarity": "uncommon",
     "type": "boost",
-    "effect": { "field": "flatDamageReduction", "value": 3 },
-    "description": "-3 incoming damage per hit.",
+    "effect": {
+      "field": "flatDamageReduction",
+      "value": 14
+    },
+    "description": "-4 incoming damage per hit.",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-21"
   },
   {
@@ -204,9 +264,258 @@
     "category": "equipment",
     "rarity": "common",
     "type": "boost",
-    "effect": { "stats": [{ "field": "baseHpBonus", "value": 5 }, { "field": "baseMpBonus", "value": 5 }] },
-    "description": "+5 base HP, +5 base MP (scales with level).",
+    "effect": {
+      "stats": [
+        {
+          "field": "baseHpBonus",
+          "value": 22
+        },
+        {
+          "field": "baseMpBonus",
+          "value": 22
+        }
+      ]
+    },
+    "description": "+7 base HP, +7 base MP (scales with level).",
     "stage": 1,
+    "area": "hajimari-no-hiroba",
     "createdAt": "2026-03-20"
+  },
+  {
+    "id": "pan",
+    "word": "パン",
+    "reading": "パン",
+    "nameEn": "Bread",
+    "meaning": "bread; (sweet) pastry",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.36
+    },
+    "description": "Light snack for the whole team.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "ame",
+    "word": "飴",
+    "reading": "あめ",
+    "nameEn": "Candy",
+    "meaning": "(hard) candy; toffee",
+    "category": "food",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "xpGrant": "killEquivalent"
+    },
+    "description": "Sugar rush — grants XP equal to one enemy kill.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07",
+    "_note": "NEEDS NEW CODE: xpGrant killEquivalent effect type"
+  },
+  {
+    "id": "okashi",
+    "word": "お菓子",
+    "reading": "おかし",
+    "nameEn": "Sweets",
+    "meaning": "confections; sweets; candy; cake",
+    "category": "food",
+    "rarity": "common",
+    "type": "mpRestore",
+    "effect": {
+      "mpRestorePercent": 0.675
+    },
+    "description": "Sweet pick-me-up restores 22% MP.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "onigiri",
+    "word": "おにぎり",
+    "reading": "おにぎり",
+    "nameEn": "Onigiri",
+    "meaning": "onigiri; rice ball",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "heal",
+    "effect": {
+      "healPercent": 1.125
+    },
+    "description": "Hearty rice ball, heals one creature for 37% HP.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "sandoicchi",
+    "word": "サンドイッチ",
+    "reading": "サンドイッチ",
+    "nameEn": "Sandwich",
+    "meaning": "sandwich",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "stats": [
+        {
+          "field": "attackMult",
+          "value": 0.135
+        },
+        {
+          "field": "hpMult",
+          "value": 0.135
+        }
+      ]
+    },
+    "description": "Balanced meal, balanced boost.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "enpitsu",
+    "word": "鉛筆",
+    "reading": "えんぴつ",
+    "nameEn": "Pencil",
+    "meaning": "pencil",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 9
+    },
+    "description": "A sharp point helps in a pinch.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "pen",
+    "word": "ペン",
+    "reading": "ペン",
+    "nameEn": "Pen",
+    "meaning": "pen",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "elementEdge",
+      "value": 0.135
+    },
+    "description": "Precise strokes exploit elemental weakness.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "nooto",
+    "word": "ノート",
+    "reading": "ノート",
+    "nameEn": "Notebook",
+    "meaning": "notebook; copy-book; exercise book",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 36
+    },
+    "description": "Extra pages, extra mental stamina.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "kyoukasho",
+    "word": "教科書",
+    "reading": "きょうかしょ",
+    "nameEn": "Textbook",
+    "meaning": "textbook; coursebook; schoolbook",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "xpMultiplier",
+      "value": 0.45
+    },
+    "description": "Study hard, learn faster — 15% more XP.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "jisho",
+    "word": "辞書",
+    "reading": "じしょ",
+    "nameEn": "Dictionary",
+    "meaning": "dictionary; lexicon",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "stats": [
+        {
+          "field": "baseMpBonus",
+          "value": 45
+        },
+        {
+          "field": "baseAttackBonus",
+          "value": 9
+        }
+      ]
+    },
+    "description": "Knowledge is power.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "ryukku",
+    "word": "リュック",
+    "reading": "リュック",
+    "nameEn": "Backpack",
+    "meaning": "rucksack; knapsack; backpack",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "stats": [
+        {
+          "field": "baseHpBonus",
+          "value": 36
+        },
+        {
+          "field": "baseMpBonus",
+          "value": 36
+        }
+      ]
+    },
+    "description": "Carries everything you need.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
+  },
+  {
+    "id": "tokei",
+    "word": "時計",
+    "reading": "とけい",
+    "nameEn": "Clock",
+    "meaning": "clock; watch; timepiece",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "flatDamageReduction",
+      "value": 9
+    },
+    "description": "Good timing means fewer clean hits.",
+    "stage": 1,
+    "area": "school",
+    "createdAt": "2026-04-07"
   }
 ]

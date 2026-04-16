@@ -1,22 +1,3 @@
-/**
- * @file pvp-lobby.js - PvP Lobby UI
- *
- * PURPOSE:
- * Renders the PvP lobby screens: lobby (create/join), waiting room,
- * and team selection. Handles socket events for match lifecycle.
- *
- * KEY EXPORTS:
- * - init(callbacks): Initialize with game state and UI callbacks
- * - renderPvpLobby(): Show the lobby screen (create/join)
- * - renderPvpTeamSelect(): Show team selection screen
- *
- * DEPENDENCIES:
- * - ../pvp-socket.js: Socket.IO PvP client
- * - ../api.js: getPvpTeams for loading saved teams
- * - ../audio.js: playSFX for button sounds
- * - ./actions.js: setContent for rendering into action area
- */
-
 import * as pvpSocket from '../pvp-socket.js';
 import { getPvpTeams } from '../api.js';
 import { playSFX } from '../audio.js';
@@ -25,7 +6,7 @@ import { escapeHtml } from './html-utils.js';
 import { creatureSpriteHtml } from './sprite-utils.js';
 import { dom } from '../dom.js';
 import { ELEMENT_COLORS, ELEMENT_ICONS } from './creature-row.js';
-import { renderJpFirst } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 
 /** Party skill names for display (matches server PARTY_SKILLS_CATALOG) */
 const PARTY_SKILL_NAMES = {
@@ -63,10 +44,10 @@ function showPvpCreaturePopup(creature, anchorEl) {
 
   const archetypeLabel = creature.archetype || 'Fighter';
   const popupSubtitle = creature.modifier
-    ? renderJpFirst(creature.modifier.word, creature.modifier.reading, creature.modifier.meaning)
+    ? renderJpSentence([entityToToken(creature.modifier)], getKnownWords(), new Map())
       + 'の'
-      + renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning)
-    : renderJpFirst(creature.baseWord, creature.baseReading, creature.baseMeaning);
+      + renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map())
+    : renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map());
 
   const movesHtml = (creature.moves || []).map(m => `
     <div class="creature-popup-move-row">

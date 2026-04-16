@@ -1,15 +1,3 @@
-/**
- * Server Logger Module
- *
- * Configurable console logging with level hierarchy.
- * Level priority: debug < info < warn < error
- *
- * Usage:
- *   import { logger } from './logger.js';
- *   logger.info('[Combat] Enemy defeated', { enemy: 'Glitch Sprite' });
- *   logger.setLevel('debug'); // Show all logs
- */
-
 const LEVELS = {
   debug: 0,
   info: 1,

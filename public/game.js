@@ -79,7 +79,6 @@ window.forceRefresh = async function() {
 import { store } from './js/store.js';
 import * as tts from './js/tts.js';
 import * as settings from './js/settings.js';
-import * as wordPractice from './js/word-practice.js';
 import * as explorationUI from './js/ui/exploration.js';
 import * as economyUI from './js/ui/economy.js';
 import * as characterUI from './js/ui/character.js';
@@ -99,33 +98,43 @@ import * as narrationBox from './js/ui/narration-box.js';
 import * as leaderboard from './js/ui/leaderboard.js';
 import * as lookup from './js/ui/lookup.js';
 import * as bugReport from './js/ui/bug-report.js';
+import * as dialogueLookup from './js/ui/dialogue-word-lookup.js';
 import * as diagnostics from './js/diagnostics.js';
 import * as pvpLobbyUI from './js/ui/pvp-lobby.js';
 import * as pvpBattleUI from './js/ui/pvp-battle.js';
 import { isPvpBattleActive } from './js/ui/pvp-battle.js';
 import * as speedReview from './js/ui/speed-review.js';
-import * as metaShop from './js/ui/meta-shop.js';
+import * as chestsUI from './js/ui/chests.js';
+import { renderAdventureReport } from './js/ui/adventure-report.js';
+import * as crestsEquipUI from './js/ui/crests-equip.js';
+import { playChestAnimation } from './js/pixi/chest-animation.js';
 import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERSION } from './js/ui/sprite-utils.js';
 import { combatEvents } from './js/ui/combat-events.js';
+import { getHpColor } from './js/ui/combat-ui-utils.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
-import { setKnownWords, renderEnFirst, renderJpFirst, flushExposures } from './js/ui/bootstrap-client.js';
+import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
 import { toRomaji } from './js/ui/romaji.js';
+import { resetClientSessionState } from './js/ui/session-reset.js';
 import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
+import { showOffline, showOnline } from './js/ui/connection-banner.js';
+import { createIntentLog } from './js/intent-log.js';
+import { createInspector } from './js/inspector.js';
 
 // PixiJS battle stage imports
 import { initBattleStage } from './js/pixi/battle-stage.js';
 import { loadParallax, setScrollState } from './js/pixi/parallax.js';
-import { showFormation as pixiShowFormation, setWalking } from './js/pixi/formation.js';
+import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite, getCreatureSprite } from './js/pixi/formation.js';
 
 // API imports - these are the server communication functions
 import {
   getGameState as apiGetGameState,
   createPlayer as apiCreatePlayer,
   startRun as apiStartRun,
+  confirmCreatures as apiConfirmCreatures,
   forfeitRun as apiForfeitRun,
   getAreaOptions as apiGetAreaOptions,
   selectArea as apiSelectArea,
@@ -133,8 +142,10 @@ import {
   roomEncounter as apiRoomEncounter,
   startEncounter as apiStartEncounter,
   shopSkip as apiShopSkip,
-  sendJpdbReview as apiSendJpdbReview,
   getDueWords as apiGetDueWords,
+  getVocabDueWords,
+  getVocabDueCount,
+  reviewVocabWord,
   getAuthHeaders,
   apiUrl,
   shrineUpgrade as apiShrineUpgrade,
@@ -147,9 +158,8 @@ import {
   startSpeedReviewRoom as apiStartSpeedReviewRoom,
   progressSpeedReviewRoom as apiProgressSpeedReviewRoom,
   completeSpeedReviewRoom as apiCompleteSpeedReviewRoom,
-  parseJpdbText,
-  lookupJpdbWord,
-  lookupJpdbBatch,
+  parseLocalText,
+  lookupLocalWord,
   getDealerState as apiGetDealerState,
   dealerSell as apiDealerSell,
   dealerBuy as apiDealerBuy,
@@ -169,12 +179,15 @@ import {
   respondNpcDialogue,
   getWhackAMolePool as apiGetWhackAMolePool,
   completeWhackAMole as apiCompleteWhackAMole,
+  getWhackAMoleDialogue as apiGetWhackAMoleDialogue,
+  skipWhackAMole as apiSkipWhackAMole,
   skillMasterOffers as apiSkillMasterOffers,
   skillMasterChoose as apiSkillMasterChoose,
   getFriendlyNpcOffers as apiGetFriendlyNpcOffers,
   chooseFriendlyNpcItem as apiChooseFriendlyNpcItem,
   npcBattleSkillOffers as apiNpcBattleSkillOffers,
   npcBattleSkillChoose as apiNpcBattleSkillChoose,
+  setConnectionCallbacks,
 } from './js/api.js';
 
 const API_BASE = PLATFORM.apiBase;
@@ -208,8 +221,6 @@ let combatAnimationActive = false;
 // Flash card state
 let currentFlashCardWord = null;
 
-// Combat batch tracking for JPDB refresh
-let combatReviewedBatch = [];
 
 // ============ UTILITY ============
 
@@ -224,12 +235,6 @@ function shuffleArray(array) {
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function getHpColor(pct) {
-  if (pct > 60) return 'var(--hp-green)';
-  if (pct > 30) return 'var(--hp-yellow)';
-  return 'var(--hp-red)';
 }
 
 // ============ UI UPDATES ============
@@ -260,7 +265,8 @@ function syncParallaxScrollWithPhase() {
   const prev = lastPhaseForParallax;
   lastPhaseForParallax = p;
 
-  if (p === 'room' && prev === 'combat') {
+  const stoppedPhases = ['combat', 'room_encounter', 'friendlyNpc', 'npc_dialogue', 'dealer', 'skillMaster', 'whackAMole', 'speedReviewRoom'];
+  if ((p === 'room' || p === 'exploring') && stoppedPhases.includes(prev)) {
     setScrollState('accelerating');
     setWalking(true);
     return;
@@ -269,16 +275,16 @@ function syncParallaxScrollWithPhase() {
   switch (p) {
     case 'exploring':
     case 'room':
+    case 'wordDiscovery':
+      setScrollState('scrolling');
+      setWalking(true);
+      break;
     case 'friendlyNpc':
     case 'npc_dialogue':
-    case 'wordDiscovery':
     case 'dealer':
     case 'skillMaster':
     case 'whackAMole':
     case 'speedReviewRoom':
-      setScrollState('scrolling');
-      setWalking(true);
-      break;
     case 'room_encounter':
       setScrollState('decelerating');
       setWalking(false);
@@ -397,7 +403,33 @@ function updateStatusBar() {
   }
 }
 
+let npcDialogueRecoveryDone = false;
+let combatRecoveryDone = false;
+let postCombatShopRecoveryDone = false;
+
+function clearClientSessionState() {
+  const nextState = resetClientSessionState(gameState, {
+    cleanupCombat: () => combatLoopUI.cleanupCombat(),
+    clearActions: () => actions.clear(),
+    hideNarration: () => narrationBox.forceHide(),
+    hideEnemies: () => scene.hideEnemies(),
+    hidePlayerFormation: () => scene.hideFormation('player'),
+    resetFlags: () => {
+      npcDialogueRecoveryDone = false;
+      combatRecoveryDone = false;
+      postCombatShopRecoveryDone = false;
+      sceneTransitionActive = false;
+      encounterStarting = false;
+    }
+  });
+  updateGameState(nextState);
+}
+
 function updateScene() {
+  if (gameState.phase !== 'npc_dialogue') npcDialogueRecoveryDone = false;
+  if (gameState.phase !== 'combat') combatRecoveryDone = false;
+  if (gameState.phase !== 'post_combat_shop') postCombatShopRecoveryDone = false;
+
   if (gameState.phase === 'combat') {
     // Creature combat uses enemies[] array; legacy uses single enemy
     const enemies = gameState.combat?.enemies;
@@ -435,6 +467,16 @@ function updateScene() {
     }
   } else if (gameState.phase === 'whackAMole') {
     scene.showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`);
+  } else if (gameState.phase === 'npc_skill_selection') {
+    // NPC sprite stays visible during skill selection — don't hideEnemies().
+    // On page reload the pixi sprite is lost, so recreate it.
+    if (!hasNpcSprite()) {
+      const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
+      const npc = room?.npcBattle?.npc || room?.npc;
+      if (npc) {
+        scene.showNpcTrainer(npc.nameEn || npc.name, npc.id, npc);
+      }
+    }
   } else {
     scene.hideEnemies();
   }
@@ -462,8 +504,9 @@ function updateScene() {
 }
 
 function updateCreatureRow() {
-  // Hide row on hub and non-run phases
-  if (!gameState.run && (gameState.phase === 'hub' || gameState.phase === 'no_save' || gameState.phase === 'area_selection')) {
+  // Hide row on hub, no-save, and area selection (bare run has no creatures yet)
+  const hidePhases = ['hub', 'no_save', 'area_selection'];
+  if (hidePhases.includes(gameState.phase)) {
     scene.hideFormation('player');
     return;
   }
@@ -486,13 +529,7 @@ function updatePlayerHP() {
 function updateGameContent() {
   switch (gameState.phase) {
     case 'no_save':
-      // During prologue (player exists, not complete), leave action area for prologue CTAs only.
-      if (!gameState.player || gameState.meta?.prologueComplete === true) {
-        actions.setContent('<button class="action-btn action-btn-primary" id="new-game-btn">ニューゲーム</button>');
-        document.getElementById('new-game-btn')?.addEventListener('click', createCharacter);
-      } else {
-        actions.clear();
-      }
+      actions.clear();
       break;
     case 'hub':
       explorationUI.renderHub();
@@ -542,6 +579,9 @@ function updateGameContent() {
           if (!result?.state) {
             throw new Error(result?.error || 'No game state from server');
           }
+          // Slide NPC out before transitioning to next phase
+          await pixiHideNpcSprite({ slideOut: true });
+          scene.hideNpcTrainer();
           updateGameState(result.state);
           updateUI();
         },
@@ -549,12 +589,37 @@ function updateGameContent() {
       });
       break;
     case 'combat':
-      // Don't clear the action area here — the combat-loop's showMoves() will
-      // overwrite it when ready. Clearing prematurely causes a visible blank
-      // flash while the enemy entrance animation plays (~1-2s).
+      // On page reload, the combat loop isn't running. Re-initialize it
+      // so the player sees their current combat state and can pick moves.
+      if (!combatLoopUI.isCombatActive() && !combatRecoveryDone) {
+        combatRecoveryDone = true;
+        combatLoopUI.startCombatLoop({ recovery: true });
+      }
       break;
     case 'npc_dialogue':
-      // Handled by combat-loop's runNpcDialogue()
+      // Normally handled inline by combat-loop's handleCombatEnd().
+      // On page reload, the combat flow isn't running, so we must restart
+      // the dialogue here to prevent the player from getting stuck.
+      if (!combatLoopUI.isNpcDialogueActive() && !npcDialogueRecoveryDone) {
+        npcDialogueRecoveryDone = true;
+        combatLoopUI.runNpcDialogue().then(() => updateUI());
+      }
+      break;
+    case 'post_combat_shop':
+      // On page reload, the shop flow isn't running. Re-trigger it so the
+      // player can complete their item selection. rollPostCombatShop returns
+      // the saved items when postCombatShop is already active on the server.
+      if (!postCombatShopRecoveryDone) {
+        postCombatShopRecoveryDone = true;
+        showPostCombatShopFlow().then(() => {
+          loadGameState().then(state => {
+            if (state) {
+              updateGameState(state);
+              updateUI();
+            }
+          });
+        });
+      }
       break;
     case 'area_complete':
       explorationUI.renderAreaComplete();
@@ -618,9 +683,10 @@ function showEnemyDialogue(text, type = 'possessed') {
 
 // ============ API CALLS ============
 async function loadKnownWords() {
+  const token = localStorage.getItem('authToken');
   try {
     const resp = await fetch(apiUrl('/api/game/known-words'), {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     if (resp.ok) {
       const data = await resp.json();
@@ -629,6 +695,22 @@ async function loadKnownWords() {
   } catch (e) {
     console.warn('Failed to load known words:', e);
   }
+
+  // Load word dictionary for dialogue rendering
+  try {
+    const dictRes = await fetch(apiUrl('/api/game/known-words/word-dictionary'), {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const dictData = await dictRes.json();
+    if (dictData.dictionary) {
+      window.gameState.wordDictionary = dictData.dictionary;
+    }
+  } catch (e) {
+    console.warn('[Game] Failed to load word dictionary:', e.message);
+  }
+
+  // Bark pool is now provided per-round in combat cycle responses (data.barks).
+  // No client-side fetch needed.
 }
 
 async function loadGameState() {
@@ -642,23 +724,17 @@ async function loadGameState() {
     ].filter(Boolean).map(r => r.id);
     probeIdleSprites(allCreatureIds);
   } else {
-    updateGameState({ ...gameState, phase: 'no_save' });
+    // Preserve server meta for fresh accounts (e.g., prologueComplete flag).
+    updateGameState({
+      ...data,
+      player: null,
+      run: null,
+      combat: null,
+      phase: data.phase || 'no_save'
+    });
   }
 }
 
-// Warm JPDB cache on session start (uses server-side key like /api/jpdb/parse)
-async function warmJpdbCache() {
-  try {
-    const response = await fetch(`${API_BASE}/api/game/session-start`, {
-      method: 'POST',
-      headers: getAuthHeaders()
-    });
-    const data = await response.json();
-    console.log(`[Game] Session cache: ${data.warmed ? data.cachedWords + ' words' : data.reason || data.error}`);
-  } catch (e) {
-    console.warn('[Game] Failed to warm session cache:', e);
-  }
-}
 
 // ============ PROLOGUE ============
 let _prologueCache = null;
@@ -720,37 +796,34 @@ async function playPrologue() {
       await narrationBox.show(html, showOpts);
     }
 
-    // if (prologueScene.id === 'prologue-hiragana-question' && result === 'kana-no') {
-    //   await fetch('/api/game/kana-mode', {
-    //     method: 'POST',
-    //     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ enabled: true })
-    //   });
-    // }
-
-    if (prologueScene.id === 'prologue-starter-selection' && result) {
-      const resp = await fetch(apiUrl('/api/game/select-starter'), {
-        method: 'POST',
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ starterId: result })
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data?.state) updateGameState(data.state);
-      }
-    }
-
-    flushExposures();
   }
 
   scene.hideCid();
 
+  // Auto-select fire starter
+  await fetch(apiUrl('/api/game/select-starter'), {
+    method: 'POST',
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ starterId: 'starter-fire' })
+  });
+
   // Mark prologue as complete on server
-  const completeResp = await fetch(apiUrl('/api/game/prologue-complete'), {
+  await fetch(apiUrl('/api/game/prologue-complete'), {
     method: 'POST',
     headers: getAuthHeaders()
   });
-  if (completeResp.ok) {
+
+  // First run ever: skip hub/area/team selection — go straight to Starting Meadow
+  const isFirstRun = (gameState.meta?.lifetimeStats?.totalRuns ?? 0) === 0 && !gameState.run;
+  if (isFirstRun) {
+    const runResult = await apiStartRun({});
+    if (runResult?.state) updateGameState(runResult.state);
+    const areaResult = await apiSelectArea('hajimari-no-hiroba');
+    if (areaResult?.state) updateGameState(areaResult.state);
+    const confirmResult = await apiConfirmCreatures(['hi']);
+    if (confirmResult?.state) updateGameState(confirmResult.state);
+  } else {
+    // Replaying prologue — just update meta and return to hub
     updateGameState({
       ...gameState,
       meta: {
@@ -778,32 +851,52 @@ function removeCollectionOverlay() {
 
 async function startNewRun() {
   diagnostics.logAction('start_run');
-  // Note: clearWordCache() moved to returnToHub() for earlier prefetching
 
-  // Fetch creature collection for team select
+  const result = await apiStartRun({});
+
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
+
+    // Tutorial: advance step 5→6 (tutorial complete)
+    if (gameState?.meta?.tutorialStep === 5) {
+      try {
+        await fetch(apiUrl('/api/game/tutorial-advance'), {
+          method: 'POST',
+          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expectedStep: 5 })
+        });
+      } catch (e) { console.warn('[Tutorial] advance failed:', e); }
+    }
+  }
+}
+
+async function triggerCreatureSelect() {
   const collectionResult = await apiGetCreatureCollection();
   const catalog = collectionResult?.catalog;
   const collection = collectionResult?.collection;
 
-  if (catalog && catalog.length > 0) {
-    const starterIds = await showCollectionSelect(catalog, collection);
-    if (!starterIds || starterIds.length === 0) {
-      removeCollectionOverlay();
-      return;
-    }
+  if (!catalog || catalog.length === 0) return;
 
-    // Retry up to 3 times if isLoading blocks the call
-    let result = null;
-    for (let attempt = 0; attempt < 3 && !result?.state; attempt++) {
-      if (attempt > 0) await new Promise(r => setTimeout(r, 300));
-      result = await apiStartRun({ starterIds });
-    }
-
+  const starterIds = await showCollectionSelect(catalog, collection);
+  if (!starterIds || starterIds.length === 0) {
     removeCollectionOverlay();
-    if (result?.state) {
-      updateGameState(result.state);
+    // Player cancelled — forfeit the bare run and return to hub
+    await apiForfeitRun();
+    const state = await apiGetGameState();
+    if (state) {
+      updateGameState(state);
       updateUI();
     }
+    return;
+  }
+
+  removeCollectionOverlay();
+
+  const result = await apiConfirmCreatures(starterIds);
+  if (result?.state) {
+    updateGameState(result.state);
+    updateUI();
   }
 }
 
@@ -1074,6 +1167,11 @@ async function startEncounter() {
   try {
     updateGameState(result.state);
 
+    // Store bootstrap NPC dialogue for use after combat (defeatLine)
+    if (result.npcDialogue) {
+      window.gameState._npcDialogue = result.npcDialogue;
+    }
+
     // For NPC battles: play NPC intro before rendering combat.
     // Lock scene transition so updateUI() won't kill the greeting narration.
     if (result?.npc && hasCreatures) {
@@ -1082,7 +1180,8 @@ async function startEncounter() {
         await playNpcBattleIntro(
           result.npc,
           (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
-          () => scene.hideNpcTrainer()
+          () => scene.hideNpcTrainer(),
+          result.npcDialogue
         );
       } finally {
         sceneTransitionActive = false;
@@ -1132,9 +1231,6 @@ async function returnToHub() {
   await apiForfeitRun();
   await loadGameState();
   updateUI();
-  // Prefetch words now so they're ready when user starts next run
-  wordPractice.clearWordCache();
-  wordPractice.prefetchCombatWords();
 }
 
 // ============ COMBAT ============
@@ -1149,49 +1245,32 @@ function showVictoryModal(result) {
     showCollectionToast(result.newCollectionAdditions);
   }
 
-  if (combatReviewedBatch.length > 0) {
-    const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
-    combatReviewedBatch = [];
-    apiGetDueWords(reviewedWords).catch(e => console.warn('[Combat] End batch refresh failed:', e));
-  }
   setTimeout(async () => {
     await loadGameState();
     updateUI();
   }, 300);
 }
 
+async function showAdventureReport(isVictory) {
+  takeover.open('gameover');
+  const content = takeover.getContent('gameover');
+  const response = await apiForfeitRun(isVictory);
+  const summary = response?.runSummary || {};
+  const returnToHubCb = async () => {
+    takeover.close('gameover');
+    await loadGameState();
+    updateUI();
+  };
+  renderAdventureReport(content, summary, isVictory, returnToHubCb);
+}
+
 function showGameOverModal(result) {
   audio.stopBGM();
   audio.playSFX('defeat');
-  actions.clear(); // Clear stale move buttons now, not when next combat starts
-
-  // Trigger batch refresh on combat end if any pending reviews
-  if (combatReviewedBatch.length > 0) {
-    const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
-    combatReviewedBatch = [];
-    apiGetDueWords(reviewedWords).catch(e => console.warn('[Combat] End batch refresh failed:', e));
-  }
+  actions.clear();
 
   updateCreatureRow();
-  takeover.open('gameover');
-  const content = takeover.getContent('gameover');
-  const floor = gameState.run?.currentFloor || 1;
-  const roomsCleared = gameState.run?.currentRoom || 0;
-  content.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:0 24px;">
-      <div style="font-size:48px;margin-bottom:8px;">💀</div>
-      <h2 style="text-align:center;font-size:24px;font-weight:700;">${t('defeated')}</h2>
-      <p style="text-align:center;color:var(--text-secondary);font-size:14px;">${t('runEnded')}</p>
-      <div style="text-align:center;color:var(--text-muted);font-size:13px;">
-        ${t('floorRooms', floor, roomsCleared)}
-      </div>
-      <button class="action-btn action-btn-primary" id="gameover-hub-btn" style="margin-top:24px;">ハブに戻る</button>
-    </div>
-  `;
-  document.getElementById('gameover-hub-btn')?.addEventListener('click', async () => {
-    takeover.close('gameover');
-    await returnToHub();
-  });
+  showAdventureReport(false);
 }
 
 // ============ FLASH CARD HANDLERS ============
@@ -1210,11 +1289,12 @@ async function showPostCombatShopFlow() {
     return new Promise((resolve) => {
       postCombatShop.init({
         itemSelectedCallback: async (itemIdx) => {
-          // Show creature target picker
+          const selectedItem = shopResult.items[itemIdx];
+          const isPartyWide = selectedItem?.effect?.healAllPercent || selectedItem?.effect?.mpRestorePercent;
           const active = gameState.run?.creatureParty?.active?.filter(Boolean) || [];
-          if (active.length <= 1) {
-            // Only one creature — auto-target
-            const selectResult = await apiSelectShopItem(itemIdx, 0);
+
+          const finalize = async (targetIdx) => {
+            const selectResult = await apiSelectShopItem(itemIdx, targetIdx);
             if (selectResult?.state) updateGameState(selectResult.state);
             const selectedCard = document.querySelector('.shop-item-card.selected');
             if (selectedCard) {
@@ -1225,20 +1305,12 @@ async function showPostCombatShopFlow() {
             }
             postCombatShop.hide();
             resolve();
+          };
+
+          if (isPartyWide || active.length <= 1) {
+            await finalize(0);
           } else {
-            postCombatShop.showTargetPicker(active, async (targetIdx) => {
-              const selectResult = await apiSelectShopItem(itemIdx, targetIdx);
-              if (selectResult?.state) updateGameState(selectResult.state);
-              const selectedCard = document.querySelector('.shop-item-card.selected');
-              if (selectedCard) {
-                const itemName = selectedCard.querySelector('.shop-item-name')?.textContent || 'Item';
-                pop(selectedCard, 1.15);
-                itemGained(selectedCard, `+${itemName}`);
-                await new Promise(r => setTimeout(r, 600));
-              }
-              postCombatShop.hide();
-              resolve();
-            });
+            postCombatShop.showTargetPicker(active, finalize);
           }
         }
       });
@@ -1415,6 +1487,40 @@ function setupEventListeners() {
   });
 }
 
+// ============ CLICK DIAGNOSTIC ============
+// Temporary: capture-phase listener registered before all others.
+// Logs click target + element stack so we can identify what blocks clicks.
+// Remove once the "clicks stop working" regression is diagnosed.
+let _clickDiagBubbled = false;
+document.addEventListener('click', (e) => {
+  _clickDiagBubbled = false;
+  const stack = document.elementsFromPoint(e.clientX, e.clientY)
+    .slice(0, 8)
+    .map(el => {
+      const tag = el.tagName.toLowerCase();
+      const id = el.id ? '#' + el.id : '';
+      const cls = el.className && typeof el.className === 'string' ? '.' + el.className.split(' ')[0] : '';
+      const pe = getComputedStyle(el).pointerEvents;
+      return tag + id + cls + (pe === 'none' ? '[pe:none]' : '');
+    });
+  // Check known blocker states
+  const blockers = [];
+  if (document.querySelector('.lookup-active')) blockers.push('lookup-active');
+  if (document.querySelector('.move-help-backdrop')) blockers.push('move-help-backdrop');
+  if (document.querySelector('#chest-anim-overlay')) blockers.push('chest-overlay');
+  if (document.querySelector('.menu-backdrop.visible')) blockers.push('menu-backdrop');
+  if (document.querySelector('.narration-box.visible')) blockers.push('narration-visible');
+  console.log('[click-diag] target:', e.target.tagName + (e.target.id ? '#' + e.target.id : ''),
+    '| stack:', stack.join(' > '),
+    '| prevented:', e.defaultPrevented,
+    blockers.length ? '| BLOCKERS: ' + blockers.join(', ') : '');
+  // Check if event actually reaches bubble phase (logged after all handlers run)
+  requestAnimationFrame(() => {
+    if (!_clickDiagBubbled) console.warn('[click-diag] EVENT SWALLOWED — did not reach bubble phase');
+  });
+}, true);
+document.addEventListener('click', () => { _clickDiagBubbled = true; });
+
 // ============ INITIALIZATION ============
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize Capacitor native plugins (no-op on web)
@@ -1448,21 +1554,67 @@ async function initGame() {
   // Must be first — captures console/fetch before other code runs
   diagnostics.init();
 
+  // Initialize intent log and inspector for debugging combat state
+  const intentLog = createIntentLog({
+    output: console.log,
+    getErrorCount: () => diagnostics.snapshot().consoleErrors.length,
+    onFailure: (failure) => diagnostics.pushFailure(failure),
+  });
+
+  const inspector = createInspector({
+    getState: () => store.get('gameState'),
+    getPhase: () => {
+      const gs = store.get('gameState');
+      return gs?.phase || 'unknown';
+    },
+    countDomBars: (side) => {
+      const container = side === 'player'
+        ? document.querySelector('.player-formation')
+        : document.querySelector('.enemy-formation');
+      if (!container) return 0;
+      return container.querySelectorAll('.formation-slot:not(.defeated):not(.befriended) .formation-hp-fill').length;
+    },
+    getPixiSprites: (side) => {
+      const sprites = [];
+      for (let i = 0; i < 3; i++) {
+        const s = getCreatureSprite(side, i);
+        if (s) sprites.push({ alpha: s.alpha, tint: s.tint });
+        else sprites.push(null);
+      }
+      return sprites.filter(Boolean);
+    },
+  });
+
+  window.__intentLog = intentLog;
+  window.__inspector = inspector;
+  window.__gameState = () => window.__inspector?.getState?.() || null;
+  window.__gamePhase = () => window.__inspector?.getPhase?.() || 'unknown';
+
   // Initialize i18n language from settings
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
 
   // Initialize PixiJS battle stage (canvas overlay for combat animations)
   await initBattleStage();
 
+  // A fresh auth session should never inherit transient combat UI from the
+  // previous user/session (e.g. stale combatActive or room transition flags).
+  clearClientSessionState();
+
   takeover.init();
   leaderboard.init();
   bugReport.init();
   speedReview.init({
-    sendReview: (vid, sid, grade, wordText) => apiSendJpdbReview(vid, sid, grade, wordText),
+    sendReview: async (vid, sid, grade, wordText) => {
+      const internalGrade = grade >= 3 ? 'good' : 'again';
+      const result = await reviewVocabWord(wordText, internalGrade);
+      if (result?.mastered) addKnownWord(wordText);
+      else if (result && !result.mastered) removeKnownWord(wordText);
+      return result;
+    },
     playTTS: (word) => tts.playWord(word),
     prefetchTTS: (word) => tts.prefetchWord(word),
-    refreshQueue: async (reviewedWords = []) => {
-      const result = await apiGetDueWords(reviewedWords);
+    refreshQueue: async () => {
+      const result = await getVocabDueWords();
       return result?.words || [];
     },
     startRoomSession: async ({ roomId }) => {
@@ -1471,7 +1623,7 @@ async function initGame() {
       return result;
     },
     commitRoomReview: async ({ roomId, word, commitIndex }) => {
-      const result = await apiProgressSpeedReviewRoom(roomId, word.vid, word.sid, commitIndex);
+      const result = await apiProgressSpeedReviewRoom(roomId, word.word, commitIndex);
       if (result?.state) updateGameState(result.state);
       return result;
     },
@@ -1484,11 +1636,9 @@ async function initGame() {
 
   // Initialize lookup mode
   lookup.init({
-    parseText: parseJpdbText,
-    lookupWord: lookupJpdbWord,
-    lookupBatch: lookupJpdbBatch,
-    showToast: (msg) => scene.showToast(msg, 3000),
-    hasJpdbKey: () => !!localStorage.getItem('authToken')
+    parseText: parseLocalText,
+    lookupWord: lookupLocalWord,
+    showToast: (msg) => scene.showToast(msg, 3000)
   });
 
   actions.init({
@@ -1506,68 +1656,8 @@ async function initGame() {
         document.dispatchEvent(new CustomEvent('discovery-card-swiped', { detail: direction }));
         return;
       }
-
-      // Kana mode: route to kana handler, skip JPDB review
-      if (combatLoopUI.isKanaRoundInProgress()) {
-        combatLoopUI.handleKanaSwipe(direction);
-        return;
-      }
-
-      // Combat mode: grade based on swipe direction and pass action type
-      const grade = direction === 'right' ? 4 : 1;
-      const actionType = window._pendingCombatAction || 'attack';
-      const reviewWord = window._pendingCombatWord;
-      window._pendingCombatAction = null;
-      window._pendingCombatWord = null;
-
-      // Send JPDB review for the word that was just graded
-      console.log('[JPDB Review] cardSwipe called:', { direction, grade, actionType, reviewWord });
-      if (reviewWord?.vid !== undefined && reviewWord?.sid !== undefined) {
-        console.log('[JPDB Review] Sending review:', { vid: reviewWord.vid, sid: reviewWord.sid, grade });
-        apiSendJpdbReview(reviewWord.vid, reviewWord.sid, grade);
-
-        // Track reviews for batch refresh
-        combatReviewedBatch.push(reviewWord);
-
-        // Check for batch refresh (every 50 reviews)
-        if (combatReviewedBatch.length >= 50) {
-          // Fire and forget - refresh queue in background
-          const reviewedWords = combatReviewedBatch.map(w => ({ vid: w.vid, sid: w.sid }));
-          combatReviewedBatch = [];
-          apiGetDueWords(reviewedWords).then(result => {
-            if (result?.words) {
-              console.log('[Combat] Batch refresh: got', result.words.length, 'fresh words');
-            }
-          }).catch(e => console.warn('[Combat] Batch refresh failed:', e));
-        }
-      } else {
-        console.warn('[JPDB Review] Missing vid/sid, cannot send review:', reviewWord);
-      }
-
-      // Play TTS for the reviewed word
-      if (reviewWord?.word) {
-        tts.playWord(reviewWord.word);
-      }
-
-      combatLoopUI.resumeCombatAfterVocab(grade, actionType);
     },
     cardFlip: handleCardFlip,
-    dualCardSelect: (actionType, selectedWord) => {
-      // Store the action type and word for when review completes
-      window._pendingCombatAction = actionType;
-      window._pendingCombatWord = selectedWord;
-      console.log('[JPDB Review] dualCardSelect - stored word:', { actionType, selectedWord, hasVid: selectedWord?.vid !== undefined, hasSid: selectedWord?.sid !== undefined });
-
-      // Return unchosen words to pool
-      const words = wordPractice.getTwoCombatWords();
-      if (actionType !== 'attack' && words?.attackWord) wordPractice.returnWordToPool(words.attackWord);
-      if (actionType !== 'defend' && words?.defendWord) wordPractice.returnWordToPool(words.defendWord);
-
-      // Remove selected word from queue
-      wordPractice.removeWordFromCombatQueue(selectedWord);
-
-      // Dual card flips in place - no separate flash card needed
-    },
   });
 
   creatureRow.init({
@@ -1615,28 +1705,6 @@ async function initGame() {
     },
   });
 
-  wordPractice.init({
-    apiBase: API_BASE,
-    getGameState: () => gameState,
-    showToast: (msg) => scene.showToast(msg),
-    escapeHtml: escapeHtml,
-    updatePlayerHPBar: (hp) => {
-      if (gameState.player) {
-        gameState.player.hp = hp;
-      }
-    },
-    showDamageNumber: (dmg, isPlayer, isCrit) => {
-      const formation = isPlayer ? dom.playerFormation : dom.enemyFormation;
-      const targetEl = formation.querySelector('.formation-slot') || formation;
-      scene.showDamageNumber(dmg, { isCrit, targetEl });
-    },
-    resumeCombatAfterVocab: () => resumeCombatAfterVocab(),
-    isCombatActive: () => combatLoopUI.isCombatActive(),
-    isEnemyDialogueActive: () => enemyDialogueActive,
-    shuffleArray: shuffleArray,
-    sendJpdbReview: apiSendJpdbReview,
-  });
-
   explorationUI.init({
     getGameState: () => gameState,
     updateGameState,
@@ -1648,6 +1716,7 @@ async function initGame() {
     returnToHub,
     apiGetAreaOptions,
     apiSelectArea,
+    triggerCreatureSelect,
     apiReturnToHub: returnToHub,
     apiProceed,
     apiRoomEncounter,
@@ -1658,13 +1727,14 @@ async function initGame() {
     apiGetDiscoveryWords,
     apiGetDiscoveryStatus,
     apiCompleteDiscovery,
-    apiSwipeWord: (vid, sid, grade, isDiscovery) => apiSendJpdbReview(vid, sid, grade, isDiscovery),
+    apiSwipeWord: (word, grade, isDiscovery) => reviewVocabWord(word, grade, isDiscovery),
     apiPostCombatRefresh: (words) => fetch(apiUrl('/api/game/post-combat-refresh'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ words })
     }),
-    apiGetDueWords,
+    apiGetDueWords: async () => getVocabDueWords(),
+    apiGetVocabDueCount: async () => getVocabDueCount(),
     apiStartSpeedReviewRoom,
     apiProgressSpeedReviewRoom,
     apiCompleteSpeedReviewRoom,
@@ -1672,10 +1742,26 @@ async function initGame() {
     showCollectionSelect,
     apiGetWhackAMolePool,
     apiCompleteWhackAMole,
+    apiGetWhackAMoleDialogue,
+    apiSkipWhackAMole,
     apiSkillMasterOffers,
     apiSkillMasterChoose,
     apiGetFriendlyNpcOffers,
     apiChooseFriendlyNpcItem,
+    apiTutorialAdvance: async (expectedStep) => {
+      try {
+        const res = await fetch(apiUrl('/api/game/tutorial-advance'), {
+          method: 'POST',
+          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expectedStep })
+        });
+        const data = await res.json();
+        if (data.tutorialStep !== undefined && gameState?.meta) {
+          gameState.meta.tutorialStep = data.tutorialStep;
+        }
+      } catch (e) { console.warn('[Tutorial] advance failed:', e); }
+    },
+    showAdventureReport,
   });
 
   pvpLobbyUI.init({
@@ -1701,9 +1787,29 @@ async function initGame() {
     },
   });
 
-  metaShop.init({
-    getGameState: () => gameState,
-    updateGameState
+  chestsUI.init({
+    getAuthHeaders,
+    apiUrl,
+    onChestOpened: async (element, crest) => {
+      await playChestAnimation(element, crest);
+    },
+    showNarration: (text, opts) => narrationBox.show(text, opts),
+    getTutorialStep: () => gameState?.meta?.tutorialStep ?? 6,
+    onBack: () => {
+      scene.setBackground('/assets/backgrounds/hub.webp');
+      explorationUI.renderHub();
+    },
+  });
+
+  crestsEquipUI.init({
+    getAuthHeaders,
+    apiUrl,
+    showNarration: (text, opts) => narrationBox.show(text, opts),
+    getTutorialStep: () => gameState?.meta?.tutorialStep ?? 6,
+    onBack: () => {
+      scene.setBackground('/assets/backgrounds/hub.webp');
+      explorationUI.renderHub();
+    },
   });
 
   economyUI.init({
@@ -1736,7 +1842,6 @@ async function initGame() {
     updateUI,
     settings,
     narration: { showNarration: (text, opts) => narrationBox.show(text, opts), forceHideNarration: () => narrationBox.forceHide() },
-    wordPractice,
     characterUI,
     showDamageNumber: (dmg, isPlayer, isCrit, isDot, isHeal, specialType, tierClass) => {
       const formation = isPlayer ? dom.playerFormation : dom.enemyFormation;
@@ -1799,40 +1904,49 @@ async function initGame() {
   // Initialize creature speech bubble system
   speechBubble.init();
 
+  // Connection status banner — shows on API failures, dismisses on recovery
+  setConnectionCallbacks({ onOffline: showOffline, onOnline: showOnline });
+  window.addEventListener('online', showOnline);
+  window.addEventListener('offline', showOffline);
+
   setupEventListeners();
 
   // Wire logout button (in menu sheet — menu auto-closes via delegation)
   document.getElementById('logout-btn')?.addEventListener('click', () => {
     if (confirm('Are you sure you want to log out?')) {
+      clearClientSessionState();
       auth.logout();
       auth.showAuthScreen();
     }
   });
 
   await loadKnownWords();
+  dialogueLookup.init({
+    wordDictionary: new Map(Object.entries(gameState.wordDictionary || {})),
+    showToast: (msg) => scene.showToast(msg, 3000),
+    pauseAutoDismiss: narrationBox.pauseAutoDismiss,
+    getKanaMode: () => gameState.meta?.kanaMode ?? false,
+  });
   await loadGameState();
+
+  // Freshly registered users should enter prologue immediately without
+  // an extra manual "New Game" click.
+  if (!gameState.player && gameState.meta && gameState.meta.prologueComplete === false) {
+    await createCharacter();
+  }
 
   // Show prologue for returning players who haven't completed it
   if (gameState.player && !gameState.meta?.prologueComplete) {
     await playPrologue();
   }
 
-  // Warm JPDB cache on session start
-  warmJpdbCache();
-
   updateUI();
 
-  // Prefetch words if in hub (ready for when user starts a run)
-  if (gameState.phase === 'hub') {
-    wordPractice.prefetchCombatWords();
-  }
-
-  // Initialize TTS and review type from server settings
+  // Initialize TTS from server settings
   const serverSettings = await settings.loadServerSettings();
   tts.initSettings(serverSettings);
   const savedTtsVol = localStorage.getItem('jrpg_ttsVolume');
   if (savedTtsVol !== null) tts.setVolume(parseFloat(savedTtsVol));
-  wordPractice.setReviewType?.(serverSettings.reviewType || 'flash-card');
 
   // Initialize audio on first user interaction (browser autoplay policy)
   let audioInitialized = false;

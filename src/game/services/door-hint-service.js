@@ -1,11 +1,3 @@
-/**
- * @file door-hint-service.js - Chippy's Door Sense
- *
- * Generates atmospheric Japanese narration for branch door choices.
- * Selects random seed phrases from data/door-hints.json and optionally
- * remixes them via AI using the player's known vocabulary.
- */
-
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';

@@ -1,4 +1,3 @@
-// src/game/bootstrap/renderer.js
 import { parseTaggedText } from './parser.js';
 
 /**

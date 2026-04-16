@@ -1,5 +1,3 @@
-// src/game/bootstrap/parser.js
-
 // Matches {english|kanji|reading} — requires exactly 2 pipes.
 // Does NOT match {0}, {1} interpolation tokens (no pipes).
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;

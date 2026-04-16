@@ -1,12 +1,7 @@
-/**
- * PvP Match Manager
- *
- * Manages the full lifecycle of PvP matches: create, join, team select,
- * move submission, round resolution, rematch, and cleanup.
- * Matches are ephemeral — stored in memory only, lost on server restart.
- */
-
+import { writeFileSync, readFileSync, readdirSync, unlinkSync, existsSync } from 'fs';
+import { join } from 'path';
 import { resolveRound } from './pvp-combat.js';
+import { applyDebugSuperAttack } from '../game/loop.js';
 
 // Characters excluding easily confused ones (no I, O, 0, 1)
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -15,6 +10,7 @@ export class MatchManager {
   /**
    * @param {object} [options]
    * @param {Function} [options.resolveRoundFn] - Override for testing; defaults to the real resolveRound
+   * @param {string} [options.dataDir] - Directory for persisting match state to disk
    */
   constructor(options = {}) {
     /** @type {Map<string, object>} matchCode -> MatchState */
@@ -23,6 +19,12 @@ export class MatchManager {
     this.socketToMatch = new Map();
     /** @type {Function} */
     this._resolveRound = options.resolveRoundFn || resolveRound;
+    /** @type {Map<string, NodeJS.Timeout>} matchCode -> round timer */
+    this._roundTimers = new Map();
+    /** @type {string|null} */
+    this._dataDir = options.dataDir || null;
+    /** @type {Function|null} */
+    this._getSettings = options.getSettings || null;
   }
 
   /**
@@ -263,6 +265,30 @@ export class MatchManager {
   }
 
   /**
+   * Forfeit a match — award victory to the other player.
+   * @param {string} code - Match code
+   * @param {string} forfeitUserId - The user who forfeits
+   * @returns {{ winnerId: string, loserId: string, reason: string }|null}
+   */
+  forfeitMatch(code, forfeitUserId) {
+    const match = this.matches.get(code);
+    if (!match) return null;
+
+    const winnerKey = match.player1?.userId === forfeitUserId ? 'player2' : 'player1';
+    const winnerId = match[winnerKey]?.userId;
+    if (!winnerId) return null;
+
+    // Clean up socket mappings and round timer
+    if (match.player1) this.socketToMatch.delete(match.player1.socketId);
+    if (match.player2) this.socketToMatch.delete(match.player2.socketId);
+    this.clearRoundTimer(code);
+    this.deleteMatchFile(code);
+    this.matches.delete(code);
+
+    return { winnerId, loserId: forfeitUserId, reason: 'forfeit' };
+  }
+
+  /**
    * Remove a match and clean up socket mappings.
    * @param {string} code
    * @param {string} userId
@@ -288,6 +314,8 @@ export class MatchManager {
       this.socketToMatch.delete(match.player2.socketId);
     }
 
+    this.clearRoundTimer(code);
+    this.deleteMatchFile(code);
     this.matches.delete(code);
     return otherPlayer;
   }
@@ -315,6 +343,77 @@ export class MatchManager {
   }
 
   /**
+   * Start a round timer that fires onTimeout if not cleared in time.
+   * @param {string} code - Match code
+   * @param {number} durationMs - Timeout duration in milliseconds
+   * @param {Function} onTimeout - Callback receiving the match code
+   */
+  startRoundTimer(code, durationMs, onTimeout) {
+    this.clearRoundTimer(code);
+    const timer = setTimeout(() => {
+      this._roundTimers.delete(code);
+      onTimeout(code);
+    }, durationMs);
+    this._roundTimers.set(code, timer);
+  }
+
+  /**
+   * Cancel a pending round timer.
+   * @param {string} code - Match code
+   */
+  clearRoundTimer(code) {
+    const timer = this._roundTimers.get(code);
+    if (timer) {
+      clearTimeout(timer);
+      this._roundTimers.delete(code);
+    }
+  }
+
+  /**
+   * Persist a match to disk as JSON.
+   * No-op if dataDir was not configured.
+   * @param {string} code - Match code
+   */
+  saveMatch(code) {
+    if (!this._dataDir) return;
+    const match = this.matches.get(code);
+    if (!match) return;
+    const filePath = join(this._dataDir, `.pvp-match-${code}.json`);
+    writeFileSync(filePath, JSON.stringify(match, null, 2));
+  }
+
+  /**
+   * Delete a persisted match file from disk.
+   * No-op if dataDir was not configured.
+   * @param {string} code - Match code
+   */
+  deleteMatchFile(code) {
+    if (!this._dataDir) return;
+    const filePath = join(this._dataDir, `.pvp-match-${code}.json`);
+    try { unlinkSync(filePath); } catch (e) { /* file may not exist */ }
+  }
+
+  /**
+   * Restore all persisted matches from disk into memory.
+   * @returns {number} Number of matches restored
+   */
+  restoreMatches() {
+    if (!this._dataDir || !existsSync(this._dataDir)) return 0;
+    let count = 0;
+    const files = readdirSync(this._dataDir).filter(f => f.startsWith('.pvp-match-') && f.endsWith('.json'));
+    for (const file of files) {
+      try {
+        const data = JSON.parse(readFileSync(join(this._dataDir, file), 'utf-8'));
+        if (data.code) {
+          this.matches.set(data.code, data);
+          count++;
+        }
+      } catch (e) { /* skip corrupt files */ }
+    }
+    return count;
+  }
+
+  /**
    * Initialize combat state from both players' teams.
    * Deep-clones teams, restores full HP/MP, clears activeEffects.
    * @param {object} match
@@ -333,6 +432,11 @@ export class MatchManager {
         c.mp = c.maxMp;
         c.activeEffects = [];
       }
+    }
+
+    if (this._getSettings?.()?.debugSuperAttack) {
+      applyDebugSuperAttack(sideA);
+      applyDebugSuperAttack(sideB);
     }
 
     match.phase = 'battle';
