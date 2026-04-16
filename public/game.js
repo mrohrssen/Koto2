@@ -160,9 +160,8 @@ import {
   startSpeedReviewRoom as apiStartSpeedReviewRoom,
   progressSpeedReviewRoom as apiProgressSpeedReviewRoom,
   completeSpeedReviewRoom as apiCompleteSpeedReviewRoom,
-  parseJpdbText,
-  lookupJpdbWord,
-  lookupJpdbBatch,
+  parseLocalText,
+  lookupLocalWord,
   getDealerState as apiGetDealerState,
   dealerSell as apiDealerSell,
   dealerBuy as apiDealerBuy,
@@ -1649,11 +1648,9 @@ async function initGame() {
 
   // Initialize lookup mode
   lookup.init({
-    parseText: parseJpdbText,
-    lookupWord: lookupJpdbWord,
-    lookupBatch: lookupJpdbBatch,
-    showToast: (msg) => scene.showToast(msg, 3000),
-    hasJpdbKey: () => !!localStorage.getItem('authToken')
+    parseText: parseLocalText,
+    lookupWord: lookupLocalWord,
+    showToast: (msg) => scene.showToast(msg, 3000)
   });
 
   actions.init({

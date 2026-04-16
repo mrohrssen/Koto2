@@ -4,6 +4,7 @@ import { exposeWords, getKnownWordsFromFsrs } from '../../game/bootstrap/word-kn
 import { gradeCard, getDueCards, getDueCount, createCard, getDeckCards } from '../../game/internal-srs.js';
 import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
+import { tokenize } from '../../tokenizer.js';
 import { incrementDiscoveryCount, getDiscoveryStatus } from '../../word-tracking.js';
 import { addReview } from '../../auth/users.js';
 
@@ -129,6 +130,63 @@ export function createKnownWordsRoutes() {
   // GET /api/game/known-words/bark-pool
   router.get('/bark-pool', (req, res) => {
     res.json({ barkPool: getBarkPool() });
+  });
+
+  // POST /api/game/known-words/parse-text — Sudachi tokenization + dictionary enrichment
+  router.post('/parse-text', (req, res) => {
+    const { text } = req.body || {};
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'text (string) required' });
+    }
+    try {
+      const dict = getWordDict();
+      const tokens = tokenize(text);
+      const enriched = tokens.map(t => {
+        const entry = dict.get(t.baseForm) || dict.get(t.surface);
+        return {
+          spelling: t.surface,
+          word: t.baseForm,
+          reading: entry?.reading || t.reading || t.baseForm,
+          meanings: entry?.definitions?.map(d => d.en).filter(Boolean) || [],
+          partOfSpeech: t.pos ? [t.pos.split(',')[0]] : [],
+          lookupable: !!entry
+        };
+      });
+      res.json({ tokens: enriched });
+    } catch (e) {
+      console.warn('[known-words/parse-text] Error:', e.message);
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // POST /api/game/known-words/lookup-word — single word lookup from dictionary
+  router.post('/lookup-word', (req, res) => {
+    const { word } = req.body || {};
+    if (!word || typeof word !== 'string') {
+      return res.status(400).json({ error: 'word (string) required' });
+    }
+    try {
+      const dict = getWordDict();
+      const entry = dict.get(word);
+      if (!entry) {
+        return res.json({ word, meanings: [], reading: '', partOfSpeech: [] });
+      }
+      const cards = getDeckCards(req.user.id, 'vocab');
+      const card = cards.find(c => c.id === word);
+      const stateLabels = { 0: 'new', 1: 'learning', 2: 'known', 3: 'due' };
+      const cardState = card ? [stateLabels[card.state] || 'unknown'] : ['never-looked-up'];
+      res.json({
+        word,
+        spelling: word,
+        reading: entry.reading || word,
+        meanings: entry.definitions?.map(d => d.en).filter(Boolean) || [],
+        partOfSpeech: entry.pos ? [entry.pos] : [],
+        cardState
+      });
+    } catch (e) {
+      console.warn('[known-words/lookup-word] Error:', e.message);
+      res.status(500).json({ error: e.message });
+    }
   });
 
   return router;

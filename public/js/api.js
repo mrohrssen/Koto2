@@ -403,57 +403,37 @@ async function sendJpdbReview(vid, sid, grade, wordText = null, isDiscovery = fa
   }
 }
 
-/** Parse text for clickable words
+/** Parse text into clickable tokens via Sudachi + local dictionary
  * @param {string} text - Text to parse
  */
-async function parseJpdbText(text) {
+async function parseLocalText(text) {
   try {
-    const response = await fetch(apiUrl('/api/jpdb/parse'), {
+    const response = await fetch(apiUrl('/api/game/known-words/parse-text'), {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ text })
     });
     return await response.json();
   } catch (error) {
-    logger.error('[API] Failed to parse JPDB text:', error.message);
+    logger.error('[API] Failed to parse text:', error.message);
     return { error: 'Network error' };
   }
 }
 
-/** Lookup word meaning
- * @param {number} vid - Vocabulary ID
- * @param {number} sid - Sense ID
+/** Lookup word meaning from local dictionary
+ * @param {string} word - Dictionary form of the word
  */
-async function lookupJpdbWord(vid, sid) {
+async function lookupLocalWord(word) {
   try {
-    const response = await fetch(apiUrl('/api/jpdb/lookup'), {
+    const response = await fetch(apiUrl('/api/game/known-words/lookup-word'), {
       method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ vid, sid })
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ word })
     });
     return await response.json();
   } catch (error) {
-    logger.error('[API] Failed to lookup JPDB word:', error.message);
+    logger.error('[API] Failed to lookup word:', error.message);
     return { error: 'Network error' };
-  }
-}
-
-/** Batch lookup word meanings (for prefetching)
- * @param {Array<[number, number]>} vocabList - Array of [vid, sid] pairs
- * @returns {Promise<Object>} Map of "vid:sid" -> definition
- */
-async function lookupJpdbBatch(vocabList) {
-  try {
-    const response = await fetch(apiUrl('/api/jpdb/lookup-batch'), {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ vocabList })
-    });
-    const data = await response.json();
-    return data.definitions || {};
-  } catch (error) {
-    logger.error('[API] Failed to batch lookup JPDB words:', error.message);
-    return {};
   }
 }
 
@@ -772,9 +752,8 @@ export {
   skipWhackAMole,
   // Vocab/JPDB endpoints
   sendJpdbReview,
-  parseJpdbText,
-  lookupJpdbWord,
-  lookupJpdbBatch,
+  parseLocalText,
+  lookupLocalWord,
   getDiscoveryWords,
   getDiscoveryStatus,
   completeDiscovery,
