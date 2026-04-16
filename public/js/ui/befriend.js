@@ -337,9 +337,10 @@ export async function renderBefriendQuiz(quizData, result) {
     enemySprite.tint = 0xFFFFFF;
   }
 
-  // Ensure the befriend target's DOM slot (HP bar + name) is visible.
-  // When overkill damage exceeds maxHp, the HP bar animation incorrectly hits 0
-  // before syncFinalState restores it to 1, leaving a stale .defeated class.
+  // Ensure the befriend target's DOM slot (HP bar + name) is fully visible.
+  // The killing blow sets HP to 0 and schedules .defeated; syncFinalState restores
+  // HP to 1, but the info box may still have .formation-info--hidden from a
+  // formation rebuild or the slot may still be fading out.
   const targetSlot = document.querySelector(
     `#enemy-formation .formation-slot[data-index="${quizData.targetIndex ?? 0}"]`
   );
@@ -348,6 +349,20 @@ export async function renderBefriendQuiz(quizData, result) {
     targetSlot.style.animation = '';
     targetSlot.style.opacity = '';
     targetSlot.style.pointerEvents = '';
+    // Reveal the info box (name + HP bar) if it was hidden
+    const info = targetSlot.querySelector('.formation-info');
+    if (info) info.classList.remove('formation-info--hidden');
+    // Set HP bar to show 1 HP (red) for the revived befriend target
+    const enemy = result?.enemies?.[quizData.targetIndex ?? 0];
+    if (enemy) {
+      const hpPct = Math.max(1, (enemy.hp / enemy.maxHp) * 100);
+      const fill = targetSlot.querySelector('.formation-hp-fill');
+      if (fill) {
+        fill.style.width = hpPct + '%';
+        fill.style.backgroundColor = 'var(--hp-red)';
+      }
+      targetSlot.dataset.hp = String(enemy.hp);
+    }
   }
 
   // Show "まって!!" narration (creature calls out first)

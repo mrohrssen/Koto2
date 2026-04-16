@@ -88,12 +88,27 @@ describe('combat-vfx data builders', () => {
       const result = {
         allies: [{ id: 'a1', hp: 30, maxHp: 100 }],
         enemyAttacks: [
-          { targetIndex: 0, damage: 20 },
-          { targetIndex: 0, damage: 15 },
+          { targetIndex: 0, targetId: 'a1', damage: 20 },
+          { targetIndex: 0, targetId: 'a1', damage: 15 },
         ],
       };
       const map = buildAllyHpMap(result);
       assert.equal(map.a1.hp, 65);
+    });
+
+    it('does not attribute damage from a KO\'d ally to surviving allies after compaction', () => {
+      // After server compaction: dead ally removed, surviving ally shifts to index 0.
+      // Enemy attack targetIndex=0 was meant for the dead creature, not the survivor.
+      const result = {
+        allies: [{ id: 'a2', hp: 80, maxHp: 100 }],  // compacted: a1 removed
+        enemyAttacks: [
+          { targetIndex: 0, targetId: 'a1', damage: 40 },  // killed a1 (no longer in allies)
+        ],
+      };
+      const map = buildAllyHpMap(result);
+      // a2 should NOT have a1's damage attributed to it
+      assert.equal(map.a2.hp, 80);
+      assert.equal(map.a1, undefined);  // dead creature not in map
     });
 
     it('handles missing enemy attacks', () => {

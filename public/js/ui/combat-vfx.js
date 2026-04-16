@@ -199,28 +199,58 @@ export function findEnemyTargetElement(targetId, enemies, enemyIndex = null) {
 export function updateCreatureHpBars(creatures, allyHpMap) {
   if (!creatures) return;
   const slots = document.querySelectorAll('#player-formation .formation-slot');
-  creatures.forEach((creature, i) => {
-    const slot = slots[i];
-    if (!slot || !creature) return;
-    const currentHp = allyHpMap?.[creature.id] ? allyHpMap[creature.id].hp : creature.hp;
-    const hpPct = Math.max(0, (currentHp / creature.maxHp) * 100);
+  // When allyHpMap is provided (mid-animation), iterate slots and look up by creature ID.
+  // This avoids index mismatches when the creatures array has been compacted (dead removed).
+  if (allyHpMap) {
+    slots.forEach((slot, i) => {
+      const creatureId = slot.dataset.creatureId;
+      if (!creatureId) return;
+      const entry = allyHpMap[creatureId];
+      if (!entry) return;
+      const hpPct = Math.max(0, (entry.hp / entry.maxHp) * 100);
+      const fill = slot.querySelector('.formation-hp-fill');
+      if (fill) {
+        fill.style.width = `${hpPct}%`;
+        fill.style.backgroundColor = getHpColor(hpPct);
+      }
+      const icon = slot.querySelector('.formation-sprite');
+      if (icon) {
+        if (entry.hp <= 0) icon.classList.add('ko');
+        else icon.classList.remove('ko');
+      }
+      const pixiSprite = getCreatureSprite('player', i);
+      if (pixiSprite) {
+        if (entry.hp <= 0) {
+          pixiSprite.alpha = 0.3;
+          pixiSprite.tint = 0x888888;
+        } else {
+          pixiSprite.alpha = 1;
+          pixiSprite.tint = 0xFFFFFF;
+        }
+      }
+    });
+    return;
+  }
+  // Final sync (no allyHpMap): match creatures to their DOM slot by ID
+  creatures.forEach((creature) => {
+    if (!creature) return;
+    const slot = Array.from(slots).find(s => s.dataset.creatureId === creature.id);
+    if (!slot) return;
+    const slotIndex = Array.from(slots).indexOf(slot);
+    const hpPct = Math.max(0, (creature.hp / creature.maxHp) * 100);
     const fill = slot.querySelector('.formation-hp-fill');
     if (fill) {
       fill.style.width = `${hpPct}%`;
       fill.style.backgroundColor = getHpColor(hpPct);
     }
-    // Update KO state (DOM + Pixi)
     const icon = slot.querySelector('.formation-sprite');
     if (icon) {
-      if (currentHp <= 0) {
-        icon.classList.add('ko');
-      } else {
-        icon.classList.remove('ko');
-      }
+      if (creature.hp <= 0) icon.classList.add('ko');
+      else icon.classList.remove('ko');
     }
-    const pixiSprite = getCreatureSprite('player', i);
+    const pixiSprite = getCreatureSprite('player', slotIndex);
     if (pixiSprite) {
-      if (currentHp <= 0) {
+      if (creature.hp <= 0) {
         pixiSprite.alpha = 0.3;
         pixiSprite.tint = 0x888888;
       } else {
@@ -611,10 +641,13 @@ export async function showCounterAttacks(result, enemyHpMap) {
 export function buildAllyHpMap(result) {
   const allyHpMap = {};
   if (result.allies) {
-    result.allies.forEach((ally, i) => {
+    result.allies.forEach((ally) => {
       if (!ally) return;
+      // Match by creature ID, not array index — the allies array may have been
+      // compacted (dead creatures removed) but attack targetIndex still references
+      // the pre-compaction positions.
       const dmgToThisAlly = (result.enemyAttacks || [])
-        .filter(a => (typeof a.targetIndex === 'number' ? a.targetIndex === i : a.targetId === ally.id))
+        .filter(a => a.targetId === ally.id)
         .reduce((sum, a) => sum + a.damage, 0);
       allyHpMap[ally.id] = { hp: ally.hp + dmgToThisAlly, maxHp: ally.maxHp };
     });
@@ -677,11 +710,12 @@ export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved)
 
   const attackerIdx = typeof atk.attackerIndex === 'number' ? atk.attackerIndex : 0;
   const targetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
-  const targetMaxHp = result.allies?.[targetIdx]?.maxHp || 100;
+  const targetMaxHp = (atk.targetId && allyHpMap?.[atk.targetId]?.maxHp) || result.allies?.[targetIdx]?.maxHp || 100;
   const enemyEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
   const hpUpdate = () => {
-    const damagedAlly = typeof atk.targetIndex === 'number' ? result.allies?.[atk.targetIndex] : null;
-    const hpMapKey = damagedAlly?.id ?? atk.targetId;
+    // Use targetId (stable creature ID) instead of targetIndex — the allies array
+    // may have been compacted so index-based lookup gets the wrong creature.
+    const hpMapKey = atk.targetId;
     if (hpMapKey && allyHpMap[hpMapKey]) {
       allyHpMap[hpMapKey].hp = Math.max(0, allyHpMap[hpMapKey].hp - atk.damage);
     }
