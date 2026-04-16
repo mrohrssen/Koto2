@@ -73,7 +73,7 @@ const DEFAULT_ROUTE_DEPS = {
   regenNpcDialogueFn: async () => {},
   setNpcMemoryFlagFn: () => {},
   updateNpcMemoryBondFn: () => {},
-  checkSentenceViolations: () => [],
+  checkSentenceViolations: (sentence) => ({ sentence: sentence || '', unknownWords: [], count: 0 }),
 };
 
 /**

@@ -1,5 +1,4 @@
-// TODO(jpdb-removal): Rewire to Sudachi tokenizer — see Task 17 in Chunk 3
-const parseText = async () => [];
+import { tokenize } from '../tokenizer.js';
 
 // ============================================================================
 // CONFIGURATION
@@ -224,37 +223,35 @@ function splitIntoSentences(text) {
  * 3. Is not a game-specific term (enemy names, etc.)
  * 4. Is not a single hiragana character (usually particles)
  *
- * Uses JPDB's parseText API for accurate Japanese word segmentation.
+ * Uses Sudachi tokenizer for accurate Japanese word segmentation.
  *
  * @param {string} sentence - The sentence to check
  * @param {Set<string>} vocabSet - Set of user's known vocabulary words
- * @param {string} jpdbApiKey - JPDB API key for parsing
  * @param {Set<string>|null} gameTerms - Optional set of game-specific terms to allow
- * @returns {Promise<Object>} Result object with:
+ * @returns {Object} Result object with:
  *   - sentence: The original sentence
  *   - unknownWords: Array of words not in vocabulary
  *   - count: Number of unknown words
  *
  * @example
- * const result = await checkSentenceViolations(
+ * const result = checkSentenceViolations(
  *   'スライムが洞窟に現れた。',
  *   userVocabSet,
- *   'jpdb-api-key',
  *   new Set(['スライム'])
  * );
  * // If user doesn't know 洞窟 or 現れた:
  * // { sentence: '...', unknownWords: ['洞窟', '現れた'], count: 2 }
  */
-async function checkSentenceViolations(sentence, vocabSet, jpdbApiKey, gameTerms = null, vidSet = null) {
-  // Can't check without API key or if sentence is empty
-  if (!jpdbApiKey || !sentence.trim()) {
+function checkSentenceViolations(sentence, vocabSet, gameTerms = null) {
+  // Return early if sentence is empty
+  if (!sentence || !sentence.trim()) {
     return { sentence, unknownWords: [], count: 0 };
   }
 
-  // Parse sentence into words using JPDB's morphological analyzer
-  const parsedWords = await parseText(jpdbApiKey, sentence);
+  // Parse sentence into tokens using Sudachi morphological analyzer
+  const tokens = tokenize(sentence);
   const unknownWords = [];
-  const seen = new Set(); // Avoid counting same word twice
+  const seen = new Set(); // Avoid counting same baseForm twice
 
   // Build expanded game terms set that includes compound name components
   // e.g., "影の君主" should also allow "影" and "君主" individually
@@ -269,35 +266,32 @@ async function checkSentenceViolations(sentence, vocabSet, jpdbApiKey, gameTerms
     }
   }
 
-  // Check each word in the parsed sentence
-  for (const word of parsedWords) {
-    // Step 1: Skip non-words (punctuation, spaces, etc.)
-    if (word.isWord === false) continue;
+  // Check each token in the parsed sentence
+  for (const token of tokens) {
+    const { surface, baseForm, pos } = token;
 
-    const spelling = word.spelling;
+    // Step 1: Skip particles, auxiliary verbs, punctuation, whitespace
+    if (pos.startsWith('助詞') || pos.startsWith('助動詞') ||
+        pos.startsWith('補助記号') || pos.startsWith('空白')) continue;
 
-    // Step 2: Vid-based matching (primary strategy)
-    if (vidSet && word.vid != null && vidSet.has(word.vid)) continue;
-
-    // Deduplication: use vid when available, fall back to spelling
-    const dedupeKey = word.vid != null ? `vid:${word.vid}` : spelling;
-    if (seen.has(dedupeKey)) continue;
-    seen.add(dedupeKey);
+    // Step 2: Deduplicate by baseForm
+    if (seen.has(baseForm)) continue;
+    seen.add(baseForm);
 
     // Step 3: Allowed grammar words / particles
-    if (ALLOWED_WORDS.has(spelling)) continue;
+    if (ALLOWED_WORDS.has(baseForm) || ALLOWED_WORDS.has(surface)) continue;
 
     // Step 4: Game-specific terms
-    if (gameTermWords.has(spelling)) continue;
+    if (gameTermWords.has(baseForm) || gameTermWords.has(surface)) continue;
 
     // Step 5: Single hiragana character
-    if (spelling.length === 1 && /[\u3040-\u309F]/.test(spelling)) continue;
+    if (surface.length === 1 && /[\u3040-\u309F]/.test(surface)) continue;
 
-    // Step 6: Fallback string match (handles vidSet=null / legacy path)
-    if (vocabSet.has(spelling)) continue;
+    // Step 6: Vocabulary match (check both baseForm and surface)
+    if (vocabSet.has(baseForm) || vocabSet.has(surface)) continue;
 
     // Unknown word
-    unknownWords.push(spelling);
+    unknownWords.push(baseForm);
   }
 
   return {
@@ -573,7 +567,6 @@ ${relevantVocab.join('、')}
  *
  * @param {string} narration - Full narration text to process
  * @param {string[]} vocabulary - User's known vocabulary words
- * @param {string} jpdbApiKey - JPDB API key for parsing
  * @param {Function} chatFn - AI chat function for repairs
  * @param {number} maxUnknownsPerSentence - Max unknown words allowed (default 1)
  * @param {string[]} gameTerms - Game-specific terms to allow (enemy names, etc.)
@@ -586,7 +579,6 @@ ${relevantVocab.join('、')}
  * const result = await enforceVocabLimit(
  *   '洞窟の奥、青いゼリーがぷるぷると揺れる。',
  *   userVocabulary,
- *   jpdbApiKey,
  *   aiChatFunction,
  *   1,
  *   ['スライム']
@@ -598,14 +590,12 @@ ${relevantVocab.join('、')}
 export async function enforceVocabLimit(
   narration,
   vocabulary,
-  jpdbApiKey,
   chatFn,
   maxUnknownsPerSentence = CONFIG.maxUnknownsPerSentence,
-  gameTerms = [],
-  vidSet = null
+  gameTerms = []
 ) {
-  // Early return if we can't process
-  if (!narration || !jpdbApiKey) {
+  // Early return if no narration to process
+  if (!narration) {
     return { narration, repairs: [], failures: [] };
   }
 
@@ -623,7 +613,7 @@ export async function enforceVocabLimit(
     const sentenceIndex = index + 1;
 
     // Check current violation count
-    const check = await checkSentenceViolations(sentence, vocabSet, jpdbApiKey, gameTermsSet, vidSet);
+    const check = checkSentenceViolations(sentence, vocabSet, gameTermsSet);
 
     if (check.count <= maxUnknownsPerSentence) {
       // ===== Sentence is OK - no repair needed =====
@@ -653,7 +643,7 @@ export async function enforceVocabLimit(
       );
 
       // Verify the repair actually fixed the violations
-      const recheck = await checkSentenceViolations(repaired, vocabSet, jpdbApiKey, gameTermsSet, vidSet);
+      const recheck = checkSentenceViolations(repaired, vocabSet, gameTermsSet);
 
       if (recheck.count <= maxUnknownsPerSentence) {
         // ===== First repair succeeded =====
@@ -680,7 +670,7 @@ export async function enforceVocabLimit(
           chatFn,
           { sentenceIndex, attempt: 2 }
         );
-        const finalCheck = await checkSentenceViolations(repaired, vocabSet, jpdbApiKey, gameTermsSet, vidSet);
+        const finalCheck = checkSentenceViolations(repaired, vocabSet, gameTermsSet);
 
         if (finalCheck.count <= maxUnknownsPerSentence) {
           // Second repair succeeded

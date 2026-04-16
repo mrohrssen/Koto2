@@ -86,23 +86,23 @@ export default function createRunRoutes({
     };
 
     if (queueMissingCreatureDialoguesFn && getUserVocabulary) {
-      const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+      const { words: vocabulary } = getUserVocabulary(req.user.id);
       const vocabSet = new Set(vocabulary);
-      const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
-        ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
+      const checkViolationsFn = checkSentenceViolations
+        ? (text) => checkSentenceViolations(text, vocabSet, new Set())
         : null;
-      queueMissingCreatureDialoguesFn(req.user.id, aiConfig, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
+      queueMissingCreatureDialoguesFn(req.user.id, aiConfig, { words: vocabulary, checkViolationsFn }).catch(e => {
         console.error('[CreatureDialogue] Background generation failed:', e.message);
       });
     }
 
     if (queueMissingNpcDialoguesFn && getUserVocabulary) {
-      const { words: vocabulary, vidSet } = getUserVocabulary(req.user.id);
+      const { words: vocabulary } = getUserVocabulary(req.user.id);
       const vocabSet = new Set(vocabulary);
-      const checkViolationsFn = userKeys.jpdbApiKey && checkSentenceViolations
-        ? async (text) => checkSentenceViolations(text, vocabSet, userKeys.jpdbApiKey, new Set(), vidSet)
+      const checkViolationsFn = checkSentenceViolations
+        ? (text) => checkSentenceViolations(text, vocabSet, new Set())
         : null;
-      queueMissingNpcDialoguesFn(req.user.id, aiConfig, { words: vocabulary, vidSet, checkViolationsFn }).catch(e => {
+      queueMissingNpcDialoguesFn(req.user.id, aiConfig, { words: vocabulary, checkViolationsFn }).catch(e => {
         console.error('[NpcDialogue] Background generation failed:', e.message);
       });
     }
@@ -532,8 +532,7 @@ export default function createRunRoutes({
       const gameManager = req.gameManager;
       const result = await gameManager.startSpeedReviewRoom({
         roomId,
-        userId: req.user?.id,
-        jpdbApiKey: req.userKeys?.jpdbApiKey
+        userId: req.user?.id
       });
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
