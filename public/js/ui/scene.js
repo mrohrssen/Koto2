@@ -189,6 +189,19 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     infoBox.appendChild(barsEl);
     slotEl.appendChild(infoBox);
 
+    // On page refresh / rejoin, dead or befriended enemies must be
+    // immediately hidden.  During active combat the .defeated class is
+    // applied by updateEnemyHPAtIndex() with a delay for the fade
+    // animation, but on a fresh render the creature was already gone —
+    // show it at opacity 0 with no animation.
+    const isDead = (creature.currentHp ?? creature.hp ?? 1) <= 0;
+    if (side === 'enemy' && (isDead || creature.befriended)) {
+      slotEl.classList.add(creature.befriended ? 'befriended' : 'defeated');
+      slotEl.style.animation = 'none';
+      slotEl.style.opacity = '0';
+      slotEl.style.pointerEvents = 'none';
+    }
+
     container.appendChild(slotEl);
   });
 
@@ -286,15 +299,28 @@ export function updateEnemyHPAtIndex(index, current, max) {
     console.warn(`[Scene] No enemy slot found at index ${index}, skipping HP update`);
     return;
   }
+  slot.dataset.hp = String(current);
   const fill = slot.querySelector('.formation-hp-fill');
   if (fill) {
     const pct = max > 0 ? Math.max(0, current / max * 100) : 0;
     fill.style.width = pct + '%';
     fill.style.backgroundColor = pct > 50 ? 'var(--hp-green)' : pct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
   }
+  // Revive: undo defeated state when HP is restored (befriend target revived to 1 HP)
+  if (current > 0 && slot.classList.contains('defeated')) {
+    slot.classList.remove('defeated');
+    slot.style.animation = '';
+    slot.style.opacity = '';
+    slot.style.pointerEvents = '';
+  }
   // Delay defeated fade so HP bar drain animation (0.3s) completes first
   if (current <= 0 && !slot.classList.contains('defeated')) {
-    setTimeout(() => slot.classList.add('defeated'), 600);
+    setTimeout(() => {
+      // Guard: HP may have been restored since the timeout was scheduled
+      if (parseInt(slot.dataset.hp || '0', 10) <= 0) {
+        slot.classList.add('defeated');
+      }
+    }, 600);
   }
 }
 

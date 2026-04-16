@@ -337,6 +337,19 @@ export async function renderBefriendQuiz(quizData, result) {
     enemySprite.tint = 0xFFFFFF;
   }
 
+  // Ensure the befriend target's DOM slot (HP bar + name) is visible.
+  // When overkill damage exceeds maxHp, the HP bar animation incorrectly hits 0
+  // before syncFinalState restores it to 1, leaving a stale .defeated class.
+  const targetSlot = document.querySelector(
+    `#enemy-formation .formation-slot[data-index="${quizData.targetIndex ?? 0}"]`
+  );
+  if (targetSlot) {
+    targetSlot.classList.remove('defeated');
+    targetSlot.style.animation = '';
+    targetSlot.style.opacity = '';
+    targetSlot.style.pointerEvents = '';
+  }
+
   // Show "まって!!" narration (creature calls out first)
   if (quizData.waitPrompt) {
     const waitHtml = renderJpSentence(quizData.waitPrompt.tokens, getKnownWords(), new Map());

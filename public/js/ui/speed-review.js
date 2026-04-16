@@ -316,11 +316,9 @@ function restoreCard(slotIndex, word, direction) {
 
   slot.innerHTML = `
     <div class="flash-card flipped" data-slot="${slotIndex}">
-      <div class="flash-card-front">${escapeHtml(word.word)}</div>
+      <div class="flash-card-front">${escapeHtml(displayWord(word))}</div>
       <div class="flash-card-back">
-        <div class="flash-card-word">${word.reading && word.reading !== word.word
-          ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
-          : escapeHtml(word.word)}</div>
+        <div class="flash-card-word">${displayWordHtml(word)}</div>
         <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
         <div class="flash-card-hint">${hintText}</div>
       </div>
@@ -466,11 +464,9 @@ function fillSlot(slotIndex) {
 
   slot.innerHTML = `
     <div class="flash-card pop-in" data-slot="${slotIndex}">
-      <div class="flash-card-front">${escapeHtml(word.word)}</div>
+      <div class="flash-card-front">${escapeHtml(displayWord(word))}</div>
       <div class="flash-card-back">
-        <div class="flash-card-word">${word.reading && word.reading !== word.word
-          ? `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`
-          : escapeHtml(word.word)}</div>
+        <div class="flash-card-word">${displayWordHtml(word)}</div>
         <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
         <div class="flash-card-hint">${hintText}</div>
       </div>
@@ -631,8 +627,7 @@ async function gradeCard(slotIndex, word, direction) {
 
   // "Word leveled up!" animation on successful recall
   if (direction === 'right') {
-    const displayWord = state.session.kanaMode && word.reading ? word.reading : word.word;
-    showWordLevelUp(card, displayWord);
+    showWordLevelUp(card, displayWord(word));
   }
 
   // Queue review (will send after 5s unless undone or new review)
@@ -817,6 +812,29 @@ function formatMeanings(meanings) {
   const parts = text.split(', ');
   if (parts.length <= 4) return escapeHtml(text);
   return escapeHtml(parts.slice(0, 4).join(', ')) + ', ...';
+}
+
+/**
+ * Get the display text for a word, respecting kanaMode setting.
+ * In kanaMode, shows hiragana reading instead of kanji.
+ */
+function displayWord(word) {
+  if (state.session.kanaMode && word.reading) return word.reading;
+  return word.word;
+}
+
+/**
+ * Get the back-of-card word HTML, respecting kanaMode.
+ * In normal mode: ruby annotation (kanji with reading). In kanaMode: just the reading.
+ */
+function displayWordHtml(word) {
+  if (state.session.kanaMode && word.reading) {
+    return escapeHtml(word.reading);
+  }
+  if (word.reading && word.reading !== word.word) {
+    return `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`;
+  }
+  return escapeHtml(word.word);
 }
 
 // ============ FUN EFFECTS ============
