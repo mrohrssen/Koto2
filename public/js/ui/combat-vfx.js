@@ -687,9 +687,10 @@ export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved)
     }
     updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
   };
-  if (atk.attackerElement) {
-    playAttackSound(atk.attackerElement);
-    await enemyCreatureAttackEffect(attackerIdx, targetIdx, atk.attackerElement, atk.damage, targetMaxHp, enemyEffectivenessType, hpUpdate);
+  const atkElement = atk.moveElement || atk.attackerElement;
+  if (atkElement) {
+    playAttackSound(atkElement);
+    await enemyCreatureAttackEffect(attackerIdx, targetIdx, atkElement, atk.damage, targetMaxHp, enemyEffectivenessType, hpUpdate);
   } else {
     ctx.animatePlayerHurt();
     hpUpdate();
