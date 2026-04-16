@@ -136,6 +136,12 @@ function handleClick(e) {
     return;
   }
 
+  // If click is inside the dictionary popup, don't dismiss — the popup is a DOM sibling
+  // of the narration box but logically part of the dialogue interaction
+  if (dialogueLookup.isPopupVisible() && document.getElementById('lookup-popup')?.contains(e.target)) {
+    return;
+  }
+
   // Click is outside narration box — advance dialogue
   if (pagedText.length > 0 && currentPage < pagedText.length - 1) {
     currentPage += 1;
