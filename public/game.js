@@ -529,13 +529,7 @@ function updatePlayerHP() {
 function updateGameContent() {
   switch (gameState.phase) {
     case 'no_save':
-      // During prologue (player exists, not complete), leave action area for prologue CTAs only.
-      if (!gameState.player || gameState.meta?.prologueComplete === true) {
-        actions.setContent('<button class="action-btn action-btn-primary" id="new-game-btn">ニューゲーム</button>');
-        document.getElementById('new-game-btn')?.addEventListener('click', createCharacter);
-      } else {
-        actions.clear();
-      }
+      actions.clear();
       break;
     case 'hub':
       explorationUI.renderHub();
