@@ -364,7 +364,7 @@ export async function renderHub() {
       }
       const result = await apiGetDueWords();
       if (result?.words?.length > 0) {
-        speedReview.start(result.words, { kanaMode: getGameState()?.meta?.kanaMode });
+        speedReview.start(result.words);
       } else {
         sceneModule.showNarration('No words to review', { autoDismiss: 2000 });
       }
@@ -842,7 +842,6 @@ export async function renderSpeedReviewRoom() {
       mode: 'room',
       maxCards: 10,
       canCloseEarly: false,
-      kanaMode: getGameState()?.meta?.kanaMode,
       onCommittedReview: async ({ word, commitIndex }) => {
         speedReviewRoomCommitChain = speedReviewRoomCommitChain.then(async () => {
           let lastError = null;

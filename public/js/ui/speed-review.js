@@ -51,7 +51,6 @@ function resolveSessionOptions(options = {}) {
     onCommittedReview: typeof options.onCommittedReview === 'function' ? options.onCommittedReview : null,
     onComplete: typeof options.onComplete === 'function' ? options.onComplete : null,
     canCloseEarly: typeof options.canCloseEarly === 'boolean' ? options.canCloseEarly : mode === 'hub',
-    kanaMode: !!options.kanaMode,
     committedReviews: 0,
     completionTriggered: false,
     commitDeliveryChain: Promise.resolve(),
@@ -815,26 +814,19 @@ function formatMeanings(meanings) {
 }
 
 /**
- * Get the display text for a word, respecting kanaMode setting.
- * In kanaMode, shows hiragana reading instead of kanji.
+ * Get the display text for a word.
+ * Shows hiragana reading by default (matching the game's dialogue renderer).
  */
 function displayWord(word) {
-  if (state.session.kanaMode && word.reading) return word.reading;
-  return word.word;
+  return word.reading || word.word;
 }
 
 /**
- * Get the back-of-card word HTML, respecting kanaMode.
- * In normal mode: ruby annotation (kanji with reading). In kanaMode: just the reading.
+ * Get the back-of-card word HTML.
+ * Shows hiragana reading by default (matching the game's dialogue renderer).
  */
 function displayWordHtml(word) {
-  if (state.session.kanaMode && word.reading) {
-    return escapeHtml(word.reading);
-  }
-  if (word.reading && word.reading !== word.word) {
-    return `<ruby>${escapeHtml(word.word)}<rt>${escapeHtml(word.reading)}</rt></ruby>`;
-  }
-  return escapeHtml(word.word);
+  return escapeHtml(word.reading || word.word);
 }
 
 // ============ FUN EFFECTS ============
