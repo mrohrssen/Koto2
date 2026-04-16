@@ -5539,6 +5539,31 @@ textarea,
   -webkit-tap-highlight-color: transparent;
 }
 
+/* — DMG effectiveness pill (target selection) — */
+.dmg-pill {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.dmg-pill--up {
+  background: rgba(102, 187, 106, 0.15);
+  color: #2e7d32;
+}
+.dmg-pill--down {
+  background: rgba(239, 83, 80, 0.12);
+  color: #c62828;
+}
+.dmg-pill__arrow {
+  font-size: 13px;
+  line-height: 1;
+}
+
 /* ============================================================
    PVP TEAM SELECT — Mini sprite team cards
    ============================================================ */

@@ -2,11 +2,23 @@ import { dom } from '../dom.js';
 import { ELEMENT_COLORS } from './creature-row.js';
 import { creatureStaticPath } from './sprite-utils.js';
 import { renderChoices, renderButtons } from './ui-components.js';
+import { renderJpSentence, entityToToken, getKnownWords } from './bootstrap-client.js';
 
 const ELEMENT_KANJI = {
   fire: '火', water: '水', wood: '木',
   earth: '土', metal: '金', neutral: '—'
 };
+
+const ELEMENT_CYCLE = ['wood', 'earth', 'water', 'fire', 'metal'];
+
+function getEffectiveness(moveElement, targetElement) {
+  const ai = ELEMENT_CYCLE.indexOf(moveElement);
+  const di = ELEMENT_CYCLE.indexOf(targetElement);
+  if (ai === -1 || di === -1) return null;
+  if ((ai + 1) % ELEMENT_CYCLE.length === di) return 'up';
+  if ((di + 1) % ELEMENT_CYCLE.length === ai) return 'down';
+  return null;
+}
 
 let onTargetSelect = null;
 let onCancel = null;
@@ -49,11 +61,20 @@ function showTargets(targets, move, type) {
       const elemColor = ELEMENT_COLORS[target.element] || '#888';
       const elemKanji = ELEMENT_KANJI[target.element] || '—';
       const spriteHtml = `<img src="${creatureStaticPath(target.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`;
+      const nameHtml = renderJpSentence(
+        [entityToToken({ name: target.name, reading: target.baseReading, nameEn: target.nameEn })],
+        getKnownWords(), new Map()
+      );
+      const eff = move ? getEffectiveness(move.element, target.element) : null;
+      let suffix = '';
+      if (eff === 'up') suffix = '<span class="dmg-pill dmg-pill--up">DMG<span class="dmg-pill__arrow">\u2191</span></span>';
+      if (eff === 'down') suffix = '<span class="dmg-pill dmg-pill--down">DMG<span class="dmg-pill__arrow">\u2193</span></span>';
       return {
         sprite: spriteHtml,
-        title: target.name,
-        subtitle: `${target.nameEn} · Lv${target.level}`,
+        title: nameHtml,
+        subtitle: `Lv${target.level}`,
         badge: { text: elemKanji, color: elemColor },
+        suffix,
       };
     }),
     onSelect: (index) => {

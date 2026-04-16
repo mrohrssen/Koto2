@@ -25,6 +25,17 @@ export function lookupMeaning(baseForm) {
   return primary?.en || entry.definitions[0]?.en || '';
 }
 
+/**
+ * Look up the hiragana reading for a Japanese word.
+ * @param {string} baseForm
+ * @returns {string} Hiragana reading, or the word itself if not found
+ */
+export function lookupReading(baseForm) {
+  const dict = getWordDict();
+  const entry = dict.get(baseForm);
+  return entry?.reading || baseForm;
+}
+
 const EXPOSURE_THRESHOLD = 5;
 
 /**
@@ -52,14 +63,15 @@ export function exposeWords(userId, words) {
     registerExposure(wk, word);
 
     if (wk.seen[word].exposures >= EXPOSURE_THRESHOLD) {
+      const reading = lookupReading(word);
       if (wasBelowThreshold) {
-        newlyMastered.push({ word, meaning, exposures: wk.seen[word].exposures });
+        newlyMastered.push({ word, reading, meaning, exposures: wk.seen[word].exposures });
       }
       const existingCards = getDeckCards(userId, 'vocab');
       if (!existingCards.find(c => c.id === word)) {
         const dictMeaning = lookupMeaning(word);
         createCard(userId, 'vocab', word, {
-          word, meaning: dictMeaning || meaning, reading: word
+          word, meaning: dictMeaning || meaning, reading
         });
       }
     }

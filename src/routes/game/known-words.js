@@ -100,13 +100,17 @@ export function createKnownWordsRoutes() {
 
   // GET /api/game/known-words/due-words
   router.get('/due-words', (req, res) => {
+    const dict = getWordDict();
     const cards = getDueCards(req.user.id, 'vocab');
-    const words = cards.map(c => ({
-      word: c.word,
-      reading: c.reading || c.word,
-      meanings: c.meaning ? [c.meaning] : [''],
-      source: 'internal',
-    }));
+    const words = cards.map(c => {
+      const entry = dict.get(c.word);
+      return {
+        word: c.word,
+        reading: entry?.reading || c.reading || c.word,
+        meanings: c.meaning ? [c.meaning] : [''],
+        source: 'internal',
+      };
+    });
     res.json({ words });
   });
 

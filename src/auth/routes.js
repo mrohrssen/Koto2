@@ -9,6 +9,7 @@ import {
 import { dataPath } from '../data-dir.js';
 import { parseWordList } from '../game/bootstrap/word-list-parser.js';
 import { createCard, gradeCard } from '../game/internal-srs.js';
+import { lookupReading } from '../game/bootstrap/word-knowledge.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } });
 
@@ -81,7 +82,7 @@ export default function createAuthRoutes(options = {}) {
       if (req.file) {
         const words = parseWordList(req.file.buffer.toString('utf-8'));
         for (const word of words) {
-          createCard(user.id, 'vocab', word, { word, meaning: '', reading: word });
+          createCard(user.id, 'vocab', word, { word, meaning: '', reading: lookupReading(word) });
           gradeCard(user.id, 'vocab', word, 'good');
         }
       }

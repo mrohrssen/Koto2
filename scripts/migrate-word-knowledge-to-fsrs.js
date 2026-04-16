@@ -1,6 +1,6 @@
 import { readdirSync } from 'fs';
 import { join } from 'path';
-import { loadWordKnowledge } from '../src/game/bootstrap/word-knowledge.js';
+import { loadWordKnowledge, lookupReading } from '../src/game/bootstrap/word-knowledge.js';
 import { createCard, getDeckCards, gradeCard } from '../src/game/internal-srs.js';
 
 const DATA_DIR = join(process.cwd(), 'data');
@@ -38,7 +38,7 @@ for (const file of wkFiles) {
     createCard(userId, 'vocab', word, {
       word,
       meaning: wk.known[word].meaning || '',
-      reading: word,
+      reading: lookupReading(word),
     });
     gradeCard(userId, 'vocab', word, 'good');
     migrated++;
