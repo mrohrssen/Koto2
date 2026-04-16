@@ -267,6 +267,7 @@ export class CombatCycleService {
     );
 
     // Party skills proc only on player attack records (post-process round output)
+    const enemyHpBeforePartySkills = this.gm.combat.enemies.map(e => e?.hp ?? 0);
     applyPartySkillsAfterPlayerAttacks({
       attacks: playerResult.attacks,
       allies: this.gm.combat.allies,
@@ -274,6 +275,23 @@ export class CombatCycleService {
       runPartySkills: this.gm.run.partySkills,
       combat: this.gm.combat
     });
+
+    // Prune enemy attacks from enemies killed by post-round party skills (e.g. Arc Strike chain).
+    // These enemies were alive during the initiative round but died afterward — showing their
+    // attack animation after the chain-kill visual is confusing ("dead creature attacked me").
+    if (playerResult.enemyAttacks) {
+      playerResult.enemyAttacks = playerResult.enemyAttacks.filter(atk => {
+        const idx = atk.attackerIndex;
+        const enemy = this.gm.combat.enemies[idx];
+        // Keep if enemy is still alive, or was already dead before party skills
+        return !enemy || enemy.hp > 0 || enemyHpBeforePartySkills[idx] <= 0;
+      });
+    }
+
+    // Re-check allEnemiesDefeated after party skills (Arc Strike chain can finish off remaining enemies)
+    if (!playerResult.allEnemiesDefeated) {
+      playerResult.allEnemiesDefeated = this.gm.combat.enemies.every(e => !e || e.hp <= 0);
+    }
 
     // Award credits for kills
     if (playerResult.xpEvents?.length > 0) {
@@ -441,6 +459,7 @@ export class CombatCycleService {
         roundStartEvents,
         combatEnded: true,
         victory: true,
+        allies: this.gm.combat.allies,
         creatureParty: this.gm.run.creatureParty,
         enemies: this.gm.combat.enemies,
         newCollectionAdditions,
@@ -547,6 +566,7 @@ export class CombatCycleService {
         koRemovals,
         combatEnded: true,
         victory: true,
+        allies: this.gm.combat.allies,
         creatureParty: this.gm.run.creatureParty,
         enemies: this.gm.combat.enemies,
         newCollectionAdditions,

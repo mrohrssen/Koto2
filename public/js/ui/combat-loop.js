@@ -881,7 +881,7 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
     await vfx.showMoveEffectsApplied(atk, targetSide, atkTargetIdx, result);
   }
 
-  await vfx.showPartySkillProcs(atk);
+  await vfx.showPartySkillProcs(atk, enemyHpMap);
 
   if (attackCard) {
     await waitForCardTap(attackCard);
@@ -985,6 +985,19 @@ async function executeCreatureMovesTurn(choices) {
           }
         }
       }
+
+      // Catch-all KO: ensure all dead enemies get their KO animation, even if killed
+      // by party skill chain damage (e.g. Arc Strike) that doesn't set targetDefeated.
+      if (result.enemies) {
+        for (let i = 0; i < result.enemies.length; i++) {
+          const e = result.enemies[i];
+          if (e && e.hp <= 0 && !e.befriended && !killedEnemies.has(`idx:${i}`)) {
+            killedEnemies.add(`idx:${i}`);
+            animateKO('enemy', i);
+          }
+        }
+      }
+
       vfx.syncStatusIconsFromResult(result);
 
       // === BEFRIEND NAME QUIZ CHECK ===

@@ -1336,3 +1336,46 @@ test('Widening Gyre: 3 rounds of Erosion + Momentum grow stages cumulatively', (
   assert.equal(allies[0].statStages.atk, 4);
   assert.equal(enemies[0].statStages.atk, -4);
 });
+
+// ── Regression: Arc Strike chain kill should be detectable for attack pruning ──
+
+test('arc strike chain kill sets enemy HP to 0 (verifiable for attack pruning)', () => {
+  // Simulate: player attacks enemy1 (40 dmg), arc strike chains to enemy2 (12 dmg).
+  // enemy2 has only 10 HP — chain should kill it.
+  const allies = [makeAlly({ attack: 20 })];
+  const enemies = [
+    makeEnemy({ id: 'target', hp: 100, maxHp: 100 }),
+    makeEnemy({ id: 'chain-victim', hp: 10, maxHp: 100 })
+  ];
+  const attacks = [makeDmgRecord({ attackerIndex: 0, targetIndex: 0, damage: 40 })];
+  const combat = makeCombat();
+
+  const hpBefore = enemies.map(e => e.hp);
+
+  withStubbedRandom(0.99, () => {
+    applyAfterPlayerAttacks({
+      attacks, allies, enemies, runPartySkills: ['arcStrike'], combat
+    });
+  });
+
+  // Chain killed enemy2
+  assert.equal(enemies[1].hp, 0, 'chain victim should be dead (hp=0)');
+  assert.ok(hpBefore[1] > 0, 'chain victim was alive before party skills');
+
+  // The chain proc exists on the attack record
+  const chainProc = attacks[0].partySkillProcs.find(p => p.skillId === 'arcStrike');
+  assert.ok(chainProc, 'arc strike proc should exist');
+  assert.equal(chainProc.targetIndex, 1, 'chain should target enemy index 1');
+
+  // Server-side pruning logic: enemyAttacks from enemies killed by party skills
+  // should be filtered out (enemy was alive during initiative but dead after party skills)
+  const fakeEnemyAttacks = [
+    { attackerIndex: 1, damage: 5, attackerName: 'chain-victim' }
+  ];
+  const pruned = fakeEnemyAttacks.filter(atk => {
+    const idx = atk.attackerIndex;
+    const enemy = enemies[idx];
+    return !enemy || enemy.hp > 0 || hpBefore[idx] <= 0;
+  });
+  assert.equal(pruned.length, 0, 'attack from chain-killed enemy should be pruned');
+});

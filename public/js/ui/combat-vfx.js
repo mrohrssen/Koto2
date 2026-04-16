@@ -403,7 +403,8 @@ export async function showAttackPartySkillProcs(atk, {
   targetIndex,
   element,
   resolveAllies,
-  resolveEnemies
+  resolveEnemies,
+  enemyHpMap
 }) {
   if (!atk.partySkillProcs?.length) return;
 
@@ -440,6 +441,16 @@ export async function showAttackPartySkillProcs(atk, {
       await fireElementBlast(chainFrom, chainTo, chainElement, () => {
         pixiDamageNumber(proc.damage, chainTo, { tier: 1 });
         screenShake('light');
+        // Update enemy HP bar for chain damage (Arc Strike, Forked Arc)
+        if (enemyHpMap && typeof proc.targetIndex === 'number' && enemyHpMap[proc.targetIndex]) {
+          enemyHpMap[proc.targetIndex].hp = Math.max(0, enemyHpMap[proc.targetIndex].hp - proc.damage);
+          const entry = enemyHpMap[proc.targetIndex];
+          if (Object.keys(enemyHpMap).length > 1) {
+            ctx.characterUI.updateEnemyHPAtIndex(entry.index, entry.hp, entry.maxHp);
+          } else {
+            ctx.characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
+          }
+        }
       });
     } else if (proc.type === 'stageChange') {
       const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
@@ -477,7 +488,7 @@ export async function showAttackPartySkillProcs(atk, {
 /**
  * Show party skill proc visuals inline after a player attack.
  */
-export async function showPartySkillProcs(atk) {
+export async function showPartySkillProcs(atk, enemyHpMap) {
   const state = ctx.getGameState();
   const activeCreatures = state.run?.creatureParty?.active || [];
   const attackerIndex = atk.attackerId
@@ -493,7 +504,8 @@ export async function showPartySkillProcs(atk) {
     targetIndex,
     element: 'neutral',
     resolveAllies: () => state.combat?.allies || activeCreatures,
-    resolveEnemies: () => state.combat?.enemies || []
+    resolveEnemies: () => state.combat?.enemies || [],
+    enemyHpMap
   });
 }
 
