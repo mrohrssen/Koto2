@@ -353,6 +353,13 @@ export function hideFormation(side) {
 export function setFormationVisible(side, visible) {
   const container = side === 'player' ? playerContainer : enemyContainer;
   if (container) container.visible = visible;
+  // Also toggle status label pills (they live in layers.labels, not the formation container)
+  for (const sprite of creatureSprites[side] || []) {
+    if (!sprite?.statusLabels) continue;
+    for (const pill of sprite.statusLabels) {
+      pill.visible = visible;
+    }
+  }
 }
 
 /**
@@ -420,9 +427,11 @@ export function clearActiveGlow() {
  * @param {{ slideIn?: boolean }} opts
  */
 export async function showNpcSprite(spritePath, { slideIn = false } = {}) {
-  const { app } = getStage();
+  const { app, layers } = getStage();
   if (!app) return;
-  const container = enemyContainer;
+  // Add NPC to the top-level creatures layer (not enemyContainer)
+  // so it stays visible when enemyContainer is hidden during skill animations
+  const container = layers?.creatures || enemyContainer;
   if (!container) return;
 
   hideNpcSprite();
