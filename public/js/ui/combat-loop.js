@@ -16,7 +16,7 @@ import {
 } from '../pixi/text.js';
 import { showBanner } from '../pixi/banners.js';
 import { clearAllStatusVfx } from '../pixi/status-vfx.js';
-import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, clearAllPixiStatusLabels } from '../pixi/formation.js';
+import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, clearAllPixiStatusLabels, setWalking } from '../pixi/formation.js';
 import { showFormation } from './scene.js';
 import { setScrollState } from '../pixi/parallax.js';
 import { wait } from '../pixi/tween.js';
@@ -1455,6 +1455,7 @@ export async function stopCombatLoop(result) {
   // 1500ms+ gap where DOM info boxes (name/HP bars) float with no creature
   // image underneath (the "ghost formation" effect).
   setScrollState('accelerating');
+  setWalking(true);
   pixiHideFormation('enemy');
 
   // Brief pause before narration (let final damage numbers display)
