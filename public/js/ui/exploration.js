@@ -1495,7 +1495,26 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
     // Stale async guard: room changed while awaiting
     if (npcBattleSkillState.roomId !== fetchRoomId) return;
 
-    const offered = resp?.offered || resp?.offers || resp?.skills || room?.npcBattle?.offered;
+    // If fetch returned null (dedup or network), show retry instead of using stale
+    // room fallback. room.npcBattle.offered contains raw IDs, not display objects.
+    if (!resp) {
+      npcBattleSkillState.fetched = false;
+      npcBattleSkillState.offered = null;
+      actions.setContent(`
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:380px;">
+          <div style="text-align:center;font-weight:800;letter-spacing:0.02em;">NPC Battle Reward</div>
+          <div style="text-align:center;color:var(--text-secondary);font-size:13px;">Loading offers…</div>
+        </div>
+      `);
+      const retryContainer = document.createElement('div');
+      document.getElementById('action-area').appendChild(retryContainer);
+      renderButtons([
+        { label: 'Retry', onClick: () => { npcBattleSkillState.fetched = false; npcBattleSkillState.offered = null; renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers }); }, primary: true },
+      ], { container: retryContainer });
+      return;
+    }
+
+    let offered = resp?.offered || resp?.offers || resp?.skills;
     if (!Array.isArray(offered) || offered.length === 0) {
       npcBattleSkillState.fetched = false;
       npcBattleSkillState.offered = null;

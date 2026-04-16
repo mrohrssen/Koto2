@@ -293,8 +293,19 @@ export default function createRunRoutes({
         return res.status(400).json({ error: 'Skill already chosen for this room' });
       }
 
-      const offeredIds = Array.isArray(room.npcBattle.offered) ? room.npcBattle.offered : [];
+      // Generate offers if they were never set (race: client used fallback data)
+      if (!Array.isArray(room.npcBattle.offered)) {
+        console.warn('[npc-battle-skill-choose] offered not set — generating on demand',
+          { skillId, npcBattle: JSON.stringify(room.npcBattle) });
+        const ownedSkillIds = (gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
+        room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
+        req.saveGame();
+      }
+
+      const offeredIds = room.npcBattle.offered;
       if (!offeredIds.includes(skillId)) {
+        console.warn('[npc-battle-skill-choose] skillId not in offered',
+          { skillId, offeredIds, typeof_skillId: typeof skillId });
         return res.status(400).json({ error: 'Invalid skill choice' });
       }
 
