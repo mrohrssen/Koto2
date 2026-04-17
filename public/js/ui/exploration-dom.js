@@ -130,7 +130,7 @@ export function showNpcTrainer(npcName, npcId, npc, { skipPixi = false } = {}) {
     const spritePath = npcId
       ? `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`
       : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
-    pixiShowNpcSprite(spritePath);
+    sceneShowNpc(spritePath);
   }
 }
 
