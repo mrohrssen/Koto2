@@ -206,15 +206,14 @@ export default function createAdminRoutes({ dataDir }) {
   router.get('/word-knowledge/:userId', (req, res) => {
     try {
       const { userId } = req.params;
-      const dataSub = join(dataDir, 'data');
-      const wkPath = join(dataSub, `word-knowledge-${userId}.json`);
+      const wkPath = join(dataDir, `word-knowledge-${userId}.json`);
 
       if (!existsSync(wkPath)) {
         return res.json({ words: [] });
       }
 
       const wk = JSON.parse(readFileSync(wkPath, 'utf-8'));
-      const dict = loadWordDictionary(dataSub);
+      const dict = loadWordDictionary(join(process.cwd(), 'data'));
       const knownSet = new Set(getKnownWordsFromFsrs(userId));
 
       const words = [];
