@@ -1,6 +1,7 @@
 import { ResourceRegistry } from './resource-registry.js';
 import { DEV } from './dev-flag.js';
 import { SceneDisposedError } from './scene-errors.js';
+import { tween as _tween } from '../pixi/tween.js';
 
 // Re-export so external code's import path ('./scene.js') keeps working.
 export { SceneDisposedError } from './scene-errors.js';
@@ -184,5 +185,28 @@ export class Scene {
     this._guard('addAsyncController');
     const controller = new AbortController();
     return this.registry.trackAsync(controller);
+  }
+
+  /**
+   * Scene-owned tween. The returned Promise resolves normally when the tween
+   * completes, OR early if the scene exits before then (the tween is cancelled
+   * by registry disposal and resolves without mutating the target further).
+   *
+   * Use this instead of pixi/tween.js's raw `tween()` for any animation whose
+   * lifetime is bounded by the scene — typically anything that animates sprites
+   * the scene owns. Scene-owned tweens never "outlive" the scene and never
+   * mutate targets that may have been destroyed.
+   *
+   * @param {object} target - Object with numeric properties (e.g., PixiJS Sprite)
+   * @param {object} props - Target values, e.g. { x: 100, alpha: 0 }
+   * @param {{ duration?: number, ease?: string, delay?: number }} opts
+   * @returns {Promise<void>}
+   */
+  tween(target, props, opts = {}) {
+    this._guard('tween');
+    const signal = { cancelled: false };
+    const handle = { cancel: () => { signal.cancelled = true; } };
+    this.registry.trackTween(handle);
+    return _tween(target, props, { ...opts, signal });
   }
 }
