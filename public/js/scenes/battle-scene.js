@@ -76,6 +76,7 @@ export class BattleScene extends Scene {
     }
 
     // Spawn or update — spawns are async; run in parallel.
+    // Each spawn is isolated via .catch so a single failure doesn't abort siblings.
     const spawnPromises = [];
     for (let i = 0; i < creatures.length; i++) {
       const c = creatures[i];
@@ -83,9 +84,9 @@ export class BattleScene extends Scene {
         updateFormationSprite(this.formation, side, c, i);
       } else {
         spawnPromises.push(
-          spawnFormationSprite(this.formation, side, c, i).then(sprite => {
-            if (sprite) this.spritesByUid.set(c.uid, sprite);
-          })
+          spawnFormationSprite(this.formation, side, c, i)
+            .then(sprite => { if (sprite) this.spritesByUid.set(c.uid, sprite); })
+            .catch(err => { console.error(`[BattleScene] spawn failed for ${side}[${i}] uid=${c.uid}:`, err); })
         );
       }
     }

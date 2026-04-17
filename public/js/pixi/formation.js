@@ -49,12 +49,15 @@ const _defaultCtx = _newContext();
  * @returns {object} a formation context for use with the ctx-based API
  */
 export function createFormationContext(scene) {
-  const ctx = _newContext(scene);
-  const formationsLayer = scene?.layers?.formations;
-  if (formationsLayer) {
-    ctx.playerContainer = scene.addContainer(new Container(), formationsLayer);
-    ctx.enemyContainer  = scene.addContainer(new Container(), formationsLayer);
+  if (!scene) {
+    throw new Error('createFormationContext: scene is required');
   }
+  if (!scene.layers?.formations) {
+    throw new Error('createFormationContext: scene.layers.formations is required');
+  }
+  const ctx = _newContext(scene);
+  ctx.playerContainer = scene.addContainer(new Container(), scene.layers.formations);
+  ctx.enemyContainer  = scene.addContainer(new Container(), scene.layers.formations);
   return ctx;
 }
 
@@ -629,8 +632,18 @@ async function _resizeFormations(ctx, /* width */ _w, /* height */ _h) {
 // --- New scene-oriented API --------------------------------------------------
 
 /**
- * Spawn a single creature sprite into a formation context and position it by
- * slot index within a 1/2/3-wide formation layout.
+ * Spawn a single creature sprite into `ctx` and register it by uid.
+ *
+ * Task 9 minimum — parity work deferred to Task 16 (combat-loop migration):
+ *   - Boss sizing (`isBoss ? 120 : 60`). Currently hardcoded to 60.
+ *   - Enemy slide-in enter animation (`_enterTarget`/`_entering` flags).
+ *   - `revealFormationInfo(side, dataIndex)` DOM sync for non-entering sprites.
+ *   - 3-slot layout mapping (1 creature → middle, 2 creatures → top+bottom).
+ *     Currently uses raw `index` as slot.
+ *   - Per-slot repositioning on creature shift (see `updateFormationSprite`).
+ *
+ * When BattleScene is wired into combat-loop (Task 16), these behaviors must
+ * be restored — either inlined here or via new `spawnFormationSprite` opts.
  *
  * Exported for scene-based callers (BattleScene.syncCreatures). Legacy callers
  * should continue to use showFormation.
@@ -642,13 +655,22 @@ async function _resizeFormations(ctx, /* width */ _w, /* height */ _h) {
  * @returns {Promise<Sprite|null>} the mounted sprite, or null if no app/container
  */
 export async function spawnFormationSprite(ctx, side, creature, index) {
+  if (ctx.scene && !creature?.uid) {
+    throw new Error(
+      `spawnFormationSprite: creature.uid is required when ctx is scene-owned (got ${JSON.stringify({ side, index, id: creature?.id })})`
+    );
+  }
   const { app } = getApp();
   if (!app) return null;
   const container = _sideContainer(ctx, side);
   if (!container) return null;
 
-  const requestId = ++ctx.loadRequestId[side];
-
+  // NOTE: unlike `_showFormation`, this function intentionally does NOT
+  // use `ctx.loadRequestId` to self-cancel. BattleScene._diff calls us
+  // in Promise.all over N creatures; a per-call counter would make N-1
+  // of those calls bail out because the last increment wins. Storage by
+  // uid is idempotent — if a caller kicks off two spawns for the same
+  // uid we defensively remove the prior sprite below.
   const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}.webp`;
   let texture;
   try {
@@ -656,7 +678,6 @@ export async function spawnFormationSprite(ctx, side, creature, index) {
   } catch {
     texture = Texture.WHITE;
   }
-  if (requestId !== ctx.loadRequestId[side]) return null;
 
   const sprite = new Sprite(texture);
   sprite.anchor.set(0.5);
@@ -713,6 +734,14 @@ export async function spawnFormationSprite(ctx, side, creature, index) {
   container.addChild(sprite);
   const key = creature.uid ?? `__idx_${index}_${creature.id || ''}`;
   sprite._storageKey = key;
+  // Defensive: if a caller re-spawns the same uid (duplicate or reset), the
+  // previous PIXI sprite still lives on the container. Remove it explicitly
+  // so we don't leak a visible double.
+  const prior = ctx.creatureSprites[side].get(key);
+  if (prior) {
+    if (prior.parent) prior.parent.removeChild(prior);
+    prior.destroy({ children: true, texture: false });
+  }
   ctx.creatureSprites[side].set(key, sprite);
   return sprite;
 }
@@ -724,6 +753,9 @@ export async function spawnFormationSprite(ctx, side, creature, index) {
  * @param {string} uid
  */
 export function removeFormationSprite(ctx, side, uid) {
+  if (ctx.scene && !uid) {
+    throw new Error('removeFormationSprite: uid is required when ctx is scene-owned');
+  }
   const sprite = ctx.creatureSprites[side].get(uid);
   if (!sprite) return;
   ctx.creatureSprites[side].delete(uid);
@@ -737,13 +769,21 @@ export function removeFormationSprite(ctx, side, uid) {
 }
 
 /**
- * Update a creature sprite in-place (data refresh + slot reposition).
+ * Update a creature sprite in place (data refresh only — no reposition).
+ *
+ * Task 9 minimum — repositioning on slot shift is deferred to Task 16.
+ * When an ally is KO'd mid-combat and remaining allies re-anchor to
+ * different slots, the existing sprites will stay at their old x/y.
+ *
  * @param {object} ctx
  * @param {'player'|'enemy'} side
  * @param {object} creature
  * @param {number} index
  */
 export function updateFormationSprite(ctx, side, creature, index) {
+  if (ctx.scene && !creature?.uid) {
+    throw new Error('updateFormationSprite: creature.uid is required when ctx is scene-owned');
+  }
   const sprite = ctx.creatureSprites[side].get(creature.uid);
   if (!sprite) return;
 
