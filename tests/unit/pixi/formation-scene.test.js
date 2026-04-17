@@ -92,7 +92,10 @@ await mock.module('../../../public/js/pixi/app.js', {
 
 // Unused in the paths we exercise, but formation.js imports from these.
 await mock.module('../../../public/js/pixi/tween.js', {
-  namedExports: { tween: () => Promise.resolve() },
+  namedExports: {
+    tween: () => Promise.resolve(),
+    wait: () => Promise.resolve(), // mock: resolve immediately for test speed
+  },
 });
 
 // BattleScene calls start/stopParallax in onEnter/beforeExit; stub them.
