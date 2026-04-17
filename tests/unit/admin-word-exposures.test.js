@@ -243,3 +243,58 @@ describe('JPDB cache', () => {
     assert.deepEqual(loaded, data);
   });
 });
+
+describe('createWordExposureRoutes dictionary load', () => {
+  it('loads the dictionary from the committed repo data dir, not from dataDir', async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { tmpdir } = await import('node:os');
+    const { default: createWordExposureRoutes } = await import('../../src/routes/admin-word-exposures.js');
+    const express = (await import('express')).default;
+
+    const tempDir = mkdtempSync(join(tmpdir(), 'word-exp-dict-'));
+    // Seed a word-knowledge file in the tempDir (dataDir) so the aggregator has a user.
+    writeFileSync(
+      join(tempDir, 'word-knowledge-dict-test-user.json'),
+      JSON.stringify({
+        userId: 'dict-test-user',
+        seen: {
+          '水': { exposures: 4, firstSeen: '2026-01-01T00:00:00Z' },
+        },
+      })
+    );
+
+    // Do NOT write a dictionary.json into tempDir — the fix should load the real
+    // committed dictionary from process.cwd()/data.
+
+    const adminSecret = 'dict-test-secret';
+    process.env.ADMIN_SECRET = adminSecret;
+
+    const app = express();
+    app.use('/api/admin', createWordExposureRoutes({
+      dataDir: tempDir,
+      framesPath: join(tempDir, 'nonexistent-frames.json'),
+    }));
+
+    const server = app.listen(0);
+    try {
+      const { port } = server.address();
+      const res = await fetch(
+        `http://127.0.0.1:${port}/api/admin/word-exposures`,
+        { headers: { 'x-admin-secret': adminSecret } }
+      );
+      assert.equal(res.status, 200, `expected 200, got ${res.status}`);
+      const body = await res.json();
+      assert.equal(body.totalUsers, 1);
+      const water = body.words.find(w => w.word === '水');
+      assert.ok(water, 'expected 水 in words');
+      // The dictionary should have populated these — if not, the fix regressed.
+      assert.ok(water.reading, `expected non-null reading for 水, got ${JSON.stringify(water.reading)}`);
+      assert.ok(water.definition, `expected non-null definition for 水, got ${JSON.stringify(water.definition)}`);
+    } finally {
+      await new Promise(resolve => server.close(resolve));
+      rmSync(tempDir, { recursive: true, force: true });
+      delete process.env.ADMIN_SECRET;
+    }
+  });
+});

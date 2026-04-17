@@ -239,7 +239,7 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
 
   let dictionary = null;
   function getDictionary() {
-    if (!dictionary) dictionary = loadWordDictionary(dataDir);
+    if (!dictionary) dictionary = loadWordDictionary(join(process.cwd(), 'data'));
     return dictionary;
   }
 
