@@ -442,7 +442,7 @@ app.use('/api/sprite-forge', createSpriteForgeRouter({
 app.get('/api/admin/secret', (req, res) => res.json({ secret: process.env.ADMIN_SECRET || '' }));
 app.use('/api/admin', createAdminRoutes({ dataDir: dataPath('') }));
 app.use('/api/admin', createWordExposureRoutes({
-  dataDir: join(__dirname, 'data'),
+  dataDir: getDataDir(),
   framesPath: join(__dirname, 'data', 'dialogue', 'frames.json'),
 }));
 
