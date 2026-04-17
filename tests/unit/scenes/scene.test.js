@@ -56,14 +56,83 @@ describe('Scene', () => {
   });
 
   it('beforeExit hook is called before disposal', () => {
-    const s = new Scene('T', makeFakeApp());
+    const fakeApp = makeFakeApp();
     let order = [];
-    s.beforeExit = () => order.push('before');
+    class Sub extends Scene {
+      constructor() { super('T', fakeApp); }
+      beforeExit() { order.push('before'); }
+    }
+    const s = new Sub();
     s.addUpdater(() => order.push('update-fn'));
     // monkey-patch registry.dispose to record order
     const origDispose = s.registry.dispose.bind(s.registry);
     s.registry.dispose = () => { order.push('dispose'); origDispose(); };
     s.exit();
     assert.deepStrictEqual(order, ['before', 'dispose']);
+  });
+
+  it('SceneDisposedError message includes scene name and method', () => {
+    const s = new Scene('Battle', makeFakeApp());
+    s.exit();
+    try {
+      s.addUpdater(() => {});
+      assert.fail('expected throw');
+    } catch (e) {
+      assert.ok(e instanceof SceneDisposedError);
+      assert.match(e.message, /Battle/);
+      assert.match(e.message, /addUpdater/);
+    }
+  });
+
+  it('addContainer does not double-track a child of a tracked parent', () => {
+    const s = new Scene('T', makeFakeApp());
+    const parent = { destroy: () => {}, addChild: () => {}, children: [] };
+    const child = { destroy: () => {}, addChild: () => {}, children: [] };
+    const trackedParent = s.addContainer(parent);
+    s.addContainer(child, trackedParent);
+    // Only the parent should be tracked; child is owned by parent's destroy cascade
+    assert.strictEqual(s.registry.containers.size, 1);
+    assert.ok(s.registry.containers.has(parent));
+    assert.ok(!s.registry.containers.has(child));
+  });
+
+  it('addContainer tracks a child whose parent is NOT tracked (e.g. app.stage)', () => {
+    const s = new Scene('T', makeFakeApp());
+    const stage = { addChild: () => {}, children: [] }; // not tracked
+    const root = { destroy: () => {}, addChild: () => {}, children: [] };
+    s.addContainer(root, stage);
+    assert.strictEqual(s.registry.containers.size, 1);
+    assert.ok(s.registry.containers.has(root));
+  });
+
+  it('enter() throws if called twice', async () => {
+    const s = new Scene('T', makeFakeApp());
+    await s.enter();
+    await assert.rejects(() => s.enter(), /already called/);
+  });
+
+  it('subclass onEnter is awaited by base enter()', async () => {
+    const fakeApp = makeFakeApp();
+    let opts;
+    class Sub extends Scene {
+      constructor() { super('Sub', fakeApp); }
+      async onEnter(o) { await new Promise(r => setTimeout(r, 1)); opts = o; }
+    }
+    const s = new Sub();
+    await s.enter({ x: 42 });
+    assert.deepStrictEqual(opts, { x: 42 });
+  });
+
+  it('update(dt) continues running other updaters even if one throws', () => {
+    const s = new Scene('T', makeFakeApp());
+    const calls = [];
+    s.addUpdater(() => calls.push('a'));
+    s.addUpdater(() => { calls.push('b'); throw new Error('boom'); });
+    s.addUpdater(() => calls.push('c'));
+    // Suppress expected console.error during this test
+    const origErr = console.error;
+    console.error = () => {};
+    try { s.update(1); } finally { console.error = origErr; }
+    assert.deepStrictEqual(calls, ['a', 'b', 'c']);
   });
 });
