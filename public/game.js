@@ -822,6 +822,16 @@ async function playPrologue() {
   }
 
   actions.clear();
+
+  // Guardrail: prologue assumes an active scene with an npcs layer.
+  // ensureSceneForPhase() on the previous updateUI() should have mounted
+  // HubScene already; this is a fast-fail check so a regression in the scene
+  // wire-up surfaces as a console error instead of an invisible Cid.
+  const prologueScene = getSceneManager()?.currentScene;
+  if (!prologueScene || prologueScene.disposed || !prologueScene.layers?.npcs) {
+    console.error('[playPrologue] no scene with npcs layer mounted — Cid will be invisible');
+  }
+
   scene.setBackground('/assets/backgrounds/areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp');
 
   let lastChoiceId = null;
