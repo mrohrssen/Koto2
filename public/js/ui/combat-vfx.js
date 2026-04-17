@@ -371,7 +371,7 @@ export async function showEffectEvents(result) {
   // Only sync pills for creatures that had effect events
   for (const key of affectedCreatures) {
     const [side, idx] = key.split(':');
-    syncStatusForCreature(result, side, Number(idx));
+    syncStatusForCreature(scene, result, side, Number(idx));
   }
 }
 
@@ -393,12 +393,12 @@ export function syncStatusIconsFromResult(result) {
   }
 }
 
-function syncStatusForCreature(result, side, index) {
+function syncStatusForCreature(scene, result, side, index) {
   const creatures = side === 'player' ? result.allies : result.enemies;
   const creature = creatures?.[index];
   if (!creature) return;
   const keys = getCreatureStatusKeys(creature);
-  syncPixiStatusLabelsForScene(getSceneManager().currentScene, side, index, keys, creature.statStages);
+  syncPixiStatusLabelsForScene(scene, side, index, keys, creature.statStages);
 }
 
 /**
@@ -440,7 +440,7 @@ export async function showMoveEffectsApplied(atk, targetSide, targetIndex, resul
   }
 
   if (shown) {
-    syncStatusForCreature(result, targetSide, targetIndex);
+    syncStatusForCreature(scene, result, targetSide, targetIndex);
     await ctx.delay(300);
   }
 }
@@ -567,6 +567,7 @@ export async function showPartySkillProcs(atk, enemyHpMap) {
  */
 export async function showRoundStartEvents(result) {
   if (!result.roundStartEvents?.length) return;
+  const scene = getSceneManager().currentScene;
 
   for (const event of result.roundStartEvents) {
     if (event.type === 'erosion') {
@@ -574,13 +575,13 @@ export async function showRoundStartEvents(result) {
       const text = `${SC_NAMES[event.stat] || event.stat} ${event.delta}`;
       popupDebuff(text, pos);
       burstParticles(pos, { count: 3, color: 0xFF5722 });
-      syncStatusForCreature(result, 'enemy', event.targetIndex);
+      syncStatusForCreature(scene, result, 'enemy', event.targetIndex);
     } else if (event.type === 'momentum') {
       const pos = spritePos('player', event.targetIndex);
       const text = `${SC_NAMES[event.stat] || event.stat} +${event.delta}`;
       popupBuff(text, pos);
       burstParticles(pos, { count: 3, color: 0x4CAF50 });
-      syncStatusForCreature(result, 'player', event.targetIndex);
+      syncStatusForCreature(scene, result, 'player', event.targetIndex);
     } else if (event.type === 'overflowVitality') {
       const pos = spritePos('player', event.targetIndex);
       burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
