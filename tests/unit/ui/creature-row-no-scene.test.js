@@ -1,4 +1,4 @@
-import { describe, it, mock } from 'node:test';
+import { describe, it, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 const domStub = {
@@ -26,14 +26,17 @@ await mock.module('../../../public/js/scenes/scene-manager.js', {
 const { render } = await import('../../../public/js/ui/creature-row.js');
 
 describe('creature-row.render scene guards', () => {
-  it('silently does nothing when scene manager not initialized (expected boot phase)', () => {
+  beforeEach(() => {
     initialized = false;
+    sceneRef = null;
+  });
+
+  it('silently does nothing when scene manager not initialized (expected boot phase)', () => {
     assert.doesNotThrow(() => render([{ id: 'hi', uid: 'hi-1' }]));
   });
 
   it('logs error when scene manager is initialized but has no current scene', () => {
     initialized = true;
-    sceneRef = null;
     const errors = [];
     const origErr = console.error;
     console.error = (...a) => errors.push(a);
@@ -49,7 +52,6 @@ describe('creature-row.render scene guards', () => {
     let syncCalled = false;
     sceneRef = {
       disposed: true,
-      entered: true,
       syncCreatures: async () => { syncCalled = true; },
       formation: { lastFormationInput: {} },
     };
