@@ -115,6 +115,15 @@ await mock.module('../../../public/js/ui/event-popup.js', {
   },
 });
 
+// BattleScene now imports createStatusVfxContext from status-vfx.js (Task 10).
+// Stub it so we don't drag in the full status-vfx graph (effects → tween etc.)
+// which the formation tests don't exercise.
+await mock.module('../../../public/js/pixi/status-vfx.js', {
+  namedExports: {
+    createStatusVfxContext: (scene) => ({ scene, vfxByUid: scene?.vfxByUid ?? new Map() }),
+  },
+});
+
 // globalThis.document shim (formation's _spawn reads `.querySelector`/getBoundingClientRect).
 // No DOM in node:test — short-circuit so the code falls through to the percentage layout.
 if (typeof globalThis.document === 'undefined') {

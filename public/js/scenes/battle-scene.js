@@ -7,6 +7,7 @@ import {
   removeFormationSprite,
   updateFormationSprite,
 } from '../pixi/formation.js';
+import { createStatusVfxContext } from '../pixi/status-vfx.js';
 
 export class BattleScene extends Scene {
   constructor(app) {
@@ -31,6 +32,12 @@ export class BattleScene extends Scene {
     // scene's formation tick is intentionally left unwired; Task 16 will
     // migrate combat-loop callers off the default ctx to this one atomically.
     this.formation = createFormationContext(this);
+
+    // Status-VFX context — shares `this.vfxByUid` with the scene so scene-
+    // facing callers (wired in Task 16) can tear down ongoing effects by uid.
+    // No callers invoke this.statusVfx yet; the module's legacy exports still
+    // back combat-loop/combat-vfx while the migration lands incrementally.
+    this.statusVfx = createStatusVfxContext(this);
   }
 
   async onEnter({ allies = [], enemies = [], parallaxSpeed = 0 } = {}) {
