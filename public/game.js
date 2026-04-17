@@ -827,8 +827,8 @@ async function playPrologue() {
   // ensureSceneForPhase() on the previous updateUI() should have mounted
   // HubScene already; this is a fast-fail check so a regression in the scene
   // wire-up surfaces as a console error instead of an invisible Cid.
-  const prologueScene = getSceneManager()?.currentScene;
-  if (!prologueScene || prologueScene.disposed || !prologueScene.layers?.npcs) {
+  const activeScene = getSceneManager()?.currentScene;
+  if (!activeScene || activeScene.disposed || !activeScene.layers?.npcs) {
     console.error('[playPrologue] no scene with npcs layer mounted — Cid will be invisible');
   }
 
