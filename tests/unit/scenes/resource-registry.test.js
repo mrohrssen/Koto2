@@ -34,29 +34,45 @@ describe('ResourceRegistry', () => {
     const r = new ResourceRegistry();
     const cleared = [];
     const aborted = [];
+    const _origClearTimeout = globalThis.clearTimeout;
+    const _origClearInterval = globalThis.clearInterval;
     globalThis.clearTimeout = (id) => cleared.push(id);
-    r.trackTimer(123);
-    r.trackAsync({ abort: () => aborted.push('a') });
-    r.trackUpdater(() => {});
-    r.dispose();
-    assert.deepStrictEqual(cleared, [123]);
-    assert.deepStrictEqual(aborted, ['a']);
+    globalThis.clearInterval = () => {};
+    try {
+      r.trackTimer(123);
+      r.trackAsync({ abort: () => aborted.push('a') });
+      r.trackUpdater(() => {});
+      r.dispose();
+      assert.deepStrictEqual(cleared, [123]);
+      assert.deepStrictEqual(aborted, ['a']);
+    } finally {
+      globalThis.clearTimeout = _origClearTimeout;
+      globalThis.clearInterval = _origClearInterval;
+    }
   });
 
   it('disposes in correct order: async, timers, updaters, tweens, listeners, dom, containers', () => {
     const r = new ResourceRegistry();
     const order = [];
-    r.trackAsync({ abort: () => order.push('async') });
-    r.trackTimer(1);
+    const _origClearTimeout = globalThis.clearTimeout;
+    const _origClearInterval = globalThis.clearInterval;
     globalThis.clearTimeout = () => order.push('timer');
-    r.trackUpdater(() => order.push('updater-fn-NOT-called'));
-    r.disposalLog = order;  // updaters just clear; we test the order via others
-    r.trackTween({ cancel: () => order.push('tween') });
-    r.trackListener({ removeEventListener: () => order.push('listener') }, 'x', () => {}, false);
-    r.trackDom({ remove: () => order.push('dom') });
-    r.trackContainer({ destroy: () => order.push('container') });
-    r.dispose();
-    assert.deepStrictEqual(order, ['async', 'timer', 'tween', 'listener', 'dom', 'container']);
+    globalThis.clearInterval = () => {};
+    try {
+      r.trackAsync({ abort: () => order.push('async') });
+      r.trackTimer(1);
+      r.trackUpdater(() => order.push('updater-fn-NOT-called'));
+      r.disposalLog = order;  // updaters just clear; we test the order via others
+      r.trackTween({ cancel: () => order.push('tween') });
+      r.trackListener({ removeEventListener: () => order.push('listener') }, 'x', () => {}, false);
+      r.trackDom({ remove: () => order.push('dom') });
+      r.trackContainer({ destroy: () => order.push('container') });
+      r.dispose();
+      assert.deepStrictEqual(order, ['async', 'timer', 'tween', 'listener', 'dom', 'container']);
+    } finally {
+      globalThis.clearTimeout = _origClearTimeout;
+      globalThis.clearInterval = _origClearInterval;
+    }
   });
 
   it('throws on track* after dispose() in dev', () => {
@@ -77,5 +93,42 @@ describe('ResourceRegistry', () => {
     r.trackContainer({ destroy: () => {} });
     r.dispose();
     assert.doesNotThrow(() => r.assertEmpty());
+  });
+
+  it('untrackTimer prevents the timer from being cleared on dispose', () => {
+    const r = new ResourceRegistry();
+    const cleared = [];
+    const _orig = globalThis.clearTimeout;
+    const _origI = globalThis.clearInterval;
+    globalThis.clearTimeout = (id) => cleared.push(id);
+    globalThis.clearInterval = () => {};
+    try {
+      r.trackTimer(99);
+      r.untrackTimer(99);
+      r.dispose();
+      assert.deepStrictEqual(cleared, []);
+    } finally {
+      globalThis.clearTimeout = _orig;
+      globalThis.clearInterval = _origI;
+    }
+  });
+
+  it('untrackTween prevents the tween from being cancelled on dispose', () => {
+    const r = new ResourceRegistry();
+    let cancelled = false;
+    const handle = { cancel: () => { cancelled = true; } };
+    r.trackTween(handle);
+    r.untrackTween(handle);
+    r.dispose();
+    assert.strictEqual(cancelled, false);
+  });
+
+  it('untrackUpdater removes an updater from the registry', () => {
+    const r = new ResourceRegistry();
+    const fn = () => {};
+    r.trackUpdater(fn);
+    assert.strictEqual(r.updaters.size, 1);
+    r.untrackUpdater(fn);
+    assert.strictEqual(r.updaters.size, 0);
   });
 });

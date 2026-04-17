@@ -47,27 +47,29 @@ export class ResourceRegistry {
     if (this.disposed) return;
     this.disposed = true;
 
-    for (const c of this.pendingAsync) { try { c.abort(); } catch {} }
+    for (const c of this.pendingAsync) { try { c.abort(); } catch (e) { console.error('ResourceRegistry: async abort failed', e); } }
     this.pendingAsync.clear();
 
-    for (const id of this.timers) { try { clearTimeout(id); } catch {} }
+    for (const id of this.timers) {
+      try { clearTimeout(id); clearInterval(id); } catch (e) { console.error('ResourceRegistry: timer clear failed', e); }
+    }
     this.timers.clear();
 
     this.updaters.clear();
 
-    for (const t of this.tweens) { try { t.cancel(); } catch {} }
+    for (const t of this.tweens) { try { t.cancel(); } catch (e) { console.error('ResourceRegistry: tween cancel failed', e); } }
     this.tweens.clear();
 
     for (const { target, event, handler, options } of this.listeners) {
-      try { target.removeEventListener(event, handler, options); } catch {}
+      try { target.removeEventListener(event, handler, options); } catch (e) { console.error('ResourceRegistry: listener removal failed', e); }
     }
     this.listeners.length = 0;
 
-    for (const node of this.domNodes) { try { node.remove(); } catch {} }
+    for (const node of this.domNodes) { try { node.remove(); } catch (e) { console.error('ResourceRegistry: dom remove failed', e); } }
     this.domNodes.clear();
 
     for (const c of this.containers) {
-      try { c.destroy({ children: true }); } catch {}
+      try { c.destroy({ children: true }); } catch (e) { console.error('ResourceRegistry: container destroy failed', e); }
     }
     this.containers.clear();
   }
