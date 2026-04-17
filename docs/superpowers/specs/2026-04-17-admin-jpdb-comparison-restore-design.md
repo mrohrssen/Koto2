@@ -110,7 +110,9 @@ Both admin-auth'd via existing `adminAuth` middleware in `src/routes/admin.js`.
 - Per-word JPDB failure → item in results is `{ error: true }`; batch continues
 - JPDB 429 — `jpdb-helpers` auto-retries once after 60s; subsequent failure is logged and returned as per-item error
 
-### `POST /api/admin/frames/jpdb-compare`
+### `POST /api/admin/word-exposures/frame-compare`
+
+(Original endpoint path preserved to match the deleted frontend code being restored verbatim.)
 
 **Request:**
 ```json
@@ -121,8 +123,10 @@ Both admin-auth'd via existing `adminAuth` middleware in `src/routes/admin.js`.
 1. Load `data/jpdb-frame-compare-cache.json` and `data/dialogue/frames.json` if not in memory.
 2. For each frame ID:
    - Cache hit → push cached result.
-   - Cache miss → find the frame in `frames.json`; call `parseOne(frame.raw, apiKey)`; build comparison via `buildFrameComparison(frame, jpdbResponse)`; cache.
+   - Cache miss → find the frame in `frames.json`; strip `{slot}` markers from `frame.raw` before sending to JPDB (JPDB can't parse template placeholders); call `parseOne(stripped, apiKey)`; build comparison via `buildFrameComparison(frame, jpdbResponse)`; cache.
 3. Write cache once per batch.
+
+Also restore `GET /api/admin/frames` (removed in the same cleanup) — returns `{ frames: [{ id, category, raw }] }` from `frames.json` metadata. The frontend already calls this endpoint.
 
 **Response:**
 ```json
@@ -184,7 +188,7 @@ Revert the removed UI from commit `3b38eb6` diff, adapted only where the backend
 - Add back styles: `tr.different`, `.diff-yes`, `.diff-badge`, `.diff-merge`, `.diff-split`, `.diff-spelling`, `.checkbox-wrap`, `.progress`.
 - Add back state maps `jpdbWordResults`, `jpdbFrameResults`.
 - Add back `formatDiffPart()` helper.
-- Add back Phase 2 progressive load: after Phase 1 completes, batch both words (20 per call) and frames (20 per call) to the respective `/jpdb-compare` endpoints. After each batch, merge results into state maps and call `renderAll()`. Update progress span with "N/M processed".
+- Add back Phase 2 progressive load: after Phase 1 completes, batch words (50 per call) to `/word-exposures/jpdb-compare` and frames (30 per call) to `/word-exposures/frame-compare`. Both run concurrently. After each batch, `Object.assign` results into state maps and re-render the relevant tab. Update progress span with "comparing N/M...".
 - Progress span hides when Phase 2 finishes.
 
 Graceful degradation: if Phase 2 gets a `503` (no API key), render "JPDB unavailable" in the progress span and leave the JPDB columns empty (show `—` rather than `...`).
