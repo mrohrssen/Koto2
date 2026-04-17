@@ -201,6 +201,23 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     }
 
     container.appendChild(slotEl);
+
+    // Reveal-on-reuse safety net: if the active scene already has a Pixi
+    // sprite for this creature that's past its entrance animation, the
+    // DOM-rebuild-then-wait-for-Pixi-entrance reveal protocol won't fire
+    // (no entering sprite → no revealFormationInfo). Remove the hidden
+    // class explicitly so the quiz flow (Bug #6) sees the HP bar + name.
+    if (side === 'enemy') {
+      const scene = getSceneManager()?.currentScene;
+      const uidKey = creature.uid ?? `__idx_${dataIndex}_${creature.id || ''}`;
+      const existing = scene?.formation?.creatureSprites?.enemy?.get(uidKey);
+      if (existing && !existing._entering) {
+        const infoEl = document.querySelector(
+          `.enemy-formation .formation-slot[data-index="${dataIndex}"] .formation-info`
+        );
+        if (infoEl) infoEl.classList.remove('formation-info--hidden');
+      }
+    }
   });
 
   // Pixi formation sprites are owned by the active scene (BattleScene for
