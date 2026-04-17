@@ -9,7 +9,7 @@ let resizeObserver = null;
 
 // Debug: expose to console for live inspection
 if (typeof window !== 'undefined') {
-  window.__pixiStage = () => ({ app, layers });
+  window.__pixiApp = () => ({ app, layers });
 }
 
 /** @returns {{ app: Application, layers: Record<string, Container> }} */
@@ -24,7 +24,7 @@ export function getApp() {
 export async function initApp() {
   const sceneArea = document.getElementById('scene-area');
   if (!sceneArea || app) {
-    console.warn('[BattleStage] init skipped:', { sceneArea: !!sceneArea, appExists: !!app });
+    console.warn('[PixiApp] init skipped:', { sceneArea: !!sceneArea, appExists: !!app });
     return;
   }
 
@@ -48,7 +48,7 @@ export async function initApp() {
   app.canvas.style.height = '100%';
   app.canvas.style.zIndex = '1'; // Above .scene-background (0), below .battle-stage DOM overlay (2)
   sceneArea.insertBefore(app.canvas, sceneArea.firstChild);
-  console.log('[BattleStage] Canvas inserted:', app.canvas.width, 'x', app.canvas.height);
+  console.log('[PixiApp] Canvas inserted:', app.canvas.width, 'x', app.canvas.height);
 
   // Create ordered layer containers
   layers = {
@@ -85,9 +85,9 @@ export async function initApp() {
     updateParticles(ticker.deltaMS);
   });
 
-  console.log('[BattleStage] Init complete');
+  console.log('[PixiApp] Init complete');
   } catch (err) {
-    console.error('[BattleStage] Init FAILED:', err);
+    console.error('[PixiApp] Init FAILED:', err);
     app = null;
   }
 }
