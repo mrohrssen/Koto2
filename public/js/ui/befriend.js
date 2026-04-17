@@ -388,21 +388,34 @@ export async function renderBefriendQuiz(quizData, result) {
     if (btns[0]) btns[0].classList.add('tutorial-dimmed');   // Fight — faded, unclickable
     if (btns[1]) btns[1].classList.add('tutorial-highlight'); // Talk — gold glow
     const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
-    showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-    // Befriend runs during combat with BattleScene active; route the NPC
-    // slide through the scene so registry disposal handles cleanup on exit.
-    const slideScene = getSceneManager()?.currentScene;
-    if (slideScene && !slideScene.disposed && slideScene.layers?.npcs) {
-      await slideScene.showNpcSprite(cidSprite, { slideIn: true });
+
+    // Explicit scene API (replaces the former showNpcInDisplay({ skipPixi })
+    // side-effect chain which assumed hideFormation('enemy') would also
+    // hide the Pixi enemy sprite — it doesn't since the PR2 refactor).
+    // Pause fades the enemy formation container; Cid slides in without
+    // overlapping the tetsu sprite.
+    const pauseScene = getSceneManager()?.currentScene;
+    if (pauseScene && !pauseScene.disposed && pauseScene.layers?.npcs) {
+      await pauseScene.pauseForNpcInterjection({ fadeEnemies: true });
+      await pauseScene.showNpcSprite(cidSprite, { slideIn: true });
+    } else {
+      console.error('[befriend] tutorial step 1: no scene with npcs layer — Cid will not render');
     }
+
+    // Keep the DOM side of the NPC info pill in sync (name label, etc.).
+    // skipPixi: true because we just drove the Pixi side explicitly above.
+    showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
 
     for (const line of getTutorialNarration(1)) {
       await ctx.narration.showNarration(line, { speaker: 'Cid' });
     }
 
     const slideOutScene = getSceneManager()?.currentScene;
-    if (slideOutScene && !slideOutScene.disposed && slideOutScene.npcSprite) {
-      await slideOutScene.hideNpcSprite({ slideOut: true });
+    if (slideOutScene && !slideOutScene.disposed) {
+      if (slideOutScene.npcSprite) {
+        await slideOutScene.hideNpcSprite({ slideOut: true });
+      }
+      await slideOutScene.resumeFromNpcInterjection();
     }
     restoreBefriendQuizEnemyUi({
       quizData,
@@ -465,15 +478,24 @@ export async function renderBefriendQuiz(quizData, result) {
 
     if (answerResult.tutorialRetry) {
       const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
-      showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-      const retrySceneIn = getSceneManager()?.currentScene;
-      if (retrySceneIn && !retrySceneIn.disposed && retrySceneIn.layers?.npcs) {
-        await retrySceneIn.showNpcSprite(cidSprite, { slideIn: true });
+
+      const retryScene = getSceneManager()?.currentScene;
+      if (retryScene && !retryScene.disposed && retryScene.layers?.npcs) {
+        await retryScene.pauseForNpcInterjection({ fadeEnemies: true });
+        await retryScene.showNpcSprite(cidSprite, { slideIn: true });
+      } else {
+        console.error('[befriend] tutorial retry: no scene with npcs layer');
       }
+      showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+
       await ctx.narration.showNarration(getBefriendWrongNarration(), { speaker: 'Cid' });
+
       const retrySceneOut = getSceneManager()?.currentScene;
-      if (retrySceneOut && !retrySceneOut.disposed && retrySceneOut.npcSprite) {
-        await retrySceneOut.hideNpcSprite({ slideOut: true });
+      if (retrySceneOut && !retrySceneOut.disposed) {
+        if (retrySceneOut.npcSprite) {
+          await retrySceneOut.hideNpcSprite({ slideOut: true });
+        }
+        await retrySceneOut.resumeFromNpcInterjection();
       }
       restoreBefriendQuizEnemyUi({
         quizData,

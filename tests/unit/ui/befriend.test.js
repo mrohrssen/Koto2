@@ -59,14 +59,19 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 await mock.module('../../../public/js/ui/befriend-quiz-state.js', {
   namedExports: { restoreBefriendQuizEnemyUi: () => {} }
 });
+// Scene-manager mock exposes a mutable holder so individual tests can swap in
+// a mock scene (e.g. to assert pauseForNpcInterjection call order).
+const sceneManagerState = { currentScene: null };
 await mock.module('../../../public/js/scenes/scene-manager.js', {
-  namedExports: { getSceneManager: () => ({ currentScene: null }) }
+  namedExports: { getSceneManager: () => sceneManagerState }
 });
 
 const {
+  init,
   isBefriendSlotBlocked,
   isBefriendAvailableForSlot,
   getMoveSelectBefriendOpts,
+  renderBefriendQuiz,
 } = await import('../../../public/js/ui/befriend.js');
 
 describe('befriend eligibility', () => {
@@ -187,5 +192,137 @@ describe('befriend eligibility', () => {
       assert.equal(opts.befriendAvailable, false);
       assert.equal(opts.onBefriend, undefined);
     });
+  });
+});
+
+describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
+  // Provide a minimal document stub for the DOM reads in renderBefriendQuiz
+  // (querySelector for enemy formation slot, querySelectorAll for action buttons).
+  // Both can safely return null/empty — the tutorial-step-1 scene-API calls
+  // don't depend on DOM state.
+  if (typeof globalThis.document === 'undefined') {
+    globalThis.document = {
+      querySelector: () => null,
+      querySelectorAll: () => [],
+    };
+  }
+
+  // Helper to build a mock scene that tracks NPC interjection call order.
+  function buildMockScene(callLog) {
+    const scene = {
+      disposed: false,
+      layers: { npcs: { addChild: () => {}, removeChild: () => {} } },
+      npcSprite: null,
+      async pauseForNpcInterjection(opts) {
+        callLog.push(['pauseForNpcInterjection', opts]);
+      },
+      async showNpcSprite(sprite, opts) {
+        callLog.push(['showNpcSprite', sprite, opts]);
+        scene.npcSprite = { sprite, opts };
+      },
+      async hideNpcSprite(opts) {
+        callLog.push(['hideNpcSprite', opts]);
+        scene.npcSprite = null;
+      },
+      async resumeFromNpcInterjection(opts) {
+        callLog.push(['resumeFromNpcInterjection', opts]);
+      },
+    };
+    return scene;
+  }
+
+  it('calls pause -> show -> narrate -> hide -> resume in order on tutorial step 1', async () => {
+    const callLog = [];
+    const scene = buildMockScene(callLog);
+    sceneManagerState.currentScene = scene;
+
+    // Minimal ctx for the code path we want to exercise.
+    const ctx = {
+      getGameState: () => ({ meta: { tutorialStep: 1 } }),
+      narration: {
+        showNarration: async (text) => {
+          callLog.push(['narration', text]);
+        },
+      },
+      updateGameState: () => {},
+      syncFinalState: () => {},
+      stopCombatLoop: () => {},
+    };
+    init(ctx);
+
+    // Stub global fetch so the fight-path follow-up doesn't hit the network
+    // (renderButtonsAsync is mocked to resolve 0 = Fight, which triggers a
+    // fetch to /api/game/befriend-quiz-answer).
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => ({
+      json: async () => ({ state: {}, combatEnded: true }),
+    });
+
+    try {
+      const quizData = { targetIndex: 0, creatureName: 'tetsu', options: [] };
+      const result = { enemies: [{ hp: 1, maxHp: 10 }] };
+      await renderBefriendQuiz(quizData, result);
+    } finally {
+      globalThis.fetch = originalFetch;
+      sceneManagerState.currentScene = null;
+    }
+
+    // Extract just the scene-API ordering (drop narration entries which vary
+    // with tutorial copy mocks).
+    const sceneOps = callLog
+      .map(e => e[0])
+      .filter(op => op !== 'narration');
+
+    // Order expectation:
+    //   pauseForNpcInterjection -> showNpcSprite -> hideNpcSprite -> resumeFromNpcInterjection
+    // (narration lines fire between show and hide, but the tutorial-copy mock
+    // returns [] so no narration entries are logged — both orderings are valid.)
+    assert.deepEqual(sceneOps, [
+      'pauseForNpcInterjection',
+      'showNpcSprite',
+      'hideNpcSprite',
+      'resumeFromNpcInterjection',
+    ]);
+
+    // Verify the pause call requested fadeEnemies (the key behaviour: fade
+    // the enemy formation container so Cid doesn't overlap with tetsu).
+    const pauseEntry = callLog.find(e => e[0] === 'pauseForNpcInterjection');
+    assert.deepEqual(pauseEntry[1], { fadeEnemies: true });
+  });
+
+  it('logs console.error when no scene with npcs layer is available', async () => {
+    sceneManagerState.currentScene = null;
+
+    const ctx = {
+      getGameState: () => ({ meta: { tutorialStep: 1 } }),
+      narration: { showNarration: async () => {} },
+      updateGameState: () => {},
+      syncFinalState: () => {},
+      stopCombatLoop: () => {},
+    };
+    init(ctx);
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => ({
+      json: async () => ({ state: {}, combatEnded: true }),
+    });
+
+    const originalError = console.error;
+    const errorCalls = [];
+    console.error = (...args) => { errorCalls.push(args); };
+
+    try {
+      const quizData = { targetIndex: 0, creatureName: 'tetsu', options: [] };
+      const result = { enemies: [{ hp: 1, maxHp: 10 }] };
+      await renderBefriendQuiz(quizData, result);
+    } finally {
+      globalThis.fetch = originalFetch;
+      console.error = originalError;
+    }
+
+    const tutorialErr = errorCalls.find(args =>
+      typeof args[0] === 'string' && args[0].includes('[befriend] tutorial step 1: no scene')
+    );
+    assert.ok(tutorialErr, 'expected console.error for missing scene, got ' + JSON.stringify(errorCalls));
   });
 });
