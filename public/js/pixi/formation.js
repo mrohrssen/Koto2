@@ -927,6 +927,21 @@ export function clearActiveGlowForScene(scene) {
 }
 
 /**
+ * Scene-facing status label sync. Rebuilds the stat-stage and status pills
+ * attached to a creature sprite. No-op when the scene has no formation ctx.
+ *
+ * @param {Scene|null} scene
+ * @param {'player'|'enemy'} side
+ * @param {number} index - data-array index
+ * @param {string[]} keys - ordered list of status keys (e.g. ['atk_up','poison'])
+ * @param {Object} [statStages] - { atk, def } stage deltas for atk/def pills
+ */
+export function syncPixiStatusLabelsForScene(scene, side, index, keys, statStages) {
+  if (!scene?.formation) return;
+  return _syncPixiStatusLabels(scene.formation, side, index, keys, statStages);
+}
+
+/**
  * Scene-aware NPC sprite spawner. Creates a sprite, adds it to
  * scene.layers.npcs, optionally animates a slide-in via scene.tween
  * (registry-tracked, auto-cancels on scene exit). Returns the sprite so

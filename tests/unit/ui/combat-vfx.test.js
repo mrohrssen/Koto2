@@ -25,13 +25,13 @@ await mock.module('../../../public/js/pixi/banners.js', {
   namedExports: { showBanner: () => {} }
 });
 await mock.module('../../../public/js/pixi/status-vfx.js', {
-  namedExports: { playStatusApplied: () => {}, clearStatusVfx: () => {} }
+  namedExports: { playStatusAppliedForScene: () => {}, clearStatusVfxForScene: () => {} }
 });
 await mock.module('../../../public/js/pixi/formation.js', {
   namedExports: {
     getCreatureSpriteForScene: () => null,
     animateKOForScene: () => {},
-    syncPixiStatusLabels: () => {},
+    syncPixiStatusLabelsForScene: () => {},
   }
 });
 await mock.module('../../../public/js/scenes/scene-manager.js', {

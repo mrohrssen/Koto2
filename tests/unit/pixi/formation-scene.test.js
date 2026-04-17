@@ -147,6 +147,7 @@ const {
   animateLevelUpForScene,
   showActiveGlowForScene,
   clearActiveGlowForScene,
+  syncPixiStatusLabelsForScene,
 } = await import('../../../public/js/pixi/formation.js');
 const { BattleScene } = await import('../../../public/js/scenes/battle-scene.js');
 
@@ -529,5 +530,12 @@ describe('scene-facing sprite-lookup variants null-scene guards', () => {
     showActiveGlowForScene({}, 1);
     clearActiveGlowForScene({});
     assert.ok(true);
+  });
+
+  it('syncPixiStatusLabelsForScene no-ops when scene is null/missing', () => {
+    // Should not throw and should return undefined
+    assert.strictEqual(syncPixiStatusLabelsForScene(null, 'player', 0, [], {}), undefined);
+    assert.strictEqual(syncPixiStatusLabelsForScene(undefined, 'enemy', 1, ['poison'], {}), undefined);
+    assert.strictEqual(syncPixiStatusLabelsForScene({}, 'player', 0, [], {}), undefined);
   });
 });

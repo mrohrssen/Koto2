@@ -20,9 +20,9 @@ import {
   showHealPopup, showPoisonTick
 } from '../pixi/text.js';
 import { showBanner } from '../pixi/banners.js';
-import { playStatusApplied, clearStatusVfx } from '../pixi/status-vfx.js';
+import { playStatusAppliedForScene, clearStatusVfxForScene } from '../pixi/status-vfx.js';
 import {
-  getCreatureSpriteForScene, animateKOForScene, syncPixiStatusLabels
+  getCreatureSpriteForScene, animateKOForScene, syncPixiStatusLabelsForScene
 } from '../pixi/formation.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { showFormation } from './combat-dom.js';
@@ -311,19 +311,26 @@ export function showFloatingText(targetEl, text) {
  */
 export async function showEffectEvents(result) {
   if (!result.effectEvents?.length) return;
+  const scene = getSceneManager().currentScene;
   const affectedCreatures = new Set();
   for (const event of result.effectEvents) {
     const side = event.targetSide === 'ally' ? 'player' : 'enemy';
     const index = typeof event.targetIndex === 'number' ? event.targetIndex : 0;
+    const sideCreatures = side === 'player' ? result.allies : result.enemies;
+    const uid = sideCreatures?.[index]?.uid;
     affectedCreatures.add(`${side}:${index}`);
 
     if (event.type === 'poison' && event.damage > 0) {
       const pos = spritePos(side, index);
       burstParticles(pos, { count: 4, color: 0x9C27B0, speed: 40, life: 300, element: 'neutral' });
       showPoisonTick(event.damage, pos);
-      playStatusApplied(side, index, 'poison');
+      if (scene?.statusVfx && uid) {
+        await playStatusAppliedForScene(scene.statusVfx, side, uid, 'poison');
+      }
       if (event.remainingTurns === 0) {
-        clearStatusVfx(side, index, 'poison');
+        if (scene?.statusVfx && uid) {
+          clearStatusVfxForScene(scene.statusVfx, side, uid, 'poison');
+        }
       }
     } else if (event.type !== 'poison') {
       const EFFECT_LABELS = {
@@ -342,15 +349,21 @@ export async function showEffectEvents(result) {
       const DEBUFF_TYPES = new Set(['confuse', 'stun', 'sleep', 'taunt']);
       if (DEBUFF_TYPES.has(baseType)) {
         popupDebuff(label, pos);
-        playStatusApplied(side, index, baseType);
+        if (scene?.statusVfx && uid) {
+          await playStatusAppliedForScene(scene.statusVfx, side, uid, baseType);
+        }
       } else if (BUFF_TYPES.has(baseType)) {
         popupBuff(label, pos);
-        playStatusApplied(side, index, baseType);
+        if (scene?.statusVfx && uid) {
+          await playStatusAppliedForScene(scene.statusVfx, side, uid, baseType);
+        }
       } else {
         showFloatingText(document.body, label);
       }
       if (event.remainingTurns === 0) {
-        clearStatusVfx(side, index, baseType);
+        if (scene?.statusVfx && uid) {
+          clearStatusVfxForScene(scene.statusVfx, side, uid, baseType);
+        }
       }
       await ctx.delay(400);
     }
@@ -363,18 +376,19 @@ export async function showEffectEvents(result) {
 }
 
 export function syncStatusIconsFromResult(result) {
+  const scene = getSceneManager().currentScene;
   if (result.allies) {
     result.allies.forEach((ally, i) => {
       if (!ally) return;
       const keys = getCreatureStatusKeys(ally);
-      syncPixiStatusLabels('player', i, keys, ally.statStages);
+      syncPixiStatusLabelsForScene(scene, 'player', i, keys, ally.statStages);
     });
   }
   if (result.enemies) {
     result.enemies.forEach((enemy, i) => {
       if (!enemy) return;
       const keys = getCreatureStatusKeys(enemy);
-      syncPixiStatusLabels('enemy', i, keys, enemy.statStages);
+      syncPixiStatusLabelsForScene(scene, 'enemy', i, keys, enemy.statStages);
     });
   }
 }
@@ -384,7 +398,7 @@ function syncStatusForCreature(result, side, index) {
   const creature = creatures?.[index];
   if (!creature) return;
   const keys = getCreatureStatusKeys(creature);
-  syncPixiStatusLabels(side, index, keys, creature.statStages);
+  syncPixiStatusLabelsForScene(getSceneManager().currentScene, side, index, keys, creature.statStages);
 }
 
 /**
@@ -393,16 +407,23 @@ function syncStatusForCreature(result, side, index) {
  */
 export async function showMoveEffectsApplied(atk, targetSide, targetIndex, result) {
   const pos = spritePos(targetSide, targetIndex);
+  const scene = getSceneManager().currentScene;
+  const targetCreatures = targetSide === 'player' ? result.allies : result.enemies;
+  const uid = targetCreatures?.[targetIndex]?.uid;
   let shown = false;
 
   if (atk.effectApplied) {
     const effect = atk.effectApplied;
     if (DEBUFF_EFFECTS.has(effect)) {
       popupDebuff(STATUS_EFFECT_LABELS[effect] || effect, pos);
-      playStatusApplied(targetSide, targetIndex, effect);
+      if (scene?.statusVfx && uid) {
+        await playStatusAppliedForScene(scene.statusVfx, targetSide, uid, effect);
+      }
     } else if (BUFF_EFFECTS.has(effect)) {
       popupBuff(STATUS_EFFECT_LABELS[effect] || effect, pos);
-      playStatusApplied(targetSide, targetIndex, effect);
+      if (scene?.statusVfx && uid) {
+        await playStatusAppliedForScene(scene.statusVfx, targetSide, uid, effect);
+      }
     }
     shown = true;
   }
