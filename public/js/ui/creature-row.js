@@ -1,6 +1,7 @@
 import { dom } from '../dom.js';
 import { showFormation, hideFormation } from './combat-dom.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
+import { getSceneManager, isSceneManagerInitialized } from '../scenes/scene-manager.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -163,6 +164,20 @@ export function render(creatures) {
   _creatures = creatures;
   currentActiveCreatures = creatures || [];
   showFormation('player', creatures);
+  // Keep the active scene's player formation in sync. Before Task 17 this
+  // only flowed through the legacy default ctx (via showFormation), which
+  // was unwired after Task 6. Forwarding the diff to scene.syncCreatures
+  // guarantees player PIXI sprites appear/update on any DOM render — both
+  // in non-combat rooms (ExplorationScene) and during combat (BattleScene).
+  //
+  // ExplorationScene.syncCreatures ignores `enemies`; BattleScene preserves
+  // its existing enemy formation by reading lastFormationInput.
+  if (!isSceneManagerInitialized()) return;
+  const scene = getSceneManager().currentScene;
+  if (!scene?.syncCreatures) return;
+  const enemies = scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
+  scene.syncCreatures({ allies: creatures || [], enemies })
+    .catch(err => console.error('[creature-row] scene.syncCreatures failed', err));
 }
 
 function togglePopup(index) {

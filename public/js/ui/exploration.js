@@ -5,7 +5,11 @@ import { hapticLight } from '../native/index.js';
 import { creatureBgUrl, itemSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { hideEnemy } from './combat-dom.js';
 import { showNpcInDisplay } from './exploration-dom.js';
-import { showNpcSprite, hideNpcSprite } from '../pixi/formation.js';
+// Legacy PIXI NPC sprite fallbacks — used only when no ExplorationScene is
+// active (e.g. Hub tutorial, initial skill pick, prologue). When a scene IS
+// active we call scene.showNpcSprite / scene.hideNpcSprite so the NPC sprite
+// is registry-tracked and cleaned up on scene transitions.
+import { showNpcSprite as legacyShowNpcSprite, hideNpcSprite as legacyHideNpcSprite } from '../pixi/formation.js';
 import { t, isJapanified } from './i18n.js';
 import * as chestsUI from './chests.js';
 import * as crestsEquipUI from './crests-equip.js';
@@ -17,6 +21,17 @@ import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
 import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import { getTutorialNarration, getFormationNarration } from './tutorial-copy.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
+import { ExplorationScene } from '../scenes/exploration-scene.js';
+
+/**
+ * Resolve the current ExplorationScene for NPC sprite operations.
+ * Returns null if we're not in an ExplorationScene (e.g., scene in flux).
+ */
+function getExplorationScene() {
+  const scene = getSceneManager()?.currentScene;
+  return scene instanceof ExplorationScene ? scene : null;
+}
 
 let getGameState = null;
 let updateGameState = null;
@@ -28,28 +43,27 @@ let startNewRun = null;
 let returnToHub = null;
 let showAdventureReport = null;
 
-// Module-level guard to prevent multiple shrine clicks across re-renders
-let shrineInProgress = false;
-
-// Module-level state for word discovery (persists across gameState updates)
-// This prevents infinite narration loops when updateGameState() replaces room object
-let discoveryState = {
-  fetched: false,
-  words: [],
-  wordsLearned: 0,
-  roomId: null,  // Reset when room changes
-  statusChecked: false,
-  atLimit: false,
-  todayCount: 0,
-  dailyLimit: 10
-};
+// Discovery / shrine guards now live on ExplorationScene (scene-owned state).
+// Moving them off the module scope means they reset naturally when we
+// transition to a new ExplorationScene on room entry — the prior issue
+// where `discoveryState.roomId !== roomId` comparison was needed is now
+// structural (fresh scene = fresh state). See ExplorationScene constructor.
 
 /** Show multi-page Cid tutorial narration. Optionally slides her sprite in/out. */
 async function showTutorialNarration(pages, { showSprite = false } = {}) {
+  // If an ExplorationScene is active, use the scene-owned NPC sprite so it
+  // participates in scene cleanup (auto-removed on scene transition). Hub /
+  // initial-skill-pick / prologue run without a scene — fall back to the
+  // legacy default-ctx sprite which still renders into layers.creatures.
+  const scene = showSprite ? getExplorationScene() : null;
+  const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
   if (showSprite) {
-    const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-    await showNpcSprite(cidSprite, { slideIn: true });
+    if (scene) {
+      await scene.showNpcSprite(cidSprite, { slideIn: true });
+    } else {
+      await legacyShowNpcSprite(cidSprite, { slideIn: true });
+    }
   }
 
   for (const page of pages) {
@@ -57,7 +71,11 @@ async function showTutorialNarration(pages, { showSprite = false } = {}) {
   }
 
   if (showSprite) {
-    await hideNpcSprite({ slideOut: true });
+    if (scene && !scene.disposed) {
+      await scene.hideNpcSprite({ slideOut: true });
+    } else {
+      await legacyHideNpcSprite({ slideOut: true });
+    }
     hideEnemy();
   }
 }
@@ -597,13 +615,14 @@ export function renderShrine() {
       };
     }),
     onSelect: async (index) => {
-      if (shrineInProgress) return;
-      shrineInProgress = true;
+      const scene = getExplorationScene();
+      if (scene?.shrineInProgress) return;
+      if (scene) scene.shrineInProgress = true;
       const creature = allCreatures[index];
       const result = await apiShrineUpgrade(creature.id);
       if (result?.state) { updateGameState(result.state); }
       sceneModule.showNarration(t('leveledUp', result?.creatureName || 'Creature', result?.newLevel || '?'), { autoDismiss: 2000 });
-      shrineInProgress = false;
+      if (scene && !scene.disposed) scene.shrineInProgress = false;
       updateUI();
     },
   });
@@ -631,19 +650,36 @@ export async function renderWordDiscovery() {
 
   if (!room) return;
 
-  // Reset module-level discovery state when entering a new room
+  // Discovery state is scene-owned now (ExplorationScene.discoveryState),
+  // so walking into a new room naturally gets a fresh scene + fresh state.
+  // The fallback object is used if we're somehow outside an ExplorationScene
+  // (the tutorial path can drive renderWordDiscovery before the scene catches
+  // up during a transition window).
+  const scene = getExplorationScene();
+  const fallback = {
+    fetched: false,
+    words: [],
+    wordsLearned: 0,
+    roomId: null,
+    statusChecked: false,
+    atLimit: false,
+    todayCount: 0,
+    dailyLimit: 10,
+  };
+  const discoveryState = scene?.discoveryState ?? fallback;
+
+  // Belt-and-suspenders: if an old ExplorationScene survived (shouldn't, but
+  // defensive) and its roomId lags behind the current room, snap it forward.
   const roomId = room.id || room.type || 'unknown';
   if (discoveryState.roomId !== roomId) {
-    discoveryState = {
-      fetched: false,
-      words: [],
-      wordsLearned: 0,
-      roomId: roomId,
-      statusChecked: false,
-      atLimit: false,
-      todayCount: 0,
-      dailyLimit: 10
-    };
+    discoveryState.fetched = false;
+    discoveryState.words = [];
+    discoveryState.wordsLearned = 0;
+    discoveryState.roomId = roomId;
+    discoveryState.statusChecked = false;
+    discoveryState.atLimit = false;
+    discoveryState.todayCount = 0;
+    discoveryState.dailyLimit = 10;
   }
 
   // Stage tracking from server state
@@ -954,7 +990,12 @@ export async function renderWhackAMole() {
     {
       label: noLabel,
       onClick: async () => {
-        await hideNpcSprite({ slideOut: true });
+        const scene = getExplorationScene();
+        if (scene && !scene.disposed) {
+          await scene.hideNpcSprite({ slideOut: true });
+        } else {
+          await legacyHideNpcSprite({ slideOut: true });
+        }
         try {
           const result = await apiSkipWhackAMole();
           if (result?.state) {
@@ -1384,12 +1425,22 @@ export async function renderFriendlyNpc() {
     cidItemShopTutorialShown = true;
     const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-    await showNpcSprite(cidSprite, { slideIn: true });
+    const scene = getExplorationScene();
+    if (scene) {
+      await scene.showNpcSprite(cidSprite, { slideIn: true });
+    } else {
+      await legacyShowNpcSprite(cidSprite, { slideIn: true });
+    }
 
     const [itemShopCidLine] = getTutorialNarration(2);
     await sceneModule.showNarration(itemShopCidLine, { speaker: 'Cid' });
 
-    await hideNpcSprite({ slideOut: true });
+    const afterScene = getExplorationScene();
+    if (afterScene && !afterScene.disposed) {
+      await afterScene.hideNpcSprite({ slideOut: true });
+    } else {
+      await legacyHideNpcSprite({ slideOut: true });
+    }
 
     // Restore NPC sprite so they're visible during item selection
     if (npc) {
@@ -1397,7 +1448,15 @@ export async function renderFriendlyNpc() {
         ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
         : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
       showNpcInDisplay(npc.nameEn || npc.name, npcSprite, { skipPixi: true });
-      await showNpcSprite(npcSprite, { slideIn: true });
+      // Re-fetch the current scene: a transition may have happened during the
+      // await of the tutorial narration. Fall back to the legacy sprite path
+      // if not in an ExplorationScene (shouldn't normally happen here).
+      const currentScene = getExplorationScene();
+      if (currentScene) {
+        await currentScene.showNpcSprite(npcSprite, { slideIn: true });
+      } else {
+        await legacyShowNpcSprite(npcSprite, { slideIn: true });
+      }
     }
   }
 }

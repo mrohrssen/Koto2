@@ -2,6 +2,7 @@ import { ResourceRegistry } from './resource-registry.js';
 import { DEV } from './dev-flag.js';
 import { SceneDisposedError } from './scene-errors.js';
 import { tween as _tween } from '../pixi/tween.js';
+import { spawnNpcSprite, removeNpcSprite } from '../pixi/formation.js';
 
 // Re-export so external code's import path ('./scene.js') keeps working.
 export { SceneDisposedError } from './scene-errors.js';
@@ -32,6 +33,12 @@ export class Scene {
     this.disposed = false;
     this._exiting = false;
     this.entered = false;
+    // NPC sprite is scene-owned. Concrete scenes must provide layers.npcs
+    // before calling showNpcSprite(). Base class manages the lifecycle so
+    // both ExplorationScene and BattleScene get hideNpcSprite() cleanup
+    // for free via beforeExit() and NPC sprites don't persist across scene
+    // transitions (fixes bug #2, #3, #5 from Task 17 smoke test).
+    this.npcSprite = null;
   }
 
   _guard(method) {
@@ -86,6 +93,10 @@ export class Scene {
       }
     } catch (e) { console.error(`Scene[${this.name}] beforeExit threw:`, e); }
     this.registry.dispose();
+    // Drop the NPC sprite ref; registry disposal just destroyed its parent
+    // layer, so the sprite is already gone. Clearing prevents a stale
+    // reference from lingering if someone holds onto the scene instance.
+    this.npcSprite = null;
     this.disposed = true;
     this._exiting = false;
     if (DEV) this.registry.assertEmpty();
@@ -185,6 +196,57 @@ export class Scene {
     this._guard('addAsyncController');
     const controller = new AbortController();
     return this.registry.trackAsync(controller);
+  }
+
+  /**
+   * Scene-owned NPC sprite. Removes any prior NPC sprite before spawning the
+   * new one so rapid show/show sequences can't stack sprites. Concrete scenes
+   * must expose layers.npcs (both ExplorationScene and BattleScene do).
+   *
+   * @param {string} spritePath
+   * @param {{ slideIn?: boolean }} [opts]
+   */
+  async showNpcSprite(spritePath, opts = {}) {
+    this._guard('showNpcSprite');
+    if (this.npcSprite) {
+      removeNpcSprite(this, this.npcSprite);
+      this.npcSprite = null;
+    }
+    this.npcSprite = await spawnNpcSprite(this, spritePath, opts);
+    return this.npcSprite;
+  }
+
+  /**
+   * Scene-owned NPC sprite teardown.
+   *
+   * With `slideOut: true` the sprite slides off-screen right before being
+   * removed (400ms tween via scene.tween — auto-cancels on scene exit).
+   * Without it, removal is immediate.
+   *
+   * @param {{ slideOut?: boolean }} [opts]
+   */
+  async hideNpcSprite({ slideOut = false } = {}) {
+    this._guard('hideNpcSprite');
+    if (!this.npcSprite) return;
+    const sprite = this.npcSprite;
+    if (slideOut) {
+      const screenW = this.app?.screen?.width ?? 400;
+      try {
+        await this.tween(sprite, { x: screenW + 170 }, { duration: 300, ease: 'easeIn' });
+      } catch {
+        // Scene exited mid-slide; registry disposal destroys the sprite.
+        // Clear our reference so subsequent calls are no-ops.
+        this.npcSprite = null;
+        return;
+      }
+    }
+    // Re-check: scene may have disposed during the slide-out tween.
+    if (this.disposed) {
+      this.npcSprite = null;
+      return;
+    }
+    removeNpcSprite(this, sprite);
+    this.npcSprite = null;
   }
 
   /**

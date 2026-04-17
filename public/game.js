@@ -131,7 +131,8 @@ import { initApp, getApp } from './js/pixi/app.js';
 import { loadParallax, setScrollState, updateParallax } from './js/pixi/parallax.js';
 import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite, getCreatureSprite } from './js/pixi/formation.js';
 import { updateParticles, isFrozen } from './js/pixi/effects.js';
-import { SceneManager, setSceneManager, isSceneManagerInitialized } from './js/scenes/scene-manager.js';
+import { SceneManager, setSceneManager, isSceneManagerInitialized, getSceneManager } from './js/scenes/scene-manager.js';
+import { BattleScene } from './js/scenes/battle-scene.js';
 
 // API imports - these are the server communication functions
 import {
@@ -1181,6 +1182,23 @@ async function startEncounter() {
     if (result?.npc && hasCreatures) {
       sceneTransitionActive = true;
       try {
+        // Task 17: transition to BattleScene BEFORE the NPC intro so player +
+        // enemy sprites spawn alongside the NPC dialogue (fixes bug #1: player
+        // sprite late spawn). The BattleScene owns a `npcs` layer so
+        // playNpcBattleIntro's scene.showNpcSprite calls target the right
+        // scene. startCombatLoop() below is idempotent — it will skip the
+        // re-transition since BattleScene is already active.
+        try {
+          const mgr = getSceneManager();
+          await mgr.transition(BattleScene, {
+            allies:  gameState.combat?.allies  ?? [],
+            enemies: gameState.combat?.enemies ?? [],
+            parallaxSpeed: 0,
+            isBoss: !!gameState.combat?.isBoss,
+          });
+        } catch (sceneErr) {
+          console.error('[StartEncounter] BattleScene transition before NPC intro failed', sceneErr);
+        }
         await playNpcBattleIntro(
           result.npc,
           (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),

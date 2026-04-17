@@ -639,19 +639,28 @@ export async function startCombatLoop(opts = {}) {
   // layer scrolling (currentSpeed=0); BattleScene's scene-level parallax gate
   // likewise stays off (only the sky drift path runs via legacy updateParallax,
   // which is already gated off while no scene has startParallax()'d).
+  //
+  // Idempotency: Task 17 moved the BattleScene transition up into startEncounter
+  // (before playNpcBattleIntro) so player + enemy sprites spawn alongside the
+  // NPC intro. If BattleScene is already active when we get here, skip the
+  // re-transition — tearing it down and respawning would destroy the sprites
+  // the intro already placed. On recovery (page reload), BattleScene is NOT
+  // active yet, so the transition still fires as expected.
   const mgr = getSceneManager();
   const gs = getGameState();
-  try {
-    await mgr.transition(BattleScene, {
-      allies:  gs.combat?.allies  ?? [],
-      enemies: gs.combat?.enemies ?? [],
-      parallaxSpeed: 0,
-      isBoss: !!gs.combat?.isBoss,
-    });
-  } catch (err) {
-    combatActive = false;
-    console.error('[CombatLoop] BattleScene transition failed, aborting combat start', err);
-    return;
+  if (!(mgr.currentScene instanceof BattleScene)) {
+    try {
+      await mgr.transition(BattleScene, {
+        allies:  gs.combat?.allies  ?? [],
+        enemies: gs.combat?.enemies ?? [],
+        parallaxSpeed: 0,
+        isBoss: !!gs.combat?.isBoss,
+      });
+    } catch (err) {
+      combatActive = false;
+      console.error('[CombatLoop] BattleScene transition failed, aborting combat start', err);
+      return;
+    }
   }
 
   // On recovery (page reload), re-render the scene before showing moves.
@@ -1447,6 +1456,7 @@ async function executeDefendThenPause() {
 export async function stopCombatLoop(result) {
   logger.info('[CombatLoop] Combat ended:', { victory: result?.victory });
   const gameState = getGameState();
+  const mgr = getSceneManager();
 
   // Clear both attack timers
   if (playerAttackTimer) {
@@ -1484,8 +1494,26 @@ export async function stopCombatLoop(result) {
   // victory screen and into the next room. Destroying them here creates a
   // 1500ms+ gap where DOM info boxes (name/HP bars) float with no creature
   // image underneath (the "ghost formation" effect).
+  //
+  // After Task 17, sprites live on the active BattleScene's formation ctx
+  // (not the legacy default ctx), so we remove them via the scene's own
+  // diff. syncCreatures({ enemies: [] }) drops all enemy sprites while
+  // leaving allies intact. The legacy pixiHideFormation('enemy') call is
+  // still fired below as a belt-and-suspenders cleanup for any stray
+  // default-ctx sprites from pre-migration code paths.
   setScrollState('accelerating');
   setWalking(true);
+  const battleSceneForCleanup = mgr.currentScene;
+  if (battleSceneForCleanup instanceof BattleScene && !battleSceneForCleanup.disposed) {
+    try {
+      await battleSceneForCleanup.syncCreatures({
+        allies: getGameState()?.combat?.allies ?? getGameState()?.run?.creatureParty?.active ?? [],
+        enemies: [],
+      });
+    } catch (err) {
+      console.error('[CombatLoop] failed to clear enemy sprites via scene diff', err);
+    }
+  }
   pixiHideFormation('enemy');
 
   // Brief pause before narration (let final damage numbers display)
@@ -1558,12 +1586,14 @@ export async function stopCombatLoop(result) {
   // formation ticker, creature-row listeners) via the registry. By the time
   // the modal promise above resolves, updateUI() has already fired with the
   // new phase — so the current scene should flip to ExplorationScene now.
-  // Note: roomId here is the index into run.rooms (the client state's
-  // property is `currentRoom`). Task 17 will wire ExplorationScene to render
-  // the room; for now the scene simply stores it.
-  const roomId = getGameState()?.run?.currentRoom ?? null;
+  // Pass the updated ally party so ExplorationScene spawns player sprites
+  // immediately on entry (fixes bug #6 — non-combat rooms previously had
+  // HP bars but no PIXI sprites because _defaultCtx was unwired).
+  const nextState = getGameState();
+  const roomId = nextState?.run?.currentRoom ?? null;
+  const alliesForExplore = nextState?.run?.creatureParty?.active ?? [];
   try {
-    await getSceneManager().transition(ExplorationScene, { roomId });
+    await mgr.transition(ExplorationScene, { roomId, allies: alliesForExplore });
   } catch (err) {
     console.error('[CombatLoop] ExplorationScene transition failed — reload to recover', err);
   }
