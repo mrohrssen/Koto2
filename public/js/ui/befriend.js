@@ -395,7 +395,7 @@ export async function renderBefriendQuiz(quizData, result) {
     // Pause fades the enemy formation container; Cid slides in without
     // overlapping the tetsu sprite.
     const pauseScene = getSceneManager()?.currentScene;
-    if (pauseScene && !pauseScene.disposed && pauseScene.layers?.npcs) {
+    if (pauseScene && !pauseScene.disposed && !pauseScene._exiting && pauseScene.layers?.npcs) {
       await pauseScene.pauseForNpcInterjection({ fadeEnemies: true });
       await pauseScene.showNpcSprite(cidSprite, { slideIn: true });
     } else {
@@ -411,7 +411,7 @@ export async function renderBefriendQuiz(quizData, result) {
     }
 
     const slideOutScene = getSceneManager()?.currentScene;
-    if (slideOutScene && !slideOutScene.disposed) {
+    if (slideOutScene && !slideOutScene.disposed && !slideOutScene._exiting) {
       if (slideOutScene.npcSprite) {
         await slideOutScene.hideNpcSprite({ slideOut: true });
       }
@@ -482,7 +482,7 @@ export async function renderBefriendQuiz(quizData, result) {
       // Same pattern as tutorial step 1 above: pause the enemy formation,
       // slide Cid in, then restore DOM name pill via showNpcInDisplay.
       const retryScene = getSceneManager()?.currentScene;
-      if (retryScene && !retryScene.disposed && retryScene.layers?.npcs) {
+      if (retryScene && !retryScene.disposed && !retryScene._exiting && retryScene.layers?.npcs) {
         await retryScene.pauseForNpcInterjection({ fadeEnemies: true });
         await retryScene.showNpcSprite(cidSprite, { slideIn: true });
       } else {
@@ -494,7 +494,7 @@ export async function renderBefriendQuiz(quizData, result) {
       await ctx.narration.showNarration(getBefriendWrongNarration(), { speaker: 'Cid' });
 
       const retrySceneOut = getSceneManager()?.currentScene;
-      if (retrySceneOut && !retrySceneOut.disposed) {
+      if (retrySceneOut && !retrySceneOut.disposed && !retrySceneOut._exiting) {
         if (retrySceneOut.npcSprite) {
           await retrySceneOut.hideNpcSprite({ slideOut: true });
         }

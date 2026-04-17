@@ -653,7 +653,7 @@ function updateGameContent() {
           // Slide NPC out via the active scene (BattleScene after NPC win,
           // or ExplorationScene on page-reload recovery) before transitioning.
           const npcHostScene = getSceneManager()?.currentScene;
-          if (npcHostScene && !npcHostScene.disposed && npcHostScene.npcSprite) {
+          if (npcHostScene && !npcHostScene.disposed && !npcHostScene._exiting && npcHostScene.npcSprite) {
             await npcHostScene.hideNpcSprite({ slideOut: true });
           }
           scene.hideNpcTrainer();

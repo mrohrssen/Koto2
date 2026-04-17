@@ -369,7 +369,7 @@ export function hideEnemy() {
   // Route NPC-sprite teardown through the active scene so the registry
   // tracks it (removed in Task 18 — legacy _defaultCtx path is gone).
   const activeScene = getSceneManager()?.currentScene;
-  if (activeScene && !activeScene.disposed && activeScene.npcSprite) {
+  if (activeScene && !activeScene.disposed && !activeScene._exiting && activeScene.npcSprite) {
     activeScene.hideNpcSprite().catch(err => {
       console.warn('[combat-dom] hideNpcSprite failed:', err);
     });
