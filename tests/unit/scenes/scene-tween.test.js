@@ -61,7 +61,9 @@ describe('Scene.tween', () => {
 
     assert.strictEqual(target.x, 100, 'target.x reached goal');
     assert.strictEqual(sharedApp.app.ticker.count, 0, 'ticker listener removed');
-    assert.strictEqual(scene.registry.tweens.size, 1, 'handle still tracked until scene.exit()');
+    // Before the fix, this asserted .size === 1 as documentation of the leak.
+    // After the fix, scene.tween's .finally untracks the handle on natural completion.
+    assert.strictEqual(scene.registry.tweens.size, 0, 'handle should be untracked after natural completion');
     scene.exit();
   });
 
@@ -79,13 +81,9 @@ describe('Scene.tween', () => {
     // Exit the scene — should cancel the tween.
     scene.exit();
 
-    // The ticker no longer has a listener (removed during cancellation check).
-    // Drive another tick so the onTick's "if (signal.cancelled)" branch runs
-    // if it's still registered; either way, the promise should resolve.
-    // (After scene.exit(), registry.dispose() calls cancel() which flips signal.cancelled;
-    // the next tick removes the listener and resolves.)
-    // If the listener was already removed synchronously, there's nothing to drive —
-    // the pending resolve will fire from whichever branch triggered it. Await the promise.
+    // scene.exit() only flips signal.cancelled — the ticker listener is
+    // removed on the next tick when onTick observes the flag. Drive a tick
+    // to trigger that removal + resolve.
     sharedApp.app.ticker.tick(10);
     await p; // should not hang
 

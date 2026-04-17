@@ -207,6 +207,7 @@ export class Scene {
     const signal = { cancelled: false };
     const handle = { cancel: () => { signal.cancelled = true; } };
     this.registry.trackTween(handle);
-    return _tween(target, props, { ...opts, signal });
+    return _tween(target, props, { ...opts, signal })
+      .finally(() => this.registry.untrackTween(handle));
   }
 }
