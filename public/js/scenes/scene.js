@@ -20,7 +20,8 @@ export class SceneDisposedError extends Error {
  *
  * Subclass contract:
  *   - Override onEnter(opts) to perform setup work (load assets, spawn sprites).
- *   - Optionally set this.beforeExit = () => {...} in constructor to run pre-disposal cleanup.
+ *   - Optionally override beforeExit() to run pre-disposal cleanup (e.g., stopping
+ *     long-lived infrastructure the scene configured but doesn't own).
  *   - Use scene.addContainer/addUpdater/addListener/setTimer/addDom/addAsyncController to
  *     create resources — never call PIXI/DOM APIs directly outside these helpers, or
  *     the scene won't know about them and they'll leak.
