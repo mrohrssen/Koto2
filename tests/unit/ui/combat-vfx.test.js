@@ -30,7 +30,7 @@ await mock.module('../../../public/js/pixi/status-vfx.js', {
 await mock.module('../../../public/js/pixi/formation.js', {
   namedExports: { getCreatureSprite: () => null, animateKO: () => {}, syncPixiStatusLabels: () => {} }
 });
-await mock.module('../../../public/js/ui/scene.js', {
+await mock.module('../../../public/js/ui/combat-dom.js', {
   namedExports: { showFormation: () => {} }
 });
 await mock.module('../../../public/js/pixi/combat-effects-util.js', {

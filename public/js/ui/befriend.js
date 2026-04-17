@@ -15,7 +15,8 @@ import {
   showNpcSprite as pixiSlideInNpc, hideNpcSprite as pixiSlideOutNpc
 } from '../pixi/formation.js';
 import { popupBuff } from '../pixi/text.js';
-import { showNpcInDisplay, hideEnemy, showFormation } from './scene.js';
+import { hideEnemy, showFormation } from './combat-dom.js';
+import { showNpcInDisplay } from './exploration-dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 import { renderButtonsAsync } from './ui-components.js';

@@ -1,4 +1,5 @@
-import { showNpcTrainer, showNpcInDisplay, showDealer, showFormation, hideFormation } from './scene.js';
+import { showFormation, hideFormation } from './combat-dom.js';
+import { showNpcTrainer, showNpcInDisplay, showDealer } from './exploration-dom.js';
 import { showNpcSprite, hideNpcSprite, setFormationVisible } from '../pixi/formation.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { speakText } from '../tts.js';

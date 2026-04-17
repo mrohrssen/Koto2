@@ -29,8 +29,11 @@ await mock.module('../../../public/js/pixi/formation.js', {
 await mock.module('../../../public/js/pixi/text.js', {
   namedExports: { popupBuff: () => {} }
 });
-await mock.module('../../../public/js/ui/scene.js', {
-  namedExports: { showNpcInDisplay: () => {}, hideEnemy: () => {}, showFormation: () => {} }
+await mock.module('../../../public/js/ui/combat-dom.js', {
+  namedExports: { hideEnemy: () => {}, showFormation: () => {} }
+});
+await mock.module('../../../public/js/ui/exploration-dom.js', {
+  namedExports: { showNpcInDisplay: () => {} }
 });
 await mock.module('../../../public/js/ui/sprite-utils.js', {
   namedExports: { SPRITE_VERSION: '0', replaceWithTextSprite: () => {}, creatureSpriteHtml: () => '', creatureStaticPath: () => '' }

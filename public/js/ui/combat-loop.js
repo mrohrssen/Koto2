@@ -15,7 +15,7 @@ import {
 } from '../pixi/text.js';
 import { clearAllStatusVfx } from '../pixi/status-vfx.js';
 import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, clearAllPixiStatusLabels, setWalking } from '../pixi/formation.js';
-import { showFormation } from './scene.js';
+import { showFormation } from './combat-dom.js';
 import { setScrollState } from '../pixi/parallax.js';
 import { wait } from '../pixi/tween.js';
 import { playAttackSound } from './combat-audio.js';

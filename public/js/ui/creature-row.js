@@ -1,5 +1,5 @@
 import { dom } from '../dom.js';
-import { showFormation, hideFormation } from './scene.js';
+import { showFormation, hideFormation } from './combat-dom.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 
 function rarityStars(rarity) {

@@ -24,7 +24,7 @@ import { playStatusApplied, clearStatusVfx } from '../pixi/status-vfx.js';
 import {
   getCreatureSprite, animateKO, syncPixiStatusLabels
 } from '../pixi/formation.js';
-import { showFormation } from './scene.js';
+import { showFormation } from './combat-dom.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
 import { hapticDamageTier } from '../native/index.js';
