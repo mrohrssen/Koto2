@@ -892,7 +892,7 @@ Expected: all green.
 With HubScene mounted at boot, a missing currentScene now reflects a
 real regression in ensureSceneForPhase — fail loudly so future bugs of
 this class surface on first frame. Adds disposed-scene guard to
-creature-row.render (Bug #7 fix; broader audit in Task 9).
+creature-row.render (Bug #7 fix; broader audit in Task 10).
 
 Fixes diagnostic half of Bugs #1 and #3; prevents SceneDisposedError
 noise during combat→room transitions (Bug #7)."
