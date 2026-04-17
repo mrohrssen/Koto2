@@ -133,6 +133,10 @@ export function setSceneManager(mgr) {
   _instance = mgr;
 }
 
+export function isSceneManagerInitialized() {
+  return _instance !== null;
+}
+
 export function clearSceneManager() {
   // Explicit escape hatch for tests that need to reset the singleton.
   _instance = null;

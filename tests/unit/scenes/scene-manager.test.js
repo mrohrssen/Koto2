@@ -163,4 +163,66 @@ describe('SceneManager', () => {
     const { setSceneManager } = await import('../../../public/js/scenes/scene-manager.js');
     assert.throws(() => setSceneManager(null), /cannot be null/);
   });
+
+  it('parallax callback routes dt to updateParallax and deltaMS to updateParticles; isFrozen gates parallax only', () => {
+    // Stand up a fake PIXI app with a ticker
+    const listeners = [];
+    const app = {
+      ticker: {
+        add: (fn) => listeners.push(fn),
+        remove: (fn) => { const i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1); },
+      },
+    };
+
+    const calls = { parallax: [], particles: [] };
+    let frozen = false;
+
+    const mgr = new SceneManager(app);
+    mgr.configure({
+      parallax: {
+        update: (dt, deltaMS) => {
+          if (!frozen) calls.parallax.push({ dt, deltaMS });
+          calls.particles.push({ dt, deltaMS });
+        },
+      },
+    });
+    mgr.init();
+
+    // Tick once with realistic values
+    listeners[0]({ deltaTime: 1.0, deltaMS: 16.6667 });
+
+    assert.strictEqual(calls.parallax.length, 1);
+    assert.strictEqual(calls.parallax[0].dt, 1.0);
+    assert.strictEqual(calls.parallax[0].deltaMS, 16.6667);
+    assert.strictEqual(calls.particles.length, 1);
+    assert.strictEqual(calls.particles[0].deltaMS, 16.6667);
+
+    // Freeze: parallax should not run, particles should
+    frozen = true;
+    listeners[0]({ deltaTime: 1.0, deltaMS: 16.6667 });
+    assert.strictEqual(calls.parallax.length, 1, 'parallax should not run when frozen');
+    assert.strictEqual(calls.particles.length, 2, 'particles should run even when frozen');
+  });
+
+  it('wiring block is idempotent — logout/login does not register duplicate tickers', async () => {
+    const {
+      setSceneManager,
+      clearSceneManager,
+      isSceneManagerInitialized,
+    } = await import('../../../public/js/scenes/scene-manager.js');
+
+    clearSceneManager();
+    assert.strictEqual(isSceneManagerInitialized(), false);
+
+    const app = { ticker: { add: () => {}, remove: () => {} } };
+    const mgr = new SceneManager(app);
+    mgr.configure({});
+    mgr.init();
+    setSceneManager(mgr);
+
+    assert.strictEqual(isSceneManagerInitialized(), true);
+
+    clearSceneManager();
+    assert.strictEqual(isSceneManagerInitialized(), false);
+  });
 });

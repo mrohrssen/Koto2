@@ -129,7 +129,7 @@ import { initApp, getApp } from './js/pixi/app.js';
 import { loadParallax, setScrollState, updateParallax } from './js/pixi/parallax.js';
 import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite, getCreatureSprite } from './js/pixi/formation.js';
 import { updateParticles, isFrozen } from './js/pixi/effects.js';
-import { SceneManager, setSceneManager } from './js/scenes/scene-manager.js';
+import { SceneManager, setSceneManager, isSceneManagerInitialized } from './js/scenes/scene-manager.js';
 
 // API imports - these are the server communication functions
 import {
@@ -1604,7 +1604,9 @@ async function initGame() {
   // where hitStop() freezes scroll motion but particles keep ticking). Formation
   // freeze will return in Task 9 via BattleScene.update.
   const { app: pixiApp } = getApp();
-  if (pixiApp) {
+  if (!pixiApp) {
+    console.error('[boot] PIXI init returned null app; SceneManager will not be wired');
+  } else if (!isSceneManagerInitialized()) {
     const sceneManager = new SceneManager(pixiApp);
     sceneManager.configure({
       parallax: {
@@ -1617,6 +1619,7 @@ async function initGame() {
     sceneManager.init();
     setSceneManager(sceneManager);
   }
+  // If already initialized (e.g., logout→login), intentionally do nothing.
 
   // A fresh auth session should never inherit transient combat UI from the
   // previous user/session (e.g. stale combatActive or room transition flags).
