@@ -32,7 +32,7 @@ await mock.module('../../../public/js/pixi/tween.js', {
 await mock.module('../../../public/js/pixi/parallax.js', {
   namedExports: { startParallax: () => {}, stopParallax: () => {} },
 });
-await mock.module('../../../public/js/pixi/formation.js', {
+const formationMock = await mock.module('../../../public/js/pixi/formation.js', {
   namedExports: {
     createFormationContext: (scene) => ({
       scene,
@@ -89,5 +89,42 @@ describe('HubScene', () => {
     scene.exit();
     assert.strictEqual(scene.disposed, true);
     assert.strictEqual(scene.npcSprite, null);
+  });
+
+  it('syncCreatures with one ally records it in spritesByUid via formation ctx', async () => {
+    // Intercept spawnFormationSprite so we don't rely on Pixi asset loading.
+    // The real formation.spawnFormationSprite returns a Sprite; we return a
+    // sentinel so the test asserts the plumbing, not the rendering.
+    const sentinel = { _uid: 'hi-1' };
+    // node:test forbids re-mocking an already-mocked module; restore the
+    // file-level formation mock before re-mocking with sibling-safe stubs.
+    formationMock.restore();
+    await mock.module('../../../public/js/pixi/formation.js', {
+      namedExports: {
+        createFormationContext: (scene) => ({
+          scene,
+          playerContainer: scene.addContainer(new FakeContainer(), scene.layers.formations),
+          enemyContainer: scene.addContainer(new FakeContainer(), scene.layers.formations),
+          creatureSprites: { player: new Map(), enemy: new Map() },
+          lastFormationInput: { player: null, enemy: null },
+          walkingEnabled: false,
+          walkTime: 0,
+        }),
+        _updateFormations: () => {},
+        spawnFormationSprite: async () => sentinel,
+        removeFormationSprite: () => {},
+        updateFormationSprite: () => {},
+        // spawnNpcSprite + removeNpcSprite are imported by base Scene and
+        // must be mocked even though this test doesn't exercise NPC paths.
+        spawnNpcSprite: async () => null,
+        removeNpcSprite: () => {},
+      },
+    });
+    const { HubScene: HS } = await import(`../../../public/js/scenes/hub-scene.js?v=${Date.now()}`);
+    const scene = new HS(makeFakeApp());
+    await scene.enter({ allies: [{ uid: 'hi-1', id: 'hi', hp: 10, maxHp: 10 }] });
+    assert.strictEqual(scene.spritesByUid.size, 1, 'sprite recorded');
+    assert.strictEqual(scene.spritesByUid.get('hi-1'), sentinel);
+    scene.exit();
   });
 });
