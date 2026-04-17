@@ -634,27 +634,25 @@ async function _resizeFormations(ctx, /* width */ _w, /* height */ _h) {
 /**
  * Spawn a single creature sprite into `ctx` and register it by uid.
  *
- * Task 9 minimum — parity work deferred to Task 16 (combat-loop migration):
- *   - Boss sizing (`isBoss ? 120 : 60`). Currently hardcoded to 60.
- *   - Enemy slide-in enter animation (`_enterTarget`/`_entering` flags).
- *   - `revealFormationInfo(side, dataIndex)` DOM sync for non-entering sprites.
- *   - 3-slot layout mapping (1 creature → middle, 2 creatures → top+bottom).
- *     Currently uses raw `index` as slot.
- *   - Per-slot repositioning on creature shift (see `updateFormationSprite`).
- *
- * When BattleScene is wired into combat-loop (Task 16), these behaviors must
- * be restored — either inlined here or via new `spawnFormationSprite` opts.
- *
  * Exported for scene-based callers (BattleScene.syncCreatures). Legacy callers
- * should continue to use showFormation.
+ * should continue to use showFormation (which delegates to `_showFormation`).
  *
  * @param {object} ctx
  * @param {'player'|'enemy'} side
  * @param {object} creature - must have .uid and either .spriteImg or .id
- * @param {number} index - slot index within the new formation (0..2)
+ * @param {number} index - creature's data-array index (used for DOM anchor
+ *   lookup and revealFormationInfo). Also the default slot position.
+ * @param {object} [opts]
+ * @param {number} [opts.slotI] - 3-slot visual position (0..2). Caller maps
+ *   (1→mid, 2→top+bot, 3→all) via slotFor() in BattleScene._diff. Defaults
+ *   to `index` so legacy-style callers continue to work.
+ * @param {boolean} [opts.isBoss=false] - boss sprites render at 120px instead
+ *   of 60px.
+ * @param {boolean} [opts.skipEnter=false] - skip the enemy slide-in enter
+ *   animation. Player sprites always skip enter.
  * @returns {Promise<Sprite|null>} the mounted sprite, or null if no app/container
  */
-export async function spawnFormationSprite(ctx, side, creature, index) {
+export async function spawnFormationSprite(ctx, side, creature, index, opts = {}) {
   if (ctx.scene && !creature?.uid) {
     throw new Error(
       `spawnFormationSprite: creature.uid is required when ctx is scene-owned (got ${JSON.stringify({ side, index, id: creature?.id })})`
@@ -664,6 +662,11 @@ export async function spawnFormationSprite(ctx, side, creature, index) {
   if (!app) return null;
   const container = _sideContainer(ctx, side);
   if (!container) return null;
+
+  const { isBoss = false, skipEnter = false } = opts;
+  const slotIRaw = opts.slotI ?? index;
+  const slotI = Math.min(Math.max(slotIRaw, 0), DEPTH_SCALES.length - 1);
+  const hadSprites = ctx.creatureSprites[side].size > 0;
 
   // NOTE: unlike `_showFormation`, this function intentionally does NOT
   // use `ctx.loadRequestId` to self-cancel. BattleScene._diff calls us
@@ -681,7 +684,7 @@ export async function spawnFormationSprite(ctx, side, creature, index) {
 
   const sprite = new Sprite(texture);
   sprite.anchor.set(0.5);
-  const spriteSize = 60;
+  const spriteSize = isBoss ? 120 : 60;
   sprite.width = spriteSize;
   sprite.height = spriteSize;
 
@@ -693,12 +696,6 @@ export async function spawnFormationSprite(ctx, side, creature, index) {
   const screenW = app.screen.width;
   const screenH = app.screen.height;
   const baseX = side === 'player' ? screenW * 0.25 : screenW * 0.75;
-
-  // dataIndex positions sprite within the 3-slot layout (1→mid, 2→top+bot, 3→all).
-  // spawnFormationSprite receives the "creature index" — we keep it as the
-  // canonical slot index and use it directly; callers that need the formal
-  // 3-slot mapping should use showFormation.
-  const slotI = Math.min(Math.max(index, 0), DEPTH_SCALES.length - 1);
 
   let targetX, targetY;
   const anchorEl = sceneRect && document.querySelector(
@@ -713,9 +710,23 @@ export async function spawnFormationSprite(ctx, side, creature, index) {
     targetY = (screenH * 0.3) + (slotI * screenH * 0.2);
   }
 
-  sprite.x = targetX;
   sprite.y = targetY;
-  sprite.baseX = targetX;
+
+  // Enemy slide-in: kick off off-screen, let _updateFormations tween it in.
+  // Only fires on first-appearance (no prior sprites on this side) when the
+  // caller hasn't opted out via skipEnter. Player sprites never slide in.
+  if (side === 'enemy' && !skipEnter && !hadSprites) {
+    sprite._enterTarget = targetX;
+    sprite._entering = true;
+    sprite.x = screenW + spriteSize * 2;
+    sprite.baseX = targetX;
+  } else {
+    sprite.x = targetX;
+    sprite.baseX = targetX;
+    sprite._entering = false;
+    revealFormationInfo(side, index);
+  }
+
   sprite.baseY = targetY;
   sprite.scale.set(DEPTH_SCALES[slotI] * (spriteSize / texture.width));
   if (side === 'enemy') sprite.scale.x *= -1;
@@ -724,7 +735,7 @@ export async function spawnFormationSprite(ctx, side, creature, index) {
   sprite._uid = creature.uid;
   sprite._side = side;
   sprite._dataIndex = index;
-  sprite._entering = false;
+  sprite._slotI = slotI;
 
   if ((creature.currentHp ?? creature.hp ?? 1) <= 0) {
     sprite.alpha = 0;
@@ -769,26 +780,77 @@ export function removeFormationSprite(ctx, side, uid) {
 }
 
 /**
- * Update a creature sprite in place (data refresh only — no reposition).
+ * Update a creature sprite in place. Refreshes data (creatureData, dataIndex,
+ * alpha/tint from HP) and repositions the sprite to match its new slot when
+ * the caller's slot-mapping has shifted (e.g. an ally KO rearrangement).
  *
- * Task 9 minimum — repositioning on slot shift is deferred to Task 16.
- * When an ally is KO'd mid-combat and remaining allies re-anchor to
- * different slots, the existing sprites will stay at their old x/y.
+ * Does NOT re-run the enter animation — rearranges are instantaneous.
  *
  * @param {object} ctx
  * @param {'player'|'enemy'} side
  * @param {object} creature
- * @param {number} index
+ * @param {number} index - creature's data-array index (DOM anchor lookup)
+ * @param {object} [opts]
+ * @param {number} [opts.slotI] - target 3-slot visual position (0..2).
+ *   Defaults to `index` for backcompat.
+ * @param {boolean} [opts.isBoss=false]
  */
-export function updateFormationSprite(ctx, side, creature, index) {
+export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
   if (ctx.scene && !creature?.uid) {
     throw new Error('updateFormationSprite: creature.uid is required when ctx is scene-owned');
   }
   const sprite = ctx.creatureSprites[side].get(creature.uid);
   if (!sprite) return;
 
+  const { isBoss = false } = opts;
+  const slotIRaw = opts.slotI ?? index;
+  const slotI = Math.min(Math.max(slotIRaw, 0), DEPTH_SCALES.length - 1);
+
   sprite.creatureData = creature;
   sprite._dataIndex = index;
+
+  // Reposition to the (possibly new) slot. Skip if:
+  //   - the sprite is still mid slide-in (enter animation owns x)
+  //   - the slot hasn't changed (leaves _animateKO's scale shrink + any
+  //     ongoing tweens untouched; only slot rearranges need to re-layout)
+  const prevSlot = sprite._slotI;
+  sprite._slotI = slotI;
+  const { app } = getApp();
+  if (app && !sprite._entering && prevSlot !== slotI) {
+    const spriteSize = isBoss ? 120 : 60;
+    const sceneArea = document.getElementById('scene-area');
+    const sceneRect = sceneArea?.getBoundingClientRect();
+    const formationSel = side === 'player' ? '.player-formation' : '.enemy-formation';
+    const staggerX = side === 'player' ? PLAYER_STAGGER_X : ENEMY_STAGGER_X;
+    const screenW = app.screen.width;
+    const screenH = app.screen.height;
+    const baseX = side === 'player' ? screenW * 0.25 : screenW * 0.75;
+
+    let targetX, targetY;
+    const anchorEl = sceneRect && document.querySelector(
+      `${formationSel} .formation-slot[data-index="${index}"] .formation-sprite--pixi-anchor`
+    );
+    if (anchorEl) {
+      const anchorRect = anchorEl.getBoundingClientRect();
+      targetX = anchorRect.left + anchorRect.width / 2 - sceneRect.left;
+      targetY = anchorRect.top + anchorRect.height / 2 - sceneRect.top;
+    } else {
+      targetX = baseX + staggerX[slotI];
+      targetY = (screenH * 0.3) + (slotI * screenH * 0.2);
+    }
+
+    sprite.x = targetX;
+    sprite.y = targetY;
+    sprite.baseX = targetX;
+    sprite.baseY = targetY;
+
+    if (sprite.texture?.width) {
+      const sign = (side === 'enemy') ? -1 : 1;
+      const depth = DEPTH_SCALES[slotI] * (spriteSize / sprite.texture.width);
+      sprite.scale.set(depth);
+      sprite.scale.x *= sign;
+    }
+  }
 
   const hp = creature.currentHp ?? creature.hp ?? 1;
   if (hp <= 0) {

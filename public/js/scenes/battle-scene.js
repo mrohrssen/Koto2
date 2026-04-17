@@ -43,8 +43,9 @@ export class BattleScene extends Scene {
     this.statusVfx = createStatusVfxContext(this);
   }
 
-  async onEnter({ allies = [], enemies = [], parallaxSpeed = 0 } = {}) {
+  async onEnter({ allies = [], enemies = [], parallaxSpeed = 0, isBoss = false } = {}) {
     if (parallaxSpeed > 0) startParallax(parallaxSpeed);
+    this._isBoss = !!isBoss;
     await this.syncCreatures({ allies, enemies, initial: true });
     this.addUpdater((dt) => _updateFormations(this.formation, dt));
     setupCreatureRowListeners(this);
@@ -88,16 +89,36 @@ export class BattleScene extends Scene {
       }
     }
 
+    // 3-slot visual layout: 1 creature → middle, 2 → top+bottom, 3 → all.
+    // Mirrors combat-dom::showFormation and the legacy _showFormation logic.
+    const slotFor = (i, total) => {
+      if (total === 1) return 1;
+      if (total === 2) return i === 0 ? 0 : 2;
+      return i;
+    };
+
+    // Boss sizing only applies to the enemy side when the encounter is a boss.
+    // Player sprites stay at the normal size even in boss fights.
+    const isBoss = !!this._isBoss && side === 'enemy';
+
+    // Player sprites never slide in. Enemy sprites slide in on the initial
+    // formation render; mid-combat additions (rare) are treated as already
+    // in place. `_initial` mirrors the onEnter bootstrap vs. a later resync.
+    const skipEnter = side === 'player' ? true : !_initial;
+
     // Spawn or update — spawns are async; run in parallel.
     // Each spawn is isolated via .catch so a single failure doesn't abort siblings.
+    const total = creatures.length;
     const spawnPromises = [];
-    for (let i = 0; i < creatures.length; i++) {
+    for (let i = 0; i < total; i++) {
       const c = creatures[i];
+      const slotI = slotFor(i, total);
+      const opts = { slotI, isBoss, skipEnter };
       if (sideMap.has(c.uid)) {
-        updateFormationSprite(this.formation, side, c, i);
+        updateFormationSprite(this.formation, side, c, i, opts);
       } else {
         spawnPromises.push(
-          spawnFormationSprite(this.formation, side, c, i)
+          spawnFormationSprite(this.formation, side, c, i, opts)
             .then(sprite => { if (sprite) this.spritesByUid.set(c.uid, sprite); })
             .catch(err => { console.error(`[BattleScene] spawn failed for ${side}[${i}] uid=${c.uid}:`, err); })
         );
@@ -107,6 +128,6 @@ export class BattleScene extends Scene {
 
     // Track the last input so legacy-style (side, index) lookups via scene ctx
     // continue to work. Mirrors the default-ctx shape { creatures, opts }.
-    this.formation.lastFormationInput[side] = { creatures, opts: {} };
+    this.formation.lastFormationInput[side] = { creatures, opts: { isBoss } };
   }
 }

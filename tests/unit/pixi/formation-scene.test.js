@@ -293,6 +293,136 @@ describe('spawnFormationSprite parallel spawns (CRIT-1 regression)', () => {
   });
 });
 
+describe('spawnFormationSprite opts (IMP-2)', () => {
+  function makeSceneCtx() {
+    const formations = new FakeContainer();
+    const scene = {
+      layers: { formations },
+      addContainer: (c /* container */, _parent) => c,
+    };
+    return createFormationContext(scene);
+  }
+
+  it('isBoss=true renders at 120px', async () => {
+    const ctx = makeSceneCtx();
+    const sprite = await spawnFormationSprite(
+      ctx, 'enemy', { uid: 'boss', id: 'b' }, 0,
+      { isBoss: true, skipEnter: true }
+    );
+    assert.strictEqual(sprite.width, 120);
+    assert.strictEqual(sprite.height, 120);
+  });
+
+  it('isBoss=false (default) renders at 60px', async () => {
+    const ctx = makeSceneCtx();
+    const sprite = await spawnFormationSprite(
+      ctx, 'enemy', { uid: 'mob', id: 'm' }, 0,
+      { skipEnter: true }
+    );
+    assert.strictEqual(sprite.width, 60);
+    assert.strictEqual(sprite.height, 60);
+  });
+
+  it('enemy with skipEnter=false + no prior sprites starts off-screen (slide-in)', async () => {
+    const ctx = makeSceneCtx();
+    const sprite = await spawnFormationSprite(
+      ctx, 'enemy', { uid: 'e1', id: 'x' }, 0,
+      { skipEnter: false }
+    );
+    assert.strictEqual(sprite._entering, true);
+    assert.ok(sprite._enterTarget != null, 'enter target stored');
+    // Start position should be beyond screen right edge
+    assert.ok(sprite.x > 400, `sprite.x=${sprite.x} should be off-screen right`);
+  });
+
+  it('player with skipEnter=true is immediately placed at target', async () => {
+    const ctx = makeSceneCtx();
+    const sprite = await spawnFormationSprite(
+      ctx, 'player', { uid: 'p1', id: 'x' }, 0,
+      { skipEnter: true }
+    );
+    assert.strictEqual(sprite._entering, false);
+    assert.strictEqual(sprite.x, sprite.baseX);
+  });
+
+  it('slotI override positions the sprite at the mapped slot', async () => {
+    const ctx = makeSceneCtx();
+    // index=0, slotI=1 → 1 creature goes to middle slot
+    const sprite = await spawnFormationSprite(
+      ctx, 'player', { uid: 'p1', id: 'x' }, 0,
+      { slotI: 1, skipEnter: true }
+    );
+    assert.strictEqual(sprite._slotI, 1);
+  });
+});
+
+describe('updateFormationSprite repositioning (IMP-4)', () => {
+  function makeSceneCtx() {
+    const formations = new FakeContainer();
+    const scene = {
+      layers: { formations },
+      addContainer: (c /* container */, _parent) => c,
+    };
+    return createFormationContext(scene);
+  }
+
+  it('repositions sprite when slotI changes', async () => {
+    const ctx = makeSceneCtx();
+    const creature = { uid: 'c1', id: 'x' };
+    const sprite = await spawnFormationSprite(
+      ctx, 'player', creature, 0, { slotI: 0, skipEnter: true }
+    );
+    const origX = sprite.x;
+    const origY = sprite.y;
+    assert.strictEqual(sprite._slotI, 0);
+
+    updateFormationSprite(ctx, 'player', creature, 0, { slotI: 2 });
+
+    assert.strictEqual(sprite._slotI, 2, 'slot moved');
+    // With DOM mocked to return null, fallback layout differs per slot.
+    const moved = (sprite.x !== origX) || (sprite.y !== origY);
+    assert.ok(moved, `sprite did not reposition (x:${origX}→${sprite.x}, y:${origY}→${sprite.y})`);
+  });
+
+  it('does not reposition when slotI is unchanged', async () => {
+    const ctx = makeSceneCtx();
+    const creature = { uid: 'c1', id: 'x' };
+    const sprite = await spawnFormationSprite(
+      ctx, 'player', creature, 0, { slotI: 1, skipEnter: true }
+    );
+    const origX = sprite.x;
+    const origY = sprite.y;
+
+    // Scale may have been changed by external animation (e.g. animateKO).
+    // An update with the same slot must NOT overwrite it.
+    sprite.scale.x = 0.5;
+    sprite.scale.y = 0.5;
+
+    updateFormationSprite(ctx, 'player', creature, 0, { slotI: 1 });
+
+    assert.strictEqual(sprite.x, origX, 'x preserved');
+    assert.strictEqual(sprite.y, origY, 'y preserved');
+    assert.strictEqual(sprite.scale.x, 0.5, 'scale.x preserved');
+    assert.strictEqual(sprite.scale.y, 0.5, 'scale.y preserved');
+  });
+
+  it('updates creatureData and applies KO alpha/tint regardless of slot', async () => {
+    const ctx = makeSceneCtx();
+    const creature = { uid: 'c1', id: 'x', currentHp: 10 };
+    const sprite = await spawnFormationSprite(
+      ctx, 'player', creature, 0, { slotI: 1, skipEnter: true }
+    );
+    assert.strictEqual(sprite.alpha, 1);
+    assert.strictEqual(sprite.tint, 0xFFFFFF);
+
+    const dead = { uid: 'c1', id: 'x', currentHp: 0 };
+    updateFormationSprite(ctx, 'player', dead, 0, { slotI: 1 });
+    assert.strictEqual(sprite.tint, 0x888888, 'KO tint applied');
+    assert.ok(sprite.alpha <= 0.3, `alpha clamped: ${sprite.alpha}`);
+    assert.strictEqual(sprite.creatureData, dead);
+  });
+});
+
 describe('BattleScene._diff lifecycle', () => {
   it('removes sprites for uids that leave the party', async () => {
     const app = makeFakeApp();

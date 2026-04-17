@@ -1241,6 +1241,10 @@ async function returnToHub() {
 function startCombatLoop() { combatLoopUI.startCombatLoop(); }
 function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 
+// Returns a Promise that resolves when the 300ms victory window's
+// loadGameState+updateUI settles. combat-loop.stopCombatLoop awaits this
+// before transitioning BattleScene → ExplorationScene so player sprites
+// remain visible through the modal window (ghost-formation fix).
 function showVictoryModal(result) {
   audio.stopBGM();
   actions.clear();
@@ -1249,23 +1253,38 @@ function showVictoryModal(result) {
     showCollectionToast(result.newCollectionAdditions);
   }
 
-  setTimeout(async () => {
-    await loadGameState();
-    updateUI();
-  }, 300);
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      try {
+        await loadGameState();
+        updateUI();
+      } finally {
+        resolve();
+      }
+    }, 300);
+  });
 }
 
+// Returns a Promise that resolves when the player dismisses the report via
+// "return to hub" (returnToHubCb fires loadGameState + updateUI). Awaited by
+// stopCombatLoop so BattleScene stays up through the defeat screen.
 async function showAdventureReport(isVictory) {
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
   const response = await apiForfeitRun(isVictory);
   const summary = response?.runSummary || {};
-  const returnToHubCb = async () => {
-    takeover.close('gameover');
-    await loadGameState();
-    updateUI();
-  };
-  renderAdventureReport(content, summary, isVictory, returnToHubCb);
+  return new Promise((resolve) => {
+    const returnToHubCb = async () => {
+      takeover.close('gameover');
+      try {
+        await loadGameState();
+        updateUI();
+      } finally {
+        resolve();
+      }
+    };
+    renderAdventureReport(content, summary, isVictory, returnToHubCb);
+  });
 }
 
 function showGameOverModal(result) {
@@ -1274,7 +1293,7 @@ function showGameOverModal(result) {
   actions.clear();
 
   updateCreatureRow();
-  showAdventureReport(false);
+  return showAdventureReport(false);
 }
 
 // ============ FLASH CARD HANDLERS ============

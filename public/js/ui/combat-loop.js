@@ -638,6 +638,7 @@ export async function startCombatLoop(opts = {}) {
       allies:  gs.combat?.allies  ?? [],
       enemies: gs.combat?.enemies ?? [],
       parallaxSpeed: 0,
+      isBoss: !!gs.combat?.isBoss,
     });
   } catch (err) {
     combatActive = false;
@@ -1518,7 +1519,12 @@ export async function stopCombatLoop(result) {
     playSFX('enemy-defeat');
   }
 
-  // Show victory or defeat modal
+  // Show victory or defeat modal. Both return Promises that resolve after
+  // the modal's loadGameState + updateUI settles — we await them here so
+  // BattleScene (and its sprites) remain visible through the modal window.
+  // Transitioning while the modal animates would destroy player sprites
+  // beneath the visible DOM info boxes (the "ghost formation" effect).
+  let modalPromise;
   if (result.victory) {
     playSFX('victory');
     const gs = getGameState();
@@ -1529,17 +1535,21 @@ export async function stopCombatLoop(result) {
     if (isCreatureCombat && showPostCombatShop) {
       await showPostCombatShop();
     }
-    showVictoryModal(result);
+    modalPromise = showVictoryModal(result);
   } else {
-    showGameOverModal(result);
+    modalPromise = showGameOverModal(result);
+  }
+  try {
+    await modalPromise;
+  } catch (err) {
+    console.error('[CombatLoop] modal dismissal rejected — continuing to cleanup', err);
   }
 
   // Transition to ExplorationScene so BattleScene.beforeExit disposes of all
   // scene-owned PIXI resources (formation sprites, status VFX, HP pills,
-  // formation ticker, creature-row listeners) via the registry. The
-  // showVictoryModal/showGameOverModal calls above kick off async work that
-  // loads the next phase's game state and calls updateUI() — by that point
-  // the active scene is ExplorationScene.
+  // formation ticker, creature-row listeners) via the registry. By the time
+  // the modal promise above resolves, updateUI() has already fired with the
+  // new phase — so the current scene should flip to ExplorationScene now.
   // Note: roomId here is the index into run.rooms (the client state's
   // property is `currentRoom`). Task 17 will wire ExplorationScene to render
   // the room; for now the scene simply stores it.
