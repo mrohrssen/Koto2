@@ -1,5 +1,5 @@
 import { Graphics, Text, Container } from 'pixi.js';
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 import { tween, wait } from './tween.js';
 import { burstParticles, screenFlash, ELEMENT_COLORS } from './effects.js';
 import { showEventPopup } from './text.js';
@@ -144,7 +144,7 @@ export async function playStatusApplied(side, index, effectType) {
  * @param {string} effectType
  */
 function startOngoing(sprite, effectType) {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app || !layers.effects) return;
 
   // Don't double-start
@@ -390,7 +390,7 @@ export function clearStatusVfx(side, index, effectType) {
   const map = ongoingVfx.get(sprite);
   if (!map || !map[effectType]) return;
 
-  const { app } = getStage();
+  const { app } = getApp();
   const entry = map[effectType];
 
   // Remove ticker callback
@@ -424,7 +424,7 @@ export function clearStatusVfx(side, index, effectType) {
  * Call at combat end to ensure clean state.
  */
 export function clearAllStatusVfx() {
-  const { app } = getStage();
+  const { app } = getApp();
 
   for (const [sprite, map] of ongoingVfx) {
     for (const effectType of Object.keys(map)) {

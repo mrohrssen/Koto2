@@ -1,5 +1,5 @@
 import { Sprite, Assets, Container, Texture, Graphics, Text } from 'pixi.js';
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 import { tween } from './tween.js';
 import { STATUS_ICON_CONFIG } from '../ui/event-popup.js';
 
@@ -58,7 +58,7 @@ function createPill(label, bg, textColor) {
 }
 
 export function syncPixiStatusLabels(side, index, keys, statStages) {
-  const { layers } = getStage();
+  const { layers } = getApp();
   if (!layers.labels) return;
 
   const sprite = getCreatureSprite(side, index);
@@ -151,7 +151,7 @@ function sameFormation(prev, creatures, isBoss) {
  * Initialize formation containers. Called once from battle-stage init.
  */
 export function initFormations() {
-  const { layers } = getStage();
+  const { layers } = getApp();
   if (!layers.creatures) return;
 
   playerContainer = new Container();
@@ -167,7 +167,7 @@ export function initFormations() {
  * @param {{ isBoss?: boolean }} opts
  */
 export async function showFormation(side, creatures, { isBoss = false, skipEnter = false } = {}) {
-  const { app } = getStage();
+  const { app } = getApp();
   if (!app) return;
 
   const container = side === 'player' ? playerContainer : enemyContainer;
@@ -332,7 +332,7 @@ export function hideFormation(side) {
   const container = side === 'player' ? playerContainer : enemyContainer;
   if (container) container.removeChildren();
   // Clean up status labels for this side
-  const { layers } = getStage();
+  const { layers } = getApp();
   for (const sprite of creatureSprites[side]) {
     if (sprite.statusLabels) {
       for (const pill of sprite.statusLabels) {
@@ -386,7 +386,7 @@ export function getCreatureSprite(side, index) {
 export function showActiveGlow(index) {
   clearActiveGlow();
   const sprite = getCreatureSprite('player', index);
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!sprite || !app) return;
 
   activeGlow = new Graphics();
@@ -415,7 +415,7 @@ export function clearActiveGlow() {
     activeGlow = null;
   }
   if (activeGlowTickFn) {
-    const { app } = getStage();
+    const { app } = getApp();
     app?.ticker.remove(activeGlowTickFn);
     activeGlowTickFn = null;
   }
@@ -427,7 +427,7 @@ export function clearActiveGlow() {
  * @param {{ slideIn?: boolean }} opts
  */
 export async function showNpcSprite(spritePath, { slideIn = false } = {}) {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app) return;
   // Add NPC to the top-level creatures layer (not enemyContainer)
   // so it stays visible when enemyContainer is hidden during skill animations
@@ -471,7 +471,7 @@ export async function showNpcSprite(spritePath, { slideIn = false } = {}) {
 export async function hideNpcSprite({ slideOut = false } = {}) {
   if (!npcSprite) return;
   if (slideOut) {
-    const { app } = getStage();
+    const { app } = getApp();
     const screenW = app?.screen.width || 400;
     await tween(npcSprite, { x: screenW + 170 }, { duration: 300, ease: 'easeIn' });
   }
@@ -562,7 +562,7 @@ export async function animateLevelUp(side, index) {
  * caused sprites to vanish on mobile Safari during address-bar resize events.
  */
 export async function resizeFormations(width, height) {
-  const { app } = getStage();
+  const { app } = getApp();
   if (!app) return;
 
   const sceneArea = document.getElementById('scene-area');

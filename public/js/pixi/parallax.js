@@ -1,5 +1,5 @@
 import { TilingSprite, Assets } from 'pixi.js';
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 
 const LAYER_NAMES = ['sky', 'far', 'mid', 'ground'];
 const LAYER_SPEEDS = [0.1, 0.3, 0.6, 1.0];
@@ -18,7 +18,7 @@ let loadRequestId = 0;
  * @param {string} areaId - e.g. 'starter_meadow'
  */
 export async function loadParallax(areaId) {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app) return;
   const requestId = ++loadRequestId;
 

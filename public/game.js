@@ -125,7 +125,7 @@ import { createIntentLog } from './js/intent-log.js';
 import { createInspector } from './js/inspector.js';
 
 // PixiJS battle stage imports
-import { initBattleStage } from './js/pixi/battle-stage.js';
+import { initApp } from './js/pixi/app.js';
 import { loadParallax, setScrollState } from './js/pixi/parallax.js';
 import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite, getCreatureSprite } from './js/pixi/formation.js';
 
@@ -1594,7 +1594,7 @@ async function initGame() {
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
 
   // Initialize PixiJS battle stage (canvas overlay for combat animations)
-  await initBattleStage();
+  await initApp();
 
   // A fresh auth session should never inherit transient combat UI from the
   // previous user/session (e.g. stale combatActive or room transition flags).

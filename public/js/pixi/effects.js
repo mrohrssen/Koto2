@@ -1,5 +1,5 @@
 import { Container, Sprite, Graphics, Texture } from 'pixi.js';
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 import { tween, wait } from './tween.js';
 
 // ============ ELEMENT COLORS ============
@@ -35,7 +35,7 @@ const ELEMENT_BEHAVIORS = {
  * Initialize the particle pool. Call once at battle-stage init.
  */
 export function initParticles() {
-  const { layers } = getStage();
+  const { layers } = getApp();
   if (!layers.effects) return;
 
   particleContainer = new Container();
@@ -172,7 +172,7 @@ const SHAKE_CONFIG = {
  * @param {'light'|'medium'|'heavy'} intensity
  */
 export async function screenShake(intensity = 'medium') {
-  const { app } = getStage();
+  const { app } = getApp();
   if (!app) return;
 
   const config = SHAKE_CONFIG[intensity] || SHAKE_CONFIG.medium;
@@ -207,7 +207,7 @@ let flashGraphics = null;
  * Initialize screen flash overlay. Call at battle-stage init.
  */
 export function initFlash() {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app || !layers.overlay) return;
 
   flashGraphics = new Graphics();
@@ -220,7 +220,7 @@ export function initFlash() {
  * @param {{ color?: number, duration?: number, count?: number }} opts
  */
 export async function screenFlash({ color = 0xFFFFFF, duration = 100, count = 1 } = {}) {
-  const { app } = getStage();
+  const { app } = getApp();
   if (!app || !flashGraphics) return;
 
   flashGraphics.clear();
@@ -285,7 +285,7 @@ let vignetteGraphics = null;
  * Call once at battle-stage init.
  */
 export function initVignette() {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app || !layers.overlay) return;
 
   vignetteGraphics = new Graphics();
@@ -298,7 +298,7 @@ export function initVignette() {
  * @param {number} duration - Fade-out duration in ms
  */
 export async function showVignette(duration = 400) {
-  const { app } = getStage();
+  const { app } = getApp();
   if (!app || !vignetteGraphics) return;
 
   const w = app.screen.width;

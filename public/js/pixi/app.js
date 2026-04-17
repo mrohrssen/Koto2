@@ -1,7 +1,7 @@
 import { Application, Container } from 'pixi.js';
-import { updateParallax, resizeParallax } from './parallax.js';
-import { initFormations, updateFormations, resizeFormations } from './formation.js';
-import { initParticles, updateParticles, initFlash, initVignette, isFrozen } from './effects.js';
+import { resizeParallax } from './parallax.js';
+import { resizeFormations } from './formation.js';
+import { initParticles, updateParticles, initFlash, initVignette } from './effects.js';
 
 let app = null;
 let layers = {};
@@ -13,7 +13,7 @@ if (typeof window !== 'undefined') {
 }
 
 /** @returns {{ app: Application, layers: Record<string, Container> }} */
-export function getStage() {
+export function getApp() {
   return { app, layers };
 }
 
@@ -21,7 +21,7 @@ export function getStage() {
  * Initialize the PixiJS battle stage inside the scene-area element.
  * Must be called once at app startup (async).
  */
-export async function initBattleStage() {
+export async function initApp() {
   const sceneArea = document.getElementById('scene-area');
   if (!sceneArea || app) {
     console.warn('[BattleStage] init skipped:', { sceneArea: !!sceneArea, appExists: !!app });
@@ -65,7 +65,6 @@ export async function initBattleStage() {
   app.stage.addChild(layers.overlay);
 
   // Initialize sub-modules
-  initFormations();
   initParticles();
   initFlash();
   initVignette();
@@ -81,12 +80,8 @@ export async function initBattleStage() {
   });
   resizeObserver.observe(sceneArea);
 
-  // Main ticker — drives parallax, formations, and particles
+  // Particle pool ticker — long-lived effects pool (moves in Task 9).
   app.ticker.add((ticker) => {
-    if (!isFrozen()) {
-      updateParallax(ticker.deltaTime);
-      updateFormations(ticker.deltaTime);
-    }
     updateParticles(ticker.deltaMS);
   });
 
@@ -100,7 +95,7 @@ export async function initBattleStage() {
 /**
  * Destroy the PixiJS application and clean up.
  */
-export function destroyBattleStage() {
+export function destroyApp() {
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;

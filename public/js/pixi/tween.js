@@ -1,4 +1,4 @@
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 
 const EASING = {
   linear: t => t,
@@ -20,7 +20,7 @@ const EASING = {
  */
 export function tween(target, props, { duration = 300, ease = 'easeOut', delay: delayMs = 0 } = {}) {
   return new Promise(resolve => {
-    const { app } = getStage();
+    const { app } = getApp();
     if (!app) { resolve(); return; }
 
     const easeFn = EASING[ease] || EASING.easeOut;
@@ -59,7 +59,7 @@ export function tween(target, props, { duration = 300, ease = 'easeOut', delay: 
  */
 export function wait(ms) {
   return new Promise(resolve => {
-    const { app } = getStage();
+    const { app } = getApp();
     if (!app) { resolve(); return; }
     let elapsed = 0;
     const onTick = (ticker) => {
