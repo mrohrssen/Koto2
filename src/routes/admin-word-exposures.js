@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { adminAuth } from './admin.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
+import { parseBatch } from '../../scripts/lib/jpdb-helpers.mjs';
 
 /**
  * Aggregate word exposures across all user word-knowledge files.
@@ -204,15 +205,35 @@ export function saveJpdbCache(cachePath, cache) {
 }
 
 // ---------------------------------------------------------------------------
+// Internal helpers (not exported)
+// ---------------------------------------------------------------------------
+
+async function parseOne(text, apiKey) {
+  const result = await parseBatch([text], apiKey, {
+    vocabularyFields: ['spelling', 'reading', 'meanings'],
+    batchSize: 1,
+  });
+  // Normalize bare numbers to [idx] arrays — parseBatch emits bare numbers
+  // when tokenFields has one entry (the default).
+  const rawTokens = result.tokens[0] || [];
+  const tokens = rawTokens.map(t => Array.isArray(t) ? t : [t]);
+  return { tokens, vocabulary: result.vocabulary };
+}
+
+function stripSlots(text) {
+  return text.replace(/\{[^}]+\}/g, '');
+}
+
+// ---------------------------------------------------------------------------
 // Route factory
 // ---------------------------------------------------------------------------
 
 /**
  * Create admin word exposure routes.
- * @param {{ dataDir: string }} options
+ * @param {{ dataDir: string, framesPath: string }} options
  * @returns {Router}
  */
-export default function createWordExposureRoutes({ dataDir }) {
+export default function createWordExposureRoutes({ dataDir, framesPath }) {
   const router = Router();
   router.use(adminAuth);
 
@@ -222,10 +243,126 @@ export default function createWordExposureRoutes({ dataDir }) {
     return dictionary;
   }
 
+  const jpdbCachePath = join(dataDir, 'jpdb-tokenization-cache.json');
+  const frameCachePath = join(dataDir, 'jpdb-frame-compare-cache.json');
+
   // GET /word-exposures
   router.get('/word-exposures', (req, res) => {
     try {
       res.json(aggregateWordExposures(dataDir, getDictionary()));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // GET /frames
+  router.get('/frames', (req, res) => {
+    try {
+      const frames = JSON.parse(readFileSync(framesPath, 'utf-8'));
+      res.json({ frames: frames.map(f => ({ id: f.id, category: f.category, raw: f.raw })) });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /word-exposures/jpdb-compare
+  router.post('/word-exposures/jpdb-compare', async (req, res) => {
+    const apiKey = process.env.JPDB_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'JPDB_API_KEY not configured' });
+
+    const { words } = req.body;
+    if (!Array.isArray(words) || words.length === 0) {
+      return res.status(400).json({ error: 'words (string[]) required' });
+    }
+
+    try {
+      const cache = loadJpdbCache(jpdbCachePath);
+      const results = {};
+      let cached = 0, fetched = 0;
+
+      for (const word of words) {
+        if (cache[word]) {
+          results[word] = cache[word];
+          cached++;
+          continue;
+        }
+        try {
+          const jpdbResp = await parseOne(word, apiKey);
+          const comparison = buildJpdbComparison(word, jpdbResp);
+          cache[word] = comparison;
+          results[word] = comparison;
+          fetched++;
+        } catch (err) {
+          results[word] = {
+            jpdbSpelling: null,
+            jpdbReading: null,
+            jpdbDefinition: null,
+            isDifferent: true,
+            error: err.message,
+          };
+        }
+      }
+
+      if (fetched > 0) saveJpdbCache(jpdbCachePath, cache);
+      res.json({ results, cached, fetched });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /word-exposures/frame-compare
+  router.post('/word-exposures/frame-compare', async (req, res) => {
+    const apiKey = process.env.JPDB_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'JPDB_API_KEY not configured' });
+
+    const { frameIds } = req.body;
+    if (!Array.isArray(frameIds) || frameIds.length === 0) {
+      return res.status(400).json({ error: 'frameIds (string[]) required' });
+    }
+
+    try {
+      const allFrames = JSON.parse(readFileSync(framesPath, 'utf-8'));
+      const frameMap = new Map(allFrames.map(f => [f.id, f]));
+      const cache = loadJpdbCache(frameCachePath);
+      const results = {};
+      let cached = 0, fetched = 0;
+
+      for (const frameId of frameIds) {
+        const frame = frameMap.get(frameId);
+        if (!frame) {
+          results[frameId] = { error: 'frame not found' };
+          continue;
+        }
+        if (cache[frameId]) {
+          results[frameId] = cache[frameId];
+          cached++;
+          continue;
+        }
+        try {
+          const textForJpdb = stripSlots(frame.raw);
+          if (!textForJpdb.trim()) {
+            results[frameId] = { raw: frame.raw, sudachiTokens: [], jpdbTokens: [], isDifferent: false, diffs: [] };
+            continue;
+          }
+          const jpdbResp = await parseOne(textForJpdb, apiKey);
+          const comparison = buildFrameComparison(frame, jpdbResp);
+          cache[frameId] = comparison;
+          results[frameId] = comparison;
+          fetched++;
+        } catch (err) {
+          results[frameId] = {
+            raw: frame.raw,
+            sudachiTokens: [],
+            jpdbTokens: [],
+            isDifferent: true,
+            diffs: [],
+            error: err.message,
+          };
+        }
+      }
+
+      if (fetched > 0) saveJpdbCache(frameCachePath, cache);
+      res.json({ results, cached, fetched });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
