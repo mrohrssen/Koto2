@@ -209,13 +209,12 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     // class explicitly so the quiz flow (Bug #6) sees the HP bar + name.
     if (side === 'enemy') {
       const scene = getSceneManager()?.currentScene;
+      // __idx_ fallback is legacy default-ctx path; scene-owned ctxs always
+      // carry creature.uid (spawnFormationSprite throws otherwise).
       const uidKey = creature.uid ?? `__idx_${dataIndex}_${creature.id || ''}`;
       const existing = scene?.formation?.creatureSprites?.enemy?.get(uidKey);
       if (existing && !existing._entering) {
-        const infoEl = document.querySelector(
-          `.enemy-formation .formation-slot[data-index="${dataIndex}"] .formation-info`
-        );
-        if (infoEl) infoEl.classList.remove('formation-info--hidden');
+        infoBox.classList.remove('formation-info--hidden');
       }
     }
   });
