@@ -479,6 +479,8 @@ export async function renderBefriendQuiz(quizData, result) {
     if (answerResult.tutorialRetry) {
       const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
 
+      // Same pattern as tutorial step 1 above: pause the enemy formation,
+      // slide Cid in, then restore DOM name pill via showNpcInDisplay.
       const retryScene = getSceneManager()?.currentScene;
       if (retryScene && !retryScene.disposed && retryScene.layers?.npcs) {
         await retryScene.pauseForNpcInterjection({ fadeEnemies: true });
@@ -486,6 +488,7 @@ export async function renderBefriendQuiz(quizData, result) {
       } else {
         console.error('[befriend] tutorial retry: no scene with npcs layer');
       }
+
       showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
 
       await ctx.narration.showNarration(getBefriendWrongNarration(), { speaker: 'Cid' });

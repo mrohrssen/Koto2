@@ -1,4 +1,4 @@
-import { describe, it, mock } from 'node:test';
+import { describe, it, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 // Mock browser-dependent modules before importing befriend.js
@@ -207,6 +207,12 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
     };
   }
 
+  // Reset scene-manager mock state before every test so earlier tests can't
+  // leak mock scenes into later ones (see Task 8 review M3).
+  beforeEach(() => {
+    sceneManagerState.currentScene = null;
+  });
+
   // Helper to build a mock scene that tracks NPC interjection call order.
   function buildMockScene(callLog) {
     const scene = {
@@ -275,8 +281,8 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
 
     // Order expectation:
     //   pauseForNpcInterjection -> showNpcSprite -> hideNpcSprite -> resumeFromNpcInterjection
-    // (narration lines fire between show and hide, but the tutorial-copy mock
-    // returns [] so no narration entries are logged — both orderings are valid.)
+    // Narration entries are filtered out above; this assertion covers only
+    // the scene-API call ordering.
     assert.deepEqual(sceneOps, [
       'pauseForNpcInterjection',
       'showNpcSprite',
