@@ -421,6 +421,32 @@ describe('updateFormationSprite repositioning (IMP-4)', () => {
     assert.ok(sprite.alpha <= 0.3, `alpha clamped: ${sprite.alpha}`);
     assert.strictEqual(sprite.creatureData, dead);
   });
+
+  it('repositions on first update when sprite lacks prior _slotI (legacy-path sprite)', async () => {
+    const ctx = makeSceneCtx();
+    const creature = { uid: 'c1', id: 'x' };
+    const sprite = await spawnFormationSprite(
+      ctx, 'player', creature, 0, { slotI: 0, skipEnter: true }
+    );
+    // Simulate a sprite born on the legacy _showFormation path that never
+    // sets _slotI. The scene-path update must still reposition it on the
+    // first call rather than short-circuiting on a nullish prevSlot.
+    delete sprite._slotI;
+    // Move sprite away from its spawn-time layout so we can detect the
+    // reposition even when the defaulted slotI (= index) matches what a
+    // fresh spawn would pick.
+    sprite.x = -9999;
+    sprite.y = -9999;
+
+    // Default slotI via `opts.slotI ?? index` (0 here). The null-safe guard
+    // triggers on `prevSlot == null` regardless of slotI value, so a
+    // legacy-path sprite always gets positioned on its first scene update.
+    updateFormationSprite(ctx, 'player', creature, 0, { slotI: undefined });
+
+    assert.strictEqual(sprite._slotI, 0, 'slotI recorded');
+    assert.notStrictEqual(sprite.x, -9999, 'x repositioned');
+    assert.notStrictEqual(sprite.y, -9999, 'y repositioned');
+  });
 });
 
 describe('BattleScene._diff lifecycle', () => {

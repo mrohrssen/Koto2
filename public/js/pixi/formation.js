@@ -815,8 +815,9 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
   //     ongoing tweens untouched; only slot rearranges need to re-layout)
   const prevSlot = sprite._slotI;
   sprite._slotI = slotI;
+  const slotChanged = prevSlot == null || prevSlot !== slotI;
   const { app } = getApp();
-  if (app && !sprite._entering && prevSlot !== slotI) {
+  if (app && !sprite._entering && slotChanged) {
     const spriteSize = isBoss ? 120 : 60;
     const sceneArea = document.getElementById('scene-area');
     const sceneRect = sceneArea?.getBoundingClientRect();
