@@ -214,3 +214,66 @@ describe('Scene', () => {
     assert.strictEqual(childDestroys, 1, 'child destroyed exactly once (via parent cascade)');
   });
 });
+
+describe('Scene pause/resume for NPC interjection', () => {
+  it('pauseForNpcInterjection fades enemy formation container to 0', async () => {
+    const app = makeFakeApp();
+    class S extends Scene {
+      constructor() {
+        super('TestPause', app);
+        this.layers = { npcs: { addChild() {}, removeChild() {} } };
+        this.formation = {
+          playerContainer: { alpha: 1, visible: true },
+          enemyContainer:  { alpha: 1, visible: true },
+        };
+      }
+    }
+    const s = new S();
+    s.tween = async (target, props) => { Object.assign(target, props); };
+    await s.pauseForNpcInterjection({ fadeEnemies: true });
+    assert.strictEqual(s.formation.enemyContainer.alpha, 0, 'enemy faded out');
+    assert.strictEqual(s.formation.playerContainer.alpha, 1, 'player untouched');
+    await s.resumeFromNpcInterjection();
+    assert.strictEqual(s.formation.enemyContainer.alpha, 1, 'enemy restored');
+    s.exit();
+  });
+
+  it('pauseForNpcInterjection can also fade allies when requested', async () => {
+    const app = makeFakeApp();
+    class S extends Scene {
+      constructor() {
+        super('TestPauseBoth', app);
+        this.layers = { npcs: { addChild() {}, removeChild() {} } };
+        this.formation = {
+          playerContainer: { alpha: 1 },
+          enemyContainer:  { alpha: 1 },
+        };
+      }
+    }
+    const s = new S();
+    s.tween = async (target, props) => { Object.assign(target, props); };
+    await s.pauseForNpcInterjection({ fadeEnemies: true, fadeAllies: true });
+    assert.strictEqual(s.formation.playerContainer.alpha, 0);
+    assert.strictEqual(s.formation.enemyContainer.alpha, 0);
+    await s.resumeFromNpcInterjection();
+    assert.strictEqual(s.formation.playerContainer.alpha, 1);
+    assert.strictEqual(s.formation.enemyContainer.alpha, 1);
+    s.exit();
+  });
+
+  it('resumeFromNpcInterjection is a no-op if pause was never called', async () => {
+    const app = makeFakeApp();
+    class S extends Scene {
+      constructor() {
+        super('TestResumeNoop', app);
+        this.layers = { npcs: {} };
+        this.formation = { playerContainer: { alpha: 1 }, enemyContainer: { alpha: 1 } };
+      }
+    }
+    const s = new S();
+    s.tween = async () => {};
+    await assert.doesNotReject(() => s.resumeFromNpcInterjection());
+    assert.strictEqual(s.formation.enemyContainer.alpha, 1);
+    s.exit();
+  });
+});

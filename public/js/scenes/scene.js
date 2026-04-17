@@ -250,6 +250,61 @@ export class Scene {
   }
 
   /**
+   * Fade formation sprites out while an NPC takes the stage.
+   *
+   * Mid-combat NPC interjections (e.g. Cid speaks during a befriend tutorial
+   * step) need the enemy sprite to step aside so the NPC can slide in without
+   * overlapping. The scene is the authoritative owner of formation sprite
+   * lifetime, so pause/resume live here rather than as a DOM side-effect
+   * chain through showNpcInDisplay + hideFormation.
+   *
+   * Stores the pre-pause alpha per side so resumeFromNpcInterjection restores
+   * exactly what was changed. Calling pause twice is idempotent (second call
+   * notices the stash exists and keeps it).
+   *
+   * @param {{ fadeEnemies?: boolean, fadeAllies?: boolean, duration?: number }} [opts]
+   * @returns {Promise<void>}
+   */
+  async pauseForNpcInterjection({ fadeEnemies = true, fadeAllies = false, duration = 200 } = {}) {
+    this._guard('pauseForNpcInterjection');
+    if (!this.formation) return;
+    if (!this._interjectionStash) this._interjectionStash = {};
+
+    const fades = [];
+    if (fadeAllies && this.formation.playerContainer && this._interjectionStash.player == null) {
+      this._interjectionStash.player = this.formation.playerContainer.alpha ?? 1;
+      fades.push(this.tween(this.formation.playerContainer, { alpha: 0 }, { duration, ease: 'easeOut' }));
+    }
+    if (fadeEnemies && this.formation.enemyContainer && this._interjectionStash.enemy == null) {
+      this._interjectionStash.enemy = this.formation.enemyContainer.alpha ?? 1;
+      fades.push(this.tween(this.formation.enemyContainer, { alpha: 0 }, { duration, ease: 'easeOut' }));
+    }
+    if (fades.length) await Promise.all(fades);
+  }
+
+  /**
+   * Restore formation sprites previously faded by pauseForNpcInterjection.
+   * Idempotent — no-ops if there's nothing to restore.
+   *
+   * @param {{ duration?: number }} [opts]
+   * @returns {Promise<void>}
+   */
+  async resumeFromNpcInterjection({ duration = 200 } = {}) {
+    this._guard('resumeFromNpcInterjection');
+    if (!this.formation || !this._interjectionStash) return;
+
+    const restores = [];
+    if (this._interjectionStash.player != null && this.formation.playerContainer) {
+      restores.push(this.tween(this.formation.playerContainer, { alpha: this._interjectionStash.player }, { duration, ease: 'easeOut' }));
+    }
+    if (this._interjectionStash.enemy != null && this.formation.enemyContainer) {
+      restores.push(this.tween(this.formation.enemyContainer, { alpha: this._interjectionStash.enemy }, { duration, ease: 'easeOut' }));
+    }
+    this._interjectionStash = null;
+    if (restores.length) await Promise.all(restores);
+  }
+
+  /**
    * Scene-owned tween. The returned Promise resolves normally when the tween
    * completes, OR early if the scene exits before then (the tween is cancelled
    * by registry disposal and resolves without mutating the target further).
