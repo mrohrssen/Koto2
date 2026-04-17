@@ -435,6 +435,11 @@ function _legacyRegisterUpdater(fnDeltaMS) {
  * ongoing visual. Legacy API — resolves sprite via getCreatureSprite and
  * stores state in the module-level `ongoingVfx` Map.
  *
+ * @deprecated Legacy export retained for combat-loop.js / combat-vfx.js
+ *   compatibility. Scheduled for removal in Task 18 after Task 16 migrates
+ *   combat-loop to the scene-ctx API (createStatusVfxContext +
+ *   playStatusAppliedForScene / clearStatusVfxForScene).
+ *
  * @param {'player'|'enemy'} side
  * @param {number} index
  * @param {string} effectType
@@ -443,9 +448,12 @@ export async function playStatusApplied(side, index, effectType) {
   const sprite = getCreatureSprite(side, index);
   if (!sprite) return;
 
-  await _playAppliedOneShot(sprite, effectType);
-
-  // --- Start ongoing visual (if any) ---
+  // --- Start ongoing visual (if any) BEFORE the one-shot ---
+  // Register the ongoing first so a sync clearStatusVfx called right after
+  // this function (see combat-vfx.js apply-then-remainingTurns===0 pattern)
+  // finds the entry. Awaiting _playAppliedOneShot first would introduce a
+  // microtask yield even for synchronous effect bodies, letting the sync
+  // clear run before the ongoing was registered — leaking the VFX.
   const { layers } = getApp();
   if (!layers?.effects) return;
 
@@ -454,14 +462,27 @@ export async function playStatusApplied(side, index, effectType) {
   if (map[effectType]) return;
 
   const entry = _startOngoingInto(sprite, effectType, layers.effects, _legacyRegisterUpdater);
-  if (!entry) return;
+  if (entry) {
+    map[effectType] = entry;
+  }
 
-  map[effectType] = entry;
+  // Fire-and-forget the one-shot visual burst — caller doesn't await, and
+  // awaiting internally would re-introduce the microtask-yield race described
+  // above. Catch to avoid unhandled-rejection warnings.
+  _playAppliedOneShot(sprite, effectType).catch(err => {
+    console.error(`[status-vfx] _playAppliedOneShot threw for ${effectType}:`, err);
+  });
 }
 
 /**
  * Remove ongoing VFX for one effect on one creature. Restores sprite
  * properties (alpha, rotation, tint) as needed.
+ *
+ * @deprecated Legacy export retained for combat-loop.js / combat-vfx.js
+ *   compatibility. Scheduled for removal in Task 18 after Task 16 migrates
+ *   combat-loop to the scene-ctx API (createStatusVfxContext +
+ *   playStatusAppliedForScene / clearStatusVfxForScene).
+ *
  * @param {'player'|'enemy'} side
  * @param {number} index
  * @param {string} effectType
@@ -484,6 +505,11 @@ export function clearStatusVfx(side, index, effectType) {
  * Called at combat end by combat-loop.js to ensure a clean state. Scene-ctx
  * callers do NOT need this — scene.exit() drops all addUpdater registrations
  * via registry.dispose(), and the vfxByUid Map is cleared in beforeExit().
+ *
+ * @deprecated Legacy export retained for combat-loop.js / combat-vfx.js
+ *   compatibility. Scheduled for removal in Task 18 after Task 16 migrates
+ *   combat-loop to the scene-ctx API (createStatusVfxContext +
+ *   playStatusAppliedForScene / clearStatusVfxForScene).
  */
 export function clearAllStatusVfx() {
   for (const [sprite, map] of ongoingVfx) {
@@ -555,32 +581,48 @@ function _sceneRegisterUpdaterFor(scene) {
  */
 export async function playStatusAppliedForScene(ctx, side, uid, effectType) {
   if (!uid) throw new Error('playStatusAppliedForScene: uid is required');
+  // Guard: caller may have exited the scene between the event dispatch and
+  // our invocation. addUpdater / addContainer would throw SceneDisposedError
+  // post-exit; surface a null return instead to mirror the "sprite missing"
+  // path.
+  if (ctx.scene.disposed) return null;
+
   const sprite = ctx.scene.getSprite(uid);
   if (!sprite) return null;
-
-  await _playAppliedOneShot(sprite, effectType);
 
   const effectsLayer = ctx.scene.layers?.effects;
   if (!effectsLayer) return null;
 
-  // Don't double-start: if the scene already tracks this effect for this uid,
-  // leave the existing entry in place.
+  // Don't double-start — align with legacy: return null, not the existing
+  // entry. Callers only use the return value to distinguish "registered new
+  // entry" from "nothing happened".
   let map = ctx.vfxByUid.get(uid);
-  if (map && map[effectType]) return map[effectType];
+  if (map && map[effectType]) return null;
   if (!map) {
     map = {};
     ctx.vfxByUid.set(uid, map);
   }
 
+  // Register the ongoing BEFORE the one-shot to avoid the microtask-yield
+  // race described on the legacy playStatusApplied above: a sync
+  // clearStatusVfxForScene called after us must find the entry.
   const entry = _startOngoingInto(
     sprite,
     effectType,
     effectsLayer,
     _sceneRegisterUpdaterFor(ctx.scene),
   );
-  if (!entry) return null;
+  if (entry) {
+    map[effectType] = entry;
+  }
 
-  map[effectType] = entry;
+  // Fire-and-forget the one-shot visual burst. Awaiting it would re-introduce
+  // the microtask yield this reordering was meant to close. Catch to avoid
+  // unhandled-rejection warnings.
+  _playAppliedOneShot(sprite, effectType).catch(err => {
+    console.error(`[status-vfx] _playAppliedOneShot threw for ${effectType}:`, err);
+  });
+
   return entry;
 }
 
@@ -597,6 +639,10 @@ export async function playStatusAppliedForScene(ctx, side, uid, effectType) {
 // eslint-disable-next-line no-unused-vars
 export function clearStatusVfxForScene(ctx, side, uid, effectType) {
   if (!uid) throw new Error('clearStatusVfxForScene: uid is required');
+  // A disposed scene has already torn down its registry (cancelling ticker
+  // updaters) and cleared vfxByUid in beforeExit. Nothing to do.
+  if (ctx.scene.disposed) return;
+
   const map = ctx.vfxByUid.get(uid);
   if (!map || !map[effectType]) return;
 

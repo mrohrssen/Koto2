@@ -188,3 +188,101 @@ describe('clearStatusVfxForScene uid contract', () => {
     clearStatusVfxForScene(ctx, 'player', 'never-registered', 'sleep');
   });
 });
+
+// --- Helpers shared by behavioral tests below -------------------------------
+
+/**
+ * Minimal "sprite" fixture: has x/y/tint/alpha/rotation plus a parent so the
+ * shared _startOngoingInto path can read sprite.parent?.x in the tick bodies.
+ */
+function makeSprite() {
+  return {
+    x: 0,
+    y: 0,
+    alpha: 1,
+    rotation: 0,
+    tint: 0xFFFFFF,
+    destroyed: false,
+    parent: { x: 0, y: 0 },
+  };
+}
+
+/**
+ * Minimal scene surface sufficient for playStatusAppliedForScene /
+ * clearStatusVfxForScene. Does NOT extend the real Scene class — these tests
+ * exercise the status-vfx contract, not scene lifecycle. addUpdater returns a
+ * real cancel; updaters are stored so tests can inspect them if desired.
+ */
+function makeScene({ disposed = false, sprite = null } = {}) {
+  const updaters = new Set();
+  return {
+    disposed,
+    vfxByUid: new Map(),
+    layers: { effects: new FakeContainer() },
+    getSprite: () => sprite,
+    addUpdater(fn) {
+      updaters.add(fn);
+      return () => updaters.delete(fn);
+    },
+    _updaters: updaters, // test-only introspection
+  };
+}
+
+describe('playStatusAppliedForScene / clearStatusVfxForScene behavioral', () => {
+  it('apply-then-sync-clear removes the effect (B2 regression)', async () => {
+    // The ongoing VFX registration must happen BEFORE the one-shot await so
+    // that a synchronous clearStatusVfxForScene called immediately after
+    // playStatusAppliedForScene finds the entry and removes it.
+    const sprite = makeSprite();
+    const scene = makeScene({ sprite });
+    const ctx = createStatusVfxContext(scene);
+
+    // Kick off the apply. The internal _playAppliedOneShot is fire-and-forget,
+    // but the wrapper returns a Promise resolving to the ongoing entry.
+    const promise = playStatusAppliedForScene(ctx, 'player', 'uid-1', 'stun');
+    // Synchronously clear — pre-fix, the ongoing entry would not yet be in
+    // vfxByUid (because the apply was still suspended on the one-shot await)
+    // and the clear would no-op. Post-fix, the entry is registered before the
+    // fire-and-forget one-shot, so the clear finds and removes it.
+    clearStatusVfxForScene(ctx, 'player', 'uid-1', 'stun');
+
+    // Let any pending microtasks (the .catch handler on the one-shot) settle.
+    await promise;
+
+    // Entry must be gone. Either the inner map is missing entirely (because
+    // deleting the last effect drops the outer map entry) or the stun slot is
+    // undefined.
+    const map = ctx.vfxByUid.get('uid-1');
+    assert.ok(!map || !map.stun, 'stun entry should have been cleared');
+  });
+
+  it('returns null and clear no-ops when scene is disposed (B3)', async () => {
+    const sprite = makeSprite();
+    const scene = makeScene({ disposed: true, sprite });
+    const ctx = createStatusVfxContext(scene);
+
+    const result = await playStatusAppliedForScene(ctx, 'player', 'uid-1', 'stun');
+    assert.equal(result, null, 'disposed scene should make apply return null');
+
+    // Nothing should have been registered.
+    assert.equal(ctx.vfxByUid.has('uid-1'), false);
+
+    // And the clear path should not throw on a disposed scene.
+    assert.doesNotThrow(() => clearStatusVfxForScene(ctx, 'player', 'uid-1', 'stun'));
+  });
+
+  it('double-start on same (uid, effectType) returns null (I-3)', async () => {
+    const sprite = makeSprite();
+    const scene = makeScene({ sprite });
+    const ctx = createStatusVfxContext(scene);
+
+    const first = await playStatusAppliedForScene(ctx, 'player', 'uid-1', 'stun');
+    assert.ok(first !== null, 'first call should register and return the entry');
+
+    const second = await playStatusAppliedForScene(ctx, 'player', 'uid-1', 'stun');
+    assert.equal(second, null, 'second call should return null, not the existing entry');
+
+    // The existing entry should still be present (guard leaves it alone).
+    assert.ok(ctx.vfxByUid.get('uid-1')?.stun, 'existing entry still tracked');
+  });
+});
