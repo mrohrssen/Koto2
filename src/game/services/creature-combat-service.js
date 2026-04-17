@@ -1111,7 +1111,9 @@ export function processBefriendQuizAnswer(answerId, combat, creatureParty, optio
     target.hp = 0;
     target.befriended = true;
 
-    const capturedCopy = { ...target, hp: target.maxHp, mp: target.maxMp, befriended: false };
+    // Fresh uid: the party-bound copy is a new conceptual instance, not an alias
+    // of the defeated enemy shell still sitting in combat.enemies[].
+    const capturedCopy = { ...target, uid: crypto.randomUUID(), hp: target.maxHp, mp: target.maxMp, befriended: false };
 
     if (!creatureParty.pendingCaptures) creatureParty.pendingCaptures = [];
     creatureParty.pendingCaptures.push(capturedCopy);
@@ -1243,8 +1245,10 @@ export function processBefriend(enemies, creatureParty, targetEnemyIndex) {
   captured.hp = 0;
   captured.befriended = true;
 
-  // Reset for when it joins the party after combat
-  const capturedCopy = { ...captured, hp: captured.maxHp, mp: captured.maxMp, befriended: false };
+  // Reset for when it joins the party after combat.
+  // Fresh uid: the party-bound copy is a new conceptual instance, not an alias
+  // of the defeated enemy shell still sitting in combat.enemies[].
+  const capturedCopy = { ...captured, uid: crypto.randomUUID(), hp: captured.maxHp, mp: captured.maxMp, befriended: false };
 
   // Store in pending list — added to party AFTER combat ends
   if (!creatureParty.pendingCaptures) creatureParty.pendingCaptures = [];

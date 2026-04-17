@@ -863,8 +863,10 @@ export class ExplorationService {
     // Deduct credits
     this.gm.run.player.credits -= price;
 
-    // Add creature to party (mark as temporary -- won't enter collection)
-    const newCreature = { ...offered, temporary: true };
+    // Add creature to party (mark as temporary -- won't enter collection).
+    // Fresh uid: the party-bound instance is distinct from the offered display
+    // shell that may still be referenced by dealer.offeredCreatures.
+    const newCreature = { ...offered, uid: crypto.randomUUID(), temporary: true };
     delete newCreature.buyPrice;
 
     // Add to active if space, otherwise reserves

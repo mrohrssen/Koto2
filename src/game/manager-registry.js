@@ -87,6 +87,12 @@ export function getManager(userId) {
           // Lazy uid backfill — old saves lack per-instance uid on creatures.
           backfillCreatureListUids(manager.run?.creatureParty?.active);
           backfillCreatureListUids(manager.run?.creatureParty?.reserves);
+          // Also backfill pendingCaptures (created during combat) and
+          // dealer.offeredCreatures (sitting in shop rooms).
+          backfillCreatureListUids(manager.run?.creatureParty?.pendingCaptures);
+          for (const room of (manager.run?.rooms || [])) {
+            backfillCreatureListUids(room?.dealer?.offeredCreatures);
+          }
         }
         if (data.combat) {
           manager.combat = data.combat;
@@ -99,6 +105,13 @@ export function getManager(userId) {
           }
           // Backfill enemies — they are not shared references, so backfill directly.
           backfillCreatureListUids(manager.combat.enemies);
+        }
+        // Backfill uids on PvP team snapshots from older saves.
+        for (const team of (manager.meta?.pvpTeams || [])) {
+          if (team?.creatureParty) {
+            backfillCreatureListUids(team.creatureParty.active);
+            backfillCreatureListUids(team.creatureParty.reserves);
+          }
         }
       }
       if (needsSave) {

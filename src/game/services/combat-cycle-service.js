@@ -1051,8 +1051,10 @@ export class CombatCycleService {
     captured.hp = 0;
     captured.befriended = true;
 
-    // Create a clean copy for when it joins the party after combat
-    const capturedCopy = { ...captured, hp: captured.maxHp, befriended: false };
+    // Create a clean copy for when it joins the party after combat.
+    // Fresh uid: the party-bound copy is a new conceptual instance, not an alias
+    // of the defeated enemy shell still sitting in combat.enemies[].
+    const capturedCopy = { ...captured, uid: crypto.randomUUID(), hp: captured.maxHp, befriended: false };
     // Release the old creature and queue the captured one for post-combat
     if (releaseFrom === 'active') {
       party.active.splice(releaseIndex, 1);
