@@ -12,8 +12,14 @@ import { getSceneManager } from '../scenes/scene-manager.js';
  */
 function sceneShowNpc(spritePath) {
   const scene = getSceneManager()?.currentScene;
-  if (!scene || scene.disposed || !scene.layers?.npcs) return;
-  // Fire-and-forget — callers of showNpcInDisplay / showNpcTrainer are sync.
+  if (!scene || scene.disposed || !scene.layers?.npcs) {
+    // With HubScene mounted at boot (PR2 fix), there should always be a
+    // scene with an npcs layer. If we hit this branch it's a regression in
+    // ensureSceneForPhase() or a mid-transition window. Fail loudly instead
+    // of rendering an invisible NPC.
+    console.error('[exploration-dom] sceneShowNpc: no active scene with npcs layer — sprite will not render', { spritePath });
+    return;
+  }
   scene.showNpcSprite(spritePath).catch(err => {
     console.warn('[exploration-dom] scene.showNpcSprite failed:', err);
   });

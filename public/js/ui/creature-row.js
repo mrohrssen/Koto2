@@ -164,17 +164,23 @@ export function render(creatures) {
   _creatures = creatures;
   currentActiveCreatures = creatures || [];
   showFormation('player', creatures);
-  // Keep the active scene's player formation in sync. Before Task 17 this
-  // only flowed through the legacy default ctx (via showFormation), which
-  // was unwired after Task 6. Forwarding the diff to scene.syncCreatures
-  // guarantees player PIXI sprites appear/update on any DOM render — both
-  // in non-combat rooms (ExplorationScene) and during combat (BattleScene).
-  //
-  // ExplorationScene.syncCreatures ignores `enemies`; BattleScene preserves
-  // its existing enemy formation by reading lastFormationInput.
-  if (!isSceneManagerInitialized()) return;
+
+  // Scene-aware Pixi sync. With HubScene mounted at boot (PR2 fix), a scene
+  // should always be available once the scene manager finishes init. The
+  // guards below distinguish legitimate pre-init calls (silent) from
+  // regressions (loud) so missing sprites surface as console.error instead of
+  // invisible NPCs/creatures.
+  if (!isSceneManagerInitialized()) return; // scene manager not booted yet
   const scene = getSceneManager().currentScene;
-  if (!scene?.syncCreatures) return;
+  if (!scene) {
+    console.error('[creature-row] no active scene — player sprites will not render. Check ensureSceneForPhase().');
+    return;
+  }
+  // Disposed/exiting scenes cannot receive syncCreatures; quietly skip so a
+  // trailing render() during the brief transition window doesn't throw.
+  if (scene.disposed || scene._exiting) return;
+  if (!scene.syncCreatures) return; // scene type doesn't own creatures (no-op)
+
   const enemies = scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
   scene.syncCreatures({ allies: creatures || [], enemies })
     .catch(err => console.error('[creature-row] scene.syncCreatures failed', err));
