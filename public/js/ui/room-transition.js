@@ -107,7 +107,7 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
 
   const npcName = npcData.nameEn || npcData.name;
   const scene = getSceneManager().currentScene;
-  const hasScene = !!scene && !scene.disposed && !!scene.layers?.npcs;
+  const hasScene = !!scene && !scene.disposed && !scene._exiting && !!scene.layers?.npcs;
 
   // Hide enemy formation during the NPC intro
   const enemyFormation = document.getElementById('enemy-formation');
@@ -147,7 +147,7 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
 
   // Scene may have changed while narration was showing; re-resolve.
   const currentScene = getSceneManager().currentScene;
-  if (currentScene && !currentScene.disposed && currentScene.layers?.npcs && currentScene.npcSprite) {
+  if (currentScene && !currentScene.disposed && !currentScene._exiting && currentScene.layers?.npcs && currentScene.npcSprite) {
     await currentScene.hideNpcSprite({ slideOut: true });
   }
   hideNpcSpriteFn();
@@ -164,7 +164,7 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   const enemyFormation = document.getElementById('enemy-formation');
   const npcName = npcData?.nameEn || npcData?.name;
   const scene = getSceneManager().currentScene;
-  const hasScene = !!scene && !scene.disposed && !!scene.layers?.npcs;
+  const hasScene = !!scene && !scene.disposed && !scene._exiting && !!scene.layers?.npcs;
 
   // Hide both DOM formation (opacity) and Pixi sprites (container.visible)
   if (enemyFormation) enemyFormation.style.opacity = '0';
@@ -183,7 +183,7 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   await skillCallback();
 
   const currentScene = getSceneManager().currentScene;
-  if (currentScene && !currentScene.disposed && currentScene.layers?.npcs && currentScene.npcSprite) {
+  if (currentScene && !currentScene.disposed && !currentScene._exiting && currentScene.layers?.npcs && currentScene.npcSprite) {
     await currentScene.hideNpcSprite({ slideOut: true });
   }
   if (hideNpcSpriteFn) hideNpcSpriteFn();
