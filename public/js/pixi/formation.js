@@ -800,6 +800,69 @@ export function updateFormationSprite(ctx, side, creature, index) {
   }
 }
 
+/**
+ * Scene-aware NPC sprite spawner. Creates a sprite, adds it to
+ * scene.layers.npcs, optionally animates a slide-in via scene.tween
+ * (registry-tracked, auto-cancels on scene exit). Returns the sprite so
+ * the caller can track it; the caller owns teardown via removeNpcSprite.
+ *
+ * @param {Scene} scene - ExplorationScene-like scene with layers.npcs
+ * @param {string} spritePath - URL to load
+ * @param {{ slideIn?: boolean }} [opts]
+ * @returns {Promise<Sprite|null>} spawned sprite, or null if app is unavailable
+ */
+export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}) {
+  if (!scene) throw new Error('spawnNpcSprite: scene is required');
+  if (!scene.layers?.npcs) {
+    throw new Error('spawnNpcSprite: scene.layers.npcs is required');
+  }
+
+  const { app } = getApp();
+  if (!app) return null;
+
+  let texture;
+  try {
+    texture = await Assets.load(spritePath);
+  } catch {
+    texture = Texture.WHITE;
+  }
+
+  const screenW = app.screen.width;
+  const screenH = app.screen.height;
+  const sprite = new Sprite(texture);
+  sprite.anchor.set(0.5);
+  sprite.width = 170;
+  sprite.height = 170;
+  sprite.scale.x *= -1; // Face left (same convention as enemy creatures + legacy _showNpcSprite)
+  sprite.y = screenH * 0.5;
+
+  scene.layers.npcs.addChild(sprite);
+
+  if (slideIn) {
+    sprite.x = screenW + 170;
+    await scene.tween(sprite, { x: screenW * 0.7 }, { duration: 400, ease: 'easeOut' });
+  } else {
+    sprite.x = screenW * 0.7;
+  }
+
+  return sprite;
+}
+
+/**
+ * Scene-aware NPC sprite teardown. Removes from parent and destroys the
+ * PIXI sprite. Synchronous — use hideNpcSprite with slideOut on the legacy
+ * API if you want the animated variant.
+ *
+ * @param {Scene} scene - ExplorationScene-like scene (taken for API consistency;
+ *   currently unused but reserved for a future tween-based slide-out).
+ * @param {Sprite} sprite - The sprite previously returned by spawnNpcSprite
+ */
+export function removeNpcSprite(scene, sprite) {
+  if (!sprite) return;
+  if (sprite.parent) sprite.parent.removeChild(sprite);
+  sprite.destroy({ children: true });
+}
+
 // --- Legacy exports (thin wrappers around _defaultCtx) -----------------------
 
 export function syncPixiStatusLabels(side, index, keys, statStages) {
