@@ -28,7 +28,14 @@ await mock.module('../../../public/js/pixi/status-vfx.js', {
   namedExports: { playStatusApplied: () => {}, clearStatusVfx: () => {} }
 });
 await mock.module('../../../public/js/pixi/formation.js', {
-  namedExports: { getCreatureSprite: () => null, animateKO: () => {}, syncPixiStatusLabels: () => {} }
+  namedExports: {
+    getCreatureSpriteForScene: () => null,
+    animateKOForScene: () => {},
+    syncPixiStatusLabels: () => {},
+  }
+});
+await mock.module('../../../public/js/scenes/scene-manager.js', {
+  namedExports: { getSceneManager: () => ({ currentScene: null }) }
 });
 await mock.module('../../../public/js/ui/combat-dom.js', {
   namedExports: { showFormation: () => {} }

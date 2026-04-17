@@ -13,7 +13,15 @@ import {
   showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup,
   showHealPopup, showPoisonTick
 } from '../pixi/text.js';
-import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, setWalking } from '../pixi/formation.js';
+import {
+  getCreatureSpriteForScene,
+  showActiveGlowForScene,
+  clearActiveGlowForScene,
+  animateKOForScene,
+  animateLevelUpForScene,
+  hideFormation as pixiHideFormation,
+  setWalking,
+} from '../pixi/formation.js';
 import { showFormation } from './combat-dom.js';
 import { setScrollState } from '../pixi/parallax.js';
 import { wait } from '../pixi/tween.js';
@@ -68,7 +76,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
 
   const effectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
 
-  if (atk.damage > 0 && (sourceEl || getCreatureSprite(sourceSide, attackerIndex))) {
+  if (atk.damage > 0 && (sourceEl || getCreatureSpriteForScene(getSceneManager().currentScene, sourceSide, attackerIndex))) {
     playAttackSound(element);
     if (isEnemy) {
       await vfx.enemyCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType, onImpact);
@@ -381,7 +389,7 @@ function promptNextCreature() {
 
   if (currentCreatureIndex >= allies.length) {
     // All creatures have chosen -- execute the turn
-    clearActiveGlow();
+    clearActiveGlowForScene(getSceneManager().currentScene);
     executeCreatureMovesTurn(moveChoices);
     return;
   }
@@ -389,12 +397,12 @@ function promptNextCreature() {
   const creature = allies[currentCreatureIndex];
   clearTargetSelect();
   setActiveLabel(creature);
-  showActiveGlow(currentCreatureIndex);
+  showActiveGlowForScene(getSceneManager().currentScene, currentCreatureIndex);
   showMoves(creature, currentCreatureIndex, befriend.getMoveSelectBefriendOpts(currentCreatureIndex));
 }
 
 function handleMoveSelected(move, creatureIndex) {
-  clearActiveGlow();
+  clearActiveGlowForScene(getSceneManager().currentScene);
   pendingMove = move;
   const state = getGameState();
 
@@ -443,7 +451,7 @@ function handleTargetCancelled() {
   if (creature) {
     clearTargetSelect();
     setActiveLabel(creature);
-    showActiveGlow(currentCreatureIndex);
+    showActiveGlowForScene(getSceneManager().currentScene, currentCreatureIndex);
     showMoves(creature, currentCreatureIndex, befriend.getMoveSelectBefriendOpts(currentCreatureIndex));
   }
 }
@@ -546,7 +554,7 @@ function showXpEvents(xpEvents) {
           // Slight delay so it appears after XP popup
           setTimeout(() => pixiLevelUpPopup(lu.newLevel, vfx.spritePos('player', index)), 400);
           // PixiJS level-up burst + flash
-          setTimeout(() => animateLevelUp('player', index), 400);
+          setTimeout(() => animateLevelUpForScene(getSceneManager().currentScene, 'player', index), 400);
         }
         // Collect move learns for later processing
         if (lu.newMove) {
@@ -837,7 +845,7 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
   const atkTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
 
   const atkEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
-  if (atk.damage > 0 && (creatureSlotEl || getCreatureSprite('player', Math.max(0, atkAttackerIdx)))) {
+  if (atk.damage > 0 && (creatureSlotEl || getCreatureSpriteForScene(getSceneManager().currentScene, 'player', Math.max(0, atkAttackerIdx)))) {
     playAttackSound(atkElement);
     const tIdx = atk.targetIndex;
     const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
@@ -885,7 +893,7 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
       && typeof result.befriendQuiz?.targetIndex === 'number'
       && result.befriendQuiz.targetIndex === atk.targetIndex;
     if (!isBefriendTarget) {
-      animateKO('enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
+      animateKOForScene(getSceneManager().currentScene, 'enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
     }
     if (result.xpEvents) {
       const xpEvent = result.xpEvents.find(ev =>
@@ -1017,7 +1025,7 @@ async function executeCreatureMovesTurn(choices) {
           const e = result.enemies[i];
           if (e && e.hp <= 0 && !e.befriended && !killedEnemies.has(`idx:${i}`)) {
             killedEnemies.add(`idx:${i}`);
-            animateKO('enemy', i);
+            animateKOForScene(getSceneManager().currentScene, 'enemy', i);
           }
         }
       }

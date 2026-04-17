@@ -22,8 +22,9 @@ import {
 import { showBanner } from '../pixi/banners.js';
 import { playStatusApplied, clearStatusVfx } from '../pixi/status-vfx.js';
 import {
-  getCreatureSprite, animateKO, syncPixiStatusLabels
+  getCreatureSpriteForScene, animateKOForScene, syncPixiStatusLabels
 } from '../pixi/formation.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
 import { showFormation } from './combat-dom.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
@@ -73,7 +74,7 @@ export const STATUS_EFFECT_LABELS = {
 // ── pixi adapter functions (no ctx needed) ─────────────────────────────
 
 export function spritePos(side, index) {
-  const sprite = getCreatureSprite(side, index);
+  const sprite = getCreatureSpriteForScene(getSceneManager().currentScene, side, index);
   if (!sprite) return { x: 0, y: 0 };
   return { x: sprite.x, y: sprite.y };
 }
@@ -88,7 +89,7 @@ export async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, 
   const tier = getDamageTier(damage, enemyMaxHp);
   const effects = TIER_EFFECTS[tier];
   const pos = spritePos(targetSide, targetIndex);
-  const sprite = getCreatureSprite(targetSide, targetIndex);
+  const sprite = getCreatureSpriteForScene(getSceneManager().currentScene, targetSide, targetIndex);
   const elemColor = ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral;
   hapticDamageTier(tier);
 
@@ -129,7 +130,7 @@ export async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, 
  * Lunges the attacker, then impacts the target.
  */
 export async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, damage, enemyMaxHp, effectivenessType = 'normal', onImpact) {
-  const attackerSprite = getCreatureSprite('player', attackerIndex);
+  const attackerSprite = getCreatureSpriteForScene(getSceneManager().currentScene, 'player', attackerIndex);
   const fromPos = spritePos('player', attackerIndex);
   const toPos = spritePos('enemy', targetIndex);
   const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: 20, duration: 200 }) : Promise.resolve();
@@ -144,7 +145,7 @@ export async function fireCreatureAttackEffect(attackerIndex, targetIndex, eleme
  * Lunges the enemy attacker, then impacts the player target.
  */
 export async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, damage, playerMaxHp = 0, effectivenessType = 'normal', onImpact) {
-  const attackerSprite = getCreatureSprite('enemy', attackerIndex);
+  const attackerSprite = getCreatureSpriteForScene(getSceneManager().currentScene, 'enemy', attackerIndex);
   const fromPos = spritePos('enemy', attackerIndex);
   const toPos = spritePos('player', targetIndex);
   const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: -20, duration: 200 }) : Promise.resolve();
@@ -199,6 +200,7 @@ export function findEnemyTargetElement(targetId, enemies, enemyIndex = null) {
 export function updateCreatureHpBars(creatures, allyHpMap) {
   if (!creatures) return;
   const slots = document.querySelectorAll('#player-formation .formation-slot');
+  const scene = getSceneManager().currentScene;
   // When allyHpMap is provided (mid-animation), iterate slots and look up by creature ID.
   // This avoids index mismatches when the creatures array has been compacted (dead removed).
   if (allyHpMap) {
@@ -218,7 +220,7 @@ export function updateCreatureHpBars(creatures, allyHpMap) {
         if (entry.hp <= 0) icon.classList.add('ko');
         else icon.classList.remove('ko');
       }
-      const pixiSprite = getCreatureSprite('player', i);
+      const pixiSprite = getCreatureSpriteForScene(scene, 'player', i);
       if (pixiSprite) {
         if (entry.hp <= 0) {
           pixiSprite.alpha = 0.3;
@@ -248,7 +250,7 @@ export function updateCreatureHpBars(creatures, allyHpMap) {
       if (creature.hp <= 0) icon.classList.add('ko');
       else icon.classList.remove('ko');
     }
-    const pixiSprite = getCreatureSprite('player', slotIndex);
+    const pixiSprite = getCreatureSpriteForScene(scene, 'player', slotIndex);
     if (pixiSprite) {
       if (creature.hp <= 0) {
         pixiSprite.alpha = 0.3;
@@ -801,7 +803,7 @@ export async function showKoSwapAnimations(result) {
       if (dyingSlot) {
         dyingSlot.classList.add('creature-dying');
       }
-      animateKO('player', koIndex);
+      animateKOForScene(getSceneManager().currentScene, 'player', koIndex);
       await ctx.delay(600);
     }
 
@@ -849,7 +851,7 @@ export async function showKoSwapAnimations(result) {
         if (dyingSlot) {
           dyingSlot.classList.add('creature-dying');
         }
-        animateKO('player', koIndex);
+        animateKOForScene(getSceneManager().currentScene, 'player', koIndex);
       }
 
       const actionArea = document.getElementById('action-area');

@@ -142,6 +142,11 @@ const {
   spawnFormationSprite,
   removeFormationSprite,
   updateFormationSprite,
+  getCreatureSpriteForScene,
+  animateKOForScene,
+  animateLevelUpForScene,
+  showActiveGlowForScene,
+  clearActiveGlowForScene,
 } = await import('../../../public/js/pixi/formation.js');
 const { BattleScene } = await import('../../../public/js/scenes/battle-scene.js');
 
@@ -501,5 +506,28 @@ describe('BattleScene._diff lifecycle', () => {
       console.error = origErr;
       scene.exit();
     }
+  });
+});
+
+describe('scene-facing sprite-lookup variants null-scene guards', () => {
+  it('getCreatureSpriteForScene returns null when scene is null', () => {
+    assert.strictEqual(getCreatureSpriteForScene(null, 'player', 0), null);
+    assert.strictEqual(getCreatureSpriteForScene(undefined, 'enemy', 2), null);
+    assert.strictEqual(getCreatureSpriteForScene({}, 'player', 0), null);
+  });
+
+  it('animateKOForScene / animateLevelUpForScene resolve to undefined for null scene', async () => {
+    assert.strictEqual(await animateKOForScene(null, 'player', 0), undefined);
+    assert.strictEqual(await animateLevelUpForScene(null, 'enemy', 1), undefined);
+    assert.strictEqual(await animateKOForScene({}, 'player', 0), undefined);
+  });
+
+  it('showActiveGlowForScene / clearActiveGlowForScene no-op when scene.formation is missing', () => {
+    // Should not throw
+    showActiveGlowForScene(null, 0);
+    clearActiveGlowForScene(null);
+    showActiveGlowForScene({}, 1);
+    clearActiveGlowForScene({});
+    assert.ok(true);
   });
 });

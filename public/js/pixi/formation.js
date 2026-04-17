@@ -863,6 +863,69 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
   }
 }
 
+// --- Scene-facing sprite lookup + per-sprite animations ---------------------
+
+/**
+ * Scene-facing sprite lookup. Wraps _getCreatureSprite with the scene's
+ * formation ctx. Returns null when scene or scene.formation is absent
+ * (e.g. during boot, between transitions, or when called outside a battle).
+ *
+ * @param {Scene|null} scene - BattleScene-like scene with a `formation` ctx
+ * @param {'player'|'enemy'} side
+ * @param {number} index - data-array index (uid is looked up via
+ *   scene.formation.lastFormationInput[side].creatures[index])
+ * @returns {Sprite|null}
+ */
+export function getCreatureSpriteForScene(scene, side, index) {
+  if (!scene?.formation) return null;
+  return _getCreatureSprite(scene.formation, side, index);
+}
+
+/**
+ * Scene-facing KO animation. No-op when the scene has no formation ctx.
+ *
+ * @param {Scene|null} scene
+ * @param {'player'|'enemy'} side
+ * @param {number} index
+ */
+export async function animateKOForScene(scene, side, index) {
+  if (!scene?.formation) return;
+  return _animateKO(scene.formation, side, index);
+}
+
+/**
+ * Scene-facing level-up animation. No-op when the scene has no formation ctx.
+ *
+ * @param {Scene|null} scene
+ * @param {'player'|'enemy'} side
+ * @param {number} index
+ */
+export async function animateLevelUpForScene(scene, side, index) {
+  if (!scene?.formation) return;
+  return _animateLevelUp(scene.formation, side, index);
+}
+
+/**
+ * Scene-facing active-creature glow. No-op when the scene has no formation ctx.
+ *
+ * @param {Scene|null} scene
+ * @param {number} index - player-side creature index
+ */
+export function showActiveGlowForScene(scene, index) {
+  if (!scene?.formation) return;
+  return _showActiveGlow(scene.formation, index);
+}
+
+/**
+ * Scene-facing clear-glow. No-op when the scene has no formation ctx.
+ *
+ * @param {Scene|null} scene
+ */
+export function clearActiveGlowForScene(scene) {
+  if (!scene?.formation) return;
+  return _clearActiveGlow(scene.formation);
+}
+
 /**
  * Scene-aware NPC sprite spawner. Creates a sprite, adds it to
  * scene.layers.npcs, optionally animates a slide-in via scene.tween
