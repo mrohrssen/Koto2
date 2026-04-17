@@ -824,9 +824,10 @@ async function playPrologue() {
   actions.clear();
 
   // Guardrail: prologue assumes an active scene with an npcs layer.
-  // ensureSceneForPhase() on the previous updateUI() should have mounted
-  // HubScene already; this is a fast-fail check so a regression in the scene
-  // wire-up surfaces as a console error instead of an invisible Cid.
+  // The boot-time sceneManager.transition(HubScene, ...) in initGame() should
+  // have mounted HubScene already; this is a fast-fail check so a regression
+  // in the boot wire-up surfaces as a console error instead of an invisible
+  // Cid. (playPrologue runs without a preceding updateUI() call.)
   const activeScene = getSceneManager()?.currentScene;
   if (!activeScene || activeScene.disposed || !activeScene.layers?.npcs) {
     console.error('[playPrologue] no scene with npcs layer mounted — Cid will be invisible');
