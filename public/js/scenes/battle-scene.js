@@ -1,6 +1,12 @@
 import { Scene } from './scene.js';
 import { Container } from 'pixi.js';
 import { startParallax, stopParallax } from '../pixi/parallax.js';
+import {
+  createFormationContext,
+  spawnFormationSprite,
+  removeFormationSprite,
+  updateFormationSprite,
+} from '../pixi/formation.js';
 
 export class BattleScene extends Scene {
   constructor(app) {
@@ -20,6 +26,11 @@ export class BattleScene extends Scene {
     this.hpBarsByUid  = new Map();
     this.pillsByUid   = new Map();
     this.vfxByUid     = new Map();
+
+    // Formation context — uid-keyed sprite storage + per-scene state. The
+    // scene's formation tick is intentionally left unwired; Task 16 will
+    // migrate combat-loop callers off the default ctx to this one atomically.
+    this.formation = createFormationContext(this);
   }
 
   async onEnter({ allies = [], enemies = [], parallaxSpeed = 0 } = {}) {
@@ -40,9 +51,48 @@ export class BattleScene extends Scene {
 
   getSprite(uid) { return this.spritesByUid.get(uid); }
 
-  // Stub — implemented in Task 9 once formation.js is stateless
+  /**
+   * Reconcile the scene's formation sprites against the provided creature
+   * arrays. Spawns new sprites for unseen uids, updates in-place for known
+   * uids, and removes sprites whose uid no longer appears.
+   */
   async syncCreatures({ allies = [], enemies = [], initial = false } = {}) {
     this._guard('syncCreatures');
-    // Filled in by Task 9, Step 6
+    await this._diff('player', allies, initial);
+    await this._diff('enemy', enemies, initial);
+  }
+
+  async _diff(side, creatures, _initial) {
+    this._guard('_diff');
+    const incomingUids = new Set(creatures.map(c => c.uid));
+    const sideMap = this.formation.creatureSprites[side];
+
+    // Remove sprites for uids no longer present.
+    for (const uid of [...sideMap.keys()]) {
+      if (!incomingUids.has(uid)) {
+        removeFormationSprite(this.formation, side, uid);
+        this.spritesByUid.delete(uid);
+      }
+    }
+
+    // Spawn or update — spawns are async; run in parallel.
+    const spawnPromises = [];
+    for (let i = 0; i < creatures.length; i++) {
+      const c = creatures[i];
+      if (sideMap.has(c.uid)) {
+        updateFormationSprite(this.formation, side, c, i);
+      } else {
+        spawnPromises.push(
+          spawnFormationSprite(this.formation, side, c, i).then(sprite => {
+            if (sprite) this.spritesByUid.set(c.uid, sprite);
+          })
+        );
+      }
+    }
+    await Promise.all(spawnPromises);
+
+    // Track the last input so legacy-style (side, index) lookups via scene ctx
+    // continue to work. Mirrors the default-ctx shape { creatures, opts }.
+    this.formation.lastFormationInput[side] = { creatures, opts: {} };
   }
 }
