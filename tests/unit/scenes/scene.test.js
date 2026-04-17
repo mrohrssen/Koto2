@@ -40,6 +40,15 @@ describe('Scene', () => {
     assert.strictEqual(called, 4);
   });
 
+  it('update(dt, deltaMS) passes both values to updaters', () => {
+    const s = new Scene('T', makeFakeApp());
+    let dtSeen, msSeen;
+    s.addUpdater((dt, ms) => { dtSeen = dt; msSeen = ms; });
+    s.update(2.0, 33.3);
+    assert.strictEqual(dtSeen, 2.0);
+    assert.strictEqual(msSeen, 33.3);
+  });
+
   it('exit() disposes the registry', () => {
     const s = new Scene('T', makeFakeApp());
     s.addUpdater(() => {});

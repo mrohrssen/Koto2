@@ -48,14 +48,14 @@ export class Scene {
     if (this.onEnter) await this.onEnter(opts);
   }
 
-  update(dt) {
+  update(dt, deltaMS) {
     // Hot path — called every frame. Guard inlined to avoid call overhead.
     if (this.disposed) {
       if (DEV) throw new SceneDisposedError(`Scene '${this.name}': method 'update' called after exit()`);
       return; // production: silently ignore
     }
     for (const fn of this.registry.updaters) {
-      try { fn(dt); } catch (e) {
+      try { fn(dt, deltaMS); } catch (e) {
         console.error(`Scene[${this.name}] updater threw:`, e);
       }
     }
@@ -124,7 +124,9 @@ export class Scene {
    * updaters are the only resource frequently cancelled mid-scene (e.g., when
    * a status effect ends). Other helpers return the resource for chaining.
    *
-   * @param {(dt: number) => void} fn
+   * @param {(dt: number, deltaMS: number) => void} fn
+   *   Receives PIXI's per-frame delta in ticks (dt, 1.0 == 60Hz frame) and in
+   *   milliseconds (deltaMS). Updaters that only need ticks may ignore deltaMS.
    * @returns {() => void} cancel function
    */
   addUpdater(fn) {
