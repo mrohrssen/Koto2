@@ -262,6 +262,11 @@ export class Scene {
    * exactly what was changed. Calling pause twice is idempotent (second call
    * notices the stash exists and keeps it).
    *
+   * Defaults fade the enemy side only — the common case is Cid interjects
+   * while the party stays visible. Opt in to `fadeAllies: true` for symmetric
+   * staging. Only alpha is managed; `visible` flags remain the caller's
+   * responsibility.
+   *
    * @param {{ fadeEnemies?: boolean, fadeAllies?: boolean, duration?: number }} [opts]
    * @returns {Promise<void>}
    */
