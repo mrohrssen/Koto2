@@ -1044,6 +1044,11 @@ git commit -m "feat(scenes): boot SceneManager after PIXI init; gate parallax sc
 
 ### Task 8: BattleScene skeleton
 
+> **Corrections from Task 8 review (2026-04-17) — applied below:**
+> 1. **Use `addContainer(container, app.stage)` single-call form.** Scene's API accepts `app.stage` as an untracked parent and handles mount+track in one step.
+> 2. **Override `onEnter` (async), not `enter`.** Base `Scene.enter` already calls `await this.onEnter(opts)`. Overriding `enter` bypasses that contract and drops the `opts` forward to telemetry/future hooks.
+> 3. **`beforeExit` as prototype method, not arrow-field.** Matches the base class's documented override contract (`scene.js:20`) and preserves `super.beforeExit()` for future subclasses.
+
 **Files:**
 - Create: `public/js/scenes/battle-scene.js`
 
@@ -1058,41 +1063,37 @@ export class BattleScene extends Scene {
   constructor(app) {
     super('BattleScene', app);
 
-    // Sub-containers organized by z-order
+    // Sub-containers organized by z-order. addContainer(c, app.stage) tracks
+    // for disposal AND mounts to the stage in one call.
     this.layers = {
-      formations: this.addContainer(new Container()),
-      effects:    this.addContainer(new Container()),
-      labels:     this.addContainer(new Container()),
-      overlay:    this.addContainer(new Container()),
+      formations: this.addContainer(new Container(), app.stage),
+      effects:    this.addContainer(new Container(), app.stage),
+      labels:     this.addContainer(new Container(), app.stage),
+      overlay:    this.addContainer(new Container(), app.stage),
     };
-    // Mount layers under app.stage so they actually render
-    app.stage.addChild(this.layers.formations);
-    app.stage.addChild(this.layers.effects);
-    app.stage.addChild(this.layers.labels);
-    app.stage.addChild(this.layers.overlay);
 
     // Per-uid lookups
-    this.spritesByUid = new Map();   // uid -> PIXI.Sprite
-    this.hpBarsByUid  = new Map();   // uid -> DOM element
-    this.pillsByUid   = new Map();   // uid -> PIXI.Container
-    this.vfxByUid     = new Map();   // uid -> { stun?: handle, sleep?: ... }
+    this.spritesByUid = new Map();
+    this.hpBarsByUid  = new Map();
+    this.pillsByUid   = new Map();
+    this.vfxByUid     = new Map();
   }
 
-  async enter({ allies = [], enemies = [], parallaxSpeed = 0 } = {}) {
-    super.enter();
+  async onEnter({ allies = [], enemies = [], parallaxSpeed = 0 } = {}) {
     if (parallaxSpeed > 0) startParallax(parallaxSpeed);
     await this.syncCreatures({ allies, enemies, initial: true });
   }
 
-  beforeExit = () => {
+  beforeExit() {
     stopParallax();
-    // Layers will be destroyed by the registry (they are tracked containers).
-    // Lookup maps just go out of scope along with `this`.
+    // Layers are tracked containers; registry disposes them after this hook.
+    // Map.clear() just drops BattleScene's references — destruction is
+    // authoritative via registry.dispose().
     this.spritesByUid.clear();
     this.hpBarsByUid.clear();
     this.pillsByUid.clear();
     this.vfxByUid.clear();
-  };
+  }
 
   getSprite(uid) { return this.spritesByUid.get(uid); }
 
@@ -1525,6 +1526,11 @@ git commit -m "refactor(effects): release in-flight particles on BattleScene exi
 
 ### Task 14: ExplorationScene with NPC sprite ownership
 
+> **Corrections from Task 8 review (2026-04-17) — applied below:**
+> 1. **Use `addContainer(container, app.stage)` single-call form.** Scene's API accepts `app.stage` as an untracked parent and handles mount+track in one step.
+> 2. **Override `onEnter` (async), not `enter`.** Base `Scene.enter` already calls `await this.onEnter(opts)`. Overriding `enter` bypasses that contract and drops the `opts` forward to telemetry/future hooks.
+> 3. **`beforeExit` as prototype method, not arrow-field.** Matches the base class's documented override contract (`scene.js:20`) and preserves `super.beforeExit()` for future subclasses.
+
 **Files:**
 - Create: `public/js/scenes/exploration-scene.js`
 
@@ -1541,13 +1547,10 @@ export class ExplorationScene extends Scene {
     super('ExplorationScene', app);
 
     this.layers = {
-      world:   this.addContainer(new Container()),
-      npcs:    this.addContainer(new Container()),
-      overlay: this.addContainer(new Container()),
+      world:   this.addContainer(new Container(), app.stage),
+      npcs:    this.addContainer(new Container(), app.stage),
+      overlay: this.addContainer(new Container(), app.stage),
     };
-    app.stage.addChild(this.layers.world);
-    app.stage.addChild(this.layers.npcs);
-    app.stage.addChild(this.layers.overlay);
 
     this.roomId = null;
     this.discoveryState = {
@@ -1560,19 +1563,18 @@ export class ExplorationScene extends Scene {
     this.npcSprite = null;
   }
 
-  async enter({ roomId, parallaxSpeed = 0.6 } = {}) {
-    super.enter();
+  async onEnter({ roomId, parallaxSpeed = 0.6 } = {}) {
     this.roomId = roomId;
     if (parallaxSpeed > 0) startParallax(parallaxSpeed);
   }
 
-  beforeExit = () => {
+  beforeExit() {
     stopParallax();
     if (this.npcSprite) {
       removeNpcSprite(this, this.npcSprite);
       this.npcSprite = null;
     }
-  };
+  }
 
   async showNpcSprite(spritePath, opts = {}) {
     this._guard('showNpcSprite');

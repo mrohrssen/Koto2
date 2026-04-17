@@ -6,41 +6,37 @@ export class BattleScene extends Scene {
   constructor(app) {
     super('BattleScene', app);
 
-    // Sub-containers organized by z-order
+    // Sub-containers organized by z-order. addContainer(c, app.stage) tracks
+    // for disposal AND mounts to the stage in one call.
     this.layers = {
-      formations: this.addContainer(new Container()),
-      effects:    this.addContainer(new Container()),
-      labels:     this.addContainer(new Container()),
-      overlay:    this.addContainer(new Container()),
+      formations: this.addContainer(new Container(), app.stage),
+      effects:    this.addContainer(new Container(), app.stage),
+      labels:     this.addContainer(new Container(), app.stage),
+      overlay:    this.addContainer(new Container(), app.stage),
     };
-    // Mount layers under app.stage so they actually render
-    app.stage.addChild(this.layers.formations);
-    app.stage.addChild(this.layers.effects);
-    app.stage.addChild(this.layers.labels);
-    app.stage.addChild(this.layers.overlay);
 
     // Per-uid lookups
-    this.spritesByUid = new Map();   // uid -> PIXI.Sprite
-    this.hpBarsByUid  = new Map();   // uid -> DOM element
-    this.pillsByUid   = new Map();   // uid -> PIXI.Container
-    this.vfxByUid     = new Map();   // uid -> { stun?: handle, sleep?: ... }
+    this.spritesByUid = new Map();
+    this.hpBarsByUid  = new Map();
+    this.pillsByUid   = new Map();
+    this.vfxByUid     = new Map();
   }
 
-  async enter({ allies = [], enemies = [], parallaxSpeed = 0 } = {}) {
-    super.enter();
+  async onEnter({ allies = [], enemies = [], parallaxSpeed = 0 } = {}) {
     if (parallaxSpeed > 0) startParallax(parallaxSpeed);
     await this.syncCreatures({ allies, enemies, initial: true });
   }
 
-  beforeExit = () => {
+  beforeExit() {
     stopParallax();
-    // Layers will be destroyed by the registry (they are tracked containers).
-    // Lookup maps just go out of scope along with `this`.
+    // Layers are tracked containers; registry disposes them after this hook.
+    // Map.clear() just drops BattleScene's references — destruction is
+    // authoritative via registry.dispose().
     this.spritesByUid.clear();
     this.hpBarsByUid.clear();
     this.pillsByUid.clear();
     this.vfxByUid.clear();
-  };
+  }
 
   getSprite(uid) { return this.spritesByUid.get(uid); }
 
