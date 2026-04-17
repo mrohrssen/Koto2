@@ -20,6 +20,7 @@ function sceneShowNpc(spritePath) {
     console.error('[exploration-dom] sceneShowNpc: no active scene with npcs layer — sprite will not render', { spritePath });
     return;
   }
+  document.getElementById('npc-display')?.setAttribute('data-pixi-backed', '1');
   scene.showNpcSprite(spritePath).catch(err => {
     console.warn('[exploration-dom] scene.showNpcSprite failed:', err);
   });

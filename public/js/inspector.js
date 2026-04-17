@@ -7,7 +7,7 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
 
   function getAliveCount(creatures) {
     if (!creatures) return 0;
-    return creatures.filter(c => c.hp > 0 && !c.befriended).length;
+    return creatures.filter(c => c && c.hp > 0 && !c.befriended).length;
   }
 
   function getVisiblePixiCount(sprites) {
@@ -54,7 +54,7 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
         }
       }
 
-      if (domCount !== aliveCount) {
+      if (domCount != null && domCount !== aliveCount) {
         mismatches.push({
           type: 'DOM_GHOST',
           detail: `${side} dom=${domCount} but state=${aliveCount} alive`,
@@ -69,16 +69,16 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
       }
     }
 
-    // NPC layer — every phase that shows an NPC display should have one
-    // matching Pixi sprite on the npcs layer. Silent when the DOM pill isn't
-    // visible; catches "Cid narration showing but no Pixi Cid" on first frame.
+    // Only fires when the DOM pill was set by a Pixi-backed path (sceneShowNpc).
+    // DOM-only paths (NPC enemy in combat, Chippy, shop with skipPixi) do not
+    // trigger this check.
     if (isNpcDisplayVisible()) {
       const npcs = getNpcSprites();
       const npcPixiCount = getVisiblePixiCount(npcs);
       if (npcPixiCount === 0) {
         mismatches.push({
           type: 'DOM_GHOST',
-          detail: 'npc display visible but 0 NPC pixi sprites — scene.showNpcSprite may have silently bailed',
+          detail: 'npc display pixi-backed but 0 NPC pixi sprites — scene.showNpcSprite may have silently bailed',
         });
       }
     }
@@ -101,12 +101,12 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
     if (inCombat) {
       summary.allies = {
         state: getAliveCount(state.combat.allies),
-        dom: countDomBars('player'),
+        dom: countDomBars('player') ?? 0,
         pixi: getVisiblePixiCount(getPixiSprites('player')),
       };
       summary.enemies = {
         state: getAliveCount(state.combat.enemies),
-        dom: countDomBars('enemy'),
+        dom: countDomBars('enemy') ?? 0,
         pixi: getVisiblePixiCount(getPixiSprites('enemy')),
       };
     } else {
@@ -114,7 +114,7 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
       if (activeParty) {
         summary.allies = {
           state: getAliveCount(activeParty),
-          dom: countDomBars('player'),
+          dom: countDomBars('player') ?? 0,
           pixi: getVisiblePixiCount(getPixiSprites('player')),
         };
       }
@@ -132,6 +132,7 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
     const mismatches = [];
     if (!result) return { ok: true, mismatches };
 
+    // Rule: KO'd creatures cannot attack
     for (const atk of [...(result.playerAttacks || []), ...(result.enemyAttacks || [])]) {
       if (atk.attackerHpBefore !== undefined && atk.attackerHpBefore <= 0) {
         mismatches.push({
@@ -141,6 +142,7 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
       }
     }
 
+    // Rule: HP must never go below 0
     for (const creatures of [result.allies || [], result.enemies || []]) {
       for (const c of creatures) {
         if (c.hp < 0) {
@@ -149,6 +151,7 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
       }
     }
 
+    // Rule: Expired effects should be removed
     for (const creatures of [result.allies || [], result.enemies || []]) {
       for (const c of creatures) {
         for (const eff of (c.activeEffects || [])) {

@@ -279,6 +279,7 @@ export function showEnemy(enemy, { isBoss = false } = {}) {
     // NPC enemy -- show in npc-display with info pill
     hideFormation('enemy');
     dom.npcDisplay.classList.add('visible');
+    dom.npcDisplay.removeAttribute('data-pixi-backed');
     dom.enemyName.textContent = enemy.nameEn || enemy.name || 'Enemy';
     dom.enemyInfo.classList.add('visible');
     updateEnemyHP(enemy.hp, enemy.maxHp);
@@ -375,6 +376,7 @@ export function hideEnemy() {
     });
   }
   dom.npcDisplay.classList.remove('visible');
+  dom.npcDisplay.removeAttribute('data-pixi-backed');
   dom.enemySprite.src = '';
   dom.enemySprite.classList.remove('visible');
   dom.enemyInfo.classList.remove('visible');

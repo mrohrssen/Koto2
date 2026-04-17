@@ -1693,7 +1693,7 @@ async function initGame() {
       const container = side === 'player'
         ? document.querySelector('.player-formation')
         : document.querySelector('.enemy-formation');
-      if (!container) return 0;
+      if (!container) return null; // container absent — inspector should skip the comparison
       return container.querySelectorAll('.formation-slot:not(.defeated):not(.befriended) .formation-hp-fill').length;
     },
     getPixiSprites: (side) => {
@@ -1717,7 +1717,9 @@ async function initGame() {
     },
     isNpcDisplayVisible: () => {
       const el = document.getElementById('npc-display');
-      return !!el && el.classList.contains('visible');
+      // Only report visible when the display was Pixi-backed (sceneShowNpc path).
+      // DOM-only paths (NPC enemy, Chippy, skipPixi shop dealer) do not set the flag.
+      return !!el && el.classList.contains('visible') && el.getAttribute('data-pixi-backed') === '1';
     },
   });
 
