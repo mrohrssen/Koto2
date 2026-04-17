@@ -54,7 +54,8 @@ import { createForgeRouter } from './src/routes/forge.js';
 import { createSpriteForgeRouter } from './src/routes/sprite-forge.js';
 import createAdminRoutes from './src/routes/admin.js';
 import createWordExposureRoutes from './src/routes/admin-word-exposures.js';
-import { dataPath } from './src/data-dir.js';
+import { dataPath, getDataDir } from './src/data-dir.js';
+import { configureSrs } from './src/game/internal-srs.js';
 import { loadDialoguePools } from './src/game/dialogue-loader.js';
 import { logger } from './src/logger.js';
 import { TtsCache } from './src/services/tts-cache.js';
@@ -126,6 +127,9 @@ function saveSettings(settings) {
 const staticDir = process.env.NODE_ENV === 'production' && existsSync(join(__dirname, 'dist'))
   ? join(__dirname, 'dist')
   : join(__dirname, 'public');
+
+// Route FSRS deck writes to the persistent data dir (Railway volume in prod).
+configureSrs({ dataDir: getDataDir() });
 
 // Load persisted data
 let settings = loadSettings();
