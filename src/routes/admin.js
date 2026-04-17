@@ -190,16 +190,6 @@ export default function createAdminRoutes({ dataDir }) {
           try { unlinkSync(join(dataDir, file)); deleted.push(file); } catch (e) { /* skip */ }
         }
       }
-      // Check data/ subdirectory (srs, word-knowledge, dialogue caches, creature memory)
-      const dataSub = join(dataDir, 'data');
-      if (existsSync(dataSub)) {
-        for (const file of readdirSync(dataSub)) {
-          if (file.includes(userId)) {
-            try { unlinkSync(join(dataSub, file)); deleted.push(`data/${file}`); } catch (e) { /* skip */ }
-          }
-        }
-      }
-
       // Remove user from users file
       data.users.splice(userIndex, 1);
       saveUsers(data, usersFile);
