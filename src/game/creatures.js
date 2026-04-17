@@ -96,6 +96,7 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
     .filter(Boolean);
 
   return {
+    uid: crypto.randomUUID(),
     id: template.id,
     name: template.name,
     nameEn: template.nameEn,
@@ -455,5 +456,30 @@ export function generateDealerCreatures(collectionIds = []) {
     ...instantiateCreature(template.id),
     buyPrice: getCreatureBuyPrice(template.rarity)
   }));
+}
+
+/**
+ * Assign a uid to a creature object if it doesn't have one.
+ * Idempotent — preserves an existing uid.
+ * @param {object|null} creature
+ * @returns {object|null} the creature (mutated), or the input unchanged for null
+ */
+export function backfillCreatureUid(creature) {
+  if (creature && typeof creature === 'object' && !creature.uid) {
+    creature.uid = crypto.randomUUID();
+  }
+  return creature;
+}
+
+/**
+ * Walk an array of creatures and backfill uids on each. Tolerates non-array
+ * input (undefined/null/object) by silently no-oping — useful for save-load
+ * paths where a property may not exist on older save formats.
+ * @param {*} list
+ */
+export function backfillCreatureListUids(list) {
+  if (!Array.isArray(list)) return list;
+  for (const c of list) backfillCreatureUid(c);
+  return list;
 }
 

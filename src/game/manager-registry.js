@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { GameManager } from './loop.js';
 import { getDataDir } from '../data-dir.js';
-import { CREATURES_BY_ID } from './creatures.js';
+import { CREATURES_BY_ID, backfillCreatureListUids } from './creatures.js';
 import { DEFAULT_COLLECTION } from './services/creature-collection-service.js';
 
 const SAVE_VERSION = 2;
@@ -82,7 +82,12 @@ export function getManager(userId) {
           }
           manager.initMeta(data.meta);
         }
-        if (data.run) manager.run = data.run;
+        if (data.run) {
+          manager.run = data.run;
+          // Lazy uid backfill — old saves lack per-instance uid on creatures.
+          backfillCreatureListUids(manager.run?.creatureParty?.active);
+          backfillCreatureListUids(manager.run?.creatureParty?.reserves);
+        }
         if (data.combat) {
           manager.combat = data.combat;
           // Re-sync combat.allies → run.creatureParty.active after deserialization.
@@ -92,6 +97,8 @@ export function getManager(userId) {
           if (manager.run?.creatureParty?.active && manager.combat.allies) {
             manager.combat.allies = manager.run.creatureParty.active;
           }
+          // Backfill enemies — they are not shared references, so backfill directly.
+          backfillCreatureListUids(manager.combat.enemies);
         }
       }
       if (needsSave) {
