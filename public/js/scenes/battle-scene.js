@@ -8,6 +8,7 @@ import {
   updateFormationSprite,
 } from '../pixi/formation.js';
 import { createStatusVfxContext } from '../pixi/status-vfx.js';
+import { releaseAllInFlight as releaseAllParticles } from '../pixi/effects.js';
 
 export class BattleScene extends Scene {
   constructor(app) {
@@ -47,6 +48,7 @@ export class BattleScene extends Scene {
 
   beforeExit() {
     stopParallax();
+    releaseAllParticles();
     // Layers are tracked containers; registry disposes them after this hook.
     // Map.clear() just drops BattleScene's references — destruction is
     // authoritative via registry.dispose().

@@ -121,6 +121,28 @@ export function flowParticles(from, to, { count = 12, color = 0xFFFFFF, speed = 
 }
 
 /**
+ * Return every currently in-flight particle to the free pool. Called by
+ * BattleScene.beforeExit() to ensure particles don't keep animating past
+ * scene disposal. Particles in this pool are pre-mounted under
+ * particleContainer at init — re-parenting isn't needed; just hide them
+ * and zero out their motion state so subsequent ticks (including mid-exit
+ * ones) are no-ops.
+ */
+export function releaseAllInFlight() {
+  if (!particlePool) return;
+  for (const p of particlePool) {
+    if (!p.visible) continue;
+    p.visible = false;
+    p.alpha = 0;
+    p.life = 0;
+    p.maxLife = 0;
+    p.vx = 0;
+    p.vy = 0;
+    p._age = 0;
+  }
+}
+
+/**
  * Ticker update for particles. Applies element-specific physics.
  * @param {number} deltaMS - Milliseconds since last frame
  */
