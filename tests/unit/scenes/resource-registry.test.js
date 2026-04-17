@@ -131,4 +131,45 @@ describe('ResourceRegistry', () => {
     r.untrackUpdater(fn);
     assert.strictEqual(r.updaters.size, 0);
   });
+
+  it('disposes siblings even if a destroy callback mutates the set', () => {
+    const r = new ResourceRegistry('snapshot-test');
+    const destroyed = [];
+    // First container's destroy callback removes the second from the set.
+    // Without snapshotting, the second would be silently skipped.
+    const second = { destroy: () => destroyed.push('second') };
+    const first = { destroy: () => { destroyed.push('first'); r.containers.delete(second); } };
+    r.trackContainer(first);
+    r.trackContainer(second);
+    r.dispose();
+    assert.deepStrictEqual(destroyed.sort(), ['first', 'second']);
+  });
+
+  it('untrackTimer returns true when the id was tracked, false otherwise', () => {
+    const r = new ResourceRegistry();
+    r.trackTimer(42);
+    assert.strictEqual(r.untrackTimer(42), true);
+    assert.strictEqual(r.untrackTimer(42), false);
+  });
+
+  it('untrackTween returns true/false depending on presence', () => {
+    const r = new ResourceRegistry();
+    const handle = { cancel: () => {} };
+    r.trackTween(handle);
+    assert.strictEqual(r.untrackTween(handle), true);
+    assert.strictEqual(r.untrackTween(handle), false);
+  });
+
+  it('untrackUpdater returns true/false depending on presence', () => {
+    const r = new ResourceRegistry();
+    const fn = () => {};
+    r.trackUpdater(fn);
+    assert.strictEqual(r.untrackUpdater(fn), true);
+    assert.strictEqual(r.untrackUpdater(fn), false);
+  });
+
+  it('accepts an optional name in the constructor and exposes it', () => {
+    const r = new ResourceRegistry('my-scene');
+    assert.strictEqual(r.name, 'my-scene');
+  });
 });

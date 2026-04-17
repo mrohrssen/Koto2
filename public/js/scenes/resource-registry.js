@@ -1,8 +1,20 @@
 // ResourceRegistry: tracks every disposable resource owned by a Scene.
 // Disposal runs in a fixed order to avoid race conditions.
 
+// Dev-mode leak detector: if a ResourceRegistry is GC'd without dispose(),
+// every resource it owned was leaked. Log loudly so developers see it.
+const _isDev = (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production')
+  || (typeof globalThis !== 'undefined' && globalThis.__DEV__ !== false);
+
+const _leakDetector = (typeof FinalizationRegistry !== 'undefined' && _isDev)
+  ? new FinalizationRegistry((label) => {
+      console.warn(`ResourceRegistry "${label}" was garbage-collected without dispose() — owned resources leaked.`);
+    })
+  : null;
+
 export class ResourceRegistry {
-  constructor() {
+  constructor(name = 'unnamed') {
+    this.name = name;
     this.containers = new Set();
     this.updaters = new Set();
     this.domNodes = new Set();
@@ -11,6 +23,7 @@ export class ResourceRegistry {
     this.tweens = new Set();
     this.pendingAsync = new Set();
     this.disposed = false;
+    if (_leakDetector) _leakDetector.register(this, name, this);
   }
 
   size() {
@@ -39,36 +52,43 @@ export class ResourceRegistry {
   trackTween(handle) { this._guard(); this.tweens.add(handle); return handle; }
   trackAsync(controller) { this._guard(); this.pendingAsync.add(controller); return controller; }
 
-  untrackTimer(id)  { this.timers.delete(id); }
-  untrackTween(h)   { this.tweens.delete(h); }
-  untrackUpdater(f) { this.updaters.delete(f); }
+  untrackTimer(id)  { return this.timers.delete(id); }
+  untrackTween(h)   { return this.tweens.delete(h); }
+  untrackUpdater(f) { return this.updaters.delete(f); }
 
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
+    if (_leakDetector) _leakDetector.unregister(this);
 
-    for (const c of this.pendingAsync) { try { c.abort(); } catch (e) { console.error('ResourceRegistry: async abort failed', e); } }
+    for (const c of Array.from(this.pendingAsync)) {
+      try { c.abort(); } catch (e) { console.error('ResourceRegistry: async abort failed', e); }
+    }
     this.pendingAsync.clear();
 
-    for (const id of this.timers) {
+    for (const id of Array.from(this.timers)) {
       try { clearTimeout(id); clearInterval(id); } catch (e) { console.error('ResourceRegistry: timer clear failed', e); }
     }
     this.timers.clear();
 
     this.updaters.clear();
 
-    for (const t of this.tweens) { try { t.cancel(); } catch (e) { console.error('ResourceRegistry: tween cancel failed', e); } }
+    for (const t of Array.from(this.tweens)) {
+      try { t.cancel(); } catch (e) { console.error('ResourceRegistry: tween cancel failed', e); }
+    }
     this.tweens.clear();
 
-    for (const { target, event, handler, options } of this.listeners) {
+    for (const { target, event, handler, options } of [...this.listeners]) {
       try { target.removeEventListener(event, handler, options); } catch (e) { console.error('ResourceRegistry: listener removal failed', e); }
     }
     this.listeners.length = 0;
 
-    for (const node of this.domNodes) { try { node.remove(); } catch (e) { console.error('ResourceRegistry: dom remove failed', e); } }
+    for (const node of Array.from(this.domNodes)) {
+      try { node.remove(); } catch (e) { console.error('ResourceRegistry: dom remove failed', e); }
+    }
     this.domNodes.clear();
 
-    for (const c of this.containers) {
+    for (const c of Array.from(this.containers)) {
       try { c.destroy({ children: true }); } catch (e) { console.error('ResourceRegistry: container destroy failed', e); }
     }
     this.containers.clear();
