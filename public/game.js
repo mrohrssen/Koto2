@@ -133,6 +133,8 @@ import { getCreatureSpriteForScene } from './js/pixi/formation.js';
 import { updateParticles, isFrozen } from './js/pixi/effects.js';
 import { SceneManager, setSceneManager, isSceneManagerInitialized, getSceneManager } from './js/scenes/scene-manager.js';
 import { BattleScene } from './js/scenes/battle-scene.js';
+import { ExplorationScene } from './js/scenes/exploration-scene.js';
+import { HubScene } from './js/scenes/hub-scene.js';
 
 // API imports - these are the server communication functions
 import {
@@ -331,6 +333,63 @@ async function syncBattleStageParallax() {
   syncParallaxScrollWithPhase();
 }
 
+/**
+ * Guarantees every visible phase has an active scene. Called from
+ * updateScene() on every updateUI(). Idempotent — skips the transition if
+ * the correct scene class is already mounted. Throws are caught and logged
+ * so a transient scene bug can't hang UI updates.
+ *
+ * Phase → scene mapping:
+ *   no_save, hub, area_selection, skillMaster, whackAMole, shrine, quiz,
+ *   wordDiscovery, speedReviewRoom, dealer, friendlyNpc, npc_skill_selection,
+ *   npc_dialogue                → HubScene (or the existing ExplorationScene
+ *                                 if we're mid-room). HubScene is used when
+ *                                 no run is active; ExplorationScene takes
+ *                                 over once rooms begin.
+ *   exploring, room, room_encounter, post_combat_shop → ExplorationScene (mounted by room-transition.js)
+ *   combat                      → BattleScene (mounted by combat-loop.js / startEncounter)
+ */
+async function ensureSceneForPhase(phase) {
+  const mgr = getSceneManager();
+  if (!mgr || mgr.transitioning) return;
+
+  const current = mgr.currentScene;
+  const hubPhases = new Set([
+    'no_save', 'hub', 'area_selection', 'skillMaster',
+  ]);
+
+  // Phases that mount their own scenes elsewhere — don't clobber them here.
+  const skipPhases = new Set([
+    'combat', 'exploring', 'room', 'room_encounter', 'post_combat_shop',
+    'friendlyNpc', 'whackAMole', 'dealer', 'shrine', 'quiz',
+    'wordDiscovery', 'speedReviewRoom', 'npc_skill_selection', 'npc_dialogue',
+  ]);
+
+  if (hubPhases.has(phase) && !(current instanceof HubScene)) {
+    try {
+      const allies = gameState.run?.creatureParty?.active ?? [];
+      await mgr.transition(HubScene, { allies });
+    } catch (err) {
+      console.error('[ensureSceneForPhase] HubScene transition failed', err);
+    }
+    return;
+  }
+
+  // For skipPhases, the relevant scene transition is owned by the code path
+  // that drives the phase (e.g. combat-loop.startCombatLoop, room-transition).
+  // If a user somehow lands in one of these phases with no scene mounted
+  // (e.g. page refresh into a stale friendlyNpc state), fall back to HubScene
+  // so at minimum the scene-routed calls don't silently bail.
+  if (skipPhases.has(phase) && !current) {
+    try {
+      const allies = gameState.run?.creatureParty?.active ?? [];
+      await mgr.transition(HubScene, { allies });
+    } catch (err) {
+      console.error('[ensureSceneForPhase] fallback HubScene transition failed', err);
+    }
+  }
+}
+
 // Guard flag: when true, updateUI() will NOT call narrationBox.forceHide().
 // Set during NPC battle intro so the greeting narration isn't killed by stray updateUI() calls.
 let sceneTransitionActive = false;
@@ -432,6 +491,11 @@ function updateScene() {
   if (gameState.phase !== 'npc_dialogue') npcDialogueRecoveryDone = false;
   if (gameState.phase !== 'combat') combatRecoveryDone = false;
   if (gameState.phase !== 'post_combat_shop') postCombatShopRecoveryDone = false;
+
+  // Guarantee an active scene exists for the current phase. Fire-and-forget:
+  // the transition resolves on its own; subsequent updateScene calls are
+  // idempotent so the eventual consistency is fine for DOM-side work.
+  void ensureSceneForPhase(gameState.phase);
 
   if (gameState.phase === 'combat') {
     // Creature combat uses enemies[] array; legacy uses single enemy
@@ -1661,6 +1725,15 @@ async function initGame() {
     });
     sceneManager.init();
     setSceneManager(sceneManager);
+
+    // Mount HubScene at boot so phases with no run (no_save, hub) render
+    // correctly from the first frame. Later phases re-use this scene or
+    // transition to ExplorationScene / BattleScene as they activate.
+    try {
+      await sceneManager.transition(HubScene, { allies: [] });
+    } catch (err) {
+      console.error('[boot] HubScene initial transition failed', err);
+    }
   }
   // If already initialized (e.g., logout→login), intentionally do nothing.
 
