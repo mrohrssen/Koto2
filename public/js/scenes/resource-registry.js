@@ -1,6 +1,8 @@
 // ResourceRegistry: tracks every disposable resource owned by a Scene.
 // Disposal runs in a fixed order to avoid race conditions.
 
+import { SceneDisposedError } from './scene-errors.js';
+
 // Dev-mode leak detector: if a ResourceRegistry is GC'd without dispose(),
 // every resource it owned was leaked. Log loudly so developers see it.
 const _isDev = (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production')
@@ -37,7 +39,7 @@ export class ResourceRegistry {
   }
 
   _guard() {
-    if (this.disposed) throw new Error('ResourceRegistry: registry already disposed');
+    if (this.disposed) throw new SceneDisposedError('ResourceRegistry: registry already disposed');
   }
 
   trackContainer(c)  { this._guard(); this.containers.add(c); return c; }
@@ -88,7 +90,18 @@ export class ResourceRegistry {
     }
     this.domNodes.clear();
 
-    for (const c of Array.from(this.containers)) {
+    const containersSnapshot = Array.from(this.containers);
+    const containersSet = this.containers; // capture for has() lookup; still pre-clear
+    for (const c of containersSnapshot) {
+      // Skip if any ancestor in the PIXI parent chain is also tracked — that
+      // ancestor's destroy({children: true}) cascade will handle this container.
+      let cur = c.parent;
+      let coveredByAncestor = false;
+      while (cur) {
+        if (containersSet.has(cur)) { coveredByAncestor = true; break; }
+        cur = cur.parent;
+      }
+      if (coveredByAncestor) continue;
       try { c.destroy({ children: true }); } catch (e) { console.error('ResourceRegistry: container destroy failed', e); }
     }
     this.containers.clear();

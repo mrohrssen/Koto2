@@ -135,4 +135,73 @@ describe('Scene', () => {
     try { s.update(1); } finally { console.error = origErr; }
     assert.deepStrictEqual(calls, ['a', 'b', 'c']);
   });
+
+  it('exit() in beforeExit() does not stack-overflow (Attack 9b)', () => {
+    const fakeApp = makeFakeApp();
+    let beforeExitCalls = 0;
+    class Sub extends Scene {
+      constructor() { super('Sub', fakeApp); }
+      beforeExit() {
+        beforeExitCalls++;
+        if (beforeExitCalls < 5) this.exit(); // would overflow without fix
+      }
+    }
+    const s = new Sub();
+    // Should complete without throwing, even though beforeExit recurses
+    s.exit();
+    assert.strictEqual(s.disposed, true);
+    assert.strictEqual(beforeExitCalls, 1, 'beforeExit should run exactly once');
+  });
+
+  it('beforeExit returning a Promise logs a warning (Attack 9)', () => {
+    const fakeApp = makeFakeApp();
+    let warned = false;
+    const origErr = console.error;
+    console.error = (msg) => { if (typeof msg === 'string' && msg.includes('must be synchronous')) warned = true; };
+    class Sub extends Scene {
+      constructor() { super('Sub', fakeApp); }
+      beforeExit() { return Promise.resolve(); } // async return — should warn
+    }
+    try {
+      const s = new Sub();
+      s.exit();
+    } finally { console.error = origErr; }
+    assert.strictEqual(warned, true, 'expected warning about async beforeExit');
+  });
+
+  it('addListener does not leak side effect if registry tracking fails (Attack 15)', () => {
+    const s = new Scene('T', makeFakeApp());
+    let addedListener = null;
+    let removedListener = null;
+    const target = {
+      addEventListener: (e, h, o) => { addedListener = h; throw new Error('side-effect failed'); },
+      removeEventListener: (e, h, o) => { removedListener = h; },
+    };
+    const handler = () => {};
+    assert.throws(() => s.addListener(target, 'click', handler), /side-effect failed/);
+    // Listener was attempted but threw; registry should NOT contain it
+    assert.strictEqual(s.registry.listeners.length, 0);
+  });
+
+  it('addContainer survives reparenting after tracking (Attack 4)', () => {
+    const fakeApp = makeFakeApp();
+    const s = new Scene('T', fakeApp);
+    let parentDestroys = 0;
+    let childDestroys = 0;
+    // Mock PIXI containers with .parent property (set by addChild)
+    const child = { parent: null, children: [], destroy() { childDestroys++; }, addChild() {} };
+    const parent = {
+      parent: null, children: [],
+      destroy({ children }) { parentDestroys++; if (children) for (const c of this.children) c.destroy(); },
+      addChild(c) { this.children.push(c); c.parent = this; },
+    };
+    s.addContainer(child);  // child tracked
+    s.addContainer(parent); // parent tracked
+    parent.addChild(child); // manual reparent — child now under parent in PIXI tree
+    s.exit();
+    // With the fix: parent.destroy({children:true}) destroys child once (cascade);
+    // registry walks child's parent chain, sees parent is tracked, skips its own destroy.
+    assert.strictEqual(parentDestroys, 1, 'parent destroyed once');
+    assert.strictEqual(childDestroys, 1, 'child destroyed exactly once (via parent cascade)');
+  });
 });

@@ -172,4 +172,31 @@ describe('ResourceRegistry', () => {
     const r = new ResourceRegistry('my-scene');
     assert.strictEqual(r.name, 'my-scene');
   });
+
+  it('_guard throws SceneDisposedError-named error after dispose', () => {
+    const r = new ResourceRegistry();
+    r.dispose();
+    try { r.trackContainer({}); assert.fail('expected throw'); }
+    catch (e) {
+      assert.strictEqual(e.name, 'SceneDisposedError');
+      assert.match(e.message, /disposed/);
+    }
+  });
+
+  it('skips destroying a container whose ancestor is also tracked', () => {
+    const r = new ResourceRegistry();
+    let outerDestroys = 0;
+    let innerDestroys = 0;
+    const inner = { parent: null, children: [], destroy() { innerDestroys++; } };
+    const outer = {
+      parent: null, children: [inner],
+      destroy({ children }) { outerDestroys++; if (children) for (const c of this.children) c.destroy(); },
+    };
+    inner.parent = outer;
+    r.trackContainer(outer);
+    r.trackContainer(inner); // tracked, but its ancestor outer is also tracked
+    r.dispose();
+    assert.strictEqual(outerDestroys, 1);
+    assert.strictEqual(innerDestroys, 1, 'inner destroyed exactly once via outer cascade');
+  });
 });
