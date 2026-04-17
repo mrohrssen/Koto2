@@ -3,12 +3,14 @@ import path from 'path';
 import { getDeckCards, createCard } from '../internal-srs.js';
 import { State } from 'ts-fsrs';
 import { loadWordDictionary } from '../word-dictionary.js';
+import { getDataDir } from '../../data-dir.js';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+// Dictionary lives in the repo (committed) — stays on the container FS.
+const DICT_DIR = path.join(process.cwd(), 'data');
 
 let _wordDict = null;
 function getWordDict() {
-  if (!_wordDict) _wordDict = loadWordDictionary(DATA_DIR);
+  if (!_wordDict) _wordDict = loadWordDictionary(DICT_DIR);
   return _wordDict;
 }
 
@@ -128,7 +130,7 @@ export function seedKnownWords(wk, words) {
 }
 
 export function loadWordKnowledge(userId) {
-  const filePath = path.join(DATA_DIR, `word-knowledge-${userId}.json`);
+  const filePath = path.join(getDataDir(), `word-knowledge-${userId}.json`);
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
   } catch {
@@ -137,7 +139,7 @@ export function loadWordKnowledge(userId) {
 }
 
 export function saveWordKnowledge(wk) {
-  const filePath = path.join(DATA_DIR, `word-knowledge-${wk.userId}.json`);
+  const filePath = path.join(getDataDir(), `word-knowledge-${wk.userId}.json`);
   fs.writeFileSync(filePath, JSON.stringify(wk, null, 2));
 }
 
