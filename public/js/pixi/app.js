@@ -1,7 +1,7 @@
 import { Application, Container } from 'pixi.js';
 import { resizeParallax } from './parallax.js';
 import { resizeFormations } from './formation.js';
-import { initParticles, updateParticles, initFlash, initVignette } from './effects.js';
+import { initParticles, initFlash, initVignette } from './effects.js';
 
 let app = null;
 let layers = {};
@@ -80,10 +80,8 @@ export async function initApp() {
   });
   resizeObserver.observe(sceneArea);
 
-  // Particle pool ticker — long-lived effects pool (moves in Task 9).
-  app.ticker.add((ticker) => {
-    updateParticles(ticker.deltaMS);
-  });
+  // Per-frame ticker is owned by SceneManager (wired in public/game.js after initApp()).
+  // It drives updateParallax and updateParticles via configure({ parallax: { update } }).
 
   console.log('[PixiApp] Init complete');
   } catch (err) {

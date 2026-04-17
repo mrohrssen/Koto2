@@ -13,6 +13,12 @@ const ACCEL_RATE = 2.0; // seconds to reach full speed
 const DECEL_RATE = 1.5; // seconds to stop
 let loadRequestId = 0;
 
+// Scene-level on/off gate: parallax does nothing until a scene calls startParallax().
+// `_scrollSpeed` is a per-scene multiplier on BASE_SCROLL_SPEED (default 1.0).
+// This sits on top of the existing scrollState/currentSpeed state machine.
+let _scrollEnabled = false;
+let _scrollSpeed = 0;
+
 /**
  * Load parallax layers for an area. Falls back to solid color if assets missing.
  * @param {string} areaId - e.g. 'starter_meadow'
@@ -83,9 +89,13 @@ export function isParallaxMoving() {
 
 /**
  * Ticker update — call every frame. Scrolls layers based on current state.
+ * Gated by the scene-level `_scrollEnabled` flag: when no scene has enabled
+ * parallax, this is a no-op regardless of the internal scrollState.
  * @param {number} delta - Frame delta time from PixiJS ticker (in frames at 60fps)
  */
 export function updateParallax(delta) {
+  if (!_scrollEnabled) return;
+
   const dt = delta / 60; // convert to seconds
 
   // Update speed based on state
@@ -101,18 +111,36 @@ export function updateParallax(delta) {
   if (scrollState === 'encounter' || scrollState === 'stopped') {
     const skyTs = tilingSprites[SKY_LAYER_INDEX];
     if (skyTs) {
-      skyTs.tilePosition.x -= BASE_SCROLL_SPEED * dt * skyTs.layerSpeed;
+      skyTs.tilePosition.x -= BASE_SCROLL_SPEED * _scrollSpeed * dt * skyTs.layerSpeed;
     }
     return;
   }
 
   if (currentSpeed <= 0) return;
 
-  const pxPerFrame = BASE_SCROLL_SPEED * dt * currentSpeed;
+  const pxPerFrame = BASE_SCROLL_SPEED * _scrollSpeed * dt * currentSpeed;
 
   for (const ts of tilingSprites) {
     ts.tilePosition.x -= pxPerFrame * ts.layerSpeed;
   }
+}
+
+/**
+ * Enable the scene-level parallax gate. Scenes call this on enter.
+ * @param {number} speed - Per-scene speed multiplier on BASE_SCROLL_SPEED (default 1.0).
+ */
+export function startParallax(speed = 1.0) {
+  _scrollEnabled = true;
+  _scrollSpeed = speed;
+}
+
+/**
+ * Disable the scene-level parallax gate. Scenes call this on exit.
+ * After this, `updateParallax()` is a no-op until `startParallax()` is called again.
+ */
+export function stopParallax() {
+  _scrollEnabled = false;
+  _scrollSpeed = 0;
 }
 
 /**

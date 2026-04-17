@@ -125,9 +125,11 @@ import { createIntentLog } from './js/intent-log.js';
 import { createInspector } from './js/inspector.js';
 
 // PixiJS battle stage imports
-import { initApp } from './js/pixi/app.js';
-import { loadParallax, setScrollState } from './js/pixi/parallax.js';
+import { initApp, getApp } from './js/pixi/app.js';
+import { loadParallax, setScrollState, updateParallax } from './js/pixi/parallax.js';
 import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite, getCreatureSprite } from './js/pixi/formation.js';
+import { updateParticles, isFrozen } from './js/pixi/effects.js';
+import { SceneManager, setSceneManager } from './js/scenes/scene-manager.js';
 
 // API imports - these are the server communication functions
 import {
@@ -1595,6 +1597,26 @@ async function initGame() {
 
   // Initialize PixiJS battle stage (canvas overlay for combat animations)
   await initApp();
+
+  // Wire the SceneManager after PIXI is up. It owns the central ticker —
+  // updateParallax receives ticker dt (deltaTime in frame-units); updateParticles
+  // receives deltaMS. isFrozen() gates parallax only (matches pre-Task-6 semantics
+  // where hitStop() freezes scroll motion but particles keep ticking). Formation
+  // freeze will return in Task 9 via BattleScene.update.
+  const { app: pixiApp } = getApp();
+  if (pixiApp) {
+    const sceneManager = new SceneManager(pixiApp);
+    sceneManager.configure({
+      parallax: {
+        update: (dt, deltaMS) => {
+          if (!isFrozen()) updateParallax(dt);
+          updateParticles(deltaMS);
+        },
+      },
+    });
+    sceneManager.init();
+    setSceneManager(sceneManager);
+  }
 
   // A fresh auth session should never inherit transient combat UI from the
   // previous user/session (e.g. stale combatActive or room transition flags).
