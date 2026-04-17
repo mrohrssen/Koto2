@@ -21,11 +21,13 @@ export class BattleScene extends Scene {
     this.layers = {
       formations: this.addContainer(new Container(), app.stage),
       effects:    this.addContainer(new Container(), app.stage),
-      labels:     this.addContainer(new Container(), app.stage),
-      // NPC sprites live above formations so mid-combat NPC intros (e.g.
-      // playNpcSkillAnimation) render on top of creatures. Base Scene owns
-      // the showNpcSprite/hideNpcSprite API that targets this layer.
+      // NPC sprites live above formations/effects so mid-combat NPC intros
+      // (e.g. playNpcSkillAnimation) render on top of creatures. Kept BELOW
+      // labels so HP/status pill labels stay visible when an NPC is shown
+      // while enemy creatures remain on screen. Base Scene owns the
+      // showNpcSprite/hideNpcSprite API that targets this layer.
       npcs:       this.addContainer(new Container(), app.stage),
+      labels:     this.addContainer(new Container(), app.stage),
       overlay:    this.addContainer(new Container(), app.stage),
     };
 
