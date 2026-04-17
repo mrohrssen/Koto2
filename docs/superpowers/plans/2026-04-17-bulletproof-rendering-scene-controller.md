@@ -946,6 +946,10 @@ git commit -m "refactor(pixi): rename battle-stage to app and remove main ticker
 
 ### Task 7: Wire SceneManager into app boot and own the central ticker
 
+> **Corrections from Task 6 adversarial review (2026-04-17) — read before coding:**
+> 1. **deltaMS vs dt:** `updateParticles` takes `deltaMS` (milliseconds per frame, ~16.67), NOT `dt` (ticker.deltaTime, ~1.0 per frame). Passing `dt` would tick particles at 1/16 speed. SceneManager's ticker already calls `this._parallax.update(dt, deltaMS)` — use the second argument for particles.
+> 2. **Preserve hit-stop freeze:** The old `app.js` ticker gated `updateParallax`+`updateFormations` on `isFrozen()` so `hitStop()` could pause motion during combat impacts. Task 6 removed that gate. Reintroduce it here around `updateParallax(dt)` only — particles were always unguarded in the original and should stay unguarded. Formation freeze will be restored in Task 9 via `BattleScene.update`. Import `isFrozen` from `./js/pixi/effects.js`.
+
 **Files:**
 - Modify: `public/game.js` (around the PIXI bootstrap)
 - Modify: `public/js/pixi/parallax.js`
@@ -966,13 +970,21 @@ In `public/game.js`, immediately after the `await initApp()` (or equivalent):
 ```javascript
 import { SceneManager, setSceneManager } from './js/scenes/scene-manager.js';
 import { updateParallax } from './js/pixi/parallax.js';
-import { updateParticles } from './js/pixi/effects.js';
+import { updateParticles, isFrozen } from './js/pixi/effects.js';
 
 // ...inside the async boot function, after initApp:
 const { app } = getApp();
 const sceneManager = new SceneManager(app);
 sceneManager.configure({
-  parallax: { update: (dt) => { updateParallax(dt); updateParticles(dt); } }
+  parallax: {
+    // SceneManager calls update(dt, deltaMS). updateParallax takes dt (deltaTime);
+    // updateParticles takes deltaMS. Hit-stop freezes parallax but not particles,
+    // matching the pre-Task-6 tick semantics.
+    update: (dt, deltaMS) => {
+      if (!isFrozen()) updateParallax(dt);
+      updateParticles(deltaMS);
+    }
+  }
 });
 sceneManager.init();
 setSceneManager(sceneManager);
