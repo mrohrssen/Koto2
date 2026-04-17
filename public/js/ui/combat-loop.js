@@ -633,11 +633,17 @@ export async function startCombatLoop(opts = {}) {
   // which is already gated off while no scene has startParallax()'d).
   const mgr = getSceneManager();
   const gs = getGameState();
-  await mgr.transition(BattleScene, {
-    allies:  gs.combat?.allies  ?? [],
-    enemies: gs.combat?.enemies ?? [],
-    parallaxSpeed: 0,
-  });
+  try {
+    await mgr.transition(BattleScene, {
+      allies:  gs.combat?.allies  ?? [],
+      enemies: gs.combat?.enemies ?? [],
+      parallaxSpeed: 0,
+    });
+  } catch (err) {
+    combatActive = false;
+    console.error('[CombatLoop] BattleScene transition failed, aborting combat start', err);
+    return;
+  }
 
   // On recovery (page reload), re-render the scene before showing moves.
   // updateScene() already rendered enemy sprites, just need the move UI.
@@ -1538,7 +1544,11 @@ export async function stopCombatLoop(result) {
   // property is `currentRoom`). Task 17 will wire ExplorationScene to render
   // the room; for now the scene simply stores it.
   const roomId = getGameState()?.run?.currentRoom ?? null;
-  await getSceneManager().transition(ExplorationScene, { roomId });
+  try {
+    await getSceneManager().transition(ExplorationScene, { roomId });
+  } catch (err) {
+    console.error('[CombatLoop] ExplorationScene transition failed — reload to recover', err);
+  }
 
   // updateUI() removed: the phase is still 'combat' here, so updateScene()
   // would re-render defeated enemies as live sprites (ghost bug).
