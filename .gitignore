@@ -7,6 +7,14 @@ node_modules/
 .pvp-match-*.json
 .DS_Store
 
+# Per-user runtime data (written to repo root when /app/persist/ is absent)
+/srs-u_*.json
+/word-knowledge-u_*.json
+/npc-memory-u_*.json
+/creature-memory-u_*.json
+/npc-dialogue-cache-u_*.json
+/creature-dialogue-cache-u_*.json
+
 # Local work files
 *.pdf
 *.log
@@ -70,3 +78,4 @@ android/
 # Simulator
 simulator/data/
 simulator/node_modules/
+.gstack/
