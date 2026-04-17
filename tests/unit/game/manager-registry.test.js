@@ -61,7 +61,13 @@ describe('manager-registry', () => {
     const reloaded = getManager('u_test123');
 
     assert.deepStrictEqual(reloaded.run, { active: true, currentArea: 'starter_meadow', currentRoom: 2 });
-    assert.deepStrictEqual(reloaded.combat, { active: true, npcId: 'npc_01', enemies: [{ id: 'c1', hp: 50 }] });
+    // Enemies without a uid get one lazily backfilled on load — check non-uid fields.
+    assert.equal(reloaded.combat.active, true);
+    assert.equal(reloaded.combat.npcId, 'npc_01');
+    assert.equal(reloaded.combat.enemies.length, 1);
+    assert.equal(reloaded.combat.enemies[0].id, 'c1');
+    assert.equal(reloaded.combat.enemies[0].hp, 50);
+    assert.ok(reloaded.combat.enemies[0].uid, 'enemy uid should be backfilled on load');
   });
 
   it('combat.allies shares reference with run.creatureParty.active after reload', () => {

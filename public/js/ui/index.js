@@ -1,6 +1,7 @@
 export * as actions from './actions.js';
 export * as takeover from './takeover.js';
-export * as scene from './scene.js';
+export * as combatDom from './combat-dom.js';
+export * as explorationDom from './exploration-dom.js';
 export * as character from './character.js';
 export * as exploration from './exploration.js';
 export * as economy from './economy.js';

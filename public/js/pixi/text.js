@@ -1,5 +1,5 @@
 import { Text } from 'pixi.js';
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 import { tween } from './tween.js';
 import { TIER_FONT_SIZES } from './combat-effects-util.js';
 
@@ -24,7 +24,7 @@ const DAMAGE_COLORS = {
  *   type: 'normal'|'super'|'resisted'|'heal'|'poison' (default 'normal')
  */
 export async function showDamageNumber(amount, pos, { tier = 1, type = 'normal' } = {}) {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app || !layers.overlay) return;
 
   const clampedTier = Math.max(0, Math.min(4, tier));
@@ -75,7 +75,7 @@ export async function showDamageNumber(amount, pos, { tier = 1, type = 'normal' 
  * @param {{ color?: string, direction?: 'up'|'down', duration?: number, size?: number }} opts
  */
 export async function showEventPopup(message, pos, { color = '#FFFFFF', direction = 'up', duration = 800, size = 18 } = {}) {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app || !layers.overlay) return;
 
   const text = new Text({

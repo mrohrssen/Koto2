@@ -1,9 +1,7 @@
 import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
-import * as pixiFormation from '../pixi/formation.js';
-import { showNpcSprite as pixiShowNpcSprite, hideNpcSprite as pixiHideNpcSprite } from '../pixi/formation.js';
-import { renderJpSentence, getKnownWords, entityToToken, esc as escHtml } from './bootstrap-client.js';
 import { toRomaji } from './romaji.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
 
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
 function creatureNameRuby(creature) {
@@ -75,9 +73,10 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
         if (spriteEl) spriteEl.classList.toggle('ko', (curHp <= 0));
         slot.dataset.hp = String(curHp);
       });
-      await pixiFormation.showFormation(side, creatures, { isBoss, skipEnter: true }).catch((err) => {
-        console.warn('[Scene] Pixi showFormation failed:', err);
-      });
+      // Pixi formation sprites are owned by the active scene's formation ctx
+      // (BattleScene during combat, PvP renders DOM-only after Task 18).
+      // DOM-side HP bars were updated above; scene diff picks up state via
+      // scene.syncCreatures on the next BattleScene update.
       if (window.__inspector && window.__intentLog) {
         const scan = window.__inspector.checkCreatures();
         window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
@@ -91,7 +90,6 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
   container.classList.toggle('boss-encounter', isBoss);
 
   if (!creatures || creatures.length === 0) {
-    pixiFormation.hideFormation(side);
     return;
   }
 
@@ -205,9 +203,9 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     container.appendChild(slotEl);
   });
 
-  await pixiFormation.showFormation(side, creatures, { isBoss }).catch((err) => {
-    console.warn('[Scene] Pixi showFormation failed:', err);
-  });
+  // Pixi formation sprites are owned by the active scene (BattleScene for
+  // combat). PvP currently renders DOM-only — this call intentionally does
+  // not spawn Pixi sprites; Task 18 removed the legacy default-ctx path.
   if (window.__inspector && window.__intentLog) {
     const scan = window.__inspector.checkCreatures();
     window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
@@ -228,7 +226,9 @@ export function hideFormation(side) {
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
   container.innerHTML = '';
   container.style.opacity = '';
-  pixiFormation.hideFormation(side);
+  // Pixi sprites are removed by BattleScene.syncCreatures when combat ends
+  // (see combat-loop.stopCombatLoop); this DOM-side clear only removes the
+  // HP-bar/name slot markup.
 
   if (window.__inspector && window.__intentLog) {
     const scan = window.__inspector.checkCreatures();
@@ -348,134 +348,16 @@ function removePlaceholder() {
   document.getElementById('enemy-placeholder')?.remove();
 }
 
-/* ------------------------------------------------------------------ */
-/*  NPC display functions                                              */
-/* ------------------------------------------------------------------ */
-
-/** Helper: show an NPC sprite in the npc-display area (no HP bar) */
-export function showNpcInDisplay(name, spritePath, { skipPixi = false } = {}) {
-  dom.npcDisplay.classList.add('visible');
-  hideFormation('enemy');
-  dom.enemyName.textContent = name;
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
-
-  // Hide DOM sprite — NPC renders on PixiJS canvas now
-  dom.enemySprite.src = '';
-  dom.enemySprite.classList.remove('visible');
-  if (!skipPixi) pixiShowNpcSprite(spritePath);
-}
-
-/** Show shrine fox in scene (no HP bar) */
-export function showShrineFox() {
-  showNpcInDisplay('Shrine Fox', `/assets/sprites/shrine_fox.webp?v=${SPRITE_VERSION}`);
-}
-
-/** Show quiz master in scene (no HP bar) */
-export function showQuizMaster() {
-  showNpcInDisplay('Quiz Master', `/assets/sprites/quiz_master.webp?v=${SPRITE_VERSION}`);
-}
-
-/** Show word discovery NPC (knowledge scholar spirit, no HP bar) */
-export function showWordDiscoveryNpc() {
-  showNpcInDisplay('Knowledge Spirit', `/assets/sprites/word_discovery_npc.webp?v=${SPRITE_VERSION}`);
-}
-
-/** Show Cid guide NPC in prologue (no HP bar) */
-export function showCid() {
-  showNpcInDisplay('Cid', `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`);
-}
-
-/** Hide Cid from scene */
-export function hideCid() {
-  hideEnemy();
-}
-
-/** Show traveling merchant NPC (shop merchant, no HP bar) */
-export function showDealer({ skipPixi = false } = {}) {
-  showNpcInDisplay('Traveling Merchant', `/assets/sprites/traveling_merchant.webp?v=${SPRITE_VERSION}`, { skipPixi });
-}
-
-/** Show Chippy companion sprite (no HP bar) */
-export function showChippy() {
-  dom.npcDisplay.classList.add('visible');
-  hideFormation('enemy');
-  dom.enemyName.textContent = 'Chippy';
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
-
-  dom.enemySprite.src = `/assets/sprites/chippy.webp?v=${SPRITE_VERSION}`;
-  dom.enemySprite.onerror = () => {
-    dom.enemySprite.classList.remove('visible');
-    removePlaceholder();
-    const el = document.createElement('div');
-    el.id = 'enemy-placeholder';
-    el.style.cssText = 'width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:2;position:relative;';
-    el.textContent = '\u2728';
-    dom.npcDisplay.appendChild(el);
-  };
-  dom.enemySprite.onload = () => {
-    removePlaceholder();
-    dom.enemySprite.classList.add('visible');
-  };
-}
-
-/** Hide Chippy (alias for hideEnemy) */
-export function hideChippy() {
-  hideEnemy();
-}
-
-/** Show NPC trainer in scene (no HP bar) */
-export function showNpcTrainer(npcName, npcId, npc, { skipPixi = false } = {}) {
-  dom.npcDisplay.classList.add('visible');
-  // When skipPixi is true (NPC skill mid-combat), the caller manages enemy
-  // formation visibility via opacity toggle — don't destroy Pixi sprites here
-  // or dead creatures will be rebuilt as ghost sprites.
-  if (!skipPixi) hideFormation('enemy');
-
-  const roleHtml = npc?.role
-    ? ' \u2014 ' + renderJpSentence([entityToToken(npc.role)], getKnownWords(), new Map())
-    : '';
-  const npcNameHtml = `${escHtml(npcName)}${roleHtml}`;
-  dom.enemyName.innerHTML = npcNameHtml;
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
-
-  // Hide DOM sprite — NPC renders on PixiJS canvas now
-  dom.enemySprite.src = '';
-  dom.enemySprite.classList.remove('visible');
-  if (!skipPixi) {
-    const spritePath = npcId
-      ? `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`
-      : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
-    pixiShowNpcSprite(spritePath);
-  }
-}
-
-/** Hide NPC trainer from scene */
-export function hideNpcTrainer() {
-  hideEnemy();
-}
-
-/** Show NPC skill pills in the enemy skill bar */
-export function showNpcSkills(skills) {
-  if (!dom.enemySkillBar || !skills?.length) return;
-  dom.enemySkillBar.innerHTML = '';
-  for (const skill of skills) {
-    const pill = document.createElement('span');
-    pill.className = 'npc-skill-pill';
-    pill.innerHTML = renderJpSentence([entityToToken(skill)], getKnownWords(), new Map());
-    dom.enemySkillBar.appendChild(pill);
-  }
-  dom.enemySkillBar.style.display = 'flex';
-}
-
 /** Hide enemy from scene */
 export function hideEnemy() {
-  pixiHideNpcSprite();
+  // Route NPC-sprite teardown through the active scene so the registry
+  // tracks it (removed in Task 18 — legacy _defaultCtx path is gone).
+  const activeScene = getSceneManager()?.currentScene;
+  if (activeScene && !activeScene.disposed && activeScene.npcSprite) {
+    activeScene.hideNpcSprite().catch(err => {
+      console.warn('[combat-dom] hideNpcSprite failed:', err);
+    });
+  }
   dom.npcDisplay.classList.remove('visible');
   dom.enemySprite.src = '';
   dom.enemySprite.classList.remove('visible');

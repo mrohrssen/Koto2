@@ -24,13 +24,16 @@ await mock.module('../../../public/js/pixi/effects.js', {
   namedExports: { burstParticles: () => {}, ELEMENT_COLORS: {} }
 });
 await mock.module('../../../public/js/pixi/formation.js', {
-  namedExports: { getCreatureSprite: () => null, showActiveGlow: () => {}, showNpcSprite: () => {}, hideNpcSprite: () => {} }
+  namedExports: { getCreatureSpriteForScene: () => null, showActiveGlowForScene: () => {} }
 });
 await mock.module('../../../public/js/pixi/text.js', {
   namedExports: { popupBuff: () => {} }
 });
-await mock.module('../../../public/js/ui/scene.js', {
-  namedExports: { showNpcInDisplay: () => {}, hideEnemy: () => {}, showFormation: () => {} }
+await mock.module('../../../public/js/ui/combat-dom.js', {
+  namedExports: { hideEnemy: () => {}, showFormation: () => {} }
+});
+await mock.module('../../../public/js/ui/exploration-dom.js', {
+  namedExports: { showNpcInDisplay: () => {} }
 });
 await mock.module('../../../public/js/ui/sprite-utils.js', {
   namedExports: { SPRITE_VERSION: '0', replaceWithTextSprite: () => {}, creatureSpriteHtml: () => '', creatureStaticPath: () => '' }
@@ -55,6 +58,9 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 });
 await mock.module('../../../public/js/ui/befriend-quiz-state.js', {
   namedExports: { restoreBefriendQuizEnemyUi: () => {} }
+});
+await mock.module('../../../public/js/scenes/scene-manager.js', {
+  namedExports: { getSceneManager: () => ({ currentScene: null }) }
 });
 
 const {

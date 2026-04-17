@@ -96,6 +96,7 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
     .filter(Boolean);
 
   return {
+    uid: crypto.randomUUID(),
     id: template.id,
     name: template.name,
     nameEn: template.nameEn,
@@ -455,5 +456,64 @@ export function generateDealerCreatures(collectionIds = []) {
     ...instantiateCreature(template.id),
     buyPrice: getCreatureBuyPrice(template.rarity)
   }));
+}
+
+/**
+ * Assign a uid to a creature object if it doesn't have a valid one.
+ * Idempotent for well-formed uids; replaces malformed uids (number, boolean,
+ * object, undefined, or short string) to prevent garbage uids leaking into
+ * spritesByUid maps and similar creature-identity keyed structures.
+ * @param {object|null} creature
+ * @returns {object|null} the creature (mutated), or the input unchanged for null
+ */
+export function backfillCreatureUid(creature) {
+  if (creature && typeof creature === 'object') {
+    // Validate uid is a non-empty string of reasonable length.
+    // Anything else (number, boolean, object, short string, undefined) is treated
+    // as missing — preventing malformed uids from leaking into spritesByUid maps.
+    if (typeof creature.uid !== 'string' || creature.uid.length < 8) {
+      creature.uid = crypto.randomUUID();
+    }
+  }
+  return creature;
+}
+
+/**
+ * Walk an array of creatures and backfill uids on each. Tolerates non-array
+ * input (undefined/null/object) by silently no-oping — useful for save-load
+ * paths where a property may not exist on older save formats.
+ * @param {*} list
+ */
+export function backfillCreatureListUids(list) {
+  if (!Array.isArray(list)) return list;
+  for (const c of list) backfillCreatureUid(c);
+  return list;
+}
+
+/**
+ * Force-assign a NEW uid to a creature, replacing any existing uid.
+ * Use this when cloning a creature into a new conceptual instance
+ * (e.g., spreading into a new party slot, deep-cloning for PvP, dealer
+ * purchase). The cloned object semantically represents a fresh instance
+ * that must be distinguishable from its source by uid.
+ * @param {object|null} creature
+ * @returns {object|null} the creature (mutated)
+ */
+export function refreshCreatureUid(creature) {
+  if (creature && typeof creature === 'object') {
+    creature.uid = crypto.randomUUID();
+  }
+  return creature;
+}
+
+/**
+ * Force-refresh uids on every creature in an array. Tolerates non-array
+ * input (undefined/null/object) by silently no-oping.
+ * @param {*} list
+ */
+export function refreshCreatureListUids(list) {
+  if (!Array.isArray(list)) return list;
+  for (const c of list) refreshCreatureUid(c);
+  return list;
 }
 

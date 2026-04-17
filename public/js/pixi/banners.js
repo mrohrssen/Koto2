@@ -1,5 +1,5 @@
 import { Text } from 'pixi.js';
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 import { tween, wait } from './tween.js';
 import { screenShake, screenFlash } from './effects.js';
 
@@ -21,7 +21,7 @@ const BANNER_STYLES = {
  *   elementColor: hex color for screenFlash (used with 'super' style)
  */
 export async function showBanner(message, style = 'super', { elementColor = 0xFFFFFF } = {}) {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app || !layers.overlay) return;
 
   const config = BANNER_STYLES[style] || BANNER_STYLES.super;

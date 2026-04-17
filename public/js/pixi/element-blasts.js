@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 
 // ============ HELPERS ============
 
@@ -24,7 +24,7 @@ const NEUTRAL_COLORS = [0xBDBDBD, 0x9E9E9E, 0x757575, 0xE0E0E0, 0xFFFFFF];
  */
 function fireNeutralBlast(from, to, onImpact) {
   return new Promise((resolve) => {
-    const { app, layers } = getStage();
+    const { app, layers } = getApp();
     if (!app || !layers.effects) {
       if (onImpact) onImpact();
       resolve();
@@ -177,7 +177,7 @@ function fireNeutralBlast(from, to, onImpact) {
  */
 function fireFireBlast(from, to, onImpact) {
   return new Promise((resolve) => {
-    const { app, layers } = getStage();
+    const { app, layers } = getApp();
     if (!app || !layers.effects) {
       if (onImpact) onImpact();
       resolve();
@@ -329,7 +329,7 @@ function fireFireBlast(from, to, onImpact) {
  */
 function fireWaterBlast(from, to, onImpact) {
   return new Promise((resolve) => {
-    const { app, layers } = getStage();
+    const { app, layers } = getApp();
     if (!app || !layers.effects) {
       if (onImpact) onImpact();
       resolve();
@@ -492,7 +492,7 @@ function fireWaterBlast(from, to, onImpact) {
  */
 function fireWoodBlast(from, to, onImpact) {
   return new Promise((resolve) => {
-    const { app, layers } = getStage();
+    const { app, layers } = getApp();
     if (!app || !layers.effects) {
       if (onImpact) onImpact();
       resolve();
@@ -631,7 +631,7 @@ function fireWoodBlast(from, to, onImpact) {
  */
 function fireEarthBlast(from, to, onImpact) {
   return new Promise((resolve) => {
-    const { app, layers } = getStage();
+    const { app, layers } = getApp();
     if (!app || !layers.effects) {
       if (onImpact) onImpact();
       resolve();
@@ -833,7 +833,7 @@ function fireEarthBlast(from, to, onImpact) {
  */
 function fireMetalBlast(from, to, onImpact) {
   return new Promise((resolve) => {
-    const { app, layers } = getStage();
+    const { app, layers } = getApp();
     if (!app || !layers.effects) {
       if (onImpact) onImpact();
       resolve();

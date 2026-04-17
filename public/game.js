@@ -91,7 +91,9 @@ import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
 import * as creatureRow from './js/ui/creature-row.js';
 import * as postCombatShop from './js/ui/post-combat-shop.js';
-import * as scene from './js/ui/scene.js';
+import * as combatDom from './js/ui/combat-dom.js';
+import * as explorationDom from './js/ui/exploration-dom.js';
+const scene = { ...combatDom, ...explorationDom };
 import * as audio from './js/audio.js';
 import * as auth from './js/ui/auth.js';
 import * as narrationBox from './js/ui/narration-box.js';
@@ -125,9 +127,12 @@ import { createIntentLog } from './js/intent-log.js';
 import { createInspector } from './js/inspector.js';
 
 // PixiJS battle stage imports
-import { initBattleStage } from './js/pixi/battle-stage.js';
-import { loadParallax, setScrollState } from './js/pixi/parallax.js';
-import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite, getCreatureSprite } from './js/pixi/formation.js';
+import { initApp, getApp } from './js/pixi/app.js';
+import { loadParallax, setScrollState, updateParallax } from './js/pixi/parallax.js';
+import { getCreatureSpriteForScene } from './js/pixi/formation.js';
+import { updateParticles, isFrozen } from './js/pixi/effects.js';
+import { SceneManager, setSceneManager, isSceneManagerInitialized, getSceneManager } from './js/scenes/scene-manager.js';
+import { BattleScene } from './js/scenes/battle-scene.js';
 
 // API imports - these are the server communication functions
 import {
@@ -254,9 +259,12 @@ function mapRunAreaToParallaxId(currentArea) {
 }
 
 function syncParallaxScrollWithPhase() {
+  // Walking wobble is toggled on the active scene's formation ctx
+  // (ExplorationScene sets walkingEnabled=true; BattleScene leaves it false).
+  // The legacy setWalking() calls here targeted the removed _defaultCtx
+  // whose updater was never ticked, so they were no-ops — dropped in Task 18.
   if (isPvpBattleActive()) {
     setScrollState('encounter');
-    setWalking(false);
     lastPhaseForParallax = gameState.phase;
     return;
   }
@@ -268,7 +276,6 @@ function syncParallaxScrollWithPhase() {
   const stoppedPhases = ['combat', 'room_encounter', 'friendlyNpc', 'npc_dialogue', 'dealer', 'skillMaster', 'whackAMole', 'speedReviewRoom'];
   if ((p === 'room' || p === 'exploring') && stoppedPhases.includes(prev)) {
     setScrollState('accelerating');
-    setWalking(true);
     return;
   }
 
@@ -277,7 +284,6 @@ function syncParallaxScrollWithPhase() {
     case 'room':
     case 'wordDiscovery':
       setScrollState('scrolling');
-      setWalking(true);
       break;
     case 'friendlyNpc':
     case 'npc_dialogue':
@@ -287,15 +293,12 @@ function syncParallaxScrollWithPhase() {
     case 'speedReviewRoom':
     case 'room_encounter':
       setScrollState('decelerating');
-      setWalking(false);
       break;
     case 'combat':
       setScrollState('encounter');
-      setWalking(false);
       break;
     default:
       setScrollState('encounter');
-      setWalking(false);
   }
 }
 
@@ -445,11 +448,8 @@ function updateScene() {
     if (npcSkills?.length) {
       scene.showNpcSkills(npcSkills);
     }
-    // PixiJS: show player formation alongside DOM formation
-    const playerParty = gameState.run?.creatureParty?.active;
-    if (playerParty?.length) {
-      pixiShowFormation('player', playerParty);
-    }
+    // Player formation sprites are spawned by BattleScene.syncCreatures on
+    // transition; no legacy pixiShowFormation call needed here.
   } else if (gameState.phase === 'shrine') {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
@@ -470,7 +470,8 @@ function updateScene() {
   } else if (gameState.phase === 'npc_skill_selection') {
     // NPC sprite stays visible during skill selection — don't hideEnemies().
     // On page reload the pixi sprite is lost, so recreate it.
-    if (!hasNpcSprite()) {
+    const activeScene = getSceneManager()?.currentScene;
+    if (!activeScene?.npcSprite) {
       const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
       const npc = room?.npcBattle?.npc || room?.npc;
       if (npc) {
@@ -579,8 +580,12 @@ function updateGameContent() {
           if (!result?.state) {
             throw new Error(result?.error || 'No game state from server');
           }
-          // Slide NPC out before transitioning to next phase
-          await pixiHideNpcSprite({ slideOut: true });
+          // Slide NPC out via the active scene (BattleScene after NPC win,
+          // or ExplorationScene on page-reload recovery) before transitioning.
+          const npcHostScene = getSceneManager()?.currentScene;
+          if (npcHostScene && !npcHostScene.disposed && npcHostScene.npcSprite) {
+            await npcHostScene.hideNpcSprite({ slideOut: true });
+          }
           scene.hideNpcTrainer();
           updateGameState(result.state);
           updateUI();
@@ -1177,6 +1182,23 @@ async function startEncounter() {
     if (result?.npc && hasCreatures) {
       sceneTransitionActive = true;
       try {
+        // Task 17: transition to BattleScene BEFORE the NPC intro so player +
+        // enemy sprites spawn alongside the NPC dialogue (fixes bug #1: player
+        // sprite late spawn). The BattleScene owns a `npcs` layer so
+        // playNpcBattleIntro's scene.showNpcSprite calls target the right
+        // scene. startCombatLoop() below is idempotent — it will skip the
+        // re-transition since BattleScene is already active.
+        try {
+          const mgr = getSceneManager();
+          await mgr.transition(BattleScene, {
+            allies:  gameState.combat?.allies  ?? [],
+            enemies: gameState.combat?.enemies ?? [],
+            parallaxSpeed: 0,
+            isBoss: !!gameState.combat?.isBoss,
+          });
+        } catch (sceneErr) {
+          console.error('[StartEncounter] BattleScene transition before NPC intro failed', sceneErr);
+        }
         await playNpcBattleIntro(
           result.npc,
           (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
@@ -1237,6 +1259,10 @@ async function returnToHub() {
 function startCombatLoop() { combatLoopUI.startCombatLoop(); }
 function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 
+// Returns a Promise that resolves when the 300ms victory window's
+// loadGameState+updateUI settles. combat-loop.stopCombatLoop awaits this
+// before transitioning BattleScene → ExplorationScene so player sprites
+// remain visible through the modal window (ghost-formation fix).
 function showVictoryModal(result) {
   audio.stopBGM();
   actions.clear();
@@ -1245,23 +1271,38 @@ function showVictoryModal(result) {
     showCollectionToast(result.newCollectionAdditions);
   }
 
-  setTimeout(async () => {
-    await loadGameState();
-    updateUI();
-  }, 300);
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      try {
+        await loadGameState();
+        updateUI();
+      } finally {
+        resolve();
+      }
+    }, 300);
+  });
 }
 
+// Returns a Promise that resolves when the player dismisses the report via
+// "return to hub" (returnToHubCb fires loadGameState + updateUI). Awaited by
+// stopCombatLoop so BattleScene stays up through the defeat screen.
 async function showAdventureReport(isVictory) {
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
   const response = await apiForfeitRun(isVictory);
   const summary = response?.runSummary || {};
-  const returnToHubCb = async () => {
-    takeover.close('gameover');
-    await loadGameState();
-    updateUI();
-  };
-  renderAdventureReport(content, summary, isVictory, returnToHubCb);
+  return new Promise((resolve) => {
+    const returnToHubCb = async () => {
+      takeover.close('gameover');
+      try {
+        await loadGameState();
+        updateUI();
+      } finally {
+        resolve();
+      }
+    };
+    renderAdventureReport(content, summary, isVictory, returnToHubCb);
+  });
 }
 
 function showGameOverModal(result) {
@@ -1270,7 +1311,7 @@ function showGameOverModal(result) {
   actions.clear();
 
   updateCreatureRow();
-  showAdventureReport(false);
+  return showAdventureReport(false);
 }
 
 // ============ FLASH CARD HANDLERS ============
@@ -1575,9 +1616,13 @@ async function initGame() {
       return container.querySelectorAll('.formation-slot:not(.defeated):not(.befriended) .formation-hp-fill').length;
     },
     getPixiSprites: (side) => {
+      // After Task 18, sprites live on the active scene's formation ctx
+      // (BattleScene during combat). Resolve via the scene-facing lookup
+      // so the intent-log inspector sees the same sprites combat uses.
+      const activeScene = getSceneManager()?.currentScene;
       const sprites = [];
       for (let i = 0; i < 3; i++) {
-        const s = getCreatureSprite(side, i);
+        const s = getCreatureSpriteForScene(activeScene, side, i);
         if (s) sprites.push({ alpha: s.alpha, tint: s.tint });
         else sprites.push(null);
       }
@@ -1594,7 +1639,30 @@ async function initGame() {
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
 
   // Initialize PixiJS battle stage (canvas overlay for combat animations)
-  await initBattleStage();
+  await initApp();
+
+  // Wire the SceneManager after PIXI is up. It owns the central ticker —
+  // updateParallax receives ticker dt (deltaTime in frame-units); updateParticles
+  // receives deltaMS. isFrozen() gates parallax only (matches pre-Task-6 semantics
+  // where hitStop() freezes scroll motion but particles keep ticking). Formation
+  // freeze will return in Task 9 via BattleScene.update.
+  const { app: pixiApp } = getApp();
+  if (!pixiApp) {
+    console.error('[boot] PIXI init returned null app; SceneManager will not be wired');
+  } else if (!isSceneManagerInitialized()) {
+    const sceneManager = new SceneManager(pixiApp);
+    sceneManager.configure({
+      parallax: {
+        update: (dt, deltaMS) => {
+          if (!isFrozen()) updateParallax(dt);
+          updateParticles(deltaMS);
+        },
+      },
+    });
+    sceneManager.init();
+    setSceneManager(sceneManager);
+  }
+  // If already initialized (e.g., logout→login), intentionally do nothing.
 
   // A fresh auth session should never inherit transient combat UI from the
   // previous user/session (e.g. stale combatActive or room transition flags).

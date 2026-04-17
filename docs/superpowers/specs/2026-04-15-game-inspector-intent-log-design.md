@@ -119,7 +119,7 @@ window.__inspector.fullScan()
 |-------|-------------|---------------|
 | Game state | `window.gameState` / `store.get('gameState')` | Source of truth: alive creatures, buffs, inventory, phase |
 | DOM | Formation slots, `.formation-info--hidden`, HP bar elements | HP bars, status indicators, phase-specific UI presence |
-| PixiJS | `window.__pixiStage()` layers + `getCreatureSprite(side, index)` for alpha/tint | Sprite visibility (alpha > 0, tint !== KO color), sprite count in creatures layer |
+| PixiJS | `window.__pixiApp()` layers + `getCreatureSprite(side, index)` for alpha/tint | Sprite visibility (alpha > 0, tint !== KO color), sprite count in creatures layer |
 
 **Console error detection:** The diagnostics ring buffer already wraps `console.error`. The inspector checks if new errors appeared between `[ACT]` and `[CHK]`. Any error = automatic `ERROR_THROWN` failure.
 
@@ -198,7 +198,7 @@ These tests accumulate in CI over time, grown from real bugs, not speculation.
 
 | Existing | How it's used |
 |----------|--------------|
-| `window.__pixiStage()` | Already exposes Pixi app + layers for inspector |
+| `window.__pixiApp()` | Already exposes Pixi app + layers for inspector |
 | `getCreatureSprite(side, index)` | Query sprite alpha/tint for KO detection |
 | `diagnostics.js` ring buffers | Console error detection (50), network failures (20), action log (30) |
 | `phase-machine.js` | VALID_TRANSITIONS used for phase transition assertions |

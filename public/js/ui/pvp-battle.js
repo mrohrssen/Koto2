@@ -4,8 +4,7 @@ import { showMoves, setActiveLabel } from './move-select.js';
 import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
 import { showAttackDisplay } from './combat-loop.js';
-import { syncPixiStatusLabels, clearAllPixiStatusLabels } from '../pixi/formation.js';
-import { getHpColor, getCreatureStatusKeys } from './combat-ui-utils.js';
+import { getHpColor } from './combat-ui-utils.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -438,7 +437,10 @@ function renderResult(resultText, resultColor, winnerName) {
  * Return to hub: clean up PvP state and socket, restore hub phase.
  */
 function returnToHub() {
-  clearAllPixiStatusLabels();
+  // PvP currently renders status via DOM slots (it doesn't own a
+  // BattleScene-style Pixi formation ctx). The legacy
+  // clearAllPixiStatusLabels target was the removed _defaultCtx sprite
+  // map — always empty, so the call was a no-op. Dropped in Task 18.
   pvpSocket.leaveMatch();
   pvpSocket.disconnect();
   pvpState = null;
@@ -454,14 +456,8 @@ function returnToHub() {
 
 function syncAllStatusLabels() {
   if (!pvpState) return;
-  for (let i = 0; i < pvpState.allies.length; i++) {
-    const c = pvpState.allies[i];
-    if (!c) continue;
-    syncPixiStatusLabels('player', i, getCreatureStatusKeys(c), c.statStages);
-  }
-  for (let i = 0; i < pvpState.enemies.length; i++) {
-    const c = pvpState.enemies[i];
-    if (!c) continue;
-    syncPixiStatusLabels('enemy', i, getCreatureStatusKeys(c), c.statStages);
-  }
+  // PvP renders DOM-only; the legacy syncPixiStatusLabels calls targeted the
+  // removed _defaultCtx sprite map (always empty) so this function is kept
+  // as a stub for call-site parity with PvE. DOM status pills are rendered
+  // via combat-dom's formation rebuilds. Dropped legacy calls in Task 18.
 }

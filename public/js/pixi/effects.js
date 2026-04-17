@@ -1,5 +1,5 @@
 import { Container, Sprite, Graphics, Texture } from 'pixi.js';
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 import { tween, wait } from './tween.js';
 
 // ============ ELEMENT COLORS ============
@@ -35,7 +35,7 @@ const ELEMENT_BEHAVIORS = {
  * Initialize the particle pool. Call once at battle-stage init.
  */
 export function initParticles() {
-  const { layers } = getStage();
+  const { layers } = getApp();
   if (!layers.effects) return;
 
   particleContainer = new Container();
@@ -121,6 +121,28 @@ export function flowParticles(from, to, { count = 12, color = 0xFFFFFF, speed = 
 }
 
 /**
+ * Return every currently in-flight particle to the free pool. Called by
+ * BattleScene.beforeExit() to ensure particles don't keep animating past
+ * scene disposal. Particles in this pool are pre-mounted under
+ * particleContainer at init — re-parenting isn't needed; just hide them
+ * and zero out their motion state so subsequent ticks (including mid-exit
+ * ones) are no-ops.
+ */
+export function releaseAllInFlight() {
+  if (!particlePool) return;
+  for (const p of particlePool) {
+    if (!p.visible) continue;
+    p.visible = false;
+    p.alpha = 0;
+    p.life = 0;
+    p.maxLife = 0;
+    p.vx = 0;
+    p.vy = 0;
+    p._age = 0;
+  }
+}
+
+/**
  * Ticker update for particles. Applies element-specific physics.
  * @param {number} deltaMS - Milliseconds since last frame
  */
@@ -172,7 +194,7 @@ const SHAKE_CONFIG = {
  * @param {'light'|'medium'|'heavy'} intensity
  */
 export async function screenShake(intensity = 'medium') {
-  const { app } = getStage();
+  const { app } = getApp();
   if (!app) return;
 
   const config = SHAKE_CONFIG[intensity] || SHAKE_CONFIG.medium;
@@ -207,7 +229,7 @@ let flashGraphics = null;
  * Initialize screen flash overlay. Call at battle-stage init.
  */
 export function initFlash() {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app || !layers.overlay) return;
 
   flashGraphics = new Graphics();
@@ -220,7 +242,7 @@ export function initFlash() {
  * @param {{ color?: number, duration?: number, count?: number }} opts
  */
 export async function screenFlash({ color = 0xFFFFFF, duration = 100, count = 1 } = {}) {
-  const { app } = getStage();
+  const { app } = getApp();
   if (!app || !flashGraphics) return;
 
   flashGraphics.clear();
@@ -285,7 +307,7 @@ let vignetteGraphics = null;
  * Call once at battle-stage init.
  */
 export function initVignette() {
-  const { app, layers } = getStage();
+  const { app, layers } = getApp();
   if (!app || !layers.overlay) return;
 
   vignetteGraphics = new Graphics();
@@ -298,7 +320,7 @@ export function initVignette() {
  * @param {number} duration - Fade-out duration in ms
  */
 export async function showVignette(duration = 400) {
-  const { app } = getStage();
+  const { app } = getApp();
   if (!app || !vignetteGraphics) return;
 
   const w = app.screen.width;

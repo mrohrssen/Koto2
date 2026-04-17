@@ -4,6 +4,9 @@ import { buildTurnOrder, resolveRound } from '../../../src/pvp/pvp-combat.js';
 
 function makeCreature(overrides = {}) {
   return {
+    // Include uid so fixtures match the production contract — every live
+    // creature has a unique per-instance uid.
+    uid: crypto.randomUUID(),
     id: `creature-${Math.random().toString(36).slice(2, 6)}`,
     name: 'テスト', nameEn: 'Test',
     element: 'neutral', level: 5,

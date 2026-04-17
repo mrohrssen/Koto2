@@ -1,6 +1,7 @@
 import { dom } from '../dom.js';
-import { showFormation, hideFormation } from './scene.js';
+import { showFormation, hideFormation } from './combat-dom.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
+import { getSceneManager, isSceneManagerInitialized } from '../scenes/scene-manager.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -107,26 +108,44 @@ export const ELEMENT_ICONS = {
 /** @type {() => Array|undefined|null} */
 let getEquippedItems = null;
 
+// Click handlers extracted so setupCreatureRowListeners() can register them
+// via scene.addListener, making them auto-removed on scene exit.
+function _onPlayerFormationClick(e) {
+  const slot = e.target.closest('.formation-slot');
+  if (!slot) return;
+  const idx = parseInt(slot.dataset.index, 10);
+  if (_creatures[idx]) togglePopup(idx);
+}
+
+function _onDocumentClickToHidePopup(e) {
+  if (!e.target.closest('.formation-slot') && !e.target.closest('.creature-popup')) {
+    hidePopup();
+  }
+}
+
 export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemBuffs: getBuffs, getEquippedItems: getEquip }) {
   onSwapCreature = swapCreatureCallback;
   onRearrangeCreature = rearrangeCreatureCallback || null;
   getItemBuffs = typeof getBuffs === 'function' ? getBuffs : null;
   getEquippedItems = typeof getEquip === 'function' ? getEquip : null;
 
-  // Event delegation: single click handler on the formation container
-  // (avoids leaking per-slot listeners when render() is called repeatedly)
-  dom.playerFormation.addEventListener('click', (e) => {
-    const slot = e.target.closest('.formation-slot');
-    if (!slot) return;
-    const idx = parseInt(slot.dataset.index, 10);
-    if (_creatures[idx]) togglePopup(idx);
-  });
+  // Click listeners are now registered by setupCreatureRowListeners() inside
+  // BattleScene.onEnter and ExplorationScene.onEnter, which auto-removes them
+  // on scene exit via scene.addListener. Registering here would double-fire.
+}
 
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.formation-slot') && !e.target.closest('.creature-popup')) {
-      hidePopup();
-    }
-  });
+/**
+ * Register creature-row listeners via scene.addListener so they're
+ * auto-removed when the scene exits. Called from BattleScene.onEnter and
+ * ExplorationScene.onEnter — this is the sole registration path for the
+ * formation-slot click and document-level hide-popup click handlers.
+ *
+ * @param {import('../scenes/scene.js').Scene} scene - a Scene instance exposing addListener
+ */
+export function setupCreatureRowListeners(scene) {
+  if (!scene) throw new Error('setupCreatureRowListeners: scene is required');
+  scene.addListener(dom.playerFormation, 'click', _onPlayerFormationClick);
+  scene.addListener(document, 'click', _onDocumentClickToHidePopup);
 }
 
 export function setReserves(reserves) {
@@ -145,6 +164,20 @@ export function render(creatures) {
   _creatures = creatures;
   currentActiveCreatures = creatures || [];
   showFormation('player', creatures);
+  // Keep the active scene's player formation in sync. Before Task 17 this
+  // only flowed through the legacy default ctx (via showFormation), which
+  // was unwired after Task 6. Forwarding the diff to scene.syncCreatures
+  // guarantees player PIXI sprites appear/update on any DOM render — both
+  // in non-combat rooms (ExplorationScene) and during combat (BattleScene).
+  //
+  // ExplorationScene.syncCreatures ignores `enemies`; BattleScene preserves
+  // its existing enemy formation by reading lastFormationInput.
+  if (!isSceneManagerInitialized()) return;
+  const scene = getSceneManager().currentScene;
+  if (!scene?.syncCreatures) return;
+  const enemies = scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
+  scene.syncCreatures({ allies: creatures || [], enemies })
+    .catch(err => console.error('[creature-row] scene.syncCreatures failed', err));
 }
 
 function togglePopup(index) {
