@@ -84,13 +84,9 @@ await mock.module('../../../public/js/pixi/text.js', {
     showEventPopup: () => {},
   },
 });
-// formation.js imports in status-vfx.js — only getCreatureSprite is used by
-// the legacy path, which these tests do not invoke.
-await mock.module('../../../public/js/pixi/formation.js', {
-  namedExports: {
-    getCreatureSprite: () => null,
-  },
-});
+// status-vfx.js no longer imports from formation.js after Task 18 (the
+// legacy getCreatureSprite wrapper was deleted along with the _defaultCtx
+// path). No formation mock is required; scene ctxs own sprite lookup.
 
 const {
   createStatusVfxContext,

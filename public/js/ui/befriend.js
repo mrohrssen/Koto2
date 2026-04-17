@@ -11,8 +11,8 @@ import { renderJpSentence, renderEnFirst, getKnownWords } from './bootstrap-clie
 import { t, tPlain } from './i18n.js';
 import { burstParticles } from '../pixi/effects.js';
 import {
-  getCreatureSprite, showActiveGlow,
-  showNpcSprite as pixiSlideInNpc, hideNpcSprite as pixiSlideOutNpc
+  getCreatureSpriteForScene,
+  showActiveGlowForScene,
 } from '../pixi/formation.js';
 import { popupBuff } from '../pixi/text.js';
 import { hideEnemy, showFormation } from './combat-dom.js';
@@ -25,6 +25,7 @@ import { showMoves, setActiveLabel } from './move-select.js';
 import { clear as clearTargetSelect } from './target-select.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
 
 const API_BASE = PLATFORM.apiBase;
 
@@ -256,7 +257,7 @@ export async function handleBefriendTalk() {
         if (creature) {
           clearTargetSelect();
           setActiveLabel(creature);
-          showActiveGlow(actingSlot);
+          showActiveGlowForScene(getSceneManager()?.currentScene, actingSlot);
           showMoves(creature, actingSlot, getMoveSelectBefriendOpts(actingSlot));
         } else {
           ctx.startMoveSelection();
@@ -332,7 +333,7 @@ export async function renderBefriendQuiz(quizData, result) {
 
   // Ensure the befriend target sprite is fully visible (KO animation is now
   // skipped for befriend targets, but reset alpha/tint as a safety fallback).
-  const enemySprite = getCreatureSprite('enemy', quizData.targetIndex ?? 0);
+  const enemySprite = getCreatureSpriteForScene(getSceneManager()?.currentScene, 'enemy', quizData.targetIndex ?? 0);
   if (enemySprite) {
     enemySprite.alpha = 1;
     enemySprite.tint = 0xFFFFFF;
@@ -388,13 +389,21 @@ export async function renderBefriendQuiz(quizData, result) {
     if (btns[1]) btns[1].classList.add('tutorial-highlight'); // Talk — gold glow
     const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-    await pixiSlideInNpc(cidSprite, { slideIn: true });
+    // Befriend runs during combat with BattleScene active; route the NPC
+    // slide through the scene so registry disposal handles cleanup on exit.
+    const slideScene = getSceneManager()?.currentScene;
+    if (slideScene && !slideScene.disposed && slideScene.layers?.npcs) {
+      await slideScene.showNpcSprite(cidSprite, { slideIn: true });
+    }
 
     for (const line of getTutorialNarration(1)) {
       await ctx.narration.showNarration(line, { speaker: 'Cid' });
     }
 
-    await pixiSlideOutNpc({ slideOut: true });
+    const slideOutScene = getSceneManager()?.currentScene;
+    if (slideOutScene && !slideOutScene.disposed && slideOutScene.npcSprite) {
+      await slideOutScene.hideNpcSprite({ slideOut: true });
+    }
     restoreBefriendQuizEnemyUi({
       quizData,
       result,
@@ -457,9 +466,15 @@ export async function renderBefriendQuiz(quizData, result) {
     if (answerResult.tutorialRetry) {
       const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
       showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-      await pixiSlideInNpc(cidSprite, { slideIn: true });
+      const retrySceneIn = getSceneManager()?.currentScene;
+      if (retrySceneIn && !retrySceneIn.disposed && retrySceneIn.layers?.npcs) {
+        await retrySceneIn.showNpcSprite(cidSprite, { slideIn: true });
+      }
       await ctx.narration.showNarration(getBefriendWrongNarration(), { speaker: 'Cid' });
-      await pixiSlideOutNpc({ slideOut: true });
+      const retrySceneOut = getSceneManager()?.currentScene;
+      if (retrySceneOut && !retrySceneOut.disposed && retrySceneOut.npcSprite) {
+        await retrySceneOut.hideNpcSprite({ slideOut: true });
+      }
       restoreBefriendQuizEnemyUi({
         quizData,
         result: answerResult,

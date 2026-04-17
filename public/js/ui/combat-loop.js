@@ -19,8 +19,6 @@ import {
   clearActiveGlowForScene,
   animateKOForScene,
   animateLevelUpForScene,
-  hideFormation as pixiHideFormation,
-  setWalking,
 } from '../pixi/formation.js';
 import { showFormation } from './combat-dom.js';
 import { setScrollState } from '../pixi/parallax.js';
@@ -1485,7 +1483,7 @@ export async function stopCombatLoop(result) {
 
   if (result?.victory) combatEvents.emit('victory');
 
-  // PIXI status VFX + canvas status label cleanup is now handled by
+  // PIXI status VFX + canvas status label cleanup is handled by
   // BattleScene.beforeExit via registry disposal when we transition to
   // ExplorationScene below (end of this function).
 
@@ -1495,14 +1493,11 @@ export async function stopCombatLoop(result) {
   // 1500ms+ gap where DOM info boxes (name/HP bars) float with no creature
   // image underneath (the "ghost formation" effect).
   //
-  // After Task 17, sprites live on the active BattleScene's formation ctx
-  // (not the legacy default ctx), so we remove them via the scene's own
-  // diff. syncCreatures({ enemies: [] }) drops all enemy sprites while
-  // leaving allies intact. The legacy pixiHideFormation('enemy') call is
-  // still fired below as a belt-and-suspenders cleanup for any stray
-  // default-ctx sprites from pre-migration code paths.
+  // Sprites live on the active BattleScene's formation ctx, so we remove
+  // them via the scene's own diff. syncCreatures({ enemies: [] }) drops all
+  // enemy sprites while leaving allies intact. Walking wobble will be
+  // re-enabled by ExplorationScene on room entry.
   setScrollState('accelerating');
-  setWalking(true);
   const battleSceneForCleanup = mgr.currentScene;
   if (battleSceneForCleanup instanceof BattleScene && !battleSceneForCleanup.disposed) {
     try {
@@ -1514,15 +1509,14 @@ export async function stopCombatLoop(result) {
       console.error('[CombatLoop] failed to clear enemy sprites via scene diff', err);
     }
   }
-  pixiHideFormation('enemy');
 
   // Brief pause before narration (let final damage numbers display)
   await delay(720);
 
-  // Fix C: Clear stale DOM enemy formation slots. Pixi sprites were already
-  // removed at pixiHideFormation('enemy') above; this closes the window where
+  // Fix C: Clear stale DOM enemy formation slots. Pixi enemy sprites were
+  // already removed via syncCreatures above; this closes the window where
   // leftover DOM slots could trigger the showFormation() dedup path to
-  // recreate Pixi sprites. The 720ms delay above lets damage numbers finish.
+  // recreate ghost sprites. The 720ms delay above lets damage numbers finish.
   const enemyFormationEl = document.getElementById('enemy-formation');
   if (enemyFormationEl) enemyFormationEl.innerHTML = '';
 

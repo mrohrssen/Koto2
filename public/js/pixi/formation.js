@@ -15,19 +15,21 @@ const LABEL_SIDE_OFFSET = 50;
 
 const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF' };
 
-// --- Context (dual-API core) --------------------------------------------------
+// --- Context (scene-owned only) ----------------------------------------------
 //
-// Formation state lives in a context object. Legacy exports are thin wrappers
-// that forward to ctx-based internal implementations using `_defaultCtx`.
-// Scenes use `createFormationContext(scene)` to get their own isolated context.
+// Formation state lives in a per-scene context. Task 18 removed the legacy
+// `_defaultCtx` singleton and its thin-wrapper exports — all rendering now
+// goes through scene-aware APIs (spawn/update/removeFormationSprite,
+// *ForScene wrappers, spawn/removeNpcSprite). Scenes allocate a ctx via
+// `createFormationContext(scene)`; there is no module-scoped fallback.
 //
-// Storage: `creatureSprites[side]` is Map<uid, Sprite>. Legacy (side, index)
-// lookups are bridged via `lastFormationInput[side].creatures[index].uid`.
+// Storage: `creatureSprites[side]` is Map<uid, Sprite>. BattleScene._diff
+// provides uids for every creature it spawns.
 
-function _newContext(scene = null) {
+function _newContext(scene) {
   return {
-    scene,  // null for legacy _defaultCtx
-    playerContainer: null,  // lazily created on first showFormation (legacy)
+    scene,
+    playerContainer: null,
     enemyContainer: null,
     creatureSprites: { player: new Map(), enemy: new Map() },  // uid -> Sprite
     lastFormationInput: { player: null, enemy: null },         // { creatures, opts } per side
@@ -39,8 +41,6 @@ function _newContext(scene = null) {
     npcSprite: null,
   };
 }
-
-const _defaultCtx = _newContext();
 
 /**
  * Create a per-scene formation context. The scene's `layers.formations`
@@ -97,18 +97,6 @@ function revealFormationInfo(side, dataIndex) {
     `${sel} .formation-slot[data-index="${dataIndex}"] .formation-info`
   );
   if (info) info.classList.remove('formation-info--hidden');
-}
-
-function sameFormation(prev, creatures, isBoss) {
-  if (!prev || !Array.isArray(prev.creatures)) return false;
-  if (!!prev.opts?.isBoss !== !!isBoss) return false;
-  if (prev.creatures.length !== creatures.length) return false;
-  for (let i = 0; i < creatures.length; i++) {
-    const a = prev.creatures[i];
-    const b = creatures[i];
-    if ((a?.id || '') !== (b?.id || '')) return false;
-  }
-  return true;
 }
 
 function _sideContainer(ctx, side) {
@@ -177,225 +165,6 @@ function _syncPixiStatusLabels(ctx, side, index, keys, statStages) {
   sprite.statusLabels = pills;
 }
 
-function _clearAllPixiStatusLabels(ctx) {
-  for (const side of ['player', 'enemy']) {
-    for (const sprite of _spritesArray(ctx, side)) {
-      if (!sprite) continue;
-      if (sprite.statusLabels) {
-        for (const pill of sprite.statusLabels) {
-          pill.destroy({ children: true });
-        }
-      }
-      sprite.statusLabels = [];
-    }
-  }
-}
-
-// --- Formation init / show / hide (ctx-based) --------------------------------
-
-function _initFormations(ctx) {
-  const { layers } = getApp();
-  if (!layers.creatures) return;
-
-  ctx.playerContainer = new Container();
-  ctx.enemyContainer = new Container();
-  layers.creatures.addChild(ctx.playerContainer);
-  layers.creatures.addChild(ctx.enemyContainer);
-}
-
-/**
- * Internal showFormation — renders a formation of creatures into a ctx.
- * Legacy callers hit this via the exported showFormation wrapper (with _defaultCtx).
- */
-async function _showFormation(ctx, side, creatures, { isBoss = false, skipEnter = false } = {}) {
-  const { app } = getApp();
-  if (!app) return;
-
-  const container = _sideContainer(ctx, side);
-  if (!container) return;
-  const normalizedCreatures = Array.isArray(creatures) ? [...creatures] : [];
-
-  if (
-    sameFormation(ctx.lastFormationInput[side], normalizedCreatures, isBoss) &&
-    ctx.creatureSprites[side].size > 0
-  ) {
-    // Same creatures by ID — update KO state (alpha/tint) in-place without rebuild.
-    // Matches scene.js dedup which updates HP bars in-place.
-    for (const sprite of _spritesArray(ctx, side)) {
-      const c = sprite.creatureData;
-      const match = normalizedCreatures.find(nc => (nc?.id || '') === (c?.id || ''));
-      if (match) {
-        const hp = match.currentHp ?? match.hp ?? 1;
-        if (hp <= 0) {
-          sprite.tint = 0x888888;
-          // Don't increase alpha — preserve animateKO fade-out (alpha=0)
-          if (sprite.alpha > 0.3) sprite.alpha = 0.3;
-        } else {
-          sprite.alpha = 1;
-          sprite.tint = 0xFFFFFF;
-        }
-        sprite.creatureData = match;
-      }
-    }
-    ctx.lastFormationInput[side] = { creatures: normalizedCreatures, opts: { isBoss, skipEnter } };
-    return;
-  }
-
-  const requestId = ++ctx.loadRequestId[side];
-
-  ctx.lastFormationInput[side] = {
-    creatures: normalizedCreatures,
-    opts: { isBoss, skipEnter },
-  };
-
-  const hadSprites = ctx.creatureSprites[side].size > 0;
-
-  // Clear existing
-  container.removeChildren();
-  // Clean up orphaned status labels before discarding sprite references
-  for (const sprite of _spritesArray(ctx, side)) {
-    if (sprite.statusLabels) {
-      for (const pill of sprite.statusLabels) {
-        pill.destroy({ children: true });
-      }
-    }
-  }
-  ctx.creatureSprites[side].clear();
-
-  if (!creatures || creatures.length === 0) return;
-
-  // Slot placement: 1->middle, 2->top+bottom, 3->all three
-  let slots;
-  if (creatures.length === 1) {
-    slots = [null, creatures[0], null];
-  } else if (creatures.length === 2) {
-    slots = [creatures[0], null, creatures[1]];
-  } else {
-    slots = [creatures[0], creatures[1], creatures[2]];
-  }
-
-  const staggerX = side === 'player' ? PLAYER_STAGGER_X : ENEMY_STAGGER_X;
-  const screenW = app.screen.width;
-  const screenH = app.screen.height;
-  const spriteSize = isBoss ? 120 : 60;
-
-  // Read DOM anchor positions so Pixi sprites align with their HUD name bars
-  const sceneArea = document.getElementById('scene-area');
-  const sceneRect = sceneArea?.getBoundingClientRect();
-  const formationSel = side === 'player' ? '.player-formation' : '.enemy-formation';
-
-  // Fallback base X (only used if DOM anchors are missing)
-  const baseX = side === 'player' ? screenW * 0.25 : screenW * 0.75;
-
-  for (let i = 0; i < slots.length; i++) {
-    const creature = slots[i];
-    if (!creature) continue;
-
-    const dataIndex = creatures.indexOf(creature);
-
-    // Load sprite texture
-    const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}.webp`;
-    let texture;
-    try {
-      texture = await Assets.load(spritePath);
-    } catch {
-      texture = Texture.WHITE; // Fallback — will show as white square
-    }
-
-    if (requestId !== ctx.loadRequestId[side]) return;
-
-    const sprite = new Sprite(texture);
-    sprite.anchor.set(0.5);
-    sprite.width = spriteSize;
-    sprite.height = spriteSize;
-
-    // Position from DOM anchor (centered above name bar), fallback to percentage
-    let targetX, targetY;
-    const anchorEl = sceneRect && document.querySelector(
-      `${formationSel} .formation-slot[data-index="${dataIndex}"] .formation-sprite--pixi-anchor`
-    );
-
-    if (anchorEl) {
-      const anchorRect = anchorEl.getBoundingClientRect();
-      targetX = anchorRect.left + anchorRect.width / 2 - sceneRect.left;
-      targetY = anchorRect.top + anchorRect.height / 2 - sceneRect.top;
-    } else {
-      targetX = baseX + staggerX[i];
-      targetY = (screenH * 0.3) + (i * screenH * 0.2);
-    }
-
-    sprite.y = targetY;
-
-    if (side === 'enemy' && !skipEnter && !hadSprites) {
-      sprite._enterTarget = targetX;
-      sprite._entering = true;
-      sprite.x = screenW + spriteSize * 2;
-      sprite.baseX = targetX;
-    } else {
-      sprite.x = targetX;
-      sprite.baseX = targetX;
-      sprite._entering = false;
-      revealFormationInfo(side, dataIndex);
-    }
-
-    // Depth scaling
-    sprite.scale.set(DEPTH_SCALES[i] * (spriteSize / texture.width));
-
-    // Flip enemy sprites
-    if (side === 'enemy') {
-      sprite.scale.x *= -1;
-    }
-
-    // Store base position for walking animation
-    sprite.baseY = sprite.y;
-    sprite.phaseOffset = Math.random() * Math.PI * 2;
-    sprite.creatureData = creature;
-    sprite._uid = creature.uid;
-    sprite._side = side;
-    sprite._dataIndex = dataIndex;
-
-    // KO state — fully invisible on rebuild (animateKO already ran)
-    if ((creature.currentHp ?? creature.hp ?? 1) <= 0) {
-      sprite.alpha = 0;
-      sprite.tint = 0x888888;
-    }
-
-    container.addChild(sprite);
-    // Key by uid. When a creature has no uid (e.g. legacy test data), fall back
-    // to a synthetic key so multiple uid-less creatures don't collide.
-    const key = creature.uid ?? `__idx_${dataIndex}_${creature.id || i}`;
-    ctx.creatureSprites[side].set(key, sprite);
-    sprite._storageKey = key;
-  }
-}
-
-function _hideFormation(ctx, side) {
-  const container = _sideContainer(ctx, side);
-  if (container) container.removeChildren();
-  // Clean up status labels for this side
-  for (const sprite of _spritesArray(ctx, side)) {
-    if (sprite.statusLabels) {
-      for (const pill of sprite.statusLabels) {
-        pill.destroy({ children: true });
-      }
-    }
-  }
-  ctx.creatureSprites[side].clear();
-  ctx.lastFormationInput[side] = null;
-}
-
-function _setFormationVisible(ctx, side, visible) {
-  const container = _sideContainer(ctx, side);
-  if (container) container.visible = visible;
-  // Also toggle status label pills (they live in layers.labels, not the formation container)
-  for (const sprite of _spritesArray(ctx, side) || []) {
-    if (!sprite?.statusLabels) continue;
-    for (const pill of sprite.statusLabels) {
-      pill.visible = visible;
-    }
-  }
-}
-
 // --- Sprite lookup / active glow (ctx-based) ---------------------------------
 
 /**
@@ -449,74 +218,12 @@ function _clearActiveGlow(ctx) {
   }
 }
 
-// --- NPC sprite (ctx-based) ---------------------------------------------------
-
-async function _showNpcSprite(ctx, spritePath, { slideIn = false } = {}) {
-  const { app, layers } = getApp();
-  if (!app) return;
-  // Add NPC to the top-level creatures layer (not enemyContainer)
-  // so it stays visible when enemyContainer is hidden during skill animations
-  const container = layers?.creatures || ctx.enemyContainer;
-  if (!container) return;
-
-  await _hideNpcSprite(ctx);
-
-  let texture;
-  try {
-    texture = await Assets.load(spritePath);
-  } catch {
-    texture = Texture.WHITE;
-  }
-
-  const screenW = app.screen.width;
-  const screenH = app.screen.height;
-  const sprite = new Sprite(texture);
-  sprite.anchor.set(0.5);
-  sprite.width = 170;
-  sprite.height = 170;
-  sprite.scale.x *= -1; // Face left (same as enemy creatures)
-  sprite.y = screenH * 0.5;
-
-  if (slideIn) {
-    sprite.x = screenW + 170;
-    container.addChild(sprite);
-    ctx.npcSprite = sprite;
-    await tween(sprite, { x: screenW * 0.7 }, { duration: 400, ease: 'easeOut' });
-  } else {
-    sprite.x = screenW * 0.7;
-    container.addChild(sprite);
-    ctx.npcSprite = sprite;
-  }
-}
-
-async function _hideNpcSprite(ctx, { slideOut = false } = {}) {
-  if (!ctx.npcSprite) return;
-  if (slideOut) {
-    const { app } = getApp();
-    const screenW = app?.screen.width || 400;
-    await tween(ctx.npcSprite, { x: screenW + 170 }, { duration: 300, ease: 'easeIn' });
-  }
-  if (ctx.npcSprite) {
-    ctx.npcSprite.destroy();
-    ctx.npcSprite = null;
-  }
-}
-
-function _hasNpcSprite(ctx) {
-  return ctx.npcSprite != null;
-}
-
 // --- Walking + per-frame update (ctx-based) ----------------------------------
 
-function _setWalking(ctx, enabled) {
-  ctx.walkingEnabled = enabled;
-}
-
 /**
- * Tick walking wobble / enter-slide animations for a ctx.
- * Legacy default ctx is intentionally unticked (the old app.ticker hook was
- * removed in Task 6; Task 16 wires scene.addUpdater to call this for the
- * scene ctx). Exported so BattleScene can register it as a per-frame updater.
+ * Tick walking wobble / enter-slide animations for a ctx. Exported so
+ * BattleScene / ExplorationScene can register it as a per-frame updater via
+ * scene.addUpdater. Scenes flip `ctx.walkingEnabled` directly.
  */
 export function _updateFormations(ctx, delta) {
   ctx.walkTime += delta * 0.05;
@@ -575,67 +282,12 @@ async function _animateLevelUp(ctx, side, index) {
   screenFlash({ color: 0xFFD700, duration: 150 });
 }
 
-// --- Resize (ctx-based) ------------------------------------------------------
-
-async function _resizeFormations(ctx, /* width */ _w, /* height */ _h) {
-  const { app } = getApp();
-  if (!app) return;
-
-  const sceneArea = document.getElementById('scene-area');
-  const sceneRect = sceneArea?.getBoundingClientRect();
-
-  for (const side of ['player', 'enemy']) {
-    const sprites = _spritesArray(ctx, side);
-    if (!sprites.length) continue;
-
-    const formationSel = side === 'player' ? '.player-formation' : '.enemy-formation';
-    const input = ctx.lastFormationInput[side];
-    const creatures = input?.creatures || [];
-
-    for (const sprite of sprites) {
-      const c = sprite.creatureData;
-      if (!c) continue;
-      const dataIndex = creatures.indexOf(c);
-      if (dataIndex < 0) continue;
-
-      const anchorEl = sceneRect && document.querySelector(
-        `${formationSel} .formation-slot[data-index="${dataIndex}"] .formation-sprite--pixi-anchor`
-      );
-      if (anchorEl) {
-        const anchorRect = anchorEl.getBoundingClientRect();
-        sprite.x = anchorRect.left + anchorRect.width / 2 - sceneRect.left;
-        sprite.y = anchorRect.top + anchorRect.height / 2 - sceneRect.top;
-        sprite.baseX = sprite.x;
-        sprite.baseY = sprite.y;
-      }
-    }
-  }
-
-  // Reposition status labels to match new sprite base positions
-  for (const side of ['player', 'enemy']) {
-    for (const sprite of _spritesArray(ctx, side)) {
-      if (!sprite.statusLabels?.length) continue;
-      const pills = sprite.statusLabels;
-      const pillHeight = pills[0].height;
-      const totalHeight = pills.length * pillHeight + LABEL_GAP * (pills.length - 1);
-      const startY = sprite.baseY - totalHeight / 2;
-      const xOffset = side === 'player' ? -LABEL_SIDE_OFFSET : LABEL_SIDE_OFFSET;
-
-      for (let i = 0; i < pills.length; i++) {
-        pills[i].x = sprite.baseX + xOffset;
-        pills[i].y = startY + i * (pillHeight + LABEL_GAP);
-      }
-    }
-  }
-}
-
 // --- New scene-oriented API --------------------------------------------------
 
 /**
  * Spawn a single creature sprite into `ctx` and register it by uid.
  *
- * Exported for scene-based callers (BattleScene.syncCreatures). Legacy callers
- * should continue to use showFormation (which delegates to `_showFormation`).
+ * Exported for scene-based callers (BattleScene.syncCreatures).
  *
  * @param {object} ctx
  * @param {'player'|'enemy'} side
@@ -668,8 +320,8 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   const slotI = Math.min(Math.max(slotIRaw, 0), DEPTH_SCALES.length - 1);
   const hadSprites = ctx.creatureSprites[side].size > 0;
 
-  // NOTE: unlike `_showFormation`, this function intentionally does NOT
-  // use `ctx.loadRequestId` to self-cancel. BattleScene._diff calls us
+  // NOTE: this function intentionally does NOT use `ctx.loadRequestId` to
+  // self-cancel. BattleScene._diff calls us
   // in Promise.all over N creatures; a per-call counter would make N-1
   // of those calls bail out because the last increment wins. Storage by
   // uid is idempotent — if a caller kicks off two spawns for the same
@@ -978,7 +630,7 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
   sprite.anchor.set(0.5);
   sprite.width = 170;
   sprite.height = 170;
-  sprite.scale.x *= -1; // Face left (same convention as enemy creatures + legacy _showNpcSprite)
+  sprite.scale.x *= -1; // Face left (same convention as enemy creatures)
   sprite.y = screenH * 0.5;
 
   scene.layers.npcs.addChild(sprite);
@@ -1004,8 +656,8 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
 
 /**
  * Scene-aware NPC sprite teardown. Removes from parent and destroys the
- * PIXI sprite. Synchronous — use hideNpcSprite with slideOut on the legacy
- * API if you want the animated variant.
+ * PIXI sprite. Synchronous — use Scene.hideNpcSprite({ slideOut: true })
+ * for the animated variant (base Scene class owns the slide-out tween).
  *
  * @param {Scene} scene - ExplorationScene-like scene (taken for API consistency;
  *   currently unused but reserved for a future tween-based slide-out).
@@ -1015,74 +667,4 @@ export function removeNpcSprite(scene, sprite) {
   if (!sprite) return;
   if (sprite.parent) sprite.parent.removeChild(sprite);
   sprite.destroy({ children: true });
-}
-
-// --- Legacy exports (thin wrappers around _defaultCtx) -----------------------
-
-export function syncPixiStatusLabels(side, index, keys, statStages) {
-  return _syncPixiStatusLabels(_defaultCtx, side, index, keys, statStages);
-}
-
-export function clearAllPixiStatusLabels() {
-  return _clearAllPixiStatusLabels(_defaultCtx);
-}
-
-export function initFormations() {
-  return _initFormations(_defaultCtx);
-}
-
-export async function showFormation(side, creatures, opts = {}) {
-  return _showFormation(_defaultCtx, side, creatures, opts);
-}
-
-export function hideFormation(side) {
-  return _hideFormation(_defaultCtx, side);
-}
-
-export function setFormationVisible(side, visible) {
-  return _setFormationVisible(_defaultCtx, side, visible);
-}
-
-export function setWalking(enabled) {
-  return _setWalking(_defaultCtx, enabled);
-}
-
-export function getCreatureSprite(side, index) {
-  return _getCreatureSprite(_defaultCtx, side, index);
-}
-
-export function showActiveGlow(index) {
-  return _showActiveGlow(_defaultCtx, index);
-}
-
-export function clearActiveGlow() {
-  return _clearActiveGlow(_defaultCtx);
-}
-
-export async function showNpcSprite(spritePath, opts = {}) {
-  return _showNpcSprite(_defaultCtx, spritePath, opts);
-}
-
-export async function hideNpcSprite(opts = {}) {
-  return _hideNpcSprite(_defaultCtx, opts);
-}
-
-export function hasNpcSprite() {
-  return _hasNpcSprite(_defaultCtx);
-}
-
-export function updateFormations(delta) {
-  return _updateFormations(_defaultCtx, delta);
-}
-
-export async function animateKO(side, index) {
-  return _animateKO(_defaultCtx, side, index);
-}
-
-export async function animateLevelUp(side, index) {
-  return _animateLevelUp(_defaultCtx, side, index);
-}
-
-export async function resizeFormations(width, height) {
-  return _resizeFormations(_defaultCtx, width, height);
 }

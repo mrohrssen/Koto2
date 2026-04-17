@@ -1,8 +1,7 @@
 import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
-import * as pixiFormation from '../pixi/formation.js';
-import { hideNpcSprite as pixiHideNpcSprite } from '../pixi/formation.js';
 import { toRomaji } from './romaji.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
 
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
 function creatureNameRuby(creature) {
@@ -74,9 +73,10 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
         if (spriteEl) spriteEl.classList.toggle('ko', (curHp <= 0));
         slot.dataset.hp = String(curHp);
       });
-      await pixiFormation.showFormation(side, creatures, { isBoss, skipEnter: true }).catch((err) => {
-        console.warn('[Scene] Pixi showFormation failed:', err);
-      });
+      // Pixi formation sprites are owned by the active scene's formation ctx
+      // (BattleScene during combat, PvP renders DOM-only after Task 18).
+      // DOM-side HP bars were updated above; scene diff picks up state via
+      // scene.syncCreatures on the next BattleScene update.
       if (window.__inspector && window.__intentLog) {
         const scan = window.__inspector.checkCreatures();
         window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
@@ -90,7 +90,6 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
   container.classList.toggle('boss-encounter', isBoss);
 
   if (!creatures || creatures.length === 0) {
-    pixiFormation.hideFormation(side);
     return;
   }
 
@@ -204,9 +203,9 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     container.appendChild(slotEl);
   });
 
-  await pixiFormation.showFormation(side, creatures, { isBoss }).catch((err) => {
-    console.warn('[Scene] Pixi showFormation failed:', err);
-  });
+  // Pixi formation sprites are owned by the active scene (BattleScene for
+  // combat). PvP currently renders DOM-only — this call intentionally does
+  // not spawn Pixi sprites; Task 18 removed the legacy default-ctx path.
   if (window.__inspector && window.__intentLog) {
     const scan = window.__inspector.checkCreatures();
     window.__intentLog.check({ ok: scan.ok, tag: scan.mismatches[0]?.type, detail: scan.mismatches[0]?.detail });
@@ -227,7 +226,9 @@ export function hideFormation(side) {
   const container = side === 'player' ? dom.playerFormation : dom.enemyFormation;
   container.innerHTML = '';
   container.style.opacity = '';
-  pixiFormation.hideFormation(side);
+  // Pixi sprites are removed by BattleScene.syncCreatures when combat ends
+  // (see combat-loop.stopCombatLoop); this DOM-side clear only removes the
+  // HP-bar/name slot markup.
 
   if (window.__inspector && window.__intentLog) {
     const scan = window.__inspector.checkCreatures();
@@ -349,7 +350,14 @@ function removePlaceholder() {
 
 /** Hide enemy from scene */
 export function hideEnemy() {
-  pixiHideNpcSprite();
+  // Route NPC-sprite teardown through the active scene so the registry
+  // tracks it (removed in Task 18 — legacy _defaultCtx path is gone).
+  const activeScene = getSceneManager()?.currentScene;
+  if (activeScene && !activeScene.disposed && activeScene.npcSprite) {
+    activeScene.hideNpcSprite().catch(err => {
+      console.warn('[combat-dom] hideNpcSprite failed:', err);
+    });
+  }
   dom.npcDisplay.classList.remove('visible');
   dom.enemySprite.src = '';
   dom.enemySprite.classList.remove('visible');

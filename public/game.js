@@ -129,7 +129,7 @@ import { createInspector } from './js/inspector.js';
 // PixiJS battle stage imports
 import { initApp, getApp } from './js/pixi/app.js';
 import { loadParallax, setScrollState, updateParallax } from './js/pixi/parallax.js';
-import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite, getCreatureSprite } from './js/pixi/formation.js';
+import { getCreatureSpriteForScene } from './js/pixi/formation.js';
 import { updateParticles, isFrozen } from './js/pixi/effects.js';
 import { SceneManager, setSceneManager, isSceneManagerInitialized, getSceneManager } from './js/scenes/scene-manager.js';
 import { BattleScene } from './js/scenes/battle-scene.js';
@@ -259,9 +259,12 @@ function mapRunAreaToParallaxId(currentArea) {
 }
 
 function syncParallaxScrollWithPhase() {
+  // Walking wobble is toggled on the active scene's formation ctx
+  // (ExplorationScene sets walkingEnabled=true; BattleScene leaves it false).
+  // The legacy setWalking() calls here targeted the removed _defaultCtx
+  // whose updater was never ticked, so they were no-ops — dropped in Task 18.
   if (isPvpBattleActive()) {
     setScrollState('encounter');
-    setWalking(false);
     lastPhaseForParallax = gameState.phase;
     return;
   }
@@ -273,7 +276,6 @@ function syncParallaxScrollWithPhase() {
   const stoppedPhases = ['combat', 'room_encounter', 'friendlyNpc', 'npc_dialogue', 'dealer', 'skillMaster', 'whackAMole', 'speedReviewRoom'];
   if ((p === 'room' || p === 'exploring') && stoppedPhases.includes(prev)) {
     setScrollState('accelerating');
-    setWalking(true);
     return;
   }
 
@@ -282,7 +284,6 @@ function syncParallaxScrollWithPhase() {
     case 'room':
     case 'wordDiscovery':
       setScrollState('scrolling');
-      setWalking(true);
       break;
     case 'friendlyNpc':
     case 'npc_dialogue':
@@ -292,15 +293,12 @@ function syncParallaxScrollWithPhase() {
     case 'speedReviewRoom':
     case 'room_encounter':
       setScrollState('decelerating');
-      setWalking(false);
       break;
     case 'combat':
       setScrollState('encounter');
-      setWalking(false);
       break;
     default:
       setScrollState('encounter');
-      setWalking(false);
   }
 }
 
@@ -450,11 +448,8 @@ function updateScene() {
     if (npcSkills?.length) {
       scene.showNpcSkills(npcSkills);
     }
-    // PixiJS: show player formation alongside DOM formation
-    const playerParty = gameState.run?.creatureParty?.active;
-    if (playerParty?.length) {
-      pixiShowFormation('player', playerParty);
-    }
+    // Player formation sprites are spawned by BattleScene.syncCreatures on
+    // transition; no legacy pixiShowFormation call needed here.
   } else if (gameState.phase === 'shrine') {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
@@ -475,7 +470,8 @@ function updateScene() {
   } else if (gameState.phase === 'npc_skill_selection') {
     // NPC sprite stays visible during skill selection — don't hideEnemies().
     // On page reload the pixi sprite is lost, so recreate it.
-    if (!hasNpcSprite()) {
+    const activeScene = getSceneManager()?.currentScene;
+    if (!activeScene?.npcSprite) {
       const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
       const npc = room?.npcBattle?.npc || room?.npc;
       if (npc) {
@@ -584,8 +580,12 @@ function updateGameContent() {
           if (!result?.state) {
             throw new Error(result?.error || 'No game state from server');
           }
-          // Slide NPC out before transitioning to next phase
-          await pixiHideNpcSprite({ slideOut: true });
+          // Slide NPC out via the active scene (BattleScene after NPC win,
+          // or ExplorationScene on page-reload recovery) before transitioning.
+          const npcHostScene = getSceneManager()?.currentScene;
+          if (npcHostScene && !npcHostScene.disposed && npcHostScene.npcSprite) {
+            await npcHostScene.hideNpcSprite({ slideOut: true });
+          }
           scene.hideNpcTrainer();
           updateGameState(result.state);
           updateUI();
@@ -1616,9 +1616,13 @@ async function initGame() {
       return container.querySelectorAll('.formation-slot:not(.defeated):not(.befriended) .formation-hp-fill').length;
     },
     getPixiSprites: (side) => {
+      // After Task 18, sprites live on the active scene's formation ctx
+      // (BattleScene during combat). Resolve via the scene-facing lookup
+      // so the intent-log inspector sees the same sprites combat uses.
+      const activeScene = getSceneManager()?.currentScene;
       const sprites = [];
       for (let i = 0; i < 3; i++) {
-        const s = getCreatureSprite(side, i);
+        const s = getCreatureSpriteForScene(activeScene, side, i);
         if (s) sprites.push({ alpha: s.alpha, tint: s.tint });
         else sprites.push(null);
       }

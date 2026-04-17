@@ -3,7 +3,6 @@ import { getApp } from './app.js';
 import { tween, wait } from './tween.js';
 import { burstParticles, screenFlash, ELEMENT_COLORS } from './effects.js';
 import { showEventPopup } from './text.js';
-import { getCreatureSprite } from './formation.js';
 
 // ============ STATUS COLORS ============
 
@@ -33,17 +32,7 @@ const STATUS_LABELS = {
   temp_attack_flat:  'ATK+',
 };
 
-// ============ ONGOING VFX TRACKING (LEGACY) ============
-
-/**
- * Legacy module-level ongoing-VFX tracking. Keyed by sprite reference so the
- * legacy path (callers that pass side+index) can coexist with the new scene-
- * ctx path that keys by uid on `scene.vfxByUid`. Both paths share the same
- * per-effect tick bodies via `_startOngoingInto` + a pluggable registerUpdater.
- *
- * @type {Map<import('pixi.js').Sprite, Record<string, OngoingEntry>>}
- */
-const ongoingVfx = new Map();
+// ============ ONGOING VFX TRACKING ============
 
 /**
  * @typedef {Object} OngoingEntry
@@ -61,25 +50,13 @@ function hexToCSS(hex) {
   return '#' + hex.toString(16).padStart(6, '0');
 }
 
-/**
- * Get or create the legacy ongoing-entry map for a sprite.
- * @param {import('pixi.js').Sprite} sprite
- * @returns {Record<string, OngoingEntry>}
- */
-function getOngoingMap(sprite) {
-  if (!ongoingVfx.has(sprite)) {
-    ongoingVfx.set(sprite, {});
-  }
-  return ongoingVfx.get(sprite);
-}
-
 // ============ APPLIED ONE-SHOTS ============
 
 /**
  * Play the one-shot "applied" animation for a status effect. The one-shots
  * do NOT depend on ticker or layer ownership — they call into pure VFX
- * primitives (burstParticles, showEventPopup, screenFlash, tween). Shared
- * by the legacy and scene-ctx entry points.
+ * primitives (burstParticles, showEventPopup, screenFlash, tween). Invoked
+ * by playStatusAppliedForScene.
  *
  * @param {import('pixi.js').Sprite} sprite
  * @param {string} effectType
@@ -150,8 +127,8 @@ async function _playAppliedOneShot(sprite, effectType) {
 // The six ongoing-visual effects each register a per-frame updater and
 // optionally mount a display container into the effects layer. The per-effect
 // bodies are parameterized on a `registerUpdater(fnDeltaMS)` callback so the
-// legacy path (app.ticker.add) and scene path (scene.addUpdater) both reuse
-// them unmodified.
+// scene-ctx path can route through scene.addUpdater (registry-tracked, auto-
+// disposed on scene.exit).
 //
 // `registerUpdater` is always invoked with a function that takes a single
 // `deltaMS` scalar. Returns a `cancel()` that stops the tick.
@@ -370,7 +347,7 @@ function _startTaunt(sprite, effectsLayer, registerUpdater) {
 /**
  * Restore mutated sprite properties after an ongoing effect ends. Safe to
  * call with a destroyed sprite — the sprite guard skips any writes. Called
- * from both the legacy and scene-ctx clear paths.
+ * from the scene-ctx clear path.
  *
  * @param {import('pixi.js').Sprite} sprite
  * @param {string} effectType
@@ -393,7 +370,7 @@ function _restoreSpriteForEffect(sprite, effectType, entry) {
 
 /**
  * Tear down a single ongoing entry: cancel the tick, destroy the container,
- * and restore sprite properties. Shared by both clear paths.
+ * and restore sprite properties.
  *
  * @param {import('pixi.js').Sprite} sprite
  * @param {string} effectType
@@ -407,119 +384,6 @@ function _teardownEntry(sprite, effectType, entry) {
   _restoreSpriteForEffect(sprite, effectType, entry);
 }
 
-// ============ LEGACY EXPORTS (unchanged signatures) =========================
-//
-// Legacy callers (combat-loop.js, combat-vfx.js) still call these with
-// (side, index, effectType). They resolve the sprite via getCreatureSprite
-// and record entries in the module-level ongoingVfx Map. Ticker registration
-// goes through app.ticker.add; tests (tier 1) don't exercise any of this.
-
-/**
- * registerUpdater implementation for the legacy path — routes through the
- * live PIXI app ticker. `fnDeltaMS` is called with a scalar deltaMS every
- * frame until the returned cancel() runs.
- *
- * @param {(deltaMS: number) => void} fnDeltaMS
- * @returns {() => void}
- */
-function _legacyRegisterUpdater(fnDeltaMS) {
-  const { app } = getApp();
-  if (!app) return () => {};
-  const wrapped = (ticker) => fnDeltaMS(ticker.deltaMS);
-  app.ticker.add(wrapped);
-  return () => app.ticker.remove(wrapped);
-}
-
-/**
- * Play the one-shot "applied" animation for a status effect, then start the
- * ongoing visual. Legacy API — resolves sprite via getCreatureSprite and
- * stores state in the module-level `ongoingVfx` Map.
- *
- * @deprecated Legacy export retained for combat-loop.js / combat-vfx.js
- *   compatibility. Scheduled for removal in Task 18 after Task 16 migrates
- *   combat-loop to the scene-ctx API (createStatusVfxContext +
- *   playStatusAppliedForScene / clearStatusVfxForScene).
- *
- * @param {'player'|'enemy'} side
- * @param {number} index
- * @param {string} effectType
- */
-export async function playStatusApplied(side, index, effectType) {
-  const sprite = getCreatureSprite(side, index);
-  if (!sprite) return;
-
-  // --- Start ongoing visual (if any) BEFORE the one-shot ---
-  // Register the ongoing first so a sync clearStatusVfx called right after
-  // this function (see combat-vfx.js apply-then-remainingTurns===0 pattern)
-  // finds the entry. Awaiting _playAppliedOneShot first would introduce a
-  // microtask yield even for synchronous effect bodies, letting the sync
-  // clear run before the ongoing was registered — leaking the VFX.
-  const { layers } = getApp();
-  if (!layers?.effects) return;
-
-  // Don't double-start
-  const map = getOngoingMap(sprite);
-  if (map[effectType]) return;
-
-  const entry = _startOngoingInto(sprite, effectType, layers.effects, _legacyRegisterUpdater);
-  if (entry) {
-    map[effectType] = entry;
-  }
-
-  // Fire-and-forget the one-shot visual burst — caller doesn't await, and
-  // awaiting internally would re-introduce the microtask-yield race described
-  // above. Catch to avoid unhandled-rejection warnings.
-  _playAppliedOneShot(sprite, effectType).catch(err => {
-    console.error(`[status-vfx] _playAppliedOneShot threw for ${effectType}:`, err);
-  });
-}
-
-/**
- * Remove ongoing VFX for one effect on one creature. Restores sprite
- * properties (alpha, rotation, tint) as needed.
- *
- * @deprecated Legacy export retained for combat-loop.js / combat-vfx.js
- *   compatibility. Scheduled for removal in Task 18 after Task 16 migrates
- *   combat-loop to the scene-ctx API (createStatusVfxContext +
- *   playStatusAppliedForScene / clearStatusVfxForScene).
- *
- * @param {'player'|'enemy'} side
- * @param {number} index
- * @param {string} effectType
- */
-export function clearStatusVfx(side, index, effectType) {
-  const sprite = getCreatureSprite(side, index);
-  if (!sprite) return;
-
-  const map = ongoingVfx.get(sprite);
-  if (!map || !map[effectType]) return;
-
-  const entry = map[effectType];
-  _teardownEntry(sprite, effectType, entry);
-  delete map[effectType];
-  if (Object.keys(map).length === 0) ongoingVfx.delete(sprite);
-}
-
-/**
- * Remove ALL ongoing status VFX across all creatures (legacy bulk-clear).
- * Called at combat end by combat-loop.js to ensure a clean state. Scene-ctx
- * callers do NOT need this — scene.exit() drops all addUpdater registrations
- * via registry.dispose(), and the vfxByUid Map is cleared in beforeExit().
- *
- * @deprecated Legacy export retained for combat-loop.js / combat-vfx.js
- *   compatibility. Scheduled for removal in Task 18 after Task 16 migrates
- *   combat-loop to the scene-ctx API (createStatusVfxContext +
- *   playStatusAppliedForScene / clearStatusVfxForScene).
- */
-export function clearAllStatusVfx() {
-  for (const [sprite, map] of ongoingVfx) {
-    for (const effectType of Object.keys(map)) {
-      _teardownEntry(sprite, effectType, map[effectType]);
-    }
-  }
-  ongoingVfx.clear();
-}
-
 // ============ SCENE-CTX API =================================================
 //
 // Stateless-ish entry points for BattleScene. State lives on the scene:
@@ -527,9 +391,6 @@ export function clearAllStatusVfx() {
 // OngoingEntry>>. Per-frame updaters are registered via `scene.addUpdater` so
 // `scene.exit()` auto-drops them through `registry.dispose()`. Display
 // containers mount into `scene.layers.effects`.
-//
-// Task 16 will flip combat-loop callers over to these. Until then, these are
-// defined but not invoked (except in unit tests).
 
 /**
  * Allocate a status-VFX context that shares the scene's `vfxByUid` Map.
@@ -553,8 +414,7 @@ export function createStatusVfxContext(scene) {
 /**
  * registerUpdater for the scene-ctx path — routes through scene.addUpdater
  * so scene.exit() drops the tick automatically. Returns the cancel function
- * returned by addUpdater. Callers see the same contract as the legacy
- * registerUpdater.
+ * returned by addUpdater.
  *
  * Adapts PIXI's (dt, deltaMS) scene updater signature down to the
  * single-deltaMS scalar that the shared per-effect bodies expect.
@@ -572,9 +432,8 @@ function _sceneRegisterUpdaterFor(scene) {
  * case.
  *
  * @param {{ scene: import('../scenes/scene.js').Scene, vfxByUid: Map<string, Record<string, OngoingEntry>> }} ctx
- * @param {'player'|'enemy'} side - retained for parity with the legacy API
- *   even though uid alone identifies the sprite. Scene callers can and should
- *   pass the real side for clarity / future routing decisions.
+ * @param {'player'|'enemy'} side - kept in the signature for clarity and
+ *   future routing decisions even though uid alone identifies the sprite.
  * @param {string} uid
  * @param {string} effectType
  * @returns {Promise<OngoingEntry|null>}
@@ -593,9 +452,9 @@ export async function playStatusAppliedForScene(ctx, side, uid, effectType) {
   const effectsLayer = ctx.scene.layers?.effects;
   if (!effectsLayer) return null;
 
-  // Don't double-start — align with legacy: return null, not the existing
-  // entry. Callers only use the return value to distinguish "registered new
-  // entry" from "nothing happened".
+  // Don't double-start — return null, not the existing entry. Callers only
+  // use the return value to distinguish "registered new entry" from
+  // "nothing happened".
   let map = ctx.vfxByUid.get(uid);
   if (map && map[effectType]) return null;
   if (!map) {
@@ -603,9 +462,9 @@ export async function playStatusAppliedForScene(ctx, side, uid, effectType) {
     ctx.vfxByUid.set(uid, map);
   }
 
-  // Register the ongoing BEFORE the one-shot to avoid the microtask-yield
-  // race described on the legacy playStatusApplied above: a sync
-  // clearStatusVfxForScene called after us must find the entry.
+  // Register the ongoing BEFORE the one-shot to close the microtask-yield
+  // race: a sync clearStatusVfxForScene called after us must find the entry,
+  // so the ongoing must be stored before any await in _playAppliedOneShot.
   const entry = _startOngoingInto(
     sprite,
     effectType,

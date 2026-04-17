@@ -1,6 +1,5 @@
 import { Application, Container } from 'pixi.js';
 import { resizeParallax } from './parallax.js';
-import { resizeFormations } from './formation.js';
 import { initParticles, initFlash, initVignette } from './effects.js';
 
 let app = null;
@@ -69,13 +68,15 @@ export async function initApp() {
   initFlash();
   initVignette();
 
-  // Resize handling
+  // Resize handling. Scene-owned formation ctxs reposition sprites via DOM
+  // anchors on spawn/update — resize re-lays DOM first, and subsequent diff
+  // passes pick up the new anchor positions. No explicit formation-resize
+  // hook needed after Task 18.
   resizeObserver = new ResizeObserver(([entry]) => {
     const { width, height } = entry.contentRect;
     if (width > 0 && height > 0) {
       app.renderer.resize(width, height);
       resizeParallax(width, height);
-      resizeFormations(width, height);
     }
   });
   resizeObserver.observe(sceneArea);

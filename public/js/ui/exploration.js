@@ -5,11 +5,6 @@ import { hapticLight } from '../native/index.js';
 import { creatureBgUrl, itemSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
 import { hideEnemy } from './combat-dom.js';
 import { showNpcInDisplay } from './exploration-dom.js';
-// Legacy PIXI NPC sprite fallbacks — used only when no ExplorationScene is
-// active (e.g. Hub tutorial, initial skill pick, prologue). When a scene IS
-// active we call scene.showNpcSprite / scene.hideNpcSprite so the NPC sprite
-// is registry-tracked and cleaned up on scene transitions.
-import { showNpcSprite as legacyShowNpcSprite, hideNpcSprite as legacyHideNpcSprite } from '../pixi/formation.js';
 import { t, isJapanified } from './i18n.js';
 import * as chestsUI from './chests.js';
 import * as crestsEquipUI from './crests-equip.js';
@@ -51,18 +46,16 @@ let showAdventureReport = null;
 
 /** Show multi-page Cid tutorial narration. Optionally slides her sprite in/out. */
 async function showTutorialNarration(pages, { showSprite = false } = {}) {
-  // If an ExplorationScene is active, use the scene-owned NPC sprite so it
-  // participates in scene cleanup (auto-removed on scene transition). Hub /
-  // initial-skill-pick / prologue run without a scene — fall back to the
-  // legacy default-ctx sprite which still renders into layers.creatures.
+  // Scene-owned NPC sprite (participates in scene cleanup on transitions).
+  // Hub / initial-skill-pick / prologue run without an ExplorationScene —
+  // in those cases the Pixi slide is skipped and only the DOM side of the
+  // tutorial runs (the legacy _defaultCtx fallback was removed in Task 18).
   const scene = showSprite ? getExplorationScene() : null;
   const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
   if (showSprite) {
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
     if (scene) {
       await scene.showNpcSprite(cidSprite, { slideIn: true });
-    } else {
-      await legacyShowNpcSprite(cidSprite, { slideIn: true });
     }
   }
 
@@ -71,10 +64,8 @@ async function showTutorialNarration(pages, { showSprite = false } = {}) {
   }
 
   if (showSprite) {
-    if (scene && !scene.disposed) {
+    if (scene && !scene.disposed && scene.npcSprite) {
       await scene.hideNpcSprite({ slideOut: true });
-    } else {
-      await legacyHideNpcSprite({ slideOut: true });
     }
     hideEnemy();
   }
@@ -991,10 +982,8 @@ export async function renderWhackAMole() {
       label: noLabel,
       onClick: async () => {
         const scene = getExplorationScene();
-        if (scene && !scene.disposed) {
+        if (scene && !scene.disposed && scene.npcSprite) {
           await scene.hideNpcSprite({ slideOut: true });
-        } else {
-          await legacyHideNpcSprite({ slideOut: true });
         }
         try {
           const result = await apiSkipWhackAMole();
@@ -1428,18 +1417,14 @@ export async function renderFriendlyNpc() {
     const scene = getExplorationScene();
     if (scene) {
       await scene.showNpcSprite(cidSprite, { slideIn: true });
-    } else {
-      await legacyShowNpcSprite(cidSprite, { slideIn: true });
     }
 
     const [itemShopCidLine] = getTutorialNarration(2);
     await sceneModule.showNarration(itemShopCidLine, { speaker: 'Cid' });
 
     const afterScene = getExplorationScene();
-    if (afterScene && !afterScene.disposed) {
+    if (afterScene && !afterScene.disposed && afterScene.npcSprite) {
       await afterScene.hideNpcSprite({ slideOut: true });
-    } else {
-      await legacyHideNpcSprite({ slideOut: true });
     }
 
     // Restore NPC sprite so they're visible during item selection
@@ -1449,13 +1434,12 @@ export async function renderFriendlyNpc() {
         : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
       showNpcInDisplay(npc.nameEn || npc.name, npcSprite, { skipPixi: true });
       // Re-fetch the current scene: a transition may have happened during the
-      // await of the tutorial narration. Fall back to the legacy sprite path
-      // if not in an ExplorationScene (shouldn't normally happen here).
+      // await of the tutorial narration. If not in an ExplorationScene
+      // (shouldn't normally happen here), only the DOM NPC display runs —
+      // the legacy _defaultCtx fallback was removed in Task 18.
       const currentScene = getExplorationScene();
       if (currentScene) {
         await currentScene.showNpcSprite(npcSprite, { slideIn: true });
-      } else {
-        await legacyShowNpcSprite(npcSprite, { slideIn: true });
       }
     }
   }

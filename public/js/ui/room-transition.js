@@ -1,13 +1,5 @@
 import { showFormation, hideFormation } from './combat-dom.js';
 import { showNpcTrainer, showNpcInDisplay, showDealer } from './exploration-dom.js';
-import {
-  setFormationVisible,
-  // Legacy NPC sprite fallbacks — used only when no scene with layers.npcs
-  // is active (shouldn't happen in the normal flow after Task 17, but
-  // defensive in case the transition fails).
-  showNpcSprite as legacyShowNpcSprite,
-  hideNpcSprite as legacyHideNpcSprite,
-} from '../pixi/formation.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { speakText } from '../tts.js';
 import * as narrationBox from './narration-box.js';
@@ -78,13 +70,37 @@ export async function playRoomTransition(gameState) {
 }
 
 /**
+ * Toggle Pixi visibility of a formation side on the active scene's formation
+ * ctx. Scene-aware replacement for the removed legacy `setFormationVisible`
+ * export — reaches into `scene.formation.{player,enemy}Container` + any
+ * status-label pills stashed on sprites.
+ */
+function setSceneFormationVisible(side, visible) {
+  const scene = getSceneManager()?.currentScene;
+  const ctx = scene?.formation;
+  if (!ctx) return;
+  const container = side === 'player' ? ctx.playerContainer : ctx.enemyContainer;
+  if (container) container.visible = visible;
+  const sprites = ctx.creatureSprites?.[side];
+  if (sprites) {
+    for (const sprite of sprites.values()) {
+      if (!sprite?.statusLabels) continue;
+      for (const pill of sprite.statusLabels) {
+        pill.visible = visible;
+      }
+    }
+  }
+}
+
+/**
  * Play NPC battle intro: NPC slides in, says greeting, slides out.
  *
  * Runs against the currently-active scene (BattleScene after Task 17's
  * pre-combat transition in game.js::startEncounter). The NPC layer exists on
  * both ExplorationScene and BattleScene, so this works regardless of which
- * scene is active at call time. Falls back to the legacy default-ctx path
- * if no scene is available (defensive — shouldn't normally happen).
+ * scene is active at call time. If no scene with an `npcs` layer is active
+ * (boot window / transition failure), the Pixi slide-in is skipped and only
+ * the DOM side of the intro plays.
  */
 export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSpriteFn, npcDialogue) {
   if (!npcData) return;
@@ -104,8 +120,6 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
     : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
   if (hasScene) {
     await scene.showNpcSprite(spritePath, { slideIn: true });
-  } else {
-    await legacyShowNpcSprite(spritePath, { slideIn: true });
   }
 
   // Show bootstrap word-gated fightStart line, fall back to legacy AI greeting
@@ -135,8 +149,6 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
   const currentScene = getSceneManager().currentScene;
   if (currentScene && !currentScene.disposed && currentScene.layers?.npcs && currentScene.npcSprite) {
     await currentScene.hideNpcSprite({ slideOut: true });
-  } else {
-    await legacyHideNpcSprite({ slideOut: true });
   }
   hideNpcSpriteFn();
 }
@@ -145,7 +157,8 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
  * Wrap NPC skill activation with slide-in/out animation.
  *
  * Runs against the currently-active scene (always BattleScene during combat).
- * Falls back to the legacy default-ctx path defensively if no scene is set.
+ * If no scene is active (shouldn't normally happen mid-combat) we skip the
+ * Pixi slide but still run the skill callback + DOM enemy formation toggle.
  */
 export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpriteFn, skillCallback, enemies) {
   const enemyFormation = document.getElementById('enemy-formation');
@@ -155,7 +168,7 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
 
   // Hide both DOM formation (opacity) and Pixi sprites (container.visible)
   if (enemyFormation) enemyFormation.style.opacity = '0';
-  setFormationVisible('enemy', false);
+  setSceneFormationVisible('enemy', false);
 
   if (npcData && showNpcSpriteFn) {
     showNpcSpriteFn(npcName, npcData.id, npcData, { skipPixi: true });
@@ -164,8 +177,6 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
       : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
     if (hasScene) {
       await scene.showNpcSprite(spritePath, { slideIn: true });
-    } else {
-      await legacyShowNpcSprite(spritePath, { slideIn: true });
     }
   }
 
@@ -174,8 +185,6 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   const currentScene = getSceneManager().currentScene;
   if (currentScene && !currentScene.disposed && currentScene.layers?.npcs && currentScene.npcSprite) {
     await currentScene.hideNpcSprite({ slideOut: true });
-  } else {
-    await legacyHideNpcSprite({ slideOut: true });
   }
   if (hideNpcSpriteFn) hideNpcSpriteFn();
 
@@ -196,6 +205,6 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   }
 
   // Restore both DOM and Pixi visibility
-  setFormationVisible('enemy', true);
+  setSceneFormationVisible('enemy', true);
   if (freshFormation) freshFormation.style.opacity = '1';
 }

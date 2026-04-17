@@ -1,8 +1,23 @@
 import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
-import { showNpcSprite as pixiShowNpcSprite } from '../pixi/formation.js';
 import { renderJpSentence, getKnownWords, entityToToken, esc as escHtml } from './bootstrap-client.js';
 import { hideFormation, hideEnemy } from './combat-dom.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
+
+/**
+ * Route an NPC sprite to the active scene's `npcs` layer when available.
+ * Scene-aware replacement for the removed legacy `pixiShowNpcSprite` call.
+ * When no scene with an `npcs` layer is active (boot / transition gap), the
+ * Pixi slide is skipped — the DOM side of the NPC display still renders.
+ */
+function sceneShowNpc(spritePath) {
+  const scene = getSceneManager()?.currentScene;
+  if (!scene || scene.disposed || !scene.layers?.npcs) return;
+  // Fire-and-forget — callers of showNpcInDisplay / showNpcTrainer are sync.
+  scene.showNpcSprite(spritePath).catch(err => {
+    console.warn('[exploration-dom] scene.showNpcSprite failed:', err);
+  });
+}
 
 /* ------------------------------------------------------------------ */
 /*  Placeholders (NPC fallback sprites)                                */
@@ -28,7 +43,7 @@ export function showNpcInDisplay(name, spritePath, { skipPixi = false } = {}) {
   // Hide DOM sprite — NPC renders on PixiJS canvas now
   dom.enemySprite.src = '';
   dom.enemySprite.classList.remove('visible');
-  if (!skipPixi) pixiShowNpcSprite(spritePath);
+  if (!skipPixi) sceneShowNpc(spritePath);
 }
 
 /** Show shrine fox in scene (no HP bar) */

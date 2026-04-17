@@ -24,7 +24,7 @@ await mock.module('../../../public/js/pixi/effects.js', {
   namedExports: { burstParticles: () => {}, ELEMENT_COLORS: {} }
 });
 await mock.module('../../../public/js/pixi/formation.js', {
-  namedExports: { getCreatureSprite: () => null, showActiveGlow: () => {}, showNpcSprite: () => {}, hideNpcSprite: () => {} }
+  namedExports: { getCreatureSpriteForScene: () => null, showActiveGlowForScene: () => {} }
 });
 await mock.module('../../../public/js/pixi/text.js', {
   namedExports: { popupBuff: () => {} }
@@ -58,6 +58,9 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
 });
 await mock.module('../../../public/js/ui/befriend-quiz-state.js', {
   namedExports: { restoreBefriendQuizEnemyUi: () => {} }
+});
+await mock.module('../../../public/js/scenes/scene-manager.js', {
+  namedExports: { getSceneManager: () => ({ currentScene: null }) }
 });
 
 const {
