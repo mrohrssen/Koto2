@@ -363,6 +363,12 @@ async function ensureSceneForPhase(phase) {
     'combat', 'exploring', 'room', 'room_encounter', 'post_combat_shop',
     'friendlyNpc', 'whackAMole', 'dealer', 'shrine', 'quiz',
     'wordDiscovery', 'speedReviewRoom', 'npc_skill_selection', 'npc_dialogue',
+    // Run-end screens: HubScene is the right fallback.
+    'run_complete', 'run_ended',
+    // PvP phases: lobby/team-select use HubScene-style rendering; pvp_arena
+    // typically mounts its own scene via combat-loop, but fall back to
+    // HubScene if nothing is mounted (same invariant as other skipPhases).
+    'pvp_lobby', 'pvp_team_select', 'pvp_arena',
   ]);
 
   if (hubPhases.has(phase) && !(current instanceof HubScene)) {
