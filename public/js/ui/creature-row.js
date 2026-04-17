@@ -107,6 +107,21 @@ export const ELEMENT_ICONS = {
 /** @type {() => Array|undefined|null} */
 let getEquippedItems = null;
 
+// Extracted click handlers so both init() and setupCreatureRowListeners()
+// can register the same logic without duplication.
+function _onPlayerFormationClick(e) {
+  const slot = e.target.closest('.formation-slot');
+  if (!slot) return;
+  const idx = parseInt(slot.dataset.index, 10);
+  if (_creatures[idx]) togglePopup(idx);
+}
+
+function _onDocumentClickToHidePopup(e) {
+  if (!e.target.closest('.formation-slot') && !e.target.closest('.creature-popup')) {
+    hidePopup();
+  }
+}
+
 export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemBuffs: getBuffs, getEquippedItems: getEquip }) {
   onSwapCreature = swapCreatureCallback;
   onRearrangeCreature = rearrangeCreatureCallback || null;
@@ -115,18 +130,26 @@ export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemB
 
   // Event delegation: single click handler on the formation container
   // (avoids leaking per-slot listeners when render() is called repeatedly)
-  dom.playerFormation.addEventListener('click', (e) => {
-    const slot = e.target.closest('.formation-slot');
-    if (!slot) return;
-    const idx = parseInt(slot.dataset.index, 10);
-    if (_creatures[idx]) togglePopup(idx);
-  });
+  dom.playerFormation.addEventListener('click', _onPlayerFormationClick);
+  document.addEventListener('click', _onDocumentClickToHidePopup);
+}
 
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.formation-slot') && !e.target.closest('.creature-popup')) {
-      hidePopup();
-    }
-  });
+/**
+ * Register creature-row listeners via scene.addListener so they're
+ * auto-removed when the scene exits. Use this in scene.enter() instead
+ * of init() once the scene lifecycle is wired (Tasks 16/17).
+ *
+ * Currently additive: init() still registers the same handlers at boot,
+ * so calling this method AND init() would double-fire clicks. The plan
+ * is for Tasks 16/17 to atomically (a) remove init()'s addEventListener
+ * pair and (b) add this call to BattleScene.enter + ExplorationScene.enter.
+ *
+ * @param {import('../scenes/scene.js').Scene} scene - a Scene instance exposing addListener
+ */
+export function setupCreatureRowListeners(scene) {
+  if (!scene) throw new Error('setupCreatureRowListeners: scene is required');
+  scene.addListener(dom.playerFormation, 'click', _onPlayerFormationClick);
+  scene.addListener(document, 'click', _onDocumentClickToHidePopup);
 }
 
 export function setReserves(reserves) {
