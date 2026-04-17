@@ -183,3 +183,72 @@ describe('Inspector', () => {
     });
   });
 });
+
+describe('Inspector — non-combat phases', () => {
+  function mockQueries({
+    stateAllies = [],
+    domAllyBars = 0,
+    pixiAllySprites = [],
+    phase = 'hub',
+    npcDisplayVisible = false,
+    npcPixiCount = 0,
+  } = {}) {
+    return {
+      getState: () => ({ run: { creatureParty: { active: stateAllies } } }),
+      getPhase: () => phase,
+      countDomBars: (side) => side === 'player' ? domAllyBars : 0,
+      getPixiSprites: (side) => side === 'player' ? pixiAllySprites : [],
+      getNpcSprites: () => {
+        const sprites = [];
+        for (let i = 0; i < npcPixiCount; i++) sprites.push({ alpha: 1 });
+        return sprites;
+      },
+      isNpcDisplayVisible: () => npcDisplayVisible,
+    };
+  }
+
+  it('skillMaster phase: detects "formation shown but 0 pixi sprites"', () => {
+    const inspector = createInspector(mockQueries({
+      phase: 'skillMaster',
+      stateAllies: [{ hp: 30 }],
+      domAllyBars: 1,
+      pixiAllySprites: [],
+    }));
+    const result = inspector.checkCreatures();
+    assert.equal(result.ok, false, 'should flag missing Pixi sprite');
+    assert.match(result.mismatches[0].detail, /pixi.*0.*state.*1|missing/i);
+  });
+
+  it('hub phase: detects NPC display visible but zero NPC pixi sprites', () => {
+    const inspector = createInspector(mockQueries({
+      phase: 'hub',
+      npcDisplayVisible: true,
+      npcPixiCount: 0,
+    }));
+    const result = inspector.checkCreatures();
+    assert.equal(result.ok, false);
+    assert.match(result.mismatches[0].detail, /npc|sprite/i);
+  });
+
+  it('hub phase: passes when NPC display visible with one NPC pixi sprite', () => {
+    const inspector = createInspector(mockQueries({
+      phase: 'hub',
+      npcDisplayVisible: true,
+      npcPixiCount: 1,
+    }));
+    const result = inspector.checkCreatures();
+    assert.equal(result.ok, true);
+  });
+
+  it('fullScan in hub phase returns npc counts in summary', () => {
+    const inspector = createInspector(mockQueries({
+      phase: 'hub',
+      npcDisplayVisible: true,
+      npcPixiCount: 1,
+    }));
+    const report = inspector.fullScan();
+    assert.ok(report.summary.npcs, 'summary.npcs present');
+    assert.strictEqual(report.summary.npcs.pixi, 1);
+    assert.strictEqual(report.summary.npcs.dom, 1);
+  });
+});

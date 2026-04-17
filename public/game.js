@@ -1709,6 +1709,16 @@ async function initGame() {
       }
       return sprites.filter(Boolean);
     },
+    getNpcSprites: () => {
+      const scene = getSceneManager()?.currentScene;
+      if (!scene?.layers?.npcs) return [];
+      return scene.layers.npcs.children
+        .filter(c => c && typeof c.alpha === 'number' && c.visible !== false);
+    },
+    isNpcDisplayVisible: () => {
+      const el = document.getElementById('npc-display');
+      return !!el && el.classList.contains('visible');
+    },
   });
 
   window.__intentLog = intentLog;
