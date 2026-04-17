@@ -13,12 +13,14 @@ import {
   showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup,
   showHealPopup, showPoisonTick
 } from '../pixi/text.js';
-import { clearAllStatusVfx } from '../pixi/status-vfx.js';
-import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, clearAllPixiStatusLabels, setWalking } from '../pixi/formation.js';
+import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, setWalking } from '../pixi/formation.js';
 import { showFormation } from './combat-dom.js';
 import { setScrollState } from '../pixi/parallax.js';
 import { wait } from '../pixi/tween.js';
 import { playAttackSound } from './combat-audio.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
+import { BattleScene } from '../scenes/battle-scene.js';
+import { ExplorationScene } from '../scenes/exploration-scene.js';
 
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
@@ -486,7 +488,8 @@ export function cleanupCombat() {
   enemyAttackPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
-  clearAllPixiStatusLabels();
+  // PIXI status label cleanup is handled by BattleScene.beforeExit via
+  // registry disposal when we transition to ExplorationScene.
 }
 
 /**
@@ -621,6 +624,20 @@ export async function startCombatLoop(opts = {}) {
   enemyAttackPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
+
+  // Transition to BattleScene so PIXI sprites/status-vfx/formation ticker are
+  // owned by the scene registry. parallaxSpeed=0: during combat,
+  // syncBattleStageParallax sets setScrollState('encounter') which halts
+  // layer scrolling (currentSpeed=0); BattleScene's scene-level parallax gate
+  // likewise stays off (only the sky drift path runs via legacy updateParallax,
+  // which is already gated off while no scene has startParallax()'d).
+  const mgr = getSceneManager();
+  const gs = getGameState();
+  await mgr.transition(BattleScene, {
+    allies:  gs.combat?.allies  ?? [],
+    enemies: gs.combat?.enemies ?? [],
+    parallaxSpeed: 0,
+  });
 
   // On recovery (page reload), re-render the scene before showing moves.
   // updateScene() already rendered enemy sprites, just need the move UI.
@@ -1443,9 +1460,9 @@ export async function stopCombatLoop(result) {
 
   if (result?.victory) combatEvents.emit('victory');
 
-  // Final cleanup: clear PixiJS status VFX and canvas status labels
-  clearAllStatusVfx();
-  clearAllPixiStatusLabels();
+  // PIXI status VFX + canvas status label cleanup is now handled by
+  // BattleScene.beforeExit via registry disposal when we transition to
+  // ExplorationScene below (end of this function).
 
   // Resume parallax scroll and hide defeated enemy PixiJS sprites.
   // Player sprites are kept alive — they should remain visible through the
@@ -1510,6 +1527,18 @@ export async function stopCombatLoop(result) {
   } else {
     showGameOverModal(result);
   }
+
+  // Transition to ExplorationScene so BattleScene.beforeExit disposes of all
+  // scene-owned PIXI resources (formation sprites, status VFX, HP pills,
+  // formation ticker, creature-row listeners) via the registry. The
+  // showVictoryModal/showGameOverModal calls above kick off async work that
+  // loads the next phase's game state and calls updateUI() — by that point
+  // the active scene is ExplorationScene.
+  // Note: roomId here is the index into run.rooms (the client state's
+  // property is `currentRoom`). Task 17 will wire ExplorationScene to render
+  // the room; for now the scene simply stores it.
+  const roomId = getGameState()?.run?.currentRoom ?? null;
+  await getSceneManager().transition(ExplorationScene, { roomId });
 
   // updateUI() removed: the phase is still 'combat' here, so updateScene()
   // would re-render defeated enemies as live sprites (ghost bug).

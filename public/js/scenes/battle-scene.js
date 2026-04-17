@@ -6,9 +6,11 @@ import {
   spawnFormationSprite,
   removeFormationSprite,
   updateFormationSprite,
+  _updateFormations,
 } from '../pixi/formation.js';
 import { createStatusVfxContext } from '../pixi/status-vfx.js';
 import { releaseAllInFlight as releaseAllParticles } from '../pixi/effects.js';
+import { setupCreatureRowListeners } from '../ui/creature-row.js';
 
 export class BattleScene extends Scene {
   constructor(app) {
@@ -44,6 +46,8 @@ export class BattleScene extends Scene {
   async onEnter({ allies = [], enemies = [], parallaxSpeed = 0 } = {}) {
     if (parallaxSpeed > 0) startParallax(parallaxSpeed);
     await this.syncCreatures({ allies, enemies, initial: true });
+    this.addUpdater((dt) => _updateFormations(this.formation, dt));
+    setupCreatureRowListeners(this);
   }
 
   beforeExit() {

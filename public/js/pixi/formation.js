@@ -515,10 +515,10 @@ function _setWalking(ctx, enabled) {
 /**
  * Tick walking wobble / enter-slide animations for a ctx.
  * Legacy default ctx is intentionally unticked (the old app.ticker hook was
- * removed in Task 6; Task 16 will wire scene.addUpdater to call this for the
- * scene ctx). This function remains exported so imports don't break.
+ * removed in Task 6; Task 16 wires scene.addUpdater to call this for the
+ * scene ctx). Exported so BattleScene can register it as a per-frame updater.
  */
-function _updateFormations(ctx, delta) {
+export function _updateFormations(ctx, delta) {
   ctx.walkTime += delta * 0.05;
 
   for (const side of ['player', 'enemy']) {

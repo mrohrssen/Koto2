@@ -2,6 +2,7 @@ import { Scene } from './scene.js';
 import { Container } from 'pixi.js';
 import { startParallax, stopParallax } from '../pixi/parallax.js';
 import { spawnNpcSprite, removeNpcSprite } from '../pixi/formation.js';
+import { setupCreatureRowListeners } from '../ui/creature-row.js';
 
 export class ExplorationScene extends Scene {
   constructor(app) {
@@ -27,6 +28,7 @@ export class ExplorationScene extends Scene {
   async onEnter({ roomId, parallaxSpeed = 0.6 } = {}) {
     this.roomId = roomId;
     if (parallaxSpeed > 0) startParallax(parallaxSpeed);
+    setupCreatureRowListeners(this);
   }
 
   beforeExit() {

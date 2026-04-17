@@ -107,8 +107,8 @@ export const ELEMENT_ICONS = {
 /** @type {() => Array|undefined|null} */
 let getEquippedItems = null;
 
-// Extracted click handlers so both init() and setupCreatureRowListeners()
-// can register the same logic without duplication.
+// Click handlers extracted so setupCreatureRowListeners() can register them
+// via scene.addListener, making them auto-removed on scene exit.
 function _onPlayerFormationClick(e) {
   const slot = e.target.closest('.formation-slot');
   if (!slot) return;
@@ -128,21 +128,16 @@ export function init({ swapCreatureCallback, rearrangeCreatureCallback, getItemB
   getItemBuffs = typeof getBuffs === 'function' ? getBuffs : null;
   getEquippedItems = typeof getEquip === 'function' ? getEquip : null;
 
-  // Event delegation: single click handler on the formation container
-  // (avoids leaking per-slot listeners when render() is called repeatedly)
-  dom.playerFormation.addEventListener('click', _onPlayerFormationClick);
-  document.addEventListener('click', _onDocumentClickToHidePopup);
+  // Click listeners are now registered by setupCreatureRowListeners() inside
+  // BattleScene.onEnter and ExplorationScene.onEnter, which auto-removes them
+  // on scene exit via scene.addListener. Registering here would double-fire.
 }
 
 /**
  * Register creature-row listeners via scene.addListener so they're
- * auto-removed when the scene exits. Use this in scene.enter() instead
- * of init() once the scene lifecycle is wired (Tasks 16/17).
- *
- * Currently additive: init() still registers the same handlers at boot,
- * so calling this method AND init() would double-fire clicks. The plan
- * is for Tasks 16/17 to atomically (a) remove init()'s addEventListener
- * pair and (b) add this call to BattleScene.enter + ExplorationScene.enter.
+ * auto-removed when the scene exits. Called from BattleScene.onEnter and
+ * ExplorationScene.onEnter — this is the sole registration path for the
+ * formation-slot click and document-level hide-popup click handlers.
  *
  * @param {import('../scenes/scene.js').Scene} scene - a Scene instance exposing addListener
  */
