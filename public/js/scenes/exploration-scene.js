@@ -39,6 +39,13 @@ export class ExplorationScene extends Scene {
 
   async showNpcSprite(spritePath, opts = {}) {
     this._guard('showNpcSprite');
+    // Remove any prior sprite before spawning a new one — matches legacy
+    // _showNpcSprite behavior and prevents visible stacking if callers
+    // invoke showNpcSprite twice without hideNpcSprite in between.
+    if (this.npcSprite) {
+      removeNpcSprite(this, this.npcSprite);
+      this.npcSprite = null;
+    }
     this.npcSprite = await spawnNpcSprite(this, spritePath, opts);
     return this.npcSprite;
   }

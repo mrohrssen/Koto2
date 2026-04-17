@@ -166,15 +166,74 @@ describe('spawnNpcSprite scene contract', () => {
 
   it('uses scene.tween for slide-in animation', async () => {
     const npcs = new FakeContainer();
-    let tweenCalled = false;
+    let tweenArgs = null;
     const scene = {
+      disposed: false,
       layers: { npcs },
-      tween: async () => { tweenCalled = true; },
+      tween: async (...args) => { tweenArgs = args; return Promise.resolve(); },
     };
 
     const sprite = await spawnNpcSprite(scene, '/foo.webp', { slideIn: true });
     assert.ok(sprite);
-    assert.ok(tweenCalled, 'scene.tween was called for slideIn');
+    assert.ok(tweenArgs, 'scene.tween should be called for slide-in');
+    assert.strictEqual(tweenArgs[0], sprite, 'tweens the spawned sprite');
+    // screenW = 400 per fake app stub; 400 * 0.7 = 280.
+    assert.deepStrictEqual(tweenArgs[1], { x: 280 }, 'target position is screenW * 0.7');
+    assert.strictEqual(tweenArgs[2].duration, 400);
+    assert.strictEqual(tweenArgs[2].ease, 'easeOut');
+  });
+
+  it('does NOT use scene.tween when slideIn is false (default)', async () => {
+    let tweenCalled = false;
+    const npcs = new FakeContainer();
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => { tweenCalled = true; },
+    };
+    await spawnNpcSprite(scene, '/foo.webp'); // slideIn default false
+    assert.strictEqual(tweenCalled, false);
+  });
+
+  it('returns null if scene disposes during Assets.load', async () => {
+    const npcs = new FakeContainer();
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => {},
+    };
+
+    // Replace Assets.load with a promise we can resolve manually after we
+    // flip scene.disposed, so the post-await disposal check fires.
+    const priorLoad = FakeAssets._loadImpl;
+    let loadResolve;
+    FakeAssets._loadImpl = () => new Promise(r => { loadResolve = r; });
+
+    try {
+      const promise = spawnNpcSprite(scene, '/foo.webp');
+      scene.disposed = true;
+      loadResolve({ width: 170, height: 170 });
+      const result = await promise;
+      assert.strictEqual(result, null, 'should return null on disposed scene');
+      assert.strictEqual(npcs.children.length, 0, 'no sprite added to disposed layer');
+    } finally {
+      FakeAssets._loadImpl = priorLoad;
+    }
+  });
+
+  it('slide-in tween rejection removes and destroys the sprite', async () => {
+    const npcs = new FakeContainer();
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => { throw new Error('tween rejected'); },
+    };
+
+    await assert.rejects(
+      () => spawnNpcSprite(scene, '/foo.webp', { slideIn: true }),
+      /tween rejected/,
+    );
+    assert.strictEqual(npcs.children.length, 0, 'sprite should be removed on tween reject');
   });
 });
 

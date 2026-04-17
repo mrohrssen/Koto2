@@ -827,6 +827,10 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
     texture = Texture.WHITE;
   }
 
+  // Scene may have exited during the texture load. Drop the work rather
+  // than mounting a sprite onto a destroyed layer.
+  if (scene.disposed) return null;
+
   const screenW = app.screen.width;
   const screenH = app.screen.height;
   const sprite = new Sprite(texture);
@@ -840,7 +844,16 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
 
   if (slideIn) {
     sprite.x = screenW + 170;
-    await scene.tween(sprite, { x: screenW * 0.7 }, { duration: 400, ease: 'easeOut' });
+    try {
+      await scene.tween(sprite, { x: screenW * 0.7 }, { duration: 400, ease: 'easeOut' });
+    } catch (e) {
+      // Tween rejected (e.g., scene disposed mid-slide). Clean up our
+      // orphan sprite so it doesn't linger in the layer while the caller's
+      // `this.npcSprite = await ...` assignment never happens.
+      if (sprite.parent) sprite.parent.removeChild(sprite);
+      sprite.destroy({ children: true });
+      throw e;
+    }
   } else {
     sprite.x = screenW * 0.7;
   }
