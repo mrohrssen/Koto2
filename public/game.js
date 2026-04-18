@@ -1263,17 +1263,19 @@ async function startEncounter() {
     if (result?.npc && hasCreatures) {
       sceneTransitionActive = true;
       try {
-        // Task 17: transition to BattleScene BEFORE the NPC intro so player +
-        // enemy sprites spawn alongside the NPC dialogue (fixes bug #1: player
-        // sprite late spawn). The BattleScene owns a `npcs` layer so
-        // playNpcBattleIntro's scene.showNpcSprite calls target the right
-        // scene. startCombatLoop() below is idempotent — it will skip the
-        // re-transition since BattleScene is already active.
+        // Bug #9 fix: mount BattleScene with the allies seeded but NO enemies.
+        // The enemies are held off-stage while the NPC slides in, speaks, and
+        // slides out; playNpcBattleIntro then reveals them via syncCreatures
+        // so the player sees NPC-alone → NPC-leaves → enemies-appear. Prior
+        // behaviour seeded enemies immediately, so they rendered at full alpha
+        // overlapping the speaking NPC.
+        const combatAllies  = gameState.combat?.allies  ?? [];
+        const combatEnemies = gameState.combat?.enemies ?? [];
         try {
           const mgr = getSceneManager();
           await mgr.transition(BattleScene, {
-            allies:  gameState.combat?.allies  ?? [],
-            enemies: gameState.combat?.enemies ?? [],
+            allies:  combatAllies,
+            enemies: [],
             parallaxSpeed: 0,
             isBoss: !!gameState.combat?.isBoss,
           });
@@ -1284,7 +1286,8 @@ async function startEncounter() {
           result.npc,
           (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
           () => scene.hideNpcTrainer(),
-          result.npcDialogue
+          result.npcDialogue,
+          { enemies: combatEnemies, allies: combatAllies },
         );
       } finally {
         sceneTransitionActive = false;

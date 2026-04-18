@@ -93,23 +93,47 @@ function setSceneFormationVisible(side, visible) {
 }
 
 /**
- * Play NPC battle intro: NPC slides in, says greeting, slides out.
+ * Play NPC battle intro: NPC slides in, says greeting, slides out, then —
+ * if `enemies` is supplied — reveals the enemy formation via
+ * `scene.syncCreatures`. The caller mounts BattleScene with `enemies: []`
+ * so the stage starts clean; this function owns the reveal choreography so
+ * the player sees NPC-alone → NPC-speaks → NPC-leaves → enemies-slide-in
+ * instead of everything materialising concurrently (Bug #9).
  *
- * Runs against the currently-active scene (BattleScene after Task 17's
- * pre-combat transition in game.js::startEncounter). The NPC layer exists on
- * both ExplorationScene and BattleScene, so this works regardless of which
- * scene is active at call time. If no scene with an `npcs` layer is active
- * (boot window / transition failure), the Pixi slide-in is skipped and only
- * the DOM side of the intro plays.
+ * Runs against the currently-active scene (BattleScene after the pre-combat
+ * transition in game.js::startEncounter). The NPC layer exists on
+ * HubScene, ExplorationScene, and BattleScene, so this works regardless of
+ * which scene is active at call time. If no scene with an `npcs` layer is
+ * active (boot window / transition failure), the Pixi slide-in is skipped
+ * and only the DOM side of the intro plays.
+ *
+ * @param {object} npcData - NPC record (id, name, nameEn, greeting).
+ * @param {Function} showNpcSpriteFn - DOM-side NPC display callback.
+ * @param {Function} hideNpcSpriteFn - DOM-side NPC hide callback.
+ * @param {object|null} npcDialogue - Optional bootstrap dialogue payload.
+ * @param {{ enemies?: Array, allies?: Array }} [opts] - If `enemies` is
+ *   provided, the active scene's `syncCreatures` is called AFTER the NPC
+ *   slides out to reveal the enemy formation with the normal slide-in
+ *   animation. Callers that have already placed enemies via the initial
+ *   scene mount can omit this to preserve the legacy behaviour.
  */
-export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSpriteFn, npcDialogue) {
+export async function playNpcBattleIntro(
+  npcData,
+  showNpcSpriteFn,
+  hideNpcSpriteFn,
+  npcDialogue,
+  { enemies = null, allies = null } = {},
+) {
   if (!npcData) return;
 
   const npcName = npcData.nameEn || npcData.name;
   const scene = getSceneManager().currentScene;
   const hasScene = !!scene && !scene.disposed && !scene._exiting && !!scene.layers?.npcs;
 
-  // Hide enemy formation during the NPC intro
+  // Hide any DOM enemy formation markup during the NPC intro. When the
+  // caller opted into scene-managed enemy reveal (enemies != null), the Pixi
+  // side starts empty — this opacity toggle only affects residual DOM from
+  // a prior screen.
   const enemyFormation = document.getElementById('enemy-formation');
   if (enemyFormation) enemyFormation.style.opacity = '0';
 
@@ -151,6 +175,25 @@ export async function playNpcBattleIntro(npcData, showNpcSpriteFn, hideNpcSprite
     await currentScene.hideNpcSprite({ slideOut: true });
   }
   hideNpcSpriteFn();
+
+  // Bug #9 fix: reveal enemies AFTER the NPC slides out so the player sees
+  // them materialise one-by-one on the cleared stage rather than alongside
+  // the NPC. Only fires when the caller opted in by passing `enemies`.
+  if (Array.isArray(enemies)) {
+    const revealScene = getSceneManager().currentScene;
+    if (revealScene && !revealScene.disposed && !revealScene._exiting && typeof revealScene.syncCreatures === 'function') {
+      await revealScene.syncCreatures({
+        allies:  allies || [],
+        enemies,
+        initial: true,  // triggers enemy slide-in (see BattleScene._diff skipEnter logic)
+      });
+    }
+    // Restore the DOM formation opacity so the HP bars + name labels built
+    // by combat-dom.showFormation become visible alongside the revealed
+    // Pixi sprites.
+    const freshEf = document.getElementById('enemy-formation');
+    if (freshEf) freshEf.style.opacity = '1';
+  }
 }
 
 /**
