@@ -411,6 +411,64 @@ test('Elemental Cascade: 30% chance to apply atk -1 stage', () => {
   assert.equal(enemies[1].statStages.atk, -1);
 });
 
+test('Elemental Cascade: no debuff when chain kills the chain target', () => {
+  // wood vs earth is SE (2x). Chain target has just enough HP that the SE
+  // chain hit kills it. The cascade debuff must NOT fire on a dead target.
+  const allies = [makeAlly({ element: 'wood' })];
+  const enemies = [
+    makeEnemy({ id: 'e1', hp: 200, maxHp: 200, element: 'fire' }),
+    // 30% of 100 damage = 30, doubled by SE = 60. HP is 50 → chain kills.
+    makeEnemy({ id: 'e2', hp: 50, maxHp: 200, element: 'earth' })
+  ];
+  const attacks = [makeDmgRecord({ attackerIndex: 0, targetIndex: 0, damage: 100 })];
+  const combat = makeCombat();
+
+  // 0.1 would otherwise proc the cascade debuff, but target is dead after chain.
+  withStubbedRandom(0.1, () => {
+    applyAfterPlayerAttacks({
+      attacks, allies, enemies,
+      runPartySkills: ['arcStrike', 'elementalCascade'],
+      combat
+    });
+  });
+
+  assert.equal(enemies[1].hp, 0, 'chain hit should have killed enemy 2');
+  const cascadeProc = attacks[0].partySkillProcs.find(p => p.skillId === 'elementalCascade');
+  assert.equal(cascadeProc, undefined, 'no cascade debuff should be applied on dead target');
+  assert.equal(enemies[1].statStages.atk, 0, 'dead target should not get atk -1 stage');
+});
+
+test('Elemental Cascade: no debuff when Forked Arc bounce kills the bounce target', () => {
+  const allies = [makeAlly({ element: 'wood' })];
+  // Three enemies so forked arc can bounce; one has low HP to be killed by bounce.
+  const enemies = [
+    makeEnemy({ id: 'e1', hp: 200, maxHp: 200, element: 'fire' }),
+    makeEnemy({ id: 'e2', hp: 200, maxHp: 200, element: 'earth' }),
+    // Low HP earth enemy — SE bounce will kill it
+    makeEnemy({ id: 'e3', hp: 20, maxHp: 200, element: 'earth' })
+  ];
+  const attacks = [makeDmgRecord({ attackerIndex: 0, targetIndex: 0, damage: 100 })];
+  const combat = makeCombat();
+
+  // 0.1 succeeds all proc rolls (< 0.30 cascade, < 0.50 forked arc bounce).
+  // We simulate: initial arc hits e2 or e3, then forked arc bounces. If any
+  // bounce kills a target and tries to apply cascade debuff, the gate should
+  // prevent it. We assert every cascade proc in the result has a live target.
+  withStubbedRandom(0.1, () => {
+    applyAfterPlayerAttacks({
+      attacks, allies, enemies,
+      runPartySkills: ['arcStrike', 'forkedArc', 'elementalCascade'],
+      combat
+    });
+  });
+
+  const cascadeProcs = attacks[0].partySkillProcs.filter(p => p.skillId === 'elementalCascade');
+  for (const proc of cascadeProcs) {
+    const target = enemies[proc.targetIndex];
+    assert.ok(target.hp > 0, `cascade debuff proc targeted a dead enemy (idx=${proc.targetIndex}, hp=${target.hp})`);
+  }
+});
+
 // ══════════════════════════════════════════════════════════════════════
 // Debuff Spread Tests (Tasks 6-8)
 // ══════════════════════════════════════════════════════════════════════
