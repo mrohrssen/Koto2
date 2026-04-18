@@ -100,6 +100,16 @@ export function finalizeCombatVictory(combat, run, opts = {}) {
   combat.active = false;
   run.currentAreaEncounters = (run.currentAreaEncounters || 0) + 1;
 
+  // Clear combat-only status on surviving allies. Stat stages (ATK/DEF) and
+  // activeEffects are combat-scoped; leaving them on the creature makes their
+  // status pills bleed into the friendlyNpc reward screen (and any other
+  // post-combat state) until the next battle starts.
+  for (const ally of combat.allies || []) {
+    if (!ally) continue;
+    ally.statStages = { atk: 0, def: 0 };
+    ally.activeEffects = [];
+  }
+
   const currentRoom = run.rooms?.[run.currentRoom];
   if (currentRoom) {
     currentRoom.interacted = true;

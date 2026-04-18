@@ -237,9 +237,9 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         target.hp = Math.max(0, target.hp - damage);
         if (damage > 0) breakSleep(target);
 
-        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
-        const statChangesApplied = tryApplyStatChanges(move, target);
         const targetDefeated = target.hp <= 0;
+        const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies) : null;
+        const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           damage, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
@@ -280,9 +280,9 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         // Heal attacker for 50% of damage dealt
         const healAmount = applyHeal(creature, Math.floor(damage * 0.5));
 
-        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
-        const statChangesApplied = tryApplyStatChanges(move, target);
         const targetDefeated = target.hp <= 0;
+        const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies) : null;
+        const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           damage, healAmount, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
@@ -683,8 +683,10 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
         rec.healAmount = applyHeal(enemy, Math.floor(damage * 0.5));
       }
 
-      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
-      rec.statChangesApplied = tryApplyStatChanges(move, target);
+      if (!rec.targetDefeated) {
+        if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
+        rec.statChangesApplied = tryApplyStatChanges(move, target);
+      }
       break;
     }
 

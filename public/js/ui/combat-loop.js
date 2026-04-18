@@ -1027,14 +1027,19 @@ async function executeCreatureMovesTurn(choices) {
 
       // Catch-all KO: ensure all dead enemies get their KO animation, even if killed
       // by party skill chain damage (e.g. Arc Strike) that doesn't set targetDefeated.
+      // Await so the fade fully resolves before any follow-up syncCreatures runs —
+      // otherwise the tween can fight updateFormationSprite and leave the corpse
+      // sprite visible.
       if (result.enemies) {
+        const koPromises = [];
         for (let i = 0; i < result.enemies.length; i++) {
           const e = result.enemies[i];
           if (e && e.hp <= 0 && !e.befriended && !killedEnemies.has(`idx:${i}`)) {
             killedEnemies.add(`idx:${i}`);
-            animateKOForScene(getSceneManager().currentScene, 'enemy', i);
+            koPromises.push(animateKOForScene(getSceneManager().currentScene, 'enemy', i));
           }
         }
+        if (koPromises.length) await Promise.all(koPromises);
       }
 
       vfx.syncStatusIconsFromResult(result);
