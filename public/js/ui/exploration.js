@@ -1008,12 +1008,29 @@ export async function renderWhackAMole() {
   ]);
 }
 
-/** Show the どの能力？ prompt in the narration box (attributed to Cid). */
-function showSkillSelectPrompt(tokens) {
+/** Show the どの能力？ prompt in the narration box, attributed to `speaker`. */
+function showSkillSelectPrompt(tokens, speaker = 'Cid') {
   if (!tokens?.length || !sceneModule?.showNarration) return;
   const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
   const html = renderJpSentence(tokens, getKnownWords(), wordDict, {}, false);
-  sceneModule.showNarration(html, { html: true, persistent: true, speaker: 'Cid' });
+  sceneModule.showNarration(html, { html: true, persistent: true, speaker });
+}
+
+/**
+ * Slide the defeated NPC's sprite into the active scene before the skill-select
+ * prompt. Mirrors showCidForSkillMaster — the defeated challenger is the one
+ * offering the skill reward, so the player should see them on screen while
+ * the `どの能力？` question is attributed to them.
+ */
+async function showDefeatedNpcForSkillSelect(npc) {
+  if (!npc?.id) return;
+  const scene = getSceneWithNpcs();
+  const spritePath = `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`;
+  const displayName = npc.nameEn || npc.name || '';
+  showNpcInDisplay(displayName, spritePath, { skipPixi: true });
+  if (scene && !scene.npcSprite) {
+    await scene.showNpcSprite(spritePath, { slideIn: true });
+  }
 }
 
 /**
@@ -1606,7 +1623,17 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
 
   const offers = npcBattleSkillState.offered || [];
 
-  showSkillSelectPrompt(npcBattleSkillState.promptTokens);
+  // The defeated NPC offers the skill reward — resolve them from combat state
+  // (available during the immediate post-combat flow) or the room record (for
+  // page-reload recovery). Fall back to Cid so the prompt always has a speaker.
+  const defeatedNpc = gameState.combat?.npcData || room?.npcBattle?.npc || room?.npc || null;
+  const speakerName = defeatedNpc?.nameEn || defeatedNpc?.name || 'Cid';
+
+  // Slide the defeated NPC sprite in (no-op if already on stage) so the
+  // player can see who's asking the question. Intentionally not awaited.
+  showDefeatedNpcForSkillSelect(defeatedNpc);
+
+  showSkillSelectPrompt(npcBattleSkillState.promptTokens, speakerName);
 
   renderChoices({
     cards: offers.slice(0, 3).map(s => ({
