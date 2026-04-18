@@ -654,3 +654,242 @@ Pending — the full Playwright walk-through of the re-test gate above is the la
 - Helper wrappers in `public/js/pixi/formation.js` (`getCreatureSpriteForScene`, `animateKOForScene`, etc.) are not `_exiting`-aware. They currently rely on `scene.formation` being truthy during the exit window — valid today, but worth tightening if another race surfaces.
 - The "shared `FormationScene` base" refactor to consolidate HubScene + ExplorationScene + BattleScene formation code (flagged during Task 2 review). Deferred until a third data point emerges.
 - `isBoss` state-serialization bug (flagged pre-existing in the original smoke test) — unaffected by this PR.
+
+---
+
+## PLAYTEST_RESULTS (2026-04-18)
+
+Playtesting `fix/pr2-bulletproof-rendering` branch end-to-end via Playwright MCP against `npm run dev` at `http://localhost:5173`. User drives, assistant observes. Bugs logged below as encountered.
+
+### Bug #8 — Cid sprite missing at skillMaster phase (Bug #1/#3 regression, narration path)
+
+**Severity:** Blocker — re-test gate #1 ("Prologue: Cid sprite visible throughout") fails on the returning-player code path. Player sees a narration box labelled "Cid" with no character on screen. Same visual symptom as the original Bug #1, despite the HubScene-mounting fix.
+
+**Encountered at:** First state observed on session load. Account already past prologue → phase transitions `no_save → skillMaster` directly (prologue narration re-run skipped). Starting Meadow background renders, fire creature (`hi`) renders on the meadow (so Bug #3 creature portion is fixed), but Cid's sprite is absent. Narration box shows `Cid` speaker label and "Each run you can get skills to make your party stronger." with a ▼ next-page indicator. Re-test gate #2 ("fire creature and Cid sprite both visible on the Starting Meadow background") half-passes: fire creature ✓, Cid ✗.
+
+### In-browser evidence
+
+DOM state (confirms DOM side of NPC display is active but sprite is blanked — classic Bug #1 footprint):
+
+```
+#npc-display          .classList: ['npc-display', 'visible']
+#enemy-info           .classList: ['visible'] (textContent "Cid")
+#enemy-sprite         src="", display:none, visibility:visible
+#npc-display.dataset  pixiBacked: undefined
+```
+
+Pixi app layers (`window.__pixiApp().layers`):
+
+```
+background:  4 children  (meadow tiles rendered)
+creatures:   0 children  (but inspector reports allies pixi:1 — rendered via scene layer)
+effects:     1 child
+labels:      0 children
+overlay:     2 children (alpha:0 transitions)
+```
+
+**No `npcs` layer on the Pixi app root.** HubScene is supposed to provide one as a scene-owned layer (per fix summary, "every phase now has a scene with `background + npcs + creatures + labels` layers"). We were unable to verify scene state directly — `window.__sceneManager` / `window.__getSceneManager` are not exposed for testing. However, the fact that zero Pixi sprites are rendering on any npc-capable layer, combined with zero `console.error` from the loud-fail guards (`sceneShowNpc` / `creature-row.render`), suggests the call path that should render Cid **never reaches `sceneShowNpc` at all** on this flow.
+
+Inspector (`window.__inspector.fullScan()`):
+
+```json
+{
+  "ok": true,
+  "mismatches": [],
+  "summary": {
+    "allies":  { "state": 1, "dom": 1, "pixi": 1 },
+    "enemies": { "state": 0, "dom": 0, "pixi": 0 },
+    "npcs":    { "dom": 0, "pixi": 0 }
+  },
+  "phase": "skillMaster"
+}
+```
+
+**Inspector is lying:** `#npc-display.visible` is true with `#enemy-name` = "Cid" and `#enemy-info.visible`, so DOM state unambiguously has an active NPC display, yet `summary.npcs.dom = 0`. The inspector's DOM-NPC counter is missing this case. Likely cause: the counter only counts `#npc-display[data-pixi-backed]` nodes (or an equivalent scene-backed attribute) and the skillMaster narration path doesn't set that attribute. Bug #4's fix is incomplete — this is a second vacuous-pass pocket.
+
+Intent log (since page load, chronological):
+
+```
+[PixiApp] Canvas inserted: 786 x 524
+[PixiApp] Init complete
+[ACT] Hide enemy formation × 3  → [CHK] ✓
+[ACT] Hide player formation     → [CHK] ✓
+[DEBUG] updateGameState called. phase: no_save pendingBranch: undefined currentRoom: undefined
+[DEBUG] updateGameState called. phase: skillMaster pendingBranch: undefined currentRoom: 0
+[ACT] Hide enemy formation   → [CHK] ✗ DOM_GHOST: player dom=0 but state=1 alive
+[ACT] Hide enemy formation   → [CHK] ✗ DOM_GHOST: player dom=0 but state=1 alive
+[ACT] Show player formation  → [EXP] player: 1 visible sprites, 1 HP bars → [CHK] ✗ DOM_GHOST: player pixi=0 visible but state=1 alive
+[ACT] Hide enemy formation   → [CHK] ✗ DOM_GHOST: player pixi=0 visible but state=1 alive
+[NarrationBox] Final displayed text: Each run you can get skills to make your party stronger.
+[API Timing] POST /api/game/skill-master-offers -> 200 in 48ms
+```
+
+Zero errors, one harmless warning. **No `[ACT] Show NPC` / `[ACT] Show Cid` event anywhere in the log.** The narration box is populated with Cid's line, but no code path ever calls `scene.showNpcSprite(cidSprite)` or `sceneShowNpc(cidSprite)` for this phase entry — so neither the scene nor the loud-fail guards ever fire.
+
+Note: several `[CHK] ✗ DOM_GHOST: player ...` fired during the phase transition window — these are transient (the inspector catches a gap between DOM scaffolding and Pixi placement). Worth noting but the final settled state has `allies pixi:1` (fire creature visible), so the transient mismatches self-resolve. The **persistent** failure is the NPC path.
+
+### Suspected root cause
+
+The original Bug #1 reasoned that the prologue's `playPrologue()` fires `scene.showCid()` → `showNpcInDisplay()` which blanks `#enemy-sprite` and delegates to `sceneShowNpc`. The fix mounted a HubScene so `sceneShowNpc` would route to a real scene. **But `playPrologue()` only runs for first-time players.** A returning account (past prologue) lands directly in `skillMaster` via `updateGameState({ phase: 'skillMaster', currentRoom: 0 })`, and the skillMaster-entry flow shows Cid's narration via `ctx.narration.showNarration(line, { speaker: 'Cid' })` **without ever calling the NPC-display helpers**.
+
+Result: the narration box shows Cid as speaker (text-only), the `#enemy-info` DOM gets set via an unrelated path, and the Pixi sprite is never requested. The bug is a **missing show-NPC call in the skillMaster tutorial-entry flow**, not a scene-mounting failure.
+
+Candidate files to inspect:
+- `public/js/ui/skill-master-ui.js` (or equivalent) — the skill-offer flow.
+- `public/game.js` around `updateGameState` / `updateScene` for `phase === 'skillMaster'`.
+- Any tutorial/skill-master narration helpers that use `showNarration({ speaker })` without pairing the show-NPC call.
+
+Recommended fix direction: every speaker attribution in narration should have a matching sprite-show pre-step. Ideally formalize as `narration.showSpeakerLine(speaker, line)` that wraps both calls, so future contributors can't introduce this footgun. Alternatively: make the speaker attribution reactive — when a narration fires with `{ speaker: 'Cid' }` and no NPC sprite is currently shown, automatically call `sceneShowNpc(cidSprite)`.
+
+### Inspector follow-up (Bug #4 tail)
+
+`summary.npcs.dom = 0` despite `#npc-display.visible` with `#enemy-name="Cid"` and `#enemy-info.visible` is itself a Bug #4-family vacuous pass. Whatever `data-pixi-backed`-based gating was added to suppress DOM-only NPC paths (shop dealer etc.) is now suppressing legitimate NPC displays too. The inspector should count visible `#npc-display` as a DOM NPC whenever the name label is present and non-empty, regardless of `pixiBacked`. Without this, Bug #8 would have been a silent `[CHK] ✓` as well.
+
+### Screenshot
+
+`tmp/pr2-playtest-cid-missing.png` (deleted after capture) — Starting Meadow background with fire creature sprite mid-meadow, narration box bottom-center labelled "Cid" containing "Each run you can get skills to make your party stronger.", three skill-offer cards below. No Cid sprite anywhere on the canvas.
+
+---
+
+### Bug #9 — Mini-boss encounter: NPC and all 3 enemy creatures appear simultaneously (choreography broken)
+
+**Severity:** High — breaks the intended mini-boss reveal choreography. Player sees the miniboss NPC and all their creatures pop in at the same moment, instead of the NPC sliding in to say their intro lines first and the creatures revealing one by one after the NPC exits. Expected flow per user: **NPC slides in → NPC speaks lines → NPC slides out → creatures slide in 1-by-1**. Actual flow: NPC and all 3 creatures appear together at full alpha while the NPC is still mid-sentence.
+
+**Encountered at:** Room 5, `phase: room_encounter → combat`, mini-boss NPC `Child` (id `kodomo` or similar) with 3 creatures. Player had cleared rooms 0–4 (all friendlyNpc rooms on this path) and walked into the encounter room. Combat phase fired, narration box showed `Child` with line `いくよ！ iku yo (to go)` while all four sprites (Child NPC + 3 enemy creatures) were already rendered on stage at alpha=1.
+
+### In-browser evidence
+
+Pixi stage dump at user-pause moment (Child speaking, expected to be alone):
+
+```
+/0/0–/0/3   TilingSprite × 4         visible=true, alpha=1   ← meadow background
+/5/0/0      Sprite  (ally hi)        visible=true, alpha=1, (79, 76)
+/5/0/1      Sprite  (ally 2)         visible=true, alpha=1, (85, 184)
+/5/1/0      Sprite  (enemy 1)        visible=true, alpha=1, (271, 131)  ← should not be visible yet
+/5/1/1      Sprite  (enemy 2)        visible=true, alpha=1, (283, 78)   ← should not be visible yet
+/5/1/2      Sprite  (enemy 3)        visible=true, alpha=1, (259, 183)  ← should not be visible yet
+/7/0        Sprite  (Child NPC)      visible=true, alpha=1, (275, 131)  ← overlaps enemy 1
+```
+
+The NPC at `(275, 131)` physically overlaps enemy slot 1 at `(271, 131)`. The 3 enemy creatures are not faded/hidden during the NPC's intro lines.
+
+Inspector:
+
+```json
+{
+  "ok": false,
+  "mismatches": [{ "type": "DOM_GHOST", "detail": "enemy dom=0 but state=3 alive" }],
+  "summary": {
+    "allies":  { "state": 2, "dom": 2, "pixi": 2 },
+    "enemies": { "state": 3, "dom": 0, "pixi": 3 },
+    "npcs":    { "dom": 0, "pixi": 1 }
+  },
+  "phase": "combat"
+}
+```
+
+Note the `enemy dom=0 but state=3 alive` DOM_GHOST: enemy DOM formation has been cleared (presumably by `hideFormation('enemy')` as part of the NPC interjection path), but the 3 enemy Pixi sprites were never hidden — they went live the moment combat entered, same as the ally formation. Same class of DOM↔Pixi desync as Bugs #5/#6, new symptom.
+
+Intent-log slice around the transition:
+
+```
+[ACT] Hide enemy formation × 3     → [CHK] ✓
+[ACT] Show player formation: 2 total, 2 alive  → [CHK] ✓
+[API Timing] POST /api/game/start-creature-encounter -> 200 in 25ms
+[DEBUG] updateGameState called. phase: combat pendingBranch: undefined currentRoom: 5
+[NarrationBox] Final displayed text: いくよ！ iku yo (to go) "Child"
+```
+
+There is **no `[ACT] Show enemy formation` event** at the combat-enter boundary for this mini-boss encounter. The 3 enemy Pixi sprites were placed directly by the scene (or by BattleScene's initial `syncCreatures` pass) with no corresponding DOM formation, and no choreography pause for the NPC monologue. Compare with Bug #5's pattern: `BattleScene` assumes combat begins with enemies already on-stage; the NPC-introduces-the-boss flow needs to hold them off-stage until the NPC exits.
+
+### Suspected root cause
+
+Mini-boss room flow fires `/api/game/start-creature-encounter` → server returns combat state with 3 enemies → client transitions to `phase: combat` → `BattleScene` mounts and immediately places all 3 enemy sprites in its `syncCreatures` initial seed. Separately, the NPC intro system fires `scene.showNpcSprite(childSprite)` and queues narration lines. The two streams run concurrently with no sequencing.
+
+Expected implementation: the NPC-intro-boss encounter should pause enemy rendering until the NPC's narration completes. This is the same conceptual need as Bug #5's `scene.pauseForNpcInterjection({ fadeEnemies: true })`, but applied to **encounter start** rather than mid-combat befriend. Candidate pattern:
+
+1. On mini-boss encounter enter, keep enemy formation state-only (do not seed BattleScene with enemies yet).
+2. Mount BattleScene with `allies` only; `enemies: []`.
+3. Call `scene.showNpcSprite(childSprite, { slideIn: true })`.
+4. Play NPC narration lines.
+5. Call `scene.hideNpcSprite({ slideOut: true })`.
+6. Call `scene.syncCreatures({ allies, enemies })` to slide the enemies in — ideally staggered (one at a time with 150–300ms delay between each).
+
+Alternatively: extend the pause/resume API from Bug #5's fix to cover "enemies not yet revealed" mode on combat entry, and have the mini-boss intro flow gate the reveal on narration completion.
+
+### Files likely involved
+
+- `public/js/scenes/battle-scene.js` (or `BattleScene.enter` / constructor) — initial enemy seed behavior.
+- `public/js/scenes/scene.js` — pause/resume API (from Bug #5 fix).
+- The encounter-start flow in `game.js` / combat-loop / whatever owns `/api/game/start-creature-encounter`'s client-side handler.
+- The mini-boss NPC-intro invocation site (grep for `Child` / `kodomo` + `showNpcSprite`).
+
+### Screenshot
+
+`tmp/pr2-playtest-miniboss-simultaneous.png` (deleted after capture) — Starting Meadow with fire creature (ally, top-left) and the Child NPC character rendered in the center, one small faded enemy creature silhouette visible at lower-center (behind NPC), and two more enemies implied by the Pixi dump (covered by the narration box overlay in the screenshot but at alpha=1). Narration box labelled `Child` with `いくよ！ iku yo (to go)`.
+
+---
+
+### Sidebar observations surfaced during Bug #9 playtest
+
+These are not new bugs but re-confirmations / tails of existing ones. Logging here so the fixer can correlate.
+
+**Bug #7 re-occurrence (SceneDisposedError on combat→room transition):**
+```
+[ERROR] [creature-row] scene.syncCreatures failed
+   SceneDisposedError: Scene 'BattleScene': method '_diff' called after exit()
+```
+Fired exactly once, on the combat → room transition after winning the first (tutorial) combat against `tetsu`. Guard that was supposed to catch this (`creature-row.render` disposed-scene check per fix summary) did not prevent it — the `console.error` branch fired instead of the guard. May mean the guard only covers `scene.disposed` and not `scene._exiting`, consistent with the "known deferred items" note about `status-vfx.js:441`. Worth confirming the `creature-row.render` guard actually short-circuits on `_exiting` too.
+
+**Bug #1/#3 family continues to fail on friendlyNpc rooms:**
+Every `friendlyNpc` room this run (rooms 1, 2, 3, 4) produced:
+```
+[CHK] ✗ DOM_GHOST: npc display pixi-backed but 0 NPC pixi sprites — scene.showNpcSprite may have silently bailed
+```
+NPC trainers on friendly rooms are setting `#npc-display[data-pixi-backed]` (good — that's the inspector hint) but `scene.showNpcSprite` is either silently bailing or not being called at all. The loud-fail branch of `sceneShowNpc` is NOT firing (no `console.error` in the log for these transitions), which means the code path **never even reaches `sceneShowNpc`** — same pathology as Bug #8 on skillMaster. Strongly suggests the show-NPC helper is skipped on the `friendlyNpc` phase entry, not just on `skillMaster`.
+
+Re-test gate #7 ("NPC sprite renders with name label and greeting narration") fails: the greeting fires but the sprite is missing on every friendly NPC room. The inspector `[CHK] ✗` is the new-signal win from the Bug #4 fix (it correctly flags this now), but the underlying Bug #1/#3 fix is incomplete — only the HubScene-mounted prologue path got patched; other phases that show NPCs are still on the broken path.
+
+**Re-test gate status so far (partial — playtest continues):**
+
+- ❌ Gate 1 — Prologue Cid visible: N/A (returning account skips prologue), but analogous **skillMaster Cid missing** → Bug #8.
+- ❌ Gate 2 — skillMaster fire creature + Cid sprite both visible: fire creature ✓, Cid ✗ → Bug #8.
+- ✓ Gate 3 — First combat: enemy slides in, ally renders, HP bars correct. Worked visually for the tutorial `tetsu` combat.
+- ✓ Gate 4 — Befriend threshold triggers Fight/Talk + tutorial step 1. Confirmed firing.
+- ⚠ Gate 5 — Cid slides in for "wants to talk": not directly re-verified in this pass. Narration fired (`Wow! This creature wants to talk!`). Cid sprite rendering status unclear from console evidence alone.
+- ✓ Gate 6 — Befriend quiz correct → enemy joins party. `tetsu` added to party, now at size 2.
+- ❌ Gate 7 — Friendly NPC room: NPC sprite renders with greeting. **Missing on every friendly NPC room (rooms 1–4)** — see sidebar above.
+- ⏸ Gate 8 — Refresh mid-friendly-NPC: not tested yet.
+- ✓ Gate 9 — Walk 3+ consecutive rooms: 5 rooms walked, no stale sprite accumulation detected visually.
+- ⏸ Gate 10 — Boss encounter at 120px: current encounter is a mini-boss, not the area boss. Pending.
+- ⏸ Gate 11 — Lose combat → return to hub: not tested yet.
+
+Playtest continuing.
+
+---
+
+## Fixes applied (2026-04-18)
+
+Bugs #8 and #9 addressed structurally on top of the 2026-04-17 fix set. Branch `fix/pr2-bulletproof-rendering` (25 commits, base `f97acf2d`).
+
+### Bug #8 — Cid sprite on skillMaster (+ follow-up for friendlyNpc tail)
+
+- Broadened the scene resolver used by the tutorial/skillMaster flow: `getExplorationScene` → `getSceneWithNpcs`. The new helper accepts any scene that exposes an `npcs` layer (HubScene, ExplorationScene, BattleScene), so Cid's Pixi sprite renders whenever a returning account lands in skillMaster with HubScene mounted. Exported for testability. (`6aa0ab4e`)
+- Added `showCidForSkillMaster()` and wired it into `renderSkillMaster`'s non-tutorial branch so every skillMaster room shows Cid, not just `tutorialStep === 0`. Narration now carries `{ speaker: 'Cid' }` so the narration box speaker label matches the sprite. (`6aa0ab4e`)
+- New tests `tests/unit/ui/exploration-scene-helper.test.js` cover the resolver's five cases (no scene / disposed / exiting / no-npcs-layer / valid scene) and confirm it resolves HubScene, ExplorationScene, and BattleScene equivalently.
+
+**Verified in Playwright:** fresh run → starter select → start run. Phase transitions to `skillMaster`. Cid slides in on the right side of the meadow; `inspector.fullScan()` reports `npcs.pixi: 1`, no mismatches. Narration: `どの能力？` with speaker `Cid`.
+
+### Bug #9 — Miniboss encounter enemy reveal choreography
+
+- Rewrote the NPC-intro path inside `startEncounter()`: mount BattleScene with `enemies: []` so the stage is empty while the NPC slides in, then pass `{ enemies, allies }` to `playNpcBattleIntro` so it can reveal them AFTER the NPC leaves. (`5c22d258`)
+- Extended `playNpcBattleIntro` with an optional `{ enemies, allies }` opt. When supplied, the function calls `scene.syncCreatures({ allies, enemies, initial: true })` after the NPC slide-out so the enemies enter on a cleared stage via the existing formation slide-in animation. Back-compat preserved — callers that omit the opt see the legacy behaviour. (`5c22d258`)
+- New tests `tests/unit/ui/npc-battle-intro.test.js` assert: (a) the call order `showNpcSprite → hideNpcSprite → syncCreatures` when `enemies` is provided; (b) `syncCreatures` forwards all enemies + allies with `initial: true`; (c) no `syncCreatures` call when `enemies` is omitted (back-compat); (d) no throw when the scene exits mid-flight.
+
+**Unit-test verified;** visual verification deferred to dev deploy — reaching a mini-boss encounter from a fresh run requires a full tutorial combat + room walk (~8 interactions).
+
+### Open items from this playtest pass
+
+- Bug #1/#3 tail on friendlyNpc rooms (`[CHK] ✗ npc display pixi-backed but 0 NPC pixi sprites`) — the HubScene-mount fix doesn't cover the friendlyNpc phase redundant re-show path in `updateScene`. Needs a separate pass. Not addressed by Bug #8's fix because the root cause differs (double-call race in `playRoomTransition` + `updateScene` both re-firing `showNpcSprite`). Flagged for follow-up.
+- Inspector DOM-NPC counter still reports `npcs.dom: 0` despite `#npc-display.visible` being true — Bug #4 tail. Not a functional bug, but hides genuine Bug #1-family regressions behind false-negative checks. Tracked for a follow-up inspector fix.
+- Re-test gates 5, 8, 10, 11 not exercised in this pass (miniboss combat mid-flight already was visible; full win-then-continue not re-done). Dev-deploy playtest will cover these.
