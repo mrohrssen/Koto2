@@ -31,7 +31,7 @@ import { ExplorationScene } from '../scenes/exploration-scene.js';
 
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
-import { SC_NAMES } from './combat-ui-utils.js';
+import { SC_NAMES, shouldSkipAttackRecord } from './combat-ui-utils.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -901,7 +901,10 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
       && typeof result.befriendQuiz?.targetIndex === 'number'
       && result.befriendQuiz.targetIndex === atk.targetIndex;
     if (!isBefriendTarget) {
-      animateKOForScene(getSceneManager().currentScene, 'enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
+      // Await the 600ms alpha+scale fade so the next attack in playback can't
+      // start against a half-faded sprite — prior fire-and-forget let the next
+      // syncCreatures race the tween's final frame, leaving a ghost corpse.
+      await animateKOForScene(getSceneManager().currentScene, 'enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
     }
     if (result.xpEvents) {
       const xpEvent = result.xpEvents.find(ev =>
@@ -1016,6 +1019,7 @@ async function executeCreatureMovesTurn(choices) {
 
       if (merged.length > 0) {
         for (const { side, atk } of merged) {
+          if (shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)) continue;
           if (side === 'player' && atk.type === 'counter') {
             await vfx.showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
           } else if (side === 'player') {
