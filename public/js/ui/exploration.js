@@ -400,14 +400,14 @@ export async function renderHub() {
 
   // Tutorial step 3: encourage after first death, then auto-advance to 4
   if (tutorialStep === 3) {
-    await showTutorialNarration(getTutorialNarration(3));
+    await showTutorialNarration(getTutorialNarration(3), { showSprite: true });
     await apiTutorialAdvance?.(3);
     tutorialStep = getGameState().meta?.tutorialStep;
   }
 
   // Tutorial step 4: introduce speed review (condition-gated on dueCount > 0)
   if (tutorialStep === 4 && dueCount > 0) {
-    await showTutorialNarration(getTutorialNarration(4, { dueCount }));
+    await showTutorialNarration(getTutorialNarration(4, { dueCount }), { showSprite: true });
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
       if (btn.textContent.includes('Speed Review')) {
@@ -421,7 +421,7 @@ export async function renderHub() {
   // Tutorial step 5: guide to formation and re-enter
   if (tutorialStep === 5) {
     const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
-    await showTutorialNarration(getFormationNarration(creatureCount));
+    await showTutorialNarration(getFormationNarration(creatureCount), { showSprite: true });
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
       if (btn.textContent.includes('Explore')) {
