@@ -122,7 +122,7 @@ export async function playNpcBattleIntro(
   showNpcSpriteFn,
   hideNpcSpriteFn,
   npcDialogue,
-  { enemies = null, allies = null } = {},
+  { enemies = null, allies = null, isBoss = false } = {},
 ) {
   if (!npcData) return;
 
@@ -180,6 +180,12 @@ export async function playNpcBattleIntro(
   // them materialise one-by-one on the cleared stage rather than alongside
   // the NPC. Only fires when the caller opted in by passing `enemies`.
   if (Array.isArray(enemies)) {
+    // Build DOM enemy formation BEFORE scene.syncCreatures so that
+    // spawnFormationSprite's `.formation-slot[data-index="X"] .formation-sprite--pixi-anchor`
+    // lookup finds a real anchor. Without this, multi-enemy layouts fall back
+    // to percentage-based positioning (fires the 3-creature scatter bug).
+    // Kept hidden (opacity:0) until the Pixi sprites finish sliding in below.
+    await showFormation('enemy', enemies, { isBoss });
     const revealScene = getSceneManager().currentScene;
     if (revealScene && !revealScene.disposed && !revealScene._exiting && typeof revealScene.syncCreatures === 'function') {
       await revealScene.syncCreatures({

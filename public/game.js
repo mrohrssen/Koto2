@@ -1287,7 +1287,7 @@ async function startEncounter() {
           (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
           () => scene.hideNpcTrainer(),
           result.npcDialogue,
-          { enemies: combatEnemies, allies: combatAllies },
+          { enemies: combatEnemies, allies: combatAllies, isBoss: !!gameState.combat?.isBoss },
         );
       } finally {
         sceneTransitionActive = false;

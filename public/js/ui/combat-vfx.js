@@ -883,9 +883,21 @@ export async function showKoSwapAnimations(result) {
       await ctx.delay(800);
     }
 
-    // Re-render formation with surviving creatures
+    // Re-render formation with surviving creatures (DOM + Pixi). The DOM rebuild
+    // alone leaves the dead creature's Pixi sprite (shrunk by animateKOForScene)
+    // on stage, and the surviving creature's sprite stays at its old slot so its
+    // HP-bar label in the freshly-rebuilt DOM no longer lines up. Syncing the
+    // scene prunes the dead sprite by uid and repositions the survivor.
     if (result.creatureParty?.active) {
       await showFormation('player', result.creatureParty.active, { force: true });
+      const scene = getSceneManager().currentScene;
+      if (scene && !scene.disposed && !scene._exiting && typeof scene.syncCreatures === 'function') {
+        const currentEnemies = scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
+        await scene.syncCreatures({
+          allies: result.creatureParty.active,
+          enemies: currentEnemies,
+        });
+      }
     }
   }
 }
