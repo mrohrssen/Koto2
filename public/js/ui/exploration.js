@@ -17,15 +17,24 @@ import { savePvpTeam, getPvpTeams } from '../api.js';
 import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import { getTutorialNarration, getFormationNarration } from './tutorial-copy.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
-import { ExplorationScene } from '../scenes/exploration-scene.js';
 
 /**
- * Resolve the current ExplorationScene for NPC sprite operations.
- * Returns null if we're not in an ExplorationScene (e.g., scene in flux).
+ * Resolve any active scene that owns an `npcs` layer. Every gameplay scene
+ * (HubScene, ExplorationScene, BattleScene) provides this layer, so NPC
+ * sprite operations should succeed across all non-combat phases that can
+ * host a dialogue.
+ *
+ * The earlier `getExplorationScene` helper required `instanceof ExplorationScene`
+ * and silently returned null when HubScene was active (prologue, hub,
+ * area_selection, skillMaster) — which is exactly the state the returning
+ * player hits at session start, causing Cid's Pixi sprite to never render.
+ * Broadening the contract to "any scene with an npcs layer" is the
+ * structural fix. See Bug #8 in docs/pr2-bulletproof-rendering-smoke-test.md.
  */
-function getExplorationScene() {
+export function getSceneWithNpcs() {
   const scene = getSceneManager()?.currentScene;
-  return scene instanceof ExplorationScene ? scene : null;
+  if (!scene || scene.disposed || scene._exiting || !scene.layers?.npcs) return null;
+  return scene;
 }
 
 let getGameState = null;
@@ -46,11 +55,10 @@ let showAdventureReport = null;
 
 /** Show multi-page Cid tutorial narration. Optionally slides her sprite in/out. */
 async function showTutorialNarration(pages, { showSprite = false } = {}) {
-  // Scene-owned NPC sprite (participates in scene cleanup on transitions).
-  // Hub / initial-skill-pick / prologue run without an ExplorationScene —
-  // in those cases the Pixi slide is skipped and only the DOM side of the
-  // tutorial runs (the legacy _defaultCtx fallback was removed in Task 18).
-  const scene = showSprite ? getExplorationScene() : null;
+  // Any scene with an npcs layer owns the Pixi slide (HubScene during
+  // prologue/skillMaster/hub, ExplorationScene inside rooms, BattleScene
+  // during combat interjections). See getSceneWithNpcs() above.
+  const scene = showSprite ? getSceneWithNpcs() : null;
   const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
   if (showSprite) {
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
@@ -64,8 +72,9 @@ async function showTutorialNarration(pages, { showSprite = false } = {}) {
   }
 
   if (showSprite) {
-    if (scene && !scene.disposed && scene.npcSprite) {
-      await scene.hideNpcSprite({ slideOut: true });
+    const exitScene = getSceneWithNpcs();
+    if (exitScene && exitScene.npcSprite) {
+      await exitScene.hideNpcSprite({ slideOut: true });
     }
     hideEnemy();
   }
@@ -999,12 +1008,27 @@ export async function renderWhackAMole() {
   ]);
 }
 
-/** Show the どの能力？ prompt in the narration box */
+/** Show the どの能力？ prompt in the narration box (attributed to Cid). */
 function showSkillSelectPrompt(tokens) {
   if (!tokens?.length || !sceneModule?.showNarration) return;
   const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
   const html = renderJpSentence(tokens, getKnownWords(), wordDict, {}, false);
-  sceneModule.showNarration(html, { html: true, persistent: true });
+  sceneModule.showNarration(html, { html: true, persistent: true, speaker: 'Cid' });
+}
+
+/**
+ * Slide Cid's sprite into the active scene for the non-tutorial skillMaster
+ * path. Mirrors showTutorialNarration's sprite-show side but without the
+ * multi-page narration loop — Cid just appears so the player has a visible
+ * speaker for the `どの能力？` prompt.
+ */
+async function showCidForSkillMaster() {
+  const scene = getSceneWithNpcs();
+  const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+  showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+  if (scene) {
+    await scene.showNpcSprite(cidSprite, { slideIn: true });
+  }
 }
 
 /** Skill Master room — placeholder UI (to be expanded in later task) */
@@ -1131,6 +1155,10 @@ export async function renderSkillMaster() {
   if (tutorialStep === 0) {
     renderTutorialSkillMaster(offers);
   } else {
+    // Slide Cid in so the player sees who's offering them skills. Intentionally
+    // not awaited — the choices render in parallel with the slide-in so UI
+    // doesn't feel gated on animation.
+    showCidForSkillMaster();
     showSkillSelectPrompt(skillMasterState.promptTokens);
 
     renderChoices({
