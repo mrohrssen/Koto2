@@ -6,6 +6,7 @@ import {
   spawnFormationSprite,
   removeFormationSprite,
   updateFormationSprite,
+  destroyAllStatusLabels,
   _updateFormations,
 } from '../pixi/formation.js';
 import { createStatusVfxContext } from '../pixi/status-vfx.js';
@@ -60,6 +61,11 @@ export class BattleScene extends Scene {
   beforeExit() {
     stopParallax();
     releaseAllParticles();
+    // Pills are parented to the *global* labels layer (pixi/app.js), not to
+    // this scene's container tree — registry.dispose() cascade won't reach
+    // them. Tear them down explicitly here before the sprites that reference
+    // them get destroyed below.
+    destroyAllStatusLabels(this.formation);
     // Layers are tracked containers; registry disposes them after this hook.
     // Map.clear() just drops BattleScene's references — destruction is
     // authoritative via registry.dispose().

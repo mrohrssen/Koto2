@@ -599,6 +599,34 @@ export function syncPixiStatusLabelsForScene(scene, side, index, keys, statStage
 }
 
 /**
+ * Destroy every status pill container attached to sprites owned by a
+ * formation context. Status pills are parented to the *global* layers.labels
+ * (see pixi/app.js), NOT to any scene-owned container — so the scene's
+ * registry.dispose() cascade cannot reach them. Without this, pills from a
+ * prior combat leak onto the next scene when the global labels layer
+ * survives the transition.
+ *
+ * Idempotent + defensive: handles missing ctx, already-destroyed pills, and
+ * side maps without statusLabels entries.
+ *
+ * @param {object|null} ctx - formation context (from scene.formation)
+ */
+export function destroyAllStatusLabels(ctx) {
+  if (!ctx?.creatureSprites) return;
+  for (const side of ['player', 'enemy']) {
+    const sideMap = ctx.creatureSprites[side];
+    if (!sideMap) continue;
+    for (const sprite of sideMap.values()) {
+      if (!sprite?.statusLabels?.length) continue;
+      for (const pill of sprite.statusLabels) {
+        try { pill.destroy({ children: true }); } catch { /* already gone */ }
+      }
+      sprite.statusLabels = [];
+    }
+  }
+}
+
+/**
  * Scene-aware NPC sprite spawner. Creates a sprite, adds it to
  * scene.layers.npcs, optionally animates a slide-in via scene.tween
  * (registry-tracked, auto-cancels on scene exit). Returns the sprite so

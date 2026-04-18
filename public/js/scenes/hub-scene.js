@@ -5,6 +5,7 @@ import {
   spawnFormationSprite,
   removeFormationSprite,
   updateFormationSprite,
+  destroyAllStatusLabels,
   _updateFormations,
 } from '../pixi/formation.js';
 import { setupCreatureRowListeners } from '../ui/creature-row.js';
@@ -44,6 +45,8 @@ export class HubScene extends Scene {
   }
 
   beforeExit() {
+    // Status pills live on the global labels layer — see destroyAllStatusLabels.
+    destroyAllStatusLabels(this.formation);
     this.spritesByUid.clear();
   }
 

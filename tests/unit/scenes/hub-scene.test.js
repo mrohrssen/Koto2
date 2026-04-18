@@ -47,6 +47,7 @@ const formationMock = await mock.module('../../../public/js/pixi/formation.js', 
     spawnFormationSprite: async () => null,
     removeFormationSprite: () => {},
     updateFormationSprite: () => {},
+    destroyAllStatusLabels: () => {},
     // scene.js imports these for showNpcSprite / hideNpcSprite.
     spawnNpcSprite: async () => null,
     removeNpcSprite: () => {},
@@ -114,6 +115,7 @@ describe('HubScene', () => {
         spawnFormationSprite: async () => sentinel,
         removeFormationSprite: () => {},
         updateFormationSprite: () => {},
+        destroyAllStatusLabels: () => {},
         // spawnNpcSprite + removeNpcSprite are imported by base Scene and
         // must be mocked even though this test doesn't exercise NPC paths.
         spawnNpcSprite: async () => null,

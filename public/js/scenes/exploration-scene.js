@@ -6,6 +6,7 @@ import {
   spawnFormationSprite,
   removeFormationSprite,
   updateFormationSprite,
+  destroyAllStatusLabels,
   _updateFormations,
 } from '../pixi/formation.js';
 import { setupCreatureRowListeners } from '../ui/creature-row.js';
@@ -69,6 +70,9 @@ export class ExplorationScene extends Scene {
 
   beforeExit() {
     stopParallax();
+    // Tear down status pills — they're parented to the global labels layer,
+    // not this scene's tree, so the registry cascade won't reach them.
+    destroyAllStatusLabels(this.formation);
     // Layers are tracked containers; registry disposes them after this hook.
     // Map.clear() just drops ExplorationScene's references — destruction is
     // authoritative via registry.dispose(). npcSprite cleanup is handled by

@@ -148,6 +148,7 @@ const {
   showActiveGlowForScene,
   clearActiveGlowForScene,
   syncPixiStatusLabelsForScene,
+  destroyAllStatusLabels,
 } = await import('../../../public/js/pixi/formation.js');
 const { BattleScene } = await import('../../../public/js/scenes/battle-scene.js');
 
@@ -537,5 +538,69 @@ describe('scene-facing sprite-lookup variants null-scene guards', () => {
     assert.strictEqual(syncPixiStatusLabelsForScene(null, 'player', 0, [], {}), undefined);
     assert.strictEqual(syncPixiStatusLabelsForScene(undefined, 'enemy', 1, ['poison'], {}), undefined);
     assert.strictEqual(syncPixiStatusLabelsForScene({}, 'player', 0, [], {}), undefined);
+  });
+});
+
+describe('destroyAllStatusLabels (scene dispose cleanup)', () => {
+  function makeSpriteWithLabels(n) {
+    const pills = [];
+    for (let i = 0; i < n; i++) pills.push(new FakeContainer());
+    const sprite = new FakeSprite({});
+    sprite.statusLabels = pills;
+    return sprite;
+  }
+
+  it('destroys every pill across both sides of a ctx and empties the arrays', () => {
+    const formations = new FakeContainer();
+    const scene = {
+      layers: { formations },
+      addContainer: (c) => c,
+    };
+    const ctx = createFormationContext(scene);
+
+    const s1 = makeSpriteWithLabels(2);
+    const s2 = makeSpriteWithLabels(3);
+    const e1 = makeSpriteWithLabels(1);
+    ctx.creatureSprites.player.set('p1', s1);
+    ctx.creatureSprites.player.set('p2', s2);
+    ctx.creatureSprites.enemy.set('e1', e1);
+
+    const allPills = [...s1.statusLabels, ...s2.statusLabels, ...e1.statusLabels];
+    destroyAllStatusLabels(ctx);
+
+    for (const pill of allPills) {
+      assert.equal(pill._destroyed, true, 'pill should be destroyed');
+    }
+    assert.equal(s1.statusLabels.length, 0);
+    assert.equal(s2.statusLabels.length, 0);
+    assert.equal(e1.statusLabels.length, 0);
+  });
+
+  it('is idempotent — calling twice is a no-op the second time', () => {
+    const formations = new FakeContainer();
+    const scene = { layers: { formations }, addContainer: (c) => c };
+    const ctx = createFormationContext(scene);
+    const sprite = makeSpriteWithLabels(2);
+    ctx.creatureSprites.player.set('p1', sprite);
+
+    destroyAllStatusLabels(ctx);
+    assert.doesNotThrow(() => destroyAllStatusLabels(ctx));
+    assert.equal(sprite.statusLabels.length, 0);
+  });
+
+  it('no-ops when ctx is nullish or has no creatureSprites', () => {
+    assert.doesNotThrow(() => destroyAllStatusLabels(null));
+    assert.doesNotThrow(() => destroyAllStatusLabels(undefined));
+    assert.doesNotThrow(() => destroyAllStatusLabels({}));
+    assert.doesNotThrow(() => destroyAllStatusLabels({ creatureSprites: null }));
+  });
+
+  it('skips sprites without statusLabels gracefully', () => {
+    const formations = new FakeContainer();
+    const scene = { layers: { formations }, addContainer: (c) => c };
+    const ctx = createFormationContext(scene);
+    const bare = new FakeSprite({});
+    ctx.creatureSprites.player.set('p1', bare);
+    assert.doesNotThrow(() => destroyAllStatusLabels(ctx));
   });
 });

@@ -118,6 +118,26 @@ export class ExplorationService {
     }
   }
 
+  /**
+   * Clear combat-scoped buffs/debuffs (stat stages + activeEffects) on every
+   * room entry. Mirrors the user's rule: "All buffs and debuffs should clear
+   * on room transitions." Previously cleared at combat-end, which made pills
+   * vanish mid-playback; deferring to room entry keeps them visible through
+   * the victory modal / friendlyNpc reward screen until the user moves on.
+   */
+  _clearCombatBuffsForRoomEntry() {
+    const party = this.gm.run?.creatureParty;
+    if (!party) return;
+
+    const active = Array.isArray(party.active) ? party.active : [];
+    const reserves = Array.isArray(party.reserves) ? party.reserves : [];
+    for (const creature of [...active, ...reserves]) {
+      if (!creature) continue;
+      creature.statStages = { atk: 0, def: 0 };
+      creature.activeEffects = [];
+    }
+  }
+
   // ============ AREA SELECTION ============
 
   /**
@@ -197,6 +217,9 @@ export class ExplorationService {
 
       // Per-room regen: heal all living creatures on first room entry too.
       this._healAllLivingCreaturesForRoomEntry();
+      // Clear combat-scoped buffs/debuffs so stat pills don't leak across
+      // areas (e.g. def+1 from the prior area's final combat).
+      this._clearCombatBuffsForRoomEntry();
     }
 
     const areaName = this.gm.run.currentArea?.nameEn || areaId;
@@ -329,6 +352,11 @@ export class ExplorationService {
 
     // Per-room regen: heal all living creatures between rooms.
     this._healAllLivingCreaturesForRoomEntry();
+    // Clear combat-scoped buffs/debuffs on every room transition. Kept here
+    // (not at combat-end) so stat pills stay visible through the victory
+    // modal / friendlyNpc reward screen and clear only when the user
+    // physically moves on. See the note in resolution.js:finalizeCombatVictory.
+    this._clearCombatBuffsForRoomEntry();
 
     // Vary background per room — sub-area-specific if available
     const areaId = this.gm.run.currentArea?.id || 'okunomori';
