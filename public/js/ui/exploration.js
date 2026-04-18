@@ -615,7 +615,7 @@ export function renderShrine() {
       };
     }),
     onSelect: async (index) => {
-      const scene = getExplorationScene();
+      const scene = getSceneWithNpcs();
       if (scene?.shrineInProgress) return;
       if (scene) scene.shrineInProgress = true;
       const creature = allCreatures[index];
@@ -655,7 +655,7 @@ export async function renderWordDiscovery() {
   // The fallback object is used if we're somehow outside an ExplorationScene
   // (the tutorial path can drive renderWordDiscovery before the scene catches
   // up during a transition window).
-  const scene = getExplorationScene();
+  const scene = getSceneWithNpcs();
   const fallback = {
     fetched: false,
     words: [],
@@ -990,7 +990,7 @@ export async function renderWhackAMole() {
     {
       label: noLabel,
       onClick: async () => {
-        const scene = getExplorationScene();
+        const scene = getSceneWithNpcs();
         if (scene && !scene.disposed && scene.npcSprite) {
           await scene.hideNpcSprite({ slideOut: true });
         }
@@ -1459,7 +1459,7 @@ export async function renderFriendlyNpc() {
     cidItemShopTutorialShown = true;
     const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-    const scene = getExplorationScene();
+    const scene = getSceneWithNpcs();
     if (scene) {
       await scene.showNpcSprite(cidSprite, { slideIn: true });
     }
@@ -1467,7 +1467,7 @@ export async function renderFriendlyNpc() {
     const [itemShopCidLine] = getTutorialNarration(2);
     await sceneModule.showNarration(itemShopCidLine, { speaker: 'Cid' });
 
-    const afterScene = getExplorationScene();
+    const afterScene = getSceneWithNpcs();
     if (afterScene && !afterScene.disposed && afterScene.npcSprite) {
       await afterScene.hideNpcSprite({ slideOut: true });
     }
@@ -1482,7 +1482,7 @@ export async function renderFriendlyNpc() {
       // await of the tutorial narration. If not in an ExplorationScene
       // (shouldn't normally happen here), only the DOM NPC display runs —
       // the legacy _defaultCtx fallback was removed in Task 18.
-      const currentScene = getExplorationScene();
+      const currentScene = getSceneWithNpcs();
       if (currentScene) {
         await currentScene.showNpcSprite(npcSprite, { slideIn: true });
       }
