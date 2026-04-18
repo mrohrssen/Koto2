@@ -1365,6 +1365,17 @@ export function awardBattleXp(creatureParty, metaMults = null, itemBuffs = null)
 }
 
 export function handleCreatureKO(creatureParty, koCreatureIndex) {
+  // Clear transient combat state off the dying creature before it leaves the
+  // active slot. Without this a later resurrect/capture path could restore a
+  // creature with lingering stun/poison effects, and any client still holding
+  // a reference (e.g. KO animation, attack record) would show stale status
+  // pills on the corpse.
+  const dying = creatureParty.active[koCreatureIndex];
+  if (dying) {
+    dying.activeEffects = [];
+    resetStatStages(dying);
+  }
+
   if (creatureParty.reserves.length === 0) {
     // No reserve — permanently remove dead creature from party
     creatureParty.active[koCreatureIndex] = null;

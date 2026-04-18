@@ -14,6 +14,12 @@ export function getHpColor(pct) {
 
 /** Derive status icon keys from a creature's activeEffects + statStages. */
 export function getCreatureStatusKeys(creature) {
+  // Dead creatures shouldn't show status labels — the effects no longer
+  // tick against a zero-HP target and the lingering pill looks like a bug
+  // (e.g. stun pill hanging off a corpse).
+  const hp = creature.currentHp ?? creature.hp ?? 0;
+  if (hp <= 0) return [];
+
   const keys = [];
   if (creature.activeEffects) {
     for (const e of creature.activeEffects) {
