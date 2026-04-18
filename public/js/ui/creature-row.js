@@ -2,6 +2,7 @@ import { dom } from '../dom.js';
 import { showFormation, hideFormation } from './combat-dom.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { getSceneManager, isSceneManagerInitialized } from '../scenes/scene-manager.js';
+import { SceneDisposedError } from '../scenes/scene-errors.js';
 
 function rarityStars(rarity) {
   const n = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 }[rarity];
@@ -171,7 +172,13 @@ export function render(creatures) {
   // regressions (loud) so missing sprites surface as console.error instead of
   // invisible NPCs/creatures.
   if (!isSceneManagerInitialized()) return; // scene manager not booted yet
-  const scene = getSceneManager().currentScene;
+  const mgr = getSceneManager();
+  // During a phase/scene transition the destination scene's onEnter is the
+  // authoritative sync path — it's called with the freshest allies/enemies
+  // and runs against a guaranteed-live target. Firing from here in that
+  // window hits the old scene just as it disposes (SceneDisposedError race).
+  if (mgr.transitioning) return;
+  const scene = mgr.currentScene;
   if (!scene) {
     console.error('[creature-row] no active scene — player sprites will not render. Check ensureSceneForPhase().');
     return;
@@ -183,7 +190,13 @@ export function render(creatures) {
 
   const enemies = scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
   scene.syncCreatures({ allies: creatures || [], enemies })
-    .catch(err => console.error('[creature-row] scene.syncCreatures failed', err));
+    .catch(err => {
+      // Scene disposed mid-sync is expected when a transition starts while
+      // spawn promises are still awaiting asset loads — the destination
+      // scene's onEnter will re-sync. Only surface real failures.
+      if (err instanceof SceneDisposedError) return;
+      console.error('[creature-row] scene.syncCreatures failed', err);
+    });
 }
 
 function togglePopup(index) {

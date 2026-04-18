@@ -25,6 +25,7 @@ import { setScrollState } from '../pixi/parallax.js';
 import { wait } from '../pixi/tween.js';
 import { playAttackSound } from './combat-audio.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
+import { SceneDisposedError } from '../scenes/scene-errors.js';
 import { BattleScene } from '../scenes/battle-scene.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
 
@@ -1504,14 +1505,19 @@ export async function stopCombatLoop(result) {
   // re-enabled by ExplorationScene on room entry.
   setScrollState('accelerating');
   const battleSceneForCleanup = mgr.currentScene;
-  if (battleSceneForCleanup instanceof BattleScene && !battleSceneForCleanup.disposed) {
+  if (battleSceneForCleanup instanceof BattleScene && !battleSceneForCleanup.disposed && !mgr.transitioning) {
     try {
       await battleSceneForCleanup.syncCreatures({
         allies: getGameState()?.combat?.allies ?? getGameState()?.run?.creatureParty?.active ?? [],
         enemies: [],
       });
     } catch (err) {
-      console.error('[CombatLoop] failed to clear enemy sprites via scene diff', err);
+      // Scene disposed mid-sync (e.g., rapid reload into post-combat): the
+      // ExplorationScene transition below will re-seed sprites from the
+      // updated ally roster, so there's nothing to recover.
+      if (!(err instanceof SceneDisposedError)) {
+        console.error('[CombatLoop] failed to clear enemy sprites via scene diff', err);
+      }
     }
   }
 

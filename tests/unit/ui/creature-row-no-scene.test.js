@@ -16,9 +16,10 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
 });
 let initialized = false;
 let sceneRef = null;
+let transitioningRef = false;
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: {
-    getSceneManager: () => ({ currentScene: sceneRef }),
+    getSceneManager: () => ({ currentScene: sceneRef, transitioning: transitioningRef }),
     isSceneManagerInitialized: () => initialized,
   },
 });
@@ -29,6 +30,7 @@ describe('creature-row.render scene guards', () => {
   beforeEach(() => {
     initialized = false;
     sceneRef = null;
+    transitioningRef = false;
   });
 
   it('silently does nothing when scene manager not initialized (expected boot phase)', () => {
@@ -60,5 +62,20 @@ describe('creature-row.render scene guards', () => {
     console.error = (...a) => errors.push(a);
     try { render([{ id: 'hi', uid: 'hi-1' }]); } finally { console.error = origErr; }
     assert.strictEqual(syncCalled, false, 'disposed scene should not receive syncCreatures');
+  });
+
+  it('silently skips when scene manager is mid-transition', () => {
+    initialized = true;
+    transitioningRef = true;
+    let syncCalled = false;
+    // Scene ref is null during transition; sync should be skipped silently
+    // because the destination scene's onEnter owns the sync.
+    sceneRef = null;
+    const errors = [];
+    const origErr = console.error;
+    console.error = (...a) => errors.push(a);
+    try { render([{ id: 'hi', uid: 'hi-1' }]); } finally { console.error = origErr; }
+    assert.strictEqual(syncCalled, false, 'mid-transition render should not fire sync');
+    assert.strictEqual(errors.length, 0, 'mid-transition render must not log no-scene error');
   });
 });

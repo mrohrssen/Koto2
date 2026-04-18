@@ -25,6 +25,7 @@ import {
   getCreatureSpriteForScene, animateKOForScene, syncPixiStatusLabelsForScene
 } from '../pixi/formation.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
+import { SceneDisposedError } from '../scenes/scene-errors.js';
 import { showFormation } from './combat-dom.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
@@ -890,13 +891,20 @@ export async function showKoSwapAnimations(result) {
     // scene prunes the dead sprite by uid and repositions the survivor.
     if (result.creatureParty?.active) {
       await showFormation('player', result.creatureParty.active, { force: true });
-      const scene = getSceneManager().currentScene;
-      if (scene && !scene.disposed && !scene._exiting && typeof scene.syncCreatures === 'function') {
+      const mgr = getSceneManager();
+      const scene = mgr.currentScene;
+      if (!mgr.transitioning && scene && !scene.disposed && !scene._exiting && typeof scene.syncCreatures === 'function') {
         const currentEnemies = scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
-        await scene.syncCreatures({
-          allies: result.creatureParty.active,
-          enemies: currentEnemies,
-        });
+        try {
+          await scene.syncCreatures({
+            allies: result.creatureParty.active,
+            enemies: currentEnemies,
+          });
+        } catch (err) {
+          // Scene disposed mid-sync: destination scene's onEnter will handle
+          // the next sync with the post-KO roster.
+          if (!(err instanceof SceneDisposedError)) throw err;
+        }
       }
     }
   }
