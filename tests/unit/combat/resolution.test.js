@@ -191,6 +191,30 @@ describe('finalizeCombatVictory', () => {
     // Boss is still tracked even without dialogue
     assert.ok(run.bossesDefeated.includes('fake_boss'));
   });
+
+  it('clears statStages and activeEffects on surviving allies', () => {
+    // Bug 2026-04-18 #2: "Ishi def+1 buff should go away when combat ends".
+    // Stat stages are combat-scoped but they were only reset at the NEXT
+    // battle start, so their pills leaked into the friendlyNpc reward screen.
+    const ally = {
+      hp: 30, maxHp: 50,
+      statStages: { atk: 2, def: 1 },
+      activeEffects: [{ type: 'poison', remainingTurns: 2, sourceId: 'x' }]
+    };
+    const combat = { active: true, isBoss: false, enemies: [], allies: [ally] };
+    const run = { currentRoom: 0, rooms: [{}], currentAreaEncounters: 0 };
+    finalizeCombatVictory(combat, run);
+    assert.deepEqual(ally.statStages, { atk: 0, def: 0 });
+    assert.deepEqual(ally.activeEffects, []);
+  });
+
+  it('ignores null/undefined ally slots during cleanup', () => {
+    const combat = { active: true, isBoss: false, enemies: [], allies: [null, undefined] };
+    const run = { currentRoom: 0, rooms: [{}], currentAreaEncounters: 0 };
+    // Should not throw
+    finalizeCombatVictory(combat, run);
+    assert.equal(combat.active, false);
+  });
 });
 
 describe('resolveDefeat', () => {

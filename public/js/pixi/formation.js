@@ -507,8 +507,13 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
 
   const hp = creature.currentHp ?? creature.hp ?? 1;
   if (hp <= 0) {
+    // Dead creatures must be fully hidden. The fade-out tween from
+    // _animateKO drives alpha to 0, but chain-skill kills (Arc Strike, etc.)
+    // can update the sprite before the tween resolves — or if the KO animation
+    // ran fire-and-forget, a later syncCreatures shouldn't accidentally keep
+    // a ghost sprite visible. Force alpha to 0 so the corpse never renders.
+    sprite.alpha = 0;
     sprite.tint = 0x888888;
-    if (sprite.alpha > 0.3) sprite.alpha = 0.3;
   } else {
     sprite.alpha = 1;
     sprite.tint = 0xFFFFFF;
