@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { join } from 'path';
-import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs, hydrateCards } from '../../game/bootstrap/word-knowledge.js';
 import { gradeCard, getDueCards, getDueCount, createCard, getDeckCards } from '../../game/internal-srs.js';
 import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
@@ -101,17 +101,13 @@ export function createKnownWordsRoutes() {
 
   // GET /api/game/known-words/due-words
   router.get('/due-words', (req, res) => {
-    const dict = getWordDict();
-    const cards = getDueCards(req.user.id, 'vocab');
-    const words = cards.map(c => {
-      const entry = dict.get(c.word);
-      return {
-        word: c.word,
-        reading: entry?.reading || c.reading || c.word,
-        meanings: c.meaning ? [c.meaning] : [''],
-        source: 'internal',
-      };
-    });
+    const cards = hydrateCards(getDueCards(req.user.id, 'vocab'));
+    const words = cards.map(c => ({
+      word: c.id,
+      reading: c.reading,
+      meanings: c.meaning ? [c.meaning] : [''],
+      source: 'internal',
+    }));
     res.json({ words });
   });
 
