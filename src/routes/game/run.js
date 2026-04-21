@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
+import { resolveLiveDictPath } from '../../game/live-dict-path.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
@@ -486,7 +487,10 @@ export default function createRunRoutes({
 
       // Enrich words with meanings from local dictionary
       if (result.words.length > 0) {
-        const dict = req.app.locals.wordDictionary || loadWordDictionary(join(process.cwd(), 'data'));
+        const dict = req.app.locals.wordDictionary || loadWordDictionary({
+          overlayDir: join(process.cwd(), 'data'),
+          liveDictPath: resolveLiveDictPath(),
+        });
         for (const word of result.words) {
           if (!word.meanings?.length) {
             const entry = dict.get(word.word);

@@ -3,15 +3,26 @@ import path from 'path';
 import { getDeckCards, createCard } from '../internal-srs.js';
 import { State } from 'ts-fsrs';
 import { loadWordDictionary } from '../word-dictionary.js';
+import { resolveLiveDictPath } from '../live-dict-path.js';
 import { getDataDir } from '../../data-dir.js';
 
-// Dictionary lives in the repo (committed) — stays on the container FS.
-const DICT_DIR = path.join(process.cwd(), 'data');
+// Overlay data (creatures.json, moves.json, ...) lives in the repo.
+const OVERLAY_DIR = path.join(process.cwd(), 'data');
 
 let _wordDict = null;
 function getWordDict() {
-  if (!_wordDict) _wordDict = loadWordDictionary(DICT_DIR);
+  if (!_wordDict) {
+    _wordDict = loadWordDictionary({
+      overlayDir: OVERLAY_DIR,
+      liveDictPath: resolveLiveDictPath(),
+    });
+  }
   return _wordDict;
+}
+
+/** Clear the in-memory dictionary cache so the next read reloads from disk. */
+export function invalidateWordDict() {
+  _wordDict = null;
 }
 
 /**

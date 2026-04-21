@@ -4,13 +4,19 @@ import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { gradeCard, getDueCards, getDueCount, createCard, getDeckCards } from '../../game/internal-srs.js';
 import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
+import { resolveLiveDictPath } from '../../game/live-dict-path.js';
 import { tokenize } from '../../tokenizer.js';
 import { incrementDiscoveryCount, getDiscoveryStatus } from '../../word-tracking.js';
 import { addReview } from '../../auth/users.js';
 
 let _wordDict = null;
 function getWordDict() {
-  if (!_wordDict) _wordDict = loadWordDictionary(join(process.cwd(), 'data'));
+  if (!_wordDict) {
+    _wordDict = loadWordDictionary({
+      overlayDir: join(process.cwd(), 'data'),
+      liveDictPath: resolveLiveDictPath(),
+    });
+  }
   return _wordDict;
 }
 

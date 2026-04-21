@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { adminAuth } from './admin.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
+import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { parseBatch } from '../../scripts/lib/jpdb-helpers.mjs';
 
 /**
@@ -239,7 +240,10 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
 
   let dictionary = null;
   function getDictionary() {
-    if (!dictionary) dictionary = loadWordDictionary(join(process.cwd(), 'data'));
+    if (!dictionary) dictionary = loadWordDictionary({
+      overlayDir: join(process.cwd(), 'data'),
+      liveDictPath: resolveLiveDictPath(),
+    });
     return dictionary;
   }
 
