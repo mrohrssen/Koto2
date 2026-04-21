@@ -99,34 +99,24 @@ describe('speech-bubble logic', () => {
   // Test the core logic patterns without importing the module directly
   // (it has browser DOM deps that break in Node)
 
-  it('25% trigger rate: fires when random < 0.25', () => {
-    const TRIGGER_CHANCE = 0.25;
-    // Should fire
-    assert.ok(0.1 < TRIGGER_CHANCE, 'random=0.1 should trigger');
-    assert.ok(0.24 < TRIGGER_CHANCE, 'random=0.24 should trigger');
-    // Should not fire
-    assert.ok(!(0.25 < TRIGGER_CHANCE), 'random=0.25 should NOT trigger');
-    assert.ok(!(0.5 < TRIGGER_CHANCE), 'random=0.5 should NOT trigger');
-    assert.ok(!(0.99 < TRIGGER_CHANCE), 'random=0.99 should NOT trigger');
+  it('renders whenever the server already selected a bark', () => {
+    const shouldRender = (bark) => !!bark;
+    assert.equal(shouldRender({ trigger: 'onHit', text: '痛い！' }), true);
+    assert.equal(shouldRender(null), false);
   });
 
-  it('phrase selection picks from correct pool', () => {
-    const phrases = {
-      onHit: [{ jp: 'a' }, { jp: 'b' }],
-      onVictory: [{ jp: 'c' }]
-    };
+  it('selects the bark matching the requested trigger', () => {
+    const barks = [
+      { trigger: 'onVictory', text: 'やった！' },
+      { trigger: 'onHit', text: '痛い！' },
+      { trigger: 'onExplore', text: 'いこう！' }
+    ];
 
-    // With deterministic random
-    const pick = (type, rand) => {
-      const pool = phrases[type];
-      if (!pool || pool.length === 0) return null;
-      return pool[Math.floor(rand * pool.length)];
-    };
+    const pick = (trigger) => barks.find(bark => bark.trigger === trigger) || null;
 
-    assert.deepStrictEqual(pick('onHit', 0.0), { jp: 'a' });
-    assert.deepStrictEqual(pick('onHit', 0.6), { jp: 'b' });
-    assert.deepStrictEqual(pick('onVictory', 0.0), { jp: 'c' });
-    assert.strictEqual(pick('nonexistent', 0.0), null);
+    assert.deepStrictEqual(pick('onHit'), { trigger: 'onHit', text: '痛い！' });
+    assert.deepStrictEqual(pick('onExplore'), { trigger: 'onExplore', text: 'いこう！' });
+    assert.strictEqual(pick('onKO'), null);
   });
 
   it('active bubble mutex prevents overlap', () => {
@@ -148,19 +138,15 @@ describe('speech-bubble logic', () => {
     assert.ok(tryShow({ jp: 'third' }), 'After dismiss, new bubble should show');
   });
 
-  it('exposure tracking collects jp field', () => {
-    const exposures = new Set();
-    function addExposure(word) { exposures.add(word); }
+  it('render-triggered exposure does not dedupe repeated bark renders locally', () => {
+    const exposures = [];
+    function addExposure(word) { exposures.push(word); }
 
     const phrase = { jp: '痛い', reading: 'いたい', en: 'Ouch!', romaji: 'itai' };
     addExposure(phrase.jp);
-
-    assert.ok(exposures.has('痛い'));
-    assert.strictEqual(exposures.size, 1);
-
-    // Adding same word again doesn't duplicate (Set behavior)
     addExposure(phrase.jp);
-    assert.strictEqual(exposures.size, 1);
+
+    assert.deepStrictEqual(exposures, ['痛い', '痛い']);
   });
 });
 

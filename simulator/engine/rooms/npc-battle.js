@@ -3,6 +3,7 @@
  * Starts encounter, logs NPC dialogue, runs combat.
  */
 import { runCombat } from '../combat.js';
+import { collectTokenExposures, syncExposureBatch } from '../exposure-sync.js';
 
 export async function handleNpcBattle(simCall, room, context, logEvent) {
   logEvent(context.day, context.run, context.roomIndex, 'room_entered', {
@@ -22,22 +23,40 @@ export async function handleNpcBattle(simCall, room, context, logEvent) {
   }
 
   const data = startResult.data;
+  const openingExposureWords = [];
 
-  // Log NPC dialogue lines (fightStart, defeatLine)
+  // Mirror the bootstrap fightStart line the client renders during room transition.
   const npcDialogue = data.npcDialogue ?? data.npc ?? {};
-  const dialogueKeys = ['fightStart', 'defeatLine'];
-  for (const key of dialogueKeys) {
-    const line = npcDialogue[key];
-    if (line) {
-      logEvent(context.day, context.run, context.roomIndex, 'dialogue_seen', {
-        source: 'npc_battle',
-        dialogueType: key,
-        line: typeof line === 'string' ? line : line.text ?? line.line ?? JSON.stringify(line)
-      });
-    }
+  const fightStart = npcDialogue.fightStart;
+  if (fightStart) {
+    collectTokenExposures(openingExposureWords, fightStart.tokens, fightStart.overrides || {});
+    logEvent(context.day, context.run, context.roomIndex, 'dialogue_seen', {
+      source: 'npc_battle',
+      dialogueType: 'fightStart',
+      line: typeof fightStart === 'string' ? fightStart : fightStart.text ?? fightStart.line ?? JSON.stringify(fightStart)
+    });
   }
+  await syncExposureBatch(simCall, openingExposureWords, 'npc battle intro exposure');
 
   const combat = await runCombat(simCall, data, context.combatSkill, context, logEvent);
+
+  if (combat.won) {
+    const dialogueStart = await simCall('POST', '/api/game/npc-dialogue-start', null, 'npc defeat line');
+    const defeatLine = dialogueStart.data?.mode === 'defeat_line'
+      ? dialogueStart.data?.line
+      : null;
+
+    if (defeatLine) {
+      logEvent(context.day, context.run, context.roomIndex, 'dialogue_seen', {
+        source: 'npc_battle',
+        dialogueType: 'defeatLine',
+        line: defeatLine.text ?? defeatLine.line ?? JSON.stringify(defeatLine)
+      });
+      const defeatExposureWords = [];
+      collectTokenExposures(defeatExposureWords, defeatLine.tokens, defeatLine.overrides || {});
+      await syncExposureBatch(simCall, defeatExposureWords, 'npc defeat line exposure');
+    }
+  }
 
   const outcome = combat.won ? 'cleared' : 'wiped';
   logEvent(context.day, context.run, context.roomIndex, 'room_entered', {

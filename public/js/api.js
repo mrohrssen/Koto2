@@ -42,6 +42,49 @@ export function getAuthHeaders() {
   };
 }
 
+export async function postKnownWordExposures(words, opts = {}) {
+  if (!Array.isArray(words) || words.length === 0) {
+    return { ok: true };
+  }
+
+  try {
+    const response = await fetch(apiUrl('/api/game/known-words/expose'), {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ words }),
+      keepalive: opts.keepalive === true
+    });
+
+    onApiSuccess();
+
+    if (response.status === 401) {
+      if (!hasRedirectedFor401) {
+        hasRedirectedFor401 = true;
+        localStorage.removeItem('authToken');
+        sessionStorage.setItem('sessionExpiredMsg', 'Session expired, please log in again');
+        window.location.href = '/';
+      }
+      throw new Error('Session expired');
+    }
+
+    if (!response.ok) {
+      let message = `HTTP ${response.status}`;
+      try {
+        const data = await response.json();
+        message = data?.error || message;
+      } catch {
+        // Keep the status fallback when the response body is unavailable.
+      }
+      throw new Error(message);
+    }
+
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof TypeError) onApiFailure();
+    throw error;
+  }
+}
+
 /**
  * Generic API call wrapper
  * Includes JWT Authorization header from localStorage in every request

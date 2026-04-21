@@ -1,4 +1,10 @@
 import { toRomaji } from './romaji.js';
+import {
+  getTokenBaseForm,
+  isContentExposureToken,
+  resolveExposureMeaning
+} from '../shared/exposure-extractor.js';
+import { record as recordExposure } from './exposure-buffer.js';
 
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
 
@@ -56,11 +62,6 @@ export function renderEnFirst(taggedText) {
 }
 
 /**
- * Punctuation POS values from UniDic that should render as-is.
- */
-const PUNCT_POS = new Set(['記号', '補助記号', '空白']);
-
-/**
  * Render a tokenized Japanese sentence with known/unknown word display.
  *
  * Known words: inline hiragana (Areas 1-3) or kanji (Area 4+).
@@ -77,19 +78,15 @@ const PUNCT_POS = new Set(['記号', '補助記号', '空白']);
 export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, useKanji = false) {
   if (!tokens || tokens.length === 0) return '';
 
+  recordExposure(tokens, wordDict, overrides);
+
   return tokens.map(token => {
     const { surface } = token;
 
-    // Detect format: universal uses `base`, legacy uses `baseForm`
-    const baseForm = token.base || token.baseForm;
+    const baseForm = getTokenBaseForm(token);
     const reading = token.reading;
 
-    // Non-content token: no base field → render as punctuation
-    // (universal format) OR legacy POS-based detection
-    const isNonContent = !baseForm
-      || (token.pos && (PUNCT_POS.has(token.pos) || /^[\p{P}\p{S}\s]+$/u.test(surface)));
-
-    if (isNonContent) {
+    if (!isContentExposureToken(token)) {
       return `<span class="jp-punct">${esc(surface)}</span>`;
     }
 
@@ -97,12 +94,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     const displayReading = reading || surface;
 
     // Look up meaning for data attribute (needed for both known and unknown)
-    const dictEntry = wordDict.get(baseForm);
-    const meaning = token.meaning
-      || overrides[baseForm]
-      || dictEntry?.definitions?.find(d => d.primary)?.en
-      || dictEntry?.definitions?.[0]?.en
-      || '';
+    const meaning = resolveExposureMeaning(token, wordDict, overrides);
 
     const pos = token.pos || '';
     const dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;

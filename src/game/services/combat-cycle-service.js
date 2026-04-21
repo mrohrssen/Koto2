@@ -113,14 +113,6 @@ export class CombatCycleService {
       });
     }
 
-    // Expose enemy creature names to SRS
-    const enemyNameWords = enemyCreatures
-      .filter(e => e && e.name)
-      .map(e => ({ word: e.name, meaning: e.nameEn || '' }));
-    if (enemyNameWords.length > 0) {
-      this.gm.exposeWords(enemyNameWords);
-    }
-
     this.gm.combat = createCombatState(enemyCreatures[0]);
     this.gm.combat.allies = this.gm.run.creatureParty.active;
     this.gm.combat.enemies = enemyCreatures;
@@ -299,27 +291,6 @@ export class CombatCycleService {
       this.gm.run.player.credits = (this.gm.run.player.credits || 0) + killCredits;
     }
 
-    // Expose combat words to SRS
-    const combatWordsToExpose = [];
-    const allRoundAttacks = [...(playerResult.attacks || []), ...(playerResult.enemyAttacks || [])];
-    for (const atk of allRoundAttacks) {
-      if (atk.attackerBaseWord) {
-        combatWordsToExpose.push({
-          word: atk.attackerBaseWord,
-          meaning: atk.attackerBaseMeaning || ''
-        });
-      }
-      if ((atk.attackerSkillName || atk.moveName) && (atk.attackerSkillName || atk.moveName) !== atk.attackerBaseWord) {
-        combatWordsToExpose.push({
-          word: atk.attackerSkillName || atk.moveName,
-          meaning: atk.attackerSkillEn || ''
-        });
-      }
-    }
-    if (combatWordsToExpose.length > 0) {
-      this.gm.exposeWords(combatWordsToExpose);
-    }
-
     // Pick combat barks server-side
     let barks = [];
     const barkPool = getBarkPool();
@@ -337,20 +308,13 @@ export class CombatCycleService {
       const allyLowHp = this.gm.combat.allies.some(a => a && a.hp > 0 && a.hp / a.maxHp < 0.25);
       if (allyLowHp) triggers.push('onLowHP');
 
-      const barkWordsToExpose = [];
       for (const trigger of triggers) {
         if (Math.random() >= 0.25) continue; // 25% chance per trigger
         const bark = selectBark(barkPool, trigger, knownWords, { usedThisCombat: this.gm.combat.usedBarks });
         if (bark) {
           barks.push({ trigger, text: bark.raw, tokens: bark.tokens || [], words: bark.words || [] });
           this.gm.combat.usedBarks.add(bark.raw);
-          for (const w of (bark.words || [])) {
-            barkWordsToExpose.push({ word: w, meaning: '' });
-          }
         }
-      }
-      if (barkWordsToExpose.length > 0) {
-        this.gm.exposeWords(barkWordsToExpose);
       }
     }
 
@@ -399,15 +363,6 @@ export class CombatCycleService {
           const namePrompt = selectBestFrame(befriendFrames.name, befriendKnownSet);
           const successPrompt = selectBestFrame(befriendFrames.success, befriendKnownSet);
           const wrongPrompt = selectBestFrame(befriendFrames.wrong, befriendKnownSet);
-
-          // Expose befriend prompt words to SRS
-          const allPrompts = [waitPrompt, namePrompt, successPrompt, wrongPrompt];
-          const befriendPromptWords = allPrompts
-            .flatMap(p => (p?.words || []).map(w => {
-              const token = (p?.tokens || []).find(t => t.base === w);
-              return { word: w, meaning: token?.meaning || '' };
-            }));
-          if (befriendPromptWords.length > 0) this.gm.exposeWords(befriendPromptWords);
 
           this.gm.emitState();
           return {

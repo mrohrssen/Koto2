@@ -2,8 +2,13 @@
  * Handler for friendly NPC rooms.
  * Gets item/equipment offers and picks the first one (everything is free).
  * Selects a target creature: lowest-HP for heals, first active for everything else.
- * Server handles word exposure natively.
  */
+import {
+  collectEntityExposure,
+  collectTokenExposures,
+  syncExposureBatch
+} from '../exposure-sync.js';
+
 export async function handleFriendlyNpc(simCall, room, context, logEvent) {
   logEvent(context.day, context.run, context.roomIndex, 'room_entered', {
     roomType: 'friendlyNpc',
@@ -19,6 +24,19 @@ export async function handleFriendlyNpc(simCall, room, context, logEvent) {
   const offered = offersResult.data.offered;
 
   const chosen = offered[0];
+  const exposureWords = [];
+
+  collectTokenExposures(exposureWords, offersResult.data?.greeting?.tokens, offersResult.data?.greeting?.overrides || {});
+  for (const item of offered) {
+    if (item?.nameToken) {
+      collectTokenExposures(exposureWords, [item.nameToken]);
+    } else {
+      collectEntityExposure(exposureWords, item);
+    }
+  }
+  collectTokenExposures(exposureWords, chosen?.tokens, {});
+  collectTokenExposures(exposureWords, chosen?.shopTokens, chosen?.shopOverrides || {});
+  await syncExposureBatch(simCall, exposureWords, 'friendly npc exposure');
 
   // Pick target creature index from current game state
   let targetCreatureIndex = 0;

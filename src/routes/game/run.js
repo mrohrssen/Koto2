@@ -750,19 +750,6 @@ export default function createRunRoutes({
         }
 
         req.saveGame();
-        // Expose item words + greeting words to SRS
-        const itemWords = room.friendlyNpc.offered
-          .filter(item => item.word)
-          .map(item => ({ word: item.word, meaning: item.nameEn || '' }));
-        const greetingWords = (room.friendlyNpc.greeting?.words || [])
-          .map(word => {
-            const token = (room.friendlyNpc.greeting?.tokens || []).find(t => t.base === word);
-            return { word, meaning: token?.meaning || '' };
-          });
-        const allExposures = [...itemWords, ...greetingWords];
-        if (allExposures.length > 0) {
-          req.gameManager.exposeWords(allExposures);
-        }
       }
       res.json({
         offered: room.friendlyNpc.offered,
@@ -812,12 +799,6 @@ export default function createRunRoutes({
       room.friendlyNpc.chosenId = itemId;
       room.friendlyNpc.completed = true;
       room.interacted = true;
-      if (item.tokens?.length) {
-        const exposures = item.tokens
-          .filter(t => t.base)
-          .map(t => ({ word: t.base, meaning: t.meaning || '' }));
-        req.gameManager.exposeWords(exposures);
-      }
       req.saveGame();
       res.json({ chosen: item, state: req.getEnrichedGameState() });
     } catch (err) {
