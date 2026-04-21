@@ -63,12 +63,7 @@ export function createKnownWordsRoutes() {
       // Auto-create card if it doesn't exist (allows fast-tracking words)
       const existingCards = getDeckCards(req.user.id, 'vocab');
       if (!existingCards.find(c => c.id === word)) {
-        const dict = getWordDict();
-        const entry = dict.get(word);
-        const meaning = entry?.definitions?.find(d => d.primary)?.en
-          || entry?.definitions?.[0]?.en || '';
-        const reading = entry?.reading || word;
-        createCard(req.user.id, 'vocab', word, { word, meaning, reading });
+        createCard(req.user.id, 'vocab', word, { word });
       }
       const updatedCard = gradeCard(req.user.id, 'vocab', word, grade);
 

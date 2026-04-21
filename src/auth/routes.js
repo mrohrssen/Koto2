@@ -82,7 +82,7 @@ export default function createAuthRoutes(options = {}) {
       if (req.file) {
         const words = parseWordList(req.file.buffer.toString('utf-8'));
         for (const word of words) {
-          createCard(user.id, 'vocab', word, { word, meaning: '', reading: lookupReading(word) });
+          createCard(user.id, 'vocab', word, { word });
           gradeCard(user.id, 'vocab', word, 'good');
         }
       }

@@ -105,7 +105,7 @@ export default function createAdminRoutes({ dataDir }) {
 
       let seeded = 0;
       for (const word of words) {
-        createCard(userId, 'vocab', word, { word, meaning: '', reading: lookupReading(word) });
+        createCard(userId, 'vocab', word, { word });
         gradeCard(userId, 'vocab', word, 'good');
         seeded++;
       }

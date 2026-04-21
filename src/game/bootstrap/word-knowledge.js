@@ -115,10 +115,7 @@ export function exposeWords(userId, words) {
       }
       const existingCards = getDeckCards(userId, 'vocab');
       if (!existingCards.find(c => c.id === word)) {
-        const dictMeaning = lookupMeaning(word);
-        createCard(userId, 'vocab', word, {
-          word, meaning: dictMeaning || meaning, reading
-        });
+        createCard(userId, 'vocab', word, { word });
       }
     }
   }
