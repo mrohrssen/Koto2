@@ -2,6 +2,7 @@ import { writeFileSync, readFileSync, readdirSync, unlinkSync, existsSync } from
 import { join } from 'path';
 import { resolveRound } from './pvp-combat.js';
 import { applyDebugSuperAttack } from '../game/loop.js';
+import { backfillCreatureListUids } from '../game/creatures.js';
 
 // Characters excluding easily confused ones (no I, O, 0, 1)
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -405,6 +406,18 @@ export class MatchManager {
       try {
         const data = JSON.parse(readFileSync(join(this._dataDir, file), 'utf-8'));
         if (data.code) {
+          // Backfill uids on persisted match data so matches written before
+          // the uid migration still work after a server restart.
+          backfillCreatureListUids(data.combat?.sideA);
+          backfillCreatureListUids(data.combat?.sideB);
+          backfillCreatureListUids(data.combat?.partyA?.active);
+          backfillCreatureListUids(data.combat?.partyA?.reserves);
+          backfillCreatureListUids(data.combat?.partyB?.active);
+          backfillCreatureListUids(data.combat?.partyB?.reserves);
+          backfillCreatureListUids(data.player1?.team?.creatureParty?.active);
+          backfillCreatureListUids(data.player1?.team?.creatureParty?.reserves);
+          backfillCreatureListUids(data.player2?.team?.creatureParty?.active);
+          backfillCreatureListUids(data.player2?.team?.creatureParty?.reserves);
           this.matches.set(data.code, data);
           count++;
         }
@@ -473,10 +486,20 @@ export class MatchManager {
 }
 
 /**
- * Deep-clone an array of creature objects.
+ * Deep-clone an array of creature objects and regenerate every uid.
+ * Cloning creates conceptually independent instances — they must not share
+ * uids with the source roster. Regenerating uids on clone also defeats a
+ * client-supplied uid collision attack (any uid the client sent up in a
+ * PvP team is replaced at battle start).
  * @param {object[]} creatures
  * @returns {object[]}
  */
 function deepCloneCreatures(creatures) {
-  return JSON.parse(JSON.stringify(creatures));
+  const clones = JSON.parse(JSON.stringify(creatures));
+  if (Array.isArray(clones)) {
+    for (const c of clones) {
+      if (c && typeof c === 'object') c.uid = crypto.randomUUID();
+    }
+  }
+  return clones;
 }

@@ -633,7 +633,7 @@ After the existing `let layers = {};` line, add:
 
 // Debug: expose to console for live inspection
 if (typeof window !== 'undefined') {
-  window.__pixiStage = () => ({ app, layers });
+  window.__pixiApp = () => ({ app, layers });
 }
 ```
 
@@ -754,7 +754,7 @@ git commit -m "fix: port try-catch error handling and debug aids to battle-stage
 
 - Wraps init in try-catch so WebGL failures don't break the app
 - Stores ResizeObserver reference for proper cleanup in destroy
-- Adds console debug access via window.__pixiStage()
+- Adds console debug access via window.__pixiApp()
 - Adds logging for init success/failure"
 ```
 

@@ -20,11 +20,13 @@ import {
   showHealPopup, showPoisonTick
 } from '../pixi/text.js';
 import { showBanner } from '../pixi/banners.js';
-import { playStatusApplied, clearStatusVfx } from '../pixi/status-vfx.js';
+import { playStatusAppliedForScene, clearStatusVfxForScene } from '../pixi/status-vfx.js';
 import {
-  getCreatureSprite, animateKO, syncPixiStatusLabels
+  getCreatureSpriteForScene, animateKOForScene, syncPixiStatusLabelsForScene
 } from '../pixi/formation.js';
-import { showFormation } from './scene.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
+import { SceneDisposedError } from '../scenes/scene-errors.js';
+import { showFormation } from './combat-dom.js';
 import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects-util.js';
 import { wait } from '../pixi/tween.js';
 import { hapticDamageTier } from '../native/index.js';
@@ -73,7 +75,7 @@ export const STATUS_EFFECT_LABELS = {
 // ── pixi adapter functions (no ctx needed) ─────────────────────────────
 
 export function spritePos(side, index) {
-  const sprite = getCreatureSprite(side, index);
+  const sprite = getCreatureSpriteForScene(getSceneManager().currentScene, side, index);
   if (!sprite) return { x: 0, y: 0 };
   return { x: sprite.x, y: sprite.y };
 }
@@ -88,7 +90,7 @@ export async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, 
   const tier = getDamageTier(damage, enemyMaxHp);
   const effects = TIER_EFFECTS[tier];
   const pos = spritePos(targetSide, targetIndex);
-  const sprite = getCreatureSprite(targetSide, targetIndex);
+  const sprite = getCreatureSpriteForScene(getSceneManager().currentScene, targetSide, targetIndex);
   const elemColor = ELEMENT_COLORS[element] || ELEMENT_COLORS.neutral;
   hapticDamageTier(tier);
 
@@ -129,7 +131,7 @@ export async function impactEffect(damage, targetSide, targetIndex, enemyMaxHp, 
  * Lunges the attacker, then impacts the target.
  */
 export async function fireCreatureAttackEffect(attackerIndex, targetIndex, element, damage, enemyMaxHp, effectivenessType = 'normal', onImpact) {
-  const attackerSprite = getCreatureSprite('player', attackerIndex);
+  const attackerSprite = getCreatureSpriteForScene(getSceneManager().currentScene, 'player', attackerIndex);
   const fromPos = spritePos('player', attackerIndex);
   const toPos = spritePos('enemy', targetIndex);
   const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: 20, duration: 200 }) : Promise.resolve();
@@ -144,7 +146,7 @@ export async function fireCreatureAttackEffect(attackerIndex, targetIndex, eleme
  * Lunges the enemy attacker, then impacts the player target.
  */
 export async function enemyCreatureAttackEffect(attackerIndex, targetIndex, element, damage, playerMaxHp = 0, effectivenessType = 'normal', onImpact) {
-  const attackerSprite = getCreatureSprite('enemy', attackerIndex);
+  const attackerSprite = getCreatureSpriteForScene(getSceneManager().currentScene, 'enemy', attackerIndex);
   const fromPos = spritePos('enemy', attackerIndex);
   const toPos = spritePos('player', targetIndex);
   const lungeP = attackerSprite ? pixiLunge(attackerSprite, { distance: -20, duration: 200 }) : Promise.resolve();
@@ -199,6 +201,7 @@ export function findEnemyTargetElement(targetId, enemies, enemyIndex = null) {
 export function updateCreatureHpBars(creatures, allyHpMap) {
   if (!creatures) return;
   const slots = document.querySelectorAll('#player-formation .formation-slot');
+  const scene = getSceneManager().currentScene;
   // When allyHpMap is provided (mid-animation), iterate slots and look up by creature ID.
   // This avoids index mismatches when the creatures array has been compacted (dead removed).
   if (allyHpMap) {
@@ -218,7 +221,7 @@ export function updateCreatureHpBars(creatures, allyHpMap) {
         if (entry.hp <= 0) icon.classList.add('ko');
         else icon.classList.remove('ko');
       }
-      const pixiSprite = getCreatureSprite('player', i);
+      const pixiSprite = getCreatureSpriteForScene(scene, 'player', i);
       if (pixiSprite) {
         if (entry.hp <= 0) {
           pixiSprite.alpha = 0.3;
@@ -248,7 +251,7 @@ export function updateCreatureHpBars(creatures, allyHpMap) {
       if (creature.hp <= 0) icon.classList.add('ko');
       else icon.classList.remove('ko');
     }
-    const pixiSprite = getCreatureSprite('player', slotIndex);
+    const pixiSprite = getCreatureSpriteForScene(scene, 'player', slotIndex);
     if (pixiSprite) {
       if (creature.hp <= 0) {
         pixiSprite.alpha = 0.3;
@@ -309,19 +312,26 @@ export function showFloatingText(targetEl, text) {
  */
 export async function showEffectEvents(result) {
   if (!result.effectEvents?.length) return;
+  const scene = getSceneManager().currentScene;
   const affectedCreatures = new Set();
   for (const event of result.effectEvents) {
     const side = event.targetSide === 'ally' ? 'player' : 'enemy';
     const index = typeof event.targetIndex === 'number' ? event.targetIndex : 0;
+    const sideCreatures = side === 'player' ? result.allies : result.enemies;
+    const uid = sideCreatures?.[index]?.uid;
     affectedCreatures.add(`${side}:${index}`);
 
     if (event.type === 'poison' && event.damage > 0) {
       const pos = spritePos(side, index);
       burstParticles(pos, { count: 4, color: 0x9C27B0, speed: 40, life: 300, element: 'neutral' });
       showPoisonTick(event.damage, pos);
-      playStatusApplied(side, index, 'poison');
+      if (scene?.statusVfx && uid) {
+        await playStatusAppliedForScene(scene.statusVfx, side, uid, 'poison');
+      }
       if (event.remainingTurns === 0) {
-        clearStatusVfx(side, index, 'poison');
+        if (scene?.statusVfx && uid) {
+          clearStatusVfxForScene(scene.statusVfx, side, uid, 'poison');
+        }
       }
     } else if (event.type !== 'poison') {
       const EFFECT_LABELS = {
@@ -340,15 +350,21 @@ export async function showEffectEvents(result) {
       const DEBUFF_TYPES = new Set(['confuse', 'stun', 'sleep', 'taunt']);
       if (DEBUFF_TYPES.has(baseType)) {
         popupDebuff(label, pos);
-        playStatusApplied(side, index, baseType);
+        if (scene?.statusVfx && uid) {
+          await playStatusAppliedForScene(scene.statusVfx, side, uid, baseType);
+        }
       } else if (BUFF_TYPES.has(baseType)) {
         popupBuff(label, pos);
-        playStatusApplied(side, index, baseType);
+        if (scene?.statusVfx && uid) {
+          await playStatusAppliedForScene(scene.statusVfx, side, uid, baseType);
+        }
       } else {
         showFloatingText(document.body, label);
       }
       if (event.remainingTurns === 0) {
-        clearStatusVfx(side, index, baseType);
+        if (scene?.statusVfx && uid) {
+          clearStatusVfxForScene(scene.statusVfx, side, uid, baseType);
+        }
       }
       await ctx.delay(400);
     }
@@ -356,33 +372,34 @@ export async function showEffectEvents(result) {
   // Only sync pills for creatures that had effect events
   for (const key of affectedCreatures) {
     const [side, idx] = key.split(':');
-    syncStatusForCreature(result, side, Number(idx));
+    syncStatusForCreature(scene, result, side, Number(idx));
   }
 }
 
 export function syncStatusIconsFromResult(result) {
+  const scene = getSceneManager().currentScene;
   if (result.allies) {
     result.allies.forEach((ally, i) => {
       if (!ally) return;
       const keys = getCreatureStatusKeys(ally);
-      syncPixiStatusLabels('player', i, keys, ally.statStages);
+      syncPixiStatusLabelsForScene(scene, 'player', i, keys, ally.statStages);
     });
   }
   if (result.enemies) {
     result.enemies.forEach((enemy, i) => {
       if (!enemy) return;
       const keys = getCreatureStatusKeys(enemy);
-      syncPixiStatusLabels('enemy', i, keys, enemy.statStages);
+      syncPixiStatusLabelsForScene(scene, 'enemy', i, keys, enemy.statStages);
     });
   }
 }
 
-function syncStatusForCreature(result, side, index) {
+function syncStatusForCreature(scene, result, side, index) {
   const creatures = side === 'player' ? result.allies : result.enemies;
   const creature = creatures?.[index];
   if (!creature) return;
   const keys = getCreatureStatusKeys(creature);
-  syncPixiStatusLabels(side, index, keys, creature.statStages);
+  syncPixiStatusLabelsForScene(scene, side, index, keys, creature.statStages);
 }
 
 /**
@@ -391,16 +408,23 @@ function syncStatusForCreature(result, side, index) {
  */
 export async function showMoveEffectsApplied(atk, targetSide, targetIndex, result) {
   const pos = spritePos(targetSide, targetIndex);
+  const scene = getSceneManager().currentScene;
+  const targetCreatures = targetSide === 'player' ? result.allies : result.enemies;
+  const uid = targetCreatures?.[targetIndex]?.uid;
   let shown = false;
 
   if (atk.effectApplied) {
     const effect = atk.effectApplied;
     if (DEBUFF_EFFECTS.has(effect)) {
       popupDebuff(STATUS_EFFECT_LABELS[effect] || effect, pos);
-      playStatusApplied(targetSide, targetIndex, effect);
+      if (scene?.statusVfx && uid) {
+        await playStatusAppliedForScene(scene.statusVfx, targetSide, uid, effect);
+      }
     } else if (BUFF_EFFECTS.has(effect)) {
       popupBuff(STATUS_EFFECT_LABELS[effect] || effect, pos);
-      playStatusApplied(targetSide, targetIndex, effect);
+      if (scene?.statusVfx && uid) {
+        await playStatusAppliedForScene(scene.statusVfx, targetSide, uid, effect);
+      }
     }
     shown = true;
   }
@@ -417,7 +441,7 @@ export async function showMoveEffectsApplied(atk, targetSide, targetIndex, resul
   }
 
   if (shown) {
-    syncStatusForCreature(result, targetSide, targetIndex);
+    syncStatusForCreature(scene, result, targetSide, targetIndex);
     await ctx.delay(300);
   }
 }
@@ -544,6 +568,7 @@ export async function showPartySkillProcs(atk, enemyHpMap) {
  */
 export async function showRoundStartEvents(result) {
   if (!result.roundStartEvents?.length) return;
+  const scene = getSceneManager().currentScene;
 
   for (const event of result.roundStartEvents) {
     if (event.type === 'erosion') {
@@ -551,13 +576,13 @@ export async function showRoundStartEvents(result) {
       const text = `${SC_NAMES[event.stat] || event.stat} ${event.delta}`;
       popupDebuff(text, pos);
       burstParticles(pos, { count: 3, color: 0xFF5722 });
-      syncStatusForCreature(result, 'enemy', event.targetIndex);
+      syncStatusForCreature(scene, result, 'enemy', event.targetIndex);
     } else if (event.type === 'momentum') {
       const pos = spritePos('player', event.targetIndex);
       const text = `${SC_NAMES[event.stat] || event.stat} +${event.delta}`;
       popupBuff(text, pos);
       burstParticles(pos, { count: 3, color: 0x4CAF50 });
-      syncStatusForCreature(result, 'player', event.targetIndex);
+      syncStatusForCreature(scene, result, 'player', event.targetIndex);
     } else if (event.type === 'overflowVitality') {
       const pos = spritePos('player', event.targetIndex);
       burstParticles(pos, { count: 6, color: 0x4CAF50, speed: 50, life: 400, element: 'wood' });
@@ -801,7 +826,7 @@ export async function showKoSwapAnimations(result) {
       if (dyingSlot) {
         dyingSlot.classList.add('creature-dying');
       }
-      animateKO('player', koIndex);
+      animateKOForScene(getSceneManager().currentScene, 'player', koIndex);
       await ctx.delay(600);
     }
 
@@ -849,7 +874,7 @@ export async function showKoSwapAnimations(result) {
         if (dyingSlot) {
           dyingSlot.classList.add('creature-dying');
         }
-        animateKO('player', koIndex);
+        animateKOForScene(getSceneManager().currentScene, 'player', koIndex);
       }
 
       const actionArea = document.getElementById('action-area');
@@ -859,9 +884,28 @@ export async function showKoSwapAnimations(result) {
       await ctx.delay(800);
     }
 
-    // Re-render formation with surviving creatures
+    // Re-render formation with surviving creatures (DOM + Pixi). The DOM rebuild
+    // alone leaves the dead creature's Pixi sprite (shrunk by animateKOForScene)
+    // on stage, and the surviving creature's sprite stays at its old slot so its
+    // HP-bar label in the freshly-rebuilt DOM no longer lines up. Syncing the
+    // scene prunes the dead sprite by uid and repositions the survivor.
     if (result.creatureParty?.active) {
       await showFormation('player', result.creatureParty.active, { force: true });
+      const mgr = getSceneManager();
+      const scene = mgr.currentScene;
+      if (!mgr.transitioning && scene && !scene.disposed && !scene._exiting && typeof scene.syncCreatures === 'function') {
+        const currentEnemies = scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
+        try {
+          await scene.syncCreatures({
+            allies: result.creatureParty.active,
+            enemies: currentEnemies,
+          });
+        } catch (err) {
+          // Scene disposed mid-sync: destination scene's onEnter will handle
+          // the next sync with the post-KO roster.
+          if (!(err instanceof SceneDisposedError)) throw err;
+        }
+      }
     }
   }
 }

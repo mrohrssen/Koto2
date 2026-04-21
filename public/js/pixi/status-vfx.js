@@ -1,9 +1,8 @@
 import { Graphics, Text, Container } from 'pixi.js';
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 import { tween, wait } from './tween.js';
 import { burstParticles, screenFlash, ELEMENT_COLORS } from './effects.js';
 import { showEventPopup } from './text.js';
-import { getCreatureSprite } from './formation.js';
 
 // ============ STATUS COLORS ============
 
@@ -35,8 +34,12 @@ const STATUS_LABELS = {
 
 // ============ ONGOING VFX TRACKING ============
 
-/** @type {Map<import('pixi.js').Sprite, Record<string, { container: Container|null, tickerId: Function|null }>>} */
-const ongoingVfx = new Map();
+/**
+ * @typedef {Object} OngoingEntry
+ * @property {import('pixi.js').Container|null} container - display container (if any)
+ * @property {() => void} cancel - stops the tick and removes any ticker registration
+ * @property {number} [_originalTint] - preserved for haste effect restoration
+ */
 
 /**
  * Convert a hex color number to a CSS hex string.
@@ -47,36 +50,22 @@ function hexToCSS(hex) {
   return '#' + hex.toString(16).padStart(6, '0');
 }
 
+// ============ APPLIED ONE-SHOTS ============
+
 /**
- * Get or create the ongoing entry map for a sprite.
+ * Play the one-shot "applied" animation for a status effect. The one-shots
+ * do NOT depend on ticker or layer ownership — they call into pure VFX
+ * primitives (burstParticles, showEventPopup, screenFlash, tween). Invoked
+ * by playStatusAppliedForScene.
+ *
  * @param {import('pixi.js').Sprite} sprite
- * @returns {Record<string, { container: Container|null, tickerId: Function|null }>}
- */
-function getOngoingMap(sprite) {
-  if (!ongoingVfx.has(sprite)) {
-    ongoingVfx.set(sprite, {});
-  }
-  return ongoingVfx.get(sprite);
-}
-
-// ============ APPLIED ANIMATIONS ============
-
-/**
- * Play the one-shot "applied" animation for a status effect, then start the ongoing visual.
- * @param {'player'|'enemy'} side
- * @param {number} index
  * @param {string} effectType
  */
-export async function playStatusApplied(side, index, effectType) {
-  const sprite = getCreatureSprite(side, index);
-  if (!sprite) return;
-
+async function _playAppliedOneShot(sprite, effectType) {
   const color = STATUS_COLORS[effectType] || 0xFFFFFF;
   const label = STATUS_LABELS[effectType] || effectType;
   const cssColor = hexToCSS(color);
   const pos = { x: sprite.x + (sprite.parent?.x || 0), y: sprite.y + (sprite.parent?.y || 0) };
-
-  // --- Applied animation per effect type ---
 
   switch (effectType) {
     case 'poison':
@@ -131,74 +120,62 @@ export async function playStatusApplied(side, index, effectType) {
       showEventPopup(label, pos, { color: cssColor, direction: 'up', duration: 700, size: 18 });
       break;
   }
-
-  // --- Start ongoing visual (if any) ---
-  startOngoing(sprite, effectType);
 }
 
-// ============ ONGOING VISUALS ============
+// ============ ONGOING VISUALS (SHARED INTERNALS) ============
+//
+// The six ongoing-visual effects each register a per-frame updater and
+// optionally mount a display container into the effects layer. The per-effect
+// bodies are parameterized on a `registerUpdater(fnDeltaMS)` callback so the
+// scene-ctx path can route through scene.addUpdater (registry-tracked, auto-
+// disposed on scene.exit).
+//
+// `registerUpdater` is always invoked with a function that takes a single
+// `deltaMS` scalar. Returns a `cancel()` that stops the tick.
 
 /**
- * Start the persistent ongoing visual for a status effect.
+ * Register an ongoing visual for `effectType` on `sprite`, mounting any
+ * display container into `effectsLayer`. Returns null for effects with no
+ * ongoing visual (poison, temp_attack_flat, unknown types).
+ *
  * @param {import('pixi.js').Sprite} sprite
  * @param {string} effectType
+ * @param {import('pixi.js').Container} effectsLayer - parent for display containers
+ * @param {(fnDeltaMS: (deltaMS: number) => void) => (() => void)} registerUpdater
+ * @returns {OngoingEntry|null}
  */
-function startOngoing(sprite, effectType) {
-  const { app, layers } = getStage();
-  if (!app || !layers.effects) return;
-
-  // Don't double-start
-  const map = getOngoingMap(sprite);
-  if (map[effectType]) return;
-
-  const entry = { container: null, tickerId: null };
-
+function _startOngoingInto(sprite, effectType, effectsLayer, registerUpdater) {
   switch (effectType) {
     case 'sleep':
-      startSleepOngoing(sprite, entry, app, layers);
-      break;
-
+      return _startSleep(sprite, effectsLayer, registerUpdater);
     case 'stun':
-      startStunOngoing(sprite, entry, app, layers);
-      break;
-
+      return _startStun(sprite, effectsLayer, registerUpdater);
     case 'confuse':
-      startConfuseOngoing(sprite, entry, app);
-      break;
-
+      return _startConfuse(sprite, registerUpdater);
     case 'haste':
-      startHasteOngoing(sprite, entry, app);
-      break;
-
+      return _startHaste(sprite, registerUpdater);
     case 'shield':
     case 'team_shield':
-      startShieldOngoing(sprite, entry, app, layers);
-      break;
-
+      return _startShield(sprite, effectsLayer, registerUpdater);
     case 'taunt':
-      startTauntOngoing(sprite, entry, app, layers);
-      break;
-
+      return _startTaunt(sprite, effectsLayer, registerUpdater);
     // poison: tick handled separately (showPoisonTick in text.js)
     // temp_attack_flat: no ongoing visual
     default:
-      return; // No ongoing for this effect
+      return null;
   }
-
-  map[effectType] = entry;
 }
 
 // --- Sleep: floating "Z" particles every 800ms ---
 
-function startSleepOngoing(sprite, entry, app, layers) {
+function _startSleep(sprite, effectsLayer, registerUpdater) {
   const container = new Container();
-  layers.effects.addChild(container);
-  entry.container = container;
+  effectsLayer.addChild(container);
 
   let elapsed = 0;
 
-  const onTick = (ticker) => {
-    elapsed += ticker.deltaMS;
+  const cancel = registerUpdater((deltaMS) => {
+    elapsed += deltaMS;
     if (elapsed >= 800) {
       elapsed -= 800;
       spawnZParticle(sprite, container);
@@ -206,17 +183,16 @@ function startSleepOngoing(sprite, entry, app, layers) {
     // Update existing Z texts — float up and fade
     for (let i = container.children.length - 1; i >= 0; i--) {
       const z = container.children[i];
-      z._age += ticker.deltaMS;
-      z.y -= ticker.deltaMS * 0.03; // drift up
+      z._age += deltaMS;
+      z.y -= deltaMS * 0.03; // drift up
       z.alpha = Math.max(0, 1 - z._age / 1200);
       if (z._age >= 1200) {
         z.destroy();
       }
     }
-  };
+  });
 
-  app.ticker.add(onTick);
-  entry.tickerId = onTick;
+  return { container, cancel };
 }
 
 function spawnZParticle(sprite, container) {
@@ -240,10 +216,9 @@ function spawnZParticle(sprite, container) {
 
 // --- Stun: 3 gold stars circling above creature ---
 
-function startStunOngoing(sprite, entry, app, layers) {
+function _startStun(sprite, effectsLayer, registerUpdater) {
   const container = new Container();
-  layers.effects.addChild(container);
-  entry.container = container;
+  effectsLayer.addChild(container);
 
   const stars = [];
   for (let i = 0; i < 3; i++) {
@@ -264,8 +239,8 @@ function startStunOngoing(sprite, entry, app, layers) {
   const RADIUS = 15;
   const SPEED = 0.003; // radians per ms
 
-  const onTick = (ticker) => {
-    elapsed += ticker.deltaMS;
+  const cancel = registerUpdater((deltaMS) => {
+    elapsed += deltaMS;
     const parentX = sprite.parent?.x || 0;
     const parentY = sprite.parent?.y || 0;
     const cx = parentX + sprite.x;
@@ -276,54 +251,50 @@ function startStunOngoing(sprite, entry, app, layers) {
       stars[i].x = cx + Math.cos(angle) * RADIUS;
       stars[i].y = cy + Math.sin(angle) * RADIUS * 0.5; // elliptical
     }
-  };
+  });
 
-  app.ticker.add(onTick);
-  entry.tickerId = onTick;
+  return { container, cancel };
 }
 
 // --- Confuse: sprite rotation wobbles (sin wave, +/-0.15 rad) ---
 
-function startConfuseOngoing(sprite, entry, app) {
+function _startConfuse(sprite, registerUpdater) {
   let elapsed = 0;
   const WOBBLE_SPEED = 0.005; // radians per ms -> ~3Hz
 
-  const onTick = (ticker) => {
-    elapsed += ticker.deltaMS;
+  const cancel = registerUpdater((deltaMS) => {
+    elapsed += deltaMS;
     sprite.rotation = Math.sin(elapsed * WOBBLE_SPEED) * 0.15;
-  };
+  });
 
-  app.ticker.add(onTick);
-  entry.tickerId = onTick;
+  return { container: null, cancel };
 }
 
 // --- Haste: blue tint shimmer toggling every 200ms ---
 
-function startHasteOngoing(sprite, entry, app) {
+function _startHaste(sprite, registerUpdater) {
   let elapsed = 0;
   let tinted = false;
   // Store original tint to restore
-  entry._originalTint = sprite.tint;
+  const originalTint = sprite.tint;
 
-  const onTick = (ticker) => {
-    elapsed += ticker.deltaMS;
+  const cancel = registerUpdater((deltaMS) => {
+    elapsed += deltaMS;
     if (elapsed >= 200) {
       elapsed -= 200;
       tinted = !tinted;
-      sprite.tint = tinted ? 0x29B6F6 : (entry._originalTint ?? 0xFFFFFF);
+      sprite.tint = tinted ? 0x29B6F6 : (originalTint ?? 0xFFFFFF);
     }
-  };
+  });
 
-  app.ticker.add(onTick);
-  entry.tickerId = onTick;
+  return { container: null, cancel, _originalTint: originalTint };
 }
 
 // --- Shield / team_shield: blue circle outline pulsing alpha ---
 
-function startShieldOngoing(sprite, entry, app, layers) {
+function _startShield(sprite, effectsLayer, registerUpdater) {
   const container = new Container();
-  layers.effects.addChild(container);
-  entry.container = container;
+  effectsLayer.addChild(container);
 
   const circle = new Graphics();
   circle.circle(0, 0, 35);
@@ -333,25 +304,23 @@ function startShieldOngoing(sprite, entry, app, layers) {
   let elapsed = 0;
   const PULSE_SPEED = 0.004; // moderate pulse
 
-  const onTick = (ticker) => {
-    elapsed += ticker.deltaMS;
+  const cancel = registerUpdater((deltaMS) => {
+    elapsed += deltaMS;
     const parentX = sprite.parent?.x || 0;
     const parentY = sprite.parent?.y || 0;
     circle.x = parentX + sprite.x;
     circle.y = parentY + sprite.y;
     circle.alpha = 0.4 + 0.4 * Math.sin(elapsed * PULSE_SPEED);
-  };
+  });
 
-  app.ticker.add(onTick);
-  entry.tickerId = onTick;
+  return { container, cancel };
 }
 
 // --- Taunt: red circle outline pulsing alpha (faster than shield) ---
 
-function startTauntOngoing(sprite, entry, app, layers) {
+function _startTaunt(sprite, effectsLayer, registerUpdater) {
   const container = new Container();
-  layers.effects.addChild(container);
-  entry.container = container;
+  effectsLayer.addChild(container);
 
   const circle = new Graphics();
   circle.circle(0, 0, 35);
@@ -361,49 +330,31 @@ function startTauntOngoing(sprite, entry, app, layers) {
   let elapsed = 0;
   const PULSE_SPEED = 0.008; // faster than shield
 
-  const onTick = (ticker) => {
-    elapsed += ticker.deltaMS;
+  const cancel = registerUpdater((deltaMS) => {
+    elapsed += deltaMS;
     const parentX = sprite.parent?.x || 0;
     const parentY = sprite.parent?.y || 0;
     circle.x = parentX + sprite.x;
     circle.y = parentY + sprite.y;
     circle.alpha = 0.4 + 0.4 * Math.sin(elapsed * PULSE_SPEED);
-  };
+  });
 
-  app.ticker.add(onTick);
-  entry.tickerId = onTick;
+  return { container, cancel };
 }
 
-// ============ CLEAR VFX ============
+// --- Shared teardown helpers ----------------------------------------------
 
 /**
- * Remove ongoing VFX for one effect on one creature.
- * Restores sprite properties (alpha, rotation, tint) as needed.
- * @param {'player'|'enemy'} side
- * @param {number} index
+ * Restore mutated sprite properties after an ongoing effect ends. Safe to
+ * call with a destroyed sprite — the sprite guard skips any writes. Called
+ * from the scene-ctx clear path.
+ *
+ * @param {import('pixi.js').Sprite} sprite
  * @param {string} effectType
+ * @param {OngoingEntry} entry
  */
-export function clearStatusVfx(side, index, effectType) {
-  const sprite = getCreatureSprite(side, index);
-  if (!sprite) return;
-
-  const map = ongoingVfx.get(sprite);
-  if (!map || !map[effectType]) return;
-
-  const { app } = getStage();
-  const entry = map[effectType];
-
-  // Remove ticker callback
-  if (entry.tickerId && app) {
-    app.ticker.remove(entry.tickerId);
-  }
-
-  // Destroy container and children
-  if (entry.container) {
-    entry.container.destroy({ children: true });
-  }
-
-  // Restore sprite properties per effect type
+function _restoreSpriteForEffect(sprite, effectType, entry) {
+  if (!sprite || sprite.destroyed) return;
   switch (effectType) {
     case 'sleep':
       sprite.alpha = 1.0;
@@ -415,43 +366,149 @@ export function clearStatusVfx(side, index, effectType) {
       sprite.tint = entry._originalTint ?? 0xFFFFFF;
       break;
   }
-
-  delete map[effectType];
 }
 
 /**
- * Remove ALL ongoing status VFX across all creatures.
- * Call at combat end to ensure clean state.
+ * Tear down a single ongoing entry: cancel the tick, destroy the container,
+ * and restore sprite properties.
+ *
+ * @param {import('pixi.js').Sprite} sprite
+ * @param {string} effectType
+ * @param {OngoingEntry} entry
  */
-export function clearAllStatusVfx() {
-  const { app } = getStage();
+function _teardownEntry(sprite, effectType, entry) {
+  try { entry.cancel?.(); } catch (e) { console.error('[status-vfx] cancel threw:', e); }
+  if (entry.container) {
+    try { entry.container.destroy({ children: true }); } catch { /* already destroyed */ }
+  }
+  _restoreSpriteForEffect(sprite, effectType, entry);
+}
 
-  for (const [sprite, map] of ongoingVfx) {
-    for (const effectType of Object.keys(map)) {
-      const entry = map[effectType];
+// ============ SCENE-CTX API =================================================
+//
+// Stateless-ish entry points for BattleScene. State lives on the scene:
+// per-effect entries are stored in `scene.vfxByUid` as Map<uid, Record<string,
+// OngoingEntry>>. Per-frame updaters are registered via `scene.addUpdater` so
+// `scene.exit()` auto-drops them through `registry.dispose()`. Display
+// containers mount into `scene.layers.effects`.
 
-      if (entry.tickerId && app) {
-        app.ticker.remove(entry.tickerId);
-      }
+/**
+ * Allocate a status-VFX context that shares the scene's `vfxByUid` Map.
+ * Mirrors the formation ctx shape so call sites can keep a stable field on
+ * the scene (e.g. `this.statusVfx`).
+ *
+ * @param {import('../scenes/scene.js').Scene} scene
+ * @returns {{ scene: import('../scenes/scene.js').Scene, vfxByUid: Map<string, Record<string, OngoingEntry>> }}
+ */
+export function createStatusVfxContext(scene) {
+  if (!scene) throw new Error('createStatusVfxContext: scene is required');
+  if (!scene.vfxByUid) throw new Error('createStatusVfxContext: scene.vfxByUid is required');
+  return {
+    scene,
+    // Share the same Map instance so reads via ctx.vfxByUid and
+    // scene.vfxByUid see the same entries.
+    vfxByUid: scene.vfxByUid,
+  };
+}
 
-      if (entry.container) {
-        entry.container.destroy({ children: true });
-      }
+/**
+ * registerUpdater for the scene-ctx path — routes through scene.addUpdater
+ * so scene.exit() drops the tick automatically. Returns the cancel function
+ * returned by addUpdater.
+ *
+ * Adapts PIXI's (dt, deltaMS) scene updater signature down to the
+ * single-deltaMS scalar that the shared per-effect bodies expect.
+ *
+ * @param {import('../scenes/scene.js').Scene} scene
+ */
+function _sceneRegisterUpdaterFor(scene) {
+  return (fnDeltaMS) => scene.addUpdater((_dt, deltaMS) => fnDeltaMS(deltaMS));
+}
 
-      // Restore sprite properties
-      switch (effectType) {
-        case 'sleep':
-          if (!sprite.destroyed) sprite.alpha = 1.0;
-          break;
-        case 'confuse':
-          if (!sprite.destroyed) sprite.rotation = 0;
-          break;
-        case 'haste':
-          if (!sprite.destroyed) sprite.tint = entry._originalTint ?? 0xFFFFFF;
-          break;
-      }
-    }
+/**
+ * Play the applied one-shot and start the ongoing visual on the scene's
+ * uid-keyed sprite. Errors if `uid` is missing — scene callers always own a
+ * uid for each creature; a missing uid indicates a wiring bug, not a fallback
+ * case.
+ *
+ * @param {{ scene: import('../scenes/scene.js').Scene, vfxByUid: Map<string, Record<string, OngoingEntry>> }} ctx
+ * @param {'player'|'enemy'} side - kept in the signature for clarity and
+ *   future routing decisions even though uid alone identifies the sprite.
+ * @param {string} uid
+ * @param {string} effectType
+ * @returns {Promise<OngoingEntry|null>}
+ */
+export async function playStatusAppliedForScene(ctx, side, uid, effectType) {
+  if (!uid) throw new Error('playStatusAppliedForScene: uid is required');
+  // Guard: caller may have exited the scene between the event dispatch and
+  // our invocation. addUpdater / addContainer would throw SceneDisposedError
+  // post-exit; surface a null return instead to mirror the "sprite missing"
+  // path.
+  if (ctx.scene.disposed) return null;
+
+  const sprite = ctx.scene.getSprite(uid);
+  if (!sprite) return null;
+
+  const effectsLayer = ctx.scene.layers?.effects;
+  if (!effectsLayer) return null;
+
+  // Don't double-start — return null, not the existing entry. Callers only
+  // use the return value to distinguish "registered new entry" from
+  // "nothing happened".
+  let map = ctx.vfxByUid.get(uid);
+  if (map && map[effectType]) return null;
+  if (!map) {
+    map = {};
+    ctx.vfxByUid.set(uid, map);
   }
 
-  ongoingVfx.clear();
+  // Register the ongoing BEFORE the one-shot to close the microtask-yield
+  // race: a sync clearStatusVfxForScene called after us must find the entry,
+  // so the ongoing must be stored before any await in _playAppliedOneShot.
+  const entry = _startOngoingInto(
+    sprite,
+    effectType,
+    effectsLayer,
+    _sceneRegisterUpdaterFor(ctx.scene),
+  );
+  if (entry) {
+    map[effectType] = entry;
+  }
+
+  // Fire-and-forget the one-shot visual burst. Awaiting it would re-introduce
+  // the microtask yield this reordering was meant to close. Catch to avoid
+  // unhandled-rejection warnings.
+  _playAppliedOneShot(sprite, effectType).catch(err => {
+    console.error(`[status-vfx] _playAppliedOneShot threw for ${effectType}:`, err);
+  });
+
+  return entry;
+}
+
+/**
+ * Remove ongoing VFX for one effect on one scene-tracked creature.
+ * Errors if `uid` is missing — the scene path does not support side/index
+ * fallbacks.
+ *
+ * @param {{ scene: import('../scenes/scene.js').Scene, vfxByUid: Map<string, Record<string, OngoingEntry>> }} ctx
+ * @param {'player'|'enemy'} side - retained for parity; currently unused
+ * @param {string} uid
+ * @param {string} effectType
+ */
+// eslint-disable-next-line no-unused-vars
+export function clearStatusVfxForScene(ctx, side, uid, effectType) {
+  if (!uid) throw new Error('clearStatusVfxForScene: uid is required');
+  // A disposed scene has already torn down its registry (cancelling ticker
+  // updaters) and cleared vfxByUid in beforeExit. Nothing to do.
+  if (ctx.scene.disposed) return;
+
+  const map = ctx.vfxByUid.get(uid);
+  if (!map || !map[effectType]) return;
+
+  const entry = map[effectType];
+  const sprite = ctx.scene.getSprite(uid);
+  _teardownEntry(sprite, effectType, entry);
+
+  delete map[effectType];
+  if (Object.keys(map).length === 0) ctx.vfxByUid.delete(uid);
 }

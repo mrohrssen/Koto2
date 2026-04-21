@@ -3,6 +3,11 @@
  * Drives the game server's creature-combat-cycle endpoint.
  */
 import { pickMove, pickTarget } from './decisions.js';
+import {
+  collectAttackExposures,
+  collectTokenExposures,
+  syncExposureBatch
+} from './exposure-sync.js';
 
 const MAX_ROUNDS = 100;
 
@@ -78,6 +83,7 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
     }
 
     const cycle = cycleResult.data;
+    const exposureWords = [];
 
     // Log the round
     logEvent(context.day, context.run, context.roomIndex, 'combat_round', {
@@ -86,10 +92,15 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
       attacks: cycle.playerAttacks ?? cycle.attacks ?? cycle.results ?? []
     });
 
-    // Log barks as dialogue (server handles word exposure)
+    collectAttackExposures(exposureWords, cycle.playerAttacks);
+    collectAttackExposures(exposureWords, cycle.enemyAttacks);
+    collectAttackExposures(exposureWords, cycle.npcSkillAttacks);
+
+    // Log barks as dialogue and mirror the same tokens the client bubble would render.
     if (cycle.barks) {
       for (const bark of cycle.barks) {
         barks.push(bark);
+        collectTokenExposures(exposureWords, bark.tokens);
         if (bark.text) {
           dialogueSeen.push(bark);
           logEvent(context.day, context.run, context.roomIndex, 'dialogue_seen', {
@@ -109,10 +120,12 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
     if (cycle.befriendQuizTriggered && cycle.befriendQuiz) {
       const quiz = cycle.befriendQuiz;
 
-      // Log befriend prompts as dialogue (server handles word exposure)
+      // Log befriend prompts as dialogue and mirror the same token payload the
+      // browser sends when these lines render.
       for (const key of ['waitPrompt', 'namePrompt', 'successPrompt', 'wrongPrompt']) {
         const prompt = quiz[key];
         if (prompt) {
+          collectTokenExposures(exposureWords, prompt.tokens, prompt.overrides || {});
           const line = prompt.text || prompt.tokens?.map(t => t.surface).join('') || '';
           dialogueSeen.push({ type: key, line });
           logEvent(context.day, context.run, context.roomIndex, 'dialogue_seen', {
@@ -122,6 +135,8 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
           });
         }
       }
+
+      await syncExposureBatch(simCall, exposureWords, `combat round ${rounds} exposure`);
 
       // Pick the correct answer (matching the creature being befriended)
       const correctOption = quiz.options?.find(o => o.id === quiz.creatureId);
@@ -152,6 +167,8 @@ export async function runCombat(simCall, encounterData, combatSkill, context, lo
       // Continue combat whether quiz succeeded or not
       continue;
     }
+
+    await syncExposureBatch(simCall, exposureWords, `combat round ${rounds} exposure`);
 
     // Check combat end
     if (cycle.combatEnded) {

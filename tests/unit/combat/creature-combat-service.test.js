@@ -218,6 +218,51 @@ describe('Creature Combat - Status Effects in Move Turn', () => {
 
     assert.ok(result2.attacks[0].damage > result1.attacks[0].damage, 'buffed damage should exceed unbuffed damage');
   });
+
+  it('does not apply status effect to target killed by the same move', () => {
+    // Bug 2026-04-18 #4: "Chain strike already killed fish so I shouldn't be
+    // able to confuse it after it's dead." A damage move with a status rider
+    // killed the target, then tryApplyStatus ran on the corpse and pushed
+    // confuse onto a dead creature.
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
+    enemies[0].hp = 1; // one-shot kill
+    const comboMove = {
+      id: 'combo-confuse-strike',
+      name: 'コンボ', nameEn: 'Combo Strike', reading: 'こんぼ',
+      element: 'neutral', category: 'damage', target: 'single_enemy',
+      power: 50, mpCost: 0, statusEffect: 'confuse', statusChance: 100, statusDuration: 2
+    };
+    allies[0].moves = [comboMove];
+    const result = processMoveTurn(allies, enemies, [{ creatureIndex: 0, moveId: 'combo-confuse-strike', targetIndex: 0 }]);
+    assert.strictEqual(result.attacks.length, 1);
+    assert.strictEqual(result.attacks[0].targetDefeated, true);
+    assert.strictEqual(result.attacks[0].effectApplied, null, 'dead target should not receive status effect');
+    assert.ok(
+      !(enemies[0].activeEffects || []).some(e => e.type === 'confuse'),
+      'dead creature should not have confuse in activeEffects'
+    );
+  });
+
+  it('does not apply stat change to target killed by the same move', () => {
+    // Same root cause as the status bug above: a damage move that also
+    // debuffs stats must not apply the debuff to a corpse.
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
+    enemies[0].hp = 1;
+    enemies[0].statStages = { atk: 0, def: 0 };
+    const comboMove = {
+      id: 'combo-debuff-strike',
+      name: 'コンボ', nameEn: 'Combo Strike', reading: 'こんぼ',
+      element: 'neutral', category: 'damage', target: 'single_enemy',
+      power: 50, mpCost: 0, statChanges: { atk: -1 }, statusChance: 100
+    };
+    allies[0].moves = [comboMove];
+    const result = processMoveTurn(allies, enemies, [{ creatureIndex: 0, moveId: 'combo-debuff-strike', targetIndex: 0 }]);
+    assert.strictEqual(result.attacks[0].targetDefeated, true);
+    assert.strictEqual(result.attacks[0].statChangesApplied, null, 'dead target should not receive stat change');
+    assert.strictEqual(enemies[0].statStages.atk, 0, 'stat stage should not drop on a dead creature');
+  });
 });
 
 describe('Creature Combat - Status Effects in Enemy Turn', () => {

@@ -2,7 +2,6 @@ import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import { combatEvents } from './combat-events.js';
 import { getCurrentBarks } from './combat-loop.js';
 
-const TRIGGER_CHANCE = 0.25;
 const DISPLAY_MS = 2500;
 const FADE_MS = 300;
 
@@ -122,27 +121,26 @@ function findServerBark(triggerType) {
 /**
  * Initialize speech bubble system.
  * Renders server-provided barks via universal tokens.
+ * Bark selection randomness already happens on the server; the client should
+ * render whichever bark the server selected exactly once.
  * @param {object} [opts]
- * @param {Function} [opts.randomFn] - Override Math.random for testing
+ * @param {Function} [opts.randomFn] - Override slot selection randomness for testing
  */
 export function init(opts = {}) {
   if (opts.randomFn) _randomFn = opts.randomFn;
 
   combatEvents.on('creatureHit', (detail) => {
-    if (_randomFn() >= TRIGGER_CHANCE) return;
     const bark = findServerBark('onHit');
     showBubble(detail?.slotEl, bark);
   });
 
   combatEvents.on('victory', () => {
-    if (_randomFn() >= TRIGGER_CHANCE) return;
     const bark = findServerBark('onVictory');
     const slot = randomPlayerSlot();
     showBubble(slot, bark);
   });
 
   combatEvents.on('explore', () => {
-    if (_randomFn() >= TRIGGER_CHANCE) return;
     const bark = findServerBark('onExplore');
     const slot = randomPlayerSlot();
     showBubble(slot, bark);

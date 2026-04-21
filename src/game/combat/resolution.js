@@ -100,6 +100,15 @@ export function finalizeCombatVictory(combat, run, opts = {}) {
   combat.active = false;
   run.currentAreaEncounters = (run.currentAreaEncounters || 0) + 1;
 
+  // Stat stages + activeEffects intentionally NOT cleared here. The previous
+  // implementation zeroed them synchronously at server-side victory, which
+  // made the client see buff pills vanish mid-playback (final AoE wave still
+  // animating when the buff-cleared state landed). Buffs are now cleared on
+  // the server-side room-advance step (exploration-service.js) — they stay
+  // visible through victory modal / friendlyNpc reward screen and disappear
+  // only when the user physically moves on. Matches the user's rule from
+  // 2026-04-18: "All buffs and debuffs should clear on room transitions."
+
   const currentRoom = run.rooms?.[run.currentRoom];
   if (currentRoom) {
     currentRoom.interacted = true;

@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { GameManager } from './loop.js';
 import { getDataDir } from '../data-dir.js';
-import { CREATURES_BY_ID } from './creatures.js';
+import { CREATURES_BY_ID, backfillCreatureListUids } from './creatures.js';
 import { DEFAULT_COLLECTION } from './services/creature-collection-service.js';
 
 const SAVE_VERSION = 2;
@@ -82,7 +82,18 @@ export function getManager(userId) {
           }
           manager.initMeta(data.meta);
         }
-        if (data.run) manager.run = data.run;
+        if (data.run) {
+          manager.run = data.run;
+          // Lazy uid backfill — old saves lack per-instance uid on creatures.
+          backfillCreatureListUids(manager.run?.creatureParty?.active);
+          backfillCreatureListUids(manager.run?.creatureParty?.reserves);
+          // Also backfill pendingCaptures (created during combat) and
+          // dealer.offeredCreatures (sitting in shop rooms).
+          backfillCreatureListUids(manager.run?.creatureParty?.pendingCaptures);
+          for (const room of (manager.run?.rooms || [])) {
+            backfillCreatureListUids(room?.dealer?.offeredCreatures);
+          }
+        }
         if (data.combat) {
           manager.combat = data.combat;
           // Re-sync combat.allies → run.creatureParty.active after deserialization.
@@ -91,6 +102,15 @@ export function getManager(userId) {
           // combat.allies to silently diverge from the party state.
           if (manager.run?.creatureParty?.active && manager.combat.allies) {
             manager.combat.allies = manager.run.creatureParty.active;
+          }
+          // Backfill enemies — they are not shared references, so backfill directly.
+          backfillCreatureListUids(manager.combat.enemies);
+        }
+        // Backfill uids on PvP team snapshots from older saves.
+        for (const team of (manager.meta?.pvpTeams || [])) {
+          if (team?.creatureParty) {
+            backfillCreatureListUids(team.creatureParty.active);
+            backfillCreatureListUids(team.creatureParty.reserves);
           }
         }
       }

@@ -191,6 +191,65 @@ describe('finalizeCombatVictory', () => {
     // Boss is still tracked even without dialogue
     assert.ok(run.bossesDefeated.includes('fake_boss'));
   });
+
+  it('preserves statStages and activeEffects on surviving allies', () => {
+    // Bug 2026-04-18 (latest playtest): clearing stages at combat-end made
+    // the buff pill vanish *mid-playback* — the final AoE wave was still
+    // animating on the client when the buff-cleared state landed. Stages
+    // are now cleared on room entry (exploration-service) instead, so
+    // they stay visible through the victory modal / friendlyNpc reward
+    // screen and disappear only when the user physically moves on.
+    const ally = {
+      hp: 30, maxHp: 50,
+      statStages: { atk: 2, def: 1 },
+      activeEffects: [{ type: 'poison', remainingTurns: 2, sourceId: 'x' }]
+    };
+    const combat = { active: true, isBoss: false, enemies: [], allies: [ally] };
+    const run = { currentRoom: 0, rooms: [{}], currentAreaEncounters: 0 };
+    finalizeCombatVictory(combat, run);
+    assert.deepEqual(ally.statStages, { atk: 2, def: 1 });
+    assert.deepEqual(ally.activeEffects, [{ type: 'poison', remainingTurns: 2, sourceId: 'x' }]);
+  });
+
+  it('ignores null/undefined ally slots during cleanup', () => {
+    const combat = { active: true, isBoss: false, enemies: [], allies: [null, undefined] };
+    const run = { currentRoom: 0, rooms: [{}], currentAreaEncounters: 0 };
+    // Should not throw
+    finalizeCombatVictory(combat, run);
+    assert.equal(combat.active, false);
+  });
+});
+
+describe('exploration-service: room-entry clears combat buffs', () => {
+  // These tests verify the new home of stat-stage cleanup. Moving the
+  // clear out of finalizeCombatVictory and into proceedToNextRoom /
+  // enterArea matches the user's rule from 2026-04-18: "All buffs and
+  // debuffs should clear on room transitions." See resolution.js note.
+  it('_clearCombatBuffsForRoomEntry zeros active creatures stat stages', async () => {
+    const { ExplorationService } = await import('../../../src/game/services/exploration-service.js');
+    const gm = {
+      run: {
+        creatureParty: {
+          active: [{ hp: 30, maxHp: 50, statStages: { atk: 2, def: 1 }, activeEffects: [{ type: 'poison', remainingTurns: 2 }] }],
+          reserves: [{ hp: 40, maxHp: 50, statStages: { atk: 0, def: -1 }, activeEffects: [] }]
+        }
+      }
+    };
+    const svc = new ExplorationService(gm);
+    svc._clearCombatBuffsForRoomEntry();
+    assert.deepEqual(gm.run.creatureParty.active[0].statStages, { atk: 0, def: 0 });
+    assert.deepEqual(gm.run.creatureParty.active[0].activeEffects, []);
+    assert.deepEqual(gm.run.creatureParty.reserves[0].statStages, { atk: 0, def: 0 });
+  });
+
+  it('_clearCombatBuffsForRoomEntry is a no-op without creatureParty', async () => {
+    const { ExplorationService } = await import('../../../src/game/services/exploration-service.js');
+    const svc = new ExplorationService({ run: null });
+    // Should not throw
+    svc._clearCombatBuffsForRoomEntry();
+    const svc2 = new ExplorationService({ run: { creatureParty: null } });
+    svc2._clearCombatBuffsForRoomEntry();
+  });
 });
 
 describe('resolveDefeat', () => {

@@ -13,16 +13,25 @@ import {
   showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup,
   showHealPopup, showPoisonTick
 } from '../pixi/text.js';
-import { clearAllStatusVfx } from '../pixi/status-vfx.js';
-import { getCreatureSprite, showActiveGlow, clearActiveGlow, hideFormation as pixiHideFormation, animateKO, animateLevelUp, clearAllPixiStatusLabels, setWalking } from '../pixi/formation.js';
-import { showFormation } from './scene.js';
+import {
+  getCreatureSpriteForScene,
+  showActiveGlowForScene,
+  clearActiveGlowForScene,
+  animateKOForScene,
+  animateLevelUpForScene,
+} from '../pixi/formation.js';
+import { showFormation } from './combat-dom.js';
 import { setScrollState } from '../pixi/parallax.js';
 import { wait } from '../pixi/tween.js';
 import { playAttackSound } from './combat-audio.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
+import { SceneDisposedError } from '../scenes/scene-errors.js';
+import { BattleScene } from '../scenes/battle-scene.js';
+import { ExplorationScene } from '../scenes/exploration-scene.js';
 
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
-import { SC_NAMES } from './combat-ui-utils.js';
+import { SC_NAMES, shouldSkipAttackRecord } from './combat-ui-utils.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -66,7 +75,7 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
 
   const effectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
 
-  if (atk.damage > 0 && (sourceEl || getCreatureSprite(sourceSide, attackerIndex))) {
+  if (atk.damage > 0 && (sourceEl || getCreatureSpriteForScene(getSceneManager().currentScene, sourceSide, attackerIndex))) {
     playAttackSound(element);
     if (isEnemy) {
       await vfx.enemyCreatureAttackEffect(attackerIndex, targetIndex, element, atk.damage, targetMaxHp, effectivenessType, onImpact);
@@ -379,7 +388,7 @@ function promptNextCreature() {
 
   if (currentCreatureIndex >= allies.length) {
     // All creatures have chosen -- execute the turn
-    clearActiveGlow();
+    clearActiveGlowForScene(getSceneManager().currentScene);
     executeCreatureMovesTurn(moveChoices);
     return;
   }
@@ -387,12 +396,12 @@ function promptNextCreature() {
   const creature = allies[currentCreatureIndex];
   clearTargetSelect();
   setActiveLabel(creature);
-  showActiveGlow(currentCreatureIndex);
+  showActiveGlowForScene(getSceneManager().currentScene, currentCreatureIndex);
   showMoves(creature, currentCreatureIndex, befriend.getMoveSelectBefriendOpts(currentCreatureIndex));
 }
 
 function handleMoveSelected(move, creatureIndex) {
-  clearActiveGlow();
+  clearActiveGlowForScene(getSceneManager().currentScene);
   pendingMove = move;
   const state = getGameState();
 
@@ -441,7 +450,7 @@ function handleTargetCancelled() {
   if (creature) {
     clearTargetSelect();
     setActiveLabel(creature);
-    showActiveGlow(currentCreatureIndex);
+    showActiveGlowForScene(getSceneManager().currentScene, currentCreatureIndex);
     showMoves(creature, currentCreatureIndex, befriend.getMoveSelectBefriendOpts(currentCreatureIndex));
   }
 }
@@ -486,7 +495,8 @@ export function cleanupCombat() {
   enemyAttackPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
-  clearAllPixiStatusLabels();
+  // PIXI status label cleanup is handled by BattleScene.beforeExit via
+  // registry disposal when we transition to ExplorationScene.
 }
 
 /**
@@ -543,7 +553,7 @@ function showXpEvents(xpEvents) {
           // Slight delay so it appears after XP popup
           setTimeout(() => pixiLevelUpPopup(lu.newLevel, vfx.spritePos('player', index)), 400);
           // PixiJS level-up burst + flash
-          setTimeout(() => animateLevelUp('player', index), 400);
+          setTimeout(() => animateLevelUpForScene(getSceneManager().currentScene, 'player', index), 400);
         }
         // Collect move learns for later processing
         if (lu.newMove) {
@@ -621,6 +631,36 @@ export async function startCombatLoop(opts = {}) {
   enemyAttackPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
+
+  // Transition to BattleScene so PIXI sprites/status-vfx/formation ticker are
+  // owned by the scene registry. parallaxSpeed=0: during combat,
+  // syncBattleStageParallax sets setScrollState('encounter') which halts
+  // layer scrolling (currentSpeed=0); BattleScene's scene-level parallax gate
+  // likewise stays off (only the sky drift path runs via legacy updateParallax,
+  // which is already gated off while no scene has startParallax()'d).
+  //
+  // Idempotency: Task 17 moved the BattleScene transition up into startEncounter
+  // (before playNpcBattleIntro) so player + enemy sprites spawn alongside the
+  // NPC intro. If BattleScene is already active when we get here, skip the
+  // re-transition — tearing it down and respawning would destroy the sprites
+  // the intro already placed. On recovery (page reload), BattleScene is NOT
+  // active yet, so the transition still fires as expected.
+  const mgr = getSceneManager();
+  const gs = getGameState();
+  if (!(mgr.currentScene instanceof BattleScene)) {
+    try {
+      await mgr.transition(BattleScene, {
+        allies:  gs.combat?.allies  ?? [],
+        enemies: gs.combat?.enemies ?? [],
+        parallaxSpeed: 0,
+        isBoss: !!gs.combat?.isBoss,
+      });
+    } catch (err) {
+      combatActive = false;
+      console.error('[CombatLoop] BattleScene transition failed, aborting combat start', err);
+      return;
+    }
+  }
 
   // On recovery (page reload), re-render the scene before showing moves.
   // updateScene() already rendered enemy sprites, just need the move UI.
@@ -813,7 +853,7 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
   const atkTargetIdx = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
 
   const atkEffectivenessType = atk.elementMultiplier > 1 ? 'superEffective' : atk.elementMultiplier < 1 ? 'resisted' : 'normal';
-  if (atk.damage > 0 && (creatureSlotEl || getCreatureSprite('player', Math.max(0, atkAttackerIdx)))) {
+  if (atk.damage > 0 && (creatureSlotEl || getCreatureSpriteForScene(getSceneManager().currentScene, 'player', Math.max(0, atkAttackerIdx)))) {
     playAttackSound(atkElement);
     const tIdx = atk.targetIndex;
     const targetMaxHp = (typeof tIdx === 'number' && enemyHpMap[tIdx]?.maxHp)
@@ -861,7 +901,10 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
       && typeof result.befriendQuiz?.targetIndex === 'number'
       && result.befriendQuiz.targetIndex === atk.targetIndex;
     if (!isBefriendTarget) {
-      animateKO('enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
+      // Await the 600ms alpha+scale fade so the next attack in playback can't
+      // start against a half-faded sprite — prior fire-and-forget let the next
+      // syncCreatures race the tween's final frame, leaving a ghost corpse.
+      await animateKOForScene(getSceneManager().currentScene, 'enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
     }
     if (result.xpEvents) {
       const xpEvent = result.xpEvents.find(ev =>
@@ -976,6 +1019,7 @@ async function executeCreatureMovesTurn(choices) {
 
       if (merged.length > 0) {
         for (const { side, atk } of merged) {
+          if (shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)) continue;
           if (side === 'player' && atk.type === 'counter') {
             await vfx.showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
           } else if (side === 'player') {
@@ -988,14 +1032,19 @@ async function executeCreatureMovesTurn(choices) {
 
       // Catch-all KO: ensure all dead enemies get their KO animation, even if killed
       // by party skill chain damage (e.g. Arc Strike) that doesn't set targetDefeated.
+      // Await so the fade fully resolves before any follow-up syncCreatures runs —
+      // otherwise the tween can fight updateFormationSprite and leave the corpse
+      // sprite visible.
       if (result.enemies) {
+        const koPromises = [];
         for (let i = 0; i < result.enemies.length; i++) {
           const e = result.enemies[i];
           if (e && e.hp <= 0 && !e.befriended && !killedEnemies.has(`idx:${i}`)) {
             killedEnemies.add(`idx:${i}`);
-            animateKO('enemy', i);
+            koPromises.push(animateKOForScene(getSceneManager().currentScene, 'enemy', i));
           }
         }
+        if (koPromises.length) await Promise.all(koPromises);
       }
 
       vfx.syncStatusIconsFromResult(result);
@@ -1415,6 +1464,7 @@ async function executeDefendThenPause() {
 export async function stopCombatLoop(result) {
   logger.info('[CombatLoop] Combat ended:', { victory: result?.victory });
   const gameState = getGameState();
+  const mgr = getSceneManager();
 
   // Clear both attack timers
   if (playerAttackTimer) {
@@ -1443,26 +1493,45 @@ export async function stopCombatLoop(result) {
 
   if (result?.victory) combatEvents.emit('victory');
 
-  // Final cleanup: clear PixiJS status VFX and canvas status labels
-  clearAllStatusVfx();
-  clearAllPixiStatusLabels();
+  // PIXI status VFX + canvas status label cleanup is handled by
+  // BattleScene.beforeExit via registry disposal when we transition to
+  // ExplorationScene below (end of this function).
 
   // Resume parallax scroll and hide defeated enemy PixiJS sprites.
   // Player sprites are kept alive — they should remain visible through the
   // victory screen and into the next room. Destroying them here creates a
   // 1500ms+ gap where DOM info boxes (name/HP bars) float with no creature
   // image underneath (the "ghost formation" effect).
+  //
+  // Sprites live on the active BattleScene's formation ctx, so we remove
+  // them via the scene's own diff. syncCreatures({ enemies: [] }) drops all
+  // enemy sprites while leaving allies intact. Walking wobble will be
+  // re-enabled by ExplorationScene on room entry.
   setScrollState('accelerating');
-  setWalking(true);
-  pixiHideFormation('enemy');
+  const battleSceneForCleanup = mgr.currentScene;
+  if (battleSceneForCleanup instanceof BattleScene && !battleSceneForCleanup.disposed && !mgr.transitioning) {
+    try {
+      await battleSceneForCleanup.syncCreatures({
+        allies: getGameState()?.combat?.allies ?? getGameState()?.run?.creatureParty?.active ?? [],
+        enemies: [],
+      });
+    } catch (err) {
+      // Scene disposed mid-sync (e.g., rapid reload into post-combat): the
+      // ExplorationScene transition below will re-seed sprites from the
+      // updated ally roster, so there's nothing to recover.
+      if (!(err instanceof SceneDisposedError)) {
+        console.error('[CombatLoop] failed to clear enemy sprites via scene diff', err);
+      }
+    }
+  }
 
   // Brief pause before narration (let final damage numbers display)
   await delay(720);
 
-  // Fix C: Clear stale DOM enemy formation slots. Pixi sprites were already
-  // removed at pixiHideFormation('enemy') above; this closes the window where
+  // Fix C: Clear stale DOM enemy formation slots. Pixi enemy sprites were
+  // already removed via syncCreatures above; this closes the window where
   // leftover DOM slots could trigger the showFormation() dedup path to
-  // recreate Pixi sprites. The 720ms delay above lets damage numbers finish.
+  // recreate ghost sprites. The 720ms delay above lets damage numbers finish.
   const enemyFormationEl = document.getElementById('enemy-formation');
   if (enemyFormationEl) enemyFormationEl.innerHTML = '';
 
@@ -1495,7 +1564,12 @@ export async function stopCombatLoop(result) {
     playSFX('enemy-defeat');
   }
 
-  // Show victory or defeat modal
+  // Show victory or defeat modal. Both return Promises that resolve after
+  // the modal's loadGameState + updateUI settles — we await them here so
+  // BattleScene (and its sprites) remain visible through the modal window.
+  // Transitioning while the modal animates would destroy player sprites
+  // beneath the visible DOM info boxes (the "ghost formation" effect).
+  let modalPromise;
   if (result.victory) {
     playSFX('victory');
     const gs = getGameState();
@@ -1506,9 +1580,31 @@ export async function stopCombatLoop(result) {
     if (isCreatureCombat && showPostCombatShop) {
       await showPostCombatShop();
     }
-    showVictoryModal(result);
+    modalPromise = showVictoryModal(result);
   } else {
-    showGameOverModal(result);
+    modalPromise = showGameOverModal(result);
+  }
+  try {
+    await modalPromise;
+  } catch (err) {
+    console.error('[CombatLoop] modal dismissal rejected — continuing to cleanup', err);
+  }
+
+  // Transition to ExplorationScene so BattleScene.beforeExit disposes of all
+  // scene-owned PIXI resources (formation sprites, status VFX, HP pills,
+  // formation ticker, creature-row listeners) via the registry. By the time
+  // the modal promise above resolves, updateUI() has already fired with the
+  // new phase — so the current scene should flip to ExplorationScene now.
+  // Pass the updated ally party so ExplorationScene spawns player sprites
+  // immediately on entry (fixes bug #6 — non-combat rooms previously had
+  // HP bars but no PIXI sprites because _defaultCtx was unwired).
+  const nextState = getGameState();
+  const roomId = nextState?.run?.currentRoom ?? null;
+  const alliesForExplore = nextState?.run?.creatureParty?.active ?? [];
+  try {
+    await mgr.transition(ExplorationScene, { roomId, allies: alliesForExplore });
+  } catch (err) {
+    console.error('[CombatLoop] ExplorationScene transition failed — reload to recover', err);
   }
 
   // updateUI() removed: the phase is still 'combat' here, so updateScene()

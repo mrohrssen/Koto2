@@ -1,7 +1,6 @@
 import { Application, Container } from 'pixi.js';
-import { updateParallax, resizeParallax } from './parallax.js';
-import { initFormations, updateFormations, resizeFormations } from './formation.js';
-import { initParticles, updateParticles, initFlash, initVignette, isFrozen } from './effects.js';
+import { resizeParallax } from './parallax.js';
+import { initParticles, initFlash, initVignette } from './effects.js';
 
 let app = null;
 let layers = {};
@@ -9,11 +8,11 @@ let resizeObserver = null;
 
 // Debug: expose to console for live inspection
 if (typeof window !== 'undefined') {
-  window.__pixiStage = () => ({ app, layers });
+  window.__pixiApp = () => ({ app, layers });
 }
 
 /** @returns {{ app: Application, layers: Record<string, Container> }} */
-export function getStage() {
+export function getApp() {
   return { app, layers };
 }
 
@@ -21,10 +20,10 @@ export function getStage() {
  * Initialize the PixiJS battle stage inside the scene-area element.
  * Must be called once at app startup (async).
  */
-export async function initBattleStage() {
+export async function initApp() {
   const sceneArea = document.getElementById('scene-area');
   if (!sceneArea || app) {
-    console.warn('[BattleStage] init skipped:', { sceneArea: !!sceneArea, appExists: !!app });
+    console.warn('[PixiApp] init skipped:', { sceneArea: !!sceneArea, appExists: !!app });
     return;
   }
 
@@ -48,7 +47,7 @@ export async function initBattleStage() {
   app.canvas.style.height = '100%';
   app.canvas.style.zIndex = '1'; // Above .scene-background (0), below .battle-stage DOM overlay (2)
   sceneArea.insertBefore(app.canvas, sceneArea.firstChild);
-  console.log('[BattleStage] Canvas inserted:', app.canvas.width, 'x', app.canvas.height);
+  console.log('[PixiApp] Canvas inserted:', app.canvas.width, 'x', app.canvas.height);
 
   // Create ordered layer containers
   layers = {
@@ -65,34 +64,29 @@ export async function initBattleStage() {
   app.stage.addChild(layers.overlay);
 
   // Initialize sub-modules
-  initFormations();
   initParticles();
   initFlash();
   initVignette();
 
-  // Resize handling
+  // Resize handling. Scene-owned formation ctxs reposition sprites via DOM
+  // anchors on spawn/update — resize re-lays DOM first, and subsequent diff
+  // passes pick up the new anchor positions. No explicit formation-resize
+  // hook needed after Task 18.
   resizeObserver = new ResizeObserver(([entry]) => {
     const { width, height } = entry.contentRect;
     if (width > 0 && height > 0) {
       app.renderer.resize(width, height);
       resizeParallax(width, height);
-      resizeFormations(width, height);
     }
   });
   resizeObserver.observe(sceneArea);
 
-  // Main ticker — drives parallax, formations, and particles
-  app.ticker.add((ticker) => {
-    if (!isFrozen()) {
-      updateParallax(ticker.deltaTime);
-      updateFormations(ticker.deltaTime);
-    }
-    updateParticles(ticker.deltaMS);
-  });
+  // Per-frame ticker is owned by SceneManager (wired in public/game.js after initApp()).
+  // It drives updateParallax and updateParticles via configure({ parallax: { update } }).
 
-  console.log('[BattleStage] Init complete');
+  console.log('[PixiApp] Init complete');
   } catch (err) {
-    console.error('[BattleStage] Init FAILED:', err);
+    console.error('[PixiApp] Init FAILED:', err);
     app = null;
   }
 }
@@ -100,7 +94,7 @@ export async function initBattleStage() {
 /**
  * Destroy the PixiJS application and clean up.
  */
-export function destroyBattleStage() {
+export function destroyApp() {
   if (resizeObserver) {
     resizeObserver.disconnect();
     resizeObserver = null;

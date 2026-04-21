@@ -237,9 +237,9 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         target.hp = Math.max(0, target.hp - damage);
         if (damage > 0) breakSleep(target);
 
-        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
-        const statChangesApplied = tryApplyStatChanges(move, target);
         const targetDefeated = target.hp <= 0;
+        const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies) : null;
+        const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           damage, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
@@ -280,9 +280,9 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         // Heal attacker for 50% of damage dealt
         const healAmount = applyHeal(creature, Math.floor(damage * 0.5));
 
-        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
-        const statChangesApplied = tryApplyStatChanges(move, target);
         const targetDefeated = target.hp <= 0;
+        const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies) : null;
+        const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           damage, healAmount, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
@@ -683,8 +683,10 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
         rec.healAmount = applyHeal(enemy, Math.floor(damage * 0.5));
       }
 
-      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
-      rec.statChangesApplied = tryApplyStatChanges(move, target);
+      if (!rec.targetDefeated) {
+        if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
+        rec.statChangesApplied = tryApplyStatChanges(move, target);
+      }
       break;
     }
 
@@ -1111,7 +1113,9 @@ export function processBefriendQuizAnswer(answerId, combat, creatureParty, optio
     target.hp = 0;
     target.befriended = true;
 
-    const capturedCopy = { ...target, hp: target.maxHp, mp: target.maxMp, befriended: false };
+    // Fresh uid: the party-bound copy is a new conceptual instance, not an alias
+    // of the defeated enemy shell still sitting in combat.enemies[].
+    const capturedCopy = { ...target, uid: crypto.randomUUID(), hp: target.maxHp, mp: target.maxMp, befriended: false };
 
     if (!creatureParty.pendingCaptures) creatureParty.pendingCaptures = [];
     creatureParty.pendingCaptures.push(capturedCopy);
@@ -1243,8 +1247,10 @@ export function processBefriend(enemies, creatureParty, targetEnemyIndex) {
   captured.hp = 0;
   captured.befriended = true;
 
-  // Reset for when it joins the party after combat
-  const capturedCopy = { ...captured, hp: captured.maxHp, mp: captured.maxMp, befriended: false };
+  // Reset for when it joins the party after combat.
+  // Fresh uid: the party-bound copy is a new conceptual instance, not an alias
+  // of the defeated enemy shell still sitting in combat.enemies[].
+  const capturedCopy = { ...captured, uid: crypto.randomUUID(), hp: captured.maxHp, mp: captured.maxMp, befriended: false };
 
   // Store in pending list — added to party AFTER combat ends
   if (!creatureParty.pendingCaptures) creatureParty.pendingCaptures = [];
@@ -1361,6 +1367,17 @@ export function awardBattleXp(creatureParty, metaMults = null, itemBuffs = null)
 }
 
 export function handleCreatureKO(creatureParty, koCreatureIndex) {
+  // Clear transient combat state off the dying creature before it leaves the
+  // active slot. Without this a later resurrect/capture path could restore a
+  // creature with lingering stun/poison effects, and any client still holding
+  // a reference (e.g. KO animation, attack record) would show stale status
+  // pills on the corpse.
+  const dying = creatureParty.active[koCreatureIndex];
+  if (dying) {
+    dying.activeEffects = [];
+    resetStatStages(dying);
+  }
+
   if (creatureParty.reserves.length === 0) {
     // No reserve — permanently remove dead creature from party
     creatureParty.active[koCreatureIndex] = null;

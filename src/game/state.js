@@ -227,7 +227,7 @@ export function createCombatState(enemy) {
     turn: "player",  // "player" | "enemy"
     turnCount: 1,
 
-    enemy: { ...enemy },
+    enemy, // Share the reference with enemies[0] — same object, single uid
 
     allies: [],    // references to run.creatureParty.active
     enemies: [],   // MVP: single enemy creature

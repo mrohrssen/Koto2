@@ -1,4 +1,4 @@
-import { getStage } from './battle-stage.js';
+import { getApp } from './app.js';
 
 const EASING = {
   linear: t => t,
@@ -13,15 +13,24 @@ const EASING = {
 
 /**
  * Tween properties on a target object.
+ *
+ * Optional `signal` param is a plain `{ cancelled: boolean }` object that the
+ * caller may flip to `true` to cancel the tween mid-flight. When cancelled,
+ * the ticker is removed and the promise resolves early without mutating the
+ * target further (the last applied values remain). The returned Promise ALWAYS
+ * resolves — never rejects — so callers do not need try/catch around cancellation.
+ *
  * @param {object} target - Object with numeric properties (e.g., PixiJS Sprite)
  * @param {object} props - Target values, e.g. { x: 100, alpha: 0 }
- * @param {{ duration?: number, ease?: string, delay?: number }} opts
+ * @param {{ duration?: number, ease?: string, delay?: number, signal?: { cancelled: boolean } }} opts
  * @returns {Promise<void>}
  */
-export function tween(target, props, { duration = 300, ease = 'easeOut', delay: delayMs = 0 } = {}) {
+export function tween(target, props, { duration = 300, ease = 'easeOut', delay: delayMs = 0, signal } = {}) {
   return new Promise(resolve => {
-    const { app } = getStage();
+    const { app } = getApp();
     if (!app) { resolve(); return; }
+    // Early-exit if already cancelled before we even register the ticker.
+    if (signal?.cancelled) { resolve(); return; }
 
     const easeFn = EASING[ease] || EASING.easeOut;
     const startValues = {};
@@ -32,6 +41,14 @@ export function tween(target, props, { duration = 300, ease = 'easeOut', delay: 
     let elapsed = -delayMs;
 
     const onTick = (ticker) => {
+      // Check cancel first — caller may have flipped signal.cancelled mid-flight.
+      // When cancelled, we stop mutating the target and resolve — the current
+      // (partial) values remain as the final state.
+      if (signal?.cancelled) {
+        app.ticker.remove(onTick);
+        resolve();
+        return;
+      }
       elapsed += ticker.deltaMS;
       if (elapsed < 0) return; // still in delay
 
@@ -59,7 +76,7 @@ export function tween(target, props, { duration = 300, ease = 'easeOut', delay: 
  */
 export function wait(ms) {
   return new Promise(resolve => {
-    const { app } = getStage();
+    const { app } = getApp();
     if (!app) { resolve(); return; }
     let elapsed = 0;
     const onTick = (ticker) => {

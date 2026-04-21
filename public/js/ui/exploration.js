@@ -3,8 +3,8 @@ import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
 import { hapticLight } from '../native/index.js';
 import { creatureBgUrl, itemSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
-import { showNpcInDisplay, hideEnemy } from './scene.js';
-import { showNpcSprite, hideNpcSprite } from '../pixi/formation.js';
+import { hideEnemy } from './combat-dom.js';
+import { showNpcInDisplay } from './exploration-dom.js';
 import { t, isJapanified } from './i18n.js';
 import * as chestsUI from './chests.js';
 import * as crestsEquipUI from './crests-equip.js';
@@ -16,6 +16,26 @@ import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
 import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import { getTutorialNarration, getFormationNarration } from './tutorial-copy.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
+
+/**
+ * Resolve any active scene that owns an `npcs` layer. Every gameplay scene
+ * (HubScene, ExplorationScene, BattleScene) provides this layer, so NPC
+ * sprite operations should succeed across all non-combat phases that can
+ * host a dialogue.
+ *
+ * The earlier `getExplorationScene` helper required `instanceof ExplorationScene`
+ * and silently returned null when HubScene was active (prologue, hub,
+ * area_selection, skillMaster) — which is exactly the state the returning
+ * player hits at session start, causing Cid's Pixi sprite to never render.
+ * Broadening the contract to "any scene with an npcs layer" is the
+ * structural fix. See Bug #8 in docs/pr2-bulletproof-rendering-smoke-test.md.
+ */
+export function getSceneWithNpcs() {
+  const scene = getSceneManager()?.currentScene;
+  if (!scene || scene.disposed || scene._exiting || !scene.layers?.npcs) return null;
+  return scene;
+}
 
 let getGameState = null;
 let updateGameState = null;
@@ -27,28 +47,24 @@ let startNewRun = null;
 let returnToHub = null;
 let showAdventureReport = null;
 
-// Module-level guard to prevent multiple shrine clicks across re-renders
-let shrineInProgress = false;
-
-// Module-level state for word discovery (persists across gameState updates)
-// This prevents infinite narration loops when updateGameState() replaces room object
-let discoveryState = {
-  fetched: false,
-  words: [],
-  wordsLearned: 0,
-  roomId: null,  // Reset when room changes
-  statusChecked: false,
-  atLimit: false,
-  todayCount: 0,
-  dailyLimit: 10
-};
+// Discovery / shrine guards now live on ExplorationScene (scene-owned state).
+// Moving them off the module scope means they reset naturally when we
+// transition to a new ExplorationScene on room entry — the prior issue
+// where `discoveryState.roomId !== roomId` comparison was needed is now
+// structural (fresh scene = fresh state). See ExplorationScene constructor.
 
 /** Show multi-page Cid tutorial narration. Optionally slides her sprite in/out. */
 async function showTutorialNarration(pages, { showSprite = false } = {}) {
+  // Any scene with an npcs layer owns the Pixi slide (HubScene during
+  // prologue/skillMaster/hub, ExplorationScene inside rooms, BattleScene
+  // during combat interjections). See getSceneWithNpcs() above.
+  const scene = showSprite ? getSceneWithNpcs() : null;
+  const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
   if (showSprite) {
-    const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-    await showNpcSprite(cidSprite, { slideIn: true });
+    if (scene) {
+      await scene.showNpcSprite(cidSprite, { slideIn: true });
+    }
   }
 
   for (const page of pages) {
@@ -56,7 +72,10 @@ async function showTutorialNarration(pages, { showSprite = false } = {}) {
   }
 
   if (showSprite) {
-    await hideNpcSprite({ slideOut: true });
+    const exitScene = getSceneWithNpcs();
+    if (exitScene && exitScene.npcSprite) {
+      await exitScene.hideNpcSprite({ slideOut: true });
+    }
     hideEnemy();
   }
 }
@@ -197,7 +216,8 @@ let skillMasterState = {
   offered: null,
   chosenId: null,
   catalogById: { ...PARTY_SKILL_CATALOG_FALLBACK },
-  promptTokens: null
+  promptTokens: null,
+  promptShown: false
 };
 
 function getActiveRoomFromRun(run) {
@@ -381,14 +401,14 @@ export async function renderHub() {
 
   // Tutorial step 3: encourage after first death, then auto-advance to 4
   if (tutorialStep === 3) {
-    await showTutorialNarration(getTutorialNarration(3));
+    await showTutorialNarration(getTutorialNarration(3), { showSprite: true });
     await apiTutorialAdvance?.(3);
     tutorialStep = getGameState().meta?.tutorialStep;
   }
 
   // Tutorial step 4: introduce speed review (condition-gated on dueCount > 0)
   if (tutorialStep === 4 && dueCount > 0) {
-    await showTutorialNarration(getTutorialNarration(4, { dueCount }));
+    await showTutorialNarration(getTutorialNarration(4, { dueCount }), { showSprite: true });
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
       if (btn.textContent.includes('Speed Review')) {
@@ -402,7 +422,7 @@ export async function renderHub() {
   // Tutorial step 5: guide to formation and re-enter
   if (tutorialStep === 5) {
     const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
-    await showTutorialNarration(getFormationNarration(creatureCount));
+    await showTutorialNarration(getFormationNarration(creatureCount), { showSprite: true });
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
       if (btn.textContent.includes('Explore')) {
@@ -596,13 +616,14 @@ export function renderShrine() {
       };
     }),
     onSelect: async (index) => {
-      if (shrineInProgress) return;
-      shrineInProgress = true;
+      const scene = getSceneWithNpcs();
+      if (scene?.shrineInProgress) return;
+      if (scene) scene.shrineInProgress = true;
       const creature = allCreatures[index];
       const result = await apiShrineUpgrade(creature.id);
       if (result?.state) { updateGameState(result.state); }
       sceneModule.showNarration(t('leveledUp', result?.creatureName || 'Creature', result?.newLevel || '?'), { autoDismiss: 2000 });
-      shrineInProgress = false;
+      if (scene && !scene.disposed) scene.shrineInProgress = false;
       updateUI();
     },
   });
@@ -630,19 +651,36 @@ export async function renderWordDiscovery() {
 
   if (!room) return;
 
-  // Reset module-level discovery state when entering a new room
+  // Discovery state is scene-owned now (ExplorationScene.discoveryState),
+  // so walking into a new room naturally gets a fresh scene + fresh state.
+  // The fallback object is used if we're somehow outside an ExplorationScene
+  // (the tutorial path can drive renderWordDiscovery before the scene catches
+  // up during a transition window).
+  const scene = getSceneWithNpcs();
+  const fallback = {
+    fetched: false,
+    words: [],
+    wordsLearned: 0,
+    roomId: null,
+    statusChecked: false,
+    atLimit: false,
+    todayCount: 0,
+    dailyLimit: 10,
+  };
+  const discoveryState = scene?.discoveryState ?? fallback;
+
+  // Belt-and-suspenders: if an old ExplorationScene survived (shouldn't, but
+  // defensive) and its roomId lags behind the current room, snap it forward.
   const roomId = room.id || room.type || 'unknown';
   if (discoveryState.roomId !== roomId) {
-    discoveryState = {
-      fetched: false,
-      words: [],
-      wordsLearned: 0,
-      roomId: roomId,
-      statusChecked: false,
-      atLimit: false,
-      todayCount: 0,
-      dailyLimit: 10
-    };
+    discoveryState.fetched = false;
+    discoveryState.words = [];
+    discoveryState.wordsLearned = 0;
+    discoveryState.roomId = roomId;
+    discoveryState.statusChecked = false;
+    discoveryState.atLimit = false;
+    discoveryState.todayCount = 0;
+    discoveryState.dailyLimit = 10;
   }
 
   // Stage tracking from server state
@@ -887,10 +925,31 @@ export async function renderSpeedReviewRoom() {
 
 // ============ WHACK-A-MOLE MINI GAME ============
 
+let whackAMoleState = {
+  roomId: null,
+  fetched: false,
+  dialogue: null,
+  yesLabel: 'Yes',
+  noLabel: 'No',
+  introShown: false
+};
+
 /** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
 export async function renderWhackAMole() {
   const gameState = getGameState();
   const room = gameState.run.rooms[gameState.run.currentRoom];
+  const roomId = room?.id || room?.type || 'whackAMole';
+
+  if (whackAMoleState.roomId !== roomId) {
+    whackAMoleState = {
+      roomId,
+      fetched: false,
+      dialogue: null,
+      yesLabel: 'Yes',
+      noLabel: 'No',
+      introShown: false
+    };
+  }
 
   // Already completed — just show proceed
   if (room?.interacted) {
@@ -903,34 +962,33 @@ export async function renderWhackAMole() {
     return;
   }
 
-  // Fetch GM dialogue tokens (before pool — no wasted request on decline)
-  let dialogue = null;
-  let gmYesTokens = null;
-  let gmNoTokens = null;
-  try {
-    const resp = await apiGetWhackAMoleDialogue();
-    dialogue = resp?.dialogue;
-    gmYesTokens = resp?.yesTokens;
-    gmNoTokens = resp?.noTokens;
-  } catch (err) {
-    // Fallback: proceed without dialogue
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+  if (!whackAMoleState.fetched) {
+    try {
+      const resp = await apiGetWhackAMoleDialogue();
+      whackAMoleState.fetched = true;
+      whackAMoleState.dialogue = resp?.dialogue || null;
+      whackAMoleState.yesLabel = resp?.yesTokens
+        ? renderJpSentence(resp.yesTokens, getKnownWords(), wordDict, {}, false)
+        : 'Yes';
+      whackAMoleState.noLabel = resp?.noTokens
+        ? renderJpSentence(resp.noTokens, getKnownWords(), wordDict, {}, false)
+        : 'No';
+    } catch (err) {
+      // Leave fetched=false so a later rerender can retry.
+    }
   }
 
-  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-
   // Show GM greeting in narration box
-  if (dialogue?.tokens?.length && sceneModule?.showNarration) {
-    const html = renderJpSentence(dialogue.tokens, getKnownWords(), wordDict, {}, false);
+  if (!whackAMoleState.introShown && whackAMoleState.dialogue?.tokens?.length && sceneModule?.showNarration) {
+    whackAMoleState.introShown = true;
+    const html = renderJpSentence(whackAMoleState.dialogue.tokens, getKnownWords(), wordDict, {}, false);
     await sceneModule.showNarration(html, { html: true, speaker: 'Game Master' });
   }
 
-  // Show yes/no buttons from tokenized frames
-  const yesLabel = gmYesTokens ? renderJpSentence(gmYesTokens, getKnownWords(), wordDict, {}, false) : 'Yes';
-  const noLabel = gmNoTokens ? renderJpSentence(gmNoTokens, getKnownWords(), wordDict, {}, false) : 'No';
-
   renderButtons([
     {
-      label: yesLabel,
+      label: whackAMoleState.yesLabel,
       onClick: async () => {
         // Fetch pool and start game directly (no intermediate start screen)
         let pool;
@@ -951,9 +1009,12 @@ export async function renderWhackAMole() {
       }
     },
     {
-      label: noLabel,
+      label: whackAMoleState.noLabel,
       onClick: async () => {
-        await hideNpcSprite({ slideOut: true });
+        const scene = getSceneWithNpcs();
+        if (scene && !scene.disposed && scene.npcSprite) {
+          await scene.hideNpcSprite({ slideOut: true });
+        }
         try {
           const result = await apiSkipWhackAMole();
           if (result?.state) {
@@ -968,12 +1029,44 @@ export async function renderWhackAMole() {
   ]);
 }
 
-/** Show the どの能力？ prompt in the narration box */
-function showSkillSelectPrompt(tokens) {
+/** Show the どの能力？ prompt in the narration box, attributed to `speaker`. */
+function showSkillSelectPrompt(tokens, speaker = 'Cid') {
   if (!tokens?.length || !sceneModule?.showNarration) return;
   const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
   const html = renderJpSentence(tokens, getKnownWords(), wordDict, {}, false);
-  sceneModule.showNarration(html, { html: true, persistent: true });
+  sceneModule.showNarration(html, { html: true, persistent: true, speaker });
+}
+
+/**
+ * Slide the defeated NPC's sprite into the active scene before the skill-select
+ * prompt. Mirrors showCidForSkillMaster — the defeated challenger is the one
+ * offering the skill reward, so the player should see them on screen while
+ * the `どの能力？` question is attributed to them.
+ */
+async function showDefeatedNpcForSkillSelect(npc) {
+  if (!npc?.id) return;
+  const scene = getSceneWithNpcs();
+  const spritePath = `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`;
+  const displayName = npc.nameEn || npc.name || '';
+  showNpcInDisplay(displayName, spritePath, { skipPixi: true });
+  if (scene && !scene.npcSprite) {
+    await scene.showNpcSprite(spritePath, { slideIn: true });
+  }
+}
+
+/**
+ * Slide Cid's sprite into the active scene for the non-tutorial skillMaster
+ * path. Mirrors showTutorialNarration's sprite-show side but without the
+ * multi-page narration loop — Cid just appears so the player has a visible
+ * speaker for the `どの能力？` prompt.
+ */
+async function showCidForSkillMaster() {
+  const scene = getSceneWithNpcs();
+  const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+  showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+  if (scene) {
+    await scene.showNpcSprite(cidSprite, { slideIn: true });
+  }
 }
 
 /** Skill Master room — placeholder UI (to be expanded in later task) */
@@ -1001,6 +1094,7 @@ export async function renderSkillMaster() {
     skillMasterState.fetched = false;
     skillMasterState.offered = null;
     skillMasterState.chosenId = null;
+    skillMasterState.promptShown = false;
   }
 
   // If already completed, don't render choices
@@ -1100,7 +1194,14 @@ export async function renderSkillMaster() {
   if (tutorialStep === 0) {
     renderTutorialSkillMaster(offers);
   } else {
-    showSkillSelectPrompt(skillMasterState.promptTokens);
+    // Slide Cid in so the player sees who's offering them skills. Intentionally
+    // not awaited — the choices render in parallel with the slide-in so UI
+    // doesn't feel gated on animation.
+    showCidForSkillMaster();
+    if (!skillMasterState.promptShown) {
+      skillMasterState.promptShown = true;
+      showSkillSelectPrompt(skillMasterState.promptTokens);
+    }
 
     renderChoices({
       cards: offers.slice(0, 3).map(s => ({
@@ -1203,7 +1304,9 @@ let friendlyNpcState = {
   fetched: false,
   offered: null,
   greeting: null,
-  choosing: false
+  choosing: false,
+  greetingShown: false,
+  renderedCards: null
 };
 
 /**
@@ -1222,7 +1325,9 @@ export async function renderFriendlyNpc() {
       fetched: false,
       offered: null,
       greeting: null,
-      choosing: false
+      choosing: false,
+      greetingShown: false,
+      renderedCards: null
     };
   }
 
@@ -1244,6 +1349,8 @@ export async function renderFriendlyNpc() {
     </div>
   `);
 
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+
   // Fetch offers once per room
   if (!friendlyNpcState.fetched) {
     friendlyNpcState.fetched = true;
@@ -1254,6 +1361,9 @@ export async function renderFriendlyNpc() {
     } catch (err) {
       friendlyNpcState.fetched = false;
       friendlyNpcState.offered = null;
+      friendlyNpcState.greeting = null;
+      friendlyNpcState.renderedCards = null;
+      friendlyNpcState.greetingShown = false;
       actions.setContent('');
       renderButtons([
         { label: 'Retry', onClick: () => { friendlyNpcState.fetched = false; friendlyNpcState.offered = null; renderFriendlyNpc(); }, primary: true },
@@ -1268,6 +1378,9 @@ export async function renderFriendlyNpc() {
     if (!Array.isArray(offered) || offered.length === 0) {
       friendlyNpcState.fetched = false;
       friendlyNpcState.offered = null;
+      friendlyNpcState.greeting = null;
+      friendlyNpcState.renderedCards = null;
+      friendlyNpcState.greetingShown = false;
       actions.setContent('');
       renderButtons([
         { label: 'Retry', onClick: () => { friendlyNpcState.fetched = false; friendlyNpcState.offered = null; renderFriendlyNpc(); }, primary: true },
@@ -1277,6 +1390,13 @@ export async function renderFriendlyNpc() {
 
     friendlyNpcState.offered = offered;
     friendlyNpcState.greeting = resp?.greeting || null;
+    friendlyNpcState.renderedCards = offered.map(item => ({
+      sprite: itemSpriteHtml(item.id, item.word),
+      title: item.nameToken
+        ? renderJpSentence([item.nameToken], getKnownWords(), wordDict, {}, false)
+        : `${item.word} (${item.reading})`,
+      pills: buildItemEffectPills(item),
+    }));
     if (resp?.state) {
       updateGameState(resp.state);
     }
@@ -1286,11 +1406,9 @@ export async function renderFriendlyNpc() {
   const npc = room?.npc;
   const tutorialStep = getGameState()?.meta?.tutorialStep;
 
-  // Shared word dictionary for token rendering
-  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-
   // NPC greeting first (blocking during tutorial so player sees it before items)
-  if (npc && sceneModule?.showNarration) {
+  if (npc && sceneModule?.showNarration && !friendlyNpcState.greetingShown) {
+    friendlyNpcState.greetingShown = true;
     const greetingTokens = friendlyNpcState.greeting?.tokens;
     let greetingContent;
     if (greetingTokens?.length) {
@@ -1310,7 +1428,7 @@ export async function renderFriendlyNpc() {
 
   // Render item cards so they're visible
   renderChoices({
-    cards: offers.map(item => ({
+    cards: friendlyNpcState.renderedCards || offers.map(item => ({
       sprite: itemSpriteHtml(item.id, item.word),
       title: item.nameToken
         ? renderJpSentence([item.nameToken], getKnownWords(), wordDict, {}, false)
@@ -1383,12 +1501,18 @@ export async function renderFriendlyNpc() {
     cidItemShopTutorialShown = true;
     const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-    await showNpcSprite(cidSprite, { slideIn: true });
+    const scene = getSceneWithNpcs();
+    if (scene) {
+      await scene.showNpcSprite(cidSprite, { slideIn: true });
+    }
 
     const [itemShopCidLine] = getTutorialNarration(2);
     await sceneModule.showNarration(itemShopCidLine, { speaker: 'Cid' });
 
-    await hideNpcSprite({ slideOut: true });
+    const afterScene = getSceneWithNpcs();
+    if (afterScene && !afterScene.disposed && afterScene.npcSprite) {
+      await afterScene.hideNpcSprite({ slideOut: true });
+    }
 
     // Restore NPC sprite so they're visible during item selection
     if (npc) {
@@ -1396,7 +1520,14 @@ export async function renderFriendlyNpc() {
         ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
         : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
       showNpcInDisplay(npc.nameEn || npc.name, npcSprite, { skipPixi: true });
-      await showNpcSprite(npcSprite, { slideIn: true });
+      // Re-fetch the current scene: a transition may have happened during the
+      // await of the tutorial narration. If not in an ExplorationScene
+      // (shouldn't normally happen here), only the DOM NPC display runs —
+      // the legacy _defaultCtx fallback was removed in Task 18.
+      const currentScene = getSceneWithNpcs();
+      if (currentScene) {
+        await currentScene.showNpcSprite(npcSprite, { slideIn: true });
+      }
     }
   }
 }
@@ -1419,7 +1550,8 @@ let npcBattleSkillState = {
   fetched: false,
   offered: null,
   choosing: false,
-  promptTokens: null
+  promptTokens: null,
+  promptShown: false
 };
 
 /**
@@ -1439,7 +1571,8 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       fetched: false,
       offered: null,
       choosing: false,
-      promptTokens: null
+      promptTokens: null,
+      promptShown: false
     };
   }
 
@@ -1534,7 +1667,20 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
 
   const offers = npcBattleSkillState.offered || [];
 
-  showSkillSelectPrompt(npcBattleSkillState.promptTokens);
+  // The defeated NPC offers the skill reward — resolve them from combat state
+  // (available during the immediate post-combat flow) or the room record (for
+  // page-reload recovery). Fall back to Cid so the prompt always has a speaker.
+  const defeatedNpc = gameState.combat?.npcData || room?.npcBattle?.npc || room?.npc || null;
+  const speakerName = defeatedNpc?.nameEn || defeatedNpc?.name || 'Cid';
+
+  // Slide the defeated NPC sprite in (no-op if already on stage) so the
+  // player can see who's asking the question. Intentionally not awaited.
+  showDefeatedNpcForSkillSelect(defeatedNpc);
+
+  if (!npcBattleSkillState.promptShown) {
+    npcBattleSkillState.promptShown = true;
+    showSkillSelectPrompt(npcBattleSkillState.promptTokens, speakerName);
+  }
 
   renderChoices({
     cards: offers.slice(0, 3).map(s => ({

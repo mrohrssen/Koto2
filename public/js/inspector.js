@@ -1,13 +1,28 @@
-export function createInspector({ getState, getPhase, countDomBars, getPixiSprites } = {}) {
+export function createInspector({ getState, getPhase, countDomBars, getPixiSprites, getNpcSprites, isNpcDisplayVisible } = {}) {
+
+  // Safe defaults so call sites that haven't wired the new queries yet don't
+  // regress to throwing. When a query is missing, that layer is skipped.
+  getNpcSprites       = getNpcSprites       || (() => []);
+  isNpcDisplayVisible = isNpcDisplayVisible || (() => false);
 
   function getAliveCount(creatures) {
     if (!creatures) return 0;
-    return creatures.filter(c => c.hp > 0 && !c.befriended).length;
+    return creatures.filter(c => c && c.hp > 0 && !c.befriended).length;
   }
 
   function getVisiblePixiCount(sprites) {
     if (!sprites) return 0;
     return sprites.filter(s => s.alpha > 0.3).length;
+  }
+
+  function sideAliveFromState(state, phase, side) {
+    if (phase === 'combat' && state?.combat) {
+      return side === 'player' ? state.combat.allies : state.combat.enemies;
+    }
+    // Non-combat: the "enemy" side isn't meaningful; "player" tracks the run's
+    // active party (e.g. skillMaster, exploration, hub-with-party).
+    if (side === 'player') return state?.run?.creatureParty?.active;
+    return null;
   }
 
   function checkCreatures() {
@@ -16,19 +31,17 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
     const state = getState();
     const inCombat = state?.combat && phase === 'combat';
 
-    if (!inCombat) {
-      return { ok: true, mismatches };
-    }
-
-    for (const side of ['player', 'enemy']) {
-      const creatures = side === 'player' ? state.combat.allies : state.combat.enemies;
+    // Formation checks — combat has both sides; non-combat has player only.
+    const sidesToCheck = inCombat ? ['player', 'enemy'] : ['player'];
+    for (const side of sidesToCheck) {
+      const creatures = sideAliveFromState(state, phase, side);
+      if (!creatures) continue;
       const aliveCount = getAliveCount(creatures);
       const domCount = countDomBars(side);
       const pixiSprites = getPixiSprites(side);
       const pixiVisibleCount = getVisiblePixiCount(pixiSprites);
 
-      // Per-creature KO checks first so they appear before aggregate count mismatches.
-      if (creatures && pixiSprites) {
+      if (inCombat && creatures && pixiSprites) {
         for (let i = 0; i < creatures.length; i++) {
           const c = creatures[i];
           const s = pixiSprites[i];
@@ -41,7 +54,7 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
         }
       }
 
-      if (domCount !== aliveCount) {
+      if (domCount != null && domCount !== aliveCount) {
         mismatches.push({
           type: 'DOM_GHOST',
           detail: `${side} dom=${domCount} but state=${aliveCount} alive`,
@@ -56,6 +69,20 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
       }
     }
 
+    // Only fires when the DOM pill was set by a Pixi-backed path (sceneShowNpc).
+    // DOM-only paths (NPC enemy in combat, Chippy, shop with skipPixi) do not
+    // trigger this check.
+    if (isNpcDisplayVisible()) {
+      const npcs = getNpcSprites();
+      const npcPixiCount = getVisiblePixiCount(npcs);
+      if (npcPixiCount === 0) {
+        mismatches.push({
+          type: 'DOM_GHOST',
+          detail: 'npc display pixi-backed but 0 NPC pixi sprites — scene.showNpcSprite may have silently bailed',
+        });
+      }
+    }
+
     return { ok: mismatches.length === 0, mismatches };
   }
 
@@ -66,22 +93,37 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
     const creatureResult = checkCreatures();
 
     const summary = {
-      allies: { state: 0, dom: 0, pixi: 0 },
+      allies:  { state: 0, dom: 0, pixi: 0 },
       enemies: { state: 0, dom: 0, pixi: 0 },
+      npcs:    { dom: 0, pixi: 0 },
     };
 
     if (inCombat) {
       summary.allies = {
         state: getAliveCount(state.combat.allies),
-        dom: countDomBars('player'),
+        dom: countDomBars('player') ?? 0,
         pixi: getVisiblePixiCount(getPixiSprites('player')),
       };
       summary.enemies = {
         state: getAliveCount(state.combat.enemies),
-        dom: countDomBars('enemy'),
+        dom: countDomBars('enemy') ?? 0,
         pixi: getVisiblePixiCount(getPixiSprites('enemy')),
       };
+    } else {
+      const activeParty = state?.run?.creatureParty?.active;
+      if (activeParty) {
+        summary.allies = {
+          state: getAliveCount(activeParty),
+          dom: countDomBars('player') ?? 0,
+          pixi: getVisiblePixiCount(getPixiSprites('player')),
+        };
+      }
     }
+
+    summary.npcs = {
+      dom: isNpcDisplayVisible() ? 1 : 0,
+      pixi: getVisiblePixiCount(getNpcSprites()),
+    };
 
     return { ok: creatureResult.ok, mismatches: creatureResult.mismatches, summary, phase };
   }
@@ -104,10 +146,7 @@ export function createInspector({ getState, getPhase, countDomBars, getPixiSprit
     for (const creatures of [result.allies || [], result.enemies || []]) {
       for (const c of creatures) {
         if (c.hp < 0) {
-          mismatches.push({
-            type: 'LOGIC_BUG',
-            detail: `HP below 0: creature has hp=${c.hp}`,
-          });
+          mismatches.push({ type: 'LOGIC_BUG', detail: `HP below 0: creature has hp=${c.hp}` });
         }
       }
     }

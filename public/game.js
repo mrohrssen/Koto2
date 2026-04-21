@@ -91,7 +91,9 @@ import * as actions from './js/ui/actions.js';
 import * as takeover from './js/ui/takeover.js';
 import * as creatureRow from './js/ui/creature-row.js';
 import * as postCombatShop from './js/ui/post-combat-shop.js';
-import * as scene from './js/ui/scene.js';
+import * as combatDom from './js/ui/combat-dom.js';
+import * as explorationDom from './js/ui/exploration-dom.js';
+const scene = { ...combatDom, ...explorationDom };
 import * as audio from './js/audio.js';
 import * as auth from './js/ui/auth.js';
 import * as narrationBox from './js/ui/narration-box.js';
@@ -112,6 +114,7 @@ import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERS
 import { combatEvents } from './js/ui/combat-events.js';
 import { getHpColor } from './js/ui/combat-ui-utils.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
+import { init as initExposureBuffer } from './js/ui/exposure-buffer.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
@@ -125,9 +128,14 @@ import { createIntentLog } from './js/intent-log.js';
 import { createInspector } from './js/inspector.js';
 
 // PixiJS battle stage imports
-import { initBattleStage } from './js/pixi/battle-stage.js';
-import { loadParallax, setScrollState } from './js/pixi/parallax.js';
-import { showFormation as pixiShowFormation, setWalking, hideNpcSprite as pixiHideNpcSprite, hasNpcSprite, getCreatureSprite } from './js/pixi/formation.js';
+import { initApp, getApp } from './js/pixi/app.js';
+import { loadParallax, setScrollState, updateParallax } from './js/pixi/parallax.js';
+import { getCreatureSpriteForScene } from './js/pixi/formation.js';
+import { updateParticles, isFrozen } from './js/pixi/effects.js';
+import { SceneManager, setSceneManager, isSceneManagerInitialized, getSceneManager } from './js/scenes/scene-manager.js';
+import { BattleScene } from './js/scenes/battle-scene.js';
+import { ExplorationScene } from './js/scenes/exploration-scene.js';
+import { HubScene } from './js/scenes/hub-scene.js';
 
 // API imports - these are the server communication functions
 import {
@@ -254,9 +262,12 @@ function mapRunAreaToParallaxId(currentArea) {
 }
 
 function syncParallaxScrollWithPhase() {
+  // Walking wobble is toggled on the active scene's formation ctx
+  // (ExplorationScene sets walkingEnabled=true; BattleScene leaves it false).
+  // The legacy setWalking() calls here targeted the removed _defaultCtx
+  // whose updater was never ticked, so they were no-ops — dropped in Task 18.
   if (isPvpBattleActive()) {
     setScrollState('encounter');
-    setWalking(false);
     lastPhaseForParallax = gameState.phase;
     return;
   }
@@ -268,7 +279,6 @@ function syncParallaxScrollWithPhase() {
   const stoppedPhases = ['combat', 'room_encounter', 'friendlyNpc', 'npc_dialogue', 'dealer', 'skillMaster', 'whackAMole', 'speedReviewRoom'];
   if ((p === 'room' || p === 'exploring') && stoppedPhases.includes(prev)) {
     setScrollState('accelerating');
-    setWalking(true);
     return;
   }
 
@@ -277,7 +287,6 @@ function syncParallaxScrollWithPhase() {
     case 'room':
     case 'wordDiscovery':
       setScrollState('scrolling');
-      setWalking(true);
       break;
     case 'friendlyNpc':
     case 'npc_dialogue':
@@ -287,15 +296,12 @@ function syncParallaxScrollWithPhase() {
     case 'speedReviewRoom':
     case 'room_encounter':
       setScrollState('decelerating');
-      setWalking(false);
       break;
     case 'combat':
       setScrollState('encounter');
-      setWalking(false);
       break;
     default:
       setScrollState('encounter');
-      setWalking(false);
   }
 }
 
@@ -326,6 +332,69 @@ async function syncBattleStageParallax() {
   }
 
   syncParallaxScrollWithPhase();
+}
+
+/**
+ * Guarantees every visible phase has an active scene. Called from
+ * updateScene() on every updateUI(). Idempotent — skips the transition if
+ * the correct scene class is already mounted. Throws are caught and logged
+ * so a transient scene bug can't hang UI updates.
+ *
+ * Phase → scene mapping:
+ *   no_save, hub, area_selection, skillMaster, whackAMole, shrine, quiz,
+ *   wordDiscovery, speedReviewRoom, dealer, friendlyNpc, npc_skill_selection,
+ *   npc_dialogue                → HubScene (or the existing ExplorationScene
+ *                                 if we're mid-room). HubScene is used when
+ *                                 no run is active; ExplorationScene takes
+ *                                 over once rooms begin.
+ *   exploring, room, room_encounter, post_combat_shop → ExplorationScene (mounted by room-transition.js)
+ *   combat                      → BattleScene (mounted by combat-loop.js / startEncounter)
+ */
+async function ensureSceneForPhase(phase) {
+  const mgr = getSceneManager();
+  if (!mgr || mgr.transitioning) return;
+
+  const current = mgr.currentScene;
+  const hubPhases = new Set([
+    'no_save', 'hub', 'area_selection', 'skillMaster',
+  ]);
+
+  // Phases that mount their own scenes elsewhere — don't clobber them here.
+  const skipPhases = new Set([
+    'combat', 'exploring', 'room', 'room_encounter', 'post_combat_shop',
+    'friendlyNpc', 'whackAMole', 'dealer', 'shrine', 'quiz',
+    'wordDiscovery', 'speedReviewRoom', 'npc_skill_selection', 'npc_dialogue',
+    // Run-end screens: HubScene is the right fallback.
+    'run_complete', 'run_ended',
+    // PvP phases: lobby/team-select use HubScene-style rendering; pvp_arena
+    // typically mounts its own scene via combat-loop, but fall back to
+    // HubScene if nothing is mounted (same invariant as other skipPhases).
+    'pvp_lobby', 'pvp_team_select', 'pvp_arena',
+  ]);
+
+  if (hubPhases.has(phase) && !(current instanceof HubScene)) {
+    try {
+      const allies = gameState.run?.creatureParty?.active ?? [];
+      await mgr.transition(HubScene, { allies });
+    } catch (err) {
+      console.error('[ensureSceneForPhase] HubScene transition failed', err);
+    }
+    return;
+  }
+
+  // For skipPhases, the relevant scene transition is owned by the code path
+  // that drives the phase (e.g. combat-loop.startCombatLoop, room-transition).
+  // If a user somehow lands in one of these phases with no scene mounted
+  // (e.g. page refresh into a stale friendlyNpc state), fall back to HubScene
+  // so at minimum the scene-routed calls don't silently bail.
+  if (skipPhases.has(phase) && !current) {
+    try {
+      const allies = gameState.run?.creatureParty?.active ?? [];
+      await mgr.transition(HubScene, { allies });
+    } catch (err) {
+      console.error('[ensureSceneForPhase] fallback HubScene transition failed', err);
+    }
+  }
 }
 
 // Guard flag: when true, updateUI() will NOT call narrationBox.forceHide().
@@ -430,6 +499,11 @@ function updateScene() {
   if (gameState.phase !== 'combat') combatRecoveryDone = false;
   if (gameState.phase !== 'post_combat_shop') postCombatShopRecoveryDone = false;
 
+  // Guarantee an active scene exists for the current phase. Fire-and-forget:
+  // the transition resolves on its own; subsequent updateScene calls are
+  // idempotent so the eventual consistency is fine for DOM-side work.
+  void ensureSceneForPhase(gameState.phase);
+
   if (gameState.phase === 'combat') {
     // Creature combat uses enemies[] array; legacy uses single enemy
     const enemies = gameState.combat?.enemies;
@@ -445,11 +519,8 @@ function updateScene() {
     if (npcSkills?.length) {
       scene.showNpcSkills(npcSkills);
     }
-    // PixiJS: show player formation alongside DOM formation
-    const playerParty = gameState.run?.creatureParty?.active;
-    if (playerParty?.length) {
-      pixiShowFormation('player', playerParty);
-    }
+    // Player formation sprites are spawned by BattleScene.syncCreatures on
+    // transition; no legacy pixiShowFormation call needed here.
   } else if (gameState.phase === 'shrine') {
     scene.showShrineFox();
   } else if (gameState.phase === 'quiz') {
@@ -470,7 +541,8 @@ function updateScene() {
   } else if (gameState.phase === 'npc_skill_selection') {
     // NPC sprite stays visible during skill selection — don't hideEnemies().
     // On page reload the pixi sprite is lost, so recreate it.
-    if (!hasNpcSprite()) {
+    const activeScene = getSceneManager()?.currentScene;
+    if (!activeScene?.npcSprite) {
       const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
       const npc = room?.npcBattle?.npc || room?.npc;
       if (npc) {
@@ -579,8 +651,12 @@ function updateGameContent() {
           if (!result?.state) {
             throw new Error(result?.error || 'No game state from server');
           }
-          // Slide NPC out before transitioning to next phase
-          await pixiHideNpcSprite({ slideOut: true });
+          // Slide NPC out via the active scene (BattleScene after NPC win,
+          // or ExplorationScene on page-reload recovery) before transitioning.
+          const npcHostScene = getSceneManager()?.currentScene;
+          if (npcHostScene && !npcHostScene.disposed && !npcHostScene._exiting && npcHostScene.npcSprite) {
+            await npcHostScene.hideNpcSprite({ slideOut: true });
+          }
           scene.hideNpcTrainer();
           updateGameState(result.state);
           updateUI();
@@ -747,6 +823,17 @@ async function playPrologue() {
   }
 
   actions.clear();
+
+  // Guardrail: prologue assumes an active scene with an npcs layer.
+  // The boot-time sceneManager.transition(HubScene, ...) in initGame() should
+  // have mounted HubScene already; this is a fast-fail check so a regression
+  // in the boot wire-up surfaces as a console error instead of an invisible
+  // Cid. (playPrologue runs without a preceding updateUI() call.)
+  const activeScene = getSceneManager()?.currentScene;
+  if (!activeScene || activeScene.disposed || !activeScene.layers?.npcs) {
+    console.error('[playPrologue] no scene with npcs layer mounted — Cid will be invisible');
+  }
+
   scene.setBackground('/assets/backgrounds/areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp');
 
   let lastChoiceId = null;
@@ -1177,11 +1264,31 @@ async function startEncounter() {
     if (result?.npc && hasCreatures) {
       sceneTransitionActive = true;
       try {
+        // Bug #9 fix: mount BattleScene with the allies seeded but NO enemies.
+        // The enemies are held off-stage while the NPC slides in, speaks, and
+        // slides out; playNpcBattleIntro then reveals them via syncCreatures
+        // so the player sees NPC-alone → NPC-leaves → enemies-appear. Prior
+        // behaviour seeded enemies immediately, so they rendered at full alpha
+        // overlapping the speaking NPC.
+        const combatAllies  = gameState.combat?.allies  ?? [];
+        const combatEnemies = gameState.combat?.enemies ?? [];
+        try {
+          const mgr = getSceneManager();
+          await mgr.transition(BattleScene, {
+            allies:  combatAllies,
+            enemies: [],
+            parallaxSpeed: 0,
+            isBoss: !!gameState.combat?.isBoss,
+          });
+        } catch (sceneErr) {
+          console.error('[StartEncounter] BattleScene transition before NPC intro failed', sceneErr);
+        }
         await playNpcBattleIntro(
           result.npc,
           (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
           () => scene.hideNpcTrainer(),
-          result.npcDialogue
+          result.npcDialogue,
+          { enemies: combatEnemies, allies: combatAllies, isBoss: !!gameState.combat?.isBoss },
         );
       } finally {
         sceneTransitionActive = false;
@@ -1237,6 +1344,10 @@ async function returnToHub() {
 function startCombatLoop() { combatLoopUI.startCombatLoop(); }
 function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 
+// Returns a Promise that resolves when the 300ms victory window's
+// loadGameState+updateUI settles. combat-loop.stopCombatLoop awaits this
+// before transitioning BattleScene → ExplorationScene so player sprites
+// remain visible through the modal window (ghost-formation fix).
 function showVictoryModal(result) {
   audio.stopBGM();
   actions.clear();
@@ -1245,23 +1356,38 @@ function showVictoryModal(result) {
     showCollectionToast(result.newCollectionAdditions);
   }
 
-  setTimeout(async () => {
-    await loadGameState();
-    updateUI();
-  }, 300);
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      try {
+        await loadGameState();
+        updateUI();
+      } finally {
+        resolve();
+      }
+    }, 300);
+  });
 }
 
+// Returns a Promise that resolves when the player dismisses the report via
+// "return to hub" (returnToHubCb fires loadGameState + updateUI). Awaited by
+// stopCombatLoop so BattleScene stays up through the defeat screen.
 async function showAdventureReport(isVictory) {
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
   const response = await apiForfeitRun(isVictory);
   const summary = response?.runSummary || {};
-  const returnToHubCb = async () => {
-    takeover.close('gameover');
-    await loadGameState();
-    updateUI();
-  };
-  renderAdventureReport(content, summary, isVictory, returnToHubCb);
+  return new Promise((resolve) => {
+    const returnToHubCb = async () => {
+      takeover.close('gameover');
+      try {
+        await loadGameState();
+        updateUI();
+      } finally {
+        resolve();
+      }
+    };
+    renderAdventureReport(content, summary, isVictory, returnToHubCb);
+  });
 }
 
 function showGameOverModal(result) {
@@ -1270,7 +1396,7 @@ function showGameOverModal(result) {
   actions.clear();
 
   updateCreatureRow();
-  showAdventureReport(false);
+  return showAdventureReport(false);
 }
 
 // ============ FLASH CARD HANDLERS ============
@@ -1571,17 +1697,33 @@ async function initGame() {
       const container = side === 'player'
         ? document.querySelector('.player-formation')
         : document.querySelector('.enemy-formation');
-      if (!container) return 0;
+      if (!container) return null; // container absent — inspector should skip the comparison
       return container.querySelectorAll('.formation-slot:not(.defeated):not(.befriended) .formation-hp-fill').length;
     },
     getPixiSprites: (side) => {
+      // After Task 18, sprites live on the active scene's formation ctx
+      // (BattleScene during combat). Resolve via the scene-facing lookup
+      // so the intent-log inspector sees the same sprites combat uses.
+      const activeScene = getSceneManager()?.currentScene;
       const sprites = [];
       for (let i = 0; i < 3; i++) {
-        const s = getCreatureSprite(side, i);
+        const s = getCreatureSpriteForScene(activeScene, side, i);
         if (s) sprites.push({ alpha: s.alpha, tint: s.tint });
         else sprites.push(null);
       }
       return sprites.filter(Boolean);
+    },
+    getNpcSprites: () => {
+      const scene = getSceneManager()?.currentScene;
+      if (!scene?.layers?.npcs) return [];
+      return scene.layers.npcs.children
+        .filter(c => c && typeof c.alpha === 'number' && c.visible !== false);
+    },
+    isNpcDisplayVisible: () => {
+      const el = document.getElementById('npc-display');
+      // Only report visible when the display was Pixi-backed (sceneShowNpc path).
+      // DOM-only paths (NPC enemy, Chippy, skipPixi shop dealer) do not set the flag.
+      return !!el && el.classList.contains('visible') && el.getAttribute('data-pixi-backed') === '1';
     },
   });
 
@@ -1594,7 +1736,39 @@ async function initGame() {
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
 
   // Initialize PixiJS battle stage (canvas overlay for combat animations)
-  await initBattleStage();
+  await initApp();
+
+  // Wire the SceneManager after PIXI is up. It owns the central ticker —
+  // updateParallax receives ticker dt (deltaTime in frame-units); updateParticles
+  // receives deltaMS. isFrozen() gates parallax only (matches pre-Task-6 semantics
+  // where hitStop() freezes scroll motion but particles keep ticking). Formation
+  // freeze will return in Task 9 via BattleScene.update.
+  const { app: pixiApp } = getApp();
+  if (!pixiApp) {
+    console.error('[boot] PIXI init returned null app; SceneManager will not be wired');
+  } else if (!isSceneManagerInitialized()) {
+    const sceneManager = new SceneManager(pixiApp);
+    sceneManager.configure({
+      parallax: {
+        update: (dt, deltaMS) => {
+          if (!isFrozen()) updateParallax(dt);
+          updateParticles(deltaMS);
+        },
+      },
+    });
+    sceneManager.init();
+    setSceneManager(sceneManager);
+
+    // Mount HubScene at boot so phases with no run (no_save, hub) render
+    // correctly from the first frame. Later phases re-use this scene or
+    // transition to ExplorationScene / BattleScene as they activate.
+    try {
+      await sceneManager.transition(HubScene, { allies: [] });
+    } catch (err) {
+      console.error('[boot] HubScene initial transition failed', err);
+    }
+  }
+  // If already initialized (e.g., logout→login), intentionally do nothing.
 
   // A fresh auth session should never inherit transient combat UI from the
   // previous user/session (e.g. stale combatActive or room transition flags).
@@ -1903,6 +2077,10 @@ async function initGame() {
 
   // Initialize creature speech bubble system
   speechBubble.init();
+
+  // Exposure tracking is render-driven, so the buffer must be ready before the
+  // first UI pass that calls renderJpSentence().
+  initExposureBuffer();
 
   // Connection status banner — shows on API failures, dismisses on recovery
   setConnectionCallbacks({ onOffline: showOffline, onOnline: showOnline });

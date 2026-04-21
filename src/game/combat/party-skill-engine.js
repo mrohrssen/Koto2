@@ -196,8 +196,11 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
         };
         record.partySkillProcs.push(chainProc);
 
-        // Elemental Cascade debuff
-        if (isSE && active.has('elementalCascade') && rollProc(0.30)) {
+        // Elemental Cascade debuff — skip when the chain hit already killed
+        // the target. Applying atk-1 to a corpse leaves it with a stat pill
+        // next to a KO'd sprite and (via Contagion) spreads a stage change
+        // that was never "seen" by the player hitting a live target.
+        if (isSE && active.has('elementalCascade') && chainTarget.hp > 0 && rollProc(0.30)) {
           initStatStages(chainTarget);
           const delta = applyStatChange(chainTarget, 'atk', -1);
           if (delta !== 0) {
@@ -248,8 +251,10 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
             });
             lastBounceSource = bounceIdx;
 
-            // Elemental Cascade debuff on bounces
-            if (bounceSE && active.has('elementalCascade') && rollProc(0.30)) {
+            // Elemental Cascade debuff on bounces — same guard as the chain
+            // hit above: if the bounce killed the target, don't leave a stat
+            // pill / Contagion spread hanging off the corpse.
+            if (bounceSE && active.has('elementalCascade') && bounceTarget.hp > 0 && rollProc(0.30)) {
               initStatStages(bounceTarget);
               const delta = applyStatChange(bounceTarget, 'atk', -1);
               if (delta !== 0) {

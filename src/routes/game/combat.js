@@ -85,20 +85,6 @@ export default function createCombatRoutes({
           const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords);
           const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords);
 
-          // Expose NPC dialogue content words to SRS
-          const dialogueWords = [];
-          for (const line of [fightStart, defeatLine]) {
-            if (line && line.words) {
-              for (const w of line.words) {
-                const token = (line.tokens || []).find(t => t.base === w);
-                dialogueWords.push({ word: w, meaning: token?.meaning || '' });
-              }
-            }
-          }
-          if (dialogueWords.length > 0) {
-            gameManager.exposeWords(dialogueWords);
-          }
-
           npcDialogue = {
             fightStart: mapLine(fightStart),
             defeatLine: mapLine(defeatLine),
