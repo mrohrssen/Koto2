@@ -1536,6 +1536,7 @@ function startWhackAMoleGame(pool) {
   new WhackAMoleGame(pool, {
     actions,
     apiCompleteWhackAMole,
+    apiProceed,
     updateGameState,
     updateUI,
     playSFX
