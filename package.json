@@ -54,6 +54,7 @@
     "c8": "^11.0.0",
     "concurrently": "^9.1.0",
     "sharp": "^0.34.5",
+    "supertest": "^7.2.2",
     "typescript": "^6.0.2",
     "vite": "^6.2.0"
   }

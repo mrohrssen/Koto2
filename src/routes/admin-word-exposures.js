@@ -5,6 +5,8 @@ import { adminAuth } from './admin.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { parseBatch } from '../../scripts/lib/jpdb-helpers.mjs';
+import createDictEditRoutes from './admin-dictionary-edit.js';
+import { enqueueDictionarySync } from './admin-dictionary-sync.js';
 
 /**
  * Aggregate word exposures across all user word-knowledge files.
@@ -454,6 +456,16 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
       res.status(500).json({ error: err.message });
     }
   });
+
+  // Mount dictionary edit sub-router. `/api/admin/dictionary/-export` is used
+  // rather than `/export` so it does not collide with the `:word` route.
+  router.use('/dictionary', createDictEditRoutes({
+    liveDictPath: resolveLiveDictPath(),
+    jmdictPath,
+    overlayOwners: getOverlayOwners(),
+    onChange: () => invalidate(),
+    enqueueSync: (word) => enqueueDictionarySync(word),
+  }));
 
   return router;
 }
