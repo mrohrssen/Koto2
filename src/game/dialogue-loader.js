@@ -8,6 +8,7 @@ let _npcLines = {};
 let _shopPurchaseFrames = [];
 let _shopGreetingFrames = [];
 let _gameMasterAskFrames = [];
+let _gameMasterFinishFrames = [];
 let _befriendFrames = {};
 let _npcDefeatFrames = [];
 let _skillSelectFrame = null;
@@ -27,6 +28,7 @@ export function loadDialoguePools(dataDir) {
   _shopPurchaseFrames = _frames.filter(f => f.category === 'shopPurchase');
   _shopGreetingFrames = _frames.filter(f => f.category === 'shopGreeting');
   _gameMasterAskFrames = _frames.filter(f => f.category === 'gameMaster_ask');
+  _gameMasterFinishFrames = _frames.filter(f => f.category === 'gameMaster_finish');
   _npcDefeatFrames = _frames.filter(f => f.category === 'npcDefeat');
   _skillSelectFrame = _frames.find(f => f.category === 'skill_select') || null;
   _gameMasterYesFrame = _frames.find(f => f.category === 'gameMaster_yes') || null;
@@ -80,6 +82,7 @@ export function getNpcLines() { return _npcLines; }
 export function getShopPurchaseFrames() { return _shopPurchaseFrames; }
 export function getShopGreetingFrames() { return _shopGreetingFrames; }
 export function getGameMasterAskFrames() { return _gameMasterAskFrames; }
+export function getGameMasterFinishFrames() { return _gameMasterFinishFrames; }
 export function getBefriendFrames() { return _befriendFrames; }
 export function getNpcDefeatFrames() { return _npcDefeatFrames; }
 export function getSkillSelectFrame() { return _skillSelectFrame; }
