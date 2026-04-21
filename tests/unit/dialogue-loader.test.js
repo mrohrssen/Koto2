@@ -10,6 +10,7 @@ import {
   getBefriendFrames,
   getDialogueWordSet,
   getGameMasterAskFrames,
+  getGameMasterFinishFrames,
   getNpcDefeatFrames,
 } from '../../src/game/dialogue-loader.js';
 
@@ -90,6 +91,17 @@ describe('dialogue-loader (frames.json)', () => {
     assert.ok(Array.isArray(frames));
     assert.ok(frames.length >= 4, `expected at least 4 gameMaster_ask frames, got ${frames.length}`);
     assert.ok(frames.every(f => f.category === 'gameMaster_ask'));
+    for (const f of frames) {
+      assert.ok(Array.isArray(f.tokens), `frame ${f.id} should have tokens`);
+      assert.ok(Array.isArray(f.words), `frame ${f.id} should have words`);
+    }
+  });
+
+  it('getGameMasterFinishFrames returns gameMaster_finish category frames', () => {
+    const frames = getGameMasterFinishFrames();
+    assert.ok(Array.isArray(frames));
+    assert.ok(frames.length >= 5, `expected at least 5 gameMaster_finish frames, got ${frames.length}`);
+    assert.ok(frames.every(f => f.category === 'gameMaster_finish'));
     for (const f of frames) {
       assert.ok(Array.isArray(f.tokens), `frame ${f.id} should have tokens`);
       assert.ok(Array.isArray(f.words), `frame ${f.id} should have words`);
