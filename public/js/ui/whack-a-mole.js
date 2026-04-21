@@ -2,6 +2,7 @@ import { animate as anime } from 'animejs';
 import { toRomaji } from './romaji.js';
 import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import * as narrationBox from './narration-box.js';
+import { tPlain } from './i18n.js';
 import { showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup } from '../pixi/text.js';
 import { animateLevelUpForScene } from '../pixi/formation.js';
 import { spritePos } from './combat-vfx.js';
@@ -382,9 +383,9 @@ export class WhackAMoleGame {
     }
 
     const xpLine = perCreatureXp > 0
-      ? `Your team gained ${perCreatureXp} XP!`
-      : `Your team gained 0 XP. Better luck next time!`;
-    await narrationBox.show(xpLine, { html: true });
+      ? tPlain('wamXpGained', perCreatureXp)
+      : tPlain('wamZeroXp');
+    await narrationBox.show(xpLine);
 
     // Advance to the next room via the standard exploration path.
     try {
