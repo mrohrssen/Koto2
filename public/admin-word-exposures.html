@@ -764,6 +764,30 @@ fetchAdminSecret().then(() => load());
       openEditModal(e.target.dataset.word);
     }
   });
+
+  async function pollSyncStatus() {
+    try {
+      const r = await fetch('/api/admin/dictionary-sync-status', { headers: { 'x-admin-secret': secret() } });
+      if (!r.ok) return;
+      const s = await r.json();
+      let banner = document.getElementById('dict-sync-banner');
+      if (s.lastError) {
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'dict-sync-banner';
+          banner.className = 'readonly-banner';
+          document.body.insertBefore(banner, document.body.firstChild);
+        }
+        banner.textContent = `Last dictionary edit not committed to git: ${s.lastError.error} (${s.lastError.word}, ${s.lastError.at}). Click to retry.`;
+        banner.style.cursor = 'pointer';
+        banner.onclick = () => { /* re-PUT the last-errored word handled out of scope for v1 */ alert('Retry: re-save the word via Edit.'); };
+      } else if (banner) {
+        banner.remove();
+      }
+    } catch { /* swallow */ }
+  }
+  setInterval(pollSyncStatus, 15000);
+  pollSyncStatus();
 })();
 </script>
 </body>

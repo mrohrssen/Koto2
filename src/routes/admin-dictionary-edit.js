@@ -130,3 +130,19 @@ export function createDictConfigRoute() {
   });
   return router;
 }
+
+/**
+ * Mount a sync-status endpoint that reports the status of dictionary auto-commit.
+ * Used by the admin UI banner to alert admins of uncommitted changes.
+ *
+ * Routes (mounted under whatever prefix the caller chooses):
+ *   GET /   — returns { lastError: {error, word, at} | null, ... }
+ */
+export function createDictSyncStatusRoute({ getSyncStatus }) {
+  const router = Router();
+  router.use(adminAuth);
+  router.get('/', (req, res) => {
+    res.json(getSyncStatus());
+  });
+  return router;
+}
