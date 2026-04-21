@@ -11,9 +11,22 @@ import { parseBatch } from '../../scripts/lib/jpdb-helpers.mjs';
  *
  * @param {string} dataDir - Directory containing word-knowledge-*.json files
  * @param {Map} dictionary - Word dictionary Map<baseForm, { reading, definitions }>
+ * @param {Object} opts - Optional enrichment options
+ * @param {string} opts.jmdictPath - Path to frozen JMdict JSON file
+ * @param {Map} opts.overlayOwners - Map<word, overlayFilename> for overlay ownership
  * @returns {{ words: Array, totalUniqueWords: number, totalUsers: number }}
  */
-export function aggregateWordExposures(dataDir, dictionary) {
+export function aggregateWordExposures(dataDir, dictionary, opts = {}) {
+  const { jmdictPath = null, overlayOwners = new Map() } = opts;
+
+  // Load frozen JMdict baseline once, if provided
+  let jmdict = null;
+  if (jmdictPath && existsSync(jmdictPath)) {
+    try {
+      jmdict = JSON.parse(readFileSync(jmdictPath, 'utf-8'));
+    } catch { jmdict = null; }
+  }
+
   const wordMap = new Map();
   let totalUsers = 0;
 
@@ -50,10 +63,14 @@ export function aggregateWordExposures(dataDir, dictionary) {
   for (const [word, data] of wordMap) {
     const entry = dictionary.get(word);
     const primaryDef = entry?.definitions?.find(d => d.primary) || entry?.definitions?.[0];
+    const jmEntry = jmdict ? jmdict[word] : null;
+    const jmPrimary = jmEntry?.definitions?.find(d => d.primary) || jmEntry?.definitions?.[0];
     words.push({
       word,
       reading: entry?.reading || null,
       definition: primaryDef?.en || null,
+      jmdictDefinition: jmPrimary?.en || null,
+      overlayOwner: overlayOwners.get(word) || null,
       totalExposures: data.totalExposures,
       userCount: data.users.size,
     });
