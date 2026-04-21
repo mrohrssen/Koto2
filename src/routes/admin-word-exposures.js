@@ -7,6 +7,8 @@ import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { parseBatch } from '../../scripts/lib/jpdb-helpers.mjs';
 import createDictEditRoutes, { createDictConfigRoute, createDictSyncStatusRoute } from './admin-dictionary-edit.js';
 import { enqueueDictionarySync, getSyncStatus } from './admin-dictionary-sync.js';
+import { invalidateWordDict } from '../game/bootstrap/word-knowledge.js';
+import { invalidateKnownWordsDict } from './game/known-words.js';
 
 /**
  * Aggregate word exposures across all user word-knowledge files.
@@ -323,6 +325,8 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
 
   function invalidate() {
     dictionary = null;
+    invalidateWordDict();
+    invalidateKnownWordsDict();
     // overlayOwners derives only from static overlay files; don't invalidate.
   }
 

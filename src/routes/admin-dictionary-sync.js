@@ -1,8 +1,13 @@
 import { simpleGit } from 'simple-git';
 import { copyFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
+import { resolveLiveDictPath } from '../game/live-dict-path.js';
 
 const DEFAULT_WORKING_REPO = '/app/persist/.dictionary-repo';
+
+function sanitizeGitError(msg) {
+  return (msg || '').replace(/x-access-token:[^@]+@/g, 'x-access-token:[REDACTED]@');
+}
 const DEFAULT_BRANCH = 'dictionary';
 const IN_REPO_PATH = 'data/live-dictionary.json';
 const AUTHOR_NAME = 'koto-dictionary-bot';
@@ -75,7 +80,7 @@ export async function runDictionarySync({
     await git.push('origin', branch);
     return { ok: true, sha: commitResult.commit };
   } catch (err) {
-    return { ok: false, error: err.message || String(err) };
+    return { ok: false, error: sanitizeGitError(err.message || String(err)) };
   }
 }
 
@@ -87,7 +92,7 @@ export function enqueueDictionarySync(word, overrides = {}) {
   const repoSlug = process.env.DICTIONARY_REPO_SLUG; // e.g. "anthropic/jrpg"
   const workingRepoDir = overrides.workingRepoDir || DEFAULT_WORKING_REPO;
   const branch = overrides.branch || DEFAULT_BRANCH;
-  const liveDictPath = overrides.liveDictPath || '/app/persist/live-dictionary.json';
+  const liveDictPath = overrides.liveDictPath || resolveLiveDictPath();
 
   if (!token || !repoSlug) {
     status.lastError = { word, error: 'DICTIONARY_BOT_GITHUB_TOKEN or DICTIONARY_REPO_SLUG not set', at: new Date().toISOString() };

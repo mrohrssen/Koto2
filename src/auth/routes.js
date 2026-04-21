@@ -9,7 +9,6 @@ import {
 import { dataPath } from '../data-dir.js';
 import { parseWordList } from '../game/bootstrap/word-list-parser.js';
 import { createCard, gradeCard } from '../game/internal-srs.js';
-import { lookupReading } from '../game/bootstrap/word-knowledge.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } });
 

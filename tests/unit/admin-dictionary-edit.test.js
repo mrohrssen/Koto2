@@ -95,6 +95,28 @@ describe('admin-dictionary-edit', () => {
     assert.equal(disk['火'].definitions[1].en, 'Tuesday');
   });
 
+  it('PUT invokes onChange (which the caller uses to invalidate caches)', async () => {
+    // This test documents the contract: onChange must fire on successful write,
+    // so the caller (admin-word-exposures.js) can call invalidateWordDict().
+    let callCount = 0;
+    const { default: createDictEditRoutes } = await import('../../src/routes/admin-dictionary-edit.js?t=' + Date.now() + 'c');
+    const app4 = express();
+    app4.use(express.json());
+    app4.use('/api/admin/dictionary', createDictEditRoutes({
+      liveDictPath,
+      jmdictPath,
+      overlayOwners: new Map(),
+      onChange: () => { callCount++; },
+      enqueueSync: () => {},
+    }));
+    const res = await request(app4)
+      .put('/api/admin/dictionary/' + encodeURIComponent('火'))
+      .set('x-admin-secret', ADMIN_SECRET)
+      .send({ reading: 'ひ', definitions: [{ en: 'flame', primary: true }] });
+    assert.equal(res.status, 200);
+    assert.equal(callCount, 1, 'onChange must fire exactly once per successful save');
+  });
+
   it('PUT returns 400 when no definition is primary', async () => {
     const res = await request(app)
       .put('/api/admin/dictionary/' + encodeURIComponent('火'))

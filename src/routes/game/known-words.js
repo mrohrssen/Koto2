@@ -20,6 +20,10 @@ function getWordDict() {
   return _wordDict;
 }
 
+export function invalidateKnownWordsDict() {
+  _wordDict = null;
+}
+
 export function createKnownWordsRoutes() {
   const router = Router();
 

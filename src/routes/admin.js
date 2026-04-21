@@ -4,7 +4,7 @@ import { join, basename } from 'path';
 import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../game/live-dict-path.js';
-import { getKnownWordsFromFsrs, lookupReading } from '../game/bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs } from '../game/bootstrap/word-knowledge.js';
 import { loadUsers, saveUsers } from '../auth/users.js';
 
 /**
