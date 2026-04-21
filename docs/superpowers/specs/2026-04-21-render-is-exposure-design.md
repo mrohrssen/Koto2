@@ -1,6 +1,6 @@
 # Render is Exposure
 
-**Date:** 2026-04-20
+**Date:** 2026-04-21
 **Status:** Draft
 
 ## Problem
@@ -26,35 +26,41 @@ The only invariant that holds is **render = exposure**: if a token was passed th
 
 ## Principle
 
-Calling `renderJpSentence` records one exposure event per content token rendered. No other code in the system records exposure.
+In the real game, `renderJpSentence` is the single source of exposure events. Every content token passed to it produces exactly one exposure. No game-logic code (server services, routes, or client UI modules) records exposure outside this path.
 
 - A content token = any non-punctuation token with a `base` field (same qualifying rules `renderJpSentence` already uses to decide how to display it).
 - Every render is a single event. Duplicate renders are bugs and fixed as part of this change.
-- Server-side `GameManager.exposeWords()` stays as a utility but has zero callers in game logic. The `/api/game/known-words/expose` endpoint stays as the client's sync channel.
-- Simulator consumes the same token-extraction logic and writes exposures directly, since it has no browser.
+- Server-side `GameManager.exposeWords()` stays as an unused utility. The `/api/game/known-words/expose` endpoint stays as the shared sync channel used by both the browser client and the simulator.
+- The simulator is a headless stand-in for the browser: it has no DOM, so it extracts from API responses instead of from `renderJpSentence` calls. It still posts to the same `/expose` endpoint. This is the only system component that records exposure without going through `renderJpSentence`, and it does so precisely because it is modeling what a browser client would render.
 
 ## Architecture
 
 ### Modules
 
 ```
+public/js/shared/exposure-extractor.js          (new, isomorphic — no DOM)
+  extract(tokens, wordDict?, overrides?) → Array<{ word, meaning }>
+    pure function; same content-token rules as the renderer
+    meaning resolves from: token.meaning → overrides[base] → dict primary → dict first
+  entityToToken(entity) → token
+    moved here from bootstrap-client.js; re-exported there for backward compat
+    used by both client render sites and simulator entity walks
+
 public/js/ui/bootstrap-client.js
   renderJpSentence(tokens, knownWords, wordDict, overrides, useKanji)
     → HTML string; internally calls exposure-buffer.record(tokens, wordDict, overrides)
+  entityToToken — re-exported from ../shared/exposure-extractor.js
 
-public/js/ui/exposure-buffer.js                 (new)
+public/js/ui/exposure-buffer.js                 (new, browser-only)
   record(tokens, wordDict, overrides)
     → walks tokens via extract(); appends to pending buffer; schedules flush
   flushNow()
     → fire-and-forget POST /api/game/known-words/expose; clears buffer
   init({ debounceMs = 500 })
     → wires debounce timer, visibilitychange listener, pagehide beacon flush
-
-src/game/exposure-extractor.js                  (new, isomorphic — no DOM)
-  extract(tokens, wordDict?, overrides?) → Array<{ word, meaning }>
-    pure function; same content-token rules as the renderer
-    meaning resolves from: token.meaning → overrides[base] → dict primary → dict first
 ```
+
+The shared module lives under `public/js/shared/` because Vite's root is `public/`. Node (simulator, tests) imports from there via relative path — already the pattern used by `tests/unit/ui/*` test files. Keep the module free of `window`, `document`, `fetch`, `setTimeout` so Node imports stay clean.
 
 `extract()` is the single source of truth for "which tokens count as content exposures and how do we name their meaning." Both the browser buffer and the simulator import it.
 
@@ -86,16 +92,21 @@ page hide / unload:
 
 ### Data flow — simulator
 
-Simulator runs in-process with access to server internals. After every `simCall` response, it walks tokens-carrying fields through `extract()` and calls `exposeWords(userId, words)` directly. No HTTP hop.
+The simulator is a separate Node process that drives the game server over HTTP (`GAME_SERVER_URL`, see `simulator/server.js`). It has no in-process access to the server's word-knowledge state, so it uses the same `/api/game/known-words/expose` endpoint the browser does — but locally extracts the words from API responses via `extract()` / `entityToToken()`, since there is no render step.
 
 ```
 simCall API response
   ↓
-for each tokens-carrying field (enemy creatures, barks, befriend prompts,
-                                 NPC dialogue, shop offers, greetings, ...):
-  words = extract(field.tokens)
-  exposeWords(userId, words)  // direct Node call, not HTTP
+for each pre-tokenized field (barks, dialogue lines, befriend prompts, greetings, ...):
+  words += extract(field.tokens)
+
+for each entity field (creatures, modifiers, moves, items, NPC roles, skill pills, speakers, ...):
+  words += extract([entityToToken(entity)])
+
+simCall('POST', '/api/game/known-words/expose', { words })
 ```
+
+Same endpoint and payload shape as the browser — only the source of the words differs (extracted from API responses instead of from `renderJpSentence` calls).
 
 ## Changes
 
@@ -114,16 +125,18 @@ Import `record` from `exposure-buffer.js`. Call it at the top of `renderJpSenten
   - `document.addEventListener('visibilitychange', ...)` — flush on hidden
   - `window.addEventListener('pagehide', ...)` — flush via `navigator.sendBeacon` (synchronous-survivable)
 
-### 3. `src/game/exposure-extractor.js` (new)
+### 3. `public/js/shared/exposure-extractor.js` (new, isomorphic)
 
-Pure function `extract(tokens, wordDict, overrides)` containing the same punctuation-skip and content-detection rules the renderer uses:
+Two exports. No DOM/browser dependencies — safe for Node import by simulator and tests.
 
-- Skip if no `base`/`baseForm`
+**`extract(tokens, wordDict, overrides) → Array<{word, meaning}>`** — pure function containing the same punctuation-skip and content-detection rules the renderer uses:
+
+- Skip tokens with no `base`/`baseForm`
 - Skip if `pos` is in the punctuation POS set or surface matches `/^[\p{P}\p{S}\s]+$/u`
 - Compute meaning: `token.meaning → overrides[base] → dictEntry.definitions.find(primary).en → dictEntry.definitions[0].en → ''`
-- Return `[{word: base, meaning}]`
+- Emit `{word: base, meaning}` per qualifying token
 
-Keep this module free of DOM/browser dependencies so the simulator (Node) can import it.
+**`entityToToken(entity) → token`** — moved here from `bootstrap-client.js` so it can be shared with the simulator. `bootstrap-client.js` re-exports it so existing call sites (`import { entityToToken } from './bootstrap-client.js'`) keep working.
 
 ### 4. Remove server-side `exposeWords()` call sites
 
@@ -143,25 +156,19 @@ Delete the exposure-collection blocks that build these arrays too (not only the 
 
 ### 5. Simulator rewrite
 
-`simulator/engine/runner.js`, `combat.js`, and all room handlers:
+The simulator is a separate Node process that drives the game server over HTTP. It has no DOM and never calls `renderJpSentence`. It mirrors the client's exposure behavior by extracting the same words the client would render from every API response and POSTing them back to `/api/game/known-words/expose` — the same endpoint the browser uses.
 
-- Replace the current "trust the server" assumption with explicit token walking.
-- After each `simCall`, inspect the response for fields carrying `tokens` arrays and call `extract(tokens)` on each, accumulating into a per-run exposure list.
-- Call `exposeWords(userId, words)` directly (in-process) from the simulator driver.
+**Rule**: for every `renderJpSentence` call site in the client, the simulator must have a matching extraction step that consumes the same input. Two input shapes to handle, matching what the client call sites produce:
 
-Token-carrying fields per endpoint, based on the current server responses:
+- **Pre-tokenized fields** — response fields that already carry `tokens: [...]` arrays (barks, dialogue lines, befriend prompts, shop greetings, etc.). Pass straight to `extract(tokens)`.
+- **Entity fields** — response objects with `word`/`baseWord`/`name` fields that the client converts via `entityToToken(entity)` inline (creature names and modifiers, move names, item names, NPC roles, NPC skill pills, target selections, speakers). Simulator calls `entityToToken(entity)` → wraps in a single-element array → `extract([token])`.
 
-| Endpoint | Fields with `tokens` |
-|---|---|
-| `POST /api/game/start-creature-encounter` | enemy creature names, `npcDialogue.fightStart.tokens`, `npcDialogue.defeatLine.tokens` |
-| `POST /api/game/creature-combat-cycle` | per-attack `attackerBaseWord`/`attackerSkillName`; `cycle.barks[].tokens`; `cycle.befriendQuiz.{wait,name,success,wrong}Prompt.tokens` |
-| `POST /api/game/friendly-npc-offers` | `room.friendlyNpc.offered[].nameToken`/`tokens`; `room.friendlyNpc.greeting.tokens` |
-| `POST /api/game/friendly-npc-choose` | `chosen.tokens` |
-| `POST /api/game/start-run` | historically `cidScript` (currently null — guard for presence) |
+Per-response, accumulate everything into one `words` array, then fire a single `simCall('POST', '/api/game/known-words/expose', { words })`. The simulator's existing "trust the server" shadow tracking is deleted. Every room handler that makes an API call grows a post-response extraction pass. The implementation plan enumerates the specific response fields per endpoint; the acceptance criterion is **every field the client would render through `renderJpSentence` (or `entityToToken` then `renderJpSentence`) has a matching simulator extraction**.
 
-The simulator must also audit any new tokens-carrying response shapes as they get added.
+Simulator imports:
+- `entityToToken`, `extract` from `public/js/shared/exposure-extractor.js` (Node can import from there — see existing `tests/unit/ui/*` pattern)
 
-Move the simulator driver module to import `extract` from `src/game/exposure-extractor.js` and `exposeWords` from `src/game/bootstrap/word-knowledge.js`. Delete any remaining shadow exposure tracking.
+When simulator results drift from expected learning rates, the first debugging question is: "which client render site has no simulator mirror?"
 
 ### 6. Duplicate-render audit
 
