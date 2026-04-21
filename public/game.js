@@ -114,6 +114,7 @@ import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERS
 import { combatEvents } from './js/ui/combat-events.js';
 import { getHpColor } from './js/ui/combat-ui-utils.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
+import { init as initExposureBuffer } from './js/ui/exposure-buffer.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
@@ -2076,6 +2077,10 @@ async function initGame() {
 
   // Initialize creature speech bubble system
   speechBubble.init();
+
+  // Exposure tracking is render-driven, so the buffer must be ready before the
+  // first UI pass that calls renderJpSentence().
+  initExposureBuffer();
 
   // Connection status banner — shows on API failures, dismisses on recovery
   setConnectionCallbacks({ onOffline: showOffline, onOnline: showOnline });

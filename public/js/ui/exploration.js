@@ -216,7 +216,8 @@ let skillMasterState = {
   offered: null,
   chosenId: null,
   catalogById: { ...PARTY_SKILL_CATALOG_FALLBACK },
-  promptTokens: null
+  promptTokens: null,
+  promptShown: false
 };
 
 function getActiveRoomFromRun(run) {
@@ -924,10 +925,31 @@ export async function renderSpeedReviewRoom() {
 
 // ============ WHACK-A-MOLE MINI GAME ============
 
+let whackAMoleState = {
+  roomId: null,
+  fetched: false,
+  dialogue: null,
+  yesLabel: 'Yes',
+  noLabel: 'No',
+  introShown: false
+};
+
 /** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
 export async function renderWhackAMole() {
   const gameState = getGameState();
   const room = gameState.run.rooms[gameState.run.currentRoom];
+  const roomId = room?.id || room?.type || 'whackAMole';
+
+  if (whackAMoleState.roomId !== roomId) {
+    whackAMoleState = {
+      roomId,
+      fetched: false,
+      dialogue: null,
+      yesLabel: 'Yes',
+      noLabel: 'No',
+      introShown: false
+    };
+  }
 
   // Already completed — just show proceed
   if (room?.interacted) {
@@ -940,34 +962,33 @@ export async function renderWhackAMole() {
     return;
   }
 
-  // Fetch GM dialogue tokens (before pool — no wasted request on decline)
-  let dialogue = null;
-  let gmYesTokens = null;
-  let gmNoTokens = null;
-  try {
-    const resp = await apiGetWhackAMoleDialogue();
-    dialogue = resp?.dialogue;
-    gmYesTokens = resp?.yesTokens;
-    gmNoTokens = resp?.noTokens;
-  } catch (err) {
-    // Fallback: proceed without dialogue
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+  if (!whackAMoleState.fetched) {
+    try {
+      const resp = await apiGetWhackAMoleDialogue();
+      whackAMoleState.fetched = true;
+      whackAMoleState.dialogue = resp?.dialogue || null;
+      whackAMoleState.yesLabel = resp?.yesTokens
+        ? renderJpSentence(resp.yesTokens, getKnownWords(), wordDict, {}, false)
+        : 'Yes';
+      whackAMoleState.noLabel = resp?.noTokens
+        ? renderJpSentence(resp.noTokens, getKnownWords(), wordDict, {}, false)
+        : 'No';
+    } catch (err) {
+      // Leave fetched=false so a later rerender can retry.
+    }
   }
 
-  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-
   // Show GM greeting in narration box
-  if (dialogue?.tokens?.length && sceneModule?.showNarration) {
-    const html = renderJpSentence(dialogue.tokens, getKnownWords(), wordDict, {}, false);
+  if (!whackAMoleState.introShown && whackAMoleState.dialogue?.tokens?.length && sceneModule?.showNarration) {
+    whackAMoleState.introShown = true;
+    const html = renderJpSentence(whackAMoleState.dialogue.tokens, getKnownWords(), wordDict, {}, false);
     await sceneModule.showNarration(html, { html: true, speaker: 'Game Master' });
   }
 
-  // Show yes/no buttons from tokenized frames
-  const yesLabel = gmYesTokens ? renderJpSentence(gmYesTokens, getKnownWords(), wordDict, {}, false) : 'Yes';
-  const noLabel = gmNoTokens ? renderJpSentence(gmNoTokens, getKnownWords(), wordDict, {}, false) : 'No';
-
   renderButtons([
     {
-      label: yesLabel,
+      label: whackAMoleState.yesLabel,
       onClick: async () => {
         // Fetch pool and start game directly (no intermediate start screen)
         let pool;
@@ -988,7 +1009,7 @@ export async function renderWhackAMole() {
       }
     },
     {
-      label: noLabel,
+      label: whackAMoleState.noLabel,
       onClick: async () => {
         const scene = getSceneWithNpcs();
         if (scene && !scene.disposed && scene.npcSprite) {
@@ -1073,6 +1094,7 @@ export async function renderSkillMaster() {
     skillMasterState.fetched = false;
     skillMasterState.offered = null;
     skillMasterState.chosenId = null;
+    skillMasterState.promptShown = false;
   }
 
   // If already completed, don't render choices
@@ -1176,7 +1198,10 @@ export async function renderSkillMaster() {
     // not awaited — the choices render in parallel with the slide-in so UI
     // doesn't feel gated on animation.
     showCidForSkillMaster();
-    showSkillSelectPrompt(skillMasterState.promptTokens);
+    if (!skillMasterState.promptShown) {
+      skillMasterState.promptShown = true;
+      showSkillSelectPrompt(skillMasterState.promptTokens);
+    }
 
     renderChoices({
       cards: offers.slice(0, 3).map(s => ({
@@ -1279,7 +1304,9 @@ let friendlyNpcState = {
   fetched: false,
   offered: null,
   greeting: null,
-  choosing: false
+  choosing: false,
+  greetingShown: false,
+  renderedCards: null
 };
 
 /**
@@ -1298,7 +1325,9 @@ export async function renderFriendlyNpc() {
       fetched: false,
       offered: null,
       greeting: null,
-      choosing: false
+      choosing: false,
+      greetingShown: false,
+      renderedCards: null
     };
   }
 
@@ -1320,6 +1349,8 @@ export async function renderFriendlyNpc() {
     </div>
   `);
 
+  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+
   // Fetch offers once per room
   if (!friendlyNpcState.fetched) {
     friendlyNpcState.fetched = true;
@@ -1330,6 +1361,9 @@ export async function renderFriendlyNpc() {
     } catch (err) {
       friendlyNpcState.fetched = false;
       friendlyNpcState.offered = null;
+      friendlyNpcState.greeting = null;
+      friendlyNpcState.renderedCards = null;
+      friendlyNpcState.greetingShown = false;
       actions.setContent('');
       renderButtons([
         { label: 'Retry', onClick: () => { friendlyNpcState.fetched = false; friendlyNpcState.offered = null; renderFriendlyNpc(); }, primary: true },
@@ -1344,6 +1378,9 @@ export async function renderFriendlyNpc() {
     if (!Array.isArray(offered) || offered.length === 0) {
       friendlyNpcState.fetched = false;
       friendlyNpcState.offered = null;
+      friendlyNpcState.greeting = null;
+      friendlyNpcState.renderedCards = null;
+      friendlyNpcState.greetingShown = false;
       actions.setContent('');
       renderButtons([
         { label: 'Retry', onClick: () => { friendlyNpcState.fetched = false; friendlyNpcState.offered = null; renderFriendlyNpc(); }, primary: true },
@@ -1353,6 +1390,13 @@ export async function renderFriendlyNpc() {
 
     friendlyNpcState.offered = offered;
     friendlyNpcState.greeting = resp?.greeting || null;
+    friendlyNpcState.renderedCards = offered.map(item => ({
+      sprite: itemSpriteHtml(item.id, item.word),
+      title: item.nameToken
+        ? renderJpSentence([item.nameToken], getKnownWords(), wordDict, {}, false)
+        : `${item.word} (${item.reading})`,
+      pills: buildItemEffectPills(item),
+    }));
     if (resp?.state) {
       updateGameState(resp.state);
     }
@@ -1362,11 +1406,9 @@ export async function renderFriendlyNpc() {
   const npc = room?.npc;
   const tutorialStep = getGameState()?.meta?.tutorialStep;
 
-  // Shared word dictionary for token rendering
-  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-
   // NPC greeting first (blocking during tutorial so player sees it before items)
-  if (npc && sceneModule?.showNarration) {
+  if (npc && sceneModule?.showNarration && !friendlyNpcState.greetingShown) {
+    friendlyNpcState.greetingShown = true;
     const greetingTokens = friendlyNpcState.greeting?.tokens;
     let greetingContent;
     if (greetingTokens?.length) {
@@ -1386,7 +1428,7 @@ export async function renderFriendlyNpc() {
 
   // Render item cards so they're visible
   renderChoices({
-    cards: offers.map(item => ({
+    cards: friendlyNpcState.renderedCards || offers.map(item => ({
       sprite: itemSpriteHtml(item.id, item.word),
       title: item.nameToken
         ? renderJpSentence([item.nameToken], getKnownWords(), wordDict, {}, false)
@@ -1508,7 +1550,8 @@ let npcBattleSkillState = {
   fetched: false,
   offered: null,
   choosing: false,
-  promptTokens: null
+  promptTokens: null,
+  promptShown: false
 };
 
 /**
@@ -1528,7 +1571,8 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       fetched: false,
       offered: null,
       choosing: false,
-      promptTokens: null
+      promptTokens: null,
+      promptShown: false
     };
   }
 
@@ -1633,7 +1677,10 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   // player can see who's asking the question. Intentionally not awaited.
   showDefeatedNpcForSkillSelect(defeatedNpc);
 
-  showSkillSelectPrompt(npcBattleSkillState.promptTokens, speakerName);
+  if (!npcBattleSkillState.promptShown) {
+    npcBattleSkillState.promptShown = true;
+    showSkillSelectPrompt(npcBattleSkillState.promptTokens, speakerName);
+  }
 
   renderChoices({
     cards: offers.slice(0, 3).map(s => ({

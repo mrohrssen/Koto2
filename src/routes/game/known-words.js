@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { join } from 'path';
-import { exposeWords, getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { gradeCard, getDueCards, getDueCount, createCard, getDeckCards } from '../../game/internal-srs.js';
 import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
@@ -26,7 +26,7 @@ export function createKnownWordsRoutes() {
   // POST /api/game/known-words/expose
   router.post('/expose', (req, res) => {
     try {
-      exposeWords(req.user.id, req.body?.words || []);
+      req.gameManager.exposeWords(req.body?.words || []);
       res.json({ ok: true });
     } catch (e) {
       console.warn('[known-words/expose] Error:', e.message);

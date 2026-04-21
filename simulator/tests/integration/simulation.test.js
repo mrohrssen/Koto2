@@ -48,14 +48,18 @@ describe('simulation integration (requires game server)', { skip: !process.env.R
     const events = store.getEvents(simId, {});
     assert.ok(events.length > 0, 'Should have logged events');
 
-    if (sim.status === 'complete') {
-      const crestCycleEvents = events.filter(e => e.event_type === 'crest_cycle_summary');
-      assert.ok(crestCycleEvents.length >= 1, 'Should log crest cycle summaries when simulation completes');
-    }
-
     const snapshots = store.getDailySnapshots(simId);
     assert.equal(snapshots.length, 1);
     assert.equal(snapshots[0].day, 1);
+
+    if (sim.status === 'complete') {
+      const crestCycleEvents = events.filter(e => e.event_type === 'crest_cycle_summary');
+      assert.ok(crestCycleEvents.length >= 1, 'Should log crest cycle summaries when simulation completes');
+      assert.ok(
+        snapshots[0].words_exposed_today > 0,
+        `Expected completed simulation to record exposures, got ${snapshots[0].words_exposed_today}`
+      );
+    }
 
     console.log(`Simulation complete: ${events.length} events, ${snapshots[0].total_known_words} words known`);
   });

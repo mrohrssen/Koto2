@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderJpSentence, entityToToken } from '../../public/js/ui/bootstrap-client.js';
+import { init as initExposureBuffer, flushNow as flushExposureBufferNow } from '../../public/js/ui/exposure-buffer.js';
 
 const wordDict = new Map([
   ['こんにちは', { reading: 'こんにちは', definitions: [{ en: 'hello', primary: true }] }],
@@ -8,6 +9,20 @@ const wordDict = new Map([
   ['遊ぶ', { reading: 'あそぶ', definitions: [{ en: 'to play', primary: true }] }],
   ['に', { reading: 'に', definitions: [{ en: 'to/at', primary: true }] }],
 ]);
+
+function createEventTarget() {
+  const listeners = new Map();
+  return {
+    visibilityState: 'visible',
+    addEventListener(type, listener) {
+      if (!listeners.has(type)) listeners.set(type, new Set());
+      listeners.get(type).add(listener);
+    },
+    removeEventListener(type, listener) {
+      listeners.get(type)?.delete(listener);
+    }
+  };
+}
 
 describe('renderJpSentence', () => {
   it('renders known words with romaji ruby annotation (useKanji=false)', () => {
@@ -160,5 +175,56 @@ describe('renderJpSentence — data attributes for word lookup', () => {
     const tokens = [{ surface: 'こんにちは', base: 'こんにちは', reading: 'こんにちは', pos: 'Interjection' }];
     const html = renderJpSentence(tokens, new Set(['こんにちは']), wordDict, {}, false);
     assert.ok(html.includes('data-meaning="hello"'), 'should fall back to wordDict for known word meaning');
+  });
+});
+
+describe('renderJpSentence — exposure buffer integration', () => {
+  it('records content-word exposures when rendering', async () => {
+    const posts = [];
+    const doc = createEventTarget();
+    const win = createEventTarget();
+    const cleanup = initExposureBuffer({
+      debounceMs: 1000,
+      postFn: async (words) => posts.push(words),
+      document: doc,
+      window: win,
+      onlineTarget: win
+    });
+
+    const tokens = [
+      { surface: 'こんにちは', baseForm: 'こんにちは', pos: '感動詞', reading: 'こんにちは' },
+      { surface: '！', baseForm: '！', pos: '記号', reading: '' },
+      { surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', reading: 'あそぶ' }
+    ];
+
+    renderJpSentence(tokens, new Set(), wordDict, {}, false);
+    await flushExposureBufferNow();
+
+    assert.deepEqual(posts, [[
+      { word: 'こんにちは', meaning: 'hello' },
+      { word: '遊ぶ', meaning: 'to play' }
+    ]]);
+
+    cleanup();
+  });
+
+  it('does not record punctuation-only renders', async () => {
+    const posts = [];
+    const doc = createEventTarget();
+    const win = createEventTarget();
+    const cleanup = initExposureBuffer({
+      debounceMs: 1000,
+      postFn: async (words) => posts.push(words),
+      document: doc,
+      window: win,
+      onlineTarget: win
+    });
+
+    renderJpSentence([{ surface: '！', baseForm: '！', pos: '記号', reading: '' }], new Set(), wordDict, {}, false);
+    await flushExposureBufferNow();
+
+    assert.deepEqual(posts, []);
+
+    cleanup();
   });
 });
