@@ -5,7 +5,7 @@ import { adminAuth } from './admin.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { parseBatch } from '../../scripts/lib/jpdb-helpers.mjs';
-import createDictEditRoutes from './admin-dictionary-edit.js';
+import createDictEditRoutes, { createDictConfigRoute } from './admin-dictionary-edit.js';
 import { enqueueDictionarySync } from './admin-dictionary-sync.js';
 
 /**
@@ -466,6 +466,9 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
     onChange: () => invalidate(),
     enqueueSync: (word) => enqueueDictionarySync(word),
   }));
+
+  // Mount dictionary config endpoint (reports readOnly state for admin UI).
+  router.use('/dictionary-config', createDictConfigRoute());
 
   return router;
 }

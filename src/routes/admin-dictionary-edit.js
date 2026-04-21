@@ -111,3 +111,22 @@ export default function createDictEditRoutes({ liveDictPath, jmdictPath, overlay
 
   return router;
 }
+
+/**
+ * Mount a read-only config endpoint that reports whether dictionary editing
+ * is disabled in the current environment. Used by the admin UI to decide
+ * whether to enable the Save button in the edit modal.
+ *
+ * Routes (mounted under whatever prefix the caller chooses):
+ *   GET /   — returns { readOnly: bool }
+ */
+export function createDictConfigRoute() {
+  const router = Router();
+  router.use(adminAuth);
+  router.get('/', (req, res) => {
+    res.json({
+      readOnly: process.env.DICTIONARY_READONLY === 'true' || process.env.DICTIONARY_READONLY === '1',
+    });
+  });
+  return router;
+}
