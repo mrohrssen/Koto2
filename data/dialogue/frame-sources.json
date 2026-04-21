@@ -1495,6 +1495,36 @@
     "slots": []
   },
   {
+    "id": "gm_finish_1",
+    "category": "gameMaster_finish",
+    "raw": "上手！",
+    "slots": []
+  },
+  {
+    "id": "gm_finish_2",
+    "category": "gameMaster_finish",
+    "raw": "楽しい！",
+    "slots": []
+  },
+  {
+    "id": "gm_finish_3",
+    "category": "gameMaster_finish",
+    "raw": "楽しい遊び！",
+    "slots": []
+  },
+  {
+    "id": "gm_finish_4",
+    "category": "gameMaster_finish",
+    "raw": "言葉の遊び！",
+    "slots": []
+  },
+  {
+    "id": "gm_finish_5",
+    "category": "gameMaster_finish",
+    "raw": "楽しい言葉の遊び！",
+    "slots": []
+  },
+  {
     "id": "npcDefeat_0",
     "category": "npcDefeat",
     "raw": "すごい！",
