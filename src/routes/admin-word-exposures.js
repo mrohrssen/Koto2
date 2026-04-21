@@ -80,6 +80,47 @@ export function aggregateWordExposures(dataDir, dictionary, opts = {}) {
   return { words, totalUniqueWords: words.length, totalUsers };
 }
 
+/**
+ * Scan overlay JSON files and return Map<word, filename> of which overlay
+ * defines each word. Used to warn the admin that edits will be shadowed.
+ */
+export function buildOverlayOwners(overlayDir) {
+  const owners = new Map();
+
+  const gameOverlays = [
+    'creatures.json',
+    'moves.json',
+    'items.json',
+    'npcs.json',
+    'npc-skills.json',
+    'areas.json',
+  ];
+  for (const file of gameOverlays) {
+    const p = join(overlayDir, file);
+    if (!existsSync(p)) continue;
+    try {
+      const raw = JSON.parse(readFileSync(p, 'utf-8'));
+      const entries = Array.isArray(raw) ? raw : Object.values(raw);
+      for (const entry of entries) {
+        if (entry?.baseWord) owners.set(entry.baseWord, file);
+      }
+    } catch { /* skip malformed */ }
+  }
+
+  for (const file of ['glue-words.json', 'grammar-words.json']) {
+    const p = join(overlayDir, file);
+    if (!existsSync(p)) continue;
+    try {
+      const entries = JSON.parse(readFileSync(p, 'utf-8'));
+      for (const entry of entries) {
+        if (entry?.word) owners.set(entry.word, file);
+      }
+    } catch { /* skip malformed */ }
+  }
+
+  return owners;
+}
+
 // ---------------------------------------------------------------------------
 // JPDB comparison helpers
 // ---------------------------------------------------------------------------
@@ -255,14 +296,36 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
   const router = Router();
   router.use(adminAuth);
 
+  const overlayDir = join(process.cwd(), 'data');
+  const jmdictPath = join(overlayDir, 'latest-jm-dict.json');
+
   let dictionary = null;
+  let overlayOwners = null;
+
   function getDictionary() {
-    if (!dictionary) dictionary = loadWordDictionary({
-      overlayDir: join(process.cwd(), 'data'),
-      liveDictPath: resolveLiveDictPath(),
-    });
+    if (!dictionary) {
+      dictionary = loadWordDictionary({
+        overlayDir,
+        liveDictPath: resolveLiveDictPath(),
+      });
+    }
     return dictionary;
   }
+
+  function getOverlayOwners() {
+    if (!overlayOwners) {
+      overlayOwners = buildOverlayOwners(overlayDir);
+    }
+    return overlayOwners;
+  }
+
+  function invalidate() {
+    dictionary = null;
+    // overlayOwners derives only from static overlay files; don't invalidate.
+  }
+
+  // Expose invalidation so future edit endpoint can reset after writes.
+  router.invalidateDictionary = invalidate;
 
   const jpdbCachePath = join(dataDir, 'jpdb-tokenization-cache.json');
   const frameCachePath = join(dataDir, 'jpdb-frame-compare-cache.json');
@@ -270,7 +333,10 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
   // GET /word-exposures
   router.get('/word-exposures', (req, res) => {
     try {
-      res.json(aggregateWordExposures(dataDir, getDictionary()));
+      res.json(aggregateWordExposures(dataDir, getDictionary(), {
+        jmdictPath,
+        overlayOwners: getOverlayOwners(),
+      }));
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
