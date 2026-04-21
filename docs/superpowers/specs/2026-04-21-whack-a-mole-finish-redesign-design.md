@@ -62,13 +62,13 @@ Game timer hits 0 (or manual end)
 | Step | Existing Function | File | Line |
 |------|------------------|------|------|
 | Overlay teardown | `actions.setContent('')` | (existing) | — |
-| Narration box | `sceneModule.showNarration(html, opts)` | `public/game.js` | 1969 |
+| Narration box | `sceneModule.showNarration(html, opts)` | `public/game.js` | 1970 |
 | Japanese text | `renderJpSentence(tokens, knownWords, wordDict)` | `public/js/ui/bootstrap-client.js` | — |
 | XP popup | `pixiXpPopup` (re-exported `showXpPopup`) | `public/js/pixi/banners.js` | — |
 | Level-up popup | `pixiLevelUpPopup` (re-exported `showLevelUpPopup`) | `public/js/pixi/banners.js` | — |
 | Level-up burst | `animateLevelUpForScene(scene, side, index)` | `public/js/pixi/formation.js` | 560 |
 | Sprite position | `vfx.spritePos('player', index)` | (existing combat import) | — |
-| Room advance | `apiProceed()` + `playRoomTransition()` + `updateUI()` | `public/js/ui/exploration.js` | 635-640 |
+| Room advance | `apiProceed()` + `playRoomTransition()` + `updateUI()` | `public/js/ui/exploration.js` | 633-640 |
 | i+1 frame select | `assembleFrame()` + `selectBestFrame()` | `src/game/token-format.js` | — |
 
 Zero new UI functions. Zero new CSS. Zero new animation primitives.
@@ -114,8 +114,8 @@ const finishDialogue = selectBestFrame(candidates, knownSet) || { tokens: [], wo
 
 Attach `finishDialogue` to the response payload alongside the existing `{ score, creditsAwarded, xpGrants, levelUps }`. Same imports / helpers the `/whack-a-mole-dialogue` route at line 686 already uses — no new helpers.
 
-### SRS exposure
-The words in `finishDialogue.words` should go through `req.gameManager.exposeWords(...)` the same way the friendly-npc-offers route at line 754 handles greeting exposure. Dialogue the player reads must register as exposure for FSRS scheduling.
+### SRS exposure (no code needed)
+Exposure is now derived from rendering (commit `880f105b`, "render-is-exposure"). `public/js/ui/bootstrap-client.js:7,81` — `renderJpSentence` calls `recordExposure(tokens, wordDict, overrides)` via `public/js/ui/exposure-buffer.js` on every render. As soon as the client calls `renderJpSentence(finishDialogue.tokens, ...)`, the words are buffered and flushed to the server. No server-side `exposeWords` call is required in `/whack-a-mole-complete`.
 
 ## Frontend Changes
 
@@ -141,9 +141,9 @@ Replace the body entirely. The new body:
 
 New dependencies the WhackAMoleGame class needs injected (added to its `deps` contract in the constructor + `startWhackAMoleGame` call site at `exploration.js:1493`): `sceneModule`, `apiProceed`, and either a passthrough of `renderJpSentence` / `getKnownWords` / `getSceneManager` / `vfx` / `pixiXpPopup` / `pixiLevelUpPopup` / `animateLevelUpForScene` / `playRoomTransition` or — simpler — direct imports at the top of `whack-a-mole.js`. Direct imports are preferred since every one of these is a pure module-level function; injection adds nothing.
 
-### `public/js/ui/exploration.js` — already-interacted branch (lines 933-941)
+### `public/js/ui/exploration.js` — already-interacted branch (lines 955-963)
 
-Currently renders a `.wam-results` card with no exit. Replace with the same auto-proceed pattern as `renderQuiz()` at line 635:
+Currently renders a `.wam-results` card with no exit. Replace with the same auto-proceed pattern as `renderQuiz()` at line 633. Note that `renderWhackAMole` now has a module-level `whackAMoleState` cache (lines 943-952) that resets on roomId change — the interacted-branch code runs AFTER that reset, so the auto-proceed slots in cleanly without touching the cache:
 
 ```js
 if (room?.interacted) {
@@ -162,7 +162,7 @@ If a player re-enters a completed whack-a-mole room (floor navigation, back-butt
 ## Deletions
 
 - `public/js/ui/whack-a-mole.js:348-362` — the `.wam-results` HTML block and Continue button handler.
-- `public/js/ui/exploration.js:933-941` — the interacted-branch `.wam-results` card.
+- `public/js/ui/exploration.js:955-963` — the interacted-branch `.wam-results` card.
 - `public/game.css:4248+` — `.wam-results`, `.wam-results-title`, `.wam-results-score`, `.wam-results-xp`, `.wam-results-levelup`, `.wam-results-credits`, `.wam-continue-btn` blocks. All unreferenced after the above deletions.
 
 ## Testing
