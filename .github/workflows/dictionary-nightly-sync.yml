@@ -1,0 +1,36 @@
+name: Dictionary nightly sync
+
+on:
+  schedule:
+    - cron: '23 4 * * *'  # 04:23 UTC daily
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dictionary
+          fetch-depth: 1
+          token: ${{ secrets.DICTIONARY_BOT_GITHUB_TOKEN }}
+
+      - name: Fetch live dictionary from prod
+        run: |
+          curl -fsSL -H "x-admin-secret: ${ADMIN_SECRET}" \
+            "${PROD_URL}/api/admin/dictionary/-export" \
+            -o data/live-dictionary.json
+        env:
+          ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+          PROD_URL: ${{ secrets.PROD_URL }}
+
+      - name: Commit if changed
+        run: |
+          git config user.email bot@koto.invalid
+          git config user.name koto-dictionary-bot
+          if git diff --quiet data/live-dictionary.json; then
+            echo "no changes"; exit 0
+          fi
+          git add data/live-dictionary.json
+          git commit -m "dict: nightly sync"
+          git push origin dictionary
