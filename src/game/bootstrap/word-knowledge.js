@@ -49,6 +49,39 @@ export function lookupReading(baseForm) {
   return entry?.reading || baseForm;
 }
 
+/** Look up primary English meaning from a given dict Map. */
+export function lookupMeaningFrom(dict, baseForm) {
+  const entry = dict.get(baseForm);
+  if (!entry?.definitions?.length) return '';
+  const primary = entry.definitions.find(d => d.primary);
+  return primary?.en || entry.definitions[0]?.en || '';
+}
+
+/** Look up hiragana reading from a given dict Map. */
+export function lookupReadingFrom(dict, baseForm) {
+  const entry = dict.get(baseForm);
+  return entry?.reading || baseForm;
+}
+
+/**
+ * Return a card with meaning/reading resolved from the current live dictionary.
+ * FSRS fields are preserved verbatim. Stale baked meaning/reading on the input
+ * card are ignored.
+ */
+export function hydrateCard(card, dict = getWordDict()) {
+  if (!card) return card;
+  return {
+    ...card,
+    meaning: lookupMeaningFrom(dict, card.id),
+    reading: lookupReadingFrom(dict, card.id),
+  };
+}
+
+/** Hydrate an array of cards. */
+export function hydrateCards(cards, dict = getWordDict()) {
+  return cards.map(c => hydrateCard(c, dict));
+}
+
 const EXPOSURE_THRESHOLD = 5;
 
 /**
