@@ -14,6 +14,7 @@ import {
 import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPrice, getCreatureSellPrice, generateDealerCreatures } from '../creatures.js';
 import { logger } from '../../logger.js';
 import { getDueCards } from '../internal-srs.js';
+import { hydrateCards } from '../bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
 import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
@@ -1106,11 +1107,11 @@ export class ExplorationService {
       const result = await dueWordsProvider(userId);
       dueWords = Array.isArray(result?.words) ? result.words : (Array.isArray(result) ? result : []);
     } else if (userId) {
-      const dueCards = getDueCards(userId, 'vocab');
+      const dueCards = hydrateCards(getDueCards(userId, 'vocab'));
       dueWords = dueCards.map(c => ({
-        word: c.word || c.id,
-        reading: c.reading || c.word || c.id,
-        meanings: c.meaning ? [c.meaning] : []
+        word: c.id,
+        reading: c.reading,
+        meanings: c.meaning ? [c.meaning] : [],
       }));
     }
 

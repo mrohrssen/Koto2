@@ -3,15 +3,26 @@ import path from 'path';
 import { getDeckCards, createCard } from '../internal-srs.js';
 import { State } from 'ts-fsrs';
 import { loadWordDictionary } from '../word-dictionary.js';
+import { resolveLiveDictPath } from '../live-dict-path.js';
 import { getDataDir } from '../../data-dir.js';
 
-// Dictionary lives in the repo (committed) — stays on the container FS.
-const DICT_DIR = path.join(process.cwd(), 'data');
+// Overlay data (creatures.json, moves.json, ...) lives in the repo.
+const OVERLAY_DIR = path.join(process.cwd(), 'data');
 
 let _wordDict = null;
 function getWordDict() {
-  if (!_wordDict) _wordDict = loadWordDictionary(DICT_DIR);
+  if (!_wordDict) {
+    _wordDict = loadWordDictionary({
+      overlayDir: OVERLAY_DIR,
+      liveDictPath: resolveLiveDictPath(),
+    });
+  }
   return _wordDict;
+}
+
+/** Clear the in-memory dictionary cache so the next read reloads from disk. */
+export function invalidateWordDict() {
+  _wordDict = null;
 }
 
 /**
@@ -36,6 +47,39 @@ export function lookupReading(baseForm) {
   const dict = getWordDict();
   const entry = dict.get(baseForm);
   return entry?.reading || baseForm;
+}
+
+/** Look up primary English meaning from a given dict Map. */
+export function lookupMeaningFrom(dict, baseForm) {
+  const entry = dict.get(baseForm);
+  if (!entry?.definitions?.length) return '';
+  const primary = entry.definitions.find(d => d.primary);
+  return primary?.en || entry.definitions[0]?.en || '';
+}
+
+/** Look up hiragana reading from a given dict Map. */
+export function lookupReadingFrom(dict, baseForm) {
+  const entry = dict.get(baseForm);
+  return entry?.reading || baseForm;
+}
+
+/**
+ * Return a card with meaning/reading resolved from the current live dictionary.
+ * FSRS fields are preserved verbatim. Stale baked meaning/reading on the input
+ * card are ignored.
+ */
+export function hydrateCard(card, dict = getWordDict()) {
+  if (!card) return card;
+  return {
+    ...card,
+    meaning: lookupMeaningFrom(dict, card.id),
+    reading: lookupReadingFrom(dict, card.id),
+  };
+}
+
+/** Hydrate an array of cards. */
+export function hydrateCards(cards, dict = getWordDict()) {
+  return cards.map(c => hydrateCard(c, dict));
 }
 
 const EXPOSURE_THRESHOLD = 5;
@@ -71,10 +115,7 @@ export function exposeWords(userId, words) {
       }
       const existingCards = getDeckCards(userId, 'vocab');
       if (!existingCards.find(c => c.id === word)) {
-        const dictMeaning = lookupMeaning(word);
-        createCard(userId, 'vocab', word, {
-          word, meaning: dictMeaning || meaning, reading
-        });
+        createCard(userId, 'vocab', word, { word });
       }
     }
   }

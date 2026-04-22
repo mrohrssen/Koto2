@@ -298,3 +298,40 @@ describe('createWordExposureRoutes dictionary load', () => {
     }
   });
 });
+
+describe('aggregateWordExposures enrichment', () => {
+  it('adds jmdictDefinition and overlayOwner fields', async () => {
+    const { mkdtempSync, writeFileSync, rmSync, mkdirSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { tmpdir } = await import('node:os');
+    const tmp = mkdtempSync(join(tmpdir(), 'agg-enrich-'));
+    try {
+      mkdirSync(join(tmp, 'data'));
+      // Live dictionary entry for 火 (edited)
+      const liveDict = new Map();
+      liveDict.set('火', { reading: 'ひ', definitions: [{ en: 'EDITED gloss', primary: true }] });
+      // JMdict baseline
+      const jmdictBaseline = { '火': { reading: 'ひ', definitions: [{ en: 'fire', primary: true }] } };
+      writeFileSync(join(tmp, 'data', 'latest-jm-dict.json'), JSON.stringify(jmdictBaseline));
+      // Overlay: 火 is a creature baseWord
+      const overlayOwners = new Map([['火', 'creatures.json']]);
+      // Word-knowledge fixture
+      writeFileSync(join(tmp, 'word-knowledge-u_test.json'), JSON.stringify({
+        userId: 'u_test', seen: { '火': { exposures: 3 } }, known: {},
+      }));
+
+      const mod = await import('../../src/routes/admin-word-exposures.js?t=' + Date.now());
+      const result = mod.aggregateWordExposures(tmp, liveDict, {
+        jmdictPath: join(tmp, 'data', 'latest-jm-dict.json'),
+        overlayOwners,
+      });
+      const row = result.words.find(w => w.word === '火');
+      assert.ok(row);
+      assert.equal(row.definition, 'EDITED gloss');
+      assert.equal(row.jmdictDefinition, 'fire');
+      assert.equal(row.overlayOwner, 'creatures.json');
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+});

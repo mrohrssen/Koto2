@@ -19,6 +19,7 @@ before(async () => {
       initKanaDeck: () => {},
       getRowCards: () => [],
       gradeCard: () => ({}),
+      createCard: () => ({}),
     }
   });
 });

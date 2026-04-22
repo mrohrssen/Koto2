@@ -3,7 +3,8 @@ import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync } from
 import { join, basename } from 'path';
 import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
-import { getKnownWordsFromFsrs, lookupReading } from '../game/bootstrap/word-knowledge.js';
+import { resolveLiveDictPath } from '../game/live-dict-path.js';
+import { getKnownWordsFromFsrs } from '../game/bootstrap/word-knowledge.js';
 import { loadUsers, saveUsers } from '../auth/users.js';
 
 /**
@@ -104,7 +105,7 @@ export default function createAdminRoutes({ dataDir }) {
 
       let seeded = 0;
       for (const word of words) {
-        createCard(userId, 'vocab', word, { word, meaning: '', reading: lookupReading(word) });
+        createCard(userId, 'vocab', word, { word });
         gradeCard(userId, 'vocab', word, 'good');
         seeded++;
       }
@@ -213,7 +214,10 @@ export default function createAdminRoutes({ dataDir }) {
       }
 
       const wk = JSON.parse(readFileSync(wkPath, 'utf-8'));
-      const dict = loadWordDictionary(join(process.cwd(), 'data'));
+      const dict = loadWordDictionary({
+        overlayDir: join(process.cwd(), 'data'),
+        liveDictPath: resolveLiveDictPath(),
+      });
       const knownSet = new Set(getKnownWordsFromFsrs(userId));
 
       const words = [];

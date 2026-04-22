@@ -1,14 +1,21 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
-export function loadWordDictionary(dataDir) {
+/**
+ * Load the word dictionary.
+ *
+ * @param {object} opts
+ * @param {string} opts.overlayDir - directory containing creatures.json, moves.json, etc.
+ * @param {string} opts.liveDictPath - absolute path to the live dictionary JSON file
+ * @returns {Map<string, {reading: string, definitions: {en: string, primary?: boolean}[]}>}
+ */
+export function loadWordDictionary({ overlayDir, liveDictPath }) {
   const dict = new Map();
 
-  // 1. Load base dictionary
-  const basePath = join(dataDir, 'dictionary.json');
-  if (existsSync(basePath)) {
+  // 1. Load base live dictionary
+  if (liveDictPath && existsSync(liveDictPath)) {
     try {
-      const base = JSON.parse(readFileSync(basePath, 'utf-8'));
+      const base = JSON.parse(readFileSync(liveDictPath, 'utf-8'));
       for (const [word, entry] of Object.entries(base)) {
         dict.set(word, entry);
       }
@@ -17,7 +24,7 @@ export function loadWordDictionary(dataDir) {
     }
   }
 
-  // 2. Overlay game data files
+  // 2. Overlay game data files (always read from overlayDir)
   const overlayConfigs = [
     { file: 'creatures.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
     { file: 'moves.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
@@ -28,12 +35,12 @@ export function loadWordDictionary(dataDir) {
   ];
 
   for (const config of overlayConfigs) {
-    overlayGameData(dict, join(dataDir, config.file), config);
+    overlayGameData(dict, join(overlayDir, config.file), config);
   }
 
-  // 3. Overlay curriculum files (glue-words, grammar-words)
+  // 3. Overlay curriculum files
   for (const file of ['glue-words.json', 'grammar-words.json']) {
-    const filePath = join(dataDir, file);
+    const filePath = join(overlayDir, file);
     if (!existsSync(filePath)) continue;
     try {
       const entries = JSON.parse(readFileSync(filePath, 'utf-8'));

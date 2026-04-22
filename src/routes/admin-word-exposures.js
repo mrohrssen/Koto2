@@ -3,16 +3,34 @@ import { readdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { adminAuth } from './admin.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
+import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { parseBatch } from '../../scripts/lib/jpdb-helpers.mjs';
+import createDictEditRoutes, { createDictConfigRoute, createDictSyncStatusRoute } from './admin-dictionary-edit.js';
+import { enqueueDictionarySync, getSyncStatus } from './admin-dictionary-sync.js';
+import { invalidateWordDict } from '../game/bootstrap/word-knowledge.js';
+import { invalidateKnownWordsDict } from './game/known-words.js';
 
 /**
  * Aggregate word exposures across all user word-knowledge files.
  *
  * @param {string} dataDir - Directory containing word-knowledge-*.json files
  * @param {Map} dictionary - Word dictionary Map<baseForm, { reading, definitions }>
+ * @param {Object} opts - Optional enrichment options
+ * @param {string} opts.jmdictPath - Path to frozen JMdict JSON file
+ * @param {Map} opts.overlayOwners - Map<word, overlayFilename> for overlay ownership
  * @returns {{ words: Array, totalUniqueWords: number, totalUsers: number }}
  */
-export function aggregateWordExposures(dataDir, dictionary) {
+export function aggregateWordExposures(dataDir, dictionary, opts = {}) {
+  const { jmdictPath = null, overlayOwners = new Map() } = opts;
+
+  // Load frozen JMdict baseline once, if provided
+  let jmdict = null;
+  if (jmdictPath && existsSync(jmdictPath)) {
+    try {
+      jmdict = JSON.parse(readFileSync(jmdictPath, 'utf-8'));
+    } catch { jmdict = null; }
+  }
+
   const wordMap = new Map();
   let totalUsers = 0;
 
@@ -49,10 +67,14 @@ export function aggregateWordExposures(dataDir, dictionary) {
   for (const [word, data] of wordMap) {
     const entry = dictionary.get(word);
     const primaryDef = entry?.definitions?.find(d => d.primary) || entry?.definitions?.[0];
+    const jmEntry = jmdict ? jmdict[word] : null;
+    const jmPrimary = jmEntry?.definitions?.find(d => d.primary) || jmEntry?.definitions?.[0];
     words.push({
       word,
       reading: entry?.reading || null,
       definition: primaryDef?.en || null,
+      jmdictDefinition: jmPrimary?.en || null,
+      overlayOwner: overlayOwners.get(word) || null,
       totalExposures: data.totalExposures,
       userCount: data.users.size,
     });
@@ -60,6 +82,47 @@ export function aggregateWordExposures(dataDir, dictionary) {
   words.sort((a, b) => b.totalExposures - a.totalExposures);
 
   return { words, totalUniqueWords: words.length, totalUsers };
+}
+
+/**
+ * Scan overlay JSON files and return Map<word, filename> of which overlay
+ * defines each word. Used to warn the admin that edits will be shadowed.
+ */
+export function buildOverlayOwners(overlayDir) {
+  const owners = new Map();
+
+  const gameOverlays = [
+    'creatures.json',
+    'moves.json',
+    'items.json',
+    'npcs.json',
+    'npc-skills.json',
+    'areas.json',
+  ];
+  for (const file of gameOverlays) {
+    const p = join(overlayDir, file);
+    if (!existsSync(p)) continue;
+    try {
+      const raw = JSON.parse(readFileSync(p, 'utf-8'));
+      const entries = Array.isArray(raw) ? raw : Object.values(raw);
+      for (const entry of entries) {
+        if (entry?.baseWord) owners.set(entry.baseWord, file);
+      }
+    } catch { /* skip malformed */ }
+  }
+
+  for (const file of ['glue-words.json', 'grammar-words.json']) {
+    const p = join(overlayDir, file);
+    if (!existsSync(p)) continue;
+    try {
+      const entries = JSON.parse(readFileSync(p, 'utf-8'));
+      for (const entry of entries) {
+        if (entry?.word) owners.set(entry.word, file);
+      }
+    } catch { /* skip malformed */ }
+  }
+
+  return owners;
 }
 
 // ---------------------------------------------------------------------------
@@ -237,11 +300,38 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
   const router = Router();
   router.use(adminAuth);
 
+  const overlayDir = join(process.cwd(), 'data');
+  const jmdictPath = join(overlayDir, 'latest-jm-dict.json');
+
   let dictionary = null;
+  let overlayOwners = null;
+
   function getDictionary() {
-    if (!dictionary) dictionary = loadWordDictionary(join(process.cwd(), 'data'));
+    if (!dictionary) {
+      dictionary = loadWordDictionary({
+        overlayDir,
+        liveDictPath: resolveLiveDictPath(),
+      });
+    }
     return dictionary;
   }
+
+  function getOverlayOwners() {
+    if (!overlayOwners) {
+      overlayOwners = buildOverlayOwners(overlayDir);
+    }
+    return overlayOwners;
+  }
+
+  function invalidate() {
+    dictionary = null;
+    invalidateWordDict();
+    invalidateKnownWordsDict();
+    // overlayOwners derives only from static overlay files; don't invalidate.
+  }
+
+  // Expose invalidation so future edit endpoint can reset after writes.
+  router.invalidateDictionary = invalidate;
 
   const jpdbCachePath = join(dataDir, 'jpdb-tokenization-cache.json');
   const frameCachePath = join(dataDir, 'jpdb-frame-compare-cache.json');
@@ -249,7 +339,10 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
   // GET /word-exposures
   router.get('/word-exposures', (req, res) => {
     try {
-      res.json(aggregateWordExposures(dataDir, getDictionary()));
+      res.json(aggregateWordExposures(dataDir, getDictionary(), {
+        jmdictPath,
+        overlayOwners: getOverlayOwners(),
+      }));
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -367,6 +460,22 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
       res.status(500).json({ error: err.message });
     }
   });
+
+  // Mount dictionary edit sub-router. `/api/admin/dictionary/-export` is used
+  // rather than `/export` so it does not collide with the `:word` route.
+  router.use('/dictionary', createDictEditRoutes({
+    liveDictPath: resolveLiveDictPath(),
+    jmdictPath,
+    overlayOwners: getOverlayOwners(),
+    onChange: () => invalidate(),
+    enqueueSync: (word) => enqueueDictionarySync(word),
+  }));
+
+  // Mount dictionary config endpoint (reports readOnly state for admin UI).
+  router.use('/dictionary-config', createDictConfigRoute());
+
+  // Mount dictionary sync-status endpoint (reports last commit error for admin UI banner).
+  router.use('/dictionary-sync-status', createDictSyncStatusRoute({ getSyncStatus }));
 
   return router;
 }

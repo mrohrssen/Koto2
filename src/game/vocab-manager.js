@@ -1,5 +1,6 @@
 import { getDeckCards, getDueCards } from './internal-srs.js';
 import { State } from 'ts-fsrs';
+import { hydrateCards } from './bootstrap/word-knowledge.js';
 
 // Configuration
 const CONFIG = {
@@ -313,14 +314,15 @@ export function getNewWordsForDiscovery(limit = 2, userId) {
   }
 
   const newWords = [];
+  const hydrated = hydrateCards(cards);
 
-  for (const card of cards) {
+  for (const card of hydrated) {
     if (card.state === State.New) {
       newWords.push({
         word: card.id,
-        reading: card.reading || card.id,
+        reading: card.reading,
         meanings: card.meaning ? [card.meaning] : (card.meanings || []),
-        rank: card.rank || Infinity
+        rank: card.rank || Infinity,
       });
     }
   }

@@ -1,17 +1,27 @@
 import { Router } from 'express';
 import { join } from 'path';
-import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs, hydrateCards } from '../../game/bootstrap/word-knowledge.js';
 import { gradeCard, getDueCards, getDueCount, createCard, getDeckCards } from '../../game/internal-srs.js';
 import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
+import { resolveLiveDictPath } from '../../game/live-dict-path.js';
 import { tokenize } from '../../tokenizer.js';
 import { incrementDiscoveryCount, getDiscoveryStatus } from '../../word-tracking.js';
 import { addReview } from '../../auth/users.js';
 
 let _wordDict = null;
 function getWordDict() {
-  if (!_wordDict) _wordDict = loadWordDictionary(join(process.cwd(), 'data'));
+  if (!_wordDict) {
+    _wordDict = loadWordDictionary({
+      overlayDir: join(process.cwd(), 'data'),
+      liveDictPath: resolveLiveDictPath(),
+    });
+  }
   return _wordDict;
+}
+
+export function invalidateKnownWordsDict() {
+  _wordDict = null;
 }
 
 export function createKnownWordsRoutes() {
@@ -57,12 +67,7 @@ export function createKnownWordsRoutes() {
       // Auto-create card if it doesn't exist (allows fast-tracking words)
       const existingCards = getDeckCards(req.user.id, 'vocab');
       if (!existingCards.find(c => c.id === word)) {
-        const dict = getWordDict();
-        const entry = dict.get(word);
-        const meaning = entry?.definitions?.find(d => d.primary)?.en
-          || entry?.definitions?.[0]?.en || '';
-        const reading = entry?.reading || word;
-        createCard(req.user.id, 'vocab', word, { word, meaning, reading });
+        createCard(req.user.id, 'vocab', word, { word });
       }
       const updatedCard = gradeCard(req.user.id, 'vocab', word, grade);
 
@@ -100,17 +105,13 @@ export function createKnownWordsRoutes() {
 
   // GET /api/game/known-words/due-words
   router.get('/due-words', (req, res) => {
-    const dict = getWordDict();
-    const cards = getDueCards(req.user.id, 'vocab');
-    const words = cards.map(c => {
-      const entry = dict.get(c.word);
-      return {
-        word: c.word,
-        reading: entry?.reading || c.reading || c.word,
-        meanings: c.meaning ? [c.meaning] : [''],
-        source: 'internal',
-      };
-    });
+    const cards = hydrateCards(getDueCards(req.user.id, 'vocab'));
+    const words = cards.map(c => ({
+      word: c.id,
+      reading: c.reading,
+      meanings: c.meaning ? [c.meaning] : [''],
+      source: 'internal',
+    }));
     res.json({ words });
   });
 
