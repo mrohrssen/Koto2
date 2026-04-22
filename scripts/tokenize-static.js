@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tokenizeBatch } from '../src/tokenizer.js';
 import { loadWordDictionary } from '../src/game/word-dictionary.js';
+import { resolveLiveDictPath } from '../src/game/live-dict-path.js';
 
 const ROOT = join(import.meta.dirname, '..');
 const SOURCES_PATH = join(ROOT, 'data', 'dialogue', 'frame-sources.json');
@@ -73,7 +74,10 @@ function toUniversalToken(st, wordDict) {
 
 function main() {
   const sources = JSON.parse(readFileSync(SOURCES_PATH, 'utf-8'));
-  const wordDict = loadWordDictionary(join(ROOT, 'data'));
+  const wordDict = loadWordDictionary({
+    overlayDir: join(ROOT, 'data'),
+    liveDictPath: resolveLiveDictPath(),
+  });
 
   // Split each frame's raw text at slot markers, tokenize each segment separately,
   // then interleave slot tokens between the segments.

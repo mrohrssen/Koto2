@@ -1,11 +1,15 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { loadWordDictionary } from '../src/game/word-dictionary.js';
+import { resolveLiveDictPath } from '../src/game/live-dict-path.js';
 
 const DATA_DIR = join(process.cwd(), 'data');
 const DIALOGUE_DIR = join(DATA_DIR, 'dialogue');
 
-const dict = loadWordDictionary(DATA_DIR);
+const dict = loadWordDictionary({
+  overlayDir: DATA_DIR,
+  liveDictPath: resolveLiveDictPath(),
+});
 let errors = 0;
 let warnings = 0;
 
