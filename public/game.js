@@ -1369,16 +1369,14 @@ function showVictoryModal(result) {
     showCollectionToast(result.newCollectionAdditions);
   }
 
-  return new Promise((resolve) => {
-    setTimeout(async () => {
-      try {
-        await loadGameState();
-        updateUI();
-      } finally {
-        resolve();
-      }
-    }, 300);
-  });
+  return (async () => {
+    try {
+      await loadGameState();
+      updateUI();
+    } catch (err) {
+      console.error('[showVictoryModal] state reload failed', err);
+    }
+  })();
 }
 
 // Returns a Promise that resolves when the player dismisses the report via
