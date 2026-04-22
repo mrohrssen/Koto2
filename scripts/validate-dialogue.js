@@ -31,8 +31,6 @@ export function validateFrame(frame, dict) {
       for (const [key, value] of Object.entries(frame.overrides)) {
         if (!tokenBases.has(key)) {
           errors.push(`${ctx} — override key "${key}" is not a base form in this frame`);
-        } else if (!dict.has(key)) {
-          errors.push(`${ctx} — word "${key}" not in dictionary`);
         }
         if (typeof value !== 'string' || value.trim().length === 0) {
           errors.push(`${ctx} — override value for "${key}" must be a non-empty string`);

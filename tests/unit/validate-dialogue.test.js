@@ -92,14 +92,15 @@ describe('validateFrame', () => {
     const frame = {
       id: 'f8',
       category: 'bark_onHit',
-      words: ['犬'],
+      words: ['犬', 'ぴよん'],
       tokens: [
         { surface: '犬', base: '犬', reading: 'いぬ', pos: 'Noun' },
         { surface: 'ぴよん', base: 'ぴよん', reading: 'ぴよん', pos: 'Interjection' },
       ],
       overrides: { 'ぴよん': 'boing' },
     };
-    // Only dict-miss on 'ぴよん'; override itself is valid.
+    // Dict-miss on 'ぴよん' comes from the words-loop, not from override validation.
+    // The override itself targets a dict-missing word — spec allows this.
     const errs = validateFrame(frame, dict);
     assert.equal(errs.length, 1);
     assert.match(errs[0], /ぴよん.*not in dictionary/);
