@@ -5,8 +5,7 @@ import { adminAuth } from './admin.js';
 import { loadWordDictionary } from '../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { parseBatch } from '../../scripts/lib/jpdb-helpers.mjs';
-import createDictEditRoutes, { createDictConfigRoute, createDictSyncStatusRoute } from './admin-dictionary-edit.js';
-import { enqueueDictionarySync, getSyncStatus } from './admin-dictionary-sync.js';
+import createDictEditRoutes, { createDictConfigRoute } from './admin-dictionary-edit.js';
 import { invalidateWordDict } from '../game/bootstrap/word-knowledge.js';
 import { invalidateKnownWordsDict } from './game/known-words.js';
 
@@ -468,14 +467,10 @@ export default function createWordExposureRoutes({ dataDir, framesPath }) {
     jmdictPath,
     overlayOwners: getOverlayOwners(),
     onChange: () => invalidate(),
-    enqueueSync: (word) => enqueueDictionarySync(word),
   }));
 
   // Mount dictionary config endpoint (reports readOnly state for admin UI).
   router.use('/dictionary-config', createDictConfigRoute());
-
-  // Mount dictionary sync-status endpoint (reports last commit error for admin UI banner).
-  router.use('/dictionary-sync-status', createDictSyncStatusRoute({ getSyncStatus }));
 
   return router;
 }

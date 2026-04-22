@@ -35,7 +35,6 @@ describe('admin-dictionary-edit', () => {
       jmdictPath,
       overlayOwners: new Map(),
       onChange: () => {},
-      enqueueSync: () => {},
     }));
   });
 
@@ -64,7 +63,6 @@ describe('admin-dictionary-edit', () => {
 
   it('PUT /:word writes and triggers onChange', async () => {
     let changed = false;
-    let synced = null;
     const { default: createDictEditRoutes } = await import('../../src/routes/admin-dictionary-edit.js?t=' + Date.now() + 'a');
     const app2 = express();
     app2.use(express.json());
@@ -73,7 +71,6 @@ describe('admin-dictionary-edit', () => {
       jmdictPath,
       overlayOwners: new Map(),
       onChange: () => { changed = true; },
-      enqueueSync: (word) => { synced = word; },
     }));
     const res = await request(app2)
       .put('/api/admin/dictionary/' + encodeURIComponent('火'))
@@ -85,9 +82,7 @@ describe('admin-dictionary-edit', () => {
     assert.equal(res.status, 200);
     assert.equal(res.body.ok, true);
     assert.equal(res.body.overlayOverridden, false);
-    assert.equal(res.body.gitCommitStatus, 'queued');
     assert.equal(changed, true);
-    assert.equal(synced, '火');
 
     const disk = JSON.parse(readFileSync(liveDictPath, 'utf-8'));
     assert.equal(disk['火'].definitions[0].en, 'flame');
@@ -107,7 +102,6 @@ describe('admin-dictionary-edit', () => {
       jmdictPath,
       overlayOwners: new Map(),
       onChange: () => { callCount++; },
-      enqueueSync: () => {},
     }));
     const res = await request(app4)
       .put('/api/admin/dictionary/' + encodeURIComponent('火'))
@@ -153,14 +147,14 @@ describe('admin-dictionary-edit', () => {
     assert.equal(res.status, 400);
   });
 
-  it('PUT returns 403 skipped-readonly when DICTIONARY_READONLY=true', async () => {
+  it('PUT returns 403 when DICTIONARY_READONLY=true', async () => {
     process.env.DICTIONARY_READONLY = 'true';
     const res = await request(app)
       .put('/api/admin/dictionary/' + encodeURIComponent('火'))
       .set('x-admin-secret', ADMIN_SECRET)
       .send({ reading: 'ひ', definitions: [{ en: 'flame', primary: true }] });
     assert.equal(res.status, 403);
-    assert.equal(res.body.gitCommitStatus, 'skipped-readonly');
+    assert.match(res.body.error, /disabled/);
   });
 
   it('PUT response reports overlayOverridden when overlayOwners has the word', async () => {
@@ -173,7 +167,6 @@ describe('admin-dictionary-edit', () => {
       jmdictPath,
       overlayOwners,
       onChange: () => {},
-      enqueueSync: () => {},
     }));
     const res = await request(app3)
       .put('/api/admin/dictionary/' + encodeURIComponent('火'))

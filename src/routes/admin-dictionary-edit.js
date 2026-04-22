@@ -8,20 +8,24 @@ import { adminAuth } from './admin.js';
  *
  * Routes (mounted under whatever prefix the caller chooses):
  *   GET  /:word            — current live entry + jmdict baseline + overlayOwner
- *   PUT  /:word            — write a new entry; returns {ok, overlayOverridden, gitCommitStatus}
- *   GET  /-export          — download full live dictionary (break-glass)
+ *   PUT  /:word            — write a new entry; returns {ok, overlayOverridden}
+ *   GET  /-export          — download full live dictionary (consumed by nightly sync workflow)
  *
  * `-export` is used instead of `/export` because `:word` would otherwise
  * match the string `export` as a word.
+ *
+ * Edits are persisted to the Railway volume immediately. A separate GitHub
+ * Actions workflow (`.github/workflows/dictionary-nightly-sync.yml`) pulls
+ * `-export` and commits to the `dictionary` branch on its own schedule, so
+ * no git binary or bot token is needed on prod.
  *
  * @param {object} opts
  * @param {string} opts.liveDictPath
  * @param {string} opts.jmdictPath
  * @param {Map<string,string>} opts.overlayOwners
  * @param {() => void} opts.onChange  called after a successful write
- * @param {(word: string) => void} opts.enqueueSync  called after a successful write
  */
-export default function createDictEditRoutes({ liveDictPath, jmdictPath, overlayOwners, onChange, enqueueSync }) {
+export default function createDictEditRoutes({ liveDictPath, jmdictPath, overlayOwners, onChange }) {
   const router = Router();
   router.use(adminAuth);
 
@@ -39,7 +43,7 @@ export default function createDictEditRoutes({ liveDictPath, jmdictPath, overlay
 
   function writeLiveAtomic(data) {
     const tmp = join(dirname(liveDictPath), 'live-dictionary.json.tmp');
-    writeFileSync(tmp, JSON.stringify(data, null, 0));
+    writeFileSync(tmp, JSON.stringify(data, null, 2));
     renameSync(tmp, liveDictPath);
   }
 
@@ -85,7 +89,6 @@ export default function createDictEditRoutes({ liveDictPath, jmdictPath, overlay
     if (isReadOnly()) {
       return res.status(403).json({
         error: 'Dictionary editing is disabled in this environment',
-        gitCommitStatus: 'skipped-readonly',
       });
     }
 
@@ -99,13 +102,11 @@ export default function createDictEditRoutes({ liveDictPath, jmdictPath, overlay
     writeLiveAtomic(current);
 
     onChange?.();
-    enqueueSync?.(word);
 
     res.json({
       ok: true,
       word,
       overlayOverridden: overlayOwners.has(word),
-      gitCommitStatus: 'queued',
     });
   });
 
@@ -131,18 +132,3 @@ export function createDictConfigRoute() {
   return router;
 }
 
-/**
- * Mount a sync-status endpoint that reports the status of dictionary auto-commit.
- * Used by the admin UI banner to alert admins of uncommitted changes.
- *
- * Routes (mounted under whatever prefix the caller chooses):
- *   GET /   — returns { lastError: {error, word, at} | null, ... }
- */
-export function createDictSyncStatusRoute({ getSyncStatus }) {
-  const router = Router();
-  router.use(adminAuth);
-  router.get('/', (req, res) => {
-    res.json(getSyncStatus());
-  });
-  return router;
-}
