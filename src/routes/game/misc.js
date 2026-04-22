@@ -3,6 +3,7 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resetTutorial } from '../../game/services/tutorial-service.js';
+import { getCidScripts } from '../../game/dialogue-loader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -296,12 +297,20 @@ export default function createMiscRoutes({
     }
   });
 
-  // Get prologue scenes
+  // Get prologue scenes — resolves jpDemo tokens from the dialogue pool
   let _prologueCache = null;
   router.get('/prologue', (_req, res) => {
     if (!_prologueCache) {
       const filePath = join(__dirname, '../../../data/prologue.json');
-      _prologueCache = JSON.parse(readFileSync(filePath, 'utf-8'));
+      const raw = JSON.parse(readFileSync(filePath, 'utf-8'));
+      _prologueCache = raw.map(scene => {
+        if (scene.type === 'jpDemo' && scene.frameGroup) {
+          const script = getCidScripts().find(s => s.id === scene.frameGroup);
+          const tokens = script?.lines?.[0]?.tokens;
+          return tokens ? { ...scene, tokens } : scene;
+        }
+        return scene;
+      });
     }
     res.json(_prologueCache);
   });

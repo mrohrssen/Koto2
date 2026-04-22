@@ -2,6 +2,10 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import express from 'express';
+import http from 'http';
+import { loadDialoguePools } from '../../../src/game/dialogue-loader.js';
+import createMiscRoutes from '../../../src/routes/game/misc.js';
 
 const PROLOGUE_PATH = join(process.cwd(), 'data/prologue.json');
 
@@ -47,5 +51,76 @@ describe('prologue.json content', () => {
     assert.equal(demo.speaker, 'Cid');
     assert.equal(demo.frameGroup, 'tutorial-translator-demo');
     assert.ok(!demo.tokens, 'tokens should not be inlined — server resolves them');
+  });
+});
+
+// Helper — spins up the router on an ephemeral port, makes one GET, returns body
+async function getJson(app, path) {
+  return new Promise((resolve, reject) => {
+    const server = app.listen(0, '127.0.0.1', () => {
+      const port = server.address().port;
+      const req = http.request(
+        { host: '127.0.0.1', port, path, method: 'GET' },
+        res => {
+          let data = '';
+          res.on('data', c => { data += c; });
+          res.on('end', () => {
+            server.close();
+            try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
+          });
+        }
+      );
+      req.on('error', err => { server.close(); reject(err); });
+      req.end();
+    });
+  });
+}
+
+describe('prologue route — GET /prologue', () => {
+  it('attaches resolved tokens to jpDemo entries', async () => {
+    // Dialogue pools must be loaded before the router resolves frame refs
+    loadDialoguePools(join(process.cwd(), 'data'));
+
+    const app = express();
+    app.use('/', createMiscRoutes({
+      getDebugMode: () => false,
+      setDebugMode: () => {},
+      getAllNpcDialogueCache: () => ({}),
+      getAllCreatureDialogueCache: () => ({}),
+      clearNpcDialogueCache: () => {},
+      clearCreatureDialogueCache: () => {},
+    }));
+
+    const body = await getJson(app, '/prologue');
+    assert.ok(Array.isArray(body), 'response should be an array of scenes');
+
+    const demo = body.find(s => s.id === 'prologue-translator-demo');
+    assert.ok(demo, 'demo entry should be present');
+    assert.equal(demo.type, 'jpDemo');
+    assert.ok(Array.isArray(demo.tokens), 'tokens should be attached as an array');
+    assert.ok(demo.tokens.length >= 1, 'tokens should be non-empty');
+    assert.equal(demo.tokens[0].base, 'こんにちは');
+    assert.ok(demo.tokens[0].reading, 'token should carry reading');
+    assert.ok(demo.tokens[0].meaning, 'token should carry meaning');
+  });
+
+  it('leaves non-jpDemo entries untouched', async () => {
+    loadDialoguePools(join(process.cwd(), 'data'));
+
+    const app = express();
+    app.use('/', createMiscRoutes({
+      getDebugMode: () => false,
+      setDebugMode: () => {},
+      getAllNpcDialogueCache: () => ({}),
+      getAllCreatureDialogueCache: () => ({}),
+      clearNpcDialogueCache: () => {},
+      clearCreatureDialogueCache: () => {},
+    }));
+
+    const body = await getJson(app, '/prologue');
+    const translator = body.find(s => s.id === 'prologue-04-translator');
+    assert.ok(translator, 'non-demo entry should still be present');
+    assert.ok(!translator.tokens, 'non-jpDemo entries should not get tokens');
+    assert.ok(translator.narration, 'non-demo entries keep their narration');
   });
 });
