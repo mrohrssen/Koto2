@@ -4,8 +4,10 @@ import { apiUrl, PLATFORM } from './platform.js';
 
 // ============ CORE API WRAPPER ============
 
-// Per-endpoint deduplication (replaces global isLoading boolean)
-const inFlightRequests = new Set();
+// Per-endpoint deduplication (replaces global isLoading boolean).
+// Maps endpoint → in-flight Promise so concurrent callers share the same
+// result instead of the second caller receiving null.
+const inFlightRequests = new Map();
 
 // Connection health tracking (used by offline banner)
 let consecutiveFailures = 0;
@@ -99,80 +101,87 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
   logger.debug('[API] Request:', { endpoint, method });
   const bypassGate = opts.bypassLoadingGate === true;
 
-  // Per-endpoint dedup: block duplicate requests to the same endpoint
+  // Per-endpoint dedup: concurrent callers share the in-flight promise so they
+  // all receive the same result instead of the second caller getting null.
   if (!bypassGate && inFlightRequests.has(endpoint)) {
-    logger.warn('[API] Request deduped - in flight:', { endpoint });
+    logger.debug('[API] Request deduped - reusing in-flight:', { endpoint });
+    return inFlightRequests.get(endpoint);
+  }
+
+  const task = (async () => {
+    // GETs always retry; POSTs only if caller opts in
+    const maxAttempts = (method === 'GET' || opts.retryable) ? 3 : 1;
+    let lastError = null;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (attempt > 0) {
+        const baseDelay = 500 * Math.pow(2, attempt - 1);
+        const jitter = baseDelay * (0.8 + Math.random() * 0.4);
+        await new Promise(r => setTimeout(r, jitter));
+        logger.debug('[API] Retry:', { endpoint, attempt });
+      }
+
+      const startedAt = performance.now();
+
+      try {
+        const options = { method, headers: getAuthHeaders() };
+        if (method !== 'GET' && body) options.body = JSON.stringify(body);
+
+        const response = await fetch(`${PLATFORM.apiBase}/api/game${endpoint}`, options);
+
+        // 401 handled specifically — don't retry auth errors
+        if (response.status === 401) {
+          if (!hasRedirectedFor401) {
+            hasRedirectedFor401 = true;
+            localStorage.removeItem('authToken');
+            sessionStorage.setItem('sessionExpiredMsg', 'Session expired, please log in again');
+            window.location.href = '/';
+          }
+          onApiSuccess(); // Server responded — connection is fine
+          throw new Error('Session expired');
+        }
+
+        const data = await response.json();
+
+        // Any HTTP response (even 4xx/5xx) proves the server is reachable
+        onApiSuccess();
+
+        if (!response.ok) {
+          if (opts.returnErrorBody) {
+            return { error: data.error || `HTTP ${response.status}` };
+          }
+          throw new Error(data.error || 'API call failed');
+        }
+
+        const elapsedMs = Math.round(performance.now() - startedAt);
+        console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
+
+        return data;
+      } catch (error) {
+        const elapsedMs = Math.round(performance.now() - startedAt);
+        console.log(`[API Timing] ${method} /api/game${endpoint} -> error in ${elapsedMs}ms`);
+        lastError = error;
+
+        // Don't retry auth errors
+        if (error.message === 'Session expired') break;
+
+        // Only count as connection failure if fetch itself threw (network error),
+        // not if the server returned an error HTTP status
+        if (error instanceof TypeError) onApiFailure();
+      }
+    }
+
+    logger.error('[API] Request failed:', { endpoint, error: lastError?.message });
+    if (onError) onError(lastError?.message);
     return null;
+  })();
+
+  if (!bypassGate) {
+    inFlightRequests.set(endpoint, task);
+    task.finally(() => inFlightRequests.delete(endpoint));
   }
 
-  // GETs always retry; POSTs only if caller opts in
-  const maxAttempts = (method === 'GET' || opts.retryable) ? 3 : 1;
-  let lastError = null;
-
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    if (attempt > 0) {
-      const baseDelay = 500 * Math.pow(2, attempt - 1);
-      const jitter = baseDelay * (0.8 + Math.random() * 0.4);
-      await new Promise(r => setTimeout(r, jitter));
-      logger.debug('[API] Retry:', { endpoint, attempt });
-    }
-
-    if (!bypassGate) inFlightRequests.add(endpoint);
-    const startedAt = performance.now();
-
-    try {
-      const options = { method, headers: getAuthHeaders() };
-      if (method !== 'GET' && body) options.body = JSON.stringify(body);
-
-      const response = await fetch(`${PLATFORM.apiBase}/api/game${endpoint}`, options);
-
-      // 401 handled specifically — don't retry auth errors
-      if (response.status === 401) {
-        if (!hasRedirectedFor401) {
-          hasRedirectedFor401 = true;
-          localStorage.removeItem('authToken');
-          sessionStorage.setItem('sessionExpiredMsg', 'Session expired, please log in again');
-          window.location.href = '/';
-        }
-        onApiSuccess(); // Server responded — connection is fine
-        throw new Error('Session expired');
-      }
-
-      const data = await response.json();
-
-      // Any HTTP response (even 4xx/5xx) proves the server is reachable
-      onApiSuccess();
-
-      if (!response.ok) {
-        if (opts.returnErrorBody) {
-          return { error: data.error || `HTTP ${response.status}` };
-        }
-        throw new Error(data.error || 'API call failed');
-      }
-
-      const elapsedMs = Math.round(performance.now() - startedAt);
-      console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
-
-      return data;
-    } catch (error) {
-      const elapsedMs = Math.round(performance.now() - startedAt);
-      console.log(`[API Timing] ${method} /api/game${endpoint} -> error in ${elapsedMs}ms`);
-      lastError = error;
-
-      // Don't retry auth errors
-      if (error.message === 'Session expired') break;
-
-      // Only count as connection failure if fetch itself threw (network error),
-      // not if the server returned an error HTTP status
-      if (error instanceof TypeError) onApiFailure();
-    } finally {
-      inFlightRequests.delete(endpoint);
-    }
-  }
-
-  logger.error('[API] Request failed:', { endpoint, error: lastError?.message });
-  if (onError) onError(lastError?.message);
-  return null;
+  return task;
 }
 
 /**

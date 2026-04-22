@@ -970,12 +970,17 @@ export async function renderWhackAMole() {
   if (!whackAMoleState.fetched) {
     try {
       const resp = await apiGetWhackAMoleDialogue();
+      // apiCall returns null when a concurrent request to the same endpoint is
+      // already in flight (dedup). Bail out so the winning caller — which has
+      // real tokens — renders the narration + Japanese はい/いいえ buttons
+      // instead of us stomping English fallbacks onto the DOM.
+      if (!resp) return;
       whackAMoleState.fetched = true;
-      whackAMoleState.dialogue = resp?.dialogue || null;
-      whackAMoleState.yesLabel = resp?.yesTokens?.tokens?.length
+      whackAMoleState.dialogue = resp.dialogue || null;
+      whackAMoleState.yesLabel = resp.yesTokens?.tokens?.length
         ? renderJpSentence(resp.yesTokens.tokens, getKnownWords(), wordDict, resp.yesTokens.overrides || {}, false)
         : 'Yes';
-      whackAMoleState.noLabel = resp?.noTokens?.tokens?.length
+      whackAMoleState.noLabel = resp.noTokens?.tokens?.length
         ? renderJpSentence(resp.noTokens.tokens, getKnownWords(), wordDict, resp.noTokens.overrides || {}, false)
         : 'No';
     } catch (err) {
@@ -1033,12 +1038,13 @@ export async function renderWhackAMole() {
   ]);
 }
 
-/** Show the どの能力？ prompt in the narration box, attributed to `speaker`. */
+/** Show the どの能力？ prompt in the narration box, attributed to `speaker`. Returns true if shown. */
 function showSkillSelectPrompt(prompt, speaker = 'Cid') {
-  if (!prompt?.tokens?.length || !sceneModule?.showNarration) return;
+  if (!prompt?.tokens?.length || !sceneModule?.showNarration) return false;
   const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
   const html = renderJpSentence(prompt.tokens, getKnownWords(), wordDict, prompt.overrides || {}, false);
   sceneModule.showNarration(html, { html: true, persistent: true, speaker });
+  return true;
 }
 
 /**
@@ -1203,8 +1209,9 @@ export async function renderSkillMaster() {
     // doesn't feel gated on animation.
     showCidForSkillMaster();
     if (!skillMasterState.promptShown) {
-      skillMasterState.promptShown = true;
-      showSkillSelectPrompt(skillMasterState.promptTokens);
+      if (showSkillSelectPrompt(skillMasterState.promptTokens)) {
+        skillMasterState.promptShown = true;
+      }
     }
 
     renderChoices({
@@ -1683,8 +1690,9 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   showDefeatedNpcForSkillSelect(defeatedNpc);
 
   if (!npcBattleSkillState.promptShown) {
-    npcBattleSkillState.promptShown = true;
-    showSkillSelectPrompt(npcBattleSkillState.promptTokens, speakerName);
+    if (showSkillSelectPrompt(npcBattleSkillState.promptTokens, speakerName)) {
+      npcBattleSkillState.promptShown = true;
+    }
   }
 
   renderChoices({
