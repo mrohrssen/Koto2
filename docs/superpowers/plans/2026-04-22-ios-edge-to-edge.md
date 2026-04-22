@@ -366,14 +366,17 @@ Run:
 ## Task 5: Zero the bottom safe-area inset on `.mini-toolbar`
 
 **Files:**
-- Modify: `public/game.css` (around lines 1455 and 1511)
+- Modify: `public/game.css` (around line 1455)
 - Modify: `tests/unit/ios-edge-to-edge-css.test.js`
 
-- [ ] **Step 5.1: Add failing tests to the existing CSS test file**
+**Note:** An earlier draft of this plan also referenced a `.mini-toolbar.keyboard-avoid` variant. That rule does not exist in the codebase (verified via `grep -rn 'keyboard-avoid' public/ src/`). Task 5 edits only the base `.mini-toolbar` rule. The unrelated `.menu-sheet` rule at line ~1496 keeps its `env(safe-area-inset-bottom, …)` padding — it is a separate slide-up menu that intentionally clears the home indicator.
+
+- [ ] **Step 5.1: Add failing test to the existing CSS test file**
 
 Append the following to `tests/unit/ios-edge-to-edge-css.test.js`:
 ```javascript
-test('.mini-toolbar base rule does not add safe-area-inset-bottom', () => {
+
+test('.mini-toolbar does not add safe-area-inset-bottom', () => {
   const body = ruleBody(css, '.mini-toolbar {');
   assert.ok(body, '.mini-toolbar rule not found');
   assert.doesNotMatch(
@@ -382,29 +385,19 @@ test('.mini-toolbar base rule does not add safe-area-inset-bottom', () => {
     '.mini-toolbar should be flush with the bottom edge'
   );
 });
-
-test('.mini-toolbar.keyboard-avoid variant does not add safe-area-inset-bottom', () => {
-  const body = ruleBody(css, '.mini-toolbar.keyboard-avoid {');
-  assert.ok(body, '.mini-toolbar.keyboard-avoid rule not found');
-  assert.doesNotMatch(
-    body,
-    /env\(\s*safe-area-inset-bottom/,
-    '.mini-toolbar.keyboard-avoid should also be flush at the bottom'
-  );
-});
 ```
 
-- [ ] **Step 5.2: Run the tests — both new ones should fail**
+- [ ] **Step 5.2: Run the tests — the new one should fail**
 
 Run:
 ```bash
 node --test tests/unit/ios-edge-to-edge-css.test.js
 ```
-Expected: two new failures (the `.game-app` test from Task 4 still passes).
+Expected: one new failure (the `.game-app` test from Task 4 still passes).
 
 - [ ] **Step 5.3: Edit the `.mini-toolbar` base rule (line ~1455)**
 
-Find the base `.mini-toolbar { … }` block in `public/game.css`. Change its `padding` declaration:
+Find the `.mini-toolbar { … }` block in `public/game.css`. Change its `padding` declaration:
 
 **Before:**
 ```css
@@ -416,29 +409,17 @@ Find the base `.mini-toolbar { … }` block in `public/game.css`. Change its `pa
   padding: 4px 0;
 ```
 
-- [ ] **Step 5.4: Edit the `.mini-toolbar.keyboard-avoid` variant (line ~1511)**
+Do not touch `.menu-sheet` at line ~1496.
 
-Find the `.mini-toolbar.keyboard-avoid { … }` block. Change its `padding` declaration:
-
-**Before:**
-```css
-  padding: 4px 0 calc(4px + env(safe-area-inset-bottom, var(--safe-area-inset-bottom, 0px)));
-```
-
-**After:**
-```css
-  padding: 4px 0 4px;
-```
-
-- [ ] **Step 5.5: Run the tests — they should all pass**
+- [ ] **Step 5.4: Run the tests — they should all pass**
 
 Run:
 ```bash
 node --test tests/unit/ios-edge-to-edge-css.test.js
 ```
-Expected: all three CSS tests pass.
+Expected: both CSS tests pass.
 
-- [ ] **Step 5.6: Run the full test suite**
+- [ ] **Step 5.5: Run the full test suite**
 
 Run:
 ```bash
@@ -446,7 +427,7 @@ npm test
 ```
 Expected: all tests pass.
 
-- [ ] **Step 5.7: Commit**
+- [ ] **Step 5.6: Commit**
 
 Run:
 ```bash
@@ -633,7 +614,7 @@ Before handing the PR to the user, confirm:
 - [ ] `capacitor.config.ts` has `contentInset: 'never'`.
 - [ ] `public/js/native/index.js` calls `StatusBar.hide()` and `StatusBar.setOverlaysWebView({ overlay: true })`, and no longer calls `StatusBar.setBackgroundColor`.
 - [ ] `.game-app` in `public/game.css` has no `padding-top: env(safe-area-inset-top, …)` declaration.
-- [ ] `.mini-toolbar` and `.mini-toolbar.keyboard-avoid` in `public/game.css` have no `env(safe-area-inset-bottom, …)` in their padding.
+- [ ] `.mini-toolbar` in `public/game.css` has no `env(safe-area-inset-bottom, …)` in its padding. (No `.keyboard-avoid` variant exists in the codebase; `.menu-sheet`'s safe-area padding is preserved.)
 - [ ] All three new unit test files pass under `npm test`.
 - [ ] No unrelated `env(safe-area-inset-*)` usages were removed. Takeover views, auth screen, speed-review header, narration box, lookup popup, and similar utility surfaces still respect safe areas.
 - [ ] Playwright simulator screenshots confirm the top gap is gone and the mini-toolbar is flush.
