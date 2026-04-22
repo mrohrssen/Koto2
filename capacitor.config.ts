@@ -4,6 +4,10 @@ const config: CapacitorConfig = {
   appId: 'com.koto.app',
   appName: 'Koto',
   webDir: 'dist',
+  server: {
+    url: 'https://jrpg-production.up.railway.app',
+    cleartext: false,
+  },
   ios: {
     contentInset: 'never',
     allowsLinkPreview: false,
