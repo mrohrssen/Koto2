@@ -165,6 +165,24 @@ describe('renderJpSentence — attack card entity tokens via entityToToken', () 
 });
 
 describe('renderJpSentence — data attributes for word lookup', () => {
+  it('adds data-override="1" on spans whose meaning came from overrides', () => {
+    const tokens = [{ surface: '犬', base: '犬', reading: 'いぬ', pos: 'Noun' }];
+    const knownWords = new Set();
+    const wordDict = new Map([['犬', { reading: 'いぬ', definitions: [{ en: 'dog', primary: true }] }]]);
+    const html = renderJpSentence(tokens, knownWords, wordDict, { '犬': 'pup' }, false);
+    assert.match(html, /data-override="1"/);
+    assert.match(html, /data-meaning="pup"/);
+  });
+
+  it('does not add data-override when meaning came from the dictionary', () => {
+    const tokens = [{ surface: '犬', base: '犬', reading: 'いぬ', pos: 'Noun' }];
+    const knownWords = new Set();
+    const wordDict = new Map([['犬', { reading: 'いぬ', definitions: [{ en: 'dog', primary: true }] }]]);
+    const html = renderJpSentence(tokens, knownWords, wordDict, {}, false);
+    assert.doesNotMatch(html, /data-override/);
+    assert.match(html, /data-meaning="dog"/);
+  });
+
   it('adds data-base, data-reading, data-meaning, data-pos to known words', () => {
     const tokens = [{ surface: 'こんにちは', base: 'こんにちは', reading: 'こんにちは', meaning: 'hello', pos: 'Interjection' }];
     const html = renderJpSentence(tokens, new Set(['こんにちは']), wordDict, {}, false);

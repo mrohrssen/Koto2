@@ -100,8 +100,10 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     const meaning = resolveExposureMeaning(token, wordDict, overrides)
       || (token.entity ? token.meaning || '' : '');
 
+    const isFromOverride = !!overrides?.[baseForm];
+
     const pos = token.pos || '';
-    const dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;
+    const dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"${isFromOverride ? ' data-override="1"' : ''}`;
 
     if (isKnown) {
       const display = useKanji ? surface : displayReading;
