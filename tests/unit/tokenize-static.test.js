@@ -46,12 +46,13 @@ describe('tokenize-static output (frames.json)', () => {
     }
   });
 
-  it('content words have base, reading, and meaning', () => {
+  it('content words have base, reading, and pos but NOT meaning', () => {
     const polite = frames.find(f => f.id === 'shopPurchase_please');
     const kudasai = polite.tokens.find(t => t.base === 'くださる');
     assert.ok(kudasai, 'should have くださる content token');
     assert.ok(kudasai.reading, 'くださる should have reading');
-    assert.equal(typeof kudasai.meaning, 'string', 'くださる should have meaning');
+    assert.ok(kudasai.pos, 'くださる should have pos');
+    assert.equal(kudasai.meaning, undefined, 'meaning should NOT be baked into tokens (live dict is source of truth)');
   });
 
   it('content words have a pos field with English POS', () => {
@@ -110,7 +111,7 @@ describe('tokenize-static output (frames.json)', () => {
     const irasshaimase = frame.tokens.find(t => t.base === 'いらっしゃいませ');
     assert.ok(irasshaimase, 'いらっしゃいませ should be a single merged content token');
     assert.ok(irasshaimase.reading, 'should have reading');
-    assert.ok(irasshaimase.meaning, 'should have meaning');
+    assert.equal(irasshaimase.meaning, undefined, 'meaning should NOT be baked');
   });
 
   it('bark frames have correct category prefix and no slots', () => {
@@ -158,6 +159,19 @@ describe('tokenize-static output (frames.json)', () => {
     const npcFrame = frames.find(f => f.category === 'npc');
     if (npcFrame) {
       assert.ok(npcFrame.group, `NPC frame ${npcFrame.id} should have group field`);
+    }
+  });
+
+  it('overrides field passes through from frame-sources when present', () => {
+    // No frame in frame-sources has overrides today; verify the field is
+    // NOT emitted when absent (clean output).
+    for (const frame of frames) {
+      if ('overrides' in frame) {
+        assert.equal(typeof frame.overrides, 'object');
+        assert.ok(frame.overrides !== null);
+        assert.ok(Object.keys(frame.overrides).length > 0,
+          `frame ${frame.id} has empty overrides — should be omitted`);
+      }
     }
   });
 });

@@ -79,7 +79,7 @@ export default function createCombatRoutes({
           const mapLine = (l) => l ? {
             text: l.raw,
             tokens: l.tokens || [],
-            overrides: {},
+            overrides: l.overrides || {},
           } : null;
 
           const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords);

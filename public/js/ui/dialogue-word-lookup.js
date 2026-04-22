@@ -25,6 +25,35 @@ let _currentReading = null; // hiragana reading of current word
 let _getKanaMode = null; // () => boolean, injected via init
 
 /**
+ * Build the ordered meaning list for the popup.
+ *  - Override (when data-override="1") goes first, flagged contextual.
+ *  - Dict definitions follow, in order.
+ *  - Duplicates suppressed by exact string match.
+ *
+ * Exported for unit testing without a DOM.
+ */
+export function buildPopupMeanings({ dataMeaning, dataOverride, dictEntry }) {
+  const result = [];
+  const seen = new Set();
+
+  if (dataOverride === '1' && dataMeaning) {
+    result.push({ text: dataMeaning, contextual: true });
+    seen.add(dataMeaning);
+  }
+
+  if (dictEntry?.definitions) {
+    for (const def of dictEntry.definitions) {
+      if (def.en && !seen.has(def.en)) {
+        result.push({ text: def.en, contextual: false });
+        seen.add(def.en);
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Initialize the module. Call once after DOM is ready.
  * @param {{ wordDictionary: Map, showToast: Function, pauseAutoDismiss: Function, getKanaMode: Function }} options
  */
@@ -119,24 +148,26 @@ function handleWordClick(e) {
   dom.reading.textContent = reading !== span.textContent ? reading : '';
   dom.pos.textContent = pos;
 
-  // Meanings: primary from token, additional from dictionary
+  // Meanings: override (labeled "In this context") + dict definitions
   dom.meanings.innerHTML = '';
-  const meanings = [];
-  if (meaning) meanings.push(meaning);
-
-  // Pull additional definitions from dictionary
-  const dictEntry = _wordDict?.get(base);
-  if (dictEntry?.definitions) {
-    for (const def of dictEntry.definitions) {
-      if (def.en && !meanings.includes(def.en)) {
-        meanings.push(def.en);
-      }
-    }
-  }
+  const dictEntry = _wordDict?.get(base) || null;
+  const meanings = buildPopupMeanings({
+    dataMeaning: meaning,
+    dataOverride: span.dataset.override || null,
+    dictEntry,
+  });
 
   for (const m of meanings) {
     const li = document.createElement('li');
-    li.textContent = m;
+    if (m.contextual) {
+      li.className = 'contextual-meaning';
+      const em = document.createElement('em');
+      em.textContent = 'In this context: ';
+      li.appendChild(em);
+      li.appendChild(document.createTextNode(m.text));
+    } else {
+      li.textContent = m.text;
+    }
     dom.meanings.appendChild(li);
   }
 
