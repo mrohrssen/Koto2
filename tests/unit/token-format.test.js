@@ -113,6 +113,27 @@ describe('assembleFrame', () => {
     assert.deepStrictEqual(result.tokens, frame.tokens);
     assert.deepStrictEqual(result.words, ['すごい']);
   });
+
+  it('passes frame.overrides through into the returned object', () => {
+    const frame = {
+      id: 'f1',
+      tokens: [{ surface: '犬', base: '犬', reading: 'いぬ', pos: 'Noun' }],
+      words: ['犬'],
+      overrides: { '犬': 'pup' },
+    };
+    const result = assembleFrame(frame, {});
+    assert.deepEqual(result.overrides, { '犬': 'pup' });
+  });
+
+  it('omits overrides when the frame has none', () => {
+    const frame = {
+      id: 'f2',
+      tokens: [{ surface: '犬', base: '犬', reading: 'いぬ', pos: 'Noun' }],
+      words: ['犬'],
+    };
+    const result = assembleFrame(frame, {});
+    assert.equal('overrides' in result, false);
+  });
 });
 
 // Helper: content token (has base field)

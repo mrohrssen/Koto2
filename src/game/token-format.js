@@ -11,7 +11,8 @@ export function entityToToken(entity) {
 
 /**
  * Splice entity tokens into a frame template's slot positions and merge
- * the entity base forms into the word list.  Never mutates the original frame.
+ * the entity base forms into the word list. Passes frame.overrides through
+ * when present. Never mutates the original frame.
  */
 export function assembleFrame(frame, entities) {
   const tokens = [];
@@ -27,7 +28,11 @@ export function assembleFrame(frame, entities) {
       tokens.push(token);
     }
   }
-  return { tokens, words: [...frame.words, ...extraWords] };
+  const result = { tokens, words: [...frame.words, ...extraWords] };
+  if (frame.overrides && Object.keys(frame.overrides).length > 0) {
+    result.overrides = frame.overrides;
+  }
+  return result;
 }
 
 const SENTENCE_ENDERS = '。！？!?';
