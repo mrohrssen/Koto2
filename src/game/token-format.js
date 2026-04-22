@@ -89,12 +89,20 @@ export function filterEligible(candidates, knownWords) {
 }
 
 /**
- * Return a frame's tokens for rendering.  Singleton wrapper around filterEligible —
- * a single frame always comes back (never null for a valid frame).
+ * Return a frame's rendered form for i+1-eligible output: tokens plus any overrides.
+ * Singleton wrapper around filterEligible — a single frame always comes back (never
+ * null for a valid frame).
+ *
+ * @returns {{tokens: Array, overrides?: Object}|null}
  */
 export function getEligibleFrameTokens(frame, knownWords) {
   if (!frame?.tokens?.length) return null;
-  return [...filterEligible([frame], knownWords)[0].tokens];
+  const chosen = filterEligible([frame], knownWords)[0];
+  const result = { tokens: [...chosen.tokens] };
+  if (chosen.overrides && Object.keys(chosen.overrides).length > 0) {
+    result.overrides = chosen.overrides;
+  }
+  return result;
 }
 
 /**

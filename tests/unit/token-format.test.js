@@ -223,14 +223,15 @@ describe('scoreCandidate', () => {
 });
 
 describe('getEligibleFrameTokens', () => {
-  it('returns tokens when the frame is i+1-eligible', () => {
+  it('returns {tokens, overrides?} when the frame is i+1-eligible', () => {
     const frame = {
       tokens: [w('はい', 'はい')],
       words: ['はい'],
     };
     const result = getEligibleFrameTokens(frame, new Set());
-    assert.notStrictEqual(result, frame.tokens);
-    assert.deepStrictEqual(result, frame.tokens);
+    assert.notStrictEqual(result.tokens, frame.tokens);
+    assert.deepStrictEqual(result.tokens, frame.tokens);
+    assert.equal('overrides' in result, false);
   });
 
   it('falls back to tokens when the frame exceeds i+1', () => {
@@ -239,8 +240,18 @@ describe('getEligibleFrameTokens', () => {
       words: ['どの', '能力'],
     };
     const result = getEligibleFrameTokens(frame, new Set());
-    assert.ok(Array.isArray(result));
-    assert.equal(result.length, 3);
+    assert.ok(Array.isArray(result.tokens));
+    assert.equal(result.tokens.length, 3);
+  });
+
+  it('includes overrides when the frame has any', () => {
+    const frame = {
+      tokens: [w('どの', 'どの')],
+      words: ['どの'],
+      overrides: { 'どの': 'which / what (way)' },
+    };
+    const result = getEligibleFrameTokens(frame, new Set());
+    assert.deepStrictEqual(result.overrides, { 'どの': 'which / what (way)' });
   });
 
   it('returns null for a missing frame', () => {

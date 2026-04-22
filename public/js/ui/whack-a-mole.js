@@ -358,7 +358,7 @@ export class WhackAMoleGame {
     // Narration 1: GM i+1 line (skip when no tokens - backend fallback path).
     if (finishDialogue?.tokens?.length) {
       const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-      const html = renderJpSentence(finishDialogue.tokens, getKnownWords(), wordDict, {}, false);
+      const html = renderJpSentence(finishDialogue.tokens, getKnownWords(), wordDict, finishDialogue.overrides || {}, false);
       await narrationBox.show(html, { html: true, speaker: 'Game Master' });
     }
 
