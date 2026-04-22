@@ -1525,13 +1525,10 @@ export async function stopCombatLoop(result) {
     }
   }
 
-  // Brief pause before narration (let final damage numbers display)
-  await delay(720);
-
-  // Fix C: Clear stale DOM enemy formation slots. Pixi enemy sprites were
-  // already removed via syncCreatures above; this closes the window where
-  // leftover DOM slots could trigger the showFormation() dedup path to
-  // recreate ghost sprites. The 720ms delay above lets damage numbers finish.
+  // Clear stale DOM enemy formation slots. Pixi enemy sprites were already
+  // removed via syncCreatures above; this closes the window where leftover
+  // DOM slots could trigger the showFormation() dedup path to recreate
+  // ghost sprites.
   const enemyFormationEl = document.getElementById('enemy-formation');
   if (enemyFormationEl) enemyFormationEl.innerHTML = '';
 
