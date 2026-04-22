@@ -2,6 +2,13 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { init, record, flushNow } from '../../public/js/ui/exposure-buffer.js';
 
+// Shared word dict — meanings now come from the live dict, not token.meaning.
+const wordDict = new Map([
+  ['遊ぶ', { definitions: [{ en: 'to play', primary: true }] }],
+  ['犬', { definitions: [{ en: 'dog', primary: true }] }],
+  ['一緒', { definitions: [{ en: 'together', primary: true }] }],
+]);
+
 function createEventTarget() {
   const listeners = new Map();
 
@@ -39,8 +46,8 @@ describe('exposure-buffer', () => {
       onlineTarget: win
     });
 
-    record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'to play' }], new Map(), {});
-    record([{ surface: '犬', base: '犬', pos: '名詞', meaning: 'dog' }], new Map(), {});
+    record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'to play' }], wordDict, {});
+    record([{ surface: '犬', base: '犬', pos: '名詞', meaning: 'dog' }], wordDict, {});
 
     await wait(25);
 
@@ -67,7 +74,7 @@ describe('exposure-buffer', () => {
       onlineTarget: win
     });
 
-    record([{ surface: '一緒', base: '一緒', pos: '名詞', meaning: 'together' }], new Map(), {});
+    record([{ surface: '一緒', base: '一緒', pos: '名詞', meaning: 'together' }], wordDict, {});
 
     await flushNow();
     await flushNow();
@@ -92,11 +99,11 @@ describe('exposure-buffer', () => {
       onlineTarget: win
     });
 
-    record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'to play' }], new Map(), {});
+    record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'to play' }], wordDict, {});
     doc.visibilityState = 'hidden';
     doc.dispatchEvent('visibilitychange');
 
-    record([{ surface: '犬', base: '犬', pos: '名詞', meaning: 'dog' }], new Map(), {});
+    record([{ surface: '犬', base: '犬', pos: '名詞', meaning: 'dog' }], wordDict, {});
     win.dispatchEvent('pagehide');
 
     assert.deepEqual(posts, [
@@ -133,7 +140,7 @@ describe('exposure-buffer', () => {
         onlineTarget: win
       });
 
-      record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'to play' }], new Map(), {});
+      record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'to play' }], wordDict, {});
 
       await flushNow();
       assert.equal(posts.length, 0);

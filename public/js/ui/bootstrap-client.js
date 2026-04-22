@@ -93,8 +93,12 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     const isKnown = knownWords.has(baseForm);
     const displayReading = reading || surface;
 
-    // Look up meaning for data attribute (needed for both known and unknown)
-    const meaning = resolveExposureMeaning(token, wordDict, overrides);
+    // Look up meaning for data attribute (needed for both known and unknown).
+    // Entity tokens (moves, creatures, NPCs) carry their English name in token.meaning
+    // (set by entityToToken). resolveExposureMeaning no longer reads token.meaning, so
+    // fall back to it here only for entity tokens (proper nouns with no dict entry).
+    const meaning = resolveExposureMeaning(token, wordDict, overrides)
+      || (token.entity ? token.meaning || '' : '');
 
     const pos = token.pos || '';
     const dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;

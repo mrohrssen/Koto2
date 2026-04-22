@@ -118,13 +118,14 @@ describe('renderJpSentence — universal token format', () => {
     assert.ok(html.includes('おちゃ'));
   });
 
-  it('renders unknown content word with meaning from token (new format)', () => {
+  it('renders unknown content word with meaning from dictionary (new format)', () => {
     const tokens = [
       { surface: 'お茶', base: 'お茶', reading: 'おちゃ', meaning: 'Tea' },
     ];
-    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    // Meaning comes from the live dictionary, not token.meaning.
+    const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
     assert.ok(html.includes('jp-unknown'));
-    assert.ok(html.includes('Tea'));
+    assert.ok(html.includes('tea'));  // dict value: 'tea (esp. green or barley)'
   });
 
   it('renders surface-only token as punctuation (new format)', () => {

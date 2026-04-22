@@ -25,9 +25,9 @@ describe('extractExposureEntries', () => {
     );
   });
 
-  it('resolves meaning from token, then override, then dictionary, then empty string', () => {
+  it('resolves meaning from override, then dictionary, then empty string', () => {
     const tokens = [
-      { surface: '猫', base: '猫', pos: '名詞', meaning: 'cat from token' },
+      { surface: '猫', base: '猫', pos: '名詞', meaning: 'stale baked meaning for cat' },
       { surface: '犬', baseForm: '犬', pos: '名詞' },
       { surface: '鳥', base: '鳥', pos: '名詞' },
     ];
@@ -35,10 +35,21 @@ describe('extractExposureEntries', () => {
     assert.deepEqual(
       extractExposureEntries(tokens, wordDict, { 犬: 'dog from override' }),
       [
-        { word: '猫', meaning: 'cat from token' },
+        { word: '猫', meaning: '' },
         { word: '犬', meaning: 'dog from override' },
         { word: '鳥', meaning: '' },
       ]
+    );
+  });
+
+  it('override beats a live-dict entry', () => {
+    const tokens = [
+      { surface: '犬', base: '犬', pos: '名詞' },
+    ];
+
+    assert.deepEqual(
+      extractExposureEntries(tokens, wordDict, { 犬: 'pup (context)' }),
+      [{ word: '犬', meaning: 'pup (context)' }]
     );
   });
 
