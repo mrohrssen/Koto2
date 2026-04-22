@@ -1357,10 +1357,10 @@ async function returnToHub() {
 function startCombatLoop() { combatLoopUI.startCombatLoop(); }
 function resumeCombatAfterVocab() { combatLoopUI.resumeCombatAfterVocab(); }
 
-// Returns a Promise that resolves when the 300ms victory window's
-// loadGameState+updateUI settles. combat-loop.stopCombatLoop awaits this
-// before transitioning BattleScene → ExplorationScene so player sprites
-// remain visible through the modal window (ghost-formation fix).
+// Returns a Promise that resolves once loadGameState + updateUI have run.
+// combat-loop.stopCombatLoop awaits this before transitioning
+// BattleScene → ExplorationScene so player sprites stay visible through
+// the victory window (ghost-formation fix).
 function showVictoryModal(result) {
   audio.stopBGM();
   actions.clear();
