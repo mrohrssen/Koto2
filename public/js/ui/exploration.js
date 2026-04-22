@@ -951,14 +951,18 @@ export async function renderWhackAMole() {
     };
   }
 
-  // Already completed — just show proceed
+  // Already completed — auto-proceed (matches renderQuiz pattern).
   if (room?.interacted) {
-    actions.setContent(`
-      <div class="wam-results">
-        <div class="wam-results-title">ゲーム完了!</div>
-        <div class="wam-results-score">Score: ${room.whackAMole?.score || 0}</div>
-      </div>
-    `);
+    try {
+      const result = await apiProceed();
+      if (result?.state) {
+        updateGameState(result.state);
+        await playRoomTransition(result.state);
+      }
+    } catch (err) {
+      // Fall through to updateUI — server state may already have advanced.
+    }
+    updateUI();
     return;
   }
 
@@ -1536,6 +1540,7 @@ function startWhackAMoleGame(pool) {
   new WhackAMoleGame(pool, {
     actions,
     apiCompleteWhackAMole,
+    apiProceed,
     updateGameState,
     updateUI,
     playSFX

@@ -74,6 +74,12 @@ const strings = {
                       ja: '{0}が仲間になりたがっている — パーティ満員！',
                       tagged: '{0} wants to join — but your party is {full|満員|まんいん}!' },
 
+  // ── Whack-a-Mole: finish narration ──
+  wamXpGained:      { en: 'Your team gained {0} XP!',
+                      ja: 'チームが{0}XPを獲得！' },
+  wamZeroXp:        { en: 'Your team gained 0 XP. Better luck next time!',
+                      ja: '0XPでした。次回頑張りましょう！' },
+
   // ── Collection / team select ──
   selectTeam:       { en: 'Select Your Team', ja: 'チーム選択',
                       tagged: '{Select|選択|せんたく} Your Team' },

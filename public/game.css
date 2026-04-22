@@ -4244,49 +4244,6 @@ textarea,
   color: var(--text-secondary);
 }
 
-/* Results screen */
-.wam-results {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 2rem 1rem;
-  text-align: center;
-  flex: 1;
-}
-
-.wam-results-title {
-  font-size: 1.5rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-}
-
-.wam-results-score {
-  font-size: 2rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--accent-amber);
-}
-
-.wam-results-xp {
-  font-size: 1.1rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--accent-cyan, #00bcd4);
-  margin-bottom: 4px;
-}
-
-.wam-results-levelup {
-  font-size: 0.95rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--accent-amber);
-  margin-bottom: 2px;
-}
-
-.wam-results-credits {
-  font-size: 1rem;
-  color: var(--text-secondary);
-}
-
 .wam-error {
   padding: 2rem;
   text-align: center;

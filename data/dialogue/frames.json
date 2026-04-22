@@ -8340,6 +8340,144 @@
     ]
   },
   {
+    "id": "gm_finish_1",
+    "category": "gameMaster_finish",
+    "raw": "上手！",
+    "tokens": [
+      {
+        "surface": "上手",
+        "base": "上手",
+        "reading": "じょうず",
+        "meaning": "skilled",
+        "pos": "Na-adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "上手"
+    ]
+  },
+  {
+    "id": "gm_finish_2",
+    "category": "gameMaster_finish",
+    "raw": "楽しい！",
+    "tokens": [
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "楽しい"
+    ]
+  },
+  {
+    "id": "gm_finish_3",
+    "category": "gameMaster_finish",
+    "raw": "楽しい遊び！",
+    "tokens": [
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "遊び",
+        "base": "遊び",
+        "reading": "あそび",
+        "meaning": "play / playing / game",
+        "pos": "Noun"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "楽しい",
+      "遊び"
+    ]
+  },
+  {
+    "id": "gm_finish_4",
+    "category": "gameMaster_finish",
+    "raw": "言葉の遊び！",
+    "tokens": [
+      {
+        "surface": "言葉",
+        "base": "言葉",
+        "reading": "ことば",
+        "meaning": "language / dialect",
+        "pos": "Noun"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "遊び",
+        "base": "遊び",
+        "reading": "あそび",
+        "meaning": "play / playing / game",
+        "pos": "Noun"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "言葉",
+      "遊び"
+    ]
+  },
+  {
+    "id": "gm_finish_5",
+    "category": "gameMaster_finish",
+    "raw": "楽しい言葉の遊び！",
+    "tokens": [
+      {
+        "surface": "楽しい",
+        "base": "楽しい",
+        "reading": "たのしい",
+        "meaning": "enjoyable / fun / pleasant / happy / delightful",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "言葉",
+        "base": "言葉",
+        "reading": "ことば",
+        "meaning": "language / dialect",
+        "pos": "Noun"
+      },
+      {
+        "surface": "の"
+      },
+      {
+        "surface": "遊び",
+        "base": "遊び",
+        "reading": "あそび",
+        "meaning": "play / playing / game",
+        "pos": "Noun"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "楽しい",
+      "言葉",
+      "遊び"
+    ]
+  },
+  {
     "id": "npcDefeat_0",
     "category": "npcDefeat",
     "raw": "すごい！",

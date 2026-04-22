@@ -210,6 +210,45 @@ describe('Whack-a-Mole Pool', () => {
     assert.ok(Array.isArray(res.body.dialogue.words), 'dialogue should have words array');
   });
 
+  it('POST /whack-a-mole-complete should include finishDialogue in response', () => {
+    const handler = getHandler(router, 'post', '/whack-a-mole-complete');
+    assert.ok(handler, 'POST /whack-a-mole-complete handler should exist');
+
+    let saved = false;
+    const req = {
+      body: { score: 3 },
+      user: { id: 'test-wam-finish-dialogue' },
+      gameManager: {
+        completeWhackAMole(score) {
+          return {
+            type: 'whack_a_mole_complete',
+            score,
+            creditsAwarded: score,
+            xpGrants: [],
+            levelUps: [],
+          };
+        },
+      },
+      saveGame: () => { saved = true; },
+      getEnrichedGameState: () => ({ run: {} }),
+    };
+    const res = {
+      statusCode: 200,
+      body: null,
+      status(c) { this.statusCode = c; return this; },
+      json(d) { this.body = d; return this; },
+    };
+
+    handler(req, res);
+
+    assert.strictEqual(res.statusCode, 200);
+    assert.ok(res.body.finishDialogue, 'response should include finishDialogue');
+    assert.ok(Array.isArray(res.body.finishDialogue.tokens), 'finishDialogue.tokens should be an array');
+    assert.ok(Array.isArray(res.body.finishDialogue.words), 'finishDialogue.words should be an array');
+    assert.strictEqual(res.body.score, 3, 'existing response fields remain');
+    assert.ok(saved, 'saveGame should have been called');
+  });
+
   it('should only include creatures and items from the current area', () => {
     const handler = getHandler(router, 'get', '/whack-a-mole-pool');
     const req = mockReq();

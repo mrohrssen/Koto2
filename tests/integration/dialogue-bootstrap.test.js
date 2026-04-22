@@ -50,7 +50,7 @@ describe('dialogue bootstrap integration', () => {
     const dataDir = join(tmpDir.path, 'data');
     mkdirSync(dataDir, { recursive: true });
 
-    writeFileSync(join(dataDir, 'dictionary.json'), JSON.stringify({
+    writeFileSync(join(dataDir, 'live-dictionary.json'), JSON.stringify({
       '猫': { reading: 'ねこ', definitions: [{ en: 'cat', primary: true }] },
     }));
 
@@ -58,7 +58,10 @@ describe('dialogue bootstrap integration', () => {
       { word: 'わたし', reading: 'わたし', en: 'I/me', priority: 1 },
     ]));
 
-    const dict = loadWordDictionary(dataDir);
+    const dict = loadWordDictionary({
+      overlayDir: dataDir,
+      liveDictPath: join(dataDir, 'live-dictionary.json'),
+    });
     assert.ok(dict.has('猫'), 'should have base dictionary entry');
     assert.ok(dict.has('わたし'), 'should have glue word overlay');
     assert.equal(dict.get('わたし').definitions[0].en, 'I/me');

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
+import { resolveLiveDictPath } from '../../game/live-dict-path.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
 import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
@@ -18,7 +19,7 @@ import {
 } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
-import { getShopPurchaseFrames, getShopGreetingFrames, getGameMasterAskFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
+import { getShopPurchaseFrames, getShopGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 
 const SPRITE_VERSION = '20260321';
 const __filename = fileURLToPath(import.meta.url);
@@ -486,7 +487,10 @@ export default function createRunRoutes({
 
       // Enrich words with meanings from local dictionary
       if (result.words.length > 0) {
-        const dict = req.app.locals.wordDictionary || loadWordDictionary(join(process.cwd(), 'data'));
+        const dict = req.app.locals.wordDictionary || loadWordDictionary({
+          overlayDir: join(process.cwd(), 'data'),
+          liveDictPath: resolveLiveDictPath(),
+        });
         for (const word of result.words) {
           if (!word.meanings?.length) {
             const entry = dict.get(word.word);
@@ -676,7 +680,15 @@ export default function createRunRoutes({
       const { score } = req.body;
       const result = req.gameManager.completeWhackAMole(score);
       req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
+
+      // Pick best i+1 finish dialogue for GM narration. Words auto-expose on client render.
+      const knownWords = getKnownWordsFromFsrs(req.user.id);
+      const knownSet = new Set(knownWords);
+      const finishFrames = getGameMasterFinishFrames();
+      const candidates = finishFrames.map(frame => assembleFrame(frame, {}));
+      const finishDialogue = selectBestFrame(candidates, knownSet) || { tokens: [], words: [] };
+
+      res.json({ ...result, finishDialogue, state: req.getEnrichedGameState() });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }

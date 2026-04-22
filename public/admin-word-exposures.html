@@ -167,6 +167,81 @@
   }
   .category-filter { display: none; }
   .category-filter.visible { display: flex; align-items: center; gap: 4px; }
+  .overlay-badge {
+    background: #3a2f00;
+    color: #f0a500;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  .edit-dict-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .edit-dict-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .dict-modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+  }
+  .dict-modal {
+    background: #16213e;
+    border: 1px solid #7fdbca;
+    border-radius: 6px;
+    padding: 20px;
+    width: min(720px, 90vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    color: #e0e0e0;
+  }
+  .dict-modal h2 { color: #7fdbca; margin-bottom: 12px; }
+  .dict-modal label { display: block; margin: 10px 0 4px; color: #aaa; font-size: 12px; }
+  .dict-modal input, .dict-modal textarea {
+    width: 100%;
+    background: #0f3460;
+    border: 1px solid #333;
+    color: #e0e0e0;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .dict-modal .def-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto auto;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .dict-modal .def-row input[type="text"] { min-width: 0; }
+  .dict-modal .def-row input[type="radio"] { width: auto; }
+  .dict-modal .baseline {
+    background: #0f3460;
+    border-left: 3px solid #7fdbca;
+    padding: 10px;
+    margin: 12px 0;
+    font-size: 12px;
+  }
+  .dict-modal .overlay-warning {
+    background: #3a0000;
+    border: 1px solid #ff6666;
+    color: #ffcccc;
+    padding: 10px;
+    margin: 12px 0;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .dict-modal .actions {
+    display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px;
+  }
+  .readonly-banner {
+    background: #3a2f00; color: #f0a500; padding: 8px 12px;
+    border-radius: 4px; margin-bottom: 10px; font-size: 12px;
+  }
 </style>
 </head>
 <body>
@@ -217,6 +292,9 @@
         <th>JPDB Reading</th>
         <th>JPDB Definition</th>
         <th>Different?</th>
+        <th>JMDict Definition</th>
+        <th>Overlay</th>
+        <th></th>
       </tr>
     </thead>
     <tbody id="words-body"></tbody>
@@ -347,6 +425,9 @@ function renderWords() {
       diffCell = isDiff ? '<span class="diff-yes">YES</span>' : 'no';
     }
 
+    const overlayCell = w.overlayOwner
+      ? '<span class="overlay-badge">' + esc(w.overlayOwner) + '</span>'
+      : '';
     html += '<tr' + rowClass + '>'
       + '<td>' + idx + '</td>'
       + '<td>' + esc(w.word) + '</td>'
@@ -358,6 +439,9 @@ function renderWords() {
       + '<td>' + jpdbReading + '</td>'
       + '<td>' + jpdbDef + '</td>'
       + '<td>' + diffCell + '</td>'
+      + '<td class="jmdict-cell">' + esc(w.jmdictDefinition) + '</td>'
+      + '<td class="overlay-cell">' + overlayCell + '</td>'
+      + '<td><button class="edit-dict-btn" data-word="' + esc(w.word) + '">Edit</button></td>'
       + '</tr>';
   }
 
@@ -552,6 +636,159 @@ async function fetchJpdbFrameBatches(gen) {
 
 // --- Init ---
 fetchAdminSecret().then(() => load());
+</script>
+
+<script>
+(function() {
+  const secret = () => adminSecret || '';
+
+  async function dictConfig() {
+    const r = await fetch('/api/admin/dictionary-config', { headers: { 'x-admin-secret': secret() } });
+    if (!r.ok) return { readOnly: false };
+    return r.json();
+  }
+
+  async function openEditModal(word) {
+    const r = await fetch('/api/admin/dictionary/' + encodeURIComponent(word), { headers: { 'x-admin-secret': secret() } });
+    if (!r.ok) { alert('Failed to load entry: ' + r.status); return; }
+    const data = await r.json();
+    const cfg = await dictConfig();
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'dict-modal-backdrop';
+    backdrop.innerHTML = `
+      <div class="dict-modal" role="dialog" aria-modal="true">
+        <h2>Edit: ${data.word}</h2>
+        ${cfg.readOnly ? '<div class="readonly-banner">Dictionary editing is disabled in this environment. Use production.</div>' : ''}
+        ${data.overlayOwner ? `<div class="overlay-warning">This word is also defined in <code>${data.overlayOwner}</code>. Your edit will save to the live dictionary but will be overridden by the overlay on next boot. To change the player-facing gloss, edit <code>${data.overlayOwner}</code> instead.</div>` : ''}
+        <label>Reading</label>
+        <input type="text" id="dm-reading" value="${(data.live?.reading || '').replace(/"/g,'&quot;')}">
+        <label>Definitions (exactly one must be primary)</label>
+        <div id="dm-defs"></div>
+        <button type="button" id="dm-add">+ Add definition</button>
+        <div class="baseline">
+          <strong>JMDict baseline:</strong><br>
+          Reading: ${data.jmdict?.reading || '&#8212;'}<br>
+          ${(data.jmdict?.definitions || []).map(d => '&#8226; ' + d.en + (d.primary ? ' (primary)' : '')).join('<br>') || '&#8212;'}
+        </div>
+        <div class="actions">
+          <button type="button" id="dm-cancel">Cancel</button>
+          <button type="button" id="dm-save" ${cfg.readOnly ? 'disabled' : ''}>Save</button>
+        </div>
+      </div>`;
+    document.body.appendChild(backdrop);
+
+    const defs = Array.isArray(data.live?.definitions) ? data.live.definitions.map(d => ({ ...d })) : [{ en: '', primary: true }];
+    const defsContainer = backdrop.querySelector('#dm-defs');
+    function renderDefs() {
+      defsContainer.innerHTML = '';
+      defs.forEach((d, i) => {
+        const row = document.createElement('div');
+        row.className = 'def-row';
+        row.innerHTML = `
+          <input type="text" value="${(d.en || '').replace(/"/g,'&quot;')}" data-idx="${i}" class="dm-en">
+          <label title="primary"><input type="radio" name="dm-primary" ${d.primary ? 'checked' : ''} data-idx="${i}"> P</label>
+          <button type="button" class="dm-up" data-idx="${i}" ${i === 0 ? 'disabled' : ''}>&#8593;</button>
+          <button type="button" class="dm-down" data-idx="${i}" ${i === defs.length - 1 ? 'disabled' : ''}>&#8595;</button>
+          <button type="button" class="dm-del" data-idx="${i}" ${defs.length === 1 ? 'disabled' : ''}>&#x2715;</button>`;
+        defsContainer.appendChild(row);
+      });
+    }
+    renderDefs();
+
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) close();
+    });
+    backdrop.querySelector('#dm-cancel').addEventListener('click', close);
+    backdrop.querySelector('#dm-add').addEventListener('click', () => {
+      defs.push({ en: '' });
+      renderDefs();
+    });
+    defsContainer.addEventListener('input', (e) => {
+      if (e.target.classList.contains('dm-en')) {
+        defs[+e.target.dataset.idx].en = e.target.value;
+      }
+    });
+    defsContainer.addEventListener('change', (e) => {
+      if (e.target.type === 'radio') {
+        defs.forEach((d, j) => { d.primary = (j === +e.target.dataset.idx); });
+      }
+    });
+    defsContainer.addEventListener('click', (e) => {
+      const idx = +e.target.dataset.idx;
+      if (e.target.classList.contains('dm-up')) {
+        [defs[idx - 1], defs[idx]] = [defs[idx], defs[idx - 1]];
+        renderDefs();
+      } else if (e.target.classList.contains('dm-down')) {
+        [defs[idx], defs[idx + 1]] = [defs[idx + 1], defs[idx]];
+        renderDefs();
+      } else if (e.target.classList.contains('dm-del')) {
+        if (defs.length > 1) {
+          const wasPrimary = defs[idx].primary;
+          defs.splice(idx, 1);
+          if (wasPrimary) defs[0].primary = true;
+          renderDefs();
+        }
+      }
+    });
+
+    backdrop.querySelector('#dm-save').addEventListener('click', async () => {
+      const reading = backdrop.querySelector('#dm-reading').value.trim();
+      const body = {
+        reading,
+        definitions: defs.map(d => ({
+          en: (d.en || '').trim(),
+          ...(d.primary ? { primary: true } : {}),
+        })),
+      };
+      const r = await fetch('/api/admin/dictionary/' + encodeURIComponent(word), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret() },
+        body: JSON.stringify(body),
+      });
+      const payload = await r.json().catch(() => ({}));
+      if (!r.ok) { alert('Save failed: ' + (payload.error || r.status)); return; }
+      if (payload.overlayOverridden) {
+        alert('Saved. Note: this word is defined in an overlay file — your edit will be overridden on next boot.');
+      }
+      close();
+      // Refresh the table if the page exposes a refresh hook
+      if (typeof window.refreshWordExposures === 'function') window.refreshWordExposures();
+    });
+
+    function close() { backdrop.remove(); }
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.target.classList?.contains('edit-dict-btn')) {
+      openEditModal(e.target.dataset.word);
+    }
+  });
+
+  async function pollSyncStatus() {
+    try {
+      const r = await fetch('/api/admin/dictionary-sync-status', { headers: { 'x-admin-secret': secret() } });
+      if (!r.ok) return;
+      const s = await r.json();
+      let banner = document.getElementById('dict-sync-banner');
+      if (s.lastError) {
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'dict-sync-banner';
+          banner.className = 'readonly-banner';
+          document.body.insertBefore(banner, document.body.firstChild);
+        }
+        banner.textContent = `Last dictionary edit not committed to git: ${s.lastError.error} (${s.lastError.word}, ${s.lastError.at}). Click to retry.`;
+        banner.style.cursor = 'pointer';
+        banner.onclick = () => { /* re-PUT the last-errored word handled out of scope for v1 */ alert('Retry: re-save the word via Edit.'); };
+      } else if (banner) {
+        banner.remove();
+      }
+    } catch { /* swallow */ }
+  }
+  setInterval(pollSyncStatus, 15000);
+  pollSyncStatus();
+})();
 </script>
 </body>
 </html>

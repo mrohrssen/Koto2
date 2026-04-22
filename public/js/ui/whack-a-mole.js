@@ -1,5 +1,13 @@
 import { animate as anime } from 'animejs';
 import { toRomaji } from './romaji.js';
+import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
+import * as narrationBox from './narration-box.js';
+import { tPlain } from './i18n.js';
+import { showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup } from '../pixi/text.js';
+import { animateLevelUpForScene } from '../pixi/formation.js';
+import { spritePos } from './combat-vfx.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
+import { playRoomTransition } from './room-transition.js';
 
 export class WhackAMoleGame {
   /**
@@ -7,6 +15,7 @@ export class WhackAMoleGame {
    * @param {Object} deps - Injected dependencies from the exploration module
    * @param {Object} deps.actions - Actions module with setContent()
    * @param {Function} deps.apiCompleteWhackAMole - API call to save score
+   * @param {Function} deps.apiProceed - API call to advance to the next room
    * @param {Function} deps.updateGameState - Callback to update game state
    * @param {Function} deps.updateUI - Callback to re-render the main UI
    * @param {Function} deps.playSFX - Sound effect player (optional, errors swallowed)
@@ -15,6 +24,7 @@ export class WhackAMoleGame {
     this.pool = pool;
     this.actions = deps.actions;
     this.apiCompleteWhackAMole = deps.apiCompleteWhackAMole;
+    this.apiProceed = deps.apiProceed;
     this.updateGameState = deps.updateGameState;
     this.updateUI = deps.updateUI;
     this.playSFX = deps.playSFX;
@@ -331,35 +341,63 @@ export class WhackAMoleGame {
 
     let xpGrants = [];
     let levelUps = [];
+    let finishDialogue = null;
     try {
       const result = await this.apiCompleteWhackAMole(this.score);
-      this.updateGameState(result.state);
-      xpGrants = result.xpGrants || [];
-      levelUps = result.levelUps || [];
+      if (result?.state) this.updateGameState(result.state);
+      xpGrants = result?.xpGrants || [];
+      levelUps = result?.levelUps || [];
+      finishDialogue = result?.finishDialogue || null;
     } catch (err) {
-      // Still show results even if save fails
+      // Network failure - still tear down the overlay and attempt to proceed below.
     }
 
-    const xpPerCreature = xpGrants.length > 0 ? xpGrants[0].xp : 0;
-    const levelUpHtml = levelUps.length > 0
-      ? levelUps.map(lu => `<div class="wam-results-levelup">${lu.creatureName} Lv${lu.oldLevel} \u2192 ${lu.newLevel}!</div>`).join('')
-      : '';
+    // Tear down fullscreen .wam-container so the ExplorationScene is visible.
+    this.actions.setContent('');
 
-    this.actions.setContent(`
-      <div class="wam-container">
-        <div class="wam-results">
-          <div class="wam-results-title">\u30BF\u30A4\u30E0\u30A2\u30C3\u30D7!</div>
-          <div class="wam-results-score">\u2605 ${this.score}</div>
-          ${xpPerCreature > 0 ? `<div class="wam-results-xp">+${xpPerCreature} XP to party</div>` : ''}
-          ${levelUpHtml}
-          <button class="ui-btn ui-btn--primary wam-continue-btn">Continue</button>
-        </div>
-      </div>
-    `);
+    // Narration 1: GM i+1 line (skip when no tokens - backend fallback path).
+    if (finishDialogue?.tokens?.length) {
+      const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+      const html = renderJpSentence(finishDialogue.tokens, getKnownWords(), wordDict, {}, false);
+      await narrationBox.show(html, { html: true, speaker: 'Game Master' });
+    }
 
-    document.querySelector('.wam-continue-btn')?.addEventListener('click', () => {
-      this.updateUI();
-    });
+    // Narration 2: system XP line + sprite popups over the player formation.
+    const perCreatureXp = xpGrants[0]?.xp ?? 0;
+
+    if (perCreatureXp > 0) {
+      const activeParty = window.gameState?.run?.creatureParty?.active || [];
+      for (const grant of xpGrants) {
+        const index = activeParty.findIndex(c => c && c.id === grant.creatureId);
+        if (index < 0) continue;
+        const pos = spritePos('player', index);
+        if (pos) pixiXpPopup(grant.xp, pos);
+      }
+      for (const lu of levelUps) {
+        const index = activeParty.findIndex(c => c && c.id === lu.creatureId);
+        if (index < 0) continue;
+        const pos = spritePos('player', index);
+        if (pos) setTimeout(() => pixiLevelUpPopup(lu.newLevel, pos), 400);
+        setTimeout(() => animateLevelUpForScene(getSceneManager().currentScene, 'player', index), 400);
+      }
+    }
+
+    const xpLine = perCreatureXp > 0
+      ? tPlain('wamXpGained', perCreatureXp)
+      : tPlain('wamZeroXp');
+    await narrationBox.show(xpLine);
+
+    // Advance to the next room via the standard exploration path.
+    try {
+      const advanced = await this.apiProceed();
+      if (advanced?.state) {
+        this.updateGameState(advanced.state);
+        await playRoomTransition(advanced.state);
+      }
+    } catch (err) {
+      // Fall through to updateUI - the next-room state may already be applied server-side.
+    }
+    this.updateUI();
   }
 
   _scheduleFlip() {
