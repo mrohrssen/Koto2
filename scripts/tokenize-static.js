@@ -66,6 +66,9 @@ function toUniversalToken(st) {
 
 function main() {
   const sources = JSON.parse(readFileSync(SOURCES_PATH, 'utf-8'));
+  // wordDict is used only by mergeSudachiTokens for greedy longest-match
+  // boundary detection. Meanings are NOT baked into tokens — the live
+  // dictionary is the sole source of truth at render time.
   const wordDict = loadWordDictionary({
     overlayDir: join(ROOT, 'data'),
     liveDictPath: resolveLiveDictPath(),
