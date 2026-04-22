@@ -8,6 +8,8 @@ const wordDict = new Map([
   ['一緒', { reading: 'いっしょ', definitions: [{ en: 'together', primary: true }] }],
   ['遊ぶ', { reading: 'あそぶ', definitions: [{ en: 'to play', primary: true }] }],
   ['に', { reading: 'に', definitions: [{ en: 'to/at', primary: true }] }],
+  ['お茶', { reading: 'おちゃ', definitions: [{ en: 'tea (esp. green or barley)', primary: true }] }],
+  ['お産', { reading: 'おさん', definitions: [{ en: '(giving) birth / childbirth', primary: true }] }],
 ]);
 
 function createEventTarget() {
@@ -84,6 +86,20 @@ describe('renderJpSentence', () => {
     assert.equal((html.match(/jp-punct/g) || []).length, 1);
     // All non-punctuation tokens get ruby
     assert.equal((html.match(/<ruby>/g) || []).length, 4);
+  });
+
+  it('clips parenthetical qualifier from unknown-word gloss', () => {
+    const tokens = [{ surface: 'お茶', baseForm: 'お茶', pos: '名詞', reading: 'おちゃ' }];
+    const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
+    const gloss = html.match(/<span class="jp-stack-en">([^<]*)<\/span>/)?.[1];
+    assert.equal(gloss, 'tea', 'gloss should be just "tea", not "tea (esp. green or barley)"');
+    assert.ok(html.includes('data-meaning="tea (esp. green or barley)"'), 'full meaning should remain on data-meaning');
+  });
+
+  it('keeps leading parenthetical when stripping would leave nothing', () => {
+    const tokens = [{ surface: 'お産', baseForm: 'お産', pos: '名詞', reading: 'おさん' }];
+    const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
+    assert.ok(html.includes('(giving) birth'), 'leading paren definition should be preserved');
   });
 
   it('returns empty string for empty tokens', () => {

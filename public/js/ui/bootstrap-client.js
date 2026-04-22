@@ -108,9 +108,15 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
 
     // Unknown word
     const typeClass = token.entity ? 'jp-entity' : 'jp-unknown';
+    const firstSense = meaning.split('/')[0].trim();
+    // Clip off parenthetical qualifiers ("tea (esp. green)" → "tea"), but keep
+    // the paren when it leads the definition ("(giving) birth") — stripping
+    // there would leave nothing to show.
+    const parenIdx = firstSense.indexOf('(');
+    const primaryEn = parenIdx > 0 ? firstSense.slice(0, parenIdx).trim() : firstSense;
     return `<span class="jp-word ${typeClass}"${dataAttrs}>`
       + `<ruby>${esc(displayReading)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
-      + `<span class="jp-stack-en">${esc(meaning.split('/')[0].trim())}</span>`
+      + `<span class="jp-stack-en">${esc(primaryEn)}</span>`
       + `</span>`;
   }).join('');
 }
