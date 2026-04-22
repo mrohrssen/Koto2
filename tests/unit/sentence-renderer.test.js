@@ -118,13 +118,14 @@ describe('renderJpSentence — universal token format', () => {
     assert.ok(html.includes('おちゃ'));
   });
 
-  it('renders unknown content word with meaning from token (new format)', () => {
+  it('renders unknown content word with meaning from dictionary (new format)', () => {
     const tokens = [
       { surface: 'お茶', base: 'お茶', reading: 'おちゃ', meaning: 'Tea' },
     ];
-    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    // Meaning comes from the live dictionary, not token.meaning.
+    const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
     assert.ok(html.includes('jp-unknown'));
-    assert.ok(html.includes('Tea'));
+    assert.ok(html.includes('tea'));  // dict value: 'tea (esp. green or barley)'
   });
 
   it('renders surface-only token as punctuation (new format)', () => {
@@ -142,6 +143,7 @@ describe('renderJpSentence — universal token format', () => {
     assert.ok(html.includes('jp-entity'), 'should have jp-entity class');
     assert.ok(!html.includes('jp-unknown'), 'should NOT have jp-unknown class');
     assert.ok(html.includes('Fire Dragon'));
+    assert.ok(html.includes('data-meaning="Fire Dragon"'), 'entity fallback should populate data-meaning attribute');
   });
 });
 
@@ -163,6 +165,24 @@ describe('renderJpSentence — attack card entity tokens via entityToToken', () 
 });
 
 describe('renderJpSentence — data attributes for word lookup', () => {
+  it('adds data-override="1" on spans whose meaning came from overrides', () => {
+    const tokens = [{ surface: '犬', base: '犬', reading: 'いぬ', pos: 'Noun' }];
+    const knownWords = new Set();
+    const wordDict = new Map([['犬', { reading: 'いぬ', definitions: [{ en: 'dog', primary: true }] }]]);
+    const html = renderJpSentence(tokens, knownWords, wordDict, { '犬': 'pup' }, false);
+    assert.match(html, /data-override="1"/);
+    assert.match(html, /data-meaning="pup"/);
+  });
+
+  it('does not add data-override when meaning came from the dictionary', () => {
+    const tokens = [{ surface: '犬', base: '犬', reading: 'いぬ', pos: 'Noun' }];
+    const knownWords = new Set();
+    const wordDict = new Map([['犬', { reading: 'いぬ', definitions: [{ en: 'dog', primary: true }] }]]);
+    const html = renderJpSentence(tokens, knownWords, wordDict, {}, false);
+    assert.doesNotMatch(html, /data-override/);
+    assert.match(html, /data-meaning="dog"/);
+  });
+
   it('adds data-base, data-reading, data-meaning, data-pos to known words', () => {
     const tokens = [{ surface: 'こんにちは', base: 'こんにちは', reading: 'こんにちは', meaning: 'hello', pos: 'Interjection' }];
     const html = renderJpSentence(tokens, new Set(['こんにちは']), wordDict, {}, false);

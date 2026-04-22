@@ -29,8 +29,7 @@ export function resolveExposureMeaning(token, wordDict, overrides = {}) {
   if (!baseForm) return '';
 
   const dictEntry = getDictEntry(wordDict, baseForm);
-  return token?.meaning
-    || overrides?.[baseForm]
+  return overrides?.[baseForm]
     || dictEntry?.definitions?.find(d => d.primary)?.en
     || dictEntry?.definitions?.[0]?.en
     || '';
