@@ -140,14 +140,7 @@ export function showMoves(creature, creatureIndex, opts = {}) {
 
   if (includeItems) {
     if (opts.befriendAvailable && opts.onBefriend) {
-      if (creature.moves.length <= 2) {
-        grid.appendChild(buildBefriendCell(opts.onBefriend));
-        grid.appendChild(buildItemsCell());
-      } else {
-        grid.appendChild(buildSplitCell(opts.onBefriend));
-      }
-    } else {
-      grid.appendChild(buildItemsCell());
+      grid.appendChild(buildBefriendCell(opts.onBefriend));
     }
   }
 
