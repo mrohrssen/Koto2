@@ -143,6 +143,7 @@ describe('renderJpSentence — universal token format', () => {
     assert.ok(html.includes('jp-entity'), 'should have jp-entity class');
     assert.ok(!html.includes('jp-unknown'), 'should NOT have jp-unknown class');
     assert.ok(html.includes('Fire Dragon'));
+    assert.ok(html.includes('data-meaning="Fire Dragon"'), 'entity fallback should populate data-meaning attribute');
   });
 });
 

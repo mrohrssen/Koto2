@@ -46,8 +46,8 @@ describe('exposure-buffer', () => {
       onlineTarget: win
     });
 
-    record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'to play' }], wordDict, {});
-    record([{ surface: '犬', base: '犬', pos: '名詞', meaning: 'dog' }], wordDict, {});
+    record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'stale meaning (should be ignored)' }], wordDict, {});
+    record([{ surface: '犬', base: '犬', pos: '名詞', meaning: 'stale meaning (should be ignored)' }], wordDict, {});
 
     await wait(25);
 
@@ -74,7 +74,7 @@ describe('exposure-buffer', () => {
       onlineTarget: win
     });
 
-    record([{ surface: '一緒', base: '一緒', pos: '名詞', meaning: 'together' }], wordDict, {});
+    record([{ surface: '一緒', base: '一緒', pos: '名詞', meaning: 'stale meaning (should be ignored)' }], wordDict, {});
 
     await flushNow();
     await flushNow();
@@ -99,11 +99,11 @@ describe('exposure-buffer', () => {
       onlineTarget: win
     });
 
-    record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'to play' }], wordDict, {});
+    record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'stale meaning (should be ignored)' }], wordDict, {});
     doc.visibilityState = 'hidden';
     doc.dispatchEvent('visibilitychange');
 
-    record([{ surface: '犬', base: '犬', pos: '名詞', meaning: 'dog' }], wordDict, {});
+    record([{ surface: '犬', base: '犬', pos: '名詞', meaning: 'stale meaning (should be ignored)' }], wordDict, {});
     win.dispatchEvent('pagehide');
 
     assert.deepEqual(posts, [
@@ -140,7 +140,7 @@ describe('exposure-buffer', () => {
         onlineTarget: win
       });
 
-      record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'to play' }], wordDict, {});
+      record([{ surface: '遊ぶ', baseForm: '遊ぶ', pos: '動詞', meaning: 'stale meaning (should be ignored)' }], wordDict, {});
 
       await flushNow();
       assert.equal(posts.length, 0);
