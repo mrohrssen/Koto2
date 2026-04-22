@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Koto',
   webDir: 'dist',
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     allowsLinkPreview: false,
     scrollEnabled: false,
   },

@@ -12,9 +12,10 @@ export async function initNative() {
     ({ Keyboard } = await import('@capacitor/keyboard'));
     ({ App } = await import('@capacitor/app'));
 
-    // Status bar: match app background
-    await StatusBar.setStyle({ style: Style.Light });
-    await StatusBar.setBackgroundColor({ color: '#e8edf3' });
+    // Status bar: hide entirely; overlay as safety net if OS re-shows it.
+    try { await StatusBar.hide(); } catch {}
+    try { await StatusBar.setOverlaysWebView({ overlay: true }); } catch {}
+    try { await StatusBar.setStyle({ style: Style.Light }); } catch {}
 
     // Keyboard: expose height as CSS variable
     Keyboard.addListener('keyboardWillShow', (info) => {

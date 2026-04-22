@@ -45,8 +45,7 @@ The fix spans two layers. Neither works alone.
 **`public/game.css`**
 - `.game-app` — remove `padding-top: env(safe-area-inset-top, var(--safe-area-inset-top, 0px))`. The scene-area now paints from y=0.
 - `.mini-toolbar` — remove the `env(safe-area-inset-bottom, …)` contribution from its padding. Keep `padding: 4px 0` so icons have a small internal breathing room.
-- `.mini-toolbar.keyboard-avoid` variant (line ~1511) — match the base rule; use `padding: 4px 0 4px` instead of adding the bottom inset.
-- Leave all other `env(safe-area-inset-*)` usage intact (takeovers, auth screen, speed review, lookup popup, narration box, etc.).
+- Leave all other `env(safe-area-inset-*)` usage intact (takeovers, auth screen, speed review, lookup popup, narration box, `.menu-sheet`, etc.).
 
 ### Unchanged
 
