@@ -1450,7 +1450,7 @@ textarea,
   min-height: var(--toolbar-height);
   background: var(--bg-elevated);
   border-top: 1px solid var(--border-subtle);
-  padding: 4px 0 env(safe-area-inset-bottom, var(--safe-area-inset-bottom, 0px));
+  padding: 4px 0;
   flex-shrink: 0;
 }
 

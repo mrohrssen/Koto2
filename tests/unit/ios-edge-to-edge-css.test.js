@@ -35,3 +35,13 @@ test('.game-app does not apply safe-area-inset-top padding', () => {
     '.game-app should not pad for the top safe area — content must reach y=0'
   );
 });
+
+test('.mini-toolbar does not add safe-area-inset-bottom', () => {
+  const body = ruleBody(css, '.mini-toolbar {');
+  assert.ok(body, '.mini-toolbar rule not found');
+  assert.doesNotMatch(
+    body,
+    /env\(\s*safe-area-inset-bottom/,
+    '.mini-toolbar should be flush with the bottom edge'
+  );
+});
