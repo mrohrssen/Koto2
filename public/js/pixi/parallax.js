@@ -1,5 +1,6 @@
-import { TilingSprite, Assets } from 'pixi.js';
+import { TilingSprite } from 'pixi.js';
 import { getApp } from './app.js';
+import { loadImageTexture } from './image-loader.js';
 
 const LAYER_NAMES = ['sky', 'far', 'mid', 'ground'];
 const LAYER_SPEEDS = [0.1, 0.3, 0.6, 1.0];
@@ -50,7 +51,7 @@ export async function loadParallax(areaId) {
 
     let texture;
     try {
-      texture = await Assets.load(path);
+      texture = await loadImageTexture(path);
     } catch {
       continue;
     }

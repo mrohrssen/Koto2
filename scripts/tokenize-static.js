@@ -51,29 +51,24 @@ const SUDACHI_POS_EN = {
   '接頭辞': 'Prefix',
 };
 
-function lookupMeaning(baseForm, wordDict) {
-  const entry = wordDict.get(baseForm);
-  if (!entry) return '';
-  const primary = entry.definitions?.find(d => d.primary);
-  return primary?.en || entry.definitions?.[0]?.en || '';
-}
-
 /**
  * Convert a Sudachi token to universal format.
  */
-function toUniversalToken(st, wordDict) {
+function toUniversalToken(st) {
   if (isDemoted(st)) {
     return { token: { surface: st.surface }, isContent: false };
   }
-  const meaning = lookupMeaning(st.baseForm, wordDict);
   return {
-    token: { surface: st.surface, base: st.baseForm, reading: st.reading, meaning, pos: SUDACHI_POS_EN[st.pos] || st.pos },
+    token: { surface: st.surface, base: st.baseForm, reading: st.reading, pos: SUDACHI_POS_EN[st.pos] || st.pos },
     isContent: true,
   };
 }
 
 function main() {
   const sources = JSON.parse(readFileSync(SOURCES_PATH, 'utf-8'));
+  // wordDict is used only by mergeSudachiTokens for greedy longest-match
+  // boundary detection. Meanings are NOT baked into tokens — the live
+  // dictionary is the sole source of truth at render time.
   const wordDict = loadWordDictionary({
     overlayDir: join(ROOT, 'data'),
     liveDictPath: resolveLiveDictPath(),
@@ -161,7 +156,7 @@ function main() {
     // Process this segment's text tokens first
     const mergedTokens = mergeSudachiTokens(allSegmentTokens[i]);
     for (const st of mergedTokens) {
-      const { token, isContent } = toUniversalToken(st, wordDict);
+      const { token, isContent } = toUniversalToken(st);
       frame.tokens.push(token);
       if (isContent) frame.words.push(token.base);
     }
@@ -182,6 +177,9 @@ function main() {
       words: frameTokens[idx].words,
     };
     if (source.group) frame.group = source.group;
+    if (source.overrides && Object.keys(source.overrides).length > 0) {
+      frame.overrides = source.overrides;
+    }
     return frame;
   });
 

@@ -1647,6 +1647,20 @@ textarea,
   margin-bottom: 4px;
 }
 
+/* Override-sourced meaning in the lookup popup — visually distinguished from dict glosses */
+.lookup-popup-meanings li.contextual-meaning {
+  background: rgba(255, 220, 120, 0.15);
+  border-left: 3px solid rgba(255, 180, 60, 0.6);
+  padding-left: 8px;
+  margin-left: -8px;
+}
+.lookup-popup-meanings li.contextual-meaning em {
+  color: #b07000;
+  font-style: normal;
+  font-weight: 600;
+  margin-right: 2px;
+}
+
 .lookup-popup-state {
   padding: 8px 12px;
   font-size: 12px;
