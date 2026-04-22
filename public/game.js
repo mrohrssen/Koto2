@@ -850,6 +850,19 @@ async function playPrologue() {
       scene.hideCid();
     }
 
+    // jpDemo: render Japanese tokens with ruby romaji above + stacked English below.
+    // Tokens are resolved server-side (see /api/game/prologue). Narration-box
+    // attaches dialogueLookup click handlers automatically when html: true.
+    if (prologueScene.type === 'jpDemo' && prologueScene.tokens) {
+      const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
+      const html = renderJpSentence(prologueScene.tokens, getKnownWords(), wordDict, {}, false);
+      await narrationBox.show(html, {
+        html: true,
+        speaker: prologueScene.speaker || undefined
+      });
+      continue;
+    }
+
     // Garbled lines: show raw text, no bootstrap rendering
     if (prologueScene.type === 'garbled') {
       await narrationBox.show(prologueScene.narration, {

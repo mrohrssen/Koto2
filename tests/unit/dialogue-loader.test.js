@@ -43,6 +43,21 @@ describe('dialogue-loader (frames.json)', () => {
     assert.ok(Array.isArray(line.words), 'line should have words');
   });
 
+  it('getCidScripts includes the tutorial-translator-demo group with tokenized こんにちは', () => {
+    const scripts = getCidScripts();
+    const demo = scripts.find(s => s.id === 'tutorial-translator-demo');
+    assert.ok(demo, 'expected tutorial-translator-demo script to be present');
+    assert.equal(demo.lines.length, 1, 'demo should have exactly one line');
+    const line = demo.lines[0];
+    assert.equal(line.raw, 'こんにちは', 'raw text should be こんにちは');
+    assert.ok(Array.isArray(line.tokens), 'line should have tokens array');
+    assert.ok(line.tokens.length >= 1, 'tokens array should be non-empty');
+    const token = line.tokens[0];
+    assert.equal(token.base, 'こんにちは', 'first token base should be こんにちは');
+    assert.equal(token.reading, 'こんにちは', 'reading should be こんにちは (all-hiragana)');
+    // Meaning is resolved at render-time from the dictionary, not baked into the token.
+  });
+
   it('getNpcLines returns lines grouped by NPC and slot', () => {
     const npcLines = getNpcLines();
     assert.ok(npcLines.kodomo, 'should have kodomo NPC');

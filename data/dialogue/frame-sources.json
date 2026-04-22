@@ -693,6 +693,13 @@
     "slots": []
   },
   {
+    "id": "cid_tutorial-translator-demo_0",
+    "category": "cid",
+    "group": "tutorial-translator-demo",
+    "raw": "こんにちは",
+    "slots": []
+  },
+  {
     "id": "befriend_success_friend",
     "category": "befriend_success",
     "raw": "友達です！",
