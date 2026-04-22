@@ -33,19 +33,30 @@
     "narration": "Every creature, human, and item here is Japanese. The Translator will simplify things for you."
   },
   {
-    "id": "prologue-07-world",
+    "id": "prologue-translator-try",
     "speaker": "Cid",
-    "narration": "At first, things might seem too simple. Don't worry. That's the Translator doing it's job."
+    "narration": "Let's give it a try!"
   },
   {
-    "id": "prologue-08-creatures",
+    "id": "prologue-translator-how",
     "speaker": "Cid",
-    "narration": "Cutting edge research shows this is the fastest way to get you fluent and useful to our cause."
+    "narration": "The Translator will automatically show the pronunciation above any Japanese word, and the definition below."
   },
   {
-    "id": "prologue-09-partners",
+    "id": "prologue-translator-demo",
     "speaker": "Cid",
-    "narration": "The more you learn, the more of this magical world will be opened up to you."
+    "type": "jpDemo",
+    "frameGroup": "tutorial-translator-demo"
+  },
+  {
+    "id": "prologue-translator-reaction",
+    "speaker": "Cid",
+    "narration": "Cool, right?"
+  },
+  {
+    "id": "prologue-translator-click",
+    "speaker": "Cid",
+    "narration": "You can also tap any word in dialogue to see its full definition. Tap outside the box to continue."
   },
   {
     "id": "prologue-10-disruption",
