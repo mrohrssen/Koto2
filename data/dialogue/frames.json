@@ -8,7 +8,6 @@
         "surface": "痛い",
         "base": "痛い",
         "reading": "いたい",
-        "meaning": "painful / sore",
         "pos": "Adjective"
       },
       {
@@ -28,7 +27,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -48,7 +46,6 @@
         "surface": "嫌",
         "base": "嫌",
         "reading": "いや",
-        "meaning": "disliking / not wanting / unwilling (to do) / reluctant",
         "pos": "Na-adjective"
       },
       {
@@ -71,7 +68,6 @@
         "surface": "うわ",
         "base": "うわ",
         "reading": "うわ",
-        "meaning": "whoa / ugh (interjection)",
         "pos": "Interjection"
       },
       {
@@ -91,7 +87,6 @@
         "surface": "くっ",
         "base": "くっ",
         "reading": "くっ",
-        "meaning": "(grunt of pain/frustration)",
         "pos": "Interjection"
       },
       {
@@ -111,7 +106,6 @@
         "surface": "ああ",
         "base": "ああ",
         "reading": "ああ",
-        "meaning": "ah! / oh! / alas!",
         "pos": "Interjection"
       },
       {
@@ -131,7 +125,6 @@
         "surface": "いた",
         "base": "いた",
         "reading": "いた",
-        "meaning": "board / plank",
         "pos": "Verb"
       },
       {
@@ -154,7 +147,6 @@
         "surface": "止め",
         "base": "止める",
         "reading": "とめ",
-        "meaning": "to stop / to turn off",
         "pos": "Verb"
       },
       {
@@ -177,7 +169,6 @@
         "surface": "辛い",
         "base": "辛い",
         "reading": "つらい",
-        "meaning": "spicy / hot",
         "pos": "Adjective"
       },
       {
@@ -197,7 +188,6 @@
         "surface": "酷い",
         "base": "酷い",
         "reading": "ひどい",
-        "meaning": "cruel / heartless / hard / harsh / severe",
         "pos": "Adjective"
       },
       {
@@ -217,7 +207,6 @@
         "surface": "凄い",
         "base": "凄い",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -237,7 +226,6 @@
         "surface": "勝っ",
         "base": "勝つ",
         "reading": "かっ",
-        "meaning": "to win / to gain victory",
         "pos": "Verb"
       },
       {
@@ -260,7 +248,6 @@
         "surface": "やった",
         "base": "やった",
         "reading": "やった",
-        "meaning": "hooray / yay / whee / yowzer / whoopee / yes",
         "pos": "Verb"
       },
       {
@@ -280,7 +267,6 @@
         "surface": "良かっ",
         "base": "良い",
         "reading": "よかっ",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
@@ -303,7 +289,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -323,7 +308,6 @@
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
-        "meaning": "happy",
         "pos": "Adjective"
       },
       {
@@ -343,7 +327,6 @@
         "surface": "やった",
         "base": "やった",
         "reading": "やった",
-        "meaning": "hooray / yay / whee / yowzer / whoopee / yes",
         "pos": "Verb"
       },
       {
@@ -366,7 +349,6 @@
         "surface": "素晴らしい",
         "base": "素晴らしい",
         "reading": "すばらしい",
-        "meaning": "wonderful / splendid / magnificent",
         "pos": "Adjective"
       },
       {
@@ -386,7 +368,6 @@
         "surface": "勝ち",
         "base": "勝ち",
         "reading": "かち",
-        "meaning": "win / victory",
         "pos": "Noun"
       },
       {
@@ -412,7 +393,6 @@
         "surface": "えー",
         "base": "えー",
         "reading": "えー",
-        "meaning": "yeah! (interjection)",
         "pos": "Interjection"
       },
       {
@@ -435,7 +415,6 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
@@ -455,7 +434,6 @@
         "surface": "行く",
         "base": "行く",
         "reading": "いく",
-        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)",
         "pos": "Verb"
       },
       {
@@ -478,7 +456,6 @@
         "surface": "見",
         "base": "見る",
         "reading": "み",
-        "meaning": "to see / to look / to watch / to view / to observe",
         "pos": "Verb"
       },
       {
@@ -501,7 +478,6 @@
         "surface": "綺麗",
         "base": "綺麗",
         "reading": "きれい",
-        "meaning": "pretty / lovely / beautiful / fair",
         "pos": "Na-adjective"
       },
       {
@@ -521,7 +497,6 @@
         "surface": "凄い",
         "base": "凄い",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -541,7 +516,6 @@
         "surface": "ここ",
         "base": "ここ",
         "reading": "ここ",
-        "meaning": "here / this place",
         "pos": "Pronoun"
       },
       {
@@ -551,7 +525,6 @@
         "surface": "好き",
         "base": "好き",
         "reading": "すき",
-        "meaning": "liking / being fond of / to one's liking / to one's taste / preferred / favourite",
         "pos": "Na-adjective"
       },
       {
@@ -572,7 +545,6 @@
         "surface": "何か",
         "base": "何か",
         "reading": "なにか",
-        "meaning": "something / some / any",
         "pos": "Pronoun"
       },
       {
@@ -598,7 +570,6 @@
         "surface": "行こう",
         "base": "行く",
         "reading": "いこう",
-        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)",
         "pos": "Verb"
       },
       {
@@ -618,7 +589,6 @@
         "surface": "新しい",
         "base": "新しい",
         "reading": "あたらしい",
-        "meaning": "new",
         "pos": "Adjective"
       },
       {
@@ -638,7 +608,6 @@
         "surface": "面白い",
         "base": "面白い",
         "reading": "おもしろい",
-        "meaning": "interesting / fascinating / intriguing / enthralling",
         "pos": "Adjective"
       },
       {
@@ -658,7 +627,6 @@
         "surface": "ありがとう",
         "base": "ありがとう",
         "reading": "ありがとう",
-        "meaning": "thank you",
         "pos": "Interjection"
       },
       {
@@ -678,7 +646,6 @@
         "surface": "助かる",
         "base": "助かる",
         "reading": "たすかる",
-        "meaning": "to be saved / to be rescued / to survive",
         "pos": "Verb"
       },
       {
@@ -698,7 +665,6 @@
         "surface": "大丈夫",
         "base": "大丈夫",
         "reading": "だいじょうぶ",
-        "meaning": "safe / secure / sound / problem-free / without fear / all right / alright / OK / okay",
         "pos": "Na-adjective"
       },
       {
@@ -718,7 +684,6 @@
         "surface": "元気",
         "base": "元気",
         "reading": "げんき",
-        "meaning": "healthy/energetic",
         "pos": "Noun"
       },
       {
@@ -738,7 +703,6 @@
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
-        "meaning": "happy",
         "pos": "Adjective"
       },
       {
@@ -758,7 +722,6 @@
         "surface": "良かっ",
         "base": "良い",
         "reading": "よかっ",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
@@ -781,7 +744,6 @@
         "surface": "ごめん",
         "base": "ごめん",
         "reading": "ごめん",
-        "meaning": "I'm sorry / my apologies / excuse me / pardon me",
         "pos": "Noun"
       },
       {
@@ -807,7 +769,6 @@
         "surface": "無理",
         "base": "無理",
         "reading": "むり",
-        "meaning": "unreasonable / unnatural / unjustifiable",
         "pos": "Noun"
       },
       {
@@ -833,7 +794,6 @@
         "surface": "負け",
         "base": "負ける",
         "reading": "まけ",
-        "meaning": "to lose / to be defeated / to be beaten",
         "pos": "Verb"
       },
       {
@@ -862,7 +822,6 @@
         "surface": "疲れ",
         "base": "疲れる",
         "reading": "つかれ",
-        "meaning": "to get tired / to tire / to get fatigued / to become exhausted / to grow weary",
         "pos": "Verb"
       },
       {
@@ -891,7 +850,6 @@
         "surface": "駄目",
         "base": "駄目",
         "reading": "だめ",
-        "meaning": "no good / not serving its purpose / useless / broken",
         "pos": "Noun"
       },
       {
@@ -920,7 +878,6 @@
         "surface": "悔しい",
         "base": "悔しい",
         "reading": "くやしい",
-        "meaning": "frustrated (over a failure, humiliation or injustice) / annoyed / chagrined / (bitterly) disappointed / bitter / vexed / frustrating / annoying / regrettable",
         "pos": "Adjective"
       },
       {
@@ -946,7 +903,6 @@
         "surface": "しまった",
         "base": "しまった",
         "reading": "しまった",
-        "meaning": "darn it! / darn! / oops! / oh dear! / oh no!",
         "pos": "Verb"
       },
       {
@@ -966,7 +922,6 @@
         "surface": "待っ",
         "base": "待つ",
         "reading": "まっ",
-        "meaning": "to wait",
         "pos": "Verb"
       },
       {
@@ -989,7 +944,6 @@
         "surface": "止め",
         "base": "止める",
         "reading": "とめ",
-        "meaning": "to stop / to turn off",
         "pos": "Verb"
       },
       {
@@ -1012,7 +966,6 @@
         "surface": "動け",
         "base": "動ける",
         "reading": "うごけ",
-        "meaning": "",
         "pos": "Verb"
       },
       {
@@ -1035,14 +988,12 @@
         "surface": "何",
         "base": "何",
         "reading": "なん",
-        "meaning": "what",
         "pos": "Pronoun"
       },
       {
         "surface": "これ",
         "base": "これ",
         "reading": "これ",
-        "meaning": "this",
         "pos": "Pronoun"
       },
       {
@@ -1063,7 +1014,6 @@
         "surface": "嫌",
         "base": "嫌",
         "reading": "いや",
-        "meaning": "disliking / not wanting / unwilling (to do) / reluctant",
         "pos": "Na-adjective"
       },
       {
@@ -1086,7 +1036,6 @@
         "surface": "危ない",
         "base": "危ない",
         "reading": "あぶない",
-        "meaning": "dangerous / risky / hazardous / perilous / precarious",
         "pos": "Adjective"
       },
       {
@@ -1106,7 +1055,6 @@
         "surface": "助け",
         "base": "助ける",
         "reading": "たすけ",
-        "meaning": "to save / to rescue / to spare",
         "pos": "Verb"
       },
       {
@@ -1129,7 +1077,6 @@
         "surface": "怖い",
         "base": "怖い",
         "reading": "こわい",
-        "meaning": "scary / frightening / eerie / dreadful",
         "pos": "Adjective"
       },
       {
@@ -1149,7 +1096,6 @@
         "surface": "やばい",
         "base": "やばい",
         "reading": "やばい",
-        "meaning": "dangerous / risky",
         "pos": "Adjective"
       },
       {
@@ -1169,7 +1115,6 @@
         "surface": "駄目",
         "base": "駄目",
         "reading": "だめ",
-        "meaning": "no good / not serving its purpose / useless / broken",
         "pos": "Noun"
       },
       {
@@ -1192,7 +1137,6 @@
         "surface": "ピンチ",
         "base": "ピンチ",
         "reading": "ぴんち",
-        "meaning": "pinch / tough spot / bind / crisis / predicament",
         "pos": "Noun"
       },
       {
@@ -1212,7 +1156,6 @@
         "surface": "頑張れ",
         "base": "頑張る",
         "reading": "がんばれ",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best",
         "pos": "Verb"
       },
       {
@@ -1232,7 +1175,6 @@
         "surface": "負け",
         "base": "負ける",
         "reading": "まけ",
-        "meaning": "to lose / to be defeated / to be beaten",
         "pos": "Verb"
       },
       {
@@ -1258,7 +1200,6 @@
         "surface": "行く",
         "base": "行く",
         "reading": "いく",
-        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)",
         "pos": "Verb"
       },
       {
@@ -1281,7 +1222,6 @@
         "surface": "やる",
         "base": "やる",
         "reading": "やる",
-        "meaning": "to do / to undertake / to perform / to play (a game) / to study",
         "pos": "Verb"
       },
       {
@@ -1304,7 +1244,6 @@
         "surface": "それ",
         "base": "それ",
         "reading": "それ",
-        "meaning": "that",
         "pos": "Pronoun"
       },
       {
@@ -1324,7 +1263,6 @@
         "surface": "行け",
         "base": "行く",
         "reading": "いけ",
-        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)",
         "pos": "Verb"
       },
       {
@@ -1358,7 +1296,6 @@
         "surface": "えいっ",
         "base": "えいっ",
         "reading": "えいっ",
-        "meaning": "(battle cry)",
         "pos": "Interjection"
       },
       {
@@ -1378,7 +1315,6 @@
         "surface": "食らえ",
         "base": "食らう",
         "reading": "くらえ",
-        "meaning": "to eat / to drink / to wolf / to knock back",
         "pos": "Verb"
       },
       {
@@ -1398,7 +1334,6 @@
         "surface": "こんにちは",
         "base": "こんにちは",
         "reading": "こんにちは",
-        "meaning": "hello",
         "pos": "Interjection"
       },
       {
@@ -1408,7 +1343,6 @@
         "surface": "鳥",
         "base": "鳥",
         "reading": "とり",
-        "meaning": "bird",
         "pos": "Noun"
       },
       {
@@ -1418,7 +1352,6 @@
         "surface": "犬",
         "base": "犬",
         "reading": "いぬ",
-        "meaning": "dog",
         "pos": "Noun"
       },
       {
@@ -1441,7 +1374,6 @@
         "surface": "火",
         "base": "火",
         "reading": "ひ",
-        "meaning": "fire",
         "pos": "Noun"
       },
       {
@@ -1451,7 +1383,6 @@
         "surface": "風",
         "base": "風",
         "reading": "かぜ",
-        "meaning": "wind; breeze",
         "pos": "Noun"
       },
       {
@@ -1461,7 +1392,6 @@
         "surface": "水",
         "base": "水",
         "reading": "みず",
-        "meaning": "water",
         "pos": "Noun"
       },
       {
@@ -1484,7 +1414,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -1494,7 +1423,6 @@
         "surface": "守る",
         "base": "守る",
         "reading": "まもる",
-        "meaning": "to protect / to guard / to defend",
         "pos": "Verb"
       },
       {
@@ -1516,7 +1444,6 @@
         "surface": "おはよう",
         "base": "おはよう",
         "reading": "おはよう",
-        "meaning": "good morning",
         "pos": "Interjection"
       },
       {
@@ -1526,7 +1453,6 @@
         "surface": "刀",
         "base": "刀",
         "reading": "かたな",
-        "meaning": "sword (esp. Japanese single-edged) / katana",
         "pos": "Noun"
       },
       {
@@ -1536,7 +1462,6 @@
         "surface": "鉄",
         "base": "鉄",
         "reading": "てつ",
-        "meaning": "iron",
         "pos": "Noun"
       },
       {
@@ -1559,7 +1484,6 @@
         "surface": "花",
         "base": "花",
         "reading": "はな",
-        "meaning": "flower; blossom",
         "pos": "Noun"
       },
       {
@@ -1569,7 +1493,6 @@
         "surface": "木",
         "base": "木",
         "reading": "き",
-        "meaning": "tree / wood",
         "pos": "Noun"
       },
       {
@@ -1579,7 +1502,6 @@
         "surface": "石",
         "base": "石",
         "reading": "いし",
-        "meaning": "stone",
         "pos": "Noun"
       },
       {
@@ -1602,7 +1524,6 @@
         "surface": "握る",
         "base": "握る",
         "reading": "にぎる",
-        "meaning": "to clasp / to grasp / to grip / to clutch",
         "pos": "Verb"
       },
       {
@@ -1612,7 +1533,6 @@
         "surface": "叩く",
         "base": "叩く",
         "reading": "たたく",
-        "meaning": "to strike / to hit / to beat / to knock / to pound / to bang / to slap / to spank / to tap / to pat / to clap (one's hands) / to play (the drums)",
         "pos": "Verb"
       },
       {
@@ -1634,7 +1554,6 @@
         "surface": "こんにちは",
         "base": "こんにちは",
         "reading": "こんにちは",
-        "meaning": "hello",
         "pos": "Interjection"
       },
       {
@@ -1644,7 +1563,6 @@
         "surface": "鳥",
         "base": "鳥",
         "reading": "とり",
-        "meaning": "bird",
         "pos": "Noun"
       },
       {
@@ -1654,7 +1572,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -1677,7 +1594,6 @@
         "surface": "虫",
         "base": "虫",
         "reading": "むし",
-        "meaning": "insect; bug",
         "pos": "Noun"
       },
       {
@@ -1687,7 +1603,6 @@
         "surface": "花",
         "base": "花",
         "reading": "はな",
-        "meaning": "flower; blossom",
         "pos": "Noun"
       },
       {
@@ -1697,7 +1612,6 @@
         "surface": "犬",
         "base": "犬",
         "reading": "いぬ",
-        "meaning": "dog",
         "pos": "Noun"
       },
       {
@@ -1707,7 +1621,6 @@
         "surface": "守る",
         "base": "守る",
         "reading": "まもる",
-        "meaning": "to protect / to guard / to defend",
         "pos": "Verb"
       },
       {
@@ -1731,7 +1644,6 @@
         "surface": "炎",
         "base": "炎",
         "reading": "ほのお",
-        "meaning": "flame / blaze",
         "pos": "Noun"
       },
       {
@@ -1741,7 +1653,6 @@
         "surface": "火",
         "base": "火",
         "reading": "ひ",
-        "meaning": "fire",
         "pos": "Noun"
       },
       {
@@ -1763,7 +1674,6 @@
         "surface": "おはよう",
         "base": "おはよう",
         "reading": "おはよう",
-        "meaning": "good morning",
         "pos": "Interjection"
       },
       {
@@ -1773,7 +1683,6 @@
         "surface": "刀",
         "base": "刀",
         "reading": "かたな",
-        "meaning": "sword (esp. Japanese single-edged) / katana",
         "pos": "Noun"
       },
       {
@@ -1783,7 +1692,6 @@
         "surface": "握る",
         "base": "握る",
         "reading": "にぎる",
-        "meaning": "to clasp / to grasp / to grip / to clutch",
         "pos": "Verb"
       },
       {
@@ -1809,7 +1717,6 @@
         "surface": "風",
         "base": "風",
         "reading": "かぜ",
-        "meaning": "wind; breeze",
         "pos": "Noun"
       },
       {
@@ -1819,7 +1726,6 @@
         "surface": "流す",
         "base": "流す",
         "reading": "ながす",
-        "meaning": "to drain / to pour / to run / to let flow / to flush / to shed (blood, tears) / to spill",
         "pos": "Verb"
       },
       {
@@ -1832,7 +1738,6 @@
         "surface": "魚",
         "base": "魚",
         "reading": "さかな",
-        "meaning": "fish",
         "pos": "Noun"
       },
       {
@@ -1842,7 +1747,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -1869,7 +1773,6 @@
         "surface": "石",
         "base": "石",
         "reading": "いし",
-        "meaning": "stone",
         "pos": "Noun"
       },
       {
@@ -1879,7 +1782,6 @@
         "surface": "鉄",
         "base": "鉄",
         "reading": "てつ",
-        "meaning": "iron",
         "pos": "Noun"
       },
       {
@@ -1904,7 +1806,6 @@
         "surface": "こんにちは",
         "base": "こんにちは",
         "reading": "こんにちは",
-        "meaning": "hello",
         "pos": "Interjection"
       },
       {
@@ -1914,7 +1815,6 @@
         "surface": "犬",
         "base": "犬",
         "reading": "いぬ",
-        "meaning": "dog",
         "pos": "Noun"
       },
       {
@@ -1924,7 +1824,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -1934,7 +1833,6 @@
         "surface": "鳥",
         "base": "鳥",
         "reading": "とり",
-        "meaning": "bird",
         "pos": "Noun"
       },
       {
@@ -1944,7 +1842,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -1969,7 +1866,6 @@
         "surface": "お茶",
         "base": "お茶",
         "reading": "おちゃ",
-        "meaning": "tea (esp. green or barley)",
         "pos": "Prefix"
       },
       {
@@ -1979,7 +1875,6 @@
         "surface": "水",
         "base": "水",
         "reading": "みず",
-        "meaning": "water",
         "pos": "Noun"
       },
       {
@@ -1992,7 +1887,6 @@
         "surface": "ラーメン",
         "base": "ラーメン",
         "reading": "らーめん",
-        "meaning": "ramen / Chinese-style noodles",
         "pos": "Noun"
       },
       {
@@ -2002,7 +1896,6 @@
         "surface": "水",
         "base": "水",
         "reading": "みず",
-        "meaning": "water",
         "pos": "Noun"
       },
       {
@@ -2029,7 +1922,6 @@
         "surface": "靴",
         "base": "靴",
         "reading": "くつ",
-        "meaning": "shoe / shoes / boots / footwear / footgear",
         "pos": "Noun"
       },
       {
@@ -2039,7 +1931,6 @@
         "surface": "鉄",
         "base": "鉄",
         "reading": "てつ",
-        "meaning": "iron",
         "pos": "Noun"
       },
       {
@@ -2052,7 +1943,6 @@
         "surface": "帽子",
         "base": "帽子",
         "reading": "ぼうし",
-        "meaning": "hat / cap",
         "pos": "Noun"
       },
       {
@@ -2062,7 +1952,6 @@
         "surface": "鉄",
         "base": "鉄",
         "reading": "てつ",
-        "meaning": "iron",
         "pos": "Noun"
       },
       {
@@ -2089,7 +1978,6 @@
         "surface": "こんにちは",
         "base": "こんにちは",
         "reading": "こんにちは",
-        "meaning": "hello",
         "pos": "Interjection"
       },
       {
@@ -2099,7 +1987,6 @@
         "surface": "猫",
         "base": "猫",
         "reading": "ねこ",
-        "meaning": "cat",
         "pos": "Noun"
       },
       {
@@ -2109,7 +1996,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -2132,7 +2018,6 @@
         "surface": "鳥",
         "base": "鳥",
         "reading": "とり",
-        "meaning": "bird",
         "pos": "Noun"
       },
       {
@@ -2142,7 +2027,6 @@
         "surface": "囲む",
         "base": "囲む",
         "reading": "かこむ",
-        "meaning": "to surround / to encircle / to enclose / to fence / to wall in",
         "pos": "Verb"
       },
       {
@@ -2152,7 +2036,6 @@
         "surface": "虫",
         "base": "虫",
         "reading": "むし",
-        "meaning": "insect; bug",
         "pos": "Noun"
       },
       {
@@ -2162,7 +2045,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -2189,7 +2071,6 @@
         "surface": "風",
         "base": "風",
         "reading": "かぜ",
-        "meaning": "wind; breeze",
         "pos": "Noun"
       },
       {
@@ -2199,7 +2080,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -2209,7 +2089,6 @@
         "surface": "犬",
         "base": "犬",
         "reading": "いぬ",
-        "meaning": "dog",
         "pos": "Noun"
       },
       {
@@ -2219,7 +2098,6 @@
         "surface": "守る",
         "base": "守る",
         "reading": "まもる",
-        "meaning": "to protect / to guard / to defend",
         "pos": "Verb"
       },
       {
@@ -2246,7 +2124,6 @@
         "surface": "おはよう",
         "base": "おはよう",
         "reading": "おはよう",
-        "meaning": "good morning",
         "pos": "Interjection"
       },
       {
@@ -2256,7 +2133,6 @@
         "surface": "お茶",
         "base": "お茶",
         "reading": "おちゃ",
-        "meaning": "tea (esp. green or barley)",
         "pos": "Prefix"
       },
       {
@@ -2266,7 +2142,6 @@
         "surface": "りんご",
         "base": "りんご",
         "reading": "りんご",
-        "meaning": "apple (fruit)",
         "pos": "Noun"
       },
       {
@@ -2276,7 +2151,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -2300,7 +2174,6 @@
         "surface": "卵",
         "base": "卵",
         "reading": "たまご",
-        "meaning": "eggs / egg / spawn / roe",
         "pos": "Noun"
       },
       {
@@ -2310,7 +2183,6 @@
         "surface": "弁当",
         "base": "弁当",
         "reading": "べんとう",
-        "meaning": "bento / Japanese box lunch",
         "pos": "Noun"
       },
       {
@@ -2320,7 +2192,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -2346,7 +2217,6 @@
         "surface": "苺",
         "base": "苺",
         "reading": "いちご",
-        "meaning": "strawberry (esp. the garden strawberry, Fragaria x ananassa)",
         "pos": "Noun"
       },
       {
@@ -2356,7 +2226,6 @@
         "surface": "わさび",
         "base": "わさび",
         "reading": "わさび",
-        "meaning": "wasabi (Wasabia japonica) / Japanese horseradish",
         "pos": "Noun"
       },
       {
@@ -2366,7 +2235,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -2389,7 +2257,6 @@
         "surface": "こんにちは",
         "base": "こんにちは",
         "reading": "こんにちは",
-        "meaning": "hello",
         "pos": "Interjection"
       },
       {
@@ -2399,7 +2266,6 @@
         "surface": "木",
         "base": "木",
         "reading": "き",
-        "meaning": "tree / wood",
         "pos": "Noun"
       },
       {
@@ -2409,7 +2275,6 @@
         "surface": "鳥",
         "base": "鳥",
         "reading": "とり",
-        "meaning": "bird",
         "pos": "Noun"
       },
       {
@@ -2419,7 +2284,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -2443,7 +2307,6 @@
         "surface": "花",
         "base": "花",
         "reading": "はな",
-        "meaning": "flower; blossom",
         "pos": "Noun"
       },
       {
@@ -2453,7 +2316,6 @@
         "surface": "虫",
         "base": "虫",
         "reading": "むし",
-        "meaning": "insect; bug",
         "pos": "Noun"
       },
       {
@@ -2463,7 +2325,6 @@
         "surface": "囲む",
         "base": "囲む",
         "reading": "かこむ",
-        "meaning": "to surround / to encircle / to enclose / to fence / to wall in",
         "pos": "Verb"
       },
       {
@@ -2486,7 +2347,6 @@
         "surface": "水",
         "base": "水",
         "reading": "みず",
-        "meaning": "water",
         "pos": "Noun"
       },
       {
@@ -2496,7 +2356,6 @@
         "surface": "魚",
         "base": "魚",
         "reading": "さかな",
-        "meaning": "fish",
         "pos": "Noun"
       },
       {
@@ -2506,7 +2365,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -2532,7 +2390,6 @@
         "surface": "おはよう",
         "base": "おはよう",
         "reading": "おはよう",
-        "meaning": "good morning",
         "pos": "Interjection"
       },
       {
@@ -2542,7 +2399,6 @@
         "surface": "鉄",
         "base": "鉄",
         "reading": "てつ",
-        "meaning": "iron",
         "pos": "Noun"
       },
       {
@@ -2552,7 +2408,6 @@
         "surface": "切る",
         "base": "切る",
         "reading": "きる",
-        "meaning": "to cut / to cut through / to perform (surgery)",
         "pos": "Verb"
       },
       {
@@ -2575,7 +2430,6 @@
         "surface": "刀",
         "base": "刀",
         "reading": "かたな",
-        "meaning": "sword (esp. Japanese single-edged) / katana",
         "pos": "Noun"
       },
       {
@@ -2585,7 +2439,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -2598,7 +2451,6 @@
         "surface": "石",
         "base": "石",
         "reading": "いし",
-        "meaning": "stone",
         "pos": "Noun"
       },
       {
@@ -2608,7 +2460,6 @@
         "surface": "叩く",
         "base": "叩く",
         "reading": "たたく",
-        "meaning": "to strike / to hit / to beat / to knock / to pound / to bang / to slap / to spank / to tap / to pat / to clap (one's hands) / to play (the drums)",
         "pos": "Verb"
       },
       {
@@ -2632,7 +2483,6 @@
         "surface": "火",
         "base": "火",
         "reading": "ひ",
-        "meaning": "fire",
         "pos": "Noun"
       },
       {
@@ -2642,7 +2492,6 @@
         "surface": "燃える",
         "base": "燃える",
         "reading": "もえる",
-        "meaning": "to burn / to get fired up",
         "pos": "Verb"
       },
       {
@@ -2652,7 +2501,6 @@
         "surface": "凄い",
         "base": "凄い",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -2678,7 +2526,6 @@
         "surface": "こんにちは",
         "base": "こんにちは",
         "reading": "こんにちは",
-        "meaning": "hello",
         "pos": "Interjection"
       },
       {
@@ -2688,7 +2535,6 @@
         "surface": "猫",
         "base": "猫",
         "reading": "ねこ",
-        "meaning": "cat",
         "pos": "Noun"
       },
       {
@@ -2698,7 +2544,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -2724,7 +2569,6 @@
         "surface": "お茶",
         "base": "お茶",
         "reading": "おちゃ",
-        "meaning": "tea (esp. green or barley)",
         "pos": "Prefix"
       },
       {
@@ -2734,7 +2578,6 @@
         "surface": "りんご",
         "base": "りんご",
         "reading": "りんご",
-        "meaning": "apple (fruit)",
         "pos": "Noun"
       },
       {
@@ -2744,7 +2587,6 @@
         "surface": "凄い",
         "base": "凄い",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -2770,7 +2612,6 @@
         "surface": "鳥",
         "base": "鳥",
         "reading": "とり",
-        "meaning": "bird",
         "pos": "Noun"
       },
       {
@@ -2780,7 +2621,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -2793,7 +2633,6 @@
         "surface": "風",
         "base": "風",
         "reading": "かぜ",
-        "meaning": "wind; breeze",
         "pos": "Noun"
       },
       {
@@ -2803,7 +2642,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -2830,7 +2668,6 @@
         "surface": "おはよう",
         "base": "おはよう",
         "reading": "おはよう",
-        "meaning": "good morning",
         "pos": "Interjection"
       },
       {
@@ -2840,7 +2677,6 @@
         "surface": "刀",
         "base": "刀",
         "reading": "かたな",
-        "meaning": "sword (esp. Japanese single-edged) / katana",
         "pos": "Noun"
       },
       {
@@ -2850,7 +2686,6 @@
         "surface": "鉄",
         "base": "鉄",
         "reading": "てつ",
-        "meaning": "iron",
         "pos": "Noun"
       },
       {
@@ -2863,7 +2698,6 @@
         "surface": "靴",
         "base": "靴",
         "reading": "くつ",
-        "meaning": "shoe / shoes / boots / footwear / footgear",
         "pos": "Noun"
       },
       {
@@ -2873,7 +2707,6 @@
         "surface": "鉄",
         "base": "鉄",
         "reading": "てつ",
-        "meaning": "iron",
         "pos": "Noun"
       },
       {
@@ -2901,7 +2734,6 @@
         "surface": "炎",
         "base": "炎",
         "reading": "ほのお",
-        "meaning": "flame / blaze",
         "pos": "Noun"
       },
       {
@@ -2911,7 +2743,6 @@
         "surface": "火",
         "base": "火",
         "reading": "ひ",
-        "meaning": "fire",
         "pos": "Noun"
       },
       {
@@ -2924,7 +2755,6 @@
         "surface": "風",
         "base": "風",
         "reading": "かぜ",
-        "meaning": "wind; breeze",
         "pos": "Noun"
       },
       {
@@ -2934,7 +2764,6 @@
         "surface": "凄い",
         "base": "凄い",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -2961,7 +2790,6 @@
         "surface": "犬",
         "base": "犬",
         "reading": "いぬ",
-        "meaning": "dog",
         "pos": "Noun"
       },
       {
@@ -2971,7 +2799,6 @@
         "surface": "猫",
         "base": "猫",
         "reading": "ねこ",
-        "meaning": "cat",
         "pos": "Noun"
       },
       {
@@ -2981,7 +2808,6 @@
         "surface": "大人",
         "base": "大人",
         "reading": "おとな",
-        "meaning": "adult",
         "pos": "Noun"
       },
       {
@@ -2994,7 +2820,6 @@
         "surface": "素晴らしい",
         "base": "素晴らしい",
         "reading": "すばらしい",
-        "meaning": "wonderful / splendid / magnificent",
         "pos": "Adjective"
       },
       {
@@ -3021,7 +2846,6 @@
         "surface": "こんにちは",
         "base": "こんにちは",
         "reading": "こんにちは",
-        "meaning": "hello",
         "pos": "Interjection"
       },
       {
@@ -3031,7 +2855,6 @@
         "surface": "犬",
         "base": "犬",
         "reading": "いぬ",
-        "meaning": "dog",
         "pos": "Noun"
       },
       {
@@ -3041,7 +2864,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -3054,7 +2876,6 @@
         "surface": "魚",
         "base": "魚",
         "reading": "さかな",
-        "meaning": "fish",
         "pos": "Noun"
       },
       {
@@ -3064,7 +2885,6 @@
         "surface": "食らう",
         "base": "食らう",
         "reading": "くらう",
-        "meaning": "to eat / to drink / to wolf / to knock back",
         "pos": "Verb"
       },
       {
@@ -3092,7 +2912,6 @@
         "surface": "鳥",
         "base": "鳥",
         "reading": "とり",
-        "meaning": "bird",
         "pos": "Noun"
       },
       {
@@ -3102,7 +2921,6 @@
         "surface": "風",
         "base": "風",
         "reading": "ふう",
-        "meaning": "wind; breeze",
         "pos": "Noun"
       },
       {
@@ -3112,7 +2930,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -3125,7 +2942,6 @@
         "surface": "猫",
         "base": "猫",
         "reading": "ねこ",
-        "meaning": "cat",
         "pos": "Noun"
       },
       {
@@ -3135,7 +2951,6 @@
         "surface": "眠る",
         "base": "眠る",
         "reading": "ねむる",
-        "meaning": "to sleep",
         "pos": "Verb"
       },
       {
@@ -3148,7 +2963,6 @@
         "surface": "早い",
         "base": "早い",
         "reading": "はやい",
-        "meaning": "fast / quick / rapid / swift / speedy / brisk / prompt",
         "pos": "Adjective"
       },
       {
@@ -3177,7 +2991,6 @@
         "surface": "男の子",
         "base": "男の子",
         "reading": "おとこのこ",
-        "meaning": "boy",
         "pos": "Noun"
       },
       {
@@ -3187,7 +3000,6 @@
         "surface": "泣く",
         "base": "泣く",
         "reading": "なく",
-        "meaning": "to cry / to shed tears / to weep / to sob",
         "pos": "Verb"
       },
       {
@@ -3200,7 +3012,6 @@
         "surface": "女の子",
         "base": "女の子",
         "reading": "おんなのこ",
-        "meaning": "girl",
         "pos": "Noun"
       },
       {
@@ -3210,7 +3021,6 @@
         "surface": "怒る",
         "base": "怒る",
         "reading": "おこる",
-        "meaning": "to get angry / to get mad / to lose one's temper",
         "pos": "Verb"
       },
       {
@@ -3223,7 +3033,6 @@
         "surface": "大人",
         "base": "大人",
         "reading": "おとな",
-        "meaning": "adult",
         "pos": "Noun"
       },
       {
@@ -3254,7 +3063,6 @@
         "surface": "おはよう",
         "base": "おはよう",
         "reading": "おはよう",
-        "meaning": "good morning",
         "pos": "Interjection"
       },
       {
@@ -3264,7 +3072,6 @@
         "surface": "鉄",
         "base": "鉄",
         "reading": "てつ",
-        "meaning": "iron",
         "pos": "Noun"
       },
       {
@@ -3274,7 +3081,6 @@
         "surface": "刀",
         "base": "刀",
         "reading": "かたな",
-        "meaning": "sword (esp. Japanese single-edged) / katana",
         "pos": "Noun"
       },
       {
@@ -3284,7 +3090,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -3311,7 +3116,6 @@
         "surface": "猫",
         "base": "猫",
         "reading": "ねこ",
-        "meaning": "cat",
         "pos": "Noun"
       },
       {
@@ -3321,7 +3125,6 @@
         "surface": "帽子",
         "base": "帽子",
         "reading": "ぼうし",
-        "meaning": "hat / cap",
         "pos": "Noun"
       },
       {
@@ -3331,7 +3134,6 @@
         "surface": "凄い",
         "base": "凄い",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -3344,7 +3146,6 @@
         "surface": "犬",
         "base": "犬",
         "reading": "いぬ",
-        "meaning": "dog",
         "pos": "Noun"
       },
       {
@@ -3354,7 +3155,6 @@
         "surface": "靴",
         "base": "靴",
         "reading": "くつ",
-        "meaning": "shoe / shoes / boots / footwear / footgear",
         "pos": "Noun"
       },
       {
@@ -3364,7 +3164,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -3390,7 +3189,6 @@
         "surface": "石",
         "base": "石",
         "reading": "いし",
-        "meaning": "stone",
         "pos": "Noun"
       },
       {
@@ -3400,7 +3198,6 @@
         "surface": "鏡",
         "base": "鏡",
         "reading": "かがみ",
-        "meaning": "mirror / looking-glass",
         "pos": "Noun"
       },
       {
@@ -3410,7 +3207,6 @@
         "surface": "凄い",
         "base": "凄い",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -3436,7 +3232,6 @@
         "surface": "こんにちは",
         "base": "こんにちは",
         "reading": "こんにちは",
-        "meaning": "hello",
         "pos": "Interjection"
       },
       {
@@ -3446,7 +3241,6 @@
         "surface": "猫",
         "base": "猫",
         "reading": "ねこ",
-        "meaning": "cat",
         "pos": "Noun"
       },
       {
@@ -3456,7 +3250,6 @@
         "surface": "魚",
         "base": "魚",
         "reading": "さかな",
-        "meaning": "fish",
         "pos": "Noun"
       },
       {
@@ -3466,7 +3259,6 @@
         "surface": "食らう",
         "base": "食らう",
         "reading": "くらう",
-        "meaning": "to eat / to drink / to wolf / to knock back",
         "pos": "Verb"
       },
       {
@@ -3493,7 +3285,6 @@
         "surface": "犬",
         "base": "犬",
         "reading": "いぬ",
-        "meaning": "dog",
         "pos": "Noun"
       },
       {
@@ -3503,7 +3294,6 @@
         "surface": "石",
         "base": "石",
         "reading": "いし",
-        "meaning": "stone",
         "pos": "Noun"
       },
       {
@@ -3513,7 +3303,6 @@
         "surface": "握る",
         "base": "握る",
         "reading": "にぎる",
-        "meaning": "to clasp / to grasp / to grip / to clutch",
         "pos": "Verb"
       },
       {
@@ -3523,7 +3312,6 @@
         "surface": "男の子",
         "base": "男の子",
         "reading": "おとこのこ",
-        "meaning": "boy",
         "pos": "Noun"
       },
       {
@@ -3533,7 +3321,6 @@
         "surface": "虫",
         "base": "虫",
         "reading": "むし",
-        "meaning": "insect; bug",
         "pos": "Noun"
       },
       {
@@ -3543,7 +3330,6 @@
         "surface": "叩く",
         "base": "叩く",
         "reading": "たたく",
-        "meaning": "to strike / to hit / to beat / to knock / to pound / to bang / to slap / to spank / to tap / to pat / to clap (one's hands) / to play (the drums)",
         "pos": "Verb"
       },
       {
@@ -3572,7 +3358,6 @@
         "surface": "鳥",
         "base": "鳥",
         "reading": "とり",
-        "meaning": "bird",
         "pos": "Noun"
       },
       {
@@ -3582,7 +3367,6 @@
         "surface": "炎",
         "base": "炎",
         "reading": "ほのお",
-        "meaning": "flame / blaze",
         "pos": "Noun"
       },
       {
@@ -3592,7 +3376,6 @@
         "surface": "守る",
         "base": "守る",
         "reading": "まもる",
-        "meaning": "to protect / to guard / to defend",
         "pos": "Verb"
       },
       {
@@ -3605,7 +3388,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -3618,7 +3400,6 @@
         "surface": "素晴らしい",
         "base": "素晴らしい",
         "reading": "すばらしい",
-        "meaning": "wonderful / splendid / magnificent",
         "pos": "Adjective"
       },
       {
@@ -3643,7 +3424,6 @@
         "surface": "おはよう",
         "base": "おはよう",
         "reading": "おはよう",
-        "meaning": "good morning",
         "pos": "Interjection"
       },
       {
@@ -3653,7 +3433,6 @@
         "surface": "鉄",
         "base": "鉄",
         "reading": "てつ",
-        "meaning": "iron",
         "pos": "Noun"
       },
       {
@@ -3663,7 +3442,6 @@
         "surface": "刀",
         "base": "刀",
         "reading": "かたな",
-        "meaning": "sword (esp. Japanese single-edged) / katana",
         "pos": "Noun"
       },
       {
@@ -3673,7 +3451,6 @@
         "surface": "凄い",
         "base": "凄い",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -3700,7 +3477,6 @@
         "surface": "犬",
         "base": "犬",
         "reading": "いぬ",
-        "meaning": "dog",
         "pos": "Noun"
       },
       {
@@ -3710,7 +3486,6 @@
         "surface": "虫",
         "base": "虫",
         "reading": "むし",
-        "meaning": "insect; bug",
         "pos": "Noun"
       },
       {
@@ -3720,7 +3495,6 @@
         "surface": "叩く",
         "base": "叩く",
         "reading": "たたく",
-        "meaning": "to strike / to hit / to beat / to knock / to pound / to bang / to slap / to spank / to tap / to pat / to clap (one's hands) / to play (the drums)",
         "pos": "Verb"
       },
       {
@@ -3730,7 +3504,6 @@
         "surface": "鳥",
         "base": "鳥",
         "reading": "とり",
-        "meaning": "bird",
         "pos": "Noun"
       },
       {
@@ -3740,7 +3513,6 @@
         "surface": "風",
         "base": "風",
         "reading": "ふう",
-        "meaning": "wind; breeze",
         "pos": "Noun"
       },
       {
@@ -3750,7 +3522,6 @@
         "surface": "飛ぶ",
         "base": "飛ぶ",
         "reading": "とぶ",
-        "meaning": "to fly / to soar",
         "pos": "Verb"
       },
       {
@@ -3779,7 +3550,6 @@
         "surface": "男の子",
         "base": "男の子",
         "reading": "おとこのこ",
-        "meaning": "boy",
         "pos": "Noun"
       },
       {
@@ -3789,7 +3559,6 @@
         "surface": "水",
         "base": "水",
         "reading": "みず",
-        "meaning": "water",
         "pos": "Noun"
       },
       {
@@ -3799,7 +3568,6 @@
         "surface": "飲む",
         "base": "飲む",
         "reading": "のむ",
-        "meaning": "to drink / to swallow / to take (medicine)",
         "pos": "Verb"
       },
       {
@@ -3812,7 +3580,6 @@
         "surface": "猫",
         "base": "猫",
         "reading": "ねこ",
-        "meaning": "cat",
         "pos": "Noun"
       },
       {
@@ -3822,7 +3589,6 @@
         "surface": "魚",
         "base": "魚",
         "reading": "さかな",
-        "meaning": "fish",
         "pos": "Noun"
       },
       {
@@ -3832,7 +3598,6 @@
         "surface": "食らう",
         "base": "食らう",
         "reading": "くらう",
-        "meaning": "to eat / to drink / to wolf / to knock back",
         "pos": "Verb"
       },
       {
@@ -3845,7 +3610,6 @@
         "surface": "素晴らしい",
         "base": "素晴らしい",
         "reading": "すばらしい",
-        "meaning": "wonderful / splendid / magnificent",
         "pos": "Adjective"
       },
       {
@@ -3872,7 +3636,6 @@
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -3895,14 +3658,12 @@
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
-        "meaning": "happy",
         "pos": "Adjective"
       },
       {
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -3926,7 +3687,6 @@
         "surface": "一緒",
         "base": "一緒",
         "reading": "いっしょ",
-        "meaning": "together",
         "pos": "Noun"
       },
       {
@@ -3936,7 +3696,6 @@
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -3946,7 +3705,6 @@
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
-        "meaning": "happy",
         "pos": "Adjective"
       },
       {
@@ -3971,7 +3729,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -3981,7 +3738,6 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
@@ -4005,21 +3761,18 @@
         "surface": "とても",
         "base": "とても",
         "reading": "とても",
-        "meaning": "very",
         "pos": "Adverb"
       },
       {
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
-        "meaning": "happy",
         "pos": "Adjective"
       },
       {
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -4044,7 +3797,6 @@
         "surface": "初めて",
         "base": "初めて",
         "reading": "はじめて",
-        "meaning": "first time",
         "pos": "Adverb"
       },
       {
@@ -4054,7 +3806,6 @@
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -4064,7 +3815,6 @@
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
-        "meaning": "happy",
         "pos": "Adjective"
       },
       {
@@ -4089,14 +3839,12 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -4106,7 +3854,6 @@
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
-        "meaning": "happy",
         "pos": "Adjective"
       },
       {
@@ -4131,7 +3878,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -4141,7 +3887,6 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
@@ -4151,14 +3896,12 @@
         "surface": "知る",
         "base": "知る",
         "reading": "しる",
-        "meaning": "to know",
         "pos": "Verb"
       },
       {
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -4184,7 +3927,6 @@
         "surface": "違う",
         "base": "違う",
         "reading": "ちがう",
-        "meaning": "to differ (from) / to be different / to be distinct / to be unlike / to vary / to disagree (with)",
         "pos": "Verb"
       },
       {
@@ -4204,7 +3946,6 @@
         "surface": "それ",
         "base": "それ",
         "reading": "それ",
-        "meaning": "that",
         "pos": "Pronoun"
       },
       {
@@ -4214,7 +3955,6 @@
         "surface": "違う",
         "base": "違う",
         "reading": "ちがう",
-        "meaning": "to differ (from) / to be different / to be distinct / to be unlike / to vary / to disagree (with)",
         "pos": "Verb"
       },
       {
@@ -4235,7 +3975,6 @@
         "surface": "それ",
         "base": "それ",
         "reading": "それ",
-        "meaning": "that",
         "pos": "Pronoun"
       },
       {
@@ -4245,14 +3984,12 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
         "surface": "じゃない",
         "base": "じゃない",
         "reading": "じゃない",
-        "meaning": "is not / am not / are not",
         "pos": "Auxiliary"
       },
       {
@@ -4274,14 +4011,12 @@
         "surface": "まだ",
         "base": "まだ",
         "reading": "まだ",
-        "meaning": "still/yet",
         "pos": "Adverb"
       },
       {
         "surface": "違う",
         "base": "違う",
         "reading": "ちがう",
-        "meaning": "to differ (from) / to be different / to be distinct / to be unlike / to vary / to disagree (with)",
         "pos": "Verb"
       },
       {
@@ -4302,7 +4037,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -4312,7 +4046,6 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
@@ -4322,7 +4055,6 @@
         "surface": "違う",
         "base": "違う",
         "reading": "ちがう",
-        "meaning": "to differ (from) / to be different / to be distinct / to be unlike / to vary / to disagree (with)",
         "pos": "Verb"
       },
       {
@@ -4344,14 +4076,12 @@
         "surface": "もう一度",
         "base": "もう一度",
         "reading": "もういちど",
-        "meaning": "once more / again",
         "pos": "Adverb"
       },
       {
         "surface": "言っ",
         "base": "言う",
         "reading": "いっ",
-        "meaning": "to say",
         "pos": "Verb"
       },
       {
@@ -4361,7 +4091,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       },
       {
@@ -4383,14 +4112,12 @@
         "surface": "もう一度",
         "base": "もう一度",
         "reading": "もういちど",
-        "meaning": "once more / again",
         "pos": "Adverb"
       },
       {
         "surface": "お願いします",
         "base": "お願いします",
         "reading": "おねがいします",
-        "meaning": "please",
         "pos": "Prefix"
       },
       {
@@ -4411,7 +4138,6 @@
         "surface": "待っ",
         "base": "待つ",
         "reading": "まっ",
-        "meaning": "to wait",
         "pos": "Verb"
       },
       {
@@ -4434,14 +4160,12 @@
         "surface": "ちょっと",
         "base": "ちょっと",
         "reading": "ちょっと",
-        "meaning": "a little / a bit / slightly",
         "pos": "Adverb"
       },
       {
         "surface": "待っ",
         "base": "待つ",
         "reading": "まっ",
-        "meaning": "to wait",
         "pos": "Verb"
       },
       {
@@ -4465,7 +4189,6 @@
         "surface": "お願い",
         "base": "お願い",
         "reading": "おねがい",
-        "meaning": "request / favour (to ask) / wish",
         "pos": "Prefix"
       },
       {
@@ -4475,7 +4198,6 @@
         "surface": "待っ",
         "base": "待つ",
         "reading": "まっ",
-        "meaning": "to wait",
         "pos": "Verb"
       },
       {
@@ -4485,7 +4207,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       },
       {
@@ -4507,14 +4228,12 @@
         "surface": "まだ",
         "base": "まだ",
         "reading": "まだ",
-        "meaning": "still/yet",
         "pos": "Adverb"
       },
       {
         "surface": "待っ",
         "base": "待つ",
         "reading": "まっ",
-        "meaning": "to wait",
         "pos": "Verb"
       },
       {
@@ -4524,7 +4243,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       },
       {
@@ -4546,7 +4264,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -4556,7 +4273,6 @@
         "surface": "待っ",
         "base": "待つ",
         "reading": "まっ",
-        "meaning": "to wait",
         "pos": "Verb"
       },
       {
@@ -4566,7 +4282,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       },
       {
@@ -4588,14 +4303,12 @@
         "surface": "少し",
         "base": "少し",
         "reading": "すこし",
-        "meaning": "a little",
         "pos": "Adverb"
       },
       {
         "surface": "待っ",
         "base": "待つ",
         "reading": "まっ",
-        "meaning": "to wait",
         "pos": "Verb"
       },
       {
@@ -4605,7 +4318,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       },
       {
@@ -4627,7 +4339,6 @@
         "surface": "今",
         "base": "今",
         "reading": "いま",
-        "meaning": "now",
         "pos": "Noun"
       },
       {
@@ -4637,7 +4348,6 @@
         "surface": "待っ",
         "base": "待つ",
         "reading": "まっ",
-        "meaning": "to wait",
         "pos": "Verb"
       },
       {
@@ -4647,7 +4357,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       },
       {
@@ -4669,7 +4378,6 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
@@ -4692,7 +4400,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -4702,7 +4409,6 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
@@ -4726,7 +4432,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -4736,7 +4441,6 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
@@ -4746,7 +4450,6 @@
         "surface": "分かる",
         "base": "分かる",
         "reading": "わかる",
-        "meaning": "to understand",
         "pos": "Verb"
       },
       {
@@ -4768,7 +4471,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -4778,7 +4480,6 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
@@ -4788,7 +4489,6 @@
         "surface": "言う",
         "base": "言う",
         "reading": "ゆう",
-        "meaning": "to say",
         "pos": "Verb"
       },
       {
@@ -4810,14 +4510,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
@@ -4827,7 +4525,6 @@
         "surface": "分かる",
         "base": "分かる",
         "reading": "わかる",
-        "meaning": "to understand",
         "pos": "Verb"
       },
       {
@@ -4849,7 +4546,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -4859,7 +4555,6 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
@@ -4869,14 +4564,12 @@
         "surface": "まだ",
         "base": "まだ",
         "reading": "まだ",
-        "meaning": "still/yet",
         "pos": "Adverb"
       },
       {
         "surface": "分かる",
         "base": "分かる",
         "reading": "わかる",
-        "meaning": "to understand",
         "pos": "Verb"
       },
       {
@@ -4899,7 +4592,6 @@
         "surface": "それ",
         "base": "それ",
         "reading": "それ",
-        "meaning": "that",
         "pos": "Pronoun"
       },
       {
@@ -4909,7 +4601,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -4919,14 +4610,12 @@
         "surface": "名前",
         "base": "名前",
         "reading": "なまえ",
-        "meaning": "name",
         "pos": "Noun"
       },
       {
         "surface": "ですか",
         "base": "ですか",
         "reading": "ですか",
-        "meaning": "is it? (polite question)",
         "pos": "Auxiliary"
       },
       {
@@ -4949,7 +4638,6 @@
         "surface": "遊ぶ",
         "base": "遊ぶ",
         "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
@@ -4970,7 +4658,6 @@
         "surface": "行く",
         "base": "行く",
         "reading": "いく",
-        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)",
         "pos": "Verb"
       },
       {
@@ -4994,7 +4681,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -5004,7 +4690,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -5029,14 +4714,12 @@
         "surface": "一緒に",
         "base": "一緒に",
         "reading": "いっしょに",
-        "meaning": "together (with)",
         "pos": "Noun"
       },
       {
         "surface": "遊ぶ",
         "base": "遊ぶ",
         "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
@@ -5058,7 +4741,6 @@
         "surface": "今日",
         "base": "今日",
         "reading": "きょう",
-        "meaning": "today",
         "pos": "Noun"
       },
       {
@@ -5068,7 +4750,6 @@
         "surface": "遊ぶ",
         "base": "遊ぶ",
         "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
@@ -5090,14 +4771,12 @@
         "surface": "とても",
         "base": "とても",
         "reading": "とても",
-        "meaning": "very",
         "pos": "Adverb"
       },
       {
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
@@ -5122,14 +4801,12 @@
         "surface": "今",
         "base": "今",
         "reading": "いま",
-        "meaning": "now",
         "pos": "Noun"
       },
       {
         "surface": "遊ぶ",
         "base": "遊ぶ",
         "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
@@ -5151,7 +4828,6 @@
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -5161,7 +4837,6 @@
         "surface": "なる",
         "base": "なる",
         "reading": "なる",
-        "meaning": "to become",
         "pos": "Verb"
       },
       {
@@ -5183,14 +4858,12 @@
         "surface": "始め",
         "base": "始める",
         "reading": "はじめ",
-        "meaning": "to start / to begin / to commence / to initiate / to originate",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -5212,7 +4885,6 @@
         "surface": "準備",
         "base": "準備",
         "reading": "じゅんび",
-        "meaning": "preparation / arrangements / getting ready / provision / setup / reserving",
         "pos": "Noun"
       },
       {
@@ -5222,14 +4894,12 @@
         "surface": "出来",
         "base": "出来る",
         "reading": "でき",
-        "meaning": "to be able to",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -5252,7 +4922,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -5262,7 +4931,6 @@
         "surface": "思い",
         "base": "思う",
         "reading": "おもい",
-        "meaning": "to think",
         "pos": "Verb"
       },
       {
@@ -5284,7 +4952,6 @@
         "surface": "頑張り",
         "base": "頑張る",
         "reading": "がんばり",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best",
         "pos": "Verb"
       },
       {
@@ -5305,7 +4972,6 @@
         "surface": "上手",
         "base": "上手",
         "reading": "じょうず",
-        "meaning": "skilled",
         "pos": "Na-adjective"
       },
       {
@@ -5329,21 +4995,18 @@
         "surface": "前",
         "base": "前",
         "reading": "まえ",
-        "meaning": "before/front",
         "pos": "Noun"
       },
       {
         "surface": "にも",
         "base": "にも",
         "reading": "にも",
-        "meaning": "also / too / not ... either / as well / even",
         "pos": "Particle"
       },
       {
         "surface": "会い",
         "base": "会う",
         "reading": "あい",
-        "meaning": "to meet / to encounter / to see",
         "pos": "Verb"
       },
       {
@@ -5353,7 +5016,6 @@
         "surface": "たね",
         "base": "たね",
         "reading": "たね",
-        "meaning": "seed (e.g. of a plant) / pip / kernel / stone (e.g. of a peach)",
         "pos": "Auxiliary"
       }
     ],
@@ -5374,7 +5036,6 @@
         "surface": "力",
         "base": "力",
         "reading": "ちから",
-        "meaning": "power/strength",
         "pos": "Noun"
       },
       {
@@ -5384,7 +5045,6 @@
         "surface": "見",
         "base": "見る",
         "reading": "み",
-        "meaning": "to see / to look / to watch / to view / to observe",
         "pos": "Verb"
       },
       {
@@ -5406,14 +5066,12 @@
         "surface": "教え",
         "base": "教える",
         "reading": "おしえ",
-        "meaning": "to teach",
         "pos": "Verb"
       },
       {
         "surface": "ましょうか",
         "base": "ましょうか",
         "reading": "ましょうか",
-        "meaning": "shall I?",
         "pos": "Auxiliary"
       },
       {
@@ -5435,7 +5093,6 @@
         "surface": "行く",
         "base": "行く",
         "reading": "いく",
-        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)",
         "pos": "Verb"
       },
       {
@@ -5459,7 +5116,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -5483,7 +5139,6 @@
         "surface": "俺",
         "base": "俺",
         "reading": "おれ",
-        "meaning": "I / me",
         "pos": "Pronoun"
       },
       {
@@ -5493,7 +5148,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -5518,7 +5172,6 @@
         "surface": "力",
         "base": "力",
         "reading": "ちから",
-        "meaning": "power/strength",
         "pos": "Noun"
       },
       {
@@ -5528,7 +5181,6 @@
         "surface": "見る",
         "base": "見る",
         "reading": "みる",
-        "meaning": "to see / to look / to watch / to view / to observe",
         "pos": "Verb"
       },
       {
@@ -5553,14 +5205,12 @@
         "surface": "大きい",
         "base": "大きい",
         "reading": "おおきい",
-        "meaning": "big",
         "pos": "Adjective"
       },
       {
         "surface": "声",
         "base": "声",
         "reading": "こえ",
-        "meaning": "voice",
         "pos": "Noun"
       },
       {
@@ -5570,7 +5220,6 @@
         "surface": "行く",
         "base": "行く",
         "reading": "いく",
-        "meaning": "to go / to move (towards) / to head (towards) / to leave (for)",
         "pos": "Verb"
       },
       {
@@ -5596,14 +5245,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "手",
         "base": "手",
         "reading": "て",
-        "meaning": "hand",
         "pos": "Noun"
       },
       {
@@ -5613,7 +5260,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -5639,7 +5285,6 @@
         "surface": "力",
         "base": "力",
         "reading": "ちから",
-        "meaning": "power/strength",
         "pos": "Noun"
       },
       {
@@ -5649,7 +5294,6 @@
         "surface": "使う",
         "base": "使う",
         "reading": "つかう",
-        "meaning": "to use",
         "pos": "Verb"
       },
       {
@@ -5674,7 +5318,6 @@
         "surface": "力",
         "base": "力",
         "reading": "ちから",
-        "meaning": "power/strength",
         "pos": "Noun"
       },
       {
@@ -5684,7 +5327,6 @@
         "surface": "持つ",
         "base": "持つ",
         "reading": "もつ",
-        "meaning": "to hold/have",
         "pos": "Verb"
       },
       {
@@ -5709,7 +5351,6 @@
         "surface": "あ",
         "base": "あ",
         "reading": "あ",
-        "meaning": "ah / oh (interjection)",
         "pos": "Interjection"
       },
       {
@@ -5719,7 +5360,6 @@
         "surface": "始め",
         "base": "始め",
         "reading": "はじめ",
-        "meaning": "beginning / start / outset / opening",
         "pos": "Verb"
       },
       {
@@ -5741,14 +5381,12 @@
         "surface": "少し",
         "base": "少し",
         "reading": "すこし",
-        "meaning": "a little",
         "pos": "Adverb"
       },
       {
         "surface": "怖い",
         "base": "怖い",
         "reading": "こわい",
-        "meaning": "scary / frightening / eerie / dreadful",
         "pos": "Adjective"
       },
       {
@@ -5779,7 +5417,6 @@
         "surface": "頑張り",
         "base": "頑張る",
         "reading": "がんばり",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best",
         "pos": "Verb"
       },
       {
@@ -5809,14 +5446,12 @@
         "surface": "小さい",
         "base": "小さい",
         "reading": "ちいさい",
-        "meaning": "small",
         "pos": "Adjective"
       },
       {
         "surface": "声",
         "base": "声",
         "reading": "こえ",
-        "meaning": "voice",
         "pos": "Noun"
       },
       {
@@ -5850,7 +5485,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -5860,7 +5494,6 @@
         "surface": "頑張り",
         "base": "頑張る",
         "reading": "がんばり",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best",
         "pos": "Verb"
       },
       {
@@ -5885,7 +5518,6 @@
         "surface": "心",
         "base": "心",
         "reading": "こころ",
-        "meaning": "heart/mind",
         "pos": "Noun"
       },
       {
@@ -5895,7 +5527,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -5920,7 +5551,6 @@
         "surface": "あの",
         "base": "あの",
         "reading": "あの",
-        "meaning": "that (adj)",
         "pos": "Pre-noun"
       },
       {
@@ -5930,7 +5560,6 @@
         "surface": "頑張り",
         "base": "頑張る",
         "reading": "がんばり",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best",
         "pos": "Verb"
       },
       {
@@ -5955,14 +5584,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "道",
         "base": "道",
         "reading": "みち",
-        "meaning": "road/path",
         "pos": "Noun"
       },
       {
@@ -5972,7 +5599,6 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
@@ -5998,7 +5624,6 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
@@ -6022,14 +5647,12 @@
         "surface": "又",
         "base": "又",
         "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time",
         "pos": "Conjunction"
       },
       {
         "surface": "遊ぶ",
         "base": "遊ぶ",
         "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
@@ -6051,14 +5674,12 @@
         "surface": "とても",
         "base": "とても",
         "reading": "とても",
-        "meaning": "very",
         "pos": "Adverb"
       },
       {
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -6068,7 +5689,6 @@
         "surface": "思う",
         "base": "思う",
         "reading": "おもう",
-        "meaning": "to think",
         "pos": "Verb"
       },
       {
@@ -6091,7 +5711,6 @@
         "surface": "明日",
         "base": "明日",
         "reading": "あす",
-        "meaning": "tomorrow",
         "pos": "Noun"
       },
       {
@@ -6101,14 +5720,12 @@
         "surface": "一緒に",
         "base": "一緒に",
         "reading": "いっしょに",
-        "meaning": "together (with)",
         "pos": "Noun"
       },
       {
         "surface": "遊ぶ",
         "base": "遊ぶ",
         "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
@@ -6131,14 +5748,12 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -6148,7 +5763,6 @@
         "surface": "来る",
         "base": "来る",
         "reading": "くる",
-        "meaning": "to come",
         "pos": "Verb"
       },
       {
@@ -6158,7 +5772,6 @@
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
-        "meaning": "happy",
         "pos": "Adjective"
       },
       {
@@ -6185,14 +5798,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "場所",
         "base": "場所",
         "reading": "ばしょ",
-        "meaning": "place",
         "pos": "Noun"
       },
       {
@@ -6202,7 +5813,6 @@
         "surface": "明日",
         "base": "明日",
         "reading": "あす",
-        "meaning": "tomorrow",
         "pos": "Noun"
       },
       {
@@ -6212,14 +5822,12 @@
         "surface": "一緒に",
         "base": "一緒に",
         "reading": "いっしょに",
-        "meaning": "together (with)",
         "pos": "Noun"
       },
       {
         "surface": "遊ぶ",
         "base": "遊ぶ",
         "reading": "あそぶ",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
@@ -6244,7 +5852,6 @@
         "surface": "上手",
         "base": "上手",
         "reading": "じょうず",
-        "meaning": "skilled",
         "pos": "Na-adjective"
       },
       {
@@ -6268,7 +5875,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -6278,7 +5884,6 @@
         "surface": "思い",
         "base": "思う",
         "reading": "おもい",
-        "meaning": "to think",
         "pos": "Verb"
       },
       {
@@ -6300,7 +5905,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -6310,14 +5914,12 @@
         "surface": "教え",
         "base": "教える",
         "reading": "おしえ",
-        "meaning": "to teach",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -6340,7 +5942,6 @@
         "surface": "後",
         "base": "後",
         "reading": "あと",
-        "meaning": "after/behind",
         "pos": "Noun"
       },
       {
@@ -6350,14 +5951,12 @@
         "surface": "又",
         "base": "又",
         "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time",
         "pos": "Adverb"
       },
       {
         "surface": "会い",
         "base": "会う",
         "reading": "あい",
-        "meaning": "to meet / to encounter / to see",
         "pos": "Verb"
       },
       {
@@ -6380,14 +5979,12 @@
         "surface": "いい",
         "base": "いい",
         "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
         "surface": "力",
         "base": "力",
         "reading": "ちから",
-        "meaning": "power/strength",
         "pos": "Noun"
       },
       {
@@ -6397,14 +5994,12 @@
         "surface": "持つ",
         "base": "持つ",
         "reading": "もつ",
-        "meaning": "to hold/have",
         "pos": "Verb"
       },
       {
         "surface": "人",
         "base": "人",
         "reading": "ひと",
-        "meaning": "person",
         "pos": "Noun"
       },
       {
@@ -6431,14 +6026,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "方",
         "base": "方",
         "reading": "かた",
-        "meaning": "direction/way",
         "pos": "Noun"
       },
       {
@@ -6448,14 +6041,12 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
         "surface": "気",
         "base": "気",
         "reading": "き",
-        "meaning": "spirit/feeling",
         "pos": "Noun"
       },
       {
@@ -6465,14 +6056,12 @@
         "surface": "持つ",
         "base": "持つ",
         "reading": "もつ",
-        "meaning": "to hold/have",
         "pos": "Verb"
       },
       {
         "surface": "人",
         "base": "人",
         "reading": "ひと",
-        "meaning": "person",
         "pos": "Noun"
       },
       {
@@ -6501,7 +6090,6 @@
         "surface": "悔しい",
         "base": "悔しい",
         "reading": "くやしい",
-        "meaning": "frustrated (over a failure, humiliation or injustice) / annoyed / chagrined / (bitterly) disappointed / bitter / vexed / frustrating / annoying / regrettable",
         "pos": "Adjective"
       },
       {
@@ -6525,7 +6113,6 @@
         "surface": "次",
         "base": "次",
         "reading": "つぎ",
-        "meaning": "next / following / subsequent",
         "pos": "Noun"
       },
       {
@@ -6535,7 +6122,6 @@
         "surface": "勝つ",
         "base": "勝つ",
         "reading": "かつ",
-        "meaning": "to win / to gain victory",
         "pos": "Verb"
       },
       {
@@ -6560,14 +6146,12 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
         "surface": "力",
         "base": "力",
         "reading": "ちから",
-        "meaning": "power/strength",
         "pos": "Noun"
       },
       {
@@ -6577,7 +6161,6 @@
         "surface": "作る",
         "base": "作る",
         "reading": "つくる",
-        "meaning": "to make",
         "pos": "Verb"
       },
       {
@@ -6603,21 +6186,18 @@
         "surface": "明日",
         "base": "明日",
         "reading": "あす",
-        "meaning": "tomorrow",
         "pos": "Noun"
       },
       {
         "surface": "又",
         "base": "又",
         "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time",
         "pos": "Adverb"
       },
       {
         "surface": "来る",
         "base": "来る",
         "reading": "くる",
-        "meaning": "to come",
         "pos": "Verb"
       },
       {
@@ -6643,14 +6223,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "場所",
         "base": "場所",
         "reading": "ばしょ",
-        "meaning": "place",
         "pos": "Noun"
       },
       {
@@ -6660,14 +6238,12 @@
         "surface": "又",
         "base": "又",
         "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time",
         "pos": "Adverb"
       },
       {
         "surface": "やる",
         "base": "やる",
         "reading": "やる",
-        "meaning": "to do / to undertake / to perform / to play (a game) / to study",
         "pos": "Verb"
       },
       {
@@ -6694,14 +6270,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "世界",
         "base": "世界",
         "reading": "せかい",
-        "meaning": "world",
         "pos": "Noun"
       },
       {
@@ -6711,14 +6285,12 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
         "surface": "力",
         "base": "力",
         "reading": "ちから",
-        "meaning": "power/strength",
         "pos": "Noun"
       },
       {
@@ -6728,7 +6300,6 @@
         "surface": "使う",
         "base": "使う",
         "reading": "つかう",
-        "meaning": "to use",
         "pos": "Verb"
       },
       {
@@ -6756,7 +6327,6 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
@@ -6786,14 +6356,12 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
         "surface": "人",
         "base": "人",
         "reading": "ひと",
-        "meaning": "person",
         "pos": "Noun"
       },
       {
@@ -6818,7 +6386,6 @@
         "surface": "あの人",
         "base": "あの人",
         "reading": "あのひと",
-        "meaning": "he / she / that person",
         "pos": "Pre-noun"
       },
       {
@@ -6828,7 +6395,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -6838,7 +6404,6 @@
         "surface": "思い",
         "base": "思う",
         "reading": "おもい",
-        "meaning": "to think",
         "pos": "Verb"
       },
       {
@@ -6870,14 +6435,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "方",
         "base": "方",
         "reading": "かた",
-        "meaning": "direction/way",
         "pos": "Noun"
       },
       {
@@ -6887,14 +6450,12 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
         "surface": "気",
         "base": "気",
         "reading": "き",
-        "meaning": "spirit/feeling",
         "pos": "Noun"
       },
       {
@@ -6904,7 +6465,6 @@
         "surface": "人",
         "base": "人",
         "reading": "ひと",
-        "meaning": "person",
         "pos": "Noun"
       },
       {
@@ -6932,7 +6492,6 @@
         "surface": "こんにちは",
         "base": "こんにちは",
         "reading": "こんにちは",
-        "meaning": "hello",
         "pos": "Interjection"
       },
       {
@@ -6952,7 +6511,6 @@
         "surface": "いらっしゃいませ",
         "base": "いらっしゃいませ",
         "reading": "いらっしゃいませ",
-        "meaning": "welcome",
         "pos": "Verb"
       },
       {
@@ -6972,21 +6530,18 @@
         "surface": "今日は",
         "base": "今日は",
         "reading": "こんにちは",
-        "meaning": "hello / good day / good afternoon",
         "pos": "Noun"
       },
       {
         "surface": "いい",
         "base": "いい",
         "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
         "surface": "日",
         "base": "日",
         "reading": "ひ",
-        "meaning": "day / days",
         "pos": "Noun"
       },
       {
@@ -7014,14 +6569,12 @@
         "surface": "よく",
         "base": "よく",
         "reading": "よく",
-        "meaning": "greed / craving / desire / appetite / hunger / avarice / wants",
         "pos": "Adverb"
       },
       {
         "surface": "来",
         "base": "来る",
         "reading": "き",
-        "meaning": "to come",
         "pos": "Verb"
       },
       {
@@ -7048,21 +6601,18 @@
         "surface": "少し",
         "base": "少し",
         "reading": "すこし",
-        "meaning": "a little",
         "pos": "Adverb"
       },
       {
         "surface": "見",
         "base": "見る",
         "reading": "み",
-        "meaning": "to see / to look / to watch / to view / to observe",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -7084,14 +6634,12 @@
         "surface": "新しい",
         "base": "新しい",
         "reading": "あたらしい",
-        "meaning": "new",
         "pos": "Adjective"
       },
       {
         "surface": "物",
         "base": "物",
         "reading": "もの",
-        "meaning": "thing / object / article / stuff / substance",
         "pos": "Noun"
       },
       {
@@ -7124,14 +6672,12 @@
         "surface": "食べる",
         "base": "食べる",
         "reading": "たべる",
-        "meaning": "to eat",
         "pos": "Verb"
       },
       {
         "surface": "物",
         "base": "物",
         "reading": "もの",
-        "meaning": "thing / object / article / stuff / substance",
         "pos": "Noun"
       },
       {
@@ -7164,7 +6710,6 @@
         "surface": "ここ",
         "base": "ここ",
         "reading": "ここ",
-        "meaning": "here / this place",
         "pos": "Pronoun"
       },
       {
@@ -7174,14 +6719,12 @@
         "surface": "入り",
         "base": "入る",
         "reading": "はいり",
-        "meaning": "to enter",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -7203,14 +6746,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "場所",
         "base": "場所",
         "reading": "ばしょ",
-        "meaning": "place",
         "pos": "Noun"
       },
       {
@@ -7220,7 +6761,6 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
@@ -7248,21 +6788,18 @@
         "surface": "少し",
         "base": "少し",
         "reading": "すこし",
-        "meaning": "a little",
         "pos": "Adverb"
       },
       {
         "surface": "出",
         "base": "出る",
         "reading": "で",
-        "meaning": "to go out",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -7284,7 +6821,6 @@
         "surface": "手",
         "base": "手",
         "reading": "て",
-        "meaning": "hand",
         "pos": "Noun"
       },
       {
@@ -7294,14 +6830,12 @@
         "surface": "取り",
         "base": "取る",
         "reading": "とり",
-        "meaning": "to take / to pick up / to grab / to catch / to hold",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -7323,7 +6857,6 @@
         "surface": "綺麗",
         "base": "綺麗",
         "reading": "きれい",
-        "meaning": "pretty / lovely / beautiful / fair",
         "pos": "Na-adjective"
       },
       {
@@ -7333,7 +6866,6 @@
         "surface": "色",
         "base": "色",
         "reading": "いろ",
-        "meaning": "color",
         "pos": "Noun"
       },
       {
@@ -7343,7 +6875,6 @@
         "surface": "物",
         "base": "物",
         "reading": "もの",
-        "meaning": "thing / object / article / stuff / substance",
         "pos": "Noun"
       },
       {
@@ -7377,14 +6908,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "世界",
         "base": "世界",
         "reading": "せかい",
-        "meaning": "world",
         "pos": "Noun"
       },
       {
@@ -7394,7 +6923,6 @@
         "surface": "物",
         "base": "物",
         "reading": "もの",
-        "meaning": "thing / object / article / stuff / substance",
         "pos": "Noun"
       },
       {
@@ -7404,14 +6932,12 @@
         "surface": "見",
         "base": "見る",
         "reading": "み",
-        "meaning": "to see / to look / to watch / to view / to observe",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -7435,14 +6961,12 @@
         "surface": "元気",
         "base": "元気",
         "reading": "げんき",
-        "meaning": "healthy/energetic",
         "pos": "Noun"
       },
       {
         "surface": "ですか",
         "base": "ですか",
         "reading": "ですか",
-        "meaning": "is it? (polite question)",
         "pos": "Auxiliary"
       },
       {
@@ -7463,14 +6987,12 @@
         "surface": "いい",
         "base": "いい",
         "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
         "surface": "時",
         "base": "時",
         "reading": "とき",
-        "meaning": "when/time",
         "pos": "Noun"
       },
       {
@@ -7480,7 +7002,6 @@
         "surface": "来",
         "base": "来る",
         "reading": "き",
-        "meaning": "to come",
         "pos": "Verb"
       },
       {
@@ -7508,14 +7029,12 @@
         "surface": "いい",
         "base": "いい",
         "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
         "surface": "話",
         "base": "話",
         "reading": "はなし",
-        "meaning": "story/talk",
         "pos": "Noun"
       },
       {
@@ -7548,7 +7067,6 @@
         "surface": "目",
         "base": "目",
         "reading": "め",
-        "meaning": "eye",
         "pos": "Noun"
       },
       {
@@ -7558,7 +7076,6 @@
         "surface": "いい",
         "base": "いい",
         "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
@@ -7591,7 +7108,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       }
     ],
@@ -7608,7 +7124,6 @@
         "surface": "すみません",
         "base": "すみません",
         "reading": "すみません",
-        "meaning": "excuse me/sorry",
         "pos": "Verb"
       },
       {
@@ -7624,7 +7139,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       }
     ],
@@ -7642,7 +7156,6 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
@@ -7655,7 +7168,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       }
     ],
@@ -7673,7 +7185,6 @@
         "surface": "それ",
         "base": "それ",
         "reading": "それ",
-        "meaning": "that",
         "pos": "Pronoun"
       },
       {
@@ -7683,7 +7194,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       }
     ],
@@ -7707,7 +7217,6 @@
         "surface": "使い",
         "base": "使う",
         "reading": "つかい",
-        "meaning": "to use",
         "pos": "Verb"
       },
       {
@@ -7736,7 +7245,6 @@
         "surface": "持ち",
         "base": "持つ",
         "reading": "もち",
-        "meaning": "to hold/have",
         "pos": "Verb"
       },
       {
@@ -7759,7 +7267,6 @@
         "surface": "いい",
         "base": "いい",
         "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
@@ -7788,7 +7295,6 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
@@ -7801,7 +7307,6 @@
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
-        "meaning": "happy",
         "pos": "Adjective"
       },
       {
@@ -7831,7 +7336,6 @@
         "surface": "ありがとうございます",
         "base": "ありがとうございます",
         "reading": "ありがとうございます",
-        "meaning": "thank you",
         "pos": "Interjection"
       },
       {
@@ -7851,7 +7355,6 @@
         "surface": "これ",
         "base": "これ",
         "reading": "これ",
-        "meaning": "this",
         "pos": "Pronoun"
       },
       {
@@ -7861,7 +7364,6 @@
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
-        "meaning": "to give / to confer / to bestow",
         "pos": "Verb"
       },
       {
@@ -7882,14 +7384,12 @@
         "surface": "大きい",
         "base": "大きい",
         "reading": "おおきい",
-        "meaning": "big",
         "pos": "Adjective"
       },
       {
         "surface": "物",
         "base": "物",
         "reading": "もの",
-        "meaning": "thing / object / article / stuff / substance",
         "pos": "Noun"
       },
       {
@@ -7922,14 +7422,12 @@
         "surface": "小さい",
         "base": "小さい",
         "reading": "ちいさい",
-        "meaning": "small",
         "pos": "Adjective"
       },
       {
         "surface": "物",
         "base": "物",
         "reading": "もの",
-        "meaning": "thing / object / article / stuff / substance",
         "pos": "Noun"
       },
       {
@@ -7962,14 +7460,12 @@
         "surface": "いい",
         "base": "いい",
         "reading": "いい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
         "surface": "声",
         "base": "声",
         "reading": "こえ",
-        "meaning": "voice",
         "pos": "Noun"
       },
       {
@@ -7996,7 +7492,6 @@
         "surface": "前",
         "base": "前",
         "reading": "まえ",
-        "meaning": "before/front",
         "pos": "Noun"
       },
       {
@@ -8006,14 +7501,12 @@
         "surface": "来",
         "base": "来る",
         "reading": "き",
-        "meaning": "to come",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -8035,7 +7528,6 @@
         "surface": "後",
         "base": "後",
         "reading": "あと",
-        "meaning": "after/behind",
         "pos": "Noun"
       },
       {
@@ -8045,21 +7537,18 @@
         "surface": "又",
         "base": "又",
         "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time",
         "pos": "Adverb"
       },
       {
         "surface": "来",
         "base": "来る",
         "reading": "き",
-        "meaning": "to come",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -8082,14 +7571,12 @@
         "surface": "この",
         "base": "この",
         "reading": "この",
-        "meaning": "this (adj)",
         "pos": "Pre-noun"
       },
       {
         "surface": "方",
         "base": "方",
         "reading": "かた",
-        "meaning": "direction/way",
         "pos": "Noun"
       },
       {
@@ -8099,7 +7586,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -8127,7 +7613,6 @@
         "surface": "いい",
         "base": "いう",
         "reading": "いい",
-        "meaning": "to say / to utter / to declare",
         "pos": "Verb"
       },
       {
@@ -8156,14 +7641,12 @@
         "surface": "出来",
         "base": "出来る",
         "reading": "でき",
-        "meaning": "to be able to",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -8184,14 +7667,12 @@
         "surface": "遊び",
         "base": "遊ぶ",
         "reading": "あそび",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -8212,21 +7693,18 @@
         "surface": "一緒に",
         "base": "一緒に",
         "reading": "いっしょに",
-        "meaning": "together (with)",
         "pos": "Noun"
       },
       {
         "surface": "遊び",
         "base": "遊ぶ",
         "reading": "あそび",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -8248,14 +7726,12 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
         "surface": "言葉",
         "base": "言葉",
         "reading": "ことば",
-        "meaning": "language / dialect",
         "pos": "Noun"
       },
       {
@@ -8265,7 +7741,6 @@
         "surface": "遊び",
         "base": "遊び",
         "reading": "あそび",
-        "meaning": "play / playing / game",
         "pos": "Noun"
       },
       {
@@ -8290,7 +7765,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -8300,14 +7774,12 @@
         "surface": "一緒に",
         "base": "一緒に",
         "reading": "いっしょに",
-        "meaning": "together (with)",
         "pos": "Noun"
       },
       {
         "surface": "言葉",
         "base": "言葉",
         "reading": "ことば",
-        "meaning": "language / dialect",
         "pos": "Noun"
       },
       {
@@ -8317,14 +7789,12 @@
         "surface": "遊び",
         "base": "遊ぶ",
         "reading": "あそび",
-        "meaning": "to play (games, sports) / to enjoy oneself / to have a good time",
         "pos": "Verb"
       },
       {
         "surface": "ますか",
         "base": "ますか",
         "reading": "ますか",
-        "meaning": "(polite verb question)",
         "pos": "Auxiliary"
       },
       {
@@ -8348,7 +7818,6 @@
         "surface": "上手",
         "base": "上手",
         "reading": "じょうず",
-        "meaning": "skilled",
         "pos": "Na-adjective"
       },
       {
@@ -8368,7 +7837,6 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
@@ -8388,14 +7856,12 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
         "surface": "遊び",
         "base": "遊び",
         "reading": "あそび",
-        "meaning": "play / playing / game",
         "pos": "Noun"
       },
       {
@@ -8416,7 +7882,6 @@
         "surface": "言葉",
         "base": "言葉",
         "reading": "ことば",
-        "meaning": "language / dialect",
         "pos": "Noun"
       },
       {
@@ -8426,7 +7891,6 @@
         "surface": "遊び",
         "base": "遊び",
         "reading": "あそび",
-        "meaning": "play / playing / game",
         "pos": "Noun"
       },
       {
@@ -8447,14 +7911,12 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
         "surface": "言葉",
         "base": "言葉",
         "reading": "ことば",
-        "meaning": "language / dialect",
         "pos": "Noun"
       },
       {
@@ -8464,7 +7926,6 @@
         "surface": "遊び",
         "base": "遊び",
         "reading": "あそび",
-        "meaning": "play / playing / game",
         "pos": "Noun"
       },
       {
@@ -8486,7 +7947,6 @@
         "surface": "すごい",
         "base": "すごい",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -8506,7 +7966,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -8526,7 +7985,6 @@
         "surface": "負ける",
         "base": "負ける",
         "reading": "まける",
-        "meaning": "to lose / to be defeated / to be beaten",
         "pos": "Verb"
       },
       {
@@ -8546,7 +8004,6 @@
         "surface": "やる",
         "base": "やる",
         "reading": "やる",
-        "meaning": "to do / to undertake / to perform / to play (a game) / to study",
         "pos": "Verb"
       },
       {
@@ -8569,14 +8026,12 @@
         "surface": "本当に",
         "base": "本当に",
         "reading": "ほんとうに",
-        "meaning": "really / truly",
         "pos": "Noun"
       },
       {
         "surface": "すごい",
         "base": "すごい",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -8603,7 +8058,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -8623,7 +8077,6 @@
         "surface": "完全",
         "base": "完全",
         "reading": "かんぜん",
-        "meaning": "perfect / complete",
         "pos": "Na-adjective"
       },
       {
@@ -8633,7 +8086,6 @@
         "surface": "負ける",
         "base": "負ける",
         "reading": "まける",
-        "meaning": "to lose / to be defeated / to be beaten",
         "pos": "Verb"
       },
       {
@@ -8654,14 +8106,12 @@
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
-        "meaning": "enjoyable / fun / pleasant / happy / delightful",
         "pos": "Adjective"
       },
       {
         "surface": "戦い",
         "base": "戦い",
         "reading": "たたかい",
-        "meaning": "battle / war / fight / conflict",
         "pos": "Noun"
       },
       {
@@ -8682,7 +8132,6 @@
         "surface": "すごい",
         "base": "すごい",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -8698,7 +8147,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -8719,14 +8167,12 @@
         "surface": "良い",
         "base": "良い",
         "reading": "よい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
         "surface": "勝負",
         "base": "勝負",
         "reading": "しょうぶ",
-        "meaning": "victory or defeat",
         "pos": "Noun"
       },
       {
@@ -8736,7 +8182,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -8746,7 +8191,6 @@
         "surface": "負ける",
         "base": "負ける",
         "reading": "まける",
-        "meaning": "to lose / to be defeated / to be beaten",
         "pos": "Verb"
       },
       {
@@ -8775,14 +8219,12 @@
         "surface": "とても",
         "base": "とても",
         "reading": "とても",
-        "meaning": "very",
         "pos": "Adverb"
       },
       {
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -8803,7 +8245,6 @@
         "surface": "次",
         "base": "次",
         "reading": "つぎ",
-        "meaning": "next / following / subsequent",
         "pos": "Noun"
       },
       {
@@ -8813,14 +8254,12 @@
         "surface": "絶対に",
         "base": "絶対に",
         "reading": "ぜったいに",
-        "meaning": "absolutely / definitely / unconditionally",
         "pos": "Noun"
       },
       {
         "surface": "勝つ",
         "base": "勝つ",
         "reading": "かつ",
-        "meaning": "to win / to gain victory",
         "pos": "Verb"
       },
       {
@@ -8842,7 +8281,6 @@
         "surface": "あなた",
         "base": "あなた",
         "reading": "あなた",
-        "meaning": "you",
         "pos": "Pronoun"
       },
       {
@@ -8858,14 +8296,12 @@
         "surface": "本当に",
         "base": "本当に",
         "reading": "ほんとうに",
-        "meaning": "really / truly",
         "pos": "Noun"
       },
       {
         "surface": "すごい",
         "base": "すごい",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -8887,7 +8323,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -8897,7 +8332,6 @@
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
-        "meaning": "strong / potent / competent / domineering / tough",
         "pos": "Adjective"
       },
       {
@@ -8907,14 +8341,12 @@
         "surface": "又",
         "base": "又",
         "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time",
         "pos": "Adverb"
       },
       {
         "surface": "戦う",
         "base": "戦う",
         "reading": "たたかう",
-        "meaning": "to make war (on) / to wage war (against) / to go to war (with) / to fight (with) / to do battle (against)",
         "pos": "Verb"
       },
       {
@@ -8937,14 +8369,12 @@
         "surface": "一緒に",
         "base": "一緒に",
         "reading": "いっしょに",
-        "meaning": "together (with)",
         "pos": "Noun"
       },
       {
         "surface": "練習",
         "base": "練習",
         "reading": "れんしゅう",
-        "meaning": "practice / training / drill / (an) exercise / workout",
         "pos": "Noun"
       },
       {
@@ -8957,7 +8387,6 @@
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
-        "meaning": "friend",
         "pos": "Noun"
       },
       {
@@ -8967,7 +8396,6 @@
         "surface": "なる",
         "base": "なる",
         "reading": "なる",
-        "meaning": "to become",
         "pos": "Verb"
       },
       {
@@ -8996,7 +8424,6 @@
         "surface": "力",
         "base": "力",
         "reading": "ちから",
-        "meaning": "power/strength",
         "pos": "Noun"
       },
       {
@@ -9006,7 +8433,6 @@
         "surface": "すごい",
         "base": "すごい",
         "reading": "すごい",
-        "meaning": "terrible / dreadful",
         "pos": "Adjective"
       },
       {
@@ -9016,7 +8442,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -9026,7 +8451,6 @@
         "surface": "頑張る",
         "base": "頑張る",
         "reading": "がんばる",
-        "meaning": "to persevere / to persist / to keep at it / to hang on / to hold out / to do one's best",
         "pos": "Verb"
       },
       {
@@ -9049,7 +8473,6 @@
         "surface": "あなた",
         "base": "あなた",
         "reading": "あなた",
-        "meaning": "you",
         "pos": "Pronoun"
       },
       {
@@ -9059,14 +8482,12 @@
         "surface": "本当に",
         "base": "本当に",
         "reading": "ほんとうに",
-        "meaning": "really / truly",
         "pos": "Noun"
       },
       {
         "surface": "上手",
         "base": "上手",
         "reading": "かみて",
-        "meaning": "skilled",
         "pos": "Noun"
       },
       {
@@ -9076,7 +8497,6 @@
         "surface": "次",
         "base": "次",
         "reading": "つぎ",
-        "meaning": "next / following / subsequent",
         "pos": "Noun"
       },
       {
@@ -9086,7 +8506,6 @@
         "surface": "私",
         "base": "私",
         "reading": "わたくし",
-        "meaning": "I/me",
         "pos": "Pronoun"
       },
       {
@@ -9096,7 +8515,6 @@
         "surface": "勝つ",
         "base": "勝つ",
         "reading": "かつ",
-        "meaning": "to win / to gain victory",
         "pos": "Verb"
       },
       {
@@ -9121,14 +8539,12 @@
         "surface": "良い",
         "base": "良い",
         "reading": "よい",
-        "meaning": "good / excellent / fine / nice / pleasant / agreeable",
         "pos": "Adjective"
       },
       {
         "surface": "勝負",
         "base": "勝負",
         "reading": "しょうぶ",
-        "meaning": "victory or defeat",
         "pos": "Noun"
       },
       {
@@ -9138,21 +8554,18 @@
         "surface": "又",
         "base": "又",
         "reading": "また",
-        "meaning": "again / once more / once again / another time / some other time",
         "pos": "Adverb"
       },
       {
         "surface": "会う",
         "base": "会う",
         "reading": "あう",
-        "meaning": "to meet / to encounter / to see",
         "pos": "Verb"
       },
       {
         "surface": "時",
         "base": "時",
         "reading": "とき",
-        "meaning": "when/time",
         "pos": "Noun"
       },
       {
@@ -9162,14 +8575,12 @@
         "surface": "絶対に",
         "base": "絶対に",
         "reading": "ぜったいに",
-        "meaning": "absolutely / definitely / unconditionally",
         "pos": "Noun"
       },
       {
         "surface": "勝つ",
         "base": "勝つ",
         "reading": "かつ",
-        "meaning": "to win / to gain victory",
         "pos": "Verb"
       },
       {
@@ -9195,14 +8606,12 @@
         "surface": "どの",
         "base": "どの",
         "reading": "どの",
-        "meaning": "Mr. / Mrs. / Miss / Ms.",
         "pos": "Pre-noun"
       },
       {
         "surface": "能力",
         "base": "能力",
         "reading": "のうりょく",
-        "meaning": "ability / faculty",
         "pos": "Noun"
       },
       {
@@ -9223,7 +8632,6 @@
         "surface": "はい",
         "base": "はい",
         "reading": "はい",
-        "meaning": "yes",
         "pos": "Interjection"
       }
     ],
@@ -9240,7 +8648,6 @@
         "surface": "いいえ",
         "base": "いいえ",
         "reading": "いいえ",
-        "meaning": "no",
         "pos": "Interjection"
       }
     ],
