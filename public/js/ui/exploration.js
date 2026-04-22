@@ -377,7 +377,7 @@ export async function renderHub() {
   const dueCount = apiGetVocabDueCount ? (await apiGetVocabDueCount().catch(() => ({ count: 0 }))).count : 0;
 
   renderButtons([
-    { label: `📚 Speed Review${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
+    { label: `📚 Knowledge Review${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
       // Tutorial step 4→5: advance when player clicks speed review
       if (getGameState().meta?.tutorialStep === 4) {
         await apiTutorialAdvance?.(4);
@@ -411,7 +411,7 @@ export async function renderHub() {
     await showTutorialNarration(getTutorialNarration(4, { dueCount }), { showSprite: true });
     const buttons = document.querySelectorAll('.action-btn');
     buttons.forEach(btn => {
-      if (btn.textContent.includes('Speed Review')) {
+      if (btn.textContent.includes('Knowledge Review')) {
         btn.classList.add('tutorial-highlight');
       } else {
         btn.classList.add('tutorial-dimmed');

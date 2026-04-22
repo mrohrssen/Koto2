@@ -128,7 +128,7 @@ export async function openSettings() {
           <option value="shrine">Shrine</option>
           <option value="quiz">Quiz</option>
           <option value="wordDiscovery">Word Discovery</option>
-          <option value="speedReviewRoom">Speed Review Room</option>
+          <option value="speedReviewRoom">Knowledge Review Room</option>
           <option value="dealer">Dealer</option>
           <option value="whackAMole">Whack-A-Mole</option>
         </select>
