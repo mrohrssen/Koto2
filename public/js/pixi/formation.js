@@ -1,5 +1,6 @@
-import { Sprite, Assets, Container, Texture, Graphics, Text } from 'pixi.js';
+import { Sprite, Container, Texture, Graphics, Text } from 'pixi.js';
 import { getApp } from './app.js';
+import { loadImageTexture } from './image-loader.js';
 import { tween } from './tween.js';
 import { STATUS_ICON_CONFIG } from '../ui/event-popup.js';
 
@@ -329,7 +330,7 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}.webp`;
   let texture;
   try {
-    texture = await Assets.load(spritePath);
+    texture = await loadImageTexture(spritePath);
   } catch {
     texture = Texture.WHITE;
   }
@@ -648,7 +649,7 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
 
   let texture;
   try {
-    texture = await Assets.load(spritePath);
+    texture = await loadImageTexture(spritePath);
   } catch {
     texture = Texture.WHITE;
   }
