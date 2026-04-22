@@ -55,7 +55,7 @@ describe('dialogue-loader (frames.json)', () => {
     const token = line.tokens[0];
     assert.equal(token.base, 'こんにちは', 'first token base should be こんにちは');
     assert.equal(token.reading, 'こんにちは', 'reading should be こんにちは (all-hiragana)');
-    assert.ok(token.meaning, 'token should have a meaning');
+    // Meaning is resolved at render-time from the dictionary, not baked into the token.
   });
 
   it('getNpcLines returns lines grouped by NPC and slot', () => {

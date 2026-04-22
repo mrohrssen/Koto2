@@ -101,7 +101,7 @@ describe('prologue route — GET /prologue', () => {
     assert.ok(demo.tokens.length >= 1, 'tokens should be non-empty');
     assert.equal(demo.tokens[0].base, 'こんにちは');
     assert.ok(demo.tokens[0].reading, 'token should carry reading');
-    assert.ok(demo.tokens[0].meaning, 'token should carry meaning');
+    // Meaning is resolved at render-time from the dictionary, not baked into the token.
   });
 
   it('leaves non-jpDemo entries untouched', async () => {
