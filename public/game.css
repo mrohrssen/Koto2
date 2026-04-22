@@ -140,8 +140,6 @@ textarea,
   background-size: 300% 300%;
   animation: action-area-gradient 12s ease infinite;
   overflow: hidden;
-  /* iOS safe areas for notch and home indicator */
-  padding-top: env(safe-area-inset-top, var(--safe-area-inset-top, 0px));
 }
 
 .game-app::before {
