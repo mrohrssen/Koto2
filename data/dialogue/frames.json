@@ -3864,6 +3864,24 @@
     "group": "cid-welcome-14"
   },
   {
+    "id": "cid_tutorial-translator-demo_0",
+    "category": "cid",
+    "raw": "こんにちは",
+    "tokens": [
+      {
+        "surface": "こんにちは",
+        "base": "こんにちは",
+        "reading": "こんにちは",
+        "meaning": "hello",
+        "pos": "Interjection"
+      }
+    ],
+    "words": [
+      "こんにちは"
+    ],
+    "group": "tutorial-translator-demo"
+  },
+  {
     "id": "befriend_success_friend",
     "category": "befriend_success",
     "raw": "友達です！",
