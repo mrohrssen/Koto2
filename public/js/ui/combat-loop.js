@@ -1510,6 +1510,11 @@ export async function stopCombatLoop(result) {
   setScrollState('accelerating');
   const battleSceneForCleanup = mgr.currentScene;
   if (battleSceneForCleanup instanceof BattleScene && !battleSceneForCleanup.disposed && !mgr.transitioning) {
+    // Flip walking wobble on immediately so the ally sprites (kept alive
+    // through the victory modal) animate in lockstep with the BG parallax
+    // acceleration above. ExplorationScene.onEnter will keep it on after
+    // the scene transition below.
+    battleSceneForCleanup.formation.walkingEnabled = true;
     try {
       await battleSceneForCleanup.syncCreatures({
         allies: getGameState()?.combat?.allies ?? getGameState()?.run?.creatureParty?.active ?? [],
