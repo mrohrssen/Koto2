@@ -83,33 +83,11 @@ export const ELEMENT_THEME = {
   wood:   { border: 'rgba(76,175,80,0.35)',   bg: '#e8f5e9',  accent: '#388E3C' }
 };
 
-const KANJI_RE = /[\u4e00-\u9faf\u3400-\u4dbf]/;
-const KATAKANA_RE = /[\u30A0-\u30FF]/;
-
 /** Map an English skill/base name to the action icon sprite path. */
 function actionIconPath(nameEn) {
   if (!nameEn) return '';
   const slug = nameEn.split(';')[0].trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   return slug ? `/assets/sprites/actions/${slug}.webp?v=20260322` : '';
-}
-
-function escHtml(text) {
-  return String(text || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function wrapWithRuby(word, reading, englishReading) {
-  if (!word || !reading) return word || '';
-  if (KANJI_RE.test(word) && word !== reading) {
-    return `<ruby>${word}<rt>${reading}</rt></ruby>`;
-  }
-  if (englishReading && KATAKANA_RE.test(word)) {
-    return `<ruby>${word}<rt>${englishReading}</rt></ruby>`;
-  }
-  return word || '';
 }
 
 function npcSpritePath(npcId) {
@@ -240,11 +218,6 @@ export function insertAttackCard(atk, isEnemy) {
   return card;
 }
 
-// TODO(Task 4): NPC path is temporarily broken — leftHtml/tagLabelsByCategory/
-// defaultCategoryTagLabel options are ignored because Task 3's buildSplitAttackCard
-// rewrite renamed the override hook to `attackerHtml`. Task 4 rewrites this function
-// to build and pass attackerHtml directly. Until then, NPC cards render with the
-// default creature-sprite attacker row.
 /**
  * Build and insert a split attack card for an NPC skill hit.
  */
@@ -252,18 +225,22 @@ export function insertNpcAttackCard(atk) {
   const actionArea = document.getElementById('action-area');
   if (!actionArea) return null;
 
-  const theme = ELEMENT_THEME[atk.moveElement] || ELEMENT_THEME['neutral'] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
+  const theme = ELEMENT_THEME[atk.moveElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
   const spriteUrl = npcSpritePath(atk.attackerId);
-  const attackerNameJp = atk.attackerNameJp || atk.attackerName;
-  const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
-  const leftHtml = `<img class="sac-sprite" src="${escHtml(spriteUrl)}" alt=""><div class="sac-attacker-name">${attackerNameHtml}</div>`;
 
-  actionArea.innerHTML = buildSplitAttackCard(atk, true, {
-    theme,
-    leftHtml,
-    tagLabelsByCategory: { drain: 'NPC' },
-    defaultCategoryTagLabel: 'NPC',
+  const knownWords = getKnownWords();
+  const npcToken = entityToToken({
+    word: atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName,
+    reading: atk.attackerBaseReading,
+    nameEn: atk.attackerBaseMeaning || atk.attackerName,
   });
+  const attackerWordHtml = renderJpSentence([npcToken], knownWords, new Map());
+
+  const attackerHtml =
+    `<div class="sac-sprite-tile"><img class="sac-sprite" src="${spriteUrl}" alt="" onerror="this.style.display='none'"></div>` +
+    `<div class="sac-body">${attackerWordHtml}</div>`;
+
+  actionArea.innerHTML = buildSplitAttackCard(atk, true, { theme, attackerHtml });
 
   const card = actionArea.querySelector('.split-attack-card');
   if (!card) return null;

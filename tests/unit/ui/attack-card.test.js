@@ -237,3 +237,28 @@ describe('buildSplitAttackCard — new 3-block layout', () => {
     assert.ok(html.includes('CUSTOM'));
   });
 });
+
+describe('insertNpcAttackCard (via buildSplitAttackCard attackerHtml shape)', () => {
+  it('NPC attacker row uses sprite tile + sac-body with renderJpSentence', () => {
+    const atk = {
+      ...SAMPLE_ATTACK,
+      category: 'damage',
+      attackerId: 'mentor',
+      attackerName: 'Mentor',
+      attackerNameJp: '先生',
+      attackerBaseWord: '先生',
+      attackerBaseReading: 'せんせい',
+      attackerBaseMeaning: 'teacher',
+    };
+    // Simulate what insertNpcAttackCard builds for attackerHtml — a sprite tile
+    // with the NPC image + a sac-body with the renderJpSentence output.
+    const npcAttackerHtml =
+      `<div class="sac-sprite-tile"><img class="sac-sprite" src="/assets/sprites/npcs/mentor.webp" alt=""></div>` +
+      `<div class="sac-body">MOCK_NPC_WORD</div>`;
+    const html = buildSplitAttackCard(atk, true, { attackerHtml: npcAttackerHtml });
+    assert.ok(html.includes('MOCK_NPC_WORD'));
+    assert.ok(html.includes('mentor.webp'));
+    // No legacy .sac-attacker-name element should appear
+    assert.ok(!html.includes('sac-attacker-name'));
+  });
+});
