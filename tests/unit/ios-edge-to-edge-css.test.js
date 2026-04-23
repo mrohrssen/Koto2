@@ -54,12 +54,12 @@ test('.area-header-pill paints at top of screen and honors horizontal safe-area 
   );
   assert.match(
     body,
-    /padding-left:\s*max\(\s*12px\s*,\s*env\(\s*safe-area-inset-left/,
-    '.area-header-pill should pad its left by at least 12px, honoring safe-area-inset-left'
+    /padding-left:\s*max\(\s*22px\s*,\s*env\(\s*safe-area-inset-left/,
+    '.area-header-pill should pad its left by at least 22px (clear of phone bezel), honoring safe-area-inset-left'
   );
   assert.match(
     body,
-    /padding-right:\s*max\(\s*12px\s*,\s*env\(\s*safe-area-inset-right/,
-    '.area-header-pill should pad its right by at least 12px, honoring safe-area-inset-right'
+    /padding-right:\s*max\(\s*22px\s*,\s*env\(\s*safe-area-inset-right/,
+    '.area-header-pill should pad its right by at least 22px (clear of phone bezel), honoring safe-area-inset-right'
   );
 });
