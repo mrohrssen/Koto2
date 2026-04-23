@@ -11,7 +11,6 @@ describe('resetClientSessionState', () => {
       combat: { enemies: [{ hp: 10 }] },
       phase: 'combat',
       meta: { tutorialStep: 2 },
-      wordDictionary: { 叩く: { reading: 'たたく' } },
     };
 
     const next = resetClientSessionState(state, {
@@ -36,6 +35,5 @@ describe('resetClientSessionState', () => {
     assert.equal(next.combat, null);
     assert.equal(next.phase, 'no_save');
     assert.deepEqual(next.meta, {});
-    assert.deepEqual(next.wordDictionary, {});
   });
 });

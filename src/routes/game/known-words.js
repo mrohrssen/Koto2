@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { join } from 'path';
 import { getKnownWordsFromFsrs, hydrateCards } from '../../game/bootstrap/word-knowledge.js';
 import { gradeCard, getDueCards, getDueCount, createCard, getDeckCards } from '../../game/internal-srs.js';
-import { getDialogueWordSet, getBarkPool } from '../../game/dialogue-loader.js';
+import { getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../../game/live-dict-path.js';
 import { tokenize } from '../../tokenizer.js';
@@ -113,23 +113,6 @@ export function createKnownWordsRoutes() {
       source: 'internal',
     }));
     res.json({ words });
-  });
-
-  // GET /api/game/known-words/word-dictionary
-  router.get('/word-dictionary', (req, res) => {
-    try {
-      const dialogueWords = getDialogueWordSet();
-      const dict = getWordDict();
-      const filtered = {};
-      for (const word of dialogueWords) {
-        const entry = dict.get(word);
-        if (entry) filtered[word] = entry;
-      }
-      res.json({ dictionary: filtered });
-    } catch (e) {
-      console.warn('[word-dictionary] Error:', e.message);
-      res.json({ dictionary: {} });
-    }
   });
 
   // GET /api/game/known-words/bark-pool

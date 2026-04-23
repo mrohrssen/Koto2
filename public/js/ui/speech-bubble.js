@@ -49,12 +49,10 @@ function showBubble(slotEl, phrase) {
   bubble.className = 'speech-bubble';
 
   const knownWords = getKnownWords();
-  const dict = window.gameState?.wordDictionary || {};
-  const dictMap = dict instanceof Map ? dict : new Map(Object.entries(dict));
   bubble.innerHTML = renderJpSentence(
     phrase.tokens || [],
     knownWords,
-    dictMap,
+    null,
     {},
     false
   );

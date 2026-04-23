@@ -54,7 +54,7 @@ export function buildPopupMeanings({ dataMeaning, dataOverride, dictEntry }) {
 
 /**
  * Initialize the module. Call once after DOM is ready.
- * @param {{ wordDictionary: Map, showToast: Function, pauseAutoDismiss: Function, getKanaMode: Function }} options
+ * @param {{ showToast: Function, pauseAutoDismiss: Function, getKanaMode: Function }} options
  */
 export function init({ showToast, pauseAutoDismiss, getKanaMode }) {
   _showToast = showToast;

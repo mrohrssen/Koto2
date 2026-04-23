@@ -152,11 +152,10 @@ export async function playNpcBattleIntro(
     await new Promise(r => setTimeout(r, 100));
     narrationBox.forceHide();
     const knownWords = getKnownWords();
-    const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
     const html = renderJpSentence(
       bootstrapLine.tokens,
       knownWords,
-      wordDict,
+      null,
       bootstrapLine.overrides || {},
       npcDialogue.useKanji || false
     );

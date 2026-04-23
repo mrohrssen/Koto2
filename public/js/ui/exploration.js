@@ -966,7 +966,6 @@ export async function renderWhackAMole() {
     return;
   }
 
-  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
   if (!whackAMoleState.fetched) {
     try {
       const resp = await apiGetWhackAMoleDialogue();
@@ -978,10 +977,10 @@ export async function renderWhackAMole() {
       whackAMoleState.fetched = true;
       whackAMoleState.dialogue = resp.dialogue || null;
       whackAMoleState.yesLabel = resp.yesTokens?.tokens?.length
-        ? renderJpSentence(resp.yesTokens.tokens, getKnownWords(), wordDict, resp.yesTokens.overrides || {}, false)
+        ? renderJpSentence(resp.yesTokens.tokens, getKnownWords(), null, resp.yesTokens.overrides || {}, false)
         : 'Yes';
       whackAMoleState.noLabel = resp.noTokens?.tokens?.length
-        ? renderJpSentence(resp.noTokens.tokens, getKnownWords(), wordDict, resp.noTokens.overrides || {}, false)
+        ? renderJpSentence(resp.noTokens.tokens, getKnownWords(), null, resp.noTokens.overrides || {}, false)
         : 'No';
     } catch (err) {
       // Leave fetched=false so a later rerender can retry.
@@ -991,7 +990,7 @@ export async function renderWhackAMole() {
   // Show GM greeting in narration box
   if (!whackAMoleState.introShown && whackAMoleState.dialogue?.tokens?.length && sceneModule?.showNarration) {
     whackAMoleState.introShown = true;
-    const html = renderJpSentence(whackAMoleState.dialogue.tokens, getKnownWords(), wordDict, whackAMoleState.dialogue.overrides || {}, false);
+    const html = renderJpSentence(whackAMoleState.dialogue.tokens, getKnownWords(), null, whackAMoleState.dialogue.overrides || {}, false);
     await sceneModule.showNarration(html, { html: true, speaker: 'Game Master' });
   }
 
@@ -1041,8 +1040,7 @@ export async function renderWhackAMole() {
 /** Show the どの能力？ prompt in the narration box, attributed to `speaker`. Returns true if shown. */
 function showSkillSelectPrompt(prompt, speaker = 'Cid') {
   if (!prompt?.tokens?.length || !sceneModule?.showNarration) return false;
-  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-  const html = renderJpSentence(prompt.tokens, getKnownWords(), wordDict, prompt.overrides || {}, false);
+  const html = renderJpSentence(prompt.tokens, getKnownWords(), null, prompt.overrides || {}, false);
   sceneModule.showNarration(html, { html: true, persistent: true, speaker });
   return true;
 }
@@ -1360,8 +1358,6 @@ export async function renderFriendlyNpc() {
     </div>
   `);
 
-  const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-
   // Fetch offers once per room
   if (!friendlyNpcState.fetched) {
     friendlyNpcState.fetched = true;
@@ -1404,7 +1400,7 @@ export async function renderFriendlyNpc() {
     friendlyNpcState.renderedCards = offered.map(item => ({
       sprite: itemSpriteHtml(item.id, item.word),
       title: item.nameToken
-        ? renderJpSentence([item.nameToken], getKnownWords(), wordDict, {}, false)
+        ? renderJpSentence([item.nameToken], getKnownWords(), null, {}, false)
         : `${item.word} (${item.reading})`,
       pills: buildItemEffectPills(item),
     }));
@@ -1423,7 +1419,7 @@ export async function renderFriendlyNpc() {
     const greetingTokens = friendlyNpcState.greeting?.tokens;
     let greetingContent;
     if (greetingTokens?.length) {
-      greetingContent = renderJpSentence(greetingTokens, getKnownWords(), wordDict, friendlyNpcState.greeting?.overrides || {}, false);
+      greetingContent = renderJpSentence(greetingTokens, getKnownWords(), null, friendlyNpcState.greeting?.overrides || {}, false);
     } else {
       greetingContent = 'こんにちは！';
     }
@@ -1442,7 +1438,7 @@ export async function renderFriendlyNpc() {
     cards: friendlyNpcState.renderedCards || offers.map(item => ({
       sprite: itemSpriteHtml(item.id, item.word),
       title: item.nameToken
-        ? renderJpSentence([item.nameToken], getKnownWords(), wordDict, {}, false)
+        ? renderJpSentence([item.nameToken], getKnownWords(), null, {}, false)
         : `${item.word} (${item.reading})`,
       pills: buildItemEffectPills(item),
     })),
@@ -1453,13 +1449,11 @@ export async function renderFriendlyNpc() {
       playSFX('creature-equip');
 
       if (item.tokens?.length && sceneModule?.showNarration) {
-        const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-        const html = renderJpSentence(item.tokens, getKnownWords(), wordDict, item.overrides || {}, false);
+        const html = renderJpSentence(item.tokens, getKnownWords(), null, item.overrides || {}, false);
         await sceneModule.showNarration(html, { html: true, speaker: 'You' });
       } else if (item.shopTokens?.length && sceneModule?.showNarration) {
         // Legacy fallback for in-progress game states
-        const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-        const html = renderJpSentence(item.shopTokens, getKnownWords(), wordDict, item.shopOverrides || {}, false);
+        const html = renderJpSentence(item.shopTokens, getKnownWords(), null, item.shopOverrides || {}, false);
         await sceneModule.showNarration(html, { html: true, speaker: 'You' });
       } else if (item.word && sceneModule?.showNarration) {
         await sceneModule.showNarration(`${item.word}、ください`, { speaker: 'You' });
