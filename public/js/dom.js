@@ -15,8 +15,6 @@ export const dom = {
 
   // Area header pill
   get areaHeaderPill() { return el('area-header-pill'); },
-  get areaHeaderName() { return el('area-header-name'); },
-  get areaHeaderSub() { return el('area-header-sub'); },
 
   // Scene area
   get sceneArea() { return el('scene-area'); },
@@ -41,8 +39,10 @@ export const dom = {
   // Toolbar + Menu
   get settingsBtn() { return el('settings-btn'); },
   get resetRunBtn() { return el('reset-run-btn'); },
-  get lookupBtn() { return el('lookup-btn'); },
+  get lookupMenuBtn() { return el('lookup-menu-btn'); },
   get menuBtn() { return el('menu-btn'); },
+  get menuSheet() { return el('menu-sheet'); },
+  get menuBackdrop() { return el('menu-backdrop'); },
   get botsBtn() { return el('bots-btn'); },
 
   // Takeover views

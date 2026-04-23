@@ -118,7 +118,6 @@ import { init as initExposureBuffer } from './js/ui/exposure-buffer.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
-import { toRomaji } from './js/ui/romaji.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
 import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
@@ -429,31 +428,9 @@ function updateStatusBar() {
     const currentRoom = run.rooms?.[currentRoomIdx];
     const activeRoom = Array.isArray(currentRoom) ? currentRoom[0] : currentRoom;
     const subAreaNameEn = activeRoom?.subArea?.nameEn;
-    const subAreaNameJa = activeRoom?.subArea?.name;
     dom.floorIndicator.textContent = subAreaNameEn || `Area ${(run.areasCompleted || 0) + 1}`;
-
-    // Update area header pill — single vertical stack: romaji / kana / English
-    const areaName = run.currentArea?.name;
-    const area = run.currentArea;
-    const sep = dom.areaHeaderPill.querySelector('.area-header-sep');
-    if (areaName) {
-      const reading = area?.reading || areaName;
-      const romaji = toRomaji(reading);
-      const english = area?.nameEn || '';
-      dom.areaHeaderName.innerHTML = `<div class="area-vocab-stack">
-        <span class="area-romaji">${romaji}</span>
-        <span class="area-kana">${reading}</span>
-        <span class="area-english">${english}</span>
-      </div>`;
-      dom.areaHeaderSub.textContent = '';
-      if (sep) sep.style.display = 'none';
-      dom.areaHeaderPill.classList.add('visible');
-    } else {
-      dom.areaHeaderPill.classList.remove('visible');
-    }
   } else {
     dom.floorIndicator.textContent = 'Hub';
-    dom.areaHeaderPill.classList.remove('visible');
   }
   dom.essenceDisplay.textContent = gameState.meta?.essence || gameState.player?.essence || 0;
 
@@ -1628,7 +1605,6 @@ document.addEventListener('click', (e) => {
     });
   // Check known blocker states
   const blockers = [];
-  if (document.querySelector('.lookup-active')) blockers.push('lookup-active');
   if (document.querySelector('.move-help-backdrop')) blockers.push('move-help-backdrop');
   if (document.querySelector('#chest-anim-overlay')) blockers.push('chest-overlay');
   if (document.querySelector('.menu-backdrop.visible')) blockers.push('menu-backdrop');
