@@ -1,4 +1,5 @@
 import { Sprite, Container, Texture, Graphics, Text } from 'pixi.js';
+import { GlowFilter } from 'pixi-filters';
 import { getApp } from './app.js';
 import { loadImageTexture } from './image-loader.js';
 import { tween } from './tween.js';
@@ -15,6 +16,14 @@ const LABEL_GAP = 3;
 const LABEL_SIDE_OFFSET = 50;
 
 const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF' };
+
+// Active-creature glow (spec: 2026-04-23-active-creature-golden-glow-design.md)
+const GLOW_COLOR = 0xFFC94A;
+const GLOW_DISTANCE = 14;
+const GLOW_MIN_STRENGTH = 1.2;
+const GLOW_MAX_STRENGTH = 2.8;
+const GLOW_QUALITY = 0.2;
+const GLOW_PERIOD_MS = 2000;
 
 // --- Context (scene-owned only) ----------------------------------------------
 //
@@ -185,33 +194,39 @@ function _getCreatureSprite(ctx, side, index) {
 function _showActiveGlow(ctx, index) {
   _clearActiveGlow(ctx);
   const sprite = _getCreatureSprite(ctx, 'player', index);
-  const { app, layers } = getApp();
+  const { app } = getApp();
   if (!sprite || !app) return;
 
-  ctx.activeGlow = new Graphics();
-  ctx.activeGlow.circle(0, 0, 38).stroke({ color: 0xFFFFFF, width: 2, alpha: 0.6 });
-  ctx.activeGlow.x = sprite.x;
-  ctx.activeGlow.y = sprite.y;
-  layers.effects.addChild(ctx.activeGlow);
+  const filter = new GlowFilter({
+    distance: GLOW_DISTANCE,
+    color: GLOW_COLOR,
+    outerStrength: GLOW_MIN_STRENGTH,
+    innerStrength: 0,
+    quality: GLOW_QUALITY,
+    alpha: 1,
+  });
+  sprite.filters = [filter];
+
+  ctx.activeGlow = { sprite, filter };
 
   ctx.activeGlowTickFn = () => {
-    const s = _getCreatureSprite(ctx, 'player', index);
-    if (s && ctx.activeGlow) {
-      ctx.activeGlow.x = s.x;
-      ctx.activeGlow.y = s.y;
-    }
-    if (ctx.activeGlow) {
-      ctx.activeGlow.alpha = 0.3 + 0.3 * Math.sin(Date.now() / 400);
-    }
+    if (!sprite || sprite.destroyed) return;
+    const t = 0.5 + 0.5 * Math.sin((Date.now() / GLOW_PERIOD_MS) * 2 * Math.PI);
+    filter.outerStrength =
+      GLOW_MIN_STRENGTH + t * (GLOW_MAX_STRENGTH - GLOW_MIN_STRENGTH);
   };
   app.ticker.add(ctx.activeGlowTickFn);
 }
 
 function _clearActiveGlow(ctx) {
-  if (ctx.activeGlow) {
-    ctx.activeGlow.destroy();
-    ctx.activeGlow = null;
+  const g = ctx.activeGlow;
+  if (g?.sprite && !g.sprite.destroyed) {
+    g.sprite.filters = [];
   }
+  if (g?.filter) {
+    g.filter.destroy();
+  }
+  ctx.activeGlow = null;
   if (ctx.activeGlowTickFn) {
     const { app } = getApp();
     app?.ticker.remove(ctx.activeGlowTickFn);

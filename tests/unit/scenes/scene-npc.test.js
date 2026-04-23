@@ -58,6 +58,15 @@ await mock.module('pixi.js', {
   },
 });
 
+await mock.module('pixi-filters', {
+  namedExports: {
+    GlowFilter: class FakeGlowFilter {
+      constructor() { this.outerStrength = 0; }
+      destroy() {}
+    },
+  },
+});
+
 let fakeAppState = {
   app: {
     screen: { width: 400, height: 600 },

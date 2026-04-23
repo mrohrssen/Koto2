@@ -74,6 +74,15 @@ await mock.module('pixi.js', {
   },
 });
 
+await mock.module('pixi-filters', {
+  namedExports: {
+    GlowFilter: class FakeGlowFilter {
+      constructor() { this.outerStrength = 0; }
+      destroy() {}
+    },
+  },
+});
+
 // Stub the PIXI app surface. formation.js calls getApp() to read `app`/`layers`.
 let fakeAppState = {
   app: {
