@@ -532,12 +532,6 @@ export async function renderBefriendQuiz(quizData, result) {
       if (slot) slot.classList.add('befriended');
     }
 
-    const actionArea = document.getElementById('action-area');
-    if (actionArea) {
-      actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', answerResult.capturedName || quizData.creatureNameEn || quizData.creatureName || '')}</div>`;
-    }
-    await ctx.delay(1200);
-
     if (answerResult.state) {
       ctx.updateGameState(answerResult.state);
     }
@@ -740,10 +734,6 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
           if (releaseChoice && ctx.apiBefriendReplace) {
             const replaceResult = await ctx.apiBefriendReplace(releaseChoice);
             if (replaceResult?.success) {
-              const actionArea = document.getElementById('action-area');
-              if (actionArea) {
-                actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', replaceResult.captured.nameEn)}</div>`;
-              }
               playSFX('creature-skill');
 
               const capturedId = replaceResult.captured?.id;
@@ -756,7 +746,6 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
                   : null);
                 if (slot) slot.classList.add('befriended');
               }
-              await ctx.delay(1200);
 
               if (replaceResult.combatEnded) {
                 ctx.stopCombatLoop({ combatEnded: true, victory: replaceResult.victory });
@@ -816,12 +805,6 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
             : null);
           if (slot) slot.classList.add('befriended');
         }
-
-        const actionArea = document.getElementById('action-area');
-        if (actionArea && captured) {
-          actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4CAF50;">${t('befriended', captured.nameEn)}</div>`;
-        }
-        await ctx.delay(1200);
 
         if (answerResult.state) {
           ctx.updateGameState(answerResult.state);
