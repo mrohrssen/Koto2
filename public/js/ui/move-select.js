@@ -2,7 +2,6 @@ import { dom } from '../dom.js';
 import { prefetchWord, playWord } from '../tts.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { effectLabel } from './move-effect-label.js';
-import { toRomaji } from './romaji.js';
 
 const STATUS_ICONS = {
   poison: '☠', stun: '⚡', confuse: '😵',
@@ -57,7 +56,6 @@ export function buildMoveCell(move, canAfford) {
   }
 
   const nameHtml = renderJpSentence([entityToToken(move)], getKnownWords(), new Map());
-  const romaji = toRomaji(move.reading || '');
   const effect = effectLabel(move);
 
   cell.innerHTML = `
@@ -69,9 +67,7 @@ export function buildMoveCell(move, canAfford) {
              alt="">
       </div>
       <div class="move-text">
-        <div class="move-romaji">${romaji}</div>
         <div class="move-name-jp">${nameHtml}</div>
-        <div class="move-name-en">${move.nameEn}</div>
       </div>
     </div>
     <div class="move-pill">
