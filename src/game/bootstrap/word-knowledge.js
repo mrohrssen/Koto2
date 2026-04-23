@@ -11,7 +11,7 @@ import { lookupDictPrimary } from '../../../public/js/shared/exposure-extractor.
 const OVERLAY_DIR = path.join(process.cwd(), 'data');
 
 let _wordDict = null;
-function getWordDict() {
+export function getWordDict() {
   if (!_wordDict) {
     _wordDict = loadWordDictionary({
       overlayDir: OVERLAY_DIR,
