@@ -36,12 +36,22 @@ test('.game-app does not apply safe-area-inset-top padding', () => {
   );
 });
 
-test('.mini-toolbar does not add safe-area-inset-bottom', () => {
-  const body = ruleBody(css, '.mini-toolbar {');
-  assert.ok(body, '.mini-toolbar rule not found');
-  assert.doesNotMatch(
+test('.area-header-pill uses safe-area insets', () => {
+  const body = ruleBody(css, '.area-header-pill {');
+  assert.ok(body, '.area-header-pill rule not found');
+  assert.match(
     body,
-    /env\(\s*safe-area-inset-bottom/,
-    '.mini-toolbar should be flush with the bottom edge'
+    /top:\s*env\(\s*safe-area-inset-top/,
+    '.area-header-pill should offset top by the safe area inset'
+  );
+  assert.match(
+    body,
+    /padding-left:\s*max\(\s*12px\s*,\s*env\(\s*safe-area-inset-left/,
+    '.area-header-pill should pad its left by at least 12px, honoring safe-area-inset-left'
+  );
+  assert.match(
+    body,
+    /padding-right:\s*max\(\s*12px\s*,\s*env\(\s*safe-area-inset-right/,
+    '.area-header-pill should pad its right by at least 12px, honoring safe-area-inset-right'
   );
 });
