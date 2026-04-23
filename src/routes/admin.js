@@ -6,6 +6,7 @@ import { loadWordDictionary } from '../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { getKnownWordsFromFsrs } from '../game/bootstrap/word-knowledge.js';
 import { loadUsers, saveUsers } from '../auth/users.js';
+import { lookupDictPrimary } from '../../public/js/shared/exposure-extractor.js';
 
 /**
  * Shift all FSRS card timestamps backward by a number of days.
@@ -223,8 +224,7 @@ export default function createAdminRoutes({ dataDir }) {
       const words = [];
       for (const [word, info] of Object.entries(wk.seen || {})) {
         const entry = dict.get(word);
-        const primaryDef = entry?.definitions?.find(d => d.primary);
-        const meaning = primaryDef?.en || entry?.definitions?.[0]?.en || '';
+        const meaning = lookupDictPrimary(dict, word);
         words.push({
           word,
           reading: entry?.reading || word,
