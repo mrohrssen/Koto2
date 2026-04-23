@@ -40,24 +40,36 @@ Note: the live-dict + game-entity + curriculum overlays that exist in `src/game/
 
 ### Shared priority function
 
-`public/js/shared/exposure-extractor.js:resolveExposureMeaning` changes to:
+`public/js/shared/exposure-extractor.js` gains a small dict-primary helper and `resolveExposureMeaning` delegates to it:
 
 ```js
+export function lookupDictPrimary(wordDict, baseForm) {
+  const entry = getDictEntry(wordDict, baseForm);
+  return entry?.definitions?.find(d => d.primary)?.en || '';
+}
+
 export function resolveExposureMeaning(token, wordDict, overrides = {}) {
   const baseForm = getTokenBaseForm(token);
   if (!baseForm) return '';
   if (overrides?.[baseForm]) return overrides[baseForm];
   if (token?.entity && token?.meaning) return token.meaning;
   if (token?.meaning) return token.meaning;
-  const dictEntry = getDictEntry(wordDict, baseForm);
-  return dictEntry?.definitions?.find(d => d.primary)?.en || '';
+  return lookupDictPrimary(wordDict, baseForm);
 }
 ```
 
-The file is already shared between server and client. Same function, two callers:
+`resolveExposureMeaning` is the single point of truth for **render-path** meaning resolution. `lookupDictPrimary` is the single point of truth for the dict tier itself (override and entity tiers don't apply when you're looking up by a bare base form). Nothing else in the codebase runs the `primary || definitions[0]` pattern — all such sites import one of these two functions.
 
-- **Server** calls it with the full in-memory dict during enrichment (step 4 of the priority falls through to dict).
-- **Client** calls it during render; tokens already carry `.meaning`, so step 3 fires. `wordDict` argument may be `undefined`.
+The file is already shared between server and client. Two render-path callers:
+
+- **Server** calls `resolveExposureMeaning` with the full in-memory dict during enrichment (step 4 falls through to dict).
+- **Client** calls `resolveExposureMeaning` during render; tokens already carry `.meaning`, so step 3 fires. `wordDict` argument may be `undefined`.
+
+Outside the render path, one non-render caller consolidates onto `lookupDictPrimary`:
+
+- `src/game/bootstrap/word-knowledge.js:33-58` today defines `lookupMeaning(baseForm)` and `lookupMeaningFrom(dict, baseForm)` that both run `primary?.en || definitions[0]?.en || ''` inline (SRS card hydration). Rewrite each to a one-liner that calls `lookupDictPrimary(dict, baseForm)`. No behavior change — `definitions[0]?.en` fallback was always equivalent to `primary` (see data audit note below).
+
+**Data audit note.** All 37,961 live-dict entries have `primary: true` stamped on `definitions[0]`, so `primary || definitions[0]` is currently a no-op second tier. The fallback stays in `lookupDictPrimary` as belt-and-suspenders in case that invariant breaks, but only in one place — callers never write the fallback themselves.
 
 ### Server-side enrichment
 
@@ -137,14 +149,15 @@ If a future debug tool needs per-word lookup, add a narrow `GET /api/dict/:word`
 
 ## Migration
 
-1. Add `enrichTokens` + unit tests.
-2. Update `resolveExposureMeaning` priority + unit tests.
-3. Wire `enrichTokens` into server token-producing paths (enumerate in plan).
-4. Simplify `renderJpSentence` (drop the entity inline fallback; stamp `data-meanings`).
-5. Clean up `dialogue-display.js`: remove orphaned `_wordDict` and `setWordDictionary`.
-6. Update `dialogue-word-lookup.js` to read from `data-meanings`; drop its `_wordDict`.
-7. Remove `/api/game/known-words/word-dictionary` route, the client fetch in `public/game.js`, `window.gameState.wordDictionary`, and the `wordDictionary` argument at the `dialogueLookup.init(...)` call.
-8. Run `npm test` + manual playtest: load a dialogue known to contain a live-dict-only word in the main narration box, verify the stacked English appears inline and the popup shows all definitions; edit a live-dict entry and verify the next render reflects the edit without redeploying.
+1. Add `lookupDictPrimary` + update `resolveExposureMeaning` priority + unit tests.
+2. Rewrite `src/game/bootstrap/word-knowledge.js:lookupMeaning` and `:lookupMeaningFrom` as one-liners over `lookupDictPrimary`. Remove the inlined `primary || definitions[0]` pattern.
+3. Add `enrichTokens` + unit tests.
+4. Wire `enrichTokens` into server token-producing paths (enumerate in plan).
+5. Simplify `renderJpSentence` (drop the entity inline fallback; stamp `data-meanings`).
+6. Clean up `dialogue-display.js`: remove orphaned `_wordDict` and `setWordDictionary`.
+7. Update `dialogue-word-lookup.js` to read from `data-meanings`; drop its `_wordDict`.
+8. Remove `/api/game/known-words/word-dictionary` route, the client fetch in `public/game.js`, `window.gameState.wordDictionary`, and the `wordDictionary` argument at the `dialogueLookup.init(...)` call.
+9. Run `npm test` + manual playtest: load a dialogue known to contain a live-dict-only word in the main narration box, verify the stacked English appears inline and the popup shows all definitions; edit a live-dict entry and verify the next render reflects the edit without redeploying.
 
 `frames.json` schema is unchanged by this spec — no regeneration required.
 
