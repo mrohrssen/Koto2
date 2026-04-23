@@ -52,9 +52,6 @@
   --radius-pill: 50px;
   --radius-circle: 50%;
 
-  /* Component tokens */
-  --toolbar-height: 44px;
-
   /* HP bar */
   --hp-green: #66bb6a;
   --hp-yellow: #ffd54f;
@@ -1346,41 +1343,6 @@ button.hud-chip {
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* ===== MINI TOOLBAR ===== */
-.mini-toolbar {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  min-height: var(--toolbar-height);
-  background: var(--bg-elevated);
-  border-top: 1px solid var(--border-subtle);
-  padding: 4px 0;
-  flex-shrink: 0;
-}
-
-.toolbar-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: 12px;
-  transition: color var(--transition-fast), background var(--transition-fast);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.toolbar-btn:active {
-  background: rgba(0,0,0,0.04);
-}
-
-.toolbar-btn.active {
-  color: var(--accent-cyan);
-}
-
 /* ===== MENU SLIDE-UP SHEET ===== */
 .menu-backdrop {
   position: fixed;
@@ -1458,20 +1420,6 @@ button.hud-chip {
 }
 
 /* ===== LOOKUP MODE ===== */
-.toolbar-btn.lookup-active {
-  color: var(--accent-green);
-  background: rgba(39, 174, 96, 0.15);
-}
-
-.toolbar-btn.lookup-loading {
-  animation: pulse-glow 1s infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
 .lookup-word {
   border-bottom: 1px solid var(--text-secondary);
   cursor: pointer;
