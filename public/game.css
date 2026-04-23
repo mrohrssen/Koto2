@@ -1605,15 +1605,17 @@ textarea,
 }
 
 .lookup-popup-word {
+  display: inline-block;
   font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.2;
 }
 
-.lookup-popup-reading {
-  font-size: 14px;
+.lookup-popup-word ruby rt {
+  font-size: 12px;
+  font-weight: 400;
   color: var(--text-secondary);
-  margin-left: 8px;
 }
 
 .lookup-popup-close {
