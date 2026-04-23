@@ -20,6 +20,5 @@ export function resetClientSessionState(state = {}, {
     combat: null,
     phase: 'no_save',
     meta: {},
-    wordDictionary: {},
   };
 }

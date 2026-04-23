@@ -47,7 +47,7 @@ import {
   shouldProtectBefriend,
   advanceTutorial as advanceTutorialStep
 } from './tutorial-service.js';
-import { getKnownWordsFromFsrs } from '../bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs, getWordDict } from '../bootstrap/word-knowledge.js';
 import { selectBark } from '../dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from '../dialogue-loader.js';
 import { selectBestFrame } from '../token-format.js';
@@ -310,7 +310,7 @@ export class CombatCycleService {
 
       for (const trigger of triggers) {
         if (Math.random() >= 0.25) continue; // 25% chance per trigger
-        const bark = selectBark(barkPool, trigger, knownWords, { usedThisCombat: this.gm.combat.usedBarks });
+        const bark = selectBark(barkPool, trigger, knownWords, { usedThisCombat: this.gm.combat.usedBarks, dict: getWordDict() });
         if (bark) {
           barks.push({ trigger, text: bark.raw, tokens: bark.tokens || [], words: bark.words || [] });
           this.gm.combat.usedBarks.add(bark.raw);
@@ -359,10 +359,10 @@ export class CombatCycleService {
           // Select best befriend prompts via i+1
           const befriendFrames = getBefriendFrames();
           const befriendKnownSet = new Set(getKnownWordsFromFsrs(this.gm.userId));
-          const waitPrompt = selectBestFrame(befriendFrames.wait, befriendKnownSet);
-          const namePrompt = selectBestFrame(befriendFrames.name, befriendKnownSet);
-          const successPrompt = selectBestFrame(befriendFrames.success, befriendKnownSet);
-          const wrongPrompt = selectBestFrame(befriendFrames.wrong, befriendKnownSet);
+          const waitPrompt = selectBestFrame(befriendFrames.wait, befriendKnownSet, { dict: getWordDict() });
+          const namePrompt = selectBestFrame(befriendFrames.name, befriendKnownSet, { dict: getWordDict() });
+          const successPrompt = selectBestFrame(befriendFrames.success, befriendKnownSet, { dict: getWordDict() });
+          const wrongPrompt = selectBestFrame(befriendFrames.wrong, befriendKnownSet, { dict: getWordDict() });
 
           this.gm.emitState();
           return {

@@ -17,7 +17,7 @@ import {
   getEligibleFrameTokens,
   selectBestFrame,
 } from '../../game/token-format.js';
-import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 
@@ -224,7 +224,7 @@ export default function createRunRoutes({
       const { offered } = req.gameManager.explorationService.getSkillMasterOffers();
       req.saveGame();
       const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
-      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet);
+      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet, { dict: getWordDict() });
       res.json({ offered, skillSelectPrompt, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -269,7 +269,7 @@ export default function createRunRoutes({
         .filter(Boolean);
 
       const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
-      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet);
+      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet, { dict: getWordDict() });
       res.json({ offered, skillSelectPrompt, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -685,8 +685,8 @@ export default function createRunRoutes({
       const knownWords = getKnownWordsFromFsrs(req.user.id);
       const knownSet = new Set(knownWords);
       const finishFrames = getGameMasterFinishFrames();
-      const candidates = finishFrames.map(frame => assembleFrame(frame, {}));
-      const finishDialogue = selectBestFrame(candidates, knownSet) || { tokens: [], words: [] };
+      const candidates = finishFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
+      const finishDialogue = selectBestFrame(candidates, knownSet, { dict: getWordDict() }) || { tokens: [], words: [] };
 
       res.json({ ...result, finishDialogue, state: req.getEnrichedGameState() });
     } catch (err) {
@@ -700,11 +700,11 @@ export default function createRunRoutes({
       const knownWords = getKnownWordsFromFsrs(req.user.id);
       const knownSet = new Set(knownWords);
       const askFrames = getGameMasterAskFrames();
-      const candidates = askFrames.map(frame => assembleFrame(frame, {}));
-      const dialogue = selectBestFrame(candidates, knownSet) || { tokens: [], words: [] };
+      const candidates = askFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
+      const dialogue = selectBestFrame(candidates, knownSet, { dict: getWordDict() }) || { tokens: [], words: [] };
 
-      const yesTokens = getEligibleFrameTokens(getGameMasterYesFrame(), knownSet);
-      const noTokens = getEligibleFrameTokens(getGameMasterNoFrame(), knownSet);
+      const yesTokens = getEligibleFrameTokens(getGameMasterYesFrame(), knownSet, { dict: getWordDict() });
+      const noTokens = getEligibleFrameTokens(getGameMasterNoFrame(), knownSet, { dict: getWordDict() });
       res.json({ dialogue, yesTokens, noTokens });
     } catch (err) {
       res.status(400).json({ error: err.message });
@@ -744,16 +744,16 @@ export default function createRunRoutes({
 
         for (const item of room.friendlyNpc.offered) {
           if (!item.word) continue;
-          const candidates = shopFrames.map(frame => assembleFrame(frame, { item }));
-          const best = selectBestFrame(candidates, knownSet);
+          const candidates = shopFrames.map(frame => assembleFrame(frame, { item }, { dict: getWordDict() }));
+          const best = selectBestFrame(candidates, knownSet, { dict: getWordDict() });
           item.tokens = best?.tokens || [];
           item.words = best?.words || [];
         }
 
         // Select best greeting frame via i+1
         const greetingFrames = getShopGreetingFrames();
-        const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}));
-        room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet);
+        const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
+        room.friendlyNpc.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
 
         // Attach entity token for each item's card display
         for (const item of room.friendlyNpc.offered) {

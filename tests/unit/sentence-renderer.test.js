@@ -120,9 +120,9 @@ describe('renderJpSentence — universal token format', () => {
 
   it('renders unknown content word with meaning from dictionary (new format)', () => {
     const tokens = [
-      { surface: 'お茶', base: 'お茶', reading: 'おちゃ', meaning: 'Tea' },
+      { surface: 'お茶', base: 'お茶', reading: 'おちゃ' },
     ];
-    // Meaning comes from the live dictionary, not token.meaning.
+    // No token.meaning — meaning must come from the live dictionary.
     const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
     assert.ok(html.includes('jp-unknown'));
     assert.ok(html.includes('tea'));  // dict value: 'tea (esp. green or barley)'
@@ -262,5 +262,45 @@ describe('renderJpSentence — exposure buffer integration', () => {
     assert.deepEqual(posts, []);
 
     cleanup();
+  });
+});
+
+describe('renderJpSentence data-meanings', () => {
+  it('emits data-meanings as JSON when the token carries .meanings', () => {
+    const tokens = [{
+      surface: '犬',
+      base: '犬',
+      reading: 'いぬ',
+      pos: '名詞',
+      meaning: 'dog',
+      meanings: [{ en: 'dog', primary: true }, { en: 'hound' }],
+    }];
+    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    assert.match(html, /data-meanings="[^"]*dog[^"]*hound[^"]*"/);
+  });
+
+  it('omits data-meanings when the token has no .meanings', () => {
+    const tokens = [{
+      surface: '犬',
+      base: '犬',
+      reading: 'いぬ',
+      pos: '名詞',
+      meaning: 'dog',
+    }];
+    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    assert.doesNotMatch(html, /data-meanings=/);
+  });
+
+  it('reads meaning from pre-stamped token.meaning without consulting the dict', () => {
+    const tokens = [{
+      surface: '犬',
+      base: '犬',
+      reading: 'いぬ',
+      pos: '名詞',
+      meaning: 'pre-stamped',
+    }];
+    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    assert.match(html, /data-meaning="pre-stamped"/);
+    assert.match(html, /<span class="jp-stack-en">pre-stamped<\/span>/);
   });
 });

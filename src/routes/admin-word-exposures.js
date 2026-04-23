@@ -8,6 +8,7 @@ import { parseBatch } from '../../scripts/lib/jpdb-helpers.mjs';
 import createDictEditRoutes, { createDictConfigRoute } from './admin-dictionary-edit.js';
 import { invalidateWordDict } from '../game/bootstrap/word-knowledge.js';
 import { invalidateKnownWordsDict } from './game/known-words.js';
+import { lookupDictPrimary } from '../../public/js/shared/exposure-extractor.js';
 
 /**
  * Aggregate word exposures across all user word-knowledge files.
@@ -65,14 +66,13 @@ export function aggregateWordExposures(dataDir, dictionary, opts = {}) {
   const words = [];
   for (const [word, data] of wordMap) {
     const entry = dictionary.get(word);
-    const primaryDef = entry?.definitions?.find(d => d.primary) || entry?.definitions?.[0];
-    const jmEntry = jmdict ? jmdict[word] : null;
-    const jmPrimary = jmEntry?.definitions?.find(d => d.primary) || jmEntry?.definitions?.[0];
+    const definition = lookupDictPrimary(dictionary, word) || null;
+    const jmdictDefinition = jmdict ? (lookupDictPrimary(jmdict, word) || null) : null;
     words.push({
       word,
       reading: entry?.reading || null,
-      definition: primaryDef?.en || null,
-      jmdictDefinition: jmPrimary?.en || null,
+      definition,
+      jmdictDefinition,
       overlayOwner: overlayOwners.get(word) || null,
       totalExposures: data.totalExposures,
       userCount: data.users.size,

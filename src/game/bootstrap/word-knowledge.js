@@ -5,12 +5,13 @@ import { State } from 'ts-fsrs';
 import { loadWordDictionary } from '../word-dictionary.js';
 import { resolveLiveDictPath } from '../live-dict-path.js';
 import { getDataDir } from '../../data-dir.js';
+import { lookupDictPrimary } from '../../../public/js/shared/exposure-extractor.js';
 
 // Overlay data (creatures.json, moves.json, ...) lives in the repo.
 const OVERLAY_DIR = path.join(process.cwd(), 'data');
 
 let _wordDict = null;
-function getWordDict() {
+export function getWordDict() {
   if (!_wordDict) {
     _wordDict = loadWordDictionary({
       overlayDir: OVERLAY_DIR,
@@ -26,16 +27,10 @@ export function invalidateWordDict() {
 }
 
 /**
- * Look up the primary English meaning for a Japanese word.
- * @param {string} baseForm
- * @returns {string} English meaning or empty string
+ * Look up the primary English meaning for a Japanese word from the singleton dict.
  */
 export function lookupMeaning(baseForm) {
-  const dict = getWordDict();
-  const entry = dict.get(baseForm);
-  if (!entry?.definitions?.length) return '';
-  const primary = entry.definitions.find(d => d.primary);
-  return primary?.en || entry.definitions[0]?.en || '';
+  return lookupDictPrimary(getWordDict(), baseForm);
 }
 
 /**
@@ -51,10 +46,7 @@ export function lookupReading(baseForm) {
 
 /** Look up primary English meaning from a given dict Map. */
 export function lookupMeaningFrom(dict, baseForm) {
-  const entry = dict.get(baseForm);
-  if (!entry?.definitions?.length) return '';
-  const primary = entry.definitions.find(d => d.primary);
-  return primary?.en || entry.definitions[0]?.en || '';
+  return lookupDictPrimary(dict, baseForm);
 }
 
 /** Look up hiragana reading from a given dict Map. */

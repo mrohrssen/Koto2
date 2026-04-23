@@ -772,19 +772,6 @@ async function loadKnownWords() {
     console.warn('Failed to load known words:', e);
   }
 
-  // Load word dictionary for dialogue rendering
-  try {
-    const dictRes = await fetch(apiUrl('/api/game/known-words/word-dictionary'), {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const dictData = await dictRes.json();
-    if (dictData.dictionary) {
-      window.gameState.wordDictionary = dictData.dictionary;
-    }
-  } catch (e) {
-    console.warn('[Game] Failed to load word dictionary:', e.message);
-  }
-
   // Bark pool is now provided per-round in combat cycle responses (data.barks).
   // No client-side fetch needed.
 }
@@ -854,8 +841,7 @@ async function playPrologue() {
     // Tokens are resolved server-side (see /api/game/prologue). Narration-box
     // attaches dialogueLookup click handlers automatically when html: true.
     if (prologueScene.type === 'jpDemo' && prologueScene.tokens) {
-      const wordDict = new Map(Object.entries(window.gameState?.wordDictionary || {}));
-      const html = renderJpSentence(prologueScene.tokens, getKnownWords(), wordDict, {}, false);
+      const html = renderJpSentence(prologueScene.tokens, getKnownWords(), null, {}, false);
       await narrationBox.show(html, {
         html: true,
         speaker: prologueScene.speaker || undefined
@@ -2111,7 +2097,6 @@ async function initGame() {
 
   await loadKnownWords();
   dialogueLookup.init({
-    wordDictionary: new Map(Object.entries(gameState.wordDictionary || {})),
     showToast: (msg) => scene.showToast(msg, 3000),
     pauseAutoDismiss: narrationBox.pauseAutoDismiss,
     getKanaMode: () => gameState.meta?.kanaMode ?? false,

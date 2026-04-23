@@ -4,6 +4,8 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resetTutorial } from '../../game/services/tutorial-service.js';
 import { getCidScripts } from '../../game/dialogue-loader.js';
+import { getWordDict } from '../../game/bootstrap/word-knowledge.js';
+import { enrichTokens } from '../../game/enrich-tokens.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -297,7 +299,9 @@ export default function createMiscRoutes({
     }
   });
 
-  // Get prologue scenes — resolves jpDemo tokens from the dialogue pool
+  // Get prologue scenes — resolves jpDemo tokens from the dialogue pool.
+  // The scene list is cached unenriched; tokens are enriched per-request so
+  // live-dict edits reach players without restarting the server.
   let _prologueCache = null;
   router.get('/prologue', (_req, res) => {
     if (!_prologueCache) {
@@ -312,7 +316,11 @@ export default function createMiscRoutes({
         return scene;
       });
     }
-    res.json(_prologueCache);
+    const dict = getWordDict();
+    const scenes = _prologueCache.map(scene => (
+      scene.tokens ? { ...scene, tokens: enrichTokens(scene.tokens, {}, dict) } : scene
+    ));
+    res.json(scenes);
   });
 
   // Mark prologue as completed

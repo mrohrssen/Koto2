@@ -1,24 +1,15 @@
 import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import * as narrationBox from './narration-box.js';
 
-let _wordDict = new Map();
-
-/**
- * Set the client-side word dictionary (called once at game init).
- * @param {Object} dictObj - { word: { reading, definitions[] } }
- */
-export function setWordDictionary(dictObj) {
-  _wordDict = new Map(Object.entries(dictObj));
-}
-
 /**
  * Display a sequence of dialogue lines in the narration box.
- * Each line has pre-tokenized data from the server.
+ * Tokens are pre-enriched by the server — each content token carries
+ * `meaning` and optionally `meanings`.
+ *
  * @param {Array<{text: string, tokens: Array, overrides?: Object}>} lines
  * @param {Object} options
- * @param {string|Object} [options.speaker] - Speaker label
- * @param {boolean} [options.useKanji] - false for Areas 1-3
- * @returns {Promise<void>}
+ * @param {string|Object} [options.speaker]
+ * @param {boolean} [options.useKanji]
  */
 export async function showDialogueLines(lines, options = {}) {
   const { speaker, useKanji = false } = options;
@@ -28,7 +19,7 @@ export async function showDialogueLines(lines, options = {}) {
     const html = renderJpSentence(
       line.tokens,
       knownWords,
-      _wordDict,
+      null,
       line.overrides || {},
       useKanji
     );

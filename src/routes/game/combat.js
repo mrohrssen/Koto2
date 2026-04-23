@@ -6,7 +6,7 @@ import { loadNpcs, shuffleOptions, updateBond, recordEncounter, handleNpcDialogu
 import { buildVocabConfig, buildBefriendDialogueVocabConfig } from './route-helpers.js';
 import { getNpcLines, getNpcDefeatFrames } from '../../game/dialogue-loader.js';
 import { selectNpcLine } from '../../game/dialogue-filter.js';
-import { getKnownWordsFromFsrs } from '../../game/bootstrap/word-knowledge.js';
+import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
 
 export default function createCombatRoutes({
@@ -82,8 +82,8 @@ export default function createCombatRoutes({
             overrides: l.overrides || {},
           } : null;
 
-          const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords);
-          const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords);
+          const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords, { dict: getWordDict() });
+          const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords, { dict: getWordDict() });
 
           npcDialogue = {
             fightStart: mapLine(fightStart),
@@ -505,11 +505,11 @@ export default function createCombatRoutes({
 
     // Assemble frames (fills slots), then filter by i+1 and score (random tie-break)
     const candidates = defeatFrames.map(frame => {
-      const assembled = assembleFrame(frame, entities);
+      const assembled = assembleFrame(frame, entities, { dict: getWordDict() });
       return { ...assembled, raw: frame.raw, id: frame.id };
     });
     const selectedLine =
-      selectBestFrame(candidates, knownWords, { randomizeTies: true }) ||
+      selectBestFrame(candidates, knownWords, { randomizeTies: true, dict: getWordDict() }) ||
       { tokens: [], raw: '', words: [] };
 
     // Do NOT set gameManager.run.npcDialogue — that traps phase machine in NPC_DIALOGUE.

@@ -126,3 +126,35 @@ describe('dialogue-filter', () => {
     });
   });
 });
+
+describe('dialogue-filter enrichment', () => {
+  const dict = new Map([
+    ['犬', { reading: 'いぬ', definitions: [{ en: 'dog', primary: true }] }],
+  ]);
+
+  it('selectNpcLine stamps meaning on the chosen line when dict supplied', () => {
+    const lines = [
+      { tokens: [{ surface: '犬', base: '犬', reading: 'いぬ', pos: '名詞' }], words: ['犬'], raw: '犬' },
+    ];
+    const chosen = selectNpcLine(lines, new Set(['犬']), { dict });
+    assert.equal(chosen.tokens[0].meaning, 'dog');
+  });
+
+  it('selectNpcLine returns raw line when dict omitted (backward-compatible)', () => {
+    const lines = [
+      { tokens: [{ surface: '犬', base: '犬', reading: 'いぬ', pos: '名詞' }], words: ['犬'], raw: '犬' },
+    ];
+    const chosen = selectNpcLine(lines, new Set(['犬']));
+    assert.equal(chosen.tokens[0].meaning, undefined);
+  });
+
+  it('selectBark stamps meaning on the chosen bark when dict supplied', () => {
+    const barkPool = {
+      onHit: [
+        { tokens: [{ surface: '犬', base: '犬', reading: 'いぬ', pos: '名詞' }], words: ['犬'], raw: '犬' },
+      ],
+    };
+    const chosen = selectBark(barkPool, 'onHit', new Set(['犬']), { dict });
+    assert.equal(chosen.tokens[0].meaning, 'dog');
+  });
+});
