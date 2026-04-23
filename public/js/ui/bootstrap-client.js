@@ -93,17 +93,17 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     const isKnown = knownWords.has(baseForm);
     const displayReading = reading || surface;
 
-    // Look up meaning for data attribute (needed for both known and unknown).
-    // Entity tokens (moves, creatures, NPCs) carry their English name in token.meaning
-    // (set by entityToToken). resolveExposureMeaning no longer reads token.meaning, so
-    // fall back to it here only for entity tokens (proper nouns with no dict entry).
-    const meaning = resolveExposureMeaning(token, wordDict, overrides)
-      || (token.entity ? token.meaning || '' : '');
-
+    const meaning = resolveExposureMeaning(token, wordDict, overrides);
     const isFromOverride = !!overrides?.[baseForm];
 
     const pos = token.pos || '';
-    const dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"${isFromOverride ? ' data-override="1"' : ''}`;
+    const meaningsJson = Array.isArray(token.meanings)
+      ? JSON.stringify(token.meanings)
+      : '';
+
+    let dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;
+    if (isFromOverride) dataAttrs += ' data-override="1"';
+    if (meaningsJson) dataAttrs += ` data-meanings="${esc(meaningsJson)}"`;
 
     if (isKnown) {
       const display = useKanji ? surface : displayReading;
@@ -112,12 +112,8 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
         + `</span>`;
     }
 
-    // Unknown word
     const typeClass = token.entity ? 'jp-entity' : 'jp-unknown';
     const firstSense = meaning.split('/')[0].trim();
-    // Clip off parenthetical qualifiers ("tea (esp. green)" → "tea"), but keep
-    // the paren when it leads the definition ("(giving) birth") — stripping
-    // there would leave nothing to show.
     const parenIdx = firstSense.indexOf('(');
     const primaryEn = parenIdx > 0 ? firstSense.slice(0, parenIdx).trim() : firstSense;
     return `<span class="jp-word ${typeClass}"${dataAttrs}>`

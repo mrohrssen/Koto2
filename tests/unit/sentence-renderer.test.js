@@ -264,3 +264,43 @@ describe('renderJpSentence — exposure buffer integration', () => {
     cleanup();
   });
 });
+
+describe('renderJpSentence data-meanings', () => {
+  it('emits data-meanings as JSON when the token carries .meanings', () => {
+    const tokens = [{
+      surface: '犬',
+      base: '犬',
+      reading: 'いぬ',
+      pos: '名詞',
+      meaning: 'dog',
+      meanings: [{ en: 'dog', primary: true }, { en: 'hound' }],
+    }];
+    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    assert.match(html, /data-meanings="[^"]*dog[^"]*hound[^"]*"/);
+  });
+
+  it('omits data-meanings when the token has no .meanings', () => {
+    const tokens = [{
+      surface: '犬',
+      base: '犬',
+      reading: 'いぬ',
+      pos: '名詞',
+      meaning: 'dog',
+    }];
+    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    assert.doesNotMatch(html, /data-meanings=/);
+  });
+
+  it('reads meaning from pre-stamped token.meaning without consulting the dict', () => {
+    const tokens = [{
+      surface: '犬',
+      base: '犬',
+      reading: 'いぬ',
+      pos: '名詞',
+      meaning: 'pre-stamped',
+    }];
+    const html = renderJpSentence(tokens, new Set(), new Map(), {}, false);
+    assert.match(html, /data-meaning="pre-stamped"/);
+    assert.match(html, /<span class="jp-stack-en">pre-stamped<\/span>/);
+  });
+});
