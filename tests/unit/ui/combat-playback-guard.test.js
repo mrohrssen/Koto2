@@ -75,12 +75,14 @@ describe('shouldSkipAttackRecord — dead-target playback pruning', () => {
     assert.equal(skip, true);
   });
 
-  it('skips an enemy attack whose enemy attacker is already at hp=0', () => {
+  it('does NOT skip an enemy attack whose attacker was killed after attacking (e.g. Arc Strike chain)', () => {
+    // Enemy attacked ally during its initiative slot (damage already applied), then a
+    // post-round party skill chain killed it. The attack happened — it must animate.
     const atk = { category: 'damage', attackerIndex: 0, targetId: 'p2' };
     const enemyHpMap = { 0: { hp: 0, maxHp: 40, index: 0 } };
     const allyHpMap  = { p2: { hp: 30, maxHp: 50 } };
     const skip = shouldSkipAttackRecord('enemy', atk, enemyHpMap, allyHpMap, {});
-    assert.equal(skip, true);
+    assert.equal(skip, false);
   });
 
   it('returns false when attack record is nullish or maps are empty', () => {
