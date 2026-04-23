@@ -41,7 +41,7 @@ export const dom = {
   // Toolbar + Menu
   get settingsBtn() { return el('settings-btn'); },
   get resetRunBtn() { return el('reset-run-btn'); },
-  get lookupBtn() { return el('lookup-btn'); },
+  get lookupMenuBtn() { return el('lookup-menu-btn'); },
   get menuBtn() { return el('menu-btn'); },
   get botsBtn() { return el('bots-btn'); },
 
