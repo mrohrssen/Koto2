@@ -79,6 +79,20 @@ describe('attack-card helpers — formatResultValue', () => {
       '-14 HP'
     );
   });
+
+  it('shield category with effectApplied=team_shield renders Shielded!', () => {
+    assert.strictEqual(
+      formatResultValue({ category: 'shield', effectApplied: 'team_shield' }),
+      'Shielded!'
+    );
+  });
+
+  it('buff category with effectApplied=haste renders Hasted!', () => {
+    assert.strictEqual(
+      formatResultValue({ category: 'buff', effectApplied: 'haste' }),
+      'Hasted!'
+    );
+  });
 });
 
 describe('attack-card helpers — resultTone', () => {

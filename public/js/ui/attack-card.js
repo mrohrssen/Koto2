@@ -23,17 +23,21 @@ export function resultTone(atk) {
 
 /** Human-readable status labels for effect names used in attack payloads. */
 const EFFECT_LABELS = {
-  confuse:  'Confused!',
-  poison:   'Poisoned!',
-  sleep:    'Sleeping!',
-  stun:     'Stunned!',
-  paralyze: 'Paralyzed!',
+  confuse:     'Confused!',
+  poison:      'Poisoned!',
+  sleep:       'Sleeping!',
+  stun:        'Stunned!',
+  paralyze:    'Paralyzed!',
+  haste:       'Hasted!',
+  team_shield: 'Shielded!',
 };
 
 /** Format the right-side result string from the attack payload. */
 export function formatResultValue(atk) {
   const cat = atk?.category;
   if (cat === 'damage' || cat === 'drain') {
+    // Drain: damage on the target only. The self-heal half is rendered separately
+    // by buildSplitAttackCard as a secondary line, not by this helper.
     return `-${atk.damage ?? 0} HP`;
   }
   if (cat === 'heal') {
@@ -59,7 +63,7 @@ export function formatResultValue(atk) {
 export function effectivenessText(atk) {
   if (atk?.category !== 'damage' && atk?.category !== 'drain') return '';
   const mult = atk.elementMultiplier;
-  if (mult == null || mult === 1) return '';
+  if (mult === undefined || mult === null || mult === 1) return '';
   if (mult === 0) return '(No effect!)';
   if (mult < 1)   return '(Not very effective…)';
   return '(Super effective!)';
