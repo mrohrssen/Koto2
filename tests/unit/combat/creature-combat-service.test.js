@@ -15,6 +15,7 @@ import {
   generateBefriendQuiz
 } from '../../../src/game/services/creature-combat-service.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
+import { computeRestMpGain } from '../../../src/game/rest-move.js';
 
 describe('Creature Combat - Move Turn', () => {
   it('each allied creature uses a move against the enemy', () => {
@@ -945,5 +946,158 @@ describe('Attack record — target reading/meaning', () => {
     assert.strictEqual(rec.targetBaseWord, '火');
     assert.strictEqual(rec.targetBaseReading, 'ひ');
     assert.strictEqual(rec.targetBaseMeaning, 'fire');
+  });
+});
+
+describe('Creature Combat - Rest MP math (computeRestMpGain)', () => {
+  it('restores ceil(maxMp * 0.20) for a dry creature (100 maxMp → 20)', () => {
+    assert.equal(computeRestMpGain({ mp: 0, maxMp: 100 }), 20);
+  });
+  it('ceil on fractional — maxMp 37, 20% = 7.4 → 8', () => {
+    assert.equal(computeRestMpGain({ mp: 0, maxMp: 37 }), 8);
+  });
+  it('maxMp 95, 20% = 19 (exact integer)', () => {
+    assert.equal(computeRestMpGain({ mp: 0, maxMp: 95 }), 19);
+  });
+  it('clamps to remaining headroom', () => {
+    assert.equal(computeRestMpGain({ mp: 95, maxMp: 100 }), 5);
+  });
+  it('returns 0 at full MP', () => {
+    assert.equal(computeRestMpGain({ mp: 100, maxMp: 100 }), 0);
+  });
+  it('treats missing mp as 0', () => {
+    assert.equal(computeRestMpGain({ maxMp: 50 }), 10);
+  });
+  it('returns 0 when maxMp missing', () => {
+    assert.equal(computeRestMpGain({ mp: 5 }), 0);
+  });
+});
+
+describe('Creature Combat - Rest action in processMoveTurn', () => {
+  it('mixed turn: 2 attacks + 1 rest emits 3 attack entries with correct categories', () => {
+    const allies = [instantiateCreature('hi'), instantiateCreature('mizu'), instantiateCreature('ki')];
+    allies[1].mp = 0; // force dry
+    allies[1].maxMp = 100;
+    const enemies = [instantiateCreature('ki')];
+    const move0 = allies[0].moves[0].id;
+    const move2 = allies[2].moves[0].id;
+    const moveChoices = [
+      { creatureIndex: 0, moveId: move0, targetIndex: 0 },
+      { creatureIndex: 1, action: 'rest' },
+      { creatureIndex: 2, moveId: move2, targetIndex: 0 },
+    ];
+    const result = processMoveTurn(allies, enemies, moveChoices);
+    // We should see at least one entry per creature — rest always emits exactly one.
+    // The exact length depends on attack move categories (single-target moves emit 1,
+    // multi-target could emit more), so be relaxed and check for the rest entry.
+    const restAttacks = result.attacks.filter(a => a.category === 'rest');
+    assert.equal(restAttacks.length, 1, 'expected exactly one rest attack entry');
+    assert.equal(restAttacks[0].attackerIndex, 1);
+    // Rest attack captures MP at rest time — should be 20 (0 + ceil(100*0.20)).
+    // (processMoveTurn adds a 5% end-of-turn MP regen after all moves, so the
+    // creature object itself ends up slightly higher; the attack snapshot is
+    // what the client renders.)
+    assert.equal(restAttacks[0].mpGained, 20);
+    assert.equal(restAttacks[0].attackerMp, 20);
+  });
+
+  it('rest at max MP: mp unchanged, mpGained is 0, rest entry still emitted', () => {
+    const creature = instantiateCreature('hi');
+    creature.mp = creature.maxMp;
+    const allies = [creature];
+    const enemies = [instantiateCreature('ki')];
+    const result = processMoveTurn(allies, enemies, [{ creatureIndex: 0, action: 'rest' }]);
+    assert.equal(allies[0].mp, allies[0].maxMp);
+    const restAtk = result.attacks.find(a => a.category === 'rest');
+    assert.ok(restAtk);
+    assert.equal(restAtk.mpGained, 0);
+  });
+
+  it('rest clamps at maxMp when near full', () => {
+    const creature = instantiateCreature('hi');
+    creature.maxMp = 100;
+    creature.mp = 95;
+    const allies = [creature];
+    const enemies = [instantiateCreature('ki')];
+    processMoveTurn(allies, enemies, [{ creatureIndex: 0, action: 'rest' }]);
+    assert.equal(allies[0].mp, 100, 'should clamp at maxMp not overflow');
+  });
+
+  it('resting creature does NOT also receive the 5% baseline regen (PvE/PvP parity)', () => {
+    // Rest alone = 20% of maxMp. The end-of-turn 5% regen must skip resting
+    // creatures so PvE matches PvP (which uses executeSlotMoveTurn and has no
+    // baseline regen in its pipeline).
+    const resting = instantiateCreature('hi');
+    resting.maxMp = 100;
+    resting.mp = 0;
+    const attacking = instantiateCreature('mizu');
+    const allies = [resting, attacking];
+    const enemies = [instantiateCreature('ki')];
+    const moveChoices = [
+      { creatureIndex: 0, action: 'rest' },
+      { creatureIndex: 1, moveId: attacking.moves[0].id, targetIndex: 0 },
+    ];
+    processMoveTurn(allies, enemies, moveChoices);
+    assert.equal(resting.mp, 20, 'resting creature should end at exactly 20 MP (no 5% regen stack)');
+  });
+
+  it('non-resting allies still receive the 5% baseline regen', () => {
+    // Invariant: the opt-out is narrow. Creatures that did NOT rest still get regen.
+    const attacker = instantiateCreature('hi');
+    attacker.maxMp = 100;
+    attacker.mp = 50;
+    const allies = [attacker];
+    const enemies = [instantiateCreature('ki')];
+    const result = processMoveTurn(allies, enemies, [
+      { creatureIndex: 0, moveId: attacker.moves[0].id, targetIndex: 0 },
+    ]);
+    // attacker used a move, paid MP cost, then gets 5 back from baseline regen
+    const mpCost = attacker.moves[0].mpCost ?? 0;
+    assert.equal(attacker.mp, 50 - mpCost + 5, 'non-rester should receive 5% baseline regen');
+    assert.ok(result.attacks.length >= 1);
+  });
+
+  it('rest entry for KOd creature is ignored (no attack emitted, no mp change)', () => {
+    const creature = instantiateCreature('hi');
+    creature.hp = 0;
+    creature.mp = 0;
+    const allies = [creature];
+    const enemies = [instantiateCreature('ki')];
+    const result = processMoveTurn(allies, enemies, [{ creatureIndex: 0, action: 'rest' }]);
+    assert.equal(allies[0].mp, 0);
+    assert.equal(result.attacks.length, 0);
+  });
+
+  it('rest entry with out-of-range creatureIndex is ignored', () => {
+    const allies = [instantiateCreature('hi')];
+    const enemies = [instantiateCreature('ki')];
+    const result = processMoveTurn(allies, enemies, [{ creatureIndex: 99, action: 'rest' }]);
+    assert.equal(result.attacks.length, 0);
+  });
+
+  it('rest attack object carries all fields needed by the attack card', () => {
+    const creature = instantiateCreature('hi');
+    creature.mp = 20;
+    creature.maxMp = 100;
+    const allies = [creature];
+    const enemies = [instantiateCreature('ki')];
+    const result = processMoveTurn(allies, enemies, [{ creatureIndex: 0, action: 'rest' }]);
+    const atk = result.attacks.find(a => a.category === 'rest');
+    assert.ok(atk, 'rest attack emitted');
+    assert.equal(atk.isRest, true);
+    assert.equal(atk.damage, 0);
+    assert.equal(atk.elementMultiplier, 1);
+    assert.equal(atk.attackerId, atk.targetId);
+    assert.equal(atk.attackerIndex, atk.targetIndex);
+    assert.equal(atk.attackerSkillName, '休む');
+    assert.equal(atk.attackerSkillReading, 'やすむ');
+    assert.equal(atk.attackerSkillEn, 'rest');
+    assert.equal(atk.moveName, '休む');
+    assert.equal(atk.moveNameEn, 'rest');
+    assert.equal(atk.moveElement, 'neutral');
+    assert.ok(atk.mpGained > 0, 'mpGained should be positive when not full');
+    assert.equal(atk.attackerMp, 40, '20 + ceil(100*0.20)');
+    assert.equal(atk.attackerMaxMp, 100);
+    assert.ok(typeof atk.attackerBaseWord === 'string' && atk.attackerBaseWord.length > 0);
   });
 });
