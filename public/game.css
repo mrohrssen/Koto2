@@ -1195,251 +1195,179 @@ textarea,
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== SPLIT ATTACK CARD ===== */
+/* ── Split Attack Card — 3-block vertical layout ─────────────────── */
 .split-attack-card {
+  --sac-continue-bg: rgba(49,183,224,0.08);
   display: flex;
-  max-width: 410px;
-  min-height: 110px;
+  flex-direction: column;
+  max-width: 300px;
   margin: 0 auto;
-  border-radius: var(--card-radius);
+  background: #fff;
+  border: 1px solid var(--sac-border, rgba(0,0,0,0.1));
+  border-radius: 14px;
   overflow: hidden;
-  border: 1px solid var(--sac-border, rgba(255,255,255,0.15));
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   animation: sacFadeIn 200ms ease-out;
   position: relative;
   cursor: pointer;
+  color: var(--text-primary);
 }
-
 .split-attack-card.sac-fading-out {
   opacity: 0;
   transition: opacity 100ms ease-out;
 }
 
-/* Left panel: sprite */
-.sac-left {
-  width: 88px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 8px;
-  background: var(--sac-bg, #f5f7fa);
-  flex-shrink: 0;
-}
-
-.sac-sprite {
-  width: 64px;
-  height: 64px;
-  font-size: 14px;
-  object-fit: contain;
-  image-rendering: pixelated;
-  border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.08);
-  background: rgba(0,0,0,0.03);
-}
-
-.sac-text-sprite {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  color: var(--text-primary);
-  user-select: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.sac-text-sprite.fire  { color: #e74c3c; }
-.sac-text-sprite.water { color: #3498db; }
-.sac-text-sprite.wood  { color: #27ae60; }
-.sac-text-sprite.earth { color: #8B4513; }
-.sac-text-sprite.metal { color: #95a5a6; }
-
-.sac-attacker-name {
-  font-size: 10px;
-  margin-top: 4px;
-  color: var(--sac-accent, var(--text-secondary));
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 80px;
-}
-
-/* Right panel: vocab rows */
-.sac-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-elevated);
-  min-width: 0;
-}
-
 .sac-row {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 14px;
   padding: 10px 14px;
-  gap: 8px;
+  border-top: 1px solid rgba(0,0,0,0.06);
   opacity: 0;
   transform: translateX(-8px);
   transition: opacity var(--sac-row-dur, 100ms) ease-out,
               transform var(--sac-row-dur, 100ms) ease-out;
 }
-
+.sac-row:first-of-type { border-top: none; }
 .sac-row.sac-visible {
   opacity: 1;
   transform: translateX(0);
 }
 
-.sac-row + .sac-row {
-  border-top: 1px solid rgba(0,0,0,0.06);
-}
-
-
-.sac-meaning {
-  font-size: 12px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-/* Action icon in BASE/ATK rows */
-.sac-action-icon {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-
-/* Tag pills */
-.sac-tag {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 1px 5px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-
-.sac-tag-base {
-  background: rgba(0,0,0,0.05);
-  color: var(--text-secondary);
-}
-
-.sac-tag-atk {
-  background: rgba(244,67,54,0.1);
-  color: #D32F2F;
-}
-
-.sac-tag-heal {
-  background: rgba(76,175,80,0.1);
-  color: #388E3C;
-}
-
-.sac-tag-buff {
-  background: rgba(33,150,243,0.1);
-  color: #1976D2;
-}
-
-.sac-tag-debuff {
-  background: rgba(156,39,176,0.1);
-  color: #7B1FA2;
-}
-
-.sac-heal {
-  color: #388E3C;
-  font-weight: 700;
-}
-
-/* Impact row */
-.sac-impact {
-  background: rgba(239,83,80,0.06);
-  border-top: 1px solid rgba(239,83,80,0.1);
-}
-
-/* Flip enemy target sprites in attack cards to face left */
-.sac-sprite-enemy {
-  transform: scaleX(-1);
-}
-
-.sac-impact-arrow {
-  color: var(--sac-accent, var(--text-secondary));
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.sac-impact-sprite,
-.sac-impact .sac-creature-sprite {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  object-fit: contain;
-  image-rendering: pixelated;
-  border: none;
-  flex-shrink: 0;
-}
-
-.sac-impact-text {
+.sac-sprite-tile {
+  width: 64px; height: 64px;
+  background: var(--sac-bg, #f5f7fa);
+  border: 1px solid var(--sac-border, rgba(0,0,0,0.1));
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  user-select: none;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.sac-impact-text.fire  { color: #e74c3c; }
-.sac-impact-text.water { color: #3498db; }
-.sac-impact-text.wood  { color: #27ae60; }
-.sac-impact-text.earth { color: #8B4513; }
-.sac-impact-text.metal { color: #95a5a6; }
-
-.sac-impact-name {
-  font-size: 12px;
-  color: var(--text-secondary);
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sac-damage {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent-red, #ff5252);
   flex-shrink: 0;
 }
+.sac-sprite-tile .sac-sprite,
+.sac-sprite-tile img {
+  width: 60px; height: 60px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.sac-sprite-enemy { transform: scaleX(-1); }
 
-/* Continue indicator */
-.sac-continue {
+.sac-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Constrain ruby + gloss to natural column inside the card (override
+   the sentence renderer's absolute-positioned gloss which is tuned for
+   inline flow where neighbouring words mustn't be pushed aside). */
+.split-attack-card .jp-entity,
+.split-attack-card .jp-unknown {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.split-attack-card .jp-entity .jp-stack-en,
+.split-attack-card .jp-unknown .jp-stack-en {
+  position: static;
+  transform: none;
+  width: auto;
+  margin-top: 1px;
+  text-align: left;
+}
+.split-attack-card .sac-body ruby {
+  line-height: 1.15;
+  ruby-align: start;
+}
+.split-attack-card .sac-body ruby rt { text-align: left; }
+
+/* Down-arrow chevrons between rows (hidden on last row) */
+.sac-down-arrow {
   position: absolute;
-  bottom: 4px;
-  right: 8px;
-  color: rgba(49, 183, 224, 0.75);
+  right: 24px;
+  bottom: -14px;
+  color: var(--sac-accent, var(--text-secondary));
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1;
+  transform: rotate(90deg);
+  letter-spacing: -4px;
+  z-index: 2;
+  background: #fff;
+  padding: 2px 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+.sac-row:last-of-type .sac-down-arrow { display: none; }
+
+/* Inline result on the target row */
+.sac-result {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+.sac-result-value {
+  font-size: 22px;
+  font-weight: 800;
+}
+.sac-tone-damage { color: #ef5350; }
+.sac-tone-heal   { color: #388E3C; }
+.sac-tone-buff   { color: #1976D2; }
+.sac-tone-debuff { color: #7B1FA2; }
+
+.sac-effectiveness {
+  font-size: 10.5px;
+  font-style: italic;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+.sac-fx-damage { color: #D32F2F; }
+.sac-fx-heal   { color: #388E3C; }
+.sac-fx-buff   { color: #1976D2; }
+.sac-fx-debuff { color: #7B1FA2; }
+
+.sac-drain-self {
+  font-size: 10.5px;
+  color: #388E3C;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Tap-to-continue strip */
+.sac-continue-strip {
+  border-top: 1px solid rgba(0,0,0,0.08);
+  background: var(--sac-continue-bg);
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sac-continue {
+  color: rgba(22,130,170,0.95);
   font-size: 10px;
   font-weight: 700;
-  text-shadow: 0 0 8px rgba(85, 196, 233, 0.45);
-  animation: narration-glow 2s ease-in-out infinite;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sac-continue::before {
+  content: '▼';
+  font-size: 8px;
+  transform: translateY(-0.5px);
 }
 
 @keyframes sacFadeIn {
   from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-/* Element theming (set via CSS custom properties in JS) */
-@keyframes sacFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 /* ===== MINI TOOLBAR ===== */
