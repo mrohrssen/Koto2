@@ -103,7 +103,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     const isFromOverride = !!overrides?.[baseForm];
 
     const pos = token.pos || '';
-    const dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"${isFromOverride ? ' data-override="1"' : ''}`;
+    const dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"${isFromOverride ? ' data-override="1"' : ''}${useKanji ? ' data-kanji-mode="1"' : ''}`;
 
     if (isKnown) {
       const display = useKanji ? surface : displayReading;
