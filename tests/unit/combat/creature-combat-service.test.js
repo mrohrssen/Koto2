@@ -21,8 +21,8 @@ describe('Creature Combat - Move Turn', () => {
     const allies = [instantiateCreature('hi'), instantiateCreature('mizu')];
     const enemies = [instantiateCreature('ki')];
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 },
-      { creatureIndex: 1, moveId: 'tataku', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'honoo', targetIndex: 0 },
+      { creatureIndex: 1, moveId: 'nagasu', targetIndex: 0 }
     ];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.ok(result.attacks.length >= 1);
@@ -34,8 +34,8 @@ describe('Creature Combat - Move Turn', () => {
     allies[0].hp = 0;
     const enemies = [instantiateCreature('ki')];
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 },
-      { creatureIndex: 1, moveId: 'tataku', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'honoo', targetIndex: 0 },
+      { creatureIndex: 1, moveId: 'nagasu', targetIndex: 0 }
     ];
     const result = processMoveTurn(allies, enemies, moveChoices);
     // Only mizu (index 1) should attack
@@ -46,15 +46,15 @@ describe('Creature Combat - Move Turn', () => {
     const allies = [instantiateCreature('mizu')];
     const enemies = [instantiateCreature('hi')];
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }
     ];
     const result = processMoveTurn(allies, enemies, moveChoices);
     const atk = result.attacks[0];
     assert.strictEqual(atk.attackerId, 'mizu');
     assert.ok(atk.attackerNameJp, 'should have attacker Japanese name');
-    assert.strictEqual(atk.moveId, 'tataku');
+    assert.strictEqual(atk.moveId, 'nagasu');
     assert.ok(atk.moveName, 'should have move Japanese name');
-    assert.strictEqual(atk.moveNameEn, 'Strike');
+    assert.strictEqual(atk.moveNameEn, 'Wash Away');
     assert.ok(atk.targetNameJp, 'should have target Japanese name');
     assert.strictEqual(atk.targetId, 'hi');
   });
@@ -63,9 +63,9 @@ describe('Creature Combat - Move Turn', () => {
     const allies = [instantiateCreature('mizu')];
     const enemies = [instantiateCreature('ki')];
     const startMp = allies[0].mp;
-    const moveCost = allies[0].moves.find(m => m.id === 'tataku').mpCost;
+    const moveCost = allies[0].moves.find(m => m.id === 'nagasu').mpCost;
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }
     ];
     processMoveTurn(allies, enemies, moveChoices);
     // MP should decrease by move cost, then regen 5% of maxMp
@@ -79,7 +79,7 @@ describe('Creature Combat - Move Turn', () => {
     const enemies = [instantiateCreature('ki')];
     const startHp = enemies[0].hp;
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }
     ];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 0);
@@ -104,8 +104,8 @@ describe('Creature Combat - Move Turn', () => {
     enemies[1].hp = 1;
     const party = { active: allies, reserves: [], pendingCaptures: [] };
     const moveChoices = [
-      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 },
-      { creatureIndex: 1, moveId: 'tataku', targetIndex: 1 }
+      { creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 },
+      { creatureIndex: 1, moveId: 'sasu', targetIndex: 1 }
     ];
     const result = processMoveTurn(allies, enemies, moveChoices, null, party);
     assert.strictEqual(result.xpEvents.length, 2);
@@ -127,7 +127,7 @@ describe('Creature Combat - Defend Turn', () => {
 describe('Creature Combat - Enemy Turn', () => {
   it('enemy attacks allied creatures using its first move', () => {
     const allies = [instantiateCreature('ki')];
-    const enemies = [instantiateCreature('mizu')]; // mizu has 'tataku' (damage move)
+    const enemies = [instantiateCreature('mizu')]; // mizu has 'nagasu' (damage move)
     const result = processEnemyTurn(enemies, allies);
     assert.ok(result.attacks.length >= 1);
     assert.ok(allies[0].hp < allies[0].maxHp);
@@ -139,7 +139,7 @@ describe('Creature Combat - Enemy Turn', () => {
     const result = processEnemyTurn(enemies, allies);
     const atk = result.attacks[0];
     assert.strictEqual(atk.attackerNameJp, '\u6C34');
-    assert.strictEqual(atk.moveId, 'tataku');
+    assert.strictEqual(atk.moveId, 'nagasu');
     assert.ok(atk.moveName);
     assert.ok(atk.moveNameEn);
     assert.strictEqual(atk.targetNameJp, '\u6728');
@@ -167,7 +167,7 @@ describe('Creature Combat - Status Effects in Move Turn', () => {
     allies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
     const enemies = [instantiateCreature('ki')];
     const startHp = enemies[0].hp;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 0);
     assert.strictEqual(enemies[0].hp, startHp, 'enemy should not take damage');
@@ -178,7 +178,7 @@ describe('Creature Combat - Status Effects in Move Turn', () => {
     allies[0].activeEffects = [{ type: 'stun', remainingTurns: 1, sourceId: 'x' }];
     const enemies = [instantiateCreature('ki')];
     const startHp = enemies[0].hp;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 0);
     assert.strictEqual(enemies[0].hp, startHp);
@@ -190,7 +190,7 @@ describe('Creature Combat - Status Effects in Move Turn', () => {
     const enemies = [instantiateCreature('ki')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
     assert.strictEqual(result.attacks.length, 2, 'hasted creature should attack twice');
     assert.ok(!allies[0].activeEffects.some(e => e.type === 'haste'));
@@ -202,12 +202,12 @@ describe('Creature Combat - Status Effects in Move Turn', () => {
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
 
-    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
     const unbuffed = { ...allies[0], statStages: { atk: 0, def: 0 }, activeEffects: [] };
     const result1 = processMoveTurn(
       [unbuffed],
       [{ ...enemies[0] }],
-      [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }]
+      [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }]
     );
 
     allies[0].statStages = { atk: 2, def: 0 };
@@ -281,7 +281,7 @@ describe('Creature Combat - Status Effects in Enemy Turn', () => {
     taunter.activeEffects = [{ type: 'taunt', remainingTurns: 2, sourceId: 'self' }];
     const other = instantiateCreature('ishi');
     const allies = [other, taunter];
-    const enemies = [instantiateCreature('mizu')]; // has damage move 'tataku'
+    const enemies = [instantiateCreature('mizu')]; // has damage move 'nagasu'
     const result = processEnemyTurn(enemies, allies);
     assert.strictEqual(result.attacks.length, 1);
     assert.strictEqual(result.attacks[0].targetId, taunter.id);
@@ -442,13 +442,13 @@ describe('Creature Combat - Effect Ticking', () => {
 
 describe('Creature Combat - Shield in Move Turn', () => {
   it('shielded enemy takes reduced damage from player moves', () => {
-    const allies = [instantiateCreature('mizu')]; // 'tataku' does damage
+    const allies = [instantiateCreature('mizu')]; // 'nagasu' does damage
     const enemies = [instantiateCreature('ki')];
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
     // 90% shield -- should drastically reduce damage
     enemies[0].activeEffects = [{ type: 'shield', percent: 90, remainingTurns: 2, sourceId: 'x' }];
-    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
     const result = processMoveTurn(allies, enemies, moveChoices);
     // With 90% shield, damage should be very small
     assert.ok(result.attacks[0].damage < allies[0].attack);
@@ -458,7 +458,7 @@ describe('Creature Combat - Shield in Move Turn', () => {
     const allies = [instantiateCreature('mizu')];
     const enemies = [instantiateCreature('ki')];
     enemies[0].activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
-    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
     processMoveTurn(allies, enemies, moveChoices);
     assert.ok(!enemies[0].activeEffects.some(e => e.type === 'sleep'));
   });
@@ -533,7 +533,7 @@ describe('Creature Combat - Temp Attack Flat Bonus', () => {
     const unbuffedEnemy = instantiateCreature('ki');
     unbuffedEnemy.hp = 9999;
     unbuffedEnemy.maxHp = 9999;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
     const unbuffedResult = processMoveTurn([unbuffedAlly], [unbuffedEnemy], moveChoices);
 
     // Measure buffed damage
@@ -801,7 +801,7 @@ describe('Creature Combat - Interleaved PvE initiative', () => {
     allies[0].hp = 500;
     const enemies = [instantiateCreature('ki')];
     enemies[0].level = 50;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }];
+    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
     const r = processInterleavedPvERound(allies, enemies, moveChoices, null, null, null);
     const merged = [...r.playerAttacks, ...r.enemyAttacks].sort((a, b) => a.playbackIndex - b.playbackIndex);
     assert.ok(merged.length >= 1, 'expected at least one attack');

@@ -17,11 +17,11 @@
     "isStarter": true,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "honoo",
         "level": 1
       },
       {
-        "moveId": "honoo",
+        "moveId": "okoru",
         "level": 7
       },
       {
@@ -58,11 +58,11 @@
     "isStarter": true,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "nagasu",
         "level": 1
       },
       {
-        "moveId": "nagasu",
+        "moveId": "mamoru",
         "level": 7
       },
       {
@@ -99,7 +99,7 @@
     "isStarter": true,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "sasu",
         "level": 1
       },
       {
@@ -140,11 +140,11 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "mamoru",
         "level": 1
       },
       {
-        "moveId": "mamoru",
+        "moveId": "suwaru",
         "level": 5
       },
       {
@@ -222,11 +222,11 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "naku",
         "level": 1
       },
       {
-        "moveId": "naku",
+        "moveId": "nemuru",
         "level": 5
       },
       {
@@ -263,7 +263,7 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "kakureru",
         "level": 1
       },
       {
@@ -304,11 +304,11 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "nemuru",
         "level": 1
       },
       {
-        "moveId": "nemuru",
+        "moveId": "nomu",
         "level": 5
       },
       {
@@ -345,7 +345,7 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "tobu",
         "level": 1
       },
       {
@@ -357,7 +357,7 @@
         "level": 10
       },
       {
-        "moveId": "tobu",
+        "moveId": "nemuru",
         "level": 16
       },
       {
@@ -386,11 +386,11 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "nomu",
         "level": 1
       },
       {
-        "moveId": "nomu",
+        "moveId": "kakureru",
         "level": 5
       },
       {
@@ -427,11 +427,11 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "okoru",
         "level": 1
       },
       {
-        "moveId": "okoru",
+        "moveId": "kakureru",
         "level": 5
       },
       {
@@ -468,7 +468,7 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "horu",
         "level": 1
       },
       {
@@ -509,7 +509,7 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "tataku",
+        "moveId": "honoo",
         "level": 1
       },
       {
@@ -517,7 +517,7 @@
         "level": 5
       },
       {
-        "moveId": "honoo",
+        "moveId": "kesu",
         "level": 10
       },
       {
