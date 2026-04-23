@@ -3,12 +3,6 @@ import { prefetchWord, playWord } from '../tts.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { effectLabel } from './move-effect-label.js';
 
-const STATUS_ICONS = {
-  poison: '☠', stun: '⚡', confuse: '😵',
-  shield: '🛡', team_shield: '🛡',
-  attack_buff: '⚔', haste: '💨'
-};
-
 const CATEGORY_ICONS = {
   damage: '⚔', drain: '⚔', heal: '❤', shield: '🛡',
   buff: '★', debuff: '★'

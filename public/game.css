@@ -4446,9 +4446,10 @@ textarea,
 }
 
 .move-pill-ico--mp { color: #1976d2; }
-.move-cell--earth   .move-pill-ico--mp { color: #6d4c41; }
+.move-cell--fire    .move-pill-ico--mp { color: #bf360c; }
 .move-cell--water   .move-pill-ico--mp { color: #0277bd; }
 .move-cell--wood    .move-pill-ico--mp { color: #2e7d32; }
+.move-cell--earth   .move-pill-ico--mp { color: #6d4c41; }
 .move-cell--metal   .move-pill-ico--mp { color: #455a64; }
 .move-cell--neutral .move-pill-ico--mp { color: #5d4037; }
 
