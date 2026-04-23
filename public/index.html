@@ -27,14 +27,22 @@
 
     <!-- Scene Area -->
     <div class="scene-area" id="scene-area">
-      <!-- Area header pill -->
+      <!-- Top HUD -->
       <div class="area-header-pill" id="area-header-pill">
-        <div class="area-header-main">
-          <span class="area-header-name" id="area-header-name"></span>
-          <span class="area-header-sep"> · </span>
-          <span class="area-header-sub" id="area-header-sub"></span>
+        <span class="hud-chip room-progress-badge" id="room-progress-badge" aria-label="Room progress"></span>
+        <div class="top-hud-right">
+          <button class="hud-chip hud-btn" id="bots-btn" aria-label="Monsters">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+            </svg>
+          </button>
+          <button class="hud-chip hud-btn" id="menu-btn" aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
         </div>
-        <span class="room-progress-badge" id="room-progress-badge" aria-label="Room progress"></span>
       </div>
       <!-- Combat effect overlays -->
       <div class="screen-flash-overlay" id="screen-flash-overlay"></div>
@@ -68,29 +76,11 @@
       <!-- Buttons OR flash cards rendered by JS -->
     </div>
 
-    <!-- Mini Toolbar -->
-    <div class="mini-toolbar" id="mini-toolbar">
-      <button class="toolbar-btn" id="lookup-btn" aria-label="Lookup">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      </button>
-      <button class="toolbar-btn" id="bots-btn" aria-label="Monsters">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-        </svg>
-      </button>
-      <button class="toolbar-btn" id="menu-btn" aria-label="Menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-      </button>
-    </div>
-
     <!-- Menu slide-up sheet -->
     <div class="menu-backdrop" id="menu-backdrop"></div>
     <div class="menu-sheet" id="menu-sheet">
       <div class="menu-handle"></div>
+      <button class="menu-item" id="lookup-menu-btn"><span class="menu-icon">&#128269;</span> Lookup</button>
       <button class="menu-item" id="settings-btn"><span class="menu-icon">&#9881;</span> Settings</button>
       <button class="menu-item" id="leaderboard-btn"><span class="menu-icon">&#127942;</span> Leaderboard</button>
       <button class="menu-item" id="reset-run-btn"><span class="menu-icon">&#10005;</span> Reset Run</button>
