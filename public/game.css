@@ -1609,7 +1609,11 @@ textarea,
   font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.2;
+  line-height: 1.4;
+}
+
+.lookup-popup-word ruby {
+  ruby-position: over;
 }
 
 .lookup-popup-word ruby rt {
