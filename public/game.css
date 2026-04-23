@@ -176,12 +176,11 @@ textarea,
 
 /* ===== AREA HEADER PILL ===== */
 .area-header-pill {
-  display: none; /* Temporarily hidden — re-enable in redesigned top-bar layout */
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  display: flex;
+  display: none; /* Temporarily hidden — re-enable as flex in redesigned top-bar layout */
   align-items: center;
   justify-content: space-between;
   gap: 8px;
