@@ -48,7 +48,6 @@ export function init(callbacks) {
   api.showToast = callbacks.showToast;
 
   // Block game clicks when lookup mode is active (capture phase runs first)
-  // Also handles activation clicks on the lookup button (see blockGameClicks)
   document.addEventListener('click', blockGameClicks, true);
 
   // Menu-sheet item toggles lookup mode on/off
