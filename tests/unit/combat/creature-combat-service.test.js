@@ -928,7 +928,7 @@ describe('Attack record — target reading/meaning', () => {
     const allies = [instantiateCreature('hi')];
     const enemies = [instantiateCreature('ki')];
     const result = processMoveTurn(allies, enemies, [
-      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }
+      { creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }
     ]);
     const rec = result.attacks[0];
     assert.strictEqual(rec.targetBaseWord, '木');
