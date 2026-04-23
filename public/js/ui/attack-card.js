@@ -229,12 +229,13 @@ export function insertNpcAttackCard(atk) {
   const spriteUrl = npcSpritePath(atk.attackerId);
 
   const knownWords = getKnownWords();
+  const wordDict = new Map();
   const npcToken = entityToToken({
     word: atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName,
     reading: atk.attackerBaseReading,
     nameEn: atk.attackerBaseMeaning || atk.attackerName,
   });
-  const attackerWordHtml = renderJpSentence([npcToken], knownWords, new Map());
+  const attackerWordHtml = renderJpSentence([npcToken], knownWords, wordDict);
 
   const attackerHtml =
     `<div class="sac-sprite-tile"><img class="sac-sprite" src="${spriteUrl}" alt="" onerror="this.style.display='none'"></div>` +
