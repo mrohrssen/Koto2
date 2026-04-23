@@ -455,16 +455,19 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
   }
 
   // Process each move choice
+  const restedCreatureIndices = new Set();
   for (const choice of moveChoices) {
     const creature = allies[choice.creatureIndex];
     if (!creature || creature.hp <= 0) continue;
     if (isIncapacitated(creature)) continue;
 
     // Rest pseudo-move — restore 20% MP and skip attack resolution entirely.
+    // Resting creatures do NOT also receive the 5% baseline regen below (PvP parity).
     if (choice.action === 'rest') {
       const mpGained = computeRestMpGain(creature);
       creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + mpGained);
       attacks.push(buildRestAttack(creature, choice.creatureIndex, mpGained));
+      restedCreatureIndices.add(choice.creatureIndex);
       continue;
     }
 
@@ -504,10 +507,13 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     }
   }
 
-  // MP regen: each alive ally gets 5% of maxMp back
+  // MP regen: each alive ally gets 5% of maxMp back, EXCEPT creatures that rested this turn
+  // (resting already grants 20%; stacking would give 25% and diverge from PvP).
   const mpRegens = [];
-  for (const creature of allies) {
-    if (creature.hp <= 0) continue;
+  for (let i = 0; i < allies.length; i++) {
+    const creature = allies[i];
+    if (!creature || creature.hp <= 0) continue;
+    if (restedCreatureIndices.has(i)) continue;
     const regen = Math.floor((creature.maxMp || 0) * 0.05);
     creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + regen);
     mpRegens.push({ creatureId: creature.id, mp: creature.mp, maxMp: creature.maxMp, regen });

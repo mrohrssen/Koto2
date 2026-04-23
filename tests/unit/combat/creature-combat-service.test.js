@@ -1023,6 +1023,40 @@ describe('Creature Combat - Rest action in processMoveTurn', () => {
     assert.equal(allies[0].mp, 100, 'should clamp at maxMp not overflow');
   });
 
+  it('resting creature does NOT also receive the 5% baseline regen (PvE/PvP parity)', () => {
+    // Rest alone = 20% of maxMp. The end-of-turn 5% regen must skip resting
+    // creatures so PvE matches PvP (which uses executeSlotMoveTurn and has no
+    // baseline regen in its pipeline).
+    const resting = instantiateCreature('hi');
+    resting.maxMp = 100;
+    resting.mp = 0;
+    const attacking = instantiateCreature('mizu');
+    const allies = [resting, attacking];
+    const enemies = [instantiateCreature('ki')];
+    const moveChoices = [
+      { creatureIndex: 0, action: 'rest' },
+      { creatureIndex: 1, moveId: attacking.moves[0].id, targetIndex: 0 },
+    ];
+    processMoveTurn(allies, enemies, moveChoices);
+    assert.equal(resting.mp, 20, 'resting creature should end at exactly 20 MP (no 5% regen stack)');
+  });
+
+  it('non-resting allies still receive the 5% baseline regen', () => {
+    // Invariant: the opt-out is narrow. Creatures that did NOT rest still get regen.
+    const attacker = instantiateCreature('hi');
+    attacker.maxMp = 100;
+    attacker.mp = 50;
+    const allies = [attacker];
+    const enemies = [instantiateCreature('ki')];
+    const result = processMoveTurn(allies, enemies, [
+      { creatureIndex: 0, moveId: attacker.moves[0].id, targetIndex: 0 },
+    ]);
+    // attacker used a move, paid MP cost, then gets 5 back from baseline regen
+    const mpCost = attacker.moves[0].mpCost ?? 0;
+    assert.equal(attacker.mp, 50 - mpCost + 5, 'non-rester should receive 5% baseline regen');
+    assert.ok(result.attacks.length >= 1);
+  });
+
   it('rest entry for KOd creature is ignored (no attack emitted, no mp change)', () => {
     const creature = instantiateCreature('hi');
     creature.hp = 0;
