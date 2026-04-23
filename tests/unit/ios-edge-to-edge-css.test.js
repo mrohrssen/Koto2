@@ -36,13 +36,21 @@ test('.game-app does not apply safe-area-inset-top padding', () => {
   );
 });
 
-test('.area-header-pill uses safe-area insets', () => {
+test('.area-header-pill paints at top of screen and honors horizontal safe-area insets', () => {
   const body = ruleBody(css, '.area-header-pill {');
   assert.ok(body, '.area-header-pill rule not found');
+  // Native status bar is hidden + WKWebView is edge-to-edge, so chips
+  // paint from y=0. The Dynamic Island is centered and the chips are
+  // left/right-aligned, so they don't collide with it.
   assert.match(
     body,
+    /(?:^|\s|;)top:\s*0\s*;/,
+    '.area-header-pill should paint at top:0 (native status bar is hidden)'
+  );
+  assert.doesNotMatch(
+    body,
     /top:\s*env\(\s*safe-area-inset-top/,
-    '.area-header-pill should offset top by the safe area inset'
+    '.area-header-pill should NOT offset by safe-area-inset-top — status bar is hidden'
   );
   assert.match(
     body,

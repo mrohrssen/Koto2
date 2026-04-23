@@ -174,7 +174,8 @@ textarea,
 /* ===== TOP HUD (replaces .mini-toolbar + old area-header-pill) ===== */
 .area-header-pill {
   position: absolute;
-  top: env(safe-area-inset-top, 0);
+  /* top:0 — native status bar is hidden (edge-to-edge WKWebView); chips sit beside the Dynamic Island, not below it */
+  top: 0;
   left: 0;
   right: 0;
   display: flex;
