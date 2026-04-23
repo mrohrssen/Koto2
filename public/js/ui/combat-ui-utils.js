@@ -64,8 +64,6 @@ export function shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)
 
   if (side === 'enemy') {
     if (atk.targetId && allyHpMap?.[atk.targetId] && allyHpMap[atk.targetId].hp <= 0) return true;
-    const aIdx = atk.attackerIndex;
-    if (typeof aIdx === 'number' && enemyHpMap?.[aIdx] && enemyHpMap[aIdx].hp <= 0) return true;
     return false;
   }
 
