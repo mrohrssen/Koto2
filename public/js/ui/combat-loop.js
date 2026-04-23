@@ -402,6 +402,15 @@ function promptNextCreature() {
 
 function handleMoveSelected(move, creatureIndex) {
   clearActiveGlowForScene(getSceneManager().currentScene);
+
+  // Rest pseudo-move: no target selection. Push moveChoices entry and advance.
+  if (move.isRest) {
+    moveChoices.push({ creatureIndex: currentCreatureIndex, action: 'rest' });
+    currentCreatureIndex++;
+    promptNextCreature();
+    return;
+  }
+
   pendingMove = move;
   const state = getGameState();
 
