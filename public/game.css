@@ -5243,7 +5243,7 @@ button.hud-chip {
 }
 
 .ui-btn {
-  padding: 14px 20px;
+  padding: 14px 20px 28px;
   border-radius: 12px;
   border: 1px solid var(--border-subtle);
   font-size: 15px;
@@ -5277,7 +5277,7 @@ button.hud-chip {
 }
 
 .ui-btn .jp-word ruby {
-  font-size: clamp(16px, 4.25vw, 24px);
+  font-size: 22px;
 }
 
 /* ========== UI COMPONENTS: CHOICE CARDS ========== */
