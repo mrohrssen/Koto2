@@ -1605,7 +1605,6 @@ document.addEventListener('click', (e) => {
     });
   // Check known blocker states
   const blockers = [];
-  if (document.querySelector('.lookup-active')) blockers.push('lookup-active');
   if (document.querySelector('.move-help-backdrop')) blockers.push('move-help-backdrop');
   if (document.querySelector('#chest-anim-overlay')) blockers.push('chest-overlay');
   if (document.querySelector('.menu-backdrop.visible')) blockers.push('menu-backdrop');
