@@ -16,7 +16,6 @@ let api = {
 const BLOCKED_SELECTORS = [
   '.quiz-answer-option',  // Quiz answers - no cheating!
   '.flash-card',          // Flashcards - no cheating!
-  '.mini-toolbar',        // Toolbar buttons
   '.lookup-popup',        // The lookup popup itself
   'button',               // All buttons
   'script',               // Script tags
@@ -31,26 +30,13 @@ function hasJapanese(text) {
 
 /** Block game clicks when lookup mode is active */
 function blockGameClicks(e) {
-  // Special case: clicking lookup button to ACTIVATE
-  // We must handle this here (document capture) to block narration dismiss
-  // before it fires, then trigger activation ourselves
-  if (!isActive && !isLoading && dom.lookupBtn?.contains(e.target)) {
-    e.stopImmediatePropagation(); // Block narration dismiss handler
-    e.preventDefault();
-    toggle(); // Activate lookup mode
-    return;
-  }
-
   if (!isActive) return;
 
-  // Allow clicks on: lookup button (to deactivate), popup, popup close
-  if (dom.lookupBtn?.contains(e.target)) return;
+  // Allow clicks on: popup, popup close, lookup words
   if (dom.lookupPopup?.contains(e.target)) return;
-
-  // Allow clicks on lookup words (they have their own handler)
   if (e.target.classList.contains('lookup-word')) return;
 
-  // Block everything else - stopImmediatePropagation stops other document handlers too
+  // Block everything else so the underlying game doesn't receive the click
   e.stopImmediatePropagation();
   e.preventDefault();
 }
@@ -65,12 +51,10 @@ export function init(callbacks) {
   // Also handles activation clicks on the lookup button (see blockGameClicks)
   document.addEventListener('click', blockGameClicks, true);
 
-  // Button click to DEACTIVATE (activation is handled in blockGameClicks)
-  dom.lookupBtn?.addEventListener('click', (e) => {
+  // Menu-sheet item toggles lookup mode on/off
+  dom.lookupMenuBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (isActive) {
-      toggle(); // Deactivate
-    }
+    toggle();
   });
 
   // Popup close button
@@ -110,7 +94,6 @@ async function activate() {
 
   isLoading = true;
   definitionCache.clear();
-  dom.lookupBtn?.classList.add('lookup-loading');
 
   try {
     // Gather all text elements to parse
@@ -128,7 +111,6 @@ async function activate() {
     if (elementsToProcess.length === 0) {
       api.showToast?.('No Japanese text to parse');
       isLoading = false;
-      dom.lookupBtn?.classList.remove('lookup-loading');
       return;
     }
 
@@ -156,14 +138,11 @@ async function activate() {
     }
 
     isActive = true;
-    dom.lookupBtn?.classList.remove('lookup-loading');
-    dom.lookupBtn?.classList.add('lookup-active');
 
   } catch (err) {
     console.error('Lookup activation failed:', err);
     api.showToast?.('Couldn\'t parse text. Try again.');
     isLoading = false;
-    dom.lookupBtn?.classList.remove('lookup-loading');
   }
 
   isLoading = false;
@@ -172,7 +151,6 @@ async function activate() {
 /** Deactivate lookup mode */
 function deactivate() {
   isActive = false;
-  dom.lookupBtn?.classList.remove('lookup-active');
   hidePopup();
   definitionCache.clear();
 
