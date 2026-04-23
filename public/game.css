@@ -176,6 +176,7 @@ textarea,
 
 /* ===== AREA HEADER PILL ===== */
 .area-header-pill {
+  display: none; /* Temporarily hidden — re-enable in redesigned top-bar layout */
   position: absolute;
   top: 0;
   left: 0;
@@ -255,7 +256,7 @@ textarea,
 .scene-area {
   position: relative;
   z-index: 1;
-  height: 40vh;
+  height: 50dvh;
   min-height: 220px;
   flex-shrink: 0;
   overflow: visible;
