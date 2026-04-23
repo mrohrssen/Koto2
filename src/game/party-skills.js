@@ -117,6 +117,21 @@ export const PARTY_SKILLS_CATALOG = {
   }
 };
 
+// Allowlist of skills that are currently offered to players. Skills outside
+// this set remain in the catalog (so already-acquired skills keep working in
+// combat) but are filtered out of new offers. Trim or extend this list to
+// change what the Skill Master can hand out.
+export const ACTIVE_PARTY_SKILL_IDS = new Set([
+  'arcStrike',
+  'retaliationStrike',
+  'furyCounter',
+  'vengefulMark',
+  'contagion',
+  'sharedVigor',
+  'momentum',
+  'diverseEmpowerment'
+]);
+
 function toOwnedSet(ownedSkillIds) {
   if (!ownedSkillIds) return new Set();
   if (ownedSkillIds instanceof Set) return ownedSkillIds;
@@ -127,6 +142,7 @@ function toOwnedSet(ownedSkillIds) {
 export function rollSkillMasterOffers({ ownedSkillIds = [], count = 3 }) {
   const owned = toOwnedSet(ownedSkillIds);
   const eligible = Object.keys(PARTY_SKILLS_CATALOG).filter(id => {
+    if (!ACTIVE_PARTY_SKILL_IDS.has(id)) return false;
     if (owned.has(id)) return false;
     const req = PARTY_SKILLS_CATALOG[id].requires;
     if (req && !owned.has(req)) return false;
