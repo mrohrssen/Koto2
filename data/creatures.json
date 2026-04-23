@@ -144,11 +144,11 @@
         "level": 1
       },
       {
-        "moveId": "suwaru",
+        "moveId": "tataku",
         "level": 5
       },
       {
-        "moveId": "nigiru",
+        "moveId": "suwaru",
         "level": 10
       },
       {
@@ -226,11 +226,11 @@
         "level": 1
       },
       {
-        "moveId": "nemuru",
+        "moveId": "kakomu",
         "level": 5
       },
       {
-        "moveId": "kakomu",
+        "moveId": "nemuru",
         "level": 10
       },
       {
@@ -267,11 +267,11 @@
         "level": 1
       },
       {
-        "moveId": "naku",
+        "moveId": "nigiru",
         "level": 5
       },
       {
-        "moveId": "nigiru",
+        "moveId": "naku",
         "level": 10
       },
       {
@@ -308,11 +308,11 @@
         "level": 1
       },
       {
-        "moveId": "nomu",
+        "moveId": "tataku",
         "level": 5
       },
       {
-        "moveId": "kakomu",
+        "moveId": "nomu",
         "level": 10
       },
       {
@@ -320,7 +320,7 @@
         "level": 16
       },
       {
-        "moveId": "yobu",
+        "moveId": "kakomu",
         "level": 22
       }
     ],
@@ -390,11 +390,11 @@
         "level": 1
       },
       {
-        "moveId": "kakureru",
+        "moveId": "nagasu",
         "level": 5
       },
       {
-        "moveId": "nagasu",
+        "moveId": "kakureru",
         "level": 10
       },
       {
@@ -431,11 +431,11 @@
         "level": 1
       },
       {
-        "moveId": "kakureru",
+        "moveId": "honoo",
         "level": 5
       },
       {
-        "moveId": "honoo",
+        "moveId": "kakureru",
         "level": 10
       },
       {
