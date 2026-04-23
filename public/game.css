@@ -4394,10 +4394,24 @@ textarea,
   font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   color: inherit;
+}
+
+/* renderJpSentence positions .jp-stack-en absolutely as a tooltip; inside the move
+   card we want it to flow as a block row under the ruby so it takes proper space. */
+.move-name-jp .jp-stack-en {
+  position: static;
+  display: block;
+  transform: none;
+  left: auto;
+  top: auto;
+  width: auto;
+  max-width: none;
+  text-align: left;
+  margin-top: 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+  opacity: 0.75;
 }
 
 .move-pill {
