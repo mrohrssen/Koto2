@@ -16,6 +16,20 @@ Read the baton JSON file at the path provided to you. Key fields you need:
 
 Search `data/moves.json` and build a learnset of 4-6 moves for this creature. Each move in the learnset is a reference to an existing move by its `id`, paired with the level at which the creature learns it.
 
+### Step 0: Pick the level-1 starter move
+
+The level-1 move is what a player sees the creature use most often in combat. Pick in this priority order:
+
+1. **Thematic match** — a move whose meaning fits the creature's concept (e.g. bird → `tobu` fly, fish → `nomu` drink, cat → `okoru` get angry).
+2. **Element-STAB match** — a damage/buff/debuff move sharing the creature's element.
+3. **Archetype fit** — Fighter: damage; Mage: damage or buff; Trickster: debuff or hide; Tank/Healer: buff or heal.
+
+**Starter-cap rule:** Before finalizing, read `data/creatures.json` and count how many creatures already have your candidate as their `level: 1` move. If the count is ≥ 2, pick a different move.
+
+**`tataku` rule:** `tataku` is allowed as a starter only if no other candidate fits the thematic, element, or archetype tests.
+
+**Anti-duplication rule:** The level-1 move must not appear at any other level in this creature's learnset. When building the rest of the learnset (Steps 1–6), exclude the level-1 move from the candidate pool.
+
 ### Step 1: Read the Move Pool
 
 Read `data/moves.json`. Each move has:
@@ -58,7 +72,8 @@ At least 1 move MUST match the creature's element (for Same-Type Attack Bonus �
 ### Step 5: Tier Spread
 
 Distribute moves across tiers for level progression:
-- **Levels 1, 5:** Tier 1 moves (basic, low cost)
+- **Level 1:** reserved for the starter chosen in Step 0 (do not re-pick here)
+- **Level 5:** Tier 1 move (basic, low cost)
 - **Levels 9, 12:** Tier 2 moves (stronger, moderate cost)
 - **Levels 16, 20:** Tier 3 moves (powerful, high cost) — only if creature has 5-6 moves
 
