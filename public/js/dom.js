@@ -41,6 +41,8 @@ export const dom = {
   get resetRunBtn() { return el('reset-run-btn'); },
   get lookupMenuBtn() { return el('lookup-menu-btn'); },
   get menuBtn() { return el('menu-btn'); },
+  get menuSheet() { return el('menu-sheet'); },
+  get menuBackdrop() { return el('menu-backdrop'); },
   get botsBtn() { return el('bots-btn'); },
 
   // Takeover views

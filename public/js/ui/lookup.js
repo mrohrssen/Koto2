@@ -32,6 +32,10 @@ function hasJapanese(text) {
 function blockGameClicks(e) {
   if (!isActive) return;
 
+  // Allow interactions with the menu — user's exit path from lookup mode
+  if (dom.menuBtn?.contains(e.target)) return;
+  if (dom.menuSheet?.contains(e.target)) return;
+  if (dom.menuBackdrop?.contains(e.target)) return;
   // Allow clicks on: popup, popup close, lookup words
   if (dom.lookupPopup?.contains(e.target)) return;
   if (e.target.classList.contains('lookup-word')) return;
