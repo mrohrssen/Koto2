@@ -17,7 +17,6 @@ const dom = {
   closeBtn: null,
 };
 
-let _wordDict = null;
 let _showToast = null;
 let _pauseAutoDismiss = null;
 let _currentWord = null; // base form of currently displayed word
@@ -57,8 +56,7 @@ export function buildPopupMeanings({ dataMeaning, dataOverride, dictEntry }) {
  * Initialize the module. Call once after DOM is ready.
  * @param {{ wordDictionary: Map, showToast: Function, pauseAutoDismiss: Function, getKanaMode: Function }} options
  */
-export function init({ wordDictionary, showToast, pauseAutoDismiss, getKanaMode }) {
-  _wordDict = wordDictionary;
+export function init({ showToast, pauseAutoDismiss, getKanaMode }) {
   _showToast = showToast;
   _pauseAutoDismiss = pauseAutoDismiss;
   _getKanaMode = getKanaMode || null;
@@ -150,7 +148,14 @@ function handleWordClick(e) {
 
   // Meanings: override (labeled "In this context") + dict definitions
   dom.meanings.innerHTML = '';
-  const dictEntry = _wordDict?.get(base) || null;
+  let dictEntry = null;
+  if (span.dataset.meanings) {
+    try {
+      dictEntry = { definitions: JSON.parse(span.dataset.meanings) };
+    } catch {
+      dictEntry = null;
+    }
+  }
   const meanings = buildPopupMeanings({
     dataMeaning: meaning,
     dataOverride: span.dataset.override || null,

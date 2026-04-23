@@ -2111,7 +2111,6 @@ async function initGame() {
 
   await loadKnownWords();
   dialogueLookup.init({
-    wordDictionary: new Map(Object.entries(gameState.wordDictionary || {})),
     showToast: (msg) => scene.showToast(msg, 3000),
     pauseAutoDismiss: narrationBox.pauseAutoDismiss,
     getKanaMode: () => gameState.meta?.kanaMode ?? false,
