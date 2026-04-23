@@ -1413,7 +1413,8 @@ export async function renderFriendlyNpc() {
   const npc = room?.npc;
   const tutorialStep = getGameState()?.meta?.tutorialStep;
 
-  // NPC greeting first (blocking during tutorial so player sees it before items)
+  // Greeting is persistent so it stays until the player picks an item
+  // (the "You: ..." response on pick replaces the text in place).
   if (npc && sceneModule?.showNarration && !friendlyNpcState.greetingShown) {
     friendlyNpcState.greetingShown = true;
     const greetingTokens = friendlyNpcState.greeting?.tokens;
@@ -1423,14 +1424,12 @@ export async function renderFriendlyNpc() {
     } else {
       greetingContent = 'こんにちは！';
     }
-    const narrationOpts = greetingTokens?.length
-      ? { html: true, speaker: npc.nameEn || npc.name }
-      : { speaker: npc.nameEn || npc.name };
-    if (tutorialStep === 2) {
-      await sceneModule.showNarration(greetingContent, narrationOpts);
-    } else {
-      sceneModule.showNarration(greetingContent, narrationOpts);
-    }
+    const narrationOpts = {
+      speaker: npc.nameEn || npc.name,
+      persistent: true,
+      ...(greetingTokens?.length ? { html: true } : {}),
+    };
+    sceneModule.showNarration(greetingContent, narrationOpts);
   }
 
   // Render item cards so they're visible
