@@ -175,6 +175,13 @@ function showMoveSelection() {
  * show target selection. Otherwise, auto-target and move to next creature.
  */
 function handleMoveSelected(creature, creatureIndex, move) {
+  // Rest pseudo-move: no target selection, push action entry, advance.
+  if (move.isRest) {
+    pvpState.moveChoices.push({ creatureIndex, action: 'rest' });
+    showMoveSelection();
+    return;
+  }
+
   const targetType = move.target || 'single_enemy';
 
   if (targetType === 'single_enemy') {

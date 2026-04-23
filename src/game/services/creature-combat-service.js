@@ -803,6 +803,16 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
   }
 
   for (const choice of choices) {
+    // Rest pseudo-move — restore 20% MP and skip attack resolution entirely.
+    if (choice.action === 'rest') {
+      const mpGained = computeRestMpGain(creature);
+      creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + mpGained);
+      const restAtk = buildRestAttack(creature, choice.creatureIndex ?? slotIndex, mpGained);
+      attacks.push(restAtk);
+      if (onAttack && onAttack(restAtk) === false) break;
+      continue;
+    }
+
     const aliveEnemies = enemies.filter(e => e.hp > 0);
     if (aliveEnemies.length === 0) break;
 
