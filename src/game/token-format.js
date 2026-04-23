@@ -1,3 +1,5 @@
+import { enrichTokens } from './enrich-tokens.js';
+
 /**
  * Convert a game entity (item, creature, move, NPC) to a universal token.
  * Entities use different field names; this normalises them.
@@ -14,7 +16,7 @@ export function entityToToken(entity) {
  * the entity base forms into the word list. Passes frame.overrides through
  * when present. Never mutates the original frame.
  */
-export function assembleFrame(frame, entities) {
+export function assembleFrame(frame, entities, { dict } = {}) {
   const tokens = [];
   const extraWords = [];
   for (const token of frame.tokens) {
@@ -28,10 +30,12 @@ export function assembleFrame(frame, entities) {
       tokens.push(token);
     }
   }
-  const result = { tokens, words: [...frame.words, ...extraWords] };
-  if (frame.overrides && Object.keys(frame.overrides).length > 0) {
-    result.overrides = frame.overrides;
-  }
+  const overrides = frame.overrides && Object.keys(frame.overrides).length > 0
+    ? frame.overrides
+    : {};
+  const enriched = dict ? enrichTokens(tokens, overrides, dict) : tokens;
+  const result = { tokens: enriched, words: [...frame.words, ...extraWords] };
+  if (Object.keys(overrides).length > 0) result.overrides = overrides;
   return result;
 }
 
@@ -95,13 +99,16 @@ export function filterEligible(candidates, knownWords) {
  *
  * @returns {{tokens: Array, overrides?: Object}|null}
  */
-export function getEligibleFrameTokens(frame, knownWords) {
+export function getEligibleFrameTokens(frame, knownWords, { dict } = {}) {
   if (!frame?.tokens?.length) return null;
   const chosen = filterEligible([frame], knownWords)[0];
-  const result = { tokens: [...chosen.tokens] };
-  if (chosen.overrides && Object.keys(chosen.overrides).length > 0) {
-    result.overrides = chosen.overrides;
-  }
+  const overrides = chosen.overrides && Object.keys(chosen.overrides).length > 0
+    ? chosen.overrides
+    : {};
+  const rawTokens = [...chosen.tokens];
+  const enriched = dict ? enrichTokens(rawTokens, overrides, dict) : rawTokens;
+  const result = { tokens: enriched };
+  if (Object.keys(overrides).length > 0) result.overrides = overrides;
   return result;
 }
 
@@ -132,10 +139,11 @@ export function scoreCandidate(tokens, knownWords) {
  * @returns {object|null} The winning candidate, or the first candidate if none are
  * eligible. Returns null only for an empty input list.
  */
-export function selectBestFrame(candidates, knownWords, { randomizeTies = false } = {}) {
+export function selectBestFrame(candidates, knownWords, { randomizeTies = false, dict } = {}) {
   if (!candidates.length) return null;
   const eligible = filterEligible(candidates, knownWords);
 
+  let winner;
   if (randomizeTies) {
     const scored = eligible.map(c => ({
       c,
@@ -143,11 +151,17 @@ export function selectBestFrame(candidates, knownWords, { randomizeTies = false 
     }));
     const bestScore = Math.max(...scored.map(s => s.score));
     const topTier = scored.filter(s => s.score === bestScore);
-    return topTier[Math.floor(Math.random() * topTier.length)].c;
+    winner = topTier[Math.floor(Math.random() * topTier.length)].c;
+  } else {
+    eligible.sort(
+      (a, b) => scoreCandidate(b.tokens, knownWords) - scoreCandidate(a.tokens, knownWords)
+    );
+    winner = eligible[0];
   }
 
-  eligible.sort(
-    (a, b) => scoreCandidate(b.tokens, knownWords) - scoreCandidate(a.tokens, knownWords)
-  );
-  return eligible[0];
+  if (!dict || !winner) return winner;
+  const overrides = winner.overrides && Object.keys(winner.overrides).length > 0
+    ? winner.overrides
+    : {};
+  return { ...winner, tokens: enrichTokens(winner.tokens, overrides, dict) };
 }
