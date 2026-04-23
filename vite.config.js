@@ -16,6 +16,7 @@ function staticFiles() {
       copyFileSync('public/sw.js', `${dist}/sw.js`);
       copyFileSync('public/manifest.json', `${dist}/manifest.json`);
       copyFileSync('public/admin-word-exposures.html', `${dist}/admin-word-exposures.html`);
+      copyFileSync('public/admin-frame-audit.html', `${dist}/admin-frame-audit.html`);
       if (existsSync('public/dev-safe-area.css')) {
         copyFileSync('public/dev-safe-area.css', `${dist}/dev-safe-area.css`);
       }

@@ -54,6 +54,7 @@ import { createForgeRouter } from './src/routes/forge.js';
 import { createSpriteForgeRouter } from './src/routes/sprite-forge.js';
 import createAdminRoutes from './src/routes/admin.js';
 import createWordExposureRoutes from './src/routes/admin-word-exposures.js';
+import createFrameAuditRoutes from './src/routes/admin-frame-audit.js';
 import { dataPath, getDataDir } from './src/data-dir.js';
 import { configureSrs } from './src/game/internal-srs.js';
 import { loadDialoguePools } from './src/game/dialogue-loader.js';
@@ -444,6 +445,10 @@ app.use('/api/admin', createAdminRoutes({ dataDir: dataPath('') }));
 app.use('/api/admin', createWordExposureRoutes({
   dataDir: getDataDir(),
   framesPath: join(__dirname, 'data', 'dialogue', 'frames.json'),
+}));
+app.use('/api/admin', createFrameAuditRoutes({
+  framesPath: join(__dirname, 'data', 'dialogue', 'frames.json'),
+  sourcesPath: join(__dirname, 'data', 'dialogue', 'frame-sources.json'),
 }));
 
 // Serve game page

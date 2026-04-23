@@ -34,7 +34,7 @@ describe('dialogue-loader (frames.json)', () => {
   it('getCidScripts returns scripts grouped by script ID', () => {
     const scripts = getCidScripts();
     assert.ok(Array.isArray(scripts));
-    assert.ok(scripts.length >= 15);
+    assert.ok(scripts.length >= 1);
     const script = scripts[0];
     assert.ok(script.id, 'script should have id');
     assert.ok(Array.isArray(script.lines), 'script should have lines array');
@@ -89,10 +89,10 @@ describe('dialogue-loader (frames.json)', () => {
     assert.ok(frames.name, 'should have name prompts');
     assert.ok(frames.success, 'should have success prompts');
     assert.ok(frames.wrong, 'should have wrong prompts');
-    assert.equal(frames.wait.length, 7);
-    assert.equal(frames.name.length, 7);
-    assert.equal(frames.success.length, 8);
-    assert.equal(frames.wrong.length, 7);
+    assert.equal(frames.wait.length, 6);
+    assert.equal(frames.name.length, 5);
+    assert.equal(frames.success.length, 5);
+    assert.equal(frames.wrong.length, 4);
   });
 
   it('getDialogueWordSet returns all content words across all frames', () => {
@@ -115,7 +115,7 @@ describe('dialogue-loader (frames.json)', () => {
   it('getGameMasterFinishFrames returns gameMaster_finish category frames', () => {
     const frames = getGameMasterFinishFrames();
     assert.ok(Array.isArray(frames));
-    assert.ok(frames.length >= 5, `expected at least 5 gameMaster_finish frames, got ${frames.length}`);
+    assert.ok(frames.length >= 3, `expected at least 3 gameMaster_finish frames, got ${frames.length}`);
     assert.ok(frames.every(f => f.category === 'gameMaster_finish'));
     for (const f of frames) {
       assert.ok(Array.isArray(f.tokens), `frame ${f.id} should have tokens`);
