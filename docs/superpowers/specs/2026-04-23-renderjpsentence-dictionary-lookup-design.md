@@ -5,11 +5,15 @@
 
 ## Context
 
-Prior work (`2026-04-22-frame-meaning-overrides-design.md`) removed baked `meaning` from tokens in `frames.json` and made the live dictionary the source of truth for static-dialogue glosses. That shift works for words present in `frames.json`, but the client-side dictionary endpoint at `src/routes/game/known-words.js:119-133` filters the dict to exactly the words referenced by static frames. Any word outside that set — AI-generated DM narration, NPC dialogue, free-text prompts, prologue `jpDemo` scenes — has no entry on the client, so `resolveExposureMeaning` returns `''`.
+Prior work (`2026-04-22-frame-meaning-overrides-design.md`) removed baked `meaning` from tokens in `frames.json` and made the live dictionary the source of truth for static-dialogue glosses. In the running game today, that source-of-truth lookup fails for almost everything that isn't a game entity. Three compounding problems:
 
-Observed symptom: game entities (creature names, moves, NPCs) and frame-dialogue words render with correct English glosses; words that exist only in the live dictionary render with no gloss at all.
+1. **Main narration box sends an empty dict.** `public/js/ui/dialogue-display.js:4` declares `let _wordDict = new Map()` and exports a `setWordDictionary` at line 10 that **nothing ever calls**. Every dialogue rendered through `showDialogueLines` — which covers most of the game's hand-written frame dialogue — passes that empty Map to `renderJpSentence`. `resolveExposureMeaning` finds no dict entry for any token, returns `''`, and the only glosses that survive are entity tokens (creature / move / NPC names) via the `token.entity ? token.meaning` fallback at `bootstrap-client.js:100-101`. This is what shows up in the game as "only game entities render with English; hand-written frame dialogue does not."
 
-Separately, the resolution priority in `public/js/shared/exposure-extractor.js:27-36` does **not** match the intended order. Today it runs `override → dict → (entity fallback only if dict was empty)`. Entity data reaches the client correctly only because game entities are overlaid into the dict as `primary: true` and happen to win the dict step — an accident, not a guarantee.
+2. **Other call sites pass a filtered dict.** `public/js/ui/exploration.js`, `public/game.js:858` (prologue `jpDemo`), and others construct `new Map(Object.entries(window.gameState?.wordDictionary || {}))` from the bootstrap fetch. The endpoint that populates it at `src/routes/game/known-words.js:119-133` **filters the dict to exactly the words appearing in `frames.json`**. Frame-vocab words resolve there (inline render and popup work). Words that exist only in the live dict — AI-generated DM narration, NPC dialogue, free-text prompts, any Sudachi-tokenized runtime text — have no client-side entry and render blank.
+
+3. **Priority order is wrong.** `public/js/shared/exposure-extractor.js:27-36` runs `override → dict → (entity fallback only if dict was empty)`. Entity data reaches the client correctly only because `src/game/word-dictionary.js:71-74` overlays game entities into the dict as `primary: true` — an accidental path, not a guaranteed one. Under the intended order, a token flagged `token.entity === true` should win over any dict entry for the same base form, unconditionally.
+
+The net user-visible state: entities render glosses everywhere; frame-dialogue words render glosses nowhere; other paths render glosses only for frame-vocab words. Popups behave similarly — `dialogue-word-lookup.js` is the one place that *is* initialized with the filtered dict (via `dialogueLookup.init` at `game.js:2113`), so frame-vocab words get a working popup; non-frame words get an empty popup.
 
 ## Goal
 
@@ -91,18 +95,23 @@ Preferred placement: wrap `tokenize()` (or the single function every path goes t
 `public/js/ui/bootstrap-client.js:renderJpSentence` simplifies:
 
 - Delete the inline entity fallback at lines 100-101 — `resolveExposureMeaning` now handles it.
-- Pass `wordDict` through as-is for the rare fallback path; do not change the 19 call-site signatures.
+- `wordDict` parameter stays in the signature (19 call sites) to avoid a breaking API change, but is only used by the shared resolver's final fallback step. In the enriched flow it is effectively unused.
 - Stamp `data-meanings` on the span (JSON-encoded `token.meanings`) when the token carries one, so the popup can render the full definitions list without another round trip.
+
+`public/js/ui/dialogue-display.js` cleanup:
+
+- Remove the orphaned `_wordDict` module state (line 4), the unused `setWordDictionary` export (line 10), and the `_wordDict` argument at the `renderJpSentence` call (line 31). Pass `null` (or the same empty Map — renderer tolerates both) in its place; tokens now carry their own meanings.
 
 `public/js/ui/dialogue-word-lookup.js` popup:
 
 - Reads `data-override` and `data-meaning` from the clicked span (unchanged).
-- For the full definitions list, read from `data-meanings` (new) on the span instead of looking up `window.gameState.wordDictionary[base]`.
+- For the full definitions list, read from `data-meanings` (new) on the span instead of `_wordDict.get(base)` at line 153. Remove the `_wordDict` module state and the `wordDictionary` parameter of `init()`.
+- `buildPopupMeanings` already takes `dictEntry` as an argument — change the caller to parse `data-meanings` JSON into `{definitions: [...]}` and pass that, so `buildPopupMeanings` itself is unchanged and its existing unit tests still apply.
 - Visual behavior unchanged: context-specific gloss first when `data-override="1"`, then every dict definition.
 
 ### Client dictionary endpoint and bootstrap
 
-`GET /api/game/known-words/word-dictionary` at `src/routes/game/known-words.js:119-133` becomes unused for the render path. Remove the route, the client fetch at `public/game.js:780-786`, and the `window.gameState.wordDictionary` field.
+`GET /api/game/known-words/word-dictionary` at `src/routes/game/known-words.js:119-133` becomes unused for the render path. Remove the route, the client fetch at `public/game.js:775-786`, the `window.gameState.wordDictionary` field, and the `wordDictionary` argument at `game.js:2113` `dialogueLookup.init(...)`.
 
 If a future debug tool needs per-word lookup, add a narrow `GET /api/dict/:word` endpoint returning one entry. Not required for this fix.
 
@@ -132,9 +141,10 @@ If a future debug tool needs per-word lookup, add a narrow `GET /api/dict/:word`
 2. Update `resolveExposureMeaning` priority + unit tests.
 3. Wire `enrichTokens` into server token-producing paths (enumerate in plan).
 4. Simplify `renderJpSentence` (drop the entity inline fallback; stamp `data-meanings`).
-5. Update `dialogue-word-lookup.js` to read from `data-meanings`.
-6. Remove `/api/game/known-words/word-dictionary` route, the client fetch in `public/game.js`, and `window.gameState.wordDictionary`.
-7. Run `npm test` + manual playtest against the bug scenario (a live-dict-only word in DM narration).
+5. Clean up `dialogue-display.js`: remove orphaned `_wordDict` and `setWordDictionary`.
+6. Update `dialogue-word-lookup.js` to read from `data-meanings`; drop its `_wordDict`.
+7. Remove `/api/game/known-words/word-dictionary` route, the client fetch in `public/game.js`, `window.gameState.wordDictionary`, and the `wordDictionary` argument at the `dialogueLookup.init(...)` call.
+8. Run `npm test` + manual playtest: load a dialogue known to contain a live-dict-only word in the main narration box, verify the stacked English appears inline and the popup shows all definitions; edit a live-dict entry and verify the next render reflects the edit without redeploying.
 
 `frames.json` schema is unchanged by this spec — no regeneration required.
 
