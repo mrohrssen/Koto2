@@ -65,9 +65,13 @@ The file is already shared between server and client. Two render-path callers:
 - **Server** calls `resolveExposureMeaning` with the full in-memory dict during enrichment (step 4 falls through to dict).
 - **Client** calls `resolveExposureMeaning` during render; tokens already carry `.meaning`, so step 3 fires. `wordDict` argument may be `undefined`.
 
-Outside the render path, one non-render caller consolidates onto `lookupDictPrimary`:
+Outside the render path, all known duplicate lookup sites consolidate onto `lookupDictPrimary`:
 
-- `src/game/bootstrap/word-knowledge.js:33-58` today defines `lookupMeaning(baseForm)` and `lookupMeaningFrom(dict, baseForm)` that both run `primary?.en || definitions[0]?.en || ''` inline (SRS card hydration). Rewrite each to a one-liner that calls `lookupDictPrimary(dict, baseForm)`. No behavior change — `definitions[0]?.en` fallback was always equivalent to `primary` (see data audit note below).
+- `src/game/bootstrap/word-knowledge.js:33-58` — `lookupMeaning(baseForm)` and `lookupMeaningFrom(dict, baseForm)` (SRS card hydration). Rewrite each as a one-liner over `lookupDictPrimary(dict, baseForm)`.
+- `src/routes/admin-word-exposures.js:68, 70` — two inline `find(d => d.primary) || definitions[0]` lookups (one against the merged dict, one against raw JMdict). Replace both with `lookupDictPrimary(dict, word)` / `lookupDictPrimary(jmdict, word)` — the same helper works for any dict-shaped Map.
+- `src/routes/admin.js:226-227` — inline `find(d => d.primary); primaryDef?.en || definitions[0]?.en || ''` (per-user known-words admin view). Replace with `lookupDictPrimary(dict, word)`.
+
+No behavior change at any site — `definitions[0]?.en` fallback is always equivalent to `primary?.en` (see data audit note below).
 
 **Data audit note.** All 37,961 live-dict entries have `primary: true` stamped on `definitions[0]`, so `primary || definitions[0]` is currently a no-op second tier. The fallback stays in `lookupDictPrimary` as belt-and-suspenders in case that invariant breaks, but only in one place — callers never write the fallback themselves.
 
@@ -150,7 +154,7 @@ If a future debug tool needs per-word lookup, add a narrow `GET /api/dict/:word`
 ## Migration
 
 1. Add `lookupDictPrimary` + update `resolveExposureMeaning` priority + unit tests.
-2. Rewrite `src/game/bootstrap/word-knowledge.js:lookupMeaning` and `:lookupMeaningFrom` as one-liners over `lookupDictPrimary`. Remove the inlined `primary || definitions[0]` pattern.
+2. Rewrite every inline `primary || definitions[0]` site as a `lookupDictPrimary` call: `word-knowledge.js:lookupMeaning`, `word-knowledge.js:lookupMeaningFrom`, `admin-word-exposures.js:68-70`, `admin.js:226-227`.
 3. Add `enrichTokens` + unit tests.
 4. Wire `enrichTokens` into server token-producing paths (enumerate in plan).
 5. Simplify `renderJpSentence` (drop the entity inline fallback; stamp `data-meanings`).
