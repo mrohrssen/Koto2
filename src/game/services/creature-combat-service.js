@@ -30,6 +30,7 @@ import {
   checkAfflictionBurstCounter,
   toActivePartySkillIdSet
 } from '../combat/party-skill-engine.js';
+import { REST_MOVE, computeRestMpGain } from '../rest-move.js';
 export { applyAfterEnemyAttacks, applyRoundStartSkills, computeInlineCounter, checkAfflictionBurstCounter } from '../combat/party-skill-engine.js';
 export const CREDITS_PER_KILL = 15;
 
@@ -388,6 +389,47 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
 }
 
 /**
+ * Build a synthetic "attack" object for a rest action so the client's
+ * attack-card orchestrator can play it alongside real attacks. The client
+ * branches on `category: 'rest'` to render `+N MP` in the number slot
+ * and skip damage/effectiveness rendering.
+ */
+function buildRestAttack(creature, creatureIndex, mpGained) {
+  return {
+    category: 'rest',
+    isRest: true,
+    attackerId: creature.id,
+    attackerIndex: creatureIndex,
+    attackerName: creature.nameEn || creature.name || '',
+    attackerNameJp: creature.name || '',
+    attackerBaseWord: creature.baseWord || creature.name || '',
+    attackerBaseReading: creature.baseReading || '',
+    attackerBaseMeaning: creature.baseMeaning || creature.nameEn || '',
+    attackerElement: creature.element || 'neutral',
+    attackerMp: creature.mp,
+    attackerMaxMp: creature.maxMp || 0,
+    targetSide: 'player',
+    targetId: creature.id,
+    targetIndex: creatureIndex,
+    targetName: creature.nameEn || creature.name || '',
+    targetNameJp: creature.name || '',
+    targetBaseWord: creature.baseWord || creature.name || '',
+    targetBaseReading: creature.baseReading || '',
+    targetBaseMeaning: creature.baseMeaning || creature.nameEn || '',
+    targetElement: creature.element || 'neutral',
+    moveName: REST_MOVE.name,
+    moveNameEn: REST_MOVE.nameEn,
+    moveElement: 'neutral',
+    attackerSkillName: REST_MOVE.name,
+    attackerSkillReading: REST_MOVE.reading,
+    attackerSkillEn: REST_MOVE.nameEn,
+    damage: 0,
+    mpGained,
+    elementMultiplier: 1,
+  };
+}
+
+/**
  * Process a move-based attack turn. Each ally creature uses a specific move
  * chosen by the player against a specific target.
  *
@@ -417,6 +459,14 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     const creature = allies[choice.creatureIndex];
     if (!creature || creature.hp <= 0) continue;
     if (isIncapacitated(creature)) continue;
+
+    // Rest pseudo-move — restore 20% MP and skip attack resolution entirely.
+    if (choice.action === 'rest') {
+      const mpGained = computeRestMpGain(creature);
+      creature.mp = Math.min(creature.maxMp || 0, (creature.mp || 0) + mpGained);
+      attacks.push(buildRestAttack(creature, choice.creatureIndex, mpGained));
+      continue;
+    }
 
     // If all enemies are dead, stop processing damage-oriented moves
     const aliveEnemies = enemies.filter(e => e.hp > 0);
