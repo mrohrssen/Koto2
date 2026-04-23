@@ -8,6 +8,63 @@ import { creatureSpriteHtml, SPRITE_VERSION } from './sprite-utils.js';
 import { SC_NAMES } from './combat-ui-utils.js';
 import { prefetchWord, playWordPair } from '../tts.js';
 
+/** Map move `category` → tone class used by CSS for color. */
+export function resultTone(atk) {
+  switch (atk?.category) {
+    case 'damage': return 'damage';
+    case 'drain':  return 'damage';
+    case 'heal':   return 'heal';
+    case 'buff':   return 'buff';
+    case 'shield': return 'buff';
+    case 'debuff': return 'debuff';
+    default:       return 'damage';
+  }
+}
+
+/** Human-readable status labels for effect names used in attack payloads. */
+const EFFECT_LABELS = {
+  confuse:  'Confused!',
+  poison:   'Poisoned!',
+  sleep:    'Sleeping!',
+  stun:     'Stunned!',
+  paralyze: 'Paralyzed!',
+};
+
+/** Format the right-side result string from the attack payload. */
+export function formatResultValue(atk) {
+  const cat = atk?.category;
+  if (cat === 'damage' || cat === 'drain') {
+    return `-${atk.damage ?? 0} HP`;
+  }
+  if (cat === 'heal') {
+    return `+${atk.healAmount ?? 0} HP`;
+  }
+  if (cat === 'buff' || cat === 'debuff' || cat === 'shield') {
+    const changes = atk.statChangesApplied;
+    if (changes) {
+      const [stat, value] = Object.entries(changes)[0];
+      const name = (SC_NAMES?.[stat] || stat).toUpperCase();
+      return `${name} ${value > 0 ? '+' : ''}${value}`;
+    }
+    if (atk.effectApplied) {
+      return EFFECT_LABELS[atk.effectApplied] || (atk.effectApplied.charAt(0).toUpperCase() + atk.effectApplied.slice(1) + '!');
+    }
+    if (cat === 'shield') return 'Shielded!';
+    return '';
+  }
+  return '';
+}
+
+/** Effectiveness line shown under the damage number (damage/drain only). */
+export function effectivenessText(atk) {
+  if (atk?.category !== 'damage' && atk?.category !== 'drain') return '';
+  const mult = atk.elementMultiplier;
+  if (mult == null || mult === 1) return '';
+  if (mult === 0) return '(No effect!)';
+  if (mult < 1)   return '(Not very effective…)';
+  return '(Super effective!)';
+}
+
 export const ATTACK_CARD_TIMING = {
   ROW_STAGGER: 50,
   ROW_ANIM_DURATION: 100,
