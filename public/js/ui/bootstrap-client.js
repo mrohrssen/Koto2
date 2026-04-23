@@ -68,9 +68,12 @@ export function renderEnFirst(taggedText) {
  * Unknown words: vertical stack — hiragana reading on top, English below.
  * Punctuation: rendered as-is.
  *
- * @param {Array<{surface: string, baseForm: string, pos: string, reading: string}>} tokens
+ * @param {Array<{surface: string, baseForm: string, pos: string, reading: string, meaning?: string, meanings?: Array}>} tokens
+ *   Tokens are expected to arrive pre-enriched by the server (meaning + meanings stamped).
  * @param {Set<string>} knownWords - baseForm strings the player knows
- * @param {Map<string, {reading: string, definitions: Array<{en: string, primary?: boolean}>}>} wordDict
+ * @param {Map|null} wordDict - legacy fallback dict. Pass null in production; tokens
+ *   now carry their own meaning. Kept in the signature for compatibility with the
+ *   shared resolver's final fallback and unit-test convenience.
  * @param {Object<string, string>} overrides - baseForm → English override
  * @param {boolean} useKanji - false for Areas 1-3 (hiragana), true for Area 4+
  * @returns {string} HTML string

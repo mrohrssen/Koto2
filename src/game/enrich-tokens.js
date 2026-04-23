@@ -2,13 +2,8 @@ import {
   isContentExposureToken,
   getTokenBaseForm,
   resolveExposureMeaning,
+  getDictEntry,
 } from '../../public/js/shared/exposure-extractor.js';
-
-function getDictEntry(dict, baseForm) {
-  if (!dict || !baseForm) return null;
-  if (typeof dict.get === 'function') return dict.get(baseForm) || null;
-  return dict[baseForm] || null;
-}
 
 /**
  * Stamp `meaning` (and `meanings` when dict has an entry) on every content token,

@@ -2,7 +2,7 @@ const SYMBOL_ONLY_RE = /^[\p{P}\p{S}\s]+$/u;
 
 export const PUNCT_POS = new Set(['記号', '補助記号', '空白']);
 
-function getDictEntry(wordDict, baseForm) {
+export function getDictEntry(wordDict, baseForm) {
   if (!wordDict || !baseForm) return null;
   if (typeof wordDict.get === 'function') {
     return wordDict.get(baseForm) || null;
