@@ -58,34 +58,43 @@ CI runs Tier 1 + 2 on every push and PR via GitHub Actions. Coverage has a ratch
 
 Multiple Claude sessions share the same repo. **Branches alone don't work** - switching branches in one terminal affects all terminals. Use **git worktrees** to isolate each session's work.
 
-**Always pull before starting work and push when done** to keep all machines in sync:
+**Two long-lived branches:**
+- `dev` — integration branch. All feature work merges here. Deploys to `jrpg-dev.up.railway.app`.
+- `master` — release branch. **Always a pure fast-forward pointer to `dev`'s tip.** Deploys to `jrpg-production.up.railway.app`. Never commit or merge into master directly — only advance it.
+
+Keeping master = dev's tip means both Railway environments run the same commit SHA, so testing on dev is testing production.
+
+**Persistent worktree** (created once, kept around):
+- `/Users/michiarohrssen/Documents/Claude/koto-dev` — checked out to `dev`
+
+No `koto-master` worktree is needed — master is advanced via `git push origin dev:master` without ever checking it out locally.
+
+Feature branches get their own disposable worktree, branched off `dev`.
 
 ```bash
-# ============ SYNC: Pull latest before starting ============
-git pull origin master
-
-# ============ START: Create isolated worktree ============
-PROJECT_ROOT=$(git rev-parse --show-toplevel)
-cd "$PROJECT_ROOT"
-git fetch origin
+# ============ START: Sync dev and create feature worktree ============
+cd /Users/michiarohrssen/Documents/Claude/koto-dev
+git pull origin dev
 git worktree add ../koto-wt-myfeature -b feature/my-feature-name
 
 # Work in the new directory (isolated from main repo)
 cd ../koto-wt-myfeature
 npm install  # If needed
 
-# ============ FINISH: Merge, push, and cleanup ============
+# ============ FINISH: Merge into dev, then advance master ============
 # Commit your changes in the worktree
 git add -A && git commit -m "Your message"
 
-# Go to main repo to merge
-cd "$PROJECT_ROOT"
-git checkout master
-git pull origin master
+# Merge into dev
+cd ../koto-dev
+git pull origin dev
 git merge feature/my-feature-name
-git push origin master
+git push origin dev
 
-# Remove the worktree and branch
+# Advance master to dev's tip — no merge commit, no worktree switch
+git push origin dev:master
+
+# Remove the feature worktree and branch
 git worktree remove ../koto-wt-myfeature
 git branch -d feature/my-feature-name
 ```
@@ -93,9 +102,21 @@ git branch -d feature/my-feature-name
 **Why worktrees?** Each worktree is a separate directory with its own branch. Multiple Claude sessions can work on different features simultaneously without conflicts.
 
 **GitHub sync rules:**
-- `git pull origin master` at the start of every session
-- `git push origin master` after merging completed work
+- `git pull origin dev` at the start of every session (in `koto-dev`)
+- `git push origin dev` after merging a feature
+- `git push origin dev:master` right after, to keep master == dev's tip
+- Never merge anything into master directly — it always just tracks dev
 - Never force-push to master
+
+**If master has diverged from dev** (someone merged directly into master in the past):
+```bash
+cd koto-dev
+git fetch origin
+git merge origin/master --no-edit   # absorb master's stray commits into dev
+git push origin dev
+git push origin dev:master          # realign — master now == dev's tip
+```
+From there, future pushes stay aligned as long as no one merges directly into master.
 
 Branch prefixes: `feature/`, `fix/`, `refactor/`
 
