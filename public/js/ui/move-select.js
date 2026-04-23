@@ -2,6 +2,8 @@ import { dom } from '../dom.js';
 import { prefetchWord, playWord } from '../tts.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { effectLabel } from './move-effect-label.js';
+import { notEnoughMp, fullyRested } from './event-popup.js';
+import { REST_MOVE } from './rest-move.js';
 
 const CATEGORY_ICONS = {
   damage: '⚔', drain: '⚔', heal: '❤', shield: '🛡',
@@ -127,14 +129,28 @@ export function showMoves(creature, creatureIndex, opts = {}) {
     const canAfford = (creature.mp ?? creature.currentMp ?? 0) >= (move.mpCost || 0);
     const cell = buildMoveCell(move, canAfford);
 
-    if (canAfford) {
-      cell.addEventListener('click', () => {
-        if (move.name) playWord(move.name);
-        if (moveSelectCb) moveSelectCb(move, creatureIndex);
-      });
-    }
+    cell.addEventListener('click', () => {
+      if (!canAfford) {
+        notEnoughMp(cell);
+        return;
+      }
+      if (move.name) playWord(move.name);
+      if (moveSelectCb) moveSelectCb(move, creatureIndex);
+    });
     grid.appendChild(cell);
   }
+
+  // --- Rest cell — always present as the 4th slot. Never removed, never replaced. ---
+  const restCell = buildMoveCell(REST_MOVE, true);
+  restCell.addEventListener('click', () => {
+    const atMaxMp = (creature.mp ?? 0) >= (creature.maxMp ?? 0);
+    if (atMaxMp) {
+      fullyRested(restCell);
+      return;
+    }
+    if (moveSelectCb) moveSelectCb(REST_MOVE, creatureIndex);
+  });
+  grid.appendChild(restCell);
 
   if (includeItems) {
     if (opts.befriendAvailable && opts.onBefriend) {

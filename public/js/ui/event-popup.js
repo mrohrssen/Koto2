@@ -121,6 +121,22 @@ export const skillProc = (el, text) => showEventPopup(el, text, {
   duration: 1500
 });
 
+/** Shown when a player clicks a move the creature can't afford. */
+export const notEnoughMp = (el) => showEventPopup(el, 'Not enough MP!', {
+  color: '#4FC3F7',
+  particles: 0,
+  size: 'large',
+  duration: 1200
+});
+
+/** Shown when a player clicks Rest on a creature already at max MP. */
+export const fullyRested = (el) => showEventPopup(el, 'Fully rested!', {
+  color: '#4FC3F7',
+  particles: 0,
+  size: 'large',
+  duration: 1200
+});
+
 // ============ STATUS ICONS ============
 
 export const STATUS_ICON_CONFIG = {

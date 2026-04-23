@@ -176,6 +176,40 @@ describe('combat flow', () => {
       `expected victory, befriend quiz, or continued combat; got keys: ${Object.keys(result.body).join(', ')}`);
   });
 
+  it('rest action restores MP and emits a rest attack in the response', async () => {
+    const state = await startCombatRun(client, tmpDir);
+    assert.ok(state.combat, 'combat should exist');
+
+    const beforeState = (await client.getState()).body;
+    const mpBefore = beforeState.combat.allies[0].mp;
+    const maxMp = beforeState.combat.allies[0].maxMp;
+
+    const turn = await client.post('/api/game/creature-combat-cycle', {
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, action: 'rest' }]
+    });
+
+    assert.equal(turn.status, 200, `rest cycle failed: ${JSON.stringify(turn.body)}`);
+    const restAttack = (turn.body.playerAttacks || turn.body.attacks || [])
+      .find(a => a.category === 'rest');
+    assert.ok(restAttack, `expected a rest attack in response; got ${JSON.stringify(Object.keys(turn.body))}`);
+    assert.equal(restAttack.isRest, true);
+    assert.equal(restAttack.damage, 0);
+    assert.equal(restAttack.attackerIndex, 0);
+    assert.equal(restAttack.targetIndex, 0);
+    assert.equal(restAttack.moveNameEn, 'rest');
+    assert.equal(restAttack.attackerSkillName, '休む');
+    assert.equal(restAttack.attackerSkillReading, 'やすむ');
+    assert.ok(restAttack.mpGained >= 0, 'mpGained should be non-negative');
+
+    // Final state: ally 0's MP should have increased by at least the rest amount (server also applies 5% baseline regen)
+    const after = turn.body.state.combat.allies[0];
+    if (mpBefore < maxMp) {
+      assert.ok(after.mp > mpBefore, `mp should increase after rest; before=${mpBefore}, after=${after.mp}`);
+    }
+    assert.ok(after.mp <= maxMp, 'mp should never exceed maxMp');
+  });
+
   it('combat state is consistent after each turn', async () => {
     await startCombatRun(client, tmpDir);
 

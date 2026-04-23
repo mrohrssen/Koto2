@@ -26,6 +26,10 @@ function capitalize(word) {
  * @returns {{iconType: string, text: string}}
  */
 export function effectLabel(move) {
+  if (move.isRest) {
+    return { iconType: 'drop', text: '+20% MP' };
+  }
+
   if (move.category === 'buff') {
     const dominant = pickDominantStat(move.statChanges);
     if (dominant) {

@@ -17,6 +17,7 @@ export function resultTone(atk) {
     case 'buff':   return 'buff';
     case 'shield': return 'buff';
     case 'debuff': return 'debuff';
+    case 'rest':   return 'rest';
     default:       return 'damage';
   }
 }
@@ -35,6 +36,9 @@ const EFFECT_LABELS = {
 /** Format the right-side result string from the attack payload. */
 export function formatResultValue(atk) {
   const cat = atk?.category;
+  if (cat === 'rest') {
+    return `+${atk.mpGained ?? 0} MP`;
+  }
   if (cat === 'damage' || cat === 'drain') {
     // Drain: damage on the target only. The self-heal half is rendered separately
     // by buildSplitAttackCard as a secondary line, not by this helper.

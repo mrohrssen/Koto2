@@ -1322,6 +1322,7 @@ textarea,
 .sac-tone-heal   { color: #388E3C; }
 .sac-tone-buff   { color: #1976D2; }
 .sac-tone-debuff { color: #7B1FA2; }
+.sac-tone-rest   { color: #4FC3F7; }
 
 .sac-effectiveness {
   font-size: 10.5px;
