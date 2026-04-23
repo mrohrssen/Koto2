@@ -15,8 +15,6 @@ export const dom = {
 
   // Area header pill
   get areaHeaderPill() { return el('area-header-pill'); },
-  get areaHeaderName() { return el('area-header-name'); },
-  get areaHeaderSub() { return el('area-header-sub'); },
 
   // Scene area
   get sceneArea() { return el('scene-area'); },
