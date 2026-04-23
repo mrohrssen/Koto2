@@ -1,5 +1,6 @@
 import { dom } from '../dom.js';
 import { escapeHtml } from './html-utils.js';
+import { buildHeadwordRuby } from './romaji.js';
 
 let isActive = false;
 let isLoading = false;
@@ -355,7 +356,6 @@ async function handleWordClick(e) {
 
   // Show loading state while fetching
   dom.lookupPopupWord.textContent = span.textContent;
-  dom.lookupPopupReading.textContent = '';
   dom.lookupPopupPos.textContent = 'Loading...';
   dom.lookupPopupMeanings.innerHTML = '';
   dom.lookupPopupState.style.display = 'none';
@@ -376,8 +376,11 @@ async function handleWordClick(e) {
 
 /** Populate popup with definition data */
 function populatePopup(result, fallbackText) {
-  dom.lookupPopupWord.textContent = result.spelling || fallbackText;
-  dom.lookupPopupReading.textContent = result.reading || '';
+  dom.lookupPopupWord.innerHTML = buildHeadwordRuby(
+    result.spelling || fallbackText,
+    result.reading || '',
+    false
+  );
   dom.lookupPopupPos.textContent = result.partOfSpeech?.join(', ') || '';
 
   // Meanings list

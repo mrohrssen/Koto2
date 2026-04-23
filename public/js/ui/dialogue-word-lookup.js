@@ -1,12 +1,12 @@
 import { getKnownWords, addKnownWord } from './bootstrap-client.js';
 import { reviewVocabWord } from '../api.js';
 import { showWordLevelUp } from './word-level-up.js';
+import { buildHeadwordRuby } from './romaji.js';
 
 // DOM references (cached on init)
 const dom = {
   popup: null,
   word: null,
-  reading: null,
   pos: null,
   meanings: null,
   stateDot: null,
@@ -63,7 +63,6 @@ export function init({ showToast, pauseAutoDismiss, getKanaMode }) {
 
   dom.popup = document.getElementById('lookup-popup');
   dom.word = document.getElementById('lookup-popup-word');
-  dom.reading = document.getElementById('lookup-popup-reading');
   dom.pos = document.getElementById('lookup-popup-pos');
   dom.meanings = document.getElementById('lookup-popup-meanings');
   dom.stateDot = document.getElementById('lookup-state-dot');
@@ -142,8 +141,8 @@ function handleWordClick(e) {
   const meaning = span.dataset.meaning || '';
   const pos = span.dataset.pos || '';
 
-  dom.word.textContent = span.textContent;
-  dom.reading.textContent = reading !== span.textContent ? reading : '';
+  const useKanji = span.dataset.kanjiMode === '1';
+  dom.word.innerHTML = buildHeadwordRuby(base, reading, useKanji);
   dom.pos.textContent = pos;
 
   // Meanings: override (labeled "In this context") + dict definitions

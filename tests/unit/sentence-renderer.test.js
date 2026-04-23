@@ -36,6 +36,7 @@ describe('renderJpSentence', () => {
     assert.ok(html.includes('こんにちは'));
     assert.ok(html.includes('<rt>konnichiha</rt>'));
     assert.ok(!html.includes('jp-unknown'));
+    assert.ok(!html.includes('data-kanji-mode'));
   });
 
   it('renders unknown words with romaji and English', () => {
@@ -62,6 +63,7 @@ describe('renderJpSentence', () => {
     assert.ok(html.includes('<ruby>一緒<'));
     assert.ok(html.includes('<rt>issho</rt>'));
     assert.ok(html.includes('jp-known'));
+    assert.ok(html.includes('data-kanji-mode="1"'));
   });
 
   it('applies definition overrides', () => {

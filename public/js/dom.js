@@ -61,7 +61,6 @@ export const dom = {
   // Lookup mode
   get lookupPopup() { return el('lookup-popup'); },
   get lookupPopupWord() { return el('lookup-popup-word'); },
-  get lookupPopupReading() { return el('lookup-popup-reading'); },
   get lookupPopupClose() { return el('lookup-popup-close'); },
   get lookupPopupPos() { return el('lookup-popup-pos'); },
   get lookupPopupMeanings() { return el('lookup-popup-meanings'); },

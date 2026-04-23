@@ -107,6 +107,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     let dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;
     if (isFromOverride) dataAttrs += ' data-override="1"';
     if (meaningsJson) dataAttrs += ` data-meanings="${esc(meaningsJson)}"`;
+    if (useKanji) dataAttrs += ' data-kanji-mode="1"';
 
     if (isKnown) {
       const display = useKanji ? surface : displayReading;
