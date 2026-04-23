@@ -160,6 +160,9 @@ export function buildSplitAttackCard(atk, isEnemy, options = {}) {
     : '';
 
   const isSelfTarget = atk.targetId === atk.attackerId && atk.targetIndex === atk.attackerIndex;
+  // isEnemy === true means an enemy is the attacker — the target is one of the
+  // player's creatures and should not be flipped. Only flip when the player is
+  // attacking an enemy, to make the sprite face the attacker.
   const targetSpriteClass = isSelfTarget ? 'sac-sprite' : (isEnemy ? 'sac-sprite' : 'sac-sprite sac-sprite-enemy');
   const targetSpriteWord = atk.targetBaseWord || atk.targetName || '？';
   const targetSpriteHtml = creatureSpriteHtml(atk.targetId, targetSpriteWord, atk.targetElement, targetSpriteClass);
@@ -237,6 +240,11 @@ export function insertAttackCard(atk, isEnemy) {
   return card;
 }
 
+// TODO(Task 4): NPC path is temporarily broken — leftHtml/tagLabelsByCategory/
+// defaultCategoryTagLabel options are ignored because Task 3's buildSplitAttackCard
+// rewrite renamed the override hook to `attackerHtml`. Task 4 rewrites this function
+// to build and pass attackerHtml directly. Until then, NPC cards render with the
+// default creature-sprite attacker row.
 /**
  * Build and insert a split attack card for an NPC skill hit.
  */
@@ -285,9 +293,6 @@ export function waitForCardTap(card) {
     if (!card) { resolve(); return; }
 
     const actionArea = card.closest('#action-area') || card.parentElement;
-
-    const indicator = card.querySelector('.sac-continue');
-    if (indicator) indicator.style.display = '';
 
     let resolved = false;
     const onTap = () => {
