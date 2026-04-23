@@ -991,7 +991,7 @@ export async function renderWhackAMole() {
   if (!whackAMoleState.introShown && whackAMoleState.dialogue?.tokens?.length && sceneModule?.showNarration) {
     whackAMoleState.introShown = true;
     const html = renderJpSentence(whackAMoleState.dialogue.tokens, getKnownWords(), null, whackAMoleState.dialogue.overrides || {}, false);
-    await sceneModule.showNarration(html, { html: true, speaker: 'Game Master' });
+    await sceneModule.showNarration(html, { html: true, speaker: 'Game Master', persistent: true });
   }
 
   renderButtons([
