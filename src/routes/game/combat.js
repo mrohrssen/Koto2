@@ -82,8 +82,8 @@ export default function createCombatRoutes({
             overrides: l.overrides || {},
           } : null;
 
-          const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords);
-          const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords);
+          const fightStart = selectNpcLine(npcPool.fightStart || [], knownWords, { dict: getWordDict() });
+          const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords, { dict: getWordDict() });
 
           npcDialogue = {
             fightStart: mapLine(fightStart),

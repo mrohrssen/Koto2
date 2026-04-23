@@ -310,7 +310,7 @@ export class CombatCycleService {
 
       for (const trigger of triggers) {
         if (Math.random() >= 0.25) continue; // 25% chance per trigger
-        const bark = selectBark(barkPool, trigger, knownWords, { usedThisCombat: this.gm.combat.usedBarks });
+        const bark = selectBark(barkPool, trigger, knownWords, { usedThisCombat: this.gm.combat.usedBarks, dict: getWordDict() });
         if (bark) {
           barks.push({ trigger, text: bark.raw, tokens: bark.tokens || [], words: bark.words || [] });
           this.gm.combat.usedBarks.add(bark.raw);

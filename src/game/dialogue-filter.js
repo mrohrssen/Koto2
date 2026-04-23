@@ -1,4 +1,13 @@
 import { isEligible, filterEligible, countUnknowns } from './token-format.js';
+import { enrichTokens } from './enrich-tokens.js';
+
+function maybeEnrich(line, dict) {
+  if (!line || !dict) return line;
+  const overrides = line.overrides && Object.keys(line.overrides).length > 0
+    ? line.overrides
+    : {};
+  return { ...line, tokens: enrichTokens(line.tokens, overrides, dict) };
+}
 
 export function isLineEligible(line, knownWords) {
   return isEligible(line.tokens || [], knownWords);
@@ -39,7 +48,7 @@ export function selectCidScript(eligible, knownWords, seenScriptIds = []) {
 }
 
 export function selectNpcLine(lines, knownWords, options = {}) {
-  const { lastSeenText, curriculumWords = [] } = options;
+  const { lastSeenText, curriculumWords = [], dict } = options;
   const eligible = filterEligible(lines, knownWords);
   const curriculumSet = new Set(curriculumWords);
   const teaching = eligible.filter(line =>
@@ -48,11 +57,12 @@ export function selectNpcLine(lines, knownWords, options = {}) {
   const pool = teaching.length > 0 ? teaching : eligible;
   const nonRepeat = pool.filter(l => l.raw !== lastSeenText);
   const finalPool = nonRepeat.length > 0 ? nonRepeat : pool;
-  return finalPool[Math.floor(Math.random() * finalPool.length)];
+  const chosen = finalPool[Math.floor(Math.random() * finalPool.length)];
+  return maybeEnrich(chosen, dict);
 }
 
 export function selectBark(barkPool, trigger, knownWords, options = {}) {
-  const { usedThisCombat = new Set() } = options;
+  const { usedThisCombat = new Set(), dict } = options;
   const pool = barkPool[trigger];
   if (!pool || pool.length === 0) return null;
   const eligible = filterEligible(pool, knownWords);
@@ -67,5 +77,6 @@ export function selectBark(barkPool, trigger, knownWords, options = {}) {
   const selectedPool = useTeaching ? teachable : (reinforcement.length > 0 ? reinforcement : eligible);
   const nonRepeat = selectedPool.filter(l => !usedThisCombat.has(l.raw));
   const finalPool = nonRepeat.length > 0 ? nonRepeat : selectedPool;
-  return finalPool[Math.floor(Math.random() * finalPool.length)];
+  const chosen = finalPool[Math.floor(Math.random() * finalPool.length)];
+  return maybeEnrich(chosen, dict);
 }
