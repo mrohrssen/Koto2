@@ -121,72 +121,90 @@ function npcSpritePath(npcId) {
  * @param {boolean} isEnemy - Target column sprite flip (enemy attacking player)
  * @param {Object} [options]
  * @param {Object} [options.theme] - Override theme; default ELEMENT_THEME[atk.attackerElement]
- * @param {string} [options.leftHtml] - Full inner HTML for .sac-left (e.g. NPC sprite column)
- * @param {Object} [options.tagLabelsByCategory] - Merge overrides for row-1 tag text (e.g. drain: 'NPC')
- * @param {string} [options.defaultCategoryTagLabel] - Fallback when category has no tag (default 'ATK')
+ * @param {string} [options.attackerHtml] - Full inner HTML for the attacker row (e.g. NPC sprite + name)
  */
 export function buildSplitAttackCard(atk, isEnemy, options = {}) {
   const theme = options.theme != null
     ? options.theme
     : (ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' });
 
-  const attackerNameJp = atk.attackerNameJp || atk.attackerName;
-  const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
+  const knownWords = getKnownWords();
+  const wordDict = new Map();
 
-  let damageSign;
-  if (atk.healAmount > 0) damageSign = `+${atk.healAmount}`;
-  else if (atk.damage > 0) damageSign = `-${atk.damage}`;
-  else if (atk.effectApplied) damageSign = atk.effectApplied;
-  else if (atk.statChangesApplied) {
-    damageSign = Object.entries(atk.statChangesApplied).map(([s, v]) => `${SC_NAMES[s] || s} ${v > 0 ? '+' : ''}${v}`).join(' ');
-  }
-  else damageSign = '0';
-  const targetDisplayName = atk.targetNameJp || atk.targetName || '';
-  const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
+  const attackerToken = entityToToken({
+    word: atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName,
+    reading: atk.attackerBaseReading,
+    nameEn: atk.attackerBaseMeaning || atk.attackerName,
+  });
+  const moveToken = entityToToken({
+    word: atk.attackerSkillName || atk.moveName,
+    reading: atk.attackerSkillReading,
+    nameEn: atk.attackerSkillEn || atk.moveNameEn,
+  });
+  const targetToken = entityToToken({
+    word: atk.targetBaseWord || atk.targetNameJp || atk.targetName,
+    reading: atk.targetBaseReading,
+    nameEn: atk.targetBaseMeaning || atk.targetName,
+  });
 
-  const baseIcon = actionIconPath(atk.attackerBaseMeaning);
-  const skillIcon = actionIconPath(atk.attackerSkillEn);
+  const attackerWordHtml = renderJpSentence([attackerToken], knownWords, wordDict);
+  const moveWordHtml     = renderJpSentence([moveToken], knownWords, wordDict);
+  const targetWordHtml   = renderJpSentence([targetToken], knownWords, wordDict);
 
-  const cat = atk.category || 'damage';
-  const defaultTagByCat = { heal: 'HEAL', buff: 'BUFF', shield: 'DEF', debuff: 'DBF', drain: 'ATK' };
-  const tagByCat = { ...defaultTagByCat, ...(options.tagLabelsByCategory || {}) };
-  const tagLabel = tagByCat[cat] ?? options.defaultCategoryTagLabel ?? 'ATK';
-  const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
-  const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
+  const spriteWord = atk.attackerBaseWord || atk.attackerName || '？';
+  const attackerSpriteHtml = creatureSpriteHtml(atk.attackerId, spriteWord, atk.attackerElement, 'sac-sprite');
 
-  const attackerWord = atk.attackerBaseWord || atk.attackerName || '？';
-  const targetWord = atk.targetBaseWord || atk.targetName || '？';
+  const moveIcon = actionIconPath(atk.attackerSkillEn || atk.moveNameEn);
+  const moveIconHtml = moveIcon
+    ? `<img class="sac-sprite" src="${moveIcon}" alt="" onerror="this.style.display='none'">`
+    : '';
 
-  const targetSpriteClass = isEnemy ? 'sac-creature-sprite' : 'sac-creature-sprite sac-sprite-enemy';
+  const isSelfTarget = atk.targetId === atk.attackerId && atk.targetIndex === atk.attackerIndex;
+  const targetSpriteClass = isSelfTarget ? 'sac-sprite' : (isEnemy ? 'sac-sprite' : 'sac-sprite sac-sprite-enemy');
+  const targetSpriteWord = atk.targetBaseWord || atk.targetName || '？';
+  const targetSpriteHtml = creatureSpriteHtml(atk.targetId, targetSpriteWord, atk.targetElement, targetSpriteClass);
 
-  const leftColumnInner = options.leftHtml !== undefined
-    ? options.leftHtml
-    : `${creatureSpriteHtml(atk.attackerId, attackerWord, atk.attackerElement, 'sac-creature-sprite')}
-      <div class="sac-attacker-name">${attackerNameHtml}</div>`;
+  const resultValue = formatResultValue(atk);
+  const tone = resultTone(atk);
+  const effText = effectivenessText(atk);
+  const effHtml = effText
+    ? `<span class="sac-effectiveness sac-fx-${tone}">${effText}</span>`
+    : '';
+
+  // Drain: small secondary "self-heal" line under the damage number
+  const drainHealHtml = (atk.category === 'drain' && atk.healAmount > 0)
+    ? `<span class="sac-drain-self">+${atk.healAmount} HP self</span>`
+    : '';
+
+  const attackerRowInner = options.attackerHtml !== undefined
+    ? options.attackerHtml
+    : `<div class="sac-sprite-tile">${attackerSpriteHtml}</div>
+       <div class="sac-body">${attackerWordHtml}</div>`;
 
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
-    <div class="sac-left">
-      ${leftColumnInner}
+    <div class="sac-row" data-row="0">
+      ${attackerRowInner}
+      <span class="sac-down-arrow">»</span>
     </div>
-    <div class="sac-right">
-      <div class="sac-row" data-row="0">
-        ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${renderJpSentence([entityToToken({ baseWord: atk.attackerBaseWord, baseReading: atk.attackerBaseReading, baseMeaning: atk.attackerBaseMeaning })], getKnownWords(), new Map())}
-        <span class="sac-tag sac-tag-base">BASE</span>
-      </div>
-      <div class="sac-row" data-row="1">
-        ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${renderJpSentence([entityToToken({ name: atk.attackerSkillName || atk.moveName, reading: atk.attackerSkillReading, nameEn: atk.attackerSkillEn })], getKnownWords(), new Map())}
-        <span class="sac-tag ${tagClass}">${tagLabel}</span>
-      </div>
-      <div class="sac-row sac-impact" data-row="2">
-        <span class="sac-impact-arrow">\u2192</span>
-        ${creatureSpriteHtml(atk.targetId, targetWord, atk.targetElement, targetSpriteClass)}
-        <span class="sac-impact-name">${targetNameHtml}</span>
-        <span class="${damageClass}">${damageSign}</span>
+    <div class="sac-row" data-row="1">
+      <div class="sac-sprite-tile">${moveIconHtml}</div>
+      <div class="sac-body">${moveWordHtml}</div>
+      <span class="sac-down-arrow">»</span>
+    </div>
+    <div class="sac-row" data-row="2">
+      <div class="sac-sprite-tile">${targetSpriteHtml}</div>
+      <div class="sac-body">
+        ${targetWordHtml}
+        <div class="sac-result">
+          <span class="sac-result-value sac-tone-${tone}">${resultValue}</span>
+          ${effHtml}
+          ${drainHealHtml}
+        </div>
       </div>
     </div>
-    <span class="sac-continue" style="display:none">\u25BC</span>
+    <div class="sac-continue-strip">
+      <span class="sac-continue">tap to continue</span>
+    </div>
   </div>`;
 }
 

@@ -6,7 +6,7 @@ import assert from 'node:assert';
 // static imports inside it (e.g. tts.js with top-level localStorage) are intercepted.
 await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: {
-    renderJpSentence: () => '',
+    renderJpSentence: (tokens) => tokens.map(t => [t.reading, t.nameEn].filter(Boolean).join(' ')).join(' '),
     getKnownWords: () => new Set(),
     entityToToken: (x) => x,
   }
@@ -34,6 +34,7 @@ const {
   formatResultValue,
   resultTone,
   effectivenessText,
+  buildSplitAttackCard,
 } = await import('../../../public/js/ui/attack-card.js');
 
 describe('attack-card helpers — formatResultValue', () => {
@@ -136,5 +137,103 @@ describe('attack-card helpers — effectivenessText', () => {
   });
   it('returns super effective for drain on >1 multiplier', () => {
     assert.strictEqual(effectivenessText({ category: 'drain', elementMultiplier: 2 }), '(Super effective!)');
+  });
+});
+
+const SAMPLE_ATTACK = {
+  category: 'damage',
+  damage: 18,
+  elementMultiplier: 2,
+  attackerId: 'hi',
+  attackerName: 'Fire',
+  attackerNameJp: '火',
+  attackerElement: 'fire',
+  attackerBaseWord: '火',
+  attackerBaseReading: 'ひ',
+  attackerBaseMeaning: 'fire',
+  attackerSkillName: '炎',
+  attackerSkillReading: 'ほのお',
+  attackerSkillEn: 'flame',
+  moveElement: 'fire',
+  targetId: 'ki',
+  targetName: 'Tree',
+  targetNameJp: '木',
+  targetBaseWord: '木',
+  targetBaseReading: 'き',
+  targetBaseMeaning: 'tree',
+  targetElement: 'wood',
+};
+
+describe('buildSplitAttackCard — new 3-block layout', () => {
+  it('renders three .sac-row elements in attacker → move → target order', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
+    const rows = html.match(/class="sac-row"/g);
+    assert.strictEqual(rows?.length, 3, 'should have exactly 3 sac-row elements');
+  });
+
+  it('includes the attacker hiragana reading and English gloss', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
+    assert.ok(html.includes('ひ'), 'attacker reading missing');
+    assert.ok(html.includes('fire'), 'attacker English missing');
+  });
+
+  it('includes the move reading and English gloss', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
+    assert.ok(html.includes('ほのお'), 'move reading missing');
+    assert.ok(html.includes('flame'), 'move English missing');
+  });
+
+  it('includes the target reading and English gloss', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
+    assert.ok(html.includes('き'), 'target reading missing');
+    assert.ok(html.includes('tree'), 'target English missing');
+  });
+
+  it('renders the result value and effectiveness line for super-effective damage', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
+    assert.ok(html.includes('-18 HP'), 'damage number missing');
+    assert.ok(html.includes('(Super effective!)'), 'effectiveness line missing');
+  });
+
+  it('omits effectiveness line for neutral damage', () => {
+    const html = buildSplitAttackCard({ ...SAMPLE_ATTACK, elementMultiplier: 1 }, false);
+    assert.ok(!html.includes('Super effective'), 'should not show super effective at mult=1');
+    assert.ok(!html.includes('Not very effective'), 'should not show not-very-effective at mult=1');
+  });
+
+  it('renders heal category with +N HP and no effectiveness', () => {
+    const html = buildSplitAttackCard(
+      { ...SAMPLE_ATTACK, category: 'heal', healAmount: 12, elementMultiplier: 2 },
+      false
+    );
+    assert.ok(html.includes('+12 HP'));
+    assert.ok(!html.includes('Super effective'));
+  });
+
+  it('renders down-arrow chevrons between rows 1-2 and 2-3 only', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
+    const arrows = html.match(/class="sac-down-arrow"/g);
+    assert.strictEqual(arrows?.length, 2, 'expected exactly 2 down arrows');
+  });
+
+  it('renders a tap-to-continue strip at the bottom', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
+    assert.ok(html.includes('sac-continue-strip'));
+    assert.ok(html.includes('tap to continue'));
+  });
+
+  it('applies the element theme via CSS variables', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
+    assert.ok(html.includes('--sac-accent:'));
+    assert.ok(html.includes('--sac-bg:'));
+    assert.ok(html.includes('--sac-border:'));
+  });
+
+  it('honors options.attackerHtml as an override for the attacker row', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false, {
+      attackerHtml: '<div class="mock-npc-attacker">CUSTOM</div>'
+    });
+    assert.ok(html.includes('mock-npc-attacker'));
+    assert.ok(html.includes('CUSTOM'));
   });
 });
