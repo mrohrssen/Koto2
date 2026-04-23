@@ -851,6 +851,24 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
     attackCard = insertAttackCard(adaptedAtk, false);
   }
 
+  // Rest: update the attacker's MP bar immediately so the bar growth is visible
+  // while the card is up. The full state sync happens after the turn.
+  if (atk.category === 'rest') {
+    const slot = vfx.findCreatureSlotByAttackerId(atk.attackerId);
+    if (slot) {
+      const mpFill = slot.querySelector('.formation-mp-fill');
+      const mpText = slot.querySelector('.formation-mp-text');
+      const maxMp = atk.attackerMaxMp || 0;
+      if (mpFill && maxMp > 0) {
+        const pct = Math.max(0, Math.min(100, (atk.attackerMp / maxMp) * 100));
+        mpFill.style.width = `${pct}%`;
+        if (mpText) mpText.textContent = `${atk.attackerMp}/${maxMp}`;
+      }
+    }
+    if (attackCard) await waitForCardTap(attackCard);
+    return;
+  }
+
   playSFX('attack');
   const creatureSlotEl = vfx.findCreatureSlotByAttackerId(atk.attackerId);
   const enemyEl = vfx.findEnemyTargetElement(atk.targetId, result.enemies, atk.targetIndex);
