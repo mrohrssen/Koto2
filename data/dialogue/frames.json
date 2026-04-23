@@ -21,12 +21,12 @@
   {
     "id": "bark_onHit_1",
     "category": "bark_onHit",
-    "raw": "強い！",
+    "raw": "早い！",
     "tokens": [
       {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
+        "surface": "早い",
+        "base": "早い",
+        "reading": "はやい",
         "pos": "Adjective"
       },
       {
@@ -34,7 +34,7 @@
       }
     ],
     "words": [
-      "強い"
+      "早い"
     ]
   },
   {
@@ -141,12 +141,12 @@
   {
     "id": "bark_onHit_7",
     "category": "bark_onHit",
-    "raw": "止めて！",
+    "raw": "やめて！",
     "tokens": [
       {
-        "surface": "止め",
-        "base": "止める",
-        "reading": "とめ",
+        "surface": "やめ",
+        "base": "やめる",
+        "reading": "やめ",
         "pos": "Verb"
       },
       {
@@ -157,7 +157,7 @@
       }
     ],
     "words": [
-      "止める"
+      "やめる"
     ]
   },
   {
@@ -283,20 +283,20 @@
   {
     "id": "bark_onVictory_4",
     "category": "bark_onVictory",
-    "raw": "強い！",
+    "raw": "ばんざい！",
     "tokens": [
       {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
+        "surface": "ばんざい",
+        "base": "ばんざい",
+        "reading": "ばんざい",
+        "pos": "Noun"
       },
       {
         "surface": "！"
       }
     ],
     "words": [
-      "強い"
+      "ばんざい"
     ]
   },
   {
@@ -379,31 +379,6 @@
     ],
     "words": [
       "勝ち"
-    ]
-  },
-  {
-    "id": "bark_onVictory_9",
-    "category": "bark_onVictory",
-    "raw": "いえーい！",
-    "tokens": [
-      {
-        "surface": "い"
-      },
-      {
-        "surface": "えー",
-        "base": "えー",
-        "reading": "えー",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "い"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "えー"
     ]
   },
   {
@@ -510,7 +485,7 @@
   {
     "id": "bark_onExplore_5",
     "category": "bark_onExplore",
-    "raw": "ここ 好き！",
+    "raw": "ここが好き！",
     "tokens": [
       {
         "surface": "ここ",
@@ -519,7 +494,7 @@
         "pos": "Pronoun"
       },
       {
-        "surface": " "
+        "surface": "が"
       },
       {
         "surface": "好き",
@@ -539,16 +514,13 @@
   {
     "id": "bark_onExplore_6",
     "category": "bark_onExplore",
-    "raw": "何か ある！",
+    "raw": "何かある！",
     "tokens": [
       {
         "surface": "何か",
         "base": "何か",
         "reading": "なにか",
         "pos": "Pronoun"
-      },
-      {
-        "surface": " "
       },
       {
         "surface": "ある"
@@ -711,28 +683,6 @@
     ],
     "words": [
       "嬉しい"
-    ]
-  },
-  {
-    "id": "bark_onHeal_5",
-    "category": "bark_onHeal",
-    "raw": "良かった！",
-    "tokens": [
-      {
-        "surface": "良かっ",
-        "base": "良い",
-        "reading": "よかっ",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "た"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "良い"
     ]
   },
   {
@@ -938,12 +888,12 @@
   {
     "id": "bark_onStatusEffect_2",
     "category": "bark_onStatusEffect",
-    "raw": "止めて！",
+    "raw": "やめて！",
     "tokens": [
       {
-        "surface": "止め",
-        "base": "止める",
-        "reading": "とめ",
+        "surface": "やめ",
+        "base": "やめる",
+        "reading": "やめ",
         "pos": "Verb"
       },
       {
@@ -954,29 +904,7 @@
       }
     ],
     "words": [
-      "止める"
-    ]
-  },
-  {
-    "id": "bark_onStatusEffect_3",
-    "category": "bark_onStatusEffect",
-    "raw": "動けない！",
-    "tokens": [
-      {
-        "surface": "動け",
-        "base": "動ける",
-        "reading": "うごけ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "ない"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "動ける"
+      "やめる"
     ]
   },
   {
@@ -1129,25 +1057,6 @@
     ]
   },
   {
-    "id": "bark_onLowHP_5",
-    "category": "bark_onLowHP",
-    "raw": "ピンチ！",
-    "tokens": [
-      {
-        "surface": "ピンチ",
-        "base": "ピンチ",
-        "reading": "ぴんち",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "ピンチ"
-    ]
-  },
-  {
     "id": "bark_onAttack_0",
     "category": "bark_onAttack",
     "raw": "頑張れ！",
@@ -1169,16 +1078,13 @@
   {
     "id": "bark_onAttack_1",
     "category": "bark_onAttack",
-    "raw": "負けないぞ！",
+    "raw": "勝つぞ！",
     "tokens": [
       {
-        "surface": "負け",
-        "base": "負ける",
-        "reading": "まけ",
+        "surface": "勝つ",
+        "base": "勝つ",
+        "reading": "かつ",
         "pos": "Verb"
-      },
-      {
-        "surface": "ない"
       },
       {
         "surface": "ぞ"
@@ -1188,7 +1094,7 @@
       }
     ],
     "words": [
-      "負ける"
+      "勝つ"
     ]
   },
   {
@@ -1236,2398 +1142,6 @@
     ]
   },
   {
-    "id": "bark_onAttack_4",
-    "category": "bark_onAttack",
-    "raw": "それ！",
-    "tokens": [
-      {
-        "surface": "それ",
-        "base": "それ",
-        "reading": "それ",
-        "pos": "Pronoun"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "それ"
-    ]
-  },
-  {
-    "id": "bark_onAttack_5",
-    "category": "bark_onAttack",
-    "raw": "行け！",
-    "tokens": [
-      {
-        "surface": "行け",
-        "base": "行く",
-        "reading": "いけ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "行く"
-    ]
-  },
-  {
-    "id": "bark_onAttack_6",
-    "category": "bark_onAttack",
-    "raw": "とりゃ！",
-    "tokens": [
-      {
-        "surface": "とりゃ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": []
-  },
-  {
-    "id": "bark_onAttack_7",
-    "category": "bark_onAttack",
-    "raw": "えいっ！",
-    "tokens": [
-      {
-        "surface": "えいっ",
-        "base": "えいっ",
-        "reading": "えいっ",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "えいっ"
-    ]
-  },
-  {
-    "id": "bark_onAttack_8",
-    "category": "bark_onAttack",
-    "raw": "食らえ！",
-    "tokens": [
-      {
-        "surface": "食らえ",
-        "base": "食らう",
-        "reading": "くらえ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "食らう"
-    ]
-  },
-  {
-    "id": "cid_cid-welcome-0_0",
-    "category": "cid",
-    "raw": "こんにちは！鳥！犬！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "鳥",
-        "base": "鳥",
-        "reading": "とり",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "犬",
-        "base": "犬",
-        "reading": "いぬ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "鳥",
-      "犬"
-    ],
-    "group": "cid-welcome-0"
-  },
-  {
-    "id": "cid_cid-welcome-0_1",
-    "category": "cid",
-    "raw": "火！風！水！",
-    "tokens": [
-      {
-        "surface": "火",
-        "base": "火",
-        "reading": "ひ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "風",
-        "base": "風",
-        "reading": "かぜ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "水",
-        "base": "水",
-        "reading": "みず",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "火",
-      "風",
-      "水"
-    ],
-    "group": "cid-welcome-0"
-  },
-  {
-    "id": "cid_cid-welcome-0_2",
-    "category": "cid",
-    "raw": "飛ぶ！守る！",
-    "tokens": [
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "守る",
-        "base": "守る",
-        "reading": "まもる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "飛ぶ",
-      "守る"
-    ],
-    "group": "cid-welcome-0"
-  },
-  {
-    "id": "cid_cid-welcome-1_0",
-    "category": "cid",
-    "raw": "おはよう！刀！鉄！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "刀",
-        "base": "刀",
-        "reading": "かたな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "鉄",
-        "base": "鉄",
-        "reading": "てつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "刀",
-      "鉄"
-    ],
-    "group": "cid-welcome-1"
-  },
-  {
-    "id": "cid_cid-welcome-1_1",
-    "category": "cid",
-    "raw": "花！木！石！",
-    "tokens": [
-      {
-        "surface": "花",
-        "base": "花",
-        "reading": "はな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "木",
-        "base": "木",
-        "reading": "き",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "石",
-        "base": "石",
-        "reading": "いし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "花",
-      "木",
-      "石"
-    ],
-    "group": "cid-welcome-1"
-  },
-  {
-    "id": "cid_cid-welcome-1_2",
-    "category": "cid",
-    "raw": "握る！叩く！",
-    "tokens": [
-      {
-        "surface": "握る",
-        "base": "握る",
-        "reading": "にぎる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "叩く",
-        "base": "叩く",
-        "reading": "たたく",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "握る",
-      "叩く"
-    ],
-    "group": "cid-welcome-1"
-  },
-  {
-    "id": "cid_cid-welcome-2_0",
-    "category": "cid",
-    "raw": "こんにちは！鳥は飛ぶ！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "鳥",
-        "base": "鳥",
-        "reading": "とり",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "鳥",
-      "飛ぶ"
-    ],
-    "group": "cid-welcome-2"
-  },
-  {
-    "id": "cid_cid-welcome-2_1",
-    "category": "cid",
-    "raw": "虫は花！犬は守る！",
-    "tokens": [
-      {
-        "surface": "虫",
-        "base": "虫",
-        "reading": "むし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "花",
-        "base": "花",
-        "reading": "はな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "犬",
-        "base": "犬",
-        "reading": "いぬ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "守る",
-        "base": "守る",
-        "reading": "まもる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "虫",
-      "花",
-      "犬",
-      "守る"
-    ],
-    "group": "cid-welcome-2"
-  },
-  {
-    "id": "cid_cid-welcome-2_2",
-    "category": "cid",
-    "raw": "炎は火！",
-    "tokens": [
-      {
-        "surface": "炎",
-        "base": "炎",
-        "reading": "ほのお",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "火",
-        "base": "火",
-        "reading": "ひ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "炎",
-      "火"
-    ],
-    "group": "cid-welcome-2"
-  },
-  {
-    "id": "cid_cid-welcome-3_0",
-    "category": "cid",
-    "raw": "おはよう！刀は握るよ！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "刀",
-        "base": "刀",
-        "reading": "かたな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "握る",
-        "base": "握る",
-        "reading": "にぎる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "刀",
-      "握る"
-    ],
-    "group": "cid-welcome-3"
-  },
-  {
-    "id": "cid_cid-welcome-3_1",
-    "category": "cid",
-    "raw": "風は流すよ！魚は飛ぶよ！",
-    "tokens": [
-      {
-        "surface": "風",
-        "base": "風",
-        "reading": "かぜ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "流す",
-        "base": "流す",
-        "reading": "ながす",
-        "pos": "Verb"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "魚",
-        "base": "魚",
-        "reading": "さかな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "風",
-      "流す",
-      "魚",
-      "飛ぶ"
-    ],
-    "group": "cid-welcome-3"
-  },
-  {
-    "id": "cid_cid-welcome-3_2",
-    "category": "cid",
-    "raw": "石は鉄よ！",
-    "tokens": [
-      {
-        "surface": "石",
-        "base": "石",
-        "reading": "いし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "鉄",
-        "base": "鉄",
-        "reading": "てつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "石",
-      "鉄"
-    ],
-    "group": "cid-welcome-3"
-  },
-  {
-    "id": "cid_cid-welcome-4_0",
-    "category": "cid",
-    "raw": "こんにちは！犬も飛ぶ！鳥も飛ぶ！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "犬",
-        "base": "犬",
-        "reading": "いぬ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "鳥",
-        "base": "鳥",
-        "reading": "とり",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "犬",
-      "飛ぶ",
-      "鳥",
-      "飛ぶ"
-    ],
-    "group": "cid-welcome-4"
-  },
-  {
-    "id": "cid_cid-welcome-4_1",
-    "category": "cid",
-    "raw": "お茶も水よ！ラーメンも水よ！",
-    "tokens": [
-      {
-        "surface": "お茶",
-        "base": "お茶",
-        "reading": "おちゃ",
-        "pos": "Prefix"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "水",
-        "base": "水",
-        "reading": "みず",
-        "pos": "Noun"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "ラーメン",
-        "base": "ラーメン",
-        "reading": "らーめん",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "水",
-        "base": "水",
-        "reading": "みず",
-        "pos": "Noun"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "お茶",
-      "水",
-      "ラーメン",
-      "水"
-    ],
-    "group": "cid-welcome-4"
-  },
-  {
-    "id": "cid_cid-welcome-4_2",
-    "category": "cid",
-    "raw": "靴も鉄よ！帽子も鉄よ！",
-    "tokens": [
-      {
-        "surface": "靴",
-        "base": "靴",
-        "reading": "くつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "鉄",
-        "base": "鉄",
-        "reading": "てつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "帽子",
-        "base": "帽子",
-        "reading": "ぼうし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "鉄",
-        "base": "鉄",
-        "reading": "てつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "靴",
-      "鉄",
-      "帽子",
-      "鉄"
-    ],
-    "group": "cid-welcome-4"
-  },
-  {
-    "id": "cid_cid-welcome-5_0",
-    "category": "cid",
-    "raw": "こんにちは！猫が飛ぶ！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "猫",
-        "base": "猫",
-        "reading": "ねこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "猫",
-      "飛ぶ"
-    ],
-    "group": "cid-welcome-5"
-  },
-  {
-    "id": "cid_cid-welcome-5_1",
-    "category": "cid",
-    "raw": "鳥が囲む！虫も強いよ！",
-    "tokens": [
-      {
-        "surface": "鳥",
-        "base": "鳥",
-        "reading": "とり",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "囲む",
-        "base": "囲む",
-        "reading": "かこむ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "虫",
-        "base": "虫",
-        "reading": "むし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "鳥",
-      "囲む",
-      "虫",
-      "強い"
-    ],
-    "group": "cid-welcome-5"
-  },
-  {
-    "id": "cid_cid-welcome-5_2",
-    "category": "cid",
-    "raw": "風が強い！犬は守るよ！",
-    "tokens": [
-      {
-        "surface": "風",
-        "base": "風",
-        "reading": "かぜ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "犬",
-        "base": "犬",
-        "reading": "いぬ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "守る",
-        "base": "守る",
-        "reading": "まもる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "風",
-      "強い",
-      "犬",
-      "守る"
-    ],
-    "group": "cid-welcome-5"
-  },
-  {
-    "id": "cid_cid-welcome-6_0",
-    "category": "cid",
-    "raw": "おはよう！お茶とりんごは強い！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "お茶",
-        "base": "お茶",
-        "reading": "おちゃ",
-        "pos": "Prefix"
-      },
-      {
-        "surface": "と"
-      },
-      {
-        "surface": "りんご",
-        "base": "りんご",
-        "reading": "りんご",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "お茶",
-      "りんご",
-      "強い"
-    ],
-    "group": "cid-welcome-6"
-  },
-  {
-    "id": "cid_cid-welcome-6_1",
-    "category": "cid",
-    "raw": "卵と弁当が強いよ！",
-    "tokens": [
-      {
-        "surface": "卵",
-        "base": "卵",
-        "reading": "たまご",
-        "pos": "Noun"
-      },
-      {
-        "surface": "と"
-      },
-      {
-        "surface": "弁当",
-        "base": "弁当",
-        "reading": "べんとう",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "卵",
-      "弁当",
-      "強い"
-    ],
-    "group": "cid-welcome-6"
-  },
-  {
-    "id": "cid_cid-welcome-6_2",
-    "category": "cid",
-    "raw": "苺とわさびも強い！",
-    "tokens": [
-      {
-        "surface": "苺",
-        "base": "苺",
-        "reading": "いちご",
-        "pos": "Noun"
-      },
-      {
-        "surface": "と"
-      },
-      {
-        "surface": "わさび",
-        "base": "わさび",
-        "reading": "わさび",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "苺",
-      "わさび",
-      "強い"
-    ],
-    "group": "cid-welcome-6"
-  },
-  {
-    "id": "cid_cid-welcome-7_0",
-    "category": "cid",
-    "raw": "こんにちは！木に鳥が飛ぶ！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "木",
-        "base": "木",
-        "reading": "き",
-        "pos": "Noun"
-      },
-      {
-        "surface": "に"
-      },
-      {
-        "surface": "鳥",
-        "base": "鳥",
-        "reading": "とり",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "木",
-      "鳥",
-      "飛ぶ"
-    ],
-    "group": "cid-welcome-7"
-  },
-  {
-    "id": "cid_cid-welcome-7_1",
-    "category": "cid",
-    "raw": "花に虫が囲む！",
-    "tokens": [
-      {
-        "surface": "花",
-        "base": "花",
-        "reading": "はな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "に"
-      },
-      {
-        "surface": "虫",
-        "base": "虫",
-        "reading": "むし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "囲む",
-        "base": "囲む",
-        "reading": "かこむ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "花",
-      "虫",
-      "囲む"
-    ],
-    "group": "cid-welcome-7"
-  },
-  {
-    "id": "cid_cid-welcome-7_2",
-    "category": "cid",
-    "raw": "水に魚が強いよ！",
-    "tokens": [
-      {
-        "surface": "水",
-        "base": "水",
-        "reading": "みず",
-        "pos": "Noun"
-      },
-      {
-        "surface": "に"
-      },
-      {
-        "surface": "魚",
-        "base": "魚",
-        "reading": "さかな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "水",
-      "魚",
-      "強い"
-    ],
-    "group": "cid-welcome-7"
-  },
-  {
-    "id": "cid_cid-welcome-8_0",
-    "category": "cid",
-    "raw": "おはよう！鉄で切る！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "鉄",
-        "base": "鉄",
-        "reading": "てつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "で"
-      },
-      {
-        "surface": "切る",
-        "base": "切る",
-        "reading": "きる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "鉄",
-      "切る"
-    ],
-    "group": "cid-welcome-8"
-  },
-  {
-    "id": "cid_cid-welcome-8_1",
-    "category": "cid",
-    "raw": "刀は強いよ！石で叩く！",
-    "tokens": [
-      {
-        "surface": "刀",
-        "base": "刀",
-        "reading": "かたな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "石",
-        "base": "石",
-        "reading": "いし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "で"
-      },
-      {
-        "surface": "叩く",
-        "base": "叩く",
-        "reading": "たたく",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "刀",
-      "強い",
-      "石",
-      "叩く"
-    ],
-    "group": "cid-welcome-8"
-  },
-  {
-    "id": "cid_cid-welcome-8_2",
-    "category": "cid",
-    "raw": "火で燃える！凄いよ！",
-    "tokens": [
-      {
-        "surface": "火",
-        "base": "火",
-        "reading": "ひ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "で"
-      },
-      {
-        "surface": "燃える",
-        "base": "燃える",
-        "reading": "もえる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "凄い",
-        "base": "凄い",
-        "reading": "すごい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "火",
-      "燃える",
-      "凄い"
-    ],
-    "group": "cid-welcome-8"
-  },
-  {
-    "id": "cid_cid-welcome-9_0",
-    "category": "cid",
-    "raw": "こんにちは！猫は強いね！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "猫",
-        "base": "猫",
-        "reading": "ねこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "猫",
-      "強い"
-    ],
-    "group": "cid-welcome-9"
-  },
-  {
-    "id": "cid_cid-welcome-9_1",
-    "category": "cid",
-    "raw": "お茶とりんごは凄いね！",
-    "tokens": [
-      {
-        "surface": "お茶",
-        "base": "お茶",
-        "reading": "おちゃ",
-        "pos": "Prefix"
-      },
-      {
-        "surface": "と"
-      },
-      {
-        "surface": "りんご",
-        "base": "りんご",
-        "reading": "りんご",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "凄い",
-        "base": "凄い",
-        "reading": "すごい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "お茶",
-      "りんご",
-      "凄い"
-    ],
-    "group": "cid-welcome-9"
-  },
-  {
-    "id": "cid_cid-welcome-9_2",
-    "category": "cid",
-    "raw": "鳥が飛ぶね！風も強いね！",
-    "tokens": [
-      {
-        "surface": "鳥",
-        "base": "鳥",
-        "reading": "とり",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "風",
-        "base": "風",
-        "reading": "かぜ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "鳥",
-      "飛ぶ",
-      "風",
-      "強い"
-    ],
-    "group": "cid-welcome-9"
-  },
-  {
-    "id": "cid_cid-welcome-10_0",
-    "category": "cid",
-    "raw": "おはよう！刀は鉄だ！靴も鉄だ！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "刀",
-        "base": "刀",
-        "reading": "かたな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "鉄",
-        "base": "鉄",
-        "reading": "てつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "だ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "靴",
-        "base": "靴",
-        "reading": "くつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "鉄",
-        "base": "鉄",
-        "reading": "てつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "だ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "刀",
-      "鉄",
-      "靴",
-      "鉄"
-    ],
-    "group": "cid-welcome-10"
-  },
-  {
-    "id": "cid_cid-welcome-10_1",
-    "category": "cid",
-    "raw": "炎は火だ！風も凄いよ！",
-    "tokens": [
-      {
-        "surface": "炎",
-        "base": "炎",
-        "reading": "ほのお",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "火",
-        "base": "火",
-        "reading": "ひ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "だ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "風",
-        "base": "風",
-        "reading": "かぜ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "凄い",
-        "base": "凄い",
-        "reading": "すごい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "炎",
-      "火",
-      "風",
-      "凄い"
-    ],
-    "group": "cid-welcome-10"
-  },
-  {
-    "id": "cid_cid-welcome-10_2",
-    "category": "cid",
-    "raw": "犬と猫は大人だ！素晴らしいね！",
-    "tokens": [
-      {
-        "surface": "犬",
-        "base": "犬",
-        "reading": "いぬ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "と"
-      },
-      {
-        "surface": "猫",
-        "base": "猫",
-        "reading": "ねこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "大人",
-        "base": "大人",
-        "reading": "おとな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "だ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "素晴らしい",
-        "base": "素晴らしい",
-        "reading": "すばらしい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "犬",
-      "猫",
-      "大人",
-      "素晴らしい"
-    ],
-    "group": "cid-welcome-10"
-  },
-  {
-    "id": "cid_cid-welcome-11_0",
-    "category": "cid",
-    "raw": "こんにちは！犬は強いか？魚も食らうか？",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "犬",
-        "base": "犬",
-        "reading": "いぬ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "か"
-      },
-      {
-        "surface": "？"
-      },
-      {
-        "surface": "魚",
-        "base": "魚",
-        "reading": "さかな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "食らう",
-        "base": "食らう",
-        "reading": "くらう",
-        "pos": "Verb"
-      },
-      {
-        "surface": "か"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "犬",
-      "強い",
-      "魚",
-      "食らう"
-    ],
-    "group": "cid-welcome-11"
-  },
-  {
-    "id": "cid_cid-welcome-11_1",
-    "category": "cid",
-    "raw": "鳥は風に飛ぶか？猫は眠るか？早いね！",
-    "tokens": [
-      {
-        "surface": "鳥",
-        "base": "鳥",
-        "reading": "とり",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "風",
-        "base": "風",
-        "reading": "ふう",
-        "pos": "Noun"
-      },
-      {
-        "surface": "に"
-      },
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "か"
-      },
-      {
-        "surface": "？"
-      },
-      {
-        "surface": "猫",
-        "base": "猫",
-        "reading": "ねこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "眠る",
-        "base": "眠る",
-        "reading": "ねむる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "か"
-      },
-      {
-        "surface": "？"
-      },
-      {
-        "surface": "早い",
-        "base": "早い",
-        "reading": "はやい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "鳥",
-      "風",
-      "飛ぶ",
-      "猫",
-      "眠る",
-      "早い"
-    ],
-    "group": "cid-welcome-11"
-  },
-  {
-    "id": "cid_cid-welcome-11_2",
-    "category": "cid",
-    "raw": "男の子は泣くか？女の子は怒るか？大人だよ！",
-    "tokens": [
-      {
-        "surface": "男の子",
-        "base": "男の子",
-        "reading": "おとこのこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "泣く",
-        "base": "泣く",
-        "reading": "なく",
-        "pos": "Verb"
-      },
-      {
-        "surface": "か"
-      },
-      {
-        "surface": "？"
-      },
-      {
-        "surface": "女の子",
-        "base": "女の子",
-        "reading": "おんなのこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "怒る",
-        "base": "怒る",
-        "reading": "おこる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "か"
-      },
-      {
-        "surface": "？"
-      },
-      {
-        "surface": "大人",
-        "base": "大人",
-        "reading": "おとな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "だ"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "男の子",
-      "泣く",
-      "女の子",
-      "怒る",
-      "大人"
-    ],
-    "group": "cid-welcome-11"
-  },
-  {
-    "id": "cid_cid-welcome-12_0",
-    "category": "cid",
-    "raw": "おはよう！鉄の刀は強いよ！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "鉄",
-        "base": "鉄",
-        "reading": "てつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "刀",
-        "base": "刀",
-        "reading": "かたな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "鉄",
-      "刀",
-      "強い"
-    ],
-    "group": "cid-welcome-12"
-  },
-  {
-    "id": "cid_cid-welcome-12_1",
-    "category": "cid",
-    "raw": "猫の帽子は凄いね！犬の靴も強い！",
-    "tokens": [
-      {
-        "surface": "猫",
-        "base": "猫",
-        "reading": "ねこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "帽子",
-        "base": "帽子",
-        "reading": "ぼうし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "凄い",
-        "base": "凄い",
-        "reading": "すごい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "犬",
-        "base": "犬",
-        "reading": "いぬ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "靴",
-        "base": "靴",
-        "reading": "くつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "猫",
-      "帽子",
-      "凄い",
-      "犬",
-      "靴",
-      "強い"
-    ],
-    "group": "cid-welcome-12"
-  },
-  {
-    "id": "cid_cid-welcome-12_2",
-    "category": "cid",
-    "raw": "石の鏡は凄いね！",
-    "tokens": [
-      {
-        "surface": "石",
-        "base": "石",
-        "reading": "いし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "鏡",
-        "base": "鏡",
-        "reading": "かがみ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "凄い",
-        "base": "凄い",
-        "reading": "すごい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "石",
-      "鏡",
-      "凄い"
-    ],
-    "group": "cid-welcome-12"
-  },
-  {
-    "id": "cid_cid-welcome-13_0",
-    "category": "cid",
-    "raw": "こんにちは！猫は魚を食らうよ！",
-    "tokens": [
-      {
-        "surface": "こんにちは",
-        "base": "こんにちは",
-        "reading": "こんにちは",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "猫",
-        "base": "猫",
-        "reading": "ねこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "魚",
-        "base": "魚",
-        "reading": "さかな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "食らう",
-        "base": "食らう",
-        "reading": "くらう",
-        "pos": "Verb"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "こんにちは",
-      "猫",
-      "魚",
-      "食らう"
-    ],
-    "group": "cid-welcome-13"
-  },
-  {
-    "id": "cid_cid-welcome-13_1",
-    "category": "cid",
-    "raw": "犬が石を握る！男の子が虫を叩くね！",
-    "tokens": [
-      {
-        "surface": "犬",
-        "base": "犬",
-        "reading": "いぬ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "石",
-        "base": "石",
-        "reading": "いし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "握る",
-        "base": "握る",
-        "reading": "にぎる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "男の子",
-        "base": "男の子",
-        "reading": "おとこのこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "虫",
-        "base": "虫",
-        "reading": "むし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "叩く",
-        "base": "叩く",
-        "reading": "たたく",
-        "pos": "Verb"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "犬",
-      "石",
-      "握る",
-      "男の子",
-      "虫",
-      "叩く"
-    ],
-    "group": "cid-welcome-13"
-  },
-  {
-    "id": "cid_cid-welcome-13_2",
-    "category": "cid",
-    "raw": "鳥は炎を守るよ！強いね！素晴らしい！",
-    "tokens": [
-      {
-        "surface": "鳥",
-        "base": "鳥",
-        "reading": "とり",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "炎",
-        "base": "炎",
-        "reading": "ほのお",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "守る",
-        "base": "守る",
-        "reading": "まもる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "素晴らしい",
-        "base": "素晴らしい",
-        "reading": "すばらしい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "鳥",
-      "炎",
-      "守る",
-      "強い",
-      "素晴らしい"
-    ],
-    "group": "cid-welcome-13"
-  },
-  {
-    "id": "cid_cid-welcome-14_0",
-    "category": "cid",
-    "raw": "おはよう！鉄の刀は凄いね！",
-    "tokens": [
-      {
-        "surface": "おはよう",
-        "base": "おはよう",
-        "reading": "おはよう",
-        "pos": "Interjection"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "鉄",
-        "base": "鉄",
-        "reading": "てつ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "刀",
-        "base": "刀",
-        "reading": "かたな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "凄い",
-        "base": "凄い",
-        "reading": "すごい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "おはよう",
-      "鉄",
-      "刀",
-      "凄い"
-    ],
-    "group": "cid-welcome-14"
-  },
-  {
-    "id": "cid_cid-welcome-14_1",
-    "category": "cid",
-    "raw": "犬が虫を叩く！鳥は風に飛ぶよ！",
-    "tokens": [
-      {
-        "surface": "犬",
-        "base": "犬",
-        "reading": "いぬ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "虫",
-        "base": "虫",
-        "reading": "むし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "叩く",
-        "base": "叩く",
-        "reading": "たたく",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "鳥",
-        "base": "鳥",
-        "reading": "とり",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "風",
-        "base": "風",
-        "reading": "ふう",
-        "pos": "Noun"
-      },
-      {
-        "surface": "に"
-      },
-      {
-        "surface": "飛ぶ",
-        "base": "飛ぶ",
-        "reading": "とぶ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "犬",
-      "虫",
-      "叩く",
-      "鳥",
-      "風",
-      "飛ぶ"
-    ],
-    "group": "cid-welcome-14"
-  },
-  {
-    "id": "cid_cid-welcome-14_2",
-    "category": "cid",
-    "raw": "男の子は水を飲むか？猫も魚を食らうね！素晴らしい！",
-    "tokens": [
-      {
-        "surface": "男の子",
-        "base": "男の子",
-        "reading": "おとこのこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "水",
-        "base": "水",
-        "reading": "みず",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "飲む",
-        "base": "飲む",
-        "reading": "のむ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "か"
-      },
-      {
-        "surface": "？"
-      },
-      {
-        "surface": "猫",
-        "base": "猫",
-        "reading": "ねこ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "も"
-      },
-      {
-        "surface": "魚",
-        "base": "魚",
-        "reading": "さかな",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "食らう",
-        "base": "食らう",
-        "reading": "くらう",
-        "pos": "Verb"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      },
-      {
-        "surface": "素晴らしい",
-        "base": "素晴らしい",
-        "reading": "すばらしい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "男の子",
-      "水",
-      "飲む",
-      "猫",
-      "魚",
-      "食らう",
-      "素晴らしい"
-    ],
-    "group": "cid-welcome-14"
-  },
-  {
     "id": "cid_tutorial-translator-demo_0",
     "category": "cid",
     "raw": "こんにちは",
@@ -3667,62 +1181,24 @@
     ]
   },
   {
-    "id": "befriend_success_happy",
-    "category": "befriend_success",
-    "raw": "嬉しい友達です！",
-    "tokens": [
-      {
-        "surface": "嬉しい",
-        "base": "嬉しい",
-        "reading": "うれしい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "友達",
-        "base": "友達",
-        "reading": "ともだち",
-        "pos": "Noun"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "嬉しい",
-      "友達"
-    ]
-  },
-  {
     "id": "befriend_success_together",
     "category": "befriend_success",
-    "raw": "一緒の友達は嬉しいです！",
+    "raw": "今から友達です！",
     "tokens": [
       {
-        "surface": "一緒",
-        "base": "一緒",
-        "reading": "いっしょ",
+        "surface": "今",
+        "base": "今",
+        "reading": "いま",
         "pos": "Noun"
       },
       {
-        "surface": "の"
+        "surface": "から"
       },
       {
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
         "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "嬉しい",
-        "base": "嬉しい",
-        "reading": "うれしい",
-        "pos": "Adjective"
       },
       {
         "surface": "です"
@@ -3732,9 +1208,8 @@
       }
     ],
     "words": [
-      "一緒",
-      "友達",
-      "嬉しい"
+      "今",
+      "友達"
     ]
   },
   {
@@ -3806,48 +1281,6 @@
     ]
   },
   {
-    "id": "befriend_success_first",
-    "category": "befriend_success",
-    "raw": "初めての友達は嬉しいです！",
-    "tokens": [
-      {
-        "surface": "初めて",
-        "base": "初めて",
-        "reading": "はじめて",
-        "pos": "Adverb"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "友達",
-        "base": "友達",
-        "reading": "ともだち",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "嬉しい",
-        "base": "嬉しい",
-        "reading": "うれしい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "初めて",
-      "友達",
-      "嬉しい"
-    ]
-  },
-  {
     "id": "befriend_success_strong",
     "category": "befriend_success",
     "raw": "強い友達は嬉しいです！",
@@ -3884,55 +1317,6 @@
       "強い",
       "友達",
       "嬉しい"
-    ]
-  },
-  {
-    "id": "befriend_success_know",
-    "category": "befriend_success",
-    "raw": "私の名前を知る友達です！",
-    "tokens": [
-      {
-        "surface": "私",
-        "base": "私",
-        "reading": "わたくし",
-        "pos": "Pronoun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "名前",
-        "base": "名前",
-        "reading": "なまえ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "知る",
-        "base": "知る",
-        "reading": "しる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "友達",
-        "base": "友達",
-        "reading": "ともだち",
-        "pos": "Noun"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "私",
-      "名前",
-      "知る",
-      "友達"
     ]
   },
   {
@@ -4020,32 +1404,6 @@
     ]
   },
   {
-    "id": "befriend_wrong_still",
-    "category": "befriend_wrong",
-    "raw": "まだ違う！",
-    "tokens": [
-      {
-        "surface": "まだ",
-        "base": "まだ",
-        "reading": "まだ",
-        "pos": "Adverb"
-      },
-      {
-        "surface": "違う",
-        "base": "違う",
-        "reading": "ちがう",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "まだ",
-      "違う"
-    ]
-  },
-  {
     "id": "befriend_wrong_different",
     "category": "befriend_wrong",
     "raw": "私の名前は違う！",
@@ -4082,68 +1440,6 @@
       "私",
       "名前",
       "違う"
-    ]
-  },
-  {
-    "id": "befriend_wrong_say",
-    "category": "befriend_wrong",
-    "raw": "もう一度言ってください！",
-    "tokens": [
-      {
-        "surface": "もう一度",
-        "base": "もう一度",
-        "reading": "もういちど",
-        "pos": "Adverb"
-      },
-      {
-        "surface": "言っ",
-        "base": "言う",
-        "reading": "いっ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "もう一度",
-      "言う",
-      "くださる"
-    ]
-  },
-  {
-    "id": "befriend_wrong_again",
-    "category": "befriend_wrong",
-    "raw": "もう一度お願いします！",
-    "tokens": [
-      {
-        "surface": "もう一度",
-        "base": "もう一度",
-        "reading": "もういちど",
-        "pos": "Adverb"
-      },
-      {
-        "surface": "お願いします",
-        "base": "お願いします",
-        "reading": "おねがいします",
-        "pos": "Prefix"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "もう一度",
-      "お願いします"
     ]
   },
   {
@@ -4239,52 +1535,16 @@
   {
     "id": "befriend_wait_still",
     "category": "befriend_wait",
-    "raw": "まだ待ってください！",
+    "raw": "少しだけ待って！",
     "tokens": [
       {
-        "surface": "まだ",
-        "base": "まだ",
-        "reading": "まだ",
+        "surface": "少し",
+        "base": "少し",
+        "reading": "すこし",
         "pos": "Adverb"
       },
       {
-        "surface": "待っ",
-        "base": "待つ",
-        "reading": "まっ",
-        "pos": "Verb"
-      },
-      {
-        "surface": "て"
-      },
-      {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "pos": "Verb"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "まだ",
-      "待つ",
-      "くださる"
-    ]
-  },
-  {
-    "id": "befriend_wait_me",
-    "category": "befriend_wait",
-    "raw": "私を待ってください！",
-    "tokens": [
-      {
-        "surface": "私",
-        "base": "私",
-        "reading": "わたくし",
-        "pos": "Pronoun"
-      },
-      {
-        "surface": "を"
+        "surface": "だけ"
       },
       {
         "surface": "待っ",
@@ -4296,19 +1556,12 @@
         "surface": "て"
       },
       {
-        "surface": "ください",
-        "base": "くださる",
-        "reading": "ください",
-        "pos": "Verb"
-      },
-      {
         "surface": "！"
       }
     ],
     "words": [
-      "私",
-      "待つ",
-      "くださる"
+      "少し",
+      "待つ"
     ]
   },
   {
@@ -4443,7 +1696,7 @@
   {
     "id": "befriend_name_know",
     "category": "befriend_name",
-    "raw": "私の名前を分かる？",
+    "raw": "私の名前が分かる？",
     "tokens": [
       {
         "surface": "私",
@@ -4461,7 +1714,7 @@
         "pos": "Noun"
       },
       {
-        "surface": "を"
+        "surface": "が"
       },
       {
         "surface": "分かる",
@@ -4482,7 +1735,7 @@
   {
     "id": "befriend_name_say",
     "category": "befriend_name",
-    "raw": "私の名前を言う？",
+    "raw": "私の名前、何？",
     "tokens": [
       {
         "surface": "私",
@@ -4500,13 +1753,13 @@
         "pos": "Noun"
       },
       {
-        "surface": "を"
+        "surface": "、"
       },
       {
-        "surface": "言う",
-        "base": "言う",
-        "reading": "ゆう",
-        "pos": "Verb"
+        "surface": "何",
+        "base": "何",
+        "reading": "なん",
+        "pos": "Pronoun"
       },
       {
         "surface": "？"
@@ -4515,50 +1768,23 @@
     "words": [
       "私",
       "名前",
-      "言う"
-    ]
-  },
-  {
-    "id": "befriend_name_this",
-    "category": "befriend_name",
-    "raw": "この名前を分かる？",
-    "tokens": [
-      {
-        "surface": "この",
-        "base": "この",
-        "reading": "この",
-        "pos": "Pre-noun"
-      },
-      {
-        "surface": "名前",
-        "base": "名前",
-        "reading": "なまえ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "分かる",
-        "base": "分かる",
-        "reading": "わかる",
-        "pos": "Verb"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "この",
-      "名前",
-      "分かる"
+      "何"
     ]
   },
   {
     "id": "befriend_name_still",
     "category": "befriend_name",
-    "raw": "私の名前はまだ分かる？",
+    "raw": "今は私の名前が分かる？",
     "tokens": [
+      {
+        "surface": "今",
+        "base": "今",
+        "reading": "いま",
+        "pos": "Noun"
+      },
+      {
+        "surface": "は"
+      },
       {
         "surface": "私",
         "base": "私",
@@ -4575,13 +1801,7 @@
         "pos": "Noun"
       },
       {
-        "surface": "は"
-      },
-      {
-        "surface": "まだ",
-        "base": "まだ",
-        "reading": "まだ",
-        "pos": "Adverb"
+        "surface": "が"
       },
       {
         "surface": "分かる",
@@ -4594,56 +1814,10 @@
       }
     ],
     "words": [
+      "今",
       "私",
       "名前",
-      "まだ",
       "分かる"
-    ]
-  },
-  {
-    "id": "befriend_name_that",
-    "category": "befriend_name",
-    "raw": "それは私の名前ですか？",
-    "tokens": [
-      {
-        "surface": "それ",
-        "base": "それ",
-        "reading": "それ",
-        "pos": "Pronoun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "私",
-        "base": "私",
-        "reading": "わたくし",
-        "pos": "Pronoun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "名前",
-        "base": "名前",
-        "reading": "なまえ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "ですか",
-        "base": "ですか",
-        "reading": "ですか",
-        "pos": "Auxiliary"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "それ",
-      "私",
-      "名前",
-      "ですか"
     ]
   },
   {
@@ -4869,7 +2043,7 @@
   {
     "id": "npc_otona_fightStart_begin",
     "category": "npc",
-    "raw": "始めますか？",
+    "raw": "始めます！",
     "tokens": [
       {
         "surface": "始め",
@@ -4878,25 +2052,21 @@
         "pos": "Verb"
       },
       {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
-        "pos": "Auxiliary"
+        "surface": "ます"
       },
       {
-        "surface": "？"
+        "surface": "！"
       }
     ],
     "words": [
-      "始める",
-      "ますか"
+      "始める"
     ],
     "group": "otona_fightStart"
   },
   {
     "id": "npc_otona_fightStart_ready",
     "category": "npc",
-    "raw": "準備は出来ますか？",
+    "raw": "準備はいいですか？",
     "tokens": [
       {
         "surface": "準備",
@@ -4908,15 +2078,15 @@
         "surface": "は"
       },
       {
-        "surface": "出来",
-        "base": "出来る",
-        "reading": "でき",
-        "pos": "Verb"
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective"
       },
       {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
+        "surface": "ですか",
+        "base": "ですか",
+        "reading": "ですか",
         "pos": "Auxiliary"
       },
       {
@@ -4925,15 +2095,15 @@
     ],
     "words": [
       "準備",
-      "出来る",
-      "ますか"
+      "いい",
+      "ですか"
     ],
     "group": "otona_fightStart"
   },
   {
     "id": "npc_otona_fightStart_strong",
     "category": "npc",
-    "raw": "強いと思います",
+    "raw": "強いですね！",
     "tokens": [
       {
         "surface": "強い",
@@ -4942,37 +2112,33 @@
         "pos": "Adjective"
       },
       {
-        "surface": "と"
+        "surface": "です"
       },
       {
-        "surface": "思い",
-        "base": "思う",
-        "reading": "おもい",
-        "pos": "Verb"
+        "surface": "ね"
       },
       {
-        "surface": "ます"
+        "surface": "！"
       }
     ],
     "words": [
-      "強い",
-      "思う"
+      "強い"
     ],
     "group": "otona_fightStart"
   },
   {
     "id": "npc_otona_fightStart_effort",
     "category": "npc",
-    "raw": "頑張りましょう",
+    "raw": "頑張る！",
     "tokens": [
       {
-        "surface": "頑張り",
+        "surface": "頑張る",
         "base": "頑張る",
-        "reading": "がんばり",
+        "reading": "がんばる",
         "pos": "Verb"
       },
       {
-        "surface": "ましょう"
+        "surface": "！"
       }
     ],
     "words": [
@@ -5006,7 +2172,7 @@
   {
     "id": "npc_otona_fightStart_before",
     "category": "npc",
-    "raw": "前にも会いましたね",
+    "raw": "前にも会いました",
     "tokens": [
       {
         "surface": "前",
@@ -5030,24 +2196,20 @@
         "surface": "まし"
       },
       {
-        "surface": "たね",
-        "base": "たね",
-        "reading": "たね",
-        "pos": "Auxiliary"
+        "surface": "た"
       }
     ],
     "words": [
       "前",
       "にも",
-      "会う",
-      "たね"
+      "会う"
     ],
     "group": "otona_fightStart"
   },
   {
     "id": "npc_otona_fightStart_power",
     "category": "npc",
-    "raw": "力を見ましょう",
+    "raw": "力を見る！",
     "tokens": [
       {
         "surface": "力",
@@ -5059,13 +2221,13 @@
         "surface": "を"
       },
       {
-        "surface": "見",
+        "surface": "見る",
         "base": "見る",
-        "reading": "み",
+        "reading": "みる",
         "pos": "Verb"
       },
       {
-        "surface": "ましょう"
+        "surface": "！"
       }
     ],
     "words": [
@@ -5214,86 +2376,6 @@
     "group": "otokonoko_fightStart"
   },
   {
-    "id": "npc_otokonoko_fightStart_big",
-    "category": "npc",
-    "raw": "大きい声で行くぞ！",
-    "tokens": [
-      {
-        "surface": "大きい",
-        "base": "大きい",
-        "reading": "おおきい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "声",
-        "base": "声",
-        "reading": "こえ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "で"
-      },
-      {
-        "surface": "行く",
-        "base": "行く",
-        "reading": "いく",
-        "pos": "Verb"
-      },
-      {
-        "surface": "ぞ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "大きい",
-      "声",
-      "行く"
-    ],
-    "group": "otokonoko_fightStart"
-  },
-  {
-    "id": "npc_otokonoko_fightStart_this",
-    "category": "npc",
-    "raw": "この手は強いぞ！",
-    "tokens": [
-      {
-        "surface": "この",
-        "base": "この",
-        "reading": "この",
-        "pos": "Pre-noun"
-      },
-      {
-        "surface": "手",
-        "base": "手",
-        "reading": "て",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
-      {
-        "surface": "強い",
-        "base": "強い",
-        "reading": "つよい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "ぞ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "この",
-      "手",
-      "強い"
-    ],
-    "group": "otokonoko_fightStart"
-  },
-  {
     "id": "npc_otokonoko_fightStart_use",
     "category": "npc",
     "raw": "力を使うぞ！",
@@ -5329,7 +2411,7 @@
   {
     "id": "npc_otokonoko_fightStart_hold",
     "category": "npc",
-    "raw": "力を持つぞ！",
+    "raw": "力があるぞ！",
     "tokens": [
       {
         "surface": "力",
@@ -5338,13 +2420,10 @@
         "pos": "Noun"
       },
       {
-        "surface": "を"
+        "surface": "が"
       },
       {
-        "surface": "持つ",
-        "base": "持つ",
-        "reading": "もつ",
-        "pos": "Verb"
+        "surface": "ある"
       },
       {
         "surface": "ぞ"
@@ -5354,8 +2433,7 @@
       }
     ],
     "words": [
-      "力",
-      "持つ"
+      "力"
     ],
     "group": "otokonoko_fightStart"
   },
@@ -5451,45 +2529,6 @@
     ],
     "words": [
       "頑張る"
-    ],
-    "group": "onnanoko_fightStart"
-  },
-  {
-    "id": "npc_onnanoko_fightStart_small",
-    "category": "npc",
-    "raw": "小さい声ですけど…",
-    "tokens": [
-      {
-        "surface": "小さい",
-        "base": "小さい",
-        "reading": "ちいさい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "声",
-        "base": "声",
-        "reading": "こえ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "けど"
-      },
-      {
-        "surface": "…"
-      },
-      {
-        "surface": ""
-      },
-      {
-        "surface": ""
-      }
-    ],
-    "words": [
-      "小さい",
-      "声"
     ],
     "group": "onnanoko_fightStart"
   },
@@ -5658,11 +2697,11 @@
   {
     "id": "npc_kodomo_defeatLine_2",
     "category": "npc",
-    "raw": "又遊ぶ？",
+    "raw": "また遊ぶ？",
     "tokens": [
       {
-        "surface": "又",
-        "base": "又",
+        "surface": "また",
+        "base": "また",
         "reading": "また",
         "pos": "Conjunction"
       },
@@ -5677,7 +2716,7 @@
       }
     ],
     "words": [
-      "又",
+      "また",
       "遊ぶ"
     ],
     "group": "kodomo_defeatLine"
@@ -5953,7 +2992,7 @@
   {
     "id": "npc_otona_defeatLine_4",
     "category": "npc",
-    "raw": "後で又会いましょう",
+    "raw": "後でまた会いましょう",
     "tokens": [
       {
         "surface": "後",
@@ -5965,8 +3004,8 @@
         "surface": "で"
       },
       {
-        "surface": "又",
-        "base": "又",
+        "surface": "また",
+        "base": "また",
         "reading": "また",
         "pos": "Adverb"
       },
@@ -5982,7 +3021,7 @@
     ],
     "words": [
       "後",
-      "又",
+      "また",
       "会う"
     ],
     "group": "otona_defeatLine"
@@ -6157,27 +3196,18 @@
   {
     "id": "npc_otokonoko_defeatLine_3",
     "category": "npc",
-    "raw": "強い力を作るぞ！",
+    "raw": "強くなるぞ！",
     "tokens": [
       {
-        "surface": "強い",
+        "surface": "強く",
         "base": "強い",
-        "reading": "つよい",
+        "reading": "つよく",
         "pos": "Adjective"
       },
       {
-        "surface": "力",
-        "base": "力",
-        "reading": "ちから",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "作る",
-        "base": "作る",
-        "reading": "つくる",
+        "surface": "なる",
+        "base": "なる",
+        "reading": "なる",
         "pos": "Verb"
       },
       {
@@ -6189,15 +3219,14 @@
     ],
     "words": [
       "強い",
-      "力",
-      "作る"
+      "なる"
     ],
     "group": "otokonoko_defeatLine"
   },
   {
     "id": "npc_otokonoko_defeatLine_4",
     "category": "npc",
-    "raw": "明日又来るぞ！",
+    "raw": "明日また来るぞ！",
     "tokens": [
       {
         "surface": "明日",
@@ -6206,8 +3235,8 @@
         "pos": "Noun"
       },
       {
-        "surface": "又",
-        "base": "又",
+        "surface": "また",
+        "base": "また",
         "reading": "また",
         "pos": "Adverb"
       },
@@ -6226,7 +3255,7 @@
     ],
     "words": [
       "明日",
-      "又",
+      "また",
       "来る"
     ],
     "group": "otokonoko_defeatLine"
@@ -6234,7 +3263,7 @@
   {
     "id": "npc_otokonoko_defeatLine_5",
     "category": "npc",
-    "raw": "この場所で又やるぞ！",
+    "raw": "この場所でまたやるぞ！",
     "tokens": [
       {
         "surface": "この",
@@ -6252,8 +3281,8 @@
         "surface": "で"
       },
       {
-        "surface": "又",
-        "base": "又",
+        "surface": "また",
+        "base": "また",
         "reading": "また",
         "pos": "Adverb"
       },
@@ -6273,7 +3302,7 @@
     "words": [
       "この",
       "場所",
-      "又",
+      "また",
       "やる"
     ],
     "group": "otokonoko_defeatLine"
@@ -6645,7 +3674,7 @@
   {
     "id": "shopGreeting_new",
     "category": "shopGreeting",
-    "raw": "新しい物がありますよ！",
+    "raw": "新しいですよ！",
     "tokens": [
       {
         "surface": "新しい",
@@ -6654,19 +3683,7 @@
         "pos": "Adjective"
       },
       {
-        "surface": "物",
-        "base": "物",
-        "reading": "もの",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "あり"
-      },
-      {
-        "surface": "ます"
+        "surface": "です"
       },
       {
         "surface": "よ"
@@ -6676,14 +3693,13 @@
       }
     ],
     "words": [
-      "新しい",
-      "物"
+      "新しい"
     ]
   },
   {
     "id": "shopGreeting_eat",
     "category": "shopGreeting",
-    "raw": "食べる物がありますよ！",
+    "raw": "食べる物です！",
     "tokens": [
       {
         "surface": "食べる",
@@ -6698,16 +3714,7 @@
         "pos": "Noun"
       },
       {
-        "surface": "が"
-      },
-      {
-        "surface": "あり"
-      },
-      {
-        "surface": "ます"
-      },
-      {
-        "surface": "よ"
+        "surface": "です"
       },
       {
         "surface": "！"
@@ -6721,37 +3728,20 @@
   {
     "id": "shopGreeting_enter",
     "category": "shopGreeting",
-    "raw": "ここに入りますか？",
+    "raw": "どうぞ！",
     "tokens": [
       {
-        "surface": "ここ",
-        "base": "ここ",
-        "reading": "ここ",
-        "pos": "Pronoun"
+        "surface": "どうぞ",
+        "base": "どうぞ",
+        "reading": "どうぞ",
+        "pos": "Adverb"
       },
       {
-        "surface": "に"
-      },
-      {
-        "surface": "入り",
-        "base": "入る",
-        "reading": "はいり",
-        "pos": "Verb"
-      },
-      {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
-        "pos": "Auxiliary"
-      },
-      {
-        "surface": "？"
+        "surface": "！"
       }
     ],
     "words": [
-      "ここ",
-      "入る",
-      "ますか"
+      "どうぞ"
     ]
   },
   {
@@ -6797,179 +3787,6 @@
     ]
   },
   {
-    "id": "shopGreeting_out",
-    "category": "shopGreeting",
-    "raw": "少し出ますか？",
-    "tokens": [
-      {
-        "surface": "少し",
-        "base": "少し",
-        "reading": "すこし",
-        "pos": "Adverb"
-      },
-      {
-        "surface": "出",
-        "base": "出る",
-        "reading": "で",
-        "pos": "Verb"
-      },
-      {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
-        "pos": "Auxiliary"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "少し",
-      "出る",
-      "ますか"
-    ]
-  },
-  {
-    "id": "shopGreeting_hand",
-    "category": "shopGreeting",
-    "raw": "手に取りますか？",
-    "tokens": [
-      {
-        "surface": "手",
-        "base": "手",
-        "reading": "て",
-        "pos": "Noun"
-      },
-      {
-        "surface": "に"
-      },
-      {
-        "surface": "取り",
-        "base": "取る",
-        "reading": "とり",
-        "pos": "Verb"
-      },
-      {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
-        "pos": "Auxiliary"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "手",
-      "取る",
-      "ますか"
-    ]
-  },
-  {
-    "id": "shopGreeting_color",
-    "category": "shopGreeting",
-    "raw": "綺麗な色の物がありますよ！",
-    "tokens": [
-      {
-        "surface": "綺麗",
-        "base": "綺麗",
-        "reading": "きれい",
-        "pos": "Na-adjective"
-      },
-      {
-        "surface": "な"
-      },
-      {
-        "surface": "色",
-        "base": "色",
-        "reading": "いろ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "物",
-        "base": "物",
-        "reading": "もの",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "あり"
-      },
-      {
-        "surface": "ます"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "綺麗",
-      "色",
-      "物"
-    ]
-  },
-  {
-    "id": "shopGreeting_world",
-    "category": "shopGreeting",
-    "raw": "この世界の物を見ますか？",
-    "tokens": [
-      {
-        "surface": "この",
-        "base": "この",
-        "reading": "この",
-        "pos": "Pre-noun"
-      },
-      {
-        "surface": "世界",
-        "base": "世界",
-        "reading": "せかい",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "物",
-        "base": "物",
-        "reading": "もの",
-        "pos": "Noun"
-      },
-      {
-        "surface": "を"
-      },
-      {
-        "surface": "見",
-        "base": "見る",
-        "reading": "み",
-        "pos": "Verb"
-      },
-      {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
-        "pos": "Auxiliary"
-      },
-      {
-        "surface": "？"
-      }
-    ],
-    "words": [
-      "この",
-      "世界",
-      "物",
-      "見る",
-      "ますか"
-    ]
-  },
-  {
     "id": "shopGreeting_energy",
     "category": "shopGreeting",
     "raw": "元気ですか？",
@@ -6998,7 +3815,7 @@
   {
     "id": "shopGreeting_time",
     "category": "shopGreeting",
-    "raw": "いい時に来ますね！",
+    "raw": "いい時に来ましたね！",
     "tokens": [
       {
         "surface": "いい",
@@ -7022,10 +3839,13 @@
         "pos": "Verb"
       },
       {
-        "surface": "ます"
+        "surface": "まし"
       },
       {
-        "surface": "ね"
+        "surface": "たね",
+        "base": "たね",
+        "reading": "たね",
+        "pos": "Auxiliary"
       },
       {
         "surface": "！"
@@ -7034,80 +3854,8 @@
     "words": [
       "いい",
       "時",
-      "来る"
-    ]
-  },
-  {
-    "id": "shopGreeting_talk",
-    "category": "shopGreeting",
-    "raw": "いい話がありますよ！",
-    "tokens": [
-      {
-        "surface": "いい",
-        "base": "いい",
-        "reading": "いい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "話",
-        "base": "話",
-        "reading": "はなし",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "あり"
-      },
-      {
-        "surface": "ます"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "いい",
-      "話"
-    ]
-  },
-  {
-    "id": "shopGreeting_eye",
-    "category": "shopGreeting",
-    "raw": "目がいいですね！",
-    "tokens": [
-      {
-        "surface": "目",
-        "base": "目",
-        "reading": "め",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "いい",
-        "base": "いい",
-        "reading": "いい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "目",
-      "いい"
+      "来る",
+      "たね"
     ]
   },
   {
@@ -7222,7 +3970,7 @@
   {
     "id": "shopPurchase_use",
     "category": "shopPurchase",
-    "raw": "{item}を使います！",
+    "raw": "{item}を買います！",
     "tokens": [
       {
         "slot": "item"
@@ -7231,9 +3979,9 @@
         "surface": "を"
       },
       {
-        "surface": "使い",
-        "base": "使う",
-        "reading": "つかい",
+        "surface": "買い",
+        "base": "買う",
+        "reading": "かい",
         "pos": "Verb"
       },
       {
@@ -7244,35 +3992,35 @@
       }
     ],
     "words": [
-      "使う"
+      "買う"
     ]
   },
   {
     "id": "shopPurchase_hold",
     "category": "shopPurchase",
-    "raw": "{item}を持ちます！",
+    "raw": "{item}がいいです！",
     "tokens": [
       {
         "slot": "item"
       },
       {
-        "surface": "を"
+        "surface": "が"
       },
       {
-        "surface": "持ち",
-        "base": "持つ",
-        "reading": "もち",
-        "pos": "Verb"
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective"
       },
       {
-        "surface": "ます"
+        "surface": "です"
       },
       {
         "surface": "！"
       }
     ],
     "words": [
-      "持つ"
+      "いい"
     ]
   },
   {
@@ -7393,117 +4141,9 @@
     ]
   },
   {
-    "id": "shopGreeting_big",
-    "category": "shopGreeting",
-    "raw": "大きい物がありますよ！",
-    "tokens": [
-      {
-        "surface": "大きい",
-        "base": "大きい",
-        "reading": "おおきい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "物",
-        "base": "物",
-        "reading": "もの",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "あり"
-      },
-      {
-        "surface": "ます"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "大きい",
-      "物"
-    ]
-  },
-  {
-    "id": "shopGreeting_small",
-    "category": "shopGreeting",
-    "raw": "小さい物がありますよ！",
-    "tokens": [
-      {
-        "surface": "小さい",
-        "base": "小さい",
-        "reading": "ちいさい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "物",
-        "base": "物",
-        "reading": "もの",
-        "pos": "Noun"
-      },
-      {
-        "surface": "が"
-      },
-      {
-        "surface": "あり"
-      },
-      {
-        "surface": "ます"
-      },
-      {
-        "surface": "よ"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "小さい",
-      "物"
-    ]
-  },
-  {
-    "id": "shopGreeting_voice",
-    "category": "shopGreeting",
-    "raw": "いい声ですね！",
-    "tokens": [
-      {
-        "surface": "いい",
-        "base": "いい",
-        "reading": "いい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "声",
-        "base": "声",
-        "reading": "こえ",
-        "pos": "Noun"
-      },
-      {
-        "surface": "です"
-      },
-      {
-        "surface": "ね"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "いい",
-      "声"
-    ]
-  },
-  {
     "id": "shopGreeting_before",
     "category": "shopGreeting",
-    "raw": "前に来ますか？",
+    "raw": "前にも来ましたね！",
     "tokens": [
       {
         "surface": "前",
@@ -7512,7 +4152,10 @@
         "pos": "Noun"
       },
       {
-        "surface": "に"
+        "surface": "にも",
+        "base": "にも",
+        "reading": "にも",
+        "pos": "Particle"
       },
       {
         "surface": "来",
@@ -7521,25 +4164,29 @@
         "pos": "Verb"
       },
       {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
+        "surface": "まし"
+      },
+      {
+        "surface": "たね",
+        "base": "たね",
+        "reading": "たね",
         "pos": "Auxiliary"
       },
       {
-        "surface": "？"
+        "surface": "！"
       }
     ],
     "words": [
       "前",
+      "にも",
       "来る",
-      "ますか"
+      "たね"
     ]
   },
   {
     "id": "shopGreeting_after",
     "category": "shopGreeting",
-    "raw": "後で又来ますか？",
+    "raw": "後でまた来ますか？",
     "tokens": [
       {
         "surface": "後",
@@ -7551,8 +4198,8 @@
         "surface": "で"
       },
       {
-        "surface": "又",
-        "base": "又",
+        "surface": "また",
+        "base": "また",
         "reading": "また",
         "pos": "Adverb"
       },
@@ -7574,7 +4221,7 @@
     ],
     "words": [
       "後",
-      "又",
+      "また",
       "来る",
       "ますか"
     ]
@@ -7582,23 +4229,8 @@
   {
     "id": "shopGreeting_direction",
     "category": "shopGreeting",
-    "raw": "この方は強いですね！",
+    "raw": "強い人ですね！",
     "tokens": [
-      {
-        "surface": "この",
-        "base": "この",
-        "reading": "この",
-        "pos": "Pre-noun"
-      },
-      {
-        "surface": "方",
-        "base": "方",
-        "reading": "かた",
-        "pos": "Noun"
-      },
-      {
-        "surface": "は"
-      },
       {
         "surface": "強い",
         "base": "強い",
@@ -7606,6 +4238,12 @@
         "pos": "Adjective"
       },
       {
+        "surface": "人",
+        "base": "人",
+        "reading": "ひと",
+        "pos": "Noun"
+      },
+      {
         "surface": "です"
       },
       {
@@ -7616,24 +4254,29 @@
       }
     ],
     "words": [
-      "この",
-      "方",
-      "強い"
+      "強い",
+      "人"
     ]
   },
   {
     "id": "shopGreeting_spirit",
     "category": "shopGreeting",
-    "raw": "いい気ですね！",
+    "raw": "元気な人ですね！",
     "tokens": [
       {
-        "surface": "いい",
-        "base": "いう",
-        "reading": "いい",
-        "pos": "Verb"
+        "surface": "元気",
+        "base": "元気",
+        "reading": "げんき",
+        "pos": "Noun"
       },
       {
-        "surface": "気"
+        "surface": "な"
+      },
+      {
+        "surface": "人",
+        "base": "人",
+        "reading": "ひと",
+        "pos": "Noun"
       },
       {
         "surface": "です"
@@ -7646,24 +4289,34 @@
       }
     ],
     "words": [
-      "いう"
+      "元気",
+      "人"
     ]
   },
   {
     "id": "shopGreeting_able",
     "category": "shopGreeting",
-    "raw": "出来ますか？",
+    "raw": "何がいいですか？",
     "tokens": [
       {
-        "surface": "出来",
-        "base": "出来る",
-        "reading": "でき",
-        "pos": "Verb"
+        "surface": "何",
+        "base": "何",
+        "reading": "なん",
+        "pos": "Pronoun"
       },
       {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
+        "surface": "が"
+      },
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "ですか",
+        "base": "ですか",
+        "reading": "ですか",
         "pos": "Auxiliary"
       },
       {
@@ -7671,34 +4324,28 @@
       }
     ],
     "words": [
-      "出来る",
-      "ますか"
+      "何",
+      "いい",
+      "ですか"
     ]
   },
   {
     "id": "gm_ask_1",
     "category": "gameMaster_ask",
-    "raw": "遊びますか？",
+    "raw": "遊ぶ？",
     "tokens": [
       {
-        "surface": "遊び",
+        "surface": "遊ぶ",
         "base": "遊ぶ",
-        "reading": "あそび",
+        "reading": "あそぶ",
         "pos": "Verb"
-      },
-      {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
-        "pos": "Auxiliary"
       },
       {
         "surface": "？"
       }
     ],
     "words": [
-      "遊ぶ",
-      "ますか"
+      "遊ぶ"
     ]
   },
   {
@@ -7737,22 +4384,13 @@
   {
     "id": "gm_ask_3",
     "category": "gameMaster_ask",
-    "raw": "楽しい言葉の遊びです！",
+    "raw": "楽しい遊びです！",
     "tokens": [
       {
         "surface": "楽しい",
         "base": "楽しい",
         "reading": "たのしい",
         "pos": "Adjective"
-      },
-      {
-        "surface": "言葉",
-        "base": "言葉",
-        "reading": "ことば",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
       },
       {
         "surface": "遊び",
@@ -7769,24 +4407,14 @@
     ],
     "words": [
       "楽しい",
-      "言葉",
       "遊び"
     ]
   },
   {
     "id": "gm_ask_4",
     "category": "gameMaster_ask",
-    "raw": "私と一緒に言葉で遊びますか？",
+    "raw": "一緒に遊ぶ？",
     "tokens": [
-      {
-        "surface": "私",
-        "base": "私",
-        "reading": "わたくし",
-        "pos": "Pronoun"
-      },
-      {
-        "surface": "と"
-      },
       {
         "surface": "一緒に",
         "base": "一緒に",
@@ -7794,36 +4422,18 @@
         "pos": "Noun"
       },
       {
-        "surface": "言葉",
-        "base": "言葉",
-        "reading": "ことば",
-        "pos": "Noun"
-      },
-      {
-        "surface": "で"
-      },
-      {
-        "surface": "遊び",
+        "surface": "遊ぶ",
         "base": "遊ぶ",
-        "reading": "あそび",
+        "reading": "あそぶ",
         "pos": "Verb"
-      },
-      {
-        "surface": "ますか",
-        "base": "ますか",
-        "reading": "ますか",
-        "pos": "Auxiliary"
       },
       {
         "surface": "？"
       }
     ],
     "words": [
-      "私",
       "一緒に",
-      "言葉",
-      "遊ぶ",
-      "ますか"
+      "遊ぶ"
     ]
   },
   {
@@ -7891,71 +4501,6 @@
     ]
   },
   {
-    "id": "gm_finish_4",
-    "category": "gameMaster_finish",
-    "raw": "言葉の遊び！",
-    "tokens": [
-      {
-        "surface": "言葉",
-        "base": "言葉",
-        "reading": "ことば",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "遊び",
-        "base": "遊び",
-        "reading": "あそび",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "言葉",
-      "遊び"
-    ]
-  },
-  {
-    "id": "gm_finish_5",
-    "category": "gameMaster_finish",
-    "raw": "楽しい言葉の遊び！",
-    "tokens": [
-      {
-        "surface": "楽しい",
-        "base": "楽しい",
-        "reading": "たのしい",
-        "pos": "Adjective"
-      },
-      {
-        "surface": "言葉",
-        "base": "言葉",
-        "reading": "ことば",
-        "pos": "Noun"
-      },
-      {
-        "surface": "の"
-      },
-      {
-        "surface": "遊び",
-        "base": "遊び",
-        "reading": "あそび",
-        "pos": "Noun"
-      },
-      {
-        "surface": "！"
-      }
-    ],
-    "words": [
-      "楽しい",
-      "言葉",
-      "遊び"
-    ]
-  },
-  {
     "id": "npcDefeat_0",
     "category": "npcDefeat",
     "raw": "すごい！",
@@ -7996,13 +4541,16 @@
   {
     "id": "npcDefeat_2",
     "category": "npcDefeat",
-    "raw": "負ける！",
+    "raw": "負けた！",
     "tokens": [
       {
-        "surface": "負ける",
+        "surface": "負け",
         "base": "負ける",
-        "reading": "まける",
+        "reading": "まけ",
         "pos": "Verb"
+      },
+      {
+        "surface": "た"
       },
       {
         "surface": "！"
@@ -8088,7 +4636,7 @@
   {
     "id": "npcDefeat_6",
     "category": "npcDefeat",
-    "raw": "完全に負ける！",
+    "raw": "完全に負けた！",
     "tokens": [
       {
         "surface": "完全",
@@ -8100,10 +4648,13 @@
         "surface": "に"
       },
       {
-        "surface": "負ける",
+        "surface": "負け",
         "base": "負ける",
-        "reading": "まける",
+        "reading": "まけ",
         "pos": "Verb"
+      },
+      {
+        "surface": "た"
       },
       {
         "surface": "！"
@@ -8178,7 +4729,7 @@
   {
     "id": "npcDefeat_9",
     "category": "npcDefeat",
-    "raw": "良い勝負、私は負ける！",
+    "raw": "良い勝負、私は負けた！",
     "tokens": [
       {
         "surface": "良い",
@@ -8205,10 +4756,13 @@
         "surface": "は"
       },
       {
-        "surface": "負ける",
+        "surface": "負け",
         "base": "負ける",
-        "reading": "まける",
+        "reading": "まけ",
         "pos": "Verb"
+      },
+      {
+        "surface": "た"
       },
       {
         "surface": "！"
@@ -8334,7 +4888,7 @@
   {
     "id": "npcDefeat_13",
     "category": "npcDefeat",
-    "raw": "私も強い、又戦う！",
+    "raw": "私も強い、また戦う！",
     "tokens": [
       {
         "surface": "私",
@@ -8355,8 +4909,8 @@
         "surface": "、"
       },
       {
-        "surface": "又",
-        "base": "又",
+        "surface": "また",
+        "base": "また",
         "reading": "また",
         "pos": "Adverb"
       },
@@ -8373,7 +4927,7 @@
     "words": [
       "私",
       "強い",
-      "又",
+      "また",
       "戦う"
     ]
   },
@@ -8550,7 +5104,7 @@
   {
     "id": "npcDefeat_17",
     "category": "npcDefeat",
-    "raw": "良い勝負、又会う時は絶対に勝つ！",
+    "raw": "良い勝負、また会う時は絶対に勝つ！",
     "tokens": [
       {
         "surface": "良い",
@@ -8568,8 +5122,8 @@
         "surface": "、"
       },
       {
-        "surface": "又",
-        "base": "又",
+        "surface": "また",
+        "base": "また",
         "reading": "また",
         "pos": "Adverb"
       },
@@ -8607,7 +5161,7 @@
     "words": [
       "良い",
       "勝負",
-      "又",
+      "また",
       "会う",
       "時",
       "絶対に",

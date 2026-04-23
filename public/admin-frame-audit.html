@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Koto admin — frame-sources audit</title>
+<style>
+  :root {
+    --bg: #0e1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --keep: #2d3a2e;
+    --keep-border: #2ea043;
+    --change: #3a3522;
+    --change-border: #d29922;
+    --delete: #3a2222;
+    --delete-border: #f85149;
+    --accent: #58a6ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  header {
+    padding: 24px 32px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  header .sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .controls input, .controls select {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .controls input[type="text"] { min-width: 260px; }
+  .controls label { font-size: 12px; color: var(--muted); }
+  .counts {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .counts span { margin-left: 14px; }
+  .counts .num { color: var(--text); font-weight: 600; }
+  main { padding: 16px 24px 48px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    background: #1f2630;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr.keep { background: color-mix(in srgb, var(--keep) 30%, transparent); }
+  tr.change { background: color-mix(in srgb, var(--change) 40%, transparent); }
+  tr.delete { background: color-mix(in srgb, var(--delete) 40%, transparent); }
+  tr.keep td:first-child { border-left: 3px solid var(--keep-border); }
+  tr.change td:first-child { border-left: 3px solid var(--change-border); }
+  tr.delete td:first-child { border-left: 3px solid var(--delete-border); }
+  .id { font-family: "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .cat { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .jp { font-size: 16px; font-weight: 500; }
+  .en { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .jp.delete { text-decoration: line-through; opacity: 0.6; }
+  .jp.same { color: var(--muted); opacity: 0.5; }
+  .notes { font-size: 12px; color: var(--muted); max-width: 280px; font-style: italic; }
+  .feedback-controls {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .feedback-controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text);
+    font-style: normal;
+    cursor: pointer;
+    user-select: none;
+  }
+  .feedback-controls label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--delete-border);
+    cursor: pointer;
+  }
+  .feedback-controls label.rejected { color: var(--delete-border); font-weight: 600; }
+  .feedback-controls .fb-input {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+    width: 100%;
+    font-style: normal;
+    resize: vertical;
+    min-height: 28px;
+  }
+  .feedback-controls .fb-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  tr.has-feedback td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
+  tr.rejected td:first-child { box-shadow: inset 4px 0 0 var(--delete-border); }
+  .copy-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .copy-btn:hover { opacity: 0.9; }
+  .copy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .feedback-count { color: var(--accent); font-weight: 600; }
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .modal-close {
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .modal-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+  }
+  .modal-body textarea {
+    width: 100%;
+    min-height: 400px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--keep-border);
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.25s;
+    z-index: 200;
+    pointer-events: none;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge.keep { background: var(--keep-border); color: #000; }
+  .badge.change { background: var(--change-border); color: #000; }
+  .badge.delete { background: var(--delete-border); color: #fff; }
+  .category-header {
+    background: #161b22 !important;
+    border-top: 2px solid var(--accent) !important;
+  }
+  .category-header td {
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .summary .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .summary .card .label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .summary .card .value {
+    font-size: 24px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .summary .card.keep .value { color: var(--keep-border); }
+  .summary .card.change .value { color: var(--change-border); }
+  .summary .card.delete .value { color: var(--delete-border); }
+
+  /* ---- In-game rendering preview ---- */
+  .preview-pane {
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: #0a0d12;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    min-height: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 2px;
+    line-height: 2.4;
+    align-items: flex-end;
+  }
+  .preview-pane .preview-label {
+    width: 100%;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  /* These mimic the in-game styles minimally so previews look right */
+  .preview-pane .jp-word {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 2px;
+  }
+  .preview-pane .jp-word ruby {
+    font-size: 18px;
+    line-height: 1.2;
+    color: var(--text);
+    ruby-position: over;
+  }
+  .preview-pane .jp-word ruby rt {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1;
+  }
+  .preview-pane .jp-unknown .jp-stack-en {
+    font-size: 10px;
+    color: #f0b429;
+    margin-top: 2px;
+    max-width: 80px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+  .preview-pane .jp-entity .jp-stack-en { color: #79c0ff; }
+  .preview-pane .jp-punct {
+    font-size: 18px;
+    color: var(--muted);
+    align-self: center;
+  }
+  .preview-pane .jp-known ruby { color: var(--keep-border); }
+  .preview-empty {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 12px;
+  }
+
+  /* ---- Dictionary gloss list ---- */
+  .dict-list {
+    margin-top: 8px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .dict-list .dict-row {
+    display: flex;
+    gap: 8px;
+    padding: 2px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.04);
+  }
+  .dict-list .dict-row:last-child { border-bottom: none; }
+  .dict-list .dict-base { color: var(--text); font-weight: 500; min-width: 70px; }
+  .dict-list .dict-reading { color: var(--muted); min-width: 80px; }
+  .dict-list .dict-en { color: var(--muted); flex: 1; }
+  .dict-list .dict-en.missing { color: var(--delete-border); font-style: italic; }
+
+  /* ---- Mode toggle ---- */
+  .mode-toggle {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .mode-toggle button {
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .mode-toggle button.active {
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+
+  /* ---- Auth gate ---- */
+  .auth-gate {
+    display: none;
+    padding: 40px;
+    text-align: center;
+  }
+  .auth-gate.show { display: block; }
+  .auth-gate input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    width: 280px;
+    margin-right: 8px;
+  }
+  .loading {
+    padding: 40px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .error-banner {
+    background: color-mix(in srgb, var(--delete-border) 30%, transparent);
+    border: 1px solid var(--delete-border);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 6px;
+    margin: 16px 24px 0;
+    font-size: 13px;
+    display: none;
+  }
+  .error-banner.show { display: block; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Koto <code>frame-sources.json</code> audit</h1>
+  <div class="sub">Round 2 applied — battle-cry interjections deleted, <code>ます/ましょう</code> simplified on otona NPC, 言葉 refs removed from Game Master, shop-greeting clutter cut. <code>R2:</code> notes mark the new changes.</div>
+  <div class="controls">
+    <input type="text" id="search" placeholder="Search by ID, JP, EN, or note…">
+    <select id="categoryFilter">
+      <option value="">All categories</option>
+    </select>
+    <select id="statusFilter">
+      <option value="">All statuses</option>
+      <option value="keep">Keep</option>
+      <option value="change">Change</option>
+      <option value="delete">Delete</option>
+      <option value="rejected">Rejected by me</option>
+      <option value="has-feedback">Has feedback</option>
+    </select>
+    <div class="mode-toggle" id="modeToggle">
+      <button data-mode="hiragana" class="active">Hiragana (A1–3)</button>
+      <button data-mode="kanji">Kanji (A4+)</button>
+    </div>
+    <button class="copy-btn" id="copyBtn" disabled>Copy feedback (<span id="fbCount">0</span>)</button>
+    <div class="counts" id="counts"></div>
+  </div>
+</header>
+
+<div class="error-banner" id="errorBanner"></div>
+
+<div class="auth-gate" id="authGate">
+  <h2 style="margin:0 0 12px;">Admin secret required</h2>
+  <p style="color: var(--muted); margin: 0 0 16px;">Set <code>ADMIN_SECRET</code> on the server, or paste it below.</p>
+  <input type="password" id="authInput" placeholder="X-Admin-Secret…">
+  <button class="copy-btn" id="authSubmit">Load</button>
+</div>
+
+<div class="loading" id="loading">Loading frames, dictionary, and tokenizations…</div>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Your feedback</h2>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="color: var(--muted); font-size: 13px; margin: 0 0 10px;">Copy the JSON below and paste it back into the chat. Only rejected entries and entries with feedback are included.</p>
+      <textarea id="feedbackOutput" readonly></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="copy-btn" id="modalCopyBtn">Copy to clipboard</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<main id="main" style="display:none;">
+  <div class="summary" id="summary"></div>
+  <table id="table">
+    <thead>
+      <tr>
+        <th style="width:220px;">ID</th>
+        <th style="width:300px;">Before</th>
+        <th style="width:300px;">After</th>
+        <th>Notes / feedback</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</main>
+
+<script type="module">
+import { renderJpSentence, setKnownWords } from '/js/ui/bootstrap-client.js';
+
+// Make sure we're in "nothing known" mode so every content word renders
+// in the teaching form (reading on top + English stacked below).
+setKnownWords([]);
+
+// ---- in-game data (loaded from /api/admin/frame-audit-data) ----
+let serverFrames = {};   // id → tokens from frames.json
+let afterTokens = {};    // id → tokens tokenized on demand for proposed "after" strings
+let dictMap = null;      // Map<baseForm, {reading, definitions}> for renderJpSentence
+let displayMode = 'hiragana'; // 'hiragana' | 'kanji'
+
+let adminSecret = '';
+function authHeaders() { return adminSecret ? { 'x-admin-secret': adminSecret } : {}; }
+
+async function fetchAdminSecret() {
+  try {
+    const r = await fetch('/api/admin/secret');
+    if (!r.ok) return '';
+    const j = await r.json();
+    return j.secret || '';
+  } catch { return ''; }
+}
+
+async function loadAuditData() {
+  const r = await fetch('/api/admin/frame-audit-data', { headers: authHeaders() });
+  if (!r.ok) {
+    const msg = r.status === 403 ? 'Forbidden (check X-Admin-Secret)'
+             : r.status === 404 ? 'Endpoint not configured (ADMIN_SECRET not set on server)'
+             : `HTTP ${r.status}`;
+    throw new Error(msg);
+  }
+  const data = await r.json();
+  for (const f of data.frames) serverFrames[f.id] = f.tokens;
+  dictMap = new Map(Object.entries(data.dict || {}));
+}
+
+async function loadAfterTokens() {
+  const texts = entries
+    .filter(e => e.status === 'change' && e.jp_a)
+    .map(e => ({ id: e.id, raw: e.jp_a }));
+  if (texts.length === 0) return;
+  const r = await fetch('/api/admin/tokenize-frames', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ texts }),
+  });
+  if (!r.ok) throw new Error(`tokenize-frames failed: ${r.status}`);
+  const data = await r.json();
+  Object.assign(afterTokens, data.tokens || {});
+  for (const [base, entry] of Object.entries(data.dict || {})) {
+    if (!dictMap.has(base)) dictMap.set(base, entry);
+  }
+}
+
+// ---- preview + dict helpers ----
+function renderPreview(tokens) {
+  if (!tokens || tokens.length === 0) {
+    return '<span class="preview-empty">(no tokens)</span>';
+  }
+  const useKanji = displayMode === 'kanji';
+  return renderJpSentence(tokens, new Set(), dictMap, {}, useKanji);
+}
+
+function primaryEn(entry) {
+  if (!entry?.definitions?.length) return '';
+  const primary = entry.definitions.find(d => d.primary);
+  return (primary?.en || entry.definitions[0].en || '').split('/')[0].trim();
+}
+
+function renderDictList(tokens) {
+  if (!tokens || tokens.length === 0) return '';
+  const seen = new Set();
+  const rows = [];
+  for (const t of tokens) {
+    const base = t.base;
+    if (!base || seen.has(base)) continue;
+    seen.add(base);
+    const entry = dictMap.get(base);
+    const reading = entry?.reading || t.reading || '';
+    const en = entry ? primaryEn(entry) : '';
+    rows.push(
+      `<div class="dict-row">`
+      + `<span class="dict-base">${escapeHtml(base)}</span>`
+      + `<span class="dict-reading">${escapeHtml(reading)}</span>`
+      + `<span class="dict-en ${en ? '' : 'missing'}">${escapeHtml(en || '(no dict entry)')}</span>`
+      + `</div>`
+    );
+  }
+  return rows.length
+    ? `<div class="dict-list">${rows.join('')}</div>`
+    : '';
+}
+
+const entries = [
+  // ==== bark_onHit ====
+  { id: "bark_onHit_0", cat: "bark_onHit", jp_b: "痛い！", en_b: "It hurts! / Ouch!", status: "keep" },
+  { id: "bark_onHit_1", cat: "bark_onHit", jp_b: "強い！", en_b: "Strong!", status: "change", jp_a: "早い！", en_a: "Fast!", note: "'Strong!' is ambiguous when being hit (who's strong?). Swap to 早い (fast) — 速い wasn't in live-dictionary, 早い shares the reading and primary meaning." },
+  { id: "bark_onHit_2", cat: "bark_onHit", jp_b: "嫌だ！", en_b: "No! / I hate it!", status: "keep" },
+  { id: "bark_onHit_3", cat: "bark_onHit", jp_b: "うわ！", en_b: "Whoa! / Ugh! (interjection)", status: "keep" },
+  { id: "bark_onHit_4", cat: "bark_onHit", jp_b: "くっ！", en_b: "Ugh! (grunt of pain/frustration)", status: "keep" },
+  { id: "bark_onHit_5", cat: "bark_onHit", jp_b: "ああ！", en_b: "Aah!", status: "keep" },
+  { id: "bark_onHit_6", cat: "bark_onHit", jp_b: "いたた！", en_b: "Ow ow ow!", status: "keep" },
+  { id: "bark_onHit_7", cat: "bark_onHit", jp_b: "止めて！", en_b: "Stop (a thing)!", status: "change", jp_a: "やめて！", en_a: "Quit it! / Stop that!", note: "止める (とめる) = stop a moving thing; やめる = quit/stop an action. For 'stop hitting me!' the verb is やめる. Write in kana to force correct reading." },
+  { id: "bark_onHit_8", cat: "bark_onHit", jp_b: "辛い！", en_b: "Painful / tough-to-endure (つらい)", status: "keep", note: "R2: user rejected 重い swap — keep 辛い." },
+  { id: "bark_onHit_9", cat: "bark_onHit", jp_b: "酷い！", en_b: "Cruel! / Awful!", status: "keep" },
+
+  // ==== bark_onVictory ====
+  { id: "bark_onVictory_0", cat: "bark_onVictory", jp_b: "凄い！", en_b: "Amazing!", status: "keep" },
+  { id: "bark_onVictory_1", cat: "bark_onVictory", jp_b: "勝った！", en_b: "Won!", status: "keep" },
+  { id: "bark_onVictory_2", cat: "bark_onVictory", jp_b: "やった！", en_b: "Did it!", status: "keep" },
+  { id: "bark_onVictory_3", cat: "bark_onVictory", jp_b: "良かった！", en_b: "It was good!", status: "keep" },
+  { id: "bark_onVictory_4", cat: "bark_onVictory", jp_b: "強い！", en_b: "Strong!", status: "change", jp_a: "ばんざい！", en_a: "Hooray! / Banzai!", note: "'Strong!' is ambiguous (who's strong, you or them?). Swap to the iconic victory cheer ばんざい." },
+  { id: "bark_onVictory_5", cat: "bark_onVictory", jp_b: "嬉しい！", en_b: "Happy!", status: "keep" },
+  { id: "bark_onVictory_6", cat: "bark_onVictory", jp_b: "やったね！", en_b: "Did it, huh!", status: "keep" },
+  { id: "bark_onVictory_7", cat: "bark_onVictory", jp_b: "素晴らしい！", en_b: "Wonderful!", status: "keep" },
+  { id: "bark_onVictory_8", cat: "bark_onVictory", jp_b: "勝ちだ！", en_b: "It's a win!", status: "keep" },
+  { id: "bark_onVictory_9", cat: "bark_onVictory", jp_b: "いえーい！", en_b: "Yay! (interjection)", status: "delete", note: "R2: not in live-dictionary; non-teaching. Delete." },
+
+  // ==== bark_onExplore ====
+  { id: "bark_onExplore_0", cat: "bark_onExplore", jp_b: "楽しい！", en_b: "Fun!", status: "keep" },
+  { id: "bark_onExplore_1", cat: "bark_onExplore", jp_b: "行くよ！", en_b: "Let's go!", status: "keep" },
+  { id: "bark_onExplore_2", cat: "bark_onExplore", jp_b: "見て！", en_b: "Look!", status: "keep" },
+  { id: "bark_onExplore_3", cat: "bark_onExplore", jp_b: "綺麗！", en_b: "Pretty!", status: "keep" },
+  { id: "bark_onExplore_4", cat: "bark_onExplore", jp_b: "凄い！", en_b: "Amazing!", status: "keep" },
+  { id: "bark_onExplore_5", cat: "bark_onExplore", jp_b: "ここ 好き！", en_b: "Here like! (broken — stray space)", status: "change", jp_a: "ここが好き！", en_a: "I like it here!", note: "Stray space between ここ and 好き will confuse Sudachi. Add the particle が for clean N5 grammar." },
+  { id: "bark_onExplore_6", cat: "bark_onExplore", jp_b: "何か ある！", en_b: "Something exists! (broken — stray space)", status: "change", jp_a: "何かある！", en_a: "There's something!", note: "Remove the stray space. Otherwise fine." },
+  { id: "bark_onExplore_7", cat: "bark_onExplore", jp_b: "行こう！", en_b: "Let's go!", status: "keep" },
+  { id: "bark_onExplore_8", cat: "bark_onExplore", jp_b: "新しい！", en_b: "New!", status: "keep" },
+  { id: "bark_onExplore_9", cat: "bark_onExplore", jp_b: "面白い！", en_b: "Interesting!", status: "keep" },
+
+  // ==== bark_onHeal ====
+  { id: "bark_onHeal_0", cat: "bark_onHeal", jp_b: "ありがとう！", en_b: "Thank you!", status: "keep" },
+  { id: "bark_onHeal_1", cat: "bark_onHeal", jp_b: "助かる！", en_b: "I'm saved!", status: "keep" },
+  { id: "bark_onHeal_2", cat: "bark_onHeal", jp_b: "大丈夫！", en_b: "I'm alright!", status: "keep" },
+  { id: "bark_onHeal_3", cat: "bark_onHeal", jp_b: "元気！", en_b: "Healthy / energetic!", status: "keep" },
+  { id: "bark_onHeal_4", cat: "bark_onHeal", jp_b: "嬉しい！", en_b: "Happy!", status: "keep" },
+  { id: "bark_onHeal_5", cat: "bark_onHeal", jp_b: "良かった！", en_b: "It was good!", status: "delete", note: "R2: past-tense conjugation; drop for beginner-friendly heal variety." },
+
+  // ==== bark_onKO ====
+  { id: "bark_onKO_0", cat: "bark_onKO", jp_b: "ごめん…", en_b: "Sorry…", status: "keep" },
+  { id: "bark_onKO_1", cat: "bark_onKO", jp_b: "無理…", en_b: "Impossible / unreasonable…", status: "keep" },
+  { id: "bark_onKO_2", cat: "bark_onKO", jp_b: "負けた…", en_b: "I lost…", status: "keep" },
+  { id: "bark_onKO_3", cat: "bark_onKO", jp_b: "疲れた…", en_b: "I'm tired…", status: "keep" },
+  { id: "bark_onKO_4", cat: "bark_onKO", jp_b: "駄目だ…", en_b: "No good…", status: "keep" },
+  { id: "bark_onKO_5", cat: "bark_onKO", jp_b: "悔しい…", en_b: "Frustrating / mortifying…", status: "keep" },
+
+  // ==== bark_onStatusEffect ====
+  { id: "bark_onStatusEffect_0", cat: "bark_onStatusEffect", jp_b: "しまった！", en_b: "Damn! / Oops!", status: "keep" },
+  { id: "bark_onStatusEffect_1", cat: "bark_onStatusEffect", jp_b: "待って！", en_b: "Wait!", status: "keep" },
+  { id: "bark_onStatusEffect_2", cat: "bark_onStatusEffect", jp_b: "止めて！", en_b: "Stop (a thing)!", status: "change", jp_a: "やめて！", en_a: "Quit it! / Stop that!", note: "Same fix as bark_onHit_7 — やめる not 止める for 'stop that'." },
+  { id: "bark_onStatusEffect_3", cat: "bark_onStatusEffect", jp_b: "動けない！", en_b: "I can't move!", status: "delete", note: "R2: potential+negative conjugation too complex. Delete." },
+  { id: "bark_onStatusEffect_4", cat: "bark_onStatusEffect", jp_b: "何これ！", en_b: "What is this!", status: "keep" },
+  { id: "bark_onStatusEffect_5", cat: "bark_onStatusEffect", jp_b: "嫌だ！", en_b: "No! / I hate it!", status: "keep" },
+
+  // ==== bark_onLowHP ====
+  { id: "bark_onLowHP_0", cat: "bark_onLowHP", jp_b: "危ない！", en_b: "Dangerous!", status: "keep" },
+  { id: "bark_onLowHP_1", cat: "bark_onLowHP", jp_b: "助けて！", en_b: "Help!", status: "keep" },
+  { id: "bark_onLowHP_2", cat: "bark_onLowHP", jp_b: "怖い！", en_b: "Scary!", status: "keep" },
+  { id: "bark_onLowHP_3", cat: "bark_onLowHP", jp_b: "やばい！", en_b: "Uh-oh! / This is bad!", status: "keep" },
+  { id: "bark_onLowHP_4", cat: "bark_onLowHP", jp_b: "駄目だ！", en_b: "No good!", status: "keep" },
+  { id: "bark_onLowHP_5", cat: "bark_onLowHP", jp_b: "ピンチ！", en_b: "Pinch! / Crisis!", status: "delete", note: "R2: katakana loanword; not hiragana-friendly. Delete." },
+
+  // ==== bark_onAttack ====
+  { id: "bark_onAttack_0", cat: "bark_onAttack", jp_b: "頑張れ！", en_b: "Do your best! (imperative)", status: "keep" },
+  { id: "bark_onAttack_1", cat: "bark_onAttack", jp_b: "負けないぞ！", en_b: "I won't lose!", status: "change", jp_a: "勝つぞ！", en_a: "I'll win!", note: "R2: no positive+ない. 勝つ is already taught via 勝った in bark_onVictory_1." },
+  { id: "bark_onAttack_2", cat: "bark_onAttack", jp_b: "行くぞ！", en_b: "Here I go!", status: "keep" },
+  { id: "bark_onAttack_3", cat: "bark_onAttack", jp_b: "やるぞ！", en_b: "I'll do it!", status: "keep" },
+  { id: "bark_onAttack_4", cat: "bark_onAttack", jp_b: "それ！", en_b: "That! / Here!", status: "delete", note: "R2: non-teaching interjection; user flagged as nonsense. Delete." },
+  { id: "bark_onAttack_5", cat: "bark_onAttack", jp_b: "行け！", en_b: "Go! (imperative)", status: "delete", note: "R2: consolidate — 行くぞ (_2) is the canonical 'let's go'." },
+  { id: "bark_onAttack_6", cat: "bark_onAttack", jp_b: "とりゃ！", en_b: "Hya! (battle cry)", status: "delete", note: "R2: non-teaching battle cry. Delete." },
+  { id: "bark_onAttack_7", cat: "bark_onAttack", jp_b: "えいっ！", en_b: "Hah! (battle cry)", status: "delete", note: "R2: non-teaching battle cry. Delete." },
+  { id: "bark_onAttack_8", cat: "bark_onAttack", jp_b: "食らえ！", en_b: "Eat this / take this! (imperative)", status: "delete", note: "R2: non-teaching imperative. Delete." },
+
+  // ==== cid welcomes (DELETE ALL) ====
+  { id: "cid_cid-welcome-0_0", cat: "cid", jp_b: "こんにちは！鳥！犬！", en_b: "Hello! Bird! Dog!", status: "delete", note: "Unused — delete entire cid-welcome series." },
+  { id: "cid_cid-welcome-0_1", cat: "cid", jp_b: "火！風！水！", en_b: "Fire! Wind! Water!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-0_2", cat: "cid", jp_b: "飛ぶ！守る！", en_b: "To fly! To protect!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-1_0", cat: "cid", jp_b: "おはよう！刀！鉄！", en_b: "Good morning! Sword! Iron!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-1_1", cat: "cid", jp_b: "花！木！石！", en_b: "Flower! Tree! Stone!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-1_2", cat: "cid", jp_b: "握る！叩く！", en_b: "To grasp! To hit!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-2_0", cat: "cid", jp_b: "こんにちは！鳥は飛ぶ！", en_b: "Hello! Birds fly!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-2_1", cat: "cid", jp_b: "虫は花！犬は守る！", en_b: "Bug is flower! Dog protects! (nonsense first clause)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-2_2", cat: "cid", jp_b: "炎は火！", en_b: "Flame is fire!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-3_0", cat: "cid", jp_b: "おはよう！刀は握るよ！", en_b: "Good morning! The sword grasps! (transitivity wrong)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-3_1", cat: "cid", jp_b: "風は流すよ！魚は飛ぶよ！", en_b: "Wind flows (something)! Fish fly!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-3_2", cat: "cid", jp_b: "石は鉄よ！", en_b: "Stone is iron! (false)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-4_0", cat: "cid", jp_b: "こんにちは！犬も飛ぶ！鳥も飛ぶ！", en_b: "Hello! Dogs fly too! Birds fly too!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-4_1", cat: "cid", jp_b: "お茶も水よ！ラーメンも水よ！", en_b: "Tea is also water! Ramen is also water! (false)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-4_2", cat: "cid", jp_b: "靴も鉄よ！帽子も鉄よ！", en_b: "Shoes are iron too! Hats are iron too! (false)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-5_0", cat: "cid", jp_b: "こんにちは！猫が飛ぶ！", en_b: "Hello! Cats fly! (false)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-5_1", cat: "cid", jp_b: "鳥が囲む！虫も強いよ！", en_b: "Birds surround! Bugs are strong too! (囲む needs object)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-5_2", cat: "cid", jp_b: "風が強い！犬は守るよ！", en_b: "Wind is strong! Dogs protect!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-6_0", cat: "cid", jp_b: "おはよう！お茶とりんごは強い！", en_b: "Good morning! Tea and apples are strong! (nonsense)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-6_1", cat: "cid", jp_b: "卵と弁当が強いよ！", en_b: "Eggs and bentos are strong! (nonsense)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-6_2", cat: "cid", jp_b: "苺とわさびも強い！", en_b: "Strawberries and wasabi are strong too! (nonsense)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-7_0", cat: "cid", jp_b: "こんにちは！木に鳥が飛ぶ！", en_b: "Hello! Birds fly to the tree!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-7_1", cat: "cid", jp_b: "花に虫が囲む！", en_b: "Bugs surround at flowers! (wrong particle)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-7_2", cat: "cid", jp_b: "水に魚が強いよ！", en_b: "Fish are strong in water!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-8_0", cat: "cid", jp_b: "おはよう！鉄で切る！", en_b: "Good morning! Cut with iron!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-8_1", cat: "cid", jp_b: "刀は強いよ！石で叩く！", en_b: "Swords are strong! Hit with stones!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-8_2", cat: "cid", jp_b: "火で燃える！凄いよ！", en_b: "Burn with fire! Amazing! (燃える is intrans, で odd)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-9_0", cat: "cid", jp_b: "こんにちは！猫は強いね！", en_b: "Hello! Cats are strong, aren't they!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-9_1", cat: "cid", jp_b: "お茶とりんごは凄いね！", en_b: "Tea and apples are amazing! (random)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-9_2", cat: "cid", jp_b: "鳥が飛ぶね！風も強いね！", en_b: "Birds fly! Wind is strong too!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-10_0", cat: "cid", jp_b: "おはよう！刀は鉄だ！靴も鉄だ！", en_b: "Good morning! Swords are iron! Shoes are iron too! (false)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-10_1", cat: "cid", jp_b: "炎は火だ！風も凄いよ！", en_b: "Flame is fire! Wind is amazing too!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-10_2", cat: "cid", jp_b: "犬と猫は大人だ！素晴らしいね！", en_b: "Dogs and cats are adults! Wonderful! (nonsense)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-11_0", cat: "cid", jp_b: "こんにちは！犬は強いか？魚も食らうか？", en_b: "Hello! Are dogs strong? Do fish eat (crudely) too?", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-11_1", cat: "cid", jp_b: "鳥は風に飛ぶか？猫は眠るか？早いね！", en_b: "Do birds fly in wind? Do cats sleep? Fast! (non-sequitur)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-11_2", cat: "cid", jp_b: "男の子は泣くか？女の子は怒るか？大人だよ！", en_b: "Do boys cry? Do girls get angry? They're adults! (non-sequitur)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-12_0", cat: "cid", jp_b: "おはよう！鉄の刀は強いよ！", en_b: "Good morning! Iron swords are strong!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-12_1", cat: "cid", jp_b: "猫の帽子は凄いね！犬の靴も強い！", en_b: "The cat's hat is amazing! The dog's shoes are strong too!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-12_2", cat: "cid", jp_b: "石の鏡は凄いね！", en_b: "The stone mirror is amazing! (stone mirror isn't a game item)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-13_0", cat: "cid", jp_b: "こんにちは！猫は魚を食らうよ！", en_b: "Hello! Cats eat (crudely) fish!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-13_1", cat: "cid", jp_b: "犬が石を握る！男の子が虫を叩くね！", en_b: "Dogs grasp stones! Boys hit bugs! (dogs can't grasp; dark tone)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-13_2", cat: "cid", jp_b: "鳥は炎を守るよ！強いね！素晴らしい！", en_b: "Birds protect flames! Strong! Wonderful! (meaningless)", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-14_0", cat: "cid", jp_b: "おはよう！鉄の刀は凄いね！", en_b: "Good morning! Iron swords are amazing!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-14_1", cat: "cid", jp_b: "犬が虫を叩く！鳥は風に飛ぶよ！", en_b: "Dogs hit bugs! Birds fly in the wind!", status: "delete", note: "Unused." },
+  { id: "cid_cid-welcome-14_2", cat: "cid", jp_b: "男の子は水を飲むか？猫も魚を食らうね！素晴らしい！", en_b: "Do boys drink water? Cats also eat (crudely) fish! Wonderful!", status: "delete", note: "Unused." },
+  { id: "cid_tutorial-translator-demo_0", cat: "cid", jp_b: "こんにちは", en_b: "Hello", status: "keep", note: "Separate group (tutorial-translator-demo) — keep." },
+
+  // ==== befriend_success ====
+  { id: "befriend_success_friend", cat: "befriend_success", jp_b: "友達です！", en_b: "(We're) friends!", status: "keep" },
+  { id: "befriend_success_happy", cat: "befriend_success", jp_b: "嬉しい友達です！", en_b: "(We're) happy friends!", status: "delete", note: "R2: 'happy friend' phrasing awkward; doesn't fit success moment." },
+  { id: "befriend_success_together", cat: "befriend_success", jp_b: "一緒の友達は嬉しいです！", en_b: "Together-friends are happy! (awkward 一緒の)", status: "change", jp_a: "今から友達です！", en_a: "From now on we're friends!", note: "一緒の friend is unnatural. Replace with 今から (from now) + 友達 — fits becoming-friends moment." },
+  { id: "befriend_success_me", cat: "befriend_success", jp_b: "私の名前です！", en_b: "It's my name!", status: "keep" },
+  { id: "befriend_success_very", cat: "befriend_success", jp_b: "とても嬉しい友達です！", en_b: "(We're) very happy friends!", status: "keep" },
+  { id: "befriend_success_first", cat: "befriend_success", jp_b: "初めての友達は嬉しいです！", en_b: "My first friend makes me happy!", status: "delete", note: "R2: awkward phrasing. Delete." },
+  { id: "befriend_success_strong", cat: "befriend_success", jp_b: "強い友達は嬉しいです！", en_b: "A strong friend makes me happy!", status: "keep" },
+  { id: "befriend_success_know", cat: "befriend_success", jp_b: "私の名前を知る友達です！", en_b: "You're a friend who knows my name!", status: "delete", note: "R2: redundant with _me (私の名前です！). Delete." },
+
+  // ==== befriend_wrong ====
+  { id: "befriend_wrong_no", cat: "befriend_wrong", jp_b: "違う！", en_b: "Wrong! / Different!", status: "keep" },
+  { id: "befriend_wrong_that", cat: "befriend_wrong", jp_b: "それは違う！", en_b: "That's wrong!", status: "keep" },
+  { id: "befriend_wrong_not_name", cat: "befriend_wrong", jp_b: "それは名前じゃない！", en_b: "That's not a name!", status: "keep" },
+  { id: "befriend_wrong_still", cat: "befriend_wrong", jp_b: "まだ違う！", en_b: "Still wrong!", status: "delete", note: "R2: doesn't fit context. Delete." },
+  { id: "befriend_wrong_different", cat: "befriend_wrong", jp_b: "私の名前は違う！", en_b: "My name is different!", status: "keep" },
+  { id: "befriend_wrong_say", cat: "befriend_wrong", jp_b: "もう一度言ってください！", en_b: "Please say it one more time!", status: "delete", note: "R2: player types, doesn't speak. Delete." },
+  { id: "befriend_wrong_again", cat: "befriend_wrong", jp_b: "もう一度お願いします！", en_b: "Once more, please!", status: "delete", note: "R2: generic; doesn't fit context. Delete." },
+
+  // ==== befriend_wait ====
+  { id: "befriend_wait_wait", cat: "befriend_wait", jp_b: "待って！", en_b: "Wait!", status: "keep" },
+  { id: "befriend_wait_little", cat: "befriend_wait", jp_b: "ちょっと待って！", en_b: "Wait a moment!", status: "keep" },
+  { id: "befriend_wait_please", cat: "befriend_wait", jp_b: "お願い、待ってください！", en_b: "Please, wait!", status: "keep" },
+  { id: "befriend_wait_still", cat: "befriend_wait", jp_b: "まだ待ってください！", en_b: "Keep waiting please! (awkward)", status: "change", jp_a: "少しだけ待って！", en_a: "Just wait a little!", note: "まだ待って implies 'keep waiting (from before).' 少しだけ uses words already in the glue/grammar lists and reads natural." },
+  { id: "befriend_wait_me", cat: "befriend_wait", jp_b: "私を待ってください！", en_b: "Please wait for me!", status: "delete", note: "R2: 'wait for me' reads like going somewhere, not 'pause guessing'. Delete." },
+  { id: "befriend_wait_less", cat: "befriend_wait", jp_b: "少し待ってください！", en_b: "Please wait a little!", status: "keep" },
+  { id: "befriend_wait_now", cat: "befriend_wait", jp_b: "今は待ってください！", en_b: "For now, please wait!", status: "keep" },
+
+  // ==== befriend_name ====
+  { id: "befriend_name_what", cat: "befriend_name", jp_b: "名前は？", en_b: "(What's my) name?", status: "keep" },
+  { id: "befriend_name_my", cat: "befriend_name", jp_b: "私の名前は？", en_b: "My name?", status: "keep" },
+  { id: "befriend_name_know", cat: "befriend_name", jp_b: "私の名前を分かる？", en_b: "Do you understand my name? (wrong particle)", status: "change", jp_a: "私の名前が分かる？", en_a: "Do you understand my name?", note: "分かる takes が, not を. Core N5 rule." },
+  { id: "befriend_name_say", cat: "befriend_name", jp_b: "私の名前を言う？", en_b: "Say my name? (ambiguous subject)", status: "change", jp_a: "私の名前、何？", en_a: "My name — what is it?", note: "Bare dictionary form as question is ambiguous. Recast as a direct 'what' question using 何." },
+  { id: "befriend_name_this", cat: "befriend_name", jp_b: "この名前を分かる？", en_b: "Do you understand this name? (wrong particle)", status: "delete", note: "R2: 'this name' has no referent when creature asks for its name — context mismatch. Delete." },
+  { id: "befriend_name_still", cat: "befriend_name", jp_b: "私の名前はまだ分かる？", en_b: "Do you still understand my name? (wrong adverb)", status: "change", jp_a: "今は私の名前が分かる？", en_a: "Now do you understand my name?", note: "まだ ('still/yet') + 分かる reads as 'are you able to still understand' — wrong sense. 今は ('by now') fits. Also fix the を→が particle." },
+  { id: "befriend_name_that", cat: "befriend_name", jp_b: "それは私の名前ですか？", en_b: "Is that my name?", status: "delete", note: "R2: category is creature ASKING for its name; this phrasing responds to a guess. Wrong direction. Delete." },
+
+  // ==== npc_kodomo_fightStart ====
+  { id: "npc_kodomo_fightStart_play", cat: "npc_kodomo_fightStart", jp_b: "遊ぶ？", en_b: "Wanna play?", status: "keep" },
+  { id: "npc_kodomo_fightStart_go", cat: "npc_kodomo_fightStart", jp_b: "行くよ！", en_b: "Let's go!", status: "keep" },
+  { id: "npc_kodomo_fightStart_strong", cat: "npc_kodomo_fightStart", jp_b: "私は強いです！", en_b: "I'm strong!", status: "keep" },
+  { id: "npc_kodomo_fightStart_together", cat: "npc_kodomo_fightStart", jp_b: "一緒に遊ぶ？", en_b: "Play together?", status: "keep" },
+  { id: "npc_kodomo_fightStart_today", cat: "npc_kodomo_fightStart", jp_b: "今日も遊ぶ？", en_b: "Play today too?", status: "keep" },
+  { id: "npc_kodomo_fightStart_very", cat: "npc_kodomo_fightStart", jp_b: "とても楽しいです！", en_b: "Very fun!", status: "keep" },
+  { id: "npc_kodomo_fightStart_now", cat: "npc_kodomo_fightStart", jp_b: "今遊ぶ？", en_b: "Play now?", status: "keep" },
+  { id: "npc_kodomo_fightStart_friend", cat: "npc_kodomo_fightStart", jp_b: "友達になる？", en_b: "Become friends?", status: "keep" },
+
+  // ==== npc_otona_fightStart ====
+  { id: "npc_otona_fightStart_begin", cat: "npc_otona_fightStart", jp_b: "始めますか？", en_b: "Shall we begin?", status: "change", jp_a: "始めます！", en_a: "I'll begin!", note: "R2: drop ますか compound; declarative is simpler." },
+  { id: "npc_otona_fightStart_ready", cat: "npc_otona_fightStart", jp_b: "準備は出来ますか？", en_b: "Are you ready? (lit. is preparation possible)", status: "change", jp_a: "準備はいいですか？", en_a: "Are you ready? (lit. is preparation good)", note: "R2: swap 出来ます for いい; です+か simpler than 出来ます+か." },
+  { id: "npc_otona_fightStart_strong", cat: "npc_otona_fightStart", jp_b: "強いと思います", en_b: "I think (you're) strong", status: "change", jp_a: "強いですね！", en_a: "You're strong, aren't you!", note: "R2: drop 思います verb chain; です+ね is simpler." },
+  { id: "npc_otona_fightStart_effort", cat: "npc_otona_fightStart", jp_b: "頑張りましょう", en_b: "Let's do our best", status: "change", jp_a: "頑張る！", en_a: "I'll do my best!", note: "R2: drop ましょう (volitional polite); plain declarative." },
+  { id: "npc_otona_fightStart_good", cat: "npc_otona_fightStart", jp_b: "上手ですね", en_b: "You're skilled", status: "keep" },
+  { id: "npc_otona_fightStart_before", cat: "npc_otona_fightStart", jp_b: "前にも会いましたね", en_b: "We've met before too, haven't we", status: "change", jp_a: "前にも会いました", en_a: "We've met before too", note: "R2: drop the ね confirmation tag." },
+  { id: "npc_otona_fightStart_power", cat: "npc_otona_fightStart", jp_b: "力を見ましょう", en_b: "Let's see (your) strength", status: "change", jp_a: "力を見る！", en_a: "I'll see (your) strength!", note: "R2: drop ましょう; plain dictionary form." },
+  { id: "npc_otona_fightStart_teach", cat: "npc_otona_fightStart", jp_b: "教えましょうか？", en_b: "Shall I teach (you)?", status: "keep" },
+
+  // ==== npc_otokonoko_fightStart ====
+  { id: "npc_otokonoko_fightStart_go", cat: "npc_otokonoko_fightStart", jp_b: "行くぞ！", en_b: "Here I go!", status: "keep" },
+  { id: "npc_otokonoko_fightStart_strong", cat: "npc_otokonoko_fightStart", jp_b: "強いぞ！", en_b: "Strong!", status: "keep" },
+  { id: "npc_otokonoko_fightStart_me", cat: "npc_otokonoko_fightStart", jp_b: "俺は強いぞ！", en_b: "I'm strong!", status: "keep" },
+  { id: "npc_otokonoko_fightStart_power", cat: "npc_otokonoko_fightStart", jp_b: "力を見るぞ！", en_b: "I'll see (your) strength!", status: "keep" },
+  { id: "npc_otokonoko_fightStart_big", cat: "npc_otokonoko_fightStart", jp_b: "大きい声で行くぞ！", en_b: "I'll go with a big voice! (awkward)", status: "delete", note: "R2: both 'big voice' and 'big strength' awkward; other boasts cover the register. Delete." },
+  { id: "npc_otokonoko_fightStart_this", cat: "npc_otokonoko_fightStart", jp_b: "この手は強いぞ！", en_b: "This hand is strong!", status: "delete", note: "R2: 'this hand is strong' makes no sense in combat context. Delete." },
+  { id: "npc_otokonoko_fightStart_use", cat: "npc_otokonoko_fightStart", jp_b: "力を使うぞ！", en_b: "I'll use (my) strength!", status: "keep" },
+  { id: "npc_otokonoko_fightStart_hold", cat: "npc_otokonoko_fightStart", jp_b: "力を持つぞ！", en_b: "I'll hold strength! (awkward as declaration)", status: "change", jp_a: "力があるぞ！", en_a: "I have strength!", note: "持つ in bare dictionary form as a declaration is unnatural. ある fits better for 'I have'." },
+
+  // ==== npc_onnanoko_fightStart ====
+  { id: "npc_onnanoko_fightStart_ah", cat: "npc_onnanoko_fightStart", jp_b: "あ…始めます", en_b: "Ah… I'll begin", status: "keep" },
+  { id: "npc_onnanoko_fightStart_scary", cat: "npc_onnanoko_fightStart", jp_b: "少し怖いです…", en_b: "It's a little scary…", status: "keep" },
+  { id: "npc_onnanoko_fightStart_try", cat: "npc_onnanoko_fightStart", jp_b: "頑張ります…", en_b: "I'll do my best…", status: "keep" },
+  { id: "npc_onnanoko_fightStart_small", cat: "npc_onnanoko_fightStart", jp_b: "小さい声ですけど…", en_b: "It's a soft voice, but… (in-character trailing)", status: "delete", note: "R2: trailing けど without completion doesn't parse as a fight-start line. Delete." },
+  { id: "npc_onnanoko_fightStart_me", cat: "npc_onnanoko_fightStart", jp_b: "私も頑張ります！", en_b: "I'll do my best too!", status: "keep" },
+  { id: "npc_onnanoko_fightStart_heart", cat: "npc_onnanoko_fightStart", jp_b: "心は強いです！", en_b: "My heart is strong!", status: "keep" },
+  { id: "npc_onnanoko_fightStart_that", cat: "npc_onnanoko_fightStart", jp_b: "あの…頑張りますね", en_b: "Um… I'll do my best, okay", status: "keep" },
+  { id: "npc_onnanoko_fightStart_road", cat: "npc_onnanoko_fightStart", jp_b: "この道は楽しいですね", en_b: "This path is fun, isn't it", status: "keep" },
+
+  // ==== npc_kodomo_defeatLine ====
+  { id: "npc_kodomo_defeatLine_1", cat: "npc_kodomo_defeatLine", jp_b: "楽しいです！", en_b: "It's fun!", status: "keep" },
+  { id: "npc_kodomo_defeatLine_2", cat: "npc_kodomo_defeatLine", jp_b: "又遊ぶ？", en_b: "Play again?", status: "change", jp_a: "また遊ぶ？", en_a: "Play again?", note: "又 → また (kana). 又 is archaic/rare in modern writing; また is N5-standard." },
+  { id: "npc_kodomo_defeatLine_3", cat: "npc_kodomo_defeatLine", jp_b: "とても強いと思う！", en_b: "I think (you're) very strong!", status: "keep" },
+  { id: "npc_kodomo_defeatLine_4", cat: "npc_kodomo_defeatLine", jp_b: "明日も一緒に遊ぶ？", en_b: "Play together tomorrow too?", status: "keep" },
+  { id: "npc_kodomo_defeatLine_5", cat: "npc_kodomo_defeatLine", jp_b: "強い友達が来ると嬉しいです！", en_b: "When a strong friend comes I'm happy!", status: "keep" },
+  { id: "npc_kodomo_defeatLine_6", cat: "npc_kodomo_defeatLine", jp_b: "この場所で明日も一緒に遊ぶ？", en_b: "Play together here tomorrow too?", status: "keep" },
+
+  // ==== npc_otona_defeatLine ====
+  { id: "npc_otona_defeatLine_1", cat: "npc_otona_defeatLine", jp_b: "上手ですね", en_b: "You're skilled", status: "keep" },
+  { id: "npc_otona_defeatLine_2", cat: "npc_otona_defeatLine", jp_b: "強いと思います", en_b: "I think (you're) strong", status: "keep" },
+  { id: "npc_otona_defeatLine_3", cat: "npc_otona_defeatLine", jp_b: "私に教えますか？", en_b: "Will you teach me?", status: "keep" },
+  { id: "npc_otona_defeatLine_4", cat: "npc_otona_defeatLine", jp_b: "後で又会いましょう", en_b: "Let's meet again later", status: "change", jp_a: "後でまた会いましょう", en_a: "Let's meet again later", note: "又 → また (kana)." },
+  { id: "npc_otona_defeatLine_5", cat: "npc_otona_defeatLine", jp_b: "いい力を持つ人ですね", en_b: "You're a person with good strength", status: "keep" },
+  { id: "npc_otona_defeatLine_6", cat: "npc_otona_defeatLine", jp_b: "この方は強い気を持つ人ですね", en_b: "This person holds strong spirit", status: "keep" },
+
+  // ==== npc_otokonoko_defeatLine ====
+  { id: "npc_otokonoko_defeatLine_1", cat: "npc_otokonoko_defeatLine", jp_b: "悔しいぞ！", en_b: "(It's) mortifying!", status: "keep" },
+  { id: "npc_otokonoko_defeatLine_2", cat: "npc_otokonoko_defeatLine", jp_b: "次は勝つぞ！", en_b: "Next time I'll win!", status: "keep" },
+  { id: "npc_otokonoko_defeatLine_3", cat: "npc_otokonoko_defeatLine", jp_b: "強い力を作るぞ！", en_b: "I'll make strong power! (作る+力 collocation is off)", status: "change", jp_a: "強くなるぞ！", en_a: "I'll become strong!", note: "作る doesn't collocate with 力. 強くなる ('become strong') is a clean N5 pattern using なる from grammar-words." },
+  { id: "npc_otokonoko_defeatLine_4", cat: "npc_otokonoko_defeatLine", jp_b: "明日又来るぞ！", en_b: "I'll come again tomorrow!", status: "change", jp_a: "明日また来るぞ！", en_a: "I'll come again tomorrow!", note: "又 → また (kana)." },
+  { id: "npc_otokonoko_defeatLine_5", cat: "npc_otokonoko_defeatLine", jp_b: "この場所で又やるぞ！", en_b: "I'll do it again at this place!", status: "change", jp_a: "この場所でまたやるぞ！", en_a: "I'll do it again at this place!", note: "又 → また (kana)." },
+  { id: "npc_otokonoko_defeatLine_6", cat: "npc_otokonoko_defeatLine", jp_b: "この世界で強い力を使うぞ！", en_b: "I'll use strong power in this world!", status: "keep" },
+
+  // ==== npc_onnanoko_defeatLine ====
+  { id: "npc_onnanoko_defeatLine_1", cat: "npc_onnanoko_defeatLine", jp_b: "楽しいです…", en_b: "It's fun…", status: "keep" },
+  { id: "npc_onnanoko_defeatLine_2", cat: "npc_onnanoko_defeatLine", jp_b: "強い人ですね", en_b: "You're a strong person", status: "keep" },
+  { id: "npc_onnanoko_defeatLine_3", cat: "npc_onnanoko_defeatLine", jp_b: "あの人も強いと思います…", en_b: "I think that person is also strong… (referent unclear)", status: "keep", note: "'That person' is vague but in-character for a timid speaker. Keeping." },
+  { id: "npc_onnanoko_defeatLine_4", cat: "npc_onnanoko_defeatLine", jp_b: "この方は強い気の人ですね", en_b: "This person is a person of strong spirit", status: "keep" },
+
+  // ==== shopGreeting ====
+  { id: "shopGreeting_hello", cat: "shopGreeting", jp_b: "こんにちは！", en_b: "Hello!", status: "keep" },
+  { id: "shopGreeting_welcome", cat: "shopGreeting", jp_b: "いらっしゃいませ！", en_b: "Welcome! (shop greeting)", status: "keep" },
+  { id: "shopGreeting_today", cat: "shopGreeting", jp_b: "今日はいい日ですね！", en_b: "Today is a good day!", status: "keep" },
+  { id: "shopGreeting_come", cat: "shopGreeting", jp_b: "よく来ますね！", en_b: "You come often!", status: "keep" },
+  { id: "shopGreeting_look", cat: "shopGreeting", jp_b: "少し見ますか？", en_b: "Will you look a little?", status: "keep" },
+  { id: "shopGreeting_new", cat: "shopGreeting", jp_b: "新しい物がありますよ！", en_b: "There are new things!", status: "change", jp_a: "新しいですよ！", en_a: "(These are) new!", note: "R2: drop 物+あります chain; shorter and cleaner." },
+  { id: "shopGreeting_eat", cat: "shopGreeting", jp_b: "食べる物がありますよ！", en_b: "There are things to eat!", status: "change", jp_a: "食べる物です！", en_a: "They're things to eat!", note: "R2: drop あります; です simpler." },
+  { id: "shopGreeting_enter", cat: "shopGreeting", jp_b: "ここに入りますか？", en_b: "Will you come in here? (awkward for counter)", status: "change", jp_a: "どうぞ！", en_a: "Please! / Go ahead!", note: "'Will you enter here?' sounds like inviting into a back room. どうぞ is the standard 'come in / help yourself' N5 interjection." },
+  { id: "shopGreeting_this", cat: "shopGreeting", jp_b: "この場所は楽しいですね！", en_b: "This place is fun, isn't it!", status: "keep" },
+  { id: "shopGreeting_out", cat: "shopGreeting", jp_b: "少し出ますか？", en_b: "Will you exit a little? (nonsensical greeting)", status: "delete", note: "Asking a customer if they'll leave makes no sense as a greeting. Delete." },
+  { id: "shopGreeting_hand", cat: "shopGreeting", jp_b: "手に取りますか？", en_b: "Will you pick it up? (lit. take in hand)", status: "delete", note: "R2: idiom doesn't fit greeting moment. Delete." },
+  { id: "shopGreeting_color", cat: "shopGreeting", jp_b: "綺麗な色の物がありますよ！", en_b: "There are things of pretty color!", status: "delete", note: "R2: doesn't fit greeting context. Delete." },
+  { id: "shopGreeting_world", cat: "shopGreeting", jp_b: "この世界の物を見ますか？", en_b: "Will you see things of this world?", status: "delete", note: "R2: too abstract for shop greeting. Delete." },
+  { id: "shopGreeting_energy", cat: "shopGreeting", jp_b: "元気ですか？", en_b: "How are you? / Are you well?", status: "keep" },
+  { id: "shopGreeting_time", cat: "shopGreeting", jp_b: "いい時に来ますね！", en_b: "You come at a good time! (present tense wrong for arrival)", status: "change", jp_a: "いい時に来ましたね！", en_a: "You came at a good time!", note: "Tense fix: 来ます (future/habitual) → 来ました (past) for commenting on the current arrival." },
+  { id: "shopGreeting_talk", cat: "shopGreeting", jp_b: "いい話がありますよ！", en_b: "There's a good story!", status: "delete", note: "R2: 'good story' pitch doesn't fit shop greeting. Delete." },
+  { id: "shopGreeting_eye", cat: "shopGreeting", jp_b: "目がいいですね！", en_b: "You have a good eye!", status: "delete", note: "R2: random compliment, not a greeting. Delete." },
+  { id: "shopGreeting_big", cat: "shopGreeting", jp_b: "大きい物がありますよ！", en_b: "There are big things!", status: "delete", note: "R2: doesn't fit greeting context. Delete." },
+  { id: "shopGreeting_small", cat: "shopGreeting", jp_b: "小さい物がありますよ！", en_b: "There are small things!", status: "delete", note: "R2: doesn't fit greeting context. Delete." },
+  { id: "shopGreeting_voice", cat: "shopGreeting", jp_b: "いい声ですね！", en_b: "You have a nice voice! (random compliment)", status: "delete", note: "Random compliment unrelated to shopping. Delete, or move to a separate 'npc_compliment' category if that's useful." },
+  { id: "shopGreeting_before", cat: "shopGreeting", jp_b: "前に来ますか？", en_b: "Will you come in front? (unclear)", status: "change", jp_a: "前にも来ましたね！", en_a: "You've been here before too, haven't you!", note: "The question form reads as 'will you come forward' which is odd. Past-tense recognition is the natural shop line." },
+  { id: "shopGreeting_after", cat: "shopGreeting", jp_b: "後で又来ますか？", en_b: "Will you come again later?", status: "change", jp_a: "後でまた来ますか？", en_a: "Will you come again later?", note: "又 → また (kana)." },
+  { id: "shopGreeting_direction", cat: "shopGreeting", jp_b: "この方は強いですね！", en_b: "This direction is strong! / This person is strong! (ambiguous gibberish)", status: "change", jp_a: "強い人ですね！", en_a: "You're a strong person!", note: "方 is ambiguous between direction and person; reads as gibberish either way. Simpler: 強い人." },
+  { id: "shopGreeting_spirit", cat: "shopGreeting", jp_b: "いい気ですね！", en_b: "Nice spirit! (vague)", status: "change", jp_a: "元気な人ですね！", en_a: "You're an energetic person!", note: "いい気 is abstract for a shopkeeper. 元気な人 is concrete and uses words already in the glue list." },
+  { id: "shopGreeting_able", cat: "shopGreeting", jp_b: "出来ますか？", en_b: "Can you do (it)? (no object)", status: "change", jp_a: "何がいいですか？", en_a: "What would be good? / What would you like?", note: "Bare 出来ますか has no referent. 何がいいですか is the natural 'what can I get you' prompt." },
+
+  // ==== shopPurchase ====
+  { id: "shopPurchase_please", cat: "shopPurchase", jp_b: "{item}をください", en_b: "Please give me {item}", status: "keep" },
+  { id: "shopPurchase_excuse", cat: "shopPurchase", jp_b: "すみません、{item}をください", en_b: "Excuse me, please give me {item}", status: "keep" },
+  { id: "shopPurchase_this", cat: "shopPurchase", jp_b: "この{item}をください", en_b: "Please give me this {item}", status: "keep" },
+  { id: "shopPurchase_that", cat: "shopPurchase", jp_b: "それをください", en_b: "Please give me that", status: "keep" },
+  { id: "shopPurchase_use", cat: "shopPurchase", jp_b: "{item}を使います！", en_b: "I'll use {item}! (weird at checkout)", status: "change", jp_a: "{item}を買います！", en_a: "I'll buy {item}!", note: "'I'll use X' is what you say when using an item, not buying. 買う is the N5 verb for purchase." },
+  { id: "shopPurchase_hold", cat: "shopPurchase", jp_b: "{item}を持ちます！", en_b: "I'll hold {item}! (weird at checkout)", status: "change", jp_a: "{item}がいいです！", en_a: "{item} is good! / I'll take {item}!", note: "'I'll hold it' is odd. Xがいいです is the natural 'I'll take X' selection phrase." },
+  { id: "shopPurchase_good", cat: "shopPurchase", jp_b: "いい{item}ですね！", en_b: "That's a nice {item}!", status: "keep" },
+  { id: "shopPurchase_happy", cat: "shopPurchase", jp_b: "この{item}は嬉しいです！", en_b: "This {item} makes me happy!", status: "keep" },
+  { id: "shopPurchase_thanks", cat: "shopPurchase", jp_b: "{item}をありがとうございます！", en_b: "Thank you for the {item}!", status: "keep" },
+  { id: "shopPurchase_this_one", cat: "shopPurchase", jp_b: "これをください！", en_b: "Please give me this!", status: "keep" },
+
+  // ==== gameMaster_ask ====
+  { id: "gm_ask_1", cat: "gameMaster_ask", jp_b: "遊びますか？", en_b: "Shall we play?", status: "change", jp_a: "遊ぶ？", en_a: "Play?", note: "R2: simplify base ask — dictionary form with implicit か." },
+  { id: "gm_ask_2", cat: "gameMaster_ask", jp_b: "一緒に遊びますか？", en_b: "Shall we play together?", status: "keep" },
+  { id: "gm_ask_3", cat: "gameMaster_ask", jp_b: "楽しい言葉の遊びです！", en_b: "It's a fun word game!", status: "change", jp_a: "楽しい遊びです！", en_a: "It's a fun game!", note: "R2: drop 言葉 — don't break 4th wall referencing 'words'." },
+  { id: "gm_ask_4", cat: "gameMaster_ask", jp_b: "私と一緒に言葉で遊びますか？", en_b: "Will you play with words together with me?", status: "change", jp_a: "一緒に遊ぶ？", en_a: "Play together?", note: "R2: drop 言葉 and polite form; match _1 simplicity." },
+
+  // ==== gameMaster_finish ====
+  { id: "gm_finish_1", cat: "gameMaster_finish", jp_b: "上手！", en_b: "Skilled! / Nicely done!", status: "keep" },
+  { id: "gm_finish_2", cat: "gameMaster_finish", jp_b: "楽しい！", en_b: "Fun!", status: "keep" },
+  { id: "gm_finish_3", cat: "gameMaster_finish", jp_b: "楽しい遊び！", en_b: "A fun game!", status: "keep" },
+  { id: "gm_finish_4", cat: "gameMaster_finish", jp_b: "言葉の遊び！", en_b: "A word game!", status: "delete", note: "R2: don't reference words/language — breaks 4th wall. Delete." },
+  { id: "gm_finish_5", cat: "gameMaster_finish", jp_b: "楽しい言葉の遊び！", en_b: "A fun word game!", status: "delete", note: "R2: don't reference words/language. Delete." },
+
+  // ==== npcDefeat ====
+  { id: "npcDefeat_0", cat: "npcDefeat", jp_b: "すごい！", en_b: "Amazing!", status: "keep" },
+  { id: "npcDefeat_1", cat: "npcDefeat", jp_b: "強い！", en_b: "Strong!", status: "keep" },
+  { id: "npcDefeat_2", cat: "npcDefeat", jp_b: "負ける！", en_b: "I lose! (wrong tense — this is after defeat)", status: "change", jp_a: "負けた！", en_a: "I lost!", note: "After defeat, past tense is required. 負ける (dict) → 負けた (past)." },
+  { id: "npcDefeat_3", cat: "npcDefeat", jp_b: "やるね！", en_b: "You've got skill! / Nicely done!", status: "keep" },
+  { id: "npcDefeat_4", cat: "npcDefeat", jp_b: "本当にすごい！", en_b: "Truly amazing!", status: "keep" },
+  { id: "npcDefeat_5", cat: "npcDefeat", jp_b: "{randomPlayerCreature}、強い！", en_b: "{creature} is strong!", status: "keep" },
+  { id: "npcDefeat_6", cat: "npcDefeat", jp_b: "完全に負ける！", en_b: "I completely lose! (wrong tense)", status: "change", jp_a: "完全に負けた！", en_a: "I completely lost!", note: "Tense fix: 負ける → 負けた." },
+  { id: "npcDefeat_7", cat: "npcDefeat", jp_b: "楽しい戦い！", en_b: "A fun battle!", status: "keep" },
+  { id: "npcDefeat_8", cat: "npcDefeat", jp_b: "すごい、{randomPlayerCreature}は強い！", en_b: "Amazing, {creature} is strong!", status: "keep" },
+  { id: "npcDefeat_9", cat: "npcDefeat", jp_b: "良い勝負、私は負ける！", en_b: "Good match, I lose! (wrong tense)", status: "change", jp_a: "良い勝負、私は負けた！", en_a: "Good match, I lost!", note: "Tense fix." },
+  { id: "npcDefeat_10", cat: "npcDefeat", jp_b: "{randomPlayerCreature}はとても強い！", en_b: "{creature} is very strong!", status: "keep" },
+  { id: "npcDefeat_11", cat: "npcDefeat", jp_b: "次は絶対に勝つ！", en_b: "Next time I'll definitely win!", status: "keep" },
+  { id: "npcDefeat_12", cat: "npcDefeat", jp_b: "あなたと{randomPlayerCreature}は本当にすごい！", en_b: "You and {creature} are truly amazing!", status: "keep" },
+  { id: "npcDefeat_13", cat: "npcDefeat", jp_b: "私も強い、又戦う！", en_b: "I'm strong too, fight again!", status: "change", jp_a: "私も強い、また戦う！", en_a: "I'm strong too, let's fight again!", note: "又 → また (kana)." },
+  { id: "npcDefeat_14", cat: "npcDefeat", jp_b: "一緒に練習する、友達になる！", en_b: "Let's practice together, become friends!", status: "keep" },
+  { id: "npcDefeat_15", cat: "npcDefeat", jp_b: "{randomPlayerCreature}の力はすごい、私も頑張る！", en_b: "{creature}'s strength is amazing, I'll try hard too!", status: "keep" },
+  { id: "npcDefeat_16", cat: "npcDefeat", jp_b: "あなたは本当に上手、次は私が勝つ！", en_b: "You're truly skilled, next time I'll win!", status: "keep" },
+  { id: "npcDefeat_17", cat: "npcDefeat", jp_b: "良い勝負、又会う時は絶対に勝つ！", en_b: "Good match, next time we meet I'll definitely win!", status: "change", jp_a: "良い勝負、また会う時は絶対に勝つ！", en_a: "Good match, next time we meet I'll definitely win!", note: "又 → また (kana)." },
+
+  // ==== skill_select ====
+  { id: "skill_select_prompt", cat: "skill_select", jp_b: "どの能力？", en_b: "Which ability?", status: "keep", note: "R2: 能力 is standard Japanese game vocab; keep as-is." },
+
+  // ==== gameMaster_yes/no ====
+  { id: "gm_yes", cat: "gameMaster_yes", jp_b: "はい", en_b: "Yes", status: "keep" },
+  { id: "gm_no", cat: "gameMaster_no", jp_b: "いいえ", en_b: "No", status: "keep" },
+];
+
+// ---- state (persists across re-renders) ----
+const STORAGE_KEY = "koto-frame-audit-feedback-v1";
+const feedbackState = new Map(); // id -> { rejected: bool, feedback: string }
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const obj = JSON.parse(raw);
+    for (const [id, s] of Object.entries(obj)) feedbackState.set(id, s);
+  } catch (e) { /* ignore */ }
+}
+function saveState() {
+  const obj = {};
+  for (const [id, s] of feedbackState.entries()) {
+    if (s.rejected || (s.feedback && s.feedback.trim())) obj[id] = s;
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+}
+function getFb(id) {
+  return feedbackState.get(id) || { rejected: false, feedback: "" };
+}
+function setFb(id, patch) {
+  const cur = getFb(id);
+  const next = { ...cur, ...patch };
+  if (!next.rejected && !(next.feedback && next.feedback.trim())) {
+    feedbackState.delete(id);
+  } else {
+    feedbackState.set(id, next);
+  }
+  saveState();
+  updateFeedbackCount();
+  // Update row classes in place (no full re-render) so user input isn't disturbed
+  const row = document.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+  if (row) {
+    row.classList.toggle("rejected", !!next.rejected);
+    row.classList.toggle("has-feedback", !next.rejected && !!(next.feedback && next.feedback.trim()));
+    const lbl = row.querySelector(".fb-reject-label");
+    if (lbl) lbl.classList.toggle("rejected", !!next.rejected);
+  }
+}
+function updateFeedbackCount() {
+  let n = 0;
+  for (const s of feedbackState.values()) {
+    if (s.rejected || (s.feedback && s.feedback.trim())) n++;
+  }
+  document.getElementById("fbCount").textContent = n;
+  document.getElementById("copyBtn").disabled = n === 0;
+}
+
+// ---- rendering ----
+const categories = [...new Set(entries.map(e => e.cat))];
+const catSelect = document.getElementById("categoryFilter");
+categories.forEach(cat => {
+  const opt = document.createElement("option");
+  opt.value = cat;
+  opt.textContent = cat;
+  catSelect.appendChild(opt);
+});
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+
+function render() {
+  const search = document.getElementById("search").value.toLowerCase();
+  const catFilter = document.getElementById("categoryFilter").value;
+  const statusFilter = document.getElementById("statusFilter").value;
+
+  const filtered = entries.filter(e => {
+    if (catFilter && e.cat !== catFilter) return false;
+    if (statusFilter) {
+      const fb = getFb(e.id);
+      if (statusFilter === "rejected" && !fb.rejected) return false;
+      else if (statusFilter === "has-feedback" && !(fb.feedback && fb.feedback.trim())) return false;
+      else if (["keep","change","delete"].includes(statusFilter) && e.status !== statusFilter) return false;
+    }
+    if (search) {
+      const fb = getFb(e.id);
+      const hay = [e.id, e.cat, e.jp_b, e.en_b, e.jp_a || "", e.en_a || "", e.note || "", fb.feedback || ""].join(" ").toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  // Group by category
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  let prevCat = null;
+  for (const e of filtered) {
+    if (e.cat !== prevCat) {
+      const hdr = document.createElement("tr");
+      hdr.className = "category-header";
+      hdr.innerHTML = `<td colspan="4">${escapeHtml(e.cat)}</td>`;
+      tbody.appendChild(hdr);
+      prevCat = e.cat;
+    }
+    const fb = getFb(e.id);
+    const tr = document.createElement("tr");
+    tr.className = e.status;
+    tr.dataset.id = e.id;
+    if (fb.rejected) tr.classList.add("rejected");
+    else if (fb.feedback && fb.feedback.trim()) tr.classList.add("has-feedback");
+
+    const beforeTokens = serverFrames[e.id];
+    const beforePreview = beforeTokens
+      ? `<div class="preview-pane"><div class="preview-label">In-game · ${displayMode}</div>${renderPreview(beforeTokens)}</div>`
+      : '<div class="preview-pane"><span class="preview-empty">(no tokens in frames.json)</span></div>';
+    const beforeDict = renderDictList(beforeTokens);
+
+    let afterHtml, afterPreview, afterDict;
+    if (e.status === 'delete') {
+      afterHtml = `<div class="jp delete">${escapeHtml(e.jp_b)}</div>`;
+      afterPreview = '';
+      afterDict = '';
+    } else if (e.status === 'keep') {
+      afterHtml = '<div class="jp same">(unchanged)</div>';
+      afterPreview = '';
+      afterDict = '';
+    } else {
+      afterHtml = `<div class="jp">${escapeHtml(e.jp_a)}</div><div class="en">${escapeHtml(e.en_a)}</div>`;
+      const aTokens = afterTokens[e.id];
+      afterPreview = aTokens
+        ? `<div class="preview-pane"><div class="preview-label">In-game · ${displayMode}</div>${renderPreview(aTokens)}</div>`
+        : '<div class="preview-pane"><span class="preview-empty">(tokenizing…)</span></div>';
+      afterDict = renderDictList(aTokens);
+    }
+
+    const noteHtml = e.note
+      ? `<div class="notes">${escapeHtml(e.note)}</div>`
+      : `<span class="badge ${e.status}">${e.status}</span>`;
+
+    const rejectLabel = e.status === 'change' ? 'Reject this change'
+                      : e.status === 'delete' ? 'Reject this delete'
+                      : null;
+    const feedbackUi = `
+      <div class="feedback-controls">
+        ${rejectLabel ? `
+          <label class="fb-reject-label ${fb.rejected ? "rejected" : ""}">
+            <input type="checkbox" class="fb-reject" data-id="${escapeHtml(e.id)}" ${fb.rejected ? "checked" : ""}>
+            <span>${rejectLabel}</span>
+          </label>
+        ` : ''}
+        <textarea class="fb-input" data-id="${escapeHtml(e.id)}" rows="2" placeholder="${e.status === 'keep' ? 'Feedback (e.g. “replace with X”)…' : 'Optional feedback / counter-proposal…'}">${escapeHtml(fb.feedback || "")}</textarea>
+      </div>
+    `;
+
+    tr.innerHTML = `
+      <td>
+        <div class="id">${escapeHtml(e.id)}</div>
+        <div class="cat">${escapeHtml(e.cat)}</div>
+        <div style="margin-top:4px;"><span class="badge ${e.status}">${e.status}</span></div>
+      </td>
+      <td>
+        <div class="jp">${escapeHtml(e.jp_b)}</div>
+        <div class="en">${escapeHtml(e.en_b)}</div>
+        ${beforePreview}
+        ${beforeDict}
+      </td>
+      <td>
+        ${afterHtml}
+        ${afterPreview}
+        ${afterDict}
+      </td>
+      <td>
+        ${noteHtml}
+        ${feedbackUi}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  // Counts
+  const counts = { keep: 0, change: 0, delete: 0 };
+  entries.forEach(e => counts[e.status]++);
+  document.getElementById("counts").innerHTML = `
+    <span>Showing <span class="num">${filtered.length}</span> / ${entries.length}</span>
+  `;
+
+  // Summary cards
+  document.getElementById("summary").innerHTML = `
+    <div class="card"><div class="label">Total frames</div><div class="value">${entries.length}</div></div>
+    <div class="card keep"><div class="label">Keep unchanged</div><div class="value">${counts.keep}</div></div>
+    <div class="card change"><div class="label">Change</div><div class="value">${counts.change}</div></div>
+    <div class="card delete"><div class="label">Delete</div><div class="value">${counts.delete}</div></div>
+  `;
+
+  updateFeedbackCount();
+}
+
+// Event delegation for checkboxes & textareas (survives re-render)
+document.getElementById("tbody").addEventListener("change", (ev) => {
+  if (ev.target.classList.contains("fb-reject")) {
+    setFb(ev.target.dataset.id, { rejected: ev.target.checked });
+  }
+});
+document.getElementById("tbody").addEventListener("input", (ev) => {
+  if (ev.target.classList.contains("fb-input")) {
+    setFb(ev.target.dataset.id, { feedback: ev.target.value });
+  }
+});
+
+// Build the feedback object for copy
+function buildFeedbackObject() {
+  const out = {};
+  for (const e of entries) {
+    const fb = getFb(e.id);
+    if (!fb.rejected && !(fb.feedback && fb.feedback.trim())) continue;
+    const item = {
+      proposed_status: e.status,
+      before_jp: e.jp_b,
+    };
+    if (e.jp_a) item.proposed_after_jp = e.jp_a;
+    if (fb.rejected) item.rejected = true;
+    if (fb.feedback && fb.feedback.trim()) item.feedback = fb.feedback.trim();
+    out[e.id] = item;
+  }
+  return out;
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.background = isError ? "var(--delete-border)" : "var(--keep-border)";
+  t.style.color = isError ? "#fff" : "#000";
+  t.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+// Open modal / copy button
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const obj = buildFeedbackObject();
+  const json = JSON.stringify(obj, null, 2);
+  document.getElementById("feedbackOutput").value = json;
+  document.getElementById("modal").classList.add("open");
+  // Pre-select text for easy keyboard copy
+  setTimeout(() => document.getElementById("feedbackOutput").select(), 50);
+});
+document.getElementById("modalClose").addEventListener("click", () => {
+  document.getElementById("modal").classList.remove("open");
+});
+document.getElementById("modal").addEventListener("click", (ev) => {
+  if (ev.target.id === "modal") document.getElementById("modal").classList.remove("open");
+});
+document.getElementById("modalCopyBtn").addEventListener("click", async () => {
+  const text = document.getElementById("feedbackOutput").value;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("Copied to clipboard!");
+  } catch (e) {
+    // Fallback: select + execCommand
+    const ta = document.getElementById("feedbackOutput");
+    ta.select();
+    document.execCommand("copy");
+    showToast("Copied!");
+  }
+});
+
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("categoryFilter").addEventListener("change", render);
+document.getElementById("statusFilter").addEventListener("change", render);
+
+// Mode toggle (hiragana / kanji)
+document.getElementById("modeToggle").addEventListener("click", (ev) => {
+  const btn = ev.target.closest("button");
+  if (!btn) return;
+  const mode = btn.dataset.mode;
+  if (!mode || mode === displayMode) return;
+  displayMode = mode;
+  for (const b of document.querySelectorAll("#modeToggle button")) {
+    b.classList.toggle("active", b.dataset.mode === mode);
+  }
+  render();
+});
+
+// Auth gate
+document.getElementById("authSubmit").addEventListener("click", async () => {
+  const val = document.getElementById("authInput").value.trim();
+  if (!val) return;
+  adminSecret = val;
+  document.getElementById("authGate").classList.remove("show");
+  document.getElementById("loading").style.display = "";
+  await init();
+});
+
+function showError(msg) {
+  const b = document.getElementById("errorBanner");
+  b.textContent = msg;
+  b.classList.add("show");
+}
+
+async function init() {
+  try {
+    if (!adminSecret) adminSecret = await fetchAdminSecret();
+    if (!adminSecret) {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("authGate").classList.add("show");
+      return;
+    }
+    await loadAuditData();
+  } catch (err) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("authGate").classList.add("show");
+    showError("Failed to load audit data: " + (err?.message || err));
+    return;
+  }
+
+  loadState();
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("main").style.display = "";
+  render();
+
+  // Tokenize proposed "after" strings in the background, re-render on arrival
+  try {
+    await loadAfterTokens();
+    render();
+  } catch (err) {
+    showError("Failed to tokenize proposed changes: " + (err?.message || err));
+  }
+}
+
+init();
+</script>
+</body>
+</html>
