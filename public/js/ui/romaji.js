@@ -116,3 +116,43 @@ export function toRomaji(str) {
 
   return result;
 }
+
+/**
+ * Escape HTML-special characters for safe insertion into innerHTML.
+ * @param {string} s
+ * @returns {string}
+ */
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Build the popup headword HTML.
+ *
+ * Pronunciation-above-headword rule:
+ *   - Beginner mode: <ruby>hiragana<rt>romaji</rt></ruby>
+ *   - Kanji mode (kanji word): <ruby>kanji<rt>hiragana</rt></ruby>
+ *   - Kanji mode (kana-only word): bare hiragana (kanji-mode players have graduated past romaji)
+ *   - Empty reading: bare base (fallback)
+ *
+ * Inputs are HTML-escaped to prevent injection from dictionary data.
+ *
+ * @param {string} base - dictionary headword (kanji form where available)
+ * @param {string} reading - hiragana reading
+ * @param {boolean} useKanji - true for Area 4+, false for Areas 1-3
+ * @returns {string} HTML string
+ */
+export function buildHeadwordRuby(base, reading, useKanji) {
+  const b = base || '';
+  const r = reading || '';
+
+  if (!r) return escapeHtml(b);
+  if (!useKanji) return `<ruby>${escapeHtml(r)}<rt>${escapeHtml(toRomaji(r))}</rt></ruby>`;
+  if (b === r) return escapeHtml(r);
+  return `<ruby>${escapeHtml(b)}<rt>${escapeHtml(r)}</rt></ruby>`;
+}
