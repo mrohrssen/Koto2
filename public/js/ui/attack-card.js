@@ -8,6 +8,67 @@ import { creatureSpriteHtml, SPRITE_VERSION } from './sprite-utils.js';
 import { SC_NAMES } from './combat-ui-utils.js';
 import { prefetchWord, playWordPair } from '../tts.js';
 
+/** Map move `category` → tone class used by CSS for color. */
+export function resultTone(atk) {
+  switch (atk?.category) {
+    case 'damage': return 'damage';
+    case 'drain':  return 'damage';
+    case 'heal':   return 'heal';
+    case 'buff':   return 'buff';
+    case 'shield': return 'buff';
+    case 'debuff': return 'debuff';
+    default:       return 'damage';
+  }
+}
+
+/** Human-readable status labels for effect names used in attack payloads. */
+const EFFECT_LABELS = {
+  confuse:     'Confused!',
+  poison:      'Poisoned!',
+  sleep:       'Sleeping!',
+  stun:        'Stunned!',
+  paralyze:    'Paralyzed!',
+  haste:       'Hasted!',
+  team_shield: 'Shielded!',
+};
+
+/** Format the right-side result string from the attack payload. */
+export function formatResultValue(atk) {
+  const cat = atk?.category;
+  if (cat === 'damage' || cat === 'drain') {
+    // Drain: damage on the target only. The self-heal half is rendered separately
+    // by buildSplitAttackCard as a secondary line, not by this helper.
+    return `-${atk.damage ?? 0} HP`;
+  }
+  if (cat === 'heal') {
+    return `+${atk.healAmount ?? 0} HP`;
+  }
+  if (cat === 'buff' || cat === 'debuff' || cat === 'shield') {
+    const changes = atk.statChangesApplied;
+    if (changes) {
+      const [stat, value] = Object.entries(changes)[0];
+      const name = (SC_NAMES?.[stat] || stat).toUpperCase();
+      return `${name} ${value > 0 ? '+' : ''}${value}`;
+    }
+    if (atk.effectApplied) {
+      return EFFECT_LABELS[atk.effectApplied] || (atk.effectApplied.charAt(0).toUpperCase() + atk.effectApplied.slice(1) + '!');
+    }
+    if (cat === 'shield') return 'Shielded!';
+    return '';
+  }
+  return '';
+}
+
+/** Effectiveness line shown under the damage number (damage/drain only). */
+export function effectivenessText(atk) {
+  if (atk?.category !== 'damage' && atk?.category !== 'drain') return '';
+  const mult = atk.elementMultiplier;
+  if (mult === undefined || mult === null || mult === 1) return '';
+  if (mult === 0) return '(No effect!)';
+  if (mult < 1)   return '(Not very effective…)';
+  return '(Super effective!)';
+}
+
 export const ATTACK_CARD_TIMING = {
   ROW_STAGGER: 50,
   ROW_ANIM_DURATION: 100,
@@ -22,33 +83,11 @@ export const ELEMENT_THEME = {
   wood:   { border: 'rgba(76,175,80,0.35)',   bg: '#e8f5e9',  accent: '#388E3C' }
 };
 
-const KANJI_RE = /[\u4e00-\u9faf\u3400-\u4dbf]/;
-const KATAKANA_RE = /[\u30A0-\u30FF]/;
-
 /** Map an English skill/base name to the action icon sprite path. */
 function actionIconPath(nameEn) {
   if (!nameEn) return '';
   const slug = nameEn.split(';')[0].trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   return slug ? `/assets/sprites/actions/${slug}.webp?v=20260322` : '';
-}
-
-function escHtml(text) {
-  return String(text || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function wrapWithRuby(word, reading, englishReading) {
-  if (!word || !reading) return word || '';
-  if (KANJI_RE.test(word) && word !== reading) {
-    return `<ruby>${word}<rt>${reading}</rt></ruby>`;
-  }
-  if (englishReading && KATAKANA_RE.test(word)) {
-    return `<ruby>${word}<rt>${englishReading}</rt></ruby>`;
-  }
-  return word || '';
 }
 
 function npcSpritePath(npcId) {
@@ -60,72 +99,93 @@ function npcSpritePath(npcId) {
  * @param {boolean} isEnemy - Target column sprite flip (enemy attacking player)
  * @param {Object} [options]
  * @param {Object} [options.theme] - Override theme; default ELEMENT_THEME[atk.attackerElement]
- * @param {string} [options.leftHtml] - Full inner HTML for .sac-left (e.g. NPC sprite column)
- * @param {Object} [options.tagLabelsByCategory] - Merge overrides for row-1 tag text (e.g. drain: 'NPC')
- * @param {string} [options.defaultCategoryTagLabel] - Fallback when category has no tag (default 'ATK')
+ * @param {string} [options.attackerHtml] - Full inner HTML for the attacker row (e.g. NPC sprite + name)
  */
 export function buildSplitAttackCard(atk, isEnemy, options = {}) {
   const theme = options.theme != null
     ? options.theme
     : (ELEMENT_THEME[atk.attackerElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' });
 
-  const attackerNameJp = atk.attackerNameJp || atk.attackerName;
-  const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
+  const knownWords = getKnownWords();
+  const wordDict = new Map();
 
-  let damageSign;
-  if (atk.healAmount > 0) damageSign = `+${atk.healAmount}`;
-  else if (atk.damage > 0) damageSign = `-${atk.damage}`;
-  else if (atk.effectApplied) damageSign = atk.effectApplied;
-  else if (atk.statChangesApplied) {
-    damageSign = Object.entries(atk.statChangesApplied).map(([s, v]) => `${SC_NAMES[s] || s} ${v > 0 ? '+' : ''}${v}`).join(' ');
-  }
-  else damageSign = '0';
-  const targetDisplayName = atk.targetNameJp || atk.targetName || '';
-  const targetNameHtml = wrapWithRuby(targetDisplayName, targetDisplayName, atk.targetName);
+  const attackerToken = entityToToken({
+    word: atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName,
+    reading: atk.attackerBaseReading,
+    nameEn: atk.attackerBaseMeaning || atk.attackerName,
+  });
+  const moveToken = entityToToken({
+    word: atk.attackerSkillName || atk.moveName,
+    reading: atk.attackerSkillReading,
+    nameEn: atk.attackerSkillEn || atk.moveNameEn,
+  });
+  const targetToken = entityToToken({
+    word: atk.targetBaseWord || atk.targetNameJp || atk.targetName,
+    reading: atk.targetBaseReading,
+    nameEn: atk.targetBaseMeaning || atk.targetName,
+  });
 
-  const baseIcon = actionIconPath(atk.attackerBaseMeaning);
-  const skillIcon = actionIconPath(atk.attackerSkillEn);
+  const attackerWordHtml = renderJpSentence([attackerToken], knownWords, wordDict);
+  const moveWordHtml     = renderJpSentence([moveToken], knownWords, wordDict);
+  const targetWordHtml   = renderJpSentence([targetToken], knownWords, wordDict);
 
-  const cat = atk.category || 'damage';
-  const defaultTagByCat = { heal: 'HEAL', buff: 'BUFF', shield: 'DEF', debuff: 'DBF', drain: 'ATK' };
-  const tagByCat = { ...defaultTagByCat, ...(options.tagLabelsByCategory || {}) };
-  const tagLabel = tagByCat[cat] ?? options.defaultCategoryTagLabel ?? 'ATK';
-  const tagClass = { heal: 'sac-tag-heal', buff: 'sac-tag-buff', shield: 'sac-tag-buff', debuff: 'sac-tag-debuff' }[cat] || 'sac-tag-atk';
-  const damageClass = (atk.healAmount > 0) ? 'sac-heal' : 'sac-damage';
+  const spriteWord = atk.attackerBaseWord || atk.attackerName || '？';
+  const attackerSpriteHtml = creatureSpriteHtml(atk.attackerId, spriteWord, atk.attackerElement, 'sac-sprite');
 
-  const attackerWord = atk.attackerBaseWord || atk.attackerName || '？';
-  const targetWord = atk.targetBaseWord || atk.targetName || '？';
+  const moveIcon = actionIconPath(atk.attackerSkillEn || atk.moveNameEn);
+  const moveIconHtml = moveIcon
+    ? `<img class="sac-sprite" src="${moveIcon}" alt="" onerror="this.style.display='none'">`
+    : '';
 
-  const targetSpriteClass = isEnemy ? 'sac-creature-sprite' : 'sac-creature-sprite sac-sprite-enemy';
+  const isSelfTarget = atk.targetId === atk.attackerId && atk.targetIndex === atk.attackerIndex;
+  // isEnemy === true means an enemy is the attacker — the target is one of the
+  // player's creatures and should not be flipped. Only flip when the player is
+  // attacking an enemy, to make the sprite face the attacker.
+  const targetSpriteClass = isSelfTarget ? 'sac-sprite' : (isEnemy ? 'sac-sprite' : 'sac-sprite sac-sprite-enemy');
+  const targetSpriteWord = atk.targetBaseWord || atk.targetName || '？';
+  const targetSpriteHtml = creatureSpriteHtml(atk.targetId, targetSpriteWord, atk.targetElement, targetSpriteClass);
 
-  const leftColumnInner = options.leftHtml !== undefined
-    ? options.leftHtml
-    : `${creatureSpriteHtml(atk.attackerId, attackerWord, atk.attackerElement, 'sac-creature-sprite')}
-      <div class="sac-attacker-name">${attackerNameHtml}</div>`;
+  const resultValue = formatResultValue(atk);
+  const tone = resultTone(atk);
+  const effText = effectivenessText(atk);
+  const effHtml = effText
+    ? `<span class="sac-effectiveness sac-fx-${tone}">${effText}</span>`
+    : '';
+
+  // Drain: small secondary "self-heal" line under the damage number
+  const drainHealHtml = (atk.category === 'drain' && atk.healAmount > 0)
+    ? `<span class="sac-drain-self">+${atk.healAmount} HP self</span>`
+    : '';
+
+  const attackerRowInner = options.attackerHtml !== undefined
+    ? options.attackerHtml
+    : `<div class="sac-sprite-tile">${attackerSpriteHtml}</div>
+       <div class="sac-body">${attackerWordHtml}</div>`;
 
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
-    <div class="sac-left">
-      ${leftColumnInner}
+    <div class="sac-row" data-row="0">
+      ${attackerRowInner}
+      <span class="sac-down-arrow">»</span>
     </div>
-    <div class="sac-right">
-      <div class="sac-row" data-row="0">
-        ${baseIcon ? `<img class="sac-action-icon" src="${baseIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${renderJpSentence([entityToToken({ baseWord: atk.attackerBaseWord, baseReading: atk.attackerBaseReading, baseMeaning: atk.attackerBaseMeaning })], getKnownWords(), new Map())}
-        <span class="sac-tag sac-tag-base">BASE</span>
-      </div>
-      <div class="sac-row" data-row="1">
-        ${skillIcon ? `<img class="sac-action-icon" src="${skillIcon}" alt="" onerror="this.style.display='none'">` : ''}
-        ${renderJpSentence([entityToToken({ name: atk.attackerSkillName || atk.moveName, reading: atk.attackerSkillReading, nameEn: atk.attackerSkillEn })], getKnownWords(), new Map())}
-        <span class="sac-tag ${tagClass}">${tagLabel}</span>
-      </div>
-      <div class="sac-row sac-impact" data-row="2">
-        <span class="sac-impact-arrow">\u2192</span>
-        ${creatureSpriteHtml(atk.targetId, targetWord, atk.targetElement, targetSpriteClass)}
-        <span class="sac-impact-name">${targetNameHtml}</span>
-        <span class="${damageClass}">${damageSign}</span>
+    <div class="sac-row" data-row="1">
+      <div class="sac-sprite-tile">${moveIconHtml}</div>
+      <div class="sac-body">${moveWordHtml}</div>
+      <span class="sac-down-arrow">»</span>
+    </div>
+    <div class="sac-row" data-row="2">
+      <div class="sac-sprite-tile">${targetSpriteHtml}</div>
+      <div class="sac-body">
+        ${targetWordHtml}
+        <div class="sac-result">
+          <span class="sac-result-value sac-tone-${tone}">${resultValue}</span>
+          ${effHtml}
+          ${drainHealHtml}
+        </div>
       </div>
     </div>
-    <span class="sac-continue" style="display:none">\u25BC</span>
+    <div class="sac-continue-strip">
+      <span class="sac-continue">tap to continue</span>
+    </div>
   </div>`;
 }
 
@@ -165,18 +225,23 @@ export function insertNpcAttackCard(atk) {
   const actionArea = document.getElementById('action-area');
   if (!actionArea) return null;
 
-  const theme = ELEMENT_THEME[atk.moveElement] || ELEMENT_THEME['neutral'] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
+  const theme = ELEMENT_THEME[atk.moveElement] || { border: 'rgba(0,0,0,0.1)', bg: '#f5f7fa', accent: '#8b92a0' };
   const spriteUrl = npcSpritePath(atk.attackerId);
-  const attackerNameJp = atk.attackerNameJp || atk.attackerName;
-  const attackerNameHtml = wrapWithRuby(attackerNameJp, attackerNameJp, atk.attackerName);
-  const leftHtml = `<img class="sac-sprite" src="${escHtml(spriteUrl)}" alt=""><div class="sac-attacker-name">${attackerNameHtml}</div>`;
 
-  actionArea.innerHTML = buildSplitAttackCard(atk, true, {
-    theme,
-    leftHtml,
-    tagLabelsByCategory: { drain: 'NPC' },
-    defaultCategoryTagLabel: 'NPC',
+  const knownWords = getKnownWords();
+  const wordDict = new Map();
+  const npcToken = entityToToken({
+    word: atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName,
+    reading: atk.attackerBaseReading,
+    nameEn: atk.attackerBaseMeaning || atk.attackerName,
   });
+  const attackerWordHtml = renderJpSentence([npcToken], knownWords, wordDict);
+
+  const attackerHtml =
+    `<div class="sac-sprite-tile"><img class="sac-sprite" src="${spriteUrl}" alt="" onerror="this.style.display='none'"></div>` +
+    `<div class="sac-body">${attackerWordHtml}</div>`;
+
+  actionArea.innerHTML = buildSplitAttackCard(atk, true, { theme, attackerHtml });
 
   const card = actionArea.querySelector('.split-attack-card');
   if (!card) return null;
@@ -206,9 +271,6 @@ export function waitForCardTap(card) {
     if (!card) { resolve(); return; }
 
     const actionArea = card.closest('#action-area') || card.parentElement;
-
-    const indicator = card.querySelector('.sac-continue');
-    if (indicator) indicator.style.display = '';
 
     let resolved = false;
     const onTap = () => {

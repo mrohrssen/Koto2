@@ -922,3 +922,28 @@ describe('executeNpcSkill — single_ally random target', () => {
     assert.ok(buffedIndices.size > 1, `Expected random targeting, but only hit indices: ${[...buffedIndices]}`);
   });
 });
+
+describe('Attack record — target reading/meaning', () => {
+  it('player move record exposes targetBaseReading and targetBaseMeaning', () => {
+    const allies = [instantiateCreature('hi')];
+    const enemies = [instantiateCreature('ki')];
+    const result = processMoveTurn(allies, enemies, [
+      { creatureIndex: 0, moveId: 'tataku', targetIndex: 0 }
+    ]);
+    const rec = result.attacks[0];
+    assert.strictEqual(rec.targetBaseWord, '木');
+    assert.strictEqual(rec.targetBaseReading, 'き');
+    assert.strictEqual(rec.targetBaseMeaning, 'tree / wood');
+  });
+
+  it('enemy attack record exposes targetBaseReading and targetBaseMeaning', () => {
+    const allies = [instantiateCreature('hi')];
+    const enemies = [instantiateCreature('ki')];
+    // Force enemy to act
+    const result = processEnemyTurn(enemies, allies);
+    const rec = result.attacks[0];
+    assert.strictEqual(rec.targetBaseWord, '火');
+    assert.strictEqual(rec.targetBaseReading, 'ひ');
+    assert.strictEqual(rec.targetBaseMeaning, 'fire');
+  });
+});
