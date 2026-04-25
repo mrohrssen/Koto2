@@ -163,6 +163,17 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
   let playbackCounter = 0;
   const inlineCountersA = [];
   const inlineCountersB = [];
+  const inlinePartySkillsA = Boolean(partySkillsA && combatA);
+  const inlinePartySkillsB = Boolean(partySkillsB && combatB);
+
+  if (inlinePartySkillsA) {
+    combatA.chainHitsThisTurn = 0;
+    combatA.chainSurgeTriggeredThisTurn = false;
+  }
+  if (inlinePartySkillsB) {
+    combatB.chainHitsThisTurn = 0;
+    combatB.chainSurgeTriggeredThisTurn = false;
+  }
 
   for (const slot of initiative) {
     const isA = slot.side === 'sideA';
@@ -175,7 +186,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     const defenderCombat = isA ? combatB : combatA;
     const defenderCounters = isA ? inlineCountersB : inlineCountersA;
 
-    executeSlotMoveTurn(attackerSide, defenderSide, slot.index, choices, {
+    const slotResult = executeSlotMoveTurn(attackerSide, defenderSide, slot.index, choices, {
       itemBuffs: isA ? itemBuffsA : itemBuffsB,
       hastedSlots: isA ? hastedA : hastedB,
       defeatedIndices: defeatedDummy,
@@ -199,9 +210,28 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
         return attackerSide[slot.index]?.hp > 0;
       }
     });
+    if (isA && inlinePartySkillsA && slotResult.attacks.length > 0) {
+      applyPartySkillsAfterPlayerAttacks({
+        attacks: slotResult.attacks,
+        allies: sideA,
+        enemies: sideB,
+        runPartySkills: partySkillsA,
+        combat: combatA,
+        resetTurnCounters: false
+      });
+    } else if (!isA && inlinePartySkillsB && slotResult.attacks.length > 0) {
+      applyPartySkillsAfterPlayerAttacks({
+        attacks: slotResult.attacks,
+        allies: sideB,
+        enemies: sideA,
+        runPartySkills: partySkillsB,
+        combat: combatB,
+        resetTurnCounters: false
+      });
+    }
   }
 
-  if (partySkillsA && combatA) {
+  if (partySkillsA && combatA && !inlinePartySkillsA) {
     applyPartySkillsAfterPlayerAttacks({
       attacks: resultA.attacks,
       allies: sideA,
@@ -210,7 +240,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
       combat: combatA
     });
   }
-  if (partySkillsB && combatB) {
+  if (partySkillsB && combatB && !inlinePartySkillsB) {
     applyPartySkillsAfterPlayerAttacks({
       attacks: resultB.attacks,
       allies: sideB,

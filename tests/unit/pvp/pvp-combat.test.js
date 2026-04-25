@@ -137,6 +137,35 @@ describe('resolveRound', () => {
     assert.ok(result.attacks.length > 0, 'should have attacks');
   });
 
+  it('prevents a PvP creature killed by Arc Strike before its initiative slot from attacking', () => {
+    sideA[0] = makeCreature({ id: 'a1', level: 50, hp: 500, maxHp: 500, attack: 999, mp: 20, maxMp: 20 });
+    sideA[0].moves = [{
+      id: 'arc-primer', name: '弧撃', nameEn: 'Arc Primer', reading: 'こげき',
+      element: 'neutral', category: 'damage', power: 200,
+      target: 'single_enemy', mpCost: 0, accuracy: 100,
+      statusEffect: null, statusChance: 0, statusDuration: 0
+    }];
+
+    sideB = [
+      makeCreature({ id: 'b-primary', level: 1, hp: 500, maxHp: 500, moves: [] }),
+      makeCreature({ id: 'b-chain-victim', level: 1, hp: 1, maxHp: 1 })
+    ];
+    movesA = [{ creatureIndex: 0, moveId: 'arc-primer', targetIndex: 0 }];
+    movesB = [{ creatureIndex: 1, moveId: 'slash', targetIndex: 0 }];
+
+    const result = resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsA: ['arcStrike'],
+      combatA: { chainHitsThisTurn: 0 }
+    });
+
+    assert.strictEqual(sideB[1].hp, 0, 'Arc Strike should kill side B slot 1');
+    assert.strictEqual(
+      result.attacks.some(atk => atk.side === 'sideB' && atk.attackerIndex === 1),
+      false,
+      'PvP creature killed by Arc Strike before its turn should not attack'
+    );
+  });
+
   it('ticks status effects at start of round', () => {
     // Apply poison to side A creature
     sideA[0].activeEffects = [{

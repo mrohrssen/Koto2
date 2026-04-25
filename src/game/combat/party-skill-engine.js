@@ -99,18 +99,23 @@ export function applyRoundStartSkills({ allies, enemies, runPartySkills, combat 
 // ── Hook 2: After Player Attacks ────────────────────────────────────
 
 /**
- * Called after processMoveTurn. Modifies attack records in-place.
+ * Called after processMoveTurn or an interleaved player initiative slot.
+ * Modifies attack records in-place.
  * Handles: Chain loop, spread triggers from chains, Affliction Burst checks, Pandemic on kills.
  */
-export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat }) {
+export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters = true }) {
   const active = toActivePartySkillIdSet(runPartySkills);
   if (!active.size) return;
   if (!Array.isArray(attacks) || attacks.length === 0) return;
   if (!combat) return;
   if (typeof combat.chainHitsThisTurn !== 'number') combat.chainHitsThisTurn = 0;
 
-  // Reset per-turn counters
-  combat.chainHitsThisTurn = 0;
+  // Reset per-turn counters for legacy whole-round callers. Interleaved
+  // initiative callers reset once at round start and pass resetTurnCounters=false.
+  if (resetTurnCounters) {
+    combat.chainHitsThisTurn = 0;
+    combat.chainSurgeTriggeredThisTurn = false;
+  }
 
   for (const record of attacks) {
     if (!isQualifyingPlayerAttack(record)) continue;
@@ -319,7 +324,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
   }
 
   // ── Chain Surge: 3+ chain hits → team atk +1 ──
-  if (active.has('chainSurge') && combat.chainHitsThisTurn >= 3) {
+  if (active.has('chainSurge') && combat.chainHitsThisTurn >= 3 && !combat.chainSurgeTriggeredThisTurn) {
     for (let i = 0; i < allies.length; i++) {
       const ally = allies[i];
       if (!ally || ally.hp <= 0) continue;
@@ -339,6 +344,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
         type: 'teamBuff', stat: 'atk', delta: 1
       });
     }
+    combat.chainSurgeTriggeredThisTurn = true;
   }
 
   // ── Affliction Burst check on all enemies ──

@@ -258,14 +258,18 @@ export class CombatCycleService {
       { runPartySkills: this.gm.run.partySkills, combat: this.gm.combat }
     );
 
-    // Party skills proc only on player attack records (post-process round output)
-    applyPartySkillsAfterPlayerAttacks({
-      attacks: playerResult.attacks,
-      allies: this.gm.combat.allies,
-      enemies: this.gm.combat.enemies,
-      runPartySkills: this.gm.run.partySkills,
-      combat: this.gm.combat
-    });
+    // Interleaved combat applies party skills inside each player initiative slot
+    // so chain kills can prevent later enemy turns. Keep this fallback for any
+    // non-interleaved caller shape.
+    if (!playerResult.partySkillsAppliedInline) {
+      applyPartySkillsAfterPlayerAttacks({
+        attacks: playerResult.attacks,
+        allies: this.gm.combat.allies,
+        enemies: this.gm.combat.enemies,
+        runPartySkills: this.gm.run.partySkills,
+        combat: this.gm.combat
+      });
+    }
 
     // Re-check allEnemiesDefeated after party skills (Arc Strike chain can finish off remaining enemies)
     if (!playerResult.allEnemiesDefeated) {

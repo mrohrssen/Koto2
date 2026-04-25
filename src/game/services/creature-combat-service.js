@@ -58,9 +58,9 @@ function rollMoveDamage(attacker, target, move, _itemBuffs, variance) {
 }
 export const BASE_KILL_XP = 25;
 
-export function applyPartySkillsAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat }) {
+export function applyPartySkillsAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters = true }) {
   // All party skills are now handled by the v2 engine
-  _applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat });
+  _applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters });
 }
 
 /**
@@ -892,11 +892,17 @@ export function processInterleavedPvERound(
   const xpEvents = [];
   const defeatedEnemyIndices = new Set();
   const pb = { n: 0 };
+  const applyInlinePartySkills = Boolean(options.runPartySkills && options.combat);
 
   const tagPlayback = (atk, side) => {
     atk.playbackIndex = pb.n++;
     atk.combatSide = side;
   };
+
+  if (applyInlinePartySkills) {
+    options.combat.chainHitsThisTurn = 0;
+    options.combat.chainSurgeTriggeredThisTurn = false;
+  }
 
   const hastedCreatureIndices = new Set();
   for (let i = 0; i < allies.length; i++) {
@@ -990,6 +996,16 @@ export function processInterleavedPvERound(
         }
       }
     );
+    if (isAlly && applyInlinePartySkills && result.attacks.length > 0) {
+      applyPartySkillsAfterPlayerAttacks({
+        attacks: result.attacks,
+        allies,
+        enemies,
+        runPartySkills: options.runPartySkills,
+        combat: options.combat,
+        resetTurnCounters: false
+      });
+    }
     if (isAlly) xpEvents.push(...result.xpEvents);
   }
 
@@ -1020,6 +1036,7 @@ export function processInterleavedPvERound(
     enemyAttacks,
     inlineCounters,
     allEnemiesDefeated: enemies.every(e => !e || e.hp <= 0),
+    partySkillsAppliedInline: applyInlinePartySkills,
     xpEvents,
     mpRegens
   };

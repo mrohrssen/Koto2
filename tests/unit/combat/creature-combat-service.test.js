@@ -882,6 +882,50 @@ describe('Dead creature cannot attack', () => {
     // Enemy HP should be unchanged
     assert.strictEqual(enemy.hp, enemyHpBefore, 'enemy HP unchanged since ally was dead');
   });
+
+  it('enemy killed by Arc Strike before its initiative slot does not attack', () => {
+    const ally = instantiateCreature('hi');
+    ally.level = 50;
+    ally.attack = 999;
+    ally.hp = 500;
+    ally.maxHp = 500;
+    ally.moves = [{
+      id: 'arc-primer', name: '弧撃', nameEn: 'Arc Primer', reading: 'こげき',
+      element: 'neutral', category: 'damage', power: 200,
+      target: 'single_enemy', mpCost: 0, accuracy: 100,
+      statusEffect: null, statusChance: 0, statusDuration: 0
+    }];
+
+    const primary = instantiateCreature('ki');
+    primary.level = 1;
+    primary.hp = 500;
+    primary.maxHp = 500;
+    primary.moves = [];
+
+    const chainVictim = instantiateCreature('mizu');
+    chainVictim.level = 1;
+    chainVictim.hp = 1;
+    chainVictim.maxHp = 1;
+
+    const result = processInterleavedPvERound(
+      [ally],
+      [primary, chainVictim],
+      [{ creatureIndex: 0, moveId: 'arc-primer', targetIndex: 0 }],
+      null,
+      null,
+      null,
+      { runPartySkills: ['arcStrike'], combat: {} }
+    );
+
+    const chainProc = result.playerAttacks[0]?.partySkillProcs?.find(p => p.skillId === 'arcStrike');
+    assert.ok(chainProc, 'Arc Strike should proc during the player initiative slot');
+    assert.strictEqual(chainVictim.hp, 0, 'Arc Strike should kill the second enemy');
+    assert.strictEqual(
+      result.enemyAttacks.some(atk => atk.attackerIndex === 1),
+      false,
+      'enemy killed by Arc Strike before its turn should not attack'
+    );
+  });
 });
 
 describe('executeNpcSkill — single_ally random target', () => {
