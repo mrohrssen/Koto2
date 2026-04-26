@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { GameManager } from './loop.js';
 import { getDataDir } from '../data-dir.js';
-import { CREATURES_BY_ID, backfillCreatureListUids } from './creatures.js';
+import { CREATURES_BY_ID, backfillCreatureListUids, syncCreatureListMoves, syncPartyCreatureMoves } from './creatures.js';
 import { DEFAULT_COLLECTION } from './services/creature-collection-service.js';
 
 const SAVE_VERSION = 2;
@@ -90,8 +90,10 @@ export function getManager(userId) {
           // Also backfill pendingCaptures (created during combat) and
           // dealer.offeredCreatures (sitting in shop rooms).
           backfillCreatureListUids(manager.run?.creatureParty?.pendingCaptures);
+          needsSave = syncPartyCreatureMoves(manager.run?.creatureParty) || needsSave;
           for (const room of (manager.run?.rooms || [])) {
             backfillCreatureListUids(room?.dealer?.offeredCreatures);
+            needsSave = syncCreatureListMoves(room?.dealer?.offeredCreatures) || needsSave;
           }
         }
         if (data.combat) {
@@ -105,17 +107,19 @@ export function getManager(userId) {
           }
           // Backfill enemies — they are not shared references, so backfill directly.
           backfillCreatureListUids(manager.combat.enemies);
+          needsSave = syncCreatureListMoves(manager.combat.enemies) || needsSave;
         }
         // Backfill uids on PvP team snapshots from older saves.
         for (const team of (manager.meta?.pvpTeams || [])) {
           if (team?.creatureParty) {
             backfillCreatureListUids(team.creatureParty.active);
             backfillCreatureListUids(team.creatureParty.reserves);
+            needsSave = syncPartyCreatureMoves(team.creatureParty) || needsSave;
           }
         }
       }
       if (needsSave) {
-        console.log(`Migrated stale creature IDs for user ${userId}`);
+        console.log(`Migrated save data for user ${userId}`);
       }
     } catch (e) {
       console.warn(`Failed to load save for ${userId}:`, e.message);

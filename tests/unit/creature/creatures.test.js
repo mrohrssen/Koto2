@@ -10,6 +10,7 @@ import {
   xpToNextLevel,
   getStatsForLevel,
   selectTarget,
+  generateEnemyCreature,
   generateEnemyCreatures,
   syncCreatureDefense
 } from '../../../src/game/creatures.js';
@@ -289,6 +290,21 @@ describe('Targeting AI', () => {
 });
 
 describe('Move learning cap', () => {
+  it('caps high-level direct instantiation at 3 normal moves', () => {
+    const creature = instantiateCreature('sakana', 16);
+
+    assert.strictEqual(creature.moves.length, 3,
+      `directly instantiated creature should not exceed 3 moves, got ${creature.moves.length}`);
+  });
+
+  it('caps high-level wild enemies at 3 normal moves', () => {
+    const creature = generateEnemyCreature(16, ['sakana']);
+
+    assert.strictEqual(creature.id, 'sakana');
+    assert.strictEqual(creature.moves.length, 3,
+      `generated enemy should not exceed 3 moves, got ${creature.moves.length}`);
+  });
+
   it('does not auto-learn a 4th move when creature already has 3', () => {
     // hi has learnset: tataku@1, honoo@7, moeru@12
     // Start at level 6 so it has tataku only, then add 2 fake moves to reach 3

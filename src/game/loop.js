@@ -13,7 +13,9 @@ import { logger } from '../logger.js';
 import {
   instantiateCreature,
   syncPartyCreatureDefense,
-  syncCreatureDefense
+  syncCreatureDefense,
+  syncPartyCreatureMoves,
+  syncCreatureMoves
 } from './creatures.js';
 import { buildRunSummary } from './adventure-report.js';
 import { createItemBuffs } from './services/item-service.js';
@@ -205,15 +207,22 @@ export class GameManager {
     // Keep DEF in sync with level (rounded scaling + backfill for saves missing defense / baseDefenseTemplate).
     if (this.run?.creatureParty) {
       syncPartyCreatureDefense(this.run.creatureParty);
+      syncPartyCreatureMoves(this.run.creatureParty);
     }
     if (this.combat?.allies?.length) {
       for (const c of this.combat.allies) {
-        if (c) syncCreatureDefense(c);
+        if (c) {
+          syncCreatureDefense(c);
+          syncCreatureMoves(c);
+        }
       }
     }
     if (this.combat?.enemies?.length) {
       for (const c of this.combat.enemies) {
-        if (c) syncCreatureDefense(c);
+        if (c) {
+          syncCreatureDefense(c);
+          syncCreatureMoves(c);
+        }
       }
     }
 

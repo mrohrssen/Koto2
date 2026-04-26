@@ -69,6 +69,32 @@ export function getElementMultiplier(attackerElement, defenderElement) {
 }
 
 const STARTING_LEVEL = 5;
+export const MAX_CREATURE_MOVES = 3;
+
+export function syncCreatureMoves(creature) {
+  if (!creature || !Array.isArray(creature.moves)) return false;
+  if (creature.moves.length <= MAX_CREATURE_MOVES) return false;
+  creature.moves = creature.moves.slice(0, MAX_CREATURE_MOVES);
+  return true;
+}
+
+export function syncCreatureListMoves(list) {
+  if (!Array.isArray(list)) return false;
+  let changed = false;
+  for (const creature of list) {
+    changed = syncCreatureMoves(creature) || changed;
+  }
+  return changed;
+}
+
+export function syncPartyCreatureMoves(party) {
+  if (!party) return false;
+  return [
+    syncCreatureListMoves(party.active),
+    syncCreatureListMoves(party.reserves),
+    syncCreatureListMoves(party.pendingCaptures)
+  ].some(Boolean);
+}
 
 export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) {
   const template = CREATURES_BY_ID[templateId];
@@ -93,7 +119,8 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
       if (!moveData) return null;
       return { ...moveData };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, MAX_CREATURE_MOVES);
 
   return {
     uid: crypto.randomUUID(),
@@ -216,7 +243,7 @@ export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = nul
       if (moveData && !(creature.moves || []).find(m => m.id === moveData.id)) {
         newMove = { ...moveData };
         if (!creature.moves) creature.moves = [];
-        if (creature.moves.length < 3) {
+        if (creature.moves.length < MAX_CREATURE_MOVES) {
           // Auto-learn if under max moves
           creature.moves.push(newMove);
         }
@@ -362,13 +389,14 @@ export function generateEnemyCreature(targetLevel, creaturePool = null, stage = 
     for (const entry of tmpl.learnset) {
       if (entry.level <= creature.level) {
         const moveData = MOVES_BY_ID[entry.moveId];
-        if (moveData && !creature.moves.find(m => m.id === moveData.id)) {
+        if (moveData && creature.moves.length < MAX_CREATURE_MOVES && !creature.moves.find(m => m.id === moveData.id)) {
           creature.moves.push({ ...moveData });
         }
       }
     }
   }
 
+  syncCreatureMoves(creature);
   return creature;
 }
 

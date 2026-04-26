@@ -39,6 +39,42 @@ describe('manager-registry', () => {
     assert.equal(manager.player.name, 'TestPlayer');
   });
 
+  it('trims legacy creature move lists above 3 moves on load', () => {
+    const overfullMoves = [
+      { id: 'move-1' },
+      { id: 'move-2' },
+      { id: 'move-3' },
+      { id: 'move-4' }
+    ];
+    const saveData = {
+      version: 2,
+      player: { name: 'MoveCapTest', stats: { str: 5 }, hp: 100, maxHp: 100, level: 1, exp: 0, money: 0, inventory: [], equipment: {}, creatures: { active: [], reserves: [] } },
+      meta: { essence: 50, upgrades: [], achievements: [], lifetimeStats: {} },
+      run: {
+        active: true,
+        creatureParty: {
+          active: [{ id: 'sakana', moves: [...overfullMoves] }],
+          reserves: [{ id: 'neko', moves: [...overfullMoves] }],
+          pendingCaptures: [{ id: 'inu', moves: [...overfullMoves] }]
+        },
+        rooms: [{ dealer: { offeredCreatures: [{ id: 'hi', moves: [...overfullMoves] }] } }]
+      },
+      combat: {
+        active: true,
+        enemies: [{ id: 'sakana', moves: [...overfullMoves] }]
+      }
+    };
+    writeFileSync(testSaveFile, JSON.stringify(saveData));
+
+    const manager = getManager('u_test123');
+
+    assert.equal(manager.run.creatureParty.active[0].moves.length, 3);
+    assert.equal(manager.run.creatureParty.reserves[0].moves.length, 3);
+    assert.equal(manager.run.creatureParty.pendingCaptures[0].moves.length, 3);
+    assert.equal(manager.run.rooms[0].dealer.offeredCreatures[0].moves.length, 3);
+    assert.equal(manager.combat.enemies[0].moves.length, 3);
+  });
+
   it('saves manager state to user-specific file', () => {
     const manager = getManager('u_test123');
     manager.createPlayer('SaveTest', { str: 5, agi: 5, vit: 5, int: 5, dex: 5, luk: 5 });
