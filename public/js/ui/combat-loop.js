@@ -31,7 +31,7 @@ import { ExplorationScene } from '../scenes/exploration-scene.js';
 
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
-import { SC_NAMES, shouldSkipAttackRecord } from './combat-ui-utils.js';
+import { SC_NAMES, shouldKeepNpcBattleSceneForReward, shouldSkipAttackRecord } from './combat-ui-utils.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -1628,6 +1628,10 @@ export async function stopCombatLoop(result) {
   // immediately on entry (fixes bug #6 — non-combat rooms previously had
   // HP bars but no PIXI sprites because _defaultCtx was unwired).
   const nextState = getGameState();
+  if (shouldKeepNpcBattleSceneForReward(nextState)) {
+    return;
+  }
+
   const roomId = nextState?.run?.currentRoom ?? null;
   const alliesForExplore = nextState?.run?.creatureParty?.active ?? [];
   try {

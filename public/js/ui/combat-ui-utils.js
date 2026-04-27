@@ -70,6 +70,11 @@ export function shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)
   return false;
 }
 
+/** Keep the current BattleScene mounted while the defeated NPC offers a reward. */
+export function shouldKeepNpcBattleSceneForReward(state) {
+  return state?.phase === 'npc_skill_selection';
+}
+
 /** Derive status icon keys from a creature's activeEffects + statStages. */
 export function getCreatureStatusKeys(creature) {
   // Dead creatures shouldn't show status labels — the effects no longer

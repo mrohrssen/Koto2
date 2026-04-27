@@ -636,6 +636,11 @@ function updateGameContent() {
           }
           scene.hideNpcTrainer();
           updateGameState(result.state);
+          if (npcHostScene instanceof BattleScene) {
+            const roomId = result.state?.run?.currentRoom ?? null;
+            const allies = result.state?.run?.creatureParty?.active ?? [];
+            await getSceneManager()?.transition(ExplorationScene, { roomId, allies });
+          }
           updateUI();
         },
         fetchOffers: apiNpcBattleSkillOffers
