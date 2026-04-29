@@ -97,6 +97,37 @@ describe('Creature Instantiation', () => {
     assert.ok(typeof move0.mpCost === 'number', 'move should have mpCost');
   });
 
+  it('instantiates Stone Giant as an uncommon tank boss creature', () => {
+    const creature = instantiateCreature('ishino-kyojin', 10);
+
+    assert.strictEqual(creature.id, 'ishino-kyojin');
+    assert.strictEqual(creature.name, '石の巨人');
+    assert.strictEqual(creature.nameEn, 'Stone Giant');
+    assert.strictEqual(creature.element, 'earth');
+    assert.strictEqual(creature.rarity, 'uncommon');
+    assert.strictEqual(creature.archetype, 'Tank/Healer');
+    assert.strictEqual(creature.baseWord, '巨人');
+    assert.strictEqual(creature.baseReading, 'きょじん');
+    assert.strictEqual(creature.baseMeaning, 'giant / great man');
+
+    // Uncommon multiplier 1.1 is applied to base templates before level scaling.
+    // Level 10 scaling is 1.9x.
+    assert.strictEqual(creature.baseHpTemplate, 110);
+    assert.strictEqual(creature.baseAttackTemplate, 14);
+    assert.strictEqual(creature.baseMpTemplate, 50);
+    assert.strictEqual(creature.baseDefenseTemplate, 9);
+    assert.strictEqual(creature.maxHp, 229); // floor(floor(110 * 1.1) * 1.9)
+    assert.strictEqual(creature.attack, 28); // floor(floor(14 * 1.1) * 1.9)
+    assert.strictEqual(creature.maxMp, 104); // floor(floor(50 * 1.1) * 1.9)
+    assert.strictEqual(creature.defense, 17); // round(floor(9 * 1.1) * 1.9)
+
+    assert.deepStrictEqual(creature.moves.map(move => move.id), [
+      'mamoru',
+      'tataku',
+      'nigiru'
+    ]);
+  });
+
   it('has multiple moves as creature levels up', () => {
     // hi learns honoo at level 7, so instantiate at level 7 to get 2 moves
     const creature = instantiateCreature('hi', 7);
