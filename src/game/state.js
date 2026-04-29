@@ -49,6 +49,9 @@ export function createMetaProgression() {
     // Element drops collected from defeating enemies (persistent)
     elementDrops: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
 
+    // Fusion currency collected outside runs (persistent)
+    fusionCores: 0,
+
     // All owned crests
     crests: [],
 

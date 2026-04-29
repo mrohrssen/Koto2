@@ -29,7 +29,8 @@
 import { PLATFORM } from './js/platform.js';
 
 // Register service worker for asset caching (skip in native Capacitor app)
-if ('serviceWorker' in navigator && !PLATFORM.isNative) {
+const isLocalDevHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+if ('serviceWorker' in navigator && !PLATFORM.isNative && !isLocalDevHost) {
   navigator.serviceWorker.register('/sw.js', {
     updateViaCache: 'none'  // Always fetch sw.js from network, never cache
   }).then((registration) => {
@@ -107,6 +108,7 @@ import * as pvpBattleUI from './js/ui/pvp-battle.js';
 import { isPvpBattleActive } from './js/ui/pvp-battle.js';
 import * as speedReview from './js/ui/speed-review.js';
 import * as chestsUI from './js/ui/chests.js';
+import * as fusionLabUI from './js/ui/fusion-lab.js';
 import { renderAdventureReport } from './js/ui/adventure-report.js';
 import * as crestsEquipUI from './js/ui/crests-equip.js';
 import { playChestAnimation } from './js/pixi/chest-animation.js';
@@ -174,6 +176,8 @@ import {
   startCreatureEncounter as apiStartCreatureEncounter,
   creatureCombatCycle as apiCreatureCombatCycle,
   getCreatureCollection as apiGetCreatureCollection,
+  getFusionState as apiGetFusionState,
+  startFusion as apiStartFusion,
   rollPostCombatShop as apiRollPostCombatShop,
   selectShopItem as apiSelectShopItem,
   swapCreature as apiSwapCreature,
@@ -582,6 +586,9 @@ function updateGameContent() {
       break;
     case 'hub':
       explorationUI.renderHub();
+      break;
+    case 'fusion_lab':
+      fusionLabUI.show();
       break;
     case 'area_selection':
       explorationUI.renderAreaSelection();
@@ -1961,6 +1968,20 @@ async function initGame() {
     onBack: () => {
       scene.setBackground('/assets/backgrounds/hub.webp');
       explorationUI.renderHub();
+    },
+  });
+
+  fusionLabUI.init({
+    apiGetFusionState,
+    apiStartFusion,
+    apiGetCreatureCollection,
+    updateGameState,
+    showToast: (text, duration) => scene.showToast(text, duration),
+    onBack: () => {
+      const nextState = { ...gameState, phase: 'hub' };
+      updateGameState(nextState);
+      scene.setBackground('/assets/backgrounds/hub.webp');
+      updateUI();
     },
   });
 

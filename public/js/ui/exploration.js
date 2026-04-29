@@ -394,6 +394,11 @@ export async function renderHub() {
       gs.phase = 'pvp_lobby';
       updateUI();
     }, disabled: !hasPvpTeams },
+    { label: 'Fusion Lab', onClick: () => {
+      const gs = getGameState();
+      gs.phase = 'fusion_lab';
+      updateUI();
+    }},
     { label: '⚡ Explore', onClick: () => startNewRun(), primary: true },
   ]);
 

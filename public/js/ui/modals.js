@@ -1,7 +1,7 @@
 import * as audio from '../audio.js';
 import * as tts from '../tts.js';
 import { setLang } from './i18n.js';
-import { getAuthHeaders, apiUrl } from '../api.js';
+import { addFusionCore, getAuthHeaders, apiUrl } from '../api.js';
 import { loadServerSettings, saveServerSettings } from '../settings.js';
 
 const MODEL_OPTIONS = {
@@ -207,6 +207,10 @@ export async function openSettings() {
       </label>
       <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">All your creatures get +100 ATK in combat.</small>
 
+      <button class="ui-btn" id="settings-add-fusion-core-btn"
+        style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Add Fusion Core</button>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Adds one fusion core for testing the Fusion Lab.</small>
+
       <button class="ui-btn ui-btn--primary" id="settings-save-btn"
         style="margin-top:20px;width:100%">Save</button>
     </div>
@@ -320,6 +324,25 @@ export async function openSettings() {
     } catch {
       btn.textContent = 'Error';
       setTimeout(() => { btn.textContent = 'Reset Tutorial'; btn.disabled = false; }, 2000);
+    }
+  });
+
+  document.getElementById('settings-add-fusion-core-btn')?.addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+    try {
+      const result = await addFusionCore();
+      if (result?.state && updateGameState && getGameState) {
+        const current = getGameState();
+        updateGameState({ ...result.state, phase: current?.phase || result.state.phase });
+      }
+      btn.textContent = `Fusion Cores: ${result?.fusionCores ?? 0}`;
+      sceneModule.showToast?.('Fusion core added', 1600);
+      setTimeout(() => { btn.textContent = 'Add Fusion Core'; btn.disabled = false; }, 2000);
+    } catch {
+      btn.textContent = 'Error';
+      setTimeout(() => { btn.textContent = 'Add Fusion Core'; btn.disabled = false; }, 2000);
     }
   });
 

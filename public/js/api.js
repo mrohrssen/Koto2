@@ -611,6 +611,18 @@ async function getCreatureCollection() {
   return apiCall('/creature-collection', 'GET');
 }
 
+async function getFusionState() {
+  return apiCall('/fusion', 'GET');
+}
+
+async function startFusion(recipeId) {
+  return apiCall('/fusion/start', 'POST', { recipeId }, null, { returnErrorBody: true });
+}
+
+async function addFusionCore() {
+  return apiCall('/fusion/debug-add-core', 'POST');
+}
+
 async function rollPostCombatShop() {
   return apiCall('/creature-shop-roll', 'POST');
 }
@@ -787,6 +799,10 @@ export {
   startSpeedReviewRoom,
   progressSpeedReviewRoom,
   completeSpeedReviewRoom,
+  // Fusion endpoints
+  getFusionState,
+  startFusion,
+  addFusionCore,
   // Skill master endpoints
   skillMasterOffers,
   skillMasterChoose,

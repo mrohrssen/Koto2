@@ -52,6 +52,9 @@ export function getManager(userId) {
           if (!data.meta.elementDrops) {
             data.meta.elementDrops = { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 };
           }
+          if (!Number.isFinite(data.meta.fusionCores)) {
+            data.meta.fusionCores = 0;
+          }
           if (!data.meta.crests) {
             data.meta.crests = [];
           }
