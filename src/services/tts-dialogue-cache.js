@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, unlinkSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, unlinkSync, mkdirSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 
@@ -56,6 +56,13 @@ export class TtsDialogueCache {
         // Ignore missing files
       }
     }
+  }
+
+  /**
+   * Delete every cached dialogue audio file for a user.
+   */
+  clearUser(userId) {
+    rmSync(join(this.baseDir, userId), { recursive: true, force: true });
   }
 
   /**

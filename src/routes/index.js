@@ -52,6 +52,7 @@ export default function createRoutes(deps) {
     staticWordList: deps.staticWordList,
     getSettings: deps.getSettings,
     getUserVocabulary: deps.getUserVocabulary,
+    ttsDialogueCache: deps.ttsDialogueCache,
     // Creature narration engine deps
     getCreatureDialogueFromCache: deps.getCreatureDialogueFromCache,
     getAllCreatureDialogueCache: deps.getAllCreatureDialogueCache,

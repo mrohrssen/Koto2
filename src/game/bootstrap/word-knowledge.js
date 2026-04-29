@@ -176,6 +176,15 @@ export function saveWordKnowledge(wk) {
   fs.writeFileSync(filePath, JSON.stringify(wk, null, 2));
 }
 
+export function clearWordKnowledge(userId) {
+  const filePath = path.join(getDataDir(), `word-knowledge-${userId}.json`);
+  try {
+    fs.unlinkSync(filePath);
+  } catch {
+    // Missing knowledge files are already reset.
+  }
+}
+
 /**
  * Get known words from FSRS vocab deck.
  * A word is "known" when its FSRS card is in Learning or Review state

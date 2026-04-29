@@ -3,6 +3,8 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { resetTutorial } from '../../game/services/tutorial-service.js';
+import { getManager } from '../../game/manager-registry.js';
+import { resetUserProgress } from '../../game/user-data-reset.js';
 import { getCidScripts } from '../../game/dialogue-loader.js';
 import { getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { enrichTokens } from '../../game/enrich-tokens.js';
@@ -13,6 +15,7 @@ const __dirname = dirname(__filename);
 export default function createMiscRoutes({
   getDebugMode,
   setDebugMode,
+  ttsDialogueCache,
   getAllNpcDialogueCache,
   getAllCreatureDialogueCache,
   clearNpcDialogueCache,
@@ -351,6 +354,19 @@ export default function createMiscRoutes({
     resetTutorial(meta);
     req.saveGame();
     res.json({ ok: true });
+  });
+
+  // Reset all current-user progress while preserving account and settings.
+  router.post('/reset-user-data', (req, res) => {
+    try {
+      const result = resetUserProgress(req.user.id);
+      ttsDialogueCache?.clearUser?.(req.user.id);
+      req.gameManager = getManager(req.user.id);
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      console.error('Reset user data error:', error);
+      res.status(500).json({ error: 'Failed to reset user data' });
+    }
   });
 
   // Toggle kana mode (hiragana-first learning path)
