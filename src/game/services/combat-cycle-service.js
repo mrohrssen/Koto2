@@ -417,7 +417,7 @@ export class CombatCycleService {
       const newCollectionAdditions = this._flushPendingCaptures();
 
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
-      finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      finalizeCombatVictory(this.gm.combat, this.gm.run, { meta: this.gm.meta, narrate: (t) => this.gm.narrate(t) });
       const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();
@@ -524,7 +524,7 @@ export class CombatCycleService {
     if (allEnemiesDown) {
       const newCollectionAdditions = this._flushPendingCaptures();
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
-      finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      finalizeCombatVictory(this.gm.combat, this.gm.run, { meta: this.gm.meta, narrate: (t) => this.gm.narrate(t) });
       const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();
@@ -735,7 +735,7 @@ export class CombatCycleService {
       const newCollectionAdditions = this._flushPendingCaptures();
 
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
-      finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      finalizeCombatVictory(this.gm.combat, this.gm.run, { meta: this.gm.meta, narrate: (t) => this.gm.narrate(t) });
       const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();
@@ -1056,7 +1056,7 @@ export class CombatCycleService {
       awardBattleXp(party, this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.gm.run.itemBuffs);
       newCollectionAdditions = this._flushPendingCaptures();
       collectElementDrops(this.gm.meta, enemies, this.gm.run?.runSummary);
-      finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      finalizeCombatVictory(this.gm.combat, this.gm.run, { meta: this.gm.meta, narrate: (t) => this.gm.narrate(t) });
       tutorialRewards = this._collectTutorialRewards();
     }
 
@@ -1116,7 +1116,7 @@ export class CombatCycleService {
       const newCollectionAdditions = this._flushPendingCaptures();
 
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
-      finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      finalizeCombatVictory(this.gm.combat, this.gm.run, { meta: this.gm.meta, narrate: (t) => this.gm.narrate(t) });
       const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();
@@ -1175,7 +1175,7 @@ export class CombatCycleService {
     if (result.allEnemiesDefeated) {
       const newCollectionAdditions = this._flushPendingCaptures();
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
-      finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      finalizeCombatVictory(this.gm.combat, this.gm.run, { meta: this.gm.meta, narrate: (t) => this.gm.narrate(t) });
       const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();

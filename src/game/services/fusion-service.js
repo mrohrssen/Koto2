@@ -6,6 +6,7 @@ import {
   getCreatureCount
 } from './creature-collection-service.js';
 import { hasTutorialFusionData, TUTORIAL_FUSION_CREATURE_ID } from './tutorial-service.js';
+import { AREAS } from '../rooms.js';
 
 export const FUSION_RECIPES = {
   fireCat: {
@@ -22,6 +23,7 @@ export const FUSION_RECIPES = {
     nameEn: 'Stone Giant',
     ingredientIds: ['ishi', 'ishi', 'ishi'],
     resultId: 'ishino-kyojin',
+    requiresBossDefeatId: 'ishino-kyojin',
     cost: { fusionCores: 1 }
   }
 };
@@ -33,6 +35,32 @@ function getCollection(meta) {
 
 function getFusionCores(meta) {
   return Number.isFinite(meta.fusionCores) ? meta.fusionCores : 0;
+}
+
+function hasDefeatedBoss(meta, bossCreatureId) {
+  if (Array.isArray(meta?.bossesDefeated) && meta.bossesDefeated.includes(bossCreatureId)) {
+    return true;
+  }
+
+  const bossAreaIndex = AREAS.findIndex(area => area.bossCreatureId === bossCreatureId);
+  if (bossAreaIndex < 0) return false;
+
+  const highestUnlocked = meta?.levels?.highestUnlocked || 1;
+  return highestUnlocked >= bossAreaIndex + 2;
+}
+
+function getRecipeLockedReason(meta, recipe) {
+  if (recipe.resultId === TUTORIAL_FUSION_CREATURE_ID && !hasTutorialFusionData(meta, recipe.resultId)) {
+    return 'Hineko fusion data required';
+  }
+  if (recipe.requiresBossDefeatId && !hasDefeatedBoss(meta, recipe.requiresBossDefeatId)) {
+    return `${recipe.nameEn} defeat required`;
+  }
+  return null;
+}
+
+function isRecipeVisible(meta, recipe) {
+  return !recipe.requiresBossDefeatId || hasDefeatedBoss(meta, recipe.requiresBossDefeatId);
 }
 
 function buildRecipeState(meta, recipe) {
@@ -53,9 +81,8 @@ function buildRecipeState(meta, recipe) {
   const resultOwned = getCreatureCount(meta, recipe.resultId);
   const fusionCores = getFusionCores(meta);
   const hasEnoughCores = fusionCores >= recipe.cost.fusionCores;
-  const requiresData = recipe.resultId === TUTORIAL_FUSION_CREATURE_ID;
-  const dataUnlocked = !requiresData || hasTutorialFusionData(meta, recipe.resultId);
-  const lockedReason = dataUnlocked ? null : 'Hineko fusion data required';
+  const lockedReason = getRecipeLockedReason(meta, recipe);
+  const dataUnlocked = !lockedReason;
 
   return {
     ...recipe,
@@ -74,7 +101,9 @@ function buildRecipeState(meta, recipe) {
 export function getFusionState(meta, recipes = Object.values(FUSION_RECIPES)) {
   return {
     fusionCores: getFusionCores(meta),
-    recipes: recipes.map(recipe => buildRecipeState(meta, recipe))
+    recipes: recipes
+      .filter(recipe => isRecipeVisible(meta, recipe))
+      .map(recipe => buildRecipeState(meta, recipe))
   };
 }
 
