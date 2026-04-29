@@ -39,6 +39,9 @@ export function createMetaProgression() {
     // Befriend counts per creature (persists across runs)
     befriendCount: {},
 
+    // Boss creatures defeated at least once (persists across runs)
+    bossesDefeated: [],
+
     // Area progression (highestUnlocked is 1-based: 1 = first area only)
     levels: { highestUnlocked: 1, completed: [], current: null },
 

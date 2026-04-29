@@ -174,6 +174,16 @@ describe('finalizeCombatVictory', () => {
     assert.ok(run.bossesDefeated.includes('boss1'));
   });
 
+  it('tracks boss defeat in persistent meta.bossesDefeated', () => {
+    const combat = { active: true, isBoss: true, enemies: [{ id: 'ishino-kyojin' }] };
+    const run = { currentRoom: 0, rooms: [{}], currentAreaEncounters: 0, bossesDefeated: [] };
+    const meta = { bossesDefeated: [] };
+
+    finalizeCombatVictory(combat, run, { meta });
+
+    assert.deepEqual(meta.bossesDefeated, ['ishino-kyojin']);
+  });
+
   it('initializes bossesDefeated if missing', () => {
     const combat = { active: true, isBoss: true, enemies: [{ id: 'b1' }] };
     const run = { currentRoom: 0, rooms: [{}], currentAreaEncounters: 0 };

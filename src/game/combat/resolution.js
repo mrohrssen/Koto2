@@ -95,6 +95,7 @@ export function getElementDropList(enemies) {
  * @param {object} run
  * @param {object} [opts]
  * @param {Function} [opts.narrate] - Narration callback for boss defeat dialogue
+ * @param {object} [opts.meta] - Meta-progression state for persistent boss tracking
  */
 export function finalizeCombatVictory(combat, run, opts = {}) {
   combat.active = false;
@@ -124,6 +125,12 @@ export function finalizeCombatVictory(combat, run, opts = {}) {
     if (!run.bossesDefeated) run.bossesDefeated = [];
     if (!run.bossesDefeated.includes(bossId)) {
       run.bossesDefeated.push(bossId);
+    }
+    if (opts.meta) {
+      if (!Array.isArray(opts.meta.bossesDefeated)) opts.meta.bossesDefeated = [];
+      if (!opts.meta.bossesDefeated.includes(bossId)) {
+        opts.meta.bossesDefeated.push(bossId);
+      }
     }
   }
 }

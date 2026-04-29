@@ -13,6 +13,7 @@ function makeMeta(overrides = {}) {
     creatureCounts: { hi: 1, neko: 1 },
     fusionCores: 1,
     tutorialFusionDataUnlocked: ['hineko'],
+    bossesDefeated: ['ishino-kyojin'],
     ...overrides
   };
 }
@@ -135,6 +136,17 @@ describe('fusion-service', () => {
     ]);
   });
 
+  it('hides Stone Giant until Stone Giant has been defeated once', () => {
+    const lockedState = getFusionState(makeMeta({ bossesDefeated: [] }));
+    assert.deepEqual(
+      lockedState.recipes.map(recipe => recipe.id),
+      [FUSION_RECIPES.fireCat.id]
+    );
+
+    const unlockedState = getFusionState(makeMeta({ bossesDefeated: ['ishino-kyojin'] }));
+    assert.ok(unlockedState.recipes.some(recipe => recipe.id === FUSION_RECIPES.stoneGiant.id));
+  });
+
   it('fuses Stone Giant from three owned Stone copies', () => {
     const meta = makeMeta({
       creatureCollection: ['hi', 'neko', 'ishi'],
@@ -165,6 +177,23 @@ describe('fusion-service', () => {
     assert.equal(result.error, 'Missing fusion ingredients');
     assert.equal(meta.fusionCores, 1);
     assert.equal(meta.creatureCounts.ishi, 2);
+    assert.equal(meta.creatureCounts['ishino-kyojin'] || 0, 0);
+  });
+
+  it('rejects direct Stone Giant fusion before Stone Giant has been defeated once', () => {
+    const meta = makeMeta({
+      bossesDefeated: [],
+      creatureCollection: ['hi', 'neko', 'ishi'],
+      creatureCounts: { hi: 1, neko: 1, ishi: 3 },
+      fusionCores: 1
+    });
+
+    const result = startFusion(meta, FUSION_RECIPES.stoneGiant.id);
+
+    assert.equal(result.success, false);
+    assert.equal(result.error, 'Stone Giant defeat required');
+    assert.equal(meta.fusionCores, 1);
+    assert.equal(meta.creatureCounts.ishi, 3);
     assert.equal(meta.creatureCounts['ishino-kyojin'] || 0, 0);
   });
 

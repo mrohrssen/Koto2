@@ -81,6 +81,9 @@ export class GameManager {
     if (!this.meta.levels) {
       this.meta.levels = { highestUnlocked: 1, completed: [], current: null };
     }
+    if (!Array.isArray(this.meta.bossesDefeated)) {
+      this.meta.bossesDefeated = [];
+    }
     // Ensure creatureCollection exists for saves created before this feature
     if (!this.meta.creatureCollection) {
       this.meta.creatureCollection = ['hikaribon', 'hanatchi', 'tsukimochi'];
@@ -303,6 +306,7 @@ export class GameManager {
         prologueComplete: this.meta.prologueComplete || false,
         creatureCollection: this.meta.creatureCollection || [],
         creatureCounts: this.meta.creatureCounts || {},
+        bossesDefeated: Array.isArray(this.meta.bossesDefeated) ? this.meta.bossesDefeated : [],
         elementDrops: this.meta.elementDrops || { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
         fusionCores: this.meta.fusionCores || 0,
         crests: this.meta.crests || [],

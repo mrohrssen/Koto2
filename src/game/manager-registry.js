@@ -66,6 +66,10 @@ export function getManager(userId) {
           if (!data.meta.itemsDiscovered) {
             data.meta.itemsDiscovered = [];
           }
+          if (!Array.isArray(data.meta.bossesDefeated)) {
+            data.meta.bossesDefeated = [];
+            needsSave = true;
+          }
           // Migrate: add tutorial fields for existing accounts
           if (data.meta.tutorialStep === undefined) {
             data.meta.tutorialStep = 6;
