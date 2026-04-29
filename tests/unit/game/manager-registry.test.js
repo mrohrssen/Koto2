@@ -145,4 +145,51 @@ describe('manager-registry', () => {
     assert.equal(manager.run, null);
     assert.equal(manager.combat, null);
   });
+
+  it('strips lingering +100 ATK debug buffs from creatures on load', () => {
+    const buffedCreature = (id) => ({
+      id,
+      uid: `${id}-uid`,
+      hp: 100,
+      maxHp: 100,
+      attack: 20,
+      itemBuffs: { baseAttackBonus: 100 },
+      _debugAtkApplied: true
+    });
+    const saveData = {
+      version: 2,
+      player: { name: 'BuffTest', stats: { str: 5 }, hp: 100, maxHp: 100, level: 1, exp: 0, money: 0, inventory: [], equipment: {}, creatures: { active: [], reserves: [] } },
+      meta: {
+        essence: 50, upgrades: [], achievements: [], lifetimeStats: {},
+        pvpTeams: [{ creatureParty: { active: [buffedCreature('pvpA')], reserves: [buffedCreature('pvpR')] } }]
+      },
+      run: {
+        active: true,
+        creatureParty: {
+          active: [buffedCreature('a1')],
+          reserves: [buffedCreature('r1')],
+          pendingCaptures: [buffedCreature('p1')]
+        }
+      }
+    };
+    writeFileSync(testSaveFile, JSON.stringify(saveData));
+
+    const manager = getManager('u_test123');
+    const all = [
+      manager.run.creatureParty.active[0],
+      manager.run.creatureParty.reserves[0],
+      manager.run.creatureParty.pendingCaptures[0],
+      manager.meta.pvpTeams[0].creatureParty.active[0],
+      manager.meta.pvpTeams[0].creatureParty.reserves[0]
+    ];
+    for (const c of all) {
+      assert.equal(c._debugAtkApplied, undefined, `${c.id} flag should be cleared`);
+      assert.equal(c.itemBuffs.baseAttackBonus, 0, `${c.id} debug buff should be reverted`);
+    }
+
+    const persisted = JSON.parse(readFileSync(testSaveFile, 'utf-8'));
+    assert.equal(persisted.run.creatureParty.active[0]._debugAtkApplied, undefined,
+      'cleanup must persist to disk');
+    assert.equal(persisted.run.creatureParty.active[0].itemBuffs.baseAttackBonus, 0);
+  });
 });

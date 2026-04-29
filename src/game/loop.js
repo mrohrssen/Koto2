@@ -39,6 +39,23 @@ export function applyDebugSuperAttack(creatures) {
   }
 }
 
+/**
+ * Revert lingering +100 ATK debug buffs on creatures previously marked
+ * with _debugAtkApplied. Returns true if any creature was changed.
+ */
+export function cleanupDebugSuperAttack(creatures) {
+  let changed = false;
+  for (const c of creatures || []) {
+    if (!c?._debugAtkApplied) continue;
+    if (c.itemBuffs) {
+      c.itemBuffs.baseAttackBonus = Math.max(0, (c.itemBuffs.baseAttackBonus || 0) - 100);
+    }
+    delete c._debugAtkApplied;
+    changed = true;
+  }
+  return changed;
+}
+
 export class GameManager {
   constructor() {
     this.player = null;

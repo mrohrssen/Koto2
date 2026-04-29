@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { GameManager } from './loop.js';
+import { GameManager, cleanupDebugSuperAttack } from './loop.js';
 import { getDataDir } from '../data-dir.js';
 import { CREATURES_BY_ID, backfillCreatureListUids, syncCreatureListMoves, syncPartyCreatureMoves } from './creatures.js';
 import { DEFAULT_COLLECTION, ensureCreatureCounts } from './services/creature-collection-service.js';
@@ -121,6 +121,11 @@ export function getManager(userId) {
           // dealer.offeredCreatures (sitting in shop rooms).
           backfillCreatureListUids(manager.run?.creatureParty?.pendingCaptures);
           needsSave = syncPartyCreatureMoves(manager.run?.creatureParty) || needsSave;
+          // Strip lingering +100 ATK debug buffs from saves made when the
+          // global debugSuperAttack toggle was on.
+          needsSave = cleanupDebugSuperAttack(manager.run?.creatureParty?.active) || needsSave;
+          needsSave = cleanupDebugSuperAttack(manager.run?.creatureParty?.reserves) || needsSave;
+          needsSave = cleanupDebugSuperAttack(manager.run?.creatureParty?.pendingCaptures) || needsSave;
           for (const room of (manager.run?.rooms || [])) {
             backfillCreatureListUids(room?.dealer?.offeredCreatures);
             needsSave = syncCreatureListMoves(room?.dealer?.offeredCreatures) || needsSave;
@@ -134,6 +139,10 @@ export function getManager(userId) {
           // combat.allies to silently diverge from the party state.
           if (manager.run?.creatureParty?.active && manager.combat.allies) {
             manager.combat.allies = manager.run.creatureParty.active;
+          } else {
+            // No run to share refs with — clean any stale debug buffs on the
+            // standalone combat.allies copy.
+            needsSave = cleanupDebugSuperAttack(manager.combat.allies) || needsSave;
           }
           // Backfill enemies — they are not shared references, so backfill directly.
           backfillCreatureListUids(manager.combat.enemies);
@@ -145,6 +154,8 @@ export function getManager(userId) {
             backfillCreatureListUids(team.creatureParty.active);
             backfillCreatureListUids(team.creatureParty.reserves);
             needsSave = syncPartyCreatureMoves(team.creatureParty) || needsSave;
+            needsSave = cleanupDebugSuperAttack(team.creatureParty.active) || needsSave;
+            needsSave = cleanupDebugSuperAttack(team.creatureParty.reserves) || needsSave;
           }
         }
       }
