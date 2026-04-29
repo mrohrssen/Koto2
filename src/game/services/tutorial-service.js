@@ -107,6 +107,9 @@ export function collectStartingMeadowHinekoVictoryReward(meta, run, combat) {
   if (!isStartingMeadowHinekoBoss(run)) return null;
   const result = unlockTutorialFusionData(meta, TUTORIAL_FUSION_CREATURE_ID);
   if (!result.unlocked) return null;
+  if (getTutorialStep(meta) < TUTORIAL_STEPS.SPEED_REVIEW) {
+    meta.tutorialStep = TUTORIAL_STEPS.SPEED_REVIEW;
+  }
   return {
     type: 'fusionData',
     creatureId: TUTORIAL_FUSION_CREATURE_ID,

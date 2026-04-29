@@ -229,6 +229,16 @@ describe('tutorial-service', () => {
       assert.equal(wildReward, null);
       assert.deepEqual(wildMeta.tutorialFusionDataUnlocked, []);
     });
+
+    it('advances from item shop tutorial to speed review after Hineko victory', () => {
+      const meta = createMetaProgression();
+      meta.tutorialStep = 2;
+      const combat = { isBoss: true, enemies: [{ id: 'hineko', hp: 0 }] };
+
+      collectStartingMeadowHinekoVictoryReward(meta, makeBossRun(), combat);
+
+      assert.equal(meta.tutorialStep, 4);
+    });
   });
 });
 
