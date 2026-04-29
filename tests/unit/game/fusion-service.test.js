@@ -10,6 +10,7 @@ import {
 function makeMeta(overrides = {}) {
   return {
     creatureCollection: ['hi', 'neko'],
+    creatureCounts: { hi: 1, neko: 1 },
     fusionCores: 1,
     tutorialFusionDataUnlocked: ['hineko'],
     ...overrides
@@ -43,7 +44,7 @@ describe('fusion-service', () => {
     assert.equal(state.recipes[0].lockedReason, 'Hineko fusion data required');
   });
 
-  it('spends one fusion core and permanently unlocks Fire Cat without consuming inputs', () => {
+  it('spends one fusion core, consumes ingredients, and adds a Fire Cat copy', () => {
     const meta = makeMeta();
 
     const result = startFusion(meta, FUSION_RECIPES.fireCat.id);
@@ -52,7 +53,10 @@ describe('fusion-service', () => {
     assert.equal(result.recipe.resultId, 'hineko');
     assert.equal(result.unlockedCreatureId, 'hineko');
     assert.equal(meta.fusionCores, 0);
-    assert.deepEqual(meta.creatureCollection, ['hi', 'neko', 'hineko']);
+    assert.ok(meta.creatureCollection.includes('hineko'));
+    assert.equal(meta.creatureCounts.hi, 0);
+    assert.equal(meta.creatureCounts.neko, 0);
+    assert.equal(meta.creatureCounts.hineko, 1);
   });
 
   it('rejects fusion before Hineko fusion data is unlocked', () => {
@@ -63,11 +67,12 @@ describe('fusion-service', () => {
     assert.equal(result.success, false);
     assert.equal(result.error, 'Hineko fusion data required');
     assert.equal(meta.fusionCores, 1);
-    assert.deepEqual(meta.creatureCollection, ['hi', 'neko']);
+    assert.equal(meta.creatureCounts.hi, 1);
+    assert.equal(meta.creatureCounts.neko, 1);
   });
 
-  it('rejects fusion when an ingredient is missing', () => {
-    const meta = makeMeta({ creatureCollection: ['hi'] });
+  it('rejects fusion when an ingredient quantity is missing', () => {
+    const meta = makeMeta({ creatureCounts: { hi: 1, neko: 0 } });
 
     const result = startFusion(meta, FUSION_RECIPES.fireCat.id);
 
@@ -75,7 +80,8 @@ describe('fusion-service', () => {
     assert.equal(result.error, 'Missing fusion ingredients');
     assert.deepEqual(result.missingIngredientIds, ['neko']);
     assert.equal(meta.fusionCores, 1);
-    assert.deepEqual(meta.creatureCollection, ['hi']);
+    assert.equal(meta.creatureCounts.hi, 1);
+    assert.equal(meta.creatureCounts.neko, 0);
   });
 
   it('rejects fusion when there are not enough fusion cores', () => {
@@ -86,18 +92,47 @@ describe('fusion-service', () => {
     assert.equal(result.success, false);
     assert.equal(result.error, 'Not enough fusion cores');
     assert.equal(meta.fusionCores, 0);
-    assert.deepEqual(meta.creatureCollection, ['hi', 'neko']);
+    assert.equal(meta.creatureCounts.hi, 1);
+    assert.equal(meta.creatureCounts.neko, 1);
   });
 
-  it('does not spend a fusion core when Fire Cat is already unlocked', () => {
-    const meta = makeMeta({ creatureCollection: ['hi', 'neko', 'hineko'] });
+  it('allows repeat fusion for an already-discovered result and consumes ingredients again', () => {
+    const meta = makeMeta({
+      creatureCollection: ['hi', 'neko', 'hineko'],
+      creatureCounts: { hi: 2, neko: 1, hineko: 1 },
+      fusionCores: 2
+    });
 
     const result = startFusion(meta, FUSION_RECIPES.fireCat.id);
 
-    assert.equal(result.success, false);
-    assert.equal(result.error, 'Creature already unlocked');
+    assert.equal(result.success, true);
     assert.equal(meta.fusionCores, 1);
-    assert.deepEqual(meta.creatureCollection, ['hi', 'neko', 'hineko']);
+    assert.equal(meta.creatureCounts.hi, 1);
+    assert.equal(meta.creatureCounts.neko, 0);
+    assert.equal(meta.creatureCounts.hineko, 2);
+  });
+
+  it('supports recipes that require multiple copies of the same ingredient', () => {
+    const tripleHiRecipe = {
+      id: 'triple-hi-test',
+      name: '三火',
+      nameEn: 'Triple Hi',
+      ingredientIds: ['hi', 'hi', 'hi'],
+      resultId: 'neko',
+      cost: { fusionCores: 1 }
+    };
+    const meta = makeMeta({
+      creatureCollection: ['hi'],
+      creatureCounts: { hi: 3 },
+      fusionCores: 1
+    });
+
+    const state = getFusionState(meta, [tripleHiRecipe]);
+
+    assert.equal(state.recipes[0].canFuse, true);
+    assert.deepEqual(state.recipes[0].ingredientRequirements, [
+      { id: 'hi', required: 3, owned: 3, missing: 0 }
+    ]);
   });
 
   it('adds one fusion core for debug testing', () => {

@@ -85,7 +85,7 @@ export function ensureCreatureCounts(meta) {
 
   for (const id of DEFAULT_COLLECTION) {
     if (!meta.creatureCollection.includes(id)) meta.creatureCollection.push(id);
-    if (getCreatureCount(meta, id) === 0) meta.creatureCounts[id] = 1;
+    if (meta.creatureCounts[id] === undefined) meta.creatureCounts[id] = 1;
   }
 
   return meta.creatureCounts;
