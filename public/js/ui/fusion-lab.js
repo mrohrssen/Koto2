@@ -12,6 +12,10 @@ let catalogById = new Map();
 let selectedRecipeId = null;
 let fusionLabNarrationShown = false;
 
+const OBTAINED_RESULT_NAMES = {
+  hineko: 'Hineko'
+};
+
 export function init(cbs) {
   callbacks = cbs;
 }
@@ -46,6 +50,12 @@ function getSelectedRecipe() {
 
 function getCreature(id) {
   return catalogById.get(id) || { id, name: id, nameEn: id, element: 'fire' };
+}
+
+function getFusionResultName(creature, result) {
+  if (!result) return creature.nameEn || creature.id;
+  const obtainedName = OBTAINED_RESULT_NAMES[creature.id] || creature.nameEn || creature.id;
+  return `${obtainedName} obtained`;
 }
 
 function shouldGuideHinekoRecipe(recipe = getSelectedRecipe()) {
@@ -141,7 +151,7 @@ function renderScene(recipe, result = null) {
       <div class="fusion-result-pedestal ${result ? 'fusion-result-pedestal--revealed' : ''}">
         ${creatureSpriteHtml(resultCreature.id, resultCreature.name || resultCreature.baseWord, resultCreature.element, 'fusion-result-sprite')}
       </div>
-      <div class="fusion-result-name">${escapeHtml(resultCreature.nameEn)}${result ? ' +1 Copy!' : ''}</div>
+      <div class="fusion-result-name">${escapeHtml(getFusionResultName(resultCreature, result))}</div>
       <div class="fusion-requirements">${escapeHtml(getRequirementText(recipe))}</div>
       <button class="ui-btn ui-btn--primary fusion-start-btn ${shouldGuideHinekoRecipe(recipe) ? 'tutorial-highlight' : ''}" type="button" ${recipe.canFuse ? '' : 'disabled'}>
         Start Fusion
