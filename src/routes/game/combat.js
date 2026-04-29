@@ -151,7 +151,8 @@ export default function createCombatRoutes({
       const meta = gameManager.getMeta();
       const collection = meta.creatureCollection || ['hikaribon', 'hanatchi', 'tsukimochi'];
       const befriendCount = meta.befriendCount || {};
-      res.json({ collection, catalog: getCollectionCatalog(collection, befriendCount) });
+      const creatureCounts = meta.creatureCounts || {};
+      res.json({ collection, catalog: getCollectionCatalog(collection, befriendCount, creatureCounts) });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

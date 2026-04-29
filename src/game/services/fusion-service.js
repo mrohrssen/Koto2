@@ -1,4 +1,10 @@
-import { addToCollection } from './creature-collection-service.js';
+import {
+  addCreatureCopy,
+  consumeCreatureCopies,
+  countRequirements,
+  ensureCreatureCounts,
+  getCreatureCount
+} from './creature-collection-service.js';
 import { hasTutorialFusionData, TUTORIAL_FUSION_CREATURE_ID } from './tutorial-service.js';
 
 export const FUSION_RECIPES = {
@@ -8,6 +14,14 @@ export const FUSION_RECIPES = {
     nameEn: 'Fire Cat',
     ingredientIds: ['hi', 'neko'],
     resultId: 'hineko',
+    cost: { fusionCores: 1 }
+  },
+  stoneGiant: {
+    id: 'stone-giant',
+    name: '石の巨人',
+    nameEn: 'Stone Giant',
+    ingredientIds: ['ishi', 'ishi', 'ishi'],
+    resultId: 'ishino-kyojin',
     cost: { fusionCores: 1 }
   }
 };
@@ -23,8 +37,20 @@ function getFusionCores(meta) {
 
 function buildRecipeState(meta, recipe) {
   const collection = getCollection(meta);
-  const missingIngredientIds = recipe.ingredientIds.filter(id => !collection.includes(id));
-  const alreadyUnlocked = collection.includes(recipe.resultId);
+  ensureCreatureCounts(meta);
+  const ingredientRequirements = countRequirements(recipe.ingredientIds).map(req => {
+    const owned = getCreatureCount(meta, req.id);
+    return {
+      ...req,
+      owned,
+      missing: Math.max(0, req.required - owned)
+    };
+  });
+  const missingIngredientIds = ingredientRequirements
+    .filter(req => req.missing > 0)
+    .map(req => req.id);
+  const alreadyDiscovered = collection.includes(recipe.resultId);
+  const resultOwned = getCreatureCount(meta, recipe.resultId);
   const fusionCores = getFusionCores(meta);
   const hasEnoughCores = fusionCores >= recipe.cost.fusionCores;
   const requiresData = recipe.resultId === TUTORIAL_FUSION_CREATURE_ID;
@@ -33,19 +59,22 @@ function buildRecipeState(meta, recipe) {
 
   return {
     ...recipe,
+    ingredientRequirements,
     missingIngredientIds,
-    alreadyUnlocked,
+    alreadyUnlocked: alreadyDiscovered,
+    alreadyDiscovered,
+    resultOwned,
     hasEnoughCores,
     dataUnlocked,
     lockedReason,
-    canFuse: dataUnlocked && missingIngredientIds.length === 0 && hasEnoughCores && !alreadyUnlocked
+    canFuse: dataUnlocked && missingIngredientIds.length === 0 && hasEnoughCores
   };
 }
 
-export function getFusionState(meta) {
+export function getFusionState(meta, recipes = Object.values(FUSION_RECIPES)) {
   return {
     fusionCores: getFusionCores(meta),
-    recipes: Object.values(FUSION_RECIPES).map(recipe => buildRecipeState(meta, recipe))
+    recipes: recipes.map(recipe => buildRecipeState(meta, recipe))
   };
 }
 
@@ -54,9 +83,6 @@ export function startFusion(meta, recipeId) {
   if (!recipe) return { success: false, error: 'Unknown fusion recipe' };
 
   const recipeState = buildRecipeState(meta, recipe);
-  if (recipeState.alreadyUnlocked) {
-    return { success: false, error: 'Creature already unlocked', recipe: recipeState };
-  }
   if (!recipeState.dataUnlocked) {
     return { success: false, error: recipeState.lockedReason || 'Fusion data required', recipe: recipeState };
   }
@@ -72,12 +98,23 @@ export function startFusion(meta, recipeId) {
     return { success: false, error: 'Not enough fusion cores', recipe: recipeState };
   }
 
+  const consumeResult = consumeCreatureCopies(meta, recipeState.ingredientRequirements);
+  if (!consumeResult.success) {
+    return {
+      success: false,
+      error: 'Missing fusion ingredients',
+      missingIngredientIds: consumeResult.missing.map(entry => entry.id),
+      recipe: buildRecipeState(meta, recipe)
+    };
+  }
+
   meta.fusionCores = getFusionCores(meta) - recipe.cost.fusionCores;
-  addToCollection(getCollection(meta), recipe.resultId);
+  addCreatureCopy(meta, recipe.resultId);
 
   return {
     success: true,
     unlockedCreatureId: recipe.resultId,
+    consumedIngredients: consumeResult.consumed,
     recipe: buildRecipeState(meta, recipe)
   };
 }

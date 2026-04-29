@@ -1001,6 +1001,14 @@ function showCollectionSelect(catalog, collection) {
       return r.nameEn;
     }
 
+    function ownedCount(r) {
+      return Number.isFinite(r?.ownedCount) ? r.ownedCount : 0;
+    }
+
+    function isAvailable(r) {
+      return collection.includes(r.id) && ownedCount(r) > 0;
+    }
+
     // Render the owned creature card HTML
     function renderOwnedCard(r) {
       const el = ELEMENT_EMOJI[r.element] || '';
@@ -1034,6 +1042,7 @@ function showCollectionSelect(catalog, collection) {
           </div>
           <div class="cc-foot">
             <span>${r.pointCost} pts</span>
+            <span>Owned x${ownedCount(r)}</span>
             <span>Befriended ${r.befriendCount || 0}x</span>
           </div>
         </div>`;
@@ -1079,12 +1088,14 @@ function showCollectionSelect(catalog, collection) {
         }
 
         const cellsHtml = sorted.map(r => {
-          const owned = collection.includes(r.id);
+          const owned = isAvailable(r);
+          const discovered = collection.includes(r.id);
           return `
             <div class="collection-cell${!owned ? ' unowned' : ''}" data-id="${r.id}" data-rarity="${r.rarity}" data-element="${r.element}">
               <img data-creature-id="${r.id}" alt="${r.nameEn}" />
               ${owned ? `<span class="point-badge">${r.pointCost}</span>` : ''}
-              <span class="creature-name">${owned ? r.nameEn : '???'}</span>
+              ${discovered ? `<span class="owned-count-badge">x${ownedCount(r)}</span>` : ''}
+              <span class="creature-name">${discovered ? r.nameEn : '???'}</span>
             </div>
           `;
         }).join('');
@@ -1121,7 +1132,7 @@ function showCollectionSelect(catalog, collection) {
 
             inspectedId = id;
 
-            const owned = collection.includes(id);
+            const owned = isAvailable(creature);
             if (owned) {
               if (selected.has(id)) {
                 selected.delete(id);
@@ -1153,9 +1164,10 @@ function showCollectionSelect(catalog, collection) {
       // Update cell classes
       overlay.querySelectorAll('.collection-cell').forEach(cell => {
         const id = cell.dataset.id;
-        const owned = collection.includes(id);
+        const row = sorted.find(r => r.id === id);
+        const owned = row ? isAvailable(row) : false;
         const isSelected = selected.has(id);
-        const tooExpensive = owned && !isSelected && (sorted.find(r => r.id === id)?.pointCost || 0) > remaining;
+        const tooExpensive = owned && !isSelected && (row?.pointCost || 0) > remaining;
         cell.classList.toggle('selected', isSelected);
         cell.classList.toggle('too-expensive', tooExpensive);
       });
@@ -1175,8 +1187,9 @@ function showCollectionSelect(catalog, collection) {
         } else {
           const inspected = sorted.find(r => r.id === inspectedId);
           if (inspected) {
-            const owned = collection.includes(inspected.id);
-            cardArea.innerHTML = owned ? renderOwnedCard(inspected) : renderRedactedCard(inspected);
+            const owned = isAvailable(inspected);
+            const discovered = collection.includes(inspected.id);
+            cardArea.innerHTML = owned || discovered ? renderOwnedCard(inspected) : renderRedactedCard(inspected);
             // Configure sprites in the card
             cardArea.querySelectorAll('img[data-creature-id]').forEach(img => {
               const cid = img.dataset.creatureId;

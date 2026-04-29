@@ -33,7 +33,7 @@ import {
   resolveDefeat
 } from '../combat/resolution.js';
 import { rollShopItems, applyItem } from './item-service.js';
-import { addToCollection } from './creature-collection-service.js';
+import { addCreatureCopy } from './creature-collection-service.js';
 import {
   selectNpcForEncounter,
   updateBond,
@@ -213,9 +213,8 @@ export class CombatCycleService {
           this.gm.run.runSummary.creaturesBefriended++;
         }
 
-        const result = addToCollection(this.gm.meta.creatureCollection || [], creature.id);
-        if (result.added) {
-          this.gm.meta.creatureCollection = result.collection;
+        const result = addCreatureCopy(this.gm.meta, creature.id);
+        if (result.addedDiscovery) {
           newAdditions.push({ id: creature.id, name: creature.name, nameEn: creature.nameEn, element: creature.element, rarity: creature.rarity });
         }
       }

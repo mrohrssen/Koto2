@@ -29,6 +29,13 @@ export function createMetaProgression() {
     // Permanent creature collection (persists across runs)
     creatureCollection: ['hikaribon', 'hanatchi', 'tsukimochi'],
 
+    // Current spendable creature copies (persists across runs)
+    creatureCounts: {
+      hikaribon: 1,
+      hanatchi: 1,
+      tsukimochi: 1
+    },
+
     // Befriend counts per creature (persists across runs)
     befriendCount: {},
 

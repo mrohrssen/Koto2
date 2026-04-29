@@ -21,6 +21,7 @@ import { buildRunSummary } from './adventure-report.js';
 import { createItemBuffs } from './services/item-service.js';
 import { getCrestMultipliers, applyCrestBonuses } from './services/crest-service.js';
 import { getTutorialStep, advanceTutorial as advanceTutorialStep } from './services/tutorial-service.js';
+import { ensureCreatureCounts } from './services/creature-collection-service.js';
 import { exposeWords as exposeWords_fn } from './bootstrap/word-knowledge.js';
 
 // ============ GAME MANAGER ============
@@ -67,6 +68,7 @@ export class GameManager {
     if (!this.meta.creatureCollection) {
       this.meta.creatureCollection = ['hikaribon', 'hanatchi', 'tsukimochi'];
     }
+    ensureCreatureCounts(this.meta);
     return this.meta;
   }
 
@@ -283,6 +285,7 @@ export class GameManager {
         levels: this.meta.levels || { highestUnlocked: 1, completed: [], current: null },
         prologueComplete: this.meta.prologueComplete || false,
         creatureCollection: this.meta.creatureCollection || [],
+        creatureCounts: this.meta.creatureCounts || {},
         elementDrops: this.meta.elementDrops || { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
         fusionCores: this.meta.fusionCores || 0,
         crests: this.meta.crests || [],

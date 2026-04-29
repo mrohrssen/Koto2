@@ -82,11 +82,12 @@ function renderRecipeTiles() {
       return {
         sprite: creatureSpriteHtml(result.id, result.name || result.baseWord, result.element, 'fusion-recipe-sprite'),
         title: escapeHtml(recipe.nameEn),
-        subtitle: recipe.alreadyUnlocked ? 'Unlocked' : recipe.canFuse ? 'Ready to fuse' : getRequirementText(recipe),
-        pills: `<span class="fusion-core-pill">${recipe.cost.fusionCores} Fusion Core</span>`,
-        badge: recipe.alreadyUnlocked
-          ? { text: 'Unlocked', color: '#5e8f62' }
-          : { text: recipe.canFuse ? 'Ready' : 'Locked', color: recipe.canFuse ? '#ef8f35' : '#777' }
+        subtitle: recipe.canFuse ? 'Ready to fuse' : getRequirementText(recipe),
+        pills: `
+          <span class="fusion-core-pill">${recipe.cost.fusionCores} Fusion Core</span>
+          <span class="fusion-core-pill">Owned x${recipe.resultOwned || 0}</span>
+        `,
+        badge: { text: recipe.canFuse ? 'Ready' : 'Locked', color: recipe.canFuse ? '#ef8f35' : '#777' }
       };
     }),
     disableAfterSelect: false,
@@ -123,8 +124,8 @@ function renderScene(recipe, result = null) {
 
   cleanup();
 
-  const selectedIds = recipe.ingredientIds.slice(0, 5);
-  while (selectedIds.length < 5) selectedIds.push(null);
+  const selectedRequirements = (recipe.ingredientRequirements || []).slice(0, 5);
+  while (selectedRequirements.length < 5) selectedRequirements.push(null);
 
   const resultCreature = getCreature(recipe.resultId);
   const scene = document.createElement('div');
@@ -135,12 +136,12 @@ function renderScene(recipe, result = null) {
     <div class="fusion-lab-content">
       <div class="fusion-lab-title">Fusion Lab</div>
       <div class="fusion-slot-row">
-        ${selectedIds.map((id, index) => renderIngredientSlot(id, recipe, index)).join('')}
+        ${selectedRequirements.map((requirement, index) => renderIngredientSlot(requirement, index)).join('')}
       </div>
       <div class="fusion-result-pedestal ${result ? 'fusion-result-pedestal--revealed' : ''}">
         ${creatureSpriteHtml(resultCreature.id, resultCreature.name || resultCreature.baseWord, resultCreature.element, 'fusion-result-sprite')}
       </div>
-      <div class="fusion-result-name">${escapeHtml(resultCreature.nameEn)}${result ? ' Unlocked!' : ''}</div>
+      <div class="fusion-result-name">${escapeHtml(resultCreature.nameEn)}${result ? ' +1 Copy!' : ''}</div>
       <div class="fusion-requirements">${escapeHtml(getRequirementText(recipe))}</div>
       <button class="ui-btn ui-btn--primary fusion-start-btn ${shouldGuideHinekoRecipe(recipe) ? 'tutorial-highlight' : ''}" type="button" ${recipe.canFuse ? '' : 'disabled'}>
         Start Fusion
@@ -157,29 +158,35 @@ function renderScene(recipe, result = null) {
   });
 }
 
-function renderIngredientSlot(id, recipe, index) {
-  if (!id) {
+function renderIngredientSlot(requirement, index) {
+  if (!requirement) {
     return `<div class="fusion-slot fusion-slot--empty"><span>Slot ${index + 1}</span></div>`;
   }
 
-  const creature = getCreature(id);
-  const isMissing = recipe.missingIngredientIds.includes(id);
+  const creature = getCreature(requirement.id);
+  const isMissing = requirement.missing > 0;
   return `
     <div class="fusion-slot ${isMissing ? 'fusion-slot--missing' : ''}">
       <div class="fusion-slot-sprite">
         ${creatureSpriteHtml(creature.id, creature.name || creature.baseWord, creature.element, 'fusion-ingredient-sprite')}
       </div>
       <div class="fusion-slot-name">${escapeHtml(creature.nameEn)}</div>
+      <div class="fusion-slot-count">${requirement.owned}/${requirement.required} owned</div>
     </div>
   `;
 }
 
 function getRequirementText(recipe) {
-  if (recipe.alreadyUnlocked) return 'Fire Cat is already unlocked.';
   if (recipe.dataUnlocked === false) return recipe.lockedReason || 'Fusion data required.';
-  if (recipe.missingIngredientIds.length > 0) {
-    const missing = recipe.missingIngredientIds.map(id => getCreature(id).nameEn).join(', ');
-    return `Missing: ${missing}`;
+  const missingRequirements = (recipe.ingredientRequirements || []).filter(req => req.missing > 0);
+  if (missingRequirements.length > 0) {
+    const missing = missingRequirements
+      .map(req => {
+        const creature = getCreature(req.id);
+        return `${creature.nameEn} ${req.owned}/${req.required}`;
+      })
+      .join(', ');
+    return `Need more: ${missing}`;
   }
   if (!recipe.hasEnoughCores) return `Needs ${recipe.cost.fusionCores} Fusion Core.`;
   return `${recipe.cost.fusionCores} Fusion Core required.`;

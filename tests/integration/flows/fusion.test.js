@@ -29,7 +29,7 @@ describe('fusion lab flow', () => {
     assert.equal(stateRes.body.recipes[0].resultId, 'hineko');
   });
 
-  it('unlocks Fire Cat without consuming Fire or Cat', async () => {
+  it('consumes Fire and Cat copies when unlocking Fire Cat', async () => {
     await client.post('/api/game/debug-mode', { enabled: true });
     const collectionRes = await client.post('/api/game/debug-set-collection', {
       creatureIds: ['hi', 'neko'],
@@ -48,6 +48,10 @@ describe('fusion lab flow', () => {
     assert.ok(collection.includes('hi'));
     assert.ok(collection.includes('neko'));
     assert.ok(collection.includes('hineko'));
+    const counts = fuseRes.body.state.meta.creatureCounts;
+    assert.equal(counts.hi, 0);
+    assert.equal(counts.neko, 0);
+    assert.equal(counts.hineko, 1);
   });
 
   it('rejects starting fusion during a run', async () => {
