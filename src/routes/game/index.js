@@ -26,6 +26,7 @@ import { createPvpRoutes } from './pvp.js';
  * @param {function} deps.saveGameStats - Save game stats
  * @param {function} deps.getGameStats - Get game stats object
  * @param {function} deps.getSettings - Get current settings object
+ * @param {object} [deps.ttsDialogueCache] - Per-user dialogue audio cache
  * @returns {Router}
  */
 export default function createGameRoutes(deps) {
@@ -111,6 +112,7 @@ export default function createGameRoutes(deps) {
     getDebugMode: deps.getDebugMode,
     setDebugMode: deps.setDebugMode,
     staticWordList: deps.staticWordList,
+    ttsDialogueCache: deps.ttsDialogueCache,
     getAllNpcDialogueCache: deps.getAllNpcDialogueCache,
     getAllCreatureDialogueCache: deps.getAllCreatureDialogueCache,
     clearNpcDialogueCache: deps.clearNpcDialogueCache,

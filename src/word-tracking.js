@@ -1,8 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { dataPath } from './data-dir.js';
 
-const TRACKING_FILE = dataPath('.jrpg-word-tracking.json');
-
 // In-memory cache
 let trackingData = null;
 
@@ -31,9 +29,10 @@ function getTokyoDayOfWeek() {
 function loadTracking() {
   if (trackingData !== null) return trackingData;
 
-  if (existsSync(TRACKING_FILE)) {
+  const trackingFile = dataPath('.jrpg-word-tracking.json');
+  if (existsSync(trackingFile)) {
     try {
-      trackingData = JSON.parse(readFileSync(TRACKING_FILE, 'utf-8'));
+      trackingData = JSON.parse(readFileSync(trackingFile, 'utf-8'));
     } catch (e) {
       console.warn('[WordTracking] Failed to load tracking file:', e.message);
       trackingData = {};
@@ -50,7 +49,7 @@ function loadTracking() {
 function saveTracking() {
   if (trackingData === null) return;
   try {
-    writeFileSync(TRACKING_FILE, JSON.stringify(trackingData, null, 2));
+    writeFileSync(dataPath('.jrpg-word-tracking.json'), JSON.stringify(trackingData, null, 2));
   } catch (e) {
     console.warn('[WordTracking] Failed to save tracking file:', e.message);
   }
@@ -133,5 +132,18 @@ export function incrementDiscoveryCount(userId, dailyLimit) {
     lifetime: user.lifetime,
     atLimit
   };
+}
+
+/**
+ * Remove all discovery-limit tracking for a user.
+ * @param {string} userId - User ID
+ */
+export function clearDiscoveryTracking(userId) {
+  const data = loadTracking();
+  if (!data[userId]) return false;
+
+  delete data[userId];
+  saveTracking();
+  return true;
 }
 

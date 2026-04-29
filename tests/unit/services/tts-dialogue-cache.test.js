@@ -81,6 +81,17 @@ describe('TtsDialogueCache', () => {
     cache.deleteFiles('user1', ['nonexistent.wav', 'also-missing.wav']);
   });
 
+  it('clears all cached dialogue audio for one user only', async () => {
+    const cache = new TtsDialogueCache(TEST_DIR);
+    await cache.synthesizeLine('user1', 'hello', 11, fakeSynth);
+    await cache.synthesizeLine('user2', 'hello', 11, fakeSynth);
+
+    cache.clearUser('user1');
+
+    assert.equal(existsSync(join(TEST_DIR, 'user1')), false);
+    assert.equal(existsSync(join(TEST_DIR, 'user2')), true);
+  });
+
   describe('synthesizeDialogue (NPC)', () => {
     it('generates TTS for all NPC lines', async () => {
       const cache = new TtsDialogueCache(TEST_DIR);

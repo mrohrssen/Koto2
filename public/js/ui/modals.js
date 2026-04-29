@@ -199,6 +199,10 @@ export async function openSettings() {
         style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Reset Tutorial</button>
       <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Replay the tutorial on next run.</small>
 
+      <button class="ui-btn" id="settings-reset-user-data-btn"
+        style="width:100%;background:#b42318;color:white;margin-top:10px">Reset User Data</button>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Erase this account's game and learning progress. Login, API keys, and settings are kept.</small>
+
       <h4 style="margin:20px 0 8px;color:var(--accent)">Debug</h4>
       <label class="settings-label" style="margin-top:8px">
         <input type="checkbox" id="settings-debug-super-attack"
@@ -324,6 +328,34 @@ export async function openSettings() {
     } catch {
       btn.textContent = 'Error';
       setTimeout(() => { btn.textContent = 'Reset Tutorial'; btn.disabled = false; }, 2000);
+    }
+  });
+
+  document.getElementById('settings-reset-user-data-btn')?.addEventListener('click', async (e) => {
+    const confirmed = confirm(
+      'Reset all progress for this user?\n\nThis erases tutorial and prologue status, creatures befriended, exposed words, flash cards, and current run progress. Your login, API keys, and settings will be kept.'
+    );
+    if (!confirmed) return;
+
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Resetting...';
+    try {
+      const resp = await fetch(apiUrl('/api/game/reset-user-data'), {
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
+      if (resp.ok) {
+        btn.textContent = 'Reset complete';
+        sceneModule.showToast?.('User progress reset', 1600);
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Reset User Data'; btn.disabled = false; }, 2000);
+      }
+    } catch {
+      btn.textContent = 'Error';
+      setTimeout(() => { btn.textContent = 'Reset User Data'; btn.disabled = false; }, 2000);
     }
   });
 

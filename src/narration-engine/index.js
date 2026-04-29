@@ -49,6 +49,18 @@ export function clearDialogueCache(userId, entityType = 'npc') {
 }
 
 /**
+ * Drop in-process narration memory and text-cache instances for a user.
+ * Use when deleting the backing files so stale data cannot be served or saved again.
+ */
+export function invalidateNarrationUser(userId) {
+  for (const entityType of ['npc', 'creature']) {
+    const key = `${userId}:${entityType}`;
+    _memories.delete(key);
+    _caches.delete(key);
+  }
+}
+
+/**
  * Queue generation for all entities that are missing or stale in cache.
  * Fire-and-forget — runs in background with concurrency limit.
  */
