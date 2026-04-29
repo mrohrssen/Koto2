@@ -32,6 +32,9 @@ export function createMetaProgression() {
     // Befriend counts per creature (persists across runs)
     befriendCount: {},
 
+    // Area progression (highestUnlocked is 1-based: 1 = first area only)
+    levels: { highestUnlocked: 1, completed: [], current: null },
+
     // NPC bonds (persists across runs)
     npcBonds: {},
 

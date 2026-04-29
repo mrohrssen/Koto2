@@ -40,6 +40,7 @@ export function getManager(userId) {
               completed: [],
               current: null
             };
+            needsSave = true;
           }
           // Migrate: rename robotCollection → creatureCollection (no version bump)
           if (data.meta.robotCollection && !data.meta.creatureCollection) {

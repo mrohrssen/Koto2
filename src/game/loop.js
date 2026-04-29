@@ -60,6 +60,9 @@ export class GameManager {
    */
   initMeta(metaData = null) {
     this.meta = metaData || createMetaProgression();
+    if (!this.meta.levels) {
+      this.meta.levels = { highestUnlocked: 1, completed: [], current: null };
+    }
     // Ensure creatureCollection exists for saves created before this feature
     if (!this.meta.creatureCollection) {
       this.meta.creatureCollection = ['hikaribon', 'hanatchi', 'tsukimochi'];
