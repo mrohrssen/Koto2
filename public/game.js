@@ -122,7 +122,7 @@ import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
 import { showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
-import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
+import { playNpcBattleIntro, playRoomTransition, playTutorialBossInterjection } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
@@ -1326,7 +1326,14 @@ async function startEncounter() {
     }
 
     if (result?.tutorialBossIntro?.lines?.length) {
-      await explorationUI.showTutorialNarration(result.tutorialBossIntro.lines, { showSprite: true });
+      await playTutorialBossInterjection(
+        result.tutorialBossIntro.lines,
+        (name, id, npc, opts) => scene.showNpcTrainer(name, id, npc, opts),
+        () => scene.hideNpcTrainer(),
+        (line, opts) => narrationBox.show(line, opts),
+        gameState.combat?.enemies || [],
+        { waitFn: delay },
+      );
     }
 
     await delay(300);

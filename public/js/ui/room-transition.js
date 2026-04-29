@@ -256,3 +256,29 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   setSceneFormationVisible('enemy', true);
   if (freshFormation) freshFormation.style.opacity = '1';
 }
+
+const CID_TUTORIAL_NPC = { id: 'cid', name: 'Cid', nameEn: 'Cid' };
+
+export async function playTutorialBossInterjection(
+  lines,
+  showCidSpriteFn,
+  hideCidSpriteFn,
+  showNarrationFn,
+  enemies,
+  { waitFn = (ms) => new Promise(resolve => setTimeout(resolve, ms)), settleMs = 500 } = {},
+) {
+  if (!Array.isArray(lines) || lines.length === 0) return;
+
+  await waitFn(settleMs);
+  await playNpcSkillAnimation(
+    CID_TUTORIAL_NPC,
+    showCidSpriteFn,
+    hideCidSpriteFn,
+    async () => {
+      for (const line of lines) {
+        await showNarrationFn(line, { speaker: 'Cid' });
+      }
+    },
+    enemies,
+  );
+}

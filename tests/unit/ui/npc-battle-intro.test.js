@@ -60,7 +60,10 @@ await mock.module('../../../public/js/scenes/exploration-scene.js', {
   namedExports: { ExplorationScene: class {} },
 });
 
-const { playNpcBattleIntro } = await import('../../../public/js/ui/room-transition.js');
+const {
+  playNpcBattleIntro,
+  playTutorialBossInterjection,
+} = await import('../../../public/js/ui/room-transition.js');
 
 function buildMockScene(callLog) {
   const scene = {
@@ -172,5 +175,59 @@ describe('playNpcBattleIntro (Bug #9 fix)', () => {
         allies: [],
       })
     );
+  });
+});
+
+describe('playTutorialBossInterjection', () => {
+  beforeEach(() => {
+    sceneManagerState.currentScene = null;
+    if (typeof globalThis.document === 'undefined') {
+      globalThis.document = { getElementById: () => null };
+    }
+  });
+
+  it('settles on the boss, plays Cid like an NPC skill interjection, then restores enemies', async () => {
+    const callLog = [];
+    const scene = buildMockScene(callLog);
+    scene.formation = {
+      enemyContainer: { visible: true },
+      creatureSprites: { enemy: new Map() },
+    };
+    sceneManagerState.currentScene = scene;
+    globalThis.document = { getElementById: () => null };
+
+    const lines = [
+      'Hey, this creature looks strong.',
+      'Try using your strongest creature first.',
+    ];
+    const enemies = [{ uid: 'boss', id: 'hineko', hp: 20, maxHp: 20 }];
+
+    await playTutorialBossInterjection(
+      lines,
+      () => callLog.push(['domShowCid']),
+      () => callLog.push(['domHideCid']),
+      async (line, opts) => {
+        callLog.push(['narration', line, opts]);
+        callLog.push(['enemyVisibleDuringNarration', scene.formation.enemyContainer.visible]);
+      },
+      enemies,
+      { waitFn: async (ms) => callLog.push(['wait', ms]) },
+    );
+
+    assert.deepEqual(callLog.map(([op]) => op), [
+      'wait',
+      'domShowCid',
+      'showNpcSprite',
+      'narration',
+      'enemyVisibleDuringNarration',
+      'narration',
+      'enemyVisibleDuringNarration',
+      'hideNpcSprite',
+      'domHideCid',
+    ]);
+    assert.deepEqual(callLog[0], ['wait', 500]);
+    assert.equal(callLog[4][1], false, 'enemy formation hidden while Cid speaks');
+    assert.equal(callLog[6][1], false, 'enemy formation stays hidden for all Cid lines');
+    assert.equal(scene.formation.enemyContainer.visible, true, 'enemy formation restored after Cid leaves');
   });
 });
