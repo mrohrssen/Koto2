@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { resetTutorial } from '../../game/services/tutorial-service.js';
 import { getManager } from '../../game/manager-registry.js';
 import { resetUserProgress } from '../../game/user-data-reset.js';
+import { ensureCreatureCounts } from '../../game/services/creature-collection-service.js';
 import { getCidScripts } from '../../game/dialogue-loader.js';
 import { getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { enrichTokens } from '../../game/enrich-tokens.js';
@@ -399,6 +400,7 @@ export default function createMiscRoutes({
     if (!gm.meta.creatureCollection.includes(creatureId)) {
       gm.meta.creatureCollection.push(creatureId);
     }
+    ensureCreatureCounts(gm.meta);
     await req.saveGame();
     res.json({ starterId: creatureId, state: gm.getState() });
   });
