@@ -164,6 +164,47 @@
     "createdAt": "2026-03-20"
   },
   {
+    "id": "ishino-kyojin",
+    "name": "石の巨人",
+    "nameEn": "Stone Giant",
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 110,
+    "baseAttack": 14,
+    "baseMp": 50,
+    "baseDefense": 9,
+    "baseWord": "巨人",
+    "baseReading": "きょじん",
+    "baseMeaning": "giant / great man",
+    "baseRank": 4900,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "mamoru",
+        "level": 1
+      },
+      {
+        "moveId": "tataku",
+        "level": 5
+      },
+      {
+        "moveId": "nigiru",
+        "level": 10
+      },
+      {
+        "moveId": "suwaru",
+        "level": 16
+      },
+      {
+        "moveId": "horu",
+        "level": 22
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-04-29"
+  },
+  {
     "id": "tetsu",
     "name": "鉄",
     "nameEn": "Iron",

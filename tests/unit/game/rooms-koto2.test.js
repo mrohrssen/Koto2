@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateAreaRooms, getAreaSelectionOptions, ROOM_TYPES } from '../../../src/game/rooms.js';
+import { generateAreaRooms, getAreaById, getAreaSelectionOptions, ROOM_TYPES } from '../../../src/game/rooms.js';
 
 function assertOnlyEnabledRoomTypes(rooms, fixedIndices) {
   const allowedTypes = new Set(['encounter', 'friendlyNpc', 'whackAMole']);
@@ -85,10 +85,16 @@ describe('Koto2 area room generation', () => {
       assert.equal(rooms[23].type, 'npcBattle');
     });
 
-    it('keeps boss at room 30', () => {
+    it('keeps Stone Giant as the boss at room 30', () => {
       const rooms = generateAreaRooms('wild-plains');
       assert.equal(rooms[29].type, 'boss');
-      assert.equal(rooms[29].boss.creatureId, 'hineko');
+      assert.equal(rooms[29].boss.creatureId, 'ishino-kyojin');
+    });
+
+    it('does not include Stone Giant in normal Wild Plains encounters', () => {
+      const area = getAreaById('wild-plains');
+      assert.ok(area);
+      assert.equal(area.creatures.includes('ishino-kyojin'), false);
     });
 
     it('fills remaining rooms with encounter, friendlyNpc, or whackAMole', () => {

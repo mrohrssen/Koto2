@@ -119,7 +119,7 @@ export default function createRunRoutes({
       if (ids) {
         const meta = gameManager.getMeta();
         const collection = meta.creatureCollection || [];
-        const validation = validateTeamSelection(collection, ids);
+        const validation = validateTeamSelection(collection, ids, meta.creatureCounts || {});
         if (!validation.valid) {
           return res.status(400).json({ error: validation.reason });
         }
@@ -186,7 +186,7 @@ export default function createRunRoutes({
       }
       const meta = gameManager.getMeta();
       const collection = meta.creatureCollection || [];
-      const validation = validateTeamSelection(collection, starterIds);
+      const validation = validateTeamSelection(collection, starterIds, meta.creatureCounts || {});
       if (!validation.valid) {
         return res.status(400).json({ error: validation.reason });
       }

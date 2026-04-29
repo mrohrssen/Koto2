@@ -8,7 +8,7 @@ import { loadDialoguePools } from '../../../src/game/dialogue-loader.js';
 
 const TEST_TEAM = ['hi', 'mizu', 'ki'];
 
-function seedSaveFile(tmpDir, userId) {
+function seedSaveFile(tmpDir, userId, metaOverrides = {}) {
   writeFileSync(
     join(tmpDir, `.jrpg-save-${userId}.json`),
     JSON.stringify({
@@ -29,7 +29,8 @@ function seedSaveFile(tmpDir, userId) {
         equippedCrests: { fire: null, water: null, earth: null, wood: null, metal: null },
         kanaMode: false, pvpTeams: [null, null, null],
         seenCidScripts: [], npcBonds: {},
-        tutorialStep: 7, tutorialFireDropsGifted: false, itemsDiscovered: []
+        tutorialStep: 7, tutorialFireDropsGifted: false, itemsDiscovered: [],
+        ...metaOverrides
       },
       run: null, combat: null, savedAt: new Date().toISOString()
     }, null, 2)
@@ -153,6 +154,24 @@ describe('meta-progression after combat', () => {
   });
 
   afterEach(() => cleanup());
+
+  it('rejects starter selection for discovered creatures with zero owned copies', async () => {
+    const loginRes = await client.loginAsNewUser();
+    const userId = loginRes.body?.user?.id;
+    seedSaveFile(tmpDir, userId, {
+      creatureCounts: { hi: 1, mizu: 0, ki: 1 }
+    });
+    await client.createPlayer();
+    await client.post('/api/game/debug-mode', { enabled: true });
+    await client.post('/api/game/start-run', {});
+
+    const areaOptions = await client.get('/api/game/area-options');
+    await client.post('/api/game/select-area', { areaId: areaOptions.body[0].id });
+    const confirmRes = await client.post('/api/game/confirm-creatures', { starterIds: ['mizu'] });
+
+    assert.equal(confirmRes.status, 400);
+    assert.match(confirmRes.body?.error || '', /mizu has no owned copies/);
+  });
 
   it('meta state persists after combat victory', async () => {
     const combatState = await setupAndEnterCombat(client, tmpDir);

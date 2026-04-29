@@ -24,7 +24,7 @@ describe('fusion-service', () => {
     const state = getFusionState(meta);
 
     assert.equal(state.fusionCores, 1);
-    assert.equal(state.recipes.length, 1);
+    assert.equal(state.recipes.length, 2);
     assert.equal(state.recipes[0].id, FUSION_RECIPES.fireCat.id);
     assert.deepEqual(state.recipes[0].ingredientIds, ['hi', 'neko']);
     assert.equal(state.recipes[0].resultId, 'hineko');
@@ -133,6 +133,39 @@ describe('fusion-service', () => {
     assert.deepEqual(state.recipes[0].ingredientRequirements, [
       { id: 'hi', required: 3, owned: 3, missing: 0 }
     ]);
+  });
+
+  it('fuses Stone Giant from three owned Stone copies', () => {
+    const meta = makeMeta({
+      creatureCollection: ['hi', 'neko', 'ishi'],
+      creatureCounts: { hi: 1, neko: 1, ishi: 3 },
+      fusionCores: 1
+    });
+
+    const result = startFusion(meta, FUSION_RECIPES.stoneGiant.id);
+
+    assert.equal(result.success, true);
+    assert.equal(result.unlockedCreatureId, 'ishino-kyojin');
+    assert.equal(meta.fusionCores, 0);
+    assert.equal(meta.creatureCounts.ishi, 0);
+    assert.equal(meta.creatureCounts['ishino-kyojin'], 1);
+    assert.ok(meta.creatureCollection.includes('ishino-kyojin'));
+  });
+
+  it('rejects Stone Giant fusion without three owned Stone copies', () => {
+    const meta = makeMeta({
+      creatureCollection: ['hi', 'neko', 'ishi'],
+      creatureCounts: { hi: 1, neko: 1, ishi: 2 },
+      fusionCores: 1
+    });
+
+    const result = startFusion(meta, FUSION_RECIPES.stoneGiant.id);
+
+    assert.equal(result.success, false);
+    assert.equal(result.error, 'Missing fusion ingredients');
+    assert.equal(meta.fusionCores, 1);
+    assert.equal(meta.creatureCounts.ishi, 2);
+    assert.equal(meta.creatureCounts['ishino-kyojin'] || 0, 0);
   });
 
   it('adds one fusion core for debug testing', () => {

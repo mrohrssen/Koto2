@@ -15,6 +15,14 @@ export const FUSION_RECIPES = {
     ingredientIds: ['hi', 'neko'],
     resultId: 'hineko',
     cost: { fusionCores: 1 }
+  },
+  stoneGiant: {
+    id: 'stone-giant',
+    name: '石の巨人',
+    nameEn: 'Stone Giant',
+    ingredientIds: ['ishi', 'ishi', 'ishi'],
+    resultId: 'ishino-kyojin',
+    cost: { fusionCores: 1 }
   }
 };
 

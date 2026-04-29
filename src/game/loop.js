@@ -285,6 +285,7 @@ export class GameManager {
         levels: this.meta.levels || { highestUnlocked: 1, completed: [], current: null },
         prologueComplete: this.meta.prologueComplete || false,
         creatureCollection: this.meta.creatureCollection || [],
+        creatureCounts: this.meta.creatureCounts || {},
         elementDrops: this.meta.elementDrops || { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
         fusionCores: this.meta.fusionCores || 0,
         crests: this.meta.crests || [],
