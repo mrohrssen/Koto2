@@ -173,6 +173,17 @@ describe('creature-collection-service', () => {
       assert.strictEqual(meta.creatureCounts.neko, 0);
     });
 
+    it('preserves explicit zero counts during normal helper use', () => {
+      const meta = {
+        creatureCollection: ['hi'],
+        creatureCounts: { hi: 0, hikaribon: 1, hanatchi: 1, tsukimochi: 1 }
+      };
+
+      ensureCreatureCounts(meta);
+
+      assert.strictEqual(meta.creatureCounts.hi, 0);
+    });
+
     it('validates starter selection against owned counts', () => {
       const meta = {
         creatureCollection: ['hi', 'mizu'],

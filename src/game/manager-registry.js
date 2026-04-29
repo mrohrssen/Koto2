@@ -3,7 +3,7 @@ import { join } from 'path';
 import { GameManager } from './loop.js';
 import { getDataDir } from '../data-dir.js';
 import { CREATURES_BY_ID, backfillCreatureListUids, syncCreatureListMoves, syncPartyCreatureMoves } from './creatures.js';
-import { DEFAULT_COLLECTION } from './services/creature-collection-service.js';
+import { DEFAULT_COLLECTION, ensureCreatureCounts } from './services/creature-collection-service.js';
 import { ensureTutorialFusionState } from './services/tutorial-service.js';
 
 const SAVE_VERSION = 2;
@@ -89,13 +89,24 @@ export function getManager(userId) {
           // Migrate: remove stale creature IDs and ensure defaults
           if (data.meta.creatureCollection) {
             const original = JSON.stringify(data.meta.creatureCollection);
+            const originalCounts = JSON.stringify(data.meta.creatureCounts || {});
             data.meta.creatureCollection = data.meta.creatureCollection.filter(id => CREATURES_BY_ID[id]);
             for (const id of DEFAULT_COLLECTION) {
               if (!data.meta.creatureCollection.includes(id)) {
                 data.meta.creatureCollection.push(id);
               }
             }
-            if (JSON.stringify(data.meta.creatureCollection) !== original) {
+            if (!data.meta.creatureCounts || typeof data.meta.creatureCounts !== 'object' || Array.isArray(data.meta.creatureCounts)) {
+              data.meta.creatureCounts = {};
+            }
+            for (const id of Object.keys(data.meta.creatureCounts)) {
+              if (!CREATURES_BY_ID[id]) delete data.meta.creatureCounts[id];
+            }
+            ensureCreatureCounts(data.meta);
+            if (
+              JSON.stringify(data.meta.creatureCollection) !== original
+              || JSON.stringify(data.meta.creatureCounts || {}) !== originalCounts
+            ) {
               needsSave = true;
             }
           }
