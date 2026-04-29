@@ -15,7 +15,14 @@ import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
 import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
-import { getTutorialNarration, getFormationNarration } from './tutorial-copy.js';
+import {
+  getTutorialNarration,
+  getFormationNarration,
+  getPostHinekoReviewNarration,
+  getFusionCoreNarration,
+  getPostFusionNarration
+} from './tutorial-copy.js';
+import { showWordLevelUp } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 
 /**
@@ -54,7 +61,7 @@ let showAdventureReport = null;
 // structural (fresh scene = fresh state). See ExplorationScene constructor.
 
 /** Show multi-page Cid tutorial narration. Optionally slides her sprite in/out. */
-async function showTutorialNarration(pages, { showSprite = false } = {}) {
+export async function showTutorialNarration(pages, { showSprite = false } = {}) {
   // Any scene with an npcs layer owns the Pixi slide (HubScene during
   // prologue/skillMaster/hub, ExplorationScene inside rooms, BattleScene
   // during combat interjections). See getSceneWithNpcs() above.
@@ -109,6 +116,8 @@ let apiGetVocabDueCount = null;
 let apiStartSpeedReviewRoom = null;
 let apiProgressSpeedReviewRoom = null;
 let apiCompleteSpeedReviewRoom = null;
+let apiClaimTutorialFusionCore = null;
+let apiCompleteTutorialFusion = null;
 
 let apiGetCreatureCollection = null;
 let showCollectionSelect = null;
@@ -129,6 +138,9 @@ let apiChooseFriendlyNpcItem = null;
 
 // Track whether CID's item-shop tutorial has already been shown this session
 let cidItemShopTutorialShown = false;
+let postHinekoReviewNarrationShown = false;
+let fusionCoreNarrationShown = false;
+let postFusionNarrationShown = false;
 
 // Tutorial API
 let apiTutorialAdvance = null;
@@ -161,6 +173,8 @@ export function init(callbacks) {
   apiStartSpeedReviewRoom = callbacks.apiStartSpeedReviewRoom;
   apiProgressSpeedReviewRoom = callbacks.apiProgressSpeedReviewRoom;
   apiCompleteSpeedReviewRoom = callbacks.apiCompleteSpeedReviewRoom;
+  apiClaimTutorialFusionCore = callbacks.apiClaimTutorialFusionCore;
+  apiCompleteTutorialFusion = callbacks.apiCompleteTutorialFusion;
   apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
   triggerCreatureSelect = callbacks.triggerCreatureSelect;
@@ -174,6 +188,42 @@ export function init(callbacks) {
   apiChooseFriendlyNpcItem = callbacks.apiChooseFriendlyNpcItem;
   apiTutorialAdvance = callbacks.apiTutorialAdvance;
   showAdventureReport = callbacks.showAdventureReport;
+}
+
+function hasHinekoFusionData(state = getGameState()) {
+  return !!state?.meta?.tutorialFusionDataUnlocked?.includes('hineko');
+}
+
+function needsPostHinekoReview(state, dueCount) {
+  return hasHinekoFusionData(state)
+    && !state?.meta?.tutorialFusionCoreAwarded
+    && dueCount > 0;
+}
+
+function needsFusionLabTutorial(state) {
+  const collection = state?.meta?.creatureCollection || [];
+  return hasHinekoFusionData(state)
+    && state?.meta?.tutorialFusionCoreAwarded
+    && !state?.meta?.tutorialFusionComplete
+    && !collection.includes('hineko');
+}
+
+function needsPostFusionMessage(state) {
+  const collection = state?.meta?.creatureCollection || [];
+  return state?.meta?.tutorialFusionComplete
+    && collection.includes('hineko')
+    && !postFusionNarrationShown;
+}
+
+function highlightActionButton(labelMatcher) {
+  const buttons = document.querySelectorAll('.action-btn, .ui-btn');
+  buttons.forEach(btn => {
+    if (labelMatcher(btn.textContent || '')) {
+      btn.classList.add('tutorial-highlight');
+    } else {
+      btn.classList.add('tutorial-dimmed');
+    }
+  });
 }
 
 // ============ INVENTORY OVERLAY ============
@@ -375,6 +425,8 @@ export async function renderHub() {
   const hasPvpTeams = pvpTeams.some(t => t !== null);
 
   const dueCount = apiGetVocabDueCount ? (await apiGetVocabDueCount().catch(() => ({ count: 0 }))).count : 0;
+  const fusionLabDisabled = !hasHinekoFusionData(gameState);
+  const guideFusionLab = needsFusionLabTutorial(gameState);
 
   renderButtons([
     { label: `📚 Knowledge Review${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
@@ -384,7 +436,20 @@ export async function renderHub() {
       }
       const result = await apiGetDueWords();
       if (result?.words?.length > 0) {
-        speedReview.start(result.words);
+        const shouldAwardFusionCore = hasHinekoFusionData(getGameState())
+          && !getGameState().meta?.tutorialFusionCoreAwarded;
+        speedReview.start(result.words, shouldAwardFusionCore ? {
+          onComplete: async () => {
+            const reward = await apiClaimTutorialFusionCore?.();
+            if (reward?.state) updateGameState(reward.state);
+            const anchor = document.getElementById('speed-review-empty') || document.body;
+            showWordLevelUp(anchor, '', { message: reward?.message || 'Obtained 1x Fusion Core!' });
+            if (!fusionCoreNarrationShown) {
+              fusionCoreNarrationShown = true;
+              await showTutorialNarration(getFusionCoreNarration(), { showSprite: true });
+            }
+          }
+        } : {});
       } else {
         sceneModule.showNarration('No words to review', { autoDismiss: 2000 });
       }
@@ -394,7 +459,7 @@ export async function renderHub() {
       gs.phase = 'pvp_lobby';
       updateUI();
     }, disabled: !hasPvpTeams },
-    { label: 'Fusion Lab', onClick: () => {
+    { label: 'Fusion Lab', disabled: fusionLabDisabled, onClick: () => {
       const gs = getGameState();
       gs.phase = 'fusion_lab';
       updateUI();
@@ -413,29 +478,30 @@ export async function renderHub() {
 
   // Tutorial step 4: introduce speed review (condition-gated on dueCount > 0)
   if (tutorialStep === 4 && dueCount > 0) {
-    await showTutorialNarration(getTutorialNarration(4, { dueCount }), { showSprite: true });
-    const buttons = document.querySelectorAll('.action-btn');
-    buttons.forEach(btn => {
-      if (btn.textContent.includes('Knowledge Review')) {
-        btn.classList.add('tutorial-highlight');
-      } else {
-        btn.classList.add('tutorial-dimmed');
-      }
-    });
+    const pages = needsPostHinekoReview(gameState, dueCount)
+      ? getPostHinekoReviewNarration(dueCount)
+      : getTutorialNarration(4, { dueCount });
+    if (!needsPostHinekoReview(gameState, dueCount) || !postHinekoReviewNarrationShown) {
+      postHinekoReviewNarrationShown = true;
+      await showTutorialNarration(pages, { showSprite: true });
+    }
+    highlightActionButton(text => text.includes('Knowledge Review'));
   }
 
   // Tutorial step 5: guide to formation and re-enter
   if (tutorialStep === 5) {
     const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
     await showTutorialNarration(getFormationNarration(creatureCount), { showSprite: true });
-    const buttons = document.querySelectorAll('.action-btn');
-    buttons.forEach(btn => {
-      if (btn.textContent.includes('Explore')) {
-        btn.classList.add('tutorial-highlight');
-      } else {
-        btn.classList.add('tutorial-dimmed');
-      }
-    });
+    highlightActionButton(text => text.includes('Explore'));
+  }
+
+  if (guideFusionLab) {
+    highlightActionButton(text => text.includes('Fusion Lab'));
+  }
+
+  if (needsPostFusionMessage(gameState)) {
+    postFusionNarrationShown = true;
+    await showTutorialNarration(getPostFusionNarration(), { showSprite: true });
   }
 }
 

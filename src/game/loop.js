@@ -286,7 +286,10 @@ export class GameManager {
         equippedCrests: this.meta.equippedCrests || { fire: null, water: null, earth: null, wood: null, metal: null },
         kanaMode: this.meta.kanaMode || false,
         pvpTeams: this.meta.pvpTeams || [null, null, null],
-        tutorialStep: this.meta.tutorialStep ?? 7
+        tutorialStep: this.meta.tutorialStep ?? 6,
+        tutorialFusionDataUnlocked: Array.isArray(this.meta.tutorialFusionDataUnlocked) ? this.meta.tutorialFusionDataUnlocked : [],
+        tutorialFusionCoreAwarded: !!this.meta.tutorialFusionCoreAwarded,
+        tutorialFusionComplete: !!this.meta.tutorialFusionComplete
       } : null,
       phase: this.getPhase()
     };

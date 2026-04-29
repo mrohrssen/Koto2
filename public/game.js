@@ -120,6 +120,7 @@ import { init as initExposureBuffer } from './js/ui/exposure-buffer.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
+import { showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
 import { playNpcBattleIntro, playRoomTransition } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
@@ -178,6 +179,8 @@ import {
   getCreatureCollection as apiGetCreatureCollection,
   getFusionState as apiGetFusionState,
   startFusion as apiStartFusion,
+  claimTutorialFusionCore as apiClaimTutorialFusionCore,
+  completeTutorialFusion as apiCompleteTutorialFusion,
   rollPostCombatShop as apiRollPostCombatShop,
   selectShopItem as apiSelectShopItem,
   swapCreature as apiSwapCreature,
@@ -1309,6 +1312,10 @@ async function startEncounter() {
       if (freshEf) freshEf.style.opacity = '1';
     }
 
+    if (result?.tutorialBossIntro?.lines?.length) {
+      await explorationUI.showTutorialNarration(result.tutorialBossIntro.lines, { showSprite: true });
+    }
+
     await delay(300);
     startCombatLoop();
   } finally {
@@ -1342,6 +1349,13 @@ function showVictoryModal(result) {
 
   if (result.newCollectionAdditions?.length > 0) {
     showCollectionToast(result.newCollectionAdditions);
+  }
+
+  for (const reward of result.tutorialRewards || []) {
+    if (reward.type === 'fusionData') {
+      const anchor = document.getElementById('enemy-formation') || document.body;
+      showWordLevelUp(anchor, '', { message: reward.message || 'Obtained Hineko Fusion Data!' });
+    }
   }
 
   return (async () => {
@@ -1897,6 +1911,8 @@ async function initGame() {
     apiStartSpeedReviewRoom,
     apiProgressSpeedReviewRoom,
     apiCompleteSpeedReviewRoom,
+    apiClaimTutorialFusionCore,
+    apiCompleteTutorialFusion,
     apiGetCreatureCollection,
     showCollectionSelect,
     apiGetWhackAMolePool,
@@ -1972,10 +1988,13 @@ async function initGame() {
   });
 
   fusionLabUI.init({
+    getGameState: () => gameState,
     apiGetFusionState,
     apiStartFusion,
+    apiCompleteTutorialFusion,
     apiGetCreatureCollection,
     updateGameState,
+    showTutorialNarration: (pages, opts) => explorationUI.showTutorialNarration(pages, opts),
     showToast: (text, duration) => scene.showToast(text, duration),
     onBack: () => {
       const nextState = { ...gameState, phase: 'hub' };

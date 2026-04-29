@@ -58,3 +58,31 @@ export function getFormationNarration(creatureCount) {
     "Select your best party and let's go back to the Starting Meadow!"
   ];
 }
+
+export function getPostHinekoReviewNarration(dueCount = 0) {
+  return [
+    'Nice work beating Hineko!',
+    ...getTutorialNarration(4, { dueCount })
+  ];
+}
+
+export function getFusionCoreNarration() {
+  return [
+    'Oh! You got a fusion core!',
+    "The next area is tough, let's use it to get stronger."
+  ];
+}
+
+export function getFusionLabNarration() {
+  return [
+    'Look! We unlocked the data for hineko. Select it',
+    'Now click Fuse'
+  ];
+}
+
+export function getPostFusionNarration() {
+  return [
+    'With hineko in your party, you should be strong enough for the next area!',
+    'Keep exploring, discovering new creatures, and getting stronger.'
+  ];
+}

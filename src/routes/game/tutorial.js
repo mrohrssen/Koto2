@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { getTutorialStep, advanceTutorial, TUTORIAL_STEPS } from '../../game/services/tutorial-service.js';
+import {
+  getTutorialStep,
+  advanceTutorial,
+  TUTORIAL_STEPS,
+  awardTutorialFusionCore,
+  markTutorialFusionComplete
+} from '../../game/services/tutorial-service.js';
 
 export default function createTutorialRoutes() {
   const router = Router();
@@ -20,6 +26,24 @@ export default function createTutorialRoutes() {
     const newStep = advanceTutorial(meta);
     req.saveGame();
     res.json({ tutorialStep: newStep, state: req.getEnrichedGameState() });
+  });
+
+  router.post('/tutorial-fusion-core', (req, res) => {
+    const meta = req.gameManager.getMeta();
+    try {
+      const result = awardTutorialFusionCore(meta);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  router.post('/tutorial-fusion-complete', (req, res) => {
+    const meta = req.gameManager.getMeta();
+    const result = markTutorialFusionComplete(meta);
+    req.saveGame();
+    res.json({ ...result, state: req.getEnrichedGameState() });
   });
 
   router.get('/tutorial-state', (req, res) => {

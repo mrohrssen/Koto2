@@ -8,6 +8,112 @@ export const TUTORIAL_STEPS = {
   COMPLETE: 6
 };
 
+export const TUTORIAL_FUSION_CREATURE_ID = 'hineko';
+
+export function ensureTutorialFusionState(meta) {
+  if (!meta) return meta;
+  if (!Array.isArray(meta.tutorialFusionDataUnlocked)) {
+    meta.tutorialFusionDataUnlocked = [];
+  }
+  if (typeof meta.tutorialFusionCoreAwarded !== 'boolean') {
+    meta.tutorialFusionCoreAwarded = false;
+  }
+  if (typeof meta.tutorialFusionComplete !== 'boolean') {
+    meta.tutorialFusionComplete = false;
+  }
+  return meta;
+}
+
+export function hasTutorialFusionData(meta, creatureId = TUTORIAL_FUSION_CREATURE_ID) {
+  ensureTutorialFusionState(meta);
+  return !!meta?.tutorialFusionDataUnlocked?.includes(creatureId);
+}
+
+export function unlockTutorialFusionData(meta, creatureId = TUTORIAL_FUSION_CREATURE_ID) {
+  ensureTutorialFusionState(meta);
+  if (!meta) return { unlocked: false, creatureId };
+  if (meta.tutorialFusionDataUnlocked.includes(creatureId)) {
+    return { unlocked: false, creatureId };
+  }
+  meta.tutorialFusionDataUnlocked.push(creatureId);
+  return {
+    unlocked: true,
+    creatureId,
+    message: 'Obtained Hineko Fusion Data!'
+  };
+}
+
+export function canUseFusionLab(meta) {
+  return hasTutorialFusionData(meta, TUTORIAL_FUSION_CREATURE_ID);
+}
+
+export function awardTutorialFusionCore(meta) {
+  ensureTutorialFusionState(meta);
+  if (!hasTutorialFusionData(meta, TUTORIAL_FUSION_CREATURE_ID)) {
+    throw new Error('Hineko fusion data is required before awarding a tutorial Fusion Core');
+  }
+  if (meta.tutorialFusionCoreAwarded) {
+    return {
+      awarded: false,
+      fusionCores: Number.isFinite(meta.fusionCores) ? meta.fusionCores : 0
+    };
+  }
+  meta.fusionCores = (Number.isFinite(meta.fusionCores) ? meta.fusionCores : 0) + 1;
+  meta.tutorialFusionCoreAwarded = true;
+  return {
+    awarded: true,
+    fusionCores: meta.fusionCores,
+    message: 'Obtained 1x Fusion Core!'
+  };
+}
+
+export function markTutorialFusionComplete(meta) {
+  ensureTutorialFusionState(meta);
+  if (!meta) return { completed: false };
+  meta.tutorialFusionComplete = true;
+  meta.tutorialStep = TUTORIAL_STEPS.COMPLETE;
+  return { completed: true, tutorialStep: meta.tutorialStep };
+}
+
+export function shouldForceStartingMeadowCatEncounter(meta, run) {
+  ensureTutorialFusionState(meta);
+  const currentRoom = run?.rooms?.[run?.currentRoom || 0];
+  return run?.currentArea?.id === 'hajimari-no-hiroba'
+    && (run?.currentRoom || 0) === 0
+    && currentRoom?.type === 'encounter'
+    && !hasTutorialFusionData(meta, TUTORIAL_FUSION_CREATURE_ID);
+}
+
+function getCurrentRoom(run) {
+  return run?.rooms?.[run?.currentRoom || 0] || null;
+}
+
+function isStartingMeadowHinekoBoss(run) {
+  const room = getCurrentRoom(run);
+  return run?.currentArea?.id === 'hajimari-no-hiroba'
+    && room?.type === 'boss'
+    && room?.boss?.creatureId === TUTORIAL_FUSION_CREATURE_ID;
+}
+
+export function shouldShowStartingMeadowHinekoIntro(meta, run) {
+  return isStartingMeadowHinekoBoss(run)
+    && !hasTutorialFusionData(meta, TUTORIAL_FUSION_CREATURE_ID);
+}
+
+export function collectStartingMeadowHinekoVictoryReward(meta, run, combat) {
+  if (!combat?.isBoss) return null;
+  const bossId = combat?.enemies?.[0]?.id;
+  if (bossId !== TUTORIAL_FUSION_CREATURE_ID) return null;
+  if (!isStartingMeadowHinekoBoss(run)) return null;
+  const result = unlockTutorialFusionData(meta, TUTORIAL_FUSION_CREATURE_ID);
+  if (!result.unlocked) return null;
+  return {
+    type: 'fusionData',
+    creatureId: TUTORIAL_FUSION_CREATURE_ID,
+    message: result.message
+  };
+}
+
 export function getTutorialStep(meta) {
   return meta?.tutorialStep ?? 6;
 }
@@ -57,4 +163,7 @@ export function shouldFixRoomSequence(meta) {
 export function resetTutorial(meta) {
   meta.tutorialStep = 0;
   meta.tutorialFireDropsGifted = false;
+  meta.tutorialFusionDataUnlocked = [];
+  meta.tutorialFusionCoreAwarded = false;
+  meta.tutorialFusionComplete = false;
 }

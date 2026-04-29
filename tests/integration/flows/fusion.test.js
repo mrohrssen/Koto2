@@ -32,7 +32,8 @@ describe('fusion lab flow', () => {
   it('unlocks Fire Cat without consuming Fire or Cat', async () => {
     await client.post('/api/game/debug-mode', { enabled: true });
     const collectionRes = await client.post('/api/game/debug-set-collection', {
-      creatureIds: ['hi', 'neko']
+      creatureIds: ['hi', 'neko'],
+      tutorialFusionDataUnlocked: ['hineko']
     });
     assert.equal(collectionRes.status, 200, `debug-set-collection failed: ${JSON.stringify(collectionRes.body)}`);
     await client.post('/api/game/fusion/debug-add-core', {});

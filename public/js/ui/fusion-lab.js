@@ -4,11 +4,13 @@ import { escapeHtml } from './html-utils.js';
 import { flashElement, spawnParticles } from './dom-effects.js';
 import { playSFX } from '../audio.js';
 import { hapticLight } from '../native/index.js';
+import { getFusionLabNarration } from './tutorial-copy.js';
 
 let callbacks = {};
 let fusionState = null;
 let catalogById = new Map();
 let selectedRecipeId = null;
+let fusionLabNarrationShown = false;
 
 export function init(cbs) {
   callbacks = cbs;
@@ -46,6 +48,16 @@ function getCreature(id) {
   return catalogById.get(id) || { id, name: id, nameEn: id, element: 'fire' };
 }
 
+function shouldGuideHinekoRecipe(recipe = getSelectedRecipe()) {
+  const state = callbacks.getGameState?.();
+  const collection = state?.meta?.creatureCollection || [];
+  return recipe?.id === 'fire-cat'
+    && state?.meta?.tutorialFusionDataUnlocked?.includes('hineko')
+    && state?.meta?.tutorialFusionCoreAwarded
+    && !state?.meta?.tutorialFusionComplete
+    && !collection.includes('hineko');
+}
+
 function render() {
   const recipe = getSelectedRecipe();
   if (!recipe) {
@@ -56,6 +68,10 @@ function render() {
 
   renderScene(recipe);
   renderRecipeTiles();
+  if (shouldGuideHinekoRecipe(recipe) && !fusionLabNarrationShown) {
+    fusionLabNarrationShown = true;
+    void callbacks.showTutorialNarration?.(getFusionLabNarration(), { showSprite: true });
+  }
 }
 
 function renderRecipeTiles() {
@@ -81,6 +97,13 @@ function renderRecipeTiles() {
   });
 
   const actionArea = document.getElementById('action-area');
+  const choiceEls = actionArea.querySelectorAll('.ui-choice');
+  recipes.forEach((recipe, index) => {
+    const choice = choiceEls[index];
+    if (!choice || !shouldGuideHinekoRecipe(recipe)) return;
+    choice.classList.add(recipe.id === selectedRecipeId ? 'tutorial-highlight' : 'tutorial-dimmed');
+  });
+
   const footer = document.createElement('div');
   footer.className = 'fusion-action-footer';
   footer.innerHTML = `
@@ -119,7 +142,7 @@ function renderScene(recipe, result = null) {
       </div>
       <div class="fusion-result-name">${escapeHtml(resultCreature.nameEn)}${result ? ' Unlocked!' : ''}</div>
       <div class="fusion-requirements">${escapeHtml(getRequirementText(recipe))}</div>
-      <button class="ui-btn ui-btn--primary fusion-start-btn" type="button" ${recipe.canFuse ? '' : 'disabled'}>
+      <button class="ui-btn ui-btn--primary fusion-start-btn ${shouldGuideHinekoRecipe(recipe) ? 'tutorial-highlight' : ''}" type="button" ${recipe.canFuse ? '' : 'disabled'}>
         Start Fusion
       </button>
     </div>
@@ -153,6 +176,7 @@ function renderIngredientSlot(id, recipe, index) {
 
 function getRequirementText(recipe) {
   if (recipe.alreadyUnlocked) return 'Fire Cat is already unlocked.';
+  if (recipe.dataUnlocked === false) return recipe.lockedReason || 'Fusion data required.';
   if (recipe.missingIngredientIds.length > 0) {
     const missing = recipe.missingIngredientIds.map(id => getCreature(id).nameEn).join(', ');
     return `Missing: ${missing}`;
@@ -164,6 +188,7 @@ function getRequirementText(recipe) {
 async function beginFusion(recipe) {
   const scene = document.querySelector('.fusion-lab-scene');
   const startBtn = scene?.querySelector('.fusion-start-btn');
+  const guidedTutorialFusion = recipe.resultId === 'hineko' && shouldGuideHinekoRecipe(recipe);
   if (startBtn) {
     startBtn.disabled = true;
     startBtn.textContent = 'Fusing...';
@@ -194,4 +219,9 @@ async function beginFusion(recipe) {
   const pedestal = document.querySelector('.fusion-result-pedestal');
   flashElement(pedestal, 3);
   spawnParticles(pedestal, 22, '#ffb74d');
+  if (guidedTutorialFusion) {
+    const completion = await callbacks.apiCompleteTutorialFusion?.();
+    if (completion?.state) callbacks.updateGameState?.({ ...completion.state, phase: 'fusion_lab' });
+    callbacks.showToast?.('Hineko joined your team!', 2000);
+  }
 }

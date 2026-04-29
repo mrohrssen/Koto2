@@ -196,7 +196,7 @@ export default function createMiscRoutes({
       return res.status(403).json({ error: 'Only available in test mode or debug mode' });
     }
 
-    const { creatureIds } = req.body;
+    const { creatureIds, tutorialFusionDataUnlocked } = req.body;
     if (!Array.isArray(creatureIds)) {
       return res.status(400).json({ error: 'creatureIds must be an array' });
     }
@@ -204,6 +204,9 @@ export default function createMiscRoutes({
     const gameManager = req.gameManager;
     const meta = gameManager.getMeta();
     meta.creatureCollection = creatureIds;
+    if (Array.isArray(tutorialFusionDataUnlocked)) {
+      meta.tutorialFusionDataUnlocked = tutorialFusionDataUnlocked;
+    }
 
     req.saveGame();
     res.json({ success: true, collection: creatureIds });

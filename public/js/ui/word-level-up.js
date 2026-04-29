@@ -2,9 +2,11 @@
  * Show a "[word] leveled up!" animation anchored to an element.
  * @param {HTMLElement} anchorEl - Element to position the animation over
  * @param {string} wordText - Japanese word to display
+ * @param {{ message?: string }} [options]
  */
-export function showWordLevelUp(anchorEl, wordText) {
-  if (!anchorEl || !wordText) return;
+export function showWordLevelUp(anchorEl, wordText, options = {}) {
+  const message = options.message || (wordText ? `${wordText} leveled up!` : '');
+  if (!anchorEl || !message) return;
 
   const rect = anchorEl.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
@@ -13,7 +15,7 @@ export function showWordLevelUp(anchorEl, wordText) {
   // Gold text popup
   const el = document.createElement('div');
   el.className = 'word-level-up-text';
-  el.textContent = `${wordText} leveled up!`;
+  el.textContent = message;
   el.style.left = `${cx}px`;
   el.style.top = `${cy}px`;
   document.body.appendChild(el);

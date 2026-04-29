@@ -45,7 +45,10 @@ import {
 import { applyCrestBonuses } from './crest-service.js';
 import {
   shouldProtectBefriend,
-  advanceTutorial as advanceTutorialStep
+  advanceTutorial as advanceTutorialStep,
+  shouldForceStartingMeadowCatEncounter,
+  shouldShowStartingMeadowHinekoIntro,
+  collectStartingMeadowHinekoVictoryReward
 } from './tutorial-service.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../bootstrap/word-knowledge.js';
 import { selectBark } from '../dialogue-filter.js';
@@ -104,13 +107,17 @@ export class CombatCycleService {
       // New player protection: if player only has 1 creature, force 1 enemy
       const totalCreatures = this.gm.run.creatureParty.active.length + (this.gm.run.creatureParty.reserves?.length || 0);
       const isStarterOnly = totalCreatures <= 1;
-      enemyCreatures = generateEnemyCreatures(highestLevel, {
-        maxEnemies: isStarterOnly ? 1 : (isFirstBattle ? 2 : undefined),
-        creaturePool,
-        stage,
-        encounterIndex,
-        totalEncounters
-      });
+      if (shouldForceStartingMeadowCatEncounter(this.gm.meta, this.gm.run)) {
+        enemyCreatures = [generateEnemyCreature(highestLevel, ['neko'], stage)];
+      } else {
+        enemyCreatures = generateEnemyCreatures(highestLevel, {
+          maxEnemies: isStarterOnly ? 1 : (isFirstBattle ? 2 : undefined),
+          creaturePool,
+          stage,
+          encounterIndex,
+          totalEncounters
+        });
+      }
     }
 
     this.gm.combat = createCombatState(enemyCreatures[0]);
@@ -156,6 +163,17 @@ export class CombatCycleService {
       }
     }
 
+    const tutorialBossIntro = shouldShowStartingMeadowHinekoIntro(this.gm.meta, this.gm.run)
+      ? {
+          speaker: 'Cid',
+          lines: [
+            'Careful! This creature is stronger than normal.',
+            "You can't befriend this creature, but defeat it and our scientists can collect data.",
+            'With enough data, our fusion scientists can add it to your team.'
+          ]
+        }
+      : null;
+
     this.gm.emitState();
 
     return {
@@ -165,7 +183,8 @@ export class CombatCycleService {
       playerGoesFirst: true,
       npc: this.gm.combat.npcData,
       isBoss,
-      isNpcBattle
+      isNpcBattle,
+      tutorialBossIntro
     };
   }
 
@@ -203,6 +222,13 @@ export class CombatCycleService {
     }
     this.gm.run.creatureParty.pendingCaptures = [];
     return newAdditions;
+  }
+
+  _collectTutorialRewards() {
+    const rewards = [];
+    const fusionReward = collectStartingMeadowHinekoVictoryReward(this.gm.meta, this.gm.run, this.gm.combat);
+    if (fusionReward) rewards.push(fusionReward);
+    return rewards;
   }
 
   /**
@@ -393,6 +419,7 @@ export class CombatCycleService {
 
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
       finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();
       return {
@@ -413,6 +440,7 @@ export class CombatCycleService {
         creatureParty: this.gm.run.creatureParty,
         enemies: this.gm.combat.enemies,
         newCollectionAdditions,
+        tutorialRewards,
         elementDropsCollected: getElementDropList(this.gm.combat.enemies)
       };
     }
@@ -498,6 +526,7 @@ export class CombatCycleService {
       const newCollectionAdditions = this._flushPendingCaptures();
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
       finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();
       return {
@@ -520,6 +549,7 @@ export class CombatCycleService {
         creatureParty: this.gm.run.creatureParty,
         enemies: this.gm.combat.enemies,
         newCollectionAdditions,
+        tutorialRewards,
         elementDropsCollected: getElementDropList(this.gm.combat.enemies)
       };
     }
@@ -707,6 +737,7 @@ export class CombatCycleService {
 
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
       finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();
       return {
@@ -719,6 +750,7 @@ export class CombatCycleService {
         creatureParty: this.gm.run.creatureParty,
         enemies: this.gm.combat.enemies,
         newCollectionAdditions,
+        tutorialRewards,
         elementDropsCollected: getElementDropList(this.gm.combat.enemies)
       };
     }
@@ -1020,11 +1052,13 @@ export class CombatCycleService {
     const allEnemiesDefeated = enemies.filter(e => e.hp > 0 && !e.befriended).length === 0;
 
     let newCollectionAdditions = [];
+    let tutorialRewards = [];
     if (allEnemiesDefeated) {
       awardBattleXp(party, this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 }, this.gm.run.itemBuffs);
       newCollectionAdditions = this._flushPendingCaptures();
       collectElementDrops(this.gm.meta, enemies, this.gm.run?.runSummary);
       finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      tutorialRewards = this._collectTutorialRewards();
     }
 
     this.gm.emitState();
@@ -1038,6 +1072,7 @@ export class CombatCycleService {
       creatureParty: party,
       enemies,
       newCollectionAdditions,
+      tutorialRewards,
       elementDropsCollected: allEnemiesDefeated ? getElementDropList(enemies) : []
     };
   }
@@ -1083,6 +1118,7 @@ export class CombatCycleService {
 
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
       finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();
       return {
@@ -1092,6 +1128,7 @@ export class CombatCycleService {
         creatureParty: this.gm.run.creatureParty,
         enemies: this.gm.combat.enemies,
         newCollectionAdditions,
+        tutorialRewards,
         elementDropsCollected: getElementDropList(this.gm.combat.enemies)
       };
     }
@@ -1140,6 +1177,7 @@ export class CombatCycleService {
       const newCollectionAdditions = this._flushPendingCaptures();
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
       finalizeCombatVictory(this.gm.combat, this.gm.run, { narrate: (t) => this.gm.narrate(t) });
+      const tutorialRewards = this._collectTutorialRewards();
 
       this.gm.emitState();
       return {
@@ -1149,6 +1187,7 @@ export class CombatCycleService {
         creatureParty: this.gm.run.creatureParty,
         enemies: this.gm.combat.enemies,
         newCollectionAdditions,
+        tutorialRewards,
         elementDropsCollected: getElementDropList(this.gm.combat.enemies)
       };
     }

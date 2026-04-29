@@ -1,4 +1,5 @@
 import { addToCollection } from './creature-collection-service.js';
+import { hasTutorialFusionData, TUTORIAL_FUSION_CREATURE_ID } from './tutorial-service.js';
 
 export const FUSION_RECIPES = {
   fireCat: {
@@ -26,13 +27,18 @@ function buildRecipeState(meta, recipe) {
   const alreadyUnlocked = collection.includes(recipe.resultId);
   const fusionCores = getFusionCores(meta);
   const hasEnoughCores = fusionCores >= recipe.cost.fusionCores;
+  const requiresData = recipe.resultId === TUTORIAL_FUSION_CREATURE_ID;
+  const dataUnlocked = !requiresData || hasTutorialFusionData(meta, recipe.resultId);
+  const lockedReason = dataUnlocked ? null : 'Hineko fusion data required';
 
   return {
     ...recipe,
     missingIngredientIds,
     alreadyUnlocked,
     hasEnoughCores,
-    canFuse: missingIngredientIds.length === 0 && hasEnoughCores && !alreadyUnlocked
+    dataUnlocked,
+    lockedReason,
+    canFuse: dataUnlocked && missingIngredientIds.length === 0 && hasEnoughCores && !alreadyUnlocked
   };
 }
 
@@ -50,6 +56,9 @@ export function startFusion(meta, recipeId) {
   const recipeState = buildRecipeState(meta, recipe);
   if (recipeState.alreadyUnlocked) {
     return { success: false, error: 'Creature already unlocked', recipe: recipeState };
+  }
+  if (!recipeState.dataUnlocked) {
+    return { success: false, error: recipeState.lockedReason || 'Fusion data required', recipe: recipeState };
   }
   if (recipeState.missingIngredientIds.length > 0) {
     return {

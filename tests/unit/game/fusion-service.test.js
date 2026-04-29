@@ -11,6 +11,7 @@ function makeMeta(overrides = {}) {
   return {
     creatureCollection: ['hi', 'neko'],
     fusionCores: 1,
+    tutorialFusionDataUnlocked: ['hineko'],
     ...overrides
   };
 }
@@ -32,6 +33,16 @@ describe('fusion-service', () => {
     assert.equal(state.recipes[0].alreadyUnlocked, false);
   });
 
+  it('locks Fire Cat until Hineko fusion data is unlocked', () => {
+    const meta = makeMeta({ tutorialFusionDataUnlocked: [] });
+
+    const state = getFusionState(meta);
+
+    assert.equal(state.recipes[0].canFuse, false);
+    assert.equal(state.recipes[0].dataUnlocked, false);
+    assert.equal(state.recipes[0].lockedReason, 'Hineko fusion data required');
+  });
+
   it('spends one fusion core and permanently unlocks Fire Cat without consuming inputs', () => {
     const meta = makeMeta();
 
@@ -42,6 +53,17 @@ describe('fusion-service', () => {
     assert.equal(result.unlockedCreatureId, 'hineko');
     assert.equal(meta.fusionCores, 0);
     assert.deepEqual(meta.creatureCollection, ['hi', 'neko', 'hineko']);
+  });
+
+  it('rejects fusion before Hineko fusion data is unlocked', () => {
+    const meta = makeMeta({ tutorialFusionDataUnlocked: [] });
+
+    const result = startFusion(meta, FUSION_RECIPES.fireCat.id);
+
+    assert.equal(result.success, false);
+    assert.equal(result.error, 'Hineko fusion data required');
+    assert.equal(meta.fusionCores, 1);
+    assert.deepEqual(meta.creatureCollection, ['hi', 'neko']);
   });
 
   it('rejects fusion when an ingredient is missing', () => {

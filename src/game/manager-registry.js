@@ -4,6 +4,7 @@ import { GameManager } from './loop.js';
 import { getDataDir } from '../data-dir.js';
 import { CREATURES_BY_ID, backfillCreatureListUids, syncCreatureListMoves, syncPartyCreatureMoves } from './creatures.js';
 import { DEFAULT_COLLECTION } from './services/creature-collection-service.js';
+import { ensureTutorialFusionState } from './services/tutorial-service.js';
 
 const SAVE_VERSION = 2;
 
@@ -66,8 +67,22 @@ export function getManager(userId) {
           }
           // Migrate: add tutorial fields for existing accounts
           if (data.meta.tutorialStep === undefined) {
-            data.meta.tutorialStep = 7;
+            data.meta.tutorialStep = 6;
             data.meta.tutorialFireDropsGifted = false;
+            needsSave = true;
+          }
+          const beforeTutorialFusion = JSON.stringify({
+            tutorialFusionDataUnlocked: data.meta.tutorialFusionDataUnlocked,
+            tutorialFusionCoreAwarded: data.meta.tutorialFusionCoreAwarded,
+            tutorialFusionComplete: data.meta.tutorialFusionComplete
+          });
+          ensureTutorialFusionState(data.meta);
+          const afterTutorialFusion = JSON.stringify({
+            tutorialFusionDataUnlocked: data.meta.tutorialFusionDataUnlocked,
+            tutorialFusionCoreAwarded: data.meta.tutorialFusionCoreAwarded,
+            tutorialFusionComplete: data.meta.tutorialFusionComplete
+          });
+          if (beforeTutorialFusion !== afterTutorialFusion) {
             needsSave = true;
           }
           // Migrate: remove stale creature IDs and ensure defaults

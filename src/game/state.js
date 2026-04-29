@@ -63,7 +63,10 @@ export function createMetaProgression() {
 
     // Tutorial state (first-run guided experience)
     tutorialStep: 0,
-    tutorialFireDropsGifted: false
+    tutorialFireDropsGifted: false,
+    tutorialFusionDataUnlocked: [],
+    tutorialFusionCoreAwarded: false,
+    tutorialFusionComplete: false
   };
 }
 

@@ -623,6 +623,14 @@ async function addFusionCore() {
   return apiCall('/fusion/debug-add-core', 'POST');
 }
 
+async function claimTutorialFusionCore() {
+  return apiCall('/tutorial-fusion-core', 'POST');
+}
+
+async function completeTutorialFusion() {
+  return apiCall('/tutorial-fusion-complete', 'POST');
+}
+
 async function rollPostCombatShop() {
   return apiCall('/creature-shop-roll', 'POST');
 }
@@ -803,6 +811,8 @@ export {
   getFusionState,
   startFusion,
   addFusionCore,
+  claimTutorialFusionCore,
+  completeTutorialFusion,
   // Skill master endpoints
   skillMasterOffers,
   skillMasterChoose,
