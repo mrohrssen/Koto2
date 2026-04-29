@@ -1,72 +1,119 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateAreaRooms, ROOM_TYPES } from '../../../src/game/rooms.js';
+import { generateAreaRooms, getAreaSelectionOptions, ROOM_TYPES } from '../../../src/game/rooms.js';
 
-describe('Koto2 30-room generation', () => {
+function assertOnlyEnabledRoomTypes(rooms, fixedIndices) {
+  const allowedTypes = new Set(['encounter', 'friendlyNpc', 'whackAMole']);
+  const otherRooms = rooms.filter((_, i) => !fixedIndices.has(i));
+  for (const room of otherRooms) {
+    assert.ok(
+      allowedTypes.has(room.type),
+      `Unexpected room type: ${room.type} at room ${room.roomNumber}`
+    );
+  }
+}
+
+function assertFriendlyNpcOfferCategories(rooms) {
+  const friendlyRooms = rooms.filter(r => r.type === 'friendlyNpc');
+  for (const room of friendlyRooms) {
+    assert.ok(
+      room.friendlyNpc?.offerCategory === 'food' || room.friendlyNpc?.offerCategory === 'equipment',
+      `friendlyNpc room missing valid offerCategory`
+    );
+  }
+}
+
+function assertNoDisabledRoomTypes(rooms) {
+  const disabledTypes = ['shrine', 'quiz', 'wordDiscovery', 'dealer', 'speedReviewRoom'];
+  for (const room of rooms) {
+    assert.ok(!disabledTypes.includes(room.type), `Disabled room type found: ${room.type}`);
+  }
+}
+
+describe('Koto2 area room generation', () => {
   it('should have npcBattle and friendlyNpc room types', () => {
     assert.ok(ROOM_TYPES.npcBattle);
     assert.ok(ROOM_TYPES.friendlyNpc);
   });
 
-  it('should generate exactly 30 rooms', () => {
-    const rooms = generateAreaRooms('test-area');
-    assert.equal(rooms.length, 30);
+  describe('Starting Meadow', () => {
+    it('generates exactly 10 rooms', () => {
+      const rooms = generateAreaRooms('hajimari-no-hiroba');
+      assert.equal(rooms.length, 10);
+    });
+
+    it('places npcBattle at room 6 and boss at room 10', () => {
+      const rooms = generateAreaRooms('hajimari-no-hiroba');
+      assert.equal(rooms[5].type, 'npcBattle');
+      assert.equal(rooms[9].type, 'boss');
+      assert.equal(rooms[9].boss.creatureId, 'hineko');
+    });
+
+    it('fills remaining rooms with encounter, friendlyNpc, or whackAMole', () => {
+      const rooms = generateAreaRooms('hajimari-no-hiroba');
+      assertOnlyEnabledRoomTypes(rooms, new Set([5, 9]));
+    });
+
+    it('does not generate disabled room types', () => {
+      assertNoDisabledRoomTypes(generateAreaRooms('hajimari-no-hiroba'));
+    });
+
+    it('friendlyNpc rooms should have offerCategory set to food or equipment', () => {
+      assertFriendlyNpcOfferCategories(generateAreaRooms('hajimari-no-hiroba'));
+    });
+
+    it('tutorial mode keeps first two tutorial rooms in the short layout', () => {
+      const rooms = generateAreaRooms('hajimari-no-hiroba', undefined, undefined, undefined, undefined, true);
+      assert.equal(rooms.length, 10);
+      assert.equal(rooms[0].type, 'encounter');
+      assert.equal(rooms[1].type, 'friendlyNpc');
+      assert.equal(rooms[9].type, 'boss');
+    });
   });
 
-  it('should place npcBattle at rooms 6, 12, 18, 24', () => {
-    const rooms = generateAreaRooms('test-area');
-    assert.equal(rooms[5].type, 'npcBattle');
-    assert.equal(rooms[11].type, 'npcBattle');
-    assert.equal(rooms[17].type, 'npcBattle');
-    assert.equal(rooms[23].type, 'npcBattle');
+  describe('Wild Plains', () => {
+    it('generates exactly 30 rooms', () => {
+      const rooms = generateAreaRooms('wild-plains');
+      assert.equal(rooms.length, 30);
+    });
+
+    it('keeps npcBattle at rooms 6, 12, 18, 24', () => {
+      const rooms = generateAreaRooms('wild-plains');
+      assert.equal(rooms[5].type, 'npcBattle');
+      assert.equal(rooms[11].type, 'npcBattle');
+      assert.equal(rooms[17].type, 'npcBattle');
+      assert.equal(rooms[23].type, 'npcBattle');
+    });
+
+    it('keeps boss at room 30', () => {
+      const rooms = generateAreaRooms('wild-plains');
+      assert.equal(rooms[29].type, 'boss');
+      assert.equal(rooms[29].boss.creatureId, 'hineko');
+    });
+
+    it('fills remaining rooms with encounter, friendlyNpc, or whackAMole', () => {
+      const rooms = generateAreaRooms('wild-plains');
+      assertOnlyEnabledRoomTypes(rooms, new Set([5, 11, 17, 23, 29]));
+    });
+
+    it('does not generate disabled room types', () => {
+      assertNoDisabledRoomTypes(generateAreaRooms('wild-plains'));
+    });
+
+    it('friendlyNpc rooms should have offerCategory set to food or equipment', () => {
+      assertFriendlyNpcOfferCategories(generateAreaRooms('wild-plains'));
+    });
   });
 
-  it('should place boss at room 30', () => {
-    const rooms = generateAreaRooms('test-area');
-    assert.equal(rooms[29].type, 'boss');
-  });
+  describe('area unlock ordering', () => {
+    it('offers only Starting Meadow before the first clear', () => {
+      const options = getAreaSelectionOptions(null, 1);
+      assert.deepEqual(options.map(area => area.id), ['hajimari-no-hiroba']);
+    });
 
-  it('should fill remaining rooms with encounter, friendlyNpc, or whackAMole', () => {
-    const rooms = generateAreaRooms('test-area');
-    const fixedIndices = new Set([5, 11, 17, 23, 29]);
-    const allowedTypes = new Set(['encounter', 'friendlyNpc', 'whackAMole']);
-    const otherRooms = rooms.filter((_, i) => !fixedIndices.has(i));
-    for (const room of otherRooms) {
-      assert.ok(
-        allowedTypes.has(room.type),
-        `Unexpected room type: ${room.type} at room ${room.roomNumber}`
-      );
-    }
-  });
-
-  it('should have roughly even split of encounter and friendlyNpc with some whackAMole', () => {
-    const rooms = generateAreaRooms('test-area');
-    const fixedIndices = new Set([5, 11, 17, 23, 29]);
-    const otherRooms = rooms.filter((_, i) => !fixedIndices.has(i));
-    const encounters = otherRooms.filter(r => r.type === 'encounter').length;
-    const friendlyNpcs = otherRooms.filter(r => r.type === 'friendlyNpc').length;
-    const wam = otherRooms.filter(r => r.type === 'whackAMole').length;
-    assert.ok(encounters >= 5 && encounters <= 18, `Encounter count ${encounters} out of range`);
-    assert.ok(friendlyNpcs >= 5 && friendlyNpcs <= 18, `FriendlyNpc count ${friendlyNpcs} out of range`);
-    assert.ok(wam >= 0 && wam <= 8, `WhackAMole count ${wam} out of range`);
-  });
-
-  it('should not generate disabled room types', () => {
-    const rooms = generateAreaRooms('test-area');
-    const disabledTypes = ['shrine', 'quiz', 'wordDiscovery', 'dealer', 'speedReviewRoom'];
-    for (const room of rooms) {
-      assert.ok(!disabledTypes.includes(room.type), `Disabled room type found: ${room.type}`);
-    }
-  });
-
-  it('friendlyNpc rooms should have offerCategory set to food or weapon', () => {
-    const rooms = generateAreaRooms('test-area');
-    const friendlyRooms = rooms.filter(r => r.type === 'friendlyNpc');
-    for (const room of friendlyRooms) {
-      assert.ok(
-        room.friendlyNpc?.offerCategory === 'food' || room.friendlyNpc?.offerCategory === 'equipment',
-        `friendlyNpc room missing valid offerCategory`
-      );
-    }
+    it('offers Starting Meadow and Wild Plains after the first clear', () => {
+      const options = getAreaSelectionOptions(null, 2);
+      assert.deepEqual(options.map(area => area.id), ['hajimari-no-hiroba', 'wild-plains']);
+    });
   });
 });

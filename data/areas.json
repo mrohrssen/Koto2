@@ -35,6 +35,7 @@
       "inu"
     ],
     "bossCreatureId": "hineko",
+    "roomCount": 10,
     "description": "A peaceful meadow at the edge of town, where creatures roam freely.",
     "tags": [
       "meadow",
@@ -45,6 +46,50 @@
     "background": "areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp",
     "stage": 1,
     "createdAt": "2026-03-20"
+  },
+  {
+    "id": "wild-plains",
+    "name": "野原",
+    "nameEn": "Wild Plains",
+    "reading": "のはら",
+    "rank": 2600,
+    "particle": "",
+    "parallaxId": "starter_meadow",
+    "modifierWord": "",
+    "modifierReading": "",
+    "modifierMeaning": "",
+    "modifierRank": null,
+    "locationWord": "野原",
+    "locationReading": "のはら",
+    "locationMeaning": "field / plain",
+    "locationRank": 2600,
+    "theme": "A bright, open plain where creatures roam freely beyond the starting meadow.",
+    "creatures": [
+      "hi",
+      "mizu",
+      "ki",
+      "ishi",
+      "tetsu",
+      "kaze",
+      "mushi",
+      "hana",
+      "tori",
+      "sakana",
+      "neko",
+      "inu"
+    ],
+    "bossCreatureId": "hineko",
+    "roomCount": 30,
+    "description": "A wide meadow-like plain where familiar creatures roam in longer routes.",
+    "tags": [
+      "meadow",
+      "plains",
+      "open"
+    ],
+    "subAreas": [],
+    "background": "areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp",
+    "stage": 1,
+    "createdAt": "2026-04-29"
   },
   {
     "id": "school",

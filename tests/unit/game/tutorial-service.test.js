@@ -145,7 +145,9 @@ describe('tutorial room generation', () => {
     const rooms = generateAreaRooms('hajimari-no-hiroba', undefined, undefined, undefined, undefined, true);
     assert.equal(rooms[0].type, 'encounter');
     assert.equal(rooms[1].type, 'friendlyNpc');
-    assert.equal(rooms.length, 30);
+    assert.equal(rooms.length, 10);
+    assert.equal(rooms[9].type, 'boss');
+    assert.equal(rooms[9].boss.creatureId, 'hineko');
   });
 
   it('without tutorialMode rooms are not forced', () => {

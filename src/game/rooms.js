@@ -143,33 +143,34 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
 }
 
 /**
- * Generate rooms for an area — Koto2: fixed 30-room structure
- * Fixed positions: indices 5, 11, 17, 23 = npcBattle; index 29 = boss
- * Remaining 25 slots: ~50/50 split between encounter and friendlyNpc
+ * Generate rooms for an area — Koto2: area-defined room count, defaulting to 30
+ * Fixed positions: room 6 = npcBattle for short areas; rooms 6, 12, 18, 24 for 30-room areas
+ * Boss is always the final room. Remaining slots are encounter, friendlyNpc, or whackAMole.
  *
  * @param {string} areaId - Area ID to generate rooms for
- * @param {number} [_roomCount] - Ignored (kept for backwards-compat); rooms are always 30
+ * @param {number} [_roomCount] - Ignored (kept for backwards-compat); use area.roomCount instead
  * @param {*} [_lastSpecialType] - Ignored
  * @param {boolean} [_encountersOnly] - Ignored
  * @param {*} [_forceRoomType] - Ignored
  */
 export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encountersOnly, _forceRoomType, tutorialMode = false) {
-  const TOTAL_ROOMS = 30;
-  const NPC_BATTLE_INDICES = new Set([5, 11, 17, 23]);
-  const BOSS_INDEX = 29;
-
   // Look up sub-areas for this area
   const area = getAreaById(areaId);
   const subAreas = area?.subAreas || [];
+  const totalRooms = area?.roomCount || 30;
+  const npcBattleIndices = totalRooms <= 10
+    ? new Set([5])
+    : new Set([5, 11, 17, 23]);
+  const bossIndex = totalRooms - 1;
 
   const rooms = [];
 
-  for (let i = 0; i < TOTAL_ROOMS; i++) {
+  for (let i = 0; i < totalRooms; i++) {
     let type;
 
-    if (NPC_BATTLE_INDICES.has(i)) {
+    if (npcBattleIndices.has(i)) {
       type = ROOM_TYPES.npcBattle;
-    } else if (i === BOSS_INDEX) {
+    } else if (i === bossIndex) {
       type = ROOM_TYPES.boss;
     } else {
       const roll = Math.random();
@@ -182,7 +183,7 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
       }
     }
 
-    const room = createRoom(type, areaId, i + 1, TOTAL_ROOMS);
+    const room = createRoom(type, areaId, i + 1, totalRooms);
 
     if (subAreas.length > 0) room.subArea = subAreas[i % subAreas.length];
 
@@ -203,7 +204,7 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
 
   // Attach boss creature if area has one
   if (area?.bossCreatureId) {
-    rooms[BOSS_INDEX].boss = { creatureId: area.bossCreatureId, defeated: false };
+    rooms[bossIndex].boss = { creatureId: area.bossCreatureId, defeated: false };
   }
 
   return rooms;
