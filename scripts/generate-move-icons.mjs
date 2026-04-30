@@ -103,6 +103,8 @@ const VISUAL_HINTS = {
   'spin':        'a spinning vortex motion with circular speed lines',
   'swallow-up':  'a whirlpool vortex sucking things inward, spiral',
   'grasp':       'a fist clenching tight with grip pressure lines',
+  'sting':       'a sharp bee stinger needle piercing downward with a bright impact star and speed lines',
+  'dig':         'a small shovel biting into a mound of dirt with soil chunks flying outward',
 
   // === BUFF ===
   'dash':        'horizontal speed lines with a motion blur swoosh',
@@ -159,6 +161,7 @@ const VISUAL_HINTS = {
   'sprout':      'a bright green sprout with two leaves unfurling from soil',
 
   // === SHIELD ===
+  'sit':         'a soft round cushion compressing downward with settling motion lines',
   'hide':        'a figure silhouette ducking behind a bush, half-hidden',
   'protect':     'a glowing energy shield dome with protective light',
   'enlarge':     'expanding outward arrows radiating from a center point',
