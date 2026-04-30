@@ -4179,7 +4179,6 @@ button.hud-chip {
 
 .move-cell.disabled {
   opacity: 0.4;
-  pointer-events: none;
 }
 
 .move-cell:nth-child(1) { animation-delay: 0s; }
