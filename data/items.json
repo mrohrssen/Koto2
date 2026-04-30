@@ -282,6 +282,288 @@
     "createdAt": "2026-03-20"
   },
   {
+    "id": "ocha",
+    "word": "お茶",
+    "reading": "おちゃ",
+    "nameEn": "Tea",
+    "meaning": "tea (usu. green); tea break (at work); tea ceremony",
+    "category": "food",
+    "rarity": "common",
+    "type": "mpRestore",
+    "effect": {
+      "mpRestorePercent": 0.9
+    },
+    "description": "Restores 30% MP to all creatures.",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-20"
+  },
+  {
+    "id": "toufu",
+    "word": "豆腐",
+    "reading": "とうふ",
+    "nameEn": "Tofu",
+    "meaning": "tofu; bean curd",
+    "category": "food",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.09
+    },
+    "description": "Boosts party attack by 3%.",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-20"
+  },
+  {
+    "id": "ringo",
+    "word": "りんご",
+    "reading": "りんご",
+    "nameEn": "Apple",
+    "meaning": "apple (fruit); apple tree",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healPercent": 0.675
+    },
+    "description": "Heals one creature for 22% of max HP.",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-20"
+  },
+  {
+    "id": "tamago",
+    "word": "卵",
+    "reading": "たまご",
+    "nameEn": "Egg",
+    "meaning": "eggs; egg; spawn; roe",
+    "category": "food",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "attackMult",
+      "value": 0.225
+    },
+    "description": "Boosts party attack by 7%.",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-20"
+  },
+  {
+    "id": "ichigo",
+    "word": "いちご",
+    "reading": "いちご",
+    "nameEn": "Strawberry",
+    "meaning": "strawberry (esp. the garden strawberry)",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "revive",
+    "effect": {
+      "revivePercent": 0.5
+    },
+    "description": "Revives one fallen creature at 50% HP.",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-20"
+  },
+  {
+    "id": "sake",
+    "word": "酒",
+    "reading": "さけ",
+    "nameEn": "Sake",
+    "meaning": "alcohol; sake",
+    "category": "food",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "stats": [
+        {
+          "field": "attackMult",
+          "value": 0.225
+        },
+        {
+          "field": "hpMult",
+          "value": -0.025
+        }
+      ]
+    },
+    "description": "+7% attack, -2% max HP to one creature.",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-21"
+  },
+  {
+    "id": "raamen",
+    "word": "ラーメン",
+    "reading": "ラーメン",
+    "nameEn": "Ramen",
+    "meaning": "ramen; Chinese-style noodles",
+    "category": "food",
+    "rarity": "common",
+    "type": "heal",
+    "effect": {
+      "healAllPercent": 0.45
+    },
+    "description": "Heals all living creatures for 15% of max HP.",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-21"
+  },
+  {
+    "id": "bentou",
+    "word": "弁当",
+    "reading": "べんとう",
+    "nameEn": "Lunch Box",
+    "meaning": "bento; Japanese box lunch",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "hpMult",
+      "value": 0.225
+    },
+    "description": "+7% max HP to one creature.",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-21"
+  },
+  {
+    "id": "sushi",
+    "word": "寿司",
+    "reading": "すし",
+    "nameEn": "Sushi",
+    "meaning": "sushi; anything made with vinegared rice",
+    "category": "food",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "hpMult",
+      "value": 0.135
+    },
+    "description": "+4% max HP to one creature.",
+    "stage": 2,
+    "area": "wild-plains",
+    "createdAt": "2026-03-21"
+  },
+  {
+    "id": "wasabi",
+    "word": "わさび",
+    "reading": "わさび",
+    "nameEn": "Wasabi",
+    "meaning": "wasabi; Japanese horseradish",
+    "category": "food",
+    "rarity": "rare",
+    "type": "boost",
+    "effect": {
+      "field": "elementEdge",
+      "value": 0.225
+    },
+    "description": "7% super effective damage bonus.",
+    "stage": 3,
+    "area": "wild-plains",
+    "createdAt": "2026-03-21"
+  },
+  {
+    "id": "katana",
+    "word": "刀",
+    "reading": "かたな",
+    "nameEn": "Katana",
+    "meaning": "sword (esp. Japanese single-edged); katana",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "baseAttackBonus",
+      "value": 22
+    },
+    "description": "+7 base attack (scales with level).",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-20"
+  },
+  {
+    "id": "hon",
+    "word": "本",
+    "reading": "ほん",
+    "nameEn": "Book",
+    "meaning": "book; volume; script",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseHpBonus",
+      "value": 45
+    },
+    "description": "+15 base HP (scales with level).",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-20"
+  },
+  {
+    "id": "kutsu",
+    "word": "靴",
+    "reading": "くつ",
+    "nameEn": "Shoes",
+    "meaning": "shoe; shoes; boots; footwear",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "field": "baseMpBonus",
+      "value": 45
+    },
+    "description": "+15 base MP (scales with level).",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-20"
+  },
+  {
+    "id": "kagami",
+    "word": "鏡",
+    "reading": "かがみ",
+    "nameEn": "Mirror",
+    "meaning": "mirror; looking-glass",
+    "category": "equipment",
+    "rarity": "uncommon",
+    "type": "boost",
+    "effect": {
+      "field": "flatDamageReduction",
+      "value": 14
+    },
+    "description": "-4 incoming damage per hit.",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-21"
+  },
+  {
+    "id": "boushi",
+    "word": "帽子",
+    "reading": "ぼうし",
+    "nameEn": "Hat",
+    "meaning": "hat; cap",
+    "category": "equipment",
+    "rarity": "common",
+    "type": "boost",
+    "effect": {
+      "stats": [
+        {
+          "field": "baseHpBonus",
+          "value": 22
+        },
+        {
+          "field": "baseMpBonus",
+          "value": 22
+        }
+      ]
+    },
+    "description": "+7 base HP, +7 base MP (scales with level).",
+    "stage": 1,
+    "area": "wild-plains",
+    "createdAt": "2026-03-20"
+  },
+  {
     "id": "pan",
     "word": "パン",
     "reading": "パン",

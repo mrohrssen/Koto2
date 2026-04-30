@@ -119,6 +119,126 @@
     "defeatLine": "いいね!",
     "createdAt": "2026-03-20"
   },
+  "kodomo_wild_plains": {
+    "id": "kodomo",
+    "name": "子供",
+    "nameEn": "Child",
+    "speakerId": 3,
+    "area": "wild-plains",
+    "tier": 1,
+    "baseWord": "子供",
+    "baseReading": "こども",
+    "baseMeaning": "child",
+    "baseRank": 836,
+    "attack": 10,
+    "skills": [
+      "asobu"
+    ],
+    "personality": {
+      "traits": [
+        "fun-loving",
+        "curious"
+      ],
+      "speechStyle": "Cheerful and playful.",
+      "quirk": "Always looking for a game."
+    },
+    "greeting": "こんにちわ!",
+    "shopGreetings": [
+      "こんにちは！"
+    ],
+    "defeatLine": "いいね!",
+    "createdAt": "2026-03-20"
+  },
+  "otona_wild_plains": {
+    "id": "otona",
+    "name": "大人",
+    "nameEn": "Adult",
+    "speakerId": 13,
+    "area": "wild-plains",
+    "tier": 1,
+    "baseWord": "大人",
+    "baseReading": "おとな",
+    "baseMeaning": "adult",
+    "baseRank": 1263,
+    "attack": 10,
+    "skills": [
+      "hataraku"
+    ],
+    "personality": {
+      "traits": [
+        "mature",
+        "composed"
+      ],
+      "speechStyle": "Calm and measured.",
+      "quirk": "Always busy with something."
+    },
+    "greeting": "こんにちわ!",
+    "shopGreetings": [
+      "こんにちは！"
+    ],
+    "defeatLine": "いいね!",
+    "createdAt": "2026-03-20"
+  },
+  "otokonoko_wild_plains": {
+    "id": "otokonoko",
+    "name": "男の子",
+    "nameEn": "Boy",
+    "speakerId": 47,
+    "area": "wild-plains",
+    "tier": 1,
+    "baseWord": "男の子",
+    "baseReading": "おとこのこ",
+    "baseMeaning": "boy",
+    "baseRank": 2500,
+    "attack": 10,
+    "skills": [
+      "hashiru"
+    ],
+    "personality": {
+      "traits": [
+        "energetic",
+        "restless"
+      ],
+      "speechStyle": "Fast-talking and excited.",
+      "quirk": "Can never stand still."
+    },
+    "greeting": "こんにちわ!",
+    "shopGreetings": [
+      "こんにちは！"
+    ],
+    "defeatLine": "いいね!",
+    "createdAt": "2026-03-20"
+  },
+  "onnanoko_wild_plains": {
+    "id": "onnanoko",
+    "name": "女の子",
+    "nameEn": "Girl",
+    "speakerId": 9,
+    "area": "wild-plains",
+    "tier": 1,
+    "baseWord": "女の子",
+    "baseReading": "おんなのこ",
+    "baseMeaning": "girl",
+    "baseRank": 2300,
+    "attack": 10,
+    "skills": [
+      "utau"
+    ],
+    "personality": {
+      "traits": [
+        "shy",
+        "gentle"
+      ],
+      "speechStyle": "Soft-spoken and careful.",
+      "quirk": "Hums to herself."
+    },
+    "greeting": "こんにちわ!",
+    "shopGreetings": [
+      "こんにちは！"
+    ],
+    "defeatLine": "いいね!",
+    "createdAt": "2026-03-20"
+  },
   "sensei": {
     "id": "sensei",
     "name": "先生",
