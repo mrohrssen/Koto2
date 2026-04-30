@@ -136,4 +136,43 @@ describe('WhackAMoleGame cancellation', () => {
     assert.equal(proceedCalls, 0);
     assert.equal(updateCalls, 0);
   });
+
+  it('still proceeds after completion state leaves whack-a-mole phase', async () => {
+    let rendered = 'game visible';
+    let active = true;
+    let proceedCalls = 0;
+
+    const game = new WhackAMoleGame([
+      { id: 'a', reading: 'あ', sprite: '/a.webp' },
+      { id: 'b', reading: 'い', sprite: '/b.webp' },
+      { id: 'c', reading: 'う', sprite: '/c.webp' },
+      { id: 'd', reading: 'え', sprite: '/d.webp' },
+      { id: 'e', reading: 'お', sprite: '/e.webp' },
+      { id: 'f', reading: 'か', sprite: '/f.webp' },
+      { id: 'g', reading: 'き', sprite: '/g.webp' },
+      { id: 'h', reading: 'く', sprite: '/h.webp' },
+      { id: 'i', reading: 'け', sprite: '/i.webp' },
+    ], {
+      actions: { setContent: html => { rendered = html; } },
+      apiCompleteWhackAMole: async () => ({
+        state: { phase: 'room' },
+        finishDialogue: null,
+        xpGrants: [],
+        levelUps: [],
+      }),
+      apiProceed: async () => {
+        proceedCalls += 1;
+        return { state: { phase: 'room', run: { currentRoom: 1 } } };
+      },
+      updateGameState: () => { active = false; },
+      updateUI: () => {},
+      playSFX: () => {},
+      isActive: () => active,
+    });
+
+    await game._endGame();
+
+    assert.equal(rendered, '');
+    assert.equal(proceedCalls, 1);
+  });
 });

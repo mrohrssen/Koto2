@@ -378,7 +378,7 @@ export class WhackAMoleGame {
     if (finishDialogue?.tokens?.length) {
       const html = renderJpSentence(finishDialogue.tokens, getKnownWords(), null, finishDialogue.overrides || {}, false);
       await narrationBox.show(html, { html: true, speaker: 'Game Master' });
-      if (this.cancelled || !this.isActive()) return;
+      if (this.cancelled) return;
     }
 
     // Narration 2: system XP line + sprite popups over the player formation.
@@ -405,16 +405,16 @@ export class WhackAMoleGame {
       ? tPlain('wamXpGained', perCreatureXp)
       : tPlain('wamZeroXp');
     await narrationBox.show(xpLine);
-    if (this.cancelled || !this.isActive()) return;
+    if (this.cancelled) return;
 
     // Advance to the next room via the standard exploration path.
     try {
       const advanced = await this.apiProceed();
-      if (this.cancelled || !this.isActive()) return;
+      if (this.cancelled) return;
       if (advanced?.state) {
         this.updateGameState(advanced.state);
         await playRoomTransition(advanced.state);
-        if (this.cancelled || !this.isActive()) return;
+        if (this.cancelled) return;
       }
     } catch (err) {
       // Fall through to updateUI - the next-room state may already be applied server-side.
