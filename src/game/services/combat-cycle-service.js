@@ -57,6 +57,19 @@ import { getBarkPool, getBefriendFrames } from '../dialogue-loader.js';
 import { selectBestFrame } from '../token-format.js';
 import { applyDebugSuperAttack } from '../loop.js';
 
+export function serializeBefriendPrompt(prompt) {
+  if (!prompt) return null;
+  const payload = {
+    text: prompt.raw,
+    tokens: prompt.tokens,
+    words: prompt.words,
+  };
+  if (prompt.overrides && Object.keys(prompt.overrides).length > 0) {
+    payload.overrides = prompt.overrides;
+  }
+  return payload;
+}
+
 export class CombatCycleService {
   constructor(gm) {
     this.gm = gm;
@@ -414,10 +427,10 @@ export class CombatCycleService {
               creatureName: lastKilled.name,
               creatureNameEn: lastKilled.nameEn,
               options: quiz.options.map(o => ({ id: o.id, name: o.name })), // Don't send correct flag
-              waitPrompt: waitPrompt ? { text: waitPrompt.raw, tokens: waitPrompt.tokens, words: waitPrompt.words } : null,
-              namePrompt: namePrompt ? { text: namePrompt.raw, tokens: namePrompt.tokens, words: namePrompt.words } : null,
-              successPrompt: successPrompt ? { text: successPrompt.raw, tokens: successPrompt.tokens, words: successPrompt.words } : null,
-              wrongPrompt: wrongPrompt ? { text: wrongPrompt.raw, tokens: wrongPrompt.tokens, words: wrongPrompt.words } : null,
+              waitPrompt: serializeBefriendPrompt(waitPrompt),
+              namePrompt: serializeBefriendPrompt(namePrompt),
+              successPrompt: serializeBefriendPrompt(successPrompt),
+              wrongPrompt: serializeBefriendPrompt(wrongPrompt),
             },
             combatEnded: false,
             allies: this.gm.combat.allies,

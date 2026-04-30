@@ -9,9 +9,35 @@ await mock.module('../../../src/game/loop.js', {
   }
 });
 
-const { CombatCycleService } = await import('../../../src/game/services/combat-cycle-service.js');
+const {
+  CombatCycleService,
+  serializeBefriendPrompt,
+} = await import('../../../src/game/services/combat-cycle-service.js');
 
 describe('CombatCycleService attack response payloads', () => {
+  it('serializes befriend prompt overrides into quiz payloads', () => {
+    const prompt = {
+      raw: '私の名前は？',
+      tokens: [
+        { surface: '私', base: '私', reading: 'わたし', pos: 'Pronoun', meaning: 'my', meanings: ['I/me'] },
+        { surface: 'の' },
+        { surface: '名前', base: '名前', reading: 'なまえ', pos: 'Noun', meaning: 'name', meanings: ['name'] },
+        { surface: 'は' },
+        { surface: '？' },
+      ],
+      words: ['私', '名前'],
+      overrides: { '私': 'my' },
+    };
+
+    assert.deepEqual(serializeBefriendPrompt(prompt), {
+      text: '私の名前は？',
+      tokens: prompt.tokens,
+      words: ['私', '名前'],
+      overrides: { '私': 'my' },
+    });
+    assert.equal(serializeBefriendPrompt(null), null);
+  });
+
   it('preserves enemy attacks when a later player action ends combat', () => {
     const strongMove = {
       id: 'debug-hit', name: '試す', nameEn: 'Debug Hit', reading: 'ためす',

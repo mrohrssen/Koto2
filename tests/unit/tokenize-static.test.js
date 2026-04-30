@@ -151,6 +151,30 @@ describe('tokenize-static output (frames.json)', () => {
     assert.equal(names.length, 7, `expected 7 befriend_name frames, got ${names.length}`);
   });
 
+  it('befriend_name base prompt is scaffolded and never bare 名前は？', () => {
+    const names = frames.filter(f => f.category === 'befriend_name');
+    assert.equal(
+      names.some(f => f.raw === '名前は？'),
+      false,
+      'befriend_name frames should not include the confusing bare 名前は？ prompt'
+    );
+
+    const basePrompt = frames.find(f => f.id === 'befriend_name_what');
+    assert.ok(basePrompt, 'befriend_name_what frame should exist');
+    assert.equal(basePrompt.raw, '私の名前は？');
+    assert.deepEqual(basePrompt.overrides, { '私': 'my' });
+  });
+
+  it('befriend_name 私 reads as わたし for beginner-facing romaji', () => {
+    const basePrompt = frames.find(f => f.id === 'befriend_name_what');
+    assert.ok(basePrompt, 'befriend_name_what frame should exist');
+
+    const watashi = basePrompt.tokens.find(t => t.base === '私');
+    assert.ok(watashi, 'befriend_name_what should keep 私 as the dictionary base');
+    assert.equal(watashi.surface, '私');
+    assert.equal(watashi.reading, 'わたし');
+  });
+
   it('preserves group field on CID and NPC frames', () => {
     const cidFrame = frames.find(f => f.category === 'cid');
     if (cidFrame) {

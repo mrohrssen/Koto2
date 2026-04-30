@@ -423,32 +423,37 @@
   {
     "id": "befriend_name_what",
     "category": "befriend_name",
-    "raw": "名前は？",
-    "slots": []
+    "raw": "私の名前は？",
+    "slots": [],
+    "overrides": { "私": "my" }
   },
   {
     "id": "befriend_name_my",
     "category": "befriend_name",
     "raw": "私の名前は？",
-    "slots": []
+    "slots": [],
+    "overrides": { "私": "my" }
   },
   {
     "id": "befriend_name_know",
     "category": "befriend_name",
     "raw": "私の名前が分かる？",
-    "slots": []
+    "slots": [],
+    "overrides": { "私": "my" }
   },
   {
     "id": "befriend_name_say",
     "category": "befriend_name",
     "raw": "私の名前、何？",
-    "slots": []
+    "slots": [],
+    "overrides": { "私": "my" }
   },
   {
     "id": "befriend_name_still",
     "category": "befriend_name",
     "raw": "今は私の名前が分かる？",
-    "slots": []
+    "slots": [],
+    "overrides": { "私": "my" }
   },
   {
     "id": "npc_kodomo_fightStart_play",

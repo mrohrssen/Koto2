@@ -375,7 +375,12 @@ export async function renderBefriendQuiz(quizData, result) {
 
   // Show "まって!!" narration (creature calls out first)
   if (quizData.waitPrompt) {
-    const waitHtml = renderJpSentence(quizData.waitPrompt.tokens, getKnownWords(), new Map());
+    const waitHtml = renderJpSentence(
+      quizData.waitPrompt.tokens,
+      getKnownWords(),
+      new Map(),
+      quizData.waitPrompt.overrides || {}
+    );
     await ctx.narration.showNarration(waitHtml, { speaker: creatureSpeaker, html: true });
   } else {
     await ctx.narration.showNarration('まって！！', { speaker: creatureSpeaker });
@@ -461,7 +466,12 @@ export async function renderBefriendQuiz(quizData, result) {
   let quizDone = false;
   while (!quizDone) {
     if (quizData.namePrompt) {
-      const nameHtml = renderJpSentence(quizData.namePrompt.tokens, getKnownWords(), new Map());
+      const nameHtml = renderJpSentence(
+        quizData.namePrompt.tokens,
+        getKnownWords(),
+        new Map(),
+        quizData.namePrompt.overrides || {}
+      );
       await ctx.narration.showNarration(nameHtml, { speaker: creatureSpeaker, html: true });
     } else {
       await ctx.narration.showNarration('なまえは？', { speaker: creatureSpeaker });
@@ -521,7 +531,12 @@ export async function renderBefriendQuiz(quizData, result) {
     // Befriended!
     playSFX('creature-skill');
     if (quizData.successPrompt) {
-      const successHtml = renderJpSentence(quizData.successPrompt.tokens, getKnownWords(), new Map());
+      const successHtml = renderJpSentence(
+        quizData.successPrompt.tokens,
+        getKnownWords(),
+        new Map(),
+        quizData.successPrompt.overrides || {}
+      );
       await ctx.narration.showNarration(successHtml, { speaker: creatureSpeaker, html: true });
     } else {
       await ctx.narration.showNarration('じゃあ、友達になろう！', { speaker: creatureSpeaker });
@@ -562,7 +577,12 @@ export async function renderBefriendQuiz(quizData, result) {
 
   // Wrong answer — creature fights back
   if (quizData.wrongPrompt) {
-    const wrongHtml = renderJpSentence(quizData.wrongPrompt.tokens, getKnownWords(), new Map());
+    const wrongHtml = renderJpSentence(
+      quizData.wrongPrompt.tokens,
+      getKnownWords(),
+      new Map(),
+      quizData.wrongPrompt.overrides || {}
+    );
     await ctx.narration.showNarration(wrongHtml, { speaker: creatureSpeaker, html: true });
   } else {
     await ctx.narration.showNarration('ちがう！', { speaker: creatureSpeaker });
