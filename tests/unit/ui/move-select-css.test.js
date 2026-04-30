@@ -33,3 +33,18 @@ test('disabled move cells remain clickable for insufficient MP feedback', () => 
     'disabled move cells must receive clicks so Not enough MP feedback can appear'
   );
 });
+
+test('move select MP droplet stays blue across move states and elements', () => {
+  const mpColorRules = [...css.matchAll(/([^{}]+)\{\s*([^{}]*\.move-pill-ico--mp[^{}]*|[^{}]*color\s*:[^{}]*)\}/g)]
+    .filter(([, selector, body]) => selector.includes('.move-pill-ico--mp') && /color\s*:/.test(body))
+    .map(([, selector]) => selector.trim());
+
+  assert.deepEqual(mpColorRules, ['.move-pill-ico--mp']);
+});
+
+test('move select sword icon keeps the shared pill icon size', () => {
+  const body = ruleBody(css, '.move-pill-ico--sword {');
+  assert.ok(body, '.move-pill-ico--sword rule not found');
+  assert.doesNotMatch(body, /\bwidth\s*:/, 'sword icon should inherit shared .move-pill-ico width');
+  assert.doesNotMatch(body, /\bheight\s*:/, 'sword icon should inherit shared .move-pill-ico height');
+});

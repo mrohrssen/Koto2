@@ -4335,13 +4335,11 @@ button.hud-chip {
   flex-shrink: 0;
 }
 
+.move-pill-ico--sword {
+  object-fit: contain;
+}
+
 .move-pill-ico--mp { color: #1976d2; }
-.move-cell--fire    .move-pill-ico--mp { color: #bf360c; }
-.move-cell--water   .move-pill-ico--mp { color: #0277bd; }
-.move-cell--wood    .move-pill-ico--mp { color: #2e7d32; }
-.move-cell--earth   .move-pill-ico--mp { color: #6d4c41; }
-.move-cell--metal   .move-pill-ico--mp { color: #455a64; }
-.move-cell--neutral .move-pill-ico--mp { color: #5d4037; }
 
 .move-pill-divider {
   width: 1px;
@@ -4351,7 +4349,6 @@ button.hud-chip {
 }
 
 .move-cell.disabled .move-pill-stat:first-child { color: #c62828; }
-.move-cell.disabled .move-pill-stat:first-child .move-pill-ico--mp { color: #c62828; }
 
 .move-help-popup {
   position: fixed;

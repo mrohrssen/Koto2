@@ -12,7 +12,7 @@ const CATEGORY_ICONS = {
 
 const SVG_ICONS = {
   drop:          '<svg class="move-pill-ico move-pill-ico--mp" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s6 7 6 12a6 6 0 1 1-12 0c0-5 6-12 6-12z"/></svg>',
-  sword:         '<svg class="move-pill-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5 20.5 9.5M4 20l4.5-1.5L20 7l-3-3L5.5 15.5 4 20z"/><path d="M11.5 12.5 15 9"/></svg>',
+  sword:         '<img class="move-pill-ico move-pill-ico--sword" src="/assets/icons/attack-sword.webp" alt="" aria-hidden="true">',
   'chevron-up':   '<svg class="move-pill-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 12l6-6 6 6"/></svg>',
   'chevron-down': '<svg class="move-pill-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v13M18 12l-6 6-6-6"/></svg>',
   heart:         '<svg class="move-pill-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6C19 16.5 12 21 12 21z"/></svg>',
