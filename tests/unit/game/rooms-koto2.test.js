@@ -62,12 +62,20 @@ describe('Koto2 area room generation', () => {
       assertFriendlyNpcOfferCategories(generateAreaRooms('hajimari-no-hiroba'));
     });
 
-    it('tutorial mode keeps first two tutorial rooms in the short layout', () => {
+    it('tutorial mode uses the 7-room first-user playtest sequence', () => {
       const rooms = generateAreaRooms('hajimari-no-hiroba', undefined, undefined, undefined, undefined, true);
-      assert.equal(rooms.length, 10);
-      assert.equal(rooms[0].type, 'encounter');
-      assert.equal(rooms[1].type, 'friendlyNpc');
-      assert.equal(rooms[9].type, 'boss');
+      assert.equal(rooms.length, 7);
+      assert.deepEqual(rooms.map(room => room.type), [
+        'encounter',
+        'friendlyNpc',
+        'encounter',
+        'npcBattle',
+        'whackAMole',
+        'friendlyNpc',
+        'boss'
+      ]);
+      assert.equal(rooms[6].boss.creatureId, 'hineko');
+      assertFriendlyNpcOfferCategories(rooms);
     });
   });
 

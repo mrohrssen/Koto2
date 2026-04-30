@@ -200,9 +200,10 @@ describe('tutorial-service', () => {
     function makeBossRun(areaId = 'hajimari-no-hiroba') {
       return {
         currentArea: { id: areaId },
-        currentRoom: 9,
+        // Boss is room 7 in the scripted Starting Meadow tutorial layout.
+        currentRoom: 6,
         rooms: [
-          null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null,
           { type: 'boss', boss: { creatureId: 'hineko' } }
         ]
       };
@@ -284,13 +285,19 @@ describe('tutorial befriend protection', () => {
 import { generateAreaRooms } from '../../../src/game/rooms.js';
 
 describe('tutorial room generation', () => {
-  it('tutorialMode forces room 0 to encounter and room 1 to friendlyNpc', () => {
+  it('tutorialMode uses the scripted 7-room Starting Meadow sequence', () => {
     const rooms = generateAreaRooms('hajimari-no-hiroba', undefined, undefined, undefined, undefined, true);
-    assert.equal(rooms[0].type, 'encounter');
-    assert.equal(rooms[1].type, 'friendlyNpc');
-    assert.equal(rooms.length, 10);
-    assert.equal(rooms[9].type, 'boss');
-    assert.equal(rooms[9].boss.creatureId, 'hineko');
+    assert.equal(rooms.length, 7);
+    assert.deepEqual(rooms.map(room => room.type), [
+      'encounter',
+      'friendlyNpc',
+      'encounter',
+      'npcBattle',
+      'whackAMole',
+      'friendlyNpc',
+      'boss'
+    ]);
+    assert.equal(rooms[6].boss.creatureId, 'hineko');
   });
 
   it('without tutorialMode rooms are not forced', () => {

@@ -64,11 +64,11 @@ describe('Starting Meadow NPC battle', () => {
           stage: 1,
           creatures: ['neko', 'inu']
         },
-        currentRoom: 5,
-        currentAreaEncounters: 5,
+        currentRoom: 3,
+        currentAreaEncounters: 3,
         totalEncounters,
         rooms: [
-          null, null, null, null, null,
+          null, null, null,
           { type: 'npcBattle' }
         ],
         creatureParty: {
@@ -107,11 +107,11 @@ describe('Starting Meadow Hineko boss override', () => {
       run: {
         active: true,
         currentArea: { id: 'hajimari-no-hiroba', stage: 1 },
-        currentRoom: 9,
-        currentAreaEncounters: 5,
-        totalEncounters: 10,
+        currentRoom: 6,
+        currentAreaEncounters: 6,
+        totalEncounters: 7,
         rooms: [
-          null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null,
           { type: 'boss', boss: { creatureId: 'hineko' } }
         ],
         creatureParty: {

@@ -77,6 +77,17 @@ export const ROOM_TYPES = {
   friendlyNpc: 'friendlyNpc'
 };
 
+const STARTING_MEADOW_AREA_ID = 'hajimari-no-hiroba';
+const STARTING_MEADOW_TUTORIAL_SEQUENCE = [
+  ROOM_TYPES.encounter,
+  ROOM_TYPES.friendlyNpc,
+  ROOM_TYPES.encounter,
+  ROOM_TYPES.npcBattle,
+  ROOM_TYPES.whackAMole,
+  ROOM_TYPES.friendlyNpc,
+  ROOM_TYPES.boss
+];
+
 // ============ ROOM GENERATION ============
 
 /**
@@ -142,9 +153,22 @@ function generateSingleRoom(areaId, roomNumber, totalRooms, excludeSpecialType =
   return createRoom(type, areaId, roomNumber, totalRooms);
 }
 
+function createStartingMeadowTutorialRooms(area, subAreas) {
+  const totalRooms = STARTING_MEADOW_TUTORIAL_SEQUENCE.length;
+  return STARTING_MEADOW_TUTORIAL_SEQUENCE.map((type, index) => {
+    const room = createRoom(type, STARTING_MEADOW_AREA_ID, index + 1, totalRooms);
+    if (subAreas.length > 0) room.subArea = subAreas[index % subAreas.length];
+    if (type === ROOM_TYPES.boss && area?.bossCreatureId) {
+      room.boss = { creatureId: area.bossCreatureId, defeated: false };
+    }
+    return room;
+  });
+}
+
 /**
  * Generate rooms for an area — Koto2: area-defined room count, defaulting to 30
- * Fixed positions: room 6 = npcBattle for short areas; rooms 6, 12, 18, 24 for 30-room areas
+ * Tutorial-mode Starting Meadow uses a scripted 7-room playtest layout.
+ * Other short areas: room 6 = npcBattle; 30-room areas: rooms 6, 12, 18, 24.
  * Boss is always the final room. Remaining slots are encounter, friendlyNpc, or whackAMole.
  *
  * @param {string} areaId - Area ID to generate rooms for
@@ -157,6 +181,11 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
   // Look up sub-areas for this area
   const area = getAreaById(areaId);
   const subAreas = area?.subAreas || [];
+
+  if (tutorialMode && areaId === STARTING_MEADOW_AREA_ID) {
+    return createStartingMeadowTutorialRooms(area, subAreas);
+  }
+
   const totalRooms = area?.roomCount || 30;
   const npcBattleIndices = totalRooms <= 10
     ? new Set([5])
@@ -190,7 +219,7 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
     rooms.push(room);
   }
 
-  // Tutorial override: force first 2 rooms for guaranteed befriend + item shop
+  // Generic tutorial override for non-scripted areas: guaranteed befriend + item shop.
   if (tutorialMode) {
     if (rooms[0]) rooms[0].type = ROOM_TYPES.encounter;
     if (rooms[1]) {
