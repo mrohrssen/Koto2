@@ -5270,6 +5270,14 @@ button.hud-chip {
   -webkit-tap-highlight-color: transparent;
 }
 
+.ui-btn:not(:has(.jp-word)) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  line-height: 1.2;
+}
+
 .ui-btn:active {
   transform: scale(0.97);
   opacity: 0.85;
