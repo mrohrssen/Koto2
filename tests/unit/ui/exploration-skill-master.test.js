@@ -115,6 +115,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
         phase: 'skillMaster',
         meta: { tutorialStep: 0 },
         run: {
+          stats: { startTime: 111 },
           initialSkillPick: { chosenId: null },
           creatureParty: { active: [] },
         },
@@ -146,6 +147,53 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     }
 
     assert.equal(showNpcSpriteCalls, 1);
+    assert.equal(showNarrationCalls, 1);
+  });
+
+  it('does not restart tutorial narration when initial skill pick is inferred from server state', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    let showNarrationCalls = 0;
+
+    init({
+      getGameState: () => ({
+        phase: 'skillMaster',
+        meta: { tutorialStep: 0 },
+        run: {
+          stats: { startTime: 222 },
+          creatureParty: { active: [] },
+        },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: {
+        showNarration: () => {
+          showNarrationCalls += 1;
+          return new Promise(() => {});
+        },
+      },
+      apiSkillMasterOffers: async () => ({
+        offered: [
+          { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+          { id: 'guard', name: 'Guard', desc: 'Defend' },
+          { id: 'haste', name: 'Haste', desc: 'Speed up' },
+        ],
+      }),
+    });
+
+    try {
+      await renderSkillMaster();
+      await renderSkillMaster();
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
     assert.equal(showNarrationCalls, 1);
   });
 });

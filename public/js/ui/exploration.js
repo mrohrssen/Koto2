@@ -261,6 +261,7 @@ const PARTY_SKILL_CATALOG_FALLBACK = {
 
 // Skill master local cache (for inventory display + to avoid refetch loops)
 let skillMasterState = {
+  cacheKey: null,
   roomId: null,
   fetched: false,
   offered: null,
@@ -1193,12 +1194,15 @@ export async function renderSkillMaster() {
   const roomId = (isInitialPick || isServerInitialPick)
     ? 'initialSkillPick'
     : (room?.id || room?.type || 'unknown');
+  const cacheKey = (isInitialPick || isServerInitialPick)
+    ? `${roomId}:${run?.stats?.startTime ?? ''}`
+    : roomId;
 
   // Reset per-room cache
-  // For the initial skill pick, always reset — room IDs are deterministic per
-  // area so the cache key collides across runs, serving stale offers that the
-  // server no longer recognizes (causes "Invalid Skill Master offer" 400).
-  if (skillMasterState.roomId !== roomId || isServerInitialPick) {
+  // For the initial skill pick, include the run start time so same-phase
+  // rerenders don't restart Cid narration, but a fresh run won't reuse offers.
+  if (skillMasterState.cacheKey !== cacheKey) {
+    skillMasterState.cacheKey = cacheKey;
     skillMasterState.roomId = roomId;
     skillMasterState.fetched = false;
     skillMasterState.offered = null;
@@ -1245,7 +1249,7 @@ export async function renderSkillMaster() {
   // Fetch offers once per room
   if (!skillMasterState.fetched) {
     skillMasterState.fetched = true;
-    const fetchRoomId = roomId;
+    const fetchCacheKey = cacheKey;
     let resp;
     try {
       resp = await apiSkillMasterOffers?.();
@@ -1268,7 +1272,7 @@ export async function renderSkillMaster() {
     }
 
     // Stale async guard: room changed while awaiting offers
-    if (skillMasterState.roomId !== fetchRoomId) return;
+    if (skillMasterState.cacheKey !== fetchCacheKey) return;
 
     const offered = resp?.offered || resp?.offers || resp?.skills || room?.skillMaster?.offered;
     if (!Array.isArray(offered) || offered.length === 0) {
