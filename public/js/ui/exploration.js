@@ -482,27 +482,27 @@ export async function renderHub() {
     tutorialStep = getGameState().meta?.tutorialStep;
   }
 
-  // Tutorial step 4: introduce speed review (condition-gated on dueCount > 0)
-  if (tutorialStep === 4 && dueCount > 0) {
-    const pages = needsPostHinekoReview(gameState, dueCount)
-      ? getPostHinekoReviewNarration(dueCount)
-      : getTutorialNarration(4, { dueCount });
-    if (!needsPostHinekoReview(gameState, dueCount) || !postHinekoReviewNarrationShown) {
-      postHinekoReviewNarrationShown = true;
-      await showTutorialNarration(pages, { showSprite: true });
-    }
-    highlightActionButton(text => text.includes('Knowledge Review'));
-  }
-
-  // Tutorial step 5: guide to formation and re-enter
-  if (tutorialStep === 5) {
-    const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
-    await showTutorialNarration(getFormationNarration(creatureCount), { showSprite: true });
-    highlightActionButton(text => text.includes('Explore'));
-  }
-
   if (guideFusionLab) {
     highlightActionButton(text => text.includes('Fusion Lab'));
+  } else {
+    // Tutorial step 4: introduce speed review (condition-gated on dueCount > 0)
+    if (tutorialStep === 4 && dueCount > 0) {
+      const pages = needsPostHinekoReview(gameState, dueCount)
+        ? getPostHinekoReviewNarration(dueCount)
+        : getTutorialNarration(4, { dueCount });
+      if (!needsPostHinekoReview(gameState, dueCount) || !postHinekoReviewNarrationShown) {
+        postHinekoReviewNarrationShown = true;
+        await showTutorialNarration(pages, { showSprite: true });
+      }
+      highlightActionButton(text => text.includes('Knowledge Review'));
+    }
+
+    // Tutorial step 5: guide to formation and re-enter
+    if (tutorialStep === 5) {
+      const creatureCount = Math.min((gameState.meta?.creatureCollection || []).length, 3);
+      await showTutorialNarration(getFormationNarration(creatureCount), { showSprite: true });
+      highlightActionButton(text => text.includes('Explore'));
+    }
   }
 
   if (needsPostFusionMessage(gameState)) {

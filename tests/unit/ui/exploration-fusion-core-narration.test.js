@@ -3,7 +3,19 @@ import assert from 'node:assert/strict';
 
 const sceneManagerState = { currentScene: null };
 let renderedButtons = [];
+let domButtons = [];
 let speedReviewStartArgs = null;
+
+function createDomButton(textContent) {
+  const classes = new Set();
+  return {
+    textContent,
+    classList: {
+      add: className => classes.add(className),
+      contains: className => classes.has(className),
+    },
+  };
+}
 
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
@@ -49,7 +61,10 @@ await mock.module('../../../public/js/ui/room-transition.js', {
 });
 await mock.module('../../../public/js/ui/ui-components.js', {
   namedExports: {
-    renderButtons: buttons => { renderedButtons = buttons; },
+    renderButtons: buttons => {
+      renderedButtons = buttons;
+      domButtons = buttons.map(button => createDomButton(button.label));
+    },
     renderChoices: () => {},
   },
 });
@@ -73,7 +88,7 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
 });
 await mock.module('../../../public/js/ui/tutorial-copy.js', {
   namedExports: {
-    getTutorialNarration: () => [],
+    getTutorialNarration: step => step === 4 ? ['knowledge review line'] : [],
     getFormationNarration: () => '',
     getPostHinekoReviewNarration: () => [],
     getFusionCoreNarration: () => ['fusion core line'],
@@ -86,12 +101,13 @@ const { init, renderHub } = await import('../../../public/js/ui/exploration.js')
 describe('renderHub fusion core review narration', () => {
   beforeEach(() => {
     renderedButtons = [];
+    domButtons = [];
     speedReviewStartArgs = null;
     sceneManagerState.currentScene = null;
     globalThis.document = {
       body: {},
       getElementById: () => null,
-      querySelectorAll: () => [],
+      querySelectorAll: () => domButtons,
     };
   });
 
@@ -150,5 +166,48 @@ describe('renderHub fusion core review narration', () => {
     assert.equal(typeof speedReviewStartArgs.options.onExit, 'function');
     await speedReviewStartArgs.options.onExit();
     assert.equal(narrationCalls, 1);
+  });
+
+  it('forces Fusion Lab instead of Knowledge Review after the fusion core is awarded', async () => {
+    let gameState = {
+      phase: 'hub',
+      meta: {
+        pvpTeams: [],
+        tutorialStep: 4,
+        tutorialFusionDataUnlocked: ['hineko'],
+        tutorialFusionCoreAwarded: true,
+        tutorialFusionComplete: false,
+        fusionCores: 1,
+        creatureCollection: [],
+      },
+    };
+    let narrationCalls = 0;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: (nextState) => { gameState = nextState; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: {
+        showNarration: async () => {
+          narrationCalls += 1;
+        },
+      },
+      startNewRun: () => {},
+      apiGetVocabDueCount: async () => ({ count: 3 }),
+    });
+
+    await renderHub();
+
+    const reviewButton = domButtons.find(button => button.textContent.includes('Knowledge Review'));
+    const fusionButton = domButtons.find(button => button.textContent.includes('Fusion Lab'));
+
+    assert.ok(reviewButton, 'Knowledge Review button should render');
+    assert.ok(fusionButton, 'Fusion Lab button should render');
+    assert.equal(narrationCalls, 0, 'Knowledge Review tutorial narration should not replay');
+    assert.equal(reviewButton.classList.contains('tutorial-highlight'), false);
+    assert.equal(reviewButton.classList.contains('tutorial-dimmed'), true);
+    assert.equal(fusionButton.classList.contains('tutorial-highlight'), true);
+    assert.equal(fusionButton.classList.contains('tutorial-dimmed'), false);
   });
 });
