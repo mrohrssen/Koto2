@@ -8,6 +8,8 @@ import { combatEvents } from './combat-events.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
 
+const NPC_BATTLE_STRENGTH_PROMPT = "Let's see how strong you are!";
+
 /**
  * Play the room entrance transition.
  * Called between updateGameState() and updateUI() after apiProceed().
@@ -148,6 +150,7 @@ export async function playNpcBattleIntro(
 
   // Show bootstrap word-gated fightStart line, fall back to legacy AI greeting
   const bootstrapLine = npcDialogue?.fightStart;
+  let showedIntroLine = false;
   if (bootstrapLine?.tokens?.length) {
     await new Promise(r => setTimeout(r, 100));
     narrationBox.forceHide();
@@ -160,12 +163,18 @@ export async function playNpcBattleIntro(
       npcDialogue.useKanji || false
     );
     await narrationBox.show(html, { speaker: npcName, html: true });
+    showedIntroLine = true;
   } else if (npcData.greeting) {
     // Legacy fallback for AI-generated greetings
     await new Promise(r => setTimeout(r, 100));
     narrationBox.forceHide();
     speakText(npcData.greeting);
     await narrationBox.show(renderEnFirst(npcData.greeting), { speaker: npcName, html: true });
+    showedIntroLine = true;
+  }
+
+  if (showedIntroLine) {
+    await narrationBox.show(NPC_BATTLE_STRENGTH_PROMPT, { speaker: npcName });
   }
 
   // Scene may have changed while narration was showing; re-resolve.

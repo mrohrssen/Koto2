@@ -47,7 +47,7 @@ await mock.module('../../../public/js/ui/narration-box.js', {
 await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: {
     renderEnFirst: (s) => s,
-    renderJpSentence: () => '',
+    renderJpSentence: (tokens) => tokens.map(t => t.text || t.surface || '').join(''),
     getKnownWords: () => new Set(),
   },
 });
@@ -175,6 +175,34 @@ describe('playNpcBattleIntro (Bug #9 fix)', () => {
         allies: [],
       })
     );
+  });
+
+  it('shows the English strength prompt as a separate line after the word-gated fight start line', async () => {
+    const callLog = [];
+    const scene = buildMockScene(callLog);
+    sceneManagerState.currentScene = scene;
+
+    const npcData = { id: 'kodomo', nameEn: 'Child', name: 'こども', greeting: 'hi' };
+    await playNpcBattleIntro(
+      npcData,
+      () => {},
+      () => {},
+      {
+        fightStart: {
+          tokens: [{ text: '行くよ！' }],
+          overrides: {},
+        },
+        useKanji: false,
+      },
+    );
+
+    assert.equal(narrationLog.length, 2);
+    assert.match(narrationLog[0].text, /行くよ！/);
+    assert.equal(narrationLog[0].opts.speaker, 'Child');
+    assert.equal(narrationLog[0].opts.html, true);
+    assert.equal(narrationLog[1].text, "Let's see how strong you are!");
+    assert.equal(narrationLog[1].opts.speaker, 'Child');
+    assert.notEqual(narrationLog[1].opts.html, true);
   });
 });
 
