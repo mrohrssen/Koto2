@@ -67,7 +67,9 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
 });
 await mock.module('../../../public/js/ui/tutorial-copy.js', {
   namedExports: {
-    getTutorialNarration: () => [],
+    getTutorialNarration: step => (step === 2
+      ? ["Here you'll be offered items to power up. Choose wisely!"]
+      : []),
     getFormationNarration: () => '',
     getPostHinekoReviewNarration: () => [],
     getFusionCoreNarration: () => [],
@@ -139,5 +141,60 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.match(actionContent, /Click to continue!/);
     assert.doesNotMatch(actionContent, /Loading/);
     assert.ok(renderedChoices, 'item choices should still render after the prompt');
+  });
+
+  it('in tutorial mode lets Cid interrupt after the NPC greeting before the persistent item prompt', async () => {
+    const narrationCalls = [];
+    const room = {
+      id: 'friendly-npc-tutorial-room',
+      type: 'friendlyNpc',
+      npc: { id: 'shopkeeper', name: '店員', nameEn: 'Shopkeeper' },
+      friendlyNpc: { completed: false },
+    };
+
+    init({
+      getGameState: () => ({
+        phase: 'friendlyNpc',
+        room,
+        meta: { tutorialStep: 2 },
+        run: { creatureParty: { active: [] } },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: {
+        showNarration: async (content, options = {}) => {
+          narrationCalls.push({ content, options });
+        },
+      },
+      apiGetFriendlyNpcOffers: async () => ({
+        greeting: {
+          tokens: [{ text: 'いらっしゃいませ！' }],
+          overrides: {},
+        },
+        offered: [
+          {
+            id: 'test-apple',
+            word: 'りんご',
+            reading: 'りんご',
+            nameToken: { text: 'りんご' },
+            effect: { healAllPercent: 0.2 },
+          },
+        ],
+      }),
+    });
+
+    await renderFriendlyNpc();
+
+    assert.equal(narrationCalls.length, 3);
+    assert.match(narrationCalls[0].content, /いらっしゃいませ！/);
+    assert.equal(narrationCalls[0].options.speaker, 'Shopkeeper');
+    assert.notEqual(narrationCalls[0].options.persistent, true);
+    assert.equal(narrationCalls[1].content, "Here you'll be offered items to power up. Choose wisely!");
+    assert.equal(narrationCalls[1].options.speaker, 'Cid');
+    assert.equal(narrationCalls[2].content, 'Which item would you like?');
+    assert.equal(narrationCalls[2].options.speaker, 'Shopkeeper');
+    assert.equal(narrationCalls[2].options.persistent, true);
+    assert.ok(renderedChoices, 'item choices should render after tutorial prompt');
   });
 });

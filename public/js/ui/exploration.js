@@ -1519,8 +1519,8 @@ export async function renderFriendlyNpc() {
   const npc = room?.npc;
   const tutorialStep = getGameState()?.meta?.tutorialStep;
 
-  // Greeting is persistent so it stays until the player picks an item
-  // (the "You: ..." response on pick replaces the text in place).
+  // Show the NPC greeting once, then keep the item prompt visible until
+  // the player picks an item.
   if (npc && sceneModule?.showNarration && !friendlyNpcState.greetingShown) {
     friendlyNpcState.greetingShown = true;
     const greetingTokens = friendlyNpcState.greeting?.tokens;
@@ -1535,6 +1535,38 @@ export async function renderFriendlyNpc() {
       ...(greetingTokens?.length ? { html: true } : {}),
     };
     await sceneModule.showNarration(greetingContent, narrationOpts);
+
+    // Tutorial step 2: Cid explains items after the shopkeeper's greeting,
+    // then the shopkeeper returns with the persistent item prompt.
+    if (tutorialStep === 2 && !cidItemShopTutorialShown) {
+      cidItemShopTutorialShown = true;
+      const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+      showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+      const scene = getSceneWithNpcs();
+      if (scene) {
+        await scene.showNpcSprite(cidSprite, { slideIn: true });
+      }
+
+      const [itemShopCidLine] = getTutorialNarration(2);
+      if (itemShopCidLine) {
+        await sceneModule.showNarration(itemShopCidLine, { speaker: 'Cid' });
+      }
+
+      const afterScene = getSceneWithNpcs();
+      if (afterScene && !afterScene.disposed && afterScene.npcSprite) {
+        await afterScene.hideNpcSprite({ slideOut: true });
+      }
+
+      const npcSprite = npc.id
+        ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
+        : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+      showNpcInDisplay(npc.nameEn || npc.name, npcSprite, { skipPixi: true });
+      const currentScene = getSceneWithNpcs();
+      if (currentScene) {
+        await currentScene.showNpcSprite(npcSprite, { slideIn: true });
+      }
+    }
+
     await sceneModule.showNarration(FRIENDLY_NPC_ITEM_PROMPT, {
       speaker: npc.nameEn || npc.name,
       persistent: true,
@@ -1608,41 +1640,6 @@ export async function renderFriendlyNpc() {
       }
     },
   });
-
-  // Tutorial step 2: Cid explains items AFTER cards are visible (once per session)
-  if (tutorialStep === 2 && !cidItemShopTutorialShown) {
-    cidItemShopTutorialShown = true;
-    const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
-    showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-    const scene = getSceneWithNpcs();
-    if (scene) {
-      await scene.showNpcSprite(cidSprite, { slideIn: true });
-    }
-
-    const [itemShopCidLine] = getTutorialNarration(2);
-    await sceneModule.showNarration(itemShopCidLine, { speaker: 'Cid' });
-
-    const afterScene = getSceneWithNpcs();
-    if (afterScene && !afterScene.disposed && afterScene.npcSprite) {
-      await afterScene.hideNpcSprite({ slideOut: true });
-    }
-
-    // Restore NPC sprite so they're visible during item selection
-    if (npc) {
-      const npcSprite = npc.id
-        ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
-        : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
-      showNpcInDisplay(npc.nameEn || npc.name, npcSprite, { skipPixi: true });
-      // Re-fetch the current scene: a transition may have happened during the
-      // await of the tutorial narration. If not in an ExplorationScene
-      // (shouldn't normally happen here), only the DOM NPC display runs —
-      // the legacy _defaultCtx fallback was removed in Task 18.
-      const currentScene = getSceneWithNpcs();
-      if (currentScene) {
-        await currentScene.showNpcSprite(npcSprite, { slideIn: true });
-      }
-    }
-  }
 }
 
 function startWhackAMoleGame(pool) {
