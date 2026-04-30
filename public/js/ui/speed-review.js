@@ -23,10 +23,12 @@ let state = {
     maxCards: null,
     onCommittedReview: null,
     onComplete: null,
+    onExit: null,
     canCloseEarly: true,
     committedReviews: 0,
     completionTriggered: false,
     commitDeliveryChain: Promise.resolve(),
+    completionPromise: null,
     completing: false
   }
 };
@@ -50,10 +52,13 @@ function resolveSessionOptions(options = {}) {
       : (mode === 'room' ? 10 : null),
     onCommittedReview: typeof options.onCommittedReview === 'function' ? options.onCommittedReview : null,
     onComplete: typeof options.onComplete === 'function' ? options.onComplete : null,
+    onExit: typeof options.onExit === 'function' ? options.onExit : null,
     canCloseEarly: typeof options.canCloseEarly === 'boolean' ? options.canCloseEarly : mode === 'hub',
     committedReviews: 0,
     completionTriggered: false,
     commitDeliveryChain: Promise.resolve(),
+    completionPromise: null,
+    exitNotified: false,
     completing: false
   };
 }
@@ -704,44 +709,48 @@ function checkEmpty() {
 }
 
 async function handleCompletion() {
-  if (state.session.completing) return;
-  if (state.session.completionTriggered) return;
+  if (state.session.completing) return state.session.completionPromise;
+  if (state.session.completionTriggered) return state.session.completionPromise;
   state.session.completing = true;
 
-  try {
-    flushPendingReview();
-    if (state.reviewPromises.length > 0) {
-      await Promise.all(state.reviewPromises);
-    }
-
-    if (state.session.onComplete) {
-      if (state.session.mode === 'room' && state.session.committedReviews < state.reviewedCount) {
-        throw new Error('Review sync incomplete. Some cards are not committed yet.');
+  state.session.completionPromise = (async () => {
+    try {
+      flushPendingReview();
+      if (state.reviewPromises.length > 0) {
+        await Promise.all(state.reviewPromises);
       }
-      await state.session.onComplete({
-        committedReviews: state.session.committedReviews
-      });
-    }
 
-    state.session.completionTriggered = true;
-    clearRoomCompletionError();
-    updateCloseButtonAvailability();
+      if (state.session.onComplete) {
+        if (state.session.mode === 'room' && state.session.committedReviews < state.reviewedCount) {
+          throw new Error('Review sync incomplete. Some cards are not committed yet.');
+        }
+        await state.session.onComplete({
+          committedReviews: state.session.committedReviews
+        });
+      }
 
-    if (state.session.mode === 'room') {
-      await handleExit();
-      takeover.close('speedReview');
+      state.session.completionTriggered = true;
+      clearRoomCompletionError();
+      updateCloseButtonAvailability();
+
+      if (state.session.mode === 'room') {
+        await handleExit();
+        takeover.close('speedReview');
+      }
+    } catch (error) {
+      state.session.completionTriggered = false;
+      updateCloseButtonAvailability();
+      if (state.session.mode === 'room') {
+        showRoomCompletionError(error?.message || 'Review completion failed. Please retry.');
+        return;
+      }
+      console.warn('[SpeedReview] Completion callback failed:', error);
+    } finally {
+      state.session.completing = false;
     }
-  } catch (error) {
-    state.session.completionTriggered = false;
-    updateCloseButtonAvailability();
-    if (state.session.mode === 'room') {
-      showRoomCompletionError(error?.message || 'Review completion failed. Please retry.');
-      return;
-    }
-    console.warn('[SpeedReview] Completion callback failed:', error);
-  } finally {
-    state.session.completing = false;
-  }
+  })();
+
+  return state.session.completionPromise;
 }
 
 /**
@@ -765,6 +774,10 @@ async function handleExit() {
   // Trigger final batch refresh if any pending
   if (state.session.mode === 'hub' && state.reviewedBatch.length > 0) {
     await triggerBatchRefresh();
+  }
+
+  if (state.session.mode === 'hub' && state.session.completionPromise) {
+    await state.session.completionPromise;
   }
 
   if (state.session.mode === 'hub') {
@@ -792,6 +805,14 @@ async function handleExit() {
     }
   } catch (e) {
     // Non-fatal
+  }
+
+  if (!state.session.exitNotified && state.session.onExit) {
+    state.session.exitNotified = true;
+    await state.session.onExit({
+      committedReviews: state.session.committedReviews,
+      completed: state.session.completionTriggered
+    });
   }
 
   // Close handled by takeover.js click listener

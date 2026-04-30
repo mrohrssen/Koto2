@@ -440,16 +440,20 @@ export async function renderHub() {
       if (result?.words?.length > 0) {
         const shouldAwardFusionCore = hasHinekoFusionData(getGameState())
           && !getGameState().meta?.tutorialFusionCoreAwarded;
+        let fusionCoreAwardedThisReview = false;
         speedReview.start(result.words, shouldAwardFusionCore ? {
-          onComplete: async () => {
-            const reward = await apiClaimTutorialFusionCore?.();
-            if (reward?.state) updateGameState(reward.state);
-            const anchor = document.getElementById('speed-review-empty') || document.body;
-            showWordLevelUp(anchor, '', { message: reward?.message || 'Obtained 1x Fusion Core!' });
-            if (!fusionCoreNarrationShown) {
+          onExit: async () => {
+            if (fusionCoreAwardedThisReview && !fusionCoreNarrationShown) {
               fusionCoreNarrationShown = true;
               await showTutorialNarration(getFusionCoreNarration(), { showSprite: true });
             }
+          },
+          onComplete: async () => {
+            const reward = await apiClaimTutorialFusionCore?.();
+            if (reward?.state) updateGameState(reward.state);
+            fusionCoreAwardedThisReview = true;
+            const anchor = document.getElementById('speed-review-empty') || document.body;
+            showWordLevelUp(anchor, '', { message: reward?.message || 'Obtained 1x Fusion Core!' });
           }
         } : {});
       } else {
