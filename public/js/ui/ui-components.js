@@ -1,6 +1,12 @@
 import { playSFX } from '../audio.js';
 import { hapticLight } from '../native/index.js';
 
+const CONTINUE_HINT_HTML = '<div class="prologue-continue-hint">Click to continue!</div>';
+
+function showContinueHint(el) {
+  if (el) el.innerHTML = CONTINUE_HINT_HTML;
+}
+
 /**
  * Render a vertical stack of tappable buttons.
  * @param {Array<{label: string, onClick: Function, primary?: boolean, disabled?: boolean}>} buttons
@@ -40,6 +46,9 @@ export function renderButtons(buttons, { container, append } = {}) {
  * @returns {Promise<number>}
  */
 export function renderButtonsAsync(buttons, options = {}) {
+  const { clearAfterSelect = true, ...renderOptions } = options;
+  const el = options.container || document.getElementById('action-area');
+
   return new Promise(resolve => {
     let answered = false;
     const wrappedButtons = buttons.map((btn, i) => ({
@@ -47,10 +56,11 @@ export function renderButtonsAsync(buttons, options = {}) {
       onClick: () => {
         if (answered) return;
         answered = true;
+        if (clearAfterSelect) showContinueHint(el);
         resolve(i);
       },
     }));
-    renderButtons(wrappedButtons, options);
+    renderButtons(wrappedButtons, renderOptions);
   });
 }
 
@@ -63,9 +73,10 @@ export function renderButtonsAsync(buttons, options = {}) {
  * @param {Array<{sprite?: string, title: string, subtitle?: string, pills?: string, badge?: {text: string, color: string}, helpBtn?: Function}>} options.cards
  * @param {Function} options.onSelect - Called with selected card index
  * @param {boolean} [options.disableAfterSelect=true] - Grey out all cards after selection
+ * @param {boolean} [options.clearAfterSelect] - Replace choices with continue hint after selection (defaults to disableAfterSelect)
  * @param {HTMLElement} [options.container] - Target element (defaults to #action-area)
  */
-export function renderChoices({ heading, cards, onSelect, disableAfterSelect = true, container } = {}) {
+export function renderChoices({ heading, cards, onSelect, disableAfterSelect = true, clearAfterSelect = disableAfterSelect, container } = {}) {
   const el = container || document.getElementById('action-area');
   el.innerHTML = '';
 
@@ -118,7 +129,9 @@ export function renderChoices({ heading, cards, onSelect, disableAfterSelect = t
       playSFX('button-tap');
       hapticLight();
       btn.classList.add('ui-choice--selected');
-      if (disableAfterSelect) {
+      if (clearAfterSelect) {
+        showContinueHint(el);
+      } else if (disableAfterSelect) {
         list.querySelectorAll('.ui-choice').forEach(c => {
           c.classList.add('ui-choice--disabled');
           c.style.pointerEvents = 'none';
