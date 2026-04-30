@@ -46,6 +46,7 @@ import { applyCrestBonuses } from './crest-service.js';
 import {
   shouldProtectBefriend,
   advanceTutorial as advanceTutorialStep,
+  isStartingMeadowHinekoBoss,
   shouldForceStartingMeadowCatEncounter,
   shouldShowStartingMeadowHinekoIntro,
   collectStartingMeadowHinekoVictoryReward
@@ -87,12 +88,15 @@ export class CombatCycleService {
 
     let enemyCreatures;
     if (isBoss) {
-      // Boss: solo creature, level × 1.25, double HP
-      const bossLevel = Math.round(
-        getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25
-      );
+      // Boss: solo creature, level × 1.25, double HP unless a tutorial override applies.
+      const isStartingMeadowHineko = isStartingMeadowHinekoBoss(this.gm.run);
+      const bossLevel = isStartingMeadowHineko
+        ? 7
+        : Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25);
       const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
-      bossCreature.hp = bossCreature.maxHp *= 2;
+      if (!isStartingMeadowHineko) {
+        bossCreature.hp = bossCreature.maxHp *= 2;
+      }
       enemyCreatures = [bossCreature];
     } else if (isNpcBattle) {
       // NPC Battle: always 3 enemies at level × 1.1
@@ -108,7 +112,13 @@ export class CombatCycleService {
       const totalCreatures = this.gm.run.creatureParty.active.length + (this.gm.run.creatureParty.reserves?.length || 0);
       const isStarterOnly = totalCreatures <= 1;
       if (shouldForceStartingMeadowCatEncounter(this.gm.meta, this.gm.run)) {
-        enemyCreatures = [generateEnemyCreature(highestLevel, ['neko'], stage)];
+        enemyCreatures = generateEnemyCreatures(highestLevel, {
+          maxEnemies: 1,
+          creaturePool: ['neko'],
+          stage,
+          encounterIndex,
+          totalEncounters
+        });
       } else {
         enemyCreatures = generateEnemyCreatures(highestLevel, {
           maxEnemies: isStarterOnly ? 1 : (isFirstBattle ? 2 : undefined),

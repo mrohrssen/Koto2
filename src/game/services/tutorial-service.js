@@ -88,7 +88,7 @@ function getCurrentRoom(run) {
   return run?.rooms?.[run?.currentRoom || 0] || null;
 }
 
-function isStartingMeadowHinekoBoss(run) {
+export function isStartingMeadowHinekoBoss(run) {
   const room = getCurrentRoom(run);
   return run?.currentArea?.id === 'hajimari-no-hiroba'
     && room?.type === 'boss'
