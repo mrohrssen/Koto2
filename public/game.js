@@ -837,6 +837,7 @@ async function playPrologue() {
     // Tokens are resolved server-side (see /api/game/prologue). Narration-box
     // attaches dialogueLookup click handlers automatically when html: true.
     if (prologueScene.type === 'jpDemo' && prologueScene.tokens) {
+      actions.showPrologueContinueHint();
       const html = renderJpSentence(prologueScene.tokens, getKnownWords(), null, {}, false);
       await narrationBox.show(html, {
         html: true,
@@ -847,6 +848,7 @@ async function playPrologue() {
 
     // Garbled lines: show raw text, no bootstrap rendering
     if (prologueScene.type === 'garbled') {
+      actions.showPrologueContinueHint();
       await narrationBox.show(prologueScene.narration, {
         speaker: prologueScene.speaker || undefined,
         garbled: true
@@ -863,6 +865,7 @@ async function playPrologue() {
     let result = undefined;
 
     if (prologueScene.choices?.length > 0) {
+      actions.clear();
       await narrationBox.show(html, { ...showOpts, persistent: true });
       const choiceIdx = await renderButtonsAsync(
         prologueScene.choices.map(c => ({
@@ -875,11 +878,13 @@ async function playPrologue() {
       result = chosen.id ?? chosen.text;
       lastChoiceId = result;
     } else {
+      actions.showPrologueContinueHint();
       await narrationBox.show(html, showOpts);
     }
 
   }
 
+  actions.clear();
   scene.hideCid();
 
   // Auto-select fire starter

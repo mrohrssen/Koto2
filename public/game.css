@@ -871,6 +871,14 @@ button.hud-chip {
   font-size: 14px !important;
 }
 
+.prologue-continue-hint {
+  color: rgba(47, 58, 69, 0.78);
+  font-size: clamp(15px, 4vw, 18px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
 @keyframes action-area-gradient {
   0%, 100% { background-position: 0% 50%; }
   25% { background-position: 100% 0%; }
