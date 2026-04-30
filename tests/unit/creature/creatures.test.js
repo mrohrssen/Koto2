@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import fs from 'node:fs';
 import {
   getElementMultiplier,
   ELEMENT_CYCLE,
@@ -14,6 +15,9 @@ import {
   generateEnemyCreatures,
   syncCreatureDefense
 } from '../../../src/game/creatures.js';
+
+const creatures = JSON.parse(fs.readFileSync(new URL('../../../data/creatures.json', import.meta.url), 'utf8'));
+const moves = JSON.parse(fs.readFileSync(new URL('../../../data/moves.json', import.meta.url), 'utf8'));
 
 describe('Element Cycle', () => {
   it('wood beats earth (1.5x)', () => {
@@ -40,6 +44,17 @@ describe('Element Cycle', () => {
 });
 
 describe('Creature Instantiation', () => {
+  it('does not teach heal moves before level 7', () => {
+    const movesById = new Map(moves.map(move => [move.id, move]));
+    const earlyHealMoves = creatures.flatMap(creature =>
+      creature.learnset
+        .filter(({ moveId, level }) => level < 7 && movesById.get(moveId)?.category === 'heal')
+        .map(({ moveId, level }) => `${creature.id}:${moveId}@${level}`)
+    );
+
+    assert.deepStrictEqual(earlyHealMoves, []);
+  });
+
   it('creates a level-5 common creature with scaled stats', () => {
     const creature = instantiateCreature('hi');
     assert.strictEqual(creature.element, 'fire');

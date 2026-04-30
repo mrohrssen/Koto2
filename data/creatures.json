@@ -345,7 +345,7 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "nemuru",
+        "moveId": "kakomu",
         "level": 1
       },
       {
@@ -361,7 +361,7 @@
         "level": 16
       },
       {
-        "moveId": "kakomu",
+        "moveId": "nemuru",
         "level": 22
       }
     ],
@@ -427,7 +427,7 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "nomu",
+        "moveId": "kakureru",
         "level": 1
       },
       {
@@ -435,7 +435,7 @@
         "level": 5
       },
       {
-        "moveId": "kakureru",
+        "moveId": "nomu",
         "level": 10
       },
       {
@@ -632,7 +632,7 @@
     "isStarter": false,
     "learnset": [
       {
-        "moveId": "suwaru",
+        "moveId": "mamoru",
         "level": 1
       },
       {
@@ -640,7 +640,7 @@
         "level": 5
       },
       {
-        "moveId": "mamoru",
+        "moveId": "suwaru",
         "level": 10
       },
       {
