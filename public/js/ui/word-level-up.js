@@ -1,4 +1,18 @@
 /**
+ * Pick the anchor for battle-level reward popups.
+ * @param {Document} [doc]
+ * @returns {HTMLElement|null}
+ */
+export function getBattleRewardAnchor(doc = globalThis.document) {
+  if (!doc) return null;
+  return doc.querySelector?.('.battle-stage')
+    || doc.getElementById?.('scene-area')
+    || doc.getElementById?.('enemy-formation')
+    || doc.body
+    || null;
+}
+
+/**
  * Show a "[word] leveled up!" animation anchored to an element.
  * @param {HTMLElement} anchorEl - Element to position the animation over
  * @param {string} wordText - Japanese word to display

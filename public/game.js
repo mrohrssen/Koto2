@@ -120,7 +120,7 @@ import { init as initExposureBuffer } from './js/ui/exposure-buffer.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
-import { showWordLevelUp } from './js/ui/word-level-up.js';
+import { getBattleRewardAnchor, showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
 import { playNpcBattleIntro, playRoomTransition, playTutorialBossInterjection } from './js/ui/room-transition.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
@@ -1373,7 +1373,7 @@ function showVictoryModal(result) {
 
   for (const reward of result.tutorialRewards || []) {
     if (reward.type === 'fusionData') {
-      const anchor = document.getElementById('enemy-formation') || document.body;
+      const anchor = getBattleRewardAnchor();
       showWordLevelUp(anchor, '', { message: reward.message || 'Obtained Hineko Fusion Data!' });
     }
   }
