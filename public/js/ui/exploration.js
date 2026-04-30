@@ -267,7 +267,9 @@ let skillMasterState = {
   chosenId: null,
   catalogById: { ...PARTY_SKILL_CATALOG_FALLBACK },
   promptTokens: null,
-  promptShown: false
+  promptShown: false,
+  cidShown: false,
+  tutorialNarrationStarted: false
 };
 
 function getActiveRoomFromRun(run) {
@@ -1001,6 +1003,22 @@ let whackAMoleState = {
   noLabel: 'No',
   introShown: false
 };
+let activeWhackAMoleGame = null;
+let activeWhackAMoleRoomId = null;
+
+function getCurrentWhackAMoleRoomId() {
+  const state = getGameState();
+  const room = state?.run?.rooms?.[state?.run?.currentRoom];
+  return room?.id || room?.type || 'whackAMole';
+}
+
+function cancelActiveWhackAMoleGame() {
+  if (activeWhackAMoleGame && typeof activeWhackAMoleGame.cancel === 'function') {
+    activeWhackAMoleGame.cancel();
+  }
+  activeWhackAMoleGame = null;
+  activeWhackAMoleRoomId = null;
+}
 
 /** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
 export async function renderWhackAMole() {
@@ -1009,6 +1027,9 @@ export async function renderWhackAMole() {
   const roomId = room?.id || room?.type || 'whackAMole';
 
   if (whackAMoleState.roomId !== roomId) {
+    if (activeWhackAMoleRoomId && activeWhackAMoleRoomId !== roomId) {
+      cancelActiveWhackAMoleGame();
+    }
     whackAMoleState = {
       roomId,
       fetched: false,
@@ -1087,6 +1108,9 @@ export async function renderWhackAMole() {
     {
       label: whackAMoleState.noLabel,
       onClick: async () => {
+        cancelActiveWhackAMoleGame();
+        actions.clear?.();
+        if (!actions.clear) actions.setContent('');
         const scene = getSceneWithNpcs();
         if (scene && !scene.disposed && scene.npcSprite) {
           await scene.hideNpcSprite({ slideOut: true });
@@ -1139,6 +1163,8 @@ async function showDefeatedNpcForSkillSelect(npc) {
 async function showCidForSkillMaster() {
   const scene = getSceneWithNpcs();
   const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+  if (skillMasterState.cidShown) return;
+  skillMasterState.cidShown = true;
   showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
   if (scene) {
     await scene.showNpcSprite(cidSprite, { slideIn: true });
@@ -1171,6 +1197,8 @@ export async function renderSkillMaster() {
     skillMasterState.offered = null;
     skillMasterState.chosenId = null;
     skillMasterState.promptShown = false;
+    skillMasterState.cidShown = false;
+    skillMasterState.tutorialNarrationStarted = false;
   }
 
   // If already completed, don't render choices
@@ -1191,9 +1219,10 @@ export async function renderSkillMaster() {
 
   // Tutorial step 0: start Cid narration early so it runs while offers load
   const tutorialStep = getGameState()?.meta?.tutorialStep;
-  const cidNarrationPromise = tutorialStep === 0
-    ? showTutorialNarration(getTutorialNarration(0), { showSprite: true })
-    : null;
+  if (tutorialStep === 0 && !skillMasterState.tutorialNarrationStarted) {
+    skillMasterState.tutorialNarrationStarted = true;
+    showTutorialNarration(getTutorialNarration(0), { showSprite: true });
+  }
 
   // Render loading state immediately to avoid flashing old buttons
   actions.setContent(`
@@ -1605,14 +1634,19 @@ export async function renderFriendlyNpc() {
 }
 
 function startWhackAMoleGame(pool) {
-  new WhackAMoleGame(pool, {
+  cancelActiveWhackAMoleGame();
+  activeWhackAMoleRoomId = whackAMoleState.roomId;
+  activeWhackAMoleGame = new WhackAMoleGame(pool, {
     actions,
     apiCompleteWhackAMole,
     apiProceed,
     updateGameState,
     updateUI,
-    playSFX
-  }).start();
+    playSFX,
+    isActive: () => getGameState()?.phase === 'whackAMole'
+      && getCurrentWhackAMoleRoomId() === activeWhackAMoleRoomId
+  });
+  activeWhackAMoleGame.start();
 }
 
 // ============ NPC BATTLE SKILL REWARD ============

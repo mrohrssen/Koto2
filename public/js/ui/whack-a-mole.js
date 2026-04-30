@@ -19,6 +19,7 @@ export class WhackAMoleGame {
    * @param {Function} deps.updateGameState - Callback to update game state
    * @param {Function} deps.updateUI - Callback to re-render the main UI
    * @param {Function} deps.playSFX - Sound effect player (optional, errors swallowed)
+   * @param {Function} deps.isActive - Returns false once the owning room is no longer current
    */
   constructor(pool, deps) {
     this.pool = pool;
@@ -28,6 +29,7 @@ export class WhackAMoleGame {
     this.updateGameState = deps.updateGameState;
     this.updateUI = deps.updateUI;
     this.playSFX = deps.playSFX;
+    this.isActive = deps.isActive || (() => true);
 
     // Game state
     this.score = 0;
@@ -39,6 +41,8 @@ export class WhackAMoleGame {
     this.timerInterval = null;
     this.wordTimeLeft = 5.0;
     this.WORD_TIME_LIMIT = 5.0;
+    this.cancelled = false;
+    this.ending = false;
   }
 
   /** Entry point -- call after constructing to kick off the game. */
@@ -84,6 +88,14 @@ export class WhackAMoleGame {
   }
 
   // ---- Private methods ----
+
+  cancel() {
+    this.cancelled = true;
+    this.gameOver = true;
+    clearTimeout(this.flipTimeout);
+    clearInterval(this.timerInterval);
+    this.actions.setContent('');
+  }
 
   _formatTime(t) {
     const secs = Math.max(0, Math.ceil(t));
@@ -335,6 +347,12 @@ export class WhackAMoleGame {
   }
 
   async _endGame() {
+    if (this.cancelled || this.ending) return;
+    if (!this.isActive()) {
+      this.cancel();
+      return;
+    }
+    this.ending = true;
     this.gameOver = true;
     clearTimeout(this.flipTimeout);
     clearInterval(this.timerInterval);
@@ -344,6 +362,7 @@ export class WhackAMoleGame {
     let finishDialogue = null;
     try {
       const result = await this.apiCompleteWhackAMole(this.score);
+      if (this.cancelled || !this.isActive()) return;
       if (result?.state) this.updateGameState(result.state);
       xpGrants = result?.xpGrants || [];
       levelUps = result?.levelUps || [];
@@ -359,6 +378,7 @@ export class WhackAMoleGame {
     if (finishDialogue?.tokens?.length) {
       const html = renderJpSentence(finishDialogue.tokens, getKnownWords(), null, finishDialogue.overrides || {}, false);
       await narrationBox.show(html, { html: true, speaker: 'Game Master' });
+      if (this.cancelled || !this.isActive()) return;
     }
 
     // Narration 2: system XP line + sprite popups over the player formation.
@@ -385,13 +405,16 @@ export class WhackAMoleGame {
       ? tPlain('wamXpGained', perCreatureXp)
       : tPlain('wamZeroXp');
     await narrationBox.show(xpLine);
+    if (this.cancelled || !this.isActive()) return;
 
     // Advance to the next room via the standard exploration path.
     try {
       const advanced = await this.apiProceed();
+      if (this.cancelled || !this.isActive()) return;
       if (advanced?.state) {
         this.updateGameState(advanced.state);
         await playRoomTransition(advanced.state);
+        if (this.cancelled || !this.isActive()) return;
       }
     } catch (err) {
       // Fall through to updateUI - the next-room state may already be applied server-side.
