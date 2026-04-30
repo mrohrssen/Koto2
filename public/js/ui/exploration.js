@@ -1408,6 +1408,8 @@ function renderTutorialSkillMaster(offers) {
 
 // ============ FRIENDLY NPC ROOM ============
 
+const FRIENDLY_NPC_ITEM_PROMPT = 'Which item would you like?';
+
 /** Module-level state to avoid refetch across re-renders */
 let friendlyNpcState = {
   roomId: null,
@@ -1527,10 +1529,13 @@ export async function renderFriendlyNpc() {
     }
     const narrationOpts = {
       speaker: npc.nameEn || npc.name,
-      persistent: true,
       ...(greetingTokens?.length ? { html: true } : {}),
     };
-    sceneModule.showNarration(greetingContent, narrationOpts);
+    await sceneModule.showNarration(greetingContent, narrationOpts);
+    await sceneModule.showNarration(FRIENDLY_NPC_ITEM_PROMPT, {
+      speaker: npc.nameEn || npc.name,
+      persistent: true,
+    });
   }
 
   // Render item cards so they're visible
