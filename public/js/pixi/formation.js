@@ -20,8 +20,8 @@ const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF' };
 // Active-creature glow (spec: 2026-04-23-active-creature-golden-glow-design.md)
 const GLOW_COLOR = 0xFFC94A;
 const GLOW_DISTANCE = 14;
-const GLOW_MIN_STRENGTH = 1.2;
-const GLOW_MAX_STRENGTH = 2.8;
+const GLOW_MIN_STRENGTH = 2.4;
+const GLOW_MAX_STRENGTH = 5.6;
 const GLOW_QUALITY = 0.2;
 const GLOW_PERIOD_MS = 2000;
 
