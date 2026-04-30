@@ -1,0 +1,118 @@
+import { describe, it, mock, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+
+const sceneManagerState = { currentScene: null };
+let renderedButtons = [];
+
+await mock.module('../../../public/js/scenes/scene-manager.js', {
+  namedExports: { getSceneManager: () => sceneManagerState },
+});
+await mock.module('../../../public/js/scenes/exploration-scene.js', {
+  namedExports: { ExplorationScene: class {} },
+});
+await mock.module('../../../public/js/ui/speed-review.js', { namedExports: {} });
+await mock.module('../../../public/js/ui/whack-a-mole.js', {
+  namedExports: { WhackAMoleGame: class {} },
+});
+await mock.module('../../../public/js/audio.js', { namedExports: { playSFX: () => {} } });
+await mock.module('../../../public/js/native/index.js', { namedExports: { hapticLight: () => {} } });
+await mock.module('../../../public/js/ui/sprite-utils.js', {
+  namedExports: {
+    creatureBgUrl: () => '', itemSpriteHtml: () => '', creatureStaticPath: () => '',
+    SPRITE_VERSION: 'test',
+  },
+});
+await mock.module('../../../public/js/ui/combat-dom.js', {
+  namedExports: { hideEnemy: () => {}, showFormation: () => {}, hideFormation: () => {} },
+});
+await mock.module('../../../public/js/ui/exploration-dom.js', {
+  namedExports: { showNpcInDisplay: () => {} },
+});
+await mock.module('../../../public/js/ui/i18n.js', {
+  namedExports: { t: (...a) => a.join(' '), isJapanified: () => false },
+});
+await mock.module('../../../public/js/ui/chests.js', { namedExports: {} });
+await mock.module('../../../public/js/ui/crests-equip.js', { namedExports: {} });
+await mock.module('../../../public/js/ui/item-effect-pills.js', {
+  namedExports: { buildItemEffectPills: () => '' },
+});
+await mock.module('../../../public/js/ui/room-transition.js', {
+  namedExports: { playRoomTransition: async () => {} },
+});
+await mock.module('../../../public/js/ui/ui-components.js', {
+  namedExports: {
+    renderButtons: buttons => { renderedButtons = buttons; },
+    renderChoices: () => {},
+  },
+});
+await mock.module('../../../public/js/ui/event-popup.js', {
+  namedExports: { buff: () => {}, itemGained: () => {} },
+});
+await mock.module('../../../public/js/ui/dom-effects.js', {
+  namedExports: { pop: () => {}, flashElement: () => {} },
+});
+await mock.module('../../../public/js/api.js', {
+  namedExports: { savePvpTeam: async () => {}, getPvpTeams: async () => [] },
+});
+await mock.module('../../../public/js/ui/bootstrap-client.js', {
+  namedExports: {
+    renderJpSentence: tokens => tokens.map(t => t.text || t.base || '').join(''),
+    getKnownWords: () => new Set(),
+  },
+});
+await mock.module('../../../public/js/ui/tutorial-copy.js', {
+  namedExports: {
+    getTutorialNarration: () => [],
+    getFormationNarration: () => '',
+    getPostHinekoReviewNarration: () => [],
+    getFusionCoreNarration: () => [],
+    getPostFusionNarration: () => [],
+  },
+});
+
+const { init, renderWhackAMole } = await import('../../../public/js/ui/exploration.js');
+
+describe('renderWhackAMole decline flow', () => {
+  beforeEach(() => {
+    renderedButtons = [];
+    sceneManagerState.currentScene = null;
+  });
+
+  it('clears the prompt buttons immediately when the player declines', async () => {
+    let actionContent = 'buttons visible';
+    let resolveSkip;
+    const skipPromise = new Promise(resolve => { resolveSkip = resolve; });
+
+    init({
+      getGameState: () => ({
+        phase: 'whackAMole',
+        run: {
+          currentRoom: 0,
+          rooms: [{ id: 'wam-1', type: 'whackAMole', interacted: false }],
+        },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: {
+        setContent: html => { actionContent = html; },
+        clear: () => { actionContent = ''; },
+      },
+      scene: { showNarration: async () => {} },
+      apiGetWhackAMoleDialogue: async () => ({
+        dialogue: null,
+        yesTokens: null,
+        noTokens: null,
+      }),
+      apiSkipWhackAMole: () => skipPromise,
+    });
+
+    await renderWhackAMole();
+    assert.equal(renderedButtons.length, 2);
+
+    const decline = renderedButtons[1].onClick();
+    assert.equal(actionContent, '');
+
+    resolveSkip({ state: null });
+    await decline;
+  });
+});

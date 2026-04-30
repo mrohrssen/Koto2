@@ -1,6 +1,8 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
+const sceneManagerState = { currentScene: null, transitioning: false };
+
 // Mock pixi and audio modules that combat-vfx imports
 await mock.module('../../../public/js/audio.js', {
   namedExports: { playSFX: () => {} }
@@ -35,7 +37,7 @@ await mock.module('../../../public/js/pixi/formation.js', {
   }
 });
 await mock.module('../../../public/js/scenes/scene-manager.js', {
-  namedExports: { getSceneManager: () => ({ currentScene: null }) }
+  namedExports: { getSceneManager: () => sceneManagerState }
 });
 await mock.module('../../../public/js/ui/combat-dom.js', {
   namedExports: { showFormation: () => {} }
@@ -66,9 +68,11 @@ await mock.module('../../../public/js/ui/attack-card.js', {
 });
 
 const {
+  init,
   buildAllyHpMap,
   buildEnemyHpMapForPlayerAttacks,
   buildMergedInitiativeAttacks,
+  showKoSwapAnimations,
 } = await import('../../../public/js/ui/combat-vfx.js');
 
 describe('combat-vfx data builders', () => {
@@ -205,5 +209,58 @@ describe('combat-vfx data builders', () => {
       const merged = buildMergedInitiativeAttacks({});
       assert.deepEqual(merged, []);
     });
+  });
+});
+
+describe('showKoSwapAnimations', () => {
+  it('resyncs enemy sprites from the server result after ally KO removal', async () => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+      querySelectorAll: () => [],
+      getElementById: () => null,
+    };
+
+    const staleEnemies = [
+      { uid: 'enemy-a', hp: 12, maxHp: 30 },
+      { uid: 'enemy-b', hp: 18, maxHp: 30 },
+    ];
+    const resultEnemies = [
+      { uid: 'enemy-a', hp: 0, maxHp: 30 },
+      { uid: 'enemy-b', hp: 18, maxHp: 30 },
+    ];
+    let syncPayload = null;
+
+    sceneManagerState.transitioning = false;
+    sceneManagerState.currentScene = {
+      disposed: false,
+      _exiting: false,
+      formation: {
+        lastFormationInput: {
+          enemy: { creatures: staleEnemies },
+        },
+      },
+      async syncCreatures(payload) {
+        syncPayload = payload;
+      },
+    };
+
+    init({
+      delay: async () => {},
+      characterUI: {},
+      getGameState: () => ({}),
+    });
+
+    try {
+      await showKoSwapAnimations({
+        koRemovals: [{ slot: 0, name: 'Neko' }],
+        creatureParty: { active: [{ uid: 'ally-b', id: 'mizu', hp: 20, maxHp: 30 }] },
+        enemies: resultEnemies,
+      });
+    } finally {
+      globalThis.document = originalDocument;
+      sceneManagerState.currentScene = null;
+    }
+
+    assert.equal(syncPayload.enemies, resultEnemies);
   });
 });

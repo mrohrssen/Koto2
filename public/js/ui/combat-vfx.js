@@ -894,7 +894,7 @@ export async function showKoSwapAnimations(result) {
       const mgr = getSceneManager();
       const scene = mgr.currentScene;
       if (!mgr.transitioning && scene && !scene.disposed && !scene._exiting && typeof scene.syncCreatures === 'function') {
-        const currentEnemies = scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
+        const currentEnemies = result.enemies ?? scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
         try {
           await scene.syncCreatures({
             allies: result.creatureParty.active,
