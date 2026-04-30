@@ -85,6 +85,7 @@ describe('renderFriendlyNpc item prompt', () => {
 
   it('shows the shared English item-choice line only after the NPC greeting', async () => {
     const narrationCalls = [];
+    let actionContent = '';
     const room = {
       id: 'friendly-npc-test-room',
       type: 'friendlyNpc',
@@ -101,7 +102,7 @@ describe('renderFriendlyNpc item prompt', () => {
       }),
       updateGameState: () => {},
       updateUI: () => {},
-      actions: { setContent: () => {}, clear: () => {} },
+      actions: { setContent: html => { actionContent = html; }, clear: () => {} },
       scene: {
         showNarration: async (content, options = {}) => {
           narrationCalls.push({ content, options });
@@ -134,6 +135,9 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(narrationCalls[1].content, 'Which item would you like?');
     assert.equal(narrationCalls[1].options.speaker, 'Guide');
     assert.equal(narrationCalls[1].options.persistent, true);
+    assert.match(actionContent, /prologue-continue-hint/);
+    assert.match(actionContent, /Click to continue!/);
+    assert.doesNotMatch(actionContent, /Loading/);
     assert.ok(renderedChoices, 'item choices should still render after the prompt');
   });
 });

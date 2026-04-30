@@ -1461,12 +1461,8 @@ export async function renderFriendlyNpc() {
     return;
   }
 
-  // Show loading state immediately
-  actions.setContent(`
-    <div style="display:flex;justify-content:center;padding:20px;">
-      <div style="color:var(--text-muted);font-size:12px;">Loading...</div>
-    </div>
-  `);
+  // The NPC greeting is click-to-continue, so show the same cue as the prologue.
+  actions.setContent('<div class="prologue-continue-hint">Click to continue!</div>');
 
   // Fetch offers once per room
   if (!friendlyNpcState.fetched) {
