@@ -168,6 +168,58 @@ describe('renderHub fusion core review narration', () => {
     assert.equal(narrationCalls, 1);
   });
 
+  it('refreshes the hub after awarding the tutorial Fusion Core', async () => {
+    let gameState = {
+      phase: 'hub',
+      meta: {
+        pvpTeams: [],
+        tutorialStep: 4,
+        tutorialFusionDataUnlocked: ['hineko'],
+        tutorialFusionCoreAwarded: false,
+        tutorialFusionComplete: false,
+        fusionCores: 0,
+        creatureCollection: [],
+      },
+    };
+    let updateUiCalls = 0;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: (nextState) => { gameState = nextState; },
+      updateUI: () => { updateUiCalls += 1; },
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      startNewRun: () => {},
+      apiGetVocabDueCount: async () => ({ count: 3 }),
+      apiGetDueWords: async () => ({
+        words: [{ word: '火', reading: 'ひ', meanings: ['fire'] }],
+      }),
+      apiClaimTutorialFusionCore: async () => ({
+        message: 'Obtained 1x Fusion Core!',
+        state: {
+          ...gameState,
+          meta: {
+            ...gameState.meta,
+            tutorialFusionCoreAwarded: true,
+            fusionCores: 1,
+          },
+        },
+      }),
+    });
+
+    await renderHub();
+    const reviewButton = renderedButtons.find(button => button.label.includes('Knowledge Review'));
+    assert.ok(reviewButton, 'Knowledge Review button should render');
+
+    await reviewButton.onClick();
+    await speedReviewStartArgs.options.onComplete();
+    assert.equal(updateUiCalls, 0, 'hub should wait until review exits before refreshing');
+
+    await speedReviewStartArgs.options.onExit();
+
+    assert.equal(updateUiCalls, 1);
+  });
+
   it('forces Fusion Lab instead of Knowledge Review after the fusion core is awarded', async () => {
     let gameState = {
       phase: 'hub',

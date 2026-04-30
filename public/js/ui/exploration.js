@@ -443,9 +443,12 @@ export async function renderHub() {
         let fusionCoreAwardedThisReview = false;
         speedReview.start(result.words, shouldAwardFusionCore ? {
           onExit: async () => {
-            if (fusionCoreAwardedThisReview && !fusionCoreNarrationShown) {
-              fusionCoreNarrationShown = true;
-              await showTutorialNarration(getFusionCoreNarration(), { showSprite: true });
+            if (fusionCoreAwardedThisReview) {
+              if (!fusionCoreNarrationShown) {
+                fusionCoreNarrationShown = true;
+                await showTutorialNarration(getFusionCoreNarration(), { showSprite: true });
+              }
+              updateUI();
             }
           },
           onComplete: async () => {
