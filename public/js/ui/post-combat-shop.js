@@ -84,6 +84,7 @@ export function showTargetPicker(creatures, onPicked) {
   if (!actionArea) return;
 
   renderChoices({
+    heading: 'Choose target',
     cards: creatures.filter(Boolean).map((c, i) => ({
       sprite: creatureSpriteHtml(c.id, c.baseWord || c.name, c.element),
       title: `${c.baseReading || c.name} (${c.nameEn})`,

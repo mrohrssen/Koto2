@@ -197,4 +197,55 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(narrationCalls[2].options.persistent, true);
     assert.ok(renderedChoices, 'item choices should render after tutorial prompt');
   });
+
+  it('labels friendly NPC item target selection with Choose target', async () => {
+    let itemApplied = false;
+    const room = {
+      id: 'friendly-npc-target-test-room',
+      type: 'friendlyNpc',
+      npc: { name: '案内人', nameEn: 'Guide' },
+      friendlyNpc: { completed: false },
+    };
+
+    init({
+      getGameState: () => ({
+        phase: 'friendlyNpc',
+        room,
+        meta: { tutorialStep: 0 },
+        run: {
+          creatureParty: {
+            active: [
+              { id: 'neko', name: '猫', nameEn: 'Cat', level: 2, hp: 8, maxHp: 10 },
+              { id: 'tori', name: '鳥', nameEn: 'Bird', level: 3, hp: 12, maxHp: 12 },
+            ],
+          },
+        },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => ({
+        offered: [
+          {
+            id: 'test-apple',
+            word: 'りんご',
+            reading: 'りんご',
+            nameToken: { text: 'りんご' },
+            effect: { healPercent: 0.3 },
+          },
+        ],
+      }),
+      apiChooseFriendlyNpcItem: async () => {
+        itemApplied = true;
+        return {};
+      },
+    });
+
+    await renderFriendlyNpc();
+    await renderedChoices.onSelect(0);
+
+    assert.equal(itemApplied, false);
+    assert.equal(renderedChoices?.heading, 'Choose target');
+  });
 });

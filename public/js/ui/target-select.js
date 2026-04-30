@@ -57,6 +57,7 @@ function showTargets(targets, move, type) {
   }
 
   renderChoices({
+    heading: 'Choose target',
     cards: validTargets.map(target => {
       const elemColor = ELEMENT_COLORS[target.element] || '#888';
       const elemKanji = ELEMENT_KANJI[target.element] || '—';

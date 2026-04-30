@@ -165,6 +165,12 @@ const SAMPLE_ATTACK = {
 };
 
 describe('buildSplitAttackCard — new 3-block layout', () => {
+  it('renders an Attack result heading', () => {
+    const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
+    assert.ok(html.includes('class="sac-heading"'));
+    assert.ok(html.includes('Attack result'));
+  });
+
   it('renders three .sac-row elements in attacker → move → target order', () => {
     const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
     const rows = html.match(/class="sac-row"/g);

@@ -167,6 +167,7 @@ export function buildSplitAttackCard(atk, isEnemy, options = {}) {
        <div class="sac-body">${attackerWordHtml}</div>`;
 
   return `<div class="split-attack-card" style="--sac-border:${theme.border};--sac-bg:${theme.bg};--sac-accent:${theme.accent};--sac-row-dur:${ATTACK_CARD_TIMING.ROW_ANIM_DURATION}ms">
+    <div class="sac-heading">Attack result</div>
     <div class="sac-row" data-row="0">
       ${attackerRowInner}
       <span class="sac-down-arrow">»</span>

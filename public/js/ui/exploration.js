@@ -1630,6 +1630,7 @@ export async function renderFriendlyNpc() {
         await applyItem(0);
       } else {
         renderChoices({
+          heading: 'Choose target',
           cards: party.filter(Boolean).map(creature => ({
             sprite: `<img src="${creatureStaticPath(creature.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`,
             title: `${creature.name} (${creature.nameEn})`,
