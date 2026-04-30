@@ -37,10 +37,30 @@ function iconSlug(nameEn) {
   return nameEn.split(';')[0].trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
 
-export function buildMoveCell(move, canAfford) {
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function getMoveTutorialHint(move, opts = {}) {
+  if (!opts.tutorialMoveId || move?.id !== opts.tutorialMoveId) return '';
+  return opts.tutorialHintText || 'Click here!';
+}
+
+export function buildMoveCell(move, canAfford, opts = {}) {
   const cell = document.createElement('button');
   const element = move.element || 'neutral';
   cell.className = 'move-cell move-cell--' + element + (canAfford ? '' : ' disabled');
+  const tutorialHint = getMoveTutorialHint(move, opts);
+  if (tutorialHint) {
+    cell.classList.add('tutorial-highlight', 'move-cell--tutorial-target');
+  } else if (opts.lockToTutorialMove && opts.tutorialMoveId) {
+    cell.classList.add('tutorial-dimmed');
+  }
 
   const slug = iconSlug(move.nameEn);
   const iconFallback = CATEGORY_ICONS[move.category] || '★';
@@ -55,6 +75,7 @@ export function buildMoveCell(move, canAfford) {
   const effect = effectLabel(move);
 
   cell.innerHTML = `
+    ${tutorialHint ? `<div class="move-tutorial-hint">${escapeHtml(tutorialHint)}</div>` : ''}
     <div class="move-help-btn" data-move-id="${move.id}">?</div>
     <div class="move-hero">
       <div class="move-badge">
@@ -127,7 +148,7 @@ export function showMoves(creature, creatureIndex, opts = {}) {
 
   for (const move of creature.moves) {
     const canAfford = (creature.mp ?? creature.currentMp ?? 0) >= (move.mpCost || 0);
-    const cell = buildMoveCell(move, canAfford);
+    const cell = buildMoveCell(move, canAfford, opts);
 
     cell.addEventListener('click', () => {
       if (!canAfford) {
@@ -141,7 +162,7 @@ export function showMoves(creature, creatureIndex, opts = {}) {
   }
 
   // --- Rest cell — always present as the 4th slot. Never removed, never replaced. ---
-  const restCell = buildMoveCell(REST_MOVE, true);
+  const restCell = buildMoveCell(REST_MOVE, true, opts);
   restCell.addEventListener('click', () => {
     const atMaxMp = (creature.mp ?? 0) >= (creature.maxMp ?? 0);
     if (atMaxMp) {
@@ -154,7 +175,11 @@ export function showMoves(creature, creatureIndex, opts = {}) {
 
   if (includeItems) {
     if (opts.befriendAvailable && opts.onBefriend) {
-      grid.appendChild(buildBefriendCell(opts.onBefriend));
+      const befriendCell = buildBefriendCell(opts.onBefriend);
+      if (opts.lockToTutorialMove && opts.tutorialMoveId) {
+        befriendCell.classList.add('tutorial-dimmed');
+      }
+      grid.appendChild(befriendCell);
     }
   }
 

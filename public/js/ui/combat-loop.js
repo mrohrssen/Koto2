@@ -377,6 +377,23 @@ export function startMoveSelection() {
   promptNextCreature();
 }
 
+export function getFirstCombatMoveTutorialOpts(state, creature, currentCreatureIndex) {
+  if (state?.phase !== 'combat') return {};
+  if (state?.meta?.tutorialStep !== 1) return {};
+  if (state?.run?.currentArea?.id !== 'hajimari-no-hiroba') return {};
+  if ((state?.run?.currentRoom ?? -1) !== 0) return {};
+  if ((state?.combat?.turnCount ?? 1) !== 1) return {};
+  if (currentCreatureIndex !== 0) return {};
+  if (creature?.id !== 'hi') return {};
+  if (!creature?.moves?.some(move => move?.id === 'honoo')) return {};
+
+  return {
+    tutorialMoveId: 'honoo',
+    tutorialHintText: 'Click here!',
+    lockToTutorialMove: true
+  };
+}
+
 function promptNextCreature() {
   const state = getGameState();
   const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
@@ -397,7 +414,10 @@ function promptNextCreature() {
   clearTargetSelect();
   setActiveLabel(creature);
   showActiveGlowForScene(getSceneManager().currentScene, currentCreatureIndex);
-  showMoves(creature, currentCreatureIndex, befriend.getMoveSelectBefriendOpts(currentCreatureIndex));
+  showMoves(creature, currentCreatureIndex, {
+    ...befriend.getMoveSelectBefriendOpts(currentCreatureIndex),
+    ...getFirstCombatMoveTutorialOpts(state, creature, currentCreatureIndex)
+  });
 }
 
 function handleMoveSelected(move, creatureIndex) {
