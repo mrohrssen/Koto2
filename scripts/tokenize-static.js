@@ -54,12 +54,15 @@ const SUDACHI_POS_EN = {
 /**
  * Convert a Sudachi token to universal format.
  */
-function toUniversalToken(st) {
+function toUniversalToken(st, wordDict) {
   if (isDemoted(st)) {
     return { token: { surface: st.surface }, isContent: false };
   }
+  const reading = st.baseForm === '私'
+    ? wordDict.get(st.baseForm)?.reading || st.reading
+    : st.reading;
   return {
-    token: { surface: st.surface, base: st.baseForm, reading: st.reading, pos: SUDACHI_POS_EN[st.pos] || st.pos },
+    token: { surface: st.surface, base: st.baseForm, reading, pos: SUDACHI_POS_EN[st.pos] || st.pos },
     isContent: true,
   };
 }
@@ -156,7 +159,7 @@ function main() {
     // Process this segment's text tokens first
     const mergedTokens = mergeSudachiTokens(allSegmentTokens[i]);
     for (const st of mergedTokens) {
-      const { token, isContent } = toUniversalToken(st);
+      const { token, isContent } = toUniversalToken(st, wordDict);
       frame.tokens.push(token);
       if (isContent) frame.words.push(token.base);
     }
