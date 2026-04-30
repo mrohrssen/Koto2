@@ -63,3 +63,26 @@ test('.area-header-pill paints at top of screen and honors horizontal safe-area 
     '.area-header-pill should pad its right by at least 22px (clear of phone bezel), honoring safe-area-inset-right'
   );
 });
+
+test('.ui-btn keeps extra bottom padding for tokenized Japanese labels', () => {
+  const body = ruleBody(css, '.ui-btn {');
+  assert.ok(body, '.ui-btn rule not found');
+  assert.match(
+    body,
+    /padding:\s*14px\s+20px\s+28px\s*;/,
+    '.ui-btn should reserve bottom space for renderJpSentence glosses'
+  );
+});
+
+test('.ui-btn centers plain labels vertically', () => {
+  const body = ruleBody(css, '.ui-btn:not(:has(.jp-word)) {');
+  assert.ok(body, '.ui-btn:not(:has(.jp-word)) rule not found');
+  assert.match(body, /(?:^|\s|;)display:\s*(?:inline-)?flex\s*;/);
+  assert.match(body, /(?:^|\s|;)align-items:\s*center\s*;/);
+  assert.match(body, /(?:^|\s|;)justify-content:\s*center\s*;/);
+  assert.doesNotMatch(
+    body,
+    /padding:\s*[^;]+?\s+[^;]+?\s+[^;]+?;/,
+    '.ui-btn should not use asymmetric top/bottom padding'
+  );
+});
