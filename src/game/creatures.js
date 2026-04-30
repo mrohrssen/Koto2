@@ -430,7 +430,7 @@ export function getEnemyCountWeights(encounterIndex = 0) {
   return ENCOUNTER_COUNT_TABLE.late;
 }
 
-export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creaturePool, stage, encounterIndex, totalEncounters } = {}) {
+export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creaturePool, stage, encounterIndex, totalEncounters, levelOffset = 0 } = {}) {
   // Determine enemy count using encounter-aware weights when available
   const countWeights = encounterIndex != null ? getEnemyCountWeights(encounterIndex) : ENEMY_COUNT_WEIGHTS;
   const totalWeight = countWeights.reduce((s, w) => s + w.weight, 0);
@@ -444,10 +444,10 @@ export function generateEnemyCreatures(highestAllyLevel = 1, { maxEnemies, creat
 
   const enemies = [];
   for (let i = 0; i < enemyCount; i++) {
-    const targetLevel = getEnemyLevel({
+    const targetLevel = Math.max(1, getEnemyLevel({
       totalEncounters: totalEncounters || 0,
       enemyCount
-    });
+    }) + levelOffset);
     enemies.push(generateEnemyCreature(targetLevel, creaturePool, stage));
   }
   return enemies;

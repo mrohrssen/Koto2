@@ -85,14 +85,16 @@ export class CombatCycleService {
     const stage = this.gm.run.currentArea?.stage || null;
     const encounterIndex = this.gm.run.currentAreaEncounters || 0;
     const totalEncounters = this.gm.run.totalEncounters || 0;
+    const isStartingMeadow = this.gm.run.currentArea?.id === 'hajimari-no-hiroba';
+    const adjustStartingMeadowLevel = level => isStartingMeadow ? Math.max(1, level - 2) : level;
 
     let enemyCreatures;
     if (isBoss) {
       // Boss: solo creature, level × 1.25, double HP unless a tutorial override applies.
       const isStartingMeadowHineko = isStartingMeadowHinekoBoss(this.gm.run);
       const bossLevel = isStartingMeadowHineko
-        ? 7
-        : Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25);
+        ? adjustStartingMeadowLevel(7)
+        : adjustStartingMeadowLevel(Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25));
       const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
       if (!isStartingMeadowHineko) {
         bossCreature.hp = bossCreature.maxHp *= 2;
@@ -101,7 +103,7 @@ export class CombatCycleService {
     } else if (isNpcBattle) {
       // NPC Battle: always 3 enemies at level × 1.1
       const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3 });
-      const npcBattleLevel = Math.round(baseLevel * 1.1);
+      const npcBattleLevel = adjustStartingMeadowLevel(Math.round(baseLevel * 1.1));
       enemyCreatures = [
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),
         generateEnemyCreature(npcBattleLevel, creaturePool, stage),
@@ -117,7 +119,8 @@ export class CombatCycleService {
           creaturePool: ['neko'],
           stage,
           encounterIndex,
-          totalEncounters
+          totalEncounters,
+          levelOffset: isStartingMeadow ? -2 : 0
         });
       } else {
         enemyCreatures = generateEnemyCreatures(highestLevel, {
@@ -125,7 +128,8 @@ export class CombatCycleService {
           creaturePool,
           stage,
           encounterIndex,
-          totalEncounters
+          totalEncounters,
+          levelOffset: isStartingMeadow ? -2 : 0
         });
       }
     }

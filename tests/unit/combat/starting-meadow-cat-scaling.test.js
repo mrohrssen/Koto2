@@ -11,7 +11,7 @@ await mock.module('../../../src/game/loop.js', {
 const { CombatCycleService } = await import('../../../src/game/services/combat-cycle-service.js');
 
 describe('Starting Meadow forced Cat encounter', () => {
-  it('uses regular solo enemy level scaling instead of matching the starter level', (t) => {
+  it('uses regular solo enemy level scaling reduced by 2 levels', (t) => {
     const random = mock.method(Math, 'random', () => 0.5);
     t.after(() => random.mock.restore());
 
@@ -24,7 +24,7 @@ describe('Starting Meadow forced Cat encounter', () => {
         currentArea: { id: 'hajimari-no-hiroba', stage: 1 },
         currentRoom: 0,
         currentAreaEncounters: 0,
-        totalEncounters: 1,
+        totalEncounters: 8,
         rooms: [{ type: 'encounter' }],
         creatureParty: {
           active: [starter],
@@ -40,7 +40,8 @@ describe('Starting Meadow forced Cat encounter', () => {
     };
 
     const result = new CombatCycleService(gm).startCreatureEncounter();
-    const expectedLevel = getEnemyLevel({ totalEncounters: 1, enemyCount: 1 });
+    const regularSoloLevel = getEnemyLevel({ totalEncounters: 8, enemyCount: 1 });
+    const expectedLevel = Math.max(1, regularSoloLevel - 2);
 
     assert.equal(result.enemies.length, 1);
     assert.equal(result.enemy.id, 'neko');
@@ -49,8 +50,56 @@ describe('Starting Meadow forced Cat encounter', () => {
   });
 });
 
+describe('Starting Meadow NPC battle', () => {
+  it('reduces all NPC battle enemies by 2 levels', (t) => {
+    const random = mock.method(Math, 'random', () => 0.5);
+    t.after(() => random.mock.restore());
+
+    const totalEncounters = 8;
+    const gm = {
+      run: {
+        active: true,
+        currentArea: {
+          id: 'hajimari-no-hiroba',
+          stage: 1,
+          creatures: ['neko', 'inu']
+        },
+        currentRoom: 5,
+        currentAreaEncounters: 5,
+        totalEncounters,
+        rooms: [
+          null, null, null, null, null,
+          { type: 'npcBattle' }
+        ],
+        creatureParty: {
+          active: [instantiateCreature('hi')],
+          reserves: [],
+          pendingCaptures: [],
+          maxTotal: 6
+        }
+      },
+      meta: {},
+      combat: null,
+      emitState() {},
+      narrate() {}
+    };
+
+    const result = new CombatCycleService(gm).startCreatureEncounter();
+    const baseLevel = getEnemyLevel({ totalEncounters, enemyCount: 3 });
+    const regularNpcLevel = Math.round(baseLevel * 1.1);
+    const expectedLevel = Math.max(1, regularNpcLevel - 2);
+
+    assert.equal(result.enemies.length, 3);
+    assert.deepEqual(result.enemies.map(enemy => enemy.level), [
+      expectedLevel,
+      expectedLevel,
+      expectedLevel
+    ]);
+  });
+});
+
 describe('Starting Meadow Hineko boss override', () => {
-  it('forces Hineko to level 7 without boss double HP', (t) => {
+  it('forces Hineko to level 5 without boss double HP', (t) => {
     const random = mock.method(Math, 'random', () => 0.5);
     t.after(() => random.mock.restore());
 
@@ -79,10 +128,10 @@ describe('Starting Meadow Hineko boss override', () => {
     };
 
     const result = new CombatCycleService(gm).startCreatureEncounter();
-    const expectedHineko = generateEnemyCreature(7, ['hineko'], 1);
+    const expectedHineko = generateEnemyCreature(5, ['hineko'], 1);
 
     assert.equal(result.enemy.id, 'hineko');
-    assert.equal(result.enemy.level, 7);
+    assert.equal(result.enemy.level, 5);
     assert.equal(result.enemy.maxHp, expectedHineko.maxHp);
     assert.equal(result.enemy.hp, expectedHineko.maxHp);
   });
