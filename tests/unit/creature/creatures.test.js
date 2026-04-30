@@ -97,6 +97,14 @@ describe('Creature Instantiation', () => {
     assert.ok(typeof move0.mpCost === 'number', 'move should have mpCost');
   });
 
+  it('gives Cat a damaging move for the tutorial encounter', () => {
+    const creature = instantiateCreature('neko', 1);
+
+    assert.deepStrictEqual(creature.moves.map(move => move.id), ['tataku']);
+    assert.strictEqual(creature.moves[0].category, 'damage');
+    assert.strictEqual(creature.moves[0].statusEffect, null);
+  });
+
   it('instantiates Stone Giant as an uncommon tank boss creature', () => {
     const creature = instantiateCreature('ishino-kyojin', 10);
 
