@@ -56,27 +56,12 @@
   {
     "id": "prologue-translator-click",
     "speaker": "Cid",
-    "narration": "You can also tap any word in dialogue to see its full definition. Tap outside the box to continue."
+    "narration": "If you get lost, you can always click any Japanese word inside a dialogue box to see the full definition."
   },
   {
     "id": "prologue-10-disruption",
     "speaker": "Cid",
     "narration": "But enough talking - let's get right into your first adventure."
-  },
-  {
-    "id": "prologue-11-calming",
-    "speaker": "Cid",
-    "narration": "Your job is to help us explore this land and gather resources to expand our base."
-  },
-  {
-    "id": "prologue-12-combat",
-    "speaker": "Cid",
-    "narration": "Along the way you'll encounter creatures, friends, and foes alike. Befriend, fight, and learn."
-  },
-  {
-    "id": "prologue-13-exploration",
-    "speaker": "Cid",
-    "narration": "But enough talking, let's get started on your first adventure."
   },
   {
     "id": "prologue-starter-gift",
