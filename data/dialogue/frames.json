@@ -1642,8 +1642,17 @@
   {
     "id": "befriend_name_what",
     "category": "befriend_name",
-    "raw": "名前は？",
+    "raw": "私の名前は？",
     "tokens": [
+      {
+        "surface": "私",
+        "base": "私",
+        "reading": "わたくし",
+        "pos": "Pronoun"
+      },
+      {
+        "surface": "の"
+      },
       {
         "surface": "名前",
         "base": "名前",
@@ -1658,8 +1667,12 @@
       }
     ],
     "words": [
+      "私",
       "名前"
-    ]
+    ],
+    "overrides": {
+      "私": "my"
+    }
   },
   {
     "id": "befriend_name_my",
@@ -1691,7 +1704,10 @@
     "words": [
       "私",
       "名前"
-    ]
+    ],
+    "overrides": {
+      "私": "my"
+    }
   },
   {
     "id": "befriend_name_know",
@@ -1730,7 +1746,10 @@
       "私",
       "名前",
       "分かる"
-    ]
+    ],
+    "overrides": {
+      "私": "my"
+    }
   },
   {
     "id": "befriend_name_say",
@@ -1769,7 +1788,10 @@
       "私",
       "名前",
       "何"
-    ]
+    ],
+    "overrides": {
+      "私": "my"
+    }
   },
   {
     "id": "befriend_name_still",
@@ -1818,7 +1840,10 @@
       "私",
       "名前",
       "分かる"
-    ]
+    ],
+    "overrides": {
+      "私": "my"
+    }
   },
   {
     "id": "npc_kodomo_fightStart_play",

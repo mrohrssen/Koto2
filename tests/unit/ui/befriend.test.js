@@ -14,8 +14,18 @@ await mock.module('../../../public/js/platform.js', {
 await mock.module('../../../public/js/logger.js', {
   namedExports: { logger: { error: () => {}, warn: () => {} } }
 });
+const renderJpSentenceCalls = [];
+const renderButtonsResults = [];
 await mock.module('../../../public/js/ui/bootstrap-client.js', {
-  namedExports: { renderJpSentence: () => '', renderEnFirst: (s) => s, getKnownWords: () => new Set(), entityToToken: () => ({}) }
+  namedExports: {
+    renderJpSentence: (...args) => {
+      renderJpSentenceCalls.push(args);
+      return '<jp>';
+    },
+    renderEnFirst: (s) => s,
+    getKnownWords: () => new Set(),
+    entityToToken: () => ({}),
+  }
 });
 await mock.module('../../../public/js/ui/i18n.js', {
   namedExports: { t: (...a) => a.join(' '), tPlain: (...a) => a.join(' ') }
@@ -42,7 +52,9 @@ await mock.module('../../../public/js/ui/romaji.js', {
   namedExports: { toRomaji: (s) => s }
 });
 await mock.module('../../../public/js/ui/ui-components.js', {
-  namedExports: { renderButtonsAsync: () => Promise.resolve(0) }
+  namedExports: {
+    renderButtonsAsync: () => Promise.resolve(renderButtonsResults.shift() ?? 0),
+  }
 });
 await mock.module('../../../public/js/tts.js', {
   namedExports: { playDialogueAudio: () => {}, prefetchWord: () => {}, playWordPair: () => {} }
@@ -282,6 +294,8 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
   // leak mock scenes into later ones (see Task 8 review M3).
   beforeEach(() => {
     sceneManagerState.currentScene = null;
+    renderJpSentenceCalls.length = 0;
+    renderButtonsResults.length = 0;
   });
 
   // Helper to build a mock scene that tracks NPC interjection call order.
@@ -401,5 +415,54 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
       typeof args[0] === 'string' && args[0].includes('[befriend] tutorial step 1: no scene')
     );
     assert.ok(tutorialErr, 'expected console.error for missing scene, got ' + JSON.stringify(errorCalls));
+  });
+
+  it('passes name prompt overrides to renderJpSentence', async () => {
+    const nameTokens = [
+      { surface: '私', base: '私', reading: 'わたし', pos: 'Pronoun', meaning: 'my', meanings: ['I/me'] },
+      { surface: 'の' },
+      { surface: '名前', base: '名前', reading: 'なまえ', pos: 'Noun', meaning: 'name', meanings: ['name'] },
+      { surface: 'は' },
+      { surface: '？' },
+    ];
+    const overrides = { '私': 'my' };
+
+    renderButtonsResults.push(1, 0); // choose Talk, then first name option
+
+    const ctx = {
+      getGameState: () => ({ meta: { tutorialStep: 0 } }),
+      narration: { showNarration: async () => {} },
+      updateGameState: () => {},
+      syncFinalState: () => {},
+      stopCombatLoop: () => {},
+      spritePos: () => ({ x: 0, y: 0 }),
+    };
+    init(ctx);
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => ({
+      json: async () => ({ correct: true, combatEnded: false }),
+    });
+
+    try {
+      await renderBefriendQuiz({
+        targetIndex: 0,
+        creatureName: '鉄',
+        creatureBaseReading: 'てつ',
+        options: [{ id: 'tetsu', name: 'Iron' }],
+        namePrompt: {
+          text: '私の名前は？',
+          tokens: nameTokens,
+          words: ['私', '名前'],
+          overrides,
+        },
+      }, { enemies: [{ hp: 1, maxHp: 10 }] });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const namePromptCall = renderJpSentenceCalls.find(args => args[0] === nameTokens);
+    assert.ok(namePromptCall, 'expected namePrompt tokens to be rendered');
+    assert.deepEqual(namePromptCall[3], overrides);
   });
 });
