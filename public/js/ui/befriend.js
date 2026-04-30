@@ -18,7 +18,6 @@ import { popupBuff } from '../pixi/text.js';
 import { hideEnemy, showFormation } from './combat-dom.js';
 import { showNpcInDisplay } from './exploration-dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
-import { toRomaji } from './romaji.js';
 import { renderButtonsAsync } from './ui-components.js';
 import { playDialogueAudio } from '../tts.js';
 import { showMoves, setActiveLabel } from './move-select.js';
@@ -38,6 +37,11 @@ let ctx = null;
  */
 export function init(deps) {
   ctx = deps;
+}
+
+function buildCreatureSpeaker(creature = {}, fallbackName = '') {
+  const reading = creature.baseReading || creature.creatureBaseReading || creature.reading || creature.name || fallbackName || '';
+  return { name: reading, reading, meaning: '' };
 }
 
 // ---- Pure helpers (explicit state inputs) ----
@@ -197,10 +201,10 @@ function showBefriendTargetSelect(enemies) {
  * Show one round of befriend conversation.
  * Returns the selected option index.
  */
-function showConversationRound(round, creatureName) {
+function showConversationRound(round, creatureSpeaker) {
   // Show creature's line in narration box
   ctx.narration.showNarration(round.speaker, {
-    speaker: creatureName,
+    speaker: creatureSpeaker,
     persistent: true
   });
 
@@ -272,7 +276,7 @@ export async function handleBefriendTalk() {
         const state = ctx.getGameState();
         const enemies = state.combat?.enemies || [];
         const alive = enemies.filter(e => e.hp > 0);
-        const creatureName = alive[0]?.nameEn || alive[0]?.name || 'Creature';
+        const creatureName = buildCreatureSpeaker(alive[0], 'Creature').name || 'Creature';
 
         ctx.narration.showNarration(`${creatureName} refused to talk!`, { persistent: false });
         if (ctx.delay) await ctx.delay(600);
@@ -328,8 +332,10 @@ export async function handleBefriendTalk() {
  * @returns {Promise<void>}
  */
 export async function renderBefriendQuiz(quizData, result) {
-  const reading = quizData.creatureBaseReading || quizData.creatureName || '';
-  const creatureSpeaker = { name: reading, reading: toRomaji(reading), meaning: '' };
+  const creatureSpeaker = buildCreatureSpeaker({
+    name: quizData.creatureName,
+    baseReading: quizData.creatureBaseReading,
+  });
 
   // Ensure the befriend target sprite is fully visible (KO animation is now
   // skipped for befriend targets, but reset alpha/tint as a safety fallback).
@@ -652,9 +658,8 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
       }
 
     const { rounds, targetEnemy, targetEnemyIndex, userId: convoUserId } = convoResult;
-    const creatureName = targetEnemy?.nameEn || targetEnemy?.name || 'Creature';
-    const reading = targetEnemy?.name || creatureName;
-    const creatureSpeaker = { name: reading, reading: toRomaji(reading), meaning: '' };
+    const creatureSpeaker = buildCreatureSpeaker(targetEnemy, 'Creature');
+    const creatureName = creatureSpeaker.name || 'Creature';
 
     // 3-round conversation loop
     for (let i = 0; i < rounds.length; i++) {
@@ -662,7 +667,7 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
       if (rounds[i].speakerTts && convoUserId) {
         playDialogueAudio(convoUserId, rounds[i].speakerTts);
       }
-      const selectedIndex = await showConversationRound(rounds[i], creatureName);
+      const selectedIndex = await showConversationRound(rounds[i], creatureSpeaker);
       // Play selected option audio if available (fire-and-forget)
       if (rounds[i].optionsTts?.[selectedIndex] && convoUserId) {
         playDialogueAudio(convoUserId, rounds[i].optionsTts[selectedIndex]);
