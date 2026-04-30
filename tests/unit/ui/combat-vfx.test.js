@@ -1,6 +1,8 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
+const popupDebuffMessages = [];
+
 // Mock pixi and audio modules that combat-vfx imports
 await mock.module('../../../public/js/audio.js', {
   namedExports: { playSFX: () => {} }
@@ -17,7 +19,7 @@ await mock.module('../../../public/js/pixi/element-blasts.js', {
 });
 await mock.module('../../../public/js/pixi/text.js', {
   namedExports: {
-    showDamageNumber: () => {}, popupBuff: () => {}, popupDebuff: () => {},
+    showDamageNumber: () => {}, popupBuff: () => {}, popupDebuff: (message) => { popupDebuffMessages.push(message); },
     popupSkillProc: () => {}, showHealPopup: () => {}, showPoisonTick: () => {}
   }
 });
@@ -56,7 +58,10 @@ await mock.module('../../../public/js/ui/sprite-utils.js', {
   namedExports: { creatureStaticPath: (id) => `/assets/${id}.webp`, SPRITE_VERSION: '0' }
 });
 await mock.module('../../../public/js/ui/i18n.js', {
-  namedExports: { t: (...a) => a.join(' ') }
+  namedExports: {
+    t: (key) => key === 'effectConfuse' ? '<span class="en-first">CONFUSE</span>!' : key,
+    tPlain: (key) => key === 'effectConfuse' ? 'CONFUSE!' : key,
+  }
 });
 await mock.module('../../../public/js/ui/combat-ui-utils.js', {
   namedExports: { getHpColor: () => 'green', SC_NAMES: {}, getCreatureStatusKeys: () => [] }
@@ -66,9 +71,11 @@ await mock.module('../../../public/js/ui/attack-card.js', {
 });
 
 const {
+  init,
   buildAllyHpMap,
   buildEnemyHpMapForPlayerAttacks,
   buildMergedInitiativeAttacks,
+  showEffectEvents,
 } = await import('../../../public/js/ui/combat-vfx.js');
 
 describe('combat-vfx data builders', () => {
@@ -204,6 +211,21 @@ describe('combat-vfx data builders', () => {
     it('returns empty array when no attacks', () => {
       const merged = buildMergedInitiativeAttacks({});
       assert.deepEqual(merged, []);
+    });
+  });
+
+  describe('showEffectEvents', () => {
+    it('uses plain status labels for Pixi text popups', async () => {
+      popupDebuffMessages.length = 0;
+      init({ delay: () => Promise.resolve() });
+
+      await showEffectEvents({
+        effectEvents: [{ type: 'confuse_tick', targetSide: 'enemy', targetIndex: 0, remainingTurns: 1 }],
+        enemies: [{ uid: 'enemy-1' }],
+        allies: [],
+      });
+
+      assert.equal(popupDebuffMessages[0], 'CONFUSE!');
     });
   });
 });

@@ -32,7 +32,7 @@ import { wait } from '../pixi/tween.js';
 import { hapticDamageTier } from '../native/index.js';
 import { playAttackSound } from './combat-audio.js';
 import { creatureStaticPath } from './sprite-utils.js';
-import { t } from './i18n.js';
+import { t, tPlain } from './i18n.js';
 import { getHpColor, SC_NAMES, getCreatureStatusKeys } from './combat-ui-utils.js';
 import {
   insertAttackCard, insertNpcAttackCard, waitForCardTap,
@@ -335,12 +335,12 @@ export async function showEffectEvents(result) {
       }
     } else if (event.type !== 'poison') {
       const EFFECT_LABELS = {
-        confuse: t('effectConfuse'),
-        stun: t('effectStun'),
-        sleep: t('effectSleep'),
-        haste: t('effectHaste'),
-        shield: t('effectShield'),
-        team_shield: t('effectShield'),
+        confuse: tPlain('effectConfuse'),
+        stun: tPlain('effectStun'),
+        sleep: tPlain('effectSleep'),
+        haste: tPlain('effectHaste'),
+        shield: tPlain('effectShield'),
+        team_shield: tPlain('effectShield'),
         taunt: 'Taunt'
       };
       const baseType = event.type.replace(/_tick$/, '');
