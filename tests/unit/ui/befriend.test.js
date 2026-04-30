@@ -68,6 +68,7 @@ await mock.module('../../../public/js/scenes/scene-manager.js', {
 
 const {
   init,
+  executeBefriendAction,
   isBefriendSlotBlocked,
   isBefriendAvailableForSlot,
   getMoveSelectBefriendOpts,
@@ -191,6 +192,76 @@ describe('befriend eligibility', () => {
       const opts = getMoveSelectBefriendOpts(0);
       assert.equal(opts.befriendAvailable, false);
       assert.equal(opts.onBefriend, undefined);
+    });
+  });
+});
+
+describe('executeBefriendAction creature speaker label', () => {
+  it('uses hiragana speaker data without English meaning for creature dialogue', async () => {
+    const narrationCalls = [];
+    const state = {
+      combat: {
+        enemies: [{
+          id: 'tetsu',
+          name: '鉄',
+          nameEn: 'Iron',
+          baseReading: 'てつ',
+          hp: 5,
+          maxHp: 10,
+          befriended: false,
+        }],
+        allies: [],
+      },
+      run: { creatureParty: { active: [] } },
+    };
+
+    const ctx = {
+      isCombatActive: () => true,
+      withAnimationActive: async (fn) => fn(),
+      getGameState: () => state,
+      apiGetBefriendConversation: async () => ({
+        targetEnemy: state.combat.enemies[0],
+        targetEnemyIndex: 0,
+        rounds: [{ speaker: 'こんにちは', options: ['うん', 'いいえ', 'またね'] }],
+      }),
+      apiSubmitBefriendAnswer: async () => ({
+        correct: true,
+        correctIndex: 0,
+        conversationComplete: true,
+        befriend: { success: true, captured: { id: 'tetsu' } },
+        enemies: state.combat.enemies,
+      }),
+      narration: {
+        showNarration: async (text, options = {}) => {
+          narrationCalls.push({ text, options });
+        },
+        forceHideNarration: () => {},
+      },
+      delay: async () => {},
+      updateGameState: () => {},
+      updateUI: () => {},
+      startMoveSelection: () => {},
+      setCurrentCreatureIndex: () => {},
+      promptNextCreature: () => {},
+      stopCombatLoop: () => {},
+      spritePos: () => ({ x: 0, y: 0 }),
+      buildAllyHpMap: () => new Map(),
+    };
+    init(ctx);
+    if (typeof globalThis.document === 'undefined') {
+      globalThis.document = {
+        querySelector: () => null,
+        querySelectorAll: () => [],
+        getElementById: () => null,
+      };
+    }
+
+    await executeBefriendAction();
+
+    assert.deepEqual(narrationCalls[0].options.speaker, {
+      name: 'てつ',
+      reading: 'てつ',
+      meaning: '',
     });
   });
 });
