@@ -517,12 +517,9 @@ export async function renderAreaSelection() {
     return;
   }
 
-  const areasCompleted = gameState.run?.areasCompleted || 0;
-  const areasToWin = gameState.run?.areasToWin || 10;
-
   actions.setContent(`
     <p style="text-align:center;color:var(--text-secondary);margin-bottom:0.5rem">
-      Area ${areasCompleted + 1} / ${areasToWin}
+      Areas Unlocked
     </p>
   `);
 
