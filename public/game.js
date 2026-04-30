@@ -406,13 +406,16 @@ async function ensureSceneForPhase(phase) {
 // Guard flag: when true, updateUI() will NOT call narrationBox.forceHide().
 // Set during NPC battle intro so the greeting narration isn't killed by stray updateUI() calls.
 let sceneTransitionActive = false;
+let lastNarrationHidePhase = null;
 
 function updateUI() {
-  // Clear any persistent narration on phase transitions — but NOT during scene transitions
-  // like the NPC battle intro, where narration is intentionally showing.
-  if (!sceneTransitionActive) {
+  // Clear narration on phase transitions, but preserve active dialogue during
+  // same-phase refreshes such as skill offer loading in the opening tutorial.
+  const phaseChangedForNarration = lastNarrationHidePhase !== gameState.phase;
+  if (phaseChangedForNarration && !sceneTransitionActive) {
     narrationBox.forceHide();
   }
+  lastNarrationHidePhase = gameState.phase;
 
   updateStatusBar();
 
@@ -472,6 +475,7 @@ function clearClientSessionState() {
       combatRecoveryDone = false;
       postCombatShopRecoveryDone = false;
       sceneTransitionActive = false;
+      lastNarrationHidePhase = null;
       encounterStarting = false;
     }
   });
@@ -833,6 +837,7 @@ async function playPrologue() {
     // Tokens are resolved server-side (see /api/game/prologue). Narration-box
     // attaches dialogueLookup click handlers automatically when html: true.
     if (prologueScene.type === 'jpDemo' && prologueScene.tokens) {
+      actions.showPrologueContinueHint();
       const html = renderJpSentence(prologueScene.tokens, getKnownWords(), null, {}, false);
       await narrationBox.show(html, {
         html: true,
@@ -843,6 +848,7 @@ async function playPrologue() {
 
     // Garbled lines: show raw text, no bootstrap rendering
     if (prologueScene.type === 'garbled') {
+      actions.showPrologueContinueHint();
       await narrationBox.show(prologueScene.narration, {
         speaker: prologueScene.speaker || undefined,
         garbled: true
@@ -859,6 +865,7 @@ async function playPrologue() {
     let result = undefined;
 
     if (prologueScene.choices?.length > 0) {
+      actions.clear();
       await narrationBox.show(html, { ...showOpts, persistent: true });
       const choiceIdx = await renderButtonsAsync(
         prologueScene.choices.map(c => ({
@@ -871,11 +878,13 @@ async function playPrologue() {
       result = chosen.id ?? chosen.text;
       lastChoiceId = result;
     } else {
+      actions.showPrologueContinueHint();
       await narrationBox.show(html, showOpts);
     }
 
   }
 
+  actions.clear();
   scene.hideCid();
 
   // Auto-select fire starter

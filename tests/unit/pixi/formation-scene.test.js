@@ -77,8 +77,11 @@ await mock.module('pixi.js', {
 await mock.module('pixi-filters', {
   namedExports: {
     GlowFilter: class FakeGlowFilter {
-      constructor() { this.outerStrength = 0; }
-      destroy() {}
+      constructor(opts = {}) {
+        Object.assign(this, opts);
+        this.outerStrength = opts.outerStrength ?? 0;
+      }
+      destroy() { this.destroyed = true; }
     },
   },
 });
@@ -171,6 +174,9 @@ function makeFakeApp() {
       add: (fn) => listeners.add(fn),
       remove: (fn) => listeners.delete(fn),
       get count() { return listeners.size; },
+    },
+    runTickers: () => {
+      for (const fn of listeners) fn();
     },
     stage: new FakeContainer(),
     screen: { width: 400, height: 600 },
@@ -540,6 +546,43 @@ describe('scene-facing sprite-lookup variants null-scene guards', () => {
     showActiveGlowForScene({}, 1);
     clearActiveGlowForScene({});
     assert.ok(true);
+  });
+
+  it('uses the stronger active-turn glow strength', async () => {
+    const app = makeFakeApp();
+    fakeAppState = {
+      ...fakeAppState,
+      app,
+    };
+    const scene = {
+      layers: { formations: new FakeContainer() },
+      addContainer: (c) => c,
+    };
+    scene.formation = createFormationContext(scene);
+    const creature = { uid: 'p1', id: 'hi' };
+    const sprite = await spawnFormationSprite(
+      scene.formation,
+      'player',
+      creature,
+      0,
+      { slotI: 0, skipEnter: true }
+    );
+    scene.formation.lastFormationInput.player = { creatures: [creature] };
+
+    showActiveGlowForScene(scene, 0);
+
+    const filter = sprite.filters?.[0];
+    assert.equal(filter.outerStrength, 2.4);
+
+    const originalNow = Date.now;
+    Date.now = () => 500;
+    try {
+      app.runTickers();
+      assert.equal(filter.outerStrength, 5.6);
+    } finally {
+      Date.now = originalNow;
+      clearActiveGlowForScene(scene);
+    }
   });
 
   it('syncPixiStatusLabelsForScene no-ops when scene is null/missing', () => {
