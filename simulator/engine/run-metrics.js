@@ -2,6 +2,11 @@
  * Pure helpers for simulator run selection and run_summary metrics.
  */
 
+// Areas the simulator should never progress into. School is excluded so the
+// simulated player caps out at Wild Plains until we're ready to validate
+// school content under the simulator.
+export const SIMULATOR_EXCLUDED_AREA_IDS = new Set(['school']);
+
 export function getAreaOptionsFromResponse(data) {
   const areas = data?.areas ?? data ?? [];
   return Array.isArray(areas) ? areas : [];
@@ -9,7 +14,8 @@ export function getAreaOptionsFromResponse(data) {
 
 export function selectLatestAreaOption(data) {
   const areas = getAreaOptionsFromResponse(data);
-  return areas.length > 0 ? areas[areas.length - 1] : null;
+  const eligible = areas.filter(area => !SIMULATOR_EXCLUDED_AREA_IDS.has(getAreaId(area)));
+  return eligible.length > 0 ? eligible[eligible.length - 1] : null;
 }
 
 export function getAreaId(area) {

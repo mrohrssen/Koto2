@@ -35,6 +35,25 @@ describe('run metrics helpers', () => {
     assert.equal(selectLatestAreaOption(null), null);
   });
 
+  it('skips the school area so wild-plains is the final progression target', () => {
+    const area = selectLatestAreaOption({
+      areas: [
+        { id: 'hajimari-no-hiroba', nameEn: 'Starting Meadow' },
+        { id: 'wild-plains', nameEn: 'Wild Plains' },
+        { id: 'school', nameEn: 'School' }
+      ]
+    });
+
+    assert.deepEqual(area, { id: 'wild-plains', nameEn: 'Wild Plains' });
+  });
+
+  it('returns null when only excluded areas are available', () => {
+    assert.equal(
+      selectLatestAreaOption({ areas: [{ id: 'school', nameEn: 'School' }] }),
+      null
+    );
+  });
+
   it('summarizes regular combat separately from boss combat', () => {
     const metrics = createRunCombatMetrics();
 
