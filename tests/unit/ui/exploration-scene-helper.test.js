@@ -66,7 +66,13 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: { renderJpSentence: () => '', getKnownWords: () => new Set() },
 });
 await mock.module('../../../public/js/ui/tutorial-copy.js', {
-  namedExports: { getTutorialNarration: () => [], getFormationNarration: () => '' },
+  namedExports: {
+    getTutorialNarration: () => [],
+    getFormationNarration: () => '',
+    getPostHinekoReviewNarration: () => [],
+    getFusionCoreNarration: () => [],
+    getPostFusionNarration: () => [],
+  },
 });
 
 const { getSceneWithNpcs } = await import('../../../public/js/ui/exploration.js');

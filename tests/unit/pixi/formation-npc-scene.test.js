@@ -112,6 +112,14 @@ await mock.module('../../../public/js/ui/event-popup.js', {
   },
 });
 
+let loadImageTextureImpl = async () => ({ width: 170, height: 170 });
+
+await mock.module('../../../public/js/pixi/image-loader.js', {
+  namedExports: {
+    loadImageTexture: (...args) => loadImageTextureImpl(...args),
+  },
+});
+
 if (typeof globalThis.document === 'undefined') {
   globalThis.document = {
     getElementById: () => null,
@@ -204,7 +212,7 @@ describe('spawnNpcSprite scene contract', () => {
     assert.strictEqual(tweenCalled, false);
   });
 
-  it('returns null if scene disposes during Assets.load', async () => {
+  it('returns null if scene disposes during texture load', async () => {
     const npcs = new FakeContainer();
     const scene = {
       disposed: false,
@@ -212,21 +220,19 @@ describe('spawnNpcSprite scene contract', () => {
       tween: async () => {},
     };
 
-    // Replace Assets.load with a promise we can resolve manually after we
-    // flip scene.disposed, so the post-await disposal check fires.
-    const priorLoad = FakeAssets._loadImpl;
+    const priorLoad = loadImageTextureImpl;
     let loadResolve;
-    FakeAssets._loadImpl = () => new Promise(r => { loadResolve = r; });
+    loadImageTextureImpl = () => new Promise(r => { loadResolve = r; });
 
     try {
       const promise = spawnNpcSprite(scene, '/foo.webp');
       scene.disposed = true;
       loadResolve({ width: 170, height: 170 });
       const result = await promise;
-      assert.strictEqual(result, null, 'should return null on disposed scene');
-      assert.strictEqual(npcs.children.length, 0, 'no sprite added to disposed layer');
+      assert.equal(result, null, 'should return null on disposed scene');
+      assert.equal(npcs.children.length, 0, 'no sprite added to disposed layer');
     } finally {
-      FakeAssets._loadImpl = priorLoad;
+      loadImageTextureImpl = priorLoad;
     }
   });
 
