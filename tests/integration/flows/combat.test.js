@@ -116,6 +116,24 @@ async function startCombatRun(client, tmpDir) {
   return encounterRes.body.state;
 }
 
+function buildAttackChoices(combat) {
+  const livingEnemyIndex = combat.enemies.findIndex(e => e && e.hp > 0);
+  if (livingEnemyIndex < 0) return [];
+
+  return combat.allies
+    .map((ally, creatureIndex) => {
+      if (!ally || ally.hp <= 0) return null;
+      const move = ally.moves?.find(m => m.category === 'damage' || m.category === 'drain')
+        || ally.moves?.[0];
+      if (!move) return null;
+      const targetIndex = move.target === 'single_ally' || move.target === 'self'
+        ? creatureIndex
+        : livingEnemyIndex;
+      return { creatureIndex, moveId: move.id, targetIndex };
+    })
+    .filter(Boolean);
+}
+
 describe('combat flow', () => {
   let client, cleanup, tmpDir;
 
@@ -135,12 +153,12 @@ describe('combat flow', () => {
     assert.ok(state.combat.allies.length > 0, 'should have at least one ally');
     assert.ok(state.combat.enemies.length > 0, 'should have at least one enemy');
 
-    const moveId = state.combat.allies[0].moves[0].id;
-    assert.ok(moveId, 'first ally should have at least one move');
+    const moveChoices = buildAttackChoices(state.combat);
+    assert.ok(moveChoices.length > 0, 'should have at least one valid attack choice');
 
     const turn = await client.post('/api/game/creature-combat-cycle', {
       actionType: 'attack',
-      moveChoices: [{ creatureIndex: 0, moveId, targetIndex: 0 }]
+      moveChoices
     });
 
     assert.equal(turn.status, 200,
@@ -157,10 +175,12 @@ describe('combat flow', () => {
     const setHpRes = await client.post('/api/game/debug-set-enemy-hp', { hp: 1 });
     assert.equal(setHpRes.status, 200, 'debug-set-enemy-hp should succeed');
 
-    const moveId = state.combat.allies[0].moves[0].id;
+    const current = await client.getState();
+    const moveChoices = buildAttackChoices(current.body.combat);
+    assert.ok(moveChoices.length > 0, 'should have at least one valid attack choice');
     const result = await client.post('/api/game/creature-combat-cycle', {
       actionType: 'attack',
-      moveChoices: [{ creatureIndex: 0, moveId, targetIndex: 0 }]
+      moveChoices
     });
 
     assert.equal(result.status, 200,
@@ -218,18 +238,14 @@ describe('combat flow', () => {
       const current = await client.getState();
       if (!current.body.combat?.active) break;
 
-      // Find a living ally and use its first move
-      const ally = current.body.combat.allies.find(a => a && a.hp > 0);
-      if (!ally) break;
-
-      const allyIndex = current.body.combat.allies.indexOf(ally);
-      const moveId = ally.moves[0].id;
+      const moveChoices = buildAttackChoices(current.body.combat);
+      if (moveChoices.length === 0) break;
 
       const turnRes = await client.post('/api/game/creature-combat-cycle', {
         actionType: 'attack',
-        moveChoices: [{ creatureIndex: allyIndex, moveId, targetIndex: 0 }]
+        moveChoices
       });
-      assert.equal(turnRes.status, 200, `turn ${i + 1} should succeed`);
+      assert.equal(turnRes.status, 200, `turn ${i + 1} should succeed: ${JSON.stringify(turnRes.body)}`);
       turnsExecuted++;
 
       const snapshot = turnRes.body.state;

@@ -1,7 +1,45 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { createTestApp } from '../helpers/test-app.js';
 import { createApiClient } from '../helpers/api-client.js';
+
+function seedSpeedReviewSave(tmpDir, userId) {
+  writeFileSync(
+    join(tmpDir, `.jrpg-save-${userId}.json`),
+    JSON.stringify({
+      version: 2,
+      player: null,
+      meta: {
+        lifetimeStats: {
+          totalRuns: 0, runsCompleted: 0, runsFailed: 0,
+          totalDamageDealt: 0, totalDamageTaken: 0, totalCreditsEarned: 0,
+          highestAreasCleared: 0, totalPlayTime: 0,
+          firstPlayDate: null, lastPlayDate: null
+        },
+        unlocks: [],
+        achievements: [],
+        creatureCollection: ['hi', 'mizu', 'ki'],
+        creatureCounts: { hi: 1, mizu: 1, ki: 1 },
+        befriendCount: {},
+        levels: { highestUnlocked: 1, completed: [], current: null },
+        prologueComplete: false,
+        elementDrops: { fire: 0, water: 0, earth: 0, wood: 0, metal: 0 },
+        crests: [],
+        equippedCrests: { fire: null, water: null, earth: null, wood: null, metal: null },
+        kanaMode: false,
+        pvpTeams: [null, null, null],
+        tutorialStep: 7,
+        tutorialFireDropsGifted: false,
+        itemsDiscovered: []
+      },
+      run: null,
+      combat: null,
+      savedAt: new Date().toISOString()
+    }, null, 2)
+  );
+}
 
 /**
  * Boot into exploration and navigate to a speed review room.
@@ -11,8 +49,12 @@ import { createApiClient } from '../helpers/api-client.js';
  *
  * Returns the speed review room object from the proceed response.
  */
-async function enterSpeedReviewRoom(client) {
-  await client.loginAsNewUser();
+async function enterSpeedReviewRoom(client, tmpDir) {
+  const loginRes = await client.loginAsNewUser();
+  const userId = loginRes.body?.user?.id;
+  if (!userId) throw new Error(`login failed: ${JSON.stringify(loginRes.body)}`);
+  seedSpeedReviewSave(tmpDir, userId);
+
   const createRes = await client.createPlayer();
   if (createRes.status !== 200) throw new Error(`create-player failed: ${JSON.stringify(createRes.body)}`);
 
@@ -21,7 +63,8 @@ async function enterSpeedReviewRoom(client) {
 
   // Set valid creature IDs in the collection
   const setCollRes = await client.post('/api/game/debug-set-collection', {
-    creatureIds: ['hi', 'mizu', 'ki']
+    creatureIds: ['hi', 'mizu', 'ki'],
+    creatureCounts: { hi: 1, mizu: 1, ki: 1 }
   });
   if (setCollRes.status !== 200) throw new Error(`debug-set-collection failed: ${JSON.stringify(setCollRes.body)}`);
 
@@ -62,18 +105,19 @@ async function enterSpeedReviewRoom(client) {
 }
 
 describe('speed review room flow', () => {
-  let client, cleanup;
+  let client, cleanup, tmpDir;
 
   beforeEach(async () => {
     const testApp = await createTestApp();
     client = createApiClient(testApp.port);
     cleanup = testApp.cleanup;
+    tmpDir = testApp.tmpDir;
   });
 
   afterEach(() => cleanup());
 
   it('start/complete cycle with empty vocab auto-completes the room', async () => {
-    const room = await enterSpeedReviewRoom(client);
+    const room = await enterSpeedReviewRoom(client, tmpDir);
 
     // Start the review — empty vocab from mock -> empty snapshot
     const startRes = await client.post('/api/game/speed-review-room/start', {
@@ -103,7 +147,7 @@ describe('speed review room flow', () => {
   });
 
   it('progress rejects commits when snapshot is empty', async () => {
-    const room = await enterSpeedReviewRoom(client);
+    const room = await enterSpeedReviewRoom(client, tmpDir);
 
     // Start review — empty snapshot, completionTarget = 0
     const startRes = await client.post('/api/game/speed-review-room/start', {
@@ -124,7 +168,7 @@ describe('speed review room flow', () => {
   });
 
   it('start is idempotent — second call returns reusedSnapshot true', async () => {
-    const room = await enterSpeedReviewRoom(client);
+    const room = await enterSpeedReviewRoom(client, tmpDir);
 
     const start1 = await client.post('/api/game/speed-review-room/start', {
       roomId: room.id

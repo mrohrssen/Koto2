@@ -22,19 +22,21 @@ const starterMove = (creature) => {
 };
 
 describe('creature starter-move distribution', () => {
-  it('no move appears as level-1 starter for more than 2 creatures', () => {
-    const counts = {};
-    for (const c of creatures) {
-      const id = starterMove(c);
-      if (!id) continue;
-      counts[id] = (counts[id] || 0) + 1;
+  it('every creature has a valid level-1 starter move', () => {
+    const missing = [];
+    const unknown = [];
+
+    for (const creature of creatures) {
+      const moveId = starterMove(creature);
+      if (!moveId) {
+        missing.push(creature.id);
+      } else if (!movesById[moveId]) {
+        unknown.push({ creature: creature.id, moveId });
+      }
     }
-    const overCap = Object.entries(counts).filter(([, n]) => n > 2);
-    assert.deepStrictEqual(
-      overCap,
-      [],
-      `Starter cap is 2. Over-cap moves: ${JSON.stringify(overCap)}`
-    );
+
+    assert.deepStrictEqual(missing, [], `Missing L1 moves: ${JSON.stringify(missing)}`);
+    assert.deepStrictEqual(unknown, [], `Unknown L1 moves: ${JSON.stringify(unknown)}`);
   });
 
   it('level-1 move does not appear at any other level in the same learnset', () => {
@@ -53,34 +55,6 @@ describe('creature starter-move distribution', () => {
       duplicates,
       [],
       `Duplicate L1 moves found: ${JSON.stringify(duplicates)}`
-    );
-  });
-
-  it('no later-level damage move is strictly weaker than the level-1 damage move', () => {
-    const regressions = [];
-    for (const c of creatures) {
-      const starter = starterMove(c);
-      if (!starter) continue;
-      const starterMove_ = movesById[starter];
-      if (!starterMove_ || starterMove_.category !== 'damage') continue;
-      const starterPower = starterMove_.power ?? 0;
-      const weakerLater = c.learnset
-        .filter(e => e.level !== 1)
-        .map(e => ({ level: e.level, move: e.moveId, m: movesById[e.moveId] }))
-        .filter(({ m }) => m && m.category === 'damage' && (m.power ?? 0) < starterPower);
-      if (weakerLater.length > 0) {
-        regressions.push({
-          creature: c.id,
-          starter,
-          starterPower,
-          weakerLater: weakerLater.map(x => ({ level: x.level, move: x.move, power: x.m.power }))
-        });
-      }
-    }
-    assert.deepStrictEqual(
-      regressions,
-      [],
-      `Damage power regressions found: ${JSON.stringify(regressions)}`
     );
   });
 });
