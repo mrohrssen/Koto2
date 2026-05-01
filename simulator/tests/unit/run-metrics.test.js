@@ -35,7 +35,7 @@ describe('run metrics helpers', () => {
     assert.equal(selectLatestAreaOption(null), null);
   });
 
-  it('skips the school area so wild-plains is the final progression target', () => {
+  it('selects the furthest available area, including school', () => {
     const area = selectLatestAreaOption({
       areas: [
         { id: 'hajimari-no-hiroba', nameEn: 'Starting Meadow' },
@@ -44,13 +44,13 @@ describe('run metrics helpers', () => {
       ]
     });
 
-    assert.deepEqual(area, { id: 'wild-plains', nameEn: 'Wild Plains' });
+    assert.deepEqual(area, { id: 'school', nameEn: 'School' });
   });
 
-  it('returns null when only excluded areas are available', () => {
-    assert.equal(
+  it('selects school when it is the only available area', () => {
+    assert.deepEqual(
       selectLatestAreaOption({ areas: [{ id: 'school', nameEn: 'School' }] }),
-      null
+      { id: 'school', nameEn: 'School' }
     );
   });
 
