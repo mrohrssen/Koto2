@@ -433,6 +433,7 @@ async function renderRunLogTab(contentEl, simId) {
             <th>Day / Run</th>
             <th>Area</th>
             <th>Outcome</th>
+            <th>Furthest Room</th>
             <th>Befriended</th>
             <th>Items</th>
             <th>Mastered</th>
@@ -454,6 +455,7 @@ async function renderRunLogTab(contentEl, simId) {
                 <td>Day ${row.day}, Run ${row.run}</td>
                 <td>${esc(row.areaName || row.areaId || 'Unknown')}</td>
                 <td>${outcome}</td>
+                <td>${row.furthestRoomReached || 0}</td>
                 <td>${row.creaturesBefriended || 0}</td>
                 <td>${row.itemsCollected || 0}</td>
                 <td>${masteredCell}</td>

@@ -40,7 +40,8 @@ describe('result routes', () => {
         completed: true,
         creaturesBefriended: 1,
         itemsCollected: 2,
-        wordsMastered: [{ word: '猫' }]
+        wordsMastered: [{ word: '猫' }],
+        furthestRoomReached: 10
       });
 
       const response = await fetch(`${baseUrl}/api/results/${simId}/run-log`);
@@ -53,6 +54,7 @@ describe('result routes', () => {
       assert.equal(rows[0].avgCombatRounds, 2);
       assert.equal(rows[0].maxCombatRounds, 2);
       assert.equal(rows[0].bossCombatRounds, 8);
+      assert.equal(rows[0].furthestRoomReached, 10);
       assert.equal(rows[0].wordsMasteredCount, 1);
     });
   });

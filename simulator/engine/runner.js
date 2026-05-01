@@ -151,6 +151,7 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         if (!startRunResult.ok) continue; // Skip this run if start fails
         let selectedArea = null;
         const combatMetrics = createRunCombatMetrics();
+        let furthestRoomReached = 0;
 
         // Handle initial skill pick (game enters skillMaster phase after start-run)
         const offersResult = await simCall('POST', '/api/game/skill-master-offers', null, `day ${day} run ${run} skill offers`);
@@ -195,6 +196,7 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
 
           const roomType = roomData.type ?? roomData.roomType;
           if (!roomType) break;
+          furthestRoomReached = Math.max(furthestRoomReached, roomIndex + 1);
 
           // Dispatch to handler
           const handler = getRoomHandler(roomType);
@@ -222,7 +224,7 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
 
         const serverRunSummary = forfeitResult.data?.runSummary ?? {};
         logEvent(day, run, 0, 'run_summary',
-          buildRunSummaryEventData(serverRunSummary, selectedArea, combatMetrics, runWiped)
+          buildRunSummaryEventData(serverRunSummary, selectedArea, combatMetrics, runWiped, furthestRoomReached)
         );
         wordsImmersedToday += serverRunSummary.wordsImmersed ?? 0;
 

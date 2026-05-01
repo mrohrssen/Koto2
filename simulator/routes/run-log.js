@@ -23,6 +23,12 @@ function summarizeRounds(rounds, bossCombatRounds) {
   };
 }
 
+function roomReachedOrDefault(value, fallback) {
+  const number = numericOrNull(value);
+  if (number === null || number <= 0) return fallback;
+  return Math.max(Math.trunc(number), fallback);
+}
+
 function deriveCombatByRun(events) {
   const byRun = new Map();
 
@@ -51,12 +57,29 @@ function deriveCombatByRun(events) {
   return summaries;
 }
 
+function deriveFurthestRoomByRun(events) {
+  const byRun = new Map();
+
+  for (const event of events) {
+    if (event.event_type !== 'room_entered') continue;
+    const roomIndex = numericOrNull(event.room);
+    if (roomIndex === null || roomIndex < 0) continue;
+
+    const key = runKey(event.day, event.run);
+    const playerFacingRoom = Math.trunc(roomIndex) + 1;
+    byRun.set(key, Math.max(byRun.get(key) ?? 0, playerFacingRoom));
+  }
+
+  return byRun;
+}
+
 function normalizeWordsMastered(wordsMastered) {
   return Array.isArray(wordsMastered) ? wordsMastered : [];
 }
 
 export function buildRunLogRows(events = []) {
   const combatByRun = deriveCombatByRun(events);
+  const furthestRoomByRun = deriveFurthestRoomByRun(events);
 
   return events
     .filter(event => event.event_type === 'run_summary')
@@ -68,6 +91,7 @@ export function buildRunLogRows(events = []) {
         maxCombatRounds: 0,
         bossCombatRounds: null
       };
+      const fallbackFurthestRoom = furthestRoomByRun.get(runKey(event.day, event.run)) ?? 0;
       const wordsMastered = normalizeWordsMastered(data.wordsMastered);
       const bossRounds = data.bossCombatRounds === null
         ? null
@@ -88,7 +112,8 @@ export function buildRunLogRows(events = []) {
         combatCount: numericOrDefault(data.combatCount, fallbackCombat.combatCount),
         avgCombatRounds: numericOrDefault(data.avgCombatRounds, fallbackCombat.avgCombatRounds),
         maxCombatRounds: numericOrDefault(data.maxCombatRounds, fallbackCombat.maxCombatRounds),
-        bossCombatRounds: bossRounds ?? fallbackCombat.bossCombatRounds
+        bossCombatRounds: bossRounds ?? fallbackCombat.bossCombatRounds,
+        furthestRoomReached: roomReachedOrDefault(data.furthestRoomReached, fallbackFurthestRoom)
       };
     });
 }

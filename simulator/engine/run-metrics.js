@@ -67,7 +67,12 @@ export function summarizeRunCombatMetrics(metrics) {
   };
 }
 
-export function buildRunSummaryEventData(serverRunSummary = {}, selectedArea = null, combatMetrics = createRunCombatMetrics(), runWiped = false) {
+function normalizeFurthestRoomReached(value) {
+  const room = Number(value);
+  return Number.isFinite(room) && room > 0 ? Math.trunc(room) : 0;
+}
+
+export function buildRunSummaryEventData(serverRunSummary = {}, selectedArea = null, combatMetrics = createRunCombatMetrics(), runWiped = false, furthestRoomReached = 0) {
   return {
     ...summarizeArea(selectedArea),
     wiped: runWiped,
@@ -77,6 +82,7 @@ export function buildRunSummaryEventData(serverRunSummary = {}, selectedArea = n
     creaturesDefeated: serverRunSummary.creaturesDefeated ?? 0,
     creaturesBefriended: serverRunSummary.creaturesBefriended ?? 0,
     itemsCollected: serverRunSummary.itemsCollected ?? 0,
-    ...summarizeRunCombatMetrics(combatMetrics)
+    ...summarizeRunCombatMetrics(combatMetrics),
+    furthestRoomReached: normalizeFurthestRoomReached(furthestRoomReached)
   };
 }

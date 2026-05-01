@@ -75,7 +75,7 @@ describe('run metrics helpers', () => {
       areaId: 'wild-plains',
       name: '野原',
       nameEn: 'Wild Plains'
-    }, metrics, true);
+    }, metrics, true, 10);
 
     assert.deepEqual(payload, {
       areaId: 'wild-plains',
@@ -91,7 +91,8 @@ describe('run metrics helpers', () => {
       combatCount: 1,
       avgCombatRounds: 4,
       maxCombatRounds: 4,
-      bossCombatRounds: 8
+      bossCombatRounds: 8,
+      furthestRoomReached: 10
     });
   });
 
