@@ -8,6 +8,10 @@ import { resolveLiveDictPath } from '../../game/live-dict-path.js';
 import { tokenize } from '../../tokenizer.js';
 import { incrementDiscoveryCount, getDiscoveryStatus } from '../../word-tracking.js';
 import { addReview } from '../../auth/users.js';
+import {
+  isReviewFusionCoreEligible,
+  rollReviewFusionCoreDrop
+} from '../../game/services/review-fusion-core-service.js';
 
 let _wordDict = null;
 function getWordDict() {
@@ -24,8 +28,26 @@ export function invalidateKnownWordsDict() {
   _wordDict = null;
 }
 
-export function createKnownWordsRoutes() {
+export function createKnownWordsRoutes({ reviewFusionCoreRandom = Math.random } = {}) {
   const router = Router();
+
+  function attachFusionCoreDrop(req, response, eligible) {
+    const meta = req.gameManager?.getMeta?.();
+    if (!meta) return response;
+
+    const fusionCoreDrop = rollReviewFusionCoreDrop(meta, {
+      eligible,
+      random: reviewFusionCoreRandom
+    });
+    if (!fusionCoreDrop) return response;
+
+    req.saveGame?.();
+    return {
+      ...response,
+      fusionCoreDrop,
+      state: req.getEnrichedGameState?.()
+    };
+  }
 
   // GET /api/game/known-words — now uses FSRS as source of truth
   router.get('/', (req, res) => {
@@ -64,9 +86,18 @@ export function createKnownWordsRoutes() {
     }
 
     try {
-      // Auto-create card if it doesn't exist (allows fast-tracking words)
+      // Capture pre-review state before auto-create so first-time "again"
+      // reviews cannot farm Fusion Core drops.
       const existingCards = getDeckCards(req.user.id, 'vocab');
-      if (!existingCards.find(c => c.id === word)) {
+      const preReviewCard = existingCards.find(c => c.id === word) || null;
+      const fusionCoreEligible = isReviewFusionCoreEligible({
+        grade,
+        isDiscovery,
+        preReviewCard
+      });
+
+      // Auto-create card if it doesn't exist (allows fast-tracking words).
+      if (!preReviewCard) {
         createCard(req.user.id, 'vocab', word, { word });
       }
       const updatedCard = gradeCard(req.user.id, 'vocab', word, grade);
@@ -77,20 +108,22 @@ export function createKnownWordsRoutes() {
       // If discovery mode, increment counter and return discovery-specific fields
       if (isDiscovery) {
         const counts = incrementDiscoveryCount(userId, dailyLimit);
-        return res.json({
+        const response = {
           ok: true,
           mastered: grade === 'good',
           card: { state: updatedCard.state, due: updatedCard.due, lapses: updatedCard.lapses },
           todayCount: counts.todayCount,
           atLimit: counts.atLimit
-        });
+        };
+        return res.json(attachFusionCoreDrop(req, response, fusionCoreEligible));
       }
 
-      res.json({
+      const response = {
         ok: true,
         mastered: grade === 'good',
         card: { state: updatedCard.state, due: updatedCard.due, lapses: updatedCard.lapses }
-      });
+      };
+      res.json(attachFusionCoreDrop(req, response, fusionCoreEligible));
     } catch (e) {
       console.warn('[known-words/review] Error:', e.message);
       res.status(500).json({ error: e.message });

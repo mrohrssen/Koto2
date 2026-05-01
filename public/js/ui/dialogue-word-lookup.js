@@ -22,6 +22,7 @@ let _pauseAutoDismiss = null;
 let _currentWord = null; // base form of currently displayed word
 let _currentReading = null; // hiragana reading of current word
 let _getKanaMode = null; // () => boolean, injected via init
+let _onStateUpdate = null; // optional callback for review reward state
 
 /**
  * Build the ordered meaning list for the popup.
@@ -54,12 +55,13 @@ export function buildPopupMeanings({ dataMeaning, dataOverride, dictEntry }) {
 
 /**
  * Initialize the module. Call once after DOM is ready.
- * @param {{ showToast: Function, pauseAutoDismiss: Function, getKanaMode: Function }} options
+ * @param {{ showToast: Function, pauseAutoDismiss: Function, getKanaMode: Function, onStateUpdate?: Function }} options
  */
-export function init({ showToast, pauseAutoDismiss, getKanaMode }) {
+export function init({ showToast, pauseAutoDismiss, getKanaMode, onStateUpdate }) {
   _showToast = showToast;
   _pauseAutoDismiss = pauseAutoDismiss;
   _getKanaMode = getKanaMode || null;
+  _onStateUpdate = typeof onStateUpdate === 'function' ? onStateUpdate : null;
 
   dom.popup = document.getElementById('lookup-popup');
   dom.word = document.getElementById('lookup-popup-word');
@@ -75,11 +77,11 @@ export function init({ showToast, pauseAutoDismiss, getKanaMode }) {
   // Button handlers
   dom.forgotBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    handleReview('again');
+    return handleReview('again');
   });
   dom.knewBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    handleReview('good');
+    return handleReview('good');
   });
   dom.closeBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -196,14 +198,13 @@ async function handleReview(grade) {
     return;
   }
 
-  // Update client-side state based on grade
+  // Update client-side state based on grade.
   if (grade === 'good') {
     addKnownWord(word);
     dom.stateDot.style.background = 'var(--status-success, #2ecc71)';
     dom.stateText.textContent = 'Known';
     _showToast?.('Marked as known');
 
-    // "Word leveled up!" animation
     const kana = _getKanaMode?.() ?? false;
     const displayWord = kana && _currentReading ? _currentReading : word;
     showWordLevelUp(dom.popup, displayWord);
@@ -212,6 +213,18 @@ async function handleReview(grade) {
     dom.stateText.textContent = 'Learning';
     _showToast?.('Marked for review');
   }
+
+  if (result.state) {
+    _onStateUpdate?.(result.state);
+  }
+
+  if (result.fusionCoreDrop?.awarded) {
+    showWordLevelUp(dom.popup || document.body, '', {
+      message: result.fusionCoreDrop.message || 'Obtained 1x Fusion Core!'
+    });
+  }
+
+  hidePopup();
 }
 
 /**

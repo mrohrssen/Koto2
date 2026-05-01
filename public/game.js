@@ -1809,8 +1809,17 @@ async function initGame() {
     sendReview: async (vid, sid, grade, wordText) => {
       const internalGrade = grade >= 3 ? 'good' : 'again';
       const result = await reviewVocabWord(wordText, internalGrade);
+      if (result?.state) updateGameState(result.state);
       if (result?.mastered) addKnownWord(wordText);
       else if (result && !result.mastered) removeKnownWord(wordText);
+      if (result?.fusionCoreDrop?.awarded) {
+        const anchor = document.getElementById('speed-review-content')
+          || document.getElementById('speed-review-modal')
+          || document.body;
+        showWordLevelUp(anchor, '', {
+          message: result.fusionCoreDrop.message || 'Obtained 1x Fusion Core!'
+        });
+      }
       return result;
     },
     playTTS: (word) => tts.playWord(word),
@@ -2150,6 +2159,7 @@ async function initGame() {
     showToast: (msg) => scene.showToast(msg, 3000),
     pauseAutoDismiss: narrationBox.pauseAutoDismiss,
     getKanaMode: () => gameState.meta?.kanaMode ?? false,
+    onStateUpdate: updateGameState,
   });
   await loadGameState();
 
