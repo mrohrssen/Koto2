@@ -1,5 +1,6 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import Database from 'better-sqlite3';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -172,6 +173,7 @@ describe('store', () => {
         new_words_today: 5,
         words_exposed_today: 8,
         runs_completed: 2,
+        fusions_performed: 3,
         snapshot_data: { details: 'extra info' }
       });
 
@@ -185,9 +187,76 @@ describe('store', () => {
       assert.equal(snapshots[0].day, 1);
       assert.equal(snapshots[0].total_known_words, 10);
       assert.equal(snapshots[0].new_words_today, 5);
+      assert.equal(snapshots[0].fusions_performed, 3);
       assert.deepEqual(snapshots[0].snapshot_data, { details: 'extra info' });
       assert.equal(snapshots[1].day, 2);
       assert.equal(snapshots[1].total_known_words, 15);
+      assert.equal(snapshots[1].fusions_performed, 0);
+    });
+
+    it('adds fusions_performed to existing snapshot tables', () => {
+      const dbPath = join(tmpDir, 'legacy-snapshot.db');
+      const legacyDb = new Database(dbPath);
+      legacyDb.exec(`
+        CREATE TABLE profiles (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE,
+          config TEXT NOT NULL,
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now'))
+        );
+        CREATE TABLE simulations (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          profile_id INTEGER NOT NULL REFERENCES profiles(id),
+          status TEXT NOT NULL DEFAULT 'pending',
+          test_user_id TEXT,
+          jwt_token TEXT,
+          current_day INTEGER DEFAULT 0,
+          current_run INTEGER DEFAULT 0,
+          current_room INTEGER DEFAULT 0,
+          started_at TEXT,
+          completed_at TEXT,
+          error_message TEXT,
+          created_at TEXT DEFAULT (datetime('now'))
+        );
+        CREATE TABLE daily_snapshots (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          simulation_id INTEGER NOT NULL REFERENCES simulations(id),
+          day INTEGER NOT NULL,
+          total_known_words INTEGER DEFAULT 0,
+          new_words_today INTEGER DEFAULT 0,
+          words_exposed_today INTEGER DEFAULT 0,
+          dialogue_lines_encountered INTEGER DEFAULT 0,
+          runs_completed INTEGER DEFAULT 0,
+          runs_wiped INTEGER DEFAULT 0,
+          rooms_explored INTEGER DEFAULT 0,
+          speed_reviews_completed INTEGER DEFAULT 0,
+          unknown_words_in_dialogue INTEGER DEFAULT 0,
+          snapshot_data TEXT,
+          created_at TEXT DEFAULT (datetime('now')),
+          UNIQUE(simulation_id, day)
+        );
+        CREATE TABLE events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          simulation_id INTEGER NOT NULL REFERENCES simulations(id),
+          day INTEGER NOT NULL,
+          run INTEGER NOT NULL,
+          room INTEGER,
+          event_type TEXT NOT NULL,
+          data TEXT NOT NULL,
+          created_at TEXT DEFAULT (datetime('now'))
+        );
+      `);
+      legacyDb.close();
+
+      const migratedStore = createStore(dbPath);
+      migratedStore.close();
+
+      const inspectionDb = new Database(dbPath);
+      const columns = inspectionDb.prepare('PRAGMA table_info(daily_snapshots)').all();
+      inspectionDb.close();
+
+      assert.ok(columns.some(column => column.name === 'fusions_performed'));
     });
 
     it('replaces snapshot on same day (INSERT OR REPLACE)', () => {
