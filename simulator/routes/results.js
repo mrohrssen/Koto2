@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { buildRunLogRows } from './run-log.js';
 
 /**
  * Simulation result / analytics routes.
@@ -15,6 +16,16 @@ export default function createResultRoutes(store, gameServerUrl, adminSecret) {
     try {
       const snapshots = store.getDailySnapshots(Number(req.params.simId));
       res.json(snapshots);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Get normalized run log rows for a simulation
+  router.get('/:simId/run-log', (req, res) => {
+    try {
+      const events = store.getEvents(Number(req.params.simId));
+      res.json(buildRunLogRows(events));
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

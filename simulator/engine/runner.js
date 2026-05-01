@@ -6,6 +6,13 @@ import { createSimCaller } from './sim-call.js';
 import { createTestUser, seedStartingVocab, advanceTime } from './auth.js';
 import { getRoomHandler } from './rooms/index.js';
 import { runCrestCycle } from './crest-cycle.js';
+import {
+  buildRunSummaryEventData,
+  createRunCombatMetrics,
+  getAreaId,
+  recordCombatResult,
+  selectLatestAreaOption
+} from './run-metrics.js';
 
 const PROFILE_DEFAULTS = {
   durationDays: 30,
@@ -142,6 +149,8 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         // Start a new run
         const startRunResult = await simCall('POST', '/api/game/start-run', starterIds ? { starterIds } : null, `day ${day} run ${run}`);
         if (!startRunResult.ok) continue; // Skip this run if start fails
+        let selectedArea = null;
+        const combatMetrics = createRunCombatMetrics();
 
         // Handle initial skill pick (game enters skillMaster phase after start-run)
         const offersResult = await simCall('POST', '/api/game/skill-master-offers', null, `day ${day} run ${run} skill offers`);
@@ -150,13 +159,12 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
           await simCall('POST', '/api/game/skill-master-choose', { skillId: skill.id }, `day ${day} run ${run} skill choose`);
         }
 
-        // Pick an area
+        // Pick the latest returned area option while respecting game unlock rules.
         const areasResult = await simCall('GET', '/api/game/area-options', null, `day ${day} run ${run} areas`);
         if (areasResult.ok) {
-          const areas = areasResult.data?.areas ?? areasResult.data ?? [];
-          if (areas.length > 0) {
-            const area = areas[Math.floor(Math.random() * areas.length)];
-            const areaId = area.id ?? area.areaId;
+          selectedArea = selectLatestAreaOption(areasResult.data);
+          const areaId = getAreaId(selectedArea);
+          if (areaId) {
             await simCall('POST', '/api/game/select-area', { areaId }, `day ${day} run ${run} select area`);
           }
         }
@@ -200,6 +208,7 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
           };
 
           const result = await handler(simCall, roomData, handlerContext, logEvent);
+          recordCombatResult(combatMetrics, roomType, result);
 
           if (result?.outcome === 'wiped') {
             runWiped = true;
@@ -212,15 +221,9 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
           { isVictory: !runWiped }, `day ${day} run ${run} forfeit`);
 
         const serverRunSummary = forfeitResult.data?.runSummary ?? {};
-        logEvent(day, run, 0, 'run_summary', {
-          wiped: runWiped,
-          completed: !runWiped,
-          wordsImmersed: serverRunSummary.wordsImmersed ?? 0,
-          wordsMastered: serverRunSummary.wordsMastered ?? [],
-          creaturesDefeated: serverRunSummary.creaturesDefeated ?? 0,
-          creaturesBefriended: serverRunSummary.creaturesBefriended ?? 0,
-          itemsCollected: serverRunSummary.itemsCollected ?? 0,
-        });
+        logEvent(day, run, 0, 'run_summary',
+          buildRunSummaryEventData(serverRunSummary, selectedArea, combatMetrics, runWiped)
+        );
         wordsImmersedToday += serverRunSummary.wordsImmersed ?? 0;
 
         if (runWiped) {

@@ -63,6 +63,29 @@ function renderTabs(container, tabs, onSwitch) {
   container.appendChild(bar);
 }
 
+function formatNumber(value, digits = 1) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '0';
+  return Number.isInteger(number) ? String(number) : number.toFixed(digits);
+}
+
+function formatBossRounds(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? String(number) : 'N/A';
+}
+
+function formatMasteredWords(words) {
+  if (!Array.isArray(words) || words.length === 0) return '';
+
+  return words.map(entry => {
+    if (typeof entry === 'string') return esc(entry);
+    const word = entry?.word ?? '?';
+    const meaning = entry?.meaning ? ` - ${entry.meaning}` : '';
+    const exposures = Number.isFinite(Number(entry?.exposures)) ? ` (${entry.exposures} exposures)` : '';
+    return `${esc(word)}${esc(meaning)}${esc(exposures)}`;
+  }).join('<br>');
+}
+
 async function renderStatsTab(contentEl, simId) {
   contentEl.innerHTML = '<div class="empty-state">Loading stats...</div>';
 
@@ -345,6 +368,108 @@ async function renderDailyDetailTab(contentEl, simId) {
   showDay(Number(select.value));
 }
 
+async function renderRunLogTab(contentEl, simId) {
+  contentEl.innerHTML = '<div class="empty-state">Loading run log...</div>';
+
+  let rows;
+  try {
+    rows = await results.runLog(simId);
+  } catch (err) {
+    contentEl.innerHTML = `<div class="empty-state">Error: ${esc(err.message)}</div>`;
+    return;
+  }
+
+  if (!rows || rows.length === 0) {
+    contentEl.innerHTML = '<div class="empty-state">No run summaries yet.</div>';
+    return;
+  }
+
+  const totalCreatures = rows.reduce((sum, row) => sum + (Number(row.creaturesBefriended) || 0), 0);
+  const totalItems = rows.reduce((sum, row) => sum + (Number(row.itemsCollected) || 0), 0);
+  const totalMastered = rows.reduce((sum, row) => sum + (Number(row.wordsMasteredCount) || 0), 0);
+  const regularMax = rows.reduce((max, row) => Math.max(max, Number(row.maxCombatRounds) || 0), 0);
+  const bossMax = rows.reduce((max, row) => Math.max(max, Number(row.bossCombatRounds) || 0), 0);
+  const rowsWithRegularCombat = rows.filter(row => (Number(row.combatCount) || 0) > 0);
+  const avgRegular = rowsWithRegularCombat.length > 0
+    ? rowsWithRegularCombat.reduce((sum, row) => sum + (Number(row.avgCombatRounds) || 0), 0) / rowsWithRegularCombat.length
+    : 0;
+
+  contentEl.innerHTML = `
+    <div class="summary-stats">
+      <div class="stat-card">
+        <div class="stat-value">${rows.length}</div>
+        <div class="stat-label">Runs Logged</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${regularMax}</div>
+        <div class="stat-label">Max Regular Rounds</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${bossMax > 0 ? bossMax : 'N/A'}</div>
+        <div class="stat-label">Max Boss Rounds</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${formatNumber(avgRegular)}</div>
+        <div class="stat-label">Avg Regular Rounds</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${totalCreatures}</div>
+        <div class="stat-label">Creatures Befriended</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${totalItems}</div>
+        <div class="stat-label">Items Collected</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${totalMastered}</div>
+        <div class="stat-label">Words Mastered</div>
+      </div>
+    </div>
+
+    <div class="vocab-table-wrap">
+      <table class="vocab-table">
+        <thead>
+          <tr>
+            <th>Day / Run</th>
+            <th>Area</th>
+            <th>Outcome</th>
+            <th>Befriended</th>
+            <th>Items</th>
+            <th>Mastered</th>
+            <th>Regular Fights</th>
+            <th>Avg Regular</th>
+            <th>Max Regular</th>
+            <th>Boss Rounds</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(row => {
+            const masteredDetail = formatMasteredWords(row.wordsMastered);
+            const masteredCell = masteredDetail
+              ? `<details><summary>${row.wordsMasteredCount || 0}</summary>${masteredDetail}</details>`
+              : String(row.wordsMasteredCount || 0);
+            const outcome = row.wiped ? 'Wiped' : (row.completed ? 'Completed' : 'Stopped');
+            return `
+              <tr>
+                <td>Day ${row.day}, Run ${row.run}</td>
+                <td>${esc(row.areaName || row.areaId || 'Unknown')}</td>
+                <td>${outcome}</td>
+                <td>${row.creaturesBefriended || 0}</td>
+                <td>${row.itemsCollected || 0}</td>
+                <td>${masteredCell}</td>
+                <td>${row.combatCount || 0}</td>
+                <td>${formatNumber(row.avgCombatRounds)}</td>
+                <td>${row.maxCombatRounds || 0}</td>
+                <td>${formatBossRounds(row.bossCombatRounds)}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 async function renderDialogueTab(contentEl, simId) {
   contentEl.innerHTML = '<div class="empty-state">Loading dialogue...</div>';
 
@@ -536,6 +661,7 @@ export async function renderResults(appEl, { simId }) {
     { key: 'stats', label: 'Stats' },
     { key: 'progression', label: 'Progression' },
     { key: 'daily', label: 'Daily Detail' },
+    { key: 'runLog', label: 'Run Log' },
     { key: 'vocabulary', label: 'Vocabulary' },
     { key: 'dialogue', label: 'Dialogue' },
     { key: 'errors', label: 'Errors' },
@@ -550,6 +676,7 @@ export async function renderResults(appEl, { simId }) {
       stats: () => renderStatsTab(contentEl, simId),
       progression: () => renderProgressionTab(contentEl, simId),
       daily: () => renderDailyDetailTab(contentEl, simId),
+      runLog: () => renderRunLogTab(contentEl, simId),
       vocabulary: () => renderVocabularyTab(contentEl, simId),
       dialogue: () => renderDialogueTab(contentEl, simId),
       errors: () => renderErrorsTab(contentEl, simId),

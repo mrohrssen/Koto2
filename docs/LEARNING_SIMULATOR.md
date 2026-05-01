@@ -34,11 +34,12 @@ For each simulated day:
 
 | Event | Data |
 |---|---|
-| `word_exposure` | Word, source (bark/npc/cid/discovery/speed_review), location |
-| `word_learned` | Word, source, when FSRS card reaches Review state |
+| `run_summary` | Per-run area, completion/wipe status, words immersed/mastered, creatures defeated/befriended, items collected, regular combat pacing, boss combat rounds |
 | `dialogue_seen` | Full Japanese text, source (CID/NPC/combat), NPC id |
 | `combat_round` | Move used, damage, creatures involved |
-| `room_entered` | Room type, outcome (cleared/wiped/skipped) |
+| `room_entered` | Room type, outcome (cleared/wiped/skipped), final combat rounds for combat rooms |
+| `creature_befriended` | Creature id/name from successful befriend quiz |
+| `item_acquired` | Item id/name from NPC shops and post-combat shops |
 | `api_error` | Endpoint, status code, error body, day/run/room context |
 | `crest_cycle_*` | Crest automation lifecycle (`started`, `chest_opened`, `equipped`, `summary`, `error`) |
 
@@ -60,10 +61,13 @@ Create simulation profiles with different player behaviors:
 
 ### Results Screen
 
-Four tabs per simulation:
+Results tabs per simulation:
 
+- **Stats** — Aggregate run, learning, and collection stats
 - **Progression** — Line chart of known words over time + new words per day
 - **Daily Detail** — Per-day breakdown of runs, rooms, reviews
+- **Run Log** — Per-run area, outcome, rewards, mastered words, regular combat pacing, and boss combat rounds
+- **Vocabulary** — Word knowledge pulled from the game server for the simulation user
 - **Dialogue** — Scrollable transcript of all Japanese text encountered, grouped by day
 - **Errors** — API failures with endpoint, status code, and context
 

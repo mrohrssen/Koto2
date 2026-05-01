@@ -46,6 +46,7 @@ export const results = {
     return api('GET', `/api/results/${simId}/events${qs ? '?' + qs : ''}`);
   },
   eventCounts: (simId) => api('GET', `/api/results/${simId}/event-counts`),
+  runLog: (simId) => api('GET', `/api/results/${simId}/run-log`),
   vocabulary: (simId) => api('GET', `/api/results/${simId}/vocabulary`),
   compare: (simIds) => api('POST', '/api/results/compare', { simIds }),
 };
