@@ -9,7 +9,12 @@ let _shopPurchaseFrames = [];
 let _shopGreetingFrames = [];
 let _gameMasterAskFrames = [];
 let _gameMasterFinishFrames = [];
-let _befriendFrames = {};
+let _befriendFrames = {
+  wait: [],
+  name: [],
+  success: [],
+  wrong: [],
+};
 let _npcDefeatFrames = [];
 let _skillSelectFrame = null;
 let _gameMasterYesFrame = null;
