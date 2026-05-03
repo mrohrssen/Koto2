@@ -269,34 +269,26 @@ button.hud-chip {
   right: 0;
   bottom: 0;
   z-index: 2;
-  display: flex;
-  justify-content: space-between;
-  padding: 40px 12px 8px;
   contain: layout style;
 }
 
 .formation {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  gap: 4px;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
-/* Diagonal stagger — player leans right, enemy leans left */
-.player-formation .formation-slot:nth-child(1) { margin-left: 12px; }
-.player-formation .formation-slot:nth-child(2) { margin-left: 24px; }
-.player-formation .formation-slot:nth-child(3) { margin-left: 36px; }
-
-.enemy-formation .formation-slot:nth-child(1) { margin-right: 12px; }
-.enemy-formation .formation-slot:nth-child(2) { margin-right: 24px; }
-.enemy-formation .formation-slot:nth-child(3) { margin-right: 36px; }
-
-/* Subtle depth scaling: back 90%, mid 95%, front 100%
-   Uses CSS `scale` property (not `transform: scale()`) so anime.js combat
-   animations on style.transform can never override the depth scaling. */
-.formation .formation-slot:nth-child(1) { scale: 0.9; }
-.formation .formation-slot:nth-child(2) { scale: 0.95; }
-.formation .formation-slot:nth-child(3) { /* scale(1.0) is default */ }
+/* Slot depth and stagger are owned by public/js/pixi/battlefield-layout.js. */
+.player-formation .formation-slot:nth-child(1),
+.player-formation .formation-slot:nth-child(2),
+.player-formation .formation-slot:nth-child(3),
+.enemy-formation .formation-slot:nth-child(1),
+.enemy-formation .formation-slot:nth-child(2),
+.enemy-formation .formation-slot:nth-child(3) {
+  margin-left: 0;
+  margin-right: 0;
+  scale: 1;
+}
 
 /* Boss encounters: 2x sprite size */
 .boss-encounter .formation-sprite {
@@ -311,12 +303,14 @@ button.hud-chip {
 
 /* ===== FORMATION SLOTS ===== */
 .formation-slot {
-  position: relative;
+  position: absolute;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   cursor: pointer;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
   will-change: transform, opacity;
 }
 

@@ -47,6 +47,7 @@ class FakeSprite extends FakeContainer {
 }
 
 class FakeGraphics extends FakeContainer {
+  ellipse() { return this; }
   circle() { return this; }
   roundRect() { return this; }
   fill() { return this; }
@@ -118,6 +119,12 @@ await mock.module('../../../public/js/pixi/parallax.js', {
     resizeParallax: () => {},
   },
 });
+await mock.module('../../../public/js/pixi/battlefield-background.js', {
+  namedExports: {
+    startSkyDrift: () => {},
+    stopSkyDrift: () => {},
+  },
+});
 await mock.module('../../../public/js/ui/event-popup.js', {
   namedExports: {
     STATUS_ICON_CONFIG: {
@@ -163,6 +170,7 @@ const {
   destroyAllStatusLabels,
 } = await import('../../../public/js/pixi/formation.js');
 const { BattleScene } = await import('../../../public/js/scenes/battle-scene.js');
+const { rowForFormationIndex } = await import('../../../public/js/pixi/battlefield-layout.js');
 
 
 // --- Helpers ----------------------------------------------------------------
@@ -375,6 +383,18 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
       { slotI: 1, skipEnter: true }
     );
     assert.strictEqual(sprite._slotI, 1);
+  });
+
+  it('positions battle sprites on the symmetric battlefield grid', async () => {
+    const ctx = makeSceneCtx();
+    const sprite = await spawnFormationSprite(ctx, 'enemy', { uid: 'e1', id: 'hi', hp: 10 }, 0, {
+      slotI: rowForFormationIndex(0, 3),
+      skipEnter: true,
+    });
+
+    assert.equal(Math.round(sprite.baseX), 322); // 400 * 0.805
+    assert.equal(Math.round(sprite.baseY), 261); // 600 * 0.435
+    assert.equal(sprite._rowName, 'top');
   });
 });
 

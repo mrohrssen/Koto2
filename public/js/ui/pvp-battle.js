@@ -70,11 +70,6 @@ export function startPvpBattle(data) {
     roundNumber: 1
   };
 
-  // Set arena background (will fall back if file doesn't exist yet)
-  if (sceneModule?.setBackground) {
-    sceneModule.setBackground('/assets/backgrounds/pvp-arena.webp');
-  }
-
   if (typeof onPvpBattleStart === 'function') {
     onPvpBattleStart();
   }

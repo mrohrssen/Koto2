@@ -86,9 +86,9 @@ describe('battlefield-background', () => {
   it('loads sky, background, and battleground in render order', async () => {
     await loadBattlefieldBackground('starter_meadow');
     assert.deepEqual(loadedPaths, [
-      '/assets/backgrounds/starter_meadow/sky.webp',
-      '/assets/backgrounds/starter_meadow/background.webp',
-      '/assets/backgrounds/starter_meadow/battleground.webp',
+      '/assets/backgrounds/starter_meadow/sky.webp?v=20260503-run007',
+      '/assets/backgrounds/starter_meadow/background.webp?v=20260503-run007',
+      '/assets/backgrounds/starter_meadow/battleground.webp?v=20260503-run007',
     ]);
     assert.equal(fakeAppState.layers.background.children.length, 3);
   });

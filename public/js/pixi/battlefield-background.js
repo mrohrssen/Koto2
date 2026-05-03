@@ -3,6 +3,7 @@ import { getApp } from './app.js';
 import { loadImageTexture } from './image-loader.js';
 
 const SKY_DRIFT_PX_PER_SECOND = 10;
+const BATTLEFIELD_ASSET_VERSION = '20260503-run007';
 
 let requestId = 0;
 let sky = null;
@@ -10,6 +11,10 @@ let scenery = null;
 let battleground = null;
 let driftEnabled = false;
 let driftSpeed = 0;
+
+function battlefieldAssetPath(battlefieldId, layerName) {
+  return `/assets/backgrounds/${battlefieldId}/${layerName}.webp?v=${BATTLEFIELD_ASSET_VERSION}`;
+}
 
 function destroyLayer(layer) {
   if (layer?.parent?.removeChild) layer.parent.removeChild(layer);
@@ -50,9 +55,9 @@ export async function loadBattlefieldBackground(battlefieldId) {
   if (!battlefieldId) return;
 
   const [skyTexture, sceneryTexture, battlegroundTexture] = await Promise.all([
-    loadImageTexture(`/assets/backgrounds/${battlefieldId}/sky.webp`),
-    loadImageTexture(`/assets/backgrounds/${battlefieldId}/background.webp`),
-    loadImageTexture(`/assets/backgrounds/${battlefieldId}/battleground.webp`),
+    loadImageTexture(battlefieldAssetPath(battlefieldId, 'sky')),
+    loadImageTexture(battlefieldAssetPath(battlefieldId, 'background')),
+    loadImageTexture(battlefieldAssetPath(battlefieldId, 'battleground')),
   ]);
 
   if (id !== requestId) return;

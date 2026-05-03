@@ -2,6 +2,7 @@ import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
+import { BATTLEFIELD_COLUMNS, BATTLEFIELD_ROWS, rowForFormationIndex } from '../pixi/battlefield-layout.js';
 
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
 function creatureNameRuby(creature) {
@@ -107,11 +108,17 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     if (!creature) return;
 
     const dataIndex = creatures.indexOf(creature);
+    const rowIndex = rowForFormationIndex(dataIndex, creatures.length);
+    const row = BATTLEFIELD_ROWS[rowIndex];
+    const columnX = BATTLEFIELD_COLUMNS[side];
     const slotEl = document.createElement('div');
     slotEl.className = 'formation-slot';
     slotEl.dataset.index = dataIndex;
     slotEl.dataset.creatureId = creature.id || '';
     slotEl.dataset.hp = String(creature.hp ?? creature.currentHp ?? '');
+    slotEl.dataset.row = row.name;
+    slotEl.style.left = `${columnX * 100}%`;
+    slotEl.style.top = `${row.y * 100}%`;
 
     // Layout anchor only — creature artwork is drawn on the Pixi battle stage
     const spriteEl = document.createElement('div');
