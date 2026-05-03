@@ -26,7 +26,7 @@ function fitLayer(layer, width, height) {
   }
 }
 
-export function clearBattlefieldBackground() {
+function resetBattlefieldBackground() {
   destroyLayer(sky);
   destroyLayer(scenery);
   destroyLayer(battleground);
@@ -37,11 +37,16 @@ export function clearBattlefieldBackground() {
   driftSpeed = 0;
 }
 
+export function clearBattlefieldBackground() {
+  requestId += 1;
+  resetBattlefieldBackground();
+}
+
 export async function loadBattlefieldBackground(battlefieldId) {
   const { app, layers } = getApp();
   if (!app || !layers?.background) return;
   const id = ++requestId;
-  clearBattlefieldBackground();
+  resetBattlefieldBackground();
   if (!battlefieldId) return;
 
   const [skyTexture, sceneryTexture, battlegroundTexture] = await Promise.all([

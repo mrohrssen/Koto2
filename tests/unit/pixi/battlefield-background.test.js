@@ -4,6 +4,11 @@ import assert from 'node:assert/strict';
 class FakeContainer {
   constructor() { this.children = []; }
   addChild(child) { this.children.push(child); child.parent = this; return child; }
+  removeChild(child) {
+    this.children = this.children.filter(existing => existing !== child);
+    child.parent = null;
+    return child;
+  }
   removeChildren() { const old = this.children; this.children = []; return old; }
 }
 
@@ -35,14 +40,26 @@ await mock.module('../../../public/js/pixi/app.js', {
 });
 
 const loadedPaths = [];
+const pendingTextureResolvers = [];
+let deferTextureLoads = false;
 await mock.module('../../../public/js/pixi/image-loader.js', {
   namedExports: {
     loadImageTexture: async (path) => {
       loadedPaths.push(path);
+      if (deferTextureLoads) {
+        return new Promise(resolve => {
+          pendingTextureResolvers.push(() => resolve({ width: 4096, height: 1024, path }));
+        });
+      }
       return { width: 4096, height: 1024, path };
     },
   },
 });
+
+function resolvePendingTextureLoads() {
+  const resolvers = pendingTextureResolvers.splice(0);
+  resolvers.forEach(resolve => resolve());
+}
 
 const {
   loadBattlefieldBackground,
@@ -56,6 +73,8 @@ const {
 
 beforeEach(() => {
   loadedPaths.length = 0;
+  pendingTextureResolvers.length = 0;
+  deferTextureLoads = false;
   fakeAppState = {
     app: { screen: { width: 390, height: 347 } },
     layers: { background: new FakeContainer() },
@@ -100,5 +119,41 @@ describe('battlefield-background', () => {
     assert.equal(state.sky.height, 450);
     assert.equal(state.scenery.width, 800);
     assert.equal(state.battleground.height, 450);
+  });
+
+  it('clears and destroys loaded layers', async () => {
+    await loadBattlefieldBackground('starter_meadow');
+    const state = _getBattlefieldBackgroundState();
+    clearBattlefieldBackground();
+    assert.equal(fakeAppState.layers.background.children.length, 0);
+    assert.equal(state.sky.destroyed, true);
+    assert.equal(state.scenery.destroyed, true);
+    assert.equal(state.battleground.destroyed, true);
+    assert.deepEqual(_getBattlefieldBackgroundState(), {
+      sky: null,
+      scenery: null,
+      battleground: null,
+      driftEnabled: false,
+      driftSpeed: 0,
+    });
+  });
+
+  it('does not render stale layers after clear cancels an in-flight load', async () => {
+    deferTextureLoads = true;
+    const loadPromise = loadBattlefieldBackground('starter_meadow');
+    assert.equal(loadedPaths.length, 3);
+
+    clearBattlefieldBackground();
+    resolvePendingTextureLoads();
+    await loadPromise;
+
+    assert.equal(fakeAppState.layers.background.children.length, 0);
+    assert.deepEqual(_getBattlefieldBackgroundState(), {
+      sky: null,
+      scenery: null,
+      battleground: null,
+      driftEnabled: false,
+      driftSpeed: 0,
+    });
   });
 });
