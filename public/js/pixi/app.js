@@ -1,4 +1,5 @@
 import { Application, Container } from 'pixi.js';
+import { resizeBattlefieldBackground } from './battlefield-background.js';
 import { resizeParallax } from './parallax.js';
 import { initParticles, initFlash, initVignette } from './effects.js';
 
@@ -77,6 +78,7 @@ export async function initApp() {
     if (width > 0 && height > 0) {
       app.renderer.resize(width, height);
       resizeParallax(width, height);
+      resizeBattlefieldBackground(width, height);
     }
   });
   resizeObserver.observe(sceneArea);
