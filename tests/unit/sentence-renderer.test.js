@@ -85,7 +85,8 @@ describe('renderJpSentence', () => {
     const html = renderJpSentence(tokens, knownWords, wordDict, {}, false);
     assert.equal((html.match(/jp-known/g) || []).length, 2);
     assert.equal((html.match(/jp-unknown/g) || []).length, 2);
-    assert.equal((html.match(/jp-punct/g) || []).length, 1);
+    assert.equal((html.match(/jp-punct/g) || []).length, 0);
+    assert.ok(html.includes('</ruby>！</span>'));
     // All non-punctuation tokens get ruby
     assert.equal((html.match(/<ruby>/g) || []).length, 4);
   });

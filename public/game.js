@@ -139,6 +139,7 @@ import { SceneManager, setSceneManager, isSceneManagerInitialized, getSceneManag
 import { BattleScene } from './js/scenes/battle-scene.js';
 import { ExplorationScene } from './js/scenes/exploration-scene.js';
 import { HubScene } from './js/scenes/hub-scene.js';
+import { sceneKindForPhase } from './js/scenes/phase-scene-map.js';
 
 // API imports - these are the server communication functions
 import {
@@ -348,12 +349,13 @@ async function syncBattleStageParallax() {
  * so a transient scene bug can't hang UI updates.
  *
  * Phase → scene mapping:
- *   no_save, hub, area_selection, skillMaster, whackAMole, shrine, quiz,
+ *   no_save, hub, area_selection, whackAMole, shrine, quiz,
  *   wordDiscovery, speedReviewRoom, dealer, friendlyNpc, npc_skill_selection,
  *   npc_dialogue                → HubScene (or the existing ExplorationScene
  *                                 if we're mid-room). HubScene is used when
  *                                 no run is active; ExplorationScene takes
  *                                 over once rooms begin.
+ *   skillMaster                 → ExplorationScene (run-area staging before room entry)
  *   exploring, room, room_encounter, post_combat_shop → ExplorationScene (mounted by room-transition.js)
  *   combat                      → BattleScene (mounted by combat-loop.js / startEncounter)
  */
@@ -362,24 +364,9 @@ async function ensureSceneForPhase(phase) {
   if (!mgr || mgr.transitioning) return;
 
   const current = mgr.currentScene;
-  const hubPhases = new Set([
-    'no_save', 'hub', 'area_selection', 'skillMaster',
-  ]);
+  const sceneKind = sceneKindForPhase(phase);
 
-  // Phases that mount their own scenes elsewhere — don't clobber them here.
-  const skipPhases = new Set([
-    'combat', 'exploring', 'room', 'room_encounter', 'post_combat_shop',
-    'friendlyNpc', 'whackAMole', 'dealer', 'shrine', 'quiz',
-    'wordDiscovery', 'speedReviewRoom', 'npc_skill_selection', 'npc_dialogue',
-    // Run-end screens: HubScene is the right fallback.
-    'run_complete', 'run_ended',
-    // PvP phases: lobby/team-select use HubScene-style rendering; pvp_arena
-    // typically mounts its own scene via combat-loop, but fall back to
-    // HubScene if nothing is mounted (same invariant as other skipPhases).
-    'pvp_lobby', 'pvp_team_select', 'pvp_arena',
-  ]);
-
-  if (hubPhases.has(phase) && !(current instanceof HubScene)) {
+  if (sceneKind === 'hub' && !(current instanceof HubScene)) {
     try {
       const allies = gameState.run?.creatureParty?.active ?? [];
       await mgr.transition(HubScene, { allies });
@@ -389,12 +376,23 @@ async function ensureSceneForPhase(phase) {
     return;
   }
 
-  // For skipPhases, the relevant scene transition is owned by the code path
+  if (sceneKind === 'exploration' && !(current instanceof ExplorationScene)) {
+    try {
+      const roomId = gameState.run?.currentRoom ?? null;
+      const allies = gameState.run?.creatureParty?.active ?? [];
+      await mgr.transition(ExplorationScene, { roomId, allies });
+    } catch (err) {
+      console.error('[ensureSceneForPhase] ExplorationScene transition failed', err);
+    }
+    return;
+  }
+
+  // For external phases, the relevant scene transition is owned by the code path
   // that drives the phase (e.g. combat-loop.startCombatLoop, room-transition).
   // If a user somehow lands in one of these phases with no scene mounted
   // (e.g. page refresh into a stale friendlyNpc state), fall back to HubScene
   // so at minimum the scene-routed calls don't silently bail.
-  if (skipPhases.has(phase) && !current) {
+  if (sceneKind === 'external' && !current) {
     try {
       const allies = gameState.run?.creatureParty?.active ?? [];
       await mgr.transition(HubScene, { allies });

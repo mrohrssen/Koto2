@@ -346,7 +346,7 @@ button.hud-chip {
   border: 0;
   border-radius: 0;
   box-shadow: none;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.82));
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.41));
   transition: opacity 0.3s ease;
 }
 
@@ -370,9 +370,9 @@ button.hud-chip {
   letter-spacing: 0;
   white-space: nowrap;
   text-shadow:
-    0 1px 0 rgba(0,0,0,0.95),
-    1px 1px 0 rgba(0,0,0,0.9),
-    -1px 1px 0 rgba(0,0,0,0.9);
+    0 1px 0 rgba(0,0,0,0.48),
+    1px 1px 0 rgba(0,0,0,0.45),
+    -1px 1px 0 rgba(0,0,0,0.45);
 }
 
 .formation-hira {
@@ -382,10 +382,10 @@ button.hud-chip {
   line-height: 1.05;
   white-space: nowrap;
   text-shadow:
-    0 2px 0 rgba(0,0,0,0.95),
-    1px 1px 0 rgba(0,0,0,0.95),
-    -1px 1px 0 rgba(0,0,0,0.95),
-    0 0 6px rgba(0,0,0,0.75);
+    0 2px 0 rgba(0,0,0,0.48),
+    1px 1px 0 rgba(0,0,0,0.48),
+    -1px 1px 0 rgba(0,0,0,0.48),
+    0 0 3px rgba(0,0,0,0.38);
 }
 
 .formation-bars {
@@ -5999,11 +5999,16 @@ button.hud-chip {
   padding: 8px 12px;
 }
 
-.npc-dialogue-translation-jp {
+.npc-dialogue-translation-source {
   margin: 12px 0 8px;
   font-size: clamp(16px, 4.4vw, 19px);
   font-weight: 720;
   line-height: 1.35;
+}
+
+.npc-dialogue-translation-source .npc-dialogue-line-grid {
+  grid-template-rows: 9px 18px;
+  margin-bottom: 4px;
 }
 
 .npc-dialogue-translation-en,
