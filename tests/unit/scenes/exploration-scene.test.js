@@ -89,12 +89,14 @@ await mock.module('../../../public/js/pixi/tween.js', {
   },
 });
 
-// ExplorationScene calls start/stopParallax; stub them.
+// ExplorationScene calls start/stopParallax + drives walking wobble from
+// isParallaxMoving(); stub everything it imports.
 await mock.module('../../../public/js/pixi/parallax.js', {
   namedExports: {
     startParallax: () => {},
     stopParallax: () => {},
     resizeParallax: () => {},
+    isParallaxMoving: () => false,
   },
 });
 
@@ -213,13 +215,21 @@ describe('ExplorationScene.syncCreatures', () => {
     assert.strictEqual(scene.disposed, true);
   });
 
-  it('onEnter registers a formation updater (walk wobble)', async () => {
+  it('onEnter registers a formation updater that mirrors parallax motion', async () => {
     const app = makeFakeApp();
     const scene = new ExplorationScene(app);
     await scene.enter({ roomId: 'room-1', allies: [] });
 
     assert.strictEqual(scene.registry.updaters.size, 1, 'one updater registered');
-    assert.strictEqual(scene.formation.walkingEnabled, true, 'walking is on by default');
+    // walkingEnabled is no longer pinned on by onEnter — the per-frame
+    // updater reads isParallaxMoving() so the wobble only plays while the
+    // battleground is actually scrolling between rooms. Test mock for
+    // parallax.js returns isParallaxMoving() === false, so it should be
+    // off here. Tick the updater and confirm it stays consistent.
+    assert.strictEqual(scene.formation.walkingEnabled, false, 'walking off when parallax not moving');
+    const updater = [...scene.registry.updaters.values()][0];
+    updater(1);
+    assert.strictEqual(scene.formation.walkingEnabled, false, 'updater keeps it off when parallax stationary');
 
     scene.exit();
   });

@@ -45,9 +45,12 @@ await mock.module('../../../public/js/ui/combat-events.js', {
 });
 
 const scrollStates = [];
+const startedSpeeds = [];
 await mock.module('../../../public/js/pixi/parallax.js', {
   namedExports: {
     setScrollState: (state) => scrollStates.push(state),
+    startParallax: (speed) => startedSpeeds.push(speed),
+    BATTLE_SKY_DRIFT_SPEED: 0.4,
   },
 });
 
