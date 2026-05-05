@@ -154,3 +154,41 @@ export function renderChoices({ heading, cards, onSelect, disableAfterSelect = t
 
   el.appendChild(list);
 }
+
+/**
+ * Render choice cards and return a Promise that resolves with the selected index.
+ * Use this for dialogue responses, name quizzes, item picks, skill picks, and targets.
+ *
+ * @param {object} options
+ * @param {string} options.heading - Heading rendered above the choices
+ * @param {Array<{sprite?: string, title: string, subtitle?: string, pills?: string, badge?: {text: string, color: string}, helpBtn?: Function}>} options.cards
+ * @param {boolean} [options.disableAfterSelect=true]
+ * @param {boolean} [options.clearAfterSelect]
+ * @param {HTMLElement} [options.container]
+ * @returns {Promise<number>}
+ */
+export function renderChoicesAsync(options = {}) {
+  const {
+    heading,
+    cards,
+    disableAfterSelect = true,
+    clearAfterSelect = disableAfterSelect,
+    container,
+  } = options;
+
+  return new Promise(resolve => {
+    let answered = false;
+    renderChoices({
+      heading,
+      cards,
+      disableAfterSelect,
+      clearAfterSelect,
+      container,
+      onSelect: index => {
+        if (answered) return;
+        answered = true;
+        resolve(index);
+      },
+    });
+  });
+}

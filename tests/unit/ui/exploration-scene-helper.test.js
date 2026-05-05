@@ -65,6 +65,9 @@ await mock.module('../../../public/js/api.js', {
 await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: { renderJpSentence: () => '', getKnownWords: () => new Set() },
 });
+await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
+  namedExports: { showNpcDialogueCard: async () => {} },
+});
 await mock.module('../../../public/js/ui/tutorial-copy.js', {
   namedExports: {
     getTutorialNarration: () => [],

@@ -1,9 +1,8 @@
 import { showFormation, hideFormation } from './combat-dom.js';
 import { showNpcTrainer, showNpcInDisplay, showDealer } from './exploration-dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
-import { speakText } from '../tts.js';
-import * as narrationBox from './narration-box.js';
-import { renderEnFirst, renderJpSentence, getKnownWords } from './bootstrap-client.js';
+import { renderEnFirst } from './bootstrap-client.js';
+import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { combatEvents } from './combat-events.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
@@ -153,28 +152,31 @@ export async function playNpcBattleIntro(
   let showedIntroLine = false;
   if (bootstrapLine?.tokens?.length) {
     await new Promise(r => setTimeout(r, 100));
-    narrationBox.forceHide();
-    const knownWords = getKnownWords();
-    const html = renderJpSentence(
-      bootstrapLine.tokens,
-      knownWords,
-      null,
-      bootstrapLine.overrides || {},
-      npcDialogue.useKanji || false
-    );
-    await narrationBox.show(html, { speaker: npcName, html: true });
+    await showNpcDialogueCard({
+      speaker: npcName,
+      speakerId: npcData.id,
+      tokens: bootstrapLine.tokens,
+      overrides: bootstrapLine.overrides || {},
+      useKanji: npcDialogue.useKanji || false,
+    });
     showedIntroLine = true;
   } else if (npcData.greeting) {
     // Legacy fallback for AI-generated greetings
     await new Promise(r => setTimeout(r, 100));
-    narrationBox.forceHide();
-    speakText(npcData.greeting);
-    await narrationBox.show(renderEnFirst(npcData.greeting), { speaker: npcName, html: true });
+    await showNpcDialogueCard({
+      speaker: npcName,
+      speakerId: npcData.id,
+      html: renderEnFirst(npcData.greeting),
+    });
     showedIntroLine = true;
   }
 
   if (showedIntroLine) {
-    await narrationBox.show(NPC_BATTLE_STRENGTH_PROMPT, { speaker: npcName });
+    await showNpcDialogueCard({
+      speaker: npcName,
+      speakerId: npcData.id,
+      text: NPC_BATTLE_STRENGTH_PROMPT,
+    });
   }
 
   // Scene may have changed while narration was showing; re-resolve.

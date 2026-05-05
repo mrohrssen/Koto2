@@ -33,7 +33,7 @@ await mock.module('../../../public/js/ui/ui-components.js', {
   namedExports: { renderChoices: args => { renderChoicesArgs = args; } },
 });
 
-const { showTargetPicker } = await import('../../../public/js/ui/post-combat-shop.js');
+const { show, showTargetPicker } = await import('../../../public/js/ui/post-combat-shop.js');
 
 describe('post-combat shop target picker', () => {
   beforeEach(() => {
@@ -46,5 +46,13 @@ describe('post-combat shop target picker', () => {
     ], () => {});
 
     assert.equal(renderChoicesArgs?.heading, 'Choose target');
+  });
+
+  it('labels item choices with Choose an item', () => {
+    show([
+      { id: 'apple', word: 'りんご', name: 'りんご', rarity: 'common', effect: { healAllPercent: 0.1 } },
+    ]);
+
+    assert.equal(renderChoicesArgs?.heading, 'Choose an item');
   });
 });

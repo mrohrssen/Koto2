@@ -853,6 +853,13 @@ button.hud-chip {
   overflow: visible;
 }
 
+.action-area:has(.npc-dialogue-shell) {
+  justify-content: flex-start;
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+}
+
 /* Container-query responsive flash cards */
 @container action-area (max-height: 200px) {
   .flash-card { min-height: 70px; }
@@ -5391,12 +5398,13 @@ button.hud-chip {
 .ui-choice-heading {
   width: 100%;
   max-width: 420px;
-  margin: 0 auto 8px;
-  font-size: 13px;
+  margin: 0 auto 6px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: rgba(53, 64, 82, 0.64);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .ui-choice {
@@ -5404,15 +5412,32 @@ button.hud-chip {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
+  min-height: 56px;
+  padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-elevated);
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.92), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 242, 230, 0.94));
+  box-shadow:
+    0 3px 0 rgba(75, 55, 34, 0.18),
+    0 8px 18px rgba(24, 33, 48, 0.08),
+    inset 0 0 0 1px rgba(116, 90, 57, 0.08);
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s, border-color 0.15s;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
   width: 100%;
+  overflow: hidden;
+}
+
+.ui-choice::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  pointer-events: none;
 }
 
 .ui-choice:active {
@@ -5421,8 +5446,11 @@ button.hud-chip {
 }
 
 .ui-choice--selected {
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 0 2px var(--accent-cyan);
+  border-color: #76b7f3;
+  box-shadow:
+    0 0 0 3px rgba(118, 183, 243, 0.35),
+    0 6px 16px rgba(36, 104, 170, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.52);
 }
 
 .ui-choice--disabled {
@@ -5454,8 +5482,8 @@ button.hud-chip {
 
 .ui-choice__title {
   font-weight: 700;
-  font-size: 14px;
-  color: var(--text-primary);
+  font-size: 15px;
+  color: #252b35;
 }
 
 .ui-choice__title .jp-unknown,
@@ -5505,6 +5533,387 @@ button.hud-chip {
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ========== NPC DIALOGUE CARD ========== */
+.npc-dialogue-shell {
+  width: 100%;
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 7px 8px max(44px, env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+}
+
+.npc-dialogue-card {
+  position: relative;
+  width: 100%;
+  height: min(214px, calc(100cqh - 206px));
+  min-height: 188px;
+  border-radius: 14px;
+  border: 3px solid #4d3c28;
+  background:
+    radial-gradient(circle at 42% 20%, rgba(255, 255, 255, 0.58), transparent 18%),
+    linear-gradient(180deg, #fff9eb, #f4dfbd);
+  box-shadow:
+    0 8px 17px rgba(0, 0, 0, 0.36),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.82),
+    inset 0 -26px 48px rgba(134, 78, 35, 0.13);
+  color: #17130f;
+  overflow: hidden;
+}
+
+.npc-dialogue-card::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 9px;
+  border: 1px solid rgba(100, 78, 48, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.62);
+  pointer-events: none;
+}
+
+.npc-dialogue-portrait {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  width: 112px;
+  height: min(171px, calc(100% - 36px));
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.npc-dialogue-portrait::before {
+  content: "";
+  position: absolute;
+  inset: 28px 6px 0;
+  border-radius: 999px 999px 14px 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(136, 90, 45, 0.08));
+}
+
+.npc-dialogue-portrait img {
+  width: 130%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 4px 3px rgba(64, 36, 24, 0.16));
+  position: relative;
+  z-index: 1;
+}
+
+.npc-dialogue-portrait--creature {
+  display: grid;
+  place-items: end center;
+}
+
+.npc-dialogue-portrait--creature::before {
+  inset: auto 6px 2px;
+  height: 72%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 68%, rgba(93, 60, 32, 0.16), transparent 54%),
+    linear-gradient(180deg, rgba(255, 248, 225, 0.28), rgba(154, 103, 54, 0.08));
+}
+
+.npc-dialogue-portrait--creature img {
+  width: 104%;
+  height: 88%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.npc-dialogue-copy {
+  position: absolute;
+  left: 133px;
+  right: 14px;
+  top: 28px;
+  bottom: 12px;
+}
+
+.npc-dialogue-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(101, 80, 52, 0.23);
+  margin-bottom: 10px;
+}
+
+.npc-dialogue-speaker {
+  color: #1f1712;
+  font-size: clamp(19px, 5.4cqw, 22px);
+  font-weight: 780;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.npc-dialogue-speaker-reading {
+  display: block;
+  margin-left: 3px;
+  margin-bottom: 2px;
+  color: #2d241d;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  font-weight: 640;
+}
+
+.npc-dialogue-tools {
+  display: flex;
+  gap: 5px;
+}
+
+.npc-dialogue-tool {
+  width: 34px;
+  height: 33px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, #fff8e9, #ead4aa);
+  border: 2px solid #756049;
+  box-shadow: 0 2px 0 #4e3b28, inset 0 0 0 1px rgba(255, 255, 255, 0.58);
+  color: #1f1a16;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.npc-dialogue-tool:disabled {
+  opacity: 0.45;
+}
+
+.npc-dialogue-text {
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", ui-rounded, system-ui, sans-serif;
+}
+
+.npc-dialogue-line-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--npc-dialogue-cols), max-content);
+  grid-template-rows: 8.5px 17px 9px;
+  column-gap: clamp(6px, 2.4cqw, 10px);
+  justify-content: start;
+  align-items: start;
+  text-align: center;
+  row-gap: 4px;
+  margin-bottom: 10px;
+}
+
+.npc-dialogue-romaji-row,
+.npc-dialogue-jp-row,
+.npc-dialogue-en-row {
+  display: contents;
+}
+
+.npc-dialogue-romaji-row .npc-dialogue-cell {
+  color: #53493e;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(8px, 2.25cqw, 9.1px);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.npc-dialogue-jp-row .npc-dialogue-cell {
+  color: #17130f;
+  font-size: clamp(13px, 3.6cqw, 14.5px);
+  font-weight: 520;
+  line-height: 1.05;
+}
+
+.npc-dialogue-en-row .npc-dialogue-cell {
+  color: #1d64a6;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(7.5px, 2.1cqw, 8.5px);
+  font-weight: 700;
+  line-height: 1.02;
+  transform: translateY(-3px);
+}
+
+.npc-dialogue-cell {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.npc-dialogue-utility-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0 16px;
+}
+
+.npc-dialogue-utility,
+.npc-dialogue-continue {
+  position: relative;
+  display: block;
+  height: 64px;
+  min-height: 0;
+  border-radius: 12px;
+  border: 3px solid #f4d9a5;
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.36);
+  box-shadow: 0 4px 0 rgba(44, 29, 20, 0.82), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+  font-weight: 800;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.npc-dialogue-utility::before,
+.npc-dialogue-continue::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background:
+    radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.22), transparent 16%),
+    linear-gradient(135deg, transparent 0 48%, rgba(255, 255, 255, 0.1) 49%, transparent 50%);
+  pointer-events: none;
+}
+
+.npc-dialogue-utility:active,
+.npc-dialogue-continue:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(44, 29, 20, 0.82), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+.npc-dialogue-utility:disabled {
+  opacity: 0.95;
+}
+
+.npc-dialogue-translate {
+  background: linear-gradient(180deg, #2f80db, #1d56be);
+}
+
+.npc-dialogue-learn {
+  background: linear-gradient(180deg, #559d3a, #2d772d);
+}
+
+.npc-dialogue-continue {
+  width: min(280px, calc(100% - 124px));
+  height: 74px;
+  min-height: 0;
+  margin: 0 auto;
+  background: linear-gradient(180deg, #e99c40, #bf6724);
+}
+
+.npc-dialogue-book-icon,
+.npc-dialogue-learn-icon {
+  position: absolute;
+  left: 10px;
+  top: 20px;
+  width: 28px;
+  height: 23px;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.24));
+}
+
+.npc-dialogue-book-icon::before,
+.npc-dialogue-book-icon::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 13px;
+  height: 20px;
+  background: #f8edd5;
+  border: 2px solid rgba(79, 48, 27, 0.5);
+  border-radius: 3px 1px 1px 3px;
+}
+
+.npc-dialogue-book-icon::before {
+  left: 1px;
+  transform: skewY(-7deg);
+}
+
+.npc-dialogue-book-icon::after {
+  right: 1px;
+  transform: skewY(7deg);
+}
+
+.npc-dialogue-learn-icon::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 9px;
+  width: 26px;
+  height: 7px;
+  background: #f7ebc7;
+  transform: skewX(-18deg);
+  box-shadow: 0 5px 0 rgba(247, 235, 199, 0.78), 0 10px 0 rgba(247, 235, 199, 0.58);
+}
+
+.npc-dialogue-learn-icon::after {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 1px;
+  width: 4px;
+  height: 21px;
+  background: #f7ebc7;
+  transform: rotate(90deg);
+}
+
+.npc-dialogue-btn-roman {
+  position: absolute;
+  left: 40px;
+  right: 6px;
+  top: 9px;
+  font-size: 7.5px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.npc-dialogue-btn-jp {
+  position: absolute;
+  left: 40px;
+  right: 6px;
+  top: 22px;
+  font-size: 17px;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.npc-dialogue-btn-en {
+  position: absolute;
+  left: 40px;
+  right: 6px;
+  top: 40px;
+  font-size: 8.5px;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.npc-dialogue-continue .npc-dialogue-btn-roman {
+  left: 0;
+  right: 0;
+  top: 9px;
+  font-size: 9px;
+}
+
+.npc-dialogue-continue .npc-dialogue-btn-jp {
+  left: 0;
+  right: 0;
+  top: 25px;
+  font-size: 26px;
+}
+
+.npc-dialogue-continue .npc-dialogue-btn-en {
+  left: 0;
+  right: 0;
+  top: 48px;
+  font-size: 9.5px;
+}
+
+.npc-dialogue-continue-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #f9e2b2;
+  font-size: clamp(18px, 5cqw, 24px);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.44);
 }
 
 /* — DMG effectiveness pill (target selection) — */

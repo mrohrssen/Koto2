@@ -2,6 +2,7 @@ import { describe, it, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 const sceneManagerState = { currentScene: null };
+let renderedChoices = null;
 
 function createElementStub() {
   return {
@@ -59,7 +60,10 @@ await mock.module('../../../public/js/ui/room-transition.js', {
   namedExports: { playRoomTransition: async () => {} },
 });
 await mock.module('../../../public/js/ui/ui-components.js', {
-  namedExports: { renderButtons: () => {}, renderChoices: () => {} },
+  namedExports: { renderButtons: () => {}, renderChoices: options => { renderedChoices = options; } },
+});
+await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
+  namedExports: { showNpcDialogueCard: async () => {} },
 });
 await mock.module('../../../public/js/ui/event-popup.js', {
   namedExports: { buff: () => {}, itemGained: () => {} },
@@ -88,6 +92,7 @@ const { init, renderSkillMaster } = await import('../../../public/js/ui/explorat
 describe('renderSkillMaster tutorial Cid narration', () => {
   beforeEach(() => {
     sceneManagerState.currentScene = null;
+    renderedChoices = null;
   });
 
   it('does not restart Cid entrance narration on same-room rerender', async () => {
@@ -195,5 +200,45 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     }
 
     assert.equal(showNarrationCalls, 1);
+  });
+
+  it('labels non-tutorial skill choices with Choose a skill', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    init({
+      getGameState: () => ({
+        phase: 'skillMaster',
+        meta: { tutorialStep: 1 },
+        run: {
+          stats: { startTime: 333 },
+          creatureParty: { active: [] },
+        },
+        room: { id: 'skill-room-heading', type: 'skillMaster' },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => ({
+        offered: [
+          { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+          { id: 'guard', name: 'Guard', desc: 'Defend' },
+          { id: 'haste', name: 'Haste', desc: 'Speed up' },
+        ],
+      }),
+    });
+
+    try {
+      await renderSkillMaster();
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.equal(renderedChoices?.heading, 'Choose a skill');
   });
 });

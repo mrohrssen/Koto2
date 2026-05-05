@@ -3,9 +3,10 @@
  * Handles post-combat NPC greetings, conversation rounds, and bond feedback.
  */
 
-import { renderJpSentence, renderEnFirst, getKnownWords } from './bootstrap-client.js';
+import { renderEnFirst } from './bootstrap-client.js';
 import { playDialogueAudio } from '../tts.js';
-import { renderButtonsAsync } from './ui-components.js';
+import { renderChoicesAsync } from './ui-components.js';
+import { showNpcDialogueCard } from './npc-dialogue-card.js';
 
 // Coordinator deps (set via init)
 let ctx = null;
@@ -24,15 +25,34 @@ export async function showNpcGreeting(npcData) {
   if (!npcData?.greeting) return;
   const npcName = npcData.nameEn || npcData.name;
   if (ctx.showNpcSprite) ctx.showNpcSprite(npcName, npcData.id, npcData);
-  if (npcData.greetingTts && npcData.userId) {
-    playDialogueAudio(npcData.userId, npcData.greetingTts);
-  }
-  await ctx.narration.showNarration(renderEnFirst(npcData.greeting), { speaker: npcName, html: true });
+  await showNpcDialogueCard(taggedDialogueOptions({
+    speaker: npcName,
+    html: renderEnFirst(npcData.greeting),
+    audio: npcData.greetingTts && npcData.userId ? { userId: npcData.userId, key: npcData.greetingTts } : null,
+  }));
   if (ctx.hideNpcSprite) ctx.hideNpcSprite();
   if (ctx.updateUI) ctx.updateUI();
 }
 
 export function isNpcDialogueActive() { return npcDialogueActive; }
+
+function taggedDialogueOptions({ speaker, html, audio }) {
+  return {
+    speaker,
+    html,
+    ...(audio ? { audio } : {}),
+  };
+}
+
+function tokenDialogueOptions({ speaker, line, useKanji, audio }) {
+  return {
+    speaker,
+    tokens: line?.tokens || [],
+    overrides: line?.overrides || {},
+    useKanji: !!useKanji,
+    ...(audio ? { audio } : {}),
+  };
+}
 
 /**
  * Run the full NPC post-combat dialogue flow.
@@ -53,40 +73,44 @@ export async function runNpcDialogue() {
 
       if (ctx.showNpcSprite) ctx.showNpcSprite(npcName, npc.id, npc);
 
-      const html = renderJpSentence(line.tokens, getKnownWords(), new Map(), line.overrides || {}, dialogueData.useKanji || false);
-      await ctx.narration.showNarration(html, { speaker: npcName, html: true });
+      await showNpcDialogueCard(tokenDialogueOptions({
+        speaker: npcName,
+        line,
+        useKanji: dialogueData.useKanji,
+      }));
     } else {
       const { npc, freed, rounds, userId, freedTts } = dialogueData;
       const npcName = npc.nameEn || npc.name;
 
       if (ctx.showNpcSprite) ctx.showNpcSprite(npcName, npc.id, npc);
 
-      if (freedTts && userId) {
-        playDialogueAudio(userId, freedTts);
-      }
-      await ctx.narration.showNarration(renderEnFirst(freed), { speaker: npcName, html: true });
+      await showNpcDialogueCard(taggedDialogueOptions({
+        speaker: npcName,
+        html: renderEnFirst(freed),
+        audio: freedTts && userId ? { userId, key: freedTts } : null,
+      }));
 
       let totalDelta = 0;
 
       for (let i = 0; i < rounds.length; i++) {
         const round = rounds[i];
 
-        if (round.npcLineTts && userId) {
-          playDialogueAudio(userId, round.npcLineTts);
-        }
-        await ctx.narration.showNarration(renderEnFirst(round.npcLine), { speaker: npcName, persistent: true, html: true });
+        await showNpcDialogueCard(taggedDialogueOptions({
+          speaker: npcName,
+          html: renderEnFirst(round.npcLine),
+          audio: round.npcLineTts && userId ? { userId, key: round.npcLineTts } : null,
+        }));
 
-        const selectedIndex = await renderButtonsAsync(
-          round.options.map(o => ({
-            label: renderEnFirst(typeof o === 'string' ? o : o.text),
-          }))
-        );
+        const selectedIndex = await renderChoicesAsync({
+          heading: 'Choose a response',
+          cards: round.options.map(o => ({
+            title: renderEnFirst(typeof o === 'string' ? o : o.text),
+          })),
+        });
 
         if (round.options[selectedIndex]?.tts && userId) {
           playDialogueAudio(userId, round.options[selectedIndex].tts);
         }
-
-        if (ctx.narration.forceHideNarration) ctx.narration.forceHideNarration();
 
         const result = await ctx.apiRespondNpcDialogue(i, selectedIndex);
         if (!result) break;

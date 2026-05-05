@@ -36,6 +36,7 @@ export function show(items) {
   items.forEach(item => { if (item.word) prefetchWord(item.word); });
 
   renderChoices({
+    heading: 'Choose an item',
     cards: items.map(item => {
       const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
       return {

@@ -11,6 +11,7 @@ import * as crestsEquipUI from './crests-equip.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
+import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
 import { savePvpTeam, getPvpTeams } from '../api.js';
@@ -538,6 +539,7 @@ export async function renderAreaSelection() {
   actionArea.appendChild(choiceContainer);
 
   renderChoices({
+    heading: 'Choose an area',
     cards: areas.map(a => ({
       title: `<strong>${a.nameEn || a.name}</strong>`,
       subtitle: a.theme || '',
@@ -684,6 +686,7 @@ export function renderShrine() {
   };
 
   renderChoices({
+    heading: 'Choose a creature',
     cards: allCreatures.map(creature => {
       const hpPercent = Math.floor((creature.hp / creature.maxHp) * 100);
       const spriteHtml = `<img src="${creatureStaticPath(creature.id)}" alt="" onerror="this.style.display='none'">`;
@@ -1321,6 +1324,7 @@ export async function renderSkillMaster() {
     }
 
     renderChoices({
+      heading: 'Choose a skill',
       cards: offers.slice(0, 3).map(s => ({
         title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
         subtitle: s.desc || skillMasterState.catalogById?.[s.id]?.desc || '',
@@ -1415,8 +1419,6 @@ function renderTutorialSkillMaster(offers) {
 
 // ============ FRIENDLY NPC ROOM ============
 
-const FRIENDLY_NPC_ITEM_PROMPT = 'Which item would you like?';
-
 /** Module-level state to avoid refetch across re-renders */
 let friendlyNpcState = {
   roomId: null,
@@ -1427,6 +1429,33 @@ let friendlyNpcState = {
   greetingShown: false,
   renderedCards: null
 };
+
+async function showPlayerItemRequest(item) {
+  if (item.tokens?.length) {
+    await showNpcDialogueCard({
+      speaker: 'You',
+      tokens: item.tokens,
+      overrides: item.overrides || {},
+      useKanji: false,
+    });
+    return;
+  }
+  if (item.shopTokens?.length) {
+    await showNpcDialogueCard({
+      speaker: 'You',
+      tokens: item.shopTokens,
+      overrides: item.shopOverrides || {},
+      useKanji: false,
+    });
+    return;
+  }
+  if (item.word) {
+    await showNpcDialogueCard({
+      speaker: 'You',
+      text: `${item.word}、ください`,
+    });
+  }
+}
 
 /**
  * Friendly NPC room — shows 3 item cards (food=heal or weapon=boost).
@@ -1519,25 +1548,23 @@ export async function renderFriendlyNpc() {
   const npc = room?.npc;
   const tutorialStep = getGameState()?.meta?.tutorialStep;
 
-  // Show the NPC greeting once, then keep the item prompt visible until
-  // the player picks an item.
-  if (npc && sceneModule?.showNarration && !friendlyNpcState.greetingShown) {
+  // Show the NPC greeting once; the item cards below carry the choice context.
+  if (npc && !friendlyNpcState.greetingShown) {
     friendlyNpcState.greetingShown = true;
     const greetingTokens = friendlyNpcState.greeting?.tokens;
-    let greetingContent;
-    if (greetingTokens?.length) {
-      greetingContent = renderJpSentence(greetingTokens, getKnownWords(), null, friendlyNpcState.greeting?.overrides || {}, false);
-    } else {
-      greetingContent = 'こんにちは！';
-    }
-    const narrationOpts = {
+    await showNpcDialogueCard({
       speaker: npc.nameEn || npc.name,
-      ...(greetingTokens?.length ? { html: true } : {}),
-    };
-    await sceneModule.showNarration(greetingContent, narrationOpts);
+      ...(greetingTokens?.length
+        ? {
+            tokens: greetingTokens,
+            overrides: friendlyNpcState.greeting?.overrides || {},
+            useKanji: false,
+          }
+        : { text: 'こんにちは！' }),
+    });
 
     // Tutorial step 2: Cid explains items after the shopkeeper's greeting,
-    // then the shopkeeper returns with the persistent item prompt.
+    // then the shopkeeper returns before item choices render.
     if (tutorialStep === 2 && !cidItemShopTutorialShown) {
       cidItemShopTutorialShown = true;
       const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
@@ -1566,15 +1593,11 @@ export async function renderFriendlyNpc() {
         await currentScene.showNpcSprite(npcSprite, { slideIn: true });
       }
     }
-
-    await sceneModule.showNarration(FRIENDLY_NPC_ITEM_PROMPT, {
-      speaker: npc.nameEn || npc.name,
-      persistent: true,
-    });
   }
 
   // Render item cards so they're visible
   renderChoices({
+    heading: 'Choose an item',
     cards: friendlyNpcState.renderedCards || offers.map(item => ({
       sprite: itemSpriteHtml(item.id, item.word),
       title: item.nameToken
@@ -1588,16 +1611,7 @@ export async function renderFriendlyNpc() {
       const item = offers[index];
       playSFX('creature-equip');
 
-      if (item.tokens?.length && sceneModule?.showNarration) {
-        const html = renderJpSentence(item.tokens, getKnownWords(), null, item.overrides || {}, false);
-        await sceneModule.showNarration(html, { html: true, speaker: 'You' });
-      } else if (item.shopTokens?.length && sceneModule?.showNarration) {
-        // Legacy fallback for in-progress game states
-        const html = renderJpSentence(item.shopTokens, getKnownWords(), null, item.shopOverrides || {}, false);
-        await sceneModule.showNarration(html, { html: true, speaker: 'You' });
-      } else if (item.word && sceneModule?.showNarration) {
-        await sceneModule.showNarration(`${item.word}、ください`, { speaker: 'You' });
-      }
+      await showPlayerItemRequest(item);
 
       const gameState = getGameState();
       const party = gameState.run?.creatureParty?.active || [];
@@ -1801,6 +1815,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   }
 
   renderChoices({
+    heading: 'Choose a skill',
     cards: offers.slice(0, 3).map(s => ({
       title: s.name || s.id,
       subtitle: s.desc || '',

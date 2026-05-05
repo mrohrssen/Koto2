@@ -112,8 +112,10 @@ function findAll(root, selector, results = []) {
 }
 
 const elementsById = new Map();
+let renderChoicesArgs = null;
 
 function resetDocument() {
+  renderChoicesArgs = null;
   elementsById.clear();
   elementsById.set('scene-area', new FakeElement('div', 'scene-area'));
   elementsById.set('action-area', new FakeElement('div', 'action-area'));
@@ -146,9 +148,10 @@ await mock.module('../../../public/js/ui/sprite-utils.js', {
 
 await mock.module('../../../public/js/ui/ui-components.js', {
   exports: {
-    renderChoices: ({ cards }) => {
+    renderChoices: (options) => {
+      renderChoicesArgs = options;
       const actionArea = document.getElementById('action-area');
-      actionArea.children = cards.map(() => {
+      actionArea.children = options.cards.map(() => {
         const choice = new FakeElement('button');
         choice.className = 'ui-choice';
         choice.parentNode = actionArea;
@@ -240,6 +243,7 @@ describe('fusion lab result copy', () => {
     const beforeScene = document.getElementById('scene-area').querySelector('.fusion-lab-scene');
     assert.match(beforeScene.innerHTML, /Fire Cat/);
     assert.doesNotMatch(beforeScene.innerHTML, /obtained|\+1 Copy/);
+    assert.equal(renderChoicesArgs?.heading, 'Choose a fusion');
 
     const startButton = beforeScene.querySelector('.fusion-start-btn');
     await startButton.events.click();

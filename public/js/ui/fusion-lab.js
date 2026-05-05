@@ -87,6 +87,7 @@ function render() {
 function renderRecipeTiles() {
   const recipes = fusionState?.recipes || [];
   renderChoices({
+    heading: 'Choose a fusion',
     cards: recipes.map(recipe => {
       const result = getCreature(recipe.resultId);
       return {

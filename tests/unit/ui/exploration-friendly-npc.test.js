@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const sceneManagerState = { currentScene: null };
 let renderedChoices = null;
+let dialogueCards = [];
 
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
@@ -47,6 +48,11 @@ await mock.module('../../../public/js/ui/ui-components.js', {
     renderChoices: choices => { renderedChoices = choices; },
   },
 });
+await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
+  namedExports: {
+    showNpcDialogueCard: async options => { dialogueCards.push(options); },
+  },
+});
 await mock.module('../../../public/js/ui/event-popup.js', {
   namedExports: { buff: () => {}, itemGained: () => {} },
 });
@@ -82,10 +88,11 @@ const { init, renderFriendlyNpc } = await import('../../../public/js/ui/explorat
 describe('renderFriendlyNpc item prompt', () => {
   beforeEach(() => {
     renderedChoices = null;
+    dialogueCards = [];
     sceneManagerState.currentScene = null;
   });
 
-  it('shows the shared English item-choice line only after the NPC greeting', async () => {
+  it('shows the NPC greeting as a dialogue card before item choices', async () => {
     const narrationCalls = [];
     let actionContent = '';
     const room = {
@@ -129,21 +136,17 @@ describe('renderFriendlyNpc item prompt', () => {
 
     await renderFriendlyNpc();
 
-    assert.equal(narrationCalls.length, 2);
-    assert.match(narrationCalls[0].content, /こんにちは！/);
-    assert.doesNotMatch(narrationCalls[0].content, /Which item would you like\?/);
-    assert.equal(narrationCalls[0].options.speaker, 'Guide');
-    assert.notEqual(narrationCalls[0].options.persistent, true);
-    assert.equal(narrationCalls[1].content, 'Which item would you like?');
-    assert.equal(narrationCalls[1].options.speaker, 'Guide');
-    assert.equal(narrationCalls[1].options.persistent, true);
+    assert.equal(narrationCalls.length, 0);
+    assert.equal(dialogueCards[0].speaker, 'Guide');
+    assert.deepEqual(dialogueCards[0].tokens, [{ text: 'こんにちは！' }]);
     assert.match(actionContent, /prologue-continue-hint/);
     assert.match(actionContent, /Click to continue!/);
     assert.doesNotMatch(actionContent, /Loading/);
     assert.ok(renderedChoices, 'item choices should still render after the prompt');
+    assert.equal(renderedChoices.heading, 'Choose an item');
   });
 
-  it('in tutorial mode lets Cid interrupt after the NPC greeting before the persistent item prompt', async () => {
+  it('in tutorial mode lets Cid interrupt after the NPC greeting before item choices', async () => {
     const narrationCalls = [];
     const room = {
       id: 'friendly-npc-tutorial-room',
@@ -186,16 +189,59 @@ describe('renderFriendlyNpc item prompt', () => {
 
     await renderFriendlyNpc();
 
-    assert.equal(narrationCalls.length, 3);
-    assert.match(narrationCalls[0].content, /いらっしゃいませ！/);
-    assert.equal(narrationCalls[0].options.speaker, 'Shopkeeper');
-    assert.notEqual(narrationCalls[0].options.persistent, true);
-    assert.equal(narrationCalls[1].content, "Here you'll be offered items to power up. Choose wisely!");
-    assert.equal(narrationCalls[1].options.speaker, 'Cid');
-    assert.equal(narrationCalls[2].content, 'Which item would you like?');
-    assert.equal(narrationCalls[2].options.speaker, 'Shopkeeper');
-    assert.equal(narrationCalls[2].options.persistent, true);
+    assert.equal(dialogueCards[0].speaker, 'Shopkeeper');
+    assert.deepEqual(dialogueCards[0].tokens, [{ text: 'いらっしゃいませ！' }]);
+    assert.equal(narrationCalls.length, 1);
+    assert.equal(narrationCalls[0].content, "Here you'll be offered items to power up. Choose wisely!");
+    assert.equal(narrationCalls[0].options.speaker, 'Cid');
     assert.ok(renderedChoices, 'item choices should render after tutorial prompt');
+    assert.equal(renderedChoices.heading, 'Choose an item');
+  });
+
+  it('shows player item request as a You dialogue card before applying the item', async () => {
+    let itemApplied = false;
+    const room = {
+      id: 'friendly-npc-player-request-room',
+      type: 'friendlyNpc',
+      npc: { name: '案内人', nameEn: 'Guide' },
+      friendlyNpc: { completed: false },
+    };
+
+    init({
+      getGameState: () => ({
+        phase: 'friendlyNpc',
+        room,
+        meta: { tutorialStep: 0 },
+        run: { creatureParty: { active: [] } },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => ({
+        offered: [
+          {
+            id: 'test-apple',
+            word: 'りんご',
+            reading: 'りんご',
+            nameToken: { text: 'りんご' },
+            effect: { healAllPercent: 0.2 },
+          },
+        ],
+      }),
+      apiChooseFriendlyNpcItem: async () => {
+        itemApplied = true;
+        return { state: { updated: true } };
+      },
+    });
+
+    await renderFriendlyNpc();
+    await renderedChoices.onSelect(0);
+
+    const youLine = dialogueCards.find(card => card.speaker === 'You');
+    assert.ok(youLine);
+    assert.match(youLine.html || youLine.text || '', /ください|りんご/);
+    assert.equal(itemApplied, true);
   });
 
   it('labels friendly NPC item target selection with Choose target', async () => {

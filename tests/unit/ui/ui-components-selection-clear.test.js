@@ -106,7 +106,7 @@ globalThis.document = {
   getElementById: id => (id === 'action-area' ? actionArea : null),
 };
 
-const { renderButtonsAsync, renderChoices } = await import('../../../public/js/ui/ui-components.js');
+const { renderButtonsAsync, renderChoices, renderChoicesAsync } = await import('../../../public/js/ui/ui-components.js');
 
 describe('selection clearing', () => {
   beforeEach(() => {
@@ -139,5 +139,21 @@ describe('selection clearing', () => {
     assert.match(actionArea.innerHTML, /prologue-continue-hint/);
     assert.match(actionArea.innerHTML, /Click to continue!/);
     assert.equal(actionArea.querySelectorAll('.ui-choice').length, 0);
+  });
+
+  it('resolves async card choices with the selected index and heading', async () => {
+    const selected = renderChoicesAsync({
+      heading: 'Choose a response',
+      cards: [{ title: 'はい' }, { title: 'いいえ' }],
+    });
+
+    assert.equal(actionArea.children[0].className, 'ui-choice-heading');
+    assert.equal(actionArea.children[0].textContent, 'Choose a response');
+
+    const choices = actionArea.querySelectorAll('.ui-choice');
+    choices[1].click();
+
+    assert.equal(await selected, 1);
+    assert.match(actionArea.innerHTML, /prologue-continue-hint/);
   });
 });

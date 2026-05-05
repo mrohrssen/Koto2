@@ -7,7 +7,7 @@ import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { PLATFORM } from '../platform.js';
 import { logger } from '../logger.js';
-import { renderJpSentence, renderEnFirst, getKnownWords } from './bootstrap-client.js';
+import { renderEnFirst } from './bootstrap-client.js';
 import { t, tPlain } from './i18n.js';
 import { burstParticles } from '../pixi/effects.js';
 import {
@@ -17,8 +17,9 @@ import {
 import { popupBuff } from '../pixi/text.js';
 import { hideEnemy, showFormation } from './combat-dom.js';
 import { showNpcInDisplay } from './exploration-dom.js';
-import { SPRITE_VERSION } from './sprite-utils.js';
-import { renderButtonsAsync } from './ui-components.js';
+import { SPRITE_VERSION, creatureStaticPath } from './sprite-utils.js';
+import { renderChoicesAsync } from './ui-components.js';
+import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { playDialogueAudio } from '../tts.js';
 import { showMoves, setActiveLabel } from './move-select.js';
 import { clear as clearTargetSelect } from './target-select.js';
@@ -41,7 +42,40 @@ export function init(deps) {
 
 function buildCreatureSpeaker(creature = {}, fallbackName = '') {
   const reading = creature.baseReading || creature.creatureBaseReading || creature.reading || creature.name || fallbackName || '';
-  return { name: reading, reading, meaning: '' };
+  const id = creature.id || creature.creatureId || '';
+  return { name: reading, reading, meaning: '', id };
+}
+
+function simpleChoiceCards(labels) {
+  return labels.map(label => ({ title: label }));
+}
+
+function dialogueOptionsForCreatureSpeaker(speaker) {
+  const speakerName = typeof speaker === 'string' ? speaker : (speaker?.name || '');
+  const speakerReading = typeof speaker === 'object' ? speaker?.reading : '';
+  const creatureId = typeof speaker === 'object' ? speaker?.id : '';
+  return {
+    speaker: speakerName,
+    speakerReading: speakerReading && speakerReading !== speakerName ? speakerReading : speakerReading || undefined,
+    ...(creatureId ? {
+      speakerPortrait: creatureStaticPath(creatureId),
+      portraitKind: 'creature',
+    } : {}),
+  };
+}
+
+async function showCreatureDialogue({ speaker, prompt, fallbackText }) {
+  const dialogueSpeaker = dialogueOptionsForCreatureSpeaker(speaker);
+  if (prompt?.tokens?.length) {
+    await showNpcDialogueCard({
+      ...dialogueSpeaker,
+      tokens: prompt.tokens,
+      overrides: prompt.overrides || {},
+      useKanji: false,
+    });
+    return;
+  }
+  await showNpcDialogueCard({ ...dialogueSpeaker, text: fallbackText });
 }
 
 // ---- Pure helpers (explicit state inputs) ----
@@ -188,12 +222,13 @@ function showBefriendTargetSelect(enemies) {
     const actionArea = document.getElementById('action-area');
     if (!actionArea) { resolve(-1); return; }
 
-    renderButtonsAsync(
-      eligible.map(e => ({
-        label: `${e.nameEn || e.name} (HP: ${Math.round(e.hp / e.maxHp * 100)}%)`,
+    renderChoicesAsync({
+      heading: 'Choose a creature',
+      cards: eligible.map(e => ({
+        title: `${e.nameEn || e.name} (HP: ${Math.round(e.hp / e.maxHp * 100)}%)`,
       })),
-      { container: actionArea }
-    ).then(idx => resolve(eligible[idx].index));
+      container: actionArea,
+    }).then(idx => resolve(eligible[idx].index));
   });
 }
 
@@ -201,25 +236,26 @@ function showBefriendTargetSelect(enemies) {
  * Show one round of befriend conversation.
  * Returns the selected option index.
  */
-function showConversationRound(round, creatureSpeaker) {
-  // Show creature's line in narration box
-  ctx.narration.showNarration(round.speaker, {
-    speaker: creatureSpeaker,
-    persistent: true
+async function showConversationRound(round, creatureSpeaker) {
+  await showNpcDialogueCard({
+    ...dialogueOptionsForCreatureSpeaker(creatureSpeaker),
+    text: round.speaker,
   });
 
-  return renderButtonsAsync(
-    round.options.map(o => ({
-      label: renderEnFirst(typeof o === 'string' ? o : o.text),
-    }))
-  );
+  return renderChoicesAsync({
+    heading: 'Choose a response',
+    clearAfterSelect: false,
+    cards: round.options.map(o => ({
+      title: renderEnFirst(typeof o === 'string' ? o : o.text),
+    })),
+  });
 }
 
 /**
  * Show green/red feedback on answer options.
  */
 function showAnswerFeedback(selectedIndex, correctIndex, correct) {
-  document.querySelectorAll('#action-area .ui-btn').forEach((o, idx) => {
+  document.querySelectorAll('#action-area .ui-choice').forEach((o, idx) => {
     o.style.pointerEvents = 'none';
     if (idx === correctIndex) {
       o.style.borderColor = 'var(--success-color, #4ade80)';
@@ -278,7 +314,10 @@ export async function handleBefriendTalk() {
         const alive = enemies.filter(e => e.hp > 0);
         const creatureName = buildCreatureSpeaker(alive[0], 'Creature').name || 'Creature';
 
-        ctx.narration.showNarration(`${creatureName} refused to talk!`, { persistent: false });
+        await showNpcDialogueCard({
+          ...dialogueOptionsForCreatureSpeaker(buildCreatureSpeaker(alive[0], 'Creature')),
+          text: `${creatureName} refused to talk!`,
+        });
         if (ctx.delay) await ctx.delay(600);
 
         await showBefriendEnemyAttacksAnimated(
@@ -333,6 +372,7 @@ export async function handleBefriendTalk() {
  */
 export async function renderBefriendQuiz(quizData, result) {
   const creatureSpeaker = buildCreatureSpeaker({
+    id: quizData.creatureId,
     name: quizData.creatureName,
     baseReading: quizData.creatureBaseReading,
   });
@@ -373,29 +413,23 @@ export async function renderBefriendQuiz(quizData, result) {
     }
   }
 
-  // Show "まって!!" narration (creature calls out first)
-  if (quizData.waitPrompt) {
-    const waitHtml = renderJpSentence(
-      quizData.waitPrompt.tokens,
-      getKnownWords(),
-      new Map(),
-      quizData.waitPrompt.overrides || {}
-    );
-    await ctx.narration.showNarration(waitHtml, { speaker: creatureSpeaker, html: true });
-  } else {
-    await ctx.narration.showNarration('まって！！', { speaker: creatureSpeaker });
-  }
+  // Show "まって!!" dialogue (creature calls out first)
+  await showCreatureDialogue({
+    speaker: creatureSpeaker,
+    prompt: quizData.waitPrompt,
+    fallbackText: 'まって！！',
+  });
 
-  // Show Fight / Talk choice (buttons render immediately)
-  const choicePromise = renderButtonsAsync([
-    { label: 'たたかう (Fight)' },
-    { label: 'はなす (Talk)' },
-  ]);
+  // Show Fight / Talk choice (cards render immediately)
+  const choicePromise = renderChoicesAsync({
+    heading: 'Choose an action',
+    cards: simpleChoiceCards(['たたかう (Fight)', 'はなす (Talk)']),
+  });
 
   // Tutorial step 1: lock to Talk with glow, then Cid encourages befriending
   const tutorialStep = ctx.getGameState()?.meta?.tutorialStep;
   if (tutorialStep === 1) {
-    const btns = document.querySelectorAll('#action-area .ui-btn');
+    const btns = document.querySelectorAll('#action-area .ui-choice');
     if (btns[0]) btns[0].classList.add('tutorial-dimmed');   // Fight — faded, unclickable
     if (btns[1]) btns[1].classList.add('tutorial-highlight'); // Talk — gold glow
     const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
@@ -465,21 +499,16 @@ export async function renderBefriendQuiz(quizData, result) {
   // Wrapped in a loop to handle tutorial retry on wrong answers
   let quizDone = false;
   while (!quizDone) {
-    if (quizData.namePrompt) {
-      const nameHtml = renderJpSentence(
-        quizData.namePrompt.tokens,
-        getKnownWords(),
-        new Map(),
-        quizData.namePrompt.overrides || {}
-      );
-      await ctx.narration.showNarration(nameHtml, { speaker: creatureSpeaker, html: true });
-    } else {
-      await ctx.narration.showNarration('なまえは？', { speaker: creatureSpeaker });
-    }
+    await showCreatureDialogue({
+      speaker: creatureSpeaker,
+      prompt: quizData.namePrompt,
+      fallbackText: 'なまえは？',
+    });
 
-    const selectedIdx = await renderButtonsAsync(
-      quizData.options.map(opt => ({ label: opt.name }))
-    );
+    const selectedIdx = await renderChoicesAsync({
+      heading: 'Choose a name',
+      cards: quizData.options.map(opt => ({ title: opt.name })),
+    });
 
     const selectedId = quizData.options[selectedIdx]?.id ?? null;
 
@@ -530,17 +559,11 @@ export async function renderBefriendQuiz(quizData, result) {
   if (answerResult.correct) {
     // Befriended!
     playSFX('creature-skill');
-    if (quizData.successPrompt) {
-      const successHtml = renderJpSentence(
-        quizData.successPrompt.tokens,
-        getKnownWords(),
-        new Map(),
-        quizData.successPrompt.overrides || {}
-      );
-      await ctx.narration.showNarration(successHtml, { speaker: creatureSpeaker, html: true });
-    } else {
-      await ctx.narration.showNarration('じゃあ、友達になろう！', { speaker: creatureSpeaker });
-    }
+    await showCreatureDialogue({
+      speaker: creatureSpeaker,
+      prompt: quizData.successPrompt,
+      fallbackText: 'じゃあ、友達になろう！',
+    });
 
     const capturedId = answerResult.capturedId;
     const capturedIdx = answerResult.capturedIndex;
@@ -576,17 +599,11 @@ export async function renderBefriendQuiz(quizData, result) {
   }
 
   // Wrong answer — creature fights back
-  if (quizData.wrongPrompt) {
-    const wrongHtml = renderJpSentence(
-      quizData.wrongPrompt.tokens,
-      getKnownWords(),
-      new Map(),
-      quizData.wrongPrompt.overrides || {}
-    );
-    await ctx.narration.showNarration(wrongHtml, { speaker: creatureSpeaker, html: true });
-  } else {
-    await ctx.narration.showNarration('ちがう！', { speaker: creatureSpeaker });
-  }
+  await showCreatureDialogue({
+    speaker: creatureSpeaker,
+    prompt: quizData.wrongPrompt,
+    fallbackText: 'ちがう！',
+  });
 
   await showBefriendEnemyAttacksAnimated(
     answerResult.counterAttack,
@@ -707,7 +724,7 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
       if (!answerResult.correct) {
         // --- FAILURE ---
         // Click-to-continue (no auto-dismiss) so players can read it.
-        await ctx.narration.showNarration('？？？', { speaker: creatureSpeaker });
+        await showNpcDialogueCard({ ...dialogueOptionsForCreatureSpeaker(creatureSpeaker), text: '？？？' });
 
         // Shake target enemy
         const slots = document.querySelectorAll('#enemy-formation .formation-slot');
@@ -820,7 +837,10 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
 
         playSFX('creature-skill');
         // Click-to-continue (no auto-dismiss) so players can read it.
-        await ctx.narration.showNarration('\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01', { speaker: creatureSpeaker });
+        await showNpcDialogueCard({
+          ...dialogueOptionsForCreatureSpeaker(creatureSpeaker),
+          text: '\u3058\u3083\u3042\u3001\u53cb\u9054\u306b\u306a\u308d\u3046\uff01',
+        });
 
         if (captured?.id || typeof targetEnemyIndex === 'number') {
           const slot = (typeof targetEnemyIndex === 'number'

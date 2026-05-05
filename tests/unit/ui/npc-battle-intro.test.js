@@ -11,6 +11,7 @@ import assert from 'node:assert/strict';
 // reveal enemies via syncCreatures.
 
 const sceneManagerState = { currentScene: null };
+const dialogueCards = [];
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
 });
@@ -41,6 +42,12 @@ await mock.module('../../../public/js/ui/narration-box.js', {
   namedExports: {
     show: async (text, opts) => { narrationLog.push({ text, opts }); },
     forceHide: () => {},
+  },
+});
+
+await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
+  namedExports: {
+    showNpcDialogueCard: async options => { dialogueCards.push(options); },
   },
 });
 
@@ -90,6 +97,7 @@ describe('playNpcBattleIntro (Bug #9 fix)', () => {
   beforeEach(() => {
     sceneManagerState.currentScene = null;
     narrationLog.length = 0;
+    dialogueCards.length = 0;
     if (typeof globalThis.document === 'undefined') {
       globalThis.document = { getElementById: () => null };
     }
@@ -196,13 +204,11 @@ describe('playNpcBattleIntro (Bug #9 fix)', () => {
       },
     );
 
-    assert.equal(narrationLog.length, 2);
-    assert.match(narrationLog[0].text, /行くよ！/);
-    assert.equal(narrationLog[0].opts.speaker, 'Child');
-    assert.equal(narrationLog[0].opts.html, true);
-    assert.equal(narrationLog[1].text, "Let's see how strong you are!");
-    assert.equal(narrationLog[1].opts.speaker, 'Child');
-    assert.notEqual(narrationLog[1].opts.html, true);
+    assert.equal(dialogueCards[0].speaker, 'Child');
+    assert.deepEqual(dialogueCards[0].tokens, [{ text: '行くよ！' }]);
+    assert.equal(dialogueCards[1].speaker, 'Child');
+    assert.equal(dialogueCards[1].text, "Let's see how strong you are!");
+    assert.equal(narrationLog.length, 0);
   });
 });
 
