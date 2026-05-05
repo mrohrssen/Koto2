@@ -73,4 +73,39 @@ describe('DialogueTranslationCache', () => {
     assert.equal(cache.get('こんにちは。').translation, 'Hello.');
     assert.equal(existsSync(join(tempDir, 'dialogue-translation-cache.json')), false);
   });
+
+  it('stores entity-aware entries under a composed cache key', () => {
+    const cache = new DialogueTranslationCache({ inMemory: true });
+    const key = DialogueTranslationCache.keyFor('花は強い！', 'creature:hana:花:Flower');
+
+    cache.set(key, 'Flower is strong!', {
+      sourceText: '花は強い！',
+      entitySignature: 'creature:hana:花:Flower',
+      entities: [{ id: 'hana', type: 'creature', text: 'Flower', start: 0, end: 6 }],
+      provider: 'openai',
+      model: 'gpt-5-mini'
+    });
+
+    const cached = cache.get(key);
+    assert.equal(cached.sourceText, '花は強い！');
+    assert.equal(cached.entitySignature, 'creature:hana:花:Flower');
+    assert.equal(cached.translation, 'Flower is strong!');
+    assert.deepEqual(cached.entities, [{ id: 'hana', type: 'creature', text: 'Flower', start: 0, end: 6 }]);
+  });
+
+  it('keeps plain text and entity-aware translations separate', () => {
+    const cache = new DialogueTranslationCache({ inMemory: true });
+    const plainKey = DialogueTranslationCache.keyFor('花は強い！', '');
+    const entityKey = DialogueTranslationCache.keyFor('花は強い！', 'creature:hana:花:Flower');
+
+    cache.set(plainKey, 'Flowers are strong!', { sourceText: '花は強い！' });
+    cache.set(entityKey, 'Flower is strong!', {
+      sourceText: '花は強い！',
+      entitySignature: 'creature:hana:花:Flower',
+      entities: [{ id: 'hana', type: 'creature', text: 'Flower', start: 0, end: 6 }]
+    });
+
+    assert.equal(cache.get(plainKey).translation, 'Flowers are strong!');
+    assert.equal(cache.get(entityKey).translation, 'Flower is strong!');
+  });
 });

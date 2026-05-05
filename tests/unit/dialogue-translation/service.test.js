@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { DialogueTranslationCache } from '../../../src/dialogue-translation/cache.js';
 import {
   buildDialogueTranslationConfig,
+  buildEntitySignature,
   buildDialogueTranslationPrompts,
+  normalizeDialogueEntities,
+  parseEntityMarkedTranslation,
   sanitizeTranslationOutput,
   translateDialogueText,
 } from '../../../src/dialogue-translation/service.js';
@@ -47,6 +50,44 @@ describe('dialogue translation service', () => {
     assert.match(prompts.userPrompt, /いまは怖いけど、一緒に行こう。/);
   });
 
+  it('normalizes protected dialogue entities from trusted game metadata', () => {
+    const entities = normalizeDialogueEntities([
+      { id: ' hana ', type: 'creature', surface: ' 花 ', displayName: ' Flower ' },
+      { id: '', type: 'creature', surface: '猫', displayName: 'Cat' },
+      { id: 'bad', type: 'creature', surface: '犬', displayName: '' },
+      { id: 'npc-1', type: 'npc', surface: 'ソラ', displayName: 'Sora' }
+    ]);
+
+    assert.deepEqual(entities, [
+      { id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' },
+      { id: 'npc-1', type: 'npc', surface: 'ソラ', displayName: 'Sora' }
+    ]);
+  });
+
+  it('builds stable order-independent entity signatures', () => {
+    const first = buildEntitySignature([
+      { id: 'sora', type: 'npc', surface: 'ソラ', displayName: 'Sora' },
+      { id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }
+    ]);
+    const second = buildEntitySignature([
+      { id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' },
+      { id: 'sora', type: 'npc', surface: 'ソラ', displayName: 'Sora' }
+    ]);
+
+    assert.equal(first, second);
+    assert.equal(first, 'creature:hana:花:Flower|npc:sora:ソラ:Sora');
+  });
+
+  it('adds protected entity marker rules to translation prompts', () => {
+    const prompts = buildDialogueTranslationPrompts('花は強い！', [
+      { id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }
+    ]);
+
+    assert.match(prompts.systemPrompt, /Protected game entity names/);
+    assert.match(prompts.userPrompt, /Every listed protected game entity/);
+    assert.match(prompts.userPrompt, /花 = \[\[entity:hana\|Flower\]\]/);
+  });
+
   it('sanitizes plain text translation output', () => {
     assert.equal(sanitizeTranslationOutput(' "Let us go." '), 'Let us go.');
     assert.equal(sanitizeTranslationOutput('```text\nLet us go.\n```'), 'Let us go.');
@@ -73,6 +114,7 @@ describe('dialogue translation service', () => {
     assert.equal(result.ok, true);
     assert.equal(result.cached, true);
     assert.equal(result.translation, 'Wait!');
+    assert.deepEqual(result.entities, []);
     assert.equal(called, false);
   });
 
@@ -93,6 +135,7 @@ describe('dialogue translation service', () => {
     assert.equal(result.ok, true);
     assert.equal(result.cached, false);
     assert.equal(result.translation, "Let's go.");
+    assert.deepEqual(result.entities, []);
     assert.equal(cache.get('行こう。').translation, "Let's go.");
     assert.equal(calls.length, 1);
     assert.equal(calls[0].purpose, 'dialogue-translation');
@@ -145,5 +188,78 @@ describe('dialogue translation service', () => {
 
     assert.deepEqual(badOutput, { ok: false, error: 'translation_unavailable' });
     assert.equal(cache.get('待って！'), null);
+  });
+
+  it('parses valid entity markers into plain text and spans', () => {
+    const result = parseEntityMarkedTranslation('Wow, [[entity:hana|Flower]] is strong!', [
+      { id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }
+    ]);
+
+    assert.deepEqual(result, {
+      ok: true,
+      translation: 'Wow, Flower is strong!',
+      entities: [{ id: 'hana', type: 'creature', text: 'Flower', start: 5, end: 11 }]
+    });
+  });
+
+  it('rejects malformed, unknown, and mismatched entity markers', () => {
+    const entities = [{ id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }];
+
+    assert.deepEqual(parseEntityMarkedTranslation('[[entity:hana|flower]] is strong!', entities), {
+      ok: false,
+      error: 'translation_unavailable'
+    });
+    assert.deepEqual(parseEntityMarkedTranslation('[[entity:neko|Cat]] is strong!', entities), {
+      ok: false,
+      error: 'translation_unavailable'
+    });
+    assert.deepEqual(parseEntityMarkedTranslation('[[entity:hana|Flower] is strong!', entities), {
+      ok: false,
+      error: 'translation_unavailable'
+    });
+  });
+
+  it('rejects output missing required markers when source contains the protected surface', async () => {
+    const cache = new DialogueTranslationCache({ inMemory: true });
+    let calls = 0;
+
+    const result = await translateDialogueText({
+      text: '花は強い！',
+      entities: [{ id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }],
+      cache,
+      chatFn: async () => {
+        calls += 1;
+        return calls === 1 ? 'Flowers are strong!' : 'Flower is strong!';
+      },
+      config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' }
+    });
+
+    assert.deepEqual(result, { ok: false, error: 'translation_unavailable' });
+    assert.equal(calls, 2);
+  });
+
+  it('retries once and caches when corrected output contains required markers', async () => {
+    const cache = new DialogueTranslationCache({ inMemory: true });
+    const calls = [];
+
+    const result = await translateDialogueText({
+      text: '花は強い！',
+      entities: [{ id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }],
+      cache,
+      chatFn: async (args) => {
+        calls.push(args);
+        return calls.length === 1 ? 'Flowers are strong!' : '[[entity:hana|Flower]] is strong!';
+      },
+      config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' }
+    });
+
+    assert.deepEqual(result, {
+      ok: true,
+      translation: 'Flower is strong!',
+      entities: [{ id: 'hana', type: 'creature', text: 'Flower', start: 0, end: 6 }],
+      cached: false
+    });
+    assert.equal(calls.length, 2);
+    assert.match(calls[1].messages[0].content, /previous answer did not follow/);
   });
 });

@@ -4,6 +4,12 @@ import { dataPath } from '../data-dir.js';
 const DEFAULT_CACHE_FILE = 'dialogue-translation-cache.json';
 
 export class DialogueTranslationCache {
+  static keyFor(sourceText, entitySignature = '') {
+    const text = String(sourceText || '').trim();
+    const signature = String(entitySignature || '').trim();
+    return signature ? `${text}\n::entities::${signature}` : text;
+  }
+
   constructor({ inMemory = false, fileName = DEFAULT_CACHE_FILE } = {}) {
     this._inMemory = inMemory;
     this._filePath = inMemory ? null : dataPath(fileName);
@@ -29,19 +35,27 @@ export class DialogueTranslationCache {
     return this._data[sourceText] || null;
   }
 
-  set(sourceText, translation, { provider = '', model = '' } = {}) {
+  set(cacheKey, translation, {
+    sourceText = cacheKey,
+    entitySignature = '',
+    entities = [],
+    provider = '',
+    model = ''
+  } = {}) {
     const now = new Date().toISOString();
-    const previous = this._data[sourceText] || {};
+    const previous = this._data[cacheKey] || {};
     const entry = {
       sourceText,
+      entitySignature,
       translation,
+      entities: Array.isArray(entities) ? entities : [],
       provider,
       model,
       createdAt: previous.createdAt || now,
       updatedAt: now
     };
 
-    this._data[sourceText] = entry;
+    this._data[cacheKey] = entry;
     this._save();
     return entry;
   }

@@ -44,12 +44,15 @@ export function getAuthHeaders() {
   };
 }
 
-export async function translateDialogue(text) {
+export async function translateDialogue(text, entities = []) {
   try {
+    const body = { text };
+    if (Array.isArray(entities) && entities.length) body.entities = entities;
+
     const response = await fetch(apiUrl('/api/dialogue/translate'), {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ text })
+      body: JSON.stringify(body)
     });
 
     const data = await response.json();

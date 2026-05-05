@@ -25,6 +25,7 @@ export default function createDialogueRoutes({
 
     const result = await translateDialogueText({
       text,
+      entities: req.body?.entities,
       cache: dialogueTranslationCache,
       chatFn: dialogueTranslationChatFn,
       config: getDialogueTranslationConfig()

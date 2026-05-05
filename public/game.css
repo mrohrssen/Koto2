@@ -6021,6 +6021,12 @@ button.hud-chip {
   color: rgba(44, 36, 29, 0.72);
 }
 
+.npc-dialogue-translation-entity {
+  color: #1f8f4a;
+  font-weight: 900;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
 .npc-dialogue-translation-error {
   margin-bottom: 12px;
   color: #78401f;

@@ -54,9 +54,18 @@ function dialogueOptionsForCreatureSpeaker(speaker) {
   const speakerName = typeof speaker === 'string' ? speaker : (speaker?.name || '');
   const speakerReading = typeof speaker === 'object' ? speaker?.reading : '';
   const creatureId = typeof speaker === 'object' ? speaker?.id : '';
+  const speakerEntity = typeof speaker === 'object' && creatureId
+    ? {
+        id: creatureId,
+        type: 'creature',
+        surface: speaker?.name || speaker?.baseWord || '',
+        displayName: speaker?.nameEn || speakerName,
+      }
+    : null;
   return {
     speaker: speakerName,
     speakerReading: speakerReading && speakerReading !== speakerName ? speakerReading : speakerReading || undefined,
+    ...(speakerEntity ? { speakerEntity } : {}),
     ...(creatureId ? {
       speakerPortrait: creatureStaticPath(creatureId),
       portraitKind: 'creature',

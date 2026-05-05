@@ -115,7 +115,7 @@ let actionArea;
 let attachedLookupContainer = null;
 let playedAudio = null;
 let translationResponse = { ok: true, translation: 'Wait!', cached: false };
-let translatedTexts = [];
+let translatedRequests = [];
 
 globalThis.document = {
   createElement: tagName => new FakeElement(tagName),
@@ -138,8 +138,8 @@ await mock.module('../../../public/js/tts.js', {
 await mock.module('../../../public/js/api.js', {
   namedExports: {
     postKnownWordExposures: async () => ({ ok: true }),
-    translateDialogue: async (text) => {
-      translatedTexts.push(text);
+    translateDialogue: async (text, entities = []) => {
+      translatedRequests.push({ text, entities });
       return translationResponse;
     }
   }
@@ -153,7 +153,7 @@ describe('npc dialogue card', () => {
     attachedLookupContainer = null;
     playedAudio = null;
     translationResponse = { ok: true, translation: 'Wait!', cached: false };
-    translatedTexts = [];
+    translatedRequests = [];
   });
 
   it('renders tokenized dialogue in shared romaji/kana/english rows', () => {
@@ -277,7 +277,7 @@ describe('npc dialogue card', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     assert.equal(resolved, false);
-    assert.deepEqual(translatedTexts, ['待って！']);
+    assert.deepEqual(translatedRequests, [{ text: '待って！', entities: [] }]);
     assert.match(actionArea.innerHTML, /npc-dialogue-translation-sheet/);
     assert.match(actionArea.innerHTML, /Wait!/);
 
@@ -311,5 +311,51 @@ describe('npc dialogue card', () => {
 
     const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
     assert.equal(translateButton.disabled, true);
+  });
+
+  it('sends protected speaker entity context with translation requests', async () => {
+    showNpcDialogueCard({
+      speaker: 'Flower',
+      speakerEntity: { id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' },
+      tokens: [
+        { surface: '花', baseForm: '花', reading: 'はな', meaning: 'flower', pos: 'noun', entity: true },
+        { surface: 'は', baseForm: 'は', reading: 'は', pos: 'particle' },
+        { surface: '強い', baseForm: '強い', reading: 'つよい', meaning: 'strong', pos: 'adjective' },
+        { surface: '！', pos: 'punctuation' }
+      ],
+      knownWords: new Set(),
+    });
+
+    const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    translateButton.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.deepEqual(translatedRequests, [{
+      text: '花は強い！',
+      entities: [{ id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }]
+    }]);
+  });
+
+  it('renders validated translation entity spans without raw marker syntax', async () => {
+    translationResponse = {
+      ok: true,
+      translation: 'Flower is strong!',
+      entities: [{ id: 'hana', type: 'creature', text: 'Flower', start: 0, end: 6 }]
+    };
+
+    showNpcDialogueCard({
+      speaker: 'Flower',
+      speakerEntity: { id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' },
+      tokens: [{ surface: '花', baseForm: '花', reading: 'はな', meaning: 'flower', pos: 'noun', entity: true }],
+      knownWords: new Set(),
+    });
+
+    const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    translateButton.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.match(actionArea.innerHTML, /npc-dialogue-translation-entity/);
+    assert.match(actionArea.innerHTML, />Flower<\/span> is strong!/);
+    assert.doesNotMatch(actionArea.innerHTML, /\[\[entity:/);
   });
 });

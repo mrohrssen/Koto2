@@ -39,7 +39,7 @@ describe('POST /api/dialogue/translate', () => {
       .send({ text: '待って！' })
       .expect(200);
 
-    assert.deepEqual(res.body, { ok: true, translation: 'Wait!', cached: true });
+    assert.deepEqual(res.body, { ok: true, translation: 'Wait!', entities: [], cached: true });
     assert.equal(called, false);
   });
 
@@ -66,9 +66,36 @@ describe('POST /api/dialogue/translate', () => {
       .send({ text: '行こう。' })
       .expect(200);
 
-    assert.deepEqual(first.body, { ok: true, translation: "Let's go.", cached: false });
-    assert.deepEqual(second.body, { ok: true, translation: "Let's go.", cached: true });
+    assert.deepEqual(first.body, { ok: true, translation: "Let's go.", entities: [], cached: false });
+    assert.deepEqual(second.body, { ok: true, translation: "Let's go.", entities: [], cached: true });
     assert.equal(calls, 1);
+  });
+
+  it('passes protected entities through to the translation service and returns spans', async () => {
+    const cache = new DialogueTranslationCache({ inMemory: true });
+    const app = createApp({
+      authBypass: true,
+      routeOverrides: {
+        dialogueTranslationCache: cache,
+        dialogueTranslationChatFn: async () => '[[entity:hana|Flower]] is strong!',
+        getDialogueTranslationConfig: () => ({ provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' })
+      }
+    });
+
+    const res = await request(app)
+      .post('/api/dialogue/translate')
+      .send({
+        text: '花は強い！',
+        entities: [{ id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }]
+      })
+      .expect(200);
+
+    assert.deepEqual(res.body, {
+      ok: true,
+      translation: 'Flower is strong!',
+      entities: [{ id: 'hana', type: 'creature', text: 'Flower', start: 0, end: 6 }],
+      cached: false
+    });
   });
 
   it('returns translation_unavailable for empty text without calling AI', async () => {

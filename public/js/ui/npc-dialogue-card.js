@@ -67,11 +67,63 @@ export function getDialogueSourceText(tokens, useKanji = false) {
   return (tokens || []).map(token => tokenSurface(token, useKanji)).join('').trim();
 }
 
-function renderTranslationSheet({ sourceText, state, translation = '' }) {
+function cleanEntityValue(value) {
+  return String(value || '').trim();
+}
+
+export function normalizeTranslationEntity(entity) {
+  const id = cleanEntityValue(entity?.id);
+  const type = cleanEntityValue(entity?.type) || 'entity';
+  const surface = cleanEntityValue(entity?.surface || entity?.name || entity?.baseWord);
+  const displayName = cleanEntityValue(entity?.displayName || entity?.nameEn);
+  if (!id || !surface || !displayName) return null;
+  return { id, type, surface, displayName };
+}
+
+export function getTranslationEntities(options = {}, pageTokens = []) {
+  const entities = [];
+  const seen = new Set();
+  const addEntity = entity => {
+    const normalized = normalizeTranslationEntity(entity);
+    if (!normalized) return;
+    const key = `${normalized.type}:${normalized.id}:${normalized.surface}:${normalized.displayName}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    entities.push(normalized);
+  };
+
+  addEntity(options.speakerEntity);
+  for (const token of pageTokens || []) {
+    if (token?.entity) addEntity(token);
+  }
+  return entities;
+}
+
+export function renderTranslationWithEntities(translation = '', entities = []) {
+  const text = String(translation || '');
+  const spans = Array.isArray(entities)
+    ? entities
+        .filter(span => Number.isInteger(span.start) && Number.isInteger(span.end) && span.start >= 0 && span.end > span.start && span.end <= text.length)
+        .sort((a, b) => a.start - b.start)
+    : [];
+
+  let html = '';
+  let cursor = 0;
+  for (const span of spans) {
+    if (span.start < cursor) continue;
+    html += esc(text.slice(cursor, span.start));
+    html += `<span class="npc-dialogue-translation-entity" data-entity-type="${esc(span.type || 'entity')}" data-entity-id="${esc(span.id || '')}">${esc(text.slice(span.start, span.end))}</span>`;
+    cursor = span.end;
+  }
+  html += esc(text.slice(cursor));
+  return html;
+}
+
+function renderTranslationSheet({ sourceText, state, translation = '', entities = [] }) {
   const body = state === 'loading'
     ? '<div class="npc-dialogue-translation-status">Translating...</div>'
     : state === 'success'
-      ? `<p class="npc-dialogue-translation-en">${esc(translation)}</p>`
+      ? `<p class="npc-dialogue-translation-en">${renderTranslationWithEntities(translation, entities)}</p>`
       : `
         <p class="npc-dialogue-translation-error">Translation is unavailable right now.</p>
         <button class="npc-dialogue-translation-retry" type="button">Try again</button>
@@ -176,6 +228,7 @@ export function showNpcDialogueCard(options = {}) {
       const content = renderPageContent(options, pageTokens);
       const continueLabel = pageIndex < pages.length - 1 ? 'Next' : 'Continue';
       const sourceText = pageTokens?.length ? getDialogueSourceText(pageTokens, options.useKanji) : '';
+      const translationEntities = pageTokens?.length ? getTranslationEntities(options, pageTokens) : [];
       const canTranslate = !!sourceText;
 
       actionArea.innerHTML = `
@@ -235,11 +288,11 @@ export function showNpcDialogueCard(options = {}) {
         actionArea.querySelector('.npc-dialogue-translation-sheet')?.remove();
       };
 
-      const setTranslationSheet = (state, translation = '') => {
+      const setTranslationSheet = (state, translation = '', entities = []) => {
         closeTranslationSheet();
         actionArea.insertAdjacentHTML(
           'beforeend',
-          renderTranslationSheet({ sourceText, state, translation })
+          renderTranslationSheet({ sourceText, state, translation, entities })
         );
         actionArea.querySelector('.npc-dialogue-translation-close')?.addEventListener('click', closeTranslationSheet);
         actionArea.querySelector('.npc-dialogue-translation-backdrop')?.addEventListener('click', closeTranslationSheet);
@@ -249,10 +302,10 @@ export function showNpcDialogueCard(options = {}) {
       const requestTranslation = async () => {
         if (!sourceText) return;
         setTranslationSheet('loading');
-        const result = await translateDialogue(sourceText);
+        const result = await translateDialogue(sourceText, translationEntities);
         if (resolved) return;
         if (result?.ok && result.translation) {
-          setTranslationSheet('success', result.translation);
+          setTranslationSheet('success', result.translation, result.entities || []);
           return;
         }
         setTranslationSheet('unavailable');
