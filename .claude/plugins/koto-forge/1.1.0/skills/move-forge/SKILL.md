@@ -1,8 +1,17 @@
 ---
 name: move-forge
-description: Design new combat moves from Japanese verbs. Each move teaches a verb and has element, category, power, status effects. Triggers on "move forge", "new moves", "forge moves", "move from verb".
-user_invocable: true
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Tables (categories, status effects, power tiers) are out of date. Use `docs/move-system-reference.md` for the current design space when authoring moves."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its category, status effect,
+> and power tables reflect an older version of the move system (still
+> references the deprecated `shield` category, `haste` / `team_shield` status
+> effects, and `attack_buff` legacy name; missing `dex` stat and `cleanse`
+> status effect). Do not run `/move-forge`. See `docs/move-system-reference.md`
+> for the current design space.
 
 # Move Forge
 

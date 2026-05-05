@@ -1,7 +1,15 @@
 ---
 name: forge-queue
-description: Process pending forge jobs from the dashboard queue. Spawns Opus subagents to generate creatures, moves, items, NPCs, NPC skills, and areas from theme pool words. Triggers on "forge queue", "forge-queue", "process forge jobs".
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Original (for reference only): Process pending forge jobs from the dashboard queue."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its tables, workflows, and
+> assumptions reflect an older version of the game systems and may produce
+> incorrect content. Do not run `/forge-queue`. See current reference docs
+> (e.g. `docs/move-system-reference.md`) for the actual design space.
 
 # Forge Queue Processor
 

@@ -1,7 +1,15 @@
 ---
 name: item-forge
-description: Generate game items (consumables, equipment, crafting resources) with JPDB frequency data. Triggers on "item forge", "new items", "forge items".
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Original (for reference only): Generate game items (consumables, equipment, crafting resources)."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its tables, workflows, and
+> assumptions reflect an older version of the game systems and may produce
+> incorrect content. Do not run `/item-forge`. See current reference docs
+> (e.g. `docs/move-system-reference.md`) for the actual design space.
 
 # Item Forge
 
