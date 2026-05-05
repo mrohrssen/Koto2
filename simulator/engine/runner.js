@@ -13,6 +13,7 @@ import {
   recordCombatResult,
   selectLatestAreaOption
 } from './run-metrics.js';
+import { autoFuseAvailableCreatures } from './auto-fusion.js';
 
 const PROFILE_DEFAULTS = {
   durationDays: 30,
@@ -116,6 +117,7 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
       let runsWiped = 0;
       let wordsImmersedToday = 0;
       let hubReviewsToday = 0;
+      let fusionsPerformedToday = 0;
       const crestDaily = {
         chestsOpenedTotal: 0,
         equipChangesTotal: 0,
@@ -247,6 +249,11 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
           }
         }
 
+        // Simulator-only auto-fusion. This models an optimizing player after hub reviews
+        // without changing live game behavior or UI.
+        const autoFusionResult = await autoFuseAvailableCreatures(simCall);
+        fusionsPerformedToday += autoFusionResult.fusionsPerformed;
+
         // Crest meta progression — open all affordable chests and auto-equip best per element.
         pos.room = 0;
         let crestSummary;
@@ -289,6 +296,7 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
         runs_wiped: runsWiped,
         rooms_explored: roomsExplored,
         speed_reviews_completed: hubReviewsToday,
+        fusions_performed: fusionsPerformedToday,
         unknown_words_in_dialogue: 0,
         snapshot_data: {
           crest: crestDaily

@@ -14,6 +14,15 @@ export function createStore(dbPath) {
   const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf-8');
   db.exec(schema);
 
+  function ensureColumn(tableName, columnName, definition) {
+    const columns = db.prepare(`PRAGMA table_info(${tableName})`).all();
+    if (!columns.some(column => column.name === columnName)) {
+      db.prepare(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`).run();
+    }
+  }
+
+  ensureColumn('daily_snapshots', 'fusions_performed', 'INTEGER DEFAULT 0');
+
   // --- Profiles ---
 
   const insertProfile = db.prepare(
@@ -64,8 +73,8 @@ export function createStore(dbPath) {
     INSERT OR REPLACE INTO daily_snapshots
       (simulation_id, day, total_known_words, new_words_today, words_exposed_today,
        dialogue_lines_encountered, runs_completed, runs_wiped, rooms_explored,
-       speed_reviews_completed, unknown_words_in_dialogue, snapshot_data)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       speed_reviews_completed, fusions_performed, unknown_words_in_dialogue, snapshot_data)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const selectSnapshots = db.prepare(
     'SELECT * FROM daily_snapshots WHERE simulation_id = ? ORDER BY day ASC'
@@ -189,6 +198,7 @@ export function createStore(dbPath) {
         metrics.runs_wiped ?? 0,
         metrics.rooms_explored ?? 0,
         metrics.speed_reviews_completed ?? 0,
+        metrics.fusions_performed ?? 0,
         metrics.unknown_words_in_dialogue ?? 0,
         metrics.snapshot_data ? JSON.stringify(metrics.snapshot_data) : null
       );

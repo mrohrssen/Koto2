@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS daily_snapshots (
   runs_wiped INTEGER DEFAULT 0,
   rooms_explored INTEGER DEFAULT 0,
   speed_reviews_completed INTEGER DEFAULT 0,
+  fusions_performed INTEGER DEFAULT 0,
   unknown_words_in_dialogue INTEGER DEFAULT 0,
   snapshot_data TEXT,
   created_at TEXT DEFAULT (datetime('now')),
