@@ -19,6 +19,18 @@ await mock.module('../../../public/js/ui/combat-loop.js', {
 await mock.module('../../../public/js/ui/combat-ui-utils.js', {
   namedExports: { getHpColor: () => 'green' },
 });
+class FakeBattleScene {}
+await mock.module('../../../public/js/scenes/battle-scene.js', {
+  namedExports: { BattleScene: FakeBattleScene },
+});
+await mock.module('../../../public/js/scenes/scene-manager.js', {
+  namedExports: {
+    getSceneManager: () => ({
+      currentScene: null,
+      transition: async () => {},
+    }),
+  },
+});
 
 const { init, startPvpBattle } = await import('../../../public/js/ui/pvp-battle.js');
 

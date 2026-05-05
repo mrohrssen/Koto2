@@ -3,6 +3,7 @@ import { SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { BATTLEFIELD_COLUMNS, BATTLEFIELD_ROWS, rowForFormationIndex } from '../pixi/battlefield-layout.js';
+import { getHpColor } from './combat-ui-utils.js';
 
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
 function creatureNameRuby(creature) {
@@ -61,7 +62,7 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
         const hpFill = slot.querySelector('.formation-hp-fill');
         if (hpFill) {
           hpFill.style.width = hpPct + '%';
-          hpFill.style.backgroundColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+          hpFill.style.backgroundColor = getHpColor(hpPct, side);
         }
         const mpFill = slot.querySelector('.formation-mp-fill');
         if (mpFill) {
@@ -165,7 +166,7 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     const maxHp = creature.maxHp ?? 1;
     const hpPct = maxHp > 0 ? Math.max(0, curHp / maxHp * 100) : 0;
     hpFill.style.width = hpPct + '%';
-    hpFill.style.backgroundColor = hpPct > 50 ? 'var(--hp-green)' : hpPct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+    hpFill.style.backgroundColor = getHpColor(hpPct, side);
     hpBar.appendChild(hpFill);
     hpRow.appendChild(hpBar);
     barsEl.appendChild(hpRow);
@@ -328,7 +329,7 @@ export function updateEnemyHPAtIndex(index, current, max) {
   if (fill) {
     const pct = max > 0 ? Math.max(0, current / max * 100) : 0;
     fill.style.width = pct + '%';
-    fill.style.backgroundColor = pct > 50 ? 'var(--hp-green)' : pct > 25 ? 'var(--hp-yellow)' : 'var(--hp-red)';
+    fill.style.backgroundColor = getHpColor(pct, 'enemy');
   }
   // Revive: undo defeated state when HP is restored (befriend target revived to 1 HP)
   if (current > 0 && slot.classList.contains('defeated')) {

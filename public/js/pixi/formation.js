@@ -4,6 +4,7 @@ import { getApp } from './app.js';
 import { loadImageTexture } from './image-loader.js';
 import { tween } from './tween.js';
 import { STATUS_ICON_CONFIG } from '../ui/event-popup.js';
+import { SPRITE_VERSION } from '../ui/sprite-utils.js';
 import {
   getBattlefieldSlot,
   getBattlefieldSpriteScale,
@@ -140,6 +141,13 @@ function _drawShadow(shadow, shadowSpec) {
     if (shadow.scale) shadow.scale.y = shadowSpec.height / shadowSpec.width;
   }
   shadow.fill({ color: 0x000000, alpha: shadowSpec.alpha });
+}
+
+function _shadowYForSprite(sprite, fallbackSpriteSize) {
+  const textureHeight = sprite?.texture?.height || fallbackSpriteSize;
+  const scaledHeight = textureHeight * Math.abs(sprite?.scale?.y || 1);
+  const offsetRatio = sprite?._slotI === 1 ? 0.38 : 0.5;
+  return sprite.baseY + scaledHeight * offsetRatio;
 }
 
 // --- Status label rendering (ctx-based) --------------------------------------
@@ -303,10 +311,14 @@ async function _animateKO(ctx, side, index) {
   sprite.tint = 0x888888;
   const targetScaleX = sprite.scale.x * 0.5;
   const targetScaleY = sprite.scale.y * 0.5;
-  await Promise.all([
+  const tweens = [
     tween(sprite, { alpha: 0 }, { duration: 600, ease: 'easeOut' }),
     tween(sprite.scale, { x: targetScaleX, y: targetScaleY }, { duration: 600, ease: 'easeIn' }),
-  ]);
+  ];
+  if (sprite._shadow) {
+    tweens.push(tween(sprite._shadow, { alpha: 0 }, { duration: 600, ease: 'easeOut' }));
+  }
+  await Promise.all(tweens);
 
   burstParticles(pos, { count: 8, color: 0xFFFFFF, speed: 60, life: 500, element: 'neutral' });
 }
@@ -366,12 +378,16 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   // of those calls bail out because the last increment wins. Storage by
   // uid is idempotent — if a caller kicks off two spawns for the same
   // uid we defensively remove the prior sprite below.
-  const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}.webp`;
   let texture;
   try {
+    const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}-idle.webp?v=${SPRITE_VERSION}`;
     texture = await loadImageTexture(spritePath);
   } catch {
-    texture = Texture.WHITE;
+    try {
+      texture = await loadImageTexture(`/assets/sprites/creatures/${creature.id}.webp?v=${SPRITE_VERSION}`);
+    } catch {
+      texture = Texture.WHITE;
+    }
   }
 
   const sprite = new Sprite(texture);
@@ -423,7 +439,7 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   const shadow = new Graphics();
   _drawShadow(shadow, shadowSpec);
   shadow.x = targetX;
-  shadow.y = targetY + spriteSize * 0.38;
+  shadow.y = _shadowYForSprite(sprite, spriteSize);
   container.addChild(shadow);
   sprite._shadow = shadow;
 
@@ -520,7 +536,6 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
 
     if (sprite._shadow) {
       sprite._shadow.x = targetX;
-      sprite._shadow.y = targetY + spriteSize * 0.38;
     }
 
     if (sprite.texture?.width) {
@@ -528,6 +543,9 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
       const depth = getBattlefieldSpriteScale(slotI) * (spriteSize / sprite.texture.width);
       sprite.scale.set(depth);
       sprite.scale.x *= sign;
+    }
+    if (sprite._shadow) {
+      sprite._shadow.y = _shadowYForSprite(sprite, spriteSize);
     }
   }
 
@@ -540,9 +558,11 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
     // a ghost sprite visible. Force alpha to 0 so the corpse never renders.
     sprite.alpha = 0;
     sprite.tint = 0x888888;
+    if (sprite._shadow) sprite._shadow.alpha = 0;
   } else {
     sprite.alpha = 1;
     sprite.tint = 0xFFFFFF;
+    if (sprite._shadow) sprite._shadow.alpha = 1;
   }
 }
 

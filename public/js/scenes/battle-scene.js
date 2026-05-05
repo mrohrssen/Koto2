@@ -1,7 +1,6 @@
 import { Scene } from './scene.js';
 import { Container } from 'pixi.js';
 import { startParallax, stopParallax } from '../pixi/parallax.js';
-import { startSkyDrift, stopSkyDrift } from '../pixi/battlefield-background.js';
 import {
   createFormationContext,
   spawnFormationSprite,
@@ -52,16 +51,14 @@ export class BattleScene extends Scene {
   }
 
   async onEnter({ allies = [], enemies = [], parallaxSpeed = 0, isBoss = false } = {}) {
-    if (parallaxSpeed > 0) startParallax(parallaxSpeed);
+    startParallax(parallaxSpeed > 0 ? parallaxSpeed : 0.4);
     this._isBoss = !!isBoss;
-    startSkyDrift(0.4);
     await this.syncCreatures({ allies, enemies, initial: true });
     this.addUpdater((dt) => _updateFormations(this.formation, dt));
     setupCreatureRowListeners(this);
   }
 
   beforeExit() {
-    stopSkyDrift();
     stopParallax();
     releaseAllParticles();
     // Pills are parented to the *global* labels layer (pixi/app.js), not to

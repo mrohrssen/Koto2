@@ -1,5 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 
 let showFormation;
 let playerFormation;
@@ -98,6 +99,22 @@ describe('combat-dom battlefield positioning', () => {
     assert.equal(slots[2].dataset.row, 'bottom');
     assert.equal(slots[0].style.left, '19.5%');
     assert.equal(slots[0].style.top, '43.5%');
+  });
+
+  it('keeps formation info absolutely fixed above the slot anchor', () => {
+    const css = fs.readFileSync(new URL('../../../public/game.css', import.meta.url), 'utf8');
+    assert.match(css, /\.formation-info\s*\{[^}]*position:\s*absolute/s);
+    assert.match(css, /\.formation-info\s*\{[^}]*bottom:\s*calc\(50% \+ 34px\)/s);
+    assert.doesNotMatch(css, /\.formation-slot\s*\{[^}]*flex-direction:\s*column-reverse/s);
+  });
+
+  it('does not transform defeated enemy slots away from their battlefield anchor', () => {
+    const css = fs.readFileSync(new URL('../../../public/game.css', import.meta.url), 'utf8');
+    const defeatedRule = css.match(/\.enemy-formation \.formation-slot\.defeated\s*\{(?<body>[^}]*)\}/s);
+    assert.ok(defeatedRule, 'defeated enemy slot rule should exist');
+    assert.doesNotMatch(defeatedRule.groups.body, /animation\s*:/);
+    assert.doesNotMatch(defeatedRule.groups.body, /transform\s*:/);
+    assert.doesNotMatch(css, /@keyframes enemy-defeated/);
   });
 }
 );

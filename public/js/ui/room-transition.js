@@ -7,6 +7,7 @@ import { renderEnFirst, renderJpSentence, getKnownWords } from './bootstrap-clie
 import { combatEvents } from './combat-events.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
+import { setScrollState } from '../pixi/parallax.js';
 
 const NPC_BATTLE_STRENGTH_PROMPT = "Let's see how strong you are!";
 
@@ -26,6 +27,7 @@ export async function playRoomTransition(gameState) {
 
   // Clear stale enemy formation from previous room before showing the new one
   hideFormation('enemy');
+  setScrollState('scrolling');
 
   // Transition to ExplorationScene. Bumping to a new scene here tears down
   // the previous scene's NPC sprite (via registry disposal + beforeExit) so

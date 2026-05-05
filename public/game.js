@@ -128,15 +128,12 @@ import { escapeHtml } from './js/ui/html-utils.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
 import { createIntentLog } from './js/intent-log.js';
 import { createInspector } from './js/inspector.js';
+import { registerBattlefieldPreview } from './js/dev/battlefield-preview.js';
 
 // PixiJS battle stage imports
 import { initApp, getApp } from './js/pixi/app.js';
 import { loadParallax, setScrollState, updateParallax } from './js/pixi/parallax.js';
-import {
-  loadBattlefieldBackground,
-  clearBattlefieldBackground,
-  updateBattlefieldBackground,
-} from './js/pixi/battlefield-background.js';
+import { getBackgroundMode, getRunBackgroundKey } from './js/pixi/background-routing.js';
 import { getCreatureSpriteForScene } from './js/pixi/formation.js';
 import { updateParticles, isFrozen } from './js/pixi/effects.js';
 import { SceneManager, setSceneManager, isSceneManagerInitialized, getSceneManager } from './js/scenes/scene-manager.js';
@@ -318,39 +315,25 @@ function syncParallaxScrollWithPhase() {
 }
 
 async function syncBattleStageParallax() {
-  let desiredKey;
-  if (isPvpBattleActive()) {
-    desiredKey = 'pvp_arena';
-  } else if (
-    !gameState.run?.active ||
-    gameState.phase === 'hub' ||
-    gameState.phase === 'no_save' ||
-    gameState.phase === 'area_selection' ||
-    gameState.phase === 'pvp_lobby' ||
-    gameState.phase === 'pvp_team_select'
-  ) {
-    desiredKey = null;
-  } else {
-    desiredKey = mapRunAreaToParallaxId(gameState.run?.currentArea);
-  }
-
-  const backgroundMode = desiredKey && (gameState.phase === 'combat' || isPvpBattleActive())
-    ? 'battlefield'
-    : 'parallax';
+  const pvpActive = isPvpBattleActive();
+  const desiredKey = getRunBackgroundKey({
+    phase: gameState.phase,
+    run: gameState.run,
+    pvpActive,
+  });
+  const backgroundMode = getBackgroundMode({ desiredKey, pvpActive });
 
   if (desiredKey !== lastParallaxAreaKey || backgroundMode !== lastBackgroundMode) {
     lastParallaxAreaKey = desiredKey;
     lastBackgroundMode = backgroundMode;
     try {
       if (backgroundMode === 'battlefield') {
-        await loadParallax(null);
-        await loadBattlefieldBackground(desiredKey);
-      } else {
-        clearBattlefieldBackground();
         await loadParallax(desiredKey);
+      } else {
+        await loadParallax(null);
       }
     } catch (err) {
-      console.warn('[Parallax] load failed:', err);
+      console.warn('[Background] load failed:', err);
     }
   }
 
@@ -446,6 +429,39 @@ function updateUI() {
 
   // Centralized parallax management
   void syncBattleStageParallax();
+}
+
+async function renderBattlefieldPreview(previewState) {
+  const allies = previewState?.combat?.allies ?? [];
+  const enemies = previewState?.combat?.enemies ?? [];
+  const areaId = previewState?.run?.currentArea?.parallaxId
+    || previewState?.run?.currentArea?.id
+    || 'starter_meadow';
+
+  narrationBox.forceHide();
+  combatLoopUI.cleanupCombat?.();
+  actions.setContent(`
+    <div style="padding:12px;text-align:center;color:var(--text-secondary);font-size:0.9rem;">
+      Battlefield preview: ${escapeHtml(areaId)}
+    </div>
+  `);
+
+  await loadParallax(areaId);
+
+  const mgr = getSceneManager();
+  if (mgr && !(mgr.currentScene instanceof BattleScene)) {
+    await mgr.transition(BattleScene, {
+      allies,
+      enemies,
+      parallaxSpeed: 0,
+      isBoss: false,
+    });
+  } else if (mgr?.currentScene instanceof BattleScene) {
+    await mgr.currentScene.syncCreatures({ allies, enemies, initial: true });
+  }
+
+  await scene.showFormation('player', allies, { force: true });
+  await scene.showFormation('enemy', enemies, { force: true });
 }
 
 function updateStatusBar() {
@@ -1798,7 +1814,6 @@ async function initGame() {
         update: (dt, deltaMS) => {
           if (!isFrozen()) {
             updateParallax(dt);
-            updateBattlefieldBackground(dt);
           }
           updateParticles(deltaMS);
         },
@@ -2011,8 +2026,7 @@ async function initGame() {
     scene,
     onPvpBattleStart: async () => {
       try {
-        await loadParallax(null);
-        await loadBattlefieldBackground('pvp_arena');
+        await loadParallax('pvp_arena');
       } catch (err) {
         console.warn('[Battlefield] PvP load failed:', err);
       }
@@ -2185,6 +2199,18 @@ async function initGame() {
   });
   await loadGameState();
 
+  registerBattlefieldPreview({
+    updateGameState,
+    renderBattlefieldPreview,
+    autoStartFromUrl: false,
+  });
+
+  const previewAreaId = new URLSearchParams(window.location.search).get('devBattlefieldPreview');
+  if (previewAreaId && window.__kotoPreview?.start3v3Battlefield) {
+    await window.__kotoPreview.start3v3Battlefield({ areaId: previewAreaId });
+    return;
+  }
+
   // Freshly registered users should enter prologue immediately without
   // an extra manual "New Game" click.
   if (!gameState.player && gameState.meta && gameState.meta.prologueComplete === false) {
@@ -2227,4 +2253,5 @@ async function initGame() {
   if (gameState.phase === 'combat' && gameState.combat?.enemy?.hp > 0) {
     startCombatLoop();
   }
+
 }

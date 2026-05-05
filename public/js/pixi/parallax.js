@@ -2,8 +2,8 @@ import { TilingSprite } from 'pixi.js';
 import { getApp } from './app.js';
 import { loadImageTexture } from './image-loader.js';
 
-const LAYER_NAMES = ['sky', 'far', 'mid', 'ground'];
-const LAYER_SPEEDS = [0.1, 0.3, 0.6, 1.0];
+const LAYER_NAMES = ['sky', 'battleground'];
+const LAYER_SPEEDS = [0.1, 1.0];
 const BASE_SCROLL_SPEED = 60; // pixels per second at 1.0x
 const SKY_LAYER_INDEX = 0;
 
@@ -86,6 +86,16 @@ export function setScrollState(state) {
 
 export function isParallaxMoving() {
   return currentSpeed > 0;
+}
+
+export function getParallaxMotionState() {
+  return {
+    scrollEnabled: _scrollEnabled,
+    scrollSpeed: _scrollSpeed,
+    scrollState,
+    currentSpeed,
+    baseScrollSpeed: BASE_SCROLL_SPEED,
+  };
 }
 
 /**
