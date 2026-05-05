@@ -15,6 +15,7 @@ In scope:
 - Enemy / NPC battle greeting lines.
 - Creature dialogue used in befriend flows, including wait, name prompt, wrong answer, success, refusal, and similar creature-origin lines.
 - Any other Japanese dialogue where an NPC, enemy, or creature is the speaker.
+- Player-spoken Japanese dialogue lines currently shown as `You`, such as friendly NPC item requests.
 - Choice screens that follow NPC dialogue. Every choice screen should have a heading.
 
 Out of scope:
@@ -119,10 +120,13 @@ The new flow should be:
 5. Player taps `Continue`.
 6. The action area clears the dialogue card and renders the next state.
 7. If the next state is a choice list, it renders with a heading.
+8. If the dialogue has multiple pages, `Continue` advances pages first. Only the final `Continue` resolves the dialogue promise and lets the caller render the next state.
 
 Choice heading rule:
 
 - All `renderChoices()` usage should include a heading.
+- Response, name-quiz, Fight/Talk, release, swap, item, skill, and target screens should consolidate on the `renderChoices()` card UI rather than `renderButtonsAsync()` button stacks.
+- Promise-based flows should use a small `renderChoicesAsync()` wrapper around `renderChoices()` so callers can continue to `await` selected indexes without keeping a separate button UI.
 - Dialogue response choices should use headings such as `Choose a response`.
 - Friendly NPC item choices should use headings such as `Choose an item`.
 - Skill choices should use headings such as `Choose a skill`.
@@ -131,6 +135,7 @@ Choice heading rule:
 Persistent NPC narration that currently acts as a prompt should be converted into either:
 
 - A dialogue card followed by a headed choice screen, if it is spoken by an NPC / creature.
+- A dialogue card followed by a headed choice screen, if it is spoken by the player as `You`.
 - A plain action-area heading, if it is UI context rather than spoken dialogue.
 
 ## Architecture
@@ -153,10 +158,16 @@ showNpcDialogueCard({
 })
 ```
 
+Canonical rendering input:
+
+- Tokenized dialogue should pass `tokens`, `overrides`, and `useKanji` into the dialogue card.
+- The `html` field is a legacy fallback only. It may be used for `renderEnFirst()` or escaped plain strings while old call sites are being migrated, but it is not the path that needs to satisfy the shared-row baseline alignment requirement.
+- Plain text fallback should be escaped and should not attach word lookup handlers.
+
 The module should:
 
 - Render into `#action-area`.
-- Return a promise that resolves when `Continue` is tapped, matching current `await narrationBox.show(...)` call sites.
+- Return a promise that resolves when `Continue` is tapped after the last page, matching current `await narrationBox.show(...)` call sites.
 - Attach word lookup handlers for tokenized words.
 - Trigger existing TTS/audio where the caller already has audio data.
 - Keep `Translate` and `Learn` buttons inert.
@@ -174,12 +185,13 @@ Migrate in focused batches:
 
 1. NPC post-combat dialogue in `public/js/ui/npc-dialogue-ui.js`.
    - Greeting / freed line: dialogue card, then continue.
-   - Each round line: dialogue card, then headed response choices.
+   - Each round line: dialogue card, then headed response choices rendered with `renderChoices()`.
    - Defeat line: dialogue card, then continue.
 
 2. Friendly NPC item rooms in `public/js/ui/exploration.js`.
    - Greeting: dialogue card, then continue.
    - Item prompt: do not keep as persistent narration. Convert to `Choose an item` heading above cards unless the prompt is spoken dialogue.
+   - Player item request lines such as `You: Xください` should use the dialogue card with `speaker: 'You'`, then continue before applying the selected item.
 
 3. NPC battle intro in `public/js/ui/room-transition.js`.
    - Fight-start line: dialogue card, then continue.
@@ -187,7 +199,7 @@ Migrate in focused batches:
 
 4. Creature befriend flows in `public/js/ui/befriend.js`.
    - Creature wait/name/success/wrong/refusal lines become dialogue cards.
-   - Fight/Talk, name quiz, release prompt, and swap choices render after `Continue` with headings.
+   - Fight/Talk, name quiz, release prompt, and swap choices render after `Continue` with headings using `renderChoices()`.
 
 The migration should not touch creature combat barks, item descriptions, or move descriptions.
 
