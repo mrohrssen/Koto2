@@ -120,6 +120,16 @@ describe('Creature Instantiation', () => {
     assert.strictEqual(creature.moves[0].statusEffect, null);
   });
 
+  it('uses a natural no-phrase for the Fire Cat fusion creature', () => {
+    const creature = instantiateCreature('hineko', 10);
+
+    assert.strictEqual(creature.name, '火の猫');
+    assert.strictEqual(creature.nameEn, 'Fire Cat');
+    assert.strictEqual(creature.baseWord, '火の猫');
+    assert.strictEqual(creature.baseReading, 'ひのねこ');
+    assert.strictEqual(creature.baseMeaning, 'fire cat (phrase: 火 fire + の + 猫 cat)');
+  });
+
   it('instantiates Stone Giant as an uncommon tank boss creature', () => {
     const creature = instantiateCreature('ishino-kyojin', 10);
 

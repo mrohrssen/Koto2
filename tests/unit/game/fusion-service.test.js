@@ -27,6 +27,7 @@ describe('fusion-service', () => {
     assert.equal(state.fusionCores, 1);
     assert.equal(state.recipes.length, 2);
     assert.equal(state.recipes[0].id, FUSION_RECIPES.fireCat.id);
+    assert.equal(state.recipes[0].name, '火の猫');
     assert.deepEqual(state.recipes[0].ingredientIds, ['hi', 'neko']);
     assert.equal(state.recipes[0].resultId, 'hineko');
     assert.equal(state.recipes[0].cost.fusionCores, 1);

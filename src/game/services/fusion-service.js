@@ -11,7 +11,7 @@ import { AREAS } from '../rooms.js';
 export const FUSION_RECIPES = {
   fireCat: {
     id: 'fire-cat',
-    name: '火猫',
+    name: '火の猫',
     nameEn: 'Fire Cat',
     ingredientIds: ['hi', 'neko'],
     resultId: 'hineko',

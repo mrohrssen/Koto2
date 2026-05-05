@@ -190,7 +190,7 @@ describe('fusion lab result copy', () => {
         catalog: [
           { id: 'hi', name: '火', nameEn: 'Fire', element: 'fire' },
           { id: 'neko', name: '猫', nameEn: 'Cat', element: 'wind' },
-          { id: 'hineko', name: '火猫', nameEn: 'Fire Cat', element: 'fire' }
+          { id: 'hineko', name: '火の猫', nameEn: 'Fire Cat', element: 'fire' }
         ]
       }),
       apiGetFusionState: async () => ({
