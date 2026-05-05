@@ -1,8 +1,15 @@
 ---
 name: area-forge
-description: Design a new game area from a Japanese location word. Looks up JPDB frequency, computes stage, matches creatures from staging, generates sub-areas, writes visual descriptions for background generation, and saves to staging. Triggers on "area forge", "new area", "design area", "area from word".
-user_invocable: true
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Original (for reference only): Design a new game area from a Japanese location word."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its tables, workflows, and
+> assumptions reflect an older version of the game systems and may produce
+> incorrect content. Do not run `/area-forge`. See current reference docs
+> (e.g. `docs/move-system-reference.md`) for the actual design space.
 
 # Area Forge — Lightweight Orchestrator
 

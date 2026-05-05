@@ -114,6 +114,7 @@ async function renderStatsTab(contentEl, simId) {
   const totalNewWords = snapshots.reduce((s, d) => s + (d.new_words_today || 0), 0);
   const totalDialogue = snapshots.reduce((s, d) => s + (d.dialogue_lines_encountered || 0), 0);
   const totalSpeedReviews = snapshots.reduce((s, d) => s + (d.speed_reviews_completed || 0), 0);
+  const totalFusions = snapshots.reduce((s, d) => s + (d.fusions_performed || 0), 0);
   const latest = snapshots[snapshots.length - 1];
   const daysSimulated = snapshots.length;
   const avgWordsPerDay = daysSimulated > 0 ? (totalNewWords / daysSimulated).toFixed(1) : 0;
@@ -186,6 +187,10 @@ async function renderStatsTab(contentEl, simId) {
         <div class="stat-card">
           <div class="stat-value">${creaturesBefriended}</div>
           <div class="stat-label">Creatures Befriended</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${totalFusions}</div>
+          <div class="stat-label">Fusions Performed</div>
         </div>
         <div class="stat-card">
           <div class="stat-value">${itemsAcquired}</div>
@@ -343,6 +348,10 @@ async function renderDailyDetailTab(contentEl, simId) {
         <div class="stat-card">
           <div class="stat-value">${snap.speed_reviews_completed || 0}</div>
           <div class="stat-label">Speed Reviews</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${snap.fusions_performed || 0}</div>
+          <div class="stat-label">Fusions Performed</div>
         </div>
         <div class="stat-card">
           <div class="stat-value">${snap.dialogue_lines_encountered || 0}</div>

@@ -14,8 +14,9 @@ import {
   type TableRowTone,
 } from 'cursor/canvas';
 
-type Source = 'Original 50' | 'Batch 2' | 'Additional';
-type Filter = 'All' | 'Original 50' | 'Batch 2' | 'Additional' | 'Overlaps' | 'Flagged';
+type Source = 'Original 50' | 'Batch 2' | 'Additional' | 'Batch 3' | 'Batch 4';
+type Filter = 'All' | 'Original 50' | 'Batch 2' | 'Additional' | 'Batch 3' | 'Batch 4' | 'Overlaps' | 'Flagged';
+type Usefulness = 'Very High' | 'High' | 'Medium' | 'Low' | 'Very Low';
 
 type Suggestion = {
   source: Source;
@@ -29,6 +30,7 @@ type Suggestion = {
   rank: number;
   tier: string;
   rarity: string;
+  usefulness: Usefulness;
   reason: string;
   flag?: string;
 };
@@ -192,13 +194,176 @@ const additionalRoster = `
 | Add | Seal | 海豹 | あざらし | true seal; earless seal | 104600 | Ultra low | Uncommon | Cute animal, not rare solely because JPDB rank is low |
 `;
 
-const filters: Filter[] = ['All', 'Original 50', 'Batch 2', 'Additional', 'Overlaps', 'Flagged'];
+const batch3Roster = `
+| 101 | Add | Pine | 松 | まつ | pine tree | 5,400 | Mid | Uncommon | High-utility tree word with a clear evergreen mascot shape |
+| 102 | Add | Elf | エルフ | エルフ | elf | 8,600 | Low | Rare | Common fantasy creature word with simple reading |
+| 103 | Add | Vampire | 吸血鬼 | きゅうけつき | vampire; bloodsucker | 8,800 | Low | Rare | Useful spooky creature word, validated as a JPDB headword |
+| 104 | Add | Goblin | ゴブリン | ゴブリン | goblin | 9,500 | Low | Rare | Familiar RPG creature with straightforward katakana |
+| 105 | Add | Willow | 柳 | やなぎ | willow | 9,900 | Low | Uncommon | Common nature noun with strong visual silhouette |
+| 106 | Add | Rose | バラ | バラ | rose | 10,200 | Low | Uncommon | High-use flower word, distinct from generic Flower |
+| 107 | Add | Shellfish | 貝 | かい | shellfish; seashell; shell | 10,400 | Low | Uncommon | Useful everyday sea creature word with simple reading |
+| 108 | Add | Cedar | 杉 | すぎ | Japanese cedar | 10,500 | Low | Uncommon | Useful tree word, distinct from generic Tree and Pine |
+| 109 | Add | Golem | ゴーレム | ゴーレム | golem | 10,900 | Low | Rare | Durable construct creature, not an ad hoc compound |
+| 110 | Add | Mosquito | 蚊 | か | mosquito | 12,500 | Low | Uncommon | Very useful bug word despite small creature scale |
+| 111 | Add | Dwarf | ドワーフ | ドワーフ | dwarf | 12,900 | Low | Rare | Fantasy humanoid creature with clear learner-friendly katakana |
+| 112 | Add | Lotus | 蓮 | はす | sacred lotus; lotus | 13,200 | Low | Uncommon | Useful plant word and strong calm-water visual |
+| 113 | Add | Ivy | 蔦 | つた | ivy | 13,200 | Low | Uncommon | Useful plant/climbing-vine word; chosen over ambiguous つる |
+| 114 | Add | Goldfish | 金魚 | きんぎょ | goldfish | 15,500 | Very low | Uncommon | Common pet/festival fish word with strong visual clarity |
+| 115 | Add | Cockroach | ゴキブリ | ゴキブリ | cockroach | 15,900 | Very low | Uncommon | Everyday bug word, kept approachable despite gross-out theme |
+| 116 | Add | Mummy | ミイラ | ミイラ | mummy | 16,000 | Very low | Rare | Classic undead creature word with easy katakana |
+| 117 | Add | Swan | 白鳥 | はくちょう | swan | 16,900 | Very low | Rare | Elegant bird with symbolic weight, distinct from Crane |
+| 118 | Add | Earthworm | ミミズ | ミミズ | earthworm | 19,000 | Very low | Uncommon | Useful garden creature word, selected over weaker parasite words |
+| 119 | Add | Tuna | マグロ | マグロ | tuna | 20,300 | Very low | Uncommon | High-use fish/food word that still works as a fish creature |
+| 120 | Add | Salmon | 鮭 | さけ | salmon | 21,500 | Very low | Uncommon | Useful fish/food word with clear animal identity |
+| 121 | Add | Fly | ハエ | ハエ | fly | 22,700 | Very low | Uncommon | Basic insect word, more learner-useful than rarer bug tail |
+| 122 | Add | Goat | ヤギ | ヤギ | goat | 23,100 | Very low | Uncommon | Common animal concept; katakana form avoids rejected 山羊 compound look |
+| 123 | Add | Ray | エイ | エイ | ray | 23,100 | Very low | Uncommon | Useful marine animal word with distinct silhouette |
+| 124 | Add | Moth | 蛾 | が | moth | 23,600 | Very low | Uncommon | Useful insect contrast with Butterfly |
+| 125 | Add | Mole | モグラ | モグラ | mole | 26,500 | Ultra low | Uncommon | Cute burrowing animal with good visual role |
+| 126 | Add | Hamster | ハムスター | ハムスター | hamster | 26,900 | Ultra low | Uncommon | Familiar pet word for beginner learners |
+| 127 | Add | Grasshopper | バッタ | バッタ | grasshopper; locust | 27,400 | Ultra low | Uncommon | Common bug concept, selected over less appealing insect options |
+| 128 | Add | Tulip | チューリップ | チューリップ | tulip | 27,600 | Ultra low | Uncommon | Familiar flower word with distinctive simple silhouette |
+| 129 | Add | Centipede | ムカデ | ムカデ | centipede | 27,900 | Ultra low | Rare | Threat bug silhouette earns a mild rarity override |
+| 130 | Add | Unicorn | ユニコーン | ユニコーン | unicorn | 28,000 | Ultra low | Epic | Iconic mythic creature, below Dragon-tier legendary weight |
+| 131 | Add | Minotaur | ミノタウロス | ミノタウロス | Minotaur | 28,300 | Ultra low | Epic | Mythic boss-scale creature, kept as a JPDB headword |
+| 132 | Add | Chimera | キメラ | キメラ | chimera | 29,100 | Ultra low | Epic | Mythic hybrid creature, not a roster-derived compound |
+| 133 | Add | Kraken | クラーケン | クラーケン | kraken | 30,600 | Ultra low | Epic | Sea-monster apex, useful fantasy word despite low frequency |
+| 134 | Add | Donkey | ロバ | ロバ | donkey; ass | 30,900 | Ultra low | Uncommon | Basic farm animal word still missing from the roster |
+| 135 | Add | Guinea pig | モルモット | モルモット | guinea pig | 31,600 | Ultra low | Uncommon | Familiar small pet word, kept cute rather than rare |
+| 136 | Add | Reindeer | トナカイ | トナカイ | reindeer | 31,700 | Ultra low | Uncommon | Familiar animal word with seasonal learner usefulness |
+| 137 | Add | Silkworm | 蚕 | かいこ | silkworm | 31,800 | Ultra low | Uncommon | Culturally useful insect word and distinct from Caterpillar |
+| 138 | Add | Cactus | サボテン | サボテン | cactus | 31,900 | Ultra low | Uncommon | Familiar plant mascot with strong defensive silhouette |
+| 139 | Add | Reed | 葦 | あし | common reed | 32,200 | Ultra low | Uncommon | Useful waterside plant word, visually clear enough for a base creature |
+| 140 | Add | Seaweed | 海藻 | かいそう | seaweed | 32,400 | Ultra low | Uncommon | Useful ocean plant word with simple creature potential |
+| 141 | Add | Hedgehog | ハリネズミ | ハリネズミ | hedgehog | 32,900 | Ultra low | Uncommon | Familiar spiky animal, kept approachable despite low frequency |
+| 142 | Add | Caterpillar | 毛虫 | けむし | hairy caterpillar | 33,100 | Ultra low | Uncommon | Useful bug life-stage word and readable creature silhouette |
+| 143 | Add | Seagull | カモメ | カモメ | gull; seagull | 33,900 | Ultra low | Uncommon | Familiar coastal bird, chosen over ambiguous 鷺 / Heron parse |
+| 144 | Add | Dandelion | タンポポ | タンポポ | dandelion | 36,100 | Ultra low | Uncommon | Familiar flower word with strong learner usefulness |
+| 145 | Add | Hippo | カバ | カバ | hippopotamus | 36,400 | Ultra low | Rare | Large animal override, useful zoo vocabulary |
+| 146 | Add | Oyster | 牡蠣 | かき | oyster; oyster shell | 37,900 | Ultra low | Uncommon | Useful shellfish word, more concrete than generic shell |
+| 147 | Add | Pufferfish | フグ | フグ | puffer fish; fugu | 38,400 | Ultra low | Rare | Iconic Japanese food/animal word with poison-threat override |
+| 148 | Add | Sunflower | ヒマワリ | ヒマワリ | sunflower | 42,100 | Ultra low | Uncommon | Familiar plant word and bright visual creature concept |
+| 149 | Add | Leopard | ヒョウ | ヒョウ | leopard | 42,100 | Ultra low | Rare | Apex cat override, distinct from Tiger and Jaguar |
+| 150 | Add | Hermit crab | ヤドカリ | ヤドカリ | hermit crab | 43,500 | Ultra low | Uncommon | Cute shell-carrying animal with clear visual identity |
+`;
+
+const batch4Roster = `
+| 151 | Add | River | 川 | かわ | river; stream | 1,100 | Common | Common | Starter-grade water terrain creature; learner-essential N5 noun, peer of Sea |
+| 152 | Add | Flame | 炎 | ほのお | flame; blaze | 1,600 | Common | Uncommon | Standalone noun (ほのお) chosen over the higher-frequency 炎(えん) suffix vid that means -itis |
+| 153 | Add | Mirror | 鏡 | かがみ | mirror; looking-glass | 2,000 | Common | Rare | Yata-no-Kagami / mythic mirror override on a learner-essential N4 noun |
+| 154 | Add | Bone | 骨 | ほね | bone; backbone; spirit | 2,100 | Common | Uncommon | Skeletal/undead component, peer of Skeleton at Mid-rank |
+| 155 | Add | Wave | 波 | なみ | wave | 2,300 | Common | Uncommon | Water-elemental creature; learner-essential N4 noun |
+| 156 | Add | Egg | 卵 | たまご | egg; spawn; roe | 3,400 | Mid | Common | Iconic starter-creature concept (egg with limbs); N5 vocabulary |
+| 157 | Add | Mist | 霧 | きり | fog; mist | 3,400 | Mid | Uncommon | Soft weather creature with ghostly silhouette |
+| 158 | Add | Storm | 嵐 | あらし | storm; tempest | 3,500 | Mid | Rare | Powerful weather phenomenon override, peer of Thunder |
+| 159 | Add | Lake | 湖 | みずうみ | lake | 4,300 | Mid | Uncommon | Standalone noun chosen over the 湖(こ) suffix vid (rank 11,700) for the kun-reading sense learners encounter |
+| 160 | Add | Bell | 鈴 | すず | bell (often globular) | 5,000 | Mid | Uncommon | Small magical-object creature concept; learner-friendly noun |
+| 161 | Add | Crystal | 水晶 | すいしょう | (rock) crystal; high purity quartz | 8,600 | Low | Uncommon | Crystalline-body mineral creature; useful gem noun |
+| 162 | Add | Yokai | 妖怪 | ようかい | ghost; apparition; phantom; specter; demon; monster; goblin | 8,600 | Low | Rare | Broad supernatural-creature category, central to Japanese folklore |
+| 163 | Add | Slime | スライム | スライム | slime | 9,600 | Low | Common | Genre-iconic JRPG starter monster; the universal beginner creature |
+| 164 | Add | Rainbow | 虹 | にじ | rainbow | 9,900 | Low | Rare | Magical visual creature; vivid-color override on Low-tier word |
+| 165 | Add | Pearl | 真珠 | しんじゅ | pearl | 12,400 | Low | Rare | Precious-treasure orb creature |
+| 166 | Add | Volcano | 火山 | かざん | volcano | 14,700 | Low | Epic | Massive fire-earth phenomenon at Whale-tier scale |
+| 167 | Add | Ogre | オーガ | オーガ | ogre | 18,500 | Very low | Rare | Large humanoid threat; Western peer of Oni |
+| 168 | Add | Wyvern | ワイバーン | ワイバーン | wyvern (two-legged dragon); wivern | 18,800 | Very low | Epic | Dragon-kin flying predator; sits below Dragon (Legendary) |
+| 169 | Add | Mackerel | サバ | サバ | mackerel (esp. chub mackerel, Scomber japonicus) | 27,300 | Ultra low | Uncommon | Common food fish, peer of Salmon and Tuna at Uncommon |
+| 170 | Add | Cerberus | ケルベロス | ケルベロス | Kerberos; multi-headed guardian hound of Hades | 27,600 | Ultra low | Epic | Mythic guardian beast at boss-tier scale |
+| 171 | Add | Troll | トロール | トロール | troll | 30,300 | Ultra low | Rare | Large monstrous humanoid, peer of Ogre |
+| 172 | Add | Killer whale | シャチ | シャチ | orca; killer whale; grampus (Orcinus orca) | 37,200 | Ultra low | Rare | Apex marine-predator override |
+| 173 | Add | Yuki-onna | 雪女 | ゆきおんな | yuki-onna; snow woman (spirit in Japanese folklore) | 38,100 | Ultra low | Rare | Classic snow-spirit yokai |
+| 174 | Add | Hydra | ヒュドラ | ヒュドラ | hydra | 39,200 | Ultra low | Epic | Multi-headed mythic boss-tier creature |
+| 175 | Add | Centaur | ケンタウロス | ケンタウロス | centaur | 39,800 | Ultra low | Epic | Mythic horse-human hybrid, peer of Pegasus |
+| 176 | Add | Heron | 鷺 | さぎ | heron (Ardeidae) | 40,200 | Ultra low | Uncommon | Ordinary wading bird with graceful silhouette |
+| 177 | Add | Werewolf | 狼男 | おおかみおとこ | werewolf | 40,400 | Ultra low | Rare | Classic shape-shifter creature |
+| 178 | Add | Cyclops | サイクロプス | サイクロプス | Cyclops | 42,200 | Ultra low | Epic | Mythic giant, peer of Sphinx |
+| 179 | Add | Sardine | イワシ | イワシ | pilchard; sardine (esp. Japanese pilchard, Sardinops melanostictus) | 42,200 | Ultra low | Uncommon | Small ordinary food fish |
+| 180 | Add | Bakeneko | 化け猫 | ばけねこ | monster cat; cat with magical powers | 42,500 | Ultra low | Rare | Classic shape-shifting cat yokai |
+| 181 | Add | Stag beetle | クワガタ | クワガタ | stag beetle (also: hoe-shaped helmet crest) | 43,200 | Ultra low | Rare | Iconic Japanese kid-favorite insect, peer of Beetle (カブトムシ) |
+| 182 | Add | Saury | サンマ | サンマ | Pacific saury; mackerel pike (Cololabis saira) | 43,800 | Ultra low | Uncommon | Iconic autumn food fish in Japan |
+| 183 | Add | Bonito | カツオ | カツオ | skipjack tuna; oceanic bonito (Katsuwonus pelamis) | 44,200 | Ultra low | Uncommon | Core Japanese cuisine fish (katsuobushi base) |
+| 184 | Add | Pheasant | キジ | きじ | green pheasant; Japanese pheasant (Japan's national bird) | 46,900 | Ultra low | Uncommon | Cultural bird; ordinary scale despite folklore appearances |
+| 185 | Add | Chimpanzee | チンパンジー | チンパンジー | common chimpanzee (Pan troglodytes) | 47,600 | Ultra low | Uncommon | Ordinary primate, peer of Monkey at Uncommon |
+| 186 | Add | Polar bear | シロクマ | シロクマ | polar bear (Ursus maritimus) | 49,400 | Ultra low | Rare | Large predator override; distinct from Bear |
+| 187 | Add | Cricket | コオロギ | コオロギ | cricket (Gryllidae spp.); chirping autumn insect | 50,300 | Ultra low | Uncommon | Common autumn insect, peer of Cicada at Uncommon |
+| 188 | Add | Toad | ヒキガエル | ヒキガエル | toad (esp. Japanese toad, Bufo japonicus) | 53,800 | Ultra low | Uncommon | Ordinary amphibian, peer of Frog at Uncommon |
+| 189 | Add | Beaver | ビーバー | ビーバー | beaver | 55,100 | Ultra low | Uncommon | ビーバー rank used to avoid the unrelated ビバ "viva!" vid at 53,800 |
+| 190 | Add | Sloth | ナマケモノ | ナマケモノ | sloth (animal) | 56,900 | Ultra low | Uncommon | Cute slow mammal; override down from Rare |
+| 191 | Add | Stork | コウノトリ | コウノトリ | stork (esp. Oriental stork, Ciconia boyciana) | 58,000 | Ultra low | Uncommon | Bird with cultural baby-delivery resonance in Japan |
+| 192 | Add | Newt | イモリ | イモリ | newt (esp. Japanese fire belly newt, Cynops pyrrhogaster) | 63,200 | Ultra low | Uncommon | Small ordinary amphibian |
+| 193 | Add | Ladybug | テントウムシ | テントウムシ | ladybug; ladybird (Harmonia axyridis) | 72,400 | Ultra low | Uncommon | Cute small bug; override down from Rare |
+| 194 | Add | Tadpole | おたまじゃくし | オタマジャクシ | tadpole; ladle; musical note | 74,700 | Ultra low | Uncommon | Tiny common life-stage creature, peer of Caterpillar |
+| 195 | Add | Yeti | イエティ | イエティ | yeti; abominable snowman | 75,700 | Ultra low | Rare | Large mountain cryptid creature |
+| 196 | Add | Kingfisher | カワセミ | カワセミ | kingfisher (esp. common kingfisher, Alcedo atthis) | 78,400 | Ultra low | Uncommon | カワセミ form chosen over 翡翠 (rank 19,600) to avoid jade-stone ambiguity, mirroring Batch 3 つた over つる for Ivy |
+| 197 | Add | Seahorse | タツノオトシゴ | タツノオトシゴ | seahorse; sea horse | 81,000 | Ultra low | Uncommon | Small ordinary marine animal with distinct silhouette |
+| 198 | Add | Walrus | セイウチ | セイウチ | walrus (Odobenus rosmarus) | 83,200 | Ultra low | Rare | Large marine mammal override |
+| 199 | Add | Salamander | サンショウウオ | サンショウウオ | salamander (amphibian of order Caudata) | 90,900 | Ultra low | Uncommon | Ordinary amphibian, override down from Rare despite ultra-low rank |
+| 200 | Add | Pelican | ペリカン | ペリカン | pelican | 98,000 | Ultra low | Uncommon | Ordinary bird; override down from Rare despite size |
+`;
+
+const filters: Filter[] = ['All', 'Original 50', 'Batch 2', 'Additional', 'Batch 3', 'Batch 4', 'Overlaps', 'Flagged'];
 
 const flagByGroup: Record<string, string> = {
   Chicken: 'Rejected by Batch 2 notes as duplicate of Bird JPDB vid',
   Penguin: 'Mentioned by Batch 2 as an easy add candidate, not selected',
   Swallow: 'Mentioned by Batch 2 as an easy add candidate, not selected',
 };
+
+const strongLearnerValueSignals = [
+  'learner-essential',
+  'high-utility',
+  'high-use',
+  'starter-grade',
+  'everyday',
+  'useful',
+  'food',
+  'cuisine',
+  'garden',
+  'common food',
+];
+
+const weakLearnerValueSignals = [
+  'familiar',
+  'ordinary',
+  'pet',
+  'farm',
+  'city',
+  'simple reading',
+  'simple creature',
+  'common animal',
+  'common bird',
+  'common bug',
+];
+
+const nicheSignals = [
+  'apex',
+  'boss',
+  'cryptid',
+  'fantasy',
+  'folklore',
+  'guardian',
+  'large-power',
+  'legendary',
+  'mythic',
+  'mythical',
+  'predator',
+  'shape-shifter',
+  'spooky',
+  'supernatural',
+  'undead',
+  'yokai',
+];
+
+const speciesSpecificSignals = [
+  'any bird of',
+  'any echinoderm',
+  'any grass of',
+  'any mammal of',
+  'family',
+  'spp.',
+  'esp.',
+  'class ',
+  'order ',
+];
 
 function conceptGroup(creature: string) {
   const normalized = creature.replace(/\s*\/\s*/g, '/').replace('-', '/');
@@ -209,16 +374,63 @@ function conceptGroup(creature: string) {
   return normalized;
 }
 
+function hasSignal(text: string, signals: string[]) {
+  const normalized = text.toLowerCase();
+  return signals.some((signal) => normalized.includes(signal));
+}
+
+function baseUsefulnessScore(rank: number) {
+  if (rank <= 1200) return 92;
+  if (rank <= 3500) return 78;
+  if (rank <= 10000) return 62;
+  if (rank <= 20000) return 52;
+  if (rank <= 50000) return 36;
+  return 22;
+}
+
+function usefulnessFromScore(score: number): Usefulness {
+  if (score >= 85) return 'Very High';
+  if (score >= 70) return 'High';
+  if (score >= 50) return 'Medium';
+  if (score >= 30) return 'Low';
+  return 'Very Low';
+}
+
+function usefulnessFor(row: Pick<Suggestion, 'definition' | 'rank' | 'rarity' | 'reason' | 'tier'>): Usefulness {
+  let score = baseUsefulnessScore(row.rank);
+  const reason = row.reason.toLowerCase();
+  const definition = row.definition.toLowerCase();
+
+  const strongLearnerSignal = hasSignal(reason, strongLearnerValueSignals);
+  const weakLearnerSignal = hasSignal(reason, weakLearnerValueSignals);
+
+  if (strongLearnerSignal) score += 16;
+  if (weakLearnerSignal && row.rank <= 25000) score += 8;
+  if (weakLearnerSignal && row.rank > 25000 && row.rank <= 50000) score += 4;
+  if (hasSignal(`${reason} ${definition}`, nicheSignals)) score -= 16;
+  if (row.rarity === 'Epic' || row.rarity === 'Legendary') score -= 12;
+  if (row.rarity === 'Rare' && row.rank > 10000) score -= 6;
+  if (row.rank > 25000 && hasSignal(definition, speciesSpecificSignals)) score -= 12;
+  if (row.rank > 50000 && !strongLearnerSignal) score -= 8;
+
+  return usefulnessFromScore(score);
+}
+
 function parseRows(source: Source, raw: string): Suggestion[] {
   return raw
     .trim()
     .split('\n')
     .map((line, index) => {
       const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
-      const hasSlot = source === 'Batch 2';
+      const hasSlot = source === 'Batch 2' || source === 'Batch 3' || source === 'Batch 4';
       const slot = hasSlot ? cells[0] : source === 'Original 50' ? String(index + 1) : `A${index + 1}`;
       const offset = hasSlot ? 1 : 0;
       const group = conceptGroup(cells[offset + 1]);
+      const rank = Number(cells[offset + 5].replace(/,/g, ''));
+      const definition = cells[offset + 4];
+      const tier = cells[offset + 6];
+      const rarity = cells[offset + 7];
+      const reason = cells[offset + 8];
 
       return {
         source,
@@ -228,11 +440,12 @@ function parseRows(source: Source, raw: string): Suggestion[] {
         group,
         japanese: cells[offset + 2],
         reading: cells[offset + 3],
-        definition: cells[offset + 4],
-        rank: Number(cells[offset + 5].replace(/,/g, '')),
-        tier: cells[offset + 6],
-        rarity: cells[offset + 7],
-        reason: cells[offset + 8],
+        definition,
+        rank,
+        tier,
+        rarity,
+        usefulness: usefulnessFor({ definition, rank, tier, rarity, reason }),
+        reason,
         flag: flagByGroup[group],
       };
     });
@@ -242,6 +455,8 @@ const suggestions = [
   ...parseRows('Original 50', originalRoster),
   ...parseRows('Batch 2', batch2Roster),
   ...parseRows('Additional', additionalRoster),
+  ...parseRows('Batch 3', batch3Roster),
+  ...parseRows('Batch 4', batch4Roster),
 ];
 
 const groups = suggestions.reduce<Record<string, Suggestion[]>>((acc, row) => {
@@ -297,19 +512,19 @@ export default function RosterExpansionSuggestionsMaster() {
     <Stack gap={20}>
       <H1>Roster Expansion Suggestions Master</H1>
       <Text>
-        Combined view of all three roster docs: the original 50-creature base roster, Batch 2, and the Additional follow-on proposal. The table preserves every source row while grouping duplicate creature concepts.
+        Combined view of all roster docs: the original 50-creature base roster, Batch 2, the Additional follow-on proposal, Batch 3, and Batch 4. The table preserves every source row while grouping duplicate creature concepts.
       </Text>
 
       <Grid columns={5} gap={16}>
         <Stat value={suggestions.length} label="Source rows" />
         <Stat value={Object.keys(groups).length} label="Unique concepts" />
-        <Stat value={`${countRows('Original 50')} / ${countRows('Batch 2')} / ${countRows('Additional')}`} label="Original / Batch 2 / Additional" />
+        <Stat value={`${countRows('Original 50')} / ${countRows('Batch 2')} / ${countRows('Additional')} / ${countRows('Batch 3')} / ${countRows('Batch 4')}`} label="Original / Batch 2 / Additional / Batch 3 / Batch 4" />
         <Stat value={overlapCount} label="Overlap concepts" tone="info" />
         <Stat value={String(filtered.length)} label="Rows currently shown" />
       </Grid>
 
       <Callout tone="info" title="How to read this">
-        Green rows are the original base 50. Blue-tinted rows are concepts suggested by more than one doc. Yellow rows are explicit flags from the source notes, such as Chicken being rejected by Batch 2.
+        Green rows are the original base 50. Blue-tinted rows are concepts suggested by more than one doc. Yellow rows are explicit flags from the source notes, such as Chicken being rejected by Batch 2. Usefulness is scored from JPDB rank, learner-practicality language in the source notes, and penalties for niche species or fantasy terms.
       </Callout>
 
       <Row gap={8} wrap>
@@ -324,7 +539,7 @@ export default function RosterExpansionSuggestionsMaster() {
 
       <H2>All Roster Suggestions</H2>
       <Table
-        headers={['Source', '#', 'Status', 'Creature', 'Japanese', 'Reading', 'Definition', 'JPDB Rank', 'Tier', 'Rarity', 'Cross-doc status', 'Reason']}
+        headers={['Source', '#', 'Status', 'Creature', 'Japanese', 'Reading', 'Definition', 'JPDB Rank', 'Usefulness', 'Tier', 'Rarity', 'Cross-doc status', 'Reason']}
         rows={filtered.map((row) => [
           row.source,
           row.slot,
@@ -334,13 +549,14 @@ export default function RosterExpansionSuggestionsMaster() {
           row.reading,
           row.definition,
           formatRank(row.rank),
+          row.usefulness,
           row.tier,
           row.rarity,
           groupStatus(row),
           row.reason,
         ])}
         rowTone={filtered.map(rowTone)}
-        columnAlign={['left', 'right', 'left', 'left', 'left', 'left', 'left', 'right', 'left', 'left', 'left', 'left']}
+        columnAlign={['left', 'right', 'left', 'left', 'left', 'left', 'left', 'right', 'left', 'left', 'left', 'left', 'left']}
         striped
         stickyHeader
       />
@@ -349,10 +565,10 @@ export default function RosterExpansionSuggestionsMaster() {
 
       <H2>Fast Takeaways</H2>
       <Text>
-        The complete source set is 150 rows: 50 original roster entries, 50 Batch 2 entries, and 50 Additional entries. After grouping duplicate concepts like Bat, Dolphin, Mantis, and Kirin/Giraffe, the canvas shows the broader 100+ candidate pool rather than only the newer 50-row subset.
+        The complete source set is 250 rows: 50 original roster entries, 50 Batch 2 entries, 50 Additional entries, 50 Batch 3 entries, and 50 Batch 4 entries. After grouping duplicate concepts like Bat, Dolphin, Mantis, and Kirin/Giraffe, the canvas shows the broader candidate pool rather than only any single 50-row subset.
       </Text>
       <Text tone="secondary" size="small">
-        Batch 2 is generally more conservative on rarity and often picks JPDB primary katakana forms. The Additional doc contributes the larger mythic and predator tail, including Griffin, Pegasus, Sphinx, Nue, Rhinoceros, Dinosaur, and several big cats.
+        Batch 4 emphasizes high-utility learner words that still read as creatures: N4/N5 nature and everyday nouns (River, Wave, Mirror, Egg, Bone, Bell), iconic missing fantasy creatures (Slime, Werewolf, Wyvern, Centaur, Cyclops, Hydra, Cerberus), Japanese folklore yokai (Yokai, Yuki-onna, Bakeneko), missing common animals (Toad, Newt, Salamander, Stag beetle, Cricket, Ladybug, Polar bear, Sloth, Stork, Pheasant, Heron, Kingfisher), and core Japanese cuisine fish (Mackerel, Sardine, Saury, Bonito). All ranks validated against JPDB; Lake/Flame use kun-reading vids and Kingfisher uses カワセミ to dodge the 翡翠 jade ambiguity.
       </Text>
     </Stack>
   );

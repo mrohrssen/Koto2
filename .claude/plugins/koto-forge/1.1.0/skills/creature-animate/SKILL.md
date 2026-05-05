@@ -1,7 +1,15 @@
 ---
 name: creature-animate
-description: Animate staging creature images into game-ready idle sprites. Runs WAN 2.2 via ComfyUI (SSH tunnel at 127.0.0.1:8188) to generate transparent animated webp + static fallback webp. Triggers on "animate creature", "creature animate", "idle animation", "animate staging".
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Original (for reference only): Animate staging creature images into game-ready idle sprites via ComfyUI."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its tables, workflows, and
+> assumptions reflect an older version of the game systems and may produce
+> incorrect content. Do not run `/creature-animate`. See current reference docs
+> (e.g. `docs/move-system-reference.md`) for the actual design space.
 
 # Creature Animate
 

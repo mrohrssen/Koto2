@@ -1,7 +1,15 @@
 ---
 name: jpdb-frequency-lookup
-description: Use when enriching Japanese word lists or CSV files with JPDB frequency rank data, or when needing to look up word frequency from the JPDB API. Triggers on "JPDB frequency", "word frequency rank", "enrich with frequency".
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Original (for reference only): Enrich Japanese word lists or CSV files with JPDB frequency rank data."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its tables, workflows, and
+> assumptions reflect an older version of the game systems and may produce
+> incorrect content. Do not run `/jpdb-frequency-lookup`. See current reference
+> docs (e.g. `docs/move-system-reference.md`) for the actual design space.
 
 # JPDB Frequency Lookup
 

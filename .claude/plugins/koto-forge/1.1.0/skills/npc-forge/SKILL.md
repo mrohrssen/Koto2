@@ -1,7 +1,15 @@
 ---
 name: npc-forge
-description: Generate 5 area-matched NPCs with JPDB names, personalities, and character cards for the AI dialogue system. Triggers on "npc forge", "new npcs", "forge npcs", "npc from area".
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Original (for reference only): Generate 5 area-matched NPCs with JPDB names, personalities, and character cards."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its tables, workflows, and
+> assumptions reflect an older version of the game systems and may produce
+> incorrect content. Do not run `/npc-forge`. See current reference docs
+> (e.g. `docs/move-system-reference.md`) for the actual design space.
 
 # NPC Forge — Orchestrator
 

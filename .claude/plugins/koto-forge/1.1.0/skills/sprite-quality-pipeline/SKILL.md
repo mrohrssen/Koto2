@@ -1,7 +1,16 @@
 ---
 name: sprite-quality-pipeline
-description: Use when generating or regenerating any sprites (actions, creatures, items, bosses, NPCs, backgrounds). Enforces the three-gate quality pipeline.
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Original (for reference only): Three-gate sprite quality pipeline for generated sprites."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its tables, workflows, and
+> assumptions reflect an older version of the game systems and may produce
+> incorrect content. Do not run `/sprite-quality-pipeline`. See current
+> reference docs (e.g. `docs/move-system-reference.md`) for the actual
+> design space.
 
 # Sprite Quality Pipeline
 

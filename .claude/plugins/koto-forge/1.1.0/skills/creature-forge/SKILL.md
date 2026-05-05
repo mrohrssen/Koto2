@@ -1,7 +1,15 @@
 ---
 name: creature-forge
-description: Design a new game creature from an English word. Generates name, Japanese vocab, learnset, archetype, element, modifier, visual description, and concept art preview with JPDB frequency data. Triggers on "creature forge", "new creature", "design creature", "creature from word".
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Original (for reference only): Design a new game creature from an English word."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its tables, workflows, and
+> assumptions reflect an older version of the game systems and may produce
+> incorrect content. Do not run `/creature-forge`. See current reference docs
+> (e.g. `docs/move-system-reference.md`) for the actual design space.
 
 # Creature Forge — Orchestrator
 

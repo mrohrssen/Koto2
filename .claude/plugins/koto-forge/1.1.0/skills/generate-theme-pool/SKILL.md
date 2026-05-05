@@ -1,7 +1,15 @@
 ---
 name: generate-theme-pool
-description: Generate a theme pool file from 5-method consensus + JPDB enrichment + human curation. Usage: /generate-theme-pool <theme-concept> [area-word]
+description: "[DEPRECATED — DO NOT USE] Stale skill — do not invoke. Original (for reference only): Generate a theme pool file from 5-method consensus + JPDB enrichment + human curation."
+user_invocable: false
 ---
+
+> **DEPRECATED — DO NOT USE**
+>
+> This skill is stale and should not be invoked. Its tables, workflows, and
+> assumptions reflect an older version of the game systems and may produce
+> incorrect content. Do not run `/generate-theme-pool`. See current reference
+> docs (e.g. `docs/move-system-reference.md`) for the actual design space.
 
 # Generate Theme Pool
 
