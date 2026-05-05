@@ -681,7 +681,6 @@ export async function startCombatLoop(opts = {}) {
       await mgr.transition(BattleScene, {
         allies:  gs.combat?.allies  ?? [],
         enemies: gs.combat?.enemies ?? [],
-        parallaxSpeed: 0,
         isBoss: !!gs.combat?.isBoss,
       });
     } catch (err) {

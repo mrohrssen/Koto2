@@ -111,18 +111,69 @@ export function createBattlefieldPreviewState({ areaId = 'starter_meadow' } = {}
   };
 }
 
+/**
+ * Build the renderer for the dev battlefield preview. Caller passes a `deps`
+ * bag with the game-side modules the renderer needs to drive (narration box,
+ * combat loop, scene manager, action area, etc.) so this module stays free of
+ * top-level game.js imports and doesn't bloat the prod path with combat code.
+ */
+function createDefaultRenderer(deps) {
+  const {
+    narrationBox,
+    combatLoopUI,
+    actions,
+    escapeHtml,
+    loadParallax,
+    getSceneManager,
+    BattleScene,
+    scene,
+  } = deps;
+
+  return async function renderBattlefieldPreview(previewState) {
+    const allies = previewState?.combat?.allies ?? [];
+    const enemies = previewState?.combat?.enemies ?? [];
+    const areaId = previewState?.run?.currentArea?.parallaxId
+      || previewState?.run?.currentArea?.id
+      || 'starter_meadow';
+
+    narrationBox.forceHide();
+    combatLoopUI.cleanupCombat?.();
+    actions.setContent(`
+      <div style="padding:12px;text-align:center;color:var(--text-secondary);font-size:0.9rem;">
+        Battlefield preview: ${escapeHtml(areaId)}
+      </div>
+    `);
+
+    await loadParallax(areaId);
+
+    const mgr = getSceneManager();
+    if (mgr && !(mgr.currentScene instanceof BattleScene)) {
+      await mgr.transition(BattleScene, { allies, enemies, isBoss: false });
+    } else if (mgr?.currentScene instanceof BattleScene) {
+      await mgr.currentScene.syncCreatures({ allies, enemies, initial: true });
+    }
+
+    await scene.showFormation('player', allies, { force: true });
+    await scene.showFormation('enemy', enemies, { force: true });
+  };
+}
+
 export function registerBattlefieldPreview({
   windowObj = globalThis.window,
   updateGameState,
   renderBattlefieldPreview,
+  deps,
   autoStartFromUrl = true,
 } = {}) {
   if (!windowObj || !isLocalPreviewHost(windowObj.location?.hostname)) return false;
 
+  const renderer = renderBattlefieldPreview
+    || (deps ? createDefaultRenderer(deps) : null);
+
   const start3v3Battlefield = async (options = {}) => {
     const state = createBattlefieldPreviewState(options);
     updateGameState?.(state);
-    await renderBattlefieldPreview?.(state);
+    await renderer?.(state);
     return state;
   };
 

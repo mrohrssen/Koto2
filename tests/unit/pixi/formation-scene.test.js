@@ -127,12 +127,16 @@ await mock.module('../../../public/js/pixi/effects.js', {
   },
 });
 
-// BattleScene calls start/stopParallax in onEnter/beforeExit; stub them.
+// BattleScene calls start/stopParallax + setScrollState in onEnter/beforeExit;
+// stub them. BATTLE_SKY_DRIFT_SPEED is a constant the scene imports — match
+// the production value so anything reading it sees a sane number.
 await mock.module('../../../public/js/pixi/parallax.js', {
   namedExports: {
     startParallax: () => {},
     stopParallax: () => {},
     resizeParallax: () => {},
+    setScrollState: () => {},
+    BATTLE_SKY_DRIFT_SPEED: 0.4,
   },
 });
 await mock.module('../../../public/js/ui/event-popup.js', {

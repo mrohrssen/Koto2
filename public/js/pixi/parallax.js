@@ -7,6 +7,12 @@ const LAYER_SPEEDS = [0.1, 1.0];
 const BASE_SCROLL_SPEED = 60; // pixels per second at 1.0x
 const SKY_LAYER_INDEX = 0;
 
+// Per-scene speed multiplier used by BattleScene. The battleground is held
+// frozen while a battle is up (scrollState='encounter'), so this only scales
+// the sky drift the player sees during combat. Lower than ExplorationScene's
+// default 0.6 so the sky visibly slows when fighting starts.
+export const BATTLE_SKY_DRIFT_SPEED = 0.4;
+
 let tilingSprites = [];
 let scrollState = 'stopped'; // 'scrolling' | 'decelerating' | 'stopped' | 'accelerating' | 'encounter'
 let currentSpeed = 0; // 0 = stopped, 1 = full speed
@@ -86,16 +92,6 @@ export function setScrollState(state) {
 
 export function isParallaxMoving() {
   return currentSpeed > 0;
-}
-
-export function getParallaxMotionState() {
-  return {
-    scrollEnabled: _scrollEnabled,
-    scrollSpeed: _scrollSpeed,
-    scrollState,
-    currentSpeed,
-    baseScrollSpeed: BASE_SCROLL_SPEED,
-  };
 }
 
 /**

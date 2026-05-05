@@ -272,7 +272,6 @@ async function syncPvpBattleScene({ initial = false } = {}) {
       await mgr.transition(BattleScene, {
         allies: pvpState.allies,
         enemies: pvpState.enemies,
-        parallaxSpeed: 0,
         isBoss: false,
       });
       return;
