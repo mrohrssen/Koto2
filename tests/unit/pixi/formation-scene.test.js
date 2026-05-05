@@ -10,6 +10,7 @@ class FakeContainer {
     this.children = [];
     this.parent = null;
     this.visible = true;
+    this.alpha = 1;
     this._destroyed = false;
   }
   addChild(c) { this.children.push(c); c.parent = this; return c; }
@@ -47,6 +48,7 @@ class FakeSprite extends FakeContainer {
 }
 
 class FakeGraphics extends FakeContainer {
+  ellipse() { return this; }
   circle() { return this; }
   roundRect() { return this; }
   fill() { return this; }
@@ -102,20 +104,39 @@ await mock.module('../../../public/js/pixi/app.js', {
   namedExports: { getApp: () => fakeAppState },
 });
 
+await mock.module('../../../public/js/pixi/image-loader.js', {
+  namedExports: { loadImageTexture: (path) => FakeAssets._loadImpl(path) },
+});
+
 // Unused in the paths we exercise, but formation.js imports from these.
 await mock.module('../../../public/js/pixi/tween.js', {
   namedExports: {
-    tween: () => Promise.resolve(),
+    tween: (target, props) => {
+      Object.assign(target, props);
+      return Promise.resolve();
+    },
     wait: () => Promise.resolve(), // mock: resolve immediately for test speed
   },
 });
 
-// BattleScene calls start/stopParallax in onEnter/beforeExit; stub them.
+await mock.module('../../../public/js/pixi/effects.js', {
+  namedExports: {
+    burstParticles: () => {},
+    screenFlash: () => {},
+    releaseAllInFlight: () => {},
+  },
+});
+
+// BattleScene calls start/stopParallax + setScrollState in onEnter/beforeExit;
+// stub them. BATTLE_SKY_DRIFT_SPEED is a constant the scene imports — match
+// the production value so anything reading it sees a sane number.
 await mock.module('../../../public/js/pixi/parallax.js', {
   namedExports: {
     startParallax: () => {},
     stopParallax: () => {},
     resizeParallax: () => {},
+    setScrollState: () => {},
+    BATTLE_SKY_DRIFT_SPEED: 0.4,
   },
 });
 await mock.module('../../../public/js/ui/event-popup.js', {
@@ -163,6 +184,7 @@ const {
   destroyAllStatusLabels,
 } = await import('../../../public/js/pixi/formation.js');
 const { BattleScene } = await import('../../../public/js/scenes/battle-scene.js');
+const { rowForFormationIndex } = await import('../../../public/js/pixi/battlefield-layout.js');
 
 
 // --- Helpers ----------------------------------------------------------------
@@ -376,6 +398,84 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
     );
     assert.strictEqual(sprite._slotI, 1);
   });
+
+  it('positions battle sprites on the symmetric battlefield grid', async () => {
+    const ctx = makeSceneCtx();
+    const sprite = await spawnFormationSprite(ctx, 'enemy', { uid: 'e1', id: 'hi', hp: 10 }, 0, {
+      slotI: rowForFormationIndex(0, 3),
+      skipEnter: true,
+    });
+
+    assert.equal(Math.round(sprite.baseX), 322); // 400 * 0.805
+    assert.equal(Math.round(sprite.baseY), 261); // 600 * 0.435
+    assert.equal(sprite._rowName, 'top');
+  });
+
+  it('anchors contact shadows to row-scaled creature feet', async () => {
+    const topCtx = makeSceneCtx();
+    const top = await spawnFormationSprite(topCtx, 'player', { uid: 'top', id: 'hi', hp: 10 }, 0, {
+      slotI: 0,
+      skipEnter: true,
+    });
+
+    const middleCtx = makeSceneCtx();
+    const middle = await spawnFormationSprite(middleCtx, 'player', { uid: 'middle', id: 'hi', hp: 10 }, 0, {
+      slotI: 1,
+      skipEnter: true,
+    });
+
+    const bottomCtx = makeSceneCtx();
+    const bottom = await spawnFormationSprite(bottomCtx, 'player', { uid: 'bottom', id: 'hi', hp: 10 }, 0, {
+      slotI: 2,
+      skipEnter: true,
+    });
+
+    assert.equal(top._shadow.y, top.baseY + 60 * 0.90 * 0.50);
+    assert.equal(middle._shadow.y, middle.baseY + 60 * 0.98 * 0.38);
+    assert.equal(bottom._shadow.y, bottom.baseY + 60 * 1.08 * 0.50);
+  });
+
+  it('prefers current idle creature sprites when available', async () => {
+    const seen = [];
+    const originalLoad = FakeAssets._loadImpl;
+    FakeAssets._loadImpl = async (path) => {
+      seen.push(path);
+      return { width: 60, height: 60, path };
+    };
+    try {
+      const ctx = makeSceneCtx();
+      const sprite = await spawnFormationSprite(ctx, 'player', { uid: 'p-idle', id: 'kitsunova' }, 0, {
+        skipEnter: true,
+      });
+      assert.equal(sprite.texture.path, '/assets/sprites/creatures/kitsunova-idle.webp?v=20260430b');
+      assert.deepEqual(seen, ['/assets/sprites/creatures/kitsunova-idle.webp?v=20260430b']);
+    } finally {
+      FakeAssets._loadImpl = originalLoad;
+    }
+  });
+
+  it('falls back to static creature sprites when no idle asset exists', async () => {
+    const seen = [];
+    const originalLoad = FakeAssets._loadImpl;
+    FakeAssets._loadImpl = async (path) => {
+      seen.push(path);
+      if (path.includes('-idle.webp')) throw new Error('missing idle sprite');
+      return { width: 60, height: 60, path };
+    };
+    try {
+      const ctx = makeSceneCtx();
+      const sprite = await spawnFormationSprite(ctx, 'player', { uid: 'p-static', id: 'mizu' }, 0, {
+        skipEnter: true,
+      });
+      assert.equal(sprite.texture.path, '/assets/sprites/creatures/mizu.webp?v=20260430b');
+      assert.deepEqual(seen, [
+        '/assets/sprites/creatures/mizu-idle.webp?v=20260430b',
+        '/assets/sprites/creatures/mizu.webp?v=20260430b',
+      ]);
+    } finally {
+      FakeAssets._loadImpl = originalLoad;
+    }
+  });
 });
 
 describe('updateFormationSprite repositioning (IMP-4)', () => {
@@ -404,6 +504,7 @@ describe('updateFormationSprite repositioning (IMP-4)', () => {
     // With DOM mocked to return null, fallback layout differs per slot.
     const moved = (sprite.x !== origX) || (sprite.y !== origY);
     assert.ok(moved, `sprite did not reposition (x:${origX}→${sprite.x}, y:${origY}→${sprite.y})`);
+    assert.equal(sprite._shadow.y, sprite.baseY + 60 * 1.08 * 0.50);
   });
 
   it('does not reposition when slotI is unchanged', async () => {
@@ -527,6 +628,15 @@ describe('BattleScene._diff lifecycle', () => {
 });
 
 describe('scene-facing sprite-lookup variants null-scene guards', () => {
+  function makeSceneCtx() {
+    const formations = new FakeContainer();
+    const scene = {
+      layers: { formations },
+      addContainer: (c /* container */, _parent) => c,
+    };
+    return createFormationContext(scene);
+  }
+
   it('getCreatureSpriteForScene returns null when scene is null', () => {
     assert.strictEqual(getCreatureSpriteForScene(null, 'player', 0), null);
     assert.strictEqual(getCreatureSpriteForScene(undefined, 'enemy', 2), null);
@@ -537,6 +647,24 @@ describe('scene-facing sprite-lookup variants null-scene guards', () => {
     assert.strictEqual(await animateKOForScene(null, 'player', 0), undefined);
     assert.strictEqual(await animateLevelUpForScene(null, 'enemy', 1), undefined);
     assert.strictEqual(await animateKOForScene({}, 'player', 0), undefined);
+  });
+
+  it('animateKOForScene fades the creature shadow with the sprite', async () => {
+    const ctx = makeSceneCtx();
+    const creature = { uid: 'ko-shadow', id: 'hi', hp: 10 };
+    const sprite = await spawnFormationSprite(ctx, 'enemy', creature, 0, {
+      slotI: 1,
+      skipEnter: true,
+    });
+    ctx.lastFormationInput.enemy = { creatures: [creature], opts: {} };
+
+    assert.equal(sprite.alpha, 1);
+    assert.equal(sprite._shadow.alpha, 1);
+
+    await animateKOForScene({ formation: ctx }, 'enemy', 0);
+
+    assert.equal(sprite.alpha, 0);
+    assert.equal(sprite._shadow.alpha, 0);
   });
 
   it('showActiveGlowForScene / clearActiveGlowForScene no-op when scene.formation is missing', () => {

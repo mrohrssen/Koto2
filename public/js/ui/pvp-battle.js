@@ -5,6 +5,8 @@ import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
 import { showAttackDisplay } from './combat-loop.js';
 import { getHpColor } from './combat-ui-utils.js';
+import { getSceneManager } from '../scenes/scene-manager.js';
+import { BattleScene } from '../scenes/battle-scene.js';
 
 // Module-level references injected via init()
 let getGameState = null;
@@ -70,11 +72,6 @@ export function startPvpBattle(data) {
     roundNumber: 1
   };
 
-  // Set arena background (will fall back if file doesn't exist yet)
-  if (sceneModule?.setBackground) {
-    sceneModule.setBackground('/assets/backgrounds/pvp-arena.webp');
-  }
-
   if (typeof onPvpBattleStart === 'function') {
     onPvpBattleStart();
   }
@@ -84,6 +81,7 @@ export function startPvpBattle(data) {
     sceneModule.showFormation('player', pvpState.allies);
     sceneModule.showFormation('enemy', pvpState.enemies);
   }
+  syncPvpBattleScene({ initial: true });
 
   // Clean up stale rematch handlers from a previous match's renderResult()
   pvpSocket.off('pvp:rematch-start');
@@ -253,6 +251,7 @@ async function handleRoundResult(result) {
     sceneModule.showFormation('player', pvpState.allies);
     sceneModule.showFormation('enemy', pvpState.enemies);
   }
+  syncPvpBattleScene();
 
   syncAllStatusLabels();
 
@@ -263,6 +262,28 @@ async function handleRoundResult(result) {
     showMoveSelection();
   }
   // If there is a winner, pvp:match-end handler will take over
+}
+
+async function syncPvpBattleScene({ initial = false } = {}) {
+  if (!pvpState) return;
+  try {
+    const mgr = getSceneManager();
+    if (!(mgr.currentScene instanceof BattleScene)) {
+      await mgr.transition(BattleScene, {
+        allies: pvpState.allies,
+        enemies: pvpState.enemies,
+        isBoss: false,
+      });
+      return;
+    }
+    await mgr.currentScene.syncCreatures({
+      allies: pvpState.allies,
+      enemies: pvpState.enemies,
+      initial,
+    });
+  } catch (err) {
+    console.warn('[PvP] BattleScene sync failed:', err);
+  }
 }
 
 /**
@@ -326,7 +347,10 @@ function updateSlotHp(formationId, index, hp, maxHp) {
   const fill = slot.querySelector('.formation-hp-fill');
   if (fill) {
     fill.style.width = `${hpPct}%`;
-    fill.style.backgroundColor = getHpColor(hpPct);
+    fill.style.backgroundColor = getHpColor(
+      hpPct,
+      formationId === 'enemy-formation' ? 'enemy' : 'player'
+    );
   }
   const sprite = slot.querySelector('.formation-sprite');
   if (sprite) {

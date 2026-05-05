@@ -1,6 +1,6 @@
 import { Scene } from './scene.js';
 import { Container } from 'pixi.js';
-import { startParallax, stopParallax } from '../pixi/parallax.js';
+import { startParallax, stopParallax, setScrollState, BATTLE_SKY_DRIFT_SPEED } from '../pixi/parallax.js';
 import {
   createFormationContext,
   spawnFormationSprite,
@@ -50,8 +50,16 @@ export class BattleScene extends Scene {
     this.statusVfx = createStatusVfxContext(this);
   }
 
-  async onEnter({ allies = [], enemies = [], parallaxSpeed = 0, isBoss = false } = {}) {
-    if (parallaxSpeed > 0) startParallax(parallaxSpeed);
+  async onEnter({ allies = [], enemies = [], isBoss = false } = {}) {
+    // Always enable parallax so the sky can drift slowly during combat, and
+    // immediately freeze the battleground so it can't keep moving in the
+    // window between scene mount and the next syncParallaxScrollWithPhase()
+    // tick. Without this explicit setScrollState, the battleground inherits
+    // whatever scrollState was active in the prior scene (often 'scrolling'
+    // when entering combat from explore) and visibly drifts for ~one frame
+    // up to the full async loadParallax() round trip.
+    startParallax(BATTLE_SKY_DRIFT_SPEED);
+    setScrollState('encounter');
     this._isBoss = !!isBoss;
     await this.syncCreatures({ allies, enemies, initial: true });
     this.addUpdater((dt) => _updateFormations(this.formation, dt));

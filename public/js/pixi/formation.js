@@ -4,10 +4,14 @@ import { getApp } from './app.js';
 import { loadImageTexture } from './image-loader.js';
 import { tween } from './tween.js';
 import { STATUS_ICON_CONFIG } from '../ui/event-popup.js';
+import { SPRITE_VERSION } from '../ui/sprite-utils.js';
+import {
+  getBattlefieldSlot,
+  getBattlefieldSpriteScale,
+  getBattlefieldShadowSpec,
+} from './battlefield-layout.js';
 
-const DEPTH_SCALES = [0.9, 0.95, 1.0]; // back, mid, front
-const PLAYER_STAGGER_X = [12, 24, 36]; // px offset per row
-const ENEMY_STAGGER_X = [-12, -24, -36]; // mirrored
+const BATTLEFIELD_SLOT_COUNT = 3;
 
 const LABEL_FONT_SIZE = 9;
 const LABEL_PADDING_X = 4;
@@ -116,6 +120,34 @@ function _sideContainer(ctx, side) {
 /** Iterate sprites in a side as an array (for legacy-style loops). */
 function _spritesArray(ctx, side) {
   return Array.from(ctx.creatureSprites[side].values());
+}
+
+function _clampSlotIndex(slotI) {
+  return Math.min(Math.max(slotI, 0), BATTLEFIELD_SLOT_COUNT - 1);
+}
+
+function _destroyShadow(sprite) {
+  if (!sprite?._shadow) return;
+  if (sprite._shadow.parent) sprite._shadow.parent.removeChild(sprite._shadow);
+  sprite._shadow.destroy({ children: true });
+  sprite._shadow = null;
+}
+
+function _drawShadow(shadow, shadowSpec) {
+  if (shadow.ellipse) {
+    shadow.ellipse(0, 0, shadowSpec.width / 2, shadowSpec.height / 2);
+  } else {
+    shadow.circle(0, 0, shadowSpec.width / 2);
+    if (shadow.scale) shadow.scale.y = shadowSpec.height / shadowSpec.width;
+  }
+  shadow.fill({ color: 0x000000, alpha: shadowSpec.alpha });
+}
+
+function _shadowYForSprite(sprite, fallbackSpriteSize) {
+  const textureHeight = sprite?.texture?.height || fallbackSpriteSize;
+  const scaledHeight = textureHeight * Math.abs(sprite?.scale?.y || 1);
+  const offsetRatio = sprite?._slotI === 1 ? 0.38 : 0.5;
+  return sprite.baseY + scaledHeight * offsetRatio;
 }
 
 // --- Status label rendering (ctx-based) --------------------------------------
@@ -279,10 +311,14 @@ async function _animateKO(ctx, side, index) {
   sprite.tint = 0x888888;
   const targetScaleX = sprite.scale.x * 0.5;
   const targetScaleY = sprite.scale.y * 0.5;
-  await Promise.all([
+  const tweens = [
     tween(sprite, { alpha: 0 }, { duration: 600, ease: 'easeOut' }),
     tween(sprite.scale, { x: targetScaleX, y: targetScaleY }, { duration: 600, ease: 'easeIn' }),
-  ]);
+  ];
+  if (sprite._shadow) {
+    tweens.push(tween(sprite._shadow, { alpha: 0 }, { duration: 600, ease: 'easeOut' }));
+  }
+  await Promise.all(tweens);
 
   burstParticles(pos, { count: 8, color: 0xFFFFFF, speed: 60, life: 500, element: 'neutral' });
 }
@@ -333,7 +369,7 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
 
   const { isBoss = false, skipEnter = false } = opts;
   const slotIRaw = opts.slotI ?? index;
-  const slotI = Math.min(Math.max(slotIRaw, 0), DEPTH_SCALES.length - 1);
+  const slotI = _clampSlotIndex(slotIRaw);
   const hadSprites = ctx.creatureSprites[side].size > 0;
 
   // NOTE: this function intentionally does NOT use `ctx.loadRequestId` to
@@ -342,12 +378,16 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   // of those calls bail out because the last increment wins. Storage by
   // uid is idempotent — if a caller kicks off two spawns for the same
   // uid we defensively remove the prior sprite below.
-  const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}.webp`;
   let texture;
   try {
+    const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}-idle.webp?v=${SPRITE_VERSION}`;
     texture = await loadImageTexture(spritePath);
   } catch {
-    texture = Texture.WHITE;
+    try {
+      texture = await loadImageTexture(`/assets/sprites/creatures/${creature.id}.webp?v=${SPRITE_VERSION}`);
+    } catch {
+      texture = Texture.WHITE;
+    }
   }
 
   const sprite = new Sprite(texture);
@@ -356,27 +396,11 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   sprite.width = spriteSize;
   sprite.height = spriteSize;
 
-  // Position: use DOM anchor if available, fall back to percentages
-  const sceneArea = document.getElementById('scene-area');
-  const sceneRect = sceneArea?.getBoundingClientRect();
-  const formationSel = side === 'player' ? '.player-formation' : '.enemy-formation';
-  const staggerX = side === 'player' ? PLAYER_STAGGER_X : ENEMY_STAGGER_X;
   const screenW = app.screen.width;
   const screenH = app.screen.height;
-  const baseX = side === 'player' ? screenW * 0.25 : screenW * 0.75;
-
-  let targetX, targetY;
-  const anchorEl = sceneRect && document.querySelector(
-    `${formationSel} .formation-slot[data-index="${index}"] .formation-sprite--pixi-anchor`
-  );
-  if (anchorEl) {
-    const anchorRect = anchorEl.getBoundingClientRect();
-    targetX = anchorRect.left + anchorRect.width / 2 - sceneRect.left;
-    targetY = anchorRect.top + anchorRect.height / 2 - sceneRect.top;
-  } else {
-    targetX = baseX + staggerX[slotI];
-    targetY = (screenH * 0.3) + (slotI * screenH * 0.2);
-  }
+  const slot = getBattlefieldSlot(side, slotI, screenW, screenH);
+  const targetX = slot.x;
+  const targetY = slot.y;
 
   sprite.y = targetY;
 
@@ -396,7 +420,7 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   }
 
   sprite.baseY = targetY;
-  sprite.scale.set(DEPTH_SCALES[slotI] * (spriteSize / texture.width));
+  sprite.scale.set(getBattlefieldSpriteScale(slotI) * (spriteSize / texture.width));
   if (side === 'enemy') sprite.scale.x *= -1;
   sprite.phaseOffset = Math.random() * Math.PI * 2;
   sprite.creatureData = creature;
@@ -404,11 +428,20 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   sprite._side = side;
   sprite._dataIndex = index;
   sprite._slotI = slotI;
+  sprite._rowName = slot.rowName;
 
   if ((creature.currentHp ?? creature.hp ?? 1) <= 0) {
     sprite.alpha = 0;
     sprite.tint = 0x888888;
   }
+
+  const shadowSpec = getBattlefieldShadowSpec(slotI);
+  const shadow = new Graphics();
+  _drawShadow(shadow, shadowSpec);
+  shadow.x = targetX;
+  shadow.y = _shadowYForSprite(sprite, spriteSize);
+  container.addChild(shadow);
+  sprite._shadow = shadow;
 
   container.addChild(sprite);
   const key = creature.uid ?? `__idx_${index}_${creature.id || ''}`;
@@ -418,6 +451,7 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   // so we don't leak a visible double.
   const prior = ctx.creatureSprites[side].get(key);
   if (prior) {
+    _destroyShadow(prior);
     if (prior.parent) prior.parent.removeChild(prior);
     prior.destroy({ children: true, texture: false });
   }
@@ -443,6 +477,7 @@ export function removeFormationSprite(ctx, side, uid) {
       pill.destroy({ children: true });
     }
   }
+  _destroyShadow(sprite);
   if (sprite.parent) sprite.parent.removeChild(sprite);
   sprite.destroy({ children: true, texture: false });
 }
@@ -472,7 +507,7 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
 
   const { isBoss = false } = opts;
   const slotIRaw = opts.slotI ?? index;
-  const slotI = Math.min(Math.max(slotIRaw, 0), DEPTH_SCALES.length - 1);
+  const slotI = _clampSlotIndex(slotIRaw);
 
   sprite.creatureData = creature;
   sprite._dataIndex = index;
@@ -487,37 +522,30 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
   const { app } = getApp();
   if (app && !sprite._entering && slotChanged) {
     const spriteSize = isBoss ? 120 : 60;
-    const sceneArea = document.getElementById('scene-area');
-    const sceneRect = sceneArea?.getBoundingClientRect();
-    const formationSel = side === 'player' ? '.player-formation' : '.enemy-formation';
-    const staggerX = side === 'player' ? PLAYER_STAGGER_X : ENEMY_STAGGER_X;
     const screenW = app.screen.width;
     const screenH = app.screen.height;
-    const baseX = side === 'player' ? screenW * 0.25 : screenW * 0.75;
-
-    let targetX, targetY;
-    const anchorEl = sceneRect && document.querySelector(
-      `${formationSel} .formation-slot[data-index="${index}"] .formation-sprite--pixi-anchor`
-    );
-    if (anchorEl) {
-      const anchorRect = anchorEl.getBoundingClientRect();
-      targetX = anchorRect.left + anchorRect.width / 2 - sceneRect.left;
-      targetY = anchorRect.top + anchorRect.height / 2 - sceneRect.top;
-    } else {
-      targetX = baseX + staggerX[slotI];
-      targetY = (screenH * 0.3) + (slotI * screenH * 0.2);
-    }
+    const slot = getBattlefieldSlot(side, slotI, screenW, screenH);
+    const targetX = slot.x;
+    const targetY = slot.y;
 
     sprite.x = targetX;
     sprite.y = targetY;
     sprite.baseX = targetX;
     sprite.baseY = targetY;
+    sprite._rowName = slot.rowName;
+
+    if (sprite._shadow) {
+      sprite._shadow.x = targetX;
+    }
 
     if (sprite.texture?.width) {
       const sign = (side === 'enemy') ? -1 : 1;
-      const depth = DEPTH_SCALES[slotI] * (spriteSize / sprite.texture.width);
+      const depth = getBattlefieldSpriteScale(slotI) * (spriteSize / sprite.texture.width);
       sprite.scale.set(depth);
       sprite.scale.x *= sign;
+    }
+    if (sprite._shadow) {
+      sprite._shadow.y = _shadowYForSprite(sprite, spriteSize);
     }
   }
 
@@ -530,9 +558,11 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
     // a ghost sprite visible. Force alpha to 0 so the corpse never renders.
     sprite.alpha = 0;
     sprite.tint = 0x888888;
+    if (sprite._shadow) sprite._shadow.alpha = 0;
   } else {
     sprite.alpha = 1;
     sprite.tint = 0xFFFFFF;
+    if (sprite._shadow) sprite._shadow.alpha = 1;
   }
 }
 

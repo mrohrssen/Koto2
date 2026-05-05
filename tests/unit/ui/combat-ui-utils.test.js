@@ -17,4 +17,9 @@ describe('getHpColor', () => {
     assert.equal(getHpColor(25), 'var(--hp-red)');
     assert.equal(getHpColor(0), 'var(--hp-red)');
   });
+
+  it('uses enemy red for enemy bars regardless of pct', () => {
+    assert.equal(getHpColor(100, 'enemy'), 'var(--hp-enemy)');
+    assert.equal(getHpColor(1, 'enemy'), 'var(--hp-enemy)');
+  });
 });

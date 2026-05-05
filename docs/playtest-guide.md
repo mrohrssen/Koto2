@@ -192,6 +192,13 @@ await page.evaluate(async () => {
 - **Move selection cards** in action area below scene: move name in Japanese + English, element, damage, MP cost
 - Room counter in header (e.g., "1/30")
 
+**Battlefield layout visual check:**
+- The battle scene uses a symmetric 3x2 creature grid.
+- Creatures stand on the battleground layer, not floating over generic scenery.
+- Labels sit above each creature.
+- Only the sky layer drifts during combat; background and battleground stay locked.
+- Verify 3v3 first, then 2v2 and 1v1.
+
 **Interactions:**
 - Tap a move card to select it → attack executes
 - After attack: a **split-attack-card** (SAC) shows the result (attacker, move, target, damage)

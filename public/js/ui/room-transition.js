@@ -6,6 +6,7 @@ import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { combatEvents } from './combat-events.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
+import { setScrollState, startParallax, BATTLE_SKY_DRIFT_SPEED } from '../pixi/parallax.js';
 
 const NPC_BATTLE_STRENGTH_PROMPT = "Let's see how strong you are!";
 
@@ -25,6 +26,7 @@ export async function playRoomTransition(gameState) {
 
   // Clear stale enemy formation from previous room before showing the new one
   hideFormation('enemy');
+  setScrollState('scrolling');
 
   // Transition to ExplorationScene. Bumping to a new scene here tears down
   // the previous scene's NPC sprite (via registry disposal + beforeExit) so
@@ -279,6 +281,15 @@ export async function playTutorialBossInterjection(
   { waitFn = (ms) => new Promise(resolve => setTimeout(resolve, ms)), settleMs = 500 } = {},
 ) {
   if (!Array.isArray(lines) || lines.length === 0) return;
+
+  // Cid's first interjection runs in startEncounter BEFORE startCombatLoop has
+  // mounted BattleScene, so the parallax gate may still be off (or running at
+  // ExplorationScene's walking speed) when Cid slides in. Pin it to the
+  // combat sky-drift speed and freeze the battleground here so the player
+  // sees the clouds drift behind Cid on the very first encounter — same
+  // setup BattleScene.onEnter does, just earlier in the sequence.
+  startParallax(BATTLE_SKY_DRIFT_SPEED);
+  setScrollState('encounter');
 
   await waitFn(settleMs);
   await playNpcSkillAnimation(

@@ -128,6 +128,7 @@ import { escapeHtml } from './js/ui/html-utils.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
 import { createIntentLog } from './js/intent-log.js';
 import { createInspector } from './js/inspector.js';
+import { registerBattlefieldPreview } from './js/dev/battlefield-preview.js';
 
 // PixiJS battle stage imports
 import { initApp, getApp } from './js/pixi/app.js';
@@ -1290,7 +1291,6 @@ async function startEncounter() {
           await mgr.transition(BattleScene, {
             allies:  combatAllies,
             enemies: [],
-            parallaxSpeed: 0,
             isBoss: !!gameState.combat?.isBoss,
           });
         } catch (sceneErr) {
@@ -2162,6 +2162,27 @@ async function initGame() {
     onStateUpdate: updateGameState,
   });
   await loadGameState();
+
+  registerBattlefieldPreview({
+    updateGameState,
+    autoStartFromUrl: false,
+    deps: {
+      narrationBox,
+      combatLoopUI,
+      actions,
+      escapeHtml,
+      loadParallax,
+      getSceneManager,
+      BattleScene,
+      scene,
+    },
+  });
+
+  const previewAreaId = new URLSearchParams(window.location.search).get('devBattlefieldPreview');
+  if (previewAreaId && window.__kotoPreview?.start3v3Battlefield) {
+    await window.__kotoPreview.start3v3Battlefield({ areaId: previewAreaId });
+    return;
+  }
 
   // Freshly registered users should enter prologue immediately without
   // an extra manual "New Game" click.

@@ -1,6 +1,6 @@
 import { Scene } from './scene.js';
 import { Container } from 'pixi.js';
-import { startParallax, stopParallax } from '../pixi/parallax.js';
+import { startParallax, stopParallax, isParallaxMoving } from '../pixi/parallax.js';
 import {
   createFormationContext,
   spawnFormationSprite,
@@ -59,12 +59,18 @@ export class ExplorationScene extends Scene {
     // appear together on room entry (fixes bug #1 and bug #6 — sprites
     // previously only rendered after BattleScene took over).
     await this.syncCreatures({ allies, initial: true });
-    // Enable the walking wobble animation for exploration — player sprites
-    // subtly bob + rotate as if walking through the room. BattleScene does
-    // the same; in combat walking is toggled via setWalking() on the
-    // default ctx. Here we keep the wobble on by default.
-    this.formation.walkingEnabled = true;
-    this.addUpdater((dt) => _updateFormations(this.formation, dt));
+    // Drive the walking wobble from the parallax motion state instead of
+    // pinning it on for the whole scene. The wobble reads as "the creature
+    // is walking" — we only want that while the battleground is actually
+    // scrolling between rooms (scrollState='scrolling' or 'accelerating',
+    // i.e. currentSpeed > 0). Once the player stops to talk to an NPC, hits
+    // an encounter, or stands at the door, isParallaxMoving() flips false
+    // and the sprite settles. Updater runs every frame, so the toggle is
+    // live without any explicit setWalking calls from game code.
+    this.addUpdater((dt) => {
+      this.formation.walkingEnabled = isParallaxMoving();
+      _updateFormations(this.formation, dt);
+    });
     setupCreatureRowListeners(this);
   }
 

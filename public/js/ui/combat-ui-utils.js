@@ -4,9 +4,11 @@ export const SC_NAMES = { atk: 'ATK', def: 'DEF' };
 /**
  * CSS variable token for HP bar fill color from current HP percentage.
  * @param {number} pct - HP as 0–100 (e.g. (hp / maxHp) * 100)
+ * @param {'player'|'enemy'} [side='player']
  * @returns {string}
  */
-export function getHpColor(pct) {
+export function getHpColor(pct, side = 'player') {
+  if (side === 'enemy') return 'var(--hp-enemy)';
   if (pct > 50) return 'var(--hp-green)';
   if (pct > 25) return 'var(--hp-yellow)';
   return 'var(--hp-red)';
