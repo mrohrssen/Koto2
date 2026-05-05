@@ -44,6 +44,7 @@ const {
   startParallax,
   stopParallax,
   updateParallax,
+  BACKGROUND_VERSION,
 } = await import('../../../public/js/pixi/parallax.js');
 
 beforeEach(() => {
@@ -58,12 +59,12 @@ beforeEach(() => {
 });
 
 describe('two-layer looping area background', () => {
-  it('loads only sky and battleground from the area folder', async () => {
+  it('loads only sky and battleground from the area folder, with cache-bust version suffix', async () => {
     await loadParallax('starter_meadow');
 
     assert.deepEqual(loadedPaths, [
-      '/assets/backgrounds/starter_meadow/sky.webp',
-      '/assets/backgrounds/starter_meadow/battleground.webp',
+      `/assets/backgrounds/starter_meadow/sky.webp?v=${BACKGROUND_VERSION}`,
+      `/assets/backgrounds/starter_meadow/battleground.webp?v=${BACKGROUND_VERSION}`,
     ]);
     assert.equal(fakeAppState.layers.background.children.length, 2);
   });
