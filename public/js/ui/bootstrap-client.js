@@ -7,6 +7,7 @@ import {
 import { record as recordExposure } from './exposure-buffer.js';
 
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
+const ATTACHABLE_PUNCT_RE = /^[\p{P}\p{S}]+$/u;
 
 let _knownWords = new Set();
 
@@ -83,14 +84,28 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
 
   recordExposure(tokens, wordDict, overrides);
 
-  return tokens.map(token => {
+  const isAttachablePunctuation = token => {
+    const surface = token?.surface || '';
+    return !!surface && !isContentExposureToken(token) && ATTACHABLE_PUNCT_RE.test(surface);
+  };
+
+  const rendered = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
     const { surface } = token;
 
     const baseForm = getTokenBaseForm(token);
     const reading = token.reading;
 
     if (!isContentExposureToken(token)) {
-      return `<span class="jp-punct">${esc(surface)}</span>`;
+      rendered.push(`<span class="jp-punct">${esc(surface)}</span>`);
+      continue;
+    }
+
+    let trailingPunct = '';
+    while (i + 1 < tokens.length && isAttachablePunctuation(tokens[i + 1])) {
+      i += 1;
+      trailingPunct += tokens[i].surface || '';
     }
 
     const isKnown = knownWords.has(baseForm);
@@ -111,20 +126,24 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
 
     if (isKnown) {
       const display = useKanji ? surface : displayReading;
-      return `<span class="jp-word jp-known"${dataAttrs}>`
+      rendered.push(`<span class="jp-word jp-known"${dataAttrs}>`
         + `<ruby>${esc(display)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
-        + `</span>`;
+        + `${esc(trailingPunct)}</span>`);
+      continue;
     }
 
     const typeClass = token.entity ? 'jp-entity' : 'jp-unknown';
     const firstSense = meaning.split('/')[0].trim();
     const parenIdx = firstSense.indexOf('(');
     const primaryEn = parenIdx > 0 ? firstSense.slice(0, parenIdx).trim() : firstSense;
-    return `<span class="jp-word ${typeClass}"${dataAttrs}>`
+    rendered.push(`<span class="jp-word ${typeClass}"${dataAttrs}>`
       + `<ruby>${esc(displayReading)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
+      + `${esc(trailingPunct)}`
       + `<span class="jp-stack-en">${esc(primaryEn)}</span>`
-      + `</span>`;
-  }).join('');
+      + `</span>`);
+  }
+
+  return rendered.join('');
 }
 
 /**

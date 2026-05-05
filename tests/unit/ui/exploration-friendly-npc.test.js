@@ -90,6 +90,7 @@ describe('renderFriendlyNpc item prompt', () => {
     renderedChoices = null;
     dialogueCards = [];
     sceneManagerState.currentScene = null;
+    sceneManagerState.transitioning = false;
   });
 
   it('shows the NPC greeting as a dialogue card before item choices', async () => {
@@ -146,13 +147,84 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(renderedChoices.heading, 'Choose an item');
   });
 
+  it('spawns the room NPC sprite before the greeting dialogue card', async () => {
+    const events = [];
+    const room = {
+      id: 'friendly-npc-sprite-room',
+      type: 'friendlyNpc',
+      npc: { id: 'kodomo', name: '子供', nameEn: 'Child' },
+      friendlyNpc: { completed: false },
+    };
+    sceneManagerState.currentScene = {
+      disposed: false,
+      _exiting: false,
+      layers: { npcs: {} },
+      async showNpcSprite(spritePath) {
+        events.push(['showNpcSprite', spritePath]);
+        this.npcSprite = { spritePath };
+      },
+      async hideNpcSprite() {
+        events.push(['hideNpcSprite']);
+        this.npcSprite = null;
+      },
+    };
+
+    init({
+      getGameState: () => ({
+        phase: 'friendlyNpc',
+        room,
+        meta: { tutorialStep: 0 },
+        run: { creatureParty: { active: [] } },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => ({
+        greeting: {
+          tokens: [{ text: 'こんにちは！' }],
+          overrides: {},
+        },
+        offered: [
+          {
+            id: 'test-apple',
+            word: 'りんご',
+            reading: 'りんご',
+            nameToken: { text: 'りんご' },
+            effect: { healAllPercent: 0.2 },
+          },
+        ],
+      }),
+    });
+
+    await renderFriendlyNpc();
+
+    assert.equal(events[0][0], 'showNpcSprite');
+    assert.match(events[0][1], /\/assets\/sprites\/npcs\/kodomo\.webp\?v=test/);
+    assert.equal(dialogueCards[0].speaker, 'Child');
+  });
+
   it('in tutorial mode lets Cid interrupt after the NPC greeting before item choices', async () => {
     const narrationCalls = [];
+    const spriteCalls = [];
     const room = {
       id: 'friendly-npc-tutorial-room',
       type: 'friendlyNpc',
       npc: { id: 'shopkeeper', name: '店員', nameEn: 'Shopkeeper' },
       friendlyNpc: { completed: false },
+    };
+    sceneManagerState.currentScene = {
+      disposed: false,
+      _exiting: false,
+      layers: { npcs: {} },
+      async showNpcSprite(spritePath) {
+        spriteCalls.push(['show', spritePath]);
+        this.npcSprite = { spritePath };
+      },
+      async hideNpcSprite() {
+        spriteCalls.push(['hide']);
+        this.npcSprite = null;
+      },
     };
 
     init({
@@ -191,6 +263,10 @@ describe('renderFriendlyNpc item prompt', () => {
 
     assert.equal(dialogueCards[0].speaker, 'Shopkeeper');
     assert.deepEqual(dialogueCards[0].tokens, [{ text: 'いらっしゃいませ！' }]);
+    assert.match(spriteCalls[0][1], /shopkeeper\.webp\?v=test/);
+    assert.match(spriteCalls[1][1], /cid\.webp\?v=test/);
+    assert.equal(spriteCalls[2][0], 'hide');
+    assert.match(spriteCalls[3][1], /shopkeeper\.webp\?v=test/);
     assert.equal(narrationCalls.length, 1);
     assert.equal(narrationCalls[0].content, "Here you'll be offered items to power up. Choose wisely!");
     assert.equal(narrationCalls[0].options.speaker, 'Cid');

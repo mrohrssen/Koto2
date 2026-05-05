@@ -87,11 +87,12 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
   },
 });
 
-const { init, renderSkillMaster } = await import('../../../public/js/ui/exploration.js');
+const { init, renderSkillMaster, showTutorialNarration } = await import('../../../public/js/ui/exploration.js');
 
 describe('renderSkillMaster tutorial Cid narration', () => {
   beforeEach(() => {
     sceneManagerState.currentScene = null;
+    sceneManagerState.transitioning = false;
     renderedChoices = null;
   });
 
@@ -149,6 +150,57 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     } finally {
       globalThis.document = originalDocument;
       sceneManagerState.currentScene = null;
+    }
+
+    assert.equal(showNpcSpriteCalls, 1);
+    assert.equal(showNarrationCalls, 1);
+  });
+
+  it('waits for an in-flight scene transition before spawning Cid', async () => {
+    let showNpcSpriteCalls = 0;
+    let showNarrationCalls = 0;
+    const scene = {
+      disposed: false,
+      _exiting: false,
+      layers: { npcs: {} },
+      async showNpcSprite() {
+        showNpcSpriteCalls += 1;
+      },
+      async hideNpcSprite() {},
+    };
+    sceneManagerState.transitioning = true;
+
+    init({
+      getGameState: () => ({
+        phase: 'skillMaster',
+        meta: { tutorialStep: 0 },
+        run: {
+          stats: { startTime: 444 },
+          initialSkillPick: { chosenId: null },
+          creatureParty: { active: [] },
+        },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {} },
+      scene: {
+        showNarration: () => {
+          showNarrationCalls += 1;
+          return Promise.resolve();
+        },
+      },
+    });
+
+    try {
+      const narrationPromise = showTutorialNarration(['first Cid line'], { showSprite: true });
+      setTimeout(() => {
+        sceneManagerState.currentScene = scene;
+        sceneManagerState.transitioning = false;
+      }, 0);
+      await narrationPromise;
+    } finally {
+      sceneManagerState.currentScene = null;
+      sceneManagerState.transitioning = false;
     }
 
     assert.equal(showNpcSpriteCalls, 1);

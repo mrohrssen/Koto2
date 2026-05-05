@@ -177,6 +177,25 @@ describe('npc dialogue card', () => {
     assert.match(html, />anxiety</);
   });
 
+  it('keeps sentence-ending punctuation attached to the preceding word cell', () => {
+    const html = renderDialogueTokenRows({
+      tokens: [
+        { surface: 'いま', baseForm: '今', reading: 'いま', meaning: 'now', pos: 'noun' },
+        { surface: 'は', baseForm: 'は', reading: 'は', pos: 'particle' },
+        { surface: '怖い', baseForm: '怖い', reading: 'こわい', meaning: 'scary', pos: 'adjective' },
+        { surface: '行こう', baseForm: '行く', reading: 'いこう', meaning: 'go', pos: 'verb' },
+        { surface: '。', pos: 'punctuation' },
+      ],
+      knownWords: new Set(['は']),
+      overrides: {},
+      useKanji: false,
+    });
+
+    assert.equal((html.match(/npc-dialogue-line-grid/g) || []).length, 1);
+    assert.match(html, /いこう。<\/span>/);
+    assert.doesNotMatch(html, /npc-dialogue-cell jp-punct/);
+  });
+
   it('resolves only when Continue is clicked', async () => {
     const promise = showNpcDialogueCard({
       speaker: 'Mira',
@@ -283,6 +302,44 @@ describe('npc dialogue card', () => {
 
     continueButton.click();
     await promise;
+  });
+
+  it('shows romaji pronunciation for translated tokenized dialogue when kanji mode is disabled', async () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '待つ', baseForm: '待つ', reading: 'まつ', meaning: 'wait', pos: 'verb' }],
+      knownWords: new Set(),
+      useKanji: false,
+    });
+
+    const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    translateButton.click();
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.match(actionArea.innerHTML, /npc-dialogue-translation-source/);
+    assert.match(actionArea.innerHTML, /npc-dialogue-romaji-row/);
+    assert.match(actionArea.innerHTML, />matsu</);
+  });
+
+  it('shows hiragana pronunciation for translated tokenized dialogue when kanji mode is enabled', async () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '待つ', baseForm: '待つ', reading: 'まつ', meaning: 'wait', pos: 'verb' }],
+      knownWords: new Set(),
+      useKanji: true,
+    });
+
+    const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    translateButton.click();
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const translationSourceHtml = actionArea.innerHTML.slice(actionArea.innerHTML.indexOf('npc-dialogue-translation-source'));
+    assert.match(actionArea.innerHTML, /npc-dialogue-translation-source/);
+    assert.match(translationSourceHtml, /npc-dialogue-romaji-row/);
+    assert.match(translationSourceHtml, />まつ</);
+    assert.doesNotMatch(translationSourceHtml, />matsu</);
   });
 
   it('renders unavailable translation state with retry control', async () => {

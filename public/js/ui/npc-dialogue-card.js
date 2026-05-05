@@ -12,6 +12,7 @@ import { translateDialogue } from '../api.js';
 const DEFAULT_PORTRAIT = '/assets/dialogue/default-headshot.png?v=20260501-headshot';
 const MAX_TOKENS_PER_PAGE = 9;
 const MAX_TOKENS_PER_LINE = 4;
+const ATTACHABLE_PUNCT_RE = /^[\p{P}\p{S}]+$/u;
 
 function tokenBase(token) {
   return getTokenBaseForm(token);
@@ -51,6 +52,23 @@ function chunkByCount(items, count) {
   return chunks;
 }
 
+function isAttachablePunctuation(token) {
+  const surface = token?.surface || '';
+  return !!surface && !isContentExposureToken(token) && ATTACHABLE_PUNCT_RE.test(surface);
+}
+
+function dialogueCellsForTokens(tokens = []) {
+  const cells = [];
+  for (const token of tokens) {
+    if (isAttachablePunctuation(token) && cells.length > 0 && !cells[cells.length - 1].standalone) {
+      cells[cells.length - 1].trailingPunct += token.surface || '';
+      continue;
+    }
+    cells.push({ token, trailingPunct: '', standalone: !isContentExposureToken(token) });
+  }
+  return cells;
+}
+
 function paginateTokens(tokens) {
   if (!Array.isArray(tokens) || tokens.length <= MAX_TOKENS_PER_PAGE) return [tokens || []];
   return chunkByCount(tokens, MAX_TOKENS_PER_PAGE);
@@ -67,7 +85,42 @@ export function getDialogueSourceText(tokens, useKanji = false) {
   return (tokens || []).map(token => tokenSurface(token, useKanji)).join('').trim();
 }
 
-function renderTranslationSheet({ sourceText, state, translation = '' }) {
+function renderTranslationSourceRows({
+  tokens,
+  useKanji = false,
+} = {}) {
+  const lines = chunkByCount(dialogueCellsForTokens(tokens || []), MAX_TOKENS_PER_LINE);
+  return lines.map(lineCells => {
+    const pronunciation = [];
+    const jp = [];
+
+    for (const cell of lineCells) {
+      const token = cell.token;
+      if (!isContentExposureToken(token)) {
+        pronunciation.push('<span class="npc-dialogue-cell npc-dialogue-cell--punct"></span>');
+        jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(token.surface || '')}</span>`);
+        continue;
+      }
+
+      const base = tokenBase(token);
+      const reading = token.reading || token.surface || base;
+      const display = `${displayReading(token, useKanji)}${cell.trailingPunct || ''}`;
+      const pronunciationText = useKanji ? reading : toRomaji(reading);
+
+      pronunciation.push(`<span class="npc-dialogue-cell">${esc(pronunciationText)}</span>`);
+      jp.push(`<span class="npc-dialogue-cell jp-word">${esc(display)}</span>`);
+    }
+
+    return `
+      <div class="npc-dialogue-line-grid" style="--npc-dialogue-cols:${Math.max(1, lineCells.length)}">
+        <div class="npc-dialogue-romaji-row">${pronunciation.join('')}</div>
+        <div class="npc-dialogue-jp-row">${jp.join('')}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTranslationSheet({ sourceText, sourceHtml = '', state, translation = '' }) {
   const body = state === 'loading'
     ? '<div class="npc-dialogue-translation-status">Translating...</div>'
     : state === 'success'
@@ -85,7 +138,7 @@ function renderTranslationSheet({ sourceText, state, translation = '' }) {
         <h3>Translation</h3>
         <button class="npc-dialogue-translation-close" type="button" aria-label="Close translation">Done</button>
       </header>
-      <p class="npc-dialogue-translation-jp">${esc(sourceText)}</p>
+      <div class="npc-dialogue-translation-source">${sourceHtml || esc(sourceText)}</div>
       ${body}
     </section>
   `;
@@ -98,13 +151,14 @@ export function renderDialogueTokenRows({
   overrides = {},
   useKanji = false,
 } = {}) {
-  const lines = chunkByCount(tokens || [], MAX_TOKENS_PER_LINE);
-  return lines.map(lineTokens => {
+  const lines = chunkByCount(dialogueCellsForTokens(tokens || []), MAX_TOKENS_PER_LINE);
+  return lines.map(lineCells => {
     const romaji = [];
     const jp = [];
     const en = [];
 
-    for (const token of lineTokens) {
+    for (const cell of lineCells) {
+      const token = cell.token;
       if (!isContentExposureToken(token)) {
         romaji.push('<span class="npc-dialogue-cell npc-dialogue-cell--punct"></span>');
         jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(token.surface || '')}</span>`);
@@ -121,12 +175,12 @@ export function renderDialogueTokenRows({
       const typeClass = token.entity ? 'jp-entity' : isKnown ? 'jp-known' : 'jp-unknown';
 
       romaji.push(`<span class="npc-dialogue-cell">${esc(toRomaji(reading))}</span>`);
-      jp.push(`<span class="npc-dialogue-cell jp-word ${typeClass}"${attrs}>${esc(display)}</span>`);
+      jp.push(`<span class="npc-dialogue-cell jp-word ${typeClass}"${attrs}>${esc(display)}${esc(cell.trailingPunct || '')}</span>`);
       en.push(`<span class="npc-dialogue-cell">${esc(meaning)}</span>`);
     }
 
     return `
-      <div class="npc-dialogue-line-grid" style="--npc-dialogue-cols:${Math.max(1, lineTokens.length)}">
+      <div class="npc-dialogue-line-grid" style="--npc-dialogue-cols:${Math.max(1, lineCells.length)}">
         <div class="npc-dialogue-romaji-row">${romaji.join('')}</div>
         <div class="npc-dialogue-jp-row">${jp.join('')}</div>
         <div class="npc-dialogue-en-row">${en.join('')}</div>
@@ -176,6 +230,7 @@ export function showNpcDialogueCard(options = {}) {
       const content = renderPageContent(options, pageTokens);
       const continueLabel = pageIndex < pages.length - 1 ? 'Next' : 'Continue';
       const sourceText = pageTokens?.length ? getDialogueSourceText(pageTokens, options.useKanji) : '';
+      const sourceHtml = pageTokens?.length ? renderTranslationSourceRows({ tokens: pageTokens, useKanji: options.useKanji }) : '';
       const canTranslate = !!sourceText;
 
       actionArea.innerHTML = `
@@ -239,7 +294,7 @@ export function showNpcDialogueCard(options = {}) {
         closeTranslationSheet();
         actionArea.insertAdjacentHTML(
           'beforeend',
-          renderTranslationSheet({ sourceText, state, translation })
+          renderTranslationSheet({ sourceText, sourceHtml, state, translation })
         );
         actionArea.querySelector('.npc-dialogue-translation-close')?.addEventListener('click', closeTranslationSheet);
         actionArea.querySelector('.npc-dialogue-translation-backdrop')?.addEventListener('click', closeTranslationSheet);

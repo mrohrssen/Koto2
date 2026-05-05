@@ -45,6 +45,17 @@ export function getSceneWithNpcs() {
   return scene;
 }
 
+async function waitForSceneWithNpcs({ timeoutMs = 1000 } = {}) {
+  const mgr = getSceneManager();
+  const deadline = Date.now() + timeoutMs;
+  let scene = getSceneWithNpcs();
+  while (!scene && mgr?.transitioning && Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, 16));
+    scene = getSceneWithNpcs();
+  }
+  return scene;
+}
+
 let getGameState = null;
 let updateGameState = null;
 let updateUI = null;
@@ -66,7 +77,7 @@ export async function showTutorialNarration(pages, { showSprite = false } = {}) 
   // Any scene with an npcs layer owns the Pixi slide (HubScene during
   // prologue/skillMaster/hub, ExplorationScene inside rooms, BattleScene
   // during combat interjections). See getSceneWithNpcs() above.
-  const scene = showSprite ? getSceneWithNpcs() : null;
+  const scene = showSprite ? await waitForSceneWithNpcs() : null;
   const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
   if (showSprite) {
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
@@ -1430,6 +1441,18 @@ let friendlyNpcState = {
   renderedCards: null
 };
 
+async function showFriendlyNpcSprite(npc) {
+  if (!npc) return;
+  const spritePath = npc.id
+    ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
+    : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+  showNpcInDisplay(npc.nameEn || npc.name, spritePath, { skipPixi: true });
+  const scene = await waitForSceneWithNpcs();
+  if (scene) {
+    await scene.showNpcSprite(spritePath, { slideIn: true });
+  }
+}
+
 async function showPlayerItemRequest(item) {
   if (item.tokens?.length) {
     await showNpcDialogueCard({
@@ -1551,6 +1574,7 @@ export async function renderFriendlyNpc() {
   // Show the NPC greeting once; the item cards below carry the choice context.
   if (npc && !friendlyNpcState.greetingShown) {
     friendlyNpcState.greetingShown = true;
+    await showFriendlyNpcSprite(npc);
     const greetingTokens = friendlyNpcState.greeting?.tokens;
     await showNpcDialogueCard({
       speaker: npc.nameEn || npc.name,
@@ -1569,7 +1593,7 @@ export async function renderFriendlyNpc() {
       cidItemShopTutorialShown = true;
       const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
       showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-      const scene = getSceneWithNpcs();
+      const scene = await waitForSceneWithNpcs();
       if (scene) {
         await scene.showNpcSprite(cidSprite, { slideIn: true });
       }
@@ -1584,14 +1608,7 @@ export async function renderFriendlyNpc() {
         await afterScene.hideNpcSprite({ slideOut: true });
       }
 
-      const npcSprite = npc.id
-        ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
-        : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
-      showNpcInDisplay(npc.nameEn || npc.name, npcSprite, { skipPixi: true });
-      const currentScene = getSceneWithNpcs();
-      if (currentScene) {
-        await currentScene.showNpcSprite(npcSprite, { slideIn: true });
-      }
+      await showFriendlyNpcSprite(npc);
     }
   }
 
