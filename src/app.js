@@ -4,6 +4,9 @@ import compression from 'compression';
 import createRoutes from './routes/index.js';
 import createAuthRoutes from './auth/routes.js';
 import { setDataDirForTest } from './data-dir.js';
+import { chat } from './ai-providers.js';
+import { DialogueTranslationCache } from './dialogue-translation/cache.js';
+import { buildDialogueTranslationConfig } from './dialogue-translation/service.js';
 
 // --- Shared helpers (reused by production and tests) ---
 
@@ -74,6 +77,9 @@ const DEFAULT_ROUTE_DEPS = {
   setNpcMemoryFlagFn: () => {},
   updateNpcMemoryBondFn: () => {},
   checkSentenceViolations: (sentence) => ({ sentence: sentence || '', unknownWords: [], count: 0 }),
+  dialogueTranslationCache: new DialogueTranslationCache(),
+  dialogueTranslationChatFn: chat,
+  getDialogueTranslationConfig: buildDialogueTranslationConfig,
 };
 
 /**

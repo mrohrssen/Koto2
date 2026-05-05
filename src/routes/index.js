@@ -5,6 +5,7 @@ import createVocabRoutes from './vocab.js';
 import createGameRoutes from './game/index.js';
 import createPrefetchRoutes from './prefetch.js';
 import createBugReportRoutes from './bug-reports.js';
+import createDialogueRoutes from './dialogue.js';
 
 /**
  * Create main API router with all route modules
@@ -35,6 +36,13 @@ export default function createRoutes(deps) {
   // Vocab routes: /api/vocab/*
   router.use(createVocabRoutes({
     getSettings: deps.getSettings
+  }));
+
+  // Dialogue routes: /api/dialogue/*
+  router.use('/dialogue', createDialogueRoutes({
+    dialogueTranslationCache: deps.dialogueTranslationCache,
+    dialogueTranslationChatFn: deps.dialogueTranslationChatFn,
+    getDialogueTranslationConfig: deps.getDialogueTranslationConfig
   }));
 
   // Game routes: /api/game/* (auth-protected, per-user managers)

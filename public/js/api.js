@@ -44,6 +44,26 @@ export function getAuthHeaders() {
   };
 }
 
+export async function translateDialogue(text) {
+  try {
+    const response = await fetch(apiUrl('/api/dialogue/translate'), {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ text })
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data?.ok) {
+      return { ok: false, error: data?.error || 'translation_unavailable' };
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError) onApiFailure();
+    return { ok: false, error: 'translation_unavailable' };
+  }
+}
+
 export async function postKnownWordExposures(words, opts = {}) {
   if (!Array.isArray(words) || words.length === 0) {
     return { ok: true };

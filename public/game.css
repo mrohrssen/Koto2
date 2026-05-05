@@ -5916,6 +5916,104 @@ button.hud-chip {
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.44);
 }
 
+.npc-dialogue-translation-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  background: rgba(18, 14, 10, 0.42);
+}
+
+.npc-dialogue-translation-sheet {
+  position: fixed;
+  left: max(10px, calc((100vw - 430px) / 2 + 10px));
+  right: max(10px, calc((100vw - 430px) / 2 + 10px));
+  bottom: 0;
+  z-index: 241;
+  padding: 10px 16px max(18px, calc(18px + env(safe-area-inset-bottom, 0px)));
+  border-radius: 22px 22px 0 0;
+  border: 3px solid #4d3c28;
+  border-bottom: 0;
+  background:
+    radial-gradient(circle at 45% 0%, rgba(255, 255, 255, 0.62), transparent 30%),
+    linear-gradient(180deg, #fff9eb, #f0d7ad);
+  box-shadow:
+    0 -12px 28px rgba(0, 0, 0, 0.34),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.72);
+  color: #17130f;
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", ui-rounded, system-ui, sans-serif;
+}
+
+.npc-dialogue-translation-handle {
+  width: 48px;
+  height: 5px;
+  margin: 0 auto 10px;
+  border-radius: 999px;
+  background: rgba(77, 60, 40, 0.38);
+}
+
+.npc-dialogue-translation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(101, 80, 52, 0.23);
+}
+
+.npc-dialogue-translation-header h3 {
+  margin: 0;
+  color: #1f1712;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.npc-dialogue-translation-close,
+.npc-dialogue-translation-retry {
+  border: 2px solid #f4d9a5;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #2f80db, #1d56be);
+  color: #fff;
+  box-shadow: 0 3px 0 rgba(44, 29, 20, 0.82), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+  font-weight: 800;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.npc-dialogue-translation-close {
+  min-width: 72px;
+  padding: 8px 12px;
+}
+
+.npc-dialogue-translation-jp {
+  margin: 12px 0 8px;
+  font-size: clamp(16px, 4.4vw, 19px);
+  font-weight: 720;
+  line-height: 1.35;
+}
+
+.npc-dialogue-translation-en,
+.npc-dialogue-translation-error,
+.npc-dialogue-translation-status {
+  margin: 0;
+  color: #2c241d;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(15px, 4vw, 18px);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.npc-dialogue-translation-status {
+  color: rgba(44, 36, 29, 0.72);
+}
+
+.npc-dialogue-translation-error {
+  margin-bottom: 12px;
+  color: #78401f;
+}
+
+.npc-dialogue-translation-retry {
+  padding: 10px 16px;
+}
+
 /* — DMG effectiveness pill (target selection) — */
 .dmg-pill {
   flex-shrink: 0;

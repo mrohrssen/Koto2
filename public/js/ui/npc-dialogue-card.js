@@ -7,6 +7,7 @@ import {
 } from '../shared/exposure-extractor.js';
 import * as dialogueLookup from './dialogue-word-lookup.js';
 import { playDialogueAudio } from '../tts.js';
+import { translateDialogue } from '../api.js';
 
 const DEFAULT_PORTRAIT = '/assets/dialogue/default-headshot.png?v=20260501-headshot';
 const MAX_TOKENS_PER_PAGE = 9;
@@ -53,6 +54,41 @@ function chunkByCount(items, count) {
 function paginateTokens(tokens) {
   if (!Array.isArray(tokens) || tokens.length <= MAX_TOKENS_PER_PAGE) return [tokens || []];
   return chunkByCount(tokens, MAX_TOKENS_PER_PAGE);
+}
+
+function tokenSurface(token, useKanji) {
+  if (!token) return '';
+  if (!isContentExposureToken(token)) return token.surface || '';
+  if (useKanji) return token.surface || token.reading || token.baseForm || '';
+  return token.surface || token.reading || token.baseForm || '';
+}
+
+export function getDialogueSourceText(tokens, useKanji = false) {
+  return (tokens || []).map(token => tokenSurface(token, useKanji)).join('').trim();
+}
+
+function renderTranslationSheet({ sourceText, state, translation = '' }) {
+  const body = state === 'loading'
+    ? '<div class="npc-dialogue-translation-status">Translating...</div>'
+    : state === 'success'
+      ? `<p class="npc-dialogue-translation-en">${esc(translation)}</p>`
+      : `
+        <p class="npc-dialogue-translation-error">Translation is unavailable right now.</p>
+        <button class="npc-dialogue-translation-retry" type="button">Try again</button>
+      `;
+
+  return `
+    <div class="npc-dialogue-translation-backdrop" role="presentation"></div>
+    <section class="npc-dialogue-translation-sheet" role="dialog" aria-modal="true" aria-label="Dialogue translation">
+      <div class="npc-dialogue-translation-handle" aria-hidden="true"></div>
+      <header class="npc-dialogue-translation-header">
+        <h3>Translation</h3>
+        <button class="npc-dialogue-translation-close" type="button" aria-label="Close translation">Done</button>
+      </header>
+      <p class="npc-dialogue-translation-jp">${esc(sourceText)}</p>
+      ${body}
+    </section>
+  `;
 }
 
 export function renderDialogueTokenRows({
@@ -139,6 +175,8 @@ export function showNpcDialogueCard(options = {}) {
       const hasAudio = !!options.audio?.userId && !!options.audio?.key;
       const content = renderPageContent(options, pageTokens);
       const continueLabel = pageIndex < pages.length - 1 ? 'Next' : 'Continue';
+      const sourceText = pageTokens?.length ? getDialogueSourceText(pageTokens, options.useKanji) : '';
+      const canTranslate = !!sourceText;
 
       actionArea.innerHTML = `
         <div class="npc-dialogue-shell">
@@ -161,7 +199,7 @@ export function showNpcDialogueCard(options = {}) {
             </div>
           </article>
           <div class="npc-dialogue-utility-row">
-            <button class="npc-dialogue-utility npc-dialogue-translate" type="button" disabled>
+            <button class="npc-dialogue-utility npc-dialogue-translate" type="button" ${canTranslate ? '' : 'disabled'}>
               <span class="npc-dialogue-book-icon" aria-hidden="true"></span>
               <span class="npc-dialogue-btn-roman">honyaku suru</span>
               <span class="npc-dialogue-btn-jp">翻訳する</span>
@@ -192,7 +230,38 @@ export function showNpcDialogueCard(options = {}) {
         if (hasAudio) playDialogueAudio(options.audio.userId, options.audio.key);
       });
 
+      const closeTranslationSheet = () => {
+        actionArea.querySelector('.npc-dialogue-translation-backdrop')?.remove();
+        actionArea.querySelector('.npc-dialogue-translation-sheet')?.remove();
+      };
+
+      const setTranslationSheet = (state, translation = '') => {
+        closeTranslationSheet();
+        actionArea.insertAdjacentHTML(
+          'beforeend',
+          renderTranslationSheet({ sourceText, state, translation })
+        );
+        actionArea.querySelector('.npc-dialogue-translation-close')?.addEventListener('click', closeTranslationSheet);
+        actionArea.querySelector('.npc-dialogue-translation-backdrop')?.addEventListener('click', closeTranslationSheet);
+        actionArea.querySelector('.npc-dialogue-translation-retry')?.addEventListener('click', requestTranslation);
+      };
+
+      const requestTranslation = async () => {
+        if (!sourceText) return;
+        setTranslationSheet('loading');
+        const result = await translateDialogue(sourceText);
+        if (resolved) return;
+        if (result?.ok && result.translation) {
+          setTranslationSheet('success', result.translation);
+          return;
+        }
+        setTranslationSheet('unavailable');
+      };
+
+      actionArea.querySelector('.npc-dialogue-translate')?.addEventListener('click', requestTranslation);
+
       actionArea.querySelector('.npc-dialogue-continue')?.addEventListener('click', () => {
+        closeTranslationSheet();
         if (pageIndex < pages.length - 1) {
           pageIndex += 1;
           render();

@@ -56,7 +56,7 @@ export const JLPT_GRAMMAR = {
 /**
  * OpenAI Provider
  */
-async function chatWithOpenAI(apiKey, messages, systemPrompt, model) {
+async function chatWithOpenAI(apiKey, messages, systemPrompt, model, purpose = 'other') {
   const client = new OpenAI({ apiKey });
 
   const modelId = model || 'gpt-5-mini';
@@ -77,8 +77,8 @@ async function chatWithOpenAI(apiKey, messages, systemPrompt, model) {
   if (isReasoningModel) {
     params.max_completion_tokens = 10000;
   } else {
-    params.temperature = 0.7;
-    params.max_tokens = 500;
+    params.temperature = purpose === 'dialogue-translation' ? 0.1 : 0.7;
+    params.max_tokens = purpose === 'dialogue-translation' ? 120 : 500;
   }
 
   const response = await client.chat.completions.create(params);
@@ -147,11 +147,12 @@ async function chatWithClaude(apiKey, messages, systemPrompt, model, systemBlock
 /**
  * Gemini (Google) Provider
  */
-async function chatWithGemini(apiKey, messages, systemPrompt) {
+async function chatWithGemini(apiKey, messages, systemPrompt, model) {
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const modelId = model || 'gemini-1.5-flash';
+  const geminiModel = genAI.getGenerativeModel({ model: modelId });
 
-  const chat = model.startChat({
+  const chat = geminiModel.startChat({
     history: messages.slice(0, -1).map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }]
@@ -220,6 +221,7 @@ export async function chat({
   openrouterModel,
   openaiModel,
   claudeModel,
+  geminiModel,
   customSystemPrompt,
   systemBlocks,
   purpose = 'other',
@@ -249,7 +251,7 @@ export async function chat({
     case 'claude':
     case 'anthropic': model = claudeModel || 'claude-sonnet-4-6'; break;
     case 'gemini':
-    case 'google': model = 'gemini-1.5-flash'; break;
+    case 'google': model = geminiModel || 'gemini-1.5-flash'; break;
     case 'openrouter': model = openrouterModel || 'unknown-openrouter'; break;
     default: model = 'unknown';
   }
@@ -261,7 +263,7 @@ export async function chat({
     let providerResult;
     switch (provider.toLowerCase()) {
       case 'openai':
-        providerResult = await chatWithOpenAI(apiKey, messages, systemPrompt, openaiModel);
+        providerResult = await chatWithOpenAI(apiKey, messages, systemPrompt, openaiModel, purpose);
         break;
 
       case 'claude':
@@ -271,7 +273,7 @@ export async function chat({
 
       case 'gemini':
       case 'google':
-        providerResult = await chatWithGemini(apiKey, messages, systemPrompt);
+        providerResult = await chatWithGemini(apiKey, messages, systemPrompt, geminiModel);
         break;
 
       case 'openrouter':

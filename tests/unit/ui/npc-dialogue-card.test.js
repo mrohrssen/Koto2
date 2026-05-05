@@ -62,6 +62,19 @@ class FakeElement {
     }
   }
 
+  insertAdjacentHTML(position, html) {
+    if (position !== 'beforeend') throw new Error(`Unsupported insertAdjacentHTML position: ${position}`);
+    const target = this.parentNode || this;
+    target._innerHTML += String(html || '');
+    target._parsedElements = null;
+  }
+
+  remove() {
+    if (!this.parentNode) return;
+    this.parentNode.children = this.parentNode.children.filter(child => child !== this);
+    this.parentNode = null;
+  }
+
   parseInnerHtmlElements() {
     if (this._parsedElements) return this._parsedElements;
     this._parsedElements = [];
@@ -101,6 +114,8 @@ class FakeElement {
 let actionArea;
 let attachedLookupContainer = null;
 let playedAudio = null;
+let translationResponse = { ok: true, translation: 'Wait!', cached: false };
+let translatedTexts = [];
 
 globalThis.document = {
   createElement: tagName => new FakeElement(tagName),
@@ -120,13 +135,25 @@ await mock.module('../../../public/js/tts.js', {
   },
 });
 
-const { showNpcDialogueCard, renderDialogueTokenRows } = await import('../../../public/js/ui/npc-dialogue-card.js');
+await mock.module('../../../public/js/api.js', {
+  namedExports: {
+    postKnownWordExposures: async () => ({ ok: true }),
+    translateDialogue: async (text) => {
+      translatedTexts.push(text);
+      return translationResponse;
+    }
+  }
+});
+
+const { showNpcDialogueCard, renderDialogueTokenRows, getDialogueSourceText } = await import('../../../public/js/ui/npc-dialogue-card.js');
 
 describe('npc dialogue card', () => {
   beforeEach(() => {
     actionArea = new FakeElement('section');
     attachedLookupContainer = null;
     playedAudio = null;
+    translationResponse = { ok: true, translation: 'Wait!', cached: false };
+    translatedTexts = [];
   });
 
   it('renders tokenized dialogue in shared romaji/kana/english rows', () => {
@@ -164,7 +191,7 @@ describe('npc dialogue card', () => {
     assert.equal(actionArea.innerHTML, '');
   });
 
-  it('renders Translate and Learn as disabled inert controls', () => {
+  it('enables Translate for tokenized dialogue and keeps Learn disabled', () => {
     showNpcDialogueCard({
       speaker: 'Mira',
       tokens: [{ surface: '不安', baseForm: '不安', reading: 'ふあん', meaning: 'anxiety', pos: 'noun' }],
@@ -173,7 +200,7 @@ describe('npc dialogue card', () => {
 
     const utilityButtons = actionArea.querySelectorAll('.npc-dialogue-utility');
     assert.equal(utilityButtons.length, 2);
-    assert.equal(utilityButtons[0].disabled, true);
+    assert.equal(utilityButtons[0].disabled, false);
     assert.equal(utilityButtons[1].disabled, true);
   });
 
@@ -222,5 +249,67 @@ describe('npc dialogue card', () => {
     audioButton.click();
 
     assert.deepEqual(playedAudio, { userId: 'user-1', audioKey: 'line-1' });
+  });
+
+  it('derives exact Japanese source text from token surfaces', () => {
+    const source = getDialogueSourceText([
+      { surface: 'いま', baseForm: '今', reading: 'いま', pos: 'noun' },
+      { surface: 'は', baseForm: 'は', reading: 'は', pos: 'particle' },
+      { surface: '怖い', baseForm: '怖い', reading: 'こわい', pos: 'adjective' },
+      { surface: '。', pos: 'punctuation' },
+    ]);
+
+    assert.equal(source, 'いまは怖い。');
+  });
+
+  it('opens translation bottom sheet without resolving dialogue', async () => {
+    let resolved = false;
+    const promise = showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '待って！', baseForm: '待つ', reading: 'まって', meaning: 'wait', pos: 'verb' }],
+      knownWords: new Set(),
+    }).then(() => { resolved = true; });
+
+    const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    const [continueButton] = actionArea.querySelectorAll('.npc-dialogue-continue');
+    translateButton.click();
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.equal(resolved, false);
+    assert.deepEqual(translatedTexts, ['待って！']);
+    assert.match(actionArea.innerHTML, /npc-dialogue-translation-sheet/);
+    assert.match(actionArea.innerHTML, /Wait!/);
+
+    continueButton.click();
+    await promise;
+  });
+
+  it('renders unavailable translation state with retry control', async () => {
+    translationResponse = { ok: false, error: 'translation_unavailable' };
+
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '待って！', baseForm: '待つ', reading: 'まって', meaning: 'wait', pos: 'verb' }],
+      knownWords: new Set(),
+    });
+
+    const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    translateButton.click();
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.match(actionArea.innerHTML, /Translation is unavailable right now/);
+    assert.match(actionArea.innerHTML, /Try again/);
+  });
+
+  it('disables Translate for fallback HTML without source text', () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      html: '<span>Hello</span>',
+    });
+
+    const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    assert.equal(translateButton.disabled, true);
   });
 });
