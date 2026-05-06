@@ -51,7 +51,10 @@ await mock.module('../../../public/js/ui/dialogue-word-lookup.js', {
   namedExports: { attachWordLookup: () => {} },
 });
 await mock.module('../../../public/js/api.js', {
-  namedExports: { translateDialogue: async () => ({ translation: '' }) },
+  namedExports: {
+    translateDialogue: async () => ({ translation: '' }),
+    learnDialogue: async () => ({ ok: false, error: 'learn_lesson_unavailable' })
+  },
 });
 
 const combatEvents = { emitted: [], emit: (event) => combatEvents.emitted.push(event) };

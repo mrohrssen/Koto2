@@ -6078,6 +6078,174 @@ button.hud-chip {
   padding: 10px 16px;
 }
 
+.npc-dialogue-learn-takeover {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  width: min(100vw, 430px);
+  margin: 0 auto;
+  background: #fff4dd;
+  color: #2c241d;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.38);
+}
+
+.npc-dialogue-learn-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: max(14px, env(safe-area-inset-top)) 16px 12px;
+  background: #2a2119;
+  color: #fff4dd;
+  border-bottom: 3px solid #f4d9a5;
+}
+
+.npc-dialogue-learn-header h2 {
+  margin: 0;
+  font-size: clamp(18px, 5vw, 22px);
+}
+
+.npc-dialogue-learn-header p {
+  margin: 2px 0 0;
+  color: #e5c98d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.npc-dialogue-learn-close,
+.npc-dialogue-learn-retry {
+  border: 2px solid #f4d9a5;
+  border-radius: 12px;
+  background: #fff4dd;
+  color: #2a2119;
+  font-weight: 900;
+  padding: 9px 13px;
+}
+
+.npc-dialogue-learn-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 14px calc(18px + env(safe-area-inset-bottom));
+}
+
+.npc-dialogue-learn-section {
+  border: 2px solid #d2a85f;
+  border-radius: 18px;
+  background: #fffaf0;
+  padding: 13px;
+  margin-bottom: 12px;
+}
+
+.npc-dialogue-learn-section h3 {
+  margin: 0 0 8px;
+  color: #1f1712;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.npc-dialogue-learn-source {
+  margin: 0;
+  font-size: clamp(24px, 8vw, 34px);
+  line-height: 1.25;
+  font-weight: 900;
+  text-align: center;
+}
+
+.npc-dialogue-learn-secondary,
+.npc-dialogue-learn-status {
+  color: rgba(44, 36, 29, 0.72);
+}
+
+.npc-dialogue-learn-translation {
+  font-size: clamp(17px, 5vw, 21px);
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.npc-dialogue-learn-token-list {
+  display: grid;
+  gap: 8px;
+}
+
+.npc-dialogue-learn-token {
+  border: 1px solid rgba(90, 63, 29, 0.22);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.npc-dialogue-learn-token-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.npc-dialogue-learn-token-jp {
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.npc-dialogue-learn-token-reading,
+.npc-dialogue-learn-token-detail {
+  color: rgba(44, 36, 29, 0.68);
+  font-size: 12px;
+}
+
+.npc-dialogue-learn-token-body {
+  display: grid;
+  gap: 4px;
+}
+
+.npc-dialogue-learn-token-role {
+  color: #1f5f9e;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.npc-dialogue-learn-token-meaning {
+  font-weight: 800;
+}
+
+.npc-dialogue-learn-entity-note {
+  margin-top: 4px;
+  border-radius: 10px;
+  background: #e8f6ea;
+  border: 1px solid #9fceb0;
+  padding: 8px;
+  color: #1f4d31;
+  font-size: 12px;
+}
+
+.npc-dialogue-learn-note {
+  border-left: 3px solid #2d71a8;
+  padding-left: 10px;
+  margin: 10px 0 0;
+}
+
+.npc-dialogue-learn-note h4 {
+  margin: 0 0 3px;
+  color: #1f1712;
+  font-size: 14px;
+}
+
+.npc-dialogue-learn-note p,
+.npc-dialogue-learn-error {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.npc-dialogue-learn-error {
+  margin-bottom: 12px;
+  color: #78401f;
+  font-weight: 800;
+}
+
 /* — DMG effectiveness pill (target selection) — */
 .dmg-pill {
   flex-shrink: 0;
