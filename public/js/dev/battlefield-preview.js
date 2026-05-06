@@ -6,7 +6,7 @@ const PREVIEW_CREATURES = [
     name: '火',
     nameEn: 'Fire',
     element: 'fire',
-    baseReading: 'ひ',
+    reading: 'ひ',
     moveId: 'honoo',
   },
   {
@@ -14,7 +14,7 @@ const PREVIEW_CREATURES = [
     name: '水',
     nameEn: 'Water',
     element: 'water',
-    baseReading: 'みず',
+    reading: 'みず',
     moveId: 'nagasu',
   },
   {
@@ -22,7 +22,7 @@ const PREVIEW_CREATURES = [
     name: '木',
     nameEn: 'Tree',
     element: 'wood',
-    baseReading: 'き',
+    reading: 'き',
     moveId: 'sasu',
   },
 ];
@@ -45,7 +45,7 @@ function createPreviewCreature(template, side) {
     maxMp: 30,
     attack: 18,
     defense: 6,
-    baseReading: template.baseReading,
+    reading: template.reading || template.baseReading,
     moves: [
       {
         id: template.moveId,

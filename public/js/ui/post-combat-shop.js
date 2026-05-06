@@ -87,8 +87,8 @@ export function showTargetPicker(creatures, onPicked) {
   renderChoices({
     heading: 'Choose target',
     cards: creatures.filter(Boolean).map((c, i) => ({
-      sprite: creatureSpriteHtml(c.id, c.baseWord || c.name, c.element),
-      title: `${c.baseReading || c.name} (${c.nameEn})`,
+      sprite: creatureSpriteHtml(c.id, c.name, c.element),
+      title: `${c.reading || c.baseReading || c.name} (${c.nameEn})`,
       subtitle: `Lv${c.level} · HP ${c.hp}/${c.maxHp}`,
     })),
     onSelect: (index) => {

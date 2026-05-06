@@ -73,6 +73,35 @@ export async function translateDialogue(text, entities = [], idempotencyKey = ''
   }
 }
 
+export async function learnDialogue(text, tokens = [], entities = [], idempotencyKey = '') {
+  try {
+    const body = { text, tokens };
+    if (Array.isArray(entities) && entities.length) body.entities = entities;
+    if (idempotencyKey) body.idempotencyKey = idempotencyKey;
+
+    const response = await fetch(apiUrl('/api/dialogue/learn'), {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data?.ok) {
+      return {
+        ok: false,
+        error: data?.error || 'learn_lesson_unavailable',
+        cost: data?.cost,
+        balance: data?.balance
+      };
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError) onApiFailure();
+    return { ok: false, error: 'learn_lesson_unavailable' };
+  }
+}
+
 export async function postKnownWordExposures(words, opts = {}) {
   if (!Array.isArray(words) || words.length === 0) {
     return { ok: true };

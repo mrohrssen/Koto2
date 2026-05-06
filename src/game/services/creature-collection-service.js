@@ -158,8 +158,9 @@ export function getCollectionCatalog(collection, befriendCount = {}, creatureCou
       baseMp: r.baseMp,
       archetype: r.archetype,
       area: r.area,
-      baseWord: r.baseWord,
-      baseMeaning: r.baseMeaning,
+      reading: r.reading || r.baseReading,
+      meaning: r.meaning || r.baseMeaning,
+      rank: r.rank ?? r.baseRank ?? null,
       modifier: r.modifier || null,
       autoSkill: r.autoSkill,
       learnset: (r.learnset || []).map(entry => ({

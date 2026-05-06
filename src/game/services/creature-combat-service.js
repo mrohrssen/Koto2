@@ -58,6 +58,14 @@ function rollMoveDamage(attacker, target, move, _itemBuffs, variance) {
 }
 export const BASE_KILL_XP = 25;
 
+function creatureVocabFields(creature = {}, prefix) {
+  return {
+    [`${prefix}Word`]: creature.name || creature.baseWord || '',
+    [`${prefix}Reading`]: creature.reading || creature.baseReading || '',
+    [`${prefix}Meaning`]: creature.meaning || creature.baseMeaning || creature.nameEn || ''
+  };
+}
+
 export function applyPartySkillsAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters = true }) {
   // All party skills are now handled by the v2 engine
   _applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters });
@@ -73,9 +81,7 @@ function buildAttackRecord(creature, creatureIndex, move, target, targetIndex, o
     attackerName: creature.nameEn,
     attackerNameJp: creature.name,
     attackerElement: creature.element,
-    attackerBaseWord: creature.baseWord,
-    attackerBaseReading: creature.baseReading,
-    attackerBaseMeaning: creature.baseMeaning,
+    ...creatureVocabFields(creature, 'attacker'),
     attackerSkillName: move.name,
     attackerSkillReading: move.reading,
     attackerSkillEn: move.nameEn,
@@ -88,9 +94,7 @@ function buildAttackRecord(creature, creatureIndex, move, target, targetIndex, o
     targetId: target.id,
     targetName: target.nameEn,
     targetNameJp: target.name,
-    targetBaseWord: target.baseWord,
-    targetBaseReading: target.baseReading,
-    targetBaseMeaning: target.baseMeaning,
+    ...creatureVocabFields(target, 'target'),
     targetElement: target.element,
     damage: 0,
     healAmount: 0,
@@ -414,9 +418,7 @@ function buildRestAttack(creature, creatureIndex, mpGained) {
     attackerIndex: creatureIndex,
     attackerName: creature.nameEn || creature.name || '',
     attackerNameJp: creature.name || '',
-    attackerBaseWord: creature.baseWord || creature.name || '',
-    attackerBaseReading: creature.baseReading || '',
-    attackerBaseMeaning: creature.baseMeaning || creature.nameEn || '',
+    ...creatureVocabFields(creature, 'attacker'),
     attackerElement: creature.element || 'neutral',
     attackerMp: creature.mp,
     attackerMaxMp: creature.maxMp || 0,
@@ -425,9 +427,7 @@ function buildRestAttack(creature, creatureIndex, mpGained) {
     targetIndex: creatureIndex,
     targetName: creature.nameEn || creature.name || '',
     targetNameJp: creature.name || '',
-    targetBaseWord: creature.baseWord || creature.name || '',
-    targetBaseReading: creature.baseReading || '',
-    targetBaseMeaning: creature.baseMeaning || creature.nameEn || '',
+    ...creatureVocabFields(creature, 'target'),
     targetElement: creature.element || 'neutral',
     moveName: REST_MOVE.name,
     moveNameEn: REST_MOVE.nameEn,
@@ -523,7 +523,7 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
  * Execute an NPC companion's skill during the NPC skill phase.
  * NPC skills behave like creature moves but are fired by the NPC, not a party member.
  *
- * @param {object} npcData - NPC combat data { id, name, nameEn, attack, element, baseWord, baseReading, baseMeaning }
+ * @param {object} npcData - NPC combat data { id, name, nameEn, reading, meaning, attack, element }
  * @param {object} skill - Skill object with move-like fields { id, name, nameEn, element, power, category, target, ... }
  * @param {object[]} allies - Player's active creatures
  * @param {object[]} enemies - Enemy creatures
@@ -538,9 +538,8 @@ export function executeNpcSkill(npcData, skill, allies, enemies) {
     attack: npcData.attack || 10,
     level: npcData.level || 5,
     defense: npcData.defense ?? 5,
-    baseWord: npcData.baseWord,
-    baseReading: npcData.baseReading,
-    baseMeaning: npcData.baseMeaning,
+    reading: npcData.reading || npcData.baseReading || '',
+    meaning: npcData.meaning || npcData.baseMeaning || npcData.nameEn || '',
     activeEffects: [],
     hp: 999,
     maxHp: 999
@@ -672,9 +671,7 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
     attackerName: enemy.nameEn,
     attackerNameJp: enemy.name,
     attackerElement: enemy.element,
-    attackerBaseWord: enemy.baseWord,
-    attackerBaseReading: enemy.baseReading,
-    attackerBaseMeaning: enemy.baseMeaning,
+    ...creatureVocabFields(enemy, 'attacker'),
     attackerSkillName: move.name,
     attackerSkillReading: move.reading,
     attackerSkillEn: move.nameEn,
@@ -688,9 +685,7 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
     targetId: target.id,
     targetName: target.nameEn,
     targetNameJp: target.name,
-    targetBaseWord: target.baseWord,
-    targetBaseReading: target.baseReading,
-    targetBaseMeaning: target.baseMeaning,
+    ...creatureVocabFields(target, 'target'),
     targetElement: target.element,
     damage: 0,
     healAmount: 0,
@@ -1153,7 +1148,13 @@ export function generateBefriendQuiz(creature, encounterCreatures = []) {
     { id: 'wrong-2', name: wrongNames[1], correct: false }
   ].sort(() => Math.random() - 0.5);
 
-  return { creatureId: creature.id, creatureName: creature.name, creatureNameEn: creature.nameEn, creatureBaseReading: creature.baseReading, options };
+  return {
+    creatureId: creature.id,
+    creatureName: creature.name,
+    creatureNameEn: creature.nameEn,
+    creatureReading: creature.reading || creature.baseReading,
+    options
+  };
 }
 
 /**
@@ -1224,9 +1225,7 @@ export function processBefriendQuizAnswer(answerId, combat, creatureParty, optio
       attackerName: target.nameEn,
       attackerNameJp: target.name,
       attackerElement: target.element,
-      attackerBaseWord: target.baseWord,
-      attackerBaseReading: target.baseReading,
-      attackerBaseMeaning: target.baseMeaning,
+      ...creatureVocabFields(target, 'attacker'),
       attackerSkillName: move.name,
       attackerSkillReading: move.reading,
       attackerSkillEn: move.nameEn,
@@ -1239,9 +1238,7 @@ export function processBefriendQuizAnswer(answerId, combat, creatureParty, optio
       targetId: allyTarget.id,
       targetName: allyTarget.nameEn,
       targetNameJp: allyTarget.name,
-      targetBaseWord: allyTarget.baseWord,
-      targetBaseReading: allyTarget.baseReading,
-      targetBaseMeaning: allyTarget.baseMeaning,
+      ...creatureVocabFields(allyTarget, 'target'),
       targetElement: allyTarget.element,
       damage,
       elementMultiplier: elemMult,

@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Koto Creature Move Preview</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f1e7;
+      --panel: #fffaf0;
+      --ink: #21170f;
+      --muted: #75685a;
+      --line: #dacdb9;
+      --soft: #eee3d0;
+      --accent: #7d4f1d;
+      --fire: #b73d2e;
+      --water: #276aa3;
+      --earth: #76583c;
+      --metal: #5d6570;
+      --wood: #43713d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.35;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: rgba(246, 241, 231, 0.96);
+      border-bottom: 1px solid var(--line);
+      padding: 18px 24px 14px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .summary span,
+    .pill {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 999px;
+      padding: 4px 9px;
+      white-space: nowrap;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    input,
+    select {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 8px 10px;
+      font: inherit;
+      min-height: 38px;
+    }
+
+    input { min-width: 280px; flex: 1; }
+
+    main {
+      padding: 18px 24px 42px;
+    }
+
+    .creature {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      margin: 0 0 14px;
+      overflow: hidden;
+    }
+
+    .creature-head {
+      display: grid;
+      grid-template-columns: minmax(210px, 1.1fr) minmax(0, 2fr);
+      gap: 16px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff6e5;
+    }
+
+    .name {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .jp {
+      font-size: 24px;
+      font-weight: 750;
+      letter-spacing: 0.02em;
+    }
+
+    .en {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .reading {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .meta,
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .stats {
+      justify-content: flex-end;
+      align-content: start;
+    }
+
+    .moves {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--soft);
+      padding: 10px 12px;
+      vertical-align: top;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    th {
+      color: var(--muted);
+      font-weight: 700;
+      background: #fffaf3;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .level { width: 58px; font-weight: 800; color: var(--accent); }
+    .move-name { width: 210px; }
+    .mechanics { width: 330px; }
+    .meaning-cell { color: var(--muted); }
+
+    .move-jp {
+      font-weight: 750;
+      font-size: 16px;
+    }
+
+    .move-en {
+      color: var(--accent);
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    .move-reading {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .tag {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 7px;
+      background: #fffdf8;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .element-fire { color: var(--fire); }
+    .element-water { color: var(--water); }
+    .element-earth { color: var(--earth); }
+    .element-metal { color: var(--metal); }
+    .element-wood { color: var(--wood); }
+
+    .missing {
+      padding: 24px;
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      color: var(--muted);
+      background: var(--panel);
+    }
+
+    @media (max-width: 900px) {
+      header, main { padding-left: 14px; padding-right: 14px; }
+      .creature-head { grid-template-columns: 1fr; }
+      .stats { justify-content: flex-start; }
+      .moves, .moves thead, .moves tbody, .moves tr, .moves th, .moves td { display: block; }
+      .moves thead { display: none; }
+      .moves tr { border-bottom: 1px solid var(--soft); padding: 8px 0; }
+      .moves tr:last-child { border-bottom: 0; }
+      .moves td { border-bottom: 0; padding: 4px 12px; width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Creature Move Preview</h1>
+    <div class="summary" id="summary"></div>
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search creature, move, Japanese, effect...">
+      <select id="element">
+        <option value="">All elements</option>
+        <option value="fire">Fire</option>
+        <option value="water">Water</option>
+        <option value="earth">Earth</option>
+        <option value="metal">Metal</option>
+        <option value="wood">Wood</option>
+      </select>
+      <select id="rarity">
+        <option value="">All rarities</option>
+        <option value="common">Common</option>
+        <option value="uncommon">Uncommon</option>
+        <option value="rare">Rare</option>
+        <option value="epic">Epic</option>
+        <option value="legendary">Legendary</option>
+      </select>
+    </div>
+  </header>
+  <main id="app"></main>
+
+  <script>
+    const EXPANSION_DATE = '2026-05-06';
+    const app = document.getElementById('app');
+    const summary = document.getElementById('summary');
+    const search = document.getElementById('search');
+    const elementFilter = document.getElementById('element');
+    const rarityFilter = document.getElementById('rarity');
+
+    let creatures = [];
+    let movesById = new Map();
+
+    function esc(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[ch]);
+    }
+
+    function statPill(label, value) {
+      return `<span class="pill">${esc(label)} ${esc(value)}</span>`;
+    }
+
+    function effectSummary(move) {
+      const parts = [];
+      parts.push(`<span class="tag element-${esc(move.element)}">${esc(move.element)}</span>`);
+      parts.push(`<span class="tag">${esc(move.category)}</span>`);
+      parts.push(`<span class="tag">${esc(move.target)}</span>`);
+      parts.push(`<span class="tag">Tier ${esc(move.tier)}</span>`);
+      if (move.power) parts.push(`<span class="tag">Power ${esc(move.power)}</span>`);
+      parts.push(`<span class="tag">MP ${esc(move.mpCost)}</span>`);
+      if (move.statusEffect) {
+        parts.push(`<span class="tag">${esc(move.statusEffect)} ${esc(move.statusChance)}% / ${esc(move.statusDuration)}t</span>`);
+      }
+      if (move.statChanges && Object.keys(move.statChanges).length) {
+        const statText = Object.entries(move.statChanges)
+          .map(([stat, amount]) => `${stat}${amount > 0 ? '+' : ''}${amount}`)
+          .join(', ');
+        parts.push(`<span class="tag">${esc(statText)}</span>`);
+      }
+      return `<div class="tags">${parts.join('')}</div>`;
+    }
+
+    function creatureSearchText(creature) {
+      const moves = (creature.learnset || [])
+        .map(entry => movesById.get(entry.moveId))
+        .filter(Boolean)
+        .map(move => [
+          move.id, move.name, move.nameEn, move.reading, move.meaning,
+          move.element, move.category, move.target, move.statusEffect,
+          move.description, JSON.stringify(move.statChanges || {}),
+        ].join(' '))
+        .join(' ');
+      return [
+        creature.id, creature.name, creature.nameEn, creature.reading, creature.meaning,
+        creature.element, creature.rarity, creature.archetype, moves,
+      ].join(' ').toLowerCase();
+    }
+
+    function render() {
+      const q = search.value.trim().toLowerCase();
+      const element = elementFilter.value;
+      const rarity = rarityFilter.value;
+      const visible = creatures.filter(creature => {
+        if (element && creature.element !== element) return false;
+        if (rarity && creature.rarity !== rarity) return false;
+        if (q && !creatureSearchText(creature).includes(q)) return false;
+        return true;
+      });
+
+      summary.innerHTML = [
+        `<span>${creatures.length} new creatures</span>`,
+        `<span>${Array.from(movesById.values()).filter(m => m.createdAt === EXPANSION_DATE).length} imported moves</span>`,
+        `<span>${visible.length} shown</span>`,
+        `<span>All learnsets capped at 6</span>`,
+      ].join('');
+
+      if (!visible.length) {
+        app.innerHTML = '<div class="missing">No creatures match the current filters.</div>';
+        return;
+      }
+
+      app.innerHTML = visible.map(creature => {
+        const rows = (creature.learnset || []).map(entry => {
+          const move = movesById.get(entry.moveId);
+          if (!move) {
+            return `<tr><td class="level">Lv ${esc(entry.level)}</td><td colspan="3">Missing move ${esc(entry.moveId)}</td></tr>`;
+          }
+          return `<tr>
+            <td class="level">Lv ${esc(entry.level)}</td>
+            <td class="move-name">
+              <div><span class="move-jp">${esc(move.name)}</span><span class="move-en">${esc(move.nameEn)}</span></div>
+              <div class="move-reading">${esc(move.reading)} · ${esc(move.id)}</div>
+            </td>
+            <td class="mechanics">${effectSummary(move)}</td>
+            <td class="meaning-cell">${esc(move.meaning)}<br>${esc(move.description)}</td>
+          </tr>`;
+        }).join('');
+
+        return `<section class="creature">
+          <div class="creature-head">
+            <div>
+              <div class="name">
+                <span class="jp">${esc(creature.name)}</span>
+                <span class="en">${esc(creature.nameEn)}</span>
+                <span class="reading">${esc(creature.reading)} · ${esc(creature.meaning)}</span>
+              </div>
+              <div class="meta">
+                <span class="pill element-${esc(creature.element)}">${esc(creature.element)}</span>
+                ${statPill(creature.rarity, creature.archetype)}
+                ${statPill('rank', creature.rank)}
+                ${statPill('moves', (creature.learnset || []).length)}
+              </div>
+            </div>
+            <div class="stats">
+              ${statPill('HP', creature.baseHp)}
+              ${statPill('ATK', creature.baseAttack)}
+              ${statPill('MP', creature.baseMp)}
+              ${statPill('DEF', creature.baseDefense)}
+              ${statPill('DEX', creature.baseDex)}
+            </div>
+          </div>
+          <table class="moves">
+            <thead>
+              <tr>
+                <th class="level">Level</th>
+                <th class="move-name">Move</th>
+                <th class="mechanics">Mechanics</th>
+                <th>Meaning / Description</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </section>`;
+      }).join('');
+    }
+
+    async function init() {
+      const [creatureData, moveData] = await Promise.all([
+        fetch('/data/creatures.json').then(r => r.json()),
+        fetch('/data/moves.json').then(r => r.json()),
+      ]);
+      movesById = new Map(moveData.map(move => [move.id, move]));
+      creatures = creatureData
+        .filter(creature => creature.createdAt === EXPANSION_DATE)
+        .sort((a, b) => {
+          const rarityOrder = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 };
+          return (rarityOrder[a.rarity] - rarityOrder[b.rarity]) || a.element.localeCompare(b.element) || a.id.localeCompare(b.id);
+        });
+      render();
+    }
+
+    search.addEventListener('input', render);
+    elementFilter.addEventListener('change', render);
+    rarityFilter.addEventListener('change', render);
+
+    init().catch(error => {
+      app.innerHTML = `<div class="missing">Failed to load preview data: ${esc(error.message)}</div>`;
+      console.error(error);
+    });
+  </script>
+</body>
+</html>

@@ -26,7 +26,7 @@ export function loadWordDictionary({ overlayDir, liveDictPath }) {
 
   // 2. Overlay game data files (always read from overlayDir)
   const overlayConfigs = [
-    { file: 'creatures.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
+    { file: 'creatures.json', wordFields: ['name', 'baseWord'], readingFields: ['reading', 'baseReading'], meaningFields: ['meaning', 'baseMeaning'] },
     { file: 'moves.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
     { file: 'items.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
     { file: 'npcs.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
@@ -64,9 +64,9 @@ function overlayGameData(dict, filePath, config) {
     const raw = JSON.parse(readFileSync(filePath, 'utf-8'));
     const entries = Array.isArray(raw) ? raw : Object.values(raw);
     for (const entry of entries) {
-      const word = entry[config.wordField];
-      const reading = entry[config.readingField];
-      const meaning = entry[config.meaningField];
+      const word = firstField(entry, config.wordFields || [config.wordField]);
+      const reading = firstField(entry, config.readingFields || [config.readingField]);
+      const meaning = firstField(entry, config.meaningFields || [config.meaningField]);
       if (!word || !meaning) continue;
       dict.set(word, {
         reading: reading || word,
@@ -76,4 +76,12 @@ function overlayGameData(dict, filePath, config) {
   } catch (e) {
     console.warn(`[WordDictionary] Failed to load ${filePath}:`, e.message);
   }
+}
+
+function firstField(entry, fields) {
+  for (const field of fields) {
+    const value = entry[field];
+    if (value != null && value !== '') return value;
+  }
+  return undefined;
 }

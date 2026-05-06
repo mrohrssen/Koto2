@@ -44,6 +44,9 @@ export default function createRoutes(deps) {
     dialogueTranslationCache: deps.dialogueTranslationCache,
     dialogueTranslationChatFn: deps.dialogueTranslationChatFn,
     getDialogueTranslationConfig: deps.getDialogueTranslationConfig,
+    dialogueLearnCache: deps.dialogueLearnCache,
+    dialogueLearnChatFn: deps.dialogueLearnChatFn,
+    getDialogueLearnConfig: deps.getDialogueLearnConfig,
     getManager: deps.getManager || getManager,
     saveManager: deps.saveManager || saveManager
   }));

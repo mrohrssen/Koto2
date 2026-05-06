@@ -7,6 +7,8 @@ import { setDataDirForTest } from './data-dir.js';
 import { chat } from './ai-providers.js';
 import { DialogueTranslationCache } from './dialogue-translation/cache.js';
 import { buildDialogueTranslationConfig } from './dialogue-translation/service.js';
+import { DialogueLearnCache } from './dialogue-learn/cache.js';
+import { buildDialogueLearnConfig } from './dialogue-learn/service.js';
 
 // --- Shared helpers (reused by production and tests) ---
 
@@ -80,6 +82,9 @@ const DEFAULT_ROUTE_DEPS = {
   dialogueTranslationCache: new DialogueTranslationCache(),
   dialogueTranslationChatFn: chat,
   getDialogueTranslationConfig: buildDialogueTranslationConfig,
+  dialogueLearnCache: new DialogueLearnCache(),
+  dialogueLearnChatFn: chat,
+  getDialogueLearnConfig: buildDialogueLearnConfig,
 };
 
 /**

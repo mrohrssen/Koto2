@@ -57,4 +57,12 @@ describe('creature starter-move distribution', () => {
       `Duplicate L1 moves found: ${JSON.stringify(duplicates)}`
     );
   });
+
+  it('no creature has more than 6 authored learnset entries', () => {
+    const overCap = creatures
+      .filter(creature => (creature.learnset || []).length > 6)
+      .map(creature => `${creature.id}:${creature.learnset.length}`);
+
+    assert.deepStrictEqual(overCap, []);
+  });
 });
