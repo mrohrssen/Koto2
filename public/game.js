@@ -149,6 +149,10 @@ import {
   selectArea as apiSelectArea,
   proceed as apiProceed,
   roomEncounter as apiRoomEncounter,
+  claimMaterials as apiClaimMaterials,
+  getCampfire as apiGetCampfire,
+  cookAtCampfire as apiCookAtCampfire,
+  feedCampfireDish as apiFeedCampfireDish,
   startEncounter as apiStartEncounter,
   shopSkip as apiShopSkip,
   getDueWords as apiGetDueWords,
@@ -281,7 +285,7 @@ function syncParallaxScrollWithPhase() {
   const prev = lastPhaseForParallax;
   lastPhaseForParallax = p;
 
-  const stoppedPhases = ['combat', 'room_encounter', 'friendlyNpc', 'npc_dialogue', 'dealer', 'skillMaster', 'whackAMole', 'speedReviewRoom'];
+  const stoppedPhases = ['combat', 'room_encounter', 'friendlyNpc', 'npc_dialogue', 'dealer', 'skillMaster', 'whackAMole', 'materials', 'campfire', 'speedReviewRoom'];
   if ((p === 'room' || p === 'exploring') && stoppedPhases.includes(prev)) {
     setScrollState('accelerating');
     return;
@@ -298,6 +302,8 @@ function syncParallaxScrollWithPhase() {
     case 'dealer':
     case 'skillMaster':
     case 'whackAMole':
+    case 'materials':
+    case 'campfire':
     case 'speedReviewRoom':
     case 'room_encounter':
       setScrollState('decelerating');
@@ -623,6 +629,12 @@ function updateGameContent() {
       break;
     case 'whackAMole':
       explorationUI.renderWhackAMole();
+      break;
+    case 'materials':
+      explorationUI.renderMaterials();
+      break;
+    case 'campfire':
+      explorationUI.renderCampfire();
       break;
     case 'skillMaster':
       explorationUI.renderSkillMaster();
@@ -1901,6 +1913,10 @@ async function initGame() {
     apiReturnToHub: returnToHub,
     apiProceed,
     apiRoomEncounter,
+    apiClaimMaterials,
+    apiGetCampfire,
+    apiCookAtCampfire,
+    apiFeedCampfireDish,
     apiGetShrineOffers,
     apiChooseShrineReward,
     apiShrineUpgrade,

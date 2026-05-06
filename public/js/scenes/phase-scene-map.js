@@ -16,6 +16,8 @@ const EXTERNAL_PHASES = new Set([
   'post_combat_shop',
   'friendlyNpc',
   'whackAMole',
+  'materials',
+  'campfire',
   'dealer',
   'shrine',
   'quiz',

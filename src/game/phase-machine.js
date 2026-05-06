@@ -12,6 +12,8 @@ export const PHASES = {
   WORD_DISCOVERY: 'wordDiscovery',
   DEALER: 'dealer',
   WHACK_A_MOLE: 'whackAMole',
+  MATERIALS: 'materials',
+  CAMPFIRE: 'campfire',
   SPEED_REVIEW_ROOM: 'speedReviewRoom',
   SKILL_MASTER: 'skillMaster',
   COMBAT: 'combat',
@@ -51,6 +53,8 @@ export const VALID_TRANSITIONS = {
     PHASES.ROOM,
     PHASES.ROOM_ENCOUNTER,
     PHASES.WHACK_A_MOLE,
+    PHASES.MATERIALS,
+    PHASES.CAMPFIRE,
     PHASES.SKILL_MASTER,
     PHASES.SPEED_REVIEW_ROOM,
     PHASES.COMBAT,
@@ -61,6 +65,8 @@ export const VALID_TRANSITIONS = {
     PHASES.ROOM,
     PHASES.ROOM_ENCOUNTER,
     PHASES.WHACK_A_MOLE,
+    PHASES.MATERIALS,
+    PHASES.CAMPFIRE,
     PHASES.SKILL_MASTER,
     PHASES.SPEED_REVIEW_ROOM,
     PHASES.COMBAT,
@@ -121,6 +127,8 @@ export const VALID_TRANSITIONS = {
   ],
 
   [PHASES.WHACK_A_MOLE]: [PHASES.ROOM],
+  [PHASES.MATERIALS]: [PHASES.ROOM],
+  [PHASES.CAMPFIRE]: [PHASES.ROOM],
   [PHASES.SKILL_MASTER]: [PHASES.ROOM],
   [PHASES.SPEED_REVIEW_ROOM]: [PHASES.ROOM],
 
@@ -188,6 +196,8 @@ export function derivePhase(state) {
     if (currentRoom.type === 'wordDiscovery' && !currentRoom.interacted) return PHASES.WORD_DISCOVERY;
     if (currentRoom.type === 'dealer' && !currentRoom.interacted) return 'dealer';
     if (currentRoom.type === 'whackAMole' && !currentRoom.interacted) return PHASES.WHACK_A_MOLE;
+    if (currentRoom.type === 'materials' && currentRoom.materials?.completed !== true) return PHASES.MATERIALS;
+    if (currentRoom.type === 'campfire' && currentRoom.campfire?.completed !== true) return PHASES.CAMPFIRE;
     if (currentRoom.type === 'speedReviewRoom' && !currentRoom.interacted) return PHASES.SPEED_REVIEW_ROOM;
     if (currentRoom.type === 'skillMaster' && currentRoom.skillMaster?.completed !== true) return PHASES.SKILL_MASTER;
     if (currentRoom.type === 'friendlyNpc' && !currentRoom.interacted) return PHASES.FRIENDLY_NPC;

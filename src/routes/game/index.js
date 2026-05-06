@@ -16,6 +16,7 @@ import createFusionRoutes from './fusion.js';
 import createTutorialRoutes from './tutorial.js';
 import createKanaRoutes from './kana.js';
 import { createPvpRoutes } from './pvp.js';
+import createCookingRoutes from './cooking.js';
 
 /**
  * Create game router
@@ -88,6 +89,9 @@ export default function createGameRoutes(deps) {
     queueMissingNpcDialoguesFn: deps.queueMissingNpcDialoguesFn,
     checkSentenceViolations: deps.checkSentenceViolations
   }));
+
+  // Mount cooking routes
+  router.use(createCookingRoutes());
 
   // Mount combat routes
   router.use(createCombatRoutes({

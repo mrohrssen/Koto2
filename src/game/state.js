@@ -78,6 +78,7 @@ export function createMetaProgression() {
 
     // Lifetime discovery tracking
     itemsDiscovered: [],   // array of item IDs ever obtained
+    cookingRecipesDiscovered: [],
 
     // Tutorial state (first-run guided experience)
     tutorialStep: 0,
@@ -197,6 +198,7 @@ export function createNewRun(player) {
     itemBuffs: {
       attackMult: 1.0,
       hpMult: 1.0,
+      dexMult: 1.0,
       elementEdge: 0,
       flatDamageReduction: 0,
       xpMultiplier: 1.0,
@@ -204,6 +206,11 @@ export function createNewRun(player) {
       baseAttackBonus: 0,
       baseHpBonus: 0,
       baseMpBonus: 0
+    },
+
+    cooking: {
+      ingredients: {},
+      cookedThisRun: []
     },
 
     // Run history for DM context

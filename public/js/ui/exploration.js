@@ -8,6 +8,7 @@ import { showNpcInDisplay } from './exploration-dom.js';
 import { t, isJapanified } from './i18n.js';
 import * as chestsUI from './chests.js';
 import * as crestsEquipUI from './crests-equip.js';
+import * as campfireUI from './campfire.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
@@ -151,6 +152,10 @@ let apiChooseFriendlyNpcItem = null;
 // Shrine API
 let apiGetShrineOffers = null;
 let apiChooseShrineReward = null;
+let apiClaimMaterials = null;
+let apiGetCampfire = null;
+let apiCookAtCampfire = null;
+let apiFeedCampfireDish = null;
 
 // Track whether CID's item-shop tutorial has already been shown this session
 let cidItemShopTutorialShown = false;
@@ -204,8 +209,20 @@ export function init(callbacks) {
   apiChooseFriendlyNpcItem = callbacks.apiChooseFriendlyNpcItem;
   apiGetShrineOffers = callbacks.apiGetShrineOffers;
   apiChooseShrineReward = callbacks.apiChooseShrineReward;
+  apiClaimMaterials = callbacks.apiClaimMaterials;
+  apiGetCampfire = callbacks.apiGetCampfire;
+  apiCookAtCampfire = callbacks.apiCookAtCampfire;
+  apiFeedCampfireDish = callbacks.apiFeedCampfireDish;
   apiTutorialAdvance = callbacks.apiTutorialAdvance;
   showAdventureReport = callbacks.showAdventureReport;
+  campfireUI.init({
+    apiGetCampfire,
+    apiCookAtCampfire,
+    apiFeedCampfireDish,
+    getGameState,
+    updateGameState,
+    updateUI,
+  });
 }
 
 function hasHinekoFusionData(state = getGameState()) {
@@ -620,6 +637,30 @@ export function renderAreaComplete() {
   renderButtons([
     { label: '次のエリアへ', onClick: () => updateUI(), primary: true },
   ], { container: btnContainer });
+}
+
+/** Materials room — claim ingredients and show Japanese entity-token receipt */
+export async function renderMaterials() {
+  try {
+    const result = await apiClaimMaterials();
+    if (result?.state) updateGameState?.(result.state);
+    if (result?.receipt?.tokens?.length) {
+      await showNpcDialogueCard({
+        speaker: 'SYSTEM',
+        tokens: result.receipt.tokens,
+        words: result.receipt.words || [],
+        useKanji: true,
+      });
+    }
+    updateUI?.();
+  } catch (error) {
+    console.error('[Exploration] Failed to claim materials:', error);
+    sceneModule?.showNarration?.('材料を手に入れた。', { autoDismiss: 1800 });
+  }
+}
+
+export async function renderCampfire() {
+  return campfireUI.show();
 }
 
 /** Run complete (game victory) — offer PvP save, then show adventure report */

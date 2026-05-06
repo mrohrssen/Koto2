@@ -74,7 +74,10 @@ export const ROOM_TYPES = {
   speedReviewRoom: 'speedReviewRoom',
   boss: 'boss',
   npcBattle: 'npcBattle',
-  friendlyNpc: 'friendlyNpc'
+  friendlyNpc: 'friendlyNpc',
+  support: 'support',
+  materials: 'materials',
+  campfire: 'campfire'
 };
 
 const STARTING_MEADOW_AREA_ID = 'hajimari-no-hiroba';
@@ -203,14 +206,10 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
       type = ROOM_TYPES.boss;
     } else {
       const roll = Math.random();
-      if (roll < 0.05) {
-        type = ROOM_TYPES.shrine;
-      } else if (roll < 0.15) {
-        type = ROOM_TYPES.whackAMole;
-      } else if (roll < 0.60) {
+      if (roll < 0.45) {
         type = ROOM_TYPES.encounter;
       } else {
-        type = ROOM_TYPES.friendlyNpc;
+        type = ROOM_TYPES.support;
       }
     }
 
@@ -336,8 +335,48 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
       room.friendlyNpc = { offerCategory, offered: null, chosenId: null, completed: false };
       break;
     }
+    case ROOM_TYPES.support:
+      room.support = { resolvedType: null };
+      break;
+    case ROOM_TYPES.materials:
+      room.materials = { drops: null, claimed: false, completed: false };
+      break;
+    case ROOM_TYPES.campfire:
+      room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
+      break;
   }
 
+  return room;
+}
+
+function hasUnusedIngredients(run) {
+  const ingredients = run?.cooking?.ingredients || {};
+  return Object.values(ingredients).some(count => count > 0);
+}
+
+export function resolveSupportRoomType(run, rng = Math.random) {
+  const canCampfire = hasUnusedIngredients(run);
+  const roll = rng();
+  if (canCampfire && roll < 0.25) return ROOM_TYPES.campfire;
+  if (roll < (canCampfire ? 0.35 : 0.10)) return ROOM_TYPES.materials;
+  if (roll < 0.45) return ROOM_TYPES.whackAMole;
+  if (roll < 0.50) return ROOM_TYPES.shrine;
+  return ROOM_TYPES.friendlyNpc;
+}
+
+export function resolveSupportRoom(room, run, rng = Math.random) {
+  if (!room || room.type !== ROOM_TYPES.support) return room;
+
+  const resolvedType = room.support?.resolvedType || resolveSupportRoomType(run, rng);
+  const resolved = createRoom(resolvedType, room.areaId, room.roomNumber, room.totalRooms);
+  resolved.id = room.id;
+  resolved.explored = room.explored;
+  resolved.interacted = room.interacted;
+  if (room.subArea) resolved.subArea = room.subArea;
+  resolved.supportResolved = true;
+
+  Object.keys(room).forEach(key => delete room[key]);
+  Object.assign(room, resolved);
   return room;
 }
 
@@ -368,6 +407,12 @@ export function getRoomEntryNarration(room) {
       return `${locationLabel}に入った。不思議なゲーム機がある...`;
     case ROOM_TYPES.speedReviewRoom:
       return `${locationLabel}に入った。記憶の装置がある...復習を始めよう。`;
+    case ROOM_TYPES.materials:
+      return `${locationLabel}に入った。材料が見つかりそうだ。`;
+    case ROOM_TYPES.campfire:
+      return `${locationLabel}に入った。焚き火がある。料理ができそうだ。`;
+    case ROOM_TYPES.support:
+      return `${locationLabel}に入った。`;
     case ROOM_TYPES.boss:
       return `${locationLabel}に入った。巨大な影が現れた...`;
     case ROOM_TYPES.friendlyNpc:
@@ -391,6 +436,8 @@ export function getRoomActions(room) {
   const isUnfinishedSkillMaster = room.type === 'skillMaster' && room.skillMaster?.completed !== true;
   const isUnfinishedWhackAMole = room.type === 'whackAMole' && !room.interacted;
   const isUnfinishedSpeedReviewRoom = room.type === 'speedReviewRoom' && !room.interacted;
+  const isUnfinishedMaterials = room.type === ROOM_TYPES.materials && room.materials?.completed !== true;
+  const isUnfinishedCampfire = room.type === ROOM_TYPES.campfire && room.campfire?.completed !== true;
   const isUnfinishedBoss = room.type === 'boss' && !room.interacted;
   const isUnfinishedShrine = room.type === ROOM_TYPES.shrine
     && !room.interacted
@@ -398,7 +445,7 @@ export function getRoomActions(room) {
     && room.shrine?.used !== true;
   const isUnfinishedFriendlyNpc = room.type === 'friendlyNpc' && !room.friendlyNpc?.completed;
   const isUnfinishedNpcBattle = room.type === 'npcBattle' && !room.interacted;
-  if (!isUnfinishedEncounter && !isUnfinishedShrine && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedSpeedReviewRoom && !isUnfinishedBoss && !isUnfinishedFriendlyNpc && !isUnfinishedNpcBattle) {
+  if (!isUnfinishedEncounter && !isUnfinishedShrine && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedSpeedReviewRoom && !isUnfinishedMaterials && !isUnfinishedCampfire && !isUnfinishedBoss && !isUnfinishedFriendlyNpc && !isUnfinishedNpcBattle) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -421,6 +468,16 @@ export function getRoomActions(room) {
     case ROOM_TYPES.wordDiscovery:
       break;
     case ROOM_TYPES.speedReviewRoom:
+      break;
+    case ROOM_TYPES.materials:
+      if (isUnfinishedMaterials) {
+        actions.push({ id: 'materials_claim', name: '集める', description: '材料を集める' });
+      }
+      break;
+    case ROOM_TYPES.campfire:
+      if (isUnfinishedCampfire) {
+        actions.push({ id: 'campfire_cook', name: '料理する', description: '焚き火で料理する' });
+      }
       break;
     case ROOM_TYPES.dealer:
       if (!room.dealer?.visited) {
