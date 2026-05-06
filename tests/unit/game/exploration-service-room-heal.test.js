@@ -70,5 +70,28 @@ describe('ExplorationService room heal (5% per room entry)', () => {
 
     assert.strictEqual(nearMax.hp, 100);
   });
+
+  it('clears dex stages on room entry with other combat buffs', () => {
+    const creature = {
+      id: 'a',
+      hp: 50,
+      maxHp: 100,
+      statStages: { atk: 1, def: -1, dex: 3 },
+      activeEffects: [{ type: 'poison', remainingTurns: 2 }]
+    };
+    const gm = makeGmWithRoomsAndParty({
+      rooms: [
+        createRoom('friendlyNpc', 'okunomori', 1, 2),
+        createRoom('friendlyNpc', 'okunomori', 2, 2)
+      ],
+      creatureParty: { active: [creature], reserves: [] }
+    });
+    const service = new ExplorationService(gm);
+
+    service.proceedToNextRoom();
+
+    assert.deepStrictEqual(creature.statStages, { atk: 0, def: 0, dex: 0 });
+    assert.deepStrictEqual(creature.activeEffects, []);
+  });
 });
 

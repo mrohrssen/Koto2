@@ -43,19 +43,12 @@ The `move.category` field. Determines which engine branch runs.
 
 | Category | What it does | Riders allowed |
 |---|---|---|
-| `damage` | HP damage to target. Element + STAB multipliers, variance, shield reduction. Damage > 0 breaks sleep on the target. | `statusEffect`, `statChanges` |
+| `damage` | HP damage to target. Element + STAB multipliers, variance, crits, and dodge. Damage > 0 breaks sleep on the target. | `statusEffect`, `statChanges` |
 | `drain` | Same as damage, plus the attacker is healed for 50% of damage dealt. | `statusEffect`, `statChanges` |
 | `heal` | Restore HP to ally(ies): `floor((atk / 10) × power × variance)`. Skips KO'd targets. | `statusEffect`, `statChanges` |
 | `buff` | Apply positive `statChanges` and/or beneficial `statusEffect` (`taunt`, `cleanse`) to ally/self. | `statusEffect`, `statChanges` |
 | `debuff` | Apply negative `statChanges` and/or harmful `statusEffect` (`poison`, `sleep`, `stun`, `confuse`) to enemy. | `statusEffect`, `statChanges` |
 | `rest` (synthetic) | Render-time pseudo-move. Restores `ceil(maxMp × 0.20)`. Detected via `move.isRest`; rendered as a `+20% MP` pill. **Never authored.** | — |
-
-> **Note:** `heal` accepting riders is design intent. The engine's
-> `case 'heal'` branch in `executeMove()` does not currently call
-> `tryApplyStatus` / `tryApplyStatChanges` — that wire-up is part of the
-> [implementation gaps](#implementation-gaps) below.
-
----
 
 ## Targets
 
@@ -115,7 +108,7 @@ battle start.
 |---|---|---|
 | `atk` | engine | Multiplies physical damage output. |
 | `def` | engine | Multiplies incoming-damage resistance. Replaces the old `shield` / `team_shield` design. |
-| `dex` | **planned (not in engine yet)** | Three things at once: turn order (higher dex acts first), critical-hit chance, and dodge chance. Same `[-6, +6]` model as atk/def. Designed for both buff and debuff use. Supersedes the orphaned `spd` UI label. |
+| `dex` | engine | Three things at once: turn order (higher dex acts first), critical-hit chance, and dodge chance. Same `[-6, +6]` model as atk/def. Designed for both buff and debuff use. Supersedes the old `spd` UI label. |
 
 ### Why dex unlocks new design
 
@@ -130,10 +123,6 @@ three new design axes from a single stat:
 - **Evasive tanks** — high dex as an alternative to def: dodge entirely
   instead of soaking. Risk/reward variant of "raise def +1."
 
-There's also a separate `applyTempAttackFlat` / `getFlatAttackBonus`
-channel — additive flat attack bonus that stacks. Not used by any
-current move; appears to be infra for items or future moves.
-
 ---
 
 ## Deprecated — do not use
@@ -143,16 +132,14 @@ no longer in the design space. Do not author moves that use them.
 
 | Name | Kind | Replacement |
 |---|---|---|
-| `shield` | category | Use `category: "buff"` with `statChanges: { def: +N }`. The engine branch still exists but is slated for removal. |
+| `shield` | category | Use `category: "buff"` with `statChanges: { def: +N }`. |
 | `shield` | status effect | Same — express as a `def` buff. |
 | `team_shield` | status effect | Use `category: "buff"`, `target: "all_allies"`, `statChanges: { def: +N }`. |
-| `haste` | status effect | Will be expressed via `dex` once `dex` lands in the engine. |
+| `haste` | status effect | Use `statChanges: { dex: +N }`. |
 | `attack_buff` | legacy status effect name | Use `statChanges: { atk: +N }`. |
-| `spd` | stat / UI label | Superseded by `dex`. The `spd` reference in `public/js/ui/move-effect-label.js` is orphaned. |
+| `spd` | stat / UI label | Superseded by `dex`. |
 
-> **One live move rides a deprecated effect:** `Call` (呼ぶ) currently
-> uses `statusEffect: "haste"`. It will need a redesign — likely as a
-> `dex +1` buff targeting `all_allies` — when `dex` lands.
+`Call` (呼ぶ) is now a `dex +1` buff targeting `all_allies`.
 
 ---
 
@@ -162,7 +149,7 @@ Slots that are mechanically supported (or will be once their engine
 gaps close) but have **zero authored moves** today:
 
 - **Status effects with no authored moves:** `poison`, `sleep`, `taunt`,
-  `cleanse` (cleanse is also not yet in the engine).
+  `cleanse`.
 - **Stat stages:** every authored move is positive (`atk +1` / `def +1`).
   No negative stages, no multi-tier (±2, ±3), and no `dex` moves at all.
 - **Categories:** `drain` has zero authored moves despite full engine
@@ -175,32 +162,16 @@ of the existing patterns.
 
 ---
 
-## Implementation gaps
+## Implementation status
 
-The engine currently does not match this reference doc on a few points.
-These are the known deltas, in roughly the order they need to be closed:
+The engine supports the current reference surface:
 
-1. **`heal` riders** — `case 'heal'` in `executeMove()` does not call
-   `tryApplyStatus` / `tryApplyStatChanges`. Heal moves with riders
-   silently no-op until this is added.
-2. **Poison can KO** — `tickEffects` in `combat/effects.js` does
-   `Math.min(effect.damagePerTurn, creature.hp - 1)`. The `- 1` clamp
-   needs to go. Decide whether a poison KO triggers the same KO-swap /
-   XP / element-drop flow as a damage KO (currently those branches only
-   fire from the `damage`/`drain` cases).
-3. **`dex` stat** — needs adding to `initStatStages`, `resetStatStages`,
-   and the multiplier query helpers. Then wire dex into turn order, crit
-   chance, and dodge chance in the combat resolution path.
-4. **`cleanse` handler** — new `applyCleanse(target)` helper alongside
-   the existing `applyPoison` / `applySleep` / etc., and a case in
-   `tryApplyStatus`. Removes `poison` / `sleep` / `stun` / `confuse`
-   from `creature.activeEffects`.
-5. **Delete deprecated branches** — `case 'shield'` in `executeMove()`,
-   the `shield` / `team_shield` / `haste` cases in `tryApplyStatus`,
-   and their `applyShield` / `applyTeamShield` / `applyHaste` helpers.
-   Redesign `Call` (呼ぶ) before this delete lands so its rider has
-   somewhere to go.
-6. **Drop the `spd` label** in `public/js/ui/move-effect-label.js`.
+1. **`heal` riders** — heal moves call status and stat rider helpers.
+2. **Poison can KO** — poison ticks can reduce HP to 0.
+3. **`dex` stat** — implemented as a real creature stat plus battle-stage stat. It affects turn order, critical-hit chance, and dodge chance in both PvE and PvP.
+4. **`cleanse` handler** — `applyCleanse(target)` removes `poison`, `sleep`, `stun`, and `confuse`.
+5. **Deprecated branches removed** — shield/team shield/haste/temp flat attack helpers and engine branches have been removed from combat.
+6. **`spd` label removed** — move labels use `Dex`.
 
 ---
 

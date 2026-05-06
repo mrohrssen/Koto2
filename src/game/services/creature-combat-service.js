@@ -16,11 +16,11 @@ import {
 import {
   applyHeal, applyPoison, tickEffects,
   applySleep, applyStun, applyConfuse,
-  applyHaste, applyShield, applyTeamShield, applyTaunt,
+  applyTaunt, applyCleanse,
   applyStatChanges, resetStatStages,
-  isIncapacitated, isConfused, hasHaste, consumeHaste,
-  getAttackMultiplier, getDefenseMultiplier, getDamageReduction, getTauntTarget, breakSleep,
-  getFlatAttackBonus
+  isIncapacitated, isConfused,
+  getAttackMultiplier, getDefenseMultiplier, getTauntTarget, breakSleep, getEffectiveDex,
+  rollCritical, rollDodge
 } from '../combat/effects.js';
 import {
   applyAfterPlayerAttacks as _applyAfterPlayerAttacks,
@@ -45,7 +45,7 @@ function rollMoveDamage(attacker, target, move, _itemBuffs, variance) {
   if (buffs) typeMult = getBuffedElementMultiplier(typeMult, buffs);
 
   let buffedAttack = buffs ? getBuffedAttack(attacker.attack, buffs, attacker.level) : attacker.attack;
-  buffedAttack = Math.floor((buffedAttack + getFlatAttackBonus(attacker)) * getAttackMultiplier(attacker));
+  buffedAttack = Math.floor(buffedAttack * getAttackMultiplier(attacker));
 
   return calculateCreatureDamage({
     attackerLevel: Math.max(1, attacker.level || 1),
@@ -95,6 +95,11 @@ function buildAttackRecord(creature, creatureIndex, move, target, targetIndex, o
     damage: 0,
     healAmount: 0,
     effectApplied: null,
+    critical: false,
+    critChance: null,
+    dodged: false,
+    hitChance: 1,
+    dodgeChance: 0,
     stab: false,
     elementMultiplier: 1.0,
     targetDefeated: false,
@@ -182,18 +187,12 @@ function tryApplyStatus(move, target, caster, allies) {
     case 'confuse':
       applyConfuse(target, { duration, sourceId });
       return 'confuse';
-    case 'haste':
-      applyHaste(target, { sourceId });
-      return 'haste';
-    case 'shield':
-      applyShield(target, { percent: move.power, duration, sourceId });
-      return 'shield';
-    case 'team_shield':
-      applyTeamShield(allies, { percent: move.power, duration, sourceId });
-      return 'team_shield';
     case 'taunt':
       applyTaunt(target, { duration, sourceId });
       return 'taunt';
+    case 'cleanse':
+      applyCleanse(target);
+      return 'cleanse';
     default:
       return null;
   }
@@ -211,6 +210,34 @@ function tryApplyStatChanges(move, target) {
   return applyStatChanges(target, move.statChanges);
 }
 
+function isHostileTarget(target, enemies) {
+  return Array.isArray(enemies) && enemies.includes(target);
+}
+
+function canMoveBeDodged(move, target, enemies) {
+  if (!isHostileTarget(target, enemies)) return false;
+  return move.category === 'damage' || move.category === 'drain' || move.category === 'debuff';
+}
+
+function resolveDodge(attacker, target, move, enemies) {
+  if (!canMoveBeDodged(move, target, enemies)) {
+    return { dodged: false, hitChance: 1, dodgeChance: 0 };
+  }
+  return rollDodge(attacker, target);
+}
+
+function applyCriticalDamage(attacker, move, damage) {
+  if (move.category !== 'damage' && move.category !== 'drain') {
+    return { damage, critical: false, critChance: null };
+  }
+  const crit = rollCritical(attacker);
+  return {
+    damage: crit.critical ? Math.floor(damage * 1.5) : damage,
+    critical: crit.critical,
+    critChance: crit.critChance
+  };
+}
+
 /**
  * Execute a single move for one creature. Returns array of attack records and xpEvents.
  */
@@ -225,16 +252,24 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
+        const dodge = resolveDodge(creature, target, move, enemies);
+        if (dodge.dodged) {
+          attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
+            dodged: true,
+            hitChance: dodge.hitChance,
+            dodgeChance: dodge.dodgeChance,
+            stab,
+            elementMultiplier: getElementMultiplier(move.element, target.element)
+          }));
+          continue;
+        }
         const variance = rollVariance();
         let damage = rollMoveDamage(creature, target, move, itemBuffs, variance);
+        const crit = applyCriticalDamage(creature, move, damage);
+        damage = crit.damage;
 
         if (defenderItemBuffs) {
           damage = applyDamageReduction(damage, defenderItemBuffs);
-        }
-
-        const shieldReduction = getDamageReduction(target);
-        if (shieldReduction > 0) {
-          damage = Math.floor(damage * (1 - shieldReduction / 100));
         }
 
         target.hp = Math.max(0, target.hp - damage);
@@ -245,7 +280,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
-          damage, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
+          damage, critical: crit.critical, critChance: crit.critChance, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
         }));
 
         if (targetDefeated && creatureParty) {
@@ -265,16 +300,24 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
+        const dodge = resolveDodge(creature, target, move, enemies);
+        if (dodge.dodged) {
+          attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
+            dodged: true,
+            hitChance: dodge.hitChance,
+            dodgeChance: dodge.dodgeChance,
+            stab,
+            elementMultiplier: getElementMultiplier(move.element, target.element)
+          }));
+          continue;
+        }
         const variance = rollVariance();
         let damage = rollMoveDamage(creature, target, move, itemBuffs, variance);
+        const crit = applyCriticalDamage(creature, move, damage);
+        damage = crit.damage;
 
         if (defenderItemBuffs) {
           damage = applyDamageReduction(damage, defenderItemBuffs);
-        }
-
-        const shieldReduction = getDamageReduction(target);
-        if (shieldReduction > 0) {
-          damage = Math.floor(damage * (1 - shieldReduction / 100));
         }
 
         target.hp = Math.max(0, target.hp - damage);
@@ -288,7 +331,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
-          damage, healAmount, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
+          damage, healAmount, critical: crit.critical, critChance: crit.critChance, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
         }));
 
         if (targetDefeated && creatureParty) {
@@ -310,9 +353,11 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const tIdx = indices[i];
         const variance = rollVariance();
         const healAmount = applyHeal(target, Math.floor((creature.attack / 10) * move.power * variance));
+        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
+        const statChangesApplied = tryApplyStatChanges(move, target);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
-          healAmount
+          healAmount, effectApplied, statChangesApplied
         }));
       }
       break;
@@ -329,39 +374,6 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           effectApplied, statChangesApplied
         }));
-      }
-      break;
-    }
-
-    case 'shield': {
-      const { targets, indices } = resolveTargets(move.target, allies, enemies, targetIndex, creature);
-      if (move.target === 'all_allies') {
-        // Use applyTeamShield for all_allies
-        applyTeamShield(allies.filter(a => a.hp > 0), {
-          percent: move.power,
-          duration: move.statusDuration || 2,
-          sourceId: creature.id
-        });
-        for (let i = 0; i < targets.length; i++) {
-          const target = targets[i];
-          const tIdx = indices[i];
-          attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
-            effectApplied: 'team_shield'
-          }));
-        }
-      } else {
-        for (let i = 0; i < targets.length; i++) {
-          const target = targets[i];
-          const tIdx = indices[i];
-          applyShield(target, {
-            percent: move.power,
-            duration: move.statusDuration || 2,
-            sourceId: creature.id
-          });
-          attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
-            effectApplied: 'shield'
-          }));
-        }
       }
       break;
     }
@@ -445,15 +457,6 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
   const xpEvents = [];
   const defeatedEnemyIndices = new Set();
 
-  // Collect creatures that have haste (before processing moves)
-  const hastedCreatureIndices = new Set();
-  for (let i = 0; i < allies.length; i++) {
-    if (allies[i] && allies[i].hp > 0 && hasHaste(allies[i])) {
-      hastedCreatureIndices.add(i);
-      consumeHaste(allies[i]);
-    }
-  }
-
   // Process each move choice
   const restedCreatureIndices = new Set();
   for (const choice of moveChoices) {
@@ -494,17 +497,6 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     attacks.push(...result.attacks);
     xpEvents.push(...result.xpEvents);
 
-    // If this creature had haste, execute the same move a second time
-    if (hastedCreatureIndices.has(choice.creatureIndex)) {
-      // Don't charge MP again for haste extra action
-      const result2 = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults);
-      for (const atk of result2.attacks) {
-        atk.attackerMp = creature.mp;
-        atk.attackerMaxMp = creature.maxMp || 0;
-      }
-      attacks.push(...result2.attacks);
-      xpEvents.push(...result2.xpEvents);
-    }
   }
 
   // MP regen: each alive ally gets 5% of maxMp back, EXCEPT creatures that rested this turn
@@ -651,7 +643,7 @@ export function pickEnemyTarget(enemy, move, mode, allies, enemies) {
       return { target: pool[Math.floor(Math.random() * pool.length)], targetSide: 'player' };
     }
     case 'random': {
-      if (['buff', 'heal', 'shield'].includes(move.category)) {
+      if (['buff', 'heal'].includes(move.category)) {
         if (move.target === 'self') return { target: enemy, targetSide: 'enemy' };
         const aliveTeam = enemies.filter(c => c.hp > 0);
         return { target: aliveTeam[Math.floor(Math.random() * aliveTeam.length)] || enemy, targetSide: 'enemy' };
@@ -711,6 +703,15 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
   switch (move.category) {
     case 'damage':
     case 'drain': {
+      const dodge = resolveDodge(enemy, target, move, targetSide === 'player' ? allies : []);
+      if (dodge.dodged) {
+        rec.dodged = true;
+        rec.hitChance = dodge.hitChance;
+        rec.dodgeChance = dodge.dodgeChance;
+        rec.elementMultiplier = getElementMultiplier(move.element, target.element);
+        break;
+      }
+
       const variance = rollVariance();
       const stab = move.element !== 'neutral' && move.element === enemy.element;
       const stabMult = stab ? 1.5 : 1.0;
@@ -725,12 +726,13 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
         typeMultiplier: typeMult,
         variance
       });
+      const crit = applyCriticalDamage(enemy, move, damage);
+      damage = crit.damage;
+      rec.critical = crit.critical;
+      rec.critChance = crit.critChance;
 
       if (defendActive) damage = Math.floor(damage * 0.5);
       if (itemBuffs) damage = applyDamageReduction(damage, itemBuffs);
-
-      const shieldReduction = getDamageReduction(target);
-      if (shieldReduction > 0) damage = Math.floor(damage * (1 - shieldReduction / 100));
 
       target.hp = Math.max(0, target.hp - damage);
       if (damage > 0) breakSleep(target);
@@ -753,6 +755,8 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
     case 'heal': {
       const variance = rollVariance();
       rec.healAmount = applyHeal(target, Math.floor((enemy.attack / 10) * move.power * variance));
+      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
+      rec.statChangesApplied = tryApplyStatChanges(move, target);
       break;
     }
 
@@ -768,11 +772,6 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
       break;
     }
 
-    case 'shield': {
-      applyShield(target, { percent: move.power, duration: move.statusDuration || 2, sourceId: enemy.id });
-      rec.effectApplied = 'shield';
-      break;
-    }
   }
 
   return rec;
@@ -782,7 +781,6 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
  * Run all submitted choices for one allied creature slot vs an opposing team.
  * Used by PvE initiative rounds and PvP.
  *
- * @param {Set<number>|null} hastedSlots - Slots that consumed haste at round start (double execute, no extra MP)
  * @param {Set|null} defeatedEnemyIndices - Kill/XP tracking (empty Set in PvP)
  */
 export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options = {}) {
@@ -790,7 +788,6 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
     itemBuffs = null,
     creatureParty = null,
     metaMults = null,
-    hastedSlots = null,
     defeatedIndices = null,
     defenderItemBuffs = null,
     onAttack = null
@@ -859,10 +856,6 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
     runOneExecute();
     if (stopped) break;
     if (creature.hp <= 0) break;
-    if (hastedSlots?.has(slotIndex)) {
-      runOneExecute();
-      if (stopped) break;
-    }
   }
 
   return { attacks, xpEvents };
@@ -870,9 +863,9 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
 
 /**
  * PvE combat round: allies and enemies act in one combined initiative order
- * (highest creature level first; ties random), same initiative rule as PvP.
+ * (highest effective dex first; level breaks ties), same initiative rule as PvP.
  *
- * Each creature's full turn (all move choices for that ally, or 1–2 strikes for hasted enemy)
+ * Each creature's full turn (all move choices for that ally or one enemy strike)
  * runs when its initiative slot comes up.
  *
  * @returns Same shape as processMoveTurn for player phase plus enemy attacks.
@@ -904,14 +897,6 @@ export function processInterleavedPvERound(
     options.combat.chainSurgeTriggeredThisTurn = false;
   }
 
-  const hastedCreatureIndices = new Set();
-  for (let i = 0; i < allies.length; i++) {
-    if (allies[i] && allies[i].hp > 0 && hasHaste(allies[i])) {
-      hastedCreatureIndices.add(i);
-      consumeHaste(allies[i]);
-    }
-  }
-
   const choicesByAlly = new Map();
   for (const choice of moveChoices || []) {
     if (typeof choice.creatureIndex !== 'number') continue;
@@ -921,14 +906,9 @@ export function processInterleavedPvERound(
 
   // Pre-select enemy moves before initiative loop
   const enemyChoicesMap = new Map();
-  const hastedEnemyIndices = new Set();
   for (let ei = 0; ei < enemies.length; ei++) {
     const enemy = enemies[ei];
     if (!enemy || enemy.hp <= 0 || isIncapacitated(enemy)) continue;
-    if (hasHaste(enemy)) {
-      hastedEnemyIndices.add(ei);
-      consumeHaste(enemy);
-    }
     const choice = pickEnemyMoveChoice(enemy, allies, enemies);
     if (!choice) continue;
     const { move, mode } = choice;
@@ -945,20 +925,22 @@ export function processInterleavedPvERound(
   for (const [allyIndex] of choicesByAlly) {
     const c = allies[allyIndex];
     if (c && c.hp > 0 && !isIncapacitated(c)) {
-      initiative.push({ kind: 'ally', index: allyIndex, level: c.level || 1 });
+      initiative.push({ kind: 'ally', index: allyIndex, level: c.level || 1, dex: getEffectiveDex(c) });
     }
   }
 
   for (let ei = 0; ei < enemies.length; ei++) {
     const e = enemies[ei];
     if (e && e.hp > 0 && !isIncapacitated(e) && e.moves?.length > 0) {
-      initiative.push({ kind: 'enemy', index: ei, level: e.level || 1 });
+      initiative.push({ kind: 'enemy', index: ei, level: e.level || 1, dex: getEffectiveDex(e) });
     }
   }
 
   initiative.sort((a, b) => {
-    const d = (b.level || 1) - (a.level || 1);
-    if (d !== 0) return d;
+    const dexDiff = (b.dex || 1) - (a.dex || 1);
+    if (dexDiff !== 0) return dexDiff;
+    const levelDiff = (b.level || 1) - (a.level || 1);
+    if (levelDiff !== 0) return levelDiff;
     return Math.random() - 0.5;
   });
 
@@ -974,7 +956,6 @@ export function processInterleavedPvERound(
         itemBuffs,
         creatureParty: isAlly ? creatureParty : null,
         metaMults: isAlly ? metaMults : null,
-        hastedSlots: isAlly ? hastedCreatureIndices : hastedEnemyIndices,
         defeatedIndices: defeatedEnemyIndices,
         defenderItemBuffs: isAlly ? null : itemBuffs,
         onAttack(atk) {
@@ -1056,8 +1037,7 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
     if (!choice) continue;
     const { move, mode } = choice;
 
-    const attackCount = hasHaste(enemy) ? 2 : 1;
-    if (hasHaste(enemy)) consumeHaste(enemy);
+    const attackCount = 1;
 
     for (let strike = 0; strike < attackCount; strike++) {
       if (enemy.hp <= 0) break;

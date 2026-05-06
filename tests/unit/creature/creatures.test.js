@@ -15,7 +15,8 @@ import {
   selectTarget,
   generateEnemyCreature,
   generateEnemyCreatures,
-  syncCreatureDefense
+  syncCreatureDefense,
+  syncCreatureDex
 } from '../../../src/game/creatures.js';
 
 const creatures = JSON.parse(fs.readFileSync(new URL('../../../data/creatures.json', import.meta.url), 'utf8'));
@@ -74,6 +75,20 @@ describe('Creature Instantiation', () => {
     assert.ok(creature.moves.length >= 1, 'should have at least one move');
   });
 
+  it('requires authored baseDex on every creature template', () => {
+    const missing = creatures
+      .filter(creature => typeof creature.baseDex !== 'number' || !Number.isFinite(creature.baseDex))
+      .map(creature => creature.id);
+
+    assert.deepStrictEqual(missing, []);
+  });
+
+  it('creates a level-5 common creature with scaled dex', () => {
+    const creature = instantiateCreature('hi');
+    assert.strictEqual(creature.baseDexTemplate, 12);
+    assert.strictEqual(creature.dex, 17); // round(12 * 1.4)
+  });
+
   it('applies rarity multiplier for uncommon at level 5', () => {
     // All R1 creatures are common; test with a common creature and verify the formula
     const creature = instantiateCreature('mizu');
@@ -102,6 +117,7 @@ describe('Creature Instantiation', () => {
     assert.strictEqual(creature.baseHpTemplate, 50);
     assert.strictEqual(creature.baseAttackTemplate, 20);
     assert.strictEqual(creature.baseDefenseTemplate, 5);
+    assert.strictEqual(creature.baseDexTemplate, 12);
   });
 
   it('has category and target on first move', () => {
@@ -112,6 +128,15 @@ describe('Creature Instantiation', () => {
     assert.ok(move0.target, 'move should have target');
     assert.ok(move0.element, 'move should have element');
     assert.ok(typeof move0.mpCost === 'number', 'move should have mpCost');
+  });
+
+  it('uses dex stat stages instead of haste for Call', () => {
+    const call = moves.find(move => move.id === 'yobu');
+
+    assert.strictEqual(call.category, 'buff');
+    assert.strictEqual(call.target, 'all_allies');
+    assert.deepStrictEqual(call.statChanges, { dex: 1 });
+    assert.ok(!('statusEffect' in call) || call.statusEffect == null);
   });
 
   it('gives Cat a damaging move for the tutorial encounter', () => {
@@ -192,6 +217,24 @@ describe('syncCreatureDefense', () => {
   });
 });
 
+describe('syncCreatureDex', () => {
+  it('fills missing template and dex from catalog + level', () => {
+    const c = instantiateCreature('hi', 6);
+    delete c.baseDexTemplate;
+    delete c.dex;
+
+    syncCreatureDex(c);
+
+    assert.strictEqual(c.baseDexTemplate, 12);
+    assert.strictEqual(c.dex, 18); // round(12 * 1.5) at L6
+  });
+
+  it('throws if a saved creature references an unknown template', () => {
+    const c = { id: 'missing-template', level: 5 };
+    assert.throws(() => syncCreatureDex(c), /Creature template not found/);
+  });
+});
+
 describe('Creature Damage', () => {
   it('calculates damage with level, DEF, and type multiplier', () => {
     // L5, atk 14, def 7, power 10, neutral: inner=(2+2)*10*14/7=80, base=10, *1.5 *1 = 15
@@ -221,11 +264,12 @@ describe('Creature Damage', () => {
 
 describe('Creature Leveling', () => {
   it('+10% stats per level', () => {
-    const stats = getStatsForLevel(100, 20, 80, 3, 5);
+    const stats = getStatsForLevel(100, 20, 80, 3, 5, 10);
     assert.strictEqual(stats.maxHp, 120); // 100 * 1.2
     assert.strictEqual(stats.attack, 24); // 20 * 1.2
     assert.strictEqual(stats.maxMp, 96); // 80 * 1.2
     assert.strictEqual(stats.defense, 6); // 5 * 1.2
+    assert.strictEqual(stats.dex, 12);
   });
 
   it('awards XP and levels up', () => {

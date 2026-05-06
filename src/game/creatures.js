@@ -47,6 +47,13 @@ const STAGE_RARITY_TABLE = {
   endgame: { common: 20, uncommon: 30, rare: 30, epic: 20 }  // stage 10
 };
 
+function requireBaseDex(template) {
+  if (!template || typeof template.baseDex !== 'number' || !Number.isFinite(template.baseDex)) {
+    throw new Error(`Creature template missing numeric baseDex: ${template?.id || 'unknown'}`);
+  }
+  return template.baseDex;
+}
+
 export function getRarityWeightsForStage(stage) {
   const s = stage || 1;
   if (s <= 3) return { ...STAGE_RARITY_TABLE.early };
@@ -127,12 +134,14 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
   const rarityMult = RARITY_MULTIPLIERS[template.rarity] || 1.0;
   const baseMp = template.baseMp || 80;
   const baseDef = template.baseDefense ?? 5;
-  const { maxHp, attack, maxMp, defense } = getStatsForLevel(
+  const baseDex = requireBaseDex(template);
+  const { maxHp, attack, maxMp, defense, dex } = getStatsForLevel(
     Math.floor(template.baseHp * rarityMult),
     Math.floor(template.baseAttack * rarityMult),
     Math.floor(baseMp * rarityMult),
     startingLevel,
-    Math.floor(baseDef * rarityMult)
+    Math.floor(baseDef * rarityMult),
+    Math.floor(baseDex * rarityMult)
   );
 
   const moves = getLatestLearnedMoves(template, startingLevel);
@@ -154,11 +163,13 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
     maxHp,
     attack,
     defense,
+    dex,
     mp: maxMp,
     maxMp,
     baseHpTemplate: template.baseHp,
     baseAttackTemplate: template.baseAttack,
     baseDefenseTemplate: baseDef,
+    baseDexTemplate: baseDex,
     baseMpTemplate: baseMp,
     moves,
     itemBuffs: null,
@@ -166,14 +177,19 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
   };
 }
 
-export function getStatsForLevel(baseHp, baseAttack, baseMp, level, baseDefense = 5) {
+export function getStatsForLevel(baseHp, baseAttack, baseMp, level, baseDefense = 5, baseDex) {
+  if (typeof baseDex !== 'number' || !Number.isFinite(baseDex)) {
+    throw new Error('getStatsForLevel requires numeric baseDex');
+  }
+
   const mult = 1 + (level - 1) * 0.1;
   return {
     maxHp: Math.floor(baseHp * mult),
     attack: Math.floor(baseAttack * mult),
     maxMp: Math.floor(baseMp * mult),
     // Round DEF so low baseDefense (e.g. 5) still bumps most levels (floor caused long plateaus vs ATK).
-    defense: Math.max(1, Math.round(baseDefense * mult))
+    defense: Math.max(1, Math.round(baseDefense * mult)),
+    dex: Math.max(1, Math.round(baseDex * mult))
   };
 }
 
@@ -192,6 +208,22 @@ export function syncCreatureDefense(creature) {
   const level = Math.max(1, creature.level || 1);
   const mult = 1 + (level - 1) * 0.1;
   creature.defense = Math.max(1, Math.round(baseDef * mult));
+  syncCreatureDex(creature);
+}
+
+export function syncCreatureDex(creature) {
+  if (!creature || !creature.id) return;
+  const template = CREATURES_BY_ID[creature.id];
+  if (!template) throw new Error(`Creature template not found: ${creature.id}`);
+
+  const baseDex = requireBaseDex(template);
+  creature.baseDexTemplate = baseDex;
+
+  const rarityMult = RARITY_MULTIPLIERS[creature.rarity] || 1.0;
+  const scaledBaseDex = Math.floor(baseDex * rarityMult);
+  const level = Math.max(1, creature.level || 1);
+  const mult = 1 + (level - 1) * 0.1;
+  creature.dex = Math.max(1, Math.round(scaledBaseDex * mult));
 }
 
 /** Apply {@link syncCreatureDefense} to all slots in a party (active + reserves). */
@@ -216,7 +248,8 @@ export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = nul
     const baseAtk = Math.floor((creature.baseAttackTemplate || 10) * rarityMult);
     const baseMp = Math.floor((creature.baseMpTemplate || 80) * rarityMult);
     const baseDef = Math.floor((creature.baseDefenseTemplate ?? 5) * rarityMult);
-    const stats = getStatsForLevel(baseHp, baseAtk, baseMp, creature.level, baseDef);
+    const baseDex = Math.floor((creature.baseDexTemplate ?? requireBaseDex(CREATURES_BY_ID[creature.id])) * rarityMult);
+    const stats = getStatsForLevel(baseHp, baseAtk, baseMp, creature.level, baseDef, baseDex);
     // Equipment base bonuses scale with level (per-creature)
     const cBuffs = creature.itemBuffs || _itemBuffs;
     const lMult = 1 + (creature.level - 1) * 0.1;
@@ -227,6 +260,7 @@ export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = nul
     creature.maxHp = stats.maxHp + equipHpBonus;
     creature.attack = stats.attack;
     creature.defense = stats.defense;
+    creature.dex = stats.dex;
     creature.maxMp = stats.maxMp + equipMpBonus;
     // Re-apply meta progression bonuses after level-up stat recalculation
     if (metaMults) {
@@ -242,6 +276,9 @@ export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = nul
       }
       if (metaMults.defMult > 1) {
         creature.defense = Math.max(1, Math.round(creature.defense * metaMults.defMult));
+      }
+      if (metaMults.dexMult > 1) {
+        creature.dex = Math.max(1, Math.round(creature.dex * metaMults.dexMult));
       }
     }
     if (creature.hp > 0) {
@@ -271,6 +308,7 @@ export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = nul
       maxHp: stats.maxHp,
       attack: stats.attack,
       defense: stats.defense,
+      dex: stats.dex,
       maxMp: stats.maxMp,
       hpGain: hpDiff,
       mpGain: mpDiff,

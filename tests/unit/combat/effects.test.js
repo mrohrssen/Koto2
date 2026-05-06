@@ -3,11 +3,12 @@ import assert from 'node:assert';
 import {
   tickEffects, applyPoison, applyHeal,
   applySleep, applyStun, applyConfuse,
-  applyHaste, applyShield, applyTeamShield, applyTaunt,
+  applyTaunt, applyCleanse,
   initStatStages, resetStatStages, applyStatChange, applyStatChanges, getStageMultiplier,
-  isIncapacitated, isConfused, hasHaste, consumeHaste,
-  getAttackMultiplier, getDefenseMultiplier, getDamageReduction, getTauntTarget, breakSleep,
-  applyTempAttackFlat, getFlatAttackBonus
+  isIncapacitated, isConfused,
+  getAttackMultiplier, getDefenseMultiplier, getDexMultiplier, getEffectiveDex,
+  computeCritChance, rollCritical, computeDexHitChance, rollDodge,
+  getTauntTarget, breakSleep
 } from '../../../src/game/combat/effects.js';
 
 describe('Combat Effects - Tick', () => {
@@ -31,12 +32,15 @@ describe('Combat Effects - Tick', () => {
     assert.strictEqual(creature.activeEffects.length, 0);
   });
 
-  it('does not reduce HP below 1 from poison', () => {
-    const creature = { id: 'test', nameEn: 'Test', hp: 3, maxHp: 100, activeEffects: [
+  it('can reduce HP to 0 from poison', () => {
+    const creature = { id: 'p', nameEn: 'Poisoned', hp: 5, maxHp: 100, activeEffects: [
       { type: 'poison', remainingTurns: 2, damagePerTurn: 10, sourceId: 'attacker' }
     ]};
-    tickEffects(creature);
-    assert.strictEqual(creature.hp, 1);
+    const events = tickEffects(creature);
+    assert.strictEqual(creature.hp, 0);
+    assert.strictEqual(events[0].damage, 5);
+    assert.strictEqual(events[0].targetDefeated, true);
+    assert.strictEqual(events[0].sourceId, 'attacker');
   });
 
   it('handles empty activeEffects array', () => {
@@ -142,19 +146,19 @@ describe('Combat Effects - Stat Stages', () => {
   it('initStatStages sets all stats to 0', () => {
     const creature = {};
     initStatStages(creature);
-    assert.deepStrictEqual(creature.statStages, { atk: 0, def: 0 });
+    assert.deepStrictEqual(creature.statStages, { atk: 0, def: 0, dex: 0 });
   });
 
   it('initStatStages does not overwrite existing stages', () => {
     const creature = { statStages: { atk: 3, def: -1 } };
     initStatStages(creature);
-    assert.deepStrictEqual(creature.statStages, { atk: 3, def: -1 });
+    assert.deepStrictEqual(creature.statStages, { atk: 3, def: -1, dex: 0 });
   });
 
   it('resetStatStages clears all stages to 0', () => {
     const creature = { statStages: { atk: 3, def: -2 } };
     resetStatStages(creature);
-    assert.deepStrictEqual(creature.statStages, { atk: 0, def: 0 });
+    assert.deepStrictEqual(creature.statStages, { atk: 0, def: 0, dex: 0 });
   });
 
   it('applyStatChange accumulates stages', () => {
@@ -249,42 +253,6 @@ describe('Combat Effects - Stat Stages', () => {
   });
 });
 
-describe('Combat Effects - Apply Haste', () => {
-  it('adds haste effect (no remainingTurns)', () => {
-    const target = { hp: 100, maxHp: 100, activeEffects: [] };
-    applyHaste(target, { sourceId: 'buffer-1' });
-    assert.strictEqual(target.activeEffects.length, 1);
-    assert.strictEqual(target.activeEffects[0].type, 'haste');
-    assert.strictEqual(target.activeEffects[0].remainingTurns, undefined);
-  });
-});
-
-describe('Combat Effects - Apply Shield', () => {
-  it('adds shield with percent damage reduction', () => {
-    const target = { hp: 100, maxHp: 100, activeEffects: [] };
-    applyShield(target, { percent: 50, duration: 2, sourceId: 'tank-1' });
-    assert.strictEqual(target.activeEffects.length, 1);
-    assert.strictEqual(target.activeEffects[0].type, 'shield');
-    assert.strictEqual(target.activeEffects[0].percent, 50);
-    assert.strictEqual(target.activeEffects[0].remainingTurns, 2);
-  });
-});
-
-describe('Combat Effects - Apply Team Shield', () => {
-  it('applies shield to all alive allies', () => {
-    const allies = [
-      { hp: 100, maxHp: 100, activeEffects: [] },
-      { hp: 80, maxHp: 100, activeEffects: [] },
-      { hp: 0, maxHp: 100, activeEffects: [] }  // KO'd
-    ];
-    applyTeamShield(allies, { percent: 40, duration: 2, sourceId: 'tank-1' });
-    assert.strictEqual(allies[0].activeEffects.length, 1);
-    assert.strictEqual(allies[0].activeEffects[0].type, 'team_shield');
-    assert.strictEqual(allies[1].activeEffects.length, 1);
-    assert.strictEqual(allies[2].activeEffects.length, 0, 'KOd ally should not get shield');
-  });
-});
-
 describe('Combat Effects - Apply Taunt', () => {
   it('adds taunt effect with 2-turn duration', () => {
     const target = { hp: 100, maxHp: 100, activeEffects: [] };
@@ -292,6 +260,26 @@ describe('Combat Effects - Apply Taunt', () => {
     assert.strictEqual(target.activeEffects.length, 1);
     assert.strictEqual(target.activeEffects[0].type, 'taunt');
     assert.strictEqual(target.activeEffects[0].remainingTurns, 2);
+  });
+});
+
+describe('Combat Effects - Apply Cleanse', () => {
+  it('removes negative status effects and keeps taunt', () => {
+    const target = {
+      activeEffects: [
+        { type: 'poison', remainingTurns: 2 },
+        { type: 'sleep', remainingTurns: 1 },
+        { type: 'stun', remainingTurns: 1 },
+        { type: 'confuse', remainingTurns: 2 },
+        { type: 'taunt', remainingTurns: 2 }
+      ],
+      statStages: { atk: -1, def: 2, dex: -2 }
+    };
+
+    applyCleanse(target);
+
+    assert.deepStrictEqual(target.activeEffects.map(e => e.type), ['taunt']);
+    assert.deepStrictEqual(target.statStages, { atk: -1, def: 2, dex: -2 });
   });
 });
 
@@ -324,39 +312,6 @@ describe('Combat Effects - Query Helpers', () => {
   it('isConfused returns false with no confuse', () => {
     const creature = { activeEffects: [] };
     assert.strictEqual(isConfused(creature), false);
-  });
-
-  it('hasHaste returns true when haste effect present', () => {
-    const creature = { activeEffects: [{ type: 'haste', sourceId: 'x' }] };
-    assert.strictEqual(hasHaste(creature), true);
-  });
-
-  it('consumeHaste removes the haste effect', () => {
-    const creature = { activeEffects: [{ type: 'haste', sourceId: 'x' }, { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'y' }] };
-    consumeHaste(creature);
-    assert.strictEqual(hasHaste(creature), false);
-    assert.strictEqual(creature.activeEffects.length, 1);
-  });
-
-  it('getDamageReduction returns 0 with no shields', () => {
-    const creature = { activeEffects: [] };
-    assert.strictEqual(getDamageReduction(creature), 0);
-  });
-
-  it('getDamageReduction combines shield and team_shield', () => {
-    const creature = { activeEffects: [
-      { type: 'shield', percent: 30, remainingTurns: 2 },
-      { type: 'team_shield', percent: 20, remainingTurns: 2 }
-    ]};
-    assert.strictEqual(getDamageReduction(creature), 50);
-  });
-
-  it('getDamageReduction caps at 90', () => {
-    const creature = { activeEffects: [
-      { type: 'shield', percent: 60, remainingTurns: 2 },
-      { type: 'team_shield', percent: 50, remainingTurns: 2 }
-    ]};
-    assert.strictEqual(getDamageReduction(creature), 90);
   });
 
   it('getTauntTarget returns taunting ally', () => {
@@ -396,6 +351,44 @@ describe('Combat Effects - breakSleep', () => {
   });
 });
 
+describe('Combat Effects - Dex Math', () => {
+  it('getDexMultiplier delegates to stage system', () => {
+    const creature = { dex: 20, statStages: { atk: 0, def: 0, dex: 1 } };
+    assert.strictEqual(getDexMultiplier(creature), 1.5);
+  });
+
+  it('getEffectiveDex applies dex stage multiplier', () => {
+    const creature = { dex: 20, statStages: { atk: 0, def: 0, dex: 1 } };
+    assert.strictEqual(getEffectiveDex(creature), 30);
+  });
+
+  it('computeCritChance clamps between 3% and 25%', () => {
+    assert.ok(computeCritChance({ dex: 1, statStages: { dex: -6 } }) >= 0.03);
+    assert.strictEqual(computeCritChance({ dex: 999, statStages: { dex: 6 } }), 0.25);
+  });
+
+  it('rollCritical returns roll result and chance', () => {
+    const result = rollCritical({ dex: 20, statStages: { dex: 0 } }, () => 0.01);
+    assert.strictEqual(result.critical, true);
+    assert.ok(result.critChance > 0.03);
+  });
+
+  it('computeDexHitChance caps defender dodge at 30%', () => {
+    const attacker = { statStages: { dex: -6 } };
+    const defender = { statStages: { dex: 6 } };
+    const result = computeDexHitChance(attacker, defender);
+    assert.strictEqual(result.hitChance, 0.70);
+    assert.strictEqual(result.dodgeChance, 0.30);
+  });
+
+  it('rollDodge marks a dodge when roll is inside dodge chance', () => {
+    const attacker = { statStages: { dex: -6 } };
+    const defender = { statStages: { dex: 6 } };
+    const result = rollDodge(attacker, defender, () => 0.29);
+    assert.strictEqual(result.dodged, true);
+  });
+});
+
 describe('Combat Effects - Tick expands to all types', () => {
   it('decrements sleep remainingTurns and removes when expired', () => {
     const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
@@ -407,79 +400,4 @@ describe('Combat Effects - Tick expands to all types', () => {
     assert.strictEqual(events[0].type, 'sleep_tick');
   });
 
-  it('does not tick haste (no remainingTurns)', () => {
-    const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
-      { type: 'haste', sourceId: 'x' }
-    ]};
-    tickEffects(creature);
-    assert.strictEqual(creature.activeEffects.length, 1, 'haste should persist through ticks');
-  });
-});
-
-describe('Combat Effects - Temp Attack Flat', () => {
-  it('adds temp_attack_flat effect to creature', () => {
-    const target = { hp: 100, maxHp: 100, activeEffects: [] };
-    applyTempAttackFlat(target, { value: 3, duration: 5, sourceId: 'miso' });
-    assert.strictEqual(target.activeEffects.length, 1);
-    assert.strictEqual(target.activeEffects[0].type, 'temp_attack_flat');
-    assert.strictEqual(target.activeEffects[0].value, 3);
-    assert.strictEqual(target.activeEffects[0].remainingTurns, 5);
-  });
-
-  it('stacks additively (two separate effects)', () => {
-    const target = { hp: 100, maxHp: 100, activeEffects: [] };
-    applyTempAttackFlat(target, { value: 3, duration: 5, sourceId: 'miso' });
-    applyTempAttackFlat(target, { value: 5, duration: 5, sourceId: 'takoyaki' });
-    assert.strictEqual(target.activeEffects.length, 2);
-  });
-
-  it('initializes activeEffects if missing', () => {
-    const target = { hp: 100, maxHp: 100 };
-    applyTempAttackFlat(target, { value: 3, duration: 5, sourceId: 'miso' });
-    assert.strictEqual(target.activeEffects.length, 1);
-  });
-});
-
-describe('Combat Effects - getFlatAttackBonus', () => {
-  it('returns 0 with no effects', () => {
-    assert.strictEqual(getFlatAttackBonus({ activeEffects: [] }), 0);
-  });
-
-  it('returns 0 when activeEffects is missing', () => {
-    assert.strictEqual(getFlatAttackBonus({}), 0);
-  });
-
-  it('sums multiple temp_attack_flat effects', () => {
-    const creature = { activeEffects: [
-      { type: 'temp_attack_flat', value: 3, remainingTurns: 5 },
-      { type: 'temp_attack_flat', value: 5, remainingTurns: 3 }
-    ]};
-    assert.strictEqual(getFlatAttackBonus(creature), 8);
-  });
-
-  it('ignores other effect types', () => {
-    const creature = { activeEffects: [
-      { type: 'temp_attack_flat', value: 3, remainingTurns: 5 },
-      { type: 'poison', damagePerTurn: 5, remainingTurns: 2, sourceId: 'x' }
-    ]};
-    assert.strictEqual(getFlatAttackBonus(creature), 3);
-  });
-});
-
-describe('Combat Effects - Tick temp_attack_flat', () => {
-  it('decrements remainingTurns each tick', () => {
-    const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
-      { type: 'temp_attack_flat', value: 3, remainingTurns: 3 }
-    ]};
-    tickEffects(creature);
-    assert.strictEqual(creature.activeEffects[0].remainingTurns, 2);
-  });
-
-  it('removes effect when remainingTurns hits 0', () => {
-    const creature = { id: 'r', nameEn: 'R', hp: 100, maxHp: 100, activeEffects: [
-      { type: 'temp_attack_flat', value: 3, remainingTurns: 1 }
-    ]};
-    tickEffects(creature);
-    assert.strictEqual(creature.activeEffects.length, 0);
-  });
 });

@@ -1,4 +1,4 @@
-import { applyStatChange, applyHeal, getDamageReduction, getStageMultiplier, breakSleep, initStatStages } from './effects.js';
+import { applyStatChange, applyHeal, getStageMultiplier, breakSleep, initStatStages } from './effects.js';
 import { getElementMultiplier } from '../creatures.js';
 import { PARTY_SKILLS_CATALOG } from '../party-skills.js';
 
@@ -309,10 +309,10 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
     }
   }
 
-  // ── Shared Vigor on buff/shield moves ──
+  // ── Shared Vigor on buff moves ──
   if (active.has('sharedVigor')) {
     for (const record of attacks) {
-      if (record.category !== 'buff' && record.category !== 'shield') continue;
+      if (record.category !== 'buff') continue;
       if (record.statChangesApplied) {
         for (const [stat, change] of Object.entries(record.statChangesApplied)) {
           if (change > 0) {
@@ -380,9 +380,8 @@ export function computeInlineCounter(record, allies, enemies, runPartySkills, co
 
   if (active.has('hardenedRiposte')) {
     initStatStages(defender);
-    const hasShield = getDamageReduction(defender) > 0;
     const hasDefStage = (defender.statStages?.def || 0) > 0;
-    if (hasShield || hasDefStage) {
+    if (hasDefStage) {
       counterDmg = Math.floor(counterDmg * 1.5);
     }
   }
@@ -698,21 +697,9 @@ export function countDebuffTypes(creature) {
 /** Count distinct buff types on a creature (positive stages + positive status effects). */
 export function countBuffTypes(creature) {
   let count = 0;
-  // Count positive stat stages
   if (creature.statStages) {
-    for (const val of Object.values(creature.statStages)) {
-      if (val > 0) count++;
-    }
-  }
-  // Count positive status effects
-  const buffTypes = ['shield', 'team_shield', 'haste'];
-  if (creature.activeEffects) {
-    const seen = new Set();
-    for (const e of creature.activeEffects) {
-      if (buffTypes.includes(e.type) && !seen.has(e.type)) {
-        seen.add(e.type);
-        count++;
-      }
+    for (const [stat, val] of Object.entries(creature.statStages)) {
+      if ((stat === 'atk' || stat === 'def' || stat === 'dex') && val > 0) count++;
     }
   }
   return count;

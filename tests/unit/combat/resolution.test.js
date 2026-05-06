@@ -96,7 +96,7 @@ describe('processKOSwaps', () => {
     const party = makeParty(allies, [reserve]);
     processKOSwaps(allies, party);
     // handleCreatureKO calls resetStatStages on the replacement
-    assert.deepEqual(reserve.statStages, { atk: 0, def: 0 });
+    assert.deepEqual(reserve.statStages, { atk: 0, def: 0, dex: 0 });
   });
 });
 
@@ -247,9 +247,9 @@ describe('exploration-service: room-entry clears combat buffs', () => {
     };
     const svc = new ExplorationService(gm);
     svc._clearCombatBuffsForRoomEntry();
-    assert.deepEqual(gm.run.creatureParty.active[0].statStages, { atk: 0, def: 0 });
+    assert.deepEqual(gm.run.creatureParty.active[0].statStages, { atk: 0, def: 0, dex: 0 });
     assert.deepEqual(gm.run.creatureParty.active[0].activeEffects, []);
-    assert.deepEqual(gm.run.creatureParty.reserves[0].statStages, { atk: 0, def: 0 });
+    assert.deepEqual(gm.run.creatureParty.reserves[0].statStages, { atk: 0, def: 0, dex: 0 });
   });
 
   it('_clearCombatBuffsForRoomEntry is a no-op without creatureParty', async () => {

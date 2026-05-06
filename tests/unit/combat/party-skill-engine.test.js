@@ -77,11 +77,11 @@ test('applyAfterEnemyAttacks returns empty array when no retaliation skill', () 
 
 test('countDebuffTypes counts negative stages and negative status effects', () => {
   const creature = {
-    statStages: { atk: -1, def: -2, spd: 0 },
+    statStages: { atk: -1, def: -2, dex: 0 },
     activeEffects: [
       { type: 'poison', remainingTurns: 2 },
       { type: 'confuse', remainingTurns: 1 },
-      { type: 'shield', remainingTurns: 3 }  // not a debuff
+      { type: 'taunt', remainingTurns: 3 }  // not a debuff
     ]
   };
   assert.equal(countDebuffTypes(creature), 4); // atk(-1) + def(-2) + poison + confuse
@@ -97,16 +97,12 @@ test('countDebuffTypes returns 0 for clean creature', () => {
 
 // ── countBuffTypes ──
 
-test('countBuffTypes counts positive stages and positive status effects', () => {
+test('countBuffTypes counts positive atk, def, and dex stages', () => {
   const creature = {
-    statStages: { atk: 2, def: 1, spd: -1 },
-    activeEffects: [
-      { type: 'haste', remainingTurns: 1 },
-      { type: 'shield', percent: 10, remainingTurns: 2 },
-      { type: 'poison', remainingTurns: 3 }  // not a buff
-    ]
+    statStages: { atk: 2, def: 1, dex: 1 },
+    activeEffects: [{ type: 'poison', remainingTurns: 3 }]
   };
-  assert.equal(countBuffTypes(creature), 4); // atk(+2) + def(+1) + haste + shield
+  assert.equal(countBuffTypes(creature), 3);
 });
 
 test('countBuffTypes returns 0 for debuffed creature', () => {
@@ -851,26 +847,6 @@ test('Hardened Riposte: +50% counter damage when defender has positive def stage
   assert.equal(result[0].damage, 15);
 });
 
-test('Hardened Riposte: +50% when defender has shield', () => {
-  const allies = [makeAlly({ id: 'a1', attack: 40, hp: 50, maxHp: 100 })];
-  allies[0].activeEffects = [{ type: 'shield', percent: 20, remainingTurns: 3 }];
-  const enemies = [makeEnemy({ id: 'e1', hp: 100, maxHp: 100 })];
-  const enemyAttacks = [{ targetIndex: 0, attackerIndex: 0, damage: 10 }];
-  const combat = makeCombat();
-
-  const result = withStubbedRandom(0.1, () => {
-    return applyAfterEnemyAttacks({
-      enemyAttacks, allies, enemies,
-      runPartySkills: ['retaliationStrike', 'hardenedRiposte'],
-      combat
-    });
-  });
-
-  assert.equal(result.length, 1);
-  // Base: floor(40 * 0.25) = 10, with riposte: floor(10 * 1.5) = 15
-  assert.equal(result[0].damage, 15);
-});
-
 // ── Fury Counter ──
 
 test('Fury Counter: each counter increments stack count (max 10) and damage increases', () => {
@@ -1078,10 +1054,10 @@ test('Momentum does not affect 0 stages', () => {
 
 test('Overflow Vitality: 3+ buff types triggers 8% max HP regen', () => {
   const allies = [makeAlly({ id: 'a1', hp: 50, maxHp: 100 })];
-  // 3 buff types: atk +1, def +1, shield
+  // 3 buff types: atk +1, def +1, dex +1
   allies[0].statStages.atk = 1;
   allies[0].statStages.def = 1;
-  allies[0].activeEffects = [{ type: 'shield', percent: 10, remainingTurns: 3 }];
+  allies[0].statStages.dex = 1;
   const enemies = [makeEnemy()];
   const combat = makeCombat();
 
@@ -1160,10 +1136,10 @@ test('Radiant Aura: +15% team damage when 1 creature at 3+ buff types', () => {
     makeAlly({ id: 'a1' }),
     makeAlly({ id: 'a2' })
   ];
-  // Give a1 exactly 3 buff types: atk +1, def +1, haste
+  // Give a1 exactly 3 buff types: atk +1, def +1, dex +1
   allies[0].statStages.atk = 1;
   allies[0].statStages.def = 1;
-  allies[0].activeEffects = [{ type: 'haste', remainingTurns: 1 }];
+  allies[0].statStages.dex = 1;
   // a2 has no buffs
   const enemies = [makeEnemy({ id: 'e1', hp: 200, maxHp: 200 })];
   const attacks = [makeDmgRecord({ attackerIndex: 1, targetIndex: 0, damage: 100 })];
@@ -1191,7 +1167,7 @@ test('Radiant Aura: +30% when 2+ creatures at 3+ buff types', () => {
   for (const ally of allies) {
     ally.statStages.atk = 1;
     ally.statStages.def = 1;
-    ally.activeEffects = [{ type: 'haste', remainingTurns: 1 }];
+    ally.statStages.dex = 1;
   }
   const enemies = [makeEnemy({ id: 'e1', hp: 200, maxHp: 200 })];
   const attacks = [makeDmgRecord({ attackerIndex: 0, targetIndex: 0, damage: 100 })];
@@ -1212,26 +1188,20 @@ test('Radiant Aura: +30% when 2+ creatures at 3+ buff types', () => {
 
 // ── countBuffTypes / countDebuffTypes additional coverage ──
 
-test('countBuffTypes correctly counts positive stages + haste + shield', () => {
+test('countBuffTypes correctly counts positive atk, def, and dex stages', () => {
   const creature = {
-    statStages: { atk: 3, def: 0 },
-    activeEffects: [
-      { type: 'shield', percent: 10, remainingTurns: 2 },
-      { type: 'haste', remainingTurns: 1 }
-    ]
+    statStages: { atk: 3, def: 1, dex: 2 },
+    activeEffects: []
   };
-  // atk(+3) + shield + haste = 3
   assert.equal(countBuffTypes(creature), 3);
 });
 
-test('countBuffTypes counts team_shield as a buff', () => {
+test('countBuffTypes ignores positive status effects', () => {
   const creature = {
     statStages: { atk: 0, def: 0 },
-    activeEffects: [
-      { type: 'team_shield', percent: 15, remainingTurns: 2 }
-    ]
+    activeEffects: [{ type: 'taunt', remainingTurns: 2 }]
   };
-  assert.equal(countBuffTypes(creature), 1);
+  assert.equal(countBuffTypes(creature), 0);
 });
 
 test('countDebuffTypes correctly counts negative stages + poison + confuse + stun + sleep', () => {
@@ -1251,10 +1221,7 @@ test('countDebuffTypes correctly counts negative stages + poison + confuse + stu
 test('countDebuffTypes does not count positive effects as debuffs', () => {
   const creature = {
     statStages: { atk: 2, def: 1 },
-    activeEffects: [
-      { type: 'shield', percent: 10, remainingTurns: 2 },
-      { type: 'haste', remainingTurns: 1 }
-    ]
+    activeEffects: [{ type: 'taunt', remainingTurns: 1 }]
   };
   assert.equal(countDebuffTypes(creature), 0);
 });
@@ -1291,15 +1258,14 @@ test('Shared Vigor triggers on buff move stat changes', () => {
   assert.equal(allies[1].statStages.atk, 1, 'Shared Vigor should spread buff to another ally');
 });
 
-test('Shared Vigor triggers on shield move stat changes', () => {
+test('Shared Vigor triggers on buff move def stat changes', () => {
   const allies = [
     makeAlly({ id: 'a1', hp: 80, maxHp: 100 }),
     makeAlly({ id: 'a2', hp: 80, maxHp: 100 })
   ];
   const enemies = [makeEnemy({ id: 'e1', hp: 100, maxHp: 100 })];
-  // A shield-category record with def +1
   const attacks = [{
-    attackerIndex: 0, category: 'shield', damage: 0, elementMultiplier: 1.0,
+    attackerIndex: 0, category: 'buff', damage: 0, elementMultiplier: 1.0,
     targetIndex: 0, targetDefeated: false, partySkillProcs: [],
     statChangesApplied: { def: 1 }, effectApplied: null
   }];
@@ -1314,7 +1280,7 @@ test('Shared Vigor triggers on shield move stat changes', () => {
     });
   });
 
-  assert.equal(allies[1].statStages.def, 1, 'Shared Vigor should spread shield buff to another ally');
+  assert.equal(allies[1].statStages.def, 1, 'Shared Vigor should spread def buff to another ally');
 });
 
 test('Shared Vigor does NOT trigger on buff moves without positive stat changes', () => {
@@ -1323,11 +1289,11 @@ test('Shared Vigor does NOT trigger on buff moves without positive stat changes'
     makeAlly({ id: 'a2', hp: 80, maxHp: 100 })
   ];
   const enemies = [makeEnemy({ id: 'e1', hp: 100, maxHp: 100 })];
-  // A buff-category record with no stat changes (e.g., status-only buff like haste)
+  // A buff-category record with no stat changes.
   const attacks = [{
     attackerIndex: 0, category: 'buff', damage: 0, elementMultiplier: 1.0,
     targetIndex: 0, targetDefeated: false, partySkillProcs: [],
-    statChangesApplied: null, effectApplied: 'haste'
+    statChangesApplied: null, effectApplied: null
   }];
   const combat = makeCombat();
 

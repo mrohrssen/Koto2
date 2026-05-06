@@ -134,7 +134,7 @@ export class ExplorationService {
     const reserves = Array.isArray(party.reserves) ? party.reserves : [];
     for (const creature of [...active, ...reserves]) {
       if (!creature) continue;
-      creature.statStages = { atk: 0, def: 0 };
+      creature.statStages = { atk: 0, def: 0, dex: 0 };
       creature.activeEffects = [];
     }
   }

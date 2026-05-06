@@ -229,25 +229,7 @@ describe('Item Buffs - XP Items', () => {
   });
 });
 
-describe('Item Buffs - Temp Boost', () => {
-  it('tempBoost applies temp_attack_flat effect to target creature', () => {
-    const r1 = mockCreature();
-    r1.activeEffects = [];
-    const r2 = mockCreature();
-    r2.activeEffects = [];
-    const party = { active: [r1, r2], reserves: [] };
-    const item = {
-      type: 'boost',
-      effect: { tempBoost: { field: 'attack', value: 3, turns: 5, target: 'single' } }
-    };
-    applyItem(item, party, null, 0);
-    assert.strictEqual(r1.activeEffects.length, 1);
-    assert.strictEqual(r1.activeEffects[0].type, 'temp_attack_flat');
-    assert.strictEqual(r1.activeEffects[0].value, 3);
-    assert.strictEqual(r1.activeEffects[0].remainingTurns, 5);
-    assert.strictEqual(r2.activeEffects.length, 0); // not targeted
-  });
-
+describe('Item Buffs - Deprecated Temp Boost', () => {
   it('tempBoost does not permanently change creature.attack', () => {
     const r1 = mockCreature();
     r1.attack = 10;
