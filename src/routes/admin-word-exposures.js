@@ -105,7 +105,8 @@ export function buildOverlayOwners(overlayDir) {
       const raw = JSON.parse(readFileSync(p, 'utf-8'));
       const entries = Array.isArray(raw) ? raw : Object.values(raw);
       for (const entry of entries) {
-        if (entry?.baseWord) owners.set(entry.baseWord, file);
+        const word = entry?.name || entry?.baseWord;
+        if (word) owners.set(word, file);
       }
     } catch { /* skip malformed */ }
   }

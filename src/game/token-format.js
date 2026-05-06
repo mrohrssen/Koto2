@@ -5,9 +5,9 @@ import { enrichTokens } from './enrich-tokens.js';
  * Entities use different field names; this normalises them.
  */
 export function entityToToken(entity) {
-  const surface = entity.word || entity.baseWord || entity.name;
+  const surface = entity.word || entity.name || entity.baseWord;
   const reading = entity.reading || entity.baseReading;
-  const meaning = entity.nameEn || entity.baseMeaning || entity.meaning;
+  const meaning = entity.meaning || entity.nameEn || entity.baseMeaning;
   return { surface, base: surface, reading, meaning, entity: true };
 }
 

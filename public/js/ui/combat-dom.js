@@ -7,7 +7,7 @@ import { getHpColor } from './combat-ui-utils.js';
 
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
 function creatureNameRuby(creature) {
-  const reading = creature.baseReading || creature.name || '';
+  const reading = creature.reading || creature.baseReading || creature.name || '';
   return `<ruby>${reading}<rt>${toRomaji(reading)}</rt></ruby>`;
 }
 
@@ -136,7 +136,7 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     // Name column: romaji on top, hiragana below
     const nameCol = document.createElement('div');
     nameCol.className = 'formation-name-col';
-    const reading = creature.baseReading || creature.name || '';
+    const reading = creature.reading || creature.baseReading || creature.name || '';
     const romajiEl = document.createElement('div');
     romajiEl.className = 'formation-romaji';
     romajiEl.textContent = toRomaji(reading);

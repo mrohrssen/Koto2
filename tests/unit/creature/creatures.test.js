@@ -152,9 +152,9 @@ describe('Creature Instantiation', () => {
 
     assert.strictEqual(creature.name, '火の猫');
     assert.strictEqual(creature.nameEn, 'Fire Cat');
-    assert.strictEqual(creature.baseWord, '火の猫');
-    assert.strictEqual(creature.baseReading, 'ひのねこ');
-    assert.strictEqual(creature.baseMeaning, 'fire cat (phrase: 火 fire + の + 猫 cat)');
+    assert.strictEqual(creature.reading, 'ひのねこ');
+    assert.strictEqual(creature.meaning, 'fire cat (phrase: 火 fire + の + 猫 cat)');
+    assert.strictEqual(creature.rank, null);
   });
 
   it('instantiates Stone Giant as an uncommon tank boss creature', () => {
@@ -166,9 +166,9 @@ describe('Creature Instantiation', () => {
     assert.strictEqual(creature.element, 'earth');
     assert.strictEqual(creature.rarity, 'uncommon');
     assert.strictEqual(creature.archetype, 'Tank/Healer');
-    assert.strictEqual(creature.baseWord, '巨人');
-    assert.strictEqual(creature.baseReading, 'きょじん');
-    assert.strictEqual(creature.baseMeaning, 'giant / great man');
+    assert.strictEqual(creature.reading, 'きょじん');
+    assert.strictEqual(creature.meaning, 'giant / great man');
+    assert.strictEqual(creature.rank, 4900);
 
     // Uncommon multiplier 1.1 is applied to base templates before level scaling.
     // Level 10 scaling is 1.9x.
@@ -200,9 +200,14 @@ describe('Creature Instantiation', () => {
     }
   });
 
-  it('includes baseReading from template', () => {
+  it('includes name-centric vocabulary fields from template', () => {
     const creature = instantiateCreature('mizu');
-    assert.strictEqual(creature.baseReading, '\u307F\u305A');
+    assert.strictEqual(creature.reading, '\u307F\u305A');
+    assert.strictEqual(creature.meaning, 'water');
+    assert.strictEqual(creature.rank, 479);
+    assert.ok(!('baseWord' in creature));
+    assert.ok(!('baseReading' in creature));
+    assert.ok(!('baseMeaning' in creature));
   });
 });
 

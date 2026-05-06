@@ -706,9 +706,9 @@ export default function createRunRoutes({
       const creaturePool = filteredCreatures.map(c => ({
         id: c.id,
         type: 'creature',
-        word: c.baseWord,
-        reading: c.baseReading,
-        meaning: c.baseMeaning,
+        word: c.name,
+        reading: c.reading || c.baseReading || c.name,
+        meaning: c.meaning || c.baseMeaning || c.nameEn,
         element: c.element || '',
         sprite: `/assets/sprites/creatures/${c.id}.webp?v=${SPRITE_VERSION}`
       }));

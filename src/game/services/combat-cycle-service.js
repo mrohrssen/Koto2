@@ -573,9 +573,8 @@ export class CombatCycleService {
             nameEn: fullNpc.nameEn,
             attack: fullNpc.attack || 10,
             element: fullNpc.element || 'neutral',
-            baseWord: fullNpc.baseWord || '',
-            baseReading: fullNpc.baseReading || '',
-            baseMeaning: fullNpc.baseMeaning || ''
+            reading: fullNpc.reading || fullNpc.baseReading || '',
+            meaning: fullNpc.meaning || fullNpc.baseMeaning || fullNpc.nameEn || ''
           };
           const skillResult = executeNpcSkill(npcCombat, skill, this.gm.combat.allies, this.gm.combat.enemies);
           npcSkillAttacks = skillResult.attacks;

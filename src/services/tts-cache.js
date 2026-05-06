@@ -129,7 +129,8 @@ export function loadGameWords(dataDir) {
   if (existsSync(creaturesPath)) {
     const creatures = JSON.parse(readFileSync(creaturesPath, 'utf-8'));
     for (const c of creatures) {
-      if (c.baseWord) words.set(c.baseWord, `creature-base:${c.id}`);
+      const word = c.name || c.baseWord;
+      if (word) words.set(word, `creature:${c.id}`);
       if (c.modifier?.word) words.set(c.modifier.word, `creature-mod:${c.id}`);
     }
   }

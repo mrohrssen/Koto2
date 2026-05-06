@@ -1033,8 +1033,9 @@ function showCollectionSelect(catalog, collection) {
 
     // Build full display name: "Kamedor the Ancient Turtle"
     function fullName(r) {
-      if (r.modifier && r.baseMeaning) {
-        return `${r.nameEn} the ${r.modifier.meaning} ${r.baseMeaning.charAt(0).toUpperCase() + r.baseMeaning.slice(1)}`;
+      const meaning = r.meaning || r.baseMeaning;
+      if (r.modifier && meaning) {
+        return `${r.nameEn} the ${r.modifier.meaning} ${meaning.charAt(0).toUpperCase() + meaning.slice(1)}`;
       }
       return r.nameEn;
     }

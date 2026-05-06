@@ -6,7 +6,7 @@ import assert from 'node:assert';
 // static imports inside it (e.g. tts.js with top-level localStorage) are intercepted.
 await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: {
-    renderJpSentence: (tokens) => tokens.map(t => [t.reading, t.nameEn].filter(Boolean).join(' ')).join(' '),
+    renderJpSentence: (tokens) => tokens.map(t => [t.reading, t.meaning || t.nameEn].filter(Boolean).join(' ')).join(' '),
     getKnownWords: () => new Set(),
     entityToToken: (x) => x,
   }
@@ -148,9 +148,9 @@ const SAMPLE_ATTACK = {
   attackerName: 'Fire',
   attackerNameJp: '火',
   attackerElement: 'fire',
-  attackerBaseWord: '火',
-  attackerBaseReading: 'ひ',
-  attackerBaseMeaning: 'fire',
+  attackerWord: '火',
+  attackerReading: 'ひ',
+  attackerMeaning: 'fire',
   attackerSkillName: '炎',
   attackerSkillReading: 'ほのお',
   attackerSkillEn: 'flame',
@@ -158,9 +158,9 @@ const SAMPLE_ATTACK = {
   targetId: 'ki',
   targetName: 'Tree',
   targetNameJp: '木',
-  targetBaseWord: '木',
-  targetBaseReading: 'き',
-  targetBaseMeaning: 'tree',
+  targetWord: '木',
+  targetReading: 'き',
+  targetMeaning: 'tree',
   targetElement: 'wood',
 };
 

@@ -1013,27 +1013,27 @@ describe('executeNpcSkill — single_ally random target', () => {
 });
 
 describe('Attack record — target reading/meaning', () => {
-  it('player move record exposes targetBaseReading and targetBaseMeaning', () => {
+  it('player move record exposes target reading and meaning', () => {
     const allies = [instantiateCreature('hi')];
     const enemies = [instantiateCreature('ki')];
     const result = processMoveTurn(allies, enemies, [
       { creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }
     ]);
     const rec = result.attacks[0];
-    assert.strictEqual(rec.targetBaseWord, '木');
-    assert.strictEqual(rec.targetBaseReading, 'き');
-    assert.strictEqual(rec.targetBaseMeaning, 'tree / wood');
+    assert.strictEqual(rec.targetWord, '木');
+    assert.strictEqual(rec.targetReading, 'き');
+    assert.strictEqual(rec.targetMeaning, 'tree / wood');
   });
 
-  it('enemy attack record exposes targetBaseReading and targetBaseMeaning', () => {
+  it('enemy attack record exposes target reading and meaning', () => {
     const allies = [instantiateCreature('hi')];
     const enemies = [instantiateCreature('ki')];
     // Force enemy to act
     const result = processEnemyTurn(enemies, allies);
     const rec = result.attacks[0];
-    assert.strictEqual(rec.targetBaseWord, '火');
-    assert.strictEqual(rec.targetBaseReading, 'ひ');
-    assert.strictEqual(rec.targetBaseMeaning, 'fire');
+    assert.strictEqual(rec.targetWord, '火');
+    assert.strictEqual(rec.targetReading, 'ひ');
+    assert.strictEqual(rec.targetMeaning, 'fire');
   });
 });
 
@@ -1186,6 +1186,6 @@ describe('Creature Combat - Rest action in processMoveTurn', () => {
     assert.ok(atk.mpGained > 0, 'mpGained should be positive when not full');
     assert.equal(atk.attackerMp, 40, '20 + ceil(100*0.20)');
     assert.equal(atk.attackerMaxMp, 100);
-    assert.ok(typeof atk.attackerBaseWord === 'string' && atk.attackerBaseWord.length > 0);
+    assert.ok(typeof atk.attackerWord === 'string' && atk.attackerWord.length > 0);
   });
 });

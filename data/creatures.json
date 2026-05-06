@@ -754,5 +754,1929 @@
     ],
     "stage": 1,
     "createdAt": "2026-04-07"
+  },
+  {
+    "id": "hikari",
+    "name": "光",
+    "nameEn": "Light",
+    "reading": "ひかり",
+    "meaning": "light",
+    "rank": 600,
+    "element": "metal",
+    "rarity": "common",
+    "baseHp": 44,
+    "baseAttack": 16,
+    "baseMp": 65,
+    "baseDefense": 4,
+    "baseDex": 6,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "ateru",
+        "level": 1
+      },
+      {
+        "moveId": "hirameku",
+        "level": 5
+      },
+      {
+        "moveId": "kizamu",
+        "level": 10
+      },
+      {
+        "moveId": "hikaru",
+        "level": 16
+      },
+      {
+        "moveId": "terasu",
+        "level": 24
+      },
+      {
+        "moveId": "tatsu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "tsuki",
+    "name": "月",
+    "nameEn": "Moon",
+    "reading": "つき",
+    "meaning": "moon; month",
+    "rank": 1100,
+    "element": "metal",
+    "rarity": "common",
+    "baseHp": 46,
+    "baseAttack": 16,
+    "baseMp": 64,
+    "baseDefense": 4,
+    "baseDex": 5,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsuku",
+        "level": 1
+      },
+      {
+        "moveId": "yuragu",
+        "level": 7
+      },
+      {
+        "moveId": "utau",
+        "level": 16
+      },
+      {
+        "moveId": "shizumu",
+        "level": 28
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kage",
+    "name": "影",
+    "nameEn": "Shadow",
+    "reading": "かげ",
+    "meaning": "shadow; silhouette",
+    "rank": 1400,
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 44,
+    "baseAttack": 18,
+    "baseMp": 60,
+    "baseDefense": 4,
+    "baseDex": 9,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kasumeru",
+        "level": 1
+      },
+      {
+        "moveId": "shizumu",
+        "level": 6
+      },
+      {
+        "moveId": "mawarikomu",
+        "level": 12
+      },
+      {
+        "moveId": "norou",
+        "level": 20
+      },
+      {
+        "moveId": "tojikomeru",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "hoshi",
+    "name": "星",
+    "nameEn": "Star",
+    "reading": "ほし",
+    "meaning": "star; heavenly body",
+    "rank": 1500,
+    "element": "metal",
+    "rarity": "common",
+    "baseHp": 42,
+    "baseAttack": 17,
+    "baseMp": 66,
+    "baseDefense": 3,
+    "baseDex": 7,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsuku",
+        "level": 1
+      },
+      {
+        "moveId": "utsu_shoot",
+        "level": 6
+      },
+      {
+        "moveId": "nerau",
+        "level": 12
+      },
+      {
+        "moveId": "tsukinukeru",
+        "level": 20
+      },
+      {
+        "moveId": "terasu",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "uma",
+    "name": "馬",
+    "nameEn": "Horse",
+    "reading": "うま",
+    "meaning": "horse",
+    "rank": 1600,
+    "element": "earth",
+    "rarity": "common",
+    "baseHp": 58,
+    "baseAttack": 21,
+    "baseMp": 45,
+    "baseDefense": 5,
+    "baseDex": 7,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "keru",
+        "level": 1
+      },
+      {
+        "moveId": "butsukeru",
+        "level": 6
+      },
+      {
+        "moveId": "hashiru",
+        "level": 12
+      },
+      {
+        "moveId": "kakeru",
+        "level": 20
+      },
+      {
+        "moveId": "fumitsukeru",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "yuki",
+    "name": "雪",
+    "nameEn": "Snow",
+    "reading": "ゆき",
+    "meaning": "snow; snowfall",
+    "rank": 1800,
+    "element": "water",
+    "rarity": "common",
+    "baseHp": 48,
+    "baseAttack": 16,
+    "baseMp": 62,
+    "baseDefense": 4,
+    "baseDex": 5,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tokeru",
+        "level": 1
+      },
+      {
+        "moveId": "kooritsuku",
+        "level": 7
+      },
+      {
+        "moveId": "furueru",
+        "level": 16
+      },
+      {
+        "moveId": "furisosogu",
+        "level": 28
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "oni",
+    "name": "鬼",
+    "nameEn": "Oni",
+    "reading": "おに",
+    "meaning": "ogre; demon; oni",
+    "rank": 2000,
+    "element": "fire",
+    "rarity": "rare",
+    "baseHp": 72,
+    "baseAttack": 24,
+    "baseMp": 42,
+    "baseDefense": 7,
+    "baseDex": 4,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "naguru",
+        "level": 1
+      },
+      {
+        "moveId": "bunnaguru",
+        "level": 5
+      },
+      {
+        "moveId": "kogeru",
+        "level": 10
+      },
+      {
+        "moveId": "tatakitsukeru",
+        "level": 16
+      },
+      {
+        "moveId": "abareru",
+        "level": 24
+      },
+      {
+        "moveId": "tatakau",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kumo",
+    "name": "雲",
+    "nameEn": "Cloud",
+    "reading": "くも",
+    "meaning": "cloud",
+    "rank": 2200,
+    "element": "water",
+    "rarity": "common",
+    "baseHp": 40,
+    "baseAttack": 15,
+    "baseMp": 66,
+    "baseDefense": 3,
+    "baseDex": 7,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "haneru",
+        "level": 1
+      },
+      {
+        "moveId": "ukabu",
+        "level": 6
+      },
+      {
+        "moveId": "fuku",
+        "level": 12
+      },
+      {
+        "moveId": "tsutsumikomu",
+        "level": 20
+      },
+      {
+        "moveId": "abiru",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "ryuu",
+    "name": "竜",
+    "nameEn": "Dragon",
+    "reading": "りゅう",
+    "meaning": "dragon",
+    "rank": 3300,
+    "element": "fire",
+    "rarity": "legendary",
+    "baseHp": 82,
+    "baseAttack": 26,
+    "baseMp": 58,
+    "baseDefense": 7,
+    "baseDex": 6,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "moyasu",
+        "level": 1
+      },
+      {
+        "moveId": "futtobasu",
+        "level": 5
+      },
+      {
+        "moveId": "fuku_erupt",
+        "level": 10
+      },
+      {
+        "moveId": "moesakaru",
+        "level": 16
+      },
+      {
+        "moveId": "horobosu",
+        "level": 24
+      },
+      {
+        "moveId": "todomewosasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kaminari",
+    "name": "雷",
+    "nameEn": "Thunder",
+    "reading": "かみなり",
+    "meaning": "lightning; thunder",
+    "rank": 3600,
+    "element": "metal",
+    "rarity": "uncommon",
+    "baseHp": 44,
+    "baseAttack": 19,
+    "baseMp": 64,
+    "baseDefense": 4,
+    "baseDex": 8,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "hirameku",
+        "level": 1
+      },
+      {
+        "moveId": "utsu_shoot",
+        "level": 5
+      },
+      {
+        "moveId": "nerau",
+        "level": 10
+      },
+      {
+        "moveId": "terasu",
+        "level": 16
+      },
+      {
+        "moveId": "kuridasu",
+        "level": 24
+      },
+      {
+        "moveId": "todoroku",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "hebi",
+    "name": "蛇",
+    "nameEn": "Snake",
+    "reading": "へび",
+    "meaning": "snake; serpent",
+    "rank": 3600,
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 46,
+    "baseAttack": 18,
+    "baseMp": 55,
+    "baseDefense": 4,
+    "baseDex": 9,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "haku",
+        "level": 1
+      },
+      {
+        "moveId": "hakidasu",
+        "level": 5
+      },
+      {
+        "moveId": "shimeru",
+        "level": 10
+      },
+      {
+        "moveId": "matsuwaru",
+        "level": 16
+      },
+      {
+        "moveId": "kuikomu",
+        "level": 24
+      },
+      {
+        "moveId": "norou",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "yuurei",
+    "name": "幽霊",
+    "nameEn": "Ghost",
+    "reading": "ゆうれい",
+    "meaning": "ghost; apparition",
+    "rank": 3600,
+    "element": "water",
+    "rarity": "rare",
+    "baseHp": 42,
+    "baseAttack": 17,
+    "baseMp": 68,
+    "baseDefense": 3,
+    "baseDex": 9,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "hineru",
+        "level": 1
+      },
+      {
+        "moveId": "norou",
+        "level": 5
+      },
+      {
+        "moveId": "tojikomeru",
+        "level": 10
+      },
+      {
+        "moveId": "keshisaru",
+        "level": 16
+      },
+      {
+        "moveId": "nogareru",
+        "level": 24
+      },
+      {
+        "moveId": "shizumu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "ookami",
+    "name": "狼",
+    "nameEn": "Wolf",
+    "reading": "おおかみ",
+    "meaning": "wolf",
+    "rank": 3700,
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 56,
+    "baseAttack": 22,
+    "baseMp": 45,
+    "baseDefense": 5,
+    "baseDex": 8,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kamu",
+        "level": 1
+      },
+      {
+        "moveId": "osoikakaru",
+        "level": 5
+      },
+      {
+        "moveId": "oikakeru",
+        "level": 10
+      },
+      {
+        "moveId": "unaru",
+        "level": 16
+      },
+      {
+        "moveId": "sakebu",
+        "level": 24
+      },
+      {
+        "moveId": "hikisaku",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "ushi",
+    "name": "牛",
+    "nameEn": "Cow",
+    "reading": "うし",
+    "meaning": "cattle; cow; bull; ox",
+    "rank": 4400,
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 82,
+    "baseAttack": 16,
+    "baseMp": 48,
+    "baseDefense": 8,
+    "baseDex": 3,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "fumu",
+        "level": 1
+      },
+      {
+        "moveId": "osaetsukeru",
+        "level": 5
+      },
+      {
+        "moveId": "funbaru",
+        "level": 10
+      },
+      {
+        "moveId": "idomu",
+        "level": 16
+      },
+      {
+        "moveId": "kabau",
+        "level": 24
+      },
+      {
+        "moveId": "iyasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kuma",
+    "name": "熊",
+    "nameEn": "Bear",
+    "reading": "くま",
+    "meaning": "bear",
+    "rank": 4700,
+    "element": "earth",
+    "rarity": "rare",
+    "baseHp": 88,
+    "baseAttack": 22,
+    "baseMp": 42,
+    "baseDefense": 8,
+    "baseDex": 3,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kajiru",
+        "level": 1
+      },
+      {
+        "moveId": "kudaku",
+        "level": 5
+      },
+      {
+        "moveId": "oshitsubusu",
+        "level": 10
+      },
+      {
+        "moveId": "funbaru",
+        "level": 16
+      },
+      {
+        "moveId": "migamaeru",
+        "level": 24
+      },
+      {
+        "moveId": "tatakitsubusu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "saru",
+    "name": "猿",
+    "nameEn": "Monkey",
+    "reading": "さる",
+    "meaning": "monkey; ape",
+    "rank": 5200,
+    "element": "wood",
+    "rarity": "uncommon",
+    "baseHp": 50,
+    "baseAttack": 18,
+    "baseMp": 55,
+    "baseDefense": 4,
+    "baseDex": 8,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "nageru",
+        "level": 1
+      },
+      {
+        "moveId": "houru",
+        "level": 5
+      },
+      {
+        "moveId": "kaku_scratch",
+        "level": 10
+      },
+      {
+        "moveId": "donaru",
+        "level": 16
+      },
+      {
+        "moveId": "oitsumeru",
+        "level": 24
+      },
+      {
+        "moveId": "kawasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "buta",
+    "name": "豚",
+    "nameEn": "Pig",
+    "reading": "ぶた",
+    "meaning": "pig",
+    "rank": 5500,
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 78,
+    "baseAttack": 17,
+    "baseMp": 45,
+    "baseDefense": 7,
+    "baseDex": 3,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "fumu",
+        "level": 1
+      },
+      {
+        "moveId": "korogasu",
+        "level": 5
+      },
+      {
+        "moveId": "suikomu",
+        "level": 10
+      },
+      {
+        "moveId": "nigirishimeru",
+        "level": 16
+      },
+      {
+        "moveId": "funbaru",
+        "level": 24
+      },
+      {
+        "moveId": "tsubusu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "tora",
+    "name": "虎",
+    "nameEn": "Tiger",
+    "reading": "とら",
+    "meaning": "tiger",
+    "rank": 5600,
+    "element": "fire",
+    "rarity": "rare",
+    "baseHp": 62,
+    "baseAttack": 24,
+    "baseMp": 44,
+    "baseDefense": 5,
+    "baseDex": 8,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kaku_scratch",
+        "level": 1
+      },
+      {
+        "moveId": "saku",
+        "level": 5
+      },
+      {
+        "moveId": "hikisaku",
+        "level": 10
+      },
+      {
+        "moveId": "osoikakaru",
+        "level": 16
+      },
+      {
+        "moveId": "kirisaku",
+        "level": 24
+      },
+      {
+        "moveId": "tachikiru",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "shika",
+    "name": "鹿",
+    "nameEn": "Deer",
+    "reading": "しか",
+    "meaning": "deer",
+    "rank": 6600,
+    "element": "wood",
+    "rarity": "uncommon",
+    "baseHp": 54,
+    "baseAttack": 19,
+    "baseMp": 50,
+    "baseDefense": 5,
+    "baseDex": 8,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsukidasu",
+        "level": 1
+      },
+      {
+        "moveId": "tsukisasu",
+        "level": 5
+      },
+      {
+        "moveId": "tobioriru",
+        "level": 10
+      },
+      {
+        "moveId": "hashiru",
+        "level": 16
+      },
+      {
+        "moveId": "tsukkomu",
+        "level": 24
+      },
+      {
+        "moveId": "tsuranuku",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "yousei",
+    "name": "妖精",
+    "nameEn": "Fairy",
+    "reading": "ようせい",
+    "meaning": "fairy; sprite; elf",
+    "rank": 8300,
+    "element": "wood",
+    "rarity": "rare",
+    "baseHp": 40,
+    "baseAttack": 17,
+    "baseMp": 72,
+    "baseDefense": 3,
+    "baseDex": 9,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kaku_scratch",
+        "level": 1
+      },
+      {
+        "moveId": "utau",
+        "level": 5
+      },
+      {
+        "moveId": "chirasu",
+        "level": 10
+      },
+      {
+        "moveId": "hikaru",
+        "level": 16
+      },
+      {
+        "moveId": "iyasu",
+        "level": 24
+      },
+      {
+        "moveId": "yobidasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kitsune",
+    "name": "狐",
+    "nameEn": "Fox",
+    "reading": "きつね",
+    "meaning": "fox",
+    "rank": 8600,
+    "element": "fire",
+    "rarity": "rare",
+    "baseHp": 44,
+    "baseAttack": 19,
+    "baseMp": 60,
+    "baseDefense": 4,
+    "baseDex": 9,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kogasu",
+        "level": 1
+      },
+      {
+        "moveId": "kasumeru",
+        "level": 5
+      },
+      {
+        "moveId": "yaku",
+        "level": 10
+      },
+      {
+        "moveId": "niramu",
+        "level": 16
+      },
+      {
+        "moveId": "furikiru",
+        "level": 24
+      },
+      {
+        "moveId": "keshisaru",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "hitsuji",
+    "name": "羊",
+    "nameEn": "Sheep",
+    "reading": "ひつじ",
+    "meaning": "sheep",
+    "rank": 8700,
+    "element": "wood",
+    "rarity": "uncommon",
+    "baseHp": 76,
+    "baseAttack": 14,
+    "baseMp": 58,
+    "baseDefense": 7,
+    "baseDex": 3,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kajiru",
+        "level": 1
+      },
+      {
+        "moveId": "musubu",
+        "level": 5
+      },
+      {
+        "moveId": "oou",
+        "level": 10
+      },
+      {
+        "moveId": "migamaeru",
+        "level": 16
+      },
+      {
+        "moveId": "arau",
+        "level": 24
+      },
+      {
+        "moveId": "iyasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kame",
+    "name": "亀",
+    "nameEn": "Turtle",
+    "reading": "かめ",
+    "meaning": "tortoise; turtle",
+    "rank": 9300,
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 90,
+    "baseAttack": 14,
+    "baseMp": 48,
+    "baseDefense": 9,
+    "baseDex": 2,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsukamu",
+        "level": 1
+      },
+      {
+        "moveId": "fusegu",
+        "level": 5
+      },
+      {
+        "moveId": "osaeru",
+        "level": 10
+      },
+      {
+        "moveId": "moguru",
+        "level": 16
+      },
+      {
+        "moveId": "funbaru",
+        "level": 24
+      },
+      {
+        "moveId": "arau",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "nezumi",
+    "name": "鼠",
+    "nameEn": "Mouse",
+    "reading": "ねずみ",
+    "meaning": "mouse; rat",
+    "rank": 10300,
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 40,
+    "baseAttack": 17,
+    "baseMp": 52,
+    "baseDefense": 3,
+    "baseDex": 10,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kajiru",
+        "level": 1
+      },
+      {
+        "moveId": "nusumu",
+        "level": 5
+      },
+      {
+        "moveId": "tsukamaeru",
+        "level": 10
+      },
+      {
+        "moveId": "nigedasu",
+        "level": 16
+      },
+      {
+        "moveId": "kawasu",
+        "level": 24
+      },
+      {
+        "moveId": "kasumeru",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kaeru",
+    "name": "蛙",
+    "nameEn": "Frog",
+    "reading": "かえる",
+    "meaning": "frog",
+    "rank": 11800,
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 48,
+    "baseAttack": 17,
+    "baseMp": 56,
+    "baseDefense": 4,
+    "baseDex": 8,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "haneru",
+        "level": 1
+      },
+      {
+        "moveId": "hazumu",
+        "level": 5
+      },
+      {
+        "moveId": "nameru",
+        "level": 10
+      },
+      {
+        "moveId": "tobioriru",
+        "level": 16
+      },
+      {
+        "moveId": "moguru",
+        "level": 24
+      },
+      {
+        "moveId": "shizumeru",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kamo",
+    "name": "鴨",
+    "nameEn": "Duck",
+    "reading": "かも",
+    "meaning": "duck",
+    "rank": 17300,
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 55,
+    "baseAttack": 18,
+    "baseMp": 52,
+    "baseDefense": 5,
+    "baseDex": 6,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "keru",
+        "level": 1
+      },
+      {
+        "moveId": "fumu",
+        "level": 6
+      },
+      {
+        "moveId": "moguru",
+        "level": 12
+      },
+      {
+        "moveId": "furiharau",
+        "level": 20
+      },
+      {
+        "moveId": "furisosogu",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kujira",
+    "name": "鯨",
+    "nameEn": "Whale",
+    "reading": "くじら",
+    "meaning": "whale",
+    "rank": 20000,
+    "element": "water",
+    "rarity": "epic",
+    "baseHp": 110,
+    "baseAttack": 18,
+    "baseMp": 60,
+    "baseDefense": 8,
+    "baseDex": 2,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "shizumeru",
+        "level": 1
+      },
+      {
+        "moveId": "oshiyoseru",
+        "level": 5
+      },
+      {
+        "moveId": "furisosogu",
+        "level": 10
+      },
+      {
+        "moveId": "suikomu",
+        "level": 16
+      },
+      {
+        "moveId": "abiru",
+        "level": 24
+      },
+      {
+        "moveId": "iyasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "koori",
+    "name": "氷",
+    "nameEn": "Ice",
+    "reading": "こおり",
+    "meaning": "ice",
+    "rank": 2100,
+    "element": "water",
+    "rarity": "common",
+    "baseHp": 46,
+    "baseAttack": 17,
+    "baseMp": 64,
+    "baseDefense": 4,
+    "baseDex": 5,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tokeru",
+        "level": 1
+      },
+      {
+        "moveId": "kooritsuku",
+        "level": 7
+      },
+      {
+        "moveId": "ukabu",
+        "level": 16
+      },
+      {
+        "moveId": "furueru",
+        "level": 28
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "tsuchi",
+    "name": "土",
+    "nameEn": "Dirt",
+    "reading": "つち",
+    "meaning": "earth; soil; dirt; clay; mud",
+    "rank": 2100,
+    "element": "earth",
+    "rarity": "common",
+    "baseHp": 84,
+    "baseAttack": 14,
+    "baseMp": 48,
+    "baseDefense": 9,
+    "baseDex": 2,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "ateru",
+        "level": 1
+      },
+      {
+        "moveId": "waru",
+        "level": 5
+      },
+      {
+        "moveId": "kowasu",
+        "level": 10
+      },
+      {
+        "moveId": "kuzusu",
+        "level": 16
+      },
+      {
+        "moveId": "yureru",
+        "level": 24
+      },
+      {
+        "moveId": "fusegu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "akuma",
+    "name": "悪魔",
+    "nameEn": "Demon / Devil",
+    "reading": "あくま",
+    "meaning": "devil; demon; fiend",
+    "rank": 3100,
+    "element": "fire",
+    "rarity": "rare",
+    "baseHp": 58,
+    "baseAttack": 22,
+    "baseMp": 64,
+    "baseDefense": 5,
+    "baseDex": 6,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kogasu",
+        "level": 1
+      },
+      {
+        "moveId": "odosu",
+        "level": 5
+      },
+      {
+        "moveId": "fuujiru",
+        "level": 10
+      },
+      {
+        "moveId": "yaku",
+        "level": 16
+      },
+      {
+        "moveId": "fuku_erupt",
+        "level": 24
+      },
+      {
+        "moveId": "horobosu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "tenshi",
+    "name": "天使",
+    "nameEn": "Angel",
+    "reading": "てんし",
+    "meaning": "angel",
+    "rank": 3300,
+    "element": "metal",
+    "rarity": "rare",
+    "baseHp": 54,
+    "baseAttack": 17,
+    "baseMp": 72,
+    "baseDefense": 5,
+    "baseDex": 6,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsuku",
+        "level": 1
+      },
+      {
+        "moveId": "hikaru",
+        "level": 5
+      },
+      {
+        "moveId": "kabau",
+        "level": 10
+      },
+      {
+        "moveId": "furiharau",
+        "level": 16
+      },
+      {
+        "moveId": "kiru_slash",
+        "level": 24
+      },
+      {
+        "moveId": "iyasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "suna",
+    "name": "砂",
+    "nameEn": "Sand",
+    "reading": "すな",
+    "meaning": "sand; grit",
+    "rank": 3400,
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 46,
+    "baseAttack": 17,
+    "baseMp": 58,
+    "baseDefense": 5,
+    "baseDex": 8,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "butsukeru",
+        "level": 1
+      },
+      {
+        "moveId": "hiku",
+        "level": 5
+      },
+      {
+        "moveId": "yusaburu",
+        "level": 10
+      },
+      {
+        "moveId": "chirasu",
+        "level": 16
+      },
+      {
+        "moveId": "habamu",
+        "level": 24
+      },
+      {
+        "moveId": "mawarikomu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "tako",
+    "name": "タコ",
+    "nameEn": "Octopus",
+    "reading": "たこ",
+    "meaning": "octopus",
+    "rank": 9800,
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 54,
+    "baseAttack": 18,
+    "baseMp": 62,
+    "baseDefense": 5,
+    "baseDex": 8,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsukamu",
+        "level": 1
+      },
+      {
+        "moveId": "shimeru",
+        "level": 5
+      },
+      {
+        "moveId": "toraeru",
+        "level": 10
+      },
+      {
+        "moveId": "suikomu",
+        "level": 16
+      },
+      {
+        "moveId": "uzumaku",
+        "level": 24
+      },
+      {
+        "moveId": "hiku",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "tsuru",
+    "name": "鶴",
+    "nameEn": "Crane",
+    "reading": "つる",
+    "meaning": "crane (any bird of family Gruidae, esp. Grus japonensis)",
+    "rank": 11000,
+    "element": "metal",
+    "rarity": "rare",
+    "baseHp": 48,
+    "baseAttack": 17,
+    "baseMp": 66,
+    "baseDefense": 4,
+    "baseDex": 8,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsuku",
+        "level": 1
+      },
+      {
+        "moveId": "ukenagasu",
+        "level": 5
+      },
+      {
+        "moveId": "furuu",
+        "level": 10
+      },
+      {
+        "moveId": "furiorosu",
+        "level": 16
+      },
+      {
+        "moveId": "tobitatsu",
+        "level": 24
+      },
+      {
+        "moveId": "kirisuteru",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "tokage",
+    "name": "トカゲ",
+    "nameEn": "Lizard",
+    "reading": "とかげ",
+    "meaning": "lizard",
+    "rank": 11700,
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 52,
+    "baseAttack": 20,
+    "baseMp": 48,
+    "baseDefense": 5,
+    "baseDex": 7,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "haneru",
+        "level": 1
+      },
+      {
+        "moveId": "tsukamu",
+        "level": 5
+      },
+      {
+        "moveId": "tsukitobasu",
+        "level": 10
+      },
+      {
+        "moveId": "kakeru",
+        "level": 16
+      },
+      {
+        "moveId": "tsukidasu",
+        "level": 24
+      },
+      {
+        "moveId": "tsukitateru",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "ika",
+    "name": "イカ",
+    "nameEn": "Squid",
+    "reading": "いか",
+    "meaning": "cuttlefish; squid",
+    "rank": 11900,
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 48,
+    "baseAttack": 18,
+    "baseMp": 64,
+    "baseDefense": 4,
+    "baseDex": 8,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "haku",
+        "level": 1
+      },
+      {
+        "moveId": "hakisuteru",
+        "level": 6
+      },
+      {
+        "moveId": "chirasu",
+        "level": 12
+      },
+      {
+        "moveId": "nogareru",
+        "level": 20
+      },
+      {
+        "moveId": "uzumaku",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "inoshishi",
+    "name": "猪",
+    "nameEn": "Boar",
+    "reading": "いのしし",
+    "meaning": "wild boar; wild pig",
+    "rank": 12500,
+    "element": "earth",
+    "rarity": "rare",
+    "baseHp": 70,
+    "baseAttack": 23,
+    "baseMp": 42,
+    "baseDefense": 6,
+    "baseDex": 5,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsukkomu",
+        "level": 1
+      },
+      {
+        "moveId": "nagedasu",
+        "level": 5
+      },
+      {
+        "moveId": "oshitaosu",
+        "level": 10
+      },
+      {
+        "moveId": "fumitsukeru",
+        "level": 16
+      },
+      {
+        "moveId": "oshitsubusu",
+        "level": 24
+      },
+      {
+        "moveId": "abareru",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kani",
+    "name": "カニ",
+    "nameEn": "Crab",
+    "reading": "かに",
+    "meaning": "crab",
+    "rank": 12700,
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 80,
+    "baseAttack": 16,
+    "baseMp": 46,
+    "baseDefense": 8,
+    "baseDex": 3,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsukamu",
+        "level": 1
+      },
+      {
+        "moveId": "hasamu",
+        "level": 6
+      },
+      {
+        "moveId": "arau",
+        "level": 12
+      },
+      {
+        "moveId": "fusegu",
+        "level": 20
+      },
+      {
+        "moveId": "kowasu",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kemono",
+    "name": "獣",
+    "nameEn": "Beast",
+    "reading": "けもの",
+    "meaning": "beast; brute; animal",
+    "rank": 3100,
+    "element": "earth",
+    "rarity": "rare",
+    "baseHp": 68,
+    "baseAttack": 23,
+    "baseMp": 44,
+    "baseDefense": 6,
+    "baseDex": 5,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "utsu",
+        "level": 1
+      },
+      {
+        "moveId": "taosu",
+        "level": 5
+      },
+      {
+        "moveId": "yaburu",
+        "level": 10
+      },
+      {
+        "moveId": "semeru",
+        "level": 16
+      },
+      {
+        "moveId": "oiharau",
+        "level": 24
+      },
+      {
+        "moveId": "horobosu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "erufu",
+    "name": "エルフ",
+    "nameEn": "Elf",
+    "reading": "エルフ",
+    "meaning": "elf",
+    "rank": 8600,
+    "element": "wood",
+    "rarity": "rare",
+    "baseHp": 46,
+    "baseAttack": 18,
+    "baseMp": 70,
+    "baseDefense": 4,
+    "baseDex": 8,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsukidasu",
+        "level": 1
+      },
+      {
+        "moveId": "utsu_shoot",
+        "level": 5
+      },
+      {
+        "moveId": "nerau",
+        "level": 10
+      },
+      {
+        "moveId": "chirasu",
+        "level": 16
+      },
+      {
+        "moveId": "oou",
+        "level": 24
+      },
+      {
+        "moveId": "iyasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "goburin",
+    "name": "ゴブリン",
+    "nameEn": "Goblin",
+    "reading": "ゴブリン",
+    "meaning": "goblin",
+    "rank": 9500,
+    "element": "earth",
+    "rarity": "rare",
+    "baseHp": 52,
+    "baseAttack": 20,
+    "baseMp": 50,
+    "baseDefense": 4,
+    "baseDex": 8,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kasumeru",
+        "level": 1
+      },
+      {
+        "moveId": "nusumu",
+        "level": 5
+      },
+      {
+        "moveId": "hourinageru",
+        "level": 10
+      },
+      {
+        "moveId": "oitsumeru",
+        "level": 16
+      },
+      {
+        "moveId": "saegiru",
+        "level": 24
+      },
+      {
+        "moveId": "hikihanasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "hone",
+    "name": "骨",
+    "nameEn": "Bone",
+    "reading": "ほね",
+    "meaning": "bone; backbone; spirit",
+    "rank": 2100,
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 72,
+    "baseAttack": 16,
+    "baseMp": 50,
+    "baseDefense": 8,
+    "baseDex": 3,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "ateru",
+        "level": 1
+      },
+      {
+        "moveId": "oru",
+        "level": 5
+      },
+      {
+        "moveId": "waru",
+        "level": 10
+      },
+      {
+        "moveId": "furueru",
+        "level": 16
+      },
+      {
+        "moveId": "kudakechiru",
+        "level": 24
+      },
+      {
+        "moveId": "fusegu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "suishou",
+    "name": "水晶",
+    "nameEn": "Crystal",
+    "reading": "すいしょう",
+    "meaning": "(rock) crystal; high purity quartz",
+    "rank": 8600,
+    "element": "metal",
+    "rarity": "uncommon",
+    "baseHp": 76,
+    "baseAttack": 15,
+    "baseMp": 60,
+    "baseDefense": 8,
+    "baseDex": 3,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tsuku",
+        "level": 1
+      },
+      {
+        "moveId": "hikinuku",
+        "level": 5
+      },
+      {
+        "moveId": "nerau",
+        "level": 10
+      },
+      {
+        "moveId": "ukenagasu",
+        "level": 16
+      },
+      {
+        "moveId": "seisuru",
+        "level": 24
+      },
+      {
+        "moveId": "hikaru",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "suraimu",
+    "name": "スライム",
+    "nameEn": "Slime",
+    "reading": "スライム",
+    "meaning": "slime",
+    "rank": 9600,
+    "element": "water",
+    "rarity": "common",
+    "baseHp": 70,
+    "baseAttack": 14,
+    "baseMp": 55,
+    "baseDefense": 7,
+    "baseDex": 4,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "haneru",
+        "level": 1
+      },
+      {
+        "moveId": "suitoru",
+        "level": 6
+      },
+      {
+        "moveId": "ukabu",
+        "level": 12
+      },
+      {
+        "moveId": "shibaru",
+        "level": 20
+      },
+      {
+        "moveId": "oou",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
   }
 ]

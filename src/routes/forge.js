@@ -276,7 +276,8 @@ export function createForgeRouter({ themesDir, dataDir }) {
         const entries = JSON.parse(readFileSync(filepath, 'utf8'));
         if (!Array.isArray(entries)) continue;
         for (const entry of entries) {
-          if (entry.baseWord) trackWord(entry.baseWord, role, entry.id, 'base');
+          const word = entry.name || entry.baseWord;
+          if (word) trackWord(word, role, entry.id, 'base');
           if (entry.modifier?.word) trackWord(entry.modifier.word, role, entry.id, 'modifier');
           // NPC skills use word/verb directly
           if (role === 'npc-skill' && entry.word) trackWord(entry.word, role, entry.id, 'base');
@@ -298,7 +299,8 @@ export function createForgeRouter({ themesDir, dataDir }) {
         const data = JSON.parse(readFileSync(filepath, 'utf8'));
         const entries = Array.isArray(data) ? data : Object.values(data);
         for (const entry of entries) {
-          if (entry.baseWord) trackWord(entry.baseWord, role, entry.id, 'base');
+          const word = entry.name || entry.baseWord;
+          if (word) trackWord(word, role, entry.id, 'base');
           if (entry.modifier?.word) trackWord(entry.modifier.word, role, entry.id, 'modifier');
         }
       }
