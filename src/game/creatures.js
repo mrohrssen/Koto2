@@ -96,6 +96,30 @@ export function syncPartyCreatureMoves(party) {
   ].some(Boolean);
 }
 
+export function getLatestLearnedMoves(templateOrId, level = STARTING_LEVEL) {
+  const template = typeof templateOrId === 'string'
+    ? CREATURES_BY_ID[templateOrId]
+    : templateOrId;
+  if (!template) throw new Error(`Creature template not found: ${templateOrId}`);
+
+  return (template.learnset || [])
+    .filter(entry => entry.level <= level)
+    .slice(-MAX_CREATURE_MOVES)
+    .map(entry => MOVES_BY_ID[entry.moveId])
+    .filter(Boolean)
+    .map(move => ({ ...move }));
+}
+
+export function instantiateCreatureForCombat(templateId, startingLevel = STARTING_LEVEL) {
+  const creature = instantiateCreature(templateId, startingLevel);
+  creature.moves = getLatestLearnedMoves(templateId, startingLevel);
+  creature.hp = creature.maxHp;
+  creature.mp = creature.maxMp;
+  creature.activeEffects = [];
+  delete creature.statStages;
+  return creature;
+}
+
 export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) {
   const template = CREATURES_BY_ID[templateId];
   if (!template) throw new Error(`Creature template not found: ${templateId}`);
@@ -111,16 +135,7 @@ export function instantiateCreature(templateId, startingLevel = STARTING_LEVEL) 
     Math.floor(baseDef * rarityMult)
   );
 
-  // Get all moves learned up to starting level
-  const moves = (template.learnset || [])
-    .filter(entry => entry.level <= startingLevel)
-    .map(entry => {
-      const moveData = MOVES_BY_ID[entry.moveId];
-      if (!moveData) return null;
-      return { ...moveData };
-    })
-    .filter(Boolean)
-    .slice(0, MAX_CREATURE_MOVES);
+  const moves = getLatestLearnedMoves(template, startingLevel);
 
   return {
     uid: crypto.randomUUID(),
@@ -374,27 +389,7 @@ export function generateEnemyCreature(targetLevel, creaturePool = null, stage = 
   }
 
   const template = group[Math.floor(Math.random() * group.length)];
-  // Enemies should be able to start below the player-party starting level.
-  // Instantiate at level 1 and level up to the target.
-  const creature = instantiateCreature(template.id, 1);
-
-  while (creature.level < targetLevel) {
-    addXpToCreature(creature, xpToNextLevel(creature.level));
-  }
-
-  // Ensure enemy has ALL moves up to its level (addXpToCreature only auto-adds if < 3)
-  const tmpl = CREATURES_BY_ID[creature.id];
-  if (tmpl?.learnset) {
-    if (!creature.moves) creature.moves = [];
-    for (const entry of tmpl.learnset) {
-      if (entry.level <= creature.level) {
-        const moveData = MOVES_BY_ID[entry.moveId];
-        if (moveData && creature.moves.length < MAX_CREATURE_MOVES && !creature.moves.find(m => m.id === moveData.id)) {
-          creature.moves.push({ ...moveData });
-        }
-      }
-    }
-  }
+  const creature = instantiateCreatureForCombat(template.id, targetLevel);
 
   syncCreatureMoves(creature);
   return creature;

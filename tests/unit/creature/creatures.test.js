@@ -5,6 +5,8 @@ import {
   getElementMultiplier,
   ELEMENT_CYCLE,
   instantiateCreature,
+  instantiateCreatureForCombat,
+  getLatestLearnedMoves,
   RARITY_MULTIPLIERS,
   calculateCreatureDamage,
   addXpToCreature,
@@ -354,6 +356,29 @@ describe('Targeting AI', () => {
 });
 
 describe('Move learning cap', () => {
+  it('selects the latest 3 eligible learnset moves for a high-level creature', () => {
+    const learned = getLatestLearnedMoves('hi', 40);
+
+    assert.deepStrictEqual(learned.map(move => move.id), ['moeru', 'tobu', 'naku']);
+  });
+
+  it('instantiates combat creatures with latest learned moves and clean combat state', () => {
+    const creature = instantiateCreatureForCombat('hi', 40);
+
+    assert.strictEqual(creature.level, 40);
+    assert.strictEqual(creature.hp, creature.maxHp);
+    assert.strictEqual(creature.mp, creature.maxMp);
+    assert.deepStrictEqual(creature.activeEffects, []);
+    assert.deepStrictEqual(creature.moves.map(move => move.id), ['moeru', 'tobu', 'naku']);
+  });
+
+  it('uses latest learned moves for high-level wild enemies', () => {
+    const creature = generateEnemyCreature(40, ['hi']);
+
+    assert.strictEqual(creature.id, 'hi');
+    assert.deepStrictEqual(creature.moves.map(move => move.id), ['moeru', 'tobu', 'naku']);
+  });
+
   it('caps high-level direct instantiation at 3 normal moves', () => {
     const creature = instantiateCreature('sakana', 16);
 

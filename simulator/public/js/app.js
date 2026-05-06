@@ -4,6 +4,7 @@
 import { renderProfiles } from './profiles.js';
 import { renderResults } from './results.js';
 import { renderCompare } from './compare.js';
+import { renderBalance } from './balance.js';
 
 const appEl = document.getElementById('app');
 
@@ -11,6 +12,7 @@ const routes = {
   profiles: () => renderProfiles(appEl),
   results: (params) => renderResults(appEl, params),
   compare: () => renderCompare(appEl),
+  balance: () => renderBalance(appEl),
 };
 
 function parseHash() {

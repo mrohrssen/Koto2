@@ -7,6 +7,7 @@ import { createStore } from './db/store.js';
 import createProfileRoutes from './routes/profiles.js';
 import createSimulationRoutes from './routes/simulations.js';
 import createResultRoutes from './routes/results.js';
+import createBalanceRoutes from './routes/balance.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -36,6 +37,7 @@ app.use(express.static(join(__dirname, 'public'), { etag: false, lastModified: f
 app.use('/api/profiles', createProfileRoutes(store));
 app.use('/api/simulations', createSimulationRoutes(store, GAME_SERVER_URL, ADMIN_SECRET));
 app.use('/api/results', createResultRoutes(store, GAME_SERVER_URL, ADMIN_SECRET));
+app.use('/api/balance', createBalanceRoutes(store, GAME_SERVER_URL, ADMIN_SECRET));
 
 // Health check
 app.get('/api/health', (req, res) => {

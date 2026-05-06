@@ -50,3 +50,11 @@ export const results = {
   vocabulary: (simId) => api('GET', `/api/results/${simId}/vocabulary`),
   compare: (simIds) => api('POST', '/api/results/compare', { simIds }),
 };
+
+
+export const balance = {
+  start: (battleCount, creatureLevel) => api('POST', '/api/balance/start', { battleCount, creatureLevel }),
+  current: () => api('GET', '/api/balance/current'),
+  cancel: () => api('POST', '/api/balance/cancel'),
+  runs: () => api('GET', '/api/balance/runs'),
+};

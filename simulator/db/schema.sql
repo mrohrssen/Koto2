@@ -54,3 +54,21 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE INDEX IF NOT EXISTS idx_events_sim_day ON events(simulation_id, day);
 CREATE INDEX IF NOT EXISTS idx_events_type ON events(simulation_id, event_type);
 CREATE INDEX IF NOT EXISTS idx_snapshots_sim ON daily_snapshots(simulation_id);
+
+
+CREATE TABLE IF NOT EXISTS balance_runs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  job_id TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL,
+  battle_count INTEGER NOT NULL,
+  creature_level INTEGER NOT NULL,
+  completed_battles INTEGER NOT NULL DEFAULT 0,
+  draws INTEGER NOT NULL DEFAULT 0,
+  started_at TEXT,
+  completed_at TEXT,
+  result_data TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_balance_runs_created ON balance_runs(created_at DESC);
