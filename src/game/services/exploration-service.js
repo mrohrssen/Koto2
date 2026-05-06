@@ -8,7 +8,8 @@ import {
   getAreaById,
   createRoom,
   ROOM_TYPES,
-  popTestRoomType
+  popTestRoomType,
+  resolveSupportRoom
 } from '../rooms.js';
 
 import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPrice, getCreatureSellPrice, generateDealerCreatures } from '../creatures.js';
@@ -366,7 +367,9 @@ export class ExplorationService {
       if (nextRoom.subArea) replaced.subArea = nextRoom.subArea;
       this.gm.run.rooms[this.gm.run.currentRoom] = replaced;
     }
-    const room = this.gm.run.rooms[this.gm.run.currentRoom]; // re-read after possible replacement
+    let room = this.gm.run.rooms[this.gm.run.currentRoom]; // re-read after possible replacement
+    resolveSupportRoom(room, this.gm.run);
+    room = this.gm.run.rooms[this.gm.run.currentRoom];
 
     // Mark as explored
     room.explored = true;

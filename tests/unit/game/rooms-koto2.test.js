@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { generateAreaRooms, getAreaById, getAreaSelectionOptions, ROOM_TYPES } from '../../../src/game/rooms.js';
 
 function assertOnlyEnabledRoomTypes(rooms, fixedIndices) {
-  const allowedTypes = new Set(['encounter', 'friendlyNpc', 'whackAMole', 'shrine']);
+  const allowedTypes = new Set(['encounter', 'friendlyNpc', 'whackAMole', 'shrine', 'support']);
   const otherRooms = rooms.filter((_, i) => !fixedIndices.has(i));
   for (const room of otherRooms) {
     assert.ok(

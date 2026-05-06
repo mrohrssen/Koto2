@@ -381,6 +381,22 @@ async function roomEncounter() {
   return apiCall('/room-encounter', 'POST');
 }
 
+async function claimMaterials() {
+  return apiCall('/materials/claim', 'POST');
+}
+
+async function getCampfire() {
+  return apiCall('/campfire', 'GET');
+}
+
+async function cookAtCampfire(ingredients) {
+  return apiCall('/campfire/cook', 'POST', { ingredients });
+}
+
+async function feedCampfireDish(targetCreatureIndex) {
+  return apiCall('/campfire/feed', 'POST', { targetCreatureIndex });
+}
+
 /** Get shrine greeting and reward options */
 async function getShrineOffers() {
   return apiCall('/shrine-offers', 'POST');
@@ -839,6 +855,10 @@ export {
   // Room exploration endpoints
   proceed,
   roomEncounter,
+  claimMaterials,
+  getCampfire,
+  cookAtCampfire,
+  feedCampfireDish,
   getShrineOffers,
   chooseShrineReward,
   shrineUpgrade,

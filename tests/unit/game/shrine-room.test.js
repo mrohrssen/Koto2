@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ROOM_TYPES, createRoom, generateAreaRooms, getRoomActions } from '../../../src/game/rooms.js';
+import { ROOM_TYPES, createRoom, generateAreaRooms, getRoomActions, resolveSupportRoomType } from '../../../src/game/rooms.js';
 import { derivePhase } from '../../../src/game/phase-machine.js';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 
@@ -17,9 +17,9 @@ describe('Shrine Room', () => {
     });
   });
 
-  it('uses the 5% shrine branch without replacing fixed npcBattle or boss slots', () => {
+  it('generates support slots without replacing fixed npcBattle or boss slots', () => {
     const originalRandom = Math.random;
-    Math.random = () => 0.01;
+    Math.random = () => 0.99;
     try {
       const rooms = generateAreaRooms('wild-plains');
       assert.equal(rooms[5].type, ROOM_TYPES.npcBattle);
@@ -30,10 +30,14 @@ describe('Shrine Room', () => {
 
       const fixed = new Set([5, 11, 17, 23, 29]);
       const generatedRooms = rooms.filter((_, index) => !fixed.has(index));
-      assert.ok(generatedRooms.every(room => room.type === ROOM_TYPES.shrine));
+      assert.ok(generatedRooms.every(room => room.type === ROOM_TYPES.support));
     } finally {
       Math.random = originalRandom;
     }
+  });
+
+  it('can resolve support slots to shrine rooms', () => {
+    assert.equal(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0.47), ROOM_TYPES.shrine);
   });
 
   it('shows shrine action before completion and proceed after completion', () => {

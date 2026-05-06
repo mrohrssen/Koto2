@@ -1,20 +1,17 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import { ROOM_TYPES, generateAreaRooms, createRoom, getRoomEntryNarration, getRoomActions } from '../../../src/game/rooms.js';
+import { ROOM_TYPES, createRoom, getRoomEntryNarration, getRoomActions, resolveSupportRoomType } from '../../../src/game/rooms.js';
 import { GameManager } from '../../../src/game/loop.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
 
 // ============ ROOM GENERATION ============
 
 describe('Whack-a-Mole Room', () => {
-  it('whackAMole can appear in Koto2 30-room generator', () => {
-    // With 10% chance per non-special slot, at least one should appear over many runs
-    let found = false;
-    for (let i = 0; i < 20; i++) {
-      const rooms = generateAreaRooms('okunomori');
-      if (rooms.some(r => r.type === 'whackAMole')) { found = true; break; }
-    }
-    assert.ok(found, 'whackAMole should appear in room generation');
+  it('whackAMole can appear when support slots resolve', () => {
+    assert.strictEqual(
+      resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0.20),
+      ROOM_TYPES.whackAMole
+    );
   });
 
   it('should create whackAMole room with correct structure via createRoom', () => {

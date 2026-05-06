@@ -19,6 +19,7 @@ export function createItemBuffs() {
   return {
     attackMult: 1.0,
     hpMult: 1.0,
+    dexMult: 1.0,
     elementEdge: 0,
     flatDamageReduction: 0,
     xpMultiplier: 1.0,
@@ -53,7 +54,7 @@ export function rollShopItems() {
   return selected;
 }
 
-const MULT_FIELDS = new Set(['attackMult', 'hpMult', 'xpMultiplier']);
+const MULT_FIELDS = new Set(['attackMult', 'hpMult', 'dexMult', 'xpMultiplier']);
 const BASE_BONUS_FIELDS = new Set(['baseAttackBonus', 'baseHpBonus', 'baseMpBonus']);
 
 function applyStat(field, value, itemBuffs) {

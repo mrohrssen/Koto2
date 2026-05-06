@@ -1,0 +1,6186 @@
+[
+  {
+    "id": "miso-soup",
+    "word": "味噌汁",
+    "reading": "みそしる",
+    "nameEn": "Miso soup",
+    "meaning": "miso soup",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Water and miso both feed the mpRestore lane, giving a clean broth that refreshes MP."
+  },
+  {
+    "id": "dashi-soup",
+    "word": "出汁",
+    "reading": "だし",
+    "nameEn": "Dashi",
+    "meaning": "Japanese soup stock made from fish and kelp",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Water plus dashi pure stock is the canonical mp-restoring broth."
+  },
+  {
+    "id": "clear-broth",
+    "word": "澄まし汁",
+    "reading": "すましじる",
+    "nameEn": "Clear soup",
+    "meaning": "clear soup",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "shiru",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Two mp-lane liquids combine into a light, cleansing broth."
+  },
+  {
+    "id": "bone-broth",
+    "word": "骨スープ",
+    "reading": "ほねスープ",
+    "nameEn": "Bone broth",
+    "meaning": "bone broth",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "hone",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% MP.",
+    "rationale": "Bone gives the broth body, but the dominant feel is still a restorative liquid."
+  },
+  {
+    "id": "vegetable-soup",
+    "word": "野菜スープ",
+    "reading": "やさいスープ",
+    "nameEn": "Vegetable soup",
+    "meaning": "vegetable soup",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "partyHpRestore",
+        "value": 0.05,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Restores 5% party HP.",
+    "rationale": "Vegetables drive the party-feeding lane; the water just helps it spread."
+  },
+  {
+    "id": "mushroom-soup",
+    "word": "キノコスープ",
+    "reading": "キノコスープ",
+    "nameEn": "Mushroom soup",
+    "meaning": "mushroom soup",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "kinoko",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Mushrooms anchor the hpRestore lane in a warming, simple broth."
+  },
+  {
+    "id": "daikon-soup",
+    "word": "大根スープ",
+    "reading": "だいこんスープ",
+    "nameEn": "Daikon soup",
+    "meaning": "daikon radish soup",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "daikon",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Simmered daikon is gentle and restorative, fitting hpRestore."
+  },
+  {
+    "id": "pumpkin-soup-simple",
+    "word": "カボチャスープ",
+    "reading": "カボチャスープ",
+    "nameEn": "Pumpkin soup",
+    "meaning": "pumpkin soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "kabocha",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% HP.",
+    "rationale": "Pumpkin's hpRestore lane carries the soup; the uncommon ingredient nudges value up."
+  },
+  {
+    "id": "onion-soup-simple",
+    "word": "オニオンスープ",
+    "reading": "オニオンスープ",
+    "nameEn": "Onion soup",
+    "meaning": "onion soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% HP.",
+    "rationale": "Onion's hpRestore lane drives a comforting, warming bowl."
+  },
+  {
+    "id": "tofu-soup",
+    "word": "豆腐スープ",
+    "reading": "とうふスープ",
+    "nameEn": "Tofu soup",
+    "meaning": "tofu soup",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "toufu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 5%.",
+    "rationale": "Tofu is the only stat-bearing ingredient, so the recipe leans into its hpMult lane."
+  },
+  {
+    "id": "kombu-soup",
+    "word": "昆布スープ",
+    "reading": "こんぶスープ",
+    "nameEn": "Kombu soup",
+    "meaning": "kombu soup",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "konbu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Kombu's umami sea-salt edge dominates this otherwise-plain broth."
+  },
+  {
+    "id": "green-onion-soup",
+    "word": "ネギスープ",
+    "reading": "ネギスープ",
+    "nameEn": "Green onion soup",
+    "meaning": "green onion soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "negi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Green onion's sharp aroma is the only flavor lane in the bowl."
+  },
+  {
+    "id": "black-tea",
+    "word": "紅茶",
+    "reading": "こうちゃ",
+    "nameEn": "Black tea",
+    "meaning": "black tea",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "koucha",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Brewed tea is a classic mp-restoring drink."
+  },
+  {
+    "id": "tea",
+    "word": "お茶",
+    "reading": "おちゃ",
+    "nameEn": "Tea",
+    "meaning": "tea",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "cha",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "A simple cup of tea: pure mpRestore."
+  },
+  {
+    "id": "coffee",
+    "word": "コーヒー",
+    "reading": "コーヒー",
+    "nameEn": "Coffee",
+    "meaning": "coffee",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "koohii",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Brewed coffee is a focused mp-restoring drink."
+  },
+  {
+    "id": "green-tea",
+    "word": "緑茶",
+    "reading": "りょくちゃ",
+    "nameEn": "Green tea",
+    "meaning": "green tea; Japanese tea",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "ryokucha",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Green tea's calming focus restores MP."
+  },
+  {
+    "id": "mint-tea",
+    "word": "ミントティー",
+    "reading": "ミントティー",
+    "nameEn": "Mint tea",
+    "meaning": "mint tea",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "minto",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.25,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 25% MP.",
+    "rationale": "Mint is a rare mp-restoring herb, pushing the value above standard tea."
+  },
+  {
+    "id": "iced-coffee",
+    "word": "アイスコーヒー",
+    "reading": "アイスコーヒー",
+    "nameEn": "Iced coffee",
+    "meaning": "iced coffee",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "koori",
+        "quantity": 1
+      },
+      {
+        "id": "koohii",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Both ice and coffee feed the mpRestore lane."
+  },
+  {
+    "id": "iced-tea",
+    "word": "アイスティー",
+    "reading": "アイスティー",
+    "nameEn": "Iced tea",
+    "meaning": "iced tea",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "koori",
+        "quantity": 1
+      },
+      {
+        "id": "koucha",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Cold-brewed tea: pure mpRestore."
+  },
+  {
+    "id": "cafe-au-lait",
+    "word": "カフェオレ",
+    "reading": "カフェオレ",
+    "nameEn": "Cafe au lait",
+    "meaning": "cafe au lait",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "koohii",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% MP.",
+    "rationale": "Coffee leads (mp lane); the milk softens it but doesn't change the dominant effect."
+  },
+  {
+    "id": "milk-tea",
+    "word": "ミルクティー",
+    "reading": "ミルクティー",
+    "nameEn": "Milk tea",
+    "meaning": "milk tea",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "koucha",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% MP.",
+    "rationale": "Black tea drives the mpRestore lane; the milk softens it without changing the dominant effect."
+  },
+  {
+    "id": "strawberry-milk",
+    "word": "イチゴミルク",
+    "reading": "イチゴミルク",
+    "nameEn": "Strawberry milk",
+    "meaning": "strawberry milk",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "ichigo",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 5%.",
+    "rationale": "Milk's xpMult lane is the only viable channel; strawberry's xpGrant lane needs a rarer recipe."
+  },
+  {
+    "id": "banana-milk",
+    "word": "バナナミルク",
+    "reading": "バナナミルク",
+    "nameEn": "Banana milk",
+    "meaning": "banana milk",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "banana",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 5%.",
+    "rationale": "Milk drives the xpMult lane in this sweet shake."
+  },
+  {
+    "id": "honey-milk",
+    "word": "蜂蜜ミルク",
+    "reading": "はちみつミルク",
+    "nameEn": "Honey milk",
+    "meaning": "honey milk",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "hachimitsu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 5%.",
+    "rationale": "Milk's xpMult lane carries the drink; honey's revive lane only triggers in larger rare+ recipes."
+  },
+  {
+    "id": "honey-yogurt",
+    "word": "蜂蜜ヨーグルト",
+    "reading": "はちみつヨーグルト",
+    "nameEn": "Honey yogurt",
+    "meaning": "honey yogurt",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "yooguruto",
+        "quantity": 1
+      },
+      {
+        "id": "hachimitsu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 10%.",
+    "rationale": "Yogurt's xpMult lane gets a sweet boost from the honey base."
+  },
+  {
+    "id": "fruit-yogurt-simple",
+    "word": "フルーツヨーグルト",
+    "reading": "フルーツヨーグルト",
+    "nameEn": "Fruit yogurt",
+    "meaning": "fruit yogurt",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "yooguruto",
+        "quantity": 1
+      },
+      {
+        "id": "kudamono",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 5%.",
+    "rationale": "Yogurt's xpMult lane is the strongest of the two; the fruit just sweetens it."
+  },
+  {
+    "id": "strawberry-yogurt",
+    "word": "イチゴヨーグルト",
+    "reading": "イチゴヨーグルト",
+    "nameEn": "Strawberry yogurt",
+    "meaning": "strawberry yogurt",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "yooguruto",
+        "quantity": 1
+      },
+      {
+        "id": "ichigo",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 5%.",
+    "rationale": "Yogurt drives the only multiplier-eligible lane in this small dessert."
+  },
+  {
+    "id": "banana-yogurt",
+    "word": "バナナヨーグルト",
+    "reading": "バナナヨーグルト",
+    "nameEn": "Banana yogurt",
+    "meaning": "banana yogurt",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "yooguruto",
+        "quantity": 1
+      },
+      {
+        "id": "banana",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 5%.",
+    "rationale": "Yogurt's xpMult lane defines the dish."
+  },
+  {
+    "id": "mandarin-yogurt",
+    "word": "みかんヨーグルト",
+    "reading": "みかんヨーグルト",
+    "nameEn": "Mandarin yogurt",
+    "meaning": "mandarin orange yogurt",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "yooguruto",
+        "quantity": 1
+      },
+      {
+        "id": "mikan",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 5%.",
+    "rationale": "Yogurt anchors the xpMult lane; mandarin's xpGrant lane is reserved for larger rare+ dishes."
+  },
+  {
+    "id": "fruit-juice",
+    "word": "ジュース",
+    "reading": "ジュース",
+    "nameEn": "Juice",
+    "meaning": "juice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "kudamono",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Fresh fruit juice leans on the fruit's hpRestore lane."
+  },
+  {
+    "id": "apple-juice",
+    "word": "リンゴジュース",
+    "reading": "リンゴジュース",
+    "nameEn": "Apple juice",
+    "meaning": "apple juice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "ringo",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Apple's hpRestore lane is what the drink delivers."
+  },
+  {
+    "id": "orange-juice",
+    "word": "オレンジジュース",
+    "reading": "オレンジジュース",
+    "nameEn": "Orange juice",
+    "meaning": "orange juice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "orenji",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Citrus is sharp and tangy: orange contributes to the elementEdge lane."
+  },
+  {
+    "id": "lemon-water",
+    "word": "レモン水",
+    "reading": "レモンすい",
+    "nameEn": "Lemon water",
+    "meaning": "lemon water",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "remon",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Lemon dominates the flavor; water just dilutes. elementEdge it is."
+  },
+  {
+    "id": "watermelon-juice",
+    "word": "スイカジュース",
+    "reading": "スイカジュース",
+    "nameEn": "Watermelon juice",
+    "meaning": "watermelon juice",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "suika",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "partyHpRestore",
+        "value": 0.05,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Restores 5% party HP.",
+    "rationale": "Watermelon is hydrating party food and pulls on the partyHpRestore lane."
+  },
+  {
+    "id": "rice-ball",
+    "word": "おにぎり",
+    "reading": "おにぎり",
+    "nameEn": "Rice ball",
+    "meaning": "rice ball",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "nori-sheet",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "partyHpRestore",
+        "value": 0.05,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Restores 5% party HP.",
+    "rationale": "Rice is the heart of an onigiri; the nori adds to its rarity, but the dish remains shareable party food."
+  },
+  {
+    "id": "ume-rice-ball",
+    "word": "梅おにぎり",
+    "reading": "うめおにぎり",
+    "nameEn": "Ume rice ball",
+    "meaning": "umeboshi rice ball",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "ume",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "The pickled ume's sour edge is what makes the rice ball distinctive."
+  },
+  {
+    "id": "egg-rice",
+    "word": "卵かけご飯",
+    "reading": "たまごかけごはん",
+    "nameEn": "Egg-on-rice",
+    "meaning": "raw egg over rice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "partyHpRestore",
+        "value": 0.05,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Restores 5% party HP.",
+    "rationale": "Comfort-food rice with egg is shared at the table; the rice's partyHp lane carries it."
+  },
+  {
+    "id": "bean-rice",
+    "word": "豆ご飯",
+    "reading": "まめごはん",
+    "nameEn": "Bean rice",
+    "meaning": "bean rice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "mame",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 5%.",
+    "rationale": "Beans give the rice substance, fitting hpMult."
+  },
+  {
+    "id": "chestnut-rice",
+    "word": "栗ご飯",
+    "reading": "くりごはん",
+    "nameEn": "Chestnut rice",
+    "meaning": "chestnut rice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "kuri",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 5%.",
+    "rationale": "Dense chestnut anchors the dish on the hpMult lane."
+  },
+  {
+    "id": "chicken-rice",
+    "word": "鶏飯",
+    "reading": "とりめし",
+    "nameEn": "Chicken rice",
+    "meaning": "chicken rice",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "toriniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Chicken (uncommon, attack lane) outweighs the rice; the rice's partyHp lane is secondary here."
+  },
+  {
+    "id": "beef-bowl",
+    "word": "牛丼",
+    "reading": "ぎゅうどん",
+    "nameEn": "Beef bowl",
+    "meaning": "beef bowl",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Beef is the protein hero; the rice is the support staple."
+  },
+  {
+    "id": "pork-bowl",
+    "word": "豚丼",
+    "reading": "ぶたどん",
+    "nameEn": "Pork bowl",
+    "meaning": "pork bowl",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "butaniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Pork is the protein hero in a butadon-style bowl."
+  },
+  {
+    "id": "salmon-rice",
+    "word": "鮭ご飯",
+    "reading": "さけごはん",
+    "nameEn": "Salmon rice",
+    "meaning": "salmon rice",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "sake-salmon",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Flaked salmon over rice; the salmon's attack lane wins."
+  },
+  {
+    "id": "tuna-bowl",
+    "word": "鉄火丼",
+    "reading": "てっかどん",
+    "nameEn": "Tekkadon",
+    "meaning": "tuna sashimi rice bowl",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "maguro",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Tuna is the protein hero in a tekkadon."
+  },
+  {
+    "id": "shrimp-bowl",
+    "word": "エビ丼",
+    "reading": "エビどん",
+    "nameEn": "Shrimp bowl",
+    "meaning": "shrimp bowl",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "ebi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Shrimp drives the protein lane in this small donburi."
+  },
+  {
+    "id": "crab-rice",
+    "word": "カニ飯",
+    "reading": "かにめし",
+    "nameEn": "Crab rice",
+    "meaning": "crab rice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "kani",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Crab is the headline protein in kanimeshi."
+  },
+  {
+    "id": "vegetable-rice",
+    "word": "野菜ご飯",
+    "reading": "やさいごはん",
+    "nameEn": "Vegetable rice",
+    "meaning": "vegetable rice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "partyHpRestore",
+        "value": 0.1,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Restores 10% party HP.",
+    "rationale": "Both ingredients feed the partyHpRestore lane, doubling up cleanly."
+  },
+  {
+    "id": "tomato-rice",
+    "word": "トマトご飯",
+    "reading": "トマトごはん",
+    "nameEn": "Tomato rice",
+    "meaning": "tomato rice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "tomato",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Tomato gives the rice its character and pulls into the hpRestore lane."
+  },
+  {
+    "id": "mushroom-rice",
+    "word": "キノコご飯",
+    "reading": "キノコごはん",
+    "nameEn": "Mushroom rice",
+    "meaning": "mushroom rice",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "kinoko",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Mushrooms are the named flavor and drive the hpRestore lane."
+  },
+  {
+    "id": "sea-bream-rice",
+    "word": "鯛飯",
+    "reading": "たいめし",
+    "nameEn": "Sea bream rice",
+    "meaning": "sea bream rice",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "tai",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Light, delicate sea bream rice; the fish's dex lane wins out over the rice."
+  },
+  {
+    "id": "salted-meat",
+    "word": "塩焼き",
+    "reading": "しおやき",
+    "nameEn": "Salt-grilled meat",
+    "meaning": "salt-grilled meat",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "niku",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Meat is the protein hero; salt is just seasoning. attackMult lane wins."
+  },
+  {
+    "id": "soy-sauce-meat",
+    "word": "肉の照り焼き",
+    "reading": "にくのてりやき",
+    "nameEn": "Teriyaki meat",
+    "meaning": "teriyaki-style meat",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "niku",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Meat is the protein hero; soy sauce is glaze. attackMult wins."
+  },
+  {
+    "id": "garlic-meat",
+    "word": "ガーリック肉",
+    "reading": "ガーリックにく",
+    "nameEn": "Garlic meat",
+    "meaning": "garlic-flavored meat",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "niku",
+        "quantity": 1
+      },
+      {
+        "id": "ninniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Uncommon garlic outweighs common meat: the elemental edge lane wins."
+  },
+  {
+    "id": "meat-with-sauce",
+    "word": "肉のソテー",
+    "reading": "にくのソテー",
+    "nameEn": "Meat sauté",
+    "meaning": "sautéed meat",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "niku",
+        "quantity": 1
+      },
+      {
+        "id": "soosu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "The meat is the centerpiece; sauce just glazes it. attack lane wins."
+  },
+  {
+    "id": "chicken-saute",
+    "word": "鶏のソテー",
+    "reading": "とりのソテー",
+    "nameEn": "Chicken saute",
+    "meaning": "chicken saute",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "toriniku",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Chicken (uncommon, attack lane) outweighs the cooking oil."
+  },
+  {
+    "id": "pork-saute",
+    "word": "豚のソテー",
+    "reading": "ぶたのソテー",
+    "nameEn": "Pork saute",
+    "meaning": "pork saute",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "butaniku",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Pork is the protein hero of the dish."
+  },
+  {
+    "id": "beef-saute",
+    "word": "牛のソテー",
+    "reading": "ぎゅうのソテー",
+    "nameEn": "Beef saute",
+    "meaning": "beef saute",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Beef is the protein hero in a saute."
+  },
+  {
+    "id": "fried-egg",
+    "word": "目玉焼き",
+    "reading": "めだまやき",
+    "nameEn": "Fried egg",
+    "meaning": "fried egg, sunny-side-up",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "tamago",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Eggs are the protein; oil just cooks them. attack lane wins."
+  },
+  {
+    "id": "omelet",
+    "word": "オムレツ",
+    "reading": "オムレツ",
+    "nameEn": "Omelet",
+    "meaning": "omelet",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "tamago",
+        "quantity": 1
+      },
+      {
+        "id": "bataa",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "The egg's protein lane (attack) edges out the butter's hpMult lane in a small dish."
+  },
+  {
+    "id": "salt-grilled-fish",
+    "word": "焼き魚",
+    "reading": "やきざかな",
+    "nameEn": "Grilled fish",
+    "meaning": "grilled fish",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "sakana",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Light salt-grilled fish stays in the dexMult lane."
+  },
+  {
+    "id": "soy-sauce-fish",
+    "word": "魚の照り焼き",
+    "reading": "さかなのてりやき",
+    "nameEn": "Teriyaki fish",
+    "meaning": "teriyaki-style fish",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "sakana",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Fish is the centerpiece; soy sauce is glaze. dexMult lane wins."
+  },
+  {
+    "id": "salted-salmon",
+    "word": "塩鮭",
+    "reading": "しおざけ",
+    "nameEn": "Salted salmon",
+    "meaning": "salted salmon",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "sake-salmon",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Salmon is the protein hero; salt is just seasoning."
+  },
+  {
+    "id": "miso-mackerel",
+    "word": "サバの味噌煮",
+    "reading": "さばのみそに",
+    "nameEn": "Miso-simmered mackerel",
+    "meaning": "mackerel simmered in miso",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "saba",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Mackerel (rare, attack lane) carries the dish; miso is the simmering base."
+  },
+  {
+    "id": "tuna-steak",
+    "word": "マグロステーキ",
+    "reading": "マグロステーキ",
+    "nameEn": "Tuna steak",
+    "meaning": "tuna steak",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "maguro",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Tuna is the protein hero; oil is just for searing."
+  },
+  {
+    "id": "squid-saute",
+    "word": "イカのソテー",
+    "reading": "イカのソテー",
+    "nameEn": "Squid saute",
+    "meaning": "squid saute",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "ika",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Squid is the protein focus of the saute."
+  },
+  {
+    "id": "octopus-saute",
+    "word": "タコのソテー",
+    "reading": "タコのソテー",
+    "nameEn": "Octopus saute",
+    "meaning": "octopus saute",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "tako",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Octopus is the protein hero of the dish."
+  },
+  {
+    "id": "butter-crab",
+    "word": "カニのバター焼き",
+    "reading": "カニのバターやき",
+    "nameEn": "Butter-grilled crab",
+    "meaning": "crab grilled with butter",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kani",
+        "quantity": 1
+      },
+      {
+        "id": "bataa",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Crab carries the dish; butter is the cooking medium."
+  },
+  {
+    "id": "salt-grilled-shrimp",
+    "word": "エビの塩焼き",
+    "reading": "エビのしおやき",
+    "nameEn": "Salt-grilled shrimp",
+    "meaning": "salt-grilled shrimp",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "ebi",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Shrimp is the protein hero; salt is just seasoning."
+  },
+  {
+    "id": "sake-steamed-shellfish",
+    "word": "貝の酒蒸し",
+    "reading": "かいのさかむし",
+    "nameEn": "Sake-steamed shellfish",
+    "meaning": "shellfish steamed in sake",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "kai",
+        "quantity": 1
+      },
+      {
+        "id": "sake",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Shellfish is the centerpiece; sake is the steaming liquid. dexMult lane wins."
+  },
+  {
+    "id": "salt-grilled-sea-bream",
+    "word": "鯛の塩焼き",
+    "reading": "たいのしおやき",
+    "nameEn": "Salt-grilled sea bream",
+    "meaning": "salt-grilled sea bream",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "tai",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Sea bream (rare, dex lane) carries the dish; salt is the dressing."
+  },
+  {
+    "id": "salt-grilled-mackerel",
+    "word": "サバの塩焼き",
+    "reading": "サバのしおやき",
+    "nameEn": "Salt-grilled mackerel",
+    "meaning": "salt-grilled mackerel",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "saba",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Mackerel's attack lane wins out over plain salt seasoning."
+  },
+  {
+    "id": "spice-chicken",
+    "word": "スパイスチキン",
+    "reading": "スパイスチキン",
+    "nameEn": "Spice chicken",
+    "meaning": "spice-rubbed chicken",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "toriniku",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Spice defines the dish: the elementEdge lane wins out over the chicken's attack lane."
+  },
+  {
+    "id": "garlic-pork",
+    "word": "ガーリックポーク",
+    "reading": "ガーリックポーク",
+    "nameEn": "Garlic pork",
+    "meaning": "garlic-flavored pork",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "butaniku",
+        "quantity": 1
+      },
+      {
+        "id": "ninniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Pork is the protein centerpiece; garlic boosts the lane but doesn't replace it."
+  },
+  {
+    "id": "spice-beef",
+    "word": "スパイスステーキ",
+    "reading": "スパイスステーキ",
+    "nameEn": "Spice steak",
+    "meaning": "spice-rubbed steak",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Beef carries the dish as the centerpiece; the spice is seasoning."
+  },
+  {
+    "id": "vegetable-salad-simple",
+    "word": "野菜サラダ",
+    "reading": "やさいサラダ",
+    "nameEn": "Vegetable salad",
+    "meaning": "vegetable salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Light, leafy greens land squarely in the dexMult lane."
+  },
+  {
+    "id": "tomato-salad-simple",
+    "word": "トマトサラダ",
+    "reading": "トマトサラダ",
+    "nameEn": "Tomato salad",
+    "meaning": "tomato salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Lettuce (uncommon, dex) edges out the tomato's hpRestore lane in this light salad."
+  },
+  {
+    "id": "cucumber-salad-simple",
+    "word": "キュウリサラダ",
+    "reading": "キュウリサラダ",
+    "nameEn": "Cucumber salad",
+    "meaning": "cucumber salad",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kyuuri",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 10%.",
+    "rationale": "Both rare-tier cucumber and lettuce feed the dex lane, doubling up."
+  },
+  {
+    "id": "cabbage-salad-simple",
+    "word": "キャベツサラダ",
+    "reading": "キャベツサラダ",
+    "nameEn": "Cabbage salad",
+    "meaning": "cabbage salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kyabetsu",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Lettuce (uncommon, dex) leads in this light leafy salad."
+  },
+  {
+    "id": "carrot-salad-simple",
+    "word": "ニンジンサラダ",
+    "reading": "ニンジンサラダ",
+    "nameEn": "Carrot salad",
+    "meaning": "carrot salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "ninjin",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Lettuce drives the dex lane; the carrot is a crunchy supporting note."
+  },
+  {
+    "id": "daikon-cucumber-salad",
+    "word": "大根キュウリサラダ",
+    "reading": "だいこんキュウリサラダ",
+    "nameEn": "Daikon cucumber salad",
+    "meaning": "daikon and cucumber salad",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "daikon",
+        "quantity": 1
+      },
+      {
+        "id": "kyuuri",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Cucumber (rare, dex) wins over the daikon's hpRestore lane in this crisp salad."
+  },
+  {
+    "id": "lettuce-with-salt",
+    "word": "塩レタス",
+    "reading": "しおレタス",
+    "nameEn": "Salted lettuce",
+    "meaning": "salted lettuce",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "retasu",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Lettuce drives the dex lane; salt is just the dressing."
+  },
+  {
+    "id": "sprout-salad",
+    "word": "新芽サラダ",
+    "reading": "しんめサラダ",
+    "nameEn": "Young sprout salad",
+    "meaning": "young sprout salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "me",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Both ingredients pull on the dex lane: a light, crunchy bowl."
+  },
+  {
+    "id": "tofu-salad-simple",
+    "word": "豆腐サラダ",
+    "reading": "とうふサラダ",
+    "nameEn": "Tofu salad",
+    "meaning": "tofu salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "toufu",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Lettuce (uncommon, dex) wins out over the tofu's hpMult lane in a salad."
+  },
+  {
+    "id": "tomato-cheese",
+    "word": "トマトチーズ",
+    "reading": "トマトチーズ",
+    "nameEn": "Tomato cheese",
+    "meaning": "tomato with cheese",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "chiizu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Cheese's xpGrant lane is reserved for larger rare+ dishes, so the tomato's hpRestore lane wins."
+  },
+  {
+    "id": "potato-butter",
+    "word": "じゃがバター",
+    "reading": "じゃがバター",
+    "nameEn": "Buttered potato",
+    "meaning": "potato with butter",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "jagaimo",
+        "quantity": 1
+      },
+      {
+        "id": "bataa",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 5%.",
+    "rationale": "Both ingredients feed the hpMult lane, doubling the filling-staple effect."
+  },
+  {
+    "id": "sweet-tuber",
+    "word": "甘い芋",
+    "reading": "あまいいも",
+    "nameEn": "Sweet tuber",
+    "meaning": "sweetened tuber",
+    "rarity": "common",
+    "ingredients": [
+      {
+        "id": "imo",
+        "quantity": 1
+      },
+      {
+        "id": "satou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 5%.",
+    "rationale": "Sugar's xpGrant lane needs a rarer recipe, so the tuber's hpMult lane wins."
+  },
+  {
+    "id": "corn-butter",
+    "word": "コーンバター",
+    "reading": "コーンバター",
+    "nameEn": "Corn with butter",
+    "meaning": "corn served with butter",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "toumorokoshi",
+        "quantity": 1
+      },
+      {
+        "id": "bataa",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 10%.",
+    "rationale": "Both ingredients pull hpMult, with epic-tier corn pushing the value higher."
+  },
+  {
+    "id": "simmered-pumpkin",
+    "word": "カボチャの煮物",
+    "reading": "カボチャのにもの",
+    "nameEn": "Simmered pumpkin",
+    "meaning": "simmered pumpkin",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kabocha",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Pumpkin (uncommon, hpRestore) leads; soy sauce is just glaze."
+  },
+  {
+    "id": "miso-eggplant",
+    "word": "茄子の味噌煮",
+    "reading": "なすのみそに",
+    "nameEn": "Miso-simmered eggplant",
+    "meaning": "eggplant simmered in miso",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "nasu",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% HP.",
+    "rationale": "Epic-tier eggplant drives the hpRestore lane; the miso simmer adds depth."
+  },
+  {
+    "id": "grape-yogurt",
+    "word": "葡萄ヨーグルト",
+    "reading": "ぶどうヨーグルト",
+    "nameEn": "Grape yogurt",
+    "meaning": "grape yogurt",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "budou",
+        "quantity": 1
+      },
+      {
+        "id": "yooguruto",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 10%.",
+    "rationale": "Yogurt's xpMult lane carries a rare-tier dessert; grape's xpGrant is reserved for richer dishes."
+  },
+  {
+    "id": "vegetable-miso-soup",
+    "word": "野菜味噌汁",
+    "reading": "やさいみそしる",
+    "nameEn": "Vegetable miso soup",
+    "meaning": "miso soup with vegetables",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Two mp ingredients dominate; the vegetables enrich but don't shift the dish off miso soup."
+  },
+  {
+    "id": "tofu-miso-soup",
+    "word": "豆腐味噌汁",
+    "reading": "とうふみそしる",
+    "nameEn": "Tofu miso soup",
+    "meaning": "miso soup with tofu",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      },
+      {
+        "id": "toufu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "It's still fundamentally miso soup; the tofu is the classic mp-soup garnish."
+  },
+  {
+    "id": "mushroom-miso-soup",
+    "word": "キノコ味噌汁",
+    "reading": "キノコみそしる",
+    "nameEn": "Mushroom miso soup",
+    "meaning": "miso soup with mushrooms",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      },
+      {
+        "id": "kinoko",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Two mp ingredients keep the miso soup identity; mushrooms enrich the broth."
+  },
+  {
+    "id": "pork-miso-soup-small",
+    "word": "豚味噌汁",
+    "reading": "ぶたみそしる",
+    "nameEn": "Pork miso soup",
+    "meaning": "pork miso soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      },
+      {
+        "id": "butaniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Pork enriches the soup, but two mp ingredients keep the dish in the mp lane."
+  },
+  {
+    "id": "shellfish-soup",
+    "word": "貝汁",
+    "reading": "かいじる",
+    "nameEn": "Shellfish soup",
+    "meaning": "clear soup with shellfish",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "kai",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Two mp ingredients (water + dashi) anchor the broth; the shellfish lifts the flavor."
+  },
+  {
+    "id": "kombu-dashi",
+    "word": "昆布出汁",
+    "reading": "こんぶだし",
+    "nameEn": "Kombu dashi",
+    "meaning": "kombu seaweed stock",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "konbu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Pure stock made of three umami liquids: a textbook mpRestore."
+  },
+  {
+    "id": "egg-soup",
+    "word": "卵スープ",
+    "reading": "たまごスープ",
+    "nameEn": "Egg soup",
+    "meaning": "egg drop soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "shiru",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Two mp ingredients carry the broth; the egg adds richness without changing the lane."
+  },
+  {
+    "id": "chicken-soup",
+    "word": "鶏スープ",
+    "reading": "とりスープ",
+    "nameEn": "Chicken soup",
+    "meaning": "chicken soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "toriniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP and boosts attack by 5%.",
+    "rationale": "Stock plus chicken makes a soup with both restorative and protein-boost lanes clearly represented."
+  },
+  {
+    "id": "beef-soup",
+    "word": "牛肉スープ",
+    "reading": "ぎゅうにくスープ",
+    "nameEn": "Beef soup",
+    "meaning": "beef soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP and boosts attack by 5%.",
+    "rationale": "Hearty stock plus beef gives both restorative and protein lanes a clear voice."
+  },
+  {
+    "id": "fish-soup",
+    "word": "魚スープ",
+    "reading": "さかなスープ",
+    "nameEn": "Fish soup",
+    "meaning": "fish soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "sakana",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% MP.",
+    "rationale": "Two mp ingredients drive the broth; the small fish hint isn't strong enough to add a second effect."
+  },
+  {
+    "id": "vegetable-stew",
+    "word": "野菜シチュー",
+    "reading": "やさいシチュー",
+    "nameEn": "Vegetable stew",
+    "meaning": "vegetable stew",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "jagaimo",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "partyHpRestore",
+        "value": 0.05,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Restores 5% party HP.",
+    "rationale": "Vegetables pull the partyHp lane out of an otherwise three-way split."
+  },
+  {
+    "id": "potato-soup",
+    "word": "ジャガイモスープ",
+    "reading": "ジャガイモスープ",
+    "nameEn": "Potato soup",
+    "meaning": "potato soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "jagaimo",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% MP.",
+    "rationale": "Soup identity wins out: water carries the mp lane, milk and potato just enrich."
+  },
+  {
+    "id": "pumpkin-milk-soup",
+    "word": "カボチャミルクスープ",
+    "reading": "カボチャミルクスープ",
+    "nameEn": "Pumpkin milk soup",
+    "meaning": "pumpkin milk soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "kabocha",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Pumpkin (uncommon, hpRestore) leads; milk and water are supporting liquids."
+  },
+  {
+    "id": "corn-soup-small",
+    "word": "コーンスープ",
+    "reading": "コーンスープ",
+    "nameEn": "Corn soup",
+    "meaning": "corn soup",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "toumorokoshi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 10%.",
+    "rationale": "Epic-tier corn dominates the recipe; the milk and water enrich its hpMult lane."
+  },
+  {
+    "id": "onion-butter-soup",
+    "word": "オニオンバタースープ",
+    "reading": "オニオンバタースープ",
+    "nameEn": "Onion butter soup",
+    "meaning": "onion butter soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      },
+      {
+        "id": "bataa",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Sauteed onion (uncommon, hpRestore) drives this rich soup."
+  },
+  {
+    "id": "tomato-soup",
+    "word": "トマトスープ",
+    "reading": "トマトスープ",
+    "nameEn": "Tomato soup",
+    "meaning": "tomato soup",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% HP.",
+    "rationale": "Tomato and onion both pull the hpRestore lane, lifting the value."
+  },
+  {
+    "id": "oyakodon",
+    "word": "親子丼",
+    "reading": "おやこどん",
+    "nameEn": "Oyakodon",
+    "meaning": "chicken and egg rice bowl",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "toriniku",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Chicken and egg both pull on the attack lane in this classic donburi."
+  },
+  {
+    "id": "pork-egg-bowl",
+    "word": "豚卵丼",
+    "reading": "ぶたたまどん",
+    "nameEn": "Pork and egg bowl",
+    "meaning": "pork and egg rice bowl",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "butaniku",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Pork and egg both pull the attack lane."
+  },
+  {
+    "id": "onion-beef-bowl",
+    "word": "玉ねぎ牛丼",
+    "reading": "たまねぎぎゅうどん",
+    "nameEn": "Onion beef bowl",
+    "meaning": "beef bowl with onion",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Beef is the centerpiece; the onion enriches without changing the dish's identity."
+  },
+  {
+    "id": "onion-pork-bowl",
+    "word": "玉ねぎ豚丼",
+    "reading": "たまねぎぶたどん",
+    "nameEn": "Onion pork bowl",
+    "meaning": "pork bowl with onion",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "butaniku",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Pork is the centerpiece, onion adds depth."
+  },
+  {
+    "id": "shrimp-egg-rice",
+    "word": "エビ卵ご飯",
+    "reading": "エビたまごごはん",
+    "nameEn": "Shrimp and egg rice",
+    "meaning": "shrimp and egg over rice",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "ebi",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Shrimp and egg both feed the attack lane."
+  },
+  {
+    "id": "crab-egg-rice",
+    "word": "カニ卵ご飯",
+    "reading": "カニたまごごはん",
+    "nameEn": "Crab and egg rice",
+    "meaning": "crab and egg over rice",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "kani",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Crab and egg double up on the attack lane."
+  },
+  {
+    "id": "tuna-soy-bowl",
+    "word": "マグロ醤油丼",
+    "reading": "マグロしょうゆどん",
+    "nameEn": "Tuna soy bowl",
+    "meaning": "tuna rice bowl with soy sauce",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "maguro",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Tuna (uncommon, attack) leads; soy sauce is glaze."
+  },
+  {
+    "id": "salmon-nori-rice",
+    "word": "鮭海苔ご飯",
+    "reading": "さけのりごはん",
+    "nameEn": "Salmon nori rice",
+    "meaning": "salmon and nori over rice",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "sake-salmon",
+        "quantity": 1
+      },
+      {
+        "id": "nori-sheet",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5% and attack by 5%.",
+    "rationale": "Nori's elemental edge and salmon's protein lane both contribute meaningfully."
+  },
+  {
+    "id": "sea-bream-salt-rice",
+    "word": "鯛塩ご飯",
+    "reading": "たいしおごはん",
+    "nameEn": "Sea bream salt rice",
+    "meaning": "sea bream rice with salt",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "tai",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Sea bream (rare, dex) is the heaviest contributor."
+  },
+  {
+    "id": "mushroom-soy-rice",
+    "word": "キノコ醤油ご飯",
+    "reading": "キノコしょうゆごはん",
+    "nameEn": "Mushroom soy rice",
+    "meaning": "mushroom rice with soy sauce",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "kinoko",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Mushrooms drive the hpRestore lane in a soy-sauced rice dish."
+  },
+  {
+    "id": "vegetable-soy-rice",
+    "word": "野菜醤油ご飯",
+    "reading": "やさいしょうゆごはん",
+    "nameEn": "Vegetable soy rice",
+    "meaning": "vegetable soy-sauced rice",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "partyHpRestore",
+        "value": 0.1,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Restores 10% party HP.",
+    "rationale": "Rice and vegetables both feed the partyHp lane; soy sauce just seasons."
+  },
+  {
+    "id": "ume-nori-rice-ball",
+    "word": "梅海苔おにぎり",
+    "reading": "うめのりおにぎり",
+    "nameEn": "Ume nori rice ball",
+    "meaning": "umeboshi nori rice ball",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "nori-sheet",
+        "quantity": 1
+      },
+      {
+        "id": "ume",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Two ele ingredients dominate; rice plays support."
+  },
+  {
+    "id": "fish-sushi",
+    "word": "魚寿司",
+    "reading": "さかなずし",
+    "nameEn": "Fish sushi",
+    "meaning": "fish sushi",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "su",
+        "quantity": 1
+      },
+      {
+        "id": "sakana",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Vinegared rice with fish: the vinegar's element edge defines sushi flavor."
+  },
+  {
+    "id": "vegetable-stir-fry",
+    "word": "野菜炒め",
+    "reading": "やさいいため",
+    "nameEn": "Vegetable stir-fry",
+    "meaning": "stir-fried vegetables",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Two ele ingredients (oil + soy sauce) dominate the stir-fry's flavor."
+  },
+  {
+    "id": "chicken-vegetable-stir-fry",
+    "word": "鶏野菜炒め",
+    "reading": "とりやさいいため",
+    "nameEn": "Chicken vegetable stir-fry",
+    "meaning": "chicken and vegetable stir-fry",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "toriniku",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Chicken (uncommon, attack) leads in this protein-driven stir-fry."
+  },
+  {
+    "id": "pork-vegetable-stir-fry",
+    "word": "豚野菜炒め",
+    "reading": "ぶたやさいいため",
+    "nameEn": "Pork vegetable stir-fry",
+    "meaning": "pork and vegetable stir-fry",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "butaniku",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Pork is the protein hero of the stir-fry."
+  },
+  {
+    "id": "beef-vegetable-stir-fry",
+    "word": "牛野菜炒め",
+    "reading": "ぎゅうやさいいため",
+    "nameEn": "Beef vegetable stir-fry",
+    "meaning": "beef and vegetable stir-fry",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Beef carries the protein lane in this stir-fry."
+  },
+  {
+    "id": "shrimp-vegetable-stir-fry",
+    "word": "エビ野菜炒め",
+    "reading": "エビやさいいため",
+    "nameEn": "Shrimp vegetable stir-fry",
+    "meaning": "shrimp and vegetable stir-fry",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "ebi",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Shrimp is the named protein; the rest is supporting."
+  },
+  {
+    "id": "squid-vegetable-stir-fry",
+    "word": "イカ野菜炒め",
+    "reading": "イカやさいいため",
+    "nameEn": "Squid vegetable stir-fry",
+    "meaning": "squid and vegetable stir-fry",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "ika",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Squid's attack lane wins out in this stir-fry."
+  },
+  {
+    "id": "mushroom-butter-soy",
+    "word": "キノコバター醤油",
+    "reading": "キノコバターしょうゆ",
+    "nameEn": "Mushroom butter soy",
+    "meaning": "mushrooms with butter and soy sauce",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kinoko",
+        "quantity": 1
+      },
+      {
+        "id": "bataa",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Mushrooms drive the hpRestore lane; butter and soy sauce are flavor support."
+  },
+  {
+    "id": "salt-butter-potato",
+    "word": "塩バターポテト",
+    "reading": "しおバターポテト",
+    "nameEn": "Salt butter potato",
+    "meaning": "salt-butter potato",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "jagaimo",
+        "quantity": 1
+      },
+      {
+        "id": "bataa",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 5%.",
+    "rationale": "Two hpMult ingredients (potato + butter) dominate this filling side."
+  },
+  {
+    "id": "cabbage-miso-stir",
+    "word": "キャベツの味噌炒め",
+    "reading": "キャベツのみそいため",
+    "nameEn": "Cabbage miso stir-fry",
+    "meaning": "cabbage stir-fried with miso",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kyabetsu",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Cabbage is the named ingredient; its hpRestore lane wins out."
+  },
+  {
+    "id": "eggplant-miso-stir",
+    "word": "茄子の味噌炒め",
+    "reading": "なすのみそいため",
+    "nameEn": "Eggplant miso stir-fry",
+    "meaning": "eggplant stir-fried with miso",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "nasu",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% HP.",
+    "rationale": "Epic-tier eggplant pulls hpRestore strongly; miso and oil support the flavor."
+  },
+  {
+    "id": "dashi-simmered-pumpkin",
+    "word": "出汁カボチャ煮",
+    "reading": "だしカボチャに",
+    "nameEn": "Dashi-simmered pumpkin",
+    "meaning": "pumpkin simmered in dashi",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kabocha",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Pumpkin (uncommon, hpRestore) is the dish's centerpiece."
+  },
+  {
+    "id": "simmered-daikon",
+    "word": "大根煮",
+    "reading": "だいこんに",
+    "nameEn": "Simmered daikon",
+    "meaning": "simmered daikon",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "daikon",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% MP.",
+    "rationale": "The dashi simmer broth defines the dish; mp lane wins by ingredient weight."
+  },
+  {
+    "id": "root-stew",
+    "word": "根菜の煮物",
+    "reading": "こんさいのにもの",
+    "nameEn": "Simmered root vegetables",
+    "meaning": "simmered root vegetables",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "ne",
+        "quantity": 1
+      },
+      {
+        "id": "jagaimo",
+        "quantity": 1
+      },
+      {
+        "id": "mame",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 10%.",
+    "rationale": "All three ingredients pull hpMult, tripling up the filling-staple effect."
+  },
+  {
+    "id": "bean-tomato-stew",
+    "word": "豆トマト煮",
+    "reading": "まめトマトに",
+    "nameEn": "Bean tomato stew",
+    "meaning": "bean and tomato stew",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "mame",
+        "quantity": 1
+      },
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 20% HP.",
+    "rationale": "Tomato and onion both pull hpRestore; the value lifts above a single-ingredient stew."
+  },
+  {
+    "id": "tofu-steak",
+    "word": "豆腐ステーキ",
+    "reading": "とうふステーキ",
+    "nameEn": "Tofu steak",
+    "meaning": "tofu steak",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "toufu",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Soy sauce and oil both feed the ele lane in a savory pan-fried tofu."
+  },
+  {
+    "id": "fried-tofu",
+    "word": "揚げ豆腐",
+    "reading": "あげどうふ",
+    "nameEn": "Fried tofu",
+    "meaning": "fried tofu",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "toufu",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      },
+      {
+        "id": "negi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Oil and green onion drive the ele lane in fried tofu."
+  },
+  {
+    "id": "okonomiyaki-small",
+    "word": "お好み焼き",
+    "reading": "おこのみやき",
+    "nameEn": "Okonomiyaki",
+    "meaning": "savory Japanese pancake",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kyabetsu",
+        "quantity": 1
+      },
+      {
+        "id": "komugiko",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 5%.",
+    "rationale": "Wheat flour anchors okonomiyaki as a filling pancake; the hpMult lane wins."
+  },
+  {
+    "id": "takoyaki-small",
+    "word": "たこ焼き",
+    "reading": "たこやき",
+    "nameEn": "Takoyaki",
+    "meaning": "octopus dumplings",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "tako",
+        "quantity": 1
+      },
+      {
+        "id": "komugiko",
+        "quantity": 1
+      },
+      {
+        "id": "soosu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Octopus is the named protein hero; the flour is just the dumpling shell."
+  },
+  {
+    "id": "gyoza",
+    "word": "餃子",
+    "reading": "ぎょうざ",
+    "nameEn": "Gyoza",
+    "meaning": "pan-fried dumplings",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "niku",
+        "quantity": 1
+      },
+      {
+        "id": "kyabetsu",
+        "quantity": 1
+      },
+      {
+        "id": "komugiko",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Gyoza are meat dumplings; the meat's attack lane wins."
+  },
+  {
+    "id": "curry-rice-basic",
+    "word": "カレーライス",
+    "reading": "カレーライス",
+    "nameEn": "Curry rice",
+    "meaning": "curry rice",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "niku",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Curry is defined by spice; the elementEdge lane wins."
+  },
+  {
+    "id": "beef-curry-small",
+    "word": "ビーフカレー",
+    "reading": "ビーフカレー",
+    "nameEn": "Beef curry",
+    "meaning": "beef curry",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Curry is defined by spice; the elementEdge lane wins out over the beef."
+  },
+  {
+    "id": "chicken-curry-small",
+    "word": "チキンカレー",
+    "reading": "チキンカレー",
+    "nameEn": "Chicken curry",
+    "meaning": "chicken curry",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "toriniku",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "The spice's ele lane defines this small curry."
+  },
+  {
+    "id": "pork-curry-small",
+    "word": "ポークカレー",
+    "reading": "ポークカレー",
+    "nameEn": "Pork curry",
+    "meaning": "pork curry",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "butaniku",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Spice defines curry; the ele lane wins out over the pork."
+  },
+  {
+    "id": "vegetable-curry-small",
+    "word": "野菜カレー",
+    "reading": "やさいカレー",
+    "nameEn": "Vegetable curry",
+    "meaning": "vegetable curry",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "partyHpRestore",
+        "value": 0.1,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Restores 10% party HP.",
+    "rationale": "Two partyHp ingredients (rice + vegetables) outweigh the spice's ele lane."
+  },
+  {
+    "id": "tomato-sauce",
+    "word": "トマトソース",
+    "reading": "トマトソース",
+    "nameEn": "Tomato sauce",
+    "meaning": "tomato sauce",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "soosu",
+        "quantity": 1
+      },
+      {
+        "id": "ninniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Garlic and sauce both feed the ele lane in this aromatic sauce."
+  },
+  {
+    "id": "garlic-oil",
+    "word": "ガーリックオイル",
+    "reading": "ガーリックオイル",
+    "nameEn": "Garlic oil",
+    "meaning": "garlic oil",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "ninniku",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 10%.",
+    "rationale": "All three ingredients pull on ele; the recipe is essentially flavored fat."
+  },
+  {
+    "id": "sesame-sauce",
+    "word": "ゴマだれ",
+    "reading": "ゴマだれ",
+    "nameEn": "Sesame sauce",
+    "meaning": "sesame dipping sauce",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "goma",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      },
+      {
+        "id": "su",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 10%.",
+    "rationale": "All three condiments feed the ele lane; rare-tier sesame pushes it higher."
+  },
+  {
+    "id": "ponzu",
+    "word": "ポン酢",
+    "reading": "ポンず",
+    "nameEn": "Ponzu",
+    "meaning": "citrus soy sauce",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "shouyu",
+        "quantity": 1
+      },
+      {
+        "id": "su",
+        "quantity": 1
+      },
+      {
+        "id": "remon",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 10%.",
+    "rationale": "Three ele condiments combine into a sharp dipping sauce."
+  },
+  {
+    "id": "fruit-salad",
+    "word": "フルーツサラダ",
+    "reading": "フルーツサラダ",
+    "nameEn": "Fruit salad",
+    "meaning": "fruit salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kudamono",
+        "quantity": 1
+      },
+      {
+        "id": "ringo",
+        "quantity": 1
+      },
+      {
+        "id": "mikan",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Two hpRestore fruits drive the dish; mikan's xpGrant lane needs a rarer recipe."
+  },
+  {
+    "id": "apple-salad",
+    "word": "リンゴサラダ",
+    "reading": "リンゴサラダ",
+    "nameEn": "Apple salad",
+    "meaning": "apple salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "ringo",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      },
+      {
+        "id": "hachimitsu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Lettuce (uncommon, dex) leads the salad; honey's revive lane is reserved for rarer dishes."
+  },
+  {
+    "id": "tomato-cucumber-salad",
+    "word": "トマトキュウリサラダ",
+    "reading": "トマトキュウリサラダ",
+    "nameEn": "Tomato cucumber salad",
+    "meaning": "tomato and cucumber salad",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "kyuuri",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 10%.",
+    "rationale": "Cucumber and lettuce both pull dex; rare-tier cucumber lifts the value."
+  },
+  {
+    "id": "cabbage-slaw",
+    "word": "コールスロー",
+    "reading": "コールスロー",
+    "nameEn": "Coleslaw",
+    "meaning": "coleslaw",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kyabetsu",
+        "quantity": 1
+      },
+      {
+        "id": "ninjin",
+        "quantity": 1
+      },
+      {
+        "id": "su",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 15% HP.",
+    "rationale": "Cabbage and carrot both feed the hpRestore lane; vinegar is just dressing."
+  },
+  {
+    "id": "sesame-daikon-salad",
+    "word": "ゴマ大根サラダ",
+    "reading": "ゴマだいこんサラダ",
+    "nameEn": "Sesame daikon salad",
+    "meaning": "daikon salad with sesame",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "daikon",
+        "quantity": 1
+      },
+      {
+        "id": "kyuuri",
+        "quantity": 1
+      },
+      {
+        "id": "goma",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 5%.",
+    "rationale": "Cucumber (rare, dex) leads the salad; sesame and daikon support."
+  },
+  {
+    "id": "sesame-tofu-salad",
+    "word": "ゴマ豆腐サラダ",
+    "reading": "ゴマとうふサラダ",
+    "nameEn": "Sesame tofu salad",
+    "meaning": "tofu salad with sesame",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "toufu",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      },
+      {
+        "id": "goma",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 5%.",
+    "rationale": "Sesame (rare, ele) gives the dish its distinctive character."
+  },
+  {
+    "id": "seafood-salad",
+    "word": "海鮮サラダ",
+    "reading": "かいせんサラダ",
+    "nameEn": "Seafood salad",
+    "meaning": "seafood salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "sakana",
+        "quantity": 1
+      },
+      {
+        "id": "kai",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "dexMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts dexterity by 10%.",
+    "rationale": "All three ingredients pull on the dex lane, lifting the value above a single-fish salad."
+  },
+  {
+    "id": "tuna-salad",
+    "word": "ツナサラダ",
+    "reading": "ツナサラダ",
+    "nameEn": "Tuna salad",
+    "meaning": "tuna salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "maguro",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      },
+      {
+        "id": "soosu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Tuna (uncommon, attack) is the named protein hero of the salad."
+  },
+  {
+    "id": "chicken-salad",
+    "word": "チキンサラダ",
+    "reading": "チキンサラダ",
+    "nameEn": "Chicken salad",
+    "meaning": "chicken salad",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "toriniku",
+        "quantity": 1
+      },
+      {
+        "id": "retasu",
+        "quantity": 1
+      },
+      {
+        "id": "soosu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 5%.",
+    "rationale": "Chicken is the named protein hero; lettuce and sauce are accents."
+  },
+  {
+    "id": "fruit-yogurt",
+    "word": "フルーツヨーグルト",
+    "reading": "フルーツヨーグルト",
+    "nameEn": "Fruit yogurt",
+    "meaning": "fruit yogurt",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "kudamono",
+        "quantity": 1
+      },
+      {
+        "id": "ichigo",
+        "quantity": 1
+      },
+      {
+        "id": "yooguruto",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 5%.",
+    "rationale": "Yogurt anchors the xpMult lane; the strawberry and fruit add sweetness."
+  },
+  {
+    "id": "peach-yogurt",
+    "word": "桃ヨーグルト",
+    "reading": "ももヨーグルト",
+    "nameEn": "Peach yogurt",
+    "meaning": "peach yogurt",
+    "rarity": "uncommon",
+    "ingredients": [
+      {
+        "id": "momo",
+        "quantity": 1
+      },
+      {
+        "id": "yooguruto",
+        "quantity": 1
+      },
+      {
+        "id": "hachimitsu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts XP gain by 5%.",
+    "rationale": "Yogurt's xpMult lane is the only viable channel; peach and honey just sweeten."
+  },
+  {
+    "id": "anko",
+    "word": "あんこ",
+    "reading": "あんこ",
+    "nameEn": "Anko",
+    "meaning": "sweet red bean paste",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "satou",
+        "quantity": 2
+      },
+      {
+        "id": "azuki",
+        "quantity": 1
+      },
+      {
+        "id": "mizu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpGrant",
+        "value": 1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Grants XP equal to 1 enemy kill.",
+    "rationale": "Doubled sugar plus rare adzuki both pull xpGrant; at 4 total ingredients with rare rarity, the rules set xpGrant to a full kill's worth of XP."
+  },
+  {
+    "id": "honey-lemon-water",
+    "word": "蜂蜜レモン水",
+    "reading": "はちみつレモンすい",
+    "nameEn": "Honey lemon water",
+    "meaning": "honey lemon water",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "hachimitsu",
+        "quantity": 2
+      },
+      {
+        "id": "remon",
+        "quantity": 1
+      },
+      {
+        "id": "mizu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.7,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 70% MP.",
+    "rationale": "A focused restorative drink: water carries the mp lane and the doubled honey plus lemon push it into a strong tonic. Single-effect design keeps the potion cleanly mp-led."
+  },
+  {
+    "id": "cream-stew",
+    "word": "クリームシチュー",
+    "reading": "クリームシチュー",
+    "nameEn": "Cream stew",
+    "meaning": "cream stew",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "toriniku",
+        "quantity": 1
+      },
+      {
+        "id": "jagaimo",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 30% and attack by 30%.",
+    "rationale": "Potato anchors the filling hpMult lane; chicken drives the attack lane. A hearty stew that builds both bulk and offense."
+  },
+  {
+    "id": "beef-stew",
+    "word": "ビーフシチュー",
+    "reading": "ビーフシチュー",
+    "nameEn": "Beef stew",
+    "meaning": "beef stew",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      },
+      {
+        "id": "jagaimo",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.65,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 65% HP and boosts attack by 30%.",
+    "rationale": "Sweet onion anchors the hpRestore lane; beef drives a meaty attack lane. A heartwarming stew that mends and empowers."
+  },
+  {
+    "id": "pork-miso-soup",
+    "word": "豚汁",
+    "reading": "とんじる",
+    "nameEn": "Tonjiru",
+    "meaning": "pork and vegetable miso soup",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      },
+      {
+        "id": "butaniku",
+        "quantity": 1
+      },
+      {
+        "id": "daikon",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.7,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 70% MP and boosts attack by 30%.",
+    "rationale": "Two mp ingredients (water + miso) build a deeply restorative broth; the pork lifts the attack lane for a robust tonjiru."
+  },
+  {
+    "id": "oden",
+    "word": "おでん",
+    "reading": "おでん",
+    "nameEn": "Oden",
+    "meaning": "Japanese winter hot pot",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "daikon",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      },
+      {
+        "id": "konbu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.7,
+        "target": "fedCreature"
+      },
+      {
+        "type": "elementEdge",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 70% MP and boosts elemental edge by 20%.",
+    "rationale": "Dashi carries the warming mp broth; rare kombu adds strong umami depth that pushes the elemental edge near cap."
+  },
+  {
+    "id": "chicken-nabe",
+    "word": "鶏鍋",
+    "reading": "とりなべ",
+    "nameEn": "Chicken hot pot",
+    "meaning": "chicken hot pot",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "toriniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.7,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 70% MP and boosts attack by 30%.",
+    "rationale": "Two mp ingredients (water + dashi) give a deep, warming broth; the chicken anchors the attack lane for a hearty hot pot."
+  },
+  {
+    "id": "sukiyaki",
+    "word": "すき焼き",
+    "reading": "すきやき",
+    "nameEn": "Sukiyaki",
+    "meaning": "sweet soy beef hot pot",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      },
+      {
+        "id": "satou",
+        "quantity": 1
+      },
+      {
+        "id": "negi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.32,
+        "target": "fedCreature"
+      },
+      {
+        "type": "elementEdge",
+        "value": 0.22,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 32% and elemental edge by 22%.",
+    "rationale": "Beef carries the attack lane; soy sauce and uncommon green onion stack twice on the elemental edge lane. A premium dish that hits hard on both fronts."
+  },
+  {
+    "id": "nikujaga",
+    "word": "肉じゃが",
+    "reading": "にくじゃが",
+    "nameEn": "Nikujaga",
+    "meaning": "meat and potato stew",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "niku",
+        "quantity": 1
+      },
+      {
+        "id": "jagaimo",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.65,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 65% HP and boosts attack by 30%.",
+    "rationale": "Onion anchors the hpRestore lane while meat drives attack. A classic comfort stew with the strength its homely reputation deserves."
+  },
+  {
+    "id": "chicken-curry",
+    "word": "チキンカレー",
+    "reading": "チキンカレー",
+    "nameEn": "Chicken curry",
+    "meaning": "chicken curry",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "toriniku",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      },
+      {
+        "type": "elementEdge",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 30% and elemental edge by 20%.",
+    "rationale": "Chicken drives the attack lane; uncommon spice pushes the elemental edge near cap for a hot, sharp curry."
+  },
+  {
+    "id": "seafood-curry",
+    "word": "海鮮カレー",
+    "reading": "かいせんカレー",
+    "nameEn": "Seafood curry",
+    "meaning": "seafood curry",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "ebi",
+        "quantity": 1
+      },
+      {
+        "id": "ika",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      },
+      {
+        "type": "elementEdge",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 30% and elemental edge by 20%.",
+    "rationale": "Two seafood proteins (shrimp + squid) drive a strong attack lane while spicy curry pushes elemental edge close to cap."
+  },
+  {
+    "id": "fried-rice",
+    "word": "チャーハン",
+    "reading": "チャーハン",
+    "nameEn": "Fried rice",
+    "meaning": "Chinese-style fried rice",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      },
+      {
+        "id": "negi",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.22,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.22,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 22% and attack by 22%.",
+    "rationale": "Soy sauce and green onion both fuel a strong elemental edge from the hot wok, while egg lifts the attack lane."
+  },
+  {
+    "id": "omurice",
+    "word": "オムライス",
+    "reading": "オムライス",
+    "nameEn": "Omurice",
+    "meaning": "omelet rice",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      },
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "soosu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.65,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.28,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 65% HP and boosts attack by 28%.",
+    "rationale": "Comfort-food classic: tomato anchors a strong HP recovery, while egg drives a meaningful attack lift."
+  },
+  {
+    "id": "yakisoba",
+    "word": "焼きそば",
+    "reading": "やきそば",
+    "nameEn": "Yakisoba",
+    "meaning": "fried noodles",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "mugi",
+        "quantity": 1
+      },
+      {
+        "id": "niku",
+        "quantity": 1
+      },
+      {
+        "id": "kyabetsu",
+        "quantity": 1
+      },
+      {
+        "id": "soosu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      },
+      {
+        "type": "elementEdge",
+        "value": 0.22,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 30% and elemental edge by 22%.",
+    "rationale": "Hot griddle dish: meat drives attack near cap, while the iconic sauce pushes elemental edge nearly to cap."
+  },
+  {
+    "id": "okonomiyaki",
+    "word": "お好み焼き",
+    "reading": "おこのみやき",
+    "nameEn": "Okonomiyaki",
+    "meaning": "savory Japanese pancake",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kyabetsu",
+        "quantity": 1
+      },
+      {
+        "id": "komugiko",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      },
+      {
+        "id": "soosu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.28,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 30% and attack by 28%.",
+    "rationale": "Wheat flour drives a filling max-HP lane to cap range, while egg pairs with the hot griddle for a strong attack lift."
+  },
+  {
+    "id": "takoyaki",
+    "word": "たこ焼き",
+    "reading": "たこやき",
+    "nameEn": "Takoyaki",
+    "meaning": "octopus dumplings",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "tako",
+        "quantity": 1
+      },
+      {
+        "id": "komugiko",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "soosu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.72,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 72% MP and boosts attack by 30%.",
+    "rationale": "Dashi-laced batter floods the MP lane, while octopus drives attack near cap."
+  },
+  {
+    "id": "shrimp-tempura",
+    "word": "エビ天ぷら",
+    "reading": "エビてんぷら",
+    "nameEn": "Shrimp tempura",
+    "meaning": "shrimp tempura",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "ebi",
+        "quantity": 1
+      },
+      {
+        "id": "komugiko",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.25,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.28,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 25% and attack by 28%.",
+    "rationale": "Crisp tempura: salt and frying oil push elemental edge to its cap, while the shrimp keeps the attack lane meaningful."
+  },
+  {
+    "id": "vegetable-tempura",
+    "word": "野菜天ぷら",
+    "reading": "やさいてんぷら",
+    "nameEn": "Vegetable tempura",
+    "meaning": "vegetable tempura",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "komugiko",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.25,
+        "target": "fedCreature"
+      },
+      {
+        "type": "partyHpRestore",
+        "value": 0.4,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 25% and restores 40% party HP.",
+    "rationale": "Two elemental ingredients (oil + salt) push elemental edge to cap; the shareable vegetables drive a strong party heal."
+  },
+  {
+    "id": "salmon-set",
+    "word": "鮭定食",
+    "reading": "さけていしょく",
+    "nameEn": "Salmon set meal",
+    "meaning": "salmon set meal",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "sake-salmon",
+        "quantity": 1
+      },
+      {
+        "id": "shio",
+        "quantity": 1
+      },
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      },
+      {
+        "type": "mpRestore",
+        "value": 0.72,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 30% and restores 72% MP.",
+    "rationale": "Set meal: salmon drives attack near cap while the miso side delivers a strong MP recovery."
+  },
+  {
+    "id": "mackerel-miso-set",
+    "word": "サバ味噌定食",
+    "reading": "さばみそていしょく",
+    "nameEn": "Miso mackerel set meal",
+    "meaning": "miso mackerel set meal",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "saba",
+        "quantity": 1
+      },
+      {
+        "id": "miso",
+        "quantity": 1
+      },
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "negi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      },
+      {
+        "type": "mpRestore",
+        "value": 0.72,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 30% and restores 72% MP.",
+    "rationale": "Set meal: rare mackerel drives attack near cap while miso provides a strong MP recovery."
+  },
+  {
+    "id": "chirashi-sushi",
+    "word": "ちらし寿司",
+    "reading": "ちらしずし",
+    "nameEn": "Chirashi sushi",
+    "meaning": "scattered-style sushi",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "sakana",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      },
+      {
+        "id": "su",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.2,
+        "target": "fedCreature"
+      },
+      {
+        "type": "dexMult",
+        "value": 0.15,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 20% and dexterity by 15%.",
+    "rationale": "Vinegar defines sushi's bright acid edge (ele cap-leaning); fresh fish keeps the dexterity lane meaningful. A 4-ingredient rare delivers a strong double bonus."
+  },
+  {
+    "id": "seafood-soup-rich",
+    "word": "海鮮スープ",
+    "reading": "かいせんスープ",
+    "nameEn": "Seafood soup",
+    "meaning": "rich seafood soup",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "dashi",
+        "quantity": 1
+      },
+      {
+        "id": "kai",
+        "quantity": 1
+      },
+      {
+        "id": "ebi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.7,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 70% MP and boosts attack by 10%.",
+    "rationale": "Water plus dashi load the mpRestore lane to a strong 4-ingredient soup value; shrimp keeps a small attack lane in play."
+  },
+  {
+    "id": "tomato-beef-stew",
+    "word": "牛肉のトマト煮",
+    "reading": "ぎゅうにくのトマトに",
+    "nameEn": "Beef simmered in tomato",
+    "meaning": "beef simmered in tomato",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      },
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "wain",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.65,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.2,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 65% HP and boosts attack by 20%.",
+    "rationale": "Renamed from the awkwardly stacked トマトビーフ煮 to the natural 牛肉のトマト煮. Tomato and onion both anchor hpRestore for a hearty stew heal; beef carries a strong attack lane while wine adds depth (lane omitted to keep the recipe tight)."
+  },
+  {
+    "id": "minestrone",
+    "word": "ミネストローネ",
+    "reading": "ミネストローネ",
+    "nameEn": "Minestrone",
+    "meaning": "minestrone vegetable soup",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "mame",
+        "quantity": 1
+      },
+      {
+        "id": "mizu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "partyHpRestore",
+        "value": 0.4,
+        "target": "party"
+      },
+      {
+        "type": "hpRestore",
+        "value": 0.55,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 40% party HP and 55% HP.",
+    "rationale": "Vegetables anchor a strong shareable partyHpRestore; tomato delivers a hearty solo heal — the rustic Italian soup feeds the whole table."
+  },
+  {
+    "id": "vegetable-tomato-stew",
+    "word": "野菜のトマト煮",
+    "reading": "やさいのトマトに",
+    "nameEn": "Vegetable tomato stew",
+    "meaning": "vegetables simmered in tomato",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "tomato",
+        "quantity": 1
+      },
+      {
+        "id": "nasu",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.8,
+        "target": "fedCreature"
+      },
+      {
+        "type": "elementEdge",
+        "value": 0.12,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 80% HP and boosts elemental edge by 12%.",
+    "rationale": "Three hpRestore ingredients (epic-tier eggplant headlining alongside tomato and onion) push the heal near cap for an epic feel; oil adds a meaningful elemental edge accent. Renamed to the more natural 野菜のトマト煮."
+  },
+  {
+    "id": "pumpkin-gratin",
+    "word": "カボチャグラタン",
+    "reading": "カボチャグラタン",
+    "nameEn": "Pumpkin gratin",
+    "meaning": "pumpkin gratin",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kabocha",
+        "quantity": 1
+      },
+      {
+        "id": "chiizu",
+        "quantity": 1
+      },
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "bataa",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.65,
+        "target": "fedCreature"
+      },
+      {
+        "type": "hpMult",
+        "value": 0.3,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 65% HP and boosts max HP by 30%.",
+    "rationale": "Pumpkin anchors a hearty hpRestore; butter's hpMult lane is amplified by the rich cream-and-cheese base for a strongly filling gratin. Kept to two clean lanes rather than spreading thin across milk's xp lane."
+  },
+  {
+    "id": "rich-corn-soup",
+    "word": "コーンスープ",
+    "reading": "コーンスープ",
+    "nameEn": "Corn soup",
+    "meaning": "rich corn soup",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "toumorokoshi",
+        "quantity": 1
+      },
+      {
+        "id": "gyuunyuu",
+        "quantity": 1
+      },
+      {
+        "id": "bataa",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.35,
+        "target": "fedCreature"
+      },
+      {
+        "type": "mpRestore",
+        "value": 0.6,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 35% and restores 60% MP.",
+    "rationale": "Epic-tier corn plus butter push hpMult close to cap for a premium filling boost; water carries a strong mpRestore soup lane. The hpMult lane hits 87% of cap, befitting epic rarity."
+  },
+  {
+    "id": "fruit-cake",
+    "word": "フルーツケーキ",
+    "reading": "フルーツケーキ",
+    "nameEn": "Fruit cake",
+    "meaning": "fruit cake",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "komugiko",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      },
+      {
+        "id": "kudamono",
+        "quantity": 1
+      },
+      {
+        "id": "satou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpGrant",
+        "value": 1,
+        "target": "fedCreature"
+      },
+      {
+        "type": "hpRestore",
+        "value": 0.65,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Grants XP equal to 1 enemy kill and restores 65% HP.",
+    "rationale": "Sugar's xpGrant lane sits at the 4-ingredient rare cap for a full kill-equivalent; fruit lifts hpRestore to a meaningful sweet-treat heal. Two strong lanes beat scattering across egg's atk and flour's hpMult."
+  },
+  {
+    "id": "strawberry-cake",
+    "word": "イチゴケーキ",
+    "reading": "イチゴケーキ",
+    "nameEn": "Strawberry cake",
+    "meaning": "strawberry cake",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "komugiko",
+        "quantity": 1
+      },
+      {
+        "id": "tamago",
+        "quantity": 1
+      },
+      {
+        "id": "ichigo",
+        "quantity": 1
+      },
+      {
+        "id": "kuriimu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpGrant",
+        "value": 1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Grants XP equal to 1 enemy kill.",
+    "rationale": "Two xpGrant ingredients (strawberry + cream) anchor a 4-ingredient rare cake at the full kill-equivalent."
+  },
+  {
+    "id": "revive-fruit-cake",
+    "word": "蜂蜜イチゴケーキ",
+    "reading": "はちみつイチゴケーキ",
+    "nameEn": "Honey strawberry cake",
+    "meaning": "honey strawberry cake",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "hachimitsu",
+        "quantity": 2
+      },
+      {
+        "id": "komugiko",
+        "quantity": 1
+      },
+      {
+        "id": "ichigo",
+        "quantity": 1
+      },
+      {
+        "id": "kuriimu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "revive",
+        "value": 1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Revives a downed creature to 100% HP.",
+    "rationale": "Two honey jars and an epic-tier dessert frame let this premium cake fully revive a fallen creature; the strawberry-and-cream sweetness carries the recipe at maximum revive value."
+  },
+  {
+    "id": "special-herb-soup",
+    "word": "特製ハーブスープ",
+    "reading": "とくせいハーブスープ",
+    "nameEn": "Special herb soup",
+    "meaning": "special herb soup",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "hachimitsu",
+        "quantity": 2
+      },
+      {
+        "id": "haabu",
+        "quantity": 1
+      },
+      {
+        "id": "mizu",
+        "quantity": 1
+      },
+      {
+        "id": "minto",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "revive",
+        "value": 1,
+        "target": "fedCreature"
+      },
+      {
+        "type": "mpRestore",
+        "value": 0.85,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Revives a downed creature to 100% HP and restores 85% MP.",
+    "rationale": "Doubled honey unlocks the epic 5-ingredient full revive, while herb, water, and rare mint stack three mpRestore lanes into a strong MP refill on top."
+  },
+  {
+    "id": "special-curry",
+    "word": "特製カレー",
+    "reading": "とくせいカレー",
+    "nameEn": "Special curry",
+    "meaning": "special curry",
+    "rarity": "legendary",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "tamanegi",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      },
+      {
+        "id": "koshou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.25,
+        "target": "fedCreature"
+      },
+      {
+        "type": "attackMult",
+        "value": 0.1,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 25% and attack by 10%.",
+    "rationale": "Legendary pepper plus spice and onion drive ele toward its 5-ingredient cap; beef keeps a meaningful attack lane."
+  },
+  {
+    "id": "red-bean-dessert",
+    "word": "小豆デザート",
+    "reading": "あずきデザート",
+    "nameEn": "Adzuki dessert",
+    "meaning": "adzuki bean dessert",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "azuki",
+        "quantity": 1
+      },
+      {
+        "id": "satou",
+        "quantity": 1
+      },
+      {
+        "id": "kuriimu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpGrant",
+        "value": 0.5,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Grants XP equal to half an enemy kill.",
+    "rationale": "Three xpGrant ingredients anchored by rare adzuki form a clean sweet-bean dessert at the rare 3-ingredient xpGrant value."
+  },
+  {
+    "id": "vegetable-feast",
+    "word": "野菜盛り合わせ",
+    "reading": "やさいもりあわせ",
+    "nameEn": "Vegetable platter",
+    "meaning": "assorted vegetable platter",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "nasu",
+        "quantity": 2
+      },
+      {
+        "id": "kabocha",
+        "quantity": 1
+      },
+      {
+        "id": "nashi",
+        "quantity": 1
+      },
+      {
+        "id": "kaki-persimmon",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.95,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 95% HP.",
+    "rationale": "Doubled epic eggplant anchors four stacked hpRestore lanes (pumpkin, pear, persimmon) for a generous five-portion vegetable platter heal."
+  },
+  {
+    "id": "power-meat-stew",
+    "word": "肉シチュー",
+    "reading": "にくシチュー",
+    "nameEn": "Hearty meat stew",
+    "meaning": "hearty meat stew",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "saba",
+        "quantity": 2
+      },
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "butaniku",
+        "quantity": 1
+      },
+      {
+        "id": "toriniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.5,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 50%.",
+    "rationale": "Doubled rare mackerel plus three uncommon meats (beef, pork, chicken) stack five attackMult lanes into the highest-power 5-ingredient meat stew the formula supports."
+  },
+  {
+    "id": "five-grain-rice",
+    "word": "五穀米",
+    "reading": "ごこくまい",
+    "nameEn": "Five-grain rice",
+    "meaning": "five-grain rice",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "toumorokoshi",
+        "quantity": 2
+      },
+      {
+        "id": "daizu",
+        "quantity": 1
+      },
+      {
+        "id": "komugi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpMult",
+        "value": 0.5,
+        "target": "fedCreature"
+      },
+      {
+        "type": "partyHpRestore",
+        "value": 0.06,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Boosts max HP by 50% and restores 6% party HP.",
+    "rationale": "Doubled epic corn plus rare soybean and uncommon wheat drive the hpMult lane higher; rice still feeds the party with a small shared restore."
+  },
+  {
+    "id": "chocolate-cocoa-cake",
+    "word": "チョコレートケーキ",
+    "reading": "チョコレートケーキ",
+    "nameEn": "Chocolate cake",
+    "meaning": "chocolate cake",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "chokoreeto",
+        "quantity": 1
+      },
+      {
+        "id": "kokoa",
+        "quantity": 1
+      },
+      {
+        "id": "satou",
+        "quantity": 1
+      },
+      {
+        "id": "kuriimu",
+        "quantity": 1
+      },
+      {
+        "id": "kinomi",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "xpGrant",
+        "value": 1.5,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Grants XP equal to 1.5 enemy kills.",
+    "rationale": "Five xpGrant ingredients (chocolate, cocoa, sugar, cream, tree nut) at epic rarity hit the premium 5-ingredient xpGrant value; the recipe stays a focused dessert."
+  },
+  {
+    "id": "mixed-fruit-parfait",
+    "word": "ミックスフルーツパフェ",
+    "reading": "ミックスフルーツパフェ",
+    "nameEn": "Mixed fruit parfait",
+    "meaning": "mixed fruit parfait",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "budou",
+        "quantity": 1
+      },
+      {
+        "id": "nashi",
+        "quantity": 1
+      },
+      {
+        "id": "kaki-persimmon",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "hpRestore",
+        "value": 0.18,
+        "target": "fedCreature"
+      },
+      {
+        "type": "xpGrant",
+        "value": 0.5,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 18% HP and grants XP equal to half an enemy kill.",
+    "rationale": "Two uncommon hp fruits and rare grape build a 3-ingredient parfait that heals modestly and grants the rare xpGrant kicker."
+  },
+  {
+    "id": "hot-pepper-stir-fry",
+    "word": "唐辛子炒め",
+    "reading": "とうがらしいため",
+    "nameEn": "Chili pepper stir-fry",
+    "meaning": "chili pepper stir-fry",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "tougarashi",
+        "quantity": 1
+      },
+      {
+        "id": "piiman",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "abura",
+        "quantity": 1
+      },
+      {
+        "id": "shouyu",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "elementEdge",
+        "value": 0.25,
+        "target": "fedCreature"
+      },
+      {
+        "type": "dexMult",
+        "value": 0.05,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts elemental edge by 25% and dexterity by 5%.",
+    "rationale": "Epic chili plus oil and soy sauce all pull ele toward premium 5-ingredient values; green pepper adds a small dex lane."
+  },
+  {
+    "id": "kaisendon",
+    "word": "海鮮丼",
+    "reading": "かいせんどん",
+    "nameEn": "Kaisendon",
+    "meaning": "seafood rice bowl",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "saba",
+        "quantity": 2
+      },
+      {
+        "id": "maguro",
+        "quantity": 1
+      },
+      {
+        "id": "sake-salmon",
+        "quantity": 1
+      },
+      {
+        "id": "kome",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.5,
+        "target": "fedCreature"
+      },
+      {
+        "type": "partyHpRestore",
+        "value": 0.06,
+        "target": "party"
+      }
+    ],
+    "effectDescription": "Boosts attack by 50% and restores 6% party HP.",
+    "rationale": "Doubled rare mackerel plus tuna and salmon load three attackMult lanes; rice keeps the bowl true to form and feeds the whole party."
+  },
+  {
+    "id": "nabeyaki-udon",
+    "word": "鍋焼きうどん",
+    "reading": "なべやきうどん",
+    "nameEn": "Nabeyaki udon",
+    "meaning": "hot pot udon noodles",
+    "rarity": "epic",
+    "ingredients": [
+      {
+        "id": "dashi",
+        "quantity": 2
+      },
+      {
+        "id": "minto",
+        "quantity": 1
+      },
+      {
+        "id": "mugi",
+        "quantity": 1
+      },
+      {
+        "id": "toriniku",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "mpRestore",
+        "value": 0.85,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Restores 85% MP.",
+    "rationale": "Doubled dashi and rare mint stack a strong mpRestore broth; wheat noodles and chicken keep the hot pot grounded as a real udon."
+  },
+  {
+    "id": "beef-curry",
+    "word": "牛肉と野菜のカレー",
+    "reading": "ぎゅうにくとやさいのカレー",
+    "nameEn": "Beef and vegetable curry",
+    "meaning": "beef and vegetable curry",
+    "rarity": "rare",
+    "ingredients": [
+      {
+        "id": "kome",
+        "quantity": 1
+      },
+      {
+        "id": "gyuuniku",
+        "quantity": 1
+      },
+      {
+        "id": "yasai",
+        "quantity": 1
+      },
+      {
+        "id": "koushinryou",
+        "quantity": 1
+      }
+    ],
+    "effects": [
+      {
+        "type": "attackMult",
+        "value": 0.32,
+        "target": "fedCreature"
+      },
+      {
+        "type": "elementEdge",
+        "value": 0.22,
+        "target": "fedCreature"
+      }
+    ],
+    "effectDescription": "Boosts attack by 32% and elemental edge by 22%.",
+    "rationale": "Beef and vegetable curry — beef drives attack, spice drives elemental edge; vegetables and rice round out the meal."
+  }
+]

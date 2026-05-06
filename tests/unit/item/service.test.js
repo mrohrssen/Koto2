@@ -276,3 +276,14 @@ describe('Item Buffs - Target Index', () => {
     assert.strictEqual(party.active[1].hp, 0); // still KO
   });
 });
+
+describe('Item Buffs - Dex', () => {
+  it('createItemBuffs includes dexMult and boost applies it to the target creature', () => {
+    const creature = mockCreature();
+    const party = { active: [creature], reserves: [] };
+
+    applyItem({ type: 'boost', effect: { field: 'dexMult', value: 0.10 } }, party, null, 0);
+
+    assert.strictEqual(creature.itemBuffs.dexMult, 1.10);
+  });
+});

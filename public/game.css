@@ -1,3 +1,66 @@
+.campfire-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.campfire-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.campfire-tab {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--text-primary);
+  padding: 7px 12px;
+}
+
+.campfire-tab.active {
+  background: rgba(239, 143, 53, 0.28);
+  border-color: rgba(239, 143, 53, 0.7);
+}
+
+.campfire-grid,
+.campfire-recipe-list,
+.campfire-target-list {
+  display: grid;
+  gap: 8px;
+}
+
+.campfire-ingredient {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.campfire-ingredient-name {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.campfire-ingredient-count {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  font-weight: 700;
+}
+
+.campfire-cook-btn {
+  margin-top: 10px;
+}
+
+.campfire-result {
+  display: grid;
+  gap: 10px;
+}
 /* ===== RESET & BASE ===== */
 *, *::before, *::after {
   box-sizing: border-box;
