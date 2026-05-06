@@ -12,6 +12,7 @@ import {
   processEnemyTurn,
   processBefriend,
   awardBattleXp,
+  awardKillXp,
   tickAllEffects,
   executeNpcSkill,
   CREDITS_PER_KILL,
@@ -257,6 +258,88 @@ export class CombatCycleService {
     return rewards;
   }
 
+  _collectPoisonKoXpEvents(effectEvents, metaMults) {
+    const xpEvents = [];
+    const defeatedEnemyIndices = new Set();
+    for (const event of effectEvents || []) {
+      if (event.type !== 'poison') continue;
+      if (event.targetSide !== 'enemy') continue;
+      if (!event.targetDefeated) continue;
+      if (typeof event.targetIndex !== 'number') continue;
+      if (defeatedEnemyIndices.has(event.targetIndex)) continue;
+
+      const enemy = this.gm.combat.enemies[event.targetIndex];
+      if (!enemy) continue;
+
+      defeatedEnemyIndices.add(event.targetIndex);
+      const xpEvent = awardKillXp(
+        this.gm.run.creatureParty,
+        enemy.level,
+        this.gm.run.itemBuffs?.xpMultiplier,
+        this.gm.run.itemBuffs?.xpBalanceStacks,
+        metaMults,
+        this.gm.run.itemBuffs
+      );
+      xpEvents.push({ enemyId: enemy.id, enemyIndex: event.targetIndex, enemyName: enemy.nameEn, ...xpEvent });
+    }
+    return xpEvents;
+  }
+
+  _finishPoisonTerminalIfNeeded(actionType, effectEvents, roundStartEvents, poisonXpEvents = []) {
+    if (checkAllDefeated(this.gm.combat.enemies)) {
+      if (poisonXpEvents.length > 0) {
+        this.gm.run.player.credits = (this.gm.run.player.credits || 0) + poisonXpEvents.length * CREDITS_PER_KILL;
+      }
+      collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
+      finalizeCombatVictory(this.gm.combat, this.gm.run, { meta: this.gm.meta, narrate: (t) => this.gm.narrate(t) });
+      const tutorialRewards = this._collectTutorialRewards();
+      this.gm.emitState();
+      return {
+        actionType,
+        barks: [],
+        playerAttacks: [],
+        enemyAttacks: [],
+        npcSkillAttacks: [],
+        npcSkillUsed: null,
+        counterAttacks: [],
+        xpEvents: poisonXpEvents,
+        mpRegens: [],
+        effectEvents,
+        roundStartEvents,
+        combatEnded: true,
+        victory: true,
+        allies: this.gm.combat.allies,
+        creatureParty: this.gm.run.creatureParty,
+        enemies: this.gm.combat.enemies,
+        newCollectionAdditions: [],
+        tutorialRewards,
+        elementDropsCollected: getElementDropList(this.gm.combat.enemies)
+      };
+    }
+
+    if (checkAllDefeated(this.gm.combat.allies)) {
+      resolveDefeat(this.gm.combat, this.gm.run, this.gm.meta, { onDefeat: () => this.gm._onRunDefeat() });
+      this.gm.emitState();
+      return {
+        actionType,
+        playerAttacks: [],
+        enemyAttacks: [],
+        xpEvents: poisonXpEvents,
+        effectEvents,
+        roundStartEvents,
+        counterAttacks: [],
+        koSwaps: [],
+        koRemovals: [],
+        combatEnded: true,
+        victory: false,
+        turnCount: this.gm.combat.turnCount,
+        creatureParty: this.gm.run.creatureParty
+      };
+    }
+
+    return null;
+  }
+
   /**
    * Execute one creature combat cycle
    * @param {string} actionType - 'attack' | 'defend' | 'befriend'
@@ -300,6 +383,10 @@ export class CombatCycleService {
     });
 
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
+    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);
+    const poisonTerminal = this._finishPoisonTerminalIfNeeded('attack', effectEvents, roundStartEvents, poisonXpEvents);
+    if (poisonTerminal) return poisonTerminal;
+
     const playerResult = processInterleavedPvERound(
       this.gm.combat.allies,
       this.gm.combat.enemies,
@@ -309,6 +396,7 @@ export class CombatCycleService {
       metaMults,
       { runPartySkills: this.gm.run.partySkills, combat: this.gm.combat }
     );
+    playerResult.xpEvents = [...poisonXpEvents, ...(playerResult.xpEvents || [])];
 
     // Interleaved combat applies party skills inside each player initiative slot
     // so chain kills can prevent later enemy turns. Keep this fallback for any
@@ -649,6 +737,10 @@ export class CombatCycleService {
       runPartySkills: this.gm.run.partySkills,
       combat: this.gm.combat
     });
+    const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
+    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);
+    const poisonTerminal = this._finishPoisonTerminalIfNeeded('defend', effectEvents, roundStartEvents, poisonXpEvents);
+    if (poisonTerminal) return poisonTerminal;
 
     processDefendTurn(this.gm.combat.allies);
 
@@ -748,6 +840,10 @@ export class CombatCycleService {
       runPartySkills: this.gm.run.partySkills,
       combat: this.gm.combat
     });
+    const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
+    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);
+    const poisonTerminal = this._finishPoisonTerminalIfNeeded('befriend', effectEvents, roundStartEvents, poisonXpEvents);
+    if (poisonTerminal) return poisonTerminal;
 
     const targetIdx =
       typeof this.gm.combat.befriendConversation?.targetEnemyIndex === 'number'

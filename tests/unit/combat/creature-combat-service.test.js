@@ -149,6 +149,33 @@ describe('Creature Combat - Enemy Turn', () => {
   });
 });
 
+describe('Creature Combat - Interleaved Initiative', () => {
+  it('processInterleavedPvERound resolves higher dex before higher level', () => {
+    const slowHighLevel = instantiateCreature('ishi', 20);
+    const fastLowLevel = instantiateCreature('kaze', 5);
+    slowHighLevel.dex = 5;
+    fastLowLevel.dex = 30;
+    slowHighLevel.statStages = { atk: 0, def: 0, dex: 0 };
+    fastLowLevel.statStages = { atk: 0, def: 0, dex: 0 };
+    slowHighLevel.moves = [{
+      id: 'slow-hit', name: '遅打', nameEn: 'Slow Hit', reading: 'おそだ',
+      element: 'neutral', category: 'damage', target: 'single_enemy', power: 5, mpCost: 0
+    }];
+    fastLowLevel.moves = [{
+      id: 'fast-hit', name: '速打', nameEn: 'Fast Hit', reading: 'はやだ',
+      element: 'neutral', category: 'damage', target: 'single_enemy', power: 5, mpCost: 0
+    }];
+
+    const result = processInterleavedPvERound(
+      [slowHighLevel],
+      [fastLowLevel],
+      [{ creatureIndex: 0, moveId: 'slow-hit', targetIndex: 0 }]
+    );
+
+    assert.strictEqual(result.enemyAttacks[0].attackerId, fastLowLevel.id);
+  });
+});
+
 describe('Creature Combat - Befriend (disabled in Koto2)', () => {
   // Old befriend mechanic disabled in Koto2 — replaced by name quiz on kill.
   // These tests verify the disabled state returns the expected rejection.
@@ -185,16 +212,79 @@ describe('Creature Combat - Status Effects in Move Turn', () => {
     assert.strictEqual(enemies[0].hp, startHp);
   });
 
-  it('hasted creature attacks twice', () => {
+  it('dodged damage move skips damage, status, and stat riders', () => {
     const allies = [instantiateCreature('mizu')];
-    allies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
     const enemies = [instantiateCreature('ki')];
+    allies[0].statStages = { atk: 0, def: 0, dex: -6 };
+    enemies[0].statStages = { atk: 0, def: 0, dex: 6 };
+    const startHp = enemies[0].hp;
+    const move = {
+      id: 'slow-poison-hit',
+      name: '毒打', nameEn: 'Poison Hit', reading: 'どくだ',
+      element: 'neutral', category: 'damage', target: 'single_enemy',
+      power: 20, mpCost: 0, statusEffect: 'poison', statusChance: 100,
+      statusDuration: 2, statChanges: { atk: -1 }
+    };
+    allies[0].moves = [move];
+
+    const origRandom = Math.random;
+    Math.random = () => 0.01;
+    try {
+      const result = processMoveTurn(allies, enemies, [{ creatureIndex: 0, moveId: 'slow-poison-hit', targetIndex: 0 }]);
+      assert.strictEqual(result.attacks[0].dodged, true);
+      assert.strictEqual(result.attacks[0].damage, 0);
+      assert.strictEqual(enemies[0].hp, startHp);
+      assert.deepStrictEqual(enemies[0].activeEffects || [], []);
+      assert.strictEqual(enemies[0].statStages.atk, 0);
+    } finally {
+      Math.random = origRandom;
+    }
+  });
+
+  it('critical damage marks attack record and increases damage', () => {
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
+    allies[0].dex = 999;
+    allies[0].statStages = { atk: 0, def: 0, dex: 6 };
+    enemies[0].statStages = { atk: 0, def: 0, dex: 0 };
     enemies[0].hp = 9999;
     enemies[0].maxHp = 9999;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
-    const result = processMoveTurn(allies, enemies, moveChoices);
-    assert.strictEqual(result.attacks.length, 2, 'hasted creature should attack twice');
-    assert.ok(!allies[0].activeEffects.some(e => e.type === 'haste'));
+
+    const origRandom = Math.random;
+    Math.random = () => 0.01;
+    try {
+      const result = processMoveTurn(allies, enemies, [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }]);
+      assert.strictEqual(result.attacks[0].critical, true);
+      assert.ok(result.attacks[0].damage > 0);
+    } finally {
+      Math.random = origRandom;
+    }
+  });
+
+  it('heal moves apply cleanse and stat riders to allies', () => {
+    const allies = [instantiateCreature('mizu')];
+    allies[0].hp = 10;
+    allies[0].activeEffects = [
+      { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: 'x' },
+      { type: 'taunt', remainingTurns: 2, sourceId: 'y' }
+    ];
+    allies[0].statStages = { atk: 0, def: 0, dex: 0 };
+    const enemies = [instantiateCreature('hi')];
+    const move = {
+      id: 'cleanse-heal',
+      name: '清癒', nameEn: 'Cleanse Heal', reading: 'せいゆ',
+      element: 'neutral', category: 'heal', target: 'self',
+      power: 20, mpCost: 0, statusEffect: 'cleanse', statusChance: 100,
+      statChanges: { dex: 1 }
+    };
+    allies[0].moves = [move];
+
+    const result = processMoveTurn(allies, enemies, [{ creatureIndex: 0, moveId: 'cleanse-heal', targetIndex: 0 }]);
+
+    assert.ok(result.attacks[0].healAmount > 0);
+    assert.strictEqual(result.attacks[0].effectApplied, 'cleanse');
+    assert.deepStrictEqual(allies[0].activeEffects.map(e => e.type), ['taunt']);
+    assert.strictEqual(allies[0].statStages.dex, 1);
   });
 
   it('attack-buffed creature deals more damage (stat stages)', () => {
@@ -288,24 +378,6 @@ describe('Creature Combat - Status Effects in Enemy Turn', () => {
     assert.strictEqual(result.attacks[0].targetId, taunter.id);
   });
 
-  it('shield reduces damage to ally', () => {
-    // First, measure unshielded damage
-    const unshieldedAlly = instantiateCreature('ki');
-    unshieldedAlly.activeEffects = [];
-    const unshieldedEnemies = [instantiateCreature('mizu')];
-    const unshieldedResult = processEnemyTurn(unshieldedEnemies, [unshieldedAlly]);
-
-    // Then, measure shielded damage
-    const shieldedAlly = instantiateCreature('ki');
-    shieldedAlly.activeEffects = [{ type: 'shield', percent: 50, remainingTurns: 2, sourceId: 'x' }];
-    const shieldedEnemies = [instantiateCreature('mizu')];
-    const shieldedResult = processEnemyTurn(shieldedEnemies, [shieldedAlly]);
-
-    assert.strictEqual(shieldedResult.attacks.length, 1);
-    assert.ok(shieldedResult.attacks[0].damage < unshieldedResult.attacks[0].damage,
-      'shielded damage should be less than unshielded damage');
-  });
-
   it('damage wakes up sleeping ally', () => {
     const ally = instantiateCreature('ki');
     ally.activeEffects = [{ type: 'sleep', remainingTurns: 2, sourceId: 'x' }];
@@ -323,16 +395,6 @@ describe('Creature Combat - Status Effects in Enemy Turn', () => {
     assert.ok(result.attacks.length >= 1);
   });
 
-  it('hasted enemy attacks twice', () => {
-    const allies = [instantiateCreature('ki')];
-    allies[0].hp = 9999;
-    allies[0].maxHp = 9999;
-    const enemies = [instantiateCreature('mizu')];
-    enemies[0].activeEffects = [{ type: 'haste', sourceId: 'x' }];
-    const result = processEnemyTurn(enemies, allies);
-    assert.strictEqual(result.attacks.length, 2);
-    assert.ok(!enemies[0].activeEffects.some(e => e.type === 'haste'));
-  });
 });
 
 describe('Creature Combat - XP', () => {
@@ -409,6 +471,22 @@ describe('Creature Combat - Effect Ticking', () => {
     assert.strictEqual(events[0].targetIndex, 0);
   });
 
+  it('tickAllEffects allows poison to KO enemies', () => {
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('ki')];
+    enemies[0].hp = 3;
+    enemies[0].activeEffects = [
+      { type: 'poison', remainingTurns: 2, damagePerTurn: 5, sourceId: allies[0].id }
+    ];
+
+    const events = tickAllEffects(allies, enemies);
+
+    assert.strictEqual(enemies[0].hp, 0);
+    assert.strictEqual(events[0].targetSide, 'enemy');
+    assert.strictEqual(events[0].targetIndex, 0);
+    assert.strictEqual(events[0].targetDefeated, true);
+  });
+
   it('ticks effects on allies too', () => {
     const allies = [instantiateCreature('ki')];
     allies[0].activeEffects = [
@@ -441,20 +519,7 @@ describe('Creature Combat - Effect Ticking', () => {
   });
 });
 
-describe('Creature Combat - Shield in Move Turn', () => {
-  it('shielded enemy takes reduced damage from player moves', () => {
-    const allies = [instantiateCreature('mizu')]; // 'nagasu' does damage
-    const enemies = [instantiateCreature('ki')];
-    enemies[0].hp = 9999;
-    enemies[0].maxHp = 9999;
-    // 90% shield -- should drastically reduce damage
-    enemies[0].activeEffects = [{ type: 'shield', percent: 90, remainingTurns: 2, sourceId: 'x' }];
-    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
-    const result = processMoveTurn(allies, enemies, moveChoices);
-    // With 90% shield, damage should be very small
-    assert.ok(result.attacks[0].damage < allies[0].attack);
-  });
-
+describe('Creature Combat - Damage Riders', () => {
   it('player move wakes sleeping enemy', () => {
     const allies = [instantiateCreature('mizu')];
     const enemies = [instantiateCreature('ki')];
@@ -523,31 +588,6 @@ describe('Creature Combat - XP Balance Redistribution', () => {
     const low3 = result3.xpGrants.find(g => g.creatureId === party3.active[1].id).xp;
 
     assert.ok(low3 > low1, 'more stacks should give underleveled creature even more XP');
-  });
-});
-
-describe('Creature Combat - Temp Attack Flat Bonus', () => {
-  it('processMoveTurn uses flat attack bonus from activeEffects', () => {
-    // Measure unbuffed damage first
-    const unbuffedAlly = instantiateCreature('mizu');
-    unbuffedAlly.activeEffects = [];
-    const unbuffedEnemy = instantiateCreature('ki');
-    unbuffedEnemy.hp = 9999;
-    unbuffedEnemy.maxHp = 9999;
-    const moveChoices = [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }];
-    const unbuffedResult = processMoveTurn([unbuffedAlly], [unbuffedEnemy], moveChoices);
-
-    // Measure buffed damage
-    const buffedAlly = instantiateCreature('mizu');
-    buffedAlly.activeEffects = [{ type: 'temp_attack_flat', value: 50, remainingTurns: 5 }];
-    const buffedEnemy = instantiateCreature('ki');
-    buffedEnemy.hp = 9999;
-    buffedEnemy.maxHp = 9999;
-    const buffedResult = processMoveTurn([buffedAlly], [buffedEnemy], moveChoices);
-
-    assert.ok(buffedResult.attacks.length >= 1);
-    assert.ok(buffedResult.attacks[0].damage > unbuffedResult.attacks[0].damage,
-      'flat-buffed damage should exceed unbuffed damage');
   });
 });
 
@@ -855,17 +895,21 @@ describe('Dead creature cannot attack', () => {
     assert.strictEqual(ally.hp, allyHpBefore, 'ally HP should be unchanged since enemy was dead');
   });
 
-  it('ally killed mid-round by higher-level enemy should not attack in interleaved initiative', () => {
-    // Enemy is high level (acts first) and will one-shot the ally
+  it('ally killed mid-round by higher-dex enemy should not attack in interleaved initiative', () => {
+    // Enemy is high dex (acts first) and will one-shot the ally
     const enemy = instantiateCreature('ki');
     enemy.level = 50;
+    enemy.dex = 50;
+    enemy.statStages = { atk: 0, def: 0, dex: 0 };
     enemy.attack = 999;
     enemy.hp = 500;
     enemy.maxHp = 500;
 
-    // Ally is low level (acts after enemy) with low HP
+    // Ally is lower dex (acts after enemy) with low HP
     const ally = instantiateCreature('hi');
     ally.level = 1;
+    ally.dex = 1;
+    ally.statStages = { atk: 0, def: 0, dex: 0 };
     ally.hp = 1;
     ally.maxHp = 1;
 

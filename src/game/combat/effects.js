@@ -1,6 +1,6 @@
 /**
  * Process all active effects on a creature at start of a combat round.
- * - Poison: deals damagePerTurn (never reduces HP below 1), decrements remainingTurns
+ * - Poison: deals damagePerTurn and can KO, decrements remainingTurns
  * - Expired effects (remainingTurns <= 0 after decrement) are removed
  *
  * @param {object} creature - Creature with hp, maxHp, and optional activeEffects[]
@@ -15,10 +15,8 @@ export function tickEffects(creature) {
 
   for (const effect of creature.activeEffects) {
     if (effect.type === 'poison') {
-      // Deal damage but never reduce HP below 1 — poison can't kill
-      const actualDamage = Math.min(effect.damagePerTurn, creature.hp - 1);
-      const damage = Math.max(0, actualDamage);
-      creature.hp -= damage;
+      const damage = Math.max(0, Math.min(effect.damagePerTurn, creature.hp));
+      creature.hp = Math.max(0, creature.hp - damage);
       effect.remainingTurns -= 1;
       events.push({
         type: 'poison',
@@ -26,10 +24,9 @@ export function tickEffects(creature) {
         targetName: creature.nameEn,
         damage,
         remainingTurns: effect.remainingTurns,
+        targetDefeated: creature.hp <= 0,
+        sourceId: effect.sourceId,
       });
-    } else if (effect.type === 'haste') {
-      // Haste has no remainingTurns — consumed on use, not on tick
-      continue;
     } else if (effect.remainingTurns !== undefined) {
       // All other turn-based effects: decrement
       effect.remainingTurns -= 1;
@@ -42,7 +39,7 @@ export function tickEffects(creature) {
     }
   }
 
-  // Remove expired effects (remainingTurns <= 0), keep haste (no remainingTurns)
+  // Remove expired effects (remainingTurns <= 0).
   creature.activeEffects = creature.activeEffects.filter(
     e => e.remainingTurns === undefined || e.remainingTurns > 0
   );
@@ -109,35 +106,14 @@ export function applyConfuse(target, { duration = 2, sourceId }) {
   applyOrRefresh(target, { type: 'confuse', remainingTurns: duration, sourceId });
 }
 
-// Legacy applyAttackBuff/applyDefenseBuff removed — replaced by stat stages below.
-
-export function applyHaste(target, { sourceId }) {
-  if (!target.activeEffects) {
-    target.activeEffects = [];
-  }
-  // Haste has no remainingTurns — consumed on use
-  const existing = target.activeEffects.find(e => e.type === 'haste');
-  if (!existing) {
-    target.activeEffects.push({ type: 'haste', sourceId });
-  }
-}
-
-export function applyShield(target, { percent, duration = 2, sourceId }) {
-  applyOrRefresh(target, { type: 'shield', percent, remainingTurns: duration, sourceId });
-}
-
-export function applyTeamShield(allies, { percent, duration = 2, sourceId }) {
-  for (const ally of allies) {
-    if (ally.hp > 0) {
-      applyOrRefresh(ally, { type: 'team_shield', percent, remainingTurns: duration, sourceId });
-    }
-  }
-}
-
-// Legacy applyAttackDebuff removed — replaced by stat stages below.
-
 export function applyTaunt(target, { duration = 2, sourceId }) {
   applyOrRefresh(target, { type: 'taunt', remainingTurns: duration, sourceId });
+}
+
+export function applyCleanse(target) {
+  if (!target.activeEffects) return;
+  const negative = new Set(['poison', 'sleep', 'stun', 'confuse']);
+  target.activeEffects = target.activeEffects.filter(effect => !negative.has(effect.type));
 }
 
 export function applyHeal(target, amount) {
@@ -156,17 +132,20 @@ export function applyHeal(target, amount) {
 
 const STAGE_MIN = -6;
 const STAGE_MAX = 6;
+const STAT_STAGE_DEFAULTS = { atk: 0, def: 0, dex: 0 };
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
 
 /** Initialize statStages on a creature if missing. */
 export function initStatStages(creature) {
-  if (!creature.statStages) {
-    creature.statStages = { atk: 0, def: 0 };
-  }
+  creature.statStages = { ...STAT_STAGE_DEFAULTS, ...(creature.statStages || {}) };
 }
 
 /** Reset all stat stages to 0 (call at combat start). */
 export function resetStatStages(creature) {
-  creature.statStages = { atk: 0, def: 0 };
+  creature.statStages = { ...STAT_STAGE_DEFAULTS };
 }
 
 /**
@@ -216,16 +195,6 @@ export function isConfused(creature) {
   return creature.activeEffects.some(e => e.type === 'confuse');
 }
 
-export function hasHaste(creature) {
-  if (!creature.activeEffects) return false;
-  return creature.activeEffects.some(e => e.type === 'haste');
-}
-
-export function consumeHaste(creature) {
-  if (!creature.activeEffects) return;
-  creature.activeEffects = creature.activeEffects.filter(e => e.type !== 'haste');
-}
-
 export function getAttackMultiplier(creature) {
   return getStageMultiplier(creature, 'atk');
 }
@@ -234,12 +203,37 @@ export function getDefenseMultiplier(creature) {
   return getStageMultiplier(creature, 'def');
 }
 
-export function getDamageReduction(creature) {
-  if (!creature.activeEffects) return 0;
-  const totalPercent = creature.activeEffects
-    .filter(e => e.type === 'shield' || e.type === 'team_shield')
-    .reduce((sum, e) => sum + e.percent, 0);
-  return Math.min(totalPercent, 90);
+export function getDexMultiplier(creature) {
+  return getStageMultiplier(creature, 'dex');
+}
+
+export function getEffectiveDex(creature) {
+  const dex = Math.max(1, Math.round(Number(creature?.dex) || 1));
+  return Math.max(1, Math.round(dex * getDexMultiplier(creature)));
+}
+
+export function computeCritChance(creature) {
+  return clamp((getEffectiveDex(creature) + 8) / 256, 0.03, 0.25);
+}
+
+export function rollCritical(creature, rng = Math.random) {
+  const critChance = computeCritChance(creature);
+  return { critical: rng() < critChance, critChance };
+}
+
+export function computeDexHitChance(attacker, defender) {
+  const attackerDexStage = attacker?.statStages?.dex || 0;
+  const defenderDexStage = defender?.statStages?.dex || 0;
+  const stageDelta = clamp(attackerDexStage - defenderDexStage, STAGE_MIN, STAGE_MAX);
+  const rawHitChance = Math.max(3, 3 + stageDelta) / Math.max(3, 3 - stageDelta);
+  const hitChance = clamp(rawHitChance, 0.70, 1.00);
+  const dodgeChance = Number((1 - hitChance).toFixed(4));
+  return { hitChance, dodgeChance, stageDelta };
+}
+
+export function rollDodge(attacker, defender, rng = Math.random) {
+  const result = computeDexHitChance(attacker, defender);
+  return { ...result, dodged: rng() < result.dodgeChance };
 }
 
 export function getTauntTarget(allies) {
@@ -250,24 +244,4 @@ export function getTauntTarget(allies) {
 export function breakSleep(target) {
   if (!target.activeEffects) return;
   target.activeEffects = target.activeEffects.filter(e => e.type !== 'sleep');
-}
-
-export function applyTempAttackFlat(target, { value, duration, sourceId }) {
-  if (!target.activeEffects) {
-    target.activeEffects = [];
-  }
-  // Stack additively — each application is a separate effect
-  target.activeEffects.push({
-    type: 'temp_attack_flat',
-    value,
-    remainingTurns: duration,
-    sourceId,
-  });
-}
-
-export function getFlatAttackBonus(creature) {
-  if (!creature.activeEffects) return 0;
-  return creature.activeEffects
-    .filter(e => e.type === 'temp_attack_flat')
-    .reduce((sum, e) => sum + e.value, 0);
 }

@@ -1,5 +1,5 @@
-const STAT_LABELS = { atk: 'Atk', def: 'Def', spd: 'Spd' };
-const STAT_PRIORITY = ['atk', 'def', 'spd'];
+const STAT_LABELS = { atk: 'Atk', def: 'Def', dex: 'Dex' };
+const STAT_PRIORITY = ['atk', 'def', 'dex'];
 
 function pickDominantStat(statChanges) {
   const entries = Object.entries(statChanges || {}).filter(([, v]) => v !== 0);

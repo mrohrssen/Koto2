@@ -28,6 +28,11 @@ describe('effectLabel', () => {
     assert.deepEqual(effectLabel(move), { iconType: 'chevron-up', text: 'Atk +1' });
   });
 
+  it('renders dex stat changes', () => {
+    const move = { category: 'buff', statChanges: { dex: 1 } };
+    assert.deepEqual(effectLabel(move), { iconType: 'chevron-up', text: 'Dex +1' });
+  });
+
   it('buff with empty statChanges falls through to default', () => {
     const move = { category: 'buff', power: 0, statChanges: {} };
     assert.deepEqual(effectLabel(move), { iconType: 'sword', text: '0' });

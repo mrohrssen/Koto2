@@ -38,7 +38,7 @@ export const PARTY_SKILLS_CATALOG = {
   },
   hardenedRiposte: {
     id: 'hardenedRiposte', name: 'Hardened Riposte', loop: 'counter',
-    desc: 'Counters deal +50% when you have a shield or positive DEF stage.',
+    desc: 'Counters deal +50% when you have a positive DEF stage.',
     requires: 'retaliationStrike',
     params: { bonusMult: 0.50 }
   },

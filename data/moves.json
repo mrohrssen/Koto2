@@ -231,11 +231,11 @@
     "target": "all_allies",
     "power": 0,
     "mpCost": 14,
-    "statusEffect": "haste",
-    "statusChance": 100,
-    "statusDuration": 1,
+    "statChanges": {
+      "dex": 1
+    },
     "tier": 1,
-    "description": "Calls out to the whole team, spurring them to act faster.",
+    "description": "Calls out to the whole team, raising dexterity by 1 stage.",
     "stage": 1,
     "createdAt": "2026-03-21"
   },

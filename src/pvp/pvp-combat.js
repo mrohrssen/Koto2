@@ -8,7 +8,7 @@ import {
   checkAfflictionBurstCounter
 } from '../game/services/creature-combat-service.js';
 import { processKOSwaps, checkAllDefeated } from '../game/combat/resolution.js';
-import { hasHaste, consumeHaste, isIncapacitated } from '../game/combat/effects.js';
+import { getEffectiveDex, isIncapacitated } from '../game/combat/effects.js';
 import { toActivePartySkillIdSet } from '../game/combat/party-skill-engine.js';
 
 /**
@@ -50,6 +50,8 @@ export function buildTurnOrder(sideA, sideB) {
   }
 
   entries.sort((a, b) => {
+    const dexDiff = getEffectiveDex(b.creature) - getEffectiveDex(a.creature);
+    if (dexDiff !== 0) return dexDiff;
     const levelDiff = (b.creature.level || 1) - (a.creature.level || 1);
     if (levelDiff !== 0) return levelDiff;
     return Math.random() - 0.5;
@@ -119,40 +121,25 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
   const mapA = groupMovesBySlot(movesA);
   const mapB = groupMovesBySlot(movesB);
 
-  const hastedA = new Set();
-  for (let i = 0; i < sideA.length; i++) {
-    const c = sideA[i];
-    if (c && c.hp > 0 && hasHaste(c)) {
-      hastedA.add(i);
-      consumeHaste(c);
-    }
-  }
-  const hastedB = new Set();
-  for (let i = 0; i < sideB.length; i++) {
-    const c = sideB[i];
-    if (c && c.hp > 0 && hasHaste(c)) {
-      hastedB.add(i);
-      consumeHaste(c);
-    }
-  }
-
   const initiative = [];
   for (const idx of mapA.keys()) {
     const c = sideA[idx];
     if (c && c.hp > 0 && !isIncapacitated(c)) {
-      initiative.push({ side: 'sideA', index: idx, level: c.level || 1 });
+      initiative.push({ side: 'sideA', index: idx, level: c.level || 1, dex: getEffectiveDex(c) });
     }
   }
   for (const idx of mapB.keys()) {
     const c = sideB[idx];
     if (c && c.hp > 0 && !isIncapacitated(c)) {
-      initiative.push({ side: 'sideB', index: idx, level: c.level || 1 });
+      initiative.push({ side: 'sideB', index: idx, level: c.level || 1, dex: getEffectiveDex(c) });
     }
   }
 
   initiative.sort((a, b) => {
-    const d = (b.level || 1) - (a.level || 1);
-    if (d !== 0) return d;
+    const dexDiff = (b.dex || 1) - (a.dex || 1);
+    if (dexDiff !== 0) return dexDiff;
+    const levelDiff = (b.level || 1) - (a.level || 1);
+    if (levelDiff !== 0) return levelDiff;
     return Math.random() - 0.5;
   });
 
@@ -188,7 +175,6 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
 
     const slotResult = executeSlotMoveTurn(attackerSide, defenderSide, slot.index, choices, {
       itemBuffs: isA ? itemBuffsA : itemBuffsB,
-      hastedSlots: isA ? hastedA : hastedB,
       defeatedIndices: defeatedDummy,
       onAttack(atk) {
         atk.playbackIndex = playbackCounter++;

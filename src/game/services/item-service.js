@@ -1,7 +1,6 @@
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { applyTempAttackFlat } from '../combat/effects.js';
 import { awardKillXp } from './creature-combat-service.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -201,14 +200,6 @@ export function applyItem(item, creatureParty, _itemBuffs, targetIndex = null, c
       const ratio = newHpMult / prevHpMult;
       targetCreature.maxHp = Math.max(1, Math.floor(targetCreature.maxHp * ratio));
       targetCreature.hp = Math.min(targetCreature.maxHp, Math.max(0, Math.floor(targetCreature.hp * ratio)));
-    }
-    if (item.effect.tempBoost) {
-      const tb = item.effect.tempBoost;
-      applyTempAttackFlat(targetCreature, {
-        value: tb.value,
-        duration: tb.turns,
-        sourceId: item.id,
-      });
     }
     // Track equipment
     if (item.category === 'equipment') {
