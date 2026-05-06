@@ -43,6 +43,7 @@ async function setupAndEnterCombat(client, tmpDir) {
   seedSaveFile(tmpDir, userId);
   await client.createPlayer();
   await client.post('/api/game/debug-mode', { enabled: true });
+  await client.claimDailyCrystals();
   await client.post('/api/game/start-run', {});
 
   const areaOptions = await client.get('/api/game/area-options');
@@ -163,6 +164,7 @@ describe('meta-progression after combat', () => {
     });
     await client.createPlayer();
     await client.post('/api/game/debug-mode', { enabled: true });
+    await client.claimDailyCrystals();
     await client.post('/api/game/start-run', {});
 
     const areaOptions = await client.get('/api/game/area-options');

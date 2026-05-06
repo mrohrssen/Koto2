@@ -21,6 +21,7 @@ describe('known-word exposure flow', () => {
     const createPlayerRes = await client.createPlayer('ExposureTester');
     assert.equal(createPlayerRes.status, 200);
 
+    await client.claimDailyCrystals();
     const startRunRes = await client.post('/api/game/start-run', {});
     assert.equal(startRunRes.status, 200);
 

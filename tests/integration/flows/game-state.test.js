@@ -34,6 +34,7 @@ describe('game state flows', () => {
     await client.post('/api/game/select-starter', { starterId: 'starter-wood' });
 
     // 1. Start run
+    await client.claimDailyCrystals();
     const startRes = await client.post('/api/game/start-run', {});
     assert.equal(startRes.status, 200);
 

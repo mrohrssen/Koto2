@@ -69,6 +69,7 @@ async function enterSpeedReviewRoom(client, tmpDir) {
   if (setCollRes.status !== 200) throw new Error(`debug-set-collection failed: ${JSON.stringify(setCollRes.body)}`);
 
   // Start bare run
+  await client.claimDailyCrystals();
   const startRes = await client.post('/api/game/start-run', {});
   if (startRes.status !== 200) throw new Error(`start-run failed: ${JSON.stringify(startRes.body)}`);
 

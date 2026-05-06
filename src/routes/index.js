@@ -6,6 +6,7 @@ import createGameRoutes from './game/index.js';
 import createPrefetchRoutes from './prefetch.js';
 import createBugReportRoutes from './bug-reports.js';
 import createDialogueRoutes from './dialogue.js';
+import { getManager, saveManager } from '../game/manager-registry.js';
 
 /**
  * Create main API router with all route modules
@@ -42,7 +43,9 @@ export default function createRoutes(deps) {
   router.use('/dialogue', createDialogueRoutes({
     dialogueTranslationCache: deps.dialogueTranslationCache,
     dialogueTranslationChatFn: deps.dialogueTranslationChatFn,
-    getDialogueTranslationConfig: deps.getDialogueTranslationConfig
+    getDialogueTranslationConfig: deps.getDialogueTranslationConfig,
+    getManager: deps.getManager || getManager,
+    saveManager: deps.saveManager || saveManager
   }));
 
   // Game routes: /api/game/* (auth-protected, per-user managers)

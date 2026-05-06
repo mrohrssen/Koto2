@@ -58,6 +58,7 @@ describe('fusion lab flow', () => {
     await client.post('/api/game/debug-mode', { enabled: true });
     await client.post('/api/game/debug-set-collection', { creatureIds: ['hi', 'neko'] });
     await client.post('/api/game/fusion/debug-add-core', {});
+    await client.claimDailyCrystals();
     await client.post('/api/game/start-run', {});
 
     const fuseRes = await client.post('/api/game/fusion/start', { recipeId: 'fire-cat' });

@@ -3,6 +3,7 @@ import { requireAuth } from '../../auth/middleware.js';
 import { getManager, saveManager } from '../../game/manager-registry.js';
 import { captureError } from '../../server-error-buffer.js';
 import { findUserById, getLeaderboard, getUserKeys } from '../../auth/users.js';
+import createCrystalRoutes from './crystals.js';
 import createGameStateRoutes from './state.js';
 import createPlayerRoutes from './player.js';
 import createRunRoutes from './run.js';
@@ -71,6 +72,9 @@ export default function createGameRoutes(deps) {
 
   // Mount player routes
   router.use(createPlayerRoutes());
+
+  // Mount crystal currency routes
+  router.use(createCrystalRoutes());
 
   // Mount run routes
   router.use(createRunRoutes({

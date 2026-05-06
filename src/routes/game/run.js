@@ -12,6 +12,12 @@ import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.j
 import { getAreaById } from '../../game/rooms.js';
 import { applyItem } from '../../game/services/item-service.js';
 import {
+  CRYSTAL_COSTS,
+  CRYSTAL_REASONS,
+  prepareCrystalSpend,
+  recordCrystalSpend
+} from '../../game/services/crystal-wallet-service.js';
+import {
   assembleFrame,
   entityToToken,
   getEligibleFrameTokens,
@@ -131,15 +137,34 @@ export default function createRunRoutes({
     const gameManager = req.gameManager;
     const { starterId, starterIds } = req.body;
     try {
+      const meta = gameManager.getMeta();
+      const startRunChargeKey = `start-run:${Date.now()}`;
+      const preparedSpend = prepareCrystalSpend(meta, {
+        reason: CRYSTAL_REASONS.startRun,
+        key: startRunChargeKey,
+        cost: CRYSTAL_COSTS.startRun
+      });
+      if (!preparedSpend.ok) {
+        return res.status(402).json(preparedSpend);
+      }
+
       // Validate creature selection against collection
       const ids = starterIds || (starterId ? [starterId] : null);
       if (ids) {
-        const meta = gameManager.getMeta();
         const collection = meta.creatureCollection || [];
         const validation = validateTeamSelection(collection, ids, meta.creatureCounts || {});
         if (!validation.valid) {
           return res.status(400).json({ error: validation.reason });
         }
+      }
+
+      const spendResult = recordCrystalSpend(meta, {
+        reason: CRYSTAL_REASONS.startRun,
+        key: startRunChargeKey,
+        cost: CRYSTAL_COSTS.startRun
+      });
+      if (!spendResult.ok) {
+        return res.status(402).json(spendResult);
       }
 
       gameManager.startRun(null, starterId, starterIds);

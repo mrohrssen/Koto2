@@ -75,6 +75,7 @@ async function startCombatRun(client, tmpDir) {
   await client.post('/api/game/debug-mode', { enabled: true });
 
   // Start a bare run (creatures deferred until confirm-creatures)
+  await client.claimDailyCrystals();
   const startRes = await client.post('/api/game/start-run', {});
   assert.equal(startRes.status, 200, `start-run: ${JSON.stringify(startRes.body)}`);
 

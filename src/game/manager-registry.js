@@ -5,6 +5,7 @@ import { getDataDir } from '../data-dir.js';
 import { CREATURES_BY_ID, backfillCreatureListUids, syncCreatureListMoves, syncPartyCreatureMoves } from './creatures.js';
 import { DEFAULT_COLLECTION, ensureCreatureCounts } from './services/creature-collection-service.js';
 import { ensureTutorialFusionState } from './services/tutorial-service.js';
+import { ensureCrystalMeta } from './services/crystal-wallet-service.js';
 
 const SAVE_VERSION = 2;
 
@@ -56,6 +57,20 @@ export function getManager(userId) {
           }
           if (!Number.isFinite(data.meta.fusionCores)) {
             data.meta.fusionCores = 0;
+          }
+          const beforeCrystals = JSON.stringify({
+            crystals: data.meta.crystals,
+            lastCrystalLoginDate: data.meta.lastCrystalLoginDate,
+            crystalCharges: data.meta.crystalCharges
+          });
+          ensureCrystalMeta(data.meta);
+          const afterCrystals = JSON.stringify({
+            crystals: data.meta.crystals,
+            lastCrystalLoginDate: data.meta.lastCrystalLoginDate,
+            crystalCharges: data.meta.crystalCharges
+          });
+          if (beforeCrystals !== afterCrystals) {
+            needsSave = true;
           }
           if (!data.meta.crests) {
             data.meta.crests = [];
