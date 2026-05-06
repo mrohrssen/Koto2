@@ -180,7 +180,10 @@ export function derivePhase(state) {
 
   const currentRoom = run.rooms?.[run.currentRoom];
   if (currentRoom) {
-    if (currentRoom.type === 'shrine' && !currentRoom.interacted) return 'shrine';
+    if (currentRoom.type === 'shrine'
+      && !currentRoom.interacted
+      && currentRoom.shrine?.completed !== true
+      && currentRoom.shrine?.used !== true) return 'shrine';
     if (currentRoom.type === 'quiz' && !currentRoom.interacted) return 'quiz';
     if (currentRoom.type === 'wordDiscovery' && !currentRoom.interacted) return PHASES.WORD_DISCOVERY;
     if (currentRoom.type === 'dealer' && !currentRoom.interacted) return 'dealer';

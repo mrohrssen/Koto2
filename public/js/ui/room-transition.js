@@ -60,6 +60,10 @@ export async function playRoomTransition(gameState) {
       showNpcTrainer(npc.nameEn || npc.name, npc.id, npc, { skipPixi: true });
       if (canShowNpc) await scene.showNpcSprite(spritePath, { slideIn: true });
     }
+  } else if (roomType === 'shrine') {
+    const spritePath = `/assets/sprites/shrine_fox.webp?v=${SPRITE_VERSION}`;
+    showNpcInDisplay('Shrine Fox', spritePath, { skipPixi: true });
+    if (canShowNpc) await scene.showNpcSprite(spritePath, { slideIn: true });
   } else if (roomType === 'whackAMole') {
     showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`, { skipPixi: true });
     if (canShowNpc) await scene.showNpcSprite(`/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`, { slideIn: true });

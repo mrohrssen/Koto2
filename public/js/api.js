@@ -342,9 +342,21 @@ async function roomEncounter() {
   return apiCall('/room-encounter', 'POST');
 }
 
-/** Upgrade creature at shrine */
+/** Get shrine greeting and reward options */
+async function getShrineOffers() {
+  return apiCall('/shrine-offers', 'POST');
+}
+
+/** Choose one shrine reward */
+async function chooseShrineReward(rewardType, creatureKey = null) {
+  const body = { rewardType };
+  if (creatureKey !== null) body.creatureKey = creatureKey;
+  return apiCall('/shrine-choose', 'POST', body);
+}
+
+/** Backwards-compatible level-up call for old callers */
 async function shrineUpgrade(creatureId) {
-  return apiCall('/shrine-upgrade', 'POST', { creatureId });
+  return chooseShrineReward('level_up', creatureId);
 }
 
 /** Claim quiz reward */
@@ -787,6 +799,8 @@ export {
   // Room exploration endpoints
   proceed,
   roomEncounter,
+  getShrineOffers,
+  chooseShrineReward,
   shrineUpgrade,
   quizReward,
   getQuizQuestion,

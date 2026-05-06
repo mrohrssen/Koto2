@@ -498,6 +498,10 @@ export class GameManager {
     return this.explorationService.useShrine(creatureId);
   }
 
+  useShrineReward(rewardType, creatureKey) {
+    return this.explorationService.useShrineReward(rewardType, creatureKey);
+  }
+
   useQuizReward(rewardType, creatureId) {
     return this.explorationService.useQuizReward(rewardType, creatureId);
   }

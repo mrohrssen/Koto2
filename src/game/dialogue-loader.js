@@ -7,6 +7,7 @@ let _cidScripts = [];
 let _npcLines = {};
 let _shopPurchaseFrames = [];
 let _shopGreetingFrames = [];
+let _shrineGreetingFrames = [];
 let _gameMasterAskFrames = [];
 let _gameMasterFinishFrames = [];
 let _befriendFrames = {
@@ -32,6 +33,7 @@ export function loadDialoguePools(dataDir) {
   // Partition by category
   _shopPurchaseFrames = _frames.filter(f => f.category === 'shopPurchase');
   _shopGreetingFrames = _frames.filter(f => f.category === 'shopGreeting');
+  _shrineGreetingFrames = _frames.filter(f => f.category === 'shrineGreeting');
   _gameMasterAskFrames = _frames.filter(f => f.category === 'gameMaster_ask');
   _gameMasterFinishFrames = _frames.filter(f => f.category === 'gameMaster_finish');
   _npcDefeatFrames = _frames.filter(f => f.category === 'npcDefeat');
@@ -86,6 +88,7 @@ export function getCidScripts() { return _cidScripts; }
 export function getNpcLines() { return _npcLines; }
 export function getShopPurchaseFrames() { return _shopPurchaseFrames; }
 export function getShopGreetingFrames() { return _shopGreetingFrames; }
+export function getShrineGreetingFrames() { return _shrineGreetingFrames; }
 export function getGameMasterAskFrames() { return _gameMasterAskFrames; }
 export function getGameMasterFinishFrames() { return _gameMasterFinishFrames; }
 export function getBefriendFrames() { return _befriendFrames; }

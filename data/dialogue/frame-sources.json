@@ -819,6 +819,30 @@
     "slots": []
   },
   {
+    "id": "shrineGreeting_hello",
+    "category": "shrineGreeting",
+    "raw": "こんにちは！",
+    "slots": []
+  },
+  {
+    "id": "shrineGreeting_energy",
+    "category": "shrineGreeting",
+    "raw": "元気ですか？",
+    "slots": []
+  },
+  {
+    "id": "shrineGreeting_good_day",
+    "category": "shrineGreeting",
+    "raw": "いい日ですね！",
+    "slots": []
+  },
+  {
+    "id": "shrineGreeting_rest",
+    "category": "shrineGreeting",
+    "raw": "少し休みますか？",
+    "slots": []
+  },
+  {
     "id": "shopGreeting_welcome",
     "category": "shopGreeting",
     "raw": "いらっしゃいませ！",

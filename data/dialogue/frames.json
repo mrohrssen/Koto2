@@ -3574,6 +3574,116 @@
     ]
   },
   {
+    "id": "shrineGreeting_hello",
+    "category": "shrineGreeting",
+    "raw": "こんにちは！",
+    "tokens": [
+      {
+        "surface": "こんにちは",
+        "base": "こんにちは",
+        "reading": "こんにちは",
+        "pos": "Interjection"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "こんにちは"
+    ]
+  },
+  {
+    "id": "shrineGreeting_energy",
+    "category": "shrineGreeting",
+    "raw": "元気ですか？",
+    "tokens": [
+      {
+        "surface": "元気",
+        "base": "元気",
+        "reading": "げんき",
+        "pos": "Noun"
+      },
+      {
+        "surface": "ですか",
+        "base": "ですか",
+        "reading": "ですか",
+        "pos": "Auxiliary"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "元気",
+      "ですか"
+    ]
+  },
+  {
+    "id": "shrineGreeting_good_day",
+    "category": "shrineGreeting",
+    "raw": "いい日ですね！",
+    "tokens": [
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "日",
+        "base": "日",
+        "reading": "ひ",
+        "pos": "Noun"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "いい",
+      "日"
+    ]
+  },
+  {
+    "id": "shrineGreeting_rest",
+    "category": "shrineGreeting",
+    "raw": "少し休みますか？",
+    "tokens": [
+      {
+        "surface": "少し",
+        "base": "少し",
+        "reading": "すこし",
+        "pos": "Adverb"
+      },
+      {
+        "surface": "休み",
+        "base": "休む",
+        "reading": "やすみ",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ますか",
+        "base": "ますか",
+        "reading": "ますか",
+        "pos": "Auxiliary"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "少し",
+      "休む",
+      "ますか"
+    ]
+  },
+  {
     "id": "shopGreeting_welcome",
     "category": "shopGreeting",
     "raw": "いらっしゃいませ！",

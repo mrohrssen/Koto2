@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { generateAreaRooms, getAreaById, getAreaSelectionOptions, ROOM_TYPES } from '../../../src/game/rooms.js';
 
 function assertOnlyEnabledRoomTypes(rooms, fixedIndices) {
-  const allowedTypes = new Set(['encounter', 'friendlyNpc', 'whackAMole']);
+  const allowedTypes = new Set(['encounter', 'friendlyNpc', 'whackAMole', 'shrine']);
   const otherRooms = rooms.filter((_, i) => !fixedIndices.has(i));
   for (const room of otherRooms) {
     assert.ok(
@@ -23,8 +23,19 @@ function assertFriendlyNpcOfferCategories(rooms) {
   }
 }
 
+function assertShrineRoomState(rooms) {
+  for (const room of rooms.filter(r => r.type === 'shrine')) {
+    assert.deepEqual(room.shrine, {
+      used: false,
+      completed: false,
+      chosenReward: null,
+      greeting: null
+    });
+  }
+}
+
 function assertNoDisabledRoomTypes(rooms) {
-  const disabledTypes = ['shrine', 'quiz', 'wordDiscovery', 'dealer', 'speedReviewRoom'];
+  const disabledTypes = ['quiz', 'wordDiscovery', 'dealer', 'speedReviewRoom'];
   for (const room of rooms) {
     assert.ok(!disabledTypes.includes(room.type), `Disabled room type found: ${room.type}`);
   }
@@ -60,6 +71,10 @@ describe('Koto2 area room generation', () => {
 
     it('friendlyNpc rooms should have offerCategory set to food or equipment', () => {
       assertFriendlyNpcOfferCategories(generateAreaRooms('hajimari-no-hiroba'));
+    });
+
+    it('shrine rooms have modern shrine state when generated', () => {
+      assertShrineRoomState(generateAreaRooms('hajimari-no-hiroba'));
     });
 
     it('tutorial mode uses the 7-room first-user playtest sequence', () => {
@@ -116,6 +131,10 @@ describe('Koto2 area room generation', () => {
 
     it('friendlyNpc rooms should have offerCategory set to food or equipment', () => {
       assertFriendlyNpcOfferCategories(generateAreaRooms('wild-plains'));
+    });
+
+    it('shrine rooms have modern shrine state when generated', () => {
+      assertShrineRoomState(generateAreaRooms('wild-plains'));
     });
   });
 

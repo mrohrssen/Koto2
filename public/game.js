@@ -160,6 +160,8 @@ import {
   reviewVocabWord,
   getAuthHeaders,
   apiUrl,
+  getShrineOffers as apiGetShrineOffers,
+  chooseShrineReward as apiChooseShrineReward,
   shrineUpgrade as apiShrineUpgrade,
   quizReward as apiQuizReward,
   getQuizQuestion as apiGetQuizQuestion,
@@ -509,7 +511,7 @@ function updateScene() {
     // Player formation sprites are spawned by BattleScene.syncCreatures on
     // transition; no legacy pixiShowFormation call needed here.
   } else if (gameState.phase === 'shrine') {
-    scene.showShrineFox();
+    // Shrine transition/renderShrine own the fox sprite; keep the parallax scene intact.
   } else if (gameState.phase === 'quiz') {
     scene.showQuizMaster();
   } else if (gameState.phase === 'wordDiscovery' || gameState.phase === 'speedReviewRoom') {
@@ -539,9 +541,7 @@ function updateScene() {
   } else {
     scene.hideEnemies();
   }
-  if (gameState.phase === 'shrine') {
-    scene.setBackground('/assets/backgrounds/shrine_background.webp');
-  } else if (gameState.phase === 'quiz') {
+  if (gameState.phase === 'quiz') {
     scene.setBackground('/assets/backgrounds/quiz_master_background.webp');
   } else if (gameState.phase === 'wordDiscovery' || gameState.phase === 'speedReviewRoom') {
     scene.setBackground('/assets/backgrounds/word_discovery_background.webp');
@@ -1929,6 +1929,8 @@ async function initGame() {
     apiReturnToHub: returnToHub,
     apiProceed,
     apiRoomEncounter,
+    apiGetShrineOffers,
+    apiChooseShrineReward,
     apiShrineUpgrade,
     apiQuizReward,
     apiGetQuizQuestion,

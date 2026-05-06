@@ -19,9 +19,26 @@ import {
 } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
-import { getShopPurchaseFrames, getShopGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
+import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 
 const SPRITE_VERSION = '20260430b';
+const SHRINE_REWARDS = [
+  {
+    id: 'heal_all',
+    title: 'Heal all creatures',
+    description: 'Restore 50% HP to living active and reserve creatures.'
+  },
+  {
+    id: 'restore_mp_all',
+    title: 'Restore MP',
+    description: 'Restore MP for all creatures to full.'
+  },
+  {
+    id: 'level_up',
+    title: 'Level up one creature',
+    description: 'Choose one living creature to gain one level.'
+  }
+];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const quizQuestionsPath = join(__dirname, '../../data/quiz-questions.json');
@@ -342,7 +359,49 @@ export default function createRunRoutes({
     }
   });
 
-  // Level up creature at shrine
+  router.post('/shrine-offers', async (req, res) => {
+    try {
+      const gm = req.gameManager;
+      const room = gm.getCurrentRoom();
+      if (!room || room.type !== 'shrine') {
+        return res.status(400).json({ error: 'Not in a shrine room' });
+      }
+
+      if (!room.shrine) room.shrine = { used: false, completed: false, chosenReward: null, greeting: null };
+      if (!room.shrine.greeting) {
+        const knownWords = getKnownWordsFromFsrs(req.user.id);
+        const knownSet = new Set(knownWords);
+        const greetingFrames = getShrineGreetingFrames();
+        const greetingCandidates = greetingFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
+        room.shrine.greeting = selectBestFrame(greetingCandidates, knownSet, { dict: getWordDict() });
+        req.saveGame();
+      }
+
+      res.json({
+        rewards: SHRINE_REWARDS,
+        greeting: room.shrine.greeting || null,
+        completed: room.shrine.completed === true || room.shrine.used === true,
+        state: req.getEnrichedGameState()
+      });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+  router.post('/shrine-choose', async (req, res) => {
+    try {
+      const { rewardType, creatureKey, creatureId } = req.body || {};
+      if (!rewardType) {
+        return res.status(400).json({ error: 'rewardType required' });
+      }
+      const result = req.gameManager.useShrineReward(rewardType, creatureKey || creatureId || null);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   router.post('/shrine-upgrade', (req, res) => {
     try {
       const gameManager = req.gameManager;
@@ -350,7 +409,7 @@ export default function createRunRoutes({
       if (!creatureId) {
         return res.status(400).json({ error: 'creatureId required' });
       }
-      const result = gameManager.useShrine(creatureId);
+      const result = gameManager.useShrineReward('level_up', creatureId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {

@@ -27,6 +27,31 @@ import { dirname, join } from 'path';
 const __dirname_exploration = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ITEMS_PATH = join(__dirname_exploration, '../../../data/items.json');
 const ROOM_HEAL_PERCENT = 0.05; // 5% maxHp on each room entry, skipping KO'd creatures
+const SHRINE_REWARDS = Object.freeze({
+  HEAL_ALL: 'heal_all',
+  RESTORE_MP_ALL: 'restore_mp_all',
+  LEVEL_UP: 'level_up'
+});
+
+function ensureShrineState(room) {
+  if (!room.shrine) room.shrine = {};
+  room.shrine.used = room.shrine.used === true;
+  room.shrine.completed = room.shrine.completed === true || room.shrine.used === true;
+  if (!Object.prototype.hasOwnProperty.call(room.shrine, 'chosenReward')) room.shrine.chosenReward = null;
+  if (!Object.prototype.hasOwnProperty.call(room.shrine, 'greeting')) room.shrine.greeting = null;
+  return room.shrine;
+}
+
+function getCreatureKey(creature) {
+  return creature?.uid || creature?.instanceId || creature?.id || '';
+}
+
+function getAllPartyCreatures(creatureParty) {
+  return [
+    ...(creatureParty?.active || []),
+    ...(creatureParty?.reserves || [])
+  ].filter(Boolean);
+}
 
 /**
  * Roll 3 item offers for a friendly NPC room.
@@ -402,56 +427,119 @@ export class ExplorationService {
   // ============ ROOM INTERACTIONS ============
 
   useShrine(creatureId) {
+    return this.useShrineReward(SHRINE_REWARDS.LEVEL_UP, creatureId);
+  }
+
+  useShrineReward(rewardType, creatureKey = null) {
     const room = this.getCurrentRoom();
     if (!room || room.type !== 'shrine') {
       throw new Error('No shrine here');
     }
 
-    if (room.shrine.used) {
+    const shrine = ensureShrineState(room);
+    if (shrine.completed || shrine.used) {
       throw new Error('Shrine already used');
     }
 
-    // Find creature in party (active or reserves)
-    const allCreatures = [
-      ...this.gm.run.creatureParty.active,
-      ...this.gm.run.creatureParty.reserves
-    ].filter(Boolean);
+    const allCreatures = getAllPartyCreatures(this.gm.run?.creatureParty);
+    let result;
 
-    const creature = allCreatures.find(r => r.id === creatureId);
-    if (!creature) {
-      throw new Error('Creature not in party');
+    switch (rewardType) {
+      case SHRINE_REWARDS.HEAL_ALL:
+        result = this._applyShrineHealAll(allCreatures);
+        break;
+      case SHRINE_REWARDS.RESTORE_MP_ALL:
+        result = this._applyShrineRestoreMpAll(allCreatures);
+        break;
+      case SHRINE_REWARDS.LEVEL_UP:
+        result = this._applyShrineLevelUp(allCreatures, creatureKey);
+        break;
+      default:
+        throw new Error('Invalid shrine reward');
     }
-    if (creature.hp <= 0) {
-      throw new Error('Cannot use shrine on a fainted creature');
+
+    shrine.used = true;
+    shrine.completed = true;
+    shrine.chosenReward = rewardType;
+    room.interacted = true;
+
+    logger.info('[Shrine] Reward claimed:', {
+      rewardType,
+      affected: result.affectedCreatures?.length || (result.levelUp ? 1 : 0)
+    });
+
+    this.gm.narrate('The shrine glow fades.');
+    this.gm.emitState();
+
+    return {
+      type: 'shrine_reward',
+      rewardType,
+      affectedCreatures: result.affectedCreatures || [],
+      levelUp: result.levelUp || null
+    };
+  }
+
+  _applyShrineHealAll(allCreatures) {
+    const affectedCreatures = [];
+    for (const creature of allCreatures) {
+      if ((creature.hp || 0) <= 0) continue;
+      const maxHp = Math.max(0, Math.floor(Number(creature.maxHp) || 0));
+      const beforeHp = Math.max(0, Math.floor(Number(creature.hp) || 0));
+      const healAmount = Math.floor(maxHp * 0.5);
+      creature.hp = Math.min(maxHp, beforeHp + healAmount);
+      affectedCreatures.push({
+        creatureKey: getCreatureKey(creature),
+        creatureName: creature.nameEn || creature.name || creature.id,
+        oldHp: beforeHp,
+        newHp: creature.hp
+      });
     }
+    return { affectedCreatures };
+  }
+
+  _applyShrineRestoreMpAll(allCreatures) {
+    const affectedCreatures = [];
+    for (const creature of allCreatures) {
+      if ((creature.hp || 0) <= 0) continue;
+      const maxMp = Math.max(0, Math.floor(Number(creature.maxMp) || 0));
+      const beforeMp = Math.max(0, Math.floor(Number(creature.mp) || 0));
+      creature.mp = maxMp;
+      affectedCreatures.push({
+        creatureKey: getCreatureKey(creature),
+        creatureName: creature.nameEn || creature.name || creature.id,
+        oldMp: beforeMp,
+        newMp: creature.mp
+      });
+    }
+    return { affectedCreatures };
+  }
+
+  _applyShrineLevelUp(allCreatures, creatureKey) {
+    if (!creatureKey) throw new Error('creatureKey required for level up reward');
+    const creature = allCreatures.find(candidate =>
+      getCreatureKey(candidate) === creatureKey || candidate.id === creatureKey
+    );
+    if (!creature) throw new Error('Creature not in party');
+    if ((creature.hp || 0) <= 0) throw new Error('Cannot use shrine on a fainted creature');
 
     const prevLevel = creature.level;
     const prevMaxHp = creature.maxHp;
     const prevAttack = creature.attack;
 
-    // Grant one full level-up worth of XP (cubic curve)
     addXpToCreature(creature, xpToNextLevel(creature.level), null, this.gm.run?.itemBuffs);
 
-    room.shrine.used = true;
-    room.interacted = true;
-
-    logger.info('[Shrine] Creature leveled up:', {
-      creature: creature.nameEn, creatureId, newLevel: creature.level
-    });
-
-    this.gm.narrate(`修練場の力でモンスターが強化された！ Lv. ${creature.level}`);
-    this.gm.emitState();
-
     return {
-      type: 'shrine_upgrade',
-      creatureId,
-      creatureName: creature.nameEn,
-      oldLevel: prevLevel,
-      newLevel: creature.level,
-      maxHp: creature.maxHp,
-      attack: creature.attack,
-      hpGain: creature.maxHp - prevMaxHp,
-      attackGain: creature.attack - prevAttack
+      levelUp: {
+        creatureKey: getCreatureKey(creature),
+        creatureId: creature.id,
+        creatureName: creature.nameEn || creature.name || creature.id,
+        oldLevel: prevLevel,
+        newLevel: creature.level,
+        maxHp: creature.maxHp,
+        attack: creature.attack,
+        hpGain: creature.maxHp - prevMaxHp,
+        attackGain: creature.attack - prevAttack
+      }
     };
   }
 

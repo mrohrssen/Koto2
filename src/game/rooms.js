@@ -203,9 +203,11 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
       type = ROOM_TYPES.boss;
     } else {
       const roll = Math.random();
-      if (roll < 0.10) {
+      if (roll < 0.05) {
+        type = ROOM_TYPES.shrine;
+      } else if (roll < 0.15) {
         type = ROOM_TYPES.whackAMole;
-      } else if (roll < 0.55) {
+      } else if (roll < 0.60) {
         type = ROOM_TYPES.encounter;
       } else {
         type = ROOM_TYPES.friendlyNpc;
@@ -284,7 +286,7 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
 
   switch (type) {
     case ROOM_TYPES.shrine:
-      room.shrine = { used: false };
+      room.shrine = { used: false, completed: false, chosenReward: null, greeting: null };
       break;
     case ROOM_TYPES.quiz:
       room.quiz = { answered: false, rewarded: false };
@@ -390,16 +392,20 @@ export function getRoomActions(room) {
   const isUnfinishedWhackAMole = room.type === 'whackAMole' && !room.interacted;
   const isUnfinishedSpeedReviewRoom = room.type === 'speedReviewRoom' && !room.interacted;
   const isUnfinishedBoss = room.type === 'boss' && !room.interacted;
+  const isUnfinishedShrine = room.type === ROOM_TYPES.shrine
+    && !room.interacted
+    && room.shrine?.completed !== true
+    && room.shrine?.used !== true;
   const isUnfinishedFriendlyNpc = room.type === 'friendlyNpc' && !room.friendlyNpc?.completed;
   const isUnfinishedNpcBattle = room.type === 'npcBattle' && !room.interacted;
-  if (!isUnfinishedEncounter && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedSpeedReviewRoom && !isUnfinishedBoss && !isUnfinishedFriendlyNpc && !isUnfinishedNpcBattle) {
+  if (!isUnfinishedEncounter && !isUnfinishedShrine && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedSpeedReviewRoom && !isUnfinishedBoss && !isUnfinishedFriendlyNpc && !isUnfinishedNpcBattle) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
   switch (room.type) {
     case ROOM_TYPES.shrine:
-      if (!room.shrine.used) {
-        actions.push({ id: 'shrine_upgrade', name: '祈る', description: '狐の祠に祈る' });
+      if (isUnfinishedShrine) {
+        actions.push({ id: 'shrine_reward', name: '祈る', description: '狐の祠に祈る' });
       }
       break;
     case ROOM_TYPES.quiz:

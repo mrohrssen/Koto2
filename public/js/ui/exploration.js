@@ -148,6 +148,10 @@ let apiSkillMasterChoose = null;
 let apiGetFriendlyNpcOffers = null;
 let apiChooseFriendlyNpcItem = null;
 
+// Shrine API
+let apiGetShrineOffers = null;
+let apiChooseShrineReward = null;
+
 // Track whether CID's item-shop tutorial has already been shown this session
 let cidItemShopTutorialShown = false;
 let postHinekoReviewNarrationShown = false;
@@ -198,6 +202,8 @@ export function init(callbacks) {
   apiSkillMasterChoose = callbacks.apiSkillMasterChoose;
   apiGetFriendlyNpcOffers = callbacks.apiGetFriendlyNpcOffers;
   apiChooseFriendlyNpcItem = callbacks.apiChooseFriendlyNpcItem;
+  apiGetShrineOffers = callbacks.apiGetShrineOffers;
+  apiChooseShrineReward = callbacks.apiChooseShrineReward;
   apiTutorialAdvance = callbacks.apiTutorialAdvance;
   showAdventureReport = callbacks.showAdventureReport;
 }
@@ -662,63 +668,170 @@ export function renderRunEnded() {
   }
 }
 
-/** Shrine phase - show creature roster for level-up */
-export function renderShrine() {
-  const gameState = getGameState();
-  const creatureParty = gameState.run?.creatureParty;
+let shrineState = {
+  roomId: null,
+  fetched: false,
+  rewards: null,
+  greeting: null,
+  choosing: false,
+  greetingShown: false,
+};
 
-  if (!creatureParty) {
-    renderButtons([
-      { label: '続ける', onClick: async () => {
-        const result = await apiProceed();
-        if (result?.state) {
-          updateGameState(result.state);
-          await playRoomTransition(result.state);
-          updateUI();
-        }
-      }, primary: true },
-    ]);
+function shrineCreatureKey(creature) {
+  return creature?.uid || creature?.instanceId || creature?.id || '';
+}
+
+function shrineCreatures(creatureParty) {
+  return [
+    ...(creatureParty?.active || []),
+    ...(creatureParty?.reserves || [])
+  ].filter(Boolean);
+}
+
+async function showShrineSprite() {
+  const spritePath = `/assets/sprites/shrine_fox.webp?v=${SPRITE_VERSION}`;
+  showNpcInDisplay('Shrine Fox', spritePath, { skipPixi: true });
+  const scene = await waitForSceneWithNpcs();
+  if (scene) await scene.showNpcSprite(spritePath, { slideIn: true });
+}
+
+/** Shrine phase - modern NPC-style reward room */
+export async function renderShrine() {
+  const gameState = getGameState();
+  const room = gameState.room || getActiveRoomFromRun(gameState.run);
+  const roomId = room?.id || room?.type || 'unknown';
+
+  if (shrineState.roomId !== roomId) {
+    shrineState = {
+      roomId,
+      fetched: false,
+      rewards: null,
+      greeting: null,
+      choosing: false,
+      greetingShown: false,
+    };
+  }
+
+  if (room?.interacted || room?.shrine?.completed || room?.shrine?.used) {
+    actions.setContent(`
+      <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;">
+        <div style="text-align:center;font-weight:800;">Shrine blessing received.</div>
+        <div style="text-align:center;color:var(--text-secondary);font-size:13px;">The path opens ahead.</div>
+      </div>
+    `);
     return;
   }
 
-  const allCreatures = [
-    ...(creatureParty.active || []),
-    ...(creatureParty.reserves || [])
-  ].filter(Boolean);
+  actions.setContent('<div class="prologue-continue-hint">Click to continue!</div>');
 
-  const atkMult = Number(gameState.run?.itemBuffs?.attackMult) || 1;
-  const shrineDisplayAtk = (base) => {
-    const n = Math.max(1, Math.floor(Number(base) || 0));
-    const raw = n * atkMult;
-    if (atkMult <= 1) return Math.max(1, Math.floor(raw));
-    let o = Math.floor(raw);
-    if (o === n && raw > n + 1e-9) o = n + 1;
-    return Math.max(1, o);
-  };
+  if (!shrineState.fetched) {
+    shrineState.fetched = true;
+    const fetchRoomId = roomId;
+    try {
+      const resp = await apiGetShrineOffers?.();
+      if (shrineState.roomId !== fetchRoomId) return;
+      shrineState.rewards = Array.isArray(resp?.rewards) ? resp.rewards : [
+        { id: 'heal_all', title: 'Heal all creatures', description: 'Restore 50% HP to living creatures.' },
+        { id: 'restore_mp_all', title: 'Restore MP', description: 'Restore MP for all creatures to full.' },
+        { id: 'level_up', title: 'Level up one creature', description: 'Choose one living creature.' }
+      ];
+      shrineState.greeting = resp?.greeting || null;
+      if (resp?.state) updateGameState(resp.state);
+    } catch {
+      shrineState.fetched = false;
+      shrineState.rewards = null;
+      shrineState.greeting = null;
+      shrineState.greetingShown = false;
+      actions.setContent('');
+      renderButtons([
+        { label: 'Retry', onClick: () => { shrineState.fetched = false; renderShrine(); }, primary: true },
+      ]);
+      return;
+    }
+  }
 
+  if (!shrineState.greetingShown) {
+    shrineState.greetingShown = true;
+    await showShrineSprite();
+    const greetingTokens = shrineState.greeting?.tokens;
+    await showNpcDialogueCard({
+      speaker: 'Shrine Fox',
+      ...(greetingTokens?.length
+        ? {
+            tokens: greetingTokens,
+            overrides: shrineState.greeting?.overrides || {},
+            useKanji: false,
+          }
+        : { text: 'こんにちは！' }),
+    });
+  }
+
+  const rewards = shrineState.rewards || [];
   renderChoices({
-    heading: 'Choose a creature',
-    cards: allCreatures.map(creature => {
-      const hpPercent = Math.floor((creature.hp / creature.maxHp) * 100);
-      const spriteHtml = `<img src="${creatureStaticPath(creature.id)}" alt="" onerror="this.style.display='none'">`;
-      return {
-        sprite: spriteHtml,
-        title: `${creature.nameEn} Lv.${creature.level} → Lv.${creature.level + 1}`,
-        subtitle: `${creature.rarity} · ${creature.element} · HP: ${creature.hp}/${creature.maxHp} (${hpPercent}%) · ATK: ${shrineDisplayAtk(creature.attack)}`,
-      };
-    }),
+    heading: 'Choose shrine blessing',
+    cards: rewards.map(reward => ({
+      title: reward.title,
+      subtitle: reward.description,
+    })),
     onSelect: async (index) => {
-      const scene = getSceneWithNpcs();
-      if (scene?.shrineInProgress) return;
-      if (scene) scene.shrineInProgress = true;
-      const creature = allCreatures[index];
-      const result = await apiShrineUpgrade(creature.id);
-      if (result?.state) { updateGameState(result.state); }
-      sceneModule.showNarration(t('leveledUp', result?.creatureName || 'Creature', result?.newLevel || '?'), { autoDismiss: 2000 });
-      if (scene && !scene.disposed) scene.shrineInProgress = false;
-      updateUI();
+      if (shrineState.choosing) return;
+      const reward = rewards[index];
+      if (!reward) return;
+      if (reward.id === 'level_up') {
+        renderShrineLevelTargets(reward.id);
+        return;
+      }
+      await chooseShrineReward(reward.id, null);
     },
   });
+}
+
+function renderShrineLevelTargets(rewardType) {
+  const gameState = getGameState();
+  const livingCreatures = shrineCreatures(gameState.run?.creatureParty)
+    .filter(creature => (creature.hp || 0) > 0);
+
+  if (livingCreatures.length === 0) {
+    sceneModule?.showNarration?.('No living creatures can receive this blessing.', { autoDismiss: 2200 });
+    renderShrine();
+    return;
+  }
+
+  renderChoices({
+    heading: 'Choose creature to level up',
+    cards: livingCreatures.map(creature => ({
+      sprite: `<img src="${creatureStaticPath(creature.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`,
+      title: `${creature.nameEn || creature.name || creature.id} Lv.${creature.level} -> Lv.${creature.level + 1}`,
+      subtitle: `HP: ${creature.hp}/${creature.maxHp} · MP: ${creature.mp || 0}/${creature.maxMp || 0}`,
+    })),
+    onSelect: async (index) => {
+      const creature = livingCreatures[index];
+      if (creature) await chooseShrineReward(rewardType, shrineCreatureKey(creature));
+    },
+  });
+}
+
+async function chooseShrineReward(rewardType, creatureKey) {
+  if (shrineState.choosing) return;
+  shrineState.choosing = true;
+  try {
+    playSFX('creature-equip');
+    const result = await apiChooseShrineReward?.(rewardType, creatureKey);
+    if (result?.state) {
+      updateGameState(result.state);
+      actions.clear();
+      updateUI();
+    } else {
+      shrineState.choosing = false;
+      sceneModule?.showNarration?.('Could not apply shrine blessing. Tap to try again.', { autoDismiss: 2200 });
+      renderShrine();
+    }
+  } catch {
+    shrineState.choosing = false;
+    actions.clear();
+    sceneModule?.showNarration?.('Failed to choose shrine blessing.', { autoDismiss: 1800 });
+    renderShrine();
+  }
 }
 
 /** Quiz phase - stubbed out (quiz rooms removed from bootstrap MVP) */

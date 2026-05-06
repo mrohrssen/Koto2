@@ -265,6 +265,27 @@ window.__inspector.fullScan()
 
 ---
 
+### Shrine Room
+
+**Trigger:** Run enters phase `shrine`.
+
+**Expected screen:**
+- Current area parallax background remains visible.
+- Shrine Fox sprite slides into the NPC layer.
+- A short Japanese greeting appears in the NPC dialogue card.
+- The action area shows three shrine blessing choices: heal all creatures, restore MP for all creatures to full, and level up one creature.
+
+**Interactions:**
+1. Choose heal or MP to apply the party-wide reward immediately.
+2. Choose level-up to open a second target list containing living active and reserve creatures only.
+
+**What could go wrong:**
+- Old shrine background appears instead of parallax.
+- Fainted creatures appear in the level-up target list.
+- Refreshing the room allows a second shrine reward.
+
+---
+
 ### Phase 4: Combat Turn (Attack)
 
 **Trigger:** Dual vocab cards visible (attack / defend).
