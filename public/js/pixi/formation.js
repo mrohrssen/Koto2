@@ -49,6 +49,7 @@ function _newContext(scene) {
     lastFormationInput: { player: null, enemy: null },         // { creatures, opts } per side
     walkingEnabled: false,
     walkTime: 0,
+    travelOffsetX: 0,
     activeGlow: null,
     activeGlowTickFn: null,
     loadRequestId: { player: 0, enemy: 0 },
@@ -267,6 +268,25 @@ function _clearActiveGlow(ctx) {
 }
 
 // --- Walking + per-frame update (ctx-based) ----------------------------------
+
+export function setFormationTravelOffset(ctx, offsetX = 0) {
+  if (!ctx?.creatureSprites?.player) return;
+  ctx.travelOffsetX = offsetX;
+
+  for (const sprite of _spritesArray(ctx, 'player')) {
+    if (!sprite || sprite._entering) continue;
+    const previousOffset = sprite._travelOffsetX || 0;
+    const delta = offsetX - previousOffset;
+    sprite.x = sprite.baseX + offsetX;
+    if (sprite._shadow) sprite._shadow.x += delta;
+    if (Array.isArray(sprite.statusLabels)) {
+      for (const label of sprite.statusLabels) {
+        label.x += delta;
+      }
+    }
+    sprite._travelOffsetX = offsetX;
+  }
+}
 
 /**
  * Tick walking wobble / enter-slide animations for a ctx. Exported so

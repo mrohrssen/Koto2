@@ -15,10 +15,19 @@ const SKY_LAYER_INDEX = 0;
 // (mirrors the SPRITE_VERSION convention in public/js/ui/sprite-utils.js).
 export const BACKGROUND_VERSION = '20260505';
 
+// Default ExplorationScene walking speed outside authored room transitions.
+export const EXPLORATION_SCROLL_SPEED = 0.6;
+
+// Approved room-to-room travel target from
+// docs/superpowers/specs/2026-05-06-room-transition-parallax-travel-design.md.
+export const ROOM_TRAVEL_DURATION_MS = 2700;
+export const ROOM_TRAVEL_SCROLL_SPEED = 3.8;
+export const ROOM_TRAVEL_GROUND_DISTANCE_PX = 620;
+
 // Per-scene speed multiplier used by BattleScene. The battleground is held
 // frozen while a battle is up (scrollState='encounter'), so this only scales
 // the sky drift the player sees during combat. Lower than ExplorationScene's
-// default 0.6 so the sky visibly slows when fighting starts.
+// default so the sky visibly slows when fighting starts.
 export const BATTLE_SKY_DRIFT_SPEED = 0.4;
 
 let tilingSprites = [];

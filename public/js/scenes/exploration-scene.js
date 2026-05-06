@@ -1,6 +1,6 @@
 import { Scene } from './scene.js';
 import { Container } from 'pixi.js';
-import { startParallax, stopParallax, isParallaxMoving } from '../pixi/parallax.js';
+import { startParallax, stopParallax, isParallaxMoving, EXPLORATION_SCROLL_SPEED } from '../pixi/parallax.js';
 import {
   createFormationContext,
   spawnFormationSprite,
@@ -8,6 +8,7 @@ import {
   updateFormationSprite,
   destroyAllStatusLabels,
   _updateFormations,
+  setFormationTravelOffset,
 } from '../pixi/formation.js';
 import { setupCreatureRowListeners } from '../ui/creature-row.js';
 
@@ -55,7 +56,7 @@ export class ExplorationScene extends Scene {
     this.shrineInProgress = false;
   }
 
-  async onEnter({ roomId = null, allies = [], parallaxSpeed = 0.6 } = {}) {
+  async onEnter({ roomId = null, allies = [], parallaxSpeed = EXPLORATION_SCROLL_SPEED } = {}) {
     this.roomId = roomId;
     if (parallaxSpeed > 0) startParallax(parallaxSpeed);
     // Spawn player formation sprites immediately so HP bars + sprites
@@ -77,7 +78,7 @@ export class ExplorationScene extends Scene {
     setupCreatureRowListeners(this);
   }
 
-  async resetForRoom({ roomId = null, allies = [], parallaxSpeed = 0.6 } = {}) {
+  async resetForRoom({ roomId = null, allies = [], parallaxSpeed = EXPLORATION_SCROLL_SPEED } = {}) {
     this._guard('resetForRoom');
     this.roomId = roomId;
     this.discoveryState = createDiscoveryState();
@@ -85,6 +86,32 @@ export class ExplorationScene extends Scene {
     if (parallaxSpeed > 0) startParallax(parallaxSpeed);
     await this.hideNpcSprite();
     await this.syncCreatures({ allies, initial: true });
+  }
+
+  async playRoomTravel({ durationMs, waitFn }) {
+    this._guard('playRoomTravel');
+    const travelDistance = 48;
+    const token = Symbol('roomTravel');
+    this._roomTravelToken = token;
+    const start = performance.now();
+    this.formation.walkingEnabled = true;
+
+    const animate = () => {
+      if (this.disposed || this._exiting) return;
+      if (this._roomTravelToken !== token) return;
+      const elapsed = performance.now() - start;
+      const progress = Math.min(1, elapsed / durationMs);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setFormationTravelOffset(this.formation, travelDistance * eased);
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+    await waitFn(durationMs);
+    if (!this.disposed && !this._exiting && this._roomTravelToken === token) {
+      this._roomTravelToken = null;
+      setFormationTravelOffset(this.formation, 0);
+    }
   }
 
   beforeExit() {

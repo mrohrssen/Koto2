@@ -45,6 +45,10 @@ const {
   stopParallax,
   updateParallax,
   BACKGROUND_VERSION,
+  EXPLORATION_SCROLL_SPEED,
+  ROOM_TRAVEL_DURATION_MS,
+  ROOM_TRAVEL_SCROLL_SPEED,
+  ROOM_TRAVEL_GROUND_DISTANCE_PX,
 } = await import('../../../public/js/pixi/parallax.js');
 
 beforeEach(() => {
@@ -79,6 +83,25 @@ describe('two-layer looping area background', () => {
 
     assert.equal(sky.tilePosition.x, -6);
     assert.equal(battleground.tilePosition.x, -60);
+  });
+
+  it('exports the approved room travel motion target', async () => {
+    assert.equal(EXPLORATION_SCROLL_SPEED, 0.6);
+    assert.equal(ROOM_TRAVEL_DURATION_MS, 2700);
+    assert.equal(ROOM_TRAVEL_SCROLL_SPEED, 3.8);
+    assert.equal(ROOM_TRAVEL_GROUND_DISTANCE_PX, 620);
+  });
+
+  it('scrolls battleground at the approved room-travel speed', async () => {
+    await loadParallax('starter_meadow');
+    const [sky, battleground] = fakeAppState.layers.background.children;
+
+    startParallax(ROOM_TRAVEL_SCROLL_SPEED);
+    setScrollState('scrolling');
+    updateParallax(60);
+
+    assert.equal(sky.tilePosition.x, -22.8);
+    assert.equal(battleground.tilePosition.x, -228);
   });
 
   it('drifts only the sky during encounters', async () => {

@@ -97,6 +97,7 @@ await mock.module('../../../public/js/pixi/parallax.js', {
     stopParallax: () => {},
     resizeParallax: () => {},
     isParallaxMoving: () => false,
+    EXPLORATION_SCROLL_SPEED: 0.6,
   },
 });
 

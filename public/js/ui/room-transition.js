@@ -6,9 +6,20 @@ import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { combatEvents } from './combat-events.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
-import { setScrollState, startParallax, BATTLE_SKY_DRIFT_SPEED } from '../pixi/parallax.js';
+import {
+  setScrollState,
+  startParallax,
+  EXPLORATION_SCROLL_SPEED,
+  ROOM_TRAVEL_DURATION_MS,
+  ROOM_TRAVEL_SCROLL_SPEED,
+  BATTLE_SKY_DRIFT_SPEED,
+} from '../pixi/parallax.js';
 
 const NPC_BATTLE_STRENGTH_PROMPT = "Let's see how strong you are!";
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
  * Play the room entrance transition.
@@ -20,13 +31,14 @@ const NPC_BATTLE_STRENGTH_PROMPT = "Let's see how strong you are!";
  * the outgoing room's NPC sprite — fixes bugs #3 and #5 (NPC sprite did not
  * clear on re-entry or on walking into a new NPC room).
  */
-export async function playRoomTransition(gameState) {
+export async function playRoomTransition(gameState, { waitFn = wait } = {}) {
   const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
   if (!room) return;
 
   // Clear stale enemy formation from previous room before showing the new one
   hideFormation('enemy');
   setScrollState('scrolling');
+  startParallax(ROOM_TRAVEL_SCROLL_SPEED);
 
   // Transition to ExplorationScene. Bumping to a new scene here tears down
   // the previous scene's NPC sprite (via registry disposal + beforeExit) so
@@ -43,9 +55,9 @@ export async function playRoomTransition(gameState) {
       && !currentScene._exiting
       && typeof currentScene.resetForRoom === 'function'
     ) {
-      await currentScene.resetForRoom({ roomId, allies });
+      await currentScene.resetForRoom({ roomId, allies, parallaxSpeed: ROOM_TRAVEL_SCROLL_SPEED });
     } else {
-      await mgr.transition(ExplorationScene, { roomId, allies });
+      await mgr.transition(ExplorationScene, { roomId, allies, parallaxSpeed: ROOM_TRAVEL_SCROLL_SPEED });
     }
   } catch (err) {
     console.error('[RoomTransition] ExplorationScene transition failed', err);
@@ -56,6 +68,13 @@ export async function playRoomTransition(gameState) {
   // per-room NPC slide-in below would attempt to call showNpcSprite on the
   // wrong scene. Guard so we don't throw from _guard() on a disposed scene.
   const canShowNpc = scene instanceof ExplorationScene;
+
+  if (canShowNpc && typeof scene.playRoomTravel === 'function') {
+    await scene.playRoomTravel({ durationMs: ROOM_TRAVEL_DURATION_MS, waitFn });
+  } else {
+    await waitFn(ROOM_TRAVEL_DURATION_MS);
+  }
+  startParallax(EXPLORATION_SCROLL_SPEED);
 
   const roomType = room.type;
 

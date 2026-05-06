@@ -10,9 +10,9 @@ await mock.module('../../../public/js/ui/combat-dom.js', {
 
 await mock.module('../../../public/js/ui/exploration-dom.js', {
   namedExports: {
-    showNpcTrainer: () => {},
-    showNpcInDisplay: () => {},
-    showDealer: () => {},
+    showNpcTrainer: () => roomTransitionEvents.push('showNpcTrainer'),
+    showNpcInDisplay: () => roomTransitionEvents.push('showNpcInDisplay'),
+    showDealer: () => roomTransitionEvents.push('showDealer'),
   },
 });
 
@@ -62,12 +62,22 @@ await mock.module('../../../public/js/ui/combat-events.js', {
   namedExports: { combatEvents },
 });
 
+const roomTransitionEvents = [];
 const scrollStates = [];
 const startedSpeeds = [];
 await mock.module('../../../public/js/pixi/parallax.js', {
   namedExports: {
-    setScrollState: (state) => scrollStates.push(state),
-    startParallax: (speed) => startedSpeeds.push(speed),
+    setScrollState: (state) => {
+      roomTransitionEvents.push(`setScrollState:${state}`);
+      scrollStates.push(state);
+    },
+    startParallax: (speed) => {
+      roomTransitionEvents.push(`startParallax:${speed}`);
+      startedSpeeds.push(speed);
+    },
+    EXPLORATION_SCROLL_SPEED: 0.6,
+    ROOM_TRAVEL_DURATION_MS: 2700,
+    ROOM_TRAVEL_SCROLL_SPEED: 3.8,
     BATTLE_SKY_DRIFT_SPEED: 0.4,
   },
 });
@@ -79,7 +89,9 @@ class FakeExplorationScene {
   async resetForRoom(opts) {
     this.resetCalls.push(opts);
   }
-  async showNpcSprite() {}
+  async showNpcSprite() {
+    roomTransitionEvents.push('showNpcSprite');
+  }
 }
 
 const fakeManager = {
@@ -113,6 +125,8 @@ describe('playRoomTransition parallax state', () => {
         creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
         rooms: [{ type: 'encounter' }],
       },
+    }, {
+      waitFn: async () => {},
     });
 
     assert.equal(scrollStates[0], 'scrolling');
@@ -133,6 +147,8 @@ describe('playRoomTransition parallax state', () => {
         creatureParty: { active: allies },
         rooms: [{ type: 'empty' }, { type: 'friendlyNpc' }],
       },
+    }, {
+      waitFn: async () => {},
     });
 
     assert.equal(fakeManager.transitionCalls.length, 0);
@@ -140,6 +156,58 @@ describe('playRoomTransition parallax state', () => {
     assert.deepEqual(existingScene.resetCalls[0], {
       roomId: 1,
       allies,
+      parallaxSpeed: 3.8,
     });
+  });
+
+  it('uses approved room travel speed and duration before restoring exploration speed', async () => {
+    scrollStates.length = 0;
+    startedSpeeds.length = 0;
+    roomTransitionEvents.length = 0;
+    fakeManager.currentScene = null;
+    const waits = [];
+
+    await playRoomTransition({
+      run: {
+        currentRoom: 0,
+        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
+        rooms: [{ type: 'empty' }],
+      },
+    }, {
+      waitFn: async (ms) => waits.push(ms),
+    });
+
+    assert.equal(startedSpeeds[0], 3.8);
+    assert.deepEqual(waits, [2700]);
+    assert.equal(startedSpeeds.at(-1), 0.6);
+  });
+
+  it('delays support-room sprite arrival until after the travel wait', async () => {
+    scrollStates.length = 0;
+    startedSpeeds.length = 0;
+    roomTransitionEvents.length = 0;
+    fakeManager.currentScene = null;
+
+    await playRoomTransition({
+      run: {
+        currentRoom: 0,
+        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
+        rooms: [{
+          type: 'friendlyNpc',
+          npc: { id: 'nagi', name: 'ナギ', nameEn: 'Nagi' },
+        }],
+      },
+    }, {
+      waitFn: async (ms) => roomTransitionEvents.push(`wait:${ms}`),
+    });
+
+    assert.deepEqual(roomTransitionEvents, [
+      'setScrollState:scrolling',
+      'startParallax:3.8',
+      'wait:2700',
+      'startParallax:0.6',
+      'showNpcTrainer',
+      'showNpcSprite',
+    ]);
   });
 });
