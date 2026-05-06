@@ -11,6 +11,19 @@ import {
 } from '../pixi/formation.js';
 import { setupCreatureRowListeners } from '../ui/creature-row.js';
 
+function createDiscoveryState() {
+  return {
+    fetched: false,
+    words: [],
+    wordsLearned: 0,
+    roomId: null,
+    statusChecked: false,
+    atLimit: false,
+    todayCount: 0,
+    dailyLimit: 10,
+  };
+}
+
 export class ExplorationScene extends Scene {
   constructor(app) {
     super('ExplorationScene', app);
@@ -36,19 +49,9 @@ export class ExplorationScene extends Scene {
 
     this.roomId = null;
     // Word-discovery + shrine state used to live at module scope in
-    // exploration.js; moving them onto the scene instance means the state
-    // naturally resets when we transition to a new ExplorationScene (new
-    // room), which was previously done by comparing a stored roomId.
-    this.discoveryState = {
-      fetched: false,
-      words: [],
-      wordsLearned: 0,
-      roomId: null,
-      statusChecked: false,
-      atLimit: false,
-      todayCount: 0,
-      dailyLimit: 10,
-    };
+    // exploration.js; keeping them on the scene lets room-transition reset
+    // them without rebuilding the player formation sprites.
+    this.discoveryState = createDiscoveryState();
     this.shrineInProgress = false;
   }
 
@@ -72,6 +75,16 @@ export class ExplorationScene extends Scene {
       _updateFormations(this.formation, dt);
     });
     setupCreatureRowListeners(this);
+  }
+
+  async resetForRoom({ roomId = null, allies = [], parallaxSpeed = 0.6 } = {}) {
+    this._guard('resetForRoom');
+    this.roomId = roomId;
+    this.discoveryState = createDiscoveryState();
+    this.shrineInProgress = false;
+    if (parallaxSpeed > 0) startParallax(parallaxSpeed);
+    await this.hideNpcSprite();
+    await this.syncCreatures({ allies, initial: true });
   }
 
   beforeExit() {

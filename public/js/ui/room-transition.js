@@ -35,10 +35,18 @@ export async function playRoomTransition(gameState) {
   const mgr = getSceneManager();
   const allies = gameState.run?.creatureParty?.active ?? [];
   try {
-    await mgr.transition(ExplorationScene, {
-      roomId: gameState.run?.currentRoom ?? null,
-      allies,
-    });
+    const roomId = gameState.run?.currentRoom ?? null;
+    const currentScene = mgr.currentScene;
+    if (
+      currentScene instanceof ExplorationScene
+      && !currentScene.disposed
+      && !currentScene._exiting
+      && typeof currentScene.resetForRoom === 'function'
+    ) {
+      await currentScene.resetForRoom({ roomId, allies });
+    } else {
+      await mgr.transition(ExplorationScene, { roomId, allies });
+    }
   } catch (err) {
     console.error('[RoomTransition] ExplorationScene transition failed', err);
   }

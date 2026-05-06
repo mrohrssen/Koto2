@@ -70,12 +70,20 @@ await mock.module('../../../public/js/pixi/parallax.js', {
 });
 
 class FakeExplorationScene {
+  constructor() {
+    this.resetCalls = [];
+  }
+  async resetForRoom(opts) {
+    this.resetCalls.push(opts);
+  }
   async showNpcSprite() {}
 }
 
 const fakeManager = {
   currentScene: null,
+  transitionCalls: [],
   async transition(SceneClass) {
+    this.transitionCalls.push(SceneClass);
     this.currentScene = new SceneClass();
   },
 };
@@ -106,5 +114,29 @@ describe('playRoomTransition parallax state', () => {
 
     assert.equal(scrollStates[0], 'scrolling');
     assert.deepEqual(combatEvents.emitted, ['explore']);
+  });
+
+  it('resets an existing exploration scene in place so player sprites do not disappear between rooms', async () => {
+    scrollStates.length = 0;
+    combatEvents.emitted.length = 0;
+    fakeManager.transitionCalls.length = 0;
+    const existingScene = new FakeExplorationScene();
+    fakeManager.currentScene = existingScene;
+    const allies = [{ uid: 'ally', id: 'hi' }];
+
+    await playRoomTransition({
+      run: {
+        currentRoom: 1,
+        creatureParty: { active: allies },
+        rooms: [{ type: 'empty' }, { type: 'friendlyNpc' }],
+      },
+    });
+
+    assert.equal(fakeManager.transitionCalls.length, 0);
+    assert.equal(existingScene.resetCalls.length, 1);
+    assert.deepEqual(existingScene.resetCalls[0], {
+      roomId: 1,
+      allies,
+    });
   });
 });
