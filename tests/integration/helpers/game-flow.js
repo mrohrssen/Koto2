@@ -30,6 +30,7 @@ export async function setupRunBeforeArea(client) {
   await client.post('/api/game/select-starter', { starterId: 'starter-water' });
   await client.post('/api/game/select-starter', { starterId: 'starter-wood' });
 
+  await client.claimDailyCrystals();
   const startRes = await client.post('/api/game/start-run', {});
   if (startRes.status !== 200) throw new Error(`start-run failed: ${JSON.stringify(startRes.body)}`);
   return startRes;

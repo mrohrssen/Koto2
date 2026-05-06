@@ -65,6 +65,11 @@ export function createMetaProgression() {
     // Fusion currency collected outside runs (persistent)
     fusionCores: 0,
 
+    // Premium API-gating currency collected outside runs (persistent)
+    crystals: 0,
+    lastCrystalLoginDate: null,
+    crystalCharges: {},
+
     // All owned crests
     crests: [],
 

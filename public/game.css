@@ -219,6 +219,77 @@ textarea,
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
+.crystal-balance {
+  gap: 5px;
+  color: #d8f7ff;
+}
+
+.crystal-icon {
+  color: #79e7ff;
+  text-shadow: 0 0 8px rgba(121, 231, 255, 0.75);
+}
+
+.crystal-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  font-weight: 800;
+}
+
+.crystal-daily-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.crystal-daily-modal {
+  width: min(320px, 100%);
+  border-radius: 24px;
+  padding: 24px;
+  text-align: center;
+  color: #1c2430;
+  background: linear-gradient(180deg, #f2fdff 0%, #d9f7ff 100%);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+}
+
+.crystal-daily-icon {
+  font-size: 40px;
+  color: #13bce8;
+  margin-bottom: 8px;
+}
+
+.crystal-daily-modal h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.crystal-daily-award {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.crystal-daily-balance {
+  margin: 8px 0 18px;
+  font-weight: 700;
+}
+
+.crystal-daily-dismiss {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-weight: 800;
+  color: #fff;
+  background: #159fd0;
+}
+
 button.hud-chip {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -5812,64 +5883,9 @@ button.hud-chip {
   background: linear-gradient(180deg, #e99c40, #bf6724);
 }
 
-.npc-dialogue-book-icon,
-.npc-dialogue-learn-icon {
-  position: absolute;
-  left: 10px;
-  top: 20px;
-  width: 28px;
-  height: 23px;
-  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.24));
-}
-
-.npc-dialogue-book-icon::before,
-.npc-dialogue-book-icon::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 13px;
-  height: 20px;
-  background: #f8edd5;
-  border: 2px solid rgba(79, 48, 27, 0.5);
-  border-radius: 3px 1px 1px 3px;
-}
-
-.npc-dialogue-book-icon::before {
-  left: 1px;
-  transform: skewY(-7deg);
-}
-
-.npc-dialogue-book-icon::after {
-  right: 1px;
-  transform: skewY(7deg);
-}
-
-.npc-dialogue-learn-icon::before {
-  content: "";
-  position: absolute;
-  left: 2px;
-  top: 9px;
-  width: 26px;
-  height: 7px;
-  background: #f7ebc7;
-  transform: skewX(-18deg);
-  box-shadow: 0 5px 0 rgba(247, 235, 199, 0.78), 0 10px 0 rgba(247, 235, 199, 0.58);
-}
-
-.npc-dialogue-learn-icon::after {
-  content: "";
-  position: absolute;
-  left: 13px;
-  top: 1px;
-  width: 4px;
-  height: 21px;
-  background: #f7ebc7;
-  transform: rotate(90deg);
-}
-
 .npc-dialogue-btn-roman {
   position: absolute;
-  left: 40px;
+  left: 6px;
   right: 6px;
   top: 9px;
   font-size: 7.5px;
@@ -5879,11 +5895,31 @@ button.hud-chip {
   white-space: nowrap;
 }
 
-.npc-dialogue-btn-jp {
+.npc-dialogue-jp-line {
   position: absolute;
-  left: 40px;
+  left: 6px;
   right: 6px;
   top: 22px;
+  display: block;
+  height: 18px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.npc-dialogue-jp-line .crystal-cost {
+  position: absolute;
+  left: 34px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  font-size: 12px;
+}
+
+.npc-dialogue-btn-jp {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
   font-size: 17px;
   line-height: 1;
   text-align: center;
@@ -5892,7 +5928,7 @@ button.hud-chip {
 
 .npc-dialogue-btn-en {
   position: absolute;
-  left: 40px;
+  left: 6px;
   right: 6px;
   top: 40px;
   font-size: 8.5px;
@@ -5909,6 +5945,7 @@ button.hud-chip {
 }
 
 .npc-dialogue-continue .npc-dialogue-btn-jp {
+  position: absolute;
   left: 0;
   right: 0;
   top: 25px;

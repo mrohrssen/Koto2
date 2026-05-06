@@ -46,6 +46,7 @@ export function createApiClient(port) {
     delete: (path) => request('DELETE', path),
     getState: () => request('GET', '/api/game/state'),
     createPlayer: (name = 'TestPlayer') => request('POST', '/api/game/create-player', { name }),
+    claimDailyCrystals: () => request('POST', '/api/game/crystals/daily-login', {}),
 
     /** Set auth token for subsequent requests */
     setToken(token) { authToken = token; },

@@ -8,6 +8,7 @@ import {
 import * as dialogueLookup from './dialogue-word-lookup.js';
 import { playDialogueAudio } from '../tts.js';
 import { translateDialogue } from '../api.js';
+import { crystalCostHtml } from './crystals.js';
 
 const DEFAULT_PORTRAIT = '/assets/dialogue/default-headshot.png?v=20260501-headshot';
 const MAX_TOKENS_PER_PAGE = 9;
@@ -83,6 +84,18 @@ function tokenSurface(token, useKanji) {
 
 export function getDialogueSourceText(tokens, useKanji = false) {
   return (tokens || []).map(token => tokenSurface(token, useKanji)).join('').trim();
+}
+
+function stableEntitySignature(entities = []) {
+  return (entities || [])
+    .map(entity => `${entity.type}:${entity.id}:${entity.surface}:${entity.displayName}`)
+    .sort()
+    .join('|');
+}
+
+function getDialogueActionKey({ action, options, pageIndex, sourceText, entities }) {
+  const scope = options.encounterId || options.dialogueId || options.roomId || options.speaker || 'dialogue';
+  return `${action}:${scope}:page-${pageIndex}:${sourceText}:${stableEntitySignature(entities)}`;
 }
 
 function cleanEntityValue(value) {
@@ -177,6 +190,8 @@ function renderTranslationSheet({ sourceText, sourceHtml = '', state, translatio
     ? '<div class="npc-dialogue-translation-status">Translating...</div>'
     : state === 'success'
       ? `<p class="npc-dialogue-translation-en">${renderTranslationWithEntities(translation, entities)}</p>`
+      : state === 'insufficient'
+        ? '<p class="npc-dialogue-translation-error">Not enough crystals. Come back tomorrow for more.</p>'
       : `
         <p class="npc-dialogue-translation-error">Translation is unavailable right now.</p>
         <button class="npc-dialogue-translation-retry" type="button">Try again</button>
@@ -285,6 +300,7 @@ export function showNpcDialogueCard(options = {}) {
       const sourceHtml = pageTokens?.length ? renderTranslationSourceRows({ tokens: pageTokens, useKanji: options.useKanji }) : '';
       const translationEntities = pageTokens?.length ? getTranslationEntities(options, pageTokens) : [];
       const canTranslate = !!sourceText;
+      const canLearn = !!sourceText && typeof options.onLearn === 'function';
 
       actionArea.innerHTML = `
         <div class="npc-dialogue-shell">
@@ -308,15 +324,13 @@ export function showNpcDialogueCard(options = {}) {
           </article>
           <div class="npc-dialogue-utility-row">
             <button class="npc-dialogue-utility npc-dialogue-translate" type="button" ${canTranslate ? '' : 'disabled'}>
-              <span class="npc-dialogue-book-icon" aria-hidden="true"></span>
               <span class="npc-dialogue-btn-roman">honyaku suru</span>
-              <span class="npc-dialogue-btn-jp">翻訳する</span>
+              <span class="npc-dialogue-jp-line">${crystalCostHtml(5)}<span class="npc-dialogue-btn-jp">翻訳する</span></span>
               <span class="npc-dialogue-btn-en">Translate</span>
             </button>
-            <button class="npc-dialogue-utility npc-dialogue-learn" type="button" disabled>
-              <span class="npc-dialogue-learn-icon" aria-hidden="true"></span>
+            <button class="npc-dialogue-utility npc-dialogue-learn" type="button" ${canLearn ? '' : 'disabled'}>
               <span class="npc-dialogue-btn-roman">manabu</span>
-              <span class="npc-dialogue-btn-jp">学ぶ</span>
+              <span class="npc-dialogue-jp-line">${crystalCostHtml(15)}<span class="npc-dialogue-btn-jp">学ぶ</span></span>
               <span class="npc-dialogue-btn-en">Learn</span>
             </button>
           </div>
@@ -354,19 +368,84 @@ export function showNpcDialogueCard(options = {}) {
         actionArea.querySelector('.npc-dialogue-translation-retry')?.addEventListener('click', requestTranslation);
       };
 
+      const translationKey = getDialogueActionKey({
+        action: 'translate',
+        options,
+        pageIndex,
+        sourceText,
+        entities: translationEntities
+      });
+      let translationInFlight = false;
+      let translationPaidForPage = false;
+      let lastTranslationResult = null;
+
       const requestTranslation = async () => {
-        if (!sourceText) return;
-        setTranslationSheet('loading');
-        const result = await translateDialogue(sourceText, translationEntities);
-        if (resolved) return;
-        if (result?.ok && result.translation) {
-          setTranslationSheet('success', result.translation, result.entities || []);
+        if (!sourceText || translationInFlight) return;
+        if (translationPaidForPage && lastTranslationResult) {
+          setTranslationSheet('success', lastTranslationResult.translation, lastTranslationResult.entities || []);
           return;
         }
-        setTranslationSheet('unavailable');
+        translationInFlight = true;
+        const translateButton = actionArea.querySelector('.npc-dialogue-translate');
+        if (translateButton) translateButton.disabled = true;
+        setTranslationSheet('loading');
+        const result = await translateDialogue(sourceText, translationEntities, translationKey);
+        translationInFlight = false;
+        if (translateButton) translateButton.disabled = false;
+        if (resolved) return;
+        if (result?.ok && result.translation) {
+          translationPaidForPage = true;
+          lastTranslationResult = result;
+          if (translateButton) {
+            translateButton.classList.add('npc-dialogue-utility--paid');
+            translateButton.querySelector('.crystal-cost')?.remove();
+          }
+          setTranslationSheet('success', result.translation, result.entities || []);
+          options.onCrystalBalanceChange?.(result.crystals?.balance);
+          return;
+        }
+        setTranslationSheet(result?.error === 'insufficient_crystals' ? 'insufficient' : 'unavailable');
       };
 
       actionArea.querySelector('.npc-dialogue-translate')?.addEventListener('click', requestTranslation);
+
+      const learnKey = getDialogueActionKey({
+        action: 'learn',
+        options,
+        pageIndex,
+        sourceText,
+        entities: translationEntities
+      });
+      let learnInFlight = false;
+      let learnPaidForPage = false;
+
+      const requestLearn = async () => {
+        if (!canLearn || learnInFlight || learnPaidForPage) return;
+        learnInFlight = true;
+        const learnButton = actionArea.querySelector('.npc-dialogue-learn');
+        if (learnButton) learnButton.disabled = true;
+        const result = await options.onLearn({
+          sourceText,
+          entities: translationEntities,
+          idempotencyKey: learnKey,
+          pageIndex
+        });
+        learnInFlight = false;
+        if (resolved) return;
+        if (result?.ok) {
+          learnPaidForPage = true;
+          if (learnButton) {
+            learnButton.disabled = false;
+            learnButton.classList.add('npc-dialogue-utility--paid');
+            learnButton.querySelector('.crystal-cost')?.remove();
+          }
+          options.onCrystalBalanceChange?.(result.crystals?.balance);
+          return;
+        }
+        if (learnButton) learnButton.disabled = false;
+      };
+
+      actionArea.querySelector('.npc-dialogue-learn')?.addEventListener('click', requestLearn);
 
       actionArea.querySelector('.npc-dialogue-continue')?.addEventListener('click', () => {
         closeTranslationSheet();

@@ -12,6 +12,7 @@ export const dom = {
   get statusBar() { return el('status-bar'); },
   get floorIndicator() { return el('floor-indicator'); },
   get essenceDisplay() { return el('essence-display'); },
+  get crystalBalance() { return el('crystal-balance'); },
 
   // Area header pill
   get areaHeaderPill() { return el('area-header-pill'); },

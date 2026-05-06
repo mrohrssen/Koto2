@@ -138,8 +138,8 @@ await mock.module('../../../public/js/tts.js', {
 await mock.module('../../../public/js/api.js', {
   namedExports: {
     postKnownWordExposures: async () => ({ ok: true }),
-    translateDialogue: async (text, entities = []) => {
-      translatedRequests.push({ text, entities });
+    translateDialogue: async (text, entities = [], idempotencyKey = '') => {
+      translatedRequests.push({ text, entities, idempotencyKey });
       return translationResponse;
     }
   }
@@ -296,7 +296,10 @@ describe('npc dialogue card', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     assert.equal(resolved, false);
-    assert.deepEqual(translatedRequests, [{ text: '待って！', entities: [] }]);
+    assert.equal(translatedRequests.length, 1);
+    assert.deepEqual(translatedRequests[0].text, '待って！');
+    assert.deepEqual(translatedRequests[0].entities, []);
+    assert.match(translatedRequests[0].idempotencyKey, /^translate:/);
     assert.match(actionArea.innerHTML, /npc-dialogue-translation-sheet/);
     assert.match(actionArea.innerHTML, /Wait!/);
 
@@ -387,10 +390,76 @@ describe('npc dialogue card', () => {
     translateButton.click();
     await new Promise(resolve => setTimeout(resolve, 0));
 
-    assert.deepEqual(translatedRequests, [{
+    assert.equal(translatedRequests.length, 1);
+    assert.deepEqual(translatedRequests[0], {
       text: '花は強い！',
-      entities: [{ id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }]
-    }]);
+      entities: [{ id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }],
+      idempotencyKey: translatedRequests[0].idempotencyKey
+    });
+    assert.match(translatedRequests[0].idempotencyKey, /^translate:/);
+  });
+
+  it('renders crystal costs inside Translate and Learn buttons', () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '待つ', baseForm: '待つ', reading: 'まつ', meaning: 'wait', pos: 'verb' }],
+      knownWords: new Set(),
+      onLearn: async () => ({ ok: true, crystals: { balance: 80 } })
+    });
+
+    assert.match(actionArea.innerHTML, /class="crystal-cost"/);
+    assert.match(actionArea.innerHTML, /crystal-cost-number">5</);
+    assert.match(actionArea.innerHTML, /crystal-cost-number">15</);
+    assert.match(actionArea.innerHTML, /npc-dialogue-jp-line[\s\S]*crystal-cost[\s\S]*翻訳する/);
+    assert.match(actionArea.innerHTML, /npc-dialogue-jp-line[\s\S]*crystal-cost[\s\S]*学ぶ/);
+    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-book-icon/);
+    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-learn-icon/);
+  });
+
+  it('sends a stable translation idempotency key and blocks duplicate in-flight clicks', async () => {
+    let resolveTranslation;
+    translationResponse = new Promise(resolve => { resolveTranslation = resolve; });
+
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      encounterId: 'enc-1',
+      tokens: [{ surface: '待って！', baseForm: '待つ', reading: 'まって', meaning: 'wait', pos: 'verb' }],
+      knownWords: new Set(),
+    });
+
+    const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    translateButton.click();
+    translateButton.click();
+
+    assert.equal(translatedRequests.length, 1);
+    assert.match(translatedRequests[0].idempotencyKey, /^translate:/);
+
+    resolveTranslation({ ok: true, translation: 'Wait!', crystals: { balance: 95 } });
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
+
+  it('calls injected Learn action once with a learn idempotency key', async () => {
+    const learnRequests = [];
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      encounterId: 'enc-1',
+      tokens: [{ surface: '待って！', baseForm: '待つ', reading: 'まって', meaning: 'wait', pos: 'verb' }],
+      knownWords: new Set(),
+      onLearn: async (payload) => {
+        learnRequests.push(payload);
+        return { ok: true, crystals: { balance: 80 } };
+      }
+    });
+
+    const [, learnButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    learnButton.click();
+    learnButton.click();
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.equal(learnRequests.length, 1);
+    assert.match(learnRequests[0].idempotencyKey, /^learn:/);
+    assert.equal(learnRequests[0].sourceText, '待って！');
   });
 
   it('renders validated translation entity spans without raw marker syntax', async () => {

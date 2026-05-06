@@ -123,6 +123,7 @@ import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSe
 import { getBattleRewardAnchor, showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
 import { playNpcBattleIntro, playRoomTransition, playTutorialBossInterjection } from './js/ui/room-transition.js';
+import { updateCrystalBalance, showDailyCrystalBonusModal } from './js/ui/crystals.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { escapeHtml } from './js/ui/html-utils.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
@@ -144,6 +145,7 @@ import { sceneKindForPhase } from './js/scenes/phase-scene-map.js';
 // API imports - these are the server communication functions
 import {
   getGameState as apiGetGameState,
+  claimDailyCrystals as apiClaimDailyCrystals,
   createPlayer as apiCreatePlayer,
   startRun as apiStartRun,
   confirmCreatures as apiConfirmCreatures,
@@ -444,6 +446,7 @@ function updateStatusBar() {
     dom.floorIndicator.textContent = 'Hub';
   }
   dom.essenceDisplay.textContent = gameState.meta?.essence || gameState.player?.essence || 0;
+  updateCrystalBalance(dom.crystalBalance, gameState.meta?.crystals || 0);
 
   // Room X / total in current area (fixed 30-room layout)
   const rpb = dom.roomProgressBadge;
@@ -793,6 +796,25 @@ async function loadGameState() {
   }
 }
 
+async function claimDailyCrystalBonus() {
+  const result = await apiClaimDailyCrystals();
+  if (!result?.ok) return;
+
+  updateGameState({
+    ...gameState,
+    meta: {
+      ...(gameState.meta || {}),
+      crystals: result.balance,
+      lastCrystalLoginDate: result.today
+    }
+  });
+  updateCrystalBalance(dom.crystalBalance, result.balance);
+
+  if (result.awarded) {
+    showDailyCrystalBonusModal({ amount: result.amount, balance: result.balance });
+  }
+}
+
 
 // ============ PROLOGUE ============
 let _prologueCache = null;
@@ -903,6 +925,10 @@ async function playPrologue() {
   const isFirstRun = (gameState.meta?.lifetimeStats?.totalRuns ?? 0) === 0 && !gameState.run;
   if (isFirstRun) {
     const runResult = await apiStartRun({});
+    if (runResult?.error === 'insufficient_crystals') {
+      scene.showToast('Come back tomorrow for more crystals.', 3000);
+      return;
+    }
     if (runResult?.state) updateGameState(runResult.state);
     const areaResult = await apiSelectArea('hajimari-no-hiroba');
     if (areaResult?.state) updateGameState(areaResult.state);
@@ -939,6 +965,10 @@ async function startNewRun() {
   diagnostics.logAction('start_run');
 
   const result = await apiStartRun({});
+  if (result?.error === 'insufficient_crystals') {
+    scene.showToast('Come back tomorrow for more crystals.', 3000);
+    return;
+  }
 
   if (result?.state) {
     updateGameState(result.state);
@@ -2162,6 +2192,7 @@ async function initGame() {
     onStateUpdate: updateGameState,
   });
   await loadGameState();
+  await claimDailyCrystalBonus();
 
   registerBattlefieldPreview({
     updateGameState,

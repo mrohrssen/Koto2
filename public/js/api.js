@@ -44,10 +44,11 @@ export function getAuthHeaders() {
   };
 }
 
-export async function translateDialogue(text, entities = []) {
+export async function translateDialogue(text, entities = [], idempotencyKey = '') {
   try {
     const body = { text };
     if (Array.isArray(entities) && entities.length) body.entities = entities;
+    if (idempotencyKey) body.idempotencyKey = idempotencyKey;
 
     const response = await fetch(apiUrl('/api/dialogue/translate'), {
       method: 'POST',
@@ -57,7 +58,12 @@ export async function translateDialogue(text, entities = []) {
 
     const data = await response.json();
     if (!response.ok || !data?.ok) {
-      return { ok: false, error: data?.error || 'translation_unavailable' };
+      return {
+        ok: false,
+        error: data?.error || 'translation_unavailable',
+        cost: data?.cost,
+        balance: data?.balance
+      };
     }
 
     return data;
@@ -249,6 +255,10 @@ async function getSettings() {
   }
 }
 
+async function claimDailyCrystals() {
+  return apiCall('/crystals/daily-login', 'POST', {});
+}
+
 // ============ PLAYER MANAGEMENT ENDPOINTS ============
 
 /**
@@ -270,7 +280,7 @@ async function createPlayer(name, stats, statPoints) {
  * @returns {Promise<object>} Result with state and narration
  */
 async function startRun(body = null) {
-  return apiCall('/start-run', 'POST', body, null, { retryable: true });
+  return apiCall('/start-run', 'POST', body, null, { retryable: true, returnErrorBody: true });
 }
 
 /**
@@ -788,6 +798,7 @@ export {
   // Game state endpoints
   getGameState,
   getSettings,
+  claimDailyCrystals,
   // Player management endpoints
   createPlayer,
   // Run management endpoints
