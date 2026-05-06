@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { getUserKeys } from './users.js';
+import { findUserById, getUserKeys } from './users.js';
 
 function getSecret() {
   return process.env.JWT_SECRET || 'dev-secret-change-in-production';
@@ -54,6 +54,9 @@ export function requireAuth(req, res, next) {
   const payload = verifyToken(token);
   if (!payload) {
     return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+  if (!findUserById(payload.id, req.app?.locals?.usersFile)) {
+    return res.status(401).json({ error: 'User not found' });
   }
 
   req.user = { id: payload.id, username: payload.username };

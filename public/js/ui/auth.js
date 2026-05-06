@@ -20,8 +20,8 @@ export function init(callbacks) {
   }
 
   const tabs = document.querySelectorAll('.auth-tab');
-  const inviteField = document.getElementById('auth-invite');
   const submitBtn = document.getElementById('auth-submit');
+  const aiConsent = document.getElementById('auth-ai-consent');
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -30,15 +30,15 @@ export function init(callbacks) {
       tab.classList.add('active');
 
       if (currentTab === 'register') {
-        inviteField.classList.remove('hidden');
         submitBtn.textContent = 'Register';
         document.getElementById('auth-password').autocomplete = 'new-password';
         document.getElementById('wordListField').style.display = '';
+        aiConsent.classList.remove('hidden');
       } else {
-        inviteField.classList.add('hidden');
         submitBtn.textContent = 'Login';
         document.getElementById('auth-password').autocomplete = 'current-password';
         document.getElementById('wordListField').style.display = 'none';
+        aiConsent.classList.add('hidden');
       }
       hideError();
     });
@@ -98,15 +98,15 @@ function storeToken(token) {
 async function handleSubmit(callbacks) {
   const username = document.getElementById('auth-username').value.trim();
   const password = document.getElementById('auth-password').value;
-  const inviteCode = document.getElementById('auth-invite').value.trim();
 
   if (!username || !password) {
     showError('Username and password required');
     return;
   }
 
-  if (currentTab === 'register' && !inviteCode) {
-    showError('Invite code required');
+  const aiDataSharingConsent = document.getElementById('auth-ai-consent-checkbox')?.checked ?? false;
+  if (currentTab === 'register' && !aiDataSharingConsent) {
+    showError('AI data sharing consent is required to play Koto');
     return;
   }
 
@@ -117,7 +117,7 @@ async function handleSubmit(callbacks) {
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
-    formData.append('inviteCode', inviteCode);
+    formData.append('aiDataSharingConsent', String(aiDataSharingConsent));
     const fileInput = document.getElementById('word-list-upload');
     if (fileInput.files.length > 0) {
       formData.append('wordList', fileInput.files[0]);

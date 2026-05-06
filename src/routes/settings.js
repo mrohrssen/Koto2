@@ -38,8 +38,7 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       gameTtsVolume: settings.gameTtsVolume || 1.0,
       voiceGender: settings.voiceGender || 'boy',
       reviewType: settings.reviewType || 'dialog',
-      dailyWordLimit: settings.dailyWordLimit ?? 10,
-      debugSuperAttack: settings.debugSuperAttack ?? false
+      dailyWordLimit: settings.dailyWordLimit ?? 10
     });
   });
 
@@ -71,10 +70,6 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       if (!isNaN(limit) && limit >= 0 && limit <= 50) {
         settings.dailyWordLimit = limit;
       }
-    }
-
-    if (req.body.debugSuperAttack !== undefined) {
-      settings.debugSuperAttack = !!req.body.debugSuperAttack;
     }
 
     if (gameTtsEnabled !== undefined || gameTtsSpeakerId !== undefined ||

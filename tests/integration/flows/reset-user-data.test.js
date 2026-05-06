@@ -24,7 +24,8 @@ describe('reset user data flow', () => {
     const registerRes = await client.post('/api/auth/register', {
       username: 'reset-flow-user',
       password: 'reset-pass-123',
-      inviteCode: 'neo-tokyo-friends'
+      inviteCode: 'neo-tokyo-friends',
+      aiDataSharingConsent: true
     });
     assert.equal(registerRes.status, 200);
     const userId = registerRes.body.user.id;

@@ -18,7 +18,8 @@ describe('Auth Integration Flow', () => {
     const res = await client.post('/api/auth/register', {
       username: 'newuser',
       password: 'securepass123',
-      inviteCode: 'neo-tokyo-friends'
+      inviteCode: 'neo-tokyo-friends',
+      aiDataSharingConsent: true
     });
     assert.equal(res.status, 200);
     assert.ok(res.body.token, 'response should include a JWT token');
@@ -30,13 +31,15 @@ describe('Auth Integration Flow', () => {
     await client.post('/api/auth/register', {
       username: 'dupeuser',
       password: 'securepass123',
-      inviteCode: 'neo-tokyo-friends'
+      inviteCode: 'neo-tokyo-friends',
+      aiDataSharingConsent: true
     });
 
     const res = await client.post('/api/auth/register', {
       username: 'dupeuser',
       password: 'differentpass123',
-      inviteCode: 'neo-tokyo-friends'
+      inviteCode: 'neo-tokyo-friends',
+      aiDataSharingConsent: true
     });
     assert.equal(res.status, 400);
     assert.ok(res.body.error, 'response should include an error message');
@@ -46,7 +49,8 @@ describe('Auth Integration Flow', () => {
     await client.post('/api/auth/register', {
       username: 'loginuser',
       password: 'securepass123',
-      inviteCode: 'neo-tokyo-friends'
+      inviteCode: 'neo-tokyo-friends',
+      aiDataSharingConsent: true
     });
 
     const res = await client.post('/api/auth/login', {
@@ -62,7 +66,8 @@ describe('Auth Integration Flow', () => {
     await client.post('/api/auth/register', {
       username: 'wrongpwuser',
       password: 'securepass123',
-      inviteCode: 'neo-tokyo-friends'
+      inviteCode: 'neo-tokyo-friends',
+      aiDataSharingConsent: true
     });
 
     const res = await client.post('/api/auth/login', {
@@ -77,7 +82,8 @@ describe('Auth Integration Flow', () => {
     const regRes = await client.post('/api/auth/register', {
       username: 'meuser',
       password: 'securepass123',
-      inviteCode: 'neo-tokyo-friends'
+      inviteCode: 'neo-tokyo-friends',
+      aiDataSharingConsent: true
     });
 
     client.setToken(regRes.body.token);

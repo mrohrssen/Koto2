@@ -355,7 +355,7 @@ async function selectArea(areaId) {
     const response = await fetch(apiUrl('/api/game/select-area'), {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ areaId, forceRoomType: getForceRoomType() })
+      body: JSON.stringify({ areaId })
     });
     return await response.json();
   } catch (error) {
@@ -364,16 +364,11 @@ async function selectArea(areaId) {
   }
 }
 
-
-function getForceRoomType() {
-  return localStorage.getItem('jrpg_forceRoomType') || null;
-}
-
 // ============ ROOM EXPLORATION ENDPOINTS ============
 
 /** Proceed to next room */
 async function proceed() {
-  return apiCall('/proceed', 'POST', { forceRoomType: getForceRoomType() }, null, { retryable: true });
+  return apiCall('/proceed', 'POST', {}, null, { retryable: true });
 }
 
 /** Start room encounter */
@@ -693,10 +688,6 @@ async function startFusion(recipeId) {
   return apiCall('/fusion/start', 'POST', { recipeId }, null, { returnErrorBody: true });
 }
 
-async function addFusionCore() {
-  return apiCall('/fusion/debug-add-core', 'POST');
-}
-
 async function claimTutorialFusionCore() {
   return apiCall('/tutorial-fusion-core', 'POST');
 }
@@ -887,7 +878,6 @@ export {
   // Fusion endpoints
   getFusionState,
   startFusion,
-  addFusionCore,
   claimTutorialFusionCore,
   completeTutorialFusion,
   // Skill master endpoints

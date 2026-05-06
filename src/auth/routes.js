@@ -1,14 +1,16 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
 import { signToken, requireAuth } from './middleware.js';
 import { verifyPassword, decryptKeys, encryptKeys } from './crypto.js';
 import {
   createUser, findUserByUsername, findUserById,
-  useInviteCode, createInviteCode, loadUsers, saveUsers
+  useInviteCode, createInviteCode, loadUsers, saveUsers, updateUserKeys
 } from './users.js';
-import { dataPath } from '../data-dir.js';
+import { dataPath, getDataDir } from '../data-dir.js';
 import { parseWordList } from '../game/bootstrap/word-list-parser.js';
-import { createCard, gradeCard } from '../game/internal-srs.js';
+import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } });
 
@@ -32,6 +34,43 @@ function checkRateLimit(ip) {
   return true;
 }
 
+function deleteAssociatedData(userId) {
+  const dataDir = getDataDir();
+  const deletedFiles = [];
+  const deletedBugReports = [];
+
+  for (const entry of readdirSync(dataDir, { withFileTypes: true })) {
+    if (entry.name.includes(userId)) {
+      rmSync(join(dataDir, entry.name), { recursive: true, force: true });
+      deletedFiles.push(entry.name);
+    }
+  }
+
+  const bugReportsDir = dataPath('bug-reports');
+  if (existsSync(bugReportsDir)) {
+    for (const entry of readdirSync(bugReportsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const reportPath = join(bugReportsDir, entry.name, 'report.json');
+      if (!existsSync(reportPath)) continue;
+      try {
+        const report = JSON.parse(readFileSync(reportPath, 'utf-8'));
+        if (report.userId === userId) {
+          rmSync(join(bugReportsDir, entry.name), { recursive: true, force: true });
+          deletedBugReports.push(entry.name);
+        }
+      } catch {
+        // Leave malformed reports in place; they cannot be matched to this account.
+      }
+    }
+  }
+
+  clearSrsCache(userId);
+  return {
+    deletedFiles: deletedFiles.sort(),
+    deletedBugReports: deletedBugReports.sort()
+  };
+}
+
 /**
  * Create auth router
  * @param {{ usersFile?: string }} options
@@ -47,9 +86,13 @@ export default function createAuthRoutes(options = {}) {
   // POST /api/auth/register
   async function register(req, res) {
     const { username, password, inviteCode } = req.body;
+    const aiDataSharingConsent = req.body.aiDataSharingConsent === true || req.body.aiDataSharingConsent === 'true';
 
-    if (!username || !password || !inviteCode) {
-      return res.status(400).json({ error: 'Username, password, and invite code required' });
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password required' });
+    }
+    if (!aiDataSharingConsent) {
+      return res.status(400).json({ error: 'AI data sharing consent required' });
     }
     if (username.length < 2 || username.length > 20) {
       return res.status(400).json({ error: 'Username must be 2-20 characters' });
@@ -58,10 +101,8 @@ export default function createAuthRoutes(options = {}) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    // Check for permanent invite code (unlimited uses)
-    const isPermanentCode = inviteCode === PERMANENT_INVITE_CODE;
-
-    if (!isPermanentCode) {
+    // Invite codes are temporarily optional for App Store review access.
+    if (inviteCode && inviteCode !== PERMANENT_INVITE_CODE) {
       // Validate one-time invite code
       const data = loadUsers(usersFile);
       const invite = data.inviteCodes.find(i => i.code === inviteCode && !i.usedBy);
@@ -73,9 +114,10 @@ export default function createAuthRoutes(options = {}) {
     try {
       const user = await createUser(username, password, usersFile);
       // Only mark one-time codes as used
-      if (!isPermanentCode) {
+      if (inviteCode && inviteCode !== PERMANENT_INVITE_CODE) {
         useInviteCode(inviteCode, user.id, usersFile);
       }
+      updateUserKeys(user.id, { aiDataSharingConsent: true }, encryptionKey, usersFile);
 
       // Seed FSRS vocab deck from uploaded word list
       if (req.file) {
@@ -124,15 +166,11 @@ export default function createAuthRoutes(options = {}) {
   function me(req, res) {
     const user = findUserById(req.user.id, usersFile);
     if (!user) {
-      // Mock profile for tests, explicit skip, or local non-production when JWT is valid but user row is missing.
-      if (
-        process.env.NODE_ENV === 'test' ||
-        process.env.SKIP_AUTH === 'true' ||
-        process.env.NODE_ENV !== 'production'
-      ) {
+      // Mock profile only for explicit test/auth-bypass modes.
+      if (process.env.NODE_ENV === 'test' || process.env.SKIP_AUTH === 'true') {
         return res.json({ id: req.user.id, username: req.user.username, apiKeys: {} });
       }
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(401).json({ error: 'User not found' });
     }
 
     let apiKeysInfo = {
@@ -141,7 +179,8 @@ export default function createAuthRoutes(options = {}) {
       openrouterModel: '',
       jlptLevel: 'N4',
       hasAiKey: false,
-      hasBunproToken: false
+      hasBunproToken: false,
+      aiDataSharingConsent: false
     };
     if (user.encryptedApiKeys) {
       try {
@@ -152,7 +191,8 @@ export default function createAuthRoutes(options = {}) {
           openrouterModel: keys.openrouterModel || '',
           jlptLevel: keys.jlptLevel || 'N4',
           hasAiKey: !!keys.aiApiKey,
-          hasBunproToken: !!keys.bunproToken
+          hasBunproToken: !!keys.bunproToken,
+          aiDataSharingConsent: keys.aiDataSharingConsent === true
         };
       } catch {
         // Keep defaults on decryption failure
@@ -164,7 +204,7 @@ export default function createAuthRoutes(options = {}) {
 
   // PUT /api/auth/api-keys
   function updateKeys(req, res) {
-    const { aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel, bunproToken } = req.body;
+    const { aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel, bunproToken, aiDataSharingConsent } = req.body;
     const keys = {};
     if (aiApiKey !== undefined) keys.aiApiKey = aiApiKey;
     if (aiProvider !== undefined) keys.aiProvider = aiProvider;
@@ -172,14 +212,21 @@ export default function createAuthRoutes(options = {}) {
     if (openrouterModel !== undefined) keys.openrouterModel = openrouterModel;
     if (jlptLevel !== undefined) keys.jlptLevel = jlptLevel;
     if (bunproToken !== undefined) keys.bunproToken = bunproToken;
+    if (aiDataSharingConsent !== undefined) keys.aiDataSharingConsent = aiDataSharingConsent === true;
 
     // Merge with existing keys (partial update)
     const user = findUserById(req.user.id, usersFile);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
     let existingKeys = {};
     if (user?.encryptedApiKeys) {
       try { existingKeys = decryptKeys(user.encryptedApiKeys, encryptionKey); } catch {}
     }
     const merged = { ...existingKeys, ...keys };
+    if (merged.aiApiKey && !merged.aiDataSharingConsent) {
+      return res.status(400).json({ error: 'AI data sharing consent required' });
+    }
 
     const encrypted = encryptKeys(merged, encryptionKey);
 
@@ -238,16 +285,47 @@ export default function createAuthRoutes(options = {}) {
     res.json({ count: users.length, users });
   }
 
+  async function deleteMe(req, res) {
+    const { password } = req.body || {};
+    if (!password) {
+      return res.status(400).json({ error: 'Password required' });
+    }
+
+    const data = loadUsers(usersFile);
+    const userIndex = data.users.findIndex(u => u.id === req.user.id);
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = data.users[userIndex];
+    const valid = await verifyPassword(password, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+
+    const { deletedFiles, deletedBugReports } = deleteAssociatedData(user.id);
+    data.users.splice(userIndex, 1);
+    saveUsers(data, usersFile);
+
+    res.json({
+      success: true,
+      deletedUserId: user.id,
+      deletedFiles,
+      deletedBugReports
+    });
+  }
+
   // Mount routes
   router.post('/register', upload.single('wordList'), register);
   router.post('/login', login);
   router.get('/me', requireAuth, me);
+  router.delete('/me', requireAuth, deleteMe);
   router.put('/api-keys', requireAuth, updateKeys);
   router.post('/generate-invite', generateInvite);
   router.get('/admin/users', adminUsers);
 
   // Expose handlers for testing
-  router._testHandlers = { register, login, me, updateKeys, generateInvite };
+  router._testHandlers = { register, login, me, deleteMe, updateKeys, generateInvite };
 
   return router;
 }

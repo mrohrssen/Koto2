@@ -9,7 +9,7 @@ export async function authenticatePage(page, request, {
   let token = null;
 
   const register = await request.post('/api/auth/register', {
-    data: { username, password, inviteCode: 'neo-tokyo-friends' }
+    data: { username, password, inviteCode: 'neo-tokyo-friends', aiDataSharingConsent: true }
   });
   const registerBody = await register.json().catch(() => null);
   token = registerBody?.token || null;

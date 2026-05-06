@@ -1,6 +1,6 @@
 export function buildVocabConfig(req, getUserVocabulary, checkSentenceViolations) {
   const userKeys = req.userKeys || {};
-  if (!userKeys.aiApiKey || !userKeys.aiProvider || !getUserVocabulary) return null;
+  if (!userKeys.aiDataSharingConsent || !userKeys.aiApiKey || !userKeys.aiProvider || !getUserVocabulary) return null;
 
   const { words: vocabulary } = getUserVocabulary(req.user.id);
   const vocabSet = new Set(vocabulary);
@@ -30,6 +30,7 @@ export function buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSe
   const fromUser = buildVocabConfig(req, getUserVocabulary, checkSentenceViolations);
   if (fromUser) return fromUser;
   if (!getUserVocabulary) return null;
+  if (req.userKeys?.aiDataSharingConsent !== true) return null;
 
   const openai = process.env.OPENAI_API_KEY;
   const anthropic = process.env.ANTHROPIC_API_KEY;

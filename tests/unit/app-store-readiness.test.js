@@ -1,0 +1,73 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const root = process.cwd();
+
+function read(path) {
+  return readFileSync(join(root, path), 'utf-8');
+}
+
+describe('App Store readiness static checks', () => {
+  it('does not expose invite-code registration UI', () => {
+    const html = read('public/index.html');
+    const authJs = read('public/js/ui/auth.js');
+
+    assert.equal(html.includes('auth-invite'), false);
+    assert.equal(authJs.includes('Invite code required'), false);
+  });
+
+  it('does not expose playtest or debug controls in settings', () => {
+    const settingsUi = read('public/js/ui/modals.js');
+
+    assert.equal(settingsUi.includes('Force Room Type'), false);
+    assert.equal(settingsUi.includes('100 ATK (Debug)'), false);
+    assert.equal(settingsUi.includes('Add Fusion Core'), false);
+    assert.equal(settingsUi.includes('debugSuperAttack'), false);
+  });
+
+  it('ships an in-app privacy policy link and page', () => {
+    const html = read('public/index.html');
+
+    assert.equal(html.includes('Privacy Policy'), true);
+    assert.equal(html.includes('/privacy.html'), true);
+    assert.equal(existsSync(join(root, 'public/privacy.html')), true);
+  });
+
+  it('discloses third-party AI data sharing during registration, not settings', () => {
+    const html = read('public/index.html');
+    const authJs = read('public/js/ui/auth.js');
+    const settingsUi = read('public/js/ui/modals.js');
+
+    assert.equal(html.includes('third-party AI providers'), true);
+    assert.equal(authJs.includes('auth-ai-consent'), true);
+    assert.equal(settingsUi.includes('settings-ai-consent'), false);
+  });
+
+  it('offers self-service account deletion in settings', () => {
+    const settingsUi = read('public/js/ui/modals.js');
+
+    assert.equal(settingsUi.includes('Delete Account'), true);
+    assert.equal(settingsUi.includes('/api/auth/me'), true);
+  });
+
+  it('has the app icon files referenced by the manifest and Apple touch icon', () => {
+    for (const icon of ['app-180.webp', 'app-192.webp', 'app-512.webp']) {
+      assert.equal(existsSync(join(root, 'public/assets/icons', icon)), true, `${icon} should exist`);
+    }
+  });
+
+  it('does not ship localhost debug beacons in the frontend API client', () => {
+    const apiJs = read('public/js/api.js');
+    const gameJs = read('public/game.js');
+
+    assert.equal(apiJs.includes('127.0.0.1:7503'), false);
+    assert.equal(apiJs.includes('debug-add-core'), false);
+    assert.equal(apiJs.includes('jrpg_forceRoomType'), false);
+    assert.equal(gameJs.includes('devBattlefieldPreview'), false);
+    assert.equal(gameJs.includes('__inspector'), false);
+    assert.equal(gameJs.includes('__intentLog'), false);
+    assert.equal(gameJs.includes('window.gameState ='), false);
+  });
+});

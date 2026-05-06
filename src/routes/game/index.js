@@ -36,6 +36,9 @@ export default function createGameRoutes(deps) {
   // Auth + per-user manager middleware
   router.use(requireAuth);
   router.use((req, res, next) => {
+    if (process.env.SKIP_AUTH !== 'true' && !findUserById(req.user.id, req.app?.locals?.usersFile)) {
+      return res.status(401).json({ error: 'User not found' });
+    }
     req.gameManager = getManager(req.user.id);
     req.saveGame = () => saveManager(req.user.id);
     req.userKeys = getUserKeys(req.user.id);
