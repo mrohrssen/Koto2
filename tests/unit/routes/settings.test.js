@@ -1,0 +1,76 @@
+import { describe, it, beforeEach, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
+import request from 'supertest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { createApp } from '../../../src/app.js';
+import { resetDataDirForTest } from '../../../src/data-dir.js';
+
+describe('settings routes App Store readiness', () => {
+  let originalNodeEnv;
+
+  beforeEach(() => {
+    originalNodeEnv = process.env.NODE_ENV;
+  });
+
+  afterEach(() => {
+    if (originalNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+    resetDataDirForTest();
+  });
+
+  it('does not expose debug super attack through public settings', async () => {
+    const settings = { debugSuperAttack: false, voiceGender: 'boy' };
+    let savedSettings = null;
+    const app = createApp({
+      routeOverrides: {
+        getSettings: () => settings,
+        saveSettings: (next) => { savedSettings = { ...next }; }
+      }
+    });
+
+    const getRes = await request(app).get('/api/settings').expect(200);
+    assert.equal(Object.hasOwn(getRes.body, 'debugSuperAttack'), false);
+
+    await request(app)
+      .post('/api/settings')
+      .send({ debugSuperAttack: true, voiceGender: 'girl' })
+      .expect(200);
+
+    assert.equal(settings.debugSuperAttack, false);
+    assert.equal(savedSettings.debugSuperAttack, false);
+    assert.equal(savedSettings.voiceGender, 'girl');
+  });
+
+  it('does not expose debug game routes in production', async () => {
+    process.env.NODE_ENV = 'production';
+    const dataDir = mkdtempSync(join(tmpdir(), 'koto-debug-routes-'));
+    try {
+      const app = createApp({ dataDir, usersFile: join(dataDir, '.jrpg-users.json') });
+      const register = await request(app)
+        .post('/api/auth/register')
+        .field('username', 'debuguser')
+        .field('password', 'pass123')
+        .field('aiDataSharingConsent', 'true')
+        .expect(200);
+
+      await request(app)
+        .post('/api/game/debug-mode')
+        .set('Authorization', `Bearer ${register.body.token}`)
+        .send({ enabled: true })
+        .expect(404);
+
+      await request(app)
+        .post('/api/game/fusion/debug-add-core')
+        .set('Authorization', `Bearer ${register.body.token}`)
+        .send({})
+        .expect(404);
+    } finally {
+      rmSync(dataDir, { recursive: true, force: true });
+    }
+  });
+});

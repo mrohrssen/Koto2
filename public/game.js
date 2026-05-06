@@ -125,16 +125,11 @@ import { resetClientSessionState } from './js/ui/session-reset.js';
 import { playNpcBattleIntro, playRoomTransition, playTutorialBossInterjection } from './js/ui/room-transition.js';
 import { updateCrystalBalance, showDailyCrystalBonusModal } from './js/ui/crystals.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
-import { escapeHtml } from './js/ui/html-utils.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
-import { createIntentLog } from './js/intent-log.js';
-import { createInspector } from './js/inspector.js';
-import { registerBattlefieldPreview } from './js/dev/battlefield-preview.js';
 
 // PixiJS battle stage imports
 import { initApp, getApp } from './js/pixi/app.js';
 import { loadParallax, setScrollState, updateParallax } from './js/pixi/parallax.js';
-import { getCreatureSpriteForScene } from './js/pixi/formation.js';
 import { updateParticles, isFrozen } from './js/pixi/effects.js';
 import { SceneManager, setSceneManager, isSceneManagerInitialized, getSceneManager } from './js/scenes/scene-manager.js';
 import { BattleScene } from './js/scenes/battle-scene.js';
@@ -220,13 +215,11 @@ let gameState = {
   phase: 'no_save'
 };
 
-window.gameState = gameState;  // Expose immediately for debugging
 store.set('gameState', gameState);
 
 function updateGameState(newState) {
   console.log('[DEBUG] updateGameState called. phase:', newState.phase, 'pendingBranch:', newState.run?.pendingBranch, 'currentRoom:', newState.run?.currentRoom);
   gameState = newState;
-  window.gameState = gameState;
   store.set('gameState', gameState);
 }
 
@@ -1299,7 +1292,7 @@ async function startEncounter() {
 
     // Store bootstrap NPC dialogue for use after combat (defeatLine)
     if (result.npcDialogue) {
-      window.gameState._npcDialogue = result.npcDialogue;
+      gameState._npcDialogue = result.npcDialogue;
     }
 
     // For NPC battles: play NPC intro before rendering combat.
@@ -1737,58 +1730,6 @@ async function initGame() {
   // Must be first — captures console/fetch before other code runs
   diagnostics.init();
 
-  // Initialize intent log and inspector for debugging combat state
-  const intentLog = createIntentLog({
-    output: console.log,
-    getErrorCount: () => diagnostics.snapshot().consoleErrors.length,
-    onFailure: (failure) => diagnostics.pushFailure(failure),
-  });
-
-  const inspector = createInspector({
-    getState: () => store.get('gameState'),
-    getPhase: () => {
-      const gs = store.get('gameState');
-      return gs?.phase || 'unknown';
-    },
-    countDomBars: (side) => {
-      const container = side === 'player'
-        ? document.querySelector('.player-formation')
-        : document.querySelector('.enemy-formation');
-      if (!container) return null; // container absent — inspector should skip the comparison
-      return container.querySelectorAll('.formation-slot:not(.defeated):not(.befriended) .formation-hp-fill').length;
-    },
-    getPixiSprites: (side) => {
-      // After Task 18, sprites live on the active scene's formation ctx
-      // (BattleScene during combat). Resolve via the scene-facing lookup
-      // so the intent-log inspector sees the same sprites combat uses.
-      const activeScene = getSceneManager()?.currentScene;
-      const sprites = [];
-      for (let i = 0; i < 3; i++) {
-        const s = getCreatureSpriteForScene(activeScene, side, i);
-        if (s) sprites.push({ alpha: s.alpha, tint: s.tint });
-        else sprites.push(null);
-      }
-      return sprites.filter(Boolean);
-    },
-    getNpcSprites: () => {
-      const scene = getSceneManager()?.currentScene;
-      if (!scene?.layers?.npcs) return [];
-      return scene.layers.npcs.children
-        .filter(c => c && typeof c.alpha === 'number' && c.visible !== false);
-    },
-    isNpcDisplayVisible: () => {
-      const el = document.getElementById('npc-display');
-      // Only report visible when the display was Pixi-backed (sceneShowNpc path).
-      // DOM-only paths (NPC enemy, Chippy, skipPixi shop dealer) do not set the flag.
-      return !!el && el.classList.contains('visible') && el.getAttribute('data-pixi-backed') === '1';
-    },
-  });
-
-  window.__intentLog = intentLog;
-  window.__inspector = inspector;
-  window.__gameState = () => window.__inspector?.getState?.() || null;
-  window.__gamePhase = () => window.__inspector?.getPhase?.() || 'unknown';
-
   // Initialize i18n language from settings
   setLang(settings.isJapanifyUIEnabled() ? 'ja' : 'en');
 
@@ -2194,27 +2135,6 @@ async function initGame() {
   });
   await loadGameState();
   await claimDailyCrystalBonus();
-
-  registerBattlefieldPreview({
-    updateGameState,
-    autoStartFromUrl: false,
-    deps: {
-      narrationBox,
-      combatLoopUI,
-      actions,
-      escapeHtml,
-      loadParallax,
-      getSceneManager,
-      BattleScene,
-      scene,
-    },
-  });
-
-  const previewAreaId = new URLSearchParams(window.location.search).get('devBattlefieldPreview');
-  if (previewAreaId && window.__kotoPreview?.start3v3Battlefield) {
-    await window.__kotoPreview.start3v3Battlefield({ areaId: previewAreaId });
-    return;
-  }
 
   // Freshly registered users should enter prologue immediately without
   // an extra manual "New Game" click.

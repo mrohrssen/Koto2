@@ -3,7 +3,7 @@ import cors from 'cors';
 import compression from 'compression';
 import createRoutes from './routes/index.js';
 import createAuthRoutes from './auth/routes.js';
-import { setDataDirForTest } from './data-dir.js';
+import { dataPath, setDataDirForTest } from './data-dir.js';
 import { chat } from './ai-providers.js';
 import { DialogueTranslationCache } from './dialogue-translation/cache.js';
 import { buildDialogueTranslationConfig } from './dialogue-translation/service.js';
@@ -108,6 +108,7 @@ export function createApp({
   if (authBypass) process.env.SKIP_AUTH = 'true';
 
   const app = express();
+  app.locals.usersFile = usersFile || dataPath('.jrpg-users.json');
 
   // Standard middleware
   app.use(cors({
@@ -130,7 +131,7 @@ export function createApp({
   app.use(express.json({ limit: '10mb' }));
 
   // Auth routes (public, no auth required)
-  app.use('/api/auth', createAuthRoutes(usersFile ? { usersFile } : {}));
+  app.use('/api/auth', createAuthRoutes({ usersFile: app.locals.usersFile }));
 
   // Main API routes — merge caller deps over safe defaults
   const routeDeps = { ...DEFAULT_ROUTE_DEPS, ...routeOverrides };

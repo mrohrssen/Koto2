@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { requireAuth } from '../auth/middleware.js';
+import { getUserKeys } from '../auth/users.js';
 import { chat } from '../ai-providers.js';
 import { DialogueTranslationCache } from '../dialogue-translation/cache.js';
 import {
@@ -35,6 +36,11 @@ export default function createDialogueRoutes({
 
   router.use(requireAuth);
 
+  function hasAiDataSharingConsent(req) {
+    if (process.env.SKIP_AUTH === 'true') return true;
+    return getUserKeys(req.user.id).aiDataSharingConsent === true;
+  }
+
   router.post('/translate', async (req, res) => {
     const text = String(req.body?.text || '').trim();
     if (!text) {
@@ -68,12 +74,17 @@ export default function createDialogueRoutes({
           cost: CRYSTAL_COSTS.translate
         });
 
+        const config = getDialogueTranslationConfig();
+        if (config && !hasAiDataSharingConsent(req)) {
+          return { status: 403, body: { ok: false, error: 'ai_data_sharing_consent_required' } };
+        }
+
         const result = await translateDialogueText({
           text,
           entities: req.body?.entities,
           cache: dialogueTranslationCache,
           chatFn: dialogueTranslationChatFn,
-          config: getDialogueTranslationConfig()
+          config
         });
 
         if (!result.ok) {
@@ -140,13 +151,18 @@ export default function createDialogueRoutes({
           cost: CRYSTAL_COSTS.learn
         });
 
+        const config = getDialogueLearnConfig();
+        if (config && !hasAiDataSharingConsent(req)) {
+          return { status: 403, body: { ok: false, error: 'ai_data_sharing_consent_required' } };
+        }
+
         const result = await generateDialogueLearnLesson({
           text,
           tokens,
           entities: req.body?.entities,
           cache: dialogueLearnCache,
           chatFn: dialogueLearnChatFn,
-          config: getDialogueLearnConfig()
+          config
         });
 
         if (!result.ok) {

@@ -24,8 +24,15 @@ export default function createMiscRoutes({
 }) {
   const router = Router();
 
+  function requireServerDebug(req, res, next) {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    next();
+  }
+
   // Debug mode toggle
-  router.post('/debug-mode', (req, res) => {
+  router.post('/debug-mode', requireServerDebug, (req, res) => {
     const { enabled } = req.body;
     setDebugMode(!!enabled);
     console.log(`Debug mode ${getDebugMode() ? 'enabled' : 'disabled'}`);
@@ -33,7 +40,7 @@ export default function createMiscRoutes({
   });
 
   // Debug: Force combat
-  router.post('/debug-force-combat', (req, res) => {
+  router.post('/debug-force-combat', requireServerDebug, (req, res) => {
     if (!getDebugMode()) {
       return res.status(403).json({ error: 'Debug mode not enabled' });
     }
@@ -50,7 +57,7 @@ export default function createMiscRoutes({
   });
 
   // Debug: Force a specific game phase
-  router.post('/debug-force-phase', async (req, res) => {
+  router.post('/debug-force-phase', requireServerDebug, async (req, res) => {
     if (!getDebugMode()) {
       return res.status(403).json({ error: 'Debug mode not enabled' });
     }
@@ -171,7 +178,7 @@ export default function createMiscRoutes({
   });
 
   // Debug: Set enemy HP (for testing combat victory)
-  router.post('/debug-set-enemy-hp', (req, res) => {
+  router.post('/debug-set-enemy-hp', requireServerDebug, (req, res) => {
     if (!getDebugMode()) {
       return res.status(403).json({ error: 'Debug mode not enabled' });
     }
@@ -195,7 +202,7 @@ export default function createMiscRoutes({
   });
 
   // Debug: Override creature collection (for testing)
-  router.post('/debug-set-collection', (req, res) => {
+  router.post('/debug-set-collection', requireServerDebug, (req, res) => {
     if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
       return res.status(403).json({ error: 'Only available in test mode or debug mode' });
     }
@@ -217,7 +224,7 @@ export default function createMiscRoutes({
   });
 
   // Debug: Mark the current room as interacted (for testing proceed)
-  router.post('/debug-skip-room', (req, res) => {
+  router.post('/debug-skip-room', requireServerDebug, (req, res) => {
     if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
       return res.status(403).json({ error: 'Only available in test mode or debug mode' });
     }
@@ -236,7 +243,7 @@ export default function createMiscRoutes({
   });
 
   // Debug: Queue room types for testing
-  router.post('/debug-queue-rooms', async (req, res) => {
+  router.post('/debug-queue-rooms', requireServerDebug, async (req, res) => {
     if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
       return res.status(403).json({ error: 'Only available in test mode or debug mode' });
     }
@@ -253,7 +260,7 @@ export default function createMiscRoutes({
   });
 
   // Debug: Clear room queue
-  router.post('/debug-clear-room-queue', async (req, res) => {
+  router.post('/debug-clear-room-queue', requireServerDebug, async (req, res) => {
     if (process.env.NODE_ENV !== 'test' && !getDebugMode()) {
       return res.status(403).json({ error: 'Only available in test mode or debug mode' });
     }
@@ -265,7 +272,7 @@ export default function createMiscRoutes({
   });
 
   // Debug: Dump NPC dialogue cache for the current user
-  router.get('/debug-npc-dialogue-cache', (req, res) => {
+  router.get('/debug-npc-dialogue-cache', requireServerDebug, (req, res) => {
     if (!getDebugMode()) {
       return res.status(403).json({ error: 'Debug mode not enabled' });
     }
@@ -275,7 +282,7 @@ export default function createMiscRoutes({
   });
 
   // Debug: Dump creature befriend dialogue cache for the current user
-  router.get('/debug-creature-dialogue-cache', (req, res) => {
+  router.get('/debug-creature-dialogue-cache', requireServerDebug, (req, res) => {
     if (!getDebugMode()) {
       return res.status(403).json({ error: 'Debug mode not enabled' });
     }

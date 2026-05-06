@@ -1,7 +1,7 @@
 import * as audio from '../audio.js';
 import * as tts from '../tts.js';
 import { setLang } from './i18n.js';
-import { addFusionCore, getAuthHeaders, apiUrl } from '../api.js';
+import { getAuthHeaders, apiUrl } from '../api.js';
 import { loadServerSettings, saveServerSettings } from '../settings.js';
 
 const MODEL_OPTIONS = {
@@ -120,20 +120,6 @@ export async function openSettings() {
           min="0" max="50" value="${keyInfo.dailyWordLimit ?? 10}">
         <small style="color:#888;font-size:0.85em">0 = skip discovery rooms, max 50</small>
       </label>
-      <label class="settings-label" style="margin-top:12px">
-        Force Room Type
-        <select id="settings-force-room-type" class="settings-input">
-          <option value="">Standard</option>
-          <option value="encounter">Encounter</option>
-          <option value="shrine">Shrine</option>
-          <option value="quiz">Quiz</option>
-          <option value="wordDiscovery">Word Discovery</option>
-          <option value="speedReviewRoom">Knowledge Review Room</option>
-          <option value="dealer">Dealer</option>
-          <option value="whackAMole">Whack-A-Mole</option>
-        </select>
-        <small style="color:#888;font-size:0.85em">Forces all rooms to this type for playtesting</small>
-      </label>
       <hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0">
       <label class="settings-label">
         <input type="checkbox" id="settings-tts-enabled"
@@ -203,36 +189,17 @@ export async function openSettings() {
         style="width:100%;background:#b42318;color:white;margin-top:10px">Reset User Data</button>
       <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Erase this account's game and learning progress. Login, API keys, and settings are kept.</small>
 
-      <h4 style="margin:20px 0 8px;color:var(--accent)">Debug</h4>
-      <label class="settings-label" style="margin-top:8px">
-        <input type="checkbox" id="settings-debug-super-attack"
-          ${serverSettings.debugSuperAttack ? 'checked' : ''}>
-        100 ATK (Debug)
-      </label>
-      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">All your creatures get +100 ATK in combat.</small>
+      <button class="ui-btn" id="settings-delete-account-btn"
+        style="width:100%;background:#7a1f17;color:white;margin-top:18px">Delete Account</button>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Permanently delete your login, game progress, learning data, API keys, and bug reports.</small>
 
-      <button class="ui-btn" id="settings-add-fusion-core-btn"
-        style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Add Fusion Core</button>
-      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Adds one fusion core for testing the Fusion Lab.</small>
+      <h4 style="margin:20px 0 8px;color:var(--accent)">Legal</h4>
+      <a href="/privacy.html" style="display:block;color:var(--accent);margin-bottom:8px">Privacy Policy</a>
 
       <button class="ui-btn ui-btn--primary" id="settings-save-btn"
         style="margin-top:20px;width:100%">Save</button>
     </div>
   `;
-
-  // Set force room type from localStorage
-  const forceRoomSelect = document.getElementById('settings-force-room-type');
-  if (forceRoomSelect) {
-    forceRoomSelect.value = localStorage.getItem('jrpg_forceRoomType') || '';
-    forceRoomSelect.addEventListener('change', (e) => {
-      const val = e.target.value;
-      if (val) {
-        localStorage.setItem('jrpg_forceRoomType', val);
-      } else {
-        localStorage.removeItem('jrpg_forceRoomType');
-      }
-    });
-  }
 
   // Update model dropdown when provider changes
   document.getElementById('settings-ai-provider')?.addEventListener('change', (e) => {
@@ -359,22 +326,37 @@ export async function openSettings() {
     }
   });
 
-  document.getElementById('settings-add-fusion-core-btn')?.addEventListener('click', async (e) => {
+  document.getElementById('settings-delete-account-btn')?.addEventListener('click', async (e) => {
+    const password = prompt(
+      'Delete your Koto account permanently?\n\nEnter your password to delete your login, progress, learning data, API keys, and bug reports.'
+    );
+    if (!password) return;
+
     const btn = e.target;
     btn.disabled = true;
-    btn.textContent = 'Adding...';
+    btn.textContent = 'Deleting...';
     try {
-      const result = await addFusionCore();
-      if (result?.state && updateGameState && getGameState) {
-        const current = getGameState();
-        updateGameState({ ...result.state, phase: current?.phase || result.state.phase });
+      const resp = await fetch(apiUrl('/api/auth/me'), {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ password })
+      });
+      if (resp.ok) {
+        localStorage.removeItem('authToken');
+        sceneModule.showToast?.('Account deleted', 1600);
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        let message = 'Delete failed';
+        try {
+          const data = await resp.json();
+          message = data?.error || message;
+        } catch {}
+        btn.textContent = message;
+        setTimeout(() => { btn.textContent = 'Delete Account'; btn.disabled = false; }, 2500);
       }
-      btn.textContent = `Fusion Cores: ${result?.fusionCores ?? 0}`;
-      sceneModule.showToast?.('Fusion core added', 1600);
-      setTimeout(() => { btn.textContent = 'Add Fusion Core'; btn.disabled = false; }, 2000);
     } catch {
       btn.textContent = 'Error';
-      setTimeout(() => { btn.textContent = 'Add Fusion Core'; btn.disabled = false; }, 2000);
+      setTimeout(() => { btn.textContent = 'Delete Account'; btn.disabled = false; }, 2000);
     }
   });
 
@@ -460,12 +442,6 @@ export async function openSettings() {
     // Save voice gender to server settings
     if (selectedVoiceGender !== voiceGender) {
       await saveServerSettings({ voiceGender: selectedVoiceGender });
-    }
-
-    // Save debug super attack toggle
-    const debugSuperAttack = document.getElementById('settings-debug-super-attack')?.checked ?? false;
-    if (debugSuperAttack !== (serverSettings.debugSuperAttack ?? false)) {
-      await saveServerSettings({ debugSuperAttack });
     }
 
     // Save kana mode to server (updates meta.kanaMode)

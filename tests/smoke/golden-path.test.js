@@ -39,7 +39,8 @@ test.describe.serial('Golden path', () => {
       data: {
         username,
         password: 'password123',
-        inviteCode: 'neo-tokyo-friends'
+        inviteCode: 'neo-tokyo-friends',
+        aiDataSharingConsent: true
       }
     });
     expect(registerRes.ok()).toBeTruthy();

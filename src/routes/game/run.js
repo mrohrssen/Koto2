@@ -99,7 +99,7 @@ export default function createRunRoutes({
   /** Fire-and-forget: queue missing creature + NPC dialogues for current run */
   function queueBackgroundDialogues(req) {
     const userKeys = req.userKeys || {};
-    if (!userKeys.aiApiKey || !userKeys.aiProvider) return;
+    if (!userKeys.aiDataSharingConsent || !userKeys.aiApiKey || !userKeys.aiProvider) return;
 
     const aiConfig = {
       provider: userKeys.aiProvider,

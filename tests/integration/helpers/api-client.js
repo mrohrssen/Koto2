@@ -54,7 +54,7 @@ export function createApiClient(port) {
     /** Register + login, store token for subsequent requests */
     async loginAsNewUser(username = 'test-user', password = 'test-pass-123') {
       await request('POST', '/api/auth/register', {
-        username, password, inviteCode: 'neo-tokyo-friends'
+        username, password, inviteCode: 'neo-tokyo-friends', aiDataSharingConsent: true
       });
       const res = await request('POST', '/api/auth/login', { username, password });
       if (res.body?.token) authToken = res.body.token;

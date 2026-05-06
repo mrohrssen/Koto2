@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addFusionCore, getFusionState, startFusion } from '../../game/services/fusion-service.js';
+import { getFusionState, startFusion } from '../../game/services/fusion-service.js';
 
 export default function createFusionRoutes() {
   const router = Router();
@@ -23,17 +23,6 @@ export default function createFusionRoutes() {
       return res.status(400).json({ error: result.error, ...result });
     }
 
-    req.saveGame();
-    res.json({
-      ...result,
-      ...getFusionState(meta),
-      state: req.getEnrichedGameState()
-    });
-  });
-
-  router.post('/fusion/debug-add-core', (req, res) => {
-    const meta = req.gameManager.getMeta();
-    const result = addFusionCore(meta);
     req.saveGame();
     res.json({
       ...result,
