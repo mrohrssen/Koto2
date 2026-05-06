@@ -2678,5 +2678,447 @@
     ],
     "stage": 1,
     "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kageno-inu",
+    "name": "影の犬",
+    "nameEn": "Shadow Dog",
+    "reading": "かげのいぬ",
+    "meaning": "shadow dog (phrase: 影 shadow + の + 犬 dog)",
+    "rank": null,
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 62,
+    "baseAttack": 21,
+    "baseMp": 62,
+    "baseDefense": 5,
+    "baseDex": 14,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kasumeru",
+        "level": 1
+      },
+      {
+        "moveId": "shizumu",
+        "level": 6
+      },
+      {
+        "moveId": "mawarikomu",
+        "level": 12
+      },
+      {
+        "moveId": "norou",
+        "level": 20
+      },
+      {
+        "moveId": "tojikomeru",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "hikarino-uma",
+    "name": "光の馬",
+    "nameEn": "Light Horse",
+    "reading": "ひかりのうま",
+    "meaning": "light horse (phrase: 光 light + の + 馬 horse)",
+    "rank": null,
+    "element": "metal",
+    "rarity": "uncommon",
+    "baseHp": 64,
+    "baseAttack": 24,
+    "baseMp": 58,
+    "baseDefense": 6,
+    "baseDex": 13,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "hirameku",
+        "level": 1
+      },
+      {
+        "moveId": "keru",
+        "level": 5
+      },
+      {
+        "moveId": "hashiru",
+        "level": 10
+      },
+      {
+        "moveId": "kakeru",
+        "level": 16
+      },
+      {
+        "moveId": "fumitsukeru",
+        "level": 24
+      },
+      {
+        "moveId": "terasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kumono-sakana",
+    "name": "雲の魚",
+    "nameEn": "Cloud Fish",
+    "reading": "くものさかな",
+    "meaning": "cloud fish (phrase: 雲 cloud + の + 魚 fish)",
+    "rank": null,
+    "element": "water",
+    "rarity": "uncommon",
+    "baseHp": 82,
+    "baseAttack": 17,
+    "baseMp": 74,
+    "baseDefense": 8,
+    "baseDex": 8,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "haneru",
+        "level": 1
+      },
+      {
+        "moveId": "ukabu",
+        "level": 6
+      },
+      {
+        "moveId": "fuku",
+        "level": 12
+      },
+      {
+        "moveId": "tsutsumikomu",
+        "level": 20
+      },
+      {
+        "moveId": "abiru",
+        "level": 30
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "tsukino-ookami",
+    "name": "月の狼",
+    "nameEn": "Moon Wolf",
+    "reading": "つきのおおかみ",
+    "meaning": "moon wolf (phrase: 月 moon + の + 狼 wolf)",
+    "rank": null,
+    "element": "metal",
+    "rarity": "rare",
+    "baseHp": 68,
+    "baseAttack": 25,
+    "baseMp": 62,
+    "baseDefense": 6,
+    "baseDex": 12,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kamu",
+        "level": 1
+      },
+      {
+        "moveId": "osoikakaru",
+        "level": 5
+      },
+      {
+        "moveId": "oikakeru",
+        "level": 10
+      },
+      {
+        "moveId": "yuragu",
+        "level": 16
+      },
+      {
+        "moveId": "unaru",
+        "level": 24
+      },
+      {
+        "moveId": "hikisaku",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "koorino-kuma",
+    "name": "氷の熊",
+    "nameEn": "Ice Bear",
+    "reading": "こおりのくま",
+    "meaning": "ice bear (phrase: 氷 ice + の + 熊 bear)",
+    "rank": null,
+    "element": "water",
+    "rarity": "rare",
+    "baseHp": 102,
+    "baseAttack": 25,
+    "baseMp": 54,
+    "baseDefense": 10,
+    "baseDex": 3,
+    "archetype": "Tank/Healer",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kajiru",
+        "level": 1
+      },
+      {
+        "moveId": "kooritsuku",
+        "level": 5
+      },
+      {
+        "moveId": "funbaru",
+        "level": 10
+      },
+      {
+        "moveId": "oshitsubusu",
+        "level": 16
+      },
+      {
+        "moveId": "furueru",
+        "level": 24
+      },
+      {
+        "moveId": "tatakitsubusu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "sunano-hebi",
+    "name": "砂の蛇",
+    "nameEn": "Sand Snake",
+    "reading": "すなのへび",
+    "meaning": "sand snake (phrase: 砂 sand + の + 蛇 snake)",
+    "rank": null,
+    "element": "earth",
+    "rarity": "uncommon",
+    "baseHp": 56,
+    "baseAttack": 21,
+    "baseMp": 62,
+    "baseDefense": 5,
+    "baseDex": 13,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "haku",
+        "level": 1
+      },
+      {
+        "moveId": "butsukeru",
+        "level": 5
+      },
+      {
+        "moveId": "shimeru",
+        "level": 10
+      },
+      {
+        "moveId": "matsuwaru",
+        "level": 16
+      },
+      {
+        "moveId": "chirasu",
+        "level": 24
+      },
+      {
+        "moveId": "norou",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "kaminarino-tori",
+    "name": "雷の鳥",
+    "nameEn": "Thunder Bird",
+    "reading": "かみなりのとり",
+    "meaning": "thunder bird (phrase: 雷 thunder + の + 鳥 bird)",
+    "rank": null,
+    "element": "metal",
+    "rarity": "rare",
+    "baseHp": 54,
+    "baseAttack": 22,
+    "baseMp": 76,
+    "baseDefense": 4,
+    "baseDex": 16,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "hirameku",
+        "level": 1
+      },
+      {
+        "moveId": "tobu",
+        "level": 5
+      },
+      {
+        "moveId": "utsu_shoot",
+        "level": 10
+      },
+      {
+        "moveId": "nerau",
+        "level": 16
+      },
+      {
+        "moveId": "terasu",
+        "level": 24
+      },
+      {
+        "moveId": "todoroku",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "yukino-kitsune",
+    "name": "雪の狐",
+    "nameEn": "Snow Fox",
+    "reading": "ゆきのきつね",
+    "meaning": "snow fox (phrase: 雪 snow + の + 狐 fox)",
+    "rank": null,
+    "element": "water",
+    "rarity": "rare",
+    "baseHp": 56,
+    "baseAttack": 22,
+    "baseMp": 76,
+    "baseDefense": 5,
+    "baseDex": 14,
+    "archetype": "Trickster",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "tokeru",
+        "level": 1
+      },
+      {
+        "moveId": "kooritsuku",
+        "level": 5
+      },
+      {
+        "moveId": "kasumeru",
+        "level": 10
+      },
+      {
+        "moveId": "kogasu",
+        "level": 16
+      },
+      {
+        "moveId": "keshisaru",
+        "level": 24
+      },
+      {
+        "moveId": "furisosogu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "hanano-yousei",
+    "name": "花の妖精",
+    "nameEn": "Flower Fairy",
+    "reading": "はなのようせい",
+    "meaning": "flower fairy (phrase: 花 flower + の + 妖精 fairy)",
+    "rank": null,
+    "element": "wood",
+    "rarity": "rare",
+    "baseHp": 56,
+    "baseAttack": 18,
+    "baseMp": 82,
+    "baseDefense": 5,
+    "baseDex": 12,
+    "archetype": "Mage",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "kakomu",
+        "level": 1
+      },
+      {
+        "moveId": "utau",
+        "level": 5
+      },
+      {
+        "moveId": "chirasu",
+        "level": 10
+      },
+      {
+        "moveId": "hikaru",
+        "level": 16
+      },
+      {
+        "moveId": "iyasu",
+        "level": 24
+      },
+      {
+        "moveId": "yobidasu",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
+  },
+  {
+    "id": "honeno-oni",
+    "name": "骨の鬼",
+    "nameEn": "Bone Oni",
+    "reading": "ほねのおに",
+    "meaning": "bone oni (phrase: 骨 bone + の + 鬼 oni)",
+    "rank": null,
+    "element": "earth",
+    "rarity": "rare",
+    "baseHp": 90,
+    "baseAttack": 27,
+    "baseMp": 54,
+    "baseDefense": 9,
+    "baseDex": 4,
+    "archetype": "Fighter",
+    "isStarter": false,
+    "learnset": [
+      {
+        "moveId": "naguru",
+        "level": 1
+      },
+      {
+        "moveId": "oru",
+        "level": 5
+      },
+      {
+        "moveId": "waru",
+        "level": 10
+      },
+      {
+        "moveId": "tatakitsukeru",
+        "level": 16
+      },
+      {
+        "moveId": "abareru",
+        "level": 24
+      },
+      {
+        "moveId": "tatakau",
+        "level": 34
+      }
+    ],
+    "stage": 1,
+    "createdAt": "2026-05-06"
   }
 ]

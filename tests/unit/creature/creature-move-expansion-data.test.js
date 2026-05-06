@@ -12,7 +12,7 @@ const moves = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/moves.json'), 'ut
 const areas = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/areas.json'), 'utf8'));
 
 const EXPANSION_DATE = '2026-05-06';
-const EXPECTED_NEW_CREATURE_COUNT = 44;
+const EXPECTED_NEW_CREATURE_COUNT = 54;
 
 const movesById = new Map(moves.map(move => [move.id, move]));
 const newCreatures = creatures.filter(creature => creature.createdAt === EXPANSION_DATE);
@@ -44,7 +44,7 @@ describe('creature and move expansion data', () => {
         typeof creature.nameEn !== 'string' ||
         typeof creature.reading !== 'string' ||
         typeof creature.meaning !== 'string' ||
-        typeof creature.rank !== 'number' ||
+        (typeof creature.rank !== 'number' && creature.rank !== null) ||
         'baseWord' in creature ||
         'baseReading' in creature ||
         'baseMeaning' in creature ||

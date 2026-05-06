@@ -25,6 +25,96 @@ export const FUSION_RECIPES = {
     resultId: 'ishino-kyojin',
     requiresBossDefeatId: 'ishino-kyojin',
     cost: { fusionCores: 1 }
+  },
+  shadowDog: {
+    id: 'shadow-dog',
+    name: '影の犬',
+    nameEn: 'Shadow Dog',
+    ingredientIds: ['kage', 'inu'],
+    resultId: 'kageno-inu',
+    requiresBossDefeatId: 'kageno-inu',
+    cost: { fusionCores: 1 }
+  },
+  lightHorse: {
+    id: 'light-horse',
+    name: '光の馬',
+    nameEn: 'Light Horse',
+    ingredientIds: ['hikari', 'uma'],
+    resultId: 'hikarino-uma',
+    requiresBossDefeatId: 'hikarino-uma',
+    cost: { fusionCores: 1 }
+  },
+  cloudFish: {
+    id: 'cloud-fish',
+    name: '雲の魚',
+    nameEn: 'Cloud Fish',
+    ingredientIds: ['kumo', 'sakana'],
+    resultId: 'kumono-sakana',
+    requiresBossDefeatId: 'kumono-sakana',
+    cost: { fusionCores: 1 }
+  },
+  moonWolf: {
+    id: 'moon-wolf',
+    name: '月の狼',
+    nameEn: 'Moon Wolf',
+    ingredientIds: ['tsuki', 'ookami'],
+    resultId: 'tsukino-ookami',
+    requiresBossDefeatId: 'tsukino-ookami',
+    cost: { fusionCores: 1 }
+  },
+  iceBear: {
+    id: 'ice-bear',
+    name: '氷の熊',
+    nameEn: 'Ice Bear',
+    ingredientIds: ['koori', 'kuma'],
+    resultId: 'koorino-kuma',
+    requiresBossDefeatId: 'koorino-kuma',
+    cost: { fusionCores: 1 }
+  },
+  sandSnake: {
+    id: 'sand-snake',
+    name: '砂の蛇',
+    nameEn: 'Sand Snake',
+    ingredientIds: ['suna', 'hebi'],
+    resultId: 'sunano-hebi',
+    requiresBossDefeatId: 'sunano-hebi',
+    cost: { fusionCores: 1 }
+  },
+  thunderBird: {
+    id: 'thunder-bird',
+    name: '雷の鳥',
+    nameEn: 'Thunder Bird',
+    ingredientIds: ['kaminari', 'tori'],
+    resultId: 'kaminarino-tori',
+    requiresBossDefeatId: 'kaminarino-tori',
+    cost: { fusionCores: 1 }
+  },
+  snowFox: {
+    id: 'snow-fox',
+    name: '雪の狐',
+    nameEn: 'Snow Fox',
+    ingredientIds: ['yuki', 'kitsune'],
+    resultId: 'yukino-kitsune',
+    requiresBossDefeatId: 'yukino-kitsune',
+    cost: { fusionCores: 1 }
+  },
+  flowerFairy: {
+    id: 'flower-fairy',
+    name: '花の妖精',
+    nameEn: 'Flower Fairy',
+    ingredientIds: ['hana', 'yousei'],
+    resultId: 'hanano-yousei',
+    requiresBossDefeatId: 'hanano-yousei',
+    cost: { fusionCores: 1 }
+  },
+  boneOni: {
+    id: 'bone-oni',
+    name: '骨の鬼',
+    nameEn: 'Bone Oni',
+    ingredientIds: ['hone', 'oni'],
+    resultId: 'honeno-oni',
+    requiresBossDefeatId: 'honeno-oni',
+    cost: { fusionCores: 1 }
   }
 };
 
