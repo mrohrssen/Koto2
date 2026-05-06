@@ -116,6 +116,31 @@ let attachedLookupContainer = null;
 let playedAudio = null;
 let translationResponse = { ok: true, translation: 'Wait!', cached: false };
 let translatedRequests = [];
+const DEFAULT_LEARN_RESPONSE = {
+  ok: true,
+  lesson: {
+    schemaVersion: 1,
+    sourceText: '花は森で光を見た。',
+    pronunciation: { kana: 'はな は もり で ひかり を みた', romaji: 'hana wa mori de hikari o mita' },
+    translation: 'Flower saw a light in the forest.',
+    tokens: [
+      { surface: '花', reading: 'はな', romaji: 'hana', baseForm: '花', role: 'noun subject', meaning: 'the creature Flower', detail: 'Marked as a Koto creature in this sentence.', entity: { id: 'hana', type: 'creature', displayName: 'Flower', kotoMeaning: 'the creature Flower', ordinaryMeaning: 'flower / blossom' } },
+      { surface: 'は', reading: 'は', romaji: 'wa', baseForm: 'は', role: 'topic marker', meaning: 'marks the topic' },
+      { surface: '森', reading: 'もり', romaji: 'mori', baseForm: '森', role: 'place noun', meaning: 'forest' },
+      { surface: 'で', reading: 'で', romaji: 'de', baseForm: 'で', role: 'location particle', meaning: 'marks where the action happens' },
+      { surface: '光', reading: 'ひかり', romaji: 'hikari', baseForm: '光', role: 'object noun', meaning: 'light' },
+      { surface: 'を', reading: 'を', romaji: 'o', baseForm: 'を', role: 'object marker', meaning: 'marks what was seen' },
+      { surface: '見た', reading: 'みた', romaji: 'mita', baseForm: '見る', role: 'past verb', meaning: 'saw' },
+      { surface: '。', reading: '。', romaji: '.', baseForm: '。', role: 'punctuation', meaning: 'sentence ending punctuation' }
+    ],
+    grammarHints: [{ title: 'Verb goes last.', body: 'Japanese sentences put the verb at the end. Read to the end first to find 見た, saw.' }],
+    otherTips: [{ title: 'Entity vs ordinary noun.', body: 'In this Koto sentence, 花 is the creature Flower. In ordinary Japanese, 花 means flower / blossom.' }]
+  },
+  crystals: { balance: 85, cost: 15 },
+  cached: false
+};
+let learnResponse = JSON.parse(JSON.stringify(DEFAULT_LEARN_RESPONSE));
+let learnRequests = [];
 
 globalThis.document = {
   createElement: tagName => new FakeElement(tagName),
@@ -141,6 +166,10 @@ await mock.module('../../../public/js/api.js', {
     translateDialogue: async (text, entities = [], idempotencyKey = '') => {
       translatedRequests.push({ text, entities, idempotencyKey });
       return translationResponse;
+    },
+    learnDialogue: async (text, tokens = [], entities = [], idempotencyKey = '') => {
+      learnRequests.push({ text, tokens, entities, idempotencyKey });
+      return learnResponse;
     }
   }
 });
@@ -154,6 +183,8 @@ describe('npc dialogue card', () => {
     playedAudio = null;
     translationResponse = { ok: true, translation: 'Wait!', cached: false };
     translatedRequests = [];
+    learnResponse = JSON.parse(JSON.stringify(DEFAULT_LEARN_RESPONSE));
+    learnRequests = [];
   });
 
   it('renders tokenized dialogue in shared romaji/kana/english rows', () => {
@@ -210,7 +241,7 @@ describe('npc dialogue card', () => {
     assert.equal(actionArea.innerHTML, '');
   });
 
-  it('enables Translate for tokenized dialogue and keeps Learn disabled', () => {
+  it('enables Translate and Learn for tokenized dialogue', () => {
     showNpcDialogueCard({
       speaker: 'Mira',
       tokens: [{ surface: '不安', baseForm: '不安', reading: 'ふあん', meaning: 'anxiety', pos: 'noun' }],
@@ -220,7 +251,7 @@ describe('npc dialogue card', () => {
     const utilityButtons = actionArea.querySelectorAll('.npc-dialogue-utility');
     assert.equal(utilityButtons.length, 2);
     assert.equal(utilityButtons[0].disabled, false);
-    assert.equal(utilityButtons[1].disabled, true);
+    assert.equal(utilityButtons[1].disabled, false);
   });
 
   it('hardcodes the temporary default headshot for every speaker', () => {
@@ -403,8 +434,7 @@ describe('npc dialogue card', () => {
     showNpcDialogueCard({
       speaker: 'Mira',
       tokens: [{ surface: '待つ', baseForm: '待つ', reading: 'まつ', meaning: 'wait', pos: 'verb' }],
-      knownWords: new Set(),
-      onLearn: async () => ({ ok: true, crystals: { balance: 80 } })
+      knownWords: new Set()
     });
 
     assert.match(actionArea.innerHTML, /class="crystal-cost"/);
@@ -438,17 +468,22 @@ describe('npc dialogue card', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
   });
 
-  it('calls injected Learn action once with a learn idempotency key', async () => {
-    const learnRequests = [];
+  it('sends Learn API request once with source tokens, entities, and idempotency key', async () => {
     showNpcDialogueCard({
-      speaker: 'Mira',
+      speaker: 'Flower',
+      speakerEntity: { id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' },
       encounterId: 'enc-1',
-      tokens: [{ surface: '待って！', baseForm: '待つ', reading: 'まって', meaning: 'wait', pos: 'verb' }],
-      knownWords: new Set(),
-      onLearn: async (payload) => {
-        learnRequests.push(payload);
-        return { ok: true, crystals: { balance: 80 } };
-      }
+      tokens: [
+        { surface: '花', baseForm: '花', reading: 'はな', meaning: 'flower / blossom', pos: 'noun', entity: true },
+        { surface: 'は', baseForm: 'は', reading: 'は', pos: 'particle' },
+        { surface: '森', baseForm: '森', reading: 'もり', meaning: 'forest', pos: 'noun' },
+        { surface: 'で', baseForm: 'で', reading: 'で', pos: 'particle' },
+        { surface: '光', baseForm: '光', reading: 'ひかり', meaning: 'light', pos: 'noun' },
+        { surface: 'を', baseForm: 'を', reading: 'を', pos: 'particle' },
+        { surface: '見た', baseForm: '見る', reading: 'みた', meaning: 'saw', pos: 'verb' },
+        { surface: '。', pos: 'punctuation' }
+      ],
+      knownWords: new Set()
     });
 
     const [, learnButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
@@ -458,8 +493,35 @@ describe('npc dialogue card', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     assert.equal(learnRequests.length, 1);
+    assert.equal(learnRequests[0].text, '花は森で光を見た。');
+    assert.equal(learnRequests[0].tokens.length, 8);
+    assert.deepEqual(learnRequests[0].entities, [{ id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }]);
     assert.match(learnRequests[0].idempotencyKey, /^learn:/);
-    assert.equal(learnRequests[0].sourceText, '待って！');
+    assert.match(actionArea.innerHTML, /npc-dialogue-learn-takeover/);
+    assert.match(actionArea.innerHTML, /Sentence/);
+    assert.match(actionArea.innerHTML, /Pronunciation/);
+    assert.match(actionArea.innerHTML, /Translation/);
+    assert.match(actionArea.innerHTML, /Word by word/);
+    assert.match(actionArea.innerHTML, /Grammar hints/);
+    assert.match(actionArea.innerHTML, /Other tips/);
+    assert.match(actionArea.innerHTML, /Flower saw a light in the forest/);
+    assert.doesNotMatch(actionArea.innerHTML, /<script/);
+  });
+
+  it('renders unavailable Learn state with retry control', async () => {
+    learnResponse = { ok: false, error: 'learn_lesson_unavailable' };
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '待って！', baseForm: '待つ', reading: 'まって', meaning: 'wait', pos: 'verb' }],
+      knownWords: new Set(),
+    });
+
+    const [, learnButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    learnButton.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.match(actionArea.innerHTML, /Learn lesson is unavailable right now/);
+    assert.match(actionArea.innerHTML, /Try again/);
   });
 
   it('renders validated translation entity spans without raw marker syntax', async () => {

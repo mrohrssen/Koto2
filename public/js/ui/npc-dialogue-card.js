@@ -7,7 +7,7 @@ import {
 } from '../shared/exposure-extractor.js';
 import * as dialogueLookup from './dialogue-word-lookup.js';
 import { playDialogueAudio } from '../tts.js';
-import { translateDialogue } from '../api.js';
+import { learnDialogue, translateDialogue } from '../api.js';
 import { crystalCostHtml } from './crystals.js';
 
 const DEFAULT_PORTRAIT = '/assets/dialogue/default-headshot.png?v=20260501-headshot';
@@ -211,6 +211,97 @@ function renderTranslationSheet({ sourceText, sourceHtml = '', state, translatio
   `;
 }
 
+function renderLessonToken(token = {}) {
+  const entity = token.entity ? `
+    <div class="npc-dialogue-learn-entity-note">
+      <strong>In Koto:</strong> ${esc(token.entity.kotoMeaning || token.entity.displayName || '')}
+      <br>
+      <strong>Ordinary Japanese:</strong> ${esc(token.entity.ordinaryMeaning || '')}
+    </div>
+  ` : '';
+  return `
+    <div class="npc-dialogue-learn-token">
+      <div class="npc-dialogue-learn-token-head">
+        <span class="npc-dialogue-learn-token-jp">${esc(token.surface || '')}</span>
+        <span class="npc-dialogue-learn-token-reading">${esc(token.reading || '')}${token.romaji ? ` · ${esc(token.romaji)}` : ''}</span>
+      </div>
+      <div class="npc-dialogue-learn-token-body">
+        <span class="npc-dialogue-learn-token-role">${esc(token.role || '')}</span>
+        <span class="npc-dialogue-learn-token-meaning">${esc(token.meaning || '')}</span>
+        ${token.detail ? `<span class="npc-dialogue-learn-token-detail">${esc(token.detail)}</span>` : ''}
+        ${entity}
+      </div>
+    </div>
+  `;
+}
+
+function renderLessonNotes(notes = []) {
+  return (notes || []).map(note => `
+    <div class="npc-dialogue-learn-note">
+      <h4>${esc(note.title || '')}</h4>
+      <p>${esc(note.body || '')}</p>
+    </div>
+  `).join('');
+}
+
+function renderLearnTakeover({ state, sourceText, lesson = null }) {
+  const body = state === 'loading'
+    ? '<div class="npc-dialogue-learn-status">Building lesson...</div>'
+    : state === 'success' && lesson
+      ? `
+        <section class="npc-dialogue-learn-section">
+          <h3>Sentence</h3>
+          <p class="npc-dialogue-learn-source">${esc(lesson.sourceText || sourceText)}</p>
+        </section>
+        <section class="npc-dialogue-learn-section">
+          <h3>Pronunciation</h3>
+          <p>${esc(lesson.pronunciation?.kana || '')}</p>
+          <p class="npc-dialogue-learn-secondary">${esc(lesson.pronunciation?.romaji || '')}</p>
+        </section>
+        <section class="npc-dialogue-learn-section">
+          <h3>Translation</h3>
+          <p class="npc-dialogue-learn-translation">${esc(lesson.translation || '')}</p>
+        </section>
+        <section class="npc-dialogue-learn-section">
+          <h3>Word by word</h3>
+          <div class="npc-dialogue-learn-token-list">${(lesson.tokens || []).map(renderLessonToken).join('')}</div>
+        </section>
+        <section class="npc-dialogue-learn-section">
+          <h3>Grammar hints</h3>
+          ${renderLessonNotes(lesson.grammarHints)}
+        </section>
+        <section class="npc-dialogue-learn-section">
+          <h3>Other tips</h3>
+          ${renderLessonNotes(lesson.otherTips)}
+        </section>
+      `
+      : state === 'insufficient'
+        ? `
+          <section class="npc-dialogue-learn-section">
+            <p class="npc-dialogue-learn-error">Not enough crystals. Come back tomorrow for more.</p>
+          </section>
+        `
+      : `
+        <section class="npc-dialogue-learn-section">
+          <p class="npc-dialogue-learn-error">Learn lesson is unavailable right now.</p>
+          <button class="npc-dialogue-learn-retry" type="button">Try again</button>
+        </section>
+      `;
+
+  return `
+    <section class="npc-dialogue-learn-takeover" role="dialog" aria-modal="true" aria-label="Learn this sentence">
+      <header class="npc-dialogue-learn-header">
+        <div>
+          <h2>学ぶ / Learn</h2>
+          <p>Sentence lesson</p>
+        </div>
+        <button class="npc-dialogue-learn-close" type="button" aria-label="Close Learn">Done</button>
+      </header>
+      <div class="npc-dialogue-learn-body">${body}</div>
+    </section>
+  `;
+}
+
 export function renderDialogueTokenRows({
   tokens,
   knownWords = getKnownWords(),
@@ -300,7 +391,7 @@ export function showNpcDialogueCard(options = {}) {
       const sourceHtml = pageTokens?.length ? renderTranslationSourceRows({ tokens: pageTokens, useKanji: options.useKanji }) : '';
       const translationEntities = pageTokens?.length ? getTranslationEntities(options, pageTokens) : [];
       const canTranslate = !!sourceText;
-      const canLearn = !!sourceText && typeof options.onLearn === 'function';
+      const canLearn = !!sourceText && !!pageTokens?.length;
 
       actionArea.innerHTML = `
         <div class="npc-dialogue-shell">
@@ -357,7 +448,12 @@ export function showNpcDialogueCard(options = {}) {
         actionArea.querySelector('.npc-dialogue-translation-sheet')?.remove();
       };
 
+      const closeLearnTakeover = () => {
+        actionArea.querySelector('.npc-dialogue-learn-takeover')?.remove();
+      };
+
       const setTranslationSheet = (state, translation = '', entities = []) => {
+        closeLearnTakeover();
         closeTranslationSheet();
         actionArea.insertAdjacentHTML(
           'beforeend',
@@ -418,37 +514,49 @@ export function showNpcDialogueCard(options = {}) {
       });
       let learnInFlight = false;
       let learnPaidForPage = false;
+      let lastLearnResult = null;
+
+      const setLearnTakeover = (state, lesson = null) => {
+        closeTranslationSheet();
+        closeLearnTakeover();
+        actionArea.insertAdjacentHTML('beforeend', renderLearnTakeover({ state, sourceText, lesson }));
+        actionArea.querySelector('.npc-dialogue-learn-close')?.addEventListener('click', closeLearnTakeover);
+        actionArea.querySelector('.npc-dialogue-learn-retry')?.addEventListener('click', requestLearn);
+      };
 
       const requestLearn = async () => {
-        if (!canLearn || learnInFlight || learnPaidForPage) return;
+        if (!canLearn || learnInFlight) return;
+        if (learnPaidForPage && lastLearnResult?.lesson) {
+          setLearnTakeover('success', lastLearnResult.lesson);
+          return;
+        }
         learnInFlight = true;
         const learnButton = actionArea.querySelector('.npc-dialogue-learn');
         if (learnButton) learnButton.disabled = true;
-        const result = await options.onLearn({
-          sourceText,
-          entities: translationEntities,
-          idempotencyKey: learnKey,
-          pageIndex
-        });
+        setLearnTakeover('loading');
+        const result = await learnDialogue(sourceText, pageTokens, translationEntities, learnKey);
         learnInFlight = false;
         if (resolved) return;
-        if (result?.ok) {
+        if (learnButton) learnButton.disabled = false;
+        if (result?.ok && result.lesson) {
           learnPaidForPage = true;
+          lastLearnResult = result;
           if (learnButton) {
-            learnButton.disabled = false;
             learnButton.classList.add('npc-dialogue-utility--paid');
             learnButton.querySelector('.crystal-cost')?.remove();
           }
           options.onCrystalBalanceChange?.(result.crystals?.balance);
+          setLearnTakeover('success', result.lesson);
           return;
         }
-        if (learnButton) learnButton.disabled = false;
+        setLearnTakeover(result?.error === 'insufficient_crystals' ? 'insufficient' : 'unavailable');
       };
 
       actionArea.querySelector('.npc-dialogue-learn')?.addEventListener('click', requestLearn);
 
       actionArea.querySelector('.npc-dialogue-continue')?.addEventListener('click', () => {
         closeTranslationSheet();
+        closeLearnTakeover();
         if (pageIndex < pages.length - 1) {
           pageIndex += 1;
           render();
