@@ -510,3 +510,48 @@ input[type="range"] {
 .vocab-meaning { color: var(--text); }
 .vocab-exposures { text-align: right; font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 600; }
 .vocab-known { text-align: center; color: var(--success); }
+
+
+/* Balance simulator */
+.balance-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.balance-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.balance-form .actions {
+  display: flex;
+  gap: 8px;
+}
+
+.balance-status {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.balance-status strong {
+  color: var(--text);
+}
+
+.table-sort {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.table-sort:hover {
+  color: var(--text);
+}

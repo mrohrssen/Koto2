@@ -292,4 +292,66 @@ describe('store', () => {
       assert.deepEqual(store.getComparisonData([]), []);
     });
   });
+
+  describe('balance runs', () => {
+    it('saves and retrieves completed balance runs as aggregate JSON', () => {
+      const result = {
+        jobId: 'balance-test-1',
+        status: 'completed',
+        battleCount: 1000,
+        creatureLevel: 40,
+        completedBattles: 1000,
+        draws: 3,
+        startedAt: '2026-05-05T00:00:00.000Z',
+        completedAt: '2026-05-05T00:01:00.000Z',
+        results: [
+          { creatureId: 'hi', nameEn: 'Fire', rarity: 'common', appearances: 12, wins: 8, losses: 4, winRate: 0.6667, lossRate: 0.3333 }
+        ]
+      };
+
+      const id = store.saveBalanceRun(result);
+      assert.ok(id > 0);
+
+      const rows = store.getBalanceRuns();
+      const saved = rows.find(row => row.job_id === 'balance-test-1');
+
+      assert.ok(saved);
+      assert.equal(saved.battle_count, 1000);
+      assert.equal(saved.creature_level, 40);
+      assert.equal(saved.result_data.jobId, 'balance-test-1');
+      assert.equal(saved.result_data.results.length, 1);
+    });
+
+    it('upserts balance runs by job id', () => {
+      store.saveBalanceRun({
+        jobId: 'balance-upsert',
+        status: 'completed',
+        battleCount: 10,
+        creatureLevel: 5,
+        completedBattles: 10,
+        draws: 0,
+        startedAt: '2026-05-05T00:00:00.000Z',
+        completedAt: '2026-05-05T00:01:00.000Z',
+        results: []
+      });
+      store.saveBalanceRun({
+        jobId: 'balance-upsert',
+        status: 'completed',
+        battleCount: 20,
+        creatureLevel: 5,
+        completedBattles: 20,
+        draws: 1,
+        startedAt: '2026-05-05T00:00:00.000Z',
+        completedAt: '2026-05-05T00:02:00.000Z',
+        results: []
+      });
+
+      const rows = store.getBalanceRuns().filter(row => row.job_id === 'balance-upsert');
+
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].battle_count, 20);
+      assert.equal(rows[0].draws, 1);
+    });
+  });
+
 });

@@ -75,6 +75,26 @@ Results tabs per simulation:
 
 Select multiple profiles and overlay their progression curves on the same chart. Summary table shows words known, avg words/day at any given day.
 
+### Balance Screen
+
+The Balance screen runs random 3v3 creature battles through the game server's admin balance simulation API.
+
+Inputs:
+
+| Setting | Description |
+|---|---|
+| Battle count | Number of random 3v3 battles to run |
+| Creature level | Level assigned to every creature in the run |
+
+Rules:
+
+- Each battle samples 6 unique creatures from the full roster.
+- All creatures use the latest 3 moves they would know at the selected level.
+- Combat resolves through the shared PvP round resolver.
+- Both sides choose moves using the same production combat AI helpers used by PvE enemies.
+- Results are aggregate-only: appearances, wins, losses, draws, win rate, and loss rate.
+- No per-battle logs or replays are stored.
+
 ## Architecture
 
 ```
@@ -105,18 +125,22 @@ simulator/           # Standalone Express app (port 3100)
     profiles.js      # CRUD API
     simulations.js   # Start/pause/resume
     results.js       # Snapshots, events, comparison queries
+    balance.js       # Proxy balance simulation jobs and mirror completed aggregates
   public/            # Dashboard SPA (vanilla JS + Chart.js)
 ```
 
 ### Game Server Additions
 
-Three admin endpoints added to the game server (`src/routes/admin.js`), gated behind `ADMIN_SECRET`:
+Admin endpoints added to the game server (`src/routes/admin.js`), gated behind `ADMIN_SECRET`:
 
 | Endpoint | Purpose |
 |---|---|
 | `POST /api/admin/advance-time` | Shift FSRS timestamps backward (time compression) |
 | `POST /api/admin/seed-vocab` | Bulk seed words into a user's FSRS deck |
 | `POST /api/admin/cleanup-sim-user` | Delete all data files for a test user |
+| `POST /api/admin/balance-simulations/start` | Start a one-at-a-time aggregate 3v3 balance job |
+| `GET /api/admin/balance-simulations/current` | Poll active/latest balance job progress and aggregate results |
+| `POST /api/admin/balance-simulations/cancel` | Cancel the active balance job |
 
 All return 404 if `ADMIN_SECRET` is not set (invisible in production).
 
@@ -128,6 +152,8 @@ All return 404 if `ADMIN_SECRET` is not set (invisible in production).
 | `GAME_SERVER_URL` | No | `http://localhost:3000` | Game server base URL |
 | `SIM_PORT` | No | `3100` | Simulator dashboard port |
 | `SIM_DB_PATH` | No | `simulator/data/simulator.db` | SQLite database path |
+
+The Balance screen also requires `ADMIN_SECRET` because the simulator backend starts and polls game-server admin jobs.
 
 ## Error Resilience
 

@@ -7,6 +7,9 @@ import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { getKnownWordsFromFsrs } from '../game/bootstrap/word-knowledge.js';
 import { loadUsers, saveUsers } from '../auth/users.js';
 import { lookupDictPrimary } from '../../public/js/shared/exposure-extractor.js';
+import { createBalanceSimulationManager } from '../game/balance-simulator.js';
+
+const defaultBalanceManager = createBalanceSimulationManager();
 
 /**
  * Shift all FSRS card timestamps backward by a number of days.
@@ -70,7 +73,7 @@ export function adminAuth(req, res, next) {
  * @param {{ dataDir: string }} options
  * @returns {Router}
  */
-export default function createAdminRoutes({ dataDir }) {
+export default function createAdminRoutes({ dataDir, balanceManager = defaultBalanceManager }) {
   const router = Router();
   router.use(adminAuth);
 
@@ -239,6 +242,43 @@ export default function createAdminRoutes({ dataDir }) {
       res.json({ words });
     } catch (err) {
       res.status(500).json({ error: err.message });
+    }
+  });
+
+
+  router.post('/balance-simulations/start', (req, res) => {
+    try {
+      const battleCount = Number(req.body?.battleCount);
+      const creatureLevel = Number(req.body?.creatureLevel);
+      if (!Number.isInteger(battleCount) || battleCount <= 0) {
+        return res.status(400).json({ error: 'battleCount must be a positive integer' });
+      }
+      if (!Number.isInteger(creatureLevel) || creatureLevel <= 0) {
+        return res.status(400).json({ error: 'creatureLevel must be a positive integer' });
+      }
+      const job = balanceManager.start({ battleCount, creatureLevel });
+      res.status(201).json(job);
+    } catch (err) {
+      const status = err.message?.includes('already running') ? 409 : 400;
+      res.status(status).json({ error: err.message });
+    }
+  });
+
+  router.get('/balance-simulations/current', (req, res) => {
+    try {
+      const job = balanceManager.current();
+      if (!job) return res.json({ status: 'idle', jobId: null, results: [] });
+      res.json(job);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  router.post('/balance-simulations/cancel', (req, res) => {
+    try {
+      res.json(balanceManager.cancel());
+    } catch (err) {
+      res.status(404).json({ error: err.message });
     }
   });
 

@@ -80,6 +80,31 @@ export function createStore(dbPath) {
     'SELECT * FROM daily_snapshots WHERE simulation_id = ? ORDER BY day ASC'
   );
 
+  // --- Balance runs ---
+
+  const upsertBalanceRun = db.prepare(`
+    INSERT INTO balance_runs
+      (job_id, status, battle_count, creature_level, completed_battles, draws,
+       started_at, completed_at, result_data, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    ON CONFLICT(job_id) DO UPDATE SET
+      status = excluded.status,
+      battle_count = excluded.battle_count,
+      creature_level = excluded.creature_level,
+      completed_battles = excluded.completed_battles,
+      draws = excluded.draws,
+      started_at = excluded.started_at,
+      completed_at = excluded.completed_at,
+      result_data = excluded.result_data,
+      updated_at = datetime('now')
+  `);
+  const selectBalanceRuns = db.prepare(
+    'SELECT * FROM balance_runs ORDER BY created_at DESC'
+  );
+  const selectBalanceRun = db.prepare(
+    'SELECT * FROM balance_runs WHERE job_id = ?'
+  );
+
   return {
     // --- Profiles ---
     createProfile(name, config) {
@@ -232,6 +257,38 @@ export function createStore(dbPath) {
         }
       }
       return rows;
+    },
+
+    // --- Balance runs ---
+    saveBalanceRun(result) {
+      const info = upsertBalanceRun.run(
+        result.jobId,
+        result.status,
+        result.battleCount,
+        result.creatureLevel,
+        result.completedBattles,
+        result.draws || 0,
+        result.startedAt || null,
+        result.completedAt || null,
+        JSON.stringify(result)
+      );
+      const row = selectBalanceRun.get(result.jobId);
+      return row?.id || info.lastInsertRowid;
+    },
+
+    getBalanceRuns() {
+      const rows = selectBalanceRuns.all();
+      for (const row of rows) {
+        try { row.result_data = JSON.parse(row.result_data); } catch { /* keep as string */ }
+      }
+      return rows;
+    },
+
+    getBalanceRun(jobId) {
+      const row = selectBalanceRun.get(jobId);
+      if (!row) return null;
+      try { row.result_data = JSON.parse(row.result_data); } catch { /* keep as string */ }
+      return row;
     },
 
     close() {
