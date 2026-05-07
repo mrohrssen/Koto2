@@ -1,5 +1,59 @@
 import { DEV } from './dev-flag.js';
 
+function _uidSetFromAllies(opts) {
+  if (!Array.isArray(opts?.allies)) return null;
+  return new Set(opts.allies.map(c => c?.uid).filter(Boolean));
+}
+
+function _detachCarriedPlayerSprites(scene, opts) {
+  const allowedUids = _uidSetFromAllies(opts);
+  if (!allowedUids || allowedUids.size === 0) return [];
+  const sideMap = scene?.formation?.creatureSprites?.player;
+  if (!sideMap) return [];
+
+  const carried = [];
+  for (const [uid, sprite] of [...sideMap.entries()]) {
+    if (!allowedUids.has(uid) || !sprite) continue;
+
+    if (Array.isArray(sprite.statusLabels)) {
+      for (const label of sprite.statusLabels) {
+        try { label.destroy({ children: true }); } catch { /* already gone */ }
+      }
+      sprite.statusLabels = [];
+    }
+    if (sprite._shadow?.parent) sprite._shadow.parent.removeChild(sprite._shadow);
+    if (sprite.parent) sprite.parent.removeChild(sprite);
+    sideMap.delete(uid);
+    scene.spritesByUid?.delete?.(uid);
+    carried.push({ uid, sprite, shadow: sprite._shadow || null });
+  }
+  return carried;
+}
+
+function _attachCarriedPlayerSprites(scene, carried) {
+  if (!carried.length) return;
+  const targetContainer = scene?.formation?.playerContainer;
+  const targetMap = scene?.formation?.creatureSprites?.player;
+  if (!targetContainer || !targetMap) {
+    _destroyCarriedPlayerSprites(carried);
+    return;
+  }
+
+  for (const { uid, sprite, shadow } of carried) {
+    if (shadow) targetContainer.addChild(shadow);
+    targetContainer.addChild(sprite);
+    targetMap.set(uid, sprite);
+    scene.spritesByUid?.set?.(uid, sprite);
+  }
+}
+
+function _destroyCarriedPlayerSprites(carried) {
+  for (const { sprite, shadow } of carried) {
+    try { shadow?.destroy?.({ children: true }); } catch { /* already gone */ }
+    try { sprite?.destroy?.({ children: true, texture: false }); } catch { /* already gone */ }
+  }
+}
+
 export class SceneManager {
   constructor(app) {
     this.app = app;
@@ -74,8 +128,10 @@ export class SceneManager {
     }
     this.transitioning = true;
     this._transitionPromise = (async () => {
+      let carriedPlayerSprites = [];
       try {
         if (this.currentScene) {
+          carriedPlayerSprites = _detachCarriedPlayerSprites(this.currentScene, opts);
           try { this.currentScene.exit(); } catch (e) { console.error('SceneManager.transition: currentScene.exit() threw:', e); }
           this.currentScene = null;
         }
@@ -83,7 +139,11 @@ export class SceneManager {
         let next;
         try {
           next = new NextSceneClass(this.app);
+          _attachCarriedPlayerSprites(next, carriedPlayerSprites);
+          carriedPlayerSprites = [];
         } catch (err) {
+          _destroyCarriedPlayerSprites(carriedPlayerSprites);
+          carriedPlayerSprites = [];
           const className = NextSceneClass?.name ?? 'unknown';
           throw new Error(`SceneManager.transition: failed to construct scene class '${className}': ${err.message}`);
         }
@@ -101,6 +161,7 @@ export class SceneManager {
           throw err;
         }
       } finally {
+        _destroyCarriedPlayerSprites(carriedPlayerSprites);
         this.transitioning = false;
         this._transitionPromise = null;
       }
