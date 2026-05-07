@@ -9,6 +9,7 @@ export class SceneManager {
     this._initialized = false;
     this._destroyed = false;
     this._parallax = null;
+    this._transitionPromise = null;
   }
 
   /**
@@ -72,36 +73,45 @@ export class SceneManager {
       return;
     }
     this.transitioning = true;
-
-    try {
-      if (this.currentScene) {
-        try { this.currentScene.exit(); } catch (e) { console.error('SceneManager.transition: currentScene.exit() threw:', e); }
-        this.currentScene = null;
-      }
-
-      let next;
+    this._transitionPromise = (async () => {
       try {
-        next = new NextSceneClass(this.app);
-      } catch (err) {
-        const className = NextSceneClass?.name ?? 'unknown';
-        throw new Error(`SceneManager.transition: failed to construct scene class '${className}': ${err.message}`);
-      }
-
-      try {
-        await next.enter(opts);
-        if (this._destroyed) {
-          // Destroy was called during enter(); dispose the new scene and bail.
-          try { next.exit(); } catch (e) { console.error('SceneManager.transition: cleanup after destroy-during-enter threw:', e); }
-          return;
+        if (this.currentScene) {
+          try { this.currentScene.exit(); } catch (e) { console.error('SceneManager.transition: currentScene.exit() threw:', e); }
+          this.currentScene = null;
         }
-        this.currentScene = next;
-      } catch (err) {
-        try { next.exit(); } catch (e) { console.error('SceneManager.transition: cleanup after failed enter() threw:', e); }
-        throw err;
+
+        let next;
+        try {
+          next = new NextSceneClass(this.app);
+        } catch (err) {
+          const className = NextSceneClass?.name ?? 'unknown';
+          throw new Error(`SceneManager.transition: failed to construct scene class '${className}': ${err.message}`);
+        }
+
+        try {
+          await next.enter(opts);
+          if (this._destroyed) {
+            // Destroy was called during enter(); dispose the new scene and bail.
+            try { next.exit(); } catch (e) { console.error('SceneManager.transition: cleanup after destroy-during-enter threw:', e); }
+            return;
+          }
+          this.currentScene = next;
+        } catch (err) {
+          try { next.exit(); } catch (e) { console.error('SceneManager.transition: cleanup after failed enter() threw:', e); }
+          throw err;
+        }
+      } finally {
+        this.transitioning = false;
+        this._transitionPromise = null;
       }
-    } finally {
-      this.transitioning = false;
-    }
+    })();
+
+    return this._transitionPromise;
+  }
+
+  async waitForIdle() {
+    const pending = this._transitionPromise;
+    if (pending) await pending;
   }
 
   destroy() {
@@ -118,6 +128,7 @@ export class SceneManager {
     // Clear state flags unconditionally so a post-failure retry isn't blocked.
     this._initialized = false;
     this.transitioning = false;
+    this._transitionPromise = null;
     this._parallax = null;
   }
 }

@@ -47,6 +47,9 @@ export async function playRoomTransition(gameState, { waitFn = wait } = {}) {
   const mgr = getSceneManager();
   const allies = gameState.run?.creatureParty?.active ?? [];
   try {
+    if (mgr.transitioning && typeof mgr.waitForIdle === 'function') {
+      await mgr.waitForIdle();
+    }
     const roomId = gameState.run?.currentRoom ?? null;
     const currentScene = mgr.currentScene;
     if (

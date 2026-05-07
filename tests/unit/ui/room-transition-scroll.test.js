@@ -96,6 +96,8 @@ class FakeExplorationScene {
 
 const fakeManager = {
   currentScene: null,
+  transitioning: false,
+  waitForIdle: null,
   transitionCalls: [],
   async transition(SceneClass) {
     this.transitionCalls.push(SceneClass);
@@ -160,11 +162,48 @@ describe('playRoomTransition parallax state', () => {
     });
   });
 
+  it('waits for an in-flight scene transition before resetting the next room', async () => {
+    scrollStates.length = 0;
+    combatEvents.emitted.length = 0;
+    fakeManager.transitionCalls.length = 0;
+    fakeManager.currentScene = null;
+    fakeManager.transitioning = true;
+    const existingScene = new FakeExplorationScene();
+    const events = [];
+    fakeManager.waitForIdle = async () => {
+      events.push('waitForIdle');
+      fakeManager.transitioning = false;
+      fakeManager.currentScene = existingScene;
+    };
+    const allies = [{ uid: 'ally', id: 'hi' }];
+
+    await playRoomTransition({
+      run: {
+        currentRoom: 1,
+        creatureParty: { active: allies },
+        rooms: [{ type: 'empty' }, { type: 'encounter' }],
+      },
+    }, {
+      waitFn: async () => {},
+    });
+
+    assert.deepEqual(events, ['waitForIdle']);
+    assert.equal(fakeManager.transitionCalls.length, 0);
+    assert.equal(existingScene.resetCalls.length, 1);
+    assert.deepEqual(existingScene.resetCalls[0], {
+      roomId: 1,
+      allies,
+      parallaxSpeed: 3.8,
+    });
+    fakeManager.waitForIdle = null;
+  });
+
   it('uses approved room travel speed and duration before restoring exploration speed', async () => {
     scrollStates.length = 0;
     startedSpeeds.length = 0;
     roomTransitionEvents.length = 0;
     fakeManager.currentScene = null;
+    fakeManager.transitioning = false;
     const waits = [];
 
     await playRoomTransition({
