@@ -1,9 +1,10 @@
-import { describe, it } from 'node:test';
+import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import { createApp } from '../../../src/app.js';
 import { DialogueLearnCache } from '../../../src/dialogue-learn/cache.js';
 import { LEARN_LESSON_SCHEMA_VERSION } from '../../../src/dialogue-learn/schema.js';
+import { clearManagersForTest, getManager } from '../../../src/game/manager-registry.js';
 
 const tokens = [
   { surface: '花', reading: 'はな', baseForm: '花', pos: 'noun', meaning: 'flower / blossom', entity: true },
@@ -36,6 +37,17 @@ const lesson = {
 };
 
 describe('POST /api/dialogue/learn', () => {
+  afterEach(() => {
+    clearManagersForTest();
+  });
+
+  function fundTestUser(crystals = 100) {
+    const gm = getManager('test-user');
+    gm.initMeta();
+    gm.meta.crystals = crystals;
+    return gm;
+  }
+
   it('requires authentication', async () => {
     const app = createApp({
       routeOverrides: {
@@ -58,6 +70,7 @@ describe('POST /api/dialogue/learn', () => {
         getDialogueLearnConfig: () => ({ provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' })
       }
     });
+    fundTestUser();
 
     const first = await request(app).post('/api/dialogue/learn').send({ text: '花は森で光を見た。', tokens, entities, idempotencyKey: 'learn-1' }).expect(200);
     const second = await request(app).post('/api/dialogue/learn').send({ text: '花は森で光を見た。', tokens, entities, idempotencyKey: 'learn-1' }).expect(200);
@@ -79,6 +92,7 @@ describe('POST /api/dialogue/learn', () => {
         getDialogueLearnConfig: () => null
       }
     });
+    fundTestUser();
 
     assert.deepEqual((await request(app).post('/api/dialogue/learn').send({ text: ' ', tokens, entities, idempotencyKey: 'learn-1' }).expect(400)).body, { ok: false, error: 'learn_lesson_unavailable' });
     assert.deepEqual((await request(app).post('/api/dialogue/learn').send({ text: '花は森で光を見た。', tokens: [], entities, idempotencyKey: 'learn-1' }).expect(400)).body, { ok: false, error: 'learn_lesson_unavailable' });
