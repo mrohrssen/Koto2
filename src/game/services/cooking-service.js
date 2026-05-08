@@ -78,6 +78,21 @@ export function hasIngredients(bag = {}, requirements = []) {
   return requirements.every(requirement => (bag[requirement.id] || 0) >= requirement.quantity);
 }
 
+export function getCookableRecipeHints(bag = {}, recipes = COOKING_RECIPES) {
+  return recipes
+    .filter(recipe => recipeTotalQuantity(recipe) <= 5)
+    .filter(recipe => hasIngredients(bag, recipe.ingredients || []))
+    .map(recipe => ({
+      id: recipe.id,
+      rarity: recipe.rarity,
+      totalQuantity: recipeTotalQuantity(recipe),
+      ingredients: (recipe.ingredients || []).map(ingredient => ({
+        id: ingredient.id,
+        quantity: ingredient.quantity,
+      })),
+    }));
+}
+
 export function consumeIngredientsFromBag(bag, requirements) {
   if (!hasIngredients(bag, requirements)) throw new Error('Not enough ingredients');
   for (const requirement of requirements) {

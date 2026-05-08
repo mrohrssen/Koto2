@@ -105,6 +105,7 @@ describe('npc dialogue ui', () => {
 
     assert.deepEqual(dialogueCards[0], {
       speaker: 'Mira',
+      speakerId: 'mira',
       html: '<freed>',
       audio: { userId: 'user-1', key: 'freed-tts' },
     });

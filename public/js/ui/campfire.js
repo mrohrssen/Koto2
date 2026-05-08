@@ -90,6 +90,57 @@ function selectedUnits(ingredientsById = ingredientById()) {
   }).slice(0, 5);
 }
 
+function selectedCountTotal(selection = selected) {
+  return Object.values(selection).reduce((sum, count) => sum + count, 0);
+}
+
+function requirementQuantity(recipe, id) {
+  return (recipe.ingredients || []).find(ingredient => ingredient.id === id)?.quantity || 0;
+}
+
+function recipeContainsSelection(recipe, selection = selected) {
+  return Object.entries(selection).every(([id, quantity]) => {
+    return quantity <= requirementQuantity(recipe, id);
+  });
+}
+
+function selectionCompletesRecipe(recipe, selection = selected) {
+  return (recipe.ingredients || []).every(ingredient => {
+    return (selection[ingredient.id] || 0) >= ingredient.quantity;
+  });
+}
+
+function selectionWithAddedIngredient(id) {
+  return {
+    ...selected,
+    [id]: (selected[id] || 0) + 1,
+  };
+}
+
+function getRecipeGuidance() {
+  const hints = campfireState?.cookableRecipeHints || [];
+  const totalSelected = selectedCountTotal();
+  const candidateRecipes = hints.filter(recipe => recipeContainsSelection(recipe));
+  const hasValidPath = candidateRecipes.length > 0;
+  const hasCompleteRecipe = candidateRecipes.some(recipe => selectionCompletesRecipe(recipe));
+  const highlightedIngredientIds = new Set();
+
+  if (hasValidPath) {
+    Object.keys(selected).forEach(id => highlightedIngredientIds.add(id));
+  }
+
+  for (const [id, owned] of Object.entries(campfireState?.ingredients || {})) {
+    if ((selected[id] || 0) >= owned) continue;
+    if (totalSelected >= 5) continue;
+    const nextSelection = selectionWithAddedIngredient(id);
+    if (hints.some(recipe => recipeContainsSelection(recipe, nextSelection))) {
+      highlightedIngredientIds.add(id);
+    }
+  }
+
+  return { candidateRecipes, hasCompleteRecipe, highlightedIngredientIds };
+}
+
 function setCookingFocusActive(active) {
   const sceneArea = document.getElementById('scene-area');
   if (!sceneArea) return;
@@ -120,6 +171,8 @@ function renderSlotPreview() {
 
   const units = selectedUnits();
   const totalSelected = units.length;
+  const { hasCompleteRecipe } = getRecipeGuidance();
+  const readyClass = hasCompleteRecipe ? ' campfire-focus-wrap--recipe-ready' : '';
   const slots = Array.from({ length: 5 }, (_, index) => {
     const ingredient = units[index];
     if (!ingredient) {
@@ -135,7 +188,7 @@ function renderSlotPreview() {
 
   renderCampfireScene(`
     <div class="campfire-scene campfire-scene--cooking">
-      <div class="campfire-focus-wrap">
+      <div class="campfire-focus-wrap${readyClass}">
         ${renderCampfireImage()}
       </div>
       <div class="campfire-slot-preview">
@@ -239,15 +292,21 @@ function renderIngredients() {
   const body = document.querySelector('.campfire-body');
   const ingredientsById = ingredientById();
   const ingredients = Object.entries(campfireState?.ingredients || {});
-  const totalSelected = Object.values(selected).reduce((sum, count) => sum + count, 0);
+  const totalSelected = selectedCountTotal();
+  const { highlightedIngredientIds } = getRecipeGuidance();
 
   body.innerHTML = `
     <div class="campfire-ingredient-grid">
       ${ingredients.map(([id, count]) => {
         const ingredient = getIngredient(id, ingredientsById);
         const selectedCount = selected[id] || 0;
+        const cardClasses = [
+          'campfire-ingredient-card',
+          selectedCount > 0 ? 'selected' : '',
+          highlightedIngredientIds.has(id) ? 'recipe-valid' : '',
+        ].filter(Boolean).join(' ');
         return `
-          <button class="campfire-ingredient-card ${selectedCount > 0 ? 'selected' : ''}" data-id="${escapeHtml(id)}" type="button">
+          <button class="${cardClasses}" data-id="${escapeHtml(id)}" type="button">
             ${renderIngredientIcon(ingredient)}
             <span class="campfire-ingredient-name">${renderJpSentence([entityToToken(ingredient)], getKnownWords(), new Map())}</span>
             <span class="campfire-ingredient-count">${selectedCount}/${count}</span>
