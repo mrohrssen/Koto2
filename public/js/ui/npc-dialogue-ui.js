@@ -23,10 +23,10 @@ export function init(deps) {
 
 export async function showNpcGreeting(npcData) {
   if (!npcData?.greeting) return;
-  const npcName = npcData.nameEn || npcData.name;
-  if (ctx.showNpcSprite) ctx.showNpcSprite(npcName, npcData.id, npcData);
+  const npcSpeaker = dialogueSpeakerForNpc(npcData);
+  if (ctx.showNpcSprite) ctx.showNpcSprite(npcSpeaker.speaker, npcData.id, npcData);
   await showNpcDialogueCard(taggedDialogueOptions({
-    speaker: npcName,
+    ...npcSpeaker,
     html: renderEnFirst(npcData.greeting),
     audio: npcData.greetingTts && npcData.userId ? { userId: npcData.userId, key: npcData.greetingTts } : null,
   }));
@@ -36,17 +36,26 @@ export async function showNpcGreeting(npcData) {
 
 export function isNpcDialogueActive() { return npcDialogueActive; }
 
-function taggedDialogueOptions({ speaker, html, audio }) {
+function dialogueSpeakerForNpc(npc = {}) {
+  return {
+    speaker: npc.nameEn || npc.name || '',
+    ...(npc.id ? { speakerId: npc.id } : {}),
+  };
+}
+
+function taggedDialogueOptions({ speaker, speakerId, html, audio }) {
   return {
     speaker,
+    ...(speakerId ? { speakerId } : {}),
     html,
     ...(audio ? { audio } : {}),
   };
 }
 
-function tokenDialogueOptions({ speaker, line, useKanji, audio }) {
+function tokenDialogueOptions({ speaker, speakerId, line, useKanji, audio }) {
   return {
     speaker,
+    ...(speakerId ? { speakerId } : {}),
     tokens: line?.tokens || [],
     overrides: line?.overrides || {},
     useKanji: !!useKanji,
@@ -69,23 +78,23 @@ export async function runNpcDialogue() {
 
     if (dialogueData.mode === 'defeat_line') {
       const { npc, line } = dialogueData;
-      const npcName = npc.nameEn || npc.name;
+      const npcSpeaker = dialogueSpeakerForNpc(npc);
 
-      if (ctx.showNpcSprite) ctx.showNpcSprite(npcName, npc.id, npc);
+      if (ctx.showNpcSprite) ctx.showNpcSprite(npcSpeaker.speaker, npc.id, npc);
 
       await showNpcDialogueCard(tokenDialogueOptions({
-        speaker: npcName,
+        ...npcSpeaker,
         line,
         useKanji: dialogueData.useKanji,
       }));
     } else {
       const { npc, freed, rounds, userId, freedTts } = dialogueData;
-      const npcName = npc.nameEn || npc.name;
+      const npcSpeaker = dialogueSpeakerForNpc(npc);
 
-      if (ctx.showNpcSprite) ctx.showNpcSprite(npcName, npc.id, npc);
+      if (ctx.showNpcSprite) ctx.showNpcSprite(npcSpeaker.speaker, npc.id, npc);
 
       await showNpcDialogueCard(taggedDialogueOptions({
-        speaker: npcName,
+        ...npcSpeaker,
         html: renderEnFirst(freed),
         audio: freedTts && userId ? { userId, key: freedTts } : null,
       }));
@@ -96,7 +105,7 @@ export async function runNpcDialogue() {
         const round = rounds[i];
 
         await showNpcDialogueCard(taggedDialogueOptions({
-          speaker: npcName,
+          ...npcSpeaker,
           html: renderEnFirst(round.npcLine),
           audio: round.npcLineTts && userId ? { userId, key: round.npcLineTts } : null,
         }));
@@ -126,7 +135,7 @@ export async function runNpcDialogue() {
 
       if (ctx.hideNpcSprite) ctx.hideNpcSprite();
 
-      showBondSummary(npcName, totalDelta);
+      showBondSummary(npcSpeaker.speaker, totalDelta);
       await ctx.delay(2200);
       document.querySelector('.bond-summary')?.remove();
     }

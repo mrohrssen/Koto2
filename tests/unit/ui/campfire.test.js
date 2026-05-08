@@ -139,10 +139,11 @@ const campfire = await import('../../../public/js/ui/campfire.js');
 
 function sampleState(overrides = {}) {
   return {
-    ingredients: { mizu: 1, miso: 1 },
+    ingredients: { mizu: 1, miso: 1, toufu: 1 },
     ingredientCatalog: [
       { id: 'mizu', word: '水', reading: 'みず', nameEn: 'Water', meaning: 'water' },
       { id: 'miso', word: '味噌', reading: 'みそ', nameEn: 'Miso', meaning: 'miso' },
+      { id: 'toufu', word: '豆腐', reading: 'とうふ', nameEn: 'Tofu', meaning: 'tofu' },
     ],
     discoveredRecipes: [{
       id: 'miso-soup',
@@ -154,6 +155,20 @@ function sampleState(overrides = {}) {
       ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
       effectDescription: 'Restores 20% MP.',
     }],
+    cookableRecipeHints: [
+      {
+        id: 'miso-soup',
+        rarity: 'common',
+        totalQuantity: 2,
+        ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+      },
+      {
+        id: 'tofu-miso-soup',
+        rarity: 'uncommon',
+        totalQuantity: 3,
+        ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }, { id: 'toufu', quantity: 1 }],
+      },
+    ],
     yesTokens: {
       tokens: [{ surface: 'はい', base: 'はい', reading: 'はい', pos: 'Interjection' }],
       overrides: {},
@@ -255,6 +270,23 @@ describe('campfire UI', () => {
     assert.equal(proceeded, true);
   });
 
+  it('clears the entry prompt immediately when choosing no', async () => {
+    let resolveSkip;
+    const skipPromise = new Promise(resolve => { resolveSkip = resolve; });
+    campfire.renderForTest(sampleState(), {
+      apiSkipCampfire: () => skipPromise,
+      completeCampfireAndProceed: async () => {},
+    });
+
+    actionArea.querySelectorAll('.ui-btn')[1].click();
+
+    assert.equal(actionArea.querySelectorAll('.ui-btn').length, 0);
+    assert.doesNotMatch(renderedHtml(actionArea), /Would you like to cook\?/);
+
+    resolveSkip({ state: { phase: 'room' }, skipped: true });
+    await skipPromise;
+  });
+
   it('renders ingredient and recipe tabs', () => {
     campfire.renderForTest(sampleState());
     openCooking();
@@ -308,6 +340,116 @@ describe('campfire UI', () => {
     actionArea.querySelector('.campfire-ingredient-card').click();
 
     assert.equal(actionArea.querySelector('.campfire-cook-btn').disabled, false);
+  });
+
+  it('glows ingredients that belong to a cookable real recipe path', () => {
+    campfire.renderForTest(sampleState());
+    openCooking();
+
+    const cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+
+    assert.match(cards[0].className, /recipe-valid/);
+    assert.match(cards[1].className, /recipe-valid/);
+    assert.match(cards[2].className, /recipe-valid/);
+  });
+
+  it('prunes unrelated ingredient glow after selecting an ingredient', () => {
+    campfire.renderForTest(sampleState({
+      ingredients: { mizu: 1, miso: 1, sakana: 1, yasai: 1 },
+      ingredientCatalog: [
+        { id: 'mizu', word: '水', reading: 'みず', nameEn: 'Water', meaning: 'water' },
+        { id: 'miso', word: '味噌', reading: 'みそ', nameEn: 'Miso', meaning: 'miso' },
+        { id: 'sakana', word: '魚', reading: 'さかな', nameEn: 'Fish', meaning: 'fish' },
+        { id: 'yasai', word: '野菜', reading: 'やさい', nameEn: 'Vegetable', meaning: 'vegetable' },
+      ],
+      cookableRecipeHints: [
+        {
+          id: 'miso-soup',
+          rarity: 'common',
+          totalQuantity: 2,
+          ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+        },
+        {
+          id: 'fish-greens',
+          rarity: 'common',
+          totalQuantity: 2,
+          ingredients: [{ id: 'sakana', quantity: 1 }, { id: 'yasai', quantity: 1 }],
+        },
+      ],
+    }));
+    openCooking();
+
+    actionArea.querySelectorAll('.campfire-ingredient-card')[0].click();
+    const cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+
+    assert.match(cards[0].className, /recipe-valid/);
+    assert.match(cards[1].className, /recipe-valid/);
+    assert.doesNotMatch(cards[2].className, /recipe-valid/);
+    assert.doesNotMatch(cards[3].className, /recipe-valid/);
+  });
+
+  it('pulses the fireplace only when a real recipe is complete', () => {
+    campfire.renderForTest(sampleState());
+    openCooking();
+
+    let cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[0].click();
+    assert.equal(sceneArea.querySelector('.campfire-focus-wrap--recipe-ready'), null);
+
+    cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[1].click();
+    assert.ok(sceneArea.querySelector('.campfire-focus-wrap--recipe-ready'));
+  });
+
+  it('keeps stronger recipe extensions glowing after a smaller recipe is complete', () => {
+    campfire.renderForTest(sampleState());
+    openCooking();
+
+    let cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[0].click();
+    cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[1].click();
+    cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+
+    assert.ok(sceneArea.querySelector('.campfire-focus-wrap--recipe-ready'));
+    assert.match(cards[2].className, /recipe-valid/);
+  });
+
+  it('does not pulse the fireplace for fallback-only selections', () => {
+    campfire.renderForTest(sampleState({
+      ingredients: { niku: 1 },
+      ingredientCatalog: [
+        { id: 'niku', word: '肉', reading: 'にく', nameEn: 'Meat', meaning: 'meat' },
+      ],
+      cookableRecipeHints: [],
+    }));
+    openCooking();
+
+    actionArea.querySelector('.campfire-ingredient-card').click();
+
+    assert.equal(sceneArea.querySelector('.campfire-focus-wrap--recipe-ready'), null);
+    assert.doesNotMatch(actionArea.querySelector('.campfire-ingredient-card').className, /recipe-valid/);
+  });
+
+  it('keeps duplicate-quantity recipe paths glowing before completion', () => {
+    campfire.renderForTest(sampleState({
+      ingredients: { tamago: 2 },
+      ingredientCatalog: [
+        { id: 'tamago', word: '卵', reading: 'たまご', nameEn: 'Egg', meaning: 'egg' },
+      ],
+      cookableRecipeHints: [{
+        id: 'double-egg',
+        rarity: 'common',
+        totalQuantity: 2,
+        ingredients: [{ id: 'tamago', quantity: 2 }],
+      }],
+    }));
+    openCooking();
+
+    actionArea.querySelector('.campfire-ingredient-card').click();
+
+    assert.match(actionArea.querySelector('.campfire-ingredient-card').className, /recipe-valid/);
+    assert.equal(sceneArea.querySelector('.campfire-focus-wrap--recipe-ready'), null);
   });
 
   it('skip completes the campfire without cooking and clears the campfire scene', async () => {

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const popupDebuffMessages = [];
 const koAnimations = [];
 const sceneManagerState = { currentScene: null, transitioning: false };
+const showFormationCalls = [];
 
 // Mock pixi and audio modules that combat-vfx imports
 await mock.module('../../../public/js/audio.js', {
@@ -50,7 +51,7 @@ await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState }
 });
 await mock.module('../../../public/js/ui/combat-dom.js', {
-  namedExports: { showFormation: () => {} }
+  namedExports: { showFormation: async (...args) => { showFormationCalls.push(args); } }
 });
 await mock.module('../../../public/js/pixi/combat-effects-util.js', {
   namedExports: { getDamageTier: () => 1, TIER_EFFECTS: { 1: { hitStop: 0, shake: 'none', flash: false } }, TIER_RECOIL: { 1: 5 } }
@@ -312,7 +313,61 @@ describe('combat-vfx data builders', () => {
 });
 
 describe('showKoSwapAnimations', () => {
+  it('rebuilds player formation and syncs Pixi sprites after ally KO swap', async () => {
+    showFormationCalls.length = 0;
+    const originalDocument = globalThis.document;
+    const slotClassNames = [];
+    globalThis.document = {
+      querySelectorAll: (selector) => {
+        if (selector !== '#player-formation .formation-slot') return [];
+        return [{
+          classList: {
+            add: (name) => slotClassNames.push(`add:${name}`),
+            remove: (name) => slotClassNames.push(`remove:${name}`),
+          },
+          querySelector: () => null,
+        }];
+      },
+      getElementById: () => ({ innerHTML: '' }),
+    };
+
+    const active = [{ uid: 'ally-new', id: 'mizu', hp: 20, maxHp: 30 }];
+    const enemies = [{ uid: 'enemy-a', hp: 18, maxHp: 30 }];
+    let syncPayload = null;
+
+    sceneManagerState.transitioning = false;
+    sceneManagerState.currentScene = {
+      disposed: false,
+      _exiting: false,
+      async syncCreatures(payload) {
+        syncPayload = payload;
+      },
+    };
+
+    init({
+      delay: async () => {},
+      characterUI: {},
+      getGameState: () => ({}),
+    });
+
+    try {
+      await showKoSwapAnimations({
+        koSwaps: [{ slot: 0, replacement: 'Mizu' }],
+        creatureParty: { active },
+        enemies,
+      });
+    } finally {
+      globalThis.document = originalDocument;
+      sceneManagerState.currentScene = null;
+    }
+
+    assert.deepEqual(showFormationCalls[0], ['player', active, { force: true }]);
+    assert.deepEqual(syncPayload, { allies: active, enemies });
+    assert.ok(slotClassNames.includes('add:creature-swapping-in'));
+  });
+
   it('resyncs enemy sprites from the server result after ally KO removal', async () => {
+    showFormationCalls.length = 0;
     const originalDocument = globalThis.document;
     globalThis.document = {
       querySelectorAll: () => [],
