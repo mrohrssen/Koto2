@@ -392,6 +392,9 @@ function renderFallbackText({ html, text }) {
 }
 
 export function resolvePortraitSrc(options = {}) {
+  if (options.portraitKind === 'creature' && options.speakerPortrait) {
+    return options.speakerPortrait;
+  }
   const candidates = [
     options.portraitId,
     options.speakerId,
@@ -435,7 +438,9 @@ export function showNpcDialogueCard(options = {}) {
     const render = () => {
       const pageTokens = pages[pageIndex];
       const portraitSrc = resolvePortraitSrc(options);
-      const portraitKindClass = '';
+      const portraitKindClass = options.portraitKind === 'creature' && options.speakerPortrait
+        ? ' npc-dialogue-portrait--creature'
+        : '';
       const hasAudio = !!options.audio?.userId && !!options.audio?.key;
       const content = renderPageContent(options, pageTokens);
       const continueLabel = pageIndex < pages.length - 1 ? 'Next' : 'Continue';
@@ -444,6 +449,8 @@ export function showNpcDialogueCard(options = {}) {
       const translationEntities = pageTokens?.length ? getTranslationEntities(options, pageTokens) : [];
       const canTranslate = !!sourceText;
       const canLearn = !!sourceText && !!pageTokens?.length;
+      const translateJpLabel = options.useKanji ? '翻訳する' : 'ほんやくする';
+      const learnJpLabel = options.useKanji ? '学ぶ' : 'まなぶ';
 
       actionArea.innerHTML = `
         <div class="npc-dialogue-shell">
@@ -468,12 +475,12 @@ export function showNpcDialogueCard(options = {}) {
           <div class="npc-dialogue-utility-row">
             <button class="npc-dialogue-utility npc-dialogue-translate" type="button" ${canTranslate ? '' : 'disabled'}>
               <span class="npc-dialogue-btn-roman">honyaku suru</span>
-              <span class="npc-dialogue-jp-line">${crystalCostHtml(5)}<span class="npc-dialogue-btn-jp">翻訳する</span></span>
+              <span class="npc-dialogue-jp-line">${crystalCostHtml(5)}<span class="npc-dialogue-btn-jp">${translateJpLabel}</span></span>
               <span class="npc-dialogue-btn-en">Translate</span>
             </button>
             <button class="npc-dialogue-utility npc-dialogue-learn" type="button" ${canLearn ? '' : 'disabled'}>
               <span class="npc-dialogue-btn-roman">manabu</span>
-              <span class="npc-dialogue-jp-line">${crystalCostHtml(15)}<span class="npc-dialogue-btn-jp">学ぶ</span></span>
+              <span class="npc-dialogue-jp-line">${crystalCostHtml(15)}<span class="npc-dialogue-btn-jp">${learnJpLabel}</span></span>
               <span class="npc-dialogue-btn-en">Learn</span>
             </button>
           </div>

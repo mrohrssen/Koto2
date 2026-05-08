@@ -797,6 +797,7 @@ export async function renderShrine() {
     const greetingTokens = shrineState.greeting?.tokens;
     await showNpcDialogueCard({
       speaker: 'Shrine Fox',
+      speakerId: 'shrine_fox',
       ...(greetingTokens?.length
         ? {
             tokens: greetingTokens,
@@ -1735,6 +1736,7 @@ export async function renderFriendlyNpc() {
     const greetingTokens = friendlyNpcState.greeting?.tokens;
     await showNpcDialogueCard({
       speaker: npc.nameEn || npc.name,
+      ...(npc.id ? { speakerId: npc.id } : {}),
       ...(greetingTokens?.length
         ? {
             tokens: greetingTokens,

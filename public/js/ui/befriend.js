@@ -20,6 +20,7 @@ import { showNpcInDisplay } from './exploration-dom.js';
 import { SPRITE_VERSION, creatureStaticPath } from './sprite-utils.js';
 import { renderChoicesAsync } from './ui-components.js';
 import { showNpcDialogueCard } from './npc-dialogue-card.js';
+import { toRomaji } from './romaji.js';
 import { playDialogueAudio } from '../tts.js';
 import { showMoves, setActiveLabel } from './move-select.js';
 import { clear as clearTargetSelect } from './target-select.js';
@@ -54,6 +55,7 @@ function dialogueOptionsForCreatureSpeaker(speaker) {
   const speakerName = typeof speaker === 'string' ? speaker : (speaker?.name || '');
   const speakerReading = typeof speaker === 'object' ? speaker?.reading : '';
   const creatureId = typeof speaker === 'object' ? speaker?.id : '';
+  const speakerReadingLabel = speakerReading ? toRomaji(speakerReading) : '';
   const speakerEntity = typeof speaker === 'object' && creatureId
     ? {
         id: creatureId,
@@ -64,7 +66,7 @@ function dialogueOptionsForCreatureSpeaker(speaker) {
     : null;
   return {
     speaker: speakerName,
-    speakerReading: speakerReading && speakerReading !== speakerName ? speakerReading : speakerReading || undefined,
+    speakerReading: speakerReadingLabel || undefined,
     ...(speakerEntity ? { speakerEntity } : {}),
     ...(creatureId ? {
       speakerPortrait: creatureStaticPath(creatureId),
