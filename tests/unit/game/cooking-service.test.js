@@ -65,11 +65,11 @@ describe('cooking resolver', () => {
 });
 
 describe('material drops', () => {
-  it('rolls between 3 and 5 ingredient units', () => {
+  it('rolls between 9 and 15 ingredient units for demo mode', () => {
     for (let i = 0; i < 50; i++) {
       const drops = rollMaterialDrops();
       const total = drops.reduce((sum, drop) => sum + drop.quantity, 0);
-      assert.ok(total >= 3 && total <= 5, `expected 3-5 drops, got ${total}`);
+      assert.ok(total >= 9 && total <= 15, `expected 9-15 drops, got ${total}`);
       assert.ok(drops.every(drop => drop.id && drop.quantity > 0));
     }
   });

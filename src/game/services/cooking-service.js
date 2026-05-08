@@ -30,15 +30,15 @@ const DROP_RARITY_WEIGHTS = [
 ];
 
 const DROP_COUNT_WEIGHTS = [
-  [3, 50],
-  [4, 35],
-  [5, 15],
+  [9, 50],
+  [12, 35],
+  [15, 15],
 ];
 
 const ROOM_DROP_COUNT_WEIGHTS = [
   [0, 50],
-  [1, 35],
-  [2, 15],
+  [3, 35],
+  [6, 15],
 ];
 
 const INGREDIENT_BY_ID = new Map(COOKING_INGREDIENTS.map(ingredient => [ingredient.id, ingredient]));

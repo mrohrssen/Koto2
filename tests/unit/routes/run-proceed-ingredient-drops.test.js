@@ -33,7 +33,7 @@ describe('run proceed ingredient drops', () => {
   it('adds room-transition ingredient drops and returns decorated drop data', async () => {
     const app = createApp({ authBypass: true });
     const gm = setupRun();
-    const randomValues = [0.50, 0, 0, 0];
+    const randomValues = [0.50, 0, 0, 0, 0, 0, 0];
     gm.explorationService.ingredientDropRandom = () => randomValues.shift() ?? 0;
     mock.method(Math, 'random', () => 0);
 
@@ -42,10 +42,10 @@ describe('run proceed ingredient drops', () => {
       .send({})
       .expect(200);
 
-    assert.equal(response.body.ingredientDrops.length, 1);
-    assert.equal(response.body.ingredientDrops[0].quantity, 1);
-    assert.ok(response.body.ingredientDrops[0].ingredient.reading);
-    assert.ok(response.body.ingredientDrops[0].nameToken.reading);
-    assert.equal(Object.values(gm.run.cooking.ingredients).reduce((sum, count) => sum + count, 0), 1);
+    assert.equal(response.body.ingredientDrops.length, 3);
+    assert.ok(response.body.ingredientDrops.every(drop => drop.quantity === 1));
+    assert.ok(response.body.ingredientDrops.every(drop => drop.ingredient.reading));
+    assert.ok(response.body.ingredientDrops.every(drop => drop.nameToken.reading));
+    assert.equal(Object.values(gm.run.cooking.ingredients).reduce((sum, count) => sum + count, 0), 3);
   });
 });
