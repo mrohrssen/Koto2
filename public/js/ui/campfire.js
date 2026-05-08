@@ -33,7 +33,7 @@ export function renderForTest(state, cbs = {}) {
 
 export function cleanup() {
   const sceneArea = document.getElementById('scene-area');
-  sceneArea?.querySelector('.campfire-scene')?.remove();
+  sceneArea?.querySelectorAll('.campfire-scene').forEach(scene => scene.remove());
   setCookingFocusActive(false);
 }
 
@@ -96,12 +96,22 @@ function setCookingFocusActive(active) {
   sceneArea.classList[active ? 'add' : 'remove']('campfire-focus-active');
 }
 
-function renderCampfireScene(html) {
+function renderCampfireScene(html, { focus = true } = {}) {
   const sceneArea = document.getElementById('scene-area');
   if (!sceneArea) return;
   cleanup();
-  setCookingFocusActive(true);
+  setCookingFocusActive(focus);
   sceneArea.insertAdjacentHTML('beforeend', html);
+}
+
+function renderEntryScene() {
+  renderCampfireScene(`
+    <div class="campfire-scene campfire-scene--entry">
+      <div class="campfire-entry-fire-wrap">
+        ${renderCampfireImage()}
+      </div>
+    </div>
+  `, { focus: false });
 }
 
 function renderSlotPreview() {
@@ -173,8 +183,8 @@ function renderRequirementPills(recipe, ingredientsById = ingredientById()) {
 function renderEntryPrompt() {
   const actionArea = document.getElementById('action-area');
   if (!actionArea) return;
-  cleanup();
-  actionArea.innerHTML = '<div class="campfire-entry-heading">Would you like to cook?</div>';
+  renderEntryScene();
+  actionArea.innerHTML = '<div class="ui-choice-heading">Would you like to cook?</div>';
   renderButtons([
     {
       label: yesLabel(),

@@ -80,6 +80,25 @@
   font-size: 3rem;
 }
 
+.campfire-scene--entry {
+  pointer-events: none;
+}
+
+.campfire-entry-fire-wrap {
+  position: absolute;
+  right: 36px;
+  bottom: 36%;
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-items: center;
+  animation: campfire-entry-in 240ms ease-out both;
+}
+
+.campfire-entry-fire-wrap .campfire-fireplace-img {
+  filter: drop-shadow(0 0 14px rgba(255, 149, 49, 0.62));
+}
+
 #scene-area.campfire-focus-active .player-formation,
 #scene-area.campfire-focus-active .formation.player,
 #scene-area.campfire-focus-active .creature-formation.player,
@@ -88,6 +107,17 @@
   opacity: 0;
   transition: opacity 220ms ease;
   pointer-events: none;
+}
+
+@keyframes campfire-entry-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes campfire-focus-in {

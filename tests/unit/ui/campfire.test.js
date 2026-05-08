@@ -190,6 +190,22 @@ describe('campfire UI', () => {
     assert.equal(actionArea.querySelector('.ui-choice'), null);
   });
 
+  it('shows a persistent campfire scene during the entry prompt without cooking focus', () => {
+    campfire.renderForTest(sampleState());
+
+    assert.ok(sceneArea.querySelector('.campfire-scene--entry'));
+    assert.match(renderedHtml(sceneArea), /\/assets\/sprites\/objects\/campfire\.webp/);
+    assert.doesNotMatch(sceneArea.className, /campfire-focus-active/);
+  });
+
+  it('uses existing heading and button UI classes for the entry prompt', () => {
+    campfire.renderForTest(sampleState());
+
+    assert.ok(actionArea.querySelector('.ui-choice-heading'));
+    assert.equal(actionArea.querySelector('.campfire-entry-heading'), null);
+    assert.equal(actionArea.querySelectorAll('.ui-btn').length, 2);
+  });
+
   it('choosing yes opens the existing campfire cooking panel and scene slots', () => {
     campfire.renderForTest(sampleState());
 
