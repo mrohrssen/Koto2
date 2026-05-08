@@ -226,8 +226,7 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
     if (rooms[1]) {
       rooms[1].type = ROOM_TYPES.friendlyNpc;
       if (!rooms[1].friendlyNpc) {
-        const offerCategory = Math.random() < 0.5 ? 'food' : 'equipment';
-        rooms[1].friendlyNpc = { offerCategory, offered: null, chosenId: null, completed: false };
+        rooms[1].friendlyNpc = { offerCategory: 'equipment', offered: null, chosenId: null, completed: false };
       }
     }
   }
@@ -331,8 +330,7 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
       room.npcBattle = {};
       break;
     case ROOM_TYPES.friendlyNpc: {
-      const offerCategory = Math.random() < 0.5 ? 'food' : 'equipment';
-      room.friendlyNpc = { offerCategory, offered: null, chosenId: null, completed: false };
+      room.friendlyNpc = { offerCategory: 'equipment', offered: null, chosenId: null, completed: false };
       break;
     }
     case ROOM_TYPES.support:
@@ -357,8 +355,7 @@ function hasUnusedIngredients(run) {
 export function resolveSupportRoomType(run, rng = Math.random) {
   const canCampfire = hasUnusedIngredients(run);
   const roll = rng();
-  if (canCampfire && roll < 0.25) return ROOM_TYPES.campfire;
-  if (roll < (canCampfire ? 0.35 : 0.10)) return ROOM_TYPES.materials;
+  if (canCampfire && roll < 0.10) return ROOM_TYPES.campfire;
   if (roll < 0.45) return ROOM_TYPES.whackAMole;
   if (roll < 0.50) return ROOM_TYPES.shrine;
   return ROOM_TYPES.friendlyNpc;

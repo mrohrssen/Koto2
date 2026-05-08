@@ -24,7 +24,7 @@ import {
   getFusionCoreNarration,
   getPostFusionNarration
 } from './tutorial-copy.js';
-import { showWordLevelUp } from './word-level-up.js';
+import { showIngredientDropPopups, showWordLevelUp } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 
 /**
@@ -165,6 +165,18 @@ let postFusionNarrationShown = false;
 
 // Tutorial API
 let apiTutorialAdvance = null;
+
+export function isKanjiModeEnabled(gameState) {
+  const meta = gameState?.meta || {};
+  if (typeof meta.kanjiMode === 'boolean') return meta.kanjiMode;
+  if (meta.kanaMode === true) return false;
+  return Number(gameState?.run?.currentArea?.stage || 0) >= 4;
+}
+
+export function showProceedIngredientDrops(result, state = getGameState?.()) {
+  const drops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
+  showIngredientDropPopups(drops, { useKanji: isKanjiModeEnabled(state) });
+}
 
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
@@ -612,6 +624,7 @@ export function renderExploring() {
       const result = await apiProceed();
       if (result?.state) {
         updateGameState(result.state);
+        showProceedIngredientDrops(result, result.state);
         await playRoomTransition(result.state);
         updateUI();
       }
@@ -882,6 +895,7 @@ export async function renderQuiz() {
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);
+    showProceedIngredientDrops(result, result.state);
     await playRoomTransition(result.state);
     updateUI();
   }
@@ -944,6 +958,7 @@ export async function renderWordDiscovery() {
         const result = await apiProceed();
         if (result?.state) {
           updateGameState(result.state);
+          showProceedIngredientDrops(result, result.state);
           await playRoomTransition(result.state);
           updateUI();
         }
@@ -1222,6 +1237,7 @@ export async function renderWhackAMole() {
       const result = await apiProceed();
       if (result?.state) {
         updateGameState(result.state);
+        showProceedIngredientDrops(result, result.state);
         await playRoomTransition(result.state);
       }
     } catch (err) {

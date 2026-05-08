@@ -16,10 +16,7 @@ function assertOnlyEnabledRoomTypes(rooms, fixedIndices) {
 function assertFriendlyNpcOfferCategories(rooms) {
   const friendlyRooms = rooms.filter(r => r.type === 'friendlyNpc');
   for (const room of friendlyRooms) {
-    assert.ok(
-      room.friendlyNpc?.offerCategory === 'food' || room.friendlyNpc?.offerCategory === 'equipment',
-      `friendlyNpc room missing valid offerCategory`
-    );
+    assert.equal(room.friendlyNpc?.offerCategory, 'equipment');
   }
 }
 
@@ -69,7 +66,7 @@ describe('Koto2 area room generation', () => {
       assertNoDisabledRoomTypes(generateAreaRooms('hajimari-no-hiroba'));
     });
 
-    it('friendlyNpc rooms should have offerCategory set to food or equipment', () => {
+    it('friendlyNpc rooms should have offerCategory set to equipment', () => {
       assertFriendlyNpcOfferCategories(generateAreaRooms('hajimari-no-hiroba'));
     });
 
@@ -129,7 +126,7 @@ describe('Koto2 area room generation', () => {
       assertNoDisabledRoomTypes(generateAreaRooms('wild-plains'));
     });
 
-    it('friendlyNpc rooms should have offerCategory set to food or equipment', () => {
+    it('friendlyNpc rooms should have offerCategory set to equipment', () => {
       assertFriendlyNpcOfferCategories(generateAreaRooms('wild-plains'));
     });
 

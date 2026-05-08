@@ -21,6 +21,8 @@ import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
 import { applyCrestBonuses } from './crest-service.js';
 import { shouldOverrideSkillOffers, advanceTutorial, shouldFixRoomSequence } from './tutorial-service.js';
+import { addIngredientsToBag, COOKING_INGREDIENTS, rollRoomIngredientDrops } from './cooking-service.js';
+import { entityToToken } from '../token-format.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -56,7 +58,7 @@ function getAllPartyCreatures(creatureParty) {
 
 /**
  * Roll 3 item offers for a friendly NPC room.
- * @param {'food'|'equipment'} category - Filters items by their category field
+ * @param {'food'|'equipment'} category - Legacy category hint; friendly NPCs now offer equipment only
  * @param {string[]|null} areaIds - Area IDs the player has reached (cumulative); null disables filtering
  * @param {Array} [itemPool] - Optional override item pool (defaults to data/items.json)
  * @returns {Array} Up to 3 item objects matching the category
@@ -70,9 +72,11 @@ export function rollFriendlyNpcOffers(category, areaIds = null, itemPool = null)
     }
   }
 
+  const offerCategory = 'equipment';
+
   // Filter by category and area progression
   const eligible = itemPool.filter(item =>
-    item.category === category &&
+    item.category === offerCategory &&
     (!areaIds || !item.area || areaIds.includes(item.area))
   );
 
@@ -119,8 +123,9 @@ export class ExplorationService {
   /**
    * @param {GameManager} gameManager - Reference to parent GameManager
    */
-  constructor(gameManager) {
+  constructor(gameManager, { ingredientDropRandom = Math.random } = {}) {
     this.gm = gameManager;
+    this.ingredientDropRandom = ingredientDropRandom;
   }
 
   /**
@@ -163,6 +168,26 @@ export class ExplorationService {
       creature.statStages = { atk: 0, def: 0, dex: 0 };
       creature.activeEffects = [];
     }
+  }
+
+  _rollRoomIngredientDrops() {
+    if (!this.gm.run.cooking) this.gm.run.cooking = { ingredients: {}, cookedThisRun: [] };
+    if (!this.gm.run.cooking.ingredients) this.gm.run.cooking.ingredients = {};
+    if (!Array.isArray(this.gm.run.cooking.cookedThisRun)) this.gm.run.cooking.cookedThisRun = [];
+
+    const drops = rollRoomIngredientDrops({ rng: this.ingredientDropRandom });
+    if (drops.length === 0) return [];
+
+    addIngredientsToBag(this.gm.run.cooking.ingredients, drops);
+    if (this.gm.run.runSummary) {
+      this.gm.run.runSummary.itemsCollected += drops.reduce((sum, drop) => sum + drop.quantity, 0);
+    }
+
+    const ingredientsById = new Map(COOKING_INGREDIENTS.map(ingredient => [ingredient.id, ingredient]));
+    return drops.map(drop => {
+      const ingredient = ingredientsById.get(drop.id);
+      return { ...drop, ingredient, nameToken: entityToToken(ingredient) };
+    });
   }
 
   // ============ AREA SELECTION ============
@@ -386,6 +411,7 @@ export class ExplorationService {
     // modal / friendlyNpc reward screen and clear only when the user
     // physically moves on. See the note in resolution.js:finalizeCombatVictory.
     this._clearCombatBuffsForRoomEntry();
+    const ingredientDrops = this._rollRoomIngredientDrops();
 
     // Vary background per room — sub-area-specific if available
     const areaId = this.gm.run.currentArea?.id || 'okunomori';
@@ -423,7 +449,8 @@ export class ExplorationService {
       roomNumber: this.gm.run.currentRoom + 1,
       totalRooms: this.gm.run.rooms.length,
       actions: getRoomActions(room),
-      narration
+      narration,
+      ingredientDrops
     };
   }
 
