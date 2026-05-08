@@ -7,6 +7,16 @@
   margin: 0 auto;
 }
 
+#action-area:has(.campfire-panel) {
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  overflow-y: auto;
+}
+
+#action-area:has(.campfire-panel) .campfire-panel {
+  flex: 0 0 auto;
+}
+
 .campfire-tabs {
   display: flex;
   gap: 8px;
