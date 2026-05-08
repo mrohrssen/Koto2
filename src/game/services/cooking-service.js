@@ -35,6 +35,12 @@ const DROP_COUNT_WEIGHTS = [
   [5, 15],
 ];
 
+const ROOM_DROP_COUNT_WEIGHTS = [
+  [0, 50],
+  [1, 35],
+  [2, 15],
+];
+
 const INGREDIENT_BY_ID = new Map(COOKING_INGREDIENTS.map(ingredient => [ingredient.id, ingredient]));
 
 function weightedPick(weightedEntries, rng = Math.random) {
@@ -96,6 +102,18 @@ export function rollMaterialDrops({ rng = Math.random } = {}) {
     counts[pick.id] = (counts[pick.id] || 0) + 1;
   }
   return Object.entries(counts).map(([id, quantity]) => ({ id, quantity }));
+}
+
+export function rollRoomIngredientDrops({ rng = Math.random } = {}) {
+  const totalDrops = weightedPick(ROOM_DROP_COUNT_WEIGHTS, rng);
+  const drops = [];
+  for (let i = 0; i < totalDrops; i++) {
+    const rarity = weightedPick(DROP_RARITY_WEIGHTS, rng);
+    const pool = COOKING_INGREDIENTS.filter(ingredient => ingredient.rarity === rarity);
+    const pick = pool[Math.floor(rng() * pool.length)] || COOKING_INGREDIENTS[0];
+    drops.push({ id: pick.id, quantity: 1 });
+  }
+  return drops;
 }
 
 export function resolveCookingSelection(selection) {

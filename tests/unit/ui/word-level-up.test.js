@@ -33,3 +33,17 @@ describe('battle reward anchor selection', () => {
     assert.equal(wordLevelUp.getBattleRewardAnchor(fakeDocument), sceneArea);
   });
 });
+
+describe('ingredient drop reward message', () => {
+  it('uses hiragana readings outside kanji mode', () => {
+    const drop = { ingredient: { word: '海老', reading: 'えび' } };
+
+    assert.equal(wordLevelUp.getIngredientDropMessage(drop, false), 'Obtained えび');
+  });
+
+  it('uses the kanji word in kanji mode', () => {
+    const drop = { ingredient: { word: '海老', reading: 'えび' } };
+
+    assert.equal(wordLevelUp.getIngredientDropMessage(drop, true), 'Obtained 海老');
+  });
+});

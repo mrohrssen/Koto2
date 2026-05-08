@@ -60,7 +60,7 @@ await mock.module('../../../public/js/ui/dom-effects.js', {
   namedExports: { pop: () => {}, flashElement: () => {} },
 });
 await mock.module('../../../public/js/ui/word-level-up.js', {
-  namedExports: { showWordLevelUp: () => {} },
+  namedExports: { showIngredientDropPopups: () => {}, showWordLevelUp: () => {} },
 });
 await mock.module('../../../public/js/api.js', {
   namedExports: { savePvpTeam: async () => {}, getPvpTeams: async () => [] },

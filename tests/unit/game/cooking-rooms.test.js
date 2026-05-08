@@ -26,8 +26,23 @@ describe('cooking room types', () => {
   });
 
   it('resolves support room to campfire only when ingredients exist', () => {
-    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0), ROOM_TYPES.materials);
+    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0), ROOM_TYPES.whackAMole);
     assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0), ROOM_TYPES.campfire);
+  });
+
+  it('never resolves support rooms to materials rooms', () => {
+    const rolls = [0, 0.09, 0.10, 0.44, 0.49, 0.99];
+
+    for (const roll of rolls) {
+      assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => roll), ROOM_TYPES.materials);
+      assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => roll), ROOM_TYPES.materials);
+    }
+  });
+
+  it('gives campfire a 10 percent support-room window when ingredients exist', () => {
+    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0.09), ROOM_TYPES.campfire);
+    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0.10), ROOM_TYPES.campfire);
+    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0.09), ROOM_TYPES.campfire);
   });
 
   it('mutates a support room into a persisted concrete room', () => {

@@ -254,7 +254,7 @@ export default function createRunRoutes({
       const narration = null; // DM narration disabled — frontend discards this
 
       req.saveGame();
-      res.json({ room, state: req.getEnrichedGameState(), narration });
+      res.json({ room, ingredientDrops: room?.ingredientDrops || [], state: req.getEnrichedGameState(), narration });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -814,8 +814,11 @@ export default function createRunRoutes({
       if (!room || room.type !== 'friendlyNpc') {
         return res.status(400).json({ error: 'Not in a friendly NPC room' });
       }
-      // Generate offers if not already generated (idempotent)
-      if (!room.friendlyNpc.offered) {
+      const hasConsumableOffer = (room.friendlyNpc.offered || []).some(item => item?.category !== 'equipment');
+
+      // Generate offers if not already generated (idempotent), or regenerate old-save consumable offers.
+      if (!room.friendlyNpc.offered || hasConsumableOffer) {
+        room.friendlyNpc.offerCategory = 'equipment';
         const areaPath = gm.run.areaPath || [];
         const currentAreaId = gm.run.currentArea?.id;
         const areaIds = [...new Set([...areaPath, currentAreaId].filter(Boolean))];
@@ -878,6 +881,9 @@ export default function createRunRoutes({
       const item = room.friendlyNpc.offered.find(i => i.id === itemId);
       if (!item) {
         return res.status(400).json({ error: 'Invalid item choice' });
+      }
+      if (item.category !== 'equipment') {
+        return res.status(400).json({ error: 'Friendly NPC shops only offer equipment' });
       }
       // Apply item effect to run state
       const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;

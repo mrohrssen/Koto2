@@ -12,6 +12,26 @@ export function getBattleRewardAnchor(doc = globalThis.document) {
     || null;
 }
 
+export function getIngredientDropMessage(drop, useKanji = false) {
+  const ingredient = drop?.ingredient || drop;
+  const name = useKanji
+    ? (ingredient?.word || ingredient?.reading || ingredient?.nameEn)
+    : (ingredient?.reading || ingredient?.word || ingredient?.nameEn);
+  return name ? `Obtained ${name}` : '';
+}
+
+export function showIngredientDropPopups(drops, { useKanji = false, anchorEl = null, staggerMs = 140 } = {}) {
+  if (!Array.isArray(drops) || drops.length === 0) return;
+
+  drops.forEach((drop, index) => {
+    const message = getIngredientDropMessage(drop, useKanji);
+    if (!message) return;
+    setTimeout(() => {
+      showWordLevelUp(anchorEl || getBattleRewardAnchor(), '', { message });
+    }, index * staggerMs);
+  });
+}
+
 /**
  * Show a "[word] leveled up!" animation anchored to an element.
  * @param {HTMLElement} anchorEl - Element to position the animation over

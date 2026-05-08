@@ -8,6 +8,14 @@ import { animateLevelUpForScene } from '../pixi/formation.js';
 import { spritePos } from './combat-vfx.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { playRoomTransition } from './room-transition.js';
+import { showIngredientDropPopups } from './word-level-up.js';
+
+function isKanjiModeEnabled(gameState) {
+  const meta = gameState?.meta || {};
+  if (typeof meta.kanjiMode === 'boolean') return meta.kanjiMode;
+  if (meta.kanaMode === true) return false;
+  return Number(gameState?.run?.currentArea?.stage || 0) >= 4;
+}
 
 export class WhackAMoleGame {
   /**
@@ -413,6 +421,9 @@ export class WhackAMoleGame {
       if (this.cancelled) return;
       if (advanced?.state) {
         this.updateGameState(advanced.state);
+        showIngredientDropPopups(advanced.ingredientDrops || advanced.room?.ingredientDrops || [], {
+          useKanji: isKanjiModeEnabled(advanced.state)
+        });
         await playRoomTransition(advanced.state);
         if (this.cancelled) return;
       }

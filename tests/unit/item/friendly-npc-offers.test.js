@@ -10,10 +10,17 @@ const MOCK_ITEMS = [
 ];
 
 describe('rollFriendlyNpcOffers - area filtering', () => {
-  it('area 1 only: returns only area 1 food items', () => {
+  it('always treats friendly NPC shops as equipment-only', () => {
+    const offers = rollFriendlyNpcOffers('food', ['hajimari-no-hiroba'], MOCK_ITEMS);
+
+    assert.ok(offers.length > 0, 'Should still return equipment offers when old saves request food');
+    assert.ok(offers.every(item => item.category === 'equipment'));
+  });
+
+  it('area 1 only: returns only area 1 equipment items', () => {
     const areaIds = ['hajimari-no-hiroba'];
     for (let i = 0; i < 20; i++) {
-      const offers = rollFriendlyNpcOffers('food', areaIds, MOCK_ITEMS);
+      const offers = rollFriendlyNpcOffers('equipment', areaIds, MOCK_ITEMS);
       for (const item of offers) {
         assert.strictEqual(item.area, 'hajimari-no-hiroba', `Got area 2 item "${item.id}" in area 1 shop`);
       }
@@ -24,7 +31,7 @@ describe('rollFriendlyNpcOffers - area filtering', () => {
     const areaIds = ['hajimari-no-hiroba', 'school'];
     const seenAreas = new Set();
     for (let i = 0; i < 50; i++) {
-      const offers = rollFriendlyNpcOffers('food', areaIds, MOCK_ITEMS);
+      const offers = rollFriendlyNpcOffers('equipment', areaIds, MOCK_ITEMS);
       for (const item of offers) seenAreas.add(item.area);
     }
     assert.ok(seenAreas.has('hajimari-no-hiroba'), 'Should include area 1 items');
@@ -44,19 +51,19 @@ describe('rollFriendlyNpcOffers - area filtering', () => {
   it('items without area field are always included', () => {
     const itemsWithNoArea = [
       ...MOCK_ITEMS,
-      { id: 'mystery', category: 'food', word: 'x', reading: 'x', meaning: 'x', rarity: 'common', type: 'heal', effect: {}, description: 'test' },
+      { id: 'mystery', category: 'equipment', word: 'x', reading: 'x', meaning: 'x', rarity: 'common', type: 'boost', effect: {}, description: 'test' },
     ];
     const areaIds = ['hajimari-no-hiroba'];
     let sawMystery = false;
     for (let i = 0; i < 50; i++) {
-      const offers = rollFriendlyNpcOffers('food', areaIds, itemsWithNoArea);
+      const offers = rollFriendlyNpcOffers('equipment', areaIds, itemsWithNoArea);
       if (offers.some(o => o.id === 'mystery')) sawMystery = true;
     }
     assert.ok(sawMystery, 'Item without area field should appear in any area');
   });
 
   it('areaIds null disables area filtering (backward compat)', () => {
-    const offers = rollFriendlyNpcOffers('food', null, MOCK_ITEMS);
+    const offers = rollFriendlyNpcOffers('equipment', null, MOCK_ITEMS);
     assert.ok(offers.length > 0, 'Should return items when areaIds is null');
   });
 
