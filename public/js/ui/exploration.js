@@ -152,7 +152,6 @@ let apiChooseFriendlyNpcItem = null;
 // Shrine API
 let apiGetShrineOffers = null;
 let apiChooseShrineReward = null;
-let apiClaimMaterials = null;
 let apiGetCampfire = null;
 let apiCookAtCampfire = null;
 let apiFeedCampfireDish = null;
@@ -222,7 +221,6 @@ export function init(callbacks) {
   apiChooseFriendlyNpcItem = callbacks.apiChooseFriendlyNpcItem;
   apiGetShrineOffers = callbacks.apiGetShrineOffers;
   apiChooseShrineReward = callbacks.apiChooseShrineReward;
-  apiClaimMaterials = callbacks.apiClaimMaterials;
   apiGetCampfire = callbacks.apiGetCampfire;
   apiCookAtCampfire = callbacks.apiCookAtCampfire;
   apiFeedCampfireDish = callbacks.apiFeedCampfireDish;
@@ -653,26 +651,6 @@ export function renderAreaComplete() {
   renderButtons([
     { label: '次のエリアへ', onClick: () => updateUI(), primary: true },
   ], { container: btnContainer });
-}
-
-/** Materials room — claim ingredients and show Japanese entity-token receipt */
-export async function renderMaterials() {
-  try {
-    const result = await apiClaimMaterials();
-    if (result?.state) updateGameState?.(result.state);
-    if (result?.receipt?.tokens?.length) {
-      await showNpcDialogueCard({
-        speaker: 'SYSTEM',
-        tokens: result.receipt.tokens,
-        words: result.receipt.words || [],
-        useKanji: true,
-      });
-    }
-    updateUI?.();
-  } catch (error) {
-    console.error('[Exploration] Failed to claim materials:', error);
-    sceneModule?.showNarration?.('材料を手に入れた。', { autoDismiss: 1800 });
-  }
 }
 
 export async function renderCampfire() {

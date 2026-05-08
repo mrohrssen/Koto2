@@ -29,16 +29,11 @@ const DROP_RARITY_WEIGHTS = [
   ['legendary', 2],
 ];
 
-const DROP_COUNT_WEIGHTS = [
-  [9, 50],
-  [12, 35],
-  [15, 15],
-];
-
 const ROOM_DROP_COUNT_WEIGHTS = [
-  [0, 50],
-  [3, 35],
-  [6, 15],
+  [1, 25],
+  [2, 25],
+  [3, 25],
+  [4, 25],
 ];
 
 const INGREDIENT_BY_ID = new Map(COOKING_INGREDIENTS.map(ingredient => [ingredient.id, ingredient]));
@@ -90,18 +85,6 @@ export function consumeIngredientsFromBag(bag, requirements) {
     if (bag[requirement.id] <= 0) delete bag[requirement.id];
   }
   return bag;
-}
-
-export function rollMaterialDrops({ rng = Math.random } = {}) {
-  const totalDrops = weightedPick(DROP_COUNT_WEIGHTS, rng);
-  const counts = {};
-  for (let i = 0; i < totalDrops; i++) {
-    const rarity = weightedPick(DROP_RARITY_WEIGHTS, rng);
-    const pool = COOKING_INGREDIENTS.filter(ingredient => ingredient.rarity === rarity);
-    const pick = pool[Math.floor(rng() * pool.length)] || COOKING_INGREDIENTS[0];
-    counts[pick.id] = (counts[pick.id] || 0) + 1;
-  }
-  return Object.entries(counts).map(([id, quantity]) => ({ id, quantity }));
 }
 
 export function rollRoomIngredientDrops({ rng = Math.random } = {}) {

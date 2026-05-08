@@ -6,7 +6,6 @@ import {
   getIngredientCount,
   hasIngredients,
   resolveCookingSelection,
-  rollMaterialDrops,
   COOKING_INGREDIENTS,
   COOKING_RECIPES,
 } from '../../game/services/cooking-service.js';
@@ -22,36 +21,6 @@ const QUANTITY_LABELS = {
 
 export default function createCookingRoutes() {
   const router = express.Router();
-
-  router.post('/materials/claim', (req, res) => {
-    try {
-      const gm = req.gameManager;
-      ensureCookingState(gm);
-      const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'materials') return res.status(400).json({ error: 'Not in a materials room' });
-      if (!room.materials) room.materials = { drops: null, claimed: false, completed: false };
-
-      if (!room.materials.claimed) {
-        room.materials.drops = rollMaterialDrops();
-        addIngredientsToBag(gm.run.cooking.ingredients, room.materials.drops);
-        room.materials.claimed = true;
-        room.materials.completed = true;
-        room.interacted = true;
-        if (gm.run.runSummary) {
-          gm.run.runSummary.itemsCollected += room.materials.drops.reduce((sum, drop) => sum + drop.quantity, 0);
-        }
-        req.saveGame();
-      }
-
-      res.json({
-        drops: decorateDrops(room.materials.drops),
-        receipt: buildReceipt(room.materials.drops),
-        state: req.getEnrichedGameState(),
-      });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  });
 
   router.get('/campfire', (req, res) => {
     try {

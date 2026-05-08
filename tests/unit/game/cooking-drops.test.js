@@ -8,21 +8,18 @@ function sequenceRng(values) {
 }
 
 describe('room transition ingredient drops', () => {
-  it('can roll zero ingredients', () => {
-    assert.deepEqual(rollRoomIngredientDrops({ rng: () => 0.49 }), []);
+  it('can roll one ingredient', () => {
+    const drops = rollRoomIngredientDrops({ rng: sequenceRng([0, 0, 0]) });
+
+    assert.equal(drops.length, 1);
+    assert.equal(drops[0].quantity, 1);
+    assert.ok(drops[0].id);
   });
 
-  it('can roll three ingredients for demo mode', () => {
-    const drops = rollRoomIngredientDrops({ rng: sequenceRng([0.50, 0, 0, 0, 0, 0, 0]) });
+  it('can roll four separate ingredient drops', () => {
+    const drops = rollRoomIngredientDrops({ rng: sequenceRng([0.99, 0, 0, 0, 0, 0, 0, 0, 0]) });
 
-    assert.equal(drops.length, 3);
-    assert.ok(drops.every(drop => drop.quantity === 1 && drop.id));
-  });
-
-  it('can roll six separate ingredient drops for demo mode', () => {
-    const drops = rollRoomIngredientDrops({ rng: sequenceRng([0.85, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) });
-
-    assert.equal(drops.length, 6);
+    assert.equal(drops.length, 4);
     assert.ok(drops.every(drop => drop.quantity === 1));
   });
 });

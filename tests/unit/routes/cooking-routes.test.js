@@ -39,40 +39,19 @@ describe('cooking routes', () => {
     clearManagersForTest();
   });
 
-  it('materials claim rejects non-materials room', async () => {
+  it('materials claim endpoint no longer exists', async () => {
     const app = createApp({ authBypass: true });
     setupRun(createRoom(ROOM_TYPES.encounter, 'test-area', 1, 1));
 
     await request(app)
       .post('/api/game/materials/claim')
       .send({})
-      .expect(400);
-  });
-
-  it('materials claim rolls once and is idempotent', async () => {
-    const app = createApp({ authBypass: true });
-    const gm = setupRun(createRoom(ROOM_TYPES.materials, 'test-area', 1, 1));
-
-    const first = await request(app)
-      .post('/api/game/materials/claim')
-      .send({})
-      .expect(200);
-    const countAfterFirst = Object.values(gm.run.cooking.ingredients).reduce((sum, count) => sum + count, 0);
-
-    const second = await request(app)
-      .post('/api/game/materials/claim')
-      .send({})
-      .expect(200);
-    const countAfterSecond = Object.values(gm.run.cooking.ingredients).reduce((sum, count) => sum + count, 0);
-
-    assert.deepEqual(second.body.drops, first.body.drops);
-    assert.equal(countAfterSecond, countAfterFirst);
-    assert.equal(gm.getCurrentRoom().interacted, true);
+      .expect(404);
   });
 
   it('campfire state rejects non-campfire room', async () => {
     const app = createApp({ authBypass: true });
-    setupRun(createRoom(ROOM_TYPES.materials, 'test-area', 1, 1));
+    setupRun(createRoom(ROOM_TYPES.encounter, 'test-area', 1, 1));
 
     await request(app)
       .get('/api/game/campfire')

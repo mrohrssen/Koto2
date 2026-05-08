@@ -376,10 +376,6 @@ async function roomEncounter() {
   return apiCall('/room-encounter', 'POST');
 }
 
-async function claimMaterials() {
-  return apiCall('/materials/claim', 'POST');
-}
-
 async function getCampfire() {
   return apiCall('/campfire', 'GET');
 }
@@ -850,7 +846,6 @@ export {
   // Room exploration endpoints
   proceed,
   roomEncounter,
-  claimMaterials,
   getCampfire,
   cookAtCampfire,
   feedCampfireDish,

@@ -76,7 +76,6 @@ export const ROOM_TYPES = {
   npcBattle: 'npcBattle',
   friendlyNpc: 'friendlyNpc',
   support: 'support',
-  materials: 'materials',
   campfire: 'campfire'
 };
 
@@ -336,9 +335,6 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
     case ROOM_TYPES.support:
       room.support = { resolvedType: null };
       break;
-    case ROOM_TYPES.materials:
-      room.materials = { drops: null, claimed: false, completed: false };
-      break;
     case ROOM_TYPES.campfire:
       room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
       break;
@@ -404,8 +400,6 @@ export function getRoomEntryNarration(room) {
       return `${locationLabel}に入った。不思議なゲーム機がある...`;
     case ROOM_TYPES.speedReviewRoom:
       return `${locationLabel}に入った。記憶の装置がある...復習を始めよう。`;
-    case ROOM_TYPES.materials:
-      return `${locationLabel}に入った。材料が見つかりそうだ。`;
     case ROOM_TYPES.campfire:
       return `${locationLabel}に入った。焚き火がある。料理ができそうだ。`;
     case ROOM_TYPES.support:
@@ -433,7 +427,6 @@ export function getRoomActions(room) {
   const isUnfinishedSkillMaster = room.type === 'skillMaster' && room.skillMaster?.completed !== true;
   const isUnfinishedWhackAMole = room.type === 'whackAMole' && !room.interacted;
   const isUnfinishedSpeedReviewRoom = room.type === 'speedReviewRoom' && !room.interacted;
-  const isUnfinishedMaterials = room.type === ROOM_TYPES.materials && room.materials?.completed !== true;
   const isUnfinishedCampfire = room.type === ROOM_TYPES.campfire && room.campfire?.completed !== true;
   const isUnfinishedBoss = room.type === 'boss' && !room.interacted;
   const isUnfinishedShrine = room.type === ROOM_TYPES.shrine
@@ -442,7 +435,7 @@ export function getRoomActions(room) {
     && room.shrine?.used !== true;
   const isUnfinishedFriendlyNpc = room.type === 'friendlyNpc' && !room.friendlyNpc?.completed;
   const isUnfinishedNpcBattle = room.type === 'npcBattle' && !room.interacted;
-  if (!isUnfinishedEncounter && !isUnfinishedShrine && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedSpeedReviewRoom && !isUnfinishedMaterials && !isUnfinishedCampfire && !isUnfinishedBoss && !isUnfinishedFriendlyNpc && !isUnfinishedNpcBattle) {
+  if (!isUnfinishedEncounter && !isUnfinishedShrine && !isUnfinishedWordDiscovery && !isUnfinishedDealer && !isUnfinishedSkillMaster && !isUnfinishedWhackAMole && !isUnfinishedSpeedReviewRoom && !isUnfinishedCampfire && !isUnfinishedBoss && !isUnfinishedFriendlyNpc && !isUnfinishedNpcBattle) {
     actions.push({ id: 'proceed', name: '進む', description: '次のエリアへ進む' });
   }
 
@@ -465,11 +458,6 @@ export function getRoomActions(room) {
     case ROOM_TYPES.wordDiscovery:
       break;
     case ROOM_TYPES.speedReviewRoom:
-      break;
-    case ROOM_TYPES.materials:
-      if (isUnfinishedMaterials) {
-        actions.push({ id: 'materials_claim', name: '集める', description: '材料を集める' });
-      }
       break;
     case ROOM_TYPES.campfire:
       if (isUnfinishedCampfire) {

@@ -7,7 +7,6 @@ import {
   getIngredientCount,
   hasIngredients,
   resolveCookingSelection,
-  rollMaterialDrops,
 } from '../../../src/game/services/cooking-service.js';
 import { createMetaProgression, createNewPlayer, createNewRun } from '../../../src/game/state.js';
 
@@ -61,17 +60,6 @@ describe('cooking resolver', () => {
     assert.ok(item.nameEn);
     assert.ok(item.description);
     assert.ok(['heal', 'boost', 'mpRestore', 'revive', 'xpCharm', 'xpGrant'].includes(item.type));
-  });
-});
-
-describe('material drops', () => {
-  it('rolls between 9 and 15 ingredient units for demo mode', () => {
-    for (let i = 0; i < 50; i++) {
-      const drops = rollMaterialDrops();
-      const total = drops.reduce((sum, drop) => sum + drop.quantity, 0);
-      assert.ok(total >= 9 && total <= 15, `expected 9-15 drops, got ${total}`);
-      assert.ok(drops.every(drop => drop.id && drop.quantity > 0));
-    }
   });
 });
 

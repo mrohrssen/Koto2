@@ -9,19 +9,15 @@ import {
 } from '../../../src/game/rooms.js';
 
 describe('cooking room types', () => {
-  it('creates materials and campfire room state', () => {
-    const materials = createRoom(ROOM_TYPES.materials, 'test-area', 1, 3);
+  it('creates campfire room state', () => {
     const campfire = createRoom(ROOM_TYPES.campfire, 'test-area', 2, 3);
 
-    assert.deepStrictEqual(materials.materials, { drops: null, claimed: false, completed: false });
     assert.deepStrictEqual(campfire.campfire, { cookedDish: null, consumed: null, fed: false, completed: false });
   });
 
-  it('shows room actions for unfinished materials and campfire rooms', () => {
-    const materials = createRoom(ROOM_TYPES.materials, 'test-area', 1, 3);
+  it('shows room actions for unfinished campfire rooms', () => {
     const campfire = createRoom(ROOM_TYPES.campfire, 'test-area', 2, 3);
 
-    assert.ok(getRoomActions(materials).some(action => action.id === 'materials_claim'));
     assert.ok(getRoomActions(campfire).some(action => action.id === 'campfire_cook'));
   });
 
@@ -34,8 +30,8 @@ describe('cooking room types', () => {
     const rolls = [0, 0.09, 0.10, 0.44, 0.49, 0.99];
 
     for (const roll of rolls) {
-      assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => roll), ROOM_TYPES.materials);
-      assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => roll), ROOM_TYPES.materials);
+      assert.notEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => roll), 'materials');
+      assert.notEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => roll), 'materials');
     }
   });
 
