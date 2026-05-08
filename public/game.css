@@ -6243,8 +6243,8 @@ button.hud-chip {
 }
 
 .npc-dialogue-portrait--creature img {
-  width: 104%;
-  height: 88%;
+  width: 138%;
+  height: 104%;
   object-fit: contain;
   object-position: center bottom;
 }
@@ -6436,22 +6436,28 @@ button.hud-chip {
 
 .npc-dialogue-jp-line {
   position: absolute;
-  left: 6px;
-  right: 6px;
+  left: 10px;
+  right: 10px;
   top: 22px;
-  display: block;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
   height: 18px;
   line-height: 1;
   white-space: nowrap;
 }
 
 .npc-dialogue-jp-line .crystal-cost {
-  position: absolute;
-  left: 34px;
-  top: 50%;
-  transform: translateY(-50%);
+  justify-self: start;
   margin: 0;
   font-size: 12px;
+}
+
+.npc-dialogue-jp-line .npc-dialogue-btn-jp {
+  position: static;
+  min-width: 0;
+  text-align: right;
 }
 
 .npc-dialogue-btn-jp {

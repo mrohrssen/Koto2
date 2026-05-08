@@ -174,7 +174,12 @@ await mock.module('../../../public/js/api.js', {
   }
 });
 
-const { showNpcDialogueCard, renderDialogueTokenRows, getDialogueSourceText } = await import('../../../public/js/ui/npc-dialogue-card.js');
+const {
+  showNpcDialogueCard,
+  renderDialogueTokenRows,
+  getDialogueSourceText,
+  resolvePortraitSrc,
+} = await import('../../../public/js/ui/npc-dialogue-card.js');
 
 describe('npc dialogue card', () => {
   beforeEach(() => {
@@ -254,7 +259,7 @@ describe('npc dialogue card', () => {
     assert.equal(utilityButtons[1].disabled, false);
   });
 
-  it('hardcodes the temporary default headshot for every speaker', () => {
+  it('uses the creature sprite as the portrait for creature speakers', () => {
     showNpcDialogueCard({
       speaker: 'Cat',
       speakerPortrait: '/assets/sprites/creatures/neko.webp',
@@ -262,9 +267,20 @@ describe('npc dialogue card', () => {
       text: 'まって！',
     });
 
-    assert.match(actionArea.innerHTML, /\/assets\/dialogue\/default-headshot\.png/);
-    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-portrait--creature/);
-    assert.doesNotMatch(actionArea.innerHTML, /\/assets\/sprites\/creatures\/neko\.webp/);
+    assert.match(actionArea.innerHTML, /npc-dialogue-portrait--creature/);
+    assert.match(actionArea.innerHTML, /\/assets\/sprites\/creatures\/neko\.webp/);
+    assert.doesNotMatch(actionArea.innerHTML, /\/assets\/dialogue\/default-headshot\.png/);
+  });
+
+  it('resolves NPC dialogue headshots from ids and known names', () => {
+    assert.equal(resolvePortraitSrc({ speakerId: 'kodomo' }), '/assets/dialogue/headshots/kodomo.webp?v=20260508-npc-headshots');
+    assert.equal(resolvePortraitSrc({ speaker: 'Shrine Fox' }), '/assets/dialogue/headshots/shrine_fox.webp?v=20260508-npc-headshots');
+    assert.equal(resolvePortraitSrc({ speaker: 'Cid' }), '/assets/dialogue/headshots/cid.webp?v=20260508-npc-headshots');
+    assert.equal(resolvePortraitSrc({ speaker: 'You' }), '/assets/dialogue/headshots/you-male.webp?v=20260508-npc-headshots');
+  });
+
+  it('falls back to the default portrait for unknown NPC speakers', () => {
+    assert.equal(resolvePortraitSrc({ speaker: 'Unknown Traveler' }), '/assets/dialogue/default-headshot.png?v=20260501-headshot');
   });
 
   it('attaches lookup handlers for tokenized dialogue', () => {
@@ -434,7 +450,8 @@ describe('npc dialogue card', () => {
     showNpcDialogueCard({
       speaker: 'Mira',
       tokens: [{ surface: '待つ', baseForm: '待つ', reading: 'まつ', meaning: 'wait', pos: 'verb' }],
-      knownWords: new Set()
+      knownWords: new Set(),
+      useKanji: true
     });
 
     assert.match(actionArea.innerHTML, /class="crystal-cost"/);
@@ -444,6 +461,20 @@ describe('npc dialogue card', () => {
     assert.match(actionArea.innerHTML, /npc-dialogue-jp-line[\s\S]*crystal-cost[\s\S]*学ぶ/);
     assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-book-icon/);
     assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-learn-icon/);
+  });
+
+  it('uses hiragana utility labels when kanji mode is disabled', () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '待つ', baseForm: '待つ', reading: 'まつ', meaning: 'wait', pos: 'verb' }],
+      knownWords: new Set(),
+      useKanji: false
+    });
+
+    assert.match(actionArea.innerHTML, /npc-dialogue-btn-jp">ほんやくする</);
+    assert.match(actionArea.innerHTML, /npc-dialogue-btn-jp">まなぶ</);
+    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-btn-jp">翻訳する</);
+    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-btn-jp">学ぶ</);
   });
 
   it('sends a stable translation idempotency key and blocks duplicate in-flight clicks', async () => {
