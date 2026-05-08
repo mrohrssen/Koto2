@@ -75,7 +75,7 @@ await mock.module('../../../public/js/api.js', {
   namedExports: { savePvpTeam: async () => {}, getPvpTeams: async () => [] },
 });
 await mock.module('../../../public/js/ui/bootstrap-client.js', {
-  namedExports: { renderJpSentence: () => '', getKnownWords: () => new Set() },
+  namedExports: { renderJpSentence: () => '', getKnownWords: () => new Set(), entityToToken: value => value },
 });
 await mock.module('../../../public/js/ui/tutorial-copy.js', {
   namedExports: {

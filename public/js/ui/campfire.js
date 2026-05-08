@@ -1,5 +1,5 @@
 import { escapeHtml } from './html-utils.js';
-import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { showItemTargetPicker } from './item-target-picker.js';
 
@@ -38,13 +38,6 @@ function ingredientById() {
 
 function getIngredient(id, ingredientsById = ingredientById()) {
   return ingredientsById.get(id) || { id, word: id, reading: id, nameEn: id, meaning: id };
-}
-
-function renderEntityName(entity) {
-  const surface = entity?.word || entity?.name || entity?.baseWord || entity?.id || '？';
-  const reading = entity?.reading || entity?.baseReading || surface;
-  const meaning = entity?.meaning || entity?.nameEn || entity?.baseMeaning || surface;
-  return renderJpSentence([{ surface, base: surface, reading, meaning, entity: true }], getKnownWords(), new Map());
 }
 
 function escapeAttribute(value) {
@@ -86,7 +79,7 @@ function renderSlotPreview() {
     return `
       <div class="campfire-slot">
         ${renderIngredientIcon(ingredient, 'campfire-slot-icon')}
-        <div class="campfire-slot-name">${renderEntityName(ingredient)}</div>
+        <div class="campfire-slot-name">${renderJpSentence([entityToToken(ingredient)], getKnownWords(), new Map())}</div>
       </div>
     `;
   }).join('');
@@ -124,7 +117,7 @@ function renderCookedDishScene(dish) {
       </div>
       <div class="campfire-cooked-dish-display">
         ${renderIngredientIcon(dish, 'campfire-cooked-dish-icon')}
-        <div class="campfire-cooked-dish-name">${renderEntityName(dish)}</div>
+        <div class="campfire-cooked-dish-name">${renderJpSentence([entityToToken(dish)], getKnownWords(), new Map())}</div>
         <div class="campfire-cooked-dish-effect">${escapeHtml(dish.effectDescription || dish.nameEn || '')}</div>
       </div>
     </div>
@@ -187,7 +180,7 @@ function renderIngredients() {
         return `
           <button class="campfire-ingredient-card ${selectedCount > 0 ? 'selected' : ''}" data-id="${escapeHtml(id)}" type="button">
             ${renderIngredientIcon(ingredient)}
-            <span class="campfire-ingredient-name">${renderEntityName(ingredient)}</span>
+            <span class="campfire-ingredient-name">${renderJpSentence([entityToToken(ingredient)], getKnownWords(), new Map())}</span>
             <span class="campfire-ingredient-count">${selectedCount}/${count}</span>
           </button>
         `;
@@ -235,7 +228,7 @@ function renderRecipes() {
             <span class="campfire-recipe-badge ${canCook ? 'ready' : 'need'}">${canCook ? 'Ready' : 'Need'}</span>
             ${renderIngredientIcon(recipe)}
             <span class="campfire-recipe-info">
-              <span class="campfire-recipe-title">${renderEntityName(recipe)}</span>
+              <span class="campfire-recipe-title">${renderJpSentence([entityToToken(recipe)], getKnownWords(), new Map())}</span>
               <span class="campfire-recipe-effect">${escapeHtml(recipe.effectDescription || recipe.nameEn || '')}</span>
               <span class="campfire-recipe-pills">${renderRequirementPills(recipe, ingredientsById)}</span>
             </span>

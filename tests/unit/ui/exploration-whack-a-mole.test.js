@@ -58,6 +58,7 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: {
     renderJpSentence: tokens => tokens.map(t => t.text || t.base || '').join(''),
     getKnownWords: () => new Set(),
+    entityToToken: value => value,
   },
 });
 await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
