@@ -447,8 +447,8 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
       const sprite = await spawnFormationSprite(ctx, 'player', { uid: 'p-idle', id: 'kitsunova' }, 0, {
         skipEnter: true,
       });
-      assert.equal(sprite.texture.path, '/assets/sprites/creatures/kitsunova-idle.webp?v=20260430b');
-      assert.deepEqual(seen, ['/assets/sprites/creatures/kitsunova-idle.webp?v=20260430b']);
+      assert.equal(sprite.texture.path, '/assets/sprites/creatures/kitsunova-idle.webp?v=20260508');
+      assert.deepEqual(seen, ['/assets/sprites/creatures/kitsunova-idle.webp?v=20260508']);
     } finally {
       FakeAssets._loadImpl = originalLoad;
     }
@@ -467,10 +467,10 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
       const sprite = await spawnFormationSprite(ctx, 'player', { uid: 'p-static', id: 'mizu' }, 0, {
         skipEnter: true,
       });
-      assert.equal(sprite.texture.path, '/assets/sprites/creatures/mizu.webp?v=20260430b');
+      assert.equal(sprite.texture.path, '/assets/sprites/creatures/mizu.webp?v=20260508');
       assert.deepEqual(seen, [
-        '/assets/sprites/creatures/mizu-idle.webp?v=20260430b',
-        '/assets/sprites/creatures/mizu.webp?v=20260430b',
+        '/assets/sprites/creatures/mizu-idle.webp?v=20260508',
+        '/assets/sprites/creatures/mizu.webp?v=20260508',
       ]);
     } finally {
       FakeAssets._loadImpl = originalLoad;

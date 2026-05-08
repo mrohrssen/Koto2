@@ -3,25 +3,30 @@
 /**
  * Item Icon Grid Generator
  *
- * Generates cute food/drink item icon grids using Gemini 2.5 Flash (Nano Banana).
+ * Generates cute food/drink item icon grids using Gemini 3.1 Flash.
  * Items are batched 9 at a time into 3×3 grids on magenta backgrounds.
  * After generation, use scripts/slice-item-grid.py to cut into individual icons.
  *
  * Usage:
- *   node scripts/generate-item-icons.mjs                    # Generate all batches
- *   node scripts/generate-item-icons.mjs --batch 0          # Generate specific batch
- *   node scripts/generate-item-icons.mjs --batch 0 --dry-run  # Preview prompts only
+ *   node scripts/generate-item-icons.mjs                              # Generate all item batches
+ *   node scripts/generate-item-icons.mjs --batch 0                    # Generate specific item batch
+ *   node scripts/generate-item-icons.mjs --source ingredients --batch 0 # Generate cooking ingredient batch
+ *   node scripts/generate-item-icons.mjs --source recipes --batch 0   # Generate cooking recipe batch
+ *   node scripts/generate-item-icons.mjs --source ingredients --only mizu,niku,sakana # Generate selected IDs
+ *   node scripts/generate-item-icons.mjs --background white           # Generate on white for background removal
+ *   node scripts/generate-item-icons.mjs --batch 0 --dry-run          # Preview prompts only
  */
 
 import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { dirname, extname, resolve } from 'node:path';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const BATCH_SIZE = 9;
 const GRID_COLS = 3;
 const GRID_ROWS = 3;
+const GEMINI_IMAGE_MODEL = 'gemini-3.1-flash-image-preview';
+const GEMINI_TIMEOUT_MS = 180_000;
 
 // ---------------------------------------------------------------------------
 // CLI
@@ -34,6 +39,9 @@ function parseCli() {
       'dry-run': { type: 'boolean' },
       'style-refs-dir': { type: 'string' },
       'item-type': { type: 'string' },
+      only: { type: 'string' },
+      background: { type: 'string' },
+      source: { type: 'string' },
     },
     strict: true,
   });
@@ -42,6 +50,9 @@ function parseCli() {
     dryRun: args.values['dry-run'] || false,
     styleRefsDir: args.values['style-refs-dir'] || undefined,
     itemType: args.values['item-type'] || null,
+    only: args.values.only ? args.values.only.split(',').map(id => id.trim()).filter(Boolean) : null,
+    background: args.values.background || 'magenta',
+    source: args.values.source || 'items',
   };
 }
 
@@ -70,20 +81,31 @@ async function loadStyleRefs(dir) {
 // Prompt construction
 // ---------------------------------------------------------------------------
 
-function buildPrompt(batch) {
+function buildPrompt(batch, source = 'items', background = 'magenta') {
   // Build the layout description — always 3×3
   const layoutLines = [];
   for (let r = 0; r < GRID_ROWS; r++) {
     const rowItems = batch.slice(r * GRID_COLS, (r + 1) * GRID_COLS);
-    const descriptions = rowItems.map((item, i) => `(${i + 1}) ${item.meaning}`);
+    const descriptions = rowItems.map((item, i) => {
+      const label = source === 'ingredients' || source === 'recipes' ? item.nameEn : item.meaning;
+      return `(${i + 1}) ${label}`;
+    });
     layoutLines.push(`Row ${r + 1}: ${descriptions.join(', ')}`);
   }
 
+  const hasIngredients = source === 'ingredients';
+  const hasRecipes = source === 'recipes';
   const hasKeepsakes = batch.some(i => i.type === 'keepsake');
   const hasFood = batch.some(i => i.type !== 'keepsake' && !i._filler);
 
   let category, itemDesc;
-  if (hasKeepsakes && !hasFood) {
+  if (hasIngredients) {
+    category = 'cooking ingredient icons';
+    itemDesc = 'Each icon should be a clean, recognizable depiction of the raw cooking ingredient or natural material — like a polished RPG inventory ingredient.';
+  } else if (hasRecipes) {
+    category = 'cooked food and drink recipe icons';
+    itemDesc = 'Each icon should be a delicious, recognizable depiction of the finished cooked dish or drink — like a polished RPG inventory food icon.';
+  } else if (hasKeepsakes && !hasFood) {
     category = 'keepsake / treasure item icons';
     itemDesc = 'Each icon should be a beautiful, detailed depiction of the object — like a polished RPG treasure or equipment icon. Gleaming metals, glowing gems, elegant craftsmanship.';
   } else if (hasKeepsakes && hasFood) {
@@ -94,26 +116,35 @@ function buildPrompt(batch) {
     itemDesc = 'Each icon should be a delicious, appetizing depiction of the food/drink — like a polished game item icon.';
   }
 
+  const backgroundName = background === 'white' ? 'plain white' : 'solid magenta';
+  const backgroundColor = background === 'white' ? '#FFFFFF' : '#FF00FF';
+
   return [
     `Use the same art style as the reference images — these are creature sprites from the same game.`,
     ``,
-    `Draw 9 cute ${category} for a video game inventory, arranged in a 3×3 layout on a solid magenta background.`,
+    `Draw EXACTLY 9 cute ${category} for a video game inventory, arranged in a 3×3 layout on a ${backgroundName} background.`,
     itemDesc,
+    ``,
+    `IMAGE FORMAT:`,
+    `- Square image, 1024×1024 or 1536×1536`,
+    `- EXACTLY 3 columns and EXACTLY 3 rows`,
+    `- EXACTLY one icon in each cell`,
+    `- Do not add any extra items, extra columns, extra rows, props, plates, bowls, or background objects`,
     ``,
     `Layout (3 rows, 3 columns):`,
     ...layoutLines,
     ``,
     `LAYOUT:`,
     `- Place each icon in an evenly-spaced 3×3 arrangement`,
-    `- DO NOT draw any grid lines, borders, dividers, or frames — just the icons on flat magenta`,
-    `- The entire background must be solid flat magenta (#FF00FF) with nothing else on it`,
+    `- DO NOT draw any grid lines, borders, dividers, or frames — just the icons on a flat background`,
+    `- The entire background must be solid flat ${backgroundName} (${backgroundColor}) with nothing else on it`,
     `- Each item must be fully contained in its area, not overlapping neighbors`,
     ``,
     `ART STYLE:`,
     `- Glows, sparkles, and particles are welcome but they MUST be drawn with fully opaque solid pixels`,
     `- NO semi-transparent pixels, NO alpha blending, NO soft feathered edges against the background`,
-    `- Every single pixel must be either pure solid magenta (#FF00FF) or fully opaque content — nothing in between`,
-    `- Hard crisp edges where the item meets the magenta background, no gradual fade-outs`,
+    `- Every single pixel must be either pure solid ${backgroundName} (${backgroundColor}) or fully opaque content — nothing in between`,
+    `- Hard crisp edges where the item meets the background, no gradual fade-outs`,
     `- No text, no labels, no numbers, no UI elements`,
     `- Each item should be immediately recognizable`,
     `- Front-facing, centered in each cell`,
@@ -131,17 +162,31 @@ function isRetryable(err) {
   return RETRYABLE.some(p => p.test(msg));
 }
 
-async function generateGrid(model, prompt, outputPath, styleRefParts) {
+async function generateGrid(apiKey, prompt, outputPath, styleRefParts) {
   let lastError;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const requestParts = [...styleRefParts, { text: prompt }];
-      const result = await model.generateContent({
+      const payload = {
         contents: [{ role: 'user', parts: requestParts }],
         generationConfig: { responseModalities: ['image', 'text'] },
-      });
+      };
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_IMAGE_MODEL}:generateContent`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
+        },
+      );
 
-      const responseParts = result.response.candidates?.[0]?.content?.parts;
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`Gemini HTTP ${response.status}: ${JSON.stringify(result).slice(0, 500)}`);
+      }
+
+      const responseParts = result.candidates?.[0]?.content?.parts;
       if (!responseParts) throw new Error('No parts in response');
 
       const imagePart = responseParts.find(p => p.inlineData);
@@ -172,19 +217,43 @@ async function generateGrid(model, prompt, outputPath, styleRefParts) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const { batchIndex, dryRun, styleRefsDir, itemType } = parseCli();
+  const { batchIndex, dryRun, styleRefsDir, itemType, only, background, source } = parseCli();
 
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const projectRoot = resolve(__dirname, '..');
 
-  // Load items (optionally filtered by type)
-  let items = JSON.parse(await readFile(resolve(projectRoot, 'data/items.json'), 'utf-8'));
+  if (!['items', 'ingredients', 'recipes'].includes(source)) {
+    console.error(`Unknown source '${source}'. Expected 'items', 'ingredients', or 'recipes'.`);
+    process.exit(1);
+  }
+  if (!['magenta', 'white'].includes(background)) {
+    console.error(`Unknown background '${background}'. Expected 'magenta' or 'white'.`);
+    process.exit(1);
+  }
+
+  // Load items, cooking ingredients, or finished cooking recipes.
+  const sourcePath = source === 'ingredients'
+    ? resolve(projectRoot, 'data/cooking/ingredients.json')
+    : source === 'recipes'
+      ? resolve(projectRoot, 'data/cooking/recipes.json')
+      : resolve(projectRoot, 'data/items.json');
+  let items = JSON.parse(await readFile(sourcePath, 'utf-8'));
   if (itemType) {
     items = items.filter(i => i.type === itemType);
     console.error(`Filtered to ${items.length} items of type '${itemType}'`);
+  }
+  if (only) {
+    const byId = new Map(items.map(item => [item.id, item]));
+    const missing = only.filter(id => !byId.has(id));
+    if (missing.length) {
+      console.error(`Unknown ${source} ID(s): ${missing.join(', ')}`);
+      process.exit(1);
+    }
+    items = only.map(id => byId.get(id));
+    console.error(`Filtered to ${items.length} selected ${source}: ${only.join(', ')}`);
   } else {
-    console.error(`Loaded ${items.length} items from items.json`);
+    console.error(`Loaded ${items.length} ${source} from ${sourcePath}`);
   }
 
   // Create batches of 9. Pad last batch with dupes from the start to fill 3×3.
@@ -207,7 +276,7 @@ async function main() {
   let apiKey, styleRefParts;
   if (!dryRun) {
     const keyPath = resolve(projectRoot, 'data', '.creature-forge-gemini-key');
-    apiKey = (await readFile(keyPath, 'utf-8')).trim();
+    apiKey = process.env.GEMINI_API_KEY || (await readFile(keyPath, 'utf-8')).trim();
     if (!apiKey) { console.error('No API key'); process.exit(1); }
 
     const refDir = styleRefsDir || resolve(projectRoot, 'data/creature-forge-style-refs');
@@ -221,10 +290,10 @@ async function main() {
       continue;
     }
     const batch = batches[idx];
-    const itemNames = batch.map(i => `${i.meaning}${i._filler ? ' (filler)' : ''}`).join(', ');
+    const itemNames = batch.map(i => `${i.nameEn || i.meaning}${i._filler ? ' (filler)' : ''}`).join(', ');
     console.error(`\n=== Batch ${idx}: ${batch.length} items (${itemNames}) ===`);
 
-    const prompt = buildPrompt(batch);
+    const prompt = buildPrompt(batch, source, background);
 
     if (dryRun) {
       console.error('\n--- PROMPT ---');
@@ -233,16 +302,15 @@ async function main() {
       continue;
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-image-preview' });
-
     const outputDir = resolve(projectRoot, 'data/item-staging-images');
     await mkdir(outputDir, { recursive: true });
-    const prefix = itemType ? `${itemType}-` : '';
+    const sourcePrefix = source === 'ingredients' ? 'ingredients-' : source === 'recipes' ? 'recipes-' : '';
+    const backgroundPrefix = background === 'white' ? 'white-' : '';
+    const prefix = `${backgroundPrefix}${sourcePrefix}${itemType ? `${itemType}-` : ''}`;
     const outputPath = resolve(outputDir, `grid-${prefix}batch-${idx}.png`);
 
     console.error(`Generating grid → ${outputPath}`);
-    const result = await generateGrid(model, prompt, outputPath, styleRefParts);
+    const result = await generateGrid(apiKey, prompt, outputPath, styleRefParts);
 
     if (result.status === 'ok') {
       console.error(`✓ Batch ${idx}: ${result.bytes} bytes → ${result.path}`);
