@@ -26,6 +26,7 @@ await mock.module('../../../public/js/ui/item-effect-pills.js', {
 await mock.module('../../../public/js/ui/sprite-utils.js', {
   namedExports: {
     creatureSpriteHtml: () => '',
+    creatureStaticPath: id => `/sprites/${id}.webp`,
     itemSpriteHtml: () => '',
   },
 });

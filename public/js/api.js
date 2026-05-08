@@ -392,6 +392,10 @@ async function feedCampfireDish(targetCreatureIndex) {
   return apiCall('/campfire/feed', 'POST', { targetCreatureIndex });
 }
 
+async function skipCampfire() {
+  return apiCall('/campfire/skip', 'POST');
+}
+
 /** Get shrine greeting and reward options */
 async function getShrineOffers() {
   return apiCall('/shrine-offers', 'POST');
@@ -850,6 +854,7 @@ export {
   getCampfire,
   cookAtCampfire,
   feedCampfireDish,
+  skipCampfire,
   getShrineOffers,
   chooseShrineReward,
   shrineUpgrade,

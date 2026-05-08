@@ -156,6 +156,7 @@ let apiClaimMaterials = null;
 let apiGetCampfire = null;
 let apiCookAtCampfire = null;
 let apiFeedCampfireDish = null;
+let apiSkipCampfire = null;
 
 // Track whether CID's item-shop tutorial has already been shown this session
 let cidItemShopTutorialShown = false;
@@ -225,12 +226,14 @@ export function init(callbacks) {
   apiGetCampfire = callbacks.apiGetCampfire;
   apiCookAtCampfire = callbacks.apiCookAtCampfire;
   apiFeedCampfireDish = callbacks.apiFeedCampfireDish;
+  apiSkipCampfire = callbacks.apiSkipCampfire;
   apiTutorialAdvance = callbacks.apiTutorialAdvance;
   showAdventureReport = callbacks.showAdventureReport;
   campfireUI.init({
     apiGetCampfire,
     apiCookAtCampfire,
     apiFeedCampfireDish,
+    apiSkipCampfire,
     getGameState,
     updateGameState,
     updateUI,

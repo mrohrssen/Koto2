@@ -355,7 +355,7 @@ function hasUnusedIngredients(run) {
 export function resolveSupportRoomType(run, rng = Math.random) {
   const canCampfire = hasUnusedIngredients(run);
   const roll = rng();
-  if (canCampfire && roll < 0.10) return ROOM_TYPES.campfire;
+  if (canCampfire && roll < 0.50) return ROOM_TYPES.campfire;
   if (roll < 0.45) return ROOM_TYPES.whackAMole;
   if (roll < 0.50) return ROOM_TYPES.shrine;
   return ROOM_TYPES.friendlyNpc;

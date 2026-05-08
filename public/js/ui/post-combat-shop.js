@@ -3,8 +3,9 @@ import { playSFX } from '../audio.js';
 import { prefetchWord, playWord } from '../tts.js';
 import { renderJpSentence, renderEnFirst, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
-import { creatureSpriteHtml, itemSpriteHtml } from './sprite-utils.js';
+import { itemSpriteHtml } from './sprite-utils.js';
 import { renderChoices } from './ui-components.js';
+import { showItemTargetPicker } from './item-target-picker.js';
 
 let onItemSelected = null;
 
@@ -81,22 +82,7 @@ function showItemHelpPopup(item) {
  * @param {Function} onPicked - Callback with (targetIndex)
  */
 export function showTargetPicker(creatures, onPicked) {
-  const actionArea = dom.actionArea;
-  if (!actionArea) return;
-
-  renderChoices({
-    heading: 'Choose target',
-    cards: creatures.filter(Boolean).map((c, i) => ({
-      sprite: creatureSpriteHtml(c.id, c.name, c.element),
-      title: `${c.reading || c.baseReading || c.name} (${c.nameEn})`,
-      subtitle: `Lv${c.level} · HP ${c.hp}/${c.maxHp}`,
-    })),
-    onSelect: (index) => {
-      playSFX('creature-equip');
-      if (onPicked) onPicked(index);
-    },
-    container: actionArea,
-  });
+  showItemTargetPicker(creatures, onPicked);
 }
 
 export function hide() {

@@ -119,4 +119,21 @@ describe('cooking routes', () => {
     assert.equal(gm.getCurrentRoom().campfire.completed, true);
     assert.deepEqual(gm.meta.cookingRecipesDiscovered, ['miso-soup']);
   });
+
+  it('campfire skip completes room without consuming ingredients or cooking a dish', async () => {
+    const app = createApp({ authBypass: true });
+    const gm = setupRun(createRoom(ROOM_TYPES.campfire, 'test-area', 1, 1));
+    gm.run.cooking.ingredients = { mizu: 1, miso: 1 };
+
+    const res = await request(app)
+      .post('/api/game/campfire/skip')
+      .send({})
+      .expect(200);
+
+    assert.deepEqual(gm.run.cooking.ingredients, { mizu: 1, miso: 1 });
+    assert.equal(gm.getCurrentRoom().campfire.cookedDish, null);
+    assert.equal(gm.getCurrentRoom().campfire.completed, true);
+    assert.equal(gm.getCurrentRoom().interacted, true);
+    assert.equal(res.body.skipped, true);
+  });
 });

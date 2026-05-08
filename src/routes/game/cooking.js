@@ -121,6 +121,25 @@ export default function createCookingRoutes() {
     }
   });
 
+  router.post('/campfire/skip', (req, res) => {
+    try {
+      const gm = req.gameManager;
+      ensureCookingState(gm);
+      const room = gm.getCurrentRoom();
+      if (!room || room.type !== 'campfire') return res.status(400).json({ error: 'Not in a campfire room' });
+      if (!room.campfire) room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
+
+      room.campfire.completed = true;
+      room.campfire.skipped = true;
+      room.interacted = true;
+      req.saveGame();
+
+      res.json({ state: req.getEnrichedGameState(), skipped: true });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
   return router;
 }
 

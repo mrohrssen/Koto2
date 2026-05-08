@@ -39,10 +39,10 @@ describe('cooking room types', () => {
     }
   });
 
-  it('gives campfire a 10 percent support-room window when ingredients exist', () => {
-    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0.09), ROOM_TYPES.campfire);
-    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0.10), ROOM_TYPES.campfire);
-    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0.09), ROOM_TYPES.campfire);
+  it('gives campfire a 50 percent support-room window when ingredients exist', () => {
+    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0.49), ROOM_TYPES.campfire);
+    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0.50), ROOM_TYPES.campfire);
+    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0.49), ROOM_TYPES.campfire);
   });
 
   it('mutates a support room into a persisted concrete room', () => {
