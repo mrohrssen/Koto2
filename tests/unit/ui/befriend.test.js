@@ -52,7 +52,7 @@ await mock.module('../../../public/js/ui/sprite-utils.js', {
   }
 });
 await mock.module('../../../public/js/ui/romaji.js', {
-  namedExports: { toRomaji: (s) => s }
+  namedExports: { toRomaji: (s) => s === 'てつ' ? 'tetsu' : s }
 });
 await mock.module('../../../public/js/ui/ui-components.js', {
   namedExports: {
@@ -283,7 +283,7 @@ describe('executeBefriendAction creature speaker label', () => {
 
     assert.equal(narrationCalls.length, 0);
     assert.equal(dialogueCardCalls[0].speaker, 'てつ');
-    assert.equal(dialogueCardCalls[0].speakerReading, 'てつ');
+    assert.equal(dialogueCardCalls[0].speakerReading, 'tetsu');
     assert.equal(dialogueCardCalls[0].speakerPortrait, '/creatures/tetsu.webp');
     assert.equal(dialogueCardCalls[0].portraitKind, 'creature');
   });
@@ -468,7 +468,7 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
     }
 
     assert.equal(dialogueCardCalls[0].speaker, 'てつ');
-    assert.equal(dialogueCardCalls[0].speakerReading, 'てつ');
+    assert.equal(dialogueCardCalls[0].speakerReading, 'tetsu');
     assert.equal(dialogueCardCalls[0].speakerPortrait, '/creatures/tetsu.webp');
     assert.equal(dialogueCardCalls[0].portraitKind, 'creature');
     assert.equal(renderChoicesCalls[0].heading, 'Choose an action');

@@ -116,6 +116,7 @@ export function buildSplitAttackCard(atk, isEnemy, options = {}) {
   const attackerToken = entityToToken({
     word: atk.attackerWord || atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName,
     reading: atk.attackerReading || atk.attackerBaseReading,
+    nameEn: atk.attackerName,
     meaning: atk.attackerMeaning || atk.attackerBaseMeaning || atk.attackerName,
   });
   const moveToken = entityToToken({
@@ -126,6 +127,7 @@ export function buildSplitAttackCard(atk, isEnemy, options = {}) {
   const targetToken = entityToToken({
     word: atk.targetWord || atk.targetBaseWord || atk.targetNameJp || atk.targetName,
     reading: atk.targetReading || atk.targetBaseReading,
+    nameEn: atk.targetName,
     meaning: atk.targetMeaning || atk.targetBaseMeaning || atk.targetName,
   });
 
@@ -238,6 +240,7 @@ export function insertNpcAttackCard(atk) {
   const npcToken = entityToToken({
     word: atk.attackerWord || atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName,
     reading: atk.attackerReading || atk.attackerBaseReading,
+    nameEn: atk.attackerName,
     meaning: atk.attackerMeaning || atk.attackerBaseMeaning || atk.attackerName,
   });
   const attackerWordHtml = renderJpSentence([npcToken], knownWords, wordDict);

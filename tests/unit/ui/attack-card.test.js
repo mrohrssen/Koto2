@@ -8,7 +8,7 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: {
     renderJpSentence: (tokens) => tokens.map(t => [t.reading, t.meaning || t.nameEn].filter(Boolean).join(' ')).join(' '),
     getKnownWords: () => new Set(),
-    entityToToken: (x) => x,
+    entityToToken: (x) => ({ ...x, meaning: x.nameEn || x.meaning }),
   }
 });
 await mock.module('../../../public/js/ui/sprite-utils.js', {
@@ -177,10 +177,11 @@ describe('buildSplitAttackCard — new 3-block layout', () => {
     assert.strictEqual(rows?.length, 3, 'should have exactly 3 sac-row elements');
   });
 
-  it('includes the attacker hiragana reading and English gloss', () => {
+  it('includes the attacker hiragana reading and entity display name', () => {
     const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
     assert.ok(html.includes('ひ'), 'attacker reading missing');
-    assert.ok(html.includes('fire'), 'attacker English missing');
+    assert.ok(html.includes('Fire'), 'attacker display name missing');
+    assert.ok(!html.includes('ひ fire'), 'attacker definition should not replace display name');
   });
 
   it('includes the move reading and English gloss', () => {
@@ -189,10 +190,11 @@ describe('buildSplitAttackCard — new 3-block layout', () => {
     assert.ok(html.includes('flame'), 'move English missing');
   });
 
-  it('includes the target reading and English gloss', () => {
+  it('includes the target reading and entity display name', () => {
     const html = buildSplitAttackCard(SAMPLE_ATTACK, false);
     assert.ok(html.includes('き'), 'target reading missing');
-    assert.ok(html.includes('tree'), 'target English missing');
+    assert.ok(html.includes('Tree'), 'target display name missing');
+    assert.ok(!html.includes('き tree'), 'target definition should not replace display name');
   });
 
   it('renders the result value and effectiveness line for super-effective damage', () => {

@@ -4,6 +4,7 @@ import {
   addIngredientsToBag,
   consumeIngredientsFromBag,
   createCookedDishItem,
+  getCookableRecipeHints,
   getIngredientCount,
   hasIngredients,
   resolveCookingSelection,
@@ -71,5 +72,60 @@ describe('cooking state defaults', () => {
     assert.deepStrictEqual(run.cooking.ingredients, {});
     assert.deepStrictEqual(run.cooking.cookedThisRun, []);
     assert.deepStrictEqual(meta.cookingRecipesDiscovered, []);
+  });
+});
+
+describe('cookable recipe hints', () => {
+  it('returns sanitized hints for recipes the player can fully make', () => {
+    const recipes = [
+      {
+        id: 'known-good',
+        word: '秘密料理',
+        reading: 'ひみつりょうり',
+        nameEn: 'Secret Dish',
+        rarity: 'rare',
+        ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+        effectDescription: 'Hidden outcome.',
+      },
+      {
+        id: 'missing-ingredient',
+        word: '足りない料理',
+        reading: 'たりないりょうり',
+        nameEn: 'Missing Dish',
+        rarity: 'epic',
+        ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'toufu', quantity: 1 }],
+      },
+    ];
+
+    const hints = getCookableRecipeHints({ mizu: 1, miso: 1 }, recipes);
+
+    assert.deepStrictEqual(hints, [{
+      id: 'known-good',
+      rarity: 'rare',
+      totalQuantity: 2,
+      ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+    }]);
+    assert.equal(hints[0].word, undefined);
+    assert.equal(hints[0].nameEn, undefined);
+    assert.equal(hints[0].effectDescription, undefined);
+  });
+
+  it('excludes recipes above the five ingredient selection cap', () => {
+    const recipes = [{
+      id: 'too-large',
+      rarity: 'legendary',
+      ingredients: [
+        { id: 'a', quantity: 1 },
+        { id: 'b', quantity: 1 },
+        { id: 'c', quantity: 1 },
+        { id: 'd', quantity: 1 },
+        { id: 'e', quantity: 1 },
+        { id: 'f', quantity: 1 },
+      ],
+    }];
+
+    const hints = getCookableRecipeHints({ a: 1, b: 1, c: 1, d: 1, e: 1, f: 1 }, recipes);
+
+    assert.deepStrictEqual(hints, []);
   });
 });

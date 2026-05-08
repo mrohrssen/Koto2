@@ -135,6 +135,7 @@ describe('renderShrine encounter flow', () => {
     await renderShrine();
 
     assert.equal(dialogueCards[0].speaker, 'Shrine Fox');
+    assert.equal(dialogueCards[0].speakerId, 'shrine_fox');
     assert.deepEqual(dialogueCards[0].tokens, [{ text: 'こんにちは！' }]);
     assert.equal(renderedChoices.heading, 'Choose shrine blessing');
     assert.deepEqual(renderedChoices.cards.map(card => card.title), [

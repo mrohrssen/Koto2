@@ -203,6 +203,7 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(events[0][0], 'showNpcSprite');
     assert.match(events[0][1], /\/assets\/sprites\/npcs\/kodomo\.webp\?v=test/);
     assert.equal(dialogueCards[0].speaker, 'Child');
+    assert.equal(dialogueCards[0].speakerId, 'kodomo');
   });
 
   it('in tutorial mode lets Cid interrupt after the NPC greeting before item choices', async () => {
