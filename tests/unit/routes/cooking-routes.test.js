@@ -5,6 +5,7 @@ import { createApp } from '../../../src/app.js';
 import { clearManagersForTest, getManager } from '../../../src/game/manager-registry.js';
 import { createNewPlayer, createNewRun } from '../../../src/game/state.js';
 import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
+import { loadDialoguePools } from '../../../src/game/dialogue-loader.js';
 
 function mockCreature(overrides = {}) {
   return {
@@ -56,6 +57,22 @@ describe('cooking routes', () => {
     await request(app)
       .get('/api/game/campfire')
       .expect(400);
+  });
+
+  it('campfire state includes rendered-choice token payloads for yes and no', async () => {
+    loadDialoguePools(`${process.cwd()}/data`);
+    const app = createApp({ authBypass: true });
+    const gm = setupRun(createRoom(ROOM_TYPES.campfire, 'test-area', 1, 1));
+    gm.run.cooking.ingredients = { mizu: 1 };
+
+    const res = await request(app)
+      .get('/api/game/campfire')
+      .expect(200);
+
+    assert.ok(Array.isArray(res.body.yesTokens.tokens));
+    assert.ok(Array.isArray(res.body.noTokens.tokens));
+    assert.equal(res.body.yesTokens.tokens[0].surface, 'はい');
+    assert.equal(res.body.noTokens.tokens[0].surface, 'いいえ');
   });
 
   it('campfire cook consumes ingredients and stores cooked dish', async () => {

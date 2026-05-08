@@ -183,6 +183,7 @@ const {
   syncPixiStatusLabelsForScene,
   destroyAllStatusLabels,
 } = await import('../../../public/js/pixi/formation.js');
+const { SPRITE_VERSION } = await import('../../../public/js/ui/sprite-utils.js');
 const { BattleScene } = await import('../../../public/js/scenes/battle-scene.js');
 const { rowForFormationIndex } = await import('../../../public/js/pixi/battlefield-layout.js');
 
@@ -447,8 +448,8 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
       const sprite = await spawnFormationSprite(ctx, 'player', { uid: 'p-idle', id: 'kitsunova' }, 0, {
         skipEnter: true,
       });
-      assert.equal(sprite.texture.path, '/assets/sprites/creatures/kitsunova-idle.webp?v=20260508');
-      assert.deepEqual(seen, ['/assets/sprites/creatures/kitsunova-idle.webp?v=20260508']);
+      assert.equal(sprite.texture.path, `/assets/sprites/creatures/kitsunova-idle.webp?v=${SPRITE_VERSION}`);
+      assert.deepEqual(seen, [`/assets/sprites/creatures/kitsunova-idle.webp?v=${SPRITE_VERSION}`]);
     } finally {
       FakeAssets._loadImpl = originalLoad;
     }
@@ -467,10 +468,10 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
       const sprite = await spawnFormationSprite(ctx, 'player', { uid: 'p-static', id: 'mizu' }, 0, {
         skipEnter: true,
       });
-      assert.equal(sprite.texture.path, '/assets/sprites/creatures/mizu.webp?v=20260508');
+      assert.equal(sprite.texture.path, `/assets/sprites/creatures/mizu.webp?v=${SPRITE_VERSION}`);
       assert.deepEqual(seen, [
-        '/assets/sprites/creatures/mizu-idle.webp?v=20260508',
-        '/assets/sprites/creatures/mizu.webp?v=20260508',
+        `/assets/sprites/creatures/mizu-idle.webp?v=${SPRITE_VERSION}`,
+        `/assets/sprites/creatures/mizu.webp?v=${SPRITE_VERSION}`,
       ]);
     } finally {
       FakeAssets._loadImpl = originalLoad;

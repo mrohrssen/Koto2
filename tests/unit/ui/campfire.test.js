@@ -17,6 +17,11 @@ class FakeElement {
         const current = new Set(this.className.split(/\s+/).filter(Boolean));
         classes.forEach(className => current.add(className));
         this.className = [...current].join(' ');
+      },
+      remove: (...classes) => {
+        const current = new Set(this.className.split(/\s+/).filter(Boolean));
+        classes.forEach(className => current.delete(className));
+        this.className = [...current].join(' ');
       }
     };
     this._innerHTML = '';
@@ -149,19 +154,94 @@ function sampleState(overrides = {}) {
       ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
       effectDescription: 'Restores 20% MP.',
     }],
+    yesTokens: {
+      tokens: [{ surface: 'はい', base: 'はい', reading: 'はい', pos: 'Interjection' }],
+      overrides: {},
+    },
+    noTokens: {
+      tokens: [{ surface: 'いいえ', base: 'いいえ', reading: 'いいえ', pos: 'Interjection' }],
+      overrides: {},
+    },
     room: { cookedDish: null },
     ...overrides,
   };
+}
+
+function openCooking() {
+  actionArea.querySelector('.ui-btn')?.click();
 }
 
 describe('campfire UI', () => {
   beforeEach(() => {
     actionArea.innerHTML = '';
     sceneArea.innerHTML = '';
+    sceneArea.className = '';
+  });
+
+  it('starts with an English cooking prompt and rendered Japanese yes/no buttons', () => {
+    campfire.renderForTest(sampleState());
+
+    assert.match(renderedHtml(actionArea), /Would you like to cook\?/);
+    assert.match(renderedHtml(actionArea), /はい/);
+    assert.match(renderedHtml(actionArea), /いいえ/);
+    assert.match(renderedHtml(actionArea), /<ruby>/);
+    assert.equal(actionArea.querySelectorAll('.ui-btn').length, 2);
+    assert.equal(actionArea.querySelector('.campfire-panel'), null);
+    assert.equal(actionArea.querySelector('.ui-choice'), null);
+  });
+
+  it('choosing yes opens the existing campfire cooking panel and scene slots', () => {
+    campfire.renderForTest(sampleState());
+
+    openCooking();
+
+    assert.ok(actionArea.querySelector('.campfire-panel'));
+    assert.ok(sceneArea.querySelector('.campfire-slot-preview'));
+    assert.ok(sceneArea.querySelector('.campfire-scene--cooking'));
+    assert.match(renderedHtml(), />Ingredients</);
+    assert.match(renderedHtml(), />Recipes</);
+    assert.match(renderedHtml(), />Cook</);
+    assert.match(renderedHtml(sceneArea), /Cooking slots/);
+    assert.match(renderedHtml(sceneArea), /\/assets\/sprites\/objects\/campfire\.webp/);
+  });
+
+  it('toggles cooking focus class on the scene area only while cooking', async () => {
+    campfire.renderForTest(sampleState(), {
+      apiSkipCampfire: async () => ({ state: { phase: 'room' } }),
+      completeCampfireAndProceed: async () => {},
+    });
+
+    assert.doesNotMatch(sceneArea.className, /campfire-focus-active/);
+
+    openCooking();
+    assert.match(sceneArea.className, /campfire-focus-active/);
+
+    await actionArea.querySelector('.campfire-skip-btn').click();
+    assert.doesNotMatch(sceneArea.className, /campfire-focus-active/);
+  });
+
+  it('choosing no skips the campfire and invokes the completion proceed callback', async () => {
+    let skipCalled = false;
+    let proceeded = false;
+    campfire.renderForTest(sampleState(), {
+      apiSkipCampfire: async () => {
+        skipCalled = true;
+        return { state: { phase: 'room' }, skipped: true };
+      },
+      completeCampfireAndProceed: async state => {
+        proceeded = state.phase === 'room';
+      },
+    });
+
+    await actionArea.querySelectorAll('.ui-btn')[1].click();
+
+    assert.equal(skipCalled, true);
+    assert.equal(proceeded, true);
   });
 
   it('renders ingredient and recipe tabs', () => {
     campfire.renderForTest(sampleState());
+    openCooking();
 
     assert.ok(actionArea.querySelector('.campfire-tab'));
     assert.equal(actionArea.querySelectorAll('.campfire-tab').length, 2);
@@ -172,6 +252,7 @@ describe('campfire UI', () => {
 
   it('renders English tabs and Cook button label', () => {
     campfire.renderForTest(sampleState());
+    openCooking();
 
     assert.match(renderedHtml(), />Ingredients</);
     assert.match(renderedHtml(), />Recipes</);
@@ -182,6 +263,7 @@ describe('campfire UI', () => {
 
   it('renders ingredient cards with icon fallback and Japanese renderer output', () => {
     campfire.renderForTest(sampleState());
+    openCooking();
 
     assert.ok(actionArea.querySelector('.campfire-ingredient-card'));
     assert.ok(actionArea.querySelector('.campfire-ingredient-icon'));
@@ -192,6 +274,7 @@ describe('campfire UI', () => {
 
   it('renders selected ingredients in the scene slot preview', () => {
     campfire.renderForTest(sampleState());
+    openCooking();
 
     actionArea.querySelector('.campfire-ingredient-card').click();
 
@@ -202,6 +285,7 @@ describe('campfire UI', () => {
 
   it('enables cook only after selecting 1 to 5 ingredients', () => {
     campfire.renderForTest(sampleState());
+    openCooking();
     assert.equal(actionArea.querySelector('.campfire-cook-btn').disabled, true);
     assert.equal(actionArea.querySelector('.campfire-skip-btn').disabled, false);
 
@@ -212,21 +296,21 @@ describe('campfire UI', () => {
 
   it('skip completes the campfire without cooking and clears the campfire scene', async () => {
     let skipCalled = false;
-    let updatedState = null;
+    let proceeded = false;
     sceneArea.innerHTML = '<canvas class="pixi-canvas"></canvas>';
     campfire.renderForTest(sampleState(), {
       apiSkipCampfire: async () => {
         skipCalled = true;
         return { state: { phase: 'room' } };
       },
-      updateGameState: state => { updatedState = state; },
-      updateUI: () => {},
+      completeCampfireAndProceed: async state => { proceeded = state.phase === 'room'; },
     });
 
+    openCooking();
     await actionArea.querySelector('.campfire-skip-btn').click();
 
     assert.equal(skipCalled, true);
-    assert.deepEqual(updatedState, { phase: 'room' });
+    assert.equal(proceeded, true);
     assert.equal(sceneArea.querySelector('.campfire-scene'), null);
     assert.ok(sceneArea.querySelector('.pixi-canvas'));
   });
@@ -239,6 +323,7 @@ describe('campfire UI', () => {
         return sampleState({ room: { cookedDish: { id: 'miso-soup', word: '味噌汁' } } });
       }
     });
+    openCooking();
 
     const cards = actionArea.querySelectorAll('.campfire-ingredient-card');
     cards[0].click();
@@ -253,6 +338,7 @@ describe('campfire UI', () => {
 
   it('renders recipe cards with English status and rendered recipe names', () => {
     campfire.renderForTest(sampleState());
+    openCooking();
 
     actionArea.querySelectorAll('.campfire-tab')[1].click();
 
@@ -271,6 +357,7 @@ describe('campfire UI', () => {
         return sampleState({ room: { cookedDish: { id: 'miso-soup', word: '味噌汁' } } });
       }
     });
+    openCooking();
 
     actionArea.querySelectorAll('.campfire-tab')[1].click();
     actionArea.querySelector('.campfire-recipe-card').click();

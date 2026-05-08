@@ -249,4 +249,30 @@ describe('playRoomTransition parallax state', () => {
       'showNpcSprite',
     ]);
   });
+
+  it('shows the campfire sprite after entering a campfire room', async () => {
+    scrollStates.length = 0;
+    startedSpeeds.length = 0;
+    roomTransitionEvents.length = 0;
+    fakeManager.currentScene = null;
+
+    await playRoomTransition({
+      run: {
+        currentRoom: 0,
+        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
+        rooms: [{ type: 'campfire' }],
+      },
+    }, {
+      waitFn: async (ms) => roomTransitionEvents.push(`wait:${ms}`),
+    });
+
+    assert.deepEqual(roomTransitionEvents, [
+      'setScrollState:scrolling',
+      'startParallax:3.8',
+      'wait:2700',
+      'startParallax:0.6',
+      'showNpcInDisplay',
+      'showNpcSprite',
+    ]);
+  });
 });

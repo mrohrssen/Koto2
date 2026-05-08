@@ -235,6 +235,10 @@ export function init(callbacks) {
     getGameState,
     updateGameState,
     updateUI,
+    completeCampfireAndProceed: async (completedState) => {
+      updateGameState(completedState);
+      await proceedToNextRoom();
+    },
   });
 }
 
@@ -605,6 +609,16 @@ export async function renderAreaSelection() {
 }
 
 /** Exploring phase — show Proceed or Fight button */
+async function proceedToNextRoom() {
+  const result = await apiProceed();
+  if (result?.state) {
+    updateGameState(result.state);
+    showProceedIngredientDrops(result, result.state);
+    await playRoomTransition(result.state);
+    updateUI();
+  }
+}
+
 export function renderExploring() {
   const gameState = getGameState();
   const room = gameState.run?.currentRoom;
@@ -621,15 +635,7 @@ export function renderExploring() {
   renderButtons([
     { label: '📦 インベントリ', onClick: showInventory },
     { label: '🐾 モンスター装備', onClick: () => actions.triggerEquipBots() },
-    { label: '➡️ 進む', onClick: async () => {
-      const result = await apiProceed();
-      if (result?.state) {
-        updateGameState(result.state);
-        showProceedIngredientDrops(result, result.state);
-        await playRoomTransition(result.state);
-        updateUI();
-      }
-    }, primary: true },
+    { label: '➡️ 進む', onClick: proceedToNextRoom, primary: true },
   ]);
 }
 

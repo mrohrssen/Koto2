@@ -9,7 +9,9 @@ import {
   COOKING_INGREDIENTS,
   COOKING_RECIPES,
 } from '../../game/services/cooking-service.js';
-import { entityToToken } from '../../game/token-format.js';
+import { entityToToken, getEligibleFrameTokens } from '../../game/token-format.js';
+import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
+import { getGameMasterYesFrame, getGameMasterNoFrame } from '../../game/dialogue-loader.js';
 
 const QUANTITY_LABELS = {
   1: { surface: '一つ', reading: 'ひとつ' },
@@ -148,12 +150,17 @@ function buildReceipt(drops) {
 function buildCampfireState(req) {
   const gm = req.gameManager;
   const discoveredIds = new Set(gm.meta?.cookingRecipesDiscovered || []);
+  const knownWords = getKnownWordsFromFsrs(req.user.id);
+  const knownSet = new Set(knownWords);
+  const dict = getWordDict();
   return {
     ingredients: gm.run.cooking.ingredients,
     ingredientCatalog: COOKING_INGREDIENTS,
     ingredientCount: getIngredientCount(gm.run.cooking.ingredients),
     discoveredRecipes: COOKING_RECIPES.filter(recipe => discoveredIds.has(recipe.id)),
     room: gm.getCurrentRoom()?.campfire || null,
+    yesTokens: getEligibleFrameTokens(getGameMasterYesFrame(), knownSet, { dict }),
+    noTokens: getEligibleFrameTokens(getGameMasterNoFrame(), knownSet, { dict }),
     state: req.getEnrichedGameState(),
   };
 }

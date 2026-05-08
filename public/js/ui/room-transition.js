@@ -16,6 +16,7 @@ import {
 } from '../pixi/parallax.js';
 
 const NPC_BATTLE_STRENGTH_PROMPT = "Let's see how strong you are!";
+const CAMPFIRE_SPRITE_PATH = `/assets/sprites/objects/campfire.webp?v=${SPRITE_VERSION}`;
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -97,6 +98,9 @@ export async function playRoomTransition(gameState, { waitFn = wait } = {}) {
   } else if (roomType === 'whackAMole') {
     showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`, { skipPixi: true });
     if (canShowNpc) await scene.showNpcSprite(`/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`, { slideIn: true });
+  } else if (roomType === 'campfire') {
+    showNpcInDisplay('Campfire', CAMPFIRE_SPRITE_PATH, { skipPixi: true });
+    if (canShowNpc) await scene.showNpcSprite(CAMPFIRE_SPRITE_PATH, { slideIn: true });
   } else if (roomType === 'dealer') {
     showDealer({ skipPixi: true });
     if (canShowNpc) await scene.showNpcSprite(`/assets/sprites/traveling_merchant.webp?v=${SPRITE_VERSION}`, { slideIn: true });
