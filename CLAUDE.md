@@ -246,6 +246,14 @@ Skills use `process.cwd()` for project paths and `$CLAUDE_PROJECT_DIR` for sub-s
 
 **All visual/CSS/animation/rendering changes MUST be verified with screenshots before reporting completion.** Never claim a visual fix works based on code reasoning alone — run the dev server, open Playwright, navigate to the affected screen, and take a screenshot proving the change is visible. If the fix involves combat animations, play through to combat. If it involves backgrounds, navigate to where the background renders. Evidence before assertions, always.
 
+## Brainstorm Visual Companion Links
+
+Before giving the user any `localhost` URL for a brainstorm/visual companion, verify it responds with HTTP 200. In Cursor, do not rely on the companion script's default detached background mode; it can exit when the owner process ends and produce connection-refused links. Run the companion as a managed foreground/background job (`block_until_ms: 0`) or otherwise keep the Node server alive, then confirm with:
+```bash
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:<port>
+```
+Only share the URL after the check returns `200`.
+
 ## PvE / PvP Parity
 
 **Never modify PvE combat in ways that disconnect it from PvP.** Both battle modes must share the same visual and mechanical systems. When adding or upgrading combat features (animations, effects, damage display, status indicators), the implementation should work for both PvE and PvP automatically. When that's not possible, both attack loops must be updated in the same PR. A feature that works in PvE but not PvP (or vice versa) is incomplete.

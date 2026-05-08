@@ -224,6 +224,53 @@ describe('renderHub fusion core review narration', () => {
     assert.equal(updateUiCalls, 1);
   });
 
+  it('re-polls the due count when returning to hub from knowledge review', async () => {
+    let gameState = {
+      phase: 'hub',
+      meta: {
+        pvpTeams: [],
+        tutorialStep: 6,
+        tutorialFusionDataUnlocked: [],
+        tutorialFusionCoreAwarded: false,
+        tutorialFusionComplete: false,
+        creatureCollection: [],
+      },
+    };
+    let dueCountCalls = 0;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: (nextState) => { gameState = nextState; },
+      updateUI: () => { void renderHub(); },
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      startNewRun: () => {},
+      apiGetVocabDueCount: async () => {
+        dueCountCalls += 1;
+        return { count: dueCountCalls === 1 ? 3 : 1 };
+      },
+      apiGetDueWords: async () => ({
+        words: [{ word: '火', reading: 'ひ', meanings: ['fire'] }],
+      }),
+    });
+
+    await renderHub();
+    const initialReviewButton = renderedButtons.find(button => button.label.includes('Knowledge Review'));
+    assert.ok(initialReviewButton, 'Knowledge Review button should render');
+    assert.equal(initialReviewButton.label, '📚 Knowledge Review (3)');
+
+    await initialReviewButton.onClick();
+    assert.equal(typeof speedReviewStartArgs?.options?.onExit, 'function');
+
+    await speedReviewStartArgs.options.onExit();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const refreshedReviewButton = renderedButtons.find(button => button.label.includes('Knowledge Review'));
+    assert.ok(refreshedReviewButton, 'Knowledge Review button should render after returning');
+    assert.equal(refreshedReviewButton.label, '📚 Knowledge Review (1)');
+    assert.equal(dueCountCalls, 2, 'hub should fetch due count again after review exit');
+  });
+
   it('forces Fusion Lab instead of Knowledge Review after the fusion core is awarded', async () => {
     let gameState = {
       phase: 'hub',

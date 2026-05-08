@@ -5,8 +5,9 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import {
   loadUsers, saveUsers, createUser, findUserByUsername,
-  findUserById, createInviteCode, useInviteCode, updateUserKeys
+  findUserById, createInviteCode, useInviteCode, updateUserKeys, migrateAiConsentForExistingUsers
 } from '../../../src/auth/users.js';
+import { decryptKeys, encryptKeys } from '../../../src/auth/crypto.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEST_FILE = join(__dirname, '../../../.jrpg-users-test.json');
@@ -73,5 +74,47 @@ describe('auth/users', () => {
     const updated = findUserById(user.id, TEST_FILE);
     assert.ok(updated.encryptedApiKeys);
     assert.notEqual(updated.encryptedApiKeys, 'test-key');
+  });
+
+  it('migrates users without aiDataSharingConsent in encrypted keys', async () => {
+    const encryptionKey = 'c'.repeat(64);
+    const user = await createUser('legacy', 'pass123', TEST_FILE);
+    updateUserKeys(user.id, { aiApiKey: 'legacy-key', aiProvider: 'openai' }, encryptionKey, TEST_FILE);
+
+    const result = migrateAiConsentForExistingUsers({ filePath: TEST_FILE, encryptionKey });
+    assert.equal(result.totalUsers, 1);
+    assert.equal(result.migratedUsers, 1);
+    assert.equal(result.skippedUsers, 0);
+
+    const migrated = findUserById(user.id, TEST_FILE);
+    const keys = decryptKeys(migrated.encryptedApiKeys, encryptionKey);
+    assert.equal(keys.aiApiKey, 'legacy-key');
+    assert.equal(keys.aiProvider, 'openai');
+    assert.equal(keys.aiDataSharingConsent, true);
+  });
+
+  it('migrates users with no encrypted keys and does not overwrite explicit consent', () => {
+    const encryptionKey = 'd'.repeat(64);
+    saveUsers({
+      users: [
+        { id: 'u_no_keys', username: 'nokeys', passwordHash: 'hash', encryptedApiKeys: null, createdAt: '2026-01-01T00:00:00.000Z' },
+        { id: 'u_false', username: 'explicitfalse', passwordHash: 'hash', encryptedApiKeys: encryptKeys({ aiDataSharingConsent: false }, encryptionKey), createdAt: '2026-01-02T00:00:00.000Z' }
+      ],
+      inviteCodes: []
+    }, TEST_FILE);
+
+    const result = migrateAiConsentForExistingUsers({ filePath: TEST_FILE, encryptionKey });
+    assert.equal(result.totalUsers, 2);
+    assert.equal(result.migratedUsers, 1);
+    assert.equal(result.skippedUsers, 0);
+
+    const data = loadUsers(TEST_FILE);
+    const noKeys = data.users.find(u => u.id === 'u_no_keys');
+    const noKeysPayload = decryptKeys(noKeys.encryptedApiKeys, encryptionKey);
+    assert.equal(noKeysPayload.aiDataSharingConsent, true);
+
+    const explicitFalse = data.users.find(u => u.id === 'u_false');
+    const explicitFalsePayload = decryptKeys(explicitFalse.encryptedApiKeys, encryptionKey);
+    assert.equal(explicitFalsePayload.aiDataSharingConsent, false);
   });
 });

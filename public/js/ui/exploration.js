@@ -494,26 +494,28 @@ export async function renderHub() {
         const shouldAwardFusionCore = hasHinonekoFusionData(getGameState())
           && !getGameState().meta?.tutorialFusionCoreAwarded;
         let fusionCoreAwardedThisReview = false;
-        speedReview.start(result.words, shouldAwardFusionCore ? {
+        const reviewOptions = {
           onExit: async () => {
-            if (fusionCoreAwardedThisReview) {
-              if (!fusionCoreNarrationShown) {
-                fusionCoreNarrationShown = true;
-                await showTutorialNarration(getFusionCoreNarration(), { showSprite: true });
-              }
-              updateUI();
+            if (fusionCoreAwardedThisReview && !fusionCoreNarrationShown) {
+              fusionCoreNarrationShown = true;
+              await showTutorialNarration(getFusionCoreNarration(), { showSprite: true });
             }
-          },
-          onComplete: async () => {
+            updateUI();
+          }
+        };
+        if (shouldAwardFusionCore) {
+          reviewOptions.onComplete = async () => {
             const reward = await apiClaimTutorialFusionCore?.();
             if (reward?.state) updateGameState(reward.state);
             fusionCoreAwardedThisReview = true;
             const anchor = document.getElementById('speed-review-empty') || document.body;
             showWordLevelUp(anchor, '', { message: reward?.message || 'Obtained 1x Fusion Core!' });
-          }
-        } : {});
+          };
+        }
+        speedReview.start(result.words, reviewOptions);
       } else {
         sceneModule.showNarration('No words to review', { autoDismiss: 2000 });
+        updateUI();
       }
     }},
     { label: '⚔️ Multiplayer Battle', onClick: () => {

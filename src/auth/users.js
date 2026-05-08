@@ -131,6 +131,52 @@ export function updateUserKeys(userId, keys, encryptionKey, filePath = DEFAULT_F
 }
 
 /**
+ * Backfill aiDataSharingConsent for existing users that predate the consent field.
+ * Preserves existing encrypted key payloads and only writes when consent is missing.
+ *
+ * @param {{ filePath?: string, encryptionKey?: string }} options
+ * @returns {{ totalUsers: number, migratedUsers: number, skippedUsers: number }}
+ */
+export function migrateAiConsentForExistingUsers({
+  filePath = DEFAULT_FILE,
+  encryptionKey = process.env.ENCRYPTION_KEY || 'a'.repeat(64)
+} = {}) {
+  const data = loadUsers(filePath);
+  const users = Array.isArray(data.users) ? data.users : [];
+  let migratedUsers = 0;
+  let skippedUsers = 0;
+
+  for (const user of users) {
+    let keys = {};
+
+    if (user?.encryptedApiKeys) {
+      try {
+        keys = decryptKeys(user.encryptedApiKeys, encryptionKey);
+      } catch {
+        skippedUsers += 1;
+        continue;
+      }
+    }
+
+    if (typeof keys.aiDataSharingConsent === 'boolean') continue;
+
+    keys.aiDataSharingConsent = true;
+    user.encryptedApiKeys = encryptKeys(keys, encryptionKey);
+    migratedUsers += 1;
+  }
+
+  if (migratedUsers > 0) {
+    saveUsers(data, filePath);
+  }
+
+  return {
+    totalUsers: users.length,
+    migratedUsers,
+    skippedUsers
+  };
+}
+
+/**
  * Record a review timestamp for a user and prune old entries (>7 days)
  * @param {string} userId
  * @param {string} filePath

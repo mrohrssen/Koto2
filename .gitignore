@@ -79,3 +79,4 @@ android/
 simulator/data/
 simulator/node_modules/
 .gstack/
+data/.creature-forge-gemini-key

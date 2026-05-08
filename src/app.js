@@ -4,6 +4,7 @@ import compression from 'compression';
 import createRoutes from './routes/index.js';
 import createAuthRoutes from './auth/routes.js';
 import { dataPath, setDataDirForTest } from './data-dir.js';
+import { migrateAiConsentForExistingUsers } from './auth/users.js';
 import { chat } from './ai-providers.js';
 import { DialogueTranslationCache } from './dialogue-translation/cache.js';
 import { buildDialogueTranslationConfig } from './dialogue-translation/service.js';
@@ -109,6 +110,14 @@ export function createApp({
 
   const app = express();
   app.locals.usersFile = usersFile || dataPath('.jrpg-users.json');
+
+  const consentMigration = migrateAiConsentForExistingUsers({
+    filePath: app.locals.usersFile,
+    encryptionKey: process.env.ENCRYPTION_KEY || 'a'.repeat(64)
+  });
+  if (consentMigration.migratedUsers > 0) {
+    console.log(`[Auth] Migrated AI consent for ${consentMigration.migratedUsers}/${consentMigration.totalUsers} users.`);
+  }
 
   // Standard middleware
   app.use(cors({
