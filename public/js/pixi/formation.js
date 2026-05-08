@@ -729,7 +729,6 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
   sprite.anchor.set(0.5);
   sprite.width = 170;
   sprite.height = 170;
-  sprite.scale.x *= -1; // Face left (same convention as enemy creatures)
   sprite.y = screenH * 0.5;
 
   scene.layers.npcs.addChild(sprite);

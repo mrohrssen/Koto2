@@ -1,5 +1,5 @@
 const BASE = '/assets/sprites/creatures';
-export const SPRITE_VERSION = '20260508-campfire-entry';
+export const SPRITE_VERSION = '20260508-campfire-entry-npc';
 
 const _noIdle = new Set();
 const _hasIdle = new Set();

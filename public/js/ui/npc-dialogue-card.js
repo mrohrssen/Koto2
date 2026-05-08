@@ -11,9 +11,48 @@ import { learnDialogue, translateDialogue } from '../api.js';
 import { crystalCostHtml } from './crystals.js';
 
 const DEFAULT_PORTRAIT = '/assets/dialogue/default-headshot.png?v=20260501-headshot';
+const HEADSHOT_VERSION = '20260508-npc-headshots';
+const HEADSHOT_BASE = '/assets/dialogue/headshots';
+const HEADSHOT_IDS = new Set([
+  'cid',
+  'game-master',
+  'kodomo',
+  'kyouju',
+  'onnanoko',
+  'otokonoko',
+  'otona',
+  'seito',
+  'senpai',
+  'sensei',
+  'shrine_fox',
+  'you-male',
+  'you-female',
+]);
+const SPEAKER_HEADSHOT_ALIASES = {
+  cid: 'cid',
+  'game-master': 'game-master',
+  gamemaster: 'game-master',
+  'shrine-fox': 'shrine_fox',
+  shrinefox: 'shrine_fox',
+  you: 'you-male',
+  player: 'you-male',
+};
 const MAX_TOKENS_PER_PAGE = 9;
 const MAX_TOKENS_PER_LINE = 4;
 const ATTACHABLE_PUNCT_RE = /^[\p{P}\p{S}]+$/u;
+
+function normalizeHeadshotKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, '-')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+}
+
+function headshotPath(id) {
+  return `${HEADSHOT_BASE}/${id}.webp?v=${HEADSHOT_VERSION}`;
+}
 
 function tokenBase(token) {
   return getTokenBaseForm(token);
@@ -352,7 +391,20 @@ function renderFallbackText({ html, text }) {
   return esc(text || '');
 }
 
-function resolvePortraitSrc() {
+export function resolvePortraitSrc(options = {}) {
+  const candidates = [
+    options.portraitId,
+    options.speakerId,
+    options.speakerEntity?.id,
+    options.speaker,
+  ];
+  for (const candidate of candidates) {
+    const normalized = normalizeHeadshotKey(candidate);
+    if (!normalized) continue;
+    const id = SPEAKER_HEADSHOT_ALIASES[normalized] || normalized.replace(/-/g, '_');
+    if (HEADSHOT_IDS.has(id)) return headshotPath(id);
+    if (HEADSHOT_IDS.has(normalized)) return headshotPath(normalized);
+  }
   return DEFAULT_PORTRAIT;
 }
 

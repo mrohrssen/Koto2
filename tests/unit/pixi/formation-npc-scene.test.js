@@ -177,8 +177,8 @@ describe('spawnNpcSprite scene contract', () => {
     assert.strictEqual(npcs.children.length, 1);
     // x positioned at 70% of screen width (400 * 0.7 = 280).
     assert.strictEqual(sprite.x, 280);
-    // scale.x flipped to face left.
-    assert.ok(sprite.scale.x < 0, 'sprite faces left (negative scale.x)');
+    // NPC sprites are authored facing the intended direction; do not mirror them.
+    assert.ok(sprite.scale.x > 0, 'sprite keeps authored orientation');
   });
 
   it('uses scene.tween for slide-in animation', async () => {
