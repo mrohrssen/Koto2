@@ -12,7 +12,7 @@ function makeMeta(overrides = {}) {
     creatureCollection: ['hi', 'neko'],
     creatureCounts: { hi: 1, neko: 1 },
     fusionCores: 1,
-    tutorialFusionDataUnlocked: ['hineko'],
+    tutorialFusionDataUnlocked: ['hinoneko'],
     bossesDefeated: ['ishino-kyojin'],
     ...overrides
   };
@@ -29,21 +29,21 @@ describe('fusion-service', () => {
     assert.equal(state.recipes[0].id, FUSION_RECIPES.fireCat.id);
     assert.equal(state.recipes[0].name, '火の猫');
     assert.deepEqual(state.recipes[0].ingredientIds, ['hi', 'neko']);
-    assert.equal(state.recipes[0].resultId, 'hineko');
+    assert.equal(state.recipes[0].resultId, 'hinoneko');
     assert.equal(state.recipes[0].cost.fusionCores, 1);
     assert.equal(state.recipes[0].canFuse, true);
     assert.deepEqual(state.recipes[0].missingIngredientIds, []);
     assert.equal(state.recipes[0].alreadyUnlocked, false);
   });
 
-  it('locks Fire Cat until Hineko fusion data is unlocked', () => {
+  it('locks Fire Cat until Hinoneko fusion data is unlocked', () => {
     const meta = makeMeta({ tutorialFusionDataUnlocked: [] });
 
     const state = getFusionState(meta);
 
     assert.equal(state.recipes[0].canFuse, false);
     assert.equal(state.recipes[0].dataUnlocked, false);
-    assert.equal(state.recipes[0].lockedReason, 'Hineko fusion data required');
+    assert.equal(state.recipes[0].lockedReason, 'Hinoneko fusion data required');
   });
 
   it('spends one fusion core, consumes ingredients, and adds a Fire Cat copy', () => {
@@ -52,22 +52,22 @@ describe('fusion-service', () => {
     const result = startFusion(meta, FUSION_RECIPES.fireCat.id);
 
     assert.equal(result.success, true);
-    assert.equal(result.recipe.resultId, 'hineko');
-    assert.equal(result.unlockedCreatureId, 'hineko');
+    assert.equal(result.recipe.resultId, 'hinoneko');
+    assert.equal(result.unlockedCreatureId, 'hinoneko');
     assert.equal(meta.fusionCores, 0);
-    assert.ok(meta.creatureCollection.includes('hineko'));
+    assert.ok(meta.creatureCollection.includes('hinoneko'));
     assert.equal(meta.creatureCounts.hi, 0);
     assert.equal(meta.creatureCounts.neko, 0);
-    assert.equal(meta.creatureCounts.hineko, 1);
+    assert.equal(meta.creatureCounts.hinoneko, 1);
   });
 
-  it('rejects fusion before Hineko fusion data is unlocked', () => {
+  it('rejects fusion before Hinoneko fusion data is unlocked', () => {
     const meta = makeMeta({ tutorialFusionDataUnlocked: [] });
 
     const result = startFusion(meta, FUSION_RECIPES.fireCat.id);
 
     assert.equal(result.success, false);
-    assert.equal(result.error, 'Hineko fusion data required');
+    assert.equal(result.error, 'Hinoneko fusion data required');
     assert.equal(meta.fusionCores, 1);
     assert.equal(meta.creatureCounts.hi, 1);
     assert.equal(meta.creatureCounts.neko, 1);
@@ -100,8 +100,8 @@ describe('fusion-service', () => {
 
   it('allows repeat fusion for an already-discovered result and consumes ingredients again', () => {
     const meta = makeMeta({
-      creatureCollection: ['hi', 'neko', 'hineko'],
-      creatureCounts: { hi: 2, neko: 1, hineko: 1 },
+      creatureCollection: ['hi', 'neko', 'hinoneko'],
+      creatureCounts: { hi: 2, neko: 1, hinoneko: 1 },
       fusionCores: 2
     });
 
@@ -111,7 +111,7 @@ describe('fusion-service', () => {
     assert.equal(meta.fusionCores, 1);
     assert.equal(meta.creatureCounts.hi, 1);
     assert.equal(meta.creatureCounts.neko, 0);
-    assert.equal(meta.creatureCounts.hineko, 2);
+    assert.equal(meta.creatureCounts.hinoneko, 2);
   });
 
   it('supports recipes that require multiple copies of the same ingredient', () => {

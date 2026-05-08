@@ -190,7 +190,7 @@ describe('fusion lab result copy', () => {
         catalog: [
           { id: 'hi', name: '火', nameEn: 'Fire', element: 'fire' },
           { id: 'neko', name: '猫', nameEn: 'Cat', element: 'wind' },
-          { id: 'hineko', name: '火の猫', nameEn: 'Fire Cat', element: 'fire' }
+          { id: 'hinoneko', name: '火の猫', nameEn: 'Fire Cat', element: 'fire' }
         ]
       }),
       apiGetFusionState: async () => ({
@@ -198,7 +198,7 @@ describe('fusion lab result copy', () => {
         recipes: [{
           id: 'fire-cat',
           nameEn: 'Fire Cat',
-          resultId: 'hineko',
+          resultId: 'hinoneko',
           canFuse: true,
           cost: { fusionCores: 1 },
           ingredientRequirements: [
@@ -210,11 +210,11 @@ describe('fusion lab result copy', () => {
       apiStartFusion: async () => ({
         success: true,
         fusionCores: 0,
-        state: { meta: { creatureCollection: ['hineko'] } },
+        state: { meta: { creatureCollection: ['hinoneko'] } },
         recipes: [{
           id: 'fire-cat',
           nameEn: 'Fire Cat',
-          resultId: 'hineko',
+          resultId: 'hinoneko',
           canFuse: false,
           cost: { fusionCores: 1 },
           resultOwned: 1,
@@ -227,7 +227,7 @@ describe('fusion lab result copy', () => {
       getGameState: () => ({
         meta: {
           creatureCollection: [],
-          tutorialFusionDataUnlocked: ['hineko'],
+          tutorialFusionDataUnlocked: ['hinoneko'],
           tutorialFusionCoreAwarded: false,
           tutorialFusionComplete: false
         }
@@ -237,7 +237,7 @@ describe('fusion lab result copy', () => {
     });
   });
 
-  it('shows Hineko obtained after the Fire Cat fusion succeeds', async () => {
+  it('shows Hinoneko obtained after the Fire Cat fusion succeeds', async () => {
     await show();
 
     const beforeScene = document.getElementById('scene-area').querySelector('.fusion-lab-scene');
@@ -249,7 +249,7 @@ describe('fusion lab result copy', () => {
     await startButton.events.click();
 
     const afterScene = document.getElementById('scene-area').querySelector('.fusion-lab-scene');
-    assert.match(afterScene.innerHTML, /Hineko obtained/);
+    assert.match(afterScene.innerHTML, /Hinoneko obtained/);
     assert.doesNotMatch(afterScene.innerHTML, /\+1 Copy|Fire Cat obtained/);
   });
 });

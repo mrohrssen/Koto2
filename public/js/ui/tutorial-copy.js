@@ -59,9 +59,9 @@ export function getFormationNarration(creatureCount) {
   ];
 }
 
-export function getPostHinekoReviewNarration(dueCount = 0) {
+export function getPostHinonekoReviewNarration(dueCount = 0) {
   return [
-    'Nice work beating Hineko!',
+    'Nice work beating Hinoneko!',
     ...getTutorialNarration(4, { dueCount })
   ];
 }
@@ -75,14 +75,14 @@ export function getFusionCoreNarration() {
 
 export function getFusionLabNarration() {
   return [
-    'Look! We unlocked the data for hineko. Select it',
+    'Look! We unlocked the data for hinoneko. Select it',
     'Now click Fuse'
   ];
 }
 
 export function getPostFusionNarration() {
   return [
-    'With hineko in your party, you should be strong enough for the next area!',
+    'With hinoneko in your party, you should be strong enough for the next area!',
     'Keep exploring, discovering new creatures, and getting stronger.'
   ];
 }

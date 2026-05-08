@@ -234,7 +234,7 @@ describe('playTutorialBossInterjection', () => {
       'Hey, this creature looks strong.',
       'Try using your strongest creature first.',
     ];
-    const enemies = [{ uid: 'boss', id: 'hineko', hp: 20, maxHp: 20 }];
+    const enemies = [{ uid: 'boss', id: 'hinoneko', hp: 20, maxHp: 20 }];
 
     await playTutorialBossInterjection(
       lines,

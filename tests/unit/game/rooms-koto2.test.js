@@ -50,11 +50,11 @@ describe('Koto2 area room generation', () => {
       assert.equal(rooms.length, 10);
     });
 
-    it('places npcBattle at room 6 and keeps Hineko as boss at room 10', () => {
+    it('places npcBattle at room 6 and keeps Hinoneko as boss at room 10', () => {
       const rooms = generateAreaRooms('hajimari-no-hiroba');
       assert.equal(rooms[5].type, 'npcBattle');
       assert.equal(rooms[9].type, 'boss');
-      assert.equal(rooms[9].boss.creatureId, 'hineko');
+      assert.equal(rooms[9].boss.creatureId, 'hinoneko');
     });
 
     it('fills remaining rooms with encounter, friendlyNpc, or whackAMole', () => {
@@ -86,7 +86,7 @@ describe('Koto2 area room generation', () => {
         'friendlyNpc',
         'boss'
       ]);
-      assert.equal(rooms[6].boss.creatureId, 'hineko');
+      assert.equal(rooms[6].boss.creatureId, 'hinoneko');
       assertFriendlyNpcOfferCategories(rooms);
     });
   });

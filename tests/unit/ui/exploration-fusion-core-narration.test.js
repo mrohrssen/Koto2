@@ -94,7 +94,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
   namedExports: {
     getTutorialNarration: step => step === 4 ? ['knowledge review line'] : [],
     getFormationNarration: () => '',
-    getPostHinekoReviewNarration: () => [],
+    getPostHinonekoReviewNarration: () => [],
     getFusionCoreNarration: () => ['fusion core line'],
     getPostFusionNarration: () => [],
   },
@@ -121,7 +121,7 @@ describe('renderHub fusion core review narration', () => {
       meta: {
         pvpTeams: [],
         tutorialStep: 6,
-        tutorialFusionDataUnlocked: ['hineko'],
+        tutorialFusionDataUnlocked: ['hinoneko'],
         tutorialFusionCoreAwarded: false,
         tutorialFusionComplete: false,
         creatureCollection: [],
@@ -178,7 +178,7 @@ describe('renderHub fusion core review narration', () => {
       meta: {
         pvpTeams: [],
         tutorialStep: 4,
-        tutorialFusionDataUnlocked: ['hineko'],
+        tutorialFusionDataUnlocked: ['hinoneko'],
         tutorialFusionCoreAwarded: false,
         tutorialFusionComplete: false,
         fusionCores: 0,
@@ -230,7 +230,7 @@ describe('renderHub fusion core review narration', () => {
       meta: {
         pvpTeams: [],
         tutorialStep: 4,
-        tutorialFusionDataUnlocked: ['hineko'],
+        tutorialFusionDataUnlocked: ['hinoneko'],
         tutorialFusionCoreAwarded: true,
         tutorialFusionComplete: false,
         fusionCores: 1,

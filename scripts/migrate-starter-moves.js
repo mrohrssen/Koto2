@@ -22,7 +22,7 @@ const L1_REASSIGN = {
   sakana: 'nomu',
   neko: 'okoru',
   inu: 'horu',
-  hineko: 'honoo',
+  hinoneko: 'honoo',
 };
 
 // 9 creatures: mid-level slot replacements (resolves duplicates created by the L1 reassignments).
@@ -36,7 +36,7 @@ const MID_REPLACE = {
   tori:   { level: 16, newMoveId: 'nemuru' },
   sakana: { level: 5,  newMoveId: 'kakureru' },
   neko:   { level: 5,  newMoveId: 'kakureru' },
-  hineko: { level: 10, newMoveId: 'kesu' },
+  hinoneko: { level: 10, newMoveId: 'kesu' },
 };
 
 // 2 moves: stat rebalances.

@@ -98,8 +98,8 @@ describe('Starting Meadow NPC battle', () => {
   });
 });
 
-describe('Starting Meadow Hineko boss override', () => {
-  it('forces Hineko to level 5 without boss double HP', (t) => {
+describe('Starting Meadow Hinoneko boss override', () => {
+  it('forces Hinoneko to level 5 without boss double HP', (t) => {
     const random = mock.method(Math, 'random', () => 0.5);
     t.after(() => random.mock.restore());
 
@@ -112,7 +112,7 @@ describe('Starting Meadow Hineko boss override', () => {
         totalEncounters: 7,
         rooms: [
           null, null, null, null, null, null,
-          { type: 'boss', boss: { creatureId: 'hineko' } }
+          { type: 'boss', boss: { creatureId: 'hinoneko' } }
         ],
         creatureParty: {
           active: [instantiateCreature('hi')],
@@ -128,11 +128,11 @@ describe('Starting Meadow Hineko boss override', () => {
     };
 
     const result = new CombatCycleService(gm).startCreatureEncounter();
-    const expectedHineko = generateEnemyCreature(5, ['hineko'], 1);
+    const expectedHinoneko = generateEnemyCreature(5, ['hinoneko'], 1);
 
-    assert.equal(result.enemy.id, 'hineko');
+    assert.equal(result.enemy.id, 'hinoneko');
     assert.equal(result.enemy.level, 5);
-    assert.equal(result.enemy.maxHp, expectedHineko.maxHp);
-    assert.equal(result.enemy.hp, expectedHineko.maxHp);
+    assert.equal(result.enemy.maxHp, expectedHinoneko.maxHp);
+    assert.equal(result.enemy.hp, expectedHinoneko.maxHp);
   });
 });
