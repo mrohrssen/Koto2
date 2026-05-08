@@ -153,7 +153,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
 export function entityToToken(entity) {
   const surface = entity.word || entity.name || entity.baseWord;
   const reading = entity.reading || entity.baseReading;
-  const meaning = entity.meaning || entity.nameEn || entity.baseMeaning;
+  const meaning = entity.nameEn || entity.meaning || entity.baseMeaning;
   return { surface, base: surface, reading, meaning, entity: true };
 }
 

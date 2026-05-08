@@ -22,6 +22,17 @@ describe('entityToToken', () => {
     });
   });
 
+  it('prefers game display name over dictionary meaning for entities', () => {
+    const move = {
+      name: '叩く',
+      reading: 'たたく',
+      nameEn: 'Strike',
+      meaning: 'to strike / to hit / to knock',
+    };
+    const token = entityToToken(move);
+    assert.strictEqual(token.meaning, 'Strike');
+  });
+
   it('maps creature fields (baseWord, baseReading, baseMeaning)', () => {
     const creature = { baseWord: '炎', baseReading: 'ほのお', baseMeaning: 'flame' };
     const token = entityToToken(creature);

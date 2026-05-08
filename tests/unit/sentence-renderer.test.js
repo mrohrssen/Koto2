@@ -151,6 +151,18 @@ describe('renderJpSentence — universal token format', () => {
 });
 
 describe('renderJpSentence — attack card entity tokens via entityToToken', () => {
+  it('renders the game display name when an entity also has a dictionary meaning', () => {
+    const token = entityToToken({
+      name: '叩く',
+      reading: 'たたく',
+      nameEn: 'Strike',
+      meaning: 'to strike / to hit / to knock',
+    });
+    const html = renderJpSentence([token], new Set(), new Map());
+    assert.ok(html.includes('Strike'), 'unknown entity should show the game display name');
+    assert.ok(!html.includes('to strike / to hit / to knock'), 'unknown entity should not show full dictionary meaning');
+  });
+
   it('renders unknown attack base word with English gloss', () => {
     const token = entityToToken({ name: '迷う', reading: 'まよう', meaning: 'get lost / hesitate' });
     const html = renderJpSentence([token], new Set(), new Map());

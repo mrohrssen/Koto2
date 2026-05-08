@@ -334,7 +334,7 @@ export function initMoveUI() {
         statsHtml += `<span class="mhp-stat">${TARGET_LABELS[move.target] || move.target}</span>`;
       }
 
-      const moveNameHtml = renderJpSentence([entityToToken({ name: move.name, reading: move.reading, nameEn: move.meaning })], getKnownWords(), new Map());
+      const moveNameHtml = renderJpSentence([entityToToken(move)], getKnownWords(), new Map());
       const descHtml = move.descriptionTagged
         ? renderEnFirst(move.descriptionTagged)
         : (move.description || '');
