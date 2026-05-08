@@ -970,7 +970,10 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
     await vfx.showMoveEffectsApplied(atk, targetSide, atkTargetIdx, result);
   }
 
-  await vfx.showPartySkillProcs(atk, enemyHpMap);
+  const partySkillKoIndices = await vfx.showPartySkillProcs(atk, enemyHpMap);
+  for (const index of partySkillKoIndices || []) {
+    killedEnemies.add(`idx:${index}`);
+  }
 
   if (attackCard) {
     await waitForCardTap(attackCard);

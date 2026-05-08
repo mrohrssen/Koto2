@@ -460,7 +460,8 @@ export async function showAttackPartySkillProcs(atk, {
   resolveEnemies,
   enemyHpMap
 }) {
-  if (!atk.partySkillProcs?.length) return;
+  const koTargetIndices = [];
+  if (!atk.partySkillProcs?.length) return koTargetIndices;
 
   for (const proc of atk.partySkillProcs) {
     let detail = '';
@@ -492,11 +493,13 @@ export async function showAttackPartySkillProcs(atk, {
       const chainFrom = spritePos('enemy', proc.sourceIndex ?? atk.targetIndex);
       const chainTo = spritePos('enemy', proc.targetIndex);
       const chainElement = proc.element || element;
+      let chainKilledIndex = null;
       await fireElementBlast(chainFrom, chainTo, chainElement, () => {
         pixiDamageNumber(proc.damage, chainTo, { tier: 1 });
         screenShake('light');
         // Update enemy HP bar for chain damage (Arc Strike, Forked Arc)
         if (enemyHpMap && typeof proc.targetIndex === 'number' && enemyHpMap[proc.targetIndex]) {
+          const wasAlive = enemyHpMap[proc.targetIndex].hp > 0;
           enemyHpMap[proc.targetIndex].hp = Math.max(0, enemyHpMap[proc.targetIndex].hp - proc.damage);
           const entry = enemyHpMap[proc.targetIndex];
           if (Object.keys(enemyHpMap).length > 1) {
@@ -504,8 +507,15 @@ export async function showAttackPartySkillProcs(atk, {
           } else {
             ctx.characterUI.updateEnemyHPBar({ current: entry.hp, max: entry.maxHp });
           }
+          if (wasAlive && entry.hp <= 0) {
+            chainKilledIndex = entry.index;
+          }
         }
       });
+      if (chainKilledIndex !== null) {
+        await animateKOForScene(getSceneManager().currentScene, 'enemy', chainKilledIndex);
+        koTargetIndices.push(chainKilledIndex);
+      }
     } else if (proc.type === 'stageChange') {
       const dir = proc.delta > 0 ? `+${proc.delta}` : `${proc.delta}`;
       const text = `${SC_NAMES[proc.stat] || proc.stat} ${dir}`;
@@ -537,6 +547,8 @@ export async function showAttackPartySkillProcs(atk, {
 
     await effectDelay(600);
   }
+
+  return koTargetIndices;
 }
 
 /**
@@ -551,7 +563,7 @@ export async function showPartySkillProcs(atk, enemyHpMap) {
   const safeAttackerIndex = Math.max(0, attackerIndex);
   const targetIndex = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
 
-  await showAttackPartySkillProcs(atk, {
+  return await showAttackPartySkillProcs(atk, {
     sourceSide: 'player',
     attackerIndex: safeAttackerIndex,
     targetSide: 'enemy',
@@ -687,9 +699,14 @@ export function buildEnemyHpMapForPlayerAttacks(result) {
   const attacks = result.playerAttacks || [];
   enemies.forEach((enemy, i) => {
     if (!enemy) return;
-    const dmgToThisEnemy = attacks
+    const primaryDmgToThisEnemy = attacks
       .filter(a => (typeof a.targetIndex === 'number' ? a.targetIndex === i : a.targetId === enemy.id))
       .reduce((sum, a) => sum + (a.damage || 0), 0);
+    const partySkillDmgToThisEnemy = attacks
+      .flatMap(a => a.partySkillProcs || [])
+      .filter(proc => ['chainHit', 'burst'].includes(proc.type) && proc.targetIndex === i)
+      .reduce((sum, proc) => sum + (proc.damage || 0), 0);
+    const dmgToThisEnemy = primaryDmgToThisEnemy + partySkillDmgToThisEnemy;
     map[i] = {
       hp: Math.min(enemy.hp + dmgToThisEnemy, enemy.maxHp),
       maxHp: enemy.maxHp,

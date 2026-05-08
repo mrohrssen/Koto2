@@ -2,6 +2,7 @@ import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 const popupDebuffMessages = [];
+const koAnimations = [];
 const sceneManagerState = { currentScene: null, transitioning: false };
 
 // Mock pixi and audio modules that combat-vfx imports
@@ -16,7 +17,12 @@ await mock.module('../../../public/js/pixi/effects.js', {
   }
 });
 await mock.module('../../../public/js/pixi/element-blasts.js', {
-  namedExports: { fireElementBlast: () => Promise.resolve() }
+  namedExports: {
+    fireElementBlast: (_from, _to, _element, onImpact) => {
+      if (onImpact) onImpact();
+      return Promise.resolve();
+    }
+  }
 });
 await mock.module('../../../public/js/pixi/text.js', {
   namedExports: {
@@ -33,7 +39,10 @@ await mock.module('../../../public/js/pixi/status-vfx.js', {
 await mock.module('../../../public/js/pixi/formation.js', {
   namedExports: {
     getCreatureSpriteForScene: () => null,
-    animateKOForScene: () => {},
+    animateKOForScene: (_scene, side, index) => {
+      koAnimations.push({ side, index });
+      return Promise.resolve();
+    },
     syncPixiStatusLabelsForScene: () => {},
   }
 });
@@ -76,6 +85,7 @@ const {
   buildAllyHpMap,
   buildEnemyHpMapForPlayerAttacks,
   buildMergedInitiativeAttacks,
+  showAttackPartySkillProcs,
   showEffectEvents,
   showKoSwapAnimations,
 } = await import('../../../public/js/ui/combat-vfx.js');
@@ -186,6 +196,28 @@ describe('combat-vfx data builders', () => {
       assert.equal(map[0].hp, 70);
       assert.equal(map[1].hp, 80);
     });
+
+    it('reconstructs HP for Arc Strike chain-hit targets', () => {
+      const result = {
+        enemies: [
+          { id: 'e1', hp: 50, maxHp: 100 },
+          { id: 'e2', hp: 0, maxHp: 80 },
+        ],
+        playerAttacks: [{
+          targetIndex: 0,
+          damage: 20,
+          partySkillProcs: [{
+            skillId: 'arcStrike',
+            type: 'chainHit',
+            targetIndex: 1,
+            damage: 8,
+          }],
+        }],
+      };
+      const map = buildEnemyHpMapForPlayerAttacks(result);
+      assert.equal(map[0].hp, 70);
+      assert.equal(map[1].hp, 8);
+    });
   });
 
   describe('buildMergedInitiativeAttacks', () => {
@@ -213,6 +245,53 @@ describe('combat-vfx data builders', () => {
     it('returns empty array when no attacks', () => {
       const merged = buildMergedInitiativeAttacks({});
       assert.deepEqual(merged, []);
+    });
+  });
+
+  describe('showAttackPartySkillProcs', () => {
+    it('animates KO for an Arc Strike chain kill', async () => {
+      koAnimations.length = 0;
+      const hpUpdates = [];
+
+      init({
+        delay: async () => {},
+        characterUI: {
+          updateEnemyHPAtIndex: (...args) => hpUpdates.push(args),
+          updateEnemyHPBar: (...args) => hpUpdates.push(args),
+        },
+        getGameState: () => ({}),
+      });
+
+      await showAttackPartySkillProcs({
+        targetIndex: 0,
+        partySkillProcs: [{
+          skillId: 'arcStrike',
+          skillName: 'Arc Strike',
+          type: 'chainHit',
+          sourceIndex: 0,
+          targetIndex: 1,
+          damage: 8,
+          element: 'fire',
+        }],
+      }, {
+        sourceSide: 'player',
+        attackerIndex: 0,
+        targetSide: 'enemy',
+        targetIndex: 0,
+        element: 'fire',
+        resolveAllies: () => [],
+        resolveEnemies: () => [],
+        enemyHpMap: {
+          0: { hp: 12, maxHp: 20, index: 0 },
+          1: { hp: 8, maxHp: 20, index: 1 },
+        },
+      });
+
+      assert.deepEqual(hpUpdates, [[1, 0, 20]]);
+      assert.ok(
+        koAnimations.some(call => call.side === 'enemy' && call.index === 1),
+        'chain-killed enemy should receive a KO animation'
+      );
     });
   });
 
