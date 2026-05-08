@@ -75,6 +75,28 @@ describe('cooking routes', () => {
     assert.equal(res.body.noTokens.tokens[0].surface, 'いいえ');
   });
 
+  it('campfire state includes anonymous cookable recipe hints', async () => {
+    loadDialoguePools(`${process.cwd()}/data`);
+    const app = createApp({ authBypass: true });
+    const gm = setupRun(createRoom(ROOM_TYPES.campfire, 'test-area', 1, 1));
+    gm.run.cooking.ingredients = { mizu: 1, miso: 1, toufu: 1 };
+
+    const res = await request(app)
+      .get('/api/game/campfire')
+      .expect(200);
+
+    const misoSoup = res.body.cookableRecipeHints.find(recipe => recipe.id === 'miso-soup');
+    const tofuMisoSoup = res.body.cookableRecipeHints.find(recipe => recipe.id === 'tofu-miso-soup');
+
+    assert.ok(misoSoup);
+    assert.ok(tofuMisoSoup);
+    assert.deepEqual(misoSoup.ingredients, [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }]);
+    assert.equal(misoSoup.totalQuantity, 2);
+    assert.equal(misoSoup.word, undefined);
+    assert.equal(misoSoup.nameEn, undefined);
+    assert.equal(misoSoup.effectDescription, undefined);
+  });
+
   it('campfire cook consumes ingredients and stores cooked dish', async () => {
     const app = createApp({ authBypass: true });
     const gm = setupRun(createRoom(ROOM_TYPES.campfire, 'test-area', 1, 1));
