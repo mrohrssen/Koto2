@@ -6163,9 +6163,9 @@ button.hud-chip {
 
 .npc-dialogue-portrait {
   position: absolute;
-  left: 10px;
+  left: 6px;
   bottom: 8px;
-  width: 112px;
+  width: 120px;
   height: min(171px, calc(100% - 36px));
   overflow: hidden;
   border-radius: 10px;
@@ -6180,7 +6180,7 @@ button.hud-chip {
 }
 
 .npc-dialogue-portrait img {
-  width: 130%;
+  width: 108%;
   height: 100%;
   object-fit: contain;
   object-position: center bottom;
