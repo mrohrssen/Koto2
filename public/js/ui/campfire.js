@@ -382,7 +382,13 @@ async function cookSelected() {
   render();
 }
 
+function clearActionArea() {
+  const actionArea = document.getElementById('action-area');
+  if (actionArea) actionArea.innerHTML = '';
+}
+
 async function completeCampfire(action) {
+  clearActionArea();
   const result = await action?.();
   if (result?.state) {
     cleanup();

@@ -270,6 +270,23 @@ describe('campfire UI', () => {
     assert.equal(proceeded, true);
   });
 
+  it('clears the entry prompt immediately when choosing no', async () => {
+    let resolveSkip;
+    const skipPromise = new Promise(resolve => { resolveSkip = resolve; });
+    campfire.renderForTest(sampleState(), {
+      apiSkipCampfire: () => skipPromise,
+      completeCampfireAndProceed: async () => {},
+    });
+
+    actionArea.querySelectorAll('.ui-btn')[1].click();
+
+    assert.equal(actionArea.querySelectorAll('.ui-btn').length, 0);
+    assert.doesNotMatch(renderedHtml(actionArea), /Would you like to cook\?/);
+
+    resolveSkip({ state: { phase: 'room' }, skipped: true });
+    await skipPromise;
+  });
+
   it('renders ingredient and recipe tabs', () => {
     campfire.renderForTest(sampleState());
     openCooking();
