@@ -10,15 +10,23 @@ import { resetDataDirForTest } from '../../../src/data-dir.js';
 
 describe('crystal game routes', { concurrency: false }, () => {
   let dataDir;
+  let originalNodeEnv;
 
   beforeEach(() => {
     dataDir = mkdtempSync(join(tmpdir(), 'koto-crystal-routes-'));
     clearManagersForTest();
+    originalNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'test';
     process.env.CRYSTAL_TEST_NOW = '2026-05-06T01:00:00.000Z';
   });
 
   afterEach(() => {
     delete process.env.CRYSTAL_TEST_NOW;
+    if (originalNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
     clearManagersForTest();
     resetDataDirForTest();
     rmSync(dataDir, { recursive: true, force: true });

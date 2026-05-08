@@ -16,9 +16,15 @@ describe('fusion lab flow', () => {
 
   afterEach(() => cleanup());
 
-  it('adds a fusion core for testing and exposes fusion status', async () => {
-    const addRes = await client.post('/api/game/fusion/debug-add-core', {});
-    assert.equal(addRes.status, 200, `debug-add-core failed: ${JSON.stringify(addRes.body)}`);
+  it('awards a tutorial fusion core and exposes fusion status', async () => {
+    await client.post('/api/game/debug-mode', { enabled: true });
+    await client.post('/api/game/debug-set-collection', {
+      creatureIds: [],
+      tutorialFusionDataUnlocked: ['hineko']
+    });
+
+    const addRes = await client.post('/api/game/tutorial-fusion-core', {});
+    assert.equal(addRes.status, 200, `tutorial-fusion-core failed: ${JSON.stringify(addRes.body)}`);
     assert.equal(addRes.body.fusionCores, 1);
     assert.equal(addRes.body.state.meta.fusionCores, 1);
 
@@ -36,7 +42,7 @@ describe('fusion lab flow', () => {
       tutorialFusionDataUnlocked: ['hineko']
     });
     assert.equal(collectionRes.status, 200, `debug-set-collection failed: ${JSON.stringify(collectionRes.body)}`);
-    await client.post('/api/game/fusion/debug-add-core', {});
+    await client.post('/api/game/tutorial-fusion-core', {});
 
     const fuseRes = await client.post('/api/game/fusion/start', { recipeId: 'fire-cat' });
 
@@ -56,8 +62,11 @@ describe('fusion lab flow', () => {
 
   it('rejects starting fusion during a run', async () => {
     await client.post('/api/game/debug-mode', { enabled: true });
-    await client.post('/api/game/debug-set-collection', { creatureIds: ['hi', 'neko'] });
-    await client.post('/api/game/fusion/debug-add-core', {});
+    await client.post('/api/game/debug-set-collection', {
+      creatureIds: ['hi', 'neko'],
+      tutorialFusionDataUnlocked: ['hineko']
+    });
+    await client.post('/api/game/tutorial-fusion-core', {});
     await client.claimDailyCrystals();
     await client.post('/api/game/start-run', {});
 

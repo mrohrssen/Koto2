@@ -1,12 +1,34 @@
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 // Set test secret before importing
 process.env.JWT_SECRET = 'test-secret-key-for-unit-tests-only';
 
 import { signToken, verifyToken, requireAuth } from '../../../src/auth/middleware.js';
+import { saveUsers } from '../../../src/auth/users.js';
 
 describe('auth/middleware', () => {
+  let dataDir;
+  let usersFile;
+
+  beforeEach(() => {
+    dataDir = mkdtempSync(join(tmpdir(), 'koto-auth-middleware-'));
+    usersFile = join(dataDir, '.jrpg-users.json');
+    saveUsers({
+      users: [{ id: 'u_123', username: 'takeshi' }],
+      inviteCodes: [],
+    }, usersFile);
+  });
+
+  afterEach(() => {
+    if (dataDir) rmSync(dataDir, { recursive: true, force: true });
+    dataDir = null;
+    usersFile = null;
+  });
+
   describe('signToken / verifyToken', () => {
     it('creates and verifies a valid token', () => {
       const token = signToken({ id: 'u_123', username: 'takeshi' });
@@ -33,7 +55,10 @@ describe('auth/middleware', () => {
   describe('requireAuth middleware', () => {
     it('attaches user to req on valid token', () => {
       const token = signToken({ id: 'u_123', username: 'takeshi' });
-      const req = { headers: { authorization: `Bearer ${token}` } };
+      const req = {
+        headers: { authorization: `Bearer ${token}` },
+        app: { locals: { usersFile } },
+      };
       const res = { status: () => res, json: () => {} };
       let nextCalled = false;
       const next = () => { nextCalled = true; };

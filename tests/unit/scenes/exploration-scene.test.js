@@ -235,6 +235,42 @@ describe('ExplorationScene.syncCreatures', () => {
     scene.exit();
   });
 
+  it('playRoomTravel keeps player sprites anchored while enabling walking wobble', async () => {
+    const app = makeFakeApp();
+    const scene = new ExplorationScene(app);
+    await scene.enter({ roomId: 'room-1', allies: [{ uid: 'c1', id: 'a' }] });
+    const sprite = scene.formation.creatureSprites.player.get('c1');
+    const initialX = sprite.x;
+    const rafCallbacks = [];
+    const originalRaf = globalThis.requestAnimationFrame;
+    const now = { value: 1000 };
+    const nowMock = mock.method(globalThis.performance, 'now', () => now.value);
+    globalThis.requestAnimationFrame = (fn) => {
+      rafCallbacks.push(fn);
+      return rafCallbacks.length;
+    };
+
+    try {
+      await scene.playRoomTravel({
+        durationMs: 100,
+        waitFn: async () => {
+          now.value = 1050;
+          rafCallbacks.shift()?.();
+          assert.equal(scene.formation.walkingEnabled, true);
+          assert.equal(sprite.x, initialX, 'travel wobble must not move sprites away from DOM HP/MP bars');
+        },
+      });
+    } finally {
+      nowMock.mock.restore();
+      if (originalRaf === undefined) {
+        delete globalThis.requestAnimationFrame;
+      } else {
+        globalThis.requestAnimationFrame = originalRaf;
+      }
+      scene.exit();
+    }
+  });
+
   it('discoveryState is scene-owned (fresh scene = fresh state)', async () => {
     const app = makeFakeApp();
     const scene = new ExplorationScene(app);

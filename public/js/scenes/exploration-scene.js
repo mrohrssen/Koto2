@@ -90,23 +90,13 @@ export class ExplorationScene extends Scene {
 
   async playRoomTravel({ durationMs, waitFn }) {
     this._guard('playRoomTravel');
-    const travelDistance = 48;
     const token = Symbol('roomTravel');
     this._roomTravelToken = token;
-    const start = performance.now();
+    // The room transition should read as movement through background parallax
+    // and walking wobble only. Keep sprites anchored to their DOM HP/MP bars.
+    setFormationTravelOffset(this.formation, 0);
     this.formation.walkingEnabled = true;
 
-    const animate = () => {
-      if (this.disposed || this._exiting) return;
-      if (this._roomTravelToken !== token) return;
-      const elapsed = performance.now() - start;
-      const progress = Math.min(1, elapsed / durationMs);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setFormationTravelOffset(this.formation, travelDistance * eased);
-      if (progress < 1) requestAnimationFrame(animate);
-    };
-
-    requestAnimationFrame(animate);
     await waitFn(durationMs);
     if (!this.disposed && !this._exiting && this._roomTravelToken === token) {
       this._roomTravelToken = null;
