@@ -31,7 +31,6 @@ import { getDamageTier, TIER_EFFECTS, TIER_RECOIL } from '../pixi/combat-effects
 import { wait } from '../pixi/tween.js';
 import { hapticDamageTier } from '../native/index.js';
 import { playAttackSound } from './combat-audio.js';
-import { creatureStaticPath } from './sprite-utils.js';
 import { t, tPlain } from './i18n.js';
 import { getHpColor, SC_NAMES, getCreatureStatusKeys } from './combat-ui-utils.js';
 import {
@@ -814,6 +813,27 @@ export async function showNpcSkillAttacksAnimated(result, allyHpMap) {
 /**
  * Show KO swap messages with death/swap-in animations.
  */
+async function syncPlayerFormationFromKoResult(result) {
+  if (!result.creatureParty?.active) return;
+
+  await showFormation('player', result.creatureParty.active, { force: true });
+  const mgr = getSceneManager();
+  const scene = mgr.currentScene;
+  if (!mgr.transitioning && scene && !scene.disposed && !scene._exiting && typeof scene.syncCreatures === 'function') {
+    const currentEnemies = result.enemies ?? scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
+    try {
+      await scene.syncCreatures({
+        allies: result.creatureParty.active,
+        enemies: currentEnemies,
+      });
+    } catch (err) {
+      // Scene disposed mid-sync: destination scene's onEnter will handle
+      // the next sync with the post-KO roster.
+      if (!(err instanceof SceneDisposedError)) throw err;
+    }
+  }
+}
+
 export async function showKoSwapAnimations(result) {
   if (!result.koSwaps?.length && !result.koRemovals?.length) return;
 
@@ -835,29 +855,14 @@ export async function showKoSwapAnimations(result) {
       actionArea.innerHTML = `<div class="combat-defend-indicator" style="color: #4fc3f7;">${t('swapsIn', swap.replacement)}</div>`;
     }
 
-    // Update sprite and HP for the new creature with swap-in animation
+    // Rebuild the DOM name/HP bars and sync the Pixi sprite roster for the
+    // replacement. The current formation DOM only has Pixi anchors, not <img>s.
     if (result.creatureParty?.active && koIndex >= 0) {
+      await syncPlayerFormationFromKoResult(result);
       const slots = document.querySelectorAll('#player-formation .formation-slot');
       const swapSlot = slots[koIndex];
       if (swapSlot) {
-        swapSlot.classList.remove('creature-dying');
         swapSlot.classList.add('creature-swapping-in');
-        const newCreature = result.creatureParty.active[koIndex];
-        if (newCreature) {
-          const icon = swapSlot.querySelector('.formation-sprite img');
-          if (icon) {
-            icon.src = creatureStaticPath(newCreature.id);
-            icon.alt = newCreature.baseWord || newCreature.name || '';
-          }
-          const hpFill = swapSlot.querySelector('.formation-hp-fill');
-          if (hpFill) {
-            const pct = Math.max(0, (newCreature.hp / newCreature.maxHp) * 100);
-            hpFill.style.width = `${pct}%`;
-            hpFill.style.backgroundColor = getHpColor(pct);
-          }
-          const koIcon = swapSlot.querySelector('.formation-sprite');
-          if (koIcon) koIcon.classList.remove('ko');
-        }
         setTimeout(() => swapSlot.classList.remove('creature-swapping-in'), 500);
       }
     }
@@ -889,23 +894,6 @@ export async function showKoSwapAnimations(result) {
     // on stage, and the surviving creature's sprite stays at its old slot so its
     // HP-bar label in the freshly-rebuilt DOM no longer lines up. Syncing the
     // scene prunes the dead sprite by uid and repositions the survivor.
-    if (result.creatureParty?.active) {
-      await showFormation('player', result.creatureParty.active, { force: true });
-      const mgr = getSceneManager();
-      const scene = mgr.currentScene;
-      if (!mgr.transitioning && scene && !scene.disposed && !scene._exiting && typeof scene.syncCreatures === 'function') {
-        const currentEnemies = result.enemies ?? scene.formation?.lastFormationInput?.enemy?.creatures ?? [];
-        try {
-          await scene.syncCreatures({
-            allies: result.creatureParty.active,
-            enemies: currentEnemies,
-          });
-        } catch (err) {
-          // Scene disposed mid-sync: destination scene's onEnter will handle
-          // the next sync with the post-KO roster.
-          if (!(err instanceof SceneDisposedError)) throw err;
-        }
-      }
-    }
+    await syncPlayerFormationFromKoResult(result);
   }
 }
