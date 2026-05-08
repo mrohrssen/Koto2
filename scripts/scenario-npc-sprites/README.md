@@ -83,6 +83,47 @@ Two viable approaches:
 After saving, set `job.results.savedAt = <ISO timestamp>` and rewrite the
 manifest.
 
+## Local review picker
+
+After generated assets are downloaded to the `job.outputs` paths, launch the
+local picker:
+
+```bash
+node scripts/scenario-npc-sprites/picker-server.mjs
+```
+
+Open `http://127.0.0.1:8766`, select one favorite per NPC, then submit. The
+picker writes `tmp/npc-sprites-scenario/selected-npc-sprites.json`.
+
+## Processing selected sprites
+
+After the selected full-body sprites have been run through Scenario background
+removal and downloaded as transparent PNGs named `<id>.png`, write game-ready
+sprites with:
+
+```bash
+node scripts/scenario-npc-sprites/process-selected-sprites.mjs \
+  --input tmp/npc-sprites-scenario/bg-removed
+```
+
+This trims transparent whitespace, fits each sprite into a transparent
+`256x256` canvas, and writes `.webp` files into `public/assets/sprites/npcs/`
+plus `public/assets/sprites/shrine_fox.webp`.
+
+## Processing dialogue headshots
+
+After headshots have been generated, background-removed, and downloaded as
+transparent PNGs named `<id>.png`, write game-ready dialogue headshots with:
+
+```bash
+node scripts/scenario-npc-sprites/process-headshots.mjs \
+  --input tmp/npc-sprites-scenario/headshots/raw-bg-removed
+```
+
+This trims transparent whitespace, fits each headshot into a transparent
+`256x256` canvas, and writes `.webp` files to
+`public/assets/dialogue/headshots/`.
+
 ## Notes
 
 - Prompts are self-contained visual descriptions: hair, outfit, pose, colors,
