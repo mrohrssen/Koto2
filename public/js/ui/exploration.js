@@ -20,7 +20,7 @@ import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import {
   getTutorialNarration,
   getFormationNarration,
-  getPostHinekoReviewNarration,
+  getPostHinonekoReviewNarration,
   getFusionCoreNarration,
   getPostFusionNarration
 } from './tutorial-copy.js';
@@ -159,7 +159,7 @@ let apiSkipCampfire = null;
 
 // Track whether CID's item-shop tutorial has already been shown this session
 let cidItemShopTutorialShown = false;
-let postHinekoReviewNarrationShown = false;
+let postHinonekoReviewNarrationShown = false;
 let fusionCoreNarrationShown = false;
 let postFusionNarrationShown = false;
 
@@ -235,31 +235,35 @@ export function init(callbacks) {
     getGameState,
     updateGameState,
     updateUI,
+    completeCampfireAndProceed: async (completedState) => {
+      updateGameState(completedState);
+      await proceedToNextRoom();
+    },
   });
 }
 
-function hasHinekoFusionData(state = getGameState()) {
-  return !!state?.meta?.tutorialFusionDataUnlocked?.includes('hineko');
+function hasHinonekoFusionData(state = getGameState()) {
+  return !!state?.meta?.tutorialFusionDataUnlocked?.includes('hinoneko');
 }
 
-function needsPostHinekoReview(state, dueCount) {
-  return hasHinekoFusionData(state)
+function needsPostHinonekoReview(state, dueCount) {
+  return hasHinonekoFusionData(state)
     && !state?.meta?.tutorialFusionCoreAwarded
     && dueCount > 0;
 }
 
 function needsFusionLabTutorial(state) {
   const collection = state?.meta?.creatureCollection || [];
-  return hasHinekoFusionData(state)
+  return hasHinonekoFusionData(state)
     && state?.meta?.tutorialFusionCoreAwarded
     && !state?.meta?.tutorialFusionComplete
-    && !collection.includes('hineko');
+    && !collection.includes('hinoneko');
 }
 
 function needsPostFusionMessage(state) {
   const collection = state?.meta?.creatureCollection || [];
   return state?.meta?.tutorialFusionComplete
-    && collection.includes('hineko')
+    && collection.includes('hinoneko')
     && !postFusionNarrationShown;
 }
 
@@ -476,7 +480,7 @@ export async function renderHub() {
   const hasPvpTeams = pvpTeams.some(t => t !== null);
 
   const dueCount = apiGetVocabDueCount ? (await apiGetVocabDueCount().catch(() => ({ count: 0 }))).count : 0;
-  const fusionLabDisabled = !hasHinekoFusionData(gameState);
+  const fusionLabDisabled = !hasHinonekoFusionData(gameState);
   const guideFusionLab = needsFusionLabTutorial(gameState);
 
   renderButtons([
@@ -487,7 +491,7 @@ export async function renderHub() {
       }
       const result = await apiGetDueWords();
       if (result?.words?.length > 0) {
-        const shouldAwardFusionCore = hasHinekoFusionData(getGameState())
+        const shouldAwardFusionCore = hasHinonekoFusionData(getGameState())
           && !getGameState().meta?.tutorialFusionCoreAwarded;
         let fusionCoreAwardedThisReview = false;
         speedReview.start(result.words, shouldAwardFusionCore ? {
@@ -539,11 +543,11 @@ export async function renderHub() {
   } else {
     // Tutorial step 4: introduce speed review (condition-gated on dueCount > 0)
     if (tutorialStep === 4 && dueCount > 0) {
-      const pages = needsPostHinekoReview(gameState, dueCount)
-        ? getPostHinekoReviewNarration(dueCount)
+      const pages = needsPostHinonekoReview(gameState, dueCount)
+        ? getPostHinonekoReviewNarration(dueCount)
         : getTutorialNarration(4, { dueCount });
-      if (!needsPostHinekoReview(gameState, dueCount) || !postHinekoReviewNarrationShown) {
-        postHinekoReviewNarrationShown = true;
+      if (!needsPostHinonekoReview(gameState, dueCount) || !postHinonekoReviewNarrationShown) {
+        postHinonekoReviewNarrationShown = true;
         await showTutorialNarration(pages, { showSprite: true });
       }
       highlightActionButton(text => text.includes('Knowledge Review'));
@@ -605,6 +609,16 @@ export async function renderAreaSelection() {
 }
 
 /** Exploring phase — show Proceed or Fight button */
+async function proceedToNextRoom() {
+  const result = await apiProceed();
+  if (result?.state) {
+    updateGameState(result.state);
+    showProceedIngredientDrops(result, result.state);
+    await playRoomTransition(result.state);
+    updateUI();
+  }
+}
+
 export function renderExploring() {
   const gameState = getGameState();
   const room = gameState.run?.currentRoom;
@@ -621,15 +635,7 @@ export function renderExploring() {
   renderButtons([
     { label: '📦 インベントリ', onClick: showInventory },
     { label: '🐾 モンスター装備', onClick: () => actions.triggerEquipBots() },
-    { label: '➡️ 進む', onClick: async () => {
-      const result = await apiProceed();
-      if (result?.state) {
-        updateGameState(result.state);
-        showProceedIngredientDrops(result, result.state);
-        await playRoomTransition(result.state);
-        updateUI();
-      }
-    }, primary: true },
+    { label: '➡️ 進む', onClick: proceedToNextRoom, primary: true },
   ]);
 }
 

@@ -14,7 +14,7 @@ export const FUSION_RECIPES = {
     name: '火の猫',
     nameEn: 'Fire Cat',
     ingredientIds: ['hi', 'neko'],
-    resultId: 'hineko',
+    resultId: 'hinoneko',
     cost: { fusionCores: 1 }
   },
   stoneGiant: {
@@ -141,7 +141,7 @@ function hasDefeatedBoss(meta, bossCreatureId) {
 
 function getRecipeLockedReason(meta, recipe) {
   if (recipe.resultId === TUTORIAL_FUSION_CREATURE_ID && !hasTutorialFusionData(meta, recipe.resultId)) {
-    return 'Hineko fusion data required';
+    return 'Hinoneko fusion data required';
   }
   if (recipe.requiresBossDefeatId && !hasDefeatedBoss(meta, recipe.requiresBossDefeatId)) {
     return `${recipe.nameEn} defeat required`;

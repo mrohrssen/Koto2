@@ -13,7 +13,7 @@ const SKY_LAYER_INDEX = 0;
 // regenerated sky.webp / battleground.webp keeps showing the old cached
 // bytes. Bump this date string whenever ANY area background is regenerated
 // (mirrors the SPRITE_VERSION convention in public/js/ui/sprite-utils.js).
-export const BACKGROUND_VERSION = '20260505';
+export const BACKGROUND_VERSION = '20260508';
 
 // Default ExplorationScene walking speed outside authored room transitions.
 export const EXPLORATION_SCROLL_SPEED = 0.6;

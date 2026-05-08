@@ -16,8 +16,8 @@ import {
   awardTutorialFusionCore,
   markTutorialFusionComplete,
   shouldForceStartingMeadowCatEncounter,
-  shouldShowStartingMeadowHinekoIntro,
-  collectStartingMeadowHinekoVictoryReward
+  shouldShowStartingMeadowHinonekoIntro,
+  collectStartingMeadowHinonekoVictoryReward
 } from '../../../src/game/services/tutorial-service.js';
 
 describe('tutorial state', () => {
@@ -123,26 +123,26 @@ describe('tutorial-service', () => {
       assert.equal(meta.tutorialFusionComplete, false);
     });
 
-    it('unlockTutorialFusionData records Hineko once', () => {
+    it('unlockTutorialFusionData records Hinoneko once', () => {
       const meta = createMetaProgression();
-      const first = unlockTutorialFusionData(meta, 'hineko');
-      const second = unlockTutorialFusionData(meta, 'hineko');
+      const first = unlockTutorialFusionData(meta, 'hinoneko');
+      const second = unlockTutorialFusionData(meta, 'hinoneko');
       assert.equal(first.unlocked, true);
       assert.equal(second.unlocked, false);
-      assert.deepEqual(meta.tutorialFusionDataUnlocked, ['hineko']);
-      assert.equal(hasTutorialFusionData(meta, 'hineko'), true);
+      assert.deepEqual(meta.tutorialFusionDataUnlocked, ['hinoneko']);
+      assert.equal(hasTutorialFusionData(meta, 'hinoneko'), true);
     });
 
-    it('canUseFusionLab requires Hineko data', () => {
+    it('canUseFusionLab requires Hinoneko data', () => {
       const meta = createMetaProgression();
       assert.equal(canUseFusionLab(meta), false);
-      unlockTutorialFusionData(meta, 'hineko');
+      unlockTutorialFusionData(meta, 'hinoneko');
       assert.equal(canUseFusionLab(meta), true);
     });
 
     it('awardTutorialFusionCore grants exactly one core', () => {
       const meta = createMetaProgression();
-      unlockTutorialFusionData(meta, 'hineko');
+      unlockTutorialFusionData(meta, 'hinoneko');
       const first = awardTutorialFusionCore(meta);
       const second = awardTutorialFusionCore(meta);
       assert.equal(first.awarded, true);
@@ -153,11 +153,11 @@ describe('tutorial-service', () => {
       assert.equal(meta.tutorialFusionCoreAwarded, true);
     });
 
-    it('awardTutorialFusionCore refuses before Hineko data', () => {
+    it('awardTutorialFusionCore refuses before Hinoneko data', () => {
       const meta = createMetaProgression();
       assert.throws(
         () => awardTutorialFusionCore(meta),
-        /Hineko fusion data is required/
+        /Hinoneko fusion data is required/
       );
       assert.equal(meta.fusionCores, 0);
     });
@@ -171,7 +171,7 @@ describe('tutorial-service', () => {
   });
 
   describe('Starting Meadow Cat encounter', () => {
-    it('forces Cat only for first Starting Meadow encounter before Hineko data', () => {
+    it('forces Cat only for first Starting Meadow encounter before Hinoneko data', () => {
       const meta = createMetaProgression();
       const run = {
         currentArea: { id: 'hajimari-no-hiroba' },
@@ -196,7 +196,7 @@ describe('tutorial-service', () => {
     });
   });
 
-  describe('Starting Meadow Hineko boss tutorial', () => {
+  describe('Starting Meadow Hinoneko boss tutorial', () => {
     function makeBossRun(areaId = 'hajimari-no-hiroba') {
       return {
         currentArea: { id: areaId },
@@ -204,39 +204,39 @@ describe('tutorial-service', () => {
         currentRoom: 6,
         rooms: [
           null, null, null, null, null, null,
-          { type: 'boss', boss: { creatureId: 'hineko' } }
+          { type: 'boss', boss: { creatureId: 'hinoneko' } }
         ]
       };
     }
 
-    it('shows boss intro only for Starting Meadow Hineko without data', () => {
+    it('shows boss intro only for Starting Meadow Hinoneko without data', () => {
       const meta = createMetaProgression();
-      assert.equal(shouldShowStartingMeadowHinekoIntro(meta, makeBossRun()), true);
-      assert.equal(shouldShowStartingMeadowHinekoIntro(meta, makeBossRun('wild-plains')), false);
-      unlockTutorialFusionData(meta, 'hineko');
-      assert.equal(shouldShowStartingMeadowHinekoIntro(meta, makeBossRun()), false);
+      assert.equal(shouldShowStartingMeadowHinonekoIntro(meta, makeBossRun()), true);
+      assert.equal(shouldShowStartingMeadowHinonekoIntro(meta, makeBossRun('wild-plains')), false);
+      unlockTutorialFusionData(meta, 'hinoneko');
+      assert.equal(shouldShowStartingMeadowHinonekoIntro(meta, makeBossRun()), false);
     });
 
-    it('collects Hineko fusion data only for Starting Meadow Hineko victory', () => {
+    it('collects Hinoneko fusion data only for Starting Meadow Hinoneko victory', () => {
       const meta = createMetaProgression();
-      const combat = { isBoss: true, enemies: [{ id: 'hineko', hp: 0 }] };
-      const reward = collectStartingMeadowHinekoVictoryReward(meta, makeBossRun(), combat);
-      assert.deepEqual(meta.tutorialFusionDataUnlocked, ['hineko']);
+      const combat = { isBoss: true, enemies: [{ id: 'hinoneko', hp: 0 }] };
+      const reward = collectStartingMeadowHinonekoVictoryReward(meta, makeBossRun(), combat);
+      assert.deepEqual(meta.tutorialFusionDataUnlocked, ['hinoneko']);
       assert.equal(reward?.type, 'fusionData');
-      assert.equal(reward?.message, 'Obtained Hineko Fusion Data!');
+      assert.equal(reward?.message, 'Obtained Hinoneko Fusion Data!');
 
       const wildMeta = createMetaProgression();
-      const wildReward = collectStartingMeadowHinekoVictoryReward(wildMeta, makeBossRun('wild-plains'), combat);
+      const wildReward = collectStartingMeadowHinonekoVictoryReward(wildMeta, makeBossRun('wild-plains'), combat);
       assert.equal(wildReward, null);
       assert.deepEqual(wildMeta.tutorialFusionDataUnlocked, []);
     });
 
-    it('advances from item shop tutorial to speed review after Hineko victory', () => {
+    it('advances from item shop tutorial to speed review after Hinoneko victory', () => {
       const meta = createMetaProgression();
       meta.tutorialStep = 2;
-      const combat = { isBoss: true, enemies: [{ id: 'hineko', hp: 0 }] };
+      const combat = { isBoss: true, enemies: [{ id: 'hinoneko', hp: 0 }] };
 
-      collectStartingMeadowHinekoVictoryReward(meta, makeBossRun(), combat);
+      collectStartingMeadowHinonekoVictoryReward(meta, makeBossRun(), combat);
 
       assert.equal(meta.tutorialStep, 4);
     });
@@ -297,7 +297,7 @@ describe('tutorial room generation', () => {
       'friendlyNpc',
       'boss'
     ]);
-    assert.equal(rooms[6].boss.creatureId, 'hineko');
+    assert.equal(rooms[6].boss.creatureId, 'hinoneko');
   });
 
   it('without tutorialMode rooms are not forced', () => {

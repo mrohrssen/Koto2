@@ -72,7 +72,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
   namedExports: {
     getTutorialNarration: () => [],
     getFormationNarration: () => '',
-    getPostHinekoReviewNarration: () => [],
+    getPostHinonekoReviewNarration: () => [],
     getFusionCoreNarration: () => [],
     getPostFusionNarration: () => [],
   },

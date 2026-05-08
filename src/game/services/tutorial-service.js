@@ -8,7 +8,7 @@ export const TUTORIAL_STEPS = {
   COMPLETE: 6
 };
 
-export const TUTORIAL_FUSION_CREATURE_ID = 'hineko';
+export const TUTORIAL_FUSION_CREATURE_ID = 'hinoneko';
 
 export function ensureTutorialFusionState(meta) {
   if (!meta) return meta;
@@ -39,7 +39,7 @@ export function unlockTutorialFusionData(meta, creatureId = TUTORIAL_FUSION_CREA
   return {
     unlocked: true,
     creatureId,
-    message: 'Obtained Hineko Fusion Data!'
+    message: 'Obtained Hinoneko Fusion Data!'
   };
 }
 
@@ -50,7 +50,7 @@ export function canUseFusionLab(meta) {
 export function awardTutorialFusionCore(meta) {
   ensureTutorialFusionState(meta);
   if (!hasTutorialFusionData(meta, TUTORIAL_FUSION_CREATURE_ID)) {
-    throw new Error('Hineko fusion data is required before awarding a tutorial Fusion Core');
+    throw new Error('Hinoneko fusion data is required before awarding a tutorial Fusion Core');
   }
   if (meta.tutorialFusionCoreAwarded) {
     return {
@@ -88,23 +88,23 @@ function getCurrentRoom(run) {
   return run?.rooms?.[run?.currentRoom || 0] || null;
 }
 
-export function isStartingMeadowHinekoBoss(run) {
+export function isStartingMeadowHinonekoBoss(run) {
   const room = getCurrentRoom(run);
   return run?.currentArea?.id === 'hajimari-no-hiroba'
     && room?.type === 'boss'
     && room?.boss?.creatureId === TUTORIAL_FUSION_CREATURE_ID;
 }
 
-export function shouldShowStartingMeadowHinekoIntro(meta, run) {
-  return isStartingMeadowHinekoBoss(run)
+export function shouldShowStartingMeadowHinonekoIntro(meta, run) {
+  return isStartingMeadowHinonekoBoss(run)
     && !hasTutorialFusionData(meta, TUTORIAL_FUSION_CREATURE_ID);
 }
 
-export function collectStartingMeadowHinekoVictoryReward(meta, run, combat) {
+export function collectStartingMeadowHinonekoVictoryReward(meta, run, combat) {
   if (!combat?.isBoss) return null;
   const bossId = combat?.enemies?.[0]?.id;
   if (bossId !== TUTORIAL_FUSION_CREATURE_ID) return null;
-  if (!isStartingMeadowHinekoBoss(run)) return null;
+  if (!isStartingMeadowHinonekoBoss(run)) return null;
   const result = unlockTutorialFusionData(meta, TUTORIAL_FUSION_CREATURE_ID);
   if (!result.unlocked) return null;
   if (getTutorialStep(meta) < TUTORIAL_STEPS.SPEED_REVIEW) {

@@ -47,10 +47,10 @@ import { applyCrestBonuses } from './crest-service.js';
 import {
   shouldProtectBefriend,
   advanceTutorial as advanceTutorialStep,
-  isStartingMeadowHinekoBoss,
+  isStartingMeadowHinonekoBoss,
   shouldForceStartingMeadowCatEncounter,
-  shouldShowStartingMeadowHinekoIntro,
-  collectStartingMeadowHinekoVictoryReward
+  shouldShowStartingMeadowHinonekoIntro,
+  collectStartingMeadowHinonekoVictoryReward
 } from './tutorial-service.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../bootstrap/word-knowledge.js';
 import { selectBark } from '../dialogue-filter.js';
@@ -105,12 +105,12 @@ export class CombatCycleService {
     let enemyCreatures;
     if (isBoss) {
       // Boss: solo creature, level × 1.25, double HP unless a tutorial override applies.
-      const isStartingMeadowHineko = isStartingMeadowHinekoBoss(this.gm.run);
-      const bossLevel = isStartingMeadowHineko
+      const isStartingMeadowHinoneko = isStartingMeadowHinonekoBoss(this.gm.run);
+      const bossLevel = isStartingMeadowHinoneko
         ? adjustStartingMeadowLevel(7)
         : adjustStartingMeadowLevel(Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25));
       const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
-      if (!isStartingMeadowHineko) {
+      if (!isStartingMeadowHinoneko) {
         bossCreature.hp = bossCreature.maxHp *= 2;
       }
       enemyCreatures = [bossCreature];
@@ -191,7 +191,7 @@ export class CombatCycleService {
       }
     }
 
-    const tutorialBossIntro = shouldShowStartingMeadowHinekoIntro(this.gm.meta, this.gm.run)
+    const tutorialBossIntro = shouldShowStartingMeadowHinonekoIntro(this.gm.meta, this.gm.run)
       ? {
           speaker: 'Cid',
           lines: [
@@ -253,7 +253,7 @@ export class CombatCycleService {
 
   _collectTutorialRewards() {
     const rewards = [];
-    const fusionReward = collectStartingMeadowHinekoVictoryReward(this.gm.meta, this.gm.run, this.gm.combat);
+    const fusionReward = collectStartingMeadowHinonekoVictoryReward(this.gm.meta, this.gm.run, this.gm.combat);
     if (fusionReward) rewards.push(fusionReward);
     return rewards;
   }

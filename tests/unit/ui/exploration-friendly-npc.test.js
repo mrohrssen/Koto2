@@ -78,7 +78,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
       ? ["Here you'll be offered items to power up. Choose wisely!"]
       : []),
     getFormationNarration: () => '',
-    getPostHinekoReviewNarration: () => [],
+    getPostHinonekoReviewNarration: () => [],
     getFusionCoreNarration: () => [],
     getPostFusionNarration: () => [],
   },

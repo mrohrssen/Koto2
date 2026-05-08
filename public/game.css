@@ -47,6 +47,90 @@
   pointer-events: auto;
 }
 
+.campfire-scene--cooking {
+  background: radial-gradient(circle at 50% 46%, rgba(255, 184, 76, 0.26), transparent 34%);
+}
+
+.campfire-focus-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 34%;
+  display: grid;
+  width: 148px;
+  height: 128px;
+  place-items: center;
+  transform: translateX(-50%) scale(1);
+  animation: campfire-focus-in 320ms ease-out both;
+}
+
+.campfire-fireplace-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px rgba(255, 149, 49, 0.72));
+}
+
+.campfire-fireplace-fallback {
+  display: grid;
+  width: 96px;
+  height: 96px;
+  place-items: center;
+  border-radius: 24px;
+  background: rgba(255, 149, 49, 0.18);
+  font-size: 3rem;
+}
+
+.campfire-scene--entry {
+  pointer-events: none;
+}
+
+.campfire-entry-fire-wrap {
+  position: absolute;
+  right: 36px;
+  bottom: 36%;
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-items: center;
+  animation: campfire-entry-in 240ms ease-out both;
+}
+
+.campfire-entry-fire-wrap .campfire-fireplace-img {
+  filter: drop-shadow(0 0 14px rgba(255, 149, 49, 0.62));
+}
+
+#scene-area.campfire-focus-active .player-formation,
+#scene-area.campfire-focus-active .formation.player,
+#scene-area.campfire-focus-active .creature-formation.player,
+#scene-area.campfire-focus-active .hp-bar,
+#scene-area.campfire-focus-active .mp-bar {
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+
+@keyframes campfire-entry-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes campfire-focus-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.72);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
 .campfire-scene-bg {
   position: absolute;
   inset: 0;

@@ -13,7 +13,7 @@ let selectedRecipeId = null;
 let fusionLabNarrationShown = false;
 
 const OBTAINED_RESULT_NAMES = {
-  hineko: 'Hineko'
+  hinoneko: 'Hinoneko'
 };
 
 export function init(cbs) {
@@ -58,14 +58,14 @@ function getFusionResultName(creature, result) {
   return `${obtainedName} obtained`;
 }
 
-function shouldGuideHinekoRecipe(recipe = getSelectedRecipe()) {
+function shouldGuideHinonekoRecipe(recipe = getSelectedRecipe()) {
   const state = callbacks.getGameState?.();
   const collection = state?.meta?.creatureCollection || [];
   return recipe?.id === 'fire-cat'
-    && state?.meta?.tutorialFusionDataUnlocked?.includes('hineko')
+    && state?.meta?.tutorialFusionDataUnlocked?.includes('hinoneko')
     && state?.meta?.tutorialFusionCoreAwarded
     && !state?.meta?.tutorialFusionComplete
-    && !collection.includes('hineko');
+    && !collection.includes('hinoneko');
 }
 
 function render() {
@@ -78,7 +78,7 @@ function render() {
 
   renderScene(recipe);
   renderRecipeTiles();
-  if (shouldGuideHinekoRecipe(recipe) && !fusionLabNarrationShown) {
+  if (shouldGuideHinonekoRecipe(recipe) && !fusionLabNarrationShown) {
     fusionLabNarrationShown = true;
     void callbacks.showTutorialNarration?.(getFusionLabNarration(), { showSprite: true });
   }
@@ -112,7 +112,7 @@ function renderRecipeTiles() {
   const choiceEls = actionArea.querySelectorAll('.ui-choice');
   recipes.forEach((recipe, index) => {
     const choice = choiceEls[index];
-    if (!choice || !shouldGuideHinekoRecipe(recipe)) return;
+    if (!choice || !shouldGuideHinonekoRecipe(recipe)) return;
     choice.classList.add(recipe.id === selectedRecipeId ? 'tutorial-highlight' : 'tutorial-dimmed');
   });
 
@@ -154,7 +154,7 @@ function renderScene(recipe, result = null) {
       </div>
       <div class="fusion-result-name">${escapeHtml(getFusionResultName(resultCreature, result))}</div>
       <div class="fusion-requirements">${escapeHtml(getRequirementText(recipe))}</div>
-      <button class="ui-btn ui-btn--primary fusion-start-btn ${shouldGuideHinekoRecipe(recipe) ? 'tutorial-highlight' : ''}" type="button" ${recipe.canFuse ? '' : 'disabled'}>
+      <button class="ui-btn ui-btn--primary fusion-start-btn ${shouldGuideHinonekoRecipe(recipe) ? 'tutorial-highlight' : ''}" type="button" ${recipe.canFuse ? '' : 'disabled'}>
         Start Fusion
       </button>
     </div>
@@ -206,7 +206,7 @@ function getRequirementText(recipe) {
 async function beginFusion(recipe) {
   const scene = document.querySelector('.fusion-lab-scene');
   const startBtn = scene?.querySelector('.fusion-start-btn');
-  const guidedTutorialFusion = recipe.resultId === 'hineko' && shouldGuideHinekoRecipe(recipe);
+  const guidedTutorialFusion = recipe.resultId === 'hinoneko' && shouldGuideHinonekoRecipe(recipe);
   if (startBtn) {
     startBtn.disabled = true;
     startBtn.textContent = 'Fusing...';
@@ -240,6 +240,6 @@ async function beginFusion(recipe) {
   if (guidedTutorialFusion) {
     const completion = await callbacks.apiCompleteTutorialFusion?.();
     if (completion?.state) callbacks.updateGameState?.({ ...completion.state, phase: 'fusion_lab' });
-    callbacks.showToast?.('Hineko joined your team!', 2000);
+    callbacks.showToast?.('Hinoneko joined your team!', 2000);
   }
 }

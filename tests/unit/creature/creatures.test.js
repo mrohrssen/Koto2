@@ -148,7 +148,7 @@ describe('Creature Instantiation', () => {
   });
 
   it('uses a natural no-phrase for the Fire Cat fusion creature', () => {
-    const creature = instantiateCreature('hineko', 10);
+    const creature = instantiateCreature('hinoneko', 10);
 
     assert.strictEqual(creature.name, '火の猫');
     assert.strictEqual(creature.nameEn, 'Fire Cat');

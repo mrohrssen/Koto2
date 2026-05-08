@@ -27,7 +27,7 @@ import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-kn
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 
-const SPRITE_VERSION = '20260508-npc';
+const SPRITE_VERSION = '20260508-campfire-entry-npc';
 const SHRINE_REWARDS = [
   {
     id: 'heal_all',

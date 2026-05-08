@@ -2,11 +2,13 @@ import { escapeHtml } from './html-utils.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
 import { showItemTargetPicker } from './item-target-picker.js';
+import { renderButtons } from './ui-components.js';
 
 let callbacks = {};
 let campfireState = null;
 let selected = {};
 let activeTab = 'ingredients';
+let displayMode = 'entry';
 
 export function init(cbs) {
   callbacks = cbs;
@@ -16,6 +18,7 @@ export async function show() {
   campfireState = await callbacks.apiGetCampfire();
   selected = {};
   activeTab = 'ingredients';
+  displayMode = campfireState?.room?.cookedDish ? 'cooking' : 'entry';
   render();
 }
 
@@ -24,12 +27,14 @@ export function renderForTest(state, cbs = {}) {
   campfireState = state;
   selected = {};
   activeTab = 'ingredients';
+  displayMode = campfireState?.room?.cookedDish ? 'cooking' : 'entry';
   render();
 }
 
 export function cleanup() {
   const sceneArea = document.getElementById('scene-area');
-  sceneArea?.querySelector('.campfire-scene')?.remove();
+  sceneArea?.querySelectorAll('.campfire-scene').forEach(scene => scene.remove());
+  setCookingFocusActive(false);
 }
 
 function ingredientById() {
@@ -44,11 +49,38 @@ function escapeAttribute(value) {
   return escapeHtml(String(value ?? '')).replace(/'/g, '&#39;');
 }
 
+function renderFrameTokens(framePayload, fallback) {
+  if (framePayload?.tokens?.length) {
+    return renderJpSentence(framePayload.tokens, getKnownWords(), null, framePayload.overrides || {}, false);
+  }
+  console.warn(`[campfire] Missing frame tokens for ${fallback}; using literal fallback`);
+  return fallback;
+}
+
+function yesLabel() {
+  return renderFrameTokens(campfireState?.yesTokens, 'はい');
+}
+
+function noLabel() {
+  return renderFrameTokens(campfireState?.noTokens, 'いいえ');
+}
+
 function renderIngredientIcon(entity, className = 'campfire-ingredient-icon') {
   const id = escapeAttribute(entity?.id || 'unknown');
   const word = escapeAttribute(entity?.word || '？');
   const cls = escapeAttribute(className);
   return `<img class="${cls}" src="/assets/sprites/items/${id}.webp?v=${SPRITE_VERSION}" alt="${word}" onerror="this.outerHTML='<div class=\\'${cls} text-sprite\\'>${word}</div>'">`;
+}
+
+function renderCampfireImage() {
+  return `
+    <img
+      class="campfire-fireplace-img"
+      src="/assets/sprites/objects/campfire.webp?v=${SPRITE_VERSION}"
+      alt="Campfire"
+      onerror="this.outerHTML='<div class=\\'campfire-fireplace-fallback\\'>🔥</div>'"
+    >
+  `;
 }
 
 function selectedUnits(ingredientsById = ingredientById()) {
@@ -58,11 +90,28 @@ function selectedUnits(ingredientsById = ingredientById()) {
   }).slice(0, 5);
 }
 
-function renderCampfireScene(html) {
+function setCookingFocusActive(active) {
+  const sceneArea = document.getElementById('scene-area');
+  if (!sceneArea) return;
+  sceneArea.classList[active ? 'add' : 'remove']('campfire-focus-active');
+}
+
+function renderCampfireScene(html, { focus = true } = {}) {
   const sceneArea = document.getElementById('scene-area');
   if (!sceneArea) return;
   cleanup();
+  setCookingFocusActive(focus);
   sceneArea.insertAdjacentHTML('beforeend', html);
+}
+
+function renderEntryScene() {
+  renderCampfireScene(`
+    <div class="campfire-scene campfire-scene--entry">
+      <div class="campfire-entry-fire-wrap">
+        ${renderCampfireImage()}
+      </div>
+    </div>
+  `, { focus: false });
 }
 
 function renderSlotPreview() {
@@ -85,12 +134,9 @@ function renderSlotPreview() {
   }).join('');
 
   renderCampfireScene(`
-    <div class="campfire-scene">
-      <div class="campfire-scene-bg"></div>
-      <div class="campfire-scene-ground"></div>
-      <div class="campfire-flame-wrap">
-        <div class="campfire-flame"></div>
-        <div class="campfire-logs"></div>
+    <div class="campfire-scene campfire-scene--cooking">
+      <div class="campfire-focus-wrap">
+        ${renderCampfireImage()}
       </div>
       <div class="campfire-slot-preview">
         <div class="campfire-slot-preview__header">
@@ -108,12 +154,9 @@ function renderCookedDishScene(dish) {
   if (!sceneArea) return;
 
   renderCampfireScene(`
-    <div class="campfire-scene">
-      <div class="campfire-scene-bg"></div>
-      <div class="campfire-scene-ground"></div>
-      <div class="campfire-flame-wrap">
-        <div class="campfire-flame"></div>
-        <div class="campfire-logs"></div>
+    <div class="campfire-scene campfire-scene--cooking">
+      <div class="campfire-focus-wrap">
+        ${renderCampfireImage()}
       </div>
       <div class="campfire-cooked-dish-display">
         ${renderIngredientIcon(dish, 'campfire-cooked-dish-icon')}
@@ -137,9 +180,35 @@ function renderRequirementPills(recipe, ingredientsById = ingredientById()) {
   }).join('');
 }
 
+function renderEntryPrompt() {
+  const actionArea = document.getElementById('action-area');
+  if (!actionArea) return;
+  renderEntryScene();
+  actionArea.innerHTML = '<div class="ui-choice-heading">Would you like to cook?</div>';
+  renderButtons([
+    {
+      label: yesLabel(),
+      primary: true,
+      onClick: () => {
+        displayMode = 'cooking';
+        render();
+      },
+    },
+    {
+      label: noLabel(),
+      onClick: () => completeCampfire(callbacks.apiSkipCampfire),
+    },
+  ], { container: actionArea, append: true });
+}
+
 function render() {
   const actionArea = document.getElementById('action-area');
   if (!actionArea) return;
+
+  if (displayMode === 'entry' && !campfireState?.room?.cookedDish) {
+    renderEntryPrompt();
+    return;
+  }
 
   const cookedDish = campfireState?.room?.cookedDish;
   if (cookedDish) renderCookedDishScene(cookedDish);
@@ -254,13 +323,21 @@ async function cookSelected() {
   render();
 }
 
-async function skipCampfire() {
-  const result = await callbacks.apiSkipCampfire?.();
+async function completeCampfire(action) {
+  const result = await action?.();
   if (result?.state) {
     cleanup();
-    callbacks.updateGameState?.(result.state);
-    callbacks.updateUI?.();
+    if (callbacks.completeCampfireAndProceed) {
+      await callbacks.completeCampfireAndProceed(result.state);
+    } else {
+      callbacks.updateGameState?.(result.state);
+      callbacks.updateUI?.();
+    }
   }
+}
+
+async function skipCampfire() {
+  await completeCampfire(callbacks.apiSkipCampfire);
 }
 
 function renderCookedDish(dish) {
@@ -271,8 +348,12 @@ function renderCookedDish(dish) {
     const result = await callbacks.apiFeedCampfireDish(targetIndex);
     if (result?.state) {
       cleanup();
-      callbacks.updateGameState?.(result.state);
-      callbacks.updateUI?.();
+      if (callbacks.completeCampfireAndProceed) {
+        await callbacks.completeCampfireAndProceed(result.state);
+      } else {
+        callbacks.updateGameState?.(result.state);
+        callbacks.updateUI?.();
+      }
     }
   });
 }
