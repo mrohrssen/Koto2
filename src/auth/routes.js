@@ -174,24 +174,14 @@ export default function createAuthRoutes(options = {}) {
     }
 
     let apiKeysInfo = {
-      aiProvider: '',
-      openaiModel: '',
-      openrouterModel: '',
       jlptLevel: 'N4',
-      hasAiKey: false,
-      hasBunproToken: false,
       aiDataSharingConsent: false
     };
     if (user.encryptedApiKeys) {
       try {
         const keys = decryptKeys(user.encryptedApiKeys, encryptionKey);
         apiKeysInfo = {
-          aiProvider: keys.aiProvider || '',
-          openaiModel: keys.openaiModel || '',
-          openrouterModel: keys.openrouterModel || '',
           jlptLevel: keys.jlptLevel || 'N4',
-          hasAiKey: !!keys.aiApiKey,
-          hasBunproToken: !!keys.bunproToken,
           aiDataSharingConsent: keys.aiDataSharingConsent === true
         };
       } catch {
@@ -204,14 +194,9 @@ export default function createAuthRoutes(options = {}) {
 
   // PUT /api/auth/api-keys
   function updateKeys(req, res) {
-    const { aiApiKey, aiProvider, openaiModel, openrouterModel, jlptLevel, bunproToken, aiDataSharingConsent } = req.body;
+    const { jlptLevel, aiDataSharingConsent } = req.body;
     const keys = {};
-    if (aiApiKey !== undefined) keys.aiApiKey = aiApiKey;
-    if (aiProvider !== undefined) keys.aiProvider = aiProvider;
-    if (openaiModel !== undefined) keys.openaiModel = openaiModel;
-    if (openrouterModel !== undefined) keys.openrouterModel = openrouterModel;
     if (jlptLevel !== undefined) keys.jlptLevel = jlptLevel;
-    if (bunproToken !== undefined) keys.bunproToken = bunproToken;
     if (aiDataSharingConsent !== undefined) keys.aiDataSharingConsent = aiDataSharingConsent === true;
 
     // Merge with existing keys (partial update)
@@ -224,9 +209,11 @@ export default function createAuthRoutes(options = {}) {
       try { existingKeys = decryptKeys(user.encryptedApiKeys, encryptionKey); } catch {}
     }
     const merged = { ...existingKeys, ...keys };
-    if (merged.aiApiKey && !merged.aiDataSharingConsent) {
-      return res.status(400).json({ error: 'AI data sharing consent required' });
-    }
+    delete merged.aiApiKey;
+    delete merged.aiProvider;
+    delete merged.openaiModel;
+    delete merged.openrouterModel;
+    delete merged.bunproToken;
 
     const encrypted = encryptKeys(merged, encryptionKey);
 

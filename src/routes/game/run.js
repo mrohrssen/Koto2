@@ -6,11 +6,11 @@ import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../../game/live-dict-path.js';
 import { getDiscoveryStatus } from '../../word-tracking.js';
-import { getQuizQuestion as getBunproQuestion, submitAnswer as submitBunproAnswer } from '../../bunpro.js';
 import { validateTeamSelection } from '../../game/services/creature-collection-service.js';
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
 import { getAreaById } from '../../game/rooms.js';
 import { applyItem } from '../../game/services/item-service.js';
+import { buildGlobalAiConfig } from './route-helpers.js';
 import {
   CRYSTAL_COSTS,
   CRYSTAL_REASONS,
@@ -99,15 +99,10 @@ export default function createRunRoutes({
   /** Fire-and-forget: queue missing creature + NPC dialogues for current run */
   function queueBackgroundDialogues(req) {
     const userKeys = req.userKeys || {};
-    if (!userKeys.aiDataSharingConsent || !userKeys.aiApiKey || !userKeys.aiProvider) return;
+    if (userKeys.aiDataSharingConsent !== true) return;
 
-    const aiConfig = {
-      provider: userKeys.aiProvider,
-      apiKey: userKeys.aiApiKey,
-      openaiModel: userKeys.openaiModel,
-      openrouterModel: userKeys.openrouterModel,
-      jlptLevel: userKeys.jlptLevel || 'N4'
-    };
+    const aiConfig = buildGlobalAiConfig(userKeys.jlptLevel || 'N4');
+    if (!aiConfig) return;
 
     if (queueMissingCreatureDialoguesFn && getUserVocabulary) {
       const { words: vocabulary } = getUserVocabulary(req.user.id);
@@ -457,35 +452,9 @@ export default function createRunRoutes({
     }
   });
 
-  // Get a quiz question (Bunpro first, fallback to static)
+  // Get a quiz question
   router.get('/quiz-question', async (req, res) => {
     try {
-      // Try Bunpro first if token available (use req.userKeys set by middleware)
-      const bunproToken = req.userKeys?.bunproToken;
-      if (bunproToken) {
-        console.log('[Quiz] Attempting Bunpro question...');
-        const bunproQuestion = await getBunproQuestion(bunproToken);
-        if (bunproQuestion) {
-          console.log('[Quiz] Serving Bunpro question');
-          // Don't send correctIndex to frontend
-          return res.json({
-            id: bunproQuestion.id,
-            type: bunproQuestion.type,
-            question: bunproQuestion.question,
-            translation: bunproQuestion.translation,
-            options: bunproQuestion.options,
-            // Store these server-side for answer validation
-            _bunpro: {
-              reviewId: bunproQuestion.reviewId,
-              sessionId: bunproQuestion.sessionId,
-              correctIndex: bunproQuestion.correctIndex
-            }
-          });
-        }
-        console.log('[Quiz] Bunpro unavailable, falling back to static');
-      }
-
-      // Fallback to static questions
       const questions = loadQuizQuestions();
       const randomIndex = Math.floor(Math.random() * questions.length);
       const question = questions[randomIndex];
@@ -505,31 +474,9 @@ export default function createRunRoutes({
   // Validate quiz answer
   router.post('/quiz-answer', async (req, res) => {
     try {
-      const { questionId, selectedIndex, _bunpro } = req.body;
+      const { questionId, selectedIndex } = req.body;
       if (questionId === undefined || selectedIndex === undefined) {
         return res.status(400).json({ error: 'questionId and selectedIndex required' });
-      }
-
-      // Handle Bunpro question
-      if (questionId.startsWith('bunpro-') && _bunpro) {
-        const correct = selectedIndex === _bunpro.correctIndex;
-        console.log('[Quiz] Bunpro answer:', { questionId, selectedIndex, correctIndex: _bunpro.correctIndex, correct });
-
-        // Submit to Bunpro (fire and forget - don't block response)
-        const bunproToken = req.userKeys?.bunproToken;
-        if (bunproToken) {
-          submitBunproAnswer(bunproToken, _bunpro.reviewId, _bunpro.sessionId, correct)
-            .then(success => console.log('[Quiz] Bunpro submission:', success ? 'success' : 'failed'))
-            .catch(err => console.log('[Quiz] Bunpro submission error:', err.message));
-        }
-
-        return res.json({
-          correct,
-          correctIndex: _bunpro.correctIndex,
-          response: correct
-            ? 'その通りだ。文法をよく理解しているな。'
-            : '残念だ。もう一度復習しよう。'
-        });
       }
 
       // Handle static question

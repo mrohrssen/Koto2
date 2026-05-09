@@ -4,47 +4,6 @@ import { setLang } from './i18n.js';
 import { getAuthHeaders, apiUrl } from '../api.js';
 import { loadServerSettings, saveServerSettings } from '../settings.js';
 
-const MODEL_OPTIONS = {
-  anthropic: [
-    { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6 (Best value)' },
-    { id: 'claude-sonnet-4-5', name: 'Claude Sonnet 4.5' },
-    { id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5 (Fast)' },
-    { id: 'claude-opus-4-6', name: 'Claude Opus 4.6 (Most capable)' },
-    { id: 'claude-3-5-haiku-latest', name: 'Claude 3.5 Haiku (Cheapest)' },
-  ],
-  openai: [
-    { id: 'gpt-5-mini', name: 'GPT-5 Mini (Fast, cheap)' },
-    { id: 'gpt-5-nano', name: 'GPT-5 Nano (Cheapest)' },
-    { id: 'gpt-5', name: 'GPT-5 (Reasoning)' },
-    { id: 'gpt-5.2', name: 'GPT-5.2 (Latest)' },
-    { id: 'gpt-5.2-pro', name: 'GPT-5.2 Pro' },
-    { id: 'gpt-4.1', name: 'GPT-4.1 (Legacy)' },
-  ],
-  google: [
-    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash (Fast)' },
-    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
-    { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash (Preview)' },
-    { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro (Preview)' },
-    { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Legacy)' },
-  ],
-  openrouter: [
-    { id: 'anthropic/claude-sonnet-4-6', name: 'Claude Sonnet 4.6' },
-    { id: 'anthropic/claude-haiku-4-5', name: 'Claude Haiku 4.5' },
-    { id: 'openai/gpt-5-mini', name: 'GPT-5 Mini' },
-    { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
-    { id: 'meta-llama/llama-4-maverick', name: 'Llama 4 Maverick' },
-    { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1' },
-    { id: 'tngtech/deepseek-r1t2-chimera', name: 'DeepSeek R1T2 Chimera' },
-  ],
-};
-
-function buildModelOptions(provider, selectedModel) {
-  const models = MODEL_OPTIONS[provider] || MODEL_OPTIONS.openrouter;
-  return models.map(m =>
-    `<option value="${m.id}" ${m.id === selectedModel ? 'selected' : ''}>${m.name}</option>`
-  ).join('');
-}
-
 let takeover = null;
 let sceneModule = null;
 let settingsModule = null;
@@ -73,38 +32,13 @@ export async function openSettings() {
     loadServerSettings()
   ]);
   const voiceGender = serverSettings.voiceGender || 'boy';
+  const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
   const kanaMode = getGameState?.()?.meta?.kanaMode ?? false;
 
   content.innerHTML = `
     <h3 style="margin:16px">Settings</h3>
     <div style="padding:0 16px">
       <label class="settings-label">
-        Bunpro Token
-        <input type="password" id="settings-bunpro-token" class="settings-input"
-          placeholder="${keyInfo.hasBunproToken ? '••••••••' : 'Enter Bunpro token'}">
-        <small style="color:#888;font-size:0.85em">For grammar reviews. Find at bunpro.jp → Settings → API</small>
-      </label>
-      <label class="settings-label" style="margin-top:12px">
-        AI API Key
-        <input type="password" id="settings-ai-key" class="settings-input"
-          placeholder="${keyInfo.hasAiKey ? '••••••••' : 'Enter AI API key'}">
-      </label>
-      <label class="settings-label" style="margin-top:12px">
-        AI Provider
-        <select id="settings-ai-provider" class="settings-input">
-          <option value="openai" ${keyInfo.aiProvider === 'openai' ? 'selected' : ''}>OpenAI</option>
-          <option value="anthropic" ${keyInfo.aiProvider === 'anthropic' ? 'selected' : ''}>Anthropic</option>
-          <option value="google" ${keyInfo.aiProvider === 'google' ? 'selected' : ''}>Google</option>
-          <option value="openrouter" ${keyInfo.aiProvider === 'openrouter' ? 'selected' : ''}>OpenRouter</option>
-        </select>
-      </label>
-      <label class="settings-label" style="margin-top:12px">
-        Model
-        <select id="settings-model" class="settings-input">
-          ${buildModelOptions(keyInfo.aiProvider || 'openrouter', (keyInfo.aiProvider === 'openrouter' ? keyInfo.openrouterModel : keyInfo.openaiModel) || '')}
-        </select>
-      </label>
-      <label class="settings-label" style="margin-top:12px">
         JLPT Level
         <select id="settings-jlpt" class="settings-input">
           <option value="N5" ${keyInfo.jlptLevel === 'N5' ? 'selected' : ''}>N5</option>
@@ -117,7 +51,7 @@ export async function openSettings() {
       <label class="settings-label" style="margin-top:12px">
         Daily Word Limit
         <input type="number" id="settings-daily-limit" class="settings-input"
-          min="0" max="50" value="${keyInfo.dailyWordLimit ?? 10}">
+          min="0" max="50" value="${dailyWordLimitSetting}">
         <small style="color:#888;font-size:0.85em">0 = skip discovery rooms, max 50</small>
       </label>
       <hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0">
@@ -175,7 +109,7 @@ export async function openSettings() {
       <h4 style="margin:20px 0 8px;color:var(--accent)">Data</h4>
       <button class="ui-btn" id="settings-clear-dialogue-cache-btn"
         style="width:100%;background:var(--surface-2);color:var(--text)">Clear Dialogue Cache</button>
-      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Regenerates all NPC and creature dialogue on next exploration. Useful after switching AI models.</small>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Regenerates all NPC and creature dialogue on next exploration.</small>
 
       <button class="ui-btn" id="settings-reset-prologue-btn"
         style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Reset Prologue</button>
@@ -187,11 +121,11 @@ export async function openSettings() {
 
       <button class="ui-btn" id="settings-reset-user-data-btn"
         style="width:100%;background:#b42318;color:white;margin-top:10px">Reset User Data</button>
-      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Erase this account's game and learning progress. Login, API keys, and settings are kept.</small>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Erase this account's game and learning progress. Login and settings are kept.</small>
 
       <button class="ui-btn" id="settings-delete-account-btn"
         style="width:100%;background:#7a1f17;color:white;margin-top:18px">Delete Account</button>
-      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Permanently delete your login, game progress, learning data, API keys, and bug reports.</small>
+      <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Permanently delete your login, game progress, learning data, settings, and bug reports.</small>
 
       <h4 style="margin:20px 0 8px;color:var(--accent)">Legal</h4>
       <a href="/privacy.html" style="display:block;color:var(--accent);margin-bottom:8px">Privacy Policy</a>
@@ -200,16 +134,6 @@ export async function openSettings() {
         style="margin-top:20px;width:100%">Save</button>
     </div>
   `;
-
-  // Update model dropdown when provider changes
-  document.getElementById('settings-ai-provider')?.addEventListener('change', (e) => {
-    const modelSelect = document.getElementById('settings-model');
-    if (modelSelect) {
-      const provider = e.target.value;
-      const models = MODEL_OPTIONS[provider] || MODEL_OPTIONS.openrouter;
-      modelSelect.innerHTML = buildModelOptions(provider, models[0]?.id);
-    }
-  });
 
   // Auto-unmute when any volume slider is adjusted
   function autoUnmute() {
@@ -300,7 +224,7 @@ export async function openSettings() {
 
   document.getElementById('settings-reset-user-data-btn')?.addEventListener('click', async (e) => {
     const confirmed = confirm(
-      'Reset all progress for this user?\n\nThis erases tutorial and prologue status, creatures befriended, exposed words, flash cards, and current run progress. Your login, API keys, and settings will be kept.'
+      'Reset all progress for this user?\n\nThis erases tutorial and prologue status, creatures befriended, exposed words, flash cards, and current run progress. Your login and settings will be kept.'
     );
     if (!confirmed) return;
 
@@ -328,7 +252,7 @@ export async function openSettings() {
 
   document.getElementById('settings-delete-account-btn')?.addEventListener('click', async (e) => {
     const password = prompt(
-      'Delete your Koto account permanently?\n\nEnter your password to delete your login, progress, learning data, API keys, and bug reports.'
+      'Delete your Koto account permanently?\n\nEnter your password to delete your login, progress, learning data, settings, and bug reports.'
     );
     if (!password) return;
 
@@ -361,10 +285,6 @@ export async function openSettings() {
   });
 
   document.getElementById('settings-save-btn')?.addEventListener('click', async () => {
-    const bunproToken = document.getElementById('settings-bunpro-token')?.value?.trim();
-    const aiKey = document.getElementById('settings-ai-key')?.value?.trim();
-    const aiProvider = document.getElementById('settings-ai-provider')?.value;
-    const model = document.getElementById('settings-model')?.value?.trim();
     const jlptLevel = document.getElementById('settings-jlpt')?.value;
     const dailyWordLimit = parseInt(document.getElementById('settings-daily-limit')?.value || '10');
     const ttsEnabled = document.getElementById('settings-tts-enabled')?.checked;
@@ -397,22 +317,9 @@ export async function openSettings() {
     localStorage.setItem('jrpg_ttsVolume', String(ttsVol));
     if (audioMuted) { audio.mute(); } else { audio.unmute(); }
 
-    // Save API keys to server (only send non-empty values)
+    // Save learning settings to server.
     const keysToSave = {};
-    if (bunproToken) keysToSave.bunproToken = bunproToken;
-    if (aiKey) keysToSave.aiApiKey = aiKey;
-    if (aiProvider) keysToSave.aiProvider = aiProvider;
-    if (model) {
-      if (aiProvider === 'openrouter') {
-        keysToSave.openrouterModel = model;
-      } else {
-        keysToSave.openaiModel = model;
-      }
-    }
     if (jlptLevel) keysToSave.jlptLevel = jlptLevel;
-    if (!isNaN(dailyWordLimit)) {
-      keysToSave.dailyWordLimit = dailyWordLimit;
-    }
 
     if (Object.keys(keysToSave).length > 0) {
       const saved = await settingsModule.saveApiKeysToServer(keysToSave);
@@ -422,26 +329,16 @@ export async function openSettings() {
       }
     }
 
-    // Detect if AI provider or model changed (for cache clearing prompt)
-    const prevModel = keyInfo.aiProvider === 'openrouter' ? keyInfo.openrouterModel : keyInfo.openaiModel;
-    const modelChanged = (aiProvider && aiProvider !== keyInfo.aiProvider) ||
-      (model && model !== prevModel);
-
-    if (modelChanged && confirm('You switched AI models. Clear cached dialogue so it regenerates with the new model?')) {
-      try {
-        await Promise.all([
-          fetch(apiUrl('/api/game/clear-npc-dialogue-cache'), { method: 'POST', headers: getAuthHeaders() }),
-          fetch(apiUrl('/api/game/clear-creature-dialogue-cache'), { method: 'POST', headers: getAuthHeaders() })
-        ]);
-        sceneModule.showToast('Dialogue cache cleared — will regenerate on next exploration', 3000);
-      } catch {
-        sceneModule.showToast('Failed to clear dialogue cache', 2000);
-      }
-    }
-
-    // Save voice gender to server settings
+    // Save global server-backed settings.
+    const serverSettingsToSave = {};
     if (selectedVoiceGender !== voiceGender) {
-      await saveServerSettings({ voiceGender: selectedVoiceGender });
+      serverSettingsToSave.voiceGender = selectedVoiceGender;
+    }
+    if (!isNaN(dailyWordLimit) && dailyWordLimit !== dailyWordLimitSetting) {
+      serverSettingsToSave.dailyWordLimit = dailyWordLimit;
+    }
+    if (Object.keys(serverSettingsToSave).length > 0) {
+      await saveServerSettings(serverSettingsToSave);
     }
 
     // Save kana mode to server (updates meta.kanaMode)

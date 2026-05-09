@@ -228,7 +228,7 @@ export async function chat({
   returnUsage = false
 }) {
   if (!provider) {
-    throw new Error('AI provider is required — configure it in Settings');
+    throw new Error('AI provider is required — configure it in the server environment');
   }
 
   if (!apiKey) {

@@ -1,12 +1,7 @@
 // ============ LOCAL STORAGE KEYS ============
 
 const STORAGE_KEYS = {
-  aiApiKey: 'jrpg_aiApiKey',
-  aiProvider: 'jrpg_aiProvider',
-  openaiModel: 'jrpg_openaiModel',
-  openrouterModel: 'jrpg_openrouterModel',
   jlptLevel: 'jrpg_jlptLevel',
-  bunproToken: 'bunproToken',
   debugMode: 'debugMode',
   bgmVolume: 'jrpg_bgmVolume',
   sfxVolume: 'jrpg_sfxVolume',
@@ -16,32 +11,24 @@ const STORAGE_KEYS = {
 // ============ API KEY DEFAULTS ============
 
 const API_KEY_DEFAULTS = {
-  aiApiKey: '',
-  aiProvider: '',
-  openaiModel: '',
-  openrouterModel: '',
   jlptLevel: 'N4'
 };
 
 // ============ API KEY MANAGEMENT ============
 
 /**
- * Get stored API keys from localStorage
- * @returns {object} Object containing all API keys and related settings
+ * Get stored learning settings from localStorage
+ * @returns {object} Object containing learning settings
  */
 export function getApiKeys() {
   return {
-    aiApiKey: localStorage.getItem(STORAGE_KEYS.aiApiKey) || API_KEY_DEFAULTS.aiApiKey,
-    aiProvider: localStorage.getItem(STORAGE_KEYS.aiProvider) || API_KEY_DEFAULTS.aiProvider,
-    openaiModel: localStorage.getItem(STORAGE_KEYS.openaiModel) || API_KEY_DEFAULTS.openaiModel,
-    openrouterModel: localStorage.getItem(STORAGE_KEYS.openrouterModel) || API_KEY_DEFAULTS.openrouterModel,
     jlptLevel: localStorage.getItem(STORAGE_KEYS.jlptLevel) || API_KEY_DEFAULTS.jlptLevel
   };
 }
 
 /**
- * Save a single API key to localStorage
- * @param {string} key - Key name (e.g., 'aiApiKey')
+ * Save a single learning setting to localStorage
+ * @param {string} key - Key name (e.g., 'jlptLevel')
  * @param {string} value - Value to save
  */
 export function saveApiKey(key, value) {
@@ -51,43 +38,11 @@ export function saveApiKey(key, value) {
 }
 
 /**
- * Save API keys to localStorage
- * @param {object} keys - Object with API key values to save
+ * Save learning settings to localStorage
+ * @param {object} keys - Object with setting values to save
  */
 export function saveApiKeys(keys) {
-  if (keys.aiApiKey !== undefined) localStorage.setItem(STORAGE_KEYS.aiApiKey, keys.aiApiKey);
-  if (keys.aiProvider !== undefined) localStorage.setItem(STORAGE_KEYS.aiProvider, keys.aiProvider);
-  if (keys.openaiModel !== undefined) localStorage.setItem(STORAGE_KEYS.openaiModel, keys.openaiModel);
-  if (keys.openrouterModel !== undefined) localStorage.setItem(STORAGE_KEYS.openrouterModel, keys.openrouterModel);
   if (keys.jlptLevel !== undefined) localStorage.setItem(STORAGE_KEYS.jlptLevel, keys.jlptLevel);
-}
-
-/**
- * Check if user has configured required API keys (AI provider key)
- * @returns {boolean} True if AI API key is configured
- */
-export function hasRequiredApiKeys() {
-  const keys = getApiKeys();
-  return keys.aiApiKey && keys.aiApiKey.length > 0;
-}
-
-// ============ BUNPRO TOKEN ============
-
-/**
- * Get Bunpro API token
- * @returns {string} Bunpro token or empty string
- */
-export function getBunproToken() {
-  return localStorage.getItem(STORAGE_KEYS.bunproToken) || '';
-}
-
-/**
- * Check if Bunpro token is configured
- * @returns {boolean} True if Bunpro token is set
- */
-export function hasBunproToken() {
-  const token = getBunproToken();
-  return token && token.length > 0;
 }
 
 // ============ DEBUG MODE ============
@@ -232,11 +187,11 @@ export function getSfxVolume() {
   return val !== null ? parseFloat(val) : 0.8;
 }
 
-// ============ SERVER-SIDE API KEY MANAGEMENT ============
+// ============ SERVER-SIDE LEARNING SETTINGS MANAGEMENT ============
 
 /**
- * Save API keys to server (authenticated)
- * @param {object} keys - API key values to save
+ * Save learning settings to server (authenticated)
+ * @param {object} keys - Setting values to save
  * @returns {Promise<boolean>} True if save succeeded
  */
 export async function saveApiKeysToServer(keys) {
@@ -259,7 +214,7 @@ export async function saveApiKeysToServer(keys) {
 
 /**
  * Load API key info from server (for settings display)
- * @returns {Promise<object>} API key info (hasJpdbKey, hasAiKey, aiProvider, etc.)
+ * @returns {Promise<object>} Learning settings and consent info
  */
 export async function loadApiKeysFromServer() {
   const token = localStorage.getItem('authToken');

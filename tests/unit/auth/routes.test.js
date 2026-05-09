@@ -145,7 +145,7 @@ describe('auth routes', { concurrency: false }, () => {
     assert.equal(users[0].username, 'keepme');
   });
 
-  it('rejects direct AI key saves without data-sharing consent', async () => {
+  it('does not expose defunct per-user AI and Bunpro settings', async () => {
     const app = createApp({ dataDir, usersFile });
 
     const register = await request(app)
@@ -158,19 +158,24 @@ describe('auth routes', { concurrency: false }, () => {
     await request(app)
       .put('/api/auth/api-keys')
       .set('Authorization', `Bearer ${register.body.token}`)
-      .send({ aiProvider: 'openai', aiApiKey: 'sk-test', aiDataSharingConsent: false })
-      .expect(400);
-
-    await request(app)
-      .put('/api/auth/api-keys')
-      .set('Authorization', `Bearer ${register.body.token}`)
-      .send({ aiProvider: 'openai', aiApiKey: 'sk-test', aiDataSharingConsent: true })
+      .send({
+        aiProvider: 'openai',
+        aiApiKey: 'sk-test',
+        openaiModel: 'gpt-5-mini',
+        openrouterModel: 'openai/gpt-5-mini',
+        bunproToken: 'bunpro-test-token',
+        jlptLevel: 'N3',
+        aiDataSharingConsent: true
+      })
       .expect(200);
 
     const me = await request(app)
       .get('/api/auth/me')
       .set('Authorization', `Bearer ${register.body.token}`)
       .expect(200);
-    assert.equal(me.body.apiKeys.aiDataSharingConsent, true);
+    assert.deepEqual(me.body.apiKeys, {
+      jlptLevel: 'N3',
+      aiDataSharingConsent: true
+    });
   });
 });

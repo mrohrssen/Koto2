@@ -414,7 +414,7 @@ async function quizReward(rewardType, creatureId = null) {
   return apiCall('/quiz-reward', 'POST', { rewardType, creatureId });
 }
 
-/** Get a quiz question (may be from Bunpro or static) */
+/** Get a quiz question */
 async function getQuizQuestion() {
   try {
     const response = await fetch(apiUrl('/api/game/quiz-question'), {
@@ -422,14 +422,7 @@ async function getQuizQuestion() {
       headers: getAuthHeaders()
     });
     const data = await response.json();
-
-    // Store Bunpro metadata for answer submission
-    if (data._bunpro) {
-      data._bunproMeta = data._bunpro;
-      delete data._bunpro; // Don't expose to UI
-    }
-
-    console.log('[API] Quiz question:', { id: data.id, type: data.type, hasBunpro: !!data._bunproMeta });
+    console.log('[API] Quiz question:', { id: data.id, type: data.type });
     return data;
   } catch (error) {
     logger.error('[API] Failed to get quiz question:', error.message);
@@ -438,15 +431,14 @@ async function getQuizQuestion() {
 }
 
 /** Submit quiz answer for validation */
-async function submitQuizAnswer(questionId, selectedIndex, bunproMeta = null) {
+async function submitQuizAnswer(questionId, selectedIndex) {
   try {
     const response = await fetch(apiUrl('/api/game/quiz-answer'), {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
         questionId,
-        selectedIndex,
-        ...(bunproMeta ? { _bunpro: bunproMeta } : {})
+        selectedIndex
       })
     });
     const data = await response.json();

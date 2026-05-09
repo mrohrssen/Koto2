@@ -31,11 +31,7 @@ describe('reset user data flow', () => {
     const userId = registerRes.body.user.id;
     client.setToken(registerRes.body.token);
 
-    const keyRes = await client.put('/api/auth/api-keys', {
-      aiApiKey: 'sk-test',
-      aiProvider: 'openai',
-      jlptLevel: 'N3'
-    });
+    const keyRes = await client.put('/api/auth/api-keys', { jlptLevel: 'N3' });
     assert.equal(keyRes.status, 200);
 
     const createPlayerRes = await client.createPlayer('ResetFlow');
@@ -71,8 +67,9 @@ describe('reset user data flow', () => {
     const meRes = await client.get('/api/auth/me');
     assert.equal(meRes.status, 200);
     assert.equal(meRes.body.username, 'reset-flow-user');
-    assert.equal(meRes.body.apiKeys.hasAiKey, true);
-    assert.equal(meRes.body.apiKeys.aiProvider, 'openai');
-    assert.equal(meRes.body.apiKeys.jlptLevel, 'N3');
+    assert.deepEqual(meRes.body.apiKeys, {
+      jlptLevel: 'N3',
+      aiDataSharingConsent: true
+    });
   });
 });
