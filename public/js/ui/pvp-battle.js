@@ -66,10 +66,10 @@ export function startPvpBattle(data) {
     enemies: opponentTeam, // Array of creature objects
     opponentName,
     mySide: mySide || 'sideA', // Which side we are (for attack card perspective)
-    moveChoices: [],       // Accumulates [{creatureIndex, moveId, targetIndex}]
-    currentCreatureIdx: 0, // Which ally is currently selecting moves
+    actionCursor: data.actionCursor || null,
+    openingResolved: data.openingResolved === true,
     waitingForOpponent: false,
-    roundNumber: 1
+    actionPlaybackActive: false
   };
 
   if (typeof onPvpBattleStart === 'function') {
@@ -100,6 +100,14 @@ export function startPvpBattle(data) {
     handleRoundResult(result);
   });
 
+  pvpSocket.on('pvp:opening-action-submitted', () => {
+    showWaitingForOpponent('Opponent chose their opening move. Waiting for your opening move...');
+  });
+
+  pvpSocket.on('pvp:action-result', (result) => {
+    handleActionResult(result);
+  });
+
   pvpSocket.on('pvp:match-end', (data) => {
     handleMatchEnd(data);
   });
@@ -127,38 +135,27 @@ export function startPvpBattle(data) {
 
 // ============ MOVE SELECTION ============
 
-/**
- * Show move selection for the next alive ally creature.
- * Each alive creature picks a move and target, then all are submitted.
- */
 function showMoveSelection() {
-  if (!pvpState) return;
+  if (!pvpState || pvpState.actionPlaybackActive) return;
 
-  // Find next alive creature that needs a move
-  const aliveIndices = [];
-  for (let i = 0; i < pvpState.allies.length; i++) {
-    const c = pvpState.allies[i];
-    if (c && c.hp > 0) {
-      aliveIndices.push(i);
-    }
-  }
+  const cursor = pvpState.actionCursor;
+  const needsOpening = !pvpState.openingResolved;
+  const creatureIndex = needsOpening
+    ? findHighestDexLivingIndex(pvpState.allies)
+    : cursor?.side === pvpState.mySide
+      ? cursor.index
+      : null;
 
-  // Find the next creature that hasn't had a move assigned yet
-  const assignedIndices = new Set(pvpState.moveChoices.map(m => m.creatureIndex));
-  const nextIdx = aliveIndices.find(i => !assignedIndices.has(i));
-
-  if (nextIdx === undefined) {
-    // All alive creatures have moves — submit
-    pvpState.waitingForOpponent = true;
-    pvpSocket.submitMoves(pvpState.moveChoices);
-    showWaitingForOpponent();
+  if (creatureIndex === null || creatureIndex === undefined) {
+    showWaitingForOpponent(needsOpening
+      ? 'Waiting for both opening moves...'
+      : 'Waiting for opponent action...');
     return;
   }
 
-  pvpState.currentCreatureIdx = nextIdx;
-  const creature = pvpState.allies[nextIdx];
+  const creature = pvpState.allies[creatureIndex];
 
-  showMoves(creature, nextIdx, {
+  showMoves(creature, creatureIndex, {
     includeItems: false,
     onMoveSelect: (move, creatureIndex) => {
       playSFX('button-tap');
@@ -168,6 +165,24 @@ function showMoveSelection() {
   setActiveLabel(creature);
 }
 
+function findHighestDexLivingIndex(creatures) {
+  let bestIndex = null;
+  let bestDex = -Infinity;
+  let bestLevel = -Infinity;
+  for (let i = 0; i < creatures.length; i++) {
+    const c = creatures[i];
+    if (!c || c.hp <= 0) continue;
+    const dex = c.dex || 1;
+    const level = c.level || 1;
+    if (dex > bestDex || (dex === bestDex && level > bestLevel)) {
+      bestIndex = i;
+      bestDex = dex;
+      bestLevel = level;
+    }
+  }
+  return bestIndex;
+}
+
 /**
  * Handle a move being selected. If the move targets a single enemy,
  * show target selection. Otherwise, auto-target and move to next creature.
@@ -175,8 +190,7 @@ function showMoveSelection() {
 function handleMoveSelected(creature, creatureIndex, move) {
   // Rest pseudo-move: no target selection, push action entry, advance.
   if (move.isRest) {
-    pvpState.moveChoices.push({ creatureIndex, action: 'rest' });
-    showMoveSelection();
+    addMoveChoice(creatureIndex, null, null, { action: 'rest' });
     return;
   }
 
@@ -203,22 +217,24 @@ function handleMoveSelected(creature, creatureIndex, move) {
 /**
  * Add a move choice and advance to next creature or submit.
  */
-function addMoveChoice(creatureIndex, moveId, targetIndex) {
+function addMoveChoice(creatureIndex, moveId, targetIndex, extra = {}) {
   if (!pvpState) return;
 
-  pvpState.moveChoices.push({ creatureIndex, moveId, targetIndex });
-
-  // Move to next creature
-  showMoveSelection();
+  pvpState.waitingForOpponent = true;
+  const action = { creatureIndex, ...extra };
+  if (moveId) action.moveId = moveId;
+  if (typeof targetIndex === 'number') action.targetIndex = targetIndex;
+  pvpSocket.submitAction(action);
+  showWaitingForOpponent(pvpState.openingResolved ? 'Action submitted...' : 'Opening move submitted...');
 }
 
 // ============ WAITING ============
 
-function showWaitingForOpponent() {
+function showWaitingForOpponent(message = "Waiting for opponent's moves...") {
   actions.setContent(`
     <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px;max-width:340px;margin:0 auto;">
       <div style="color:var(--text-secondary);text-align:center;animation:pulse 2s ease-in-out infinite;">
-        Waiting for opponent's moves...
+        ${escapeHtml(message)}
       </div>
       <div id="pvp-battle-status" style="text-align:center;color:var(--text-secondary);font-size:0.8em;min-height:1em;">
       </div>
@@ -236,7 +252,6 @@ async function handleRoundResult(result) {
   if (!pvpState) return;
 
   pvpState.waitingForOpponent = false;
-  pvpState.roundNumber++;
 
   // Show attacks with progressive HP drain (pre-round state still in pvpState)
   const attacks = result.attacks || [];
@@ -257,11 +272,50 @@ async function handleRoundResult(result) {
 
   // If no winner, continue to next round's move selection
   if (!result.winner) {
-    pvpState.currentCreatureIdx = 0;
-    pvpState.moveChoices = [];
     showMoveSelection();
   }
   // If there is a winner, pvp:match-end handler will take over
+}
+
+async function handleActionResult(result) {
+  if (!pvpState) return;
+  pvpState.actionPlaybackActive = true;
+  pvpState.waitingForOpponent = false;
+
+  await showActionSegments(result.actionSegments || [{
+    actor: { side: pvpState.mySide, index: 0 },
+    attacks: result.attacks || []
+  }]);
+
+  pvpState.allies = result.allies;
+  pvpState.enemies = result.enemies;
+  pvpState.actionCursor = result.actionCursor;
+  pvpState.openingResolved = result.openingResolved === true;
+
+  if (sceneModule?.showFormation) {
+    sceneModule.showFormation('player', pvpState.allies);
+    sceneModule.showFormation('enemy', pvpState.enemies);
+  }
+  syncPvpBattleScene();
+  syncAllStatusLabels();
+
+  pvpState.actionPlaybackActive = false;
+
+  if (!result.winner) {
+    showMoveSelection();
+  }
+}
+
+async function showActionSegments(segments) {
+  for (const segment of segments) {
+    const attacks = [
+      ...(segment.attacks || []),
+      ...(segment.counterAttacks || [])
+    ];
+    if (attacks.length > 0) {
+      await showAttackSummary(attacks);
+    }
+  }
 }
 
 async function syncPvpBattleScene({ initial = false } = {}) {

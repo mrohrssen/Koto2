@@ -135,6 +135,19 @@ function buildAttackChoices(combat) {
     .filter(Boolean);
 }
 
+function buildCursorAttackChoice(combat) {
+  const cursor = combat.actionCursor;
+  assert.ok(cursor, 'combat should expose actionCursor');
+  assert.equal(cursor.side, 'ally', 'test expects player-owned cursor');
+  const actor = combat.allies[cursor.index];
+  assert.ok(actor, 'cursor actor should exist');
+  const livingEnemyIndex = combat.enemies.findIndex(e => e && e.hp > 0);
+  assert.ok(livingEnemyIndex >= 0, 'should have a living enemy');
+  const move = actor.moves?.find(m => m.category === 'damage' || m.category === 'drain') || actor.moves?.[0];
+  assert.ok(move, 'cursor actor should have a move');
+  return { creatureIndex: cursor.index, moveId: move.id, targetIndex: livingEnemyIndex };
+}
+
 describe('combat flow', () => {
   let client, cleanup, tmpDir;
 
@@ -168,6 +181,23 @@ describe('combat flow', () => {
     assert.ok(turn.body.state.combat, 'state should still have combat');
   });
 
+  it('submits one cursor action and returns ordered action segments', async () => {
+    const state = await startCombatRun(client, tmpDir);
+    const choice = buildCursorAttackChoice(state.combat);
+
+    const turn = await client.post('/api/game/creature-combat-cycle', {
+      actionType: 'attack',
+      moveChoices: [choice]
+    });
+
+    assert.equal(turn.status, 200, `combat cycle failed: ${JSON.stringify(turn.body)}`);
+    assert.ok(Array.isArray(turn.body.actionSegments), 'response should include actionSegments');
+    assert.ok(turn.body.actionSegments.length >= 1, 'should animate at least the submitted action');
+    assert.equal(turn.body.actionSegments[0].actor.side, 'ally');
+    assert.equal(turn.body.actionSegments[0].actor.index, choice.creatureIndex);
+    assert.ok(turn.body.state.combat.actionCount >= 1, 'actionCount should advance');
+  });
+
   it('winning combat grants rewards', async () => {
     const state = await startCombatRun(client, tmpDir);
     assert.ok(state.combat, 'combat should exist');
@@ -177,11 +207,10 @@ describe('combat flow', () => {
     assert.equal(setHpRes.status, 200, 'debug-set-enemy-hp should succeed');
 
     const current = await client.getState();
-    const moveChoices = buildAttackChoices(current.body.combat);
-    assert.ok(moveChoices.length > 0, 'should have at least one valid attack choice');
+    const moveChoice = buildCursorAttackChoice(current.body.combat);
     const result = await client.post('/api/game/creature-combat-cycle', {
       actionType: 'attack',
-      moveChoices
+      moveChoices: [moveChoice]
     });
 
     assert.equal(result.status, 200,
@@ -202,12 +231,14 @@ describe('combat flow', () => {
     assert.ok(state.combat, 'combat should exist');
 
     const beforeState = (await client.getState()).body;
-    const mpBefore = beforeState.combat.allies[0].mp;
-    const maxMp = beforeState.combat.allies[0].maxMp;
+    const cursor = beforeState.combat.actionCursor;
+    assert.equal(cursor.side, 'ally', 'rest test expects player-owned cursor');
+    const mpBefore = beforeState.combat.allies[cursor.index].mp;
+    const maxMp = beforeState.combat.allies[cursor.index].maxMp;
 
     const turn = await client.post('/api/game/creature-combat-cycle', {
       actionType: 'attack',
-      moveChoices: [{ creatureIndex: 0, action: 'rest' }]
+      moveChoices: [{ creatureIndex: cursor.index, action: 'rest' }]
     });
 
     assert.equal(turn.status, 200, `rest cycle failed: ${JSON.stringify(turn.body)}`);
@@ -216,15 +247,15 @@ describe('combat flow', () => {
     assert.ok(restAttack, `expected a rest attack in response; got ${JSON.stringify(Object.keys(turn.body))}`);
     assert.equal(restAttack.isRest, true);
     assert.equal(restAttack.damage, 0);
-    assert.equal(restAttack.attackerIndex, 0);
-    assert.equal(restAttack.targetIndex, 0);
+    assert.equal(restAttack.attackerIndex, cursor.index);
+    assert.equal(restAttack.targetIndex, cursor.index);
     assert.equal(restAttack.moveNameEn, 'rest');
     assert.equal(restAttack.attackerSkillName, '休む');
     assert.equal(restAttack.attackerSkillReading, 'やすむ');
     assert.ok(restAttack.mpGained >= 0, 'mpGained should be non-negative');
 
     // Final state: ally 0's MP should have increased by at least the rest amount (server also applies 5% baseline regen)
-    const after = turn.body.state.combat.allies[0];
+    const after = turn.body.state.combat.allies[cursor.index];
     if (mpBefore < maxMp) {
       assert.ok(after.mp > mpBefore, `mp should increase after rest; before=${mpBefore}, after=${after.mp}`);
     }
@@ -239,12 +270,11 @@ describe('combat flow', () => {
       const current = await client.getState();
       if (!current.body.combat?.active) break;
 
-      const moveChoices = buildAttackChoices(current.body.combat);
-      if (moveChoices.length === 0) break;
+      const moveChoice = buildCursorAttackChoice(current.body.combat);
 
       const turnRes = await client.post('/api/game/creature-combat-cycle', {
         actionType: 'attack',
-        moveChoices
+        moveChoices: [moveChoice]
       });
       assert.equal(turnRes.status, 200, `turn ${i + 1} should succeed: ${JSON.stringify(turnRes.body)}`);
       turnsExecuted++;

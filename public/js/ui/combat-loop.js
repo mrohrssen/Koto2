@@ -133,7 +133,6 @@ let playerAttackTimer = null;
 let enemyAttackTimer = null;
 
 // Move-based combat state
-let moveChoices = [];
 let currentCreatureIndex = 0;
 let pendingMove = null;
 
@@ -372,8 +371,15 @@ export function initMoveUI() {
  * Replaces the old pauseForNextVocab flow for creature combat.
  */
 export function startMoveSelection() {
-  moveChoices = [];
-  currentCreatureIndex = 0;
+  const state = getGameState();
+  const cursor = state.combat?.actionCursor;
+  if (!cursor || cursor.side !== 'ally') {
+    clearMoveSelect();
+    clearTargetSelect();
+    clearActiveGlowForScene(getSceneManager().currentScene);
+    return;
+  }
+  currentCreatureIndex = cursor.index;
   promptNextCreature();
 }
 
@@ -382,8 +388,11 @@ export function getFirstCombatMoveTutorialOpts(state, creature, currentCreatureI
   if (state?.meta?.tutorialStep !== 1) return {};
   if (state?.run?.currentArea?.id !== 'hajimari-no-hiroba') return {};
   if ((state?.run?.currentRoom ?? -1) !== 0) return {};
-  if ((state?.combat?.turnCount ?? 1) !== 1) return {};
+  const cursor = state?.combat?.actionCursor;
+  if ((state?.combat?.actionCount ?? 0) !== 0) return {};
+  if (cursor?.side !== 'ally') return {};
   if (currentCreatureIndex !== 0) return {};
+  if (cursor?.index !== currentCreatureIndex) return {};
   if (creature?.id !== 'hi') return {};
   if (!creature?.moves?.some(move => move?.id === 'honoo')) return {};
 
@@ -397,20 +406,23 @@ export function getFirstCombatMoveTutorialOpts(state, creature, currentCreatureI
 function promptNextCreature() {
   const state = getGameState();
   const allies = state.combat?.allies || state.run?.creatureParty?.active || [];
-
-  // Skip KO'd creatures
-  while (currentCreatureIndex < allies.length && (!allies[currentCreatureIndex] || allies[currentCreatureIndex].hp <= 0)) {
-    currentCreatureIndex++;
-  }
-
-  if (currentCreatureIndex >= allies.length) {
-    // All creatures have chosen -- execute the turn
+  const cursor = state.combat?.actionCursor;
+  if (!cursor || cursor.side !== 'ally') {
+    clearMoveSelect();
+    clearTargetSelect();
     clearActiveGlowForScene(getSceneManager().currentScene);
-    executeCreatureMovesTurn(moveChoices);
     return;
   }
 
+  currentCreatureIndex = cursor.index;
   const creature = allies[currentCreatureIndex];
+  if (!creature || creature.hp <= 0) {
+    clearMoveSelect();
+    clearTargetSelect();
+    clearActiveGlowForScene(getSceneManager().currentScene);
+    return;
+  }
+
   clearTargetSelect();
   setActiveLabel(creature);
   showActiveGlowForScene(getSceneManager().currentScene, currentCreatureIndex);
@@ -420,14 +432,17 @@ function promptNextCreature() {
   });
 }
 
+function submitCursorAction(choice) {
+  clearActiveGlowForScene(getSceneManager().currentScene);
+  executeCreatureMovesTurn([choice]);
+}
+
 function handleMoveSelected(move, creatureIndex) {
   clearActiveGlowForScene(getSceneManager().currentScene);
 
-  // Rest pseudo-move: no target selection. Push moveChoices entry and advance.
+  // Rest pseudo-move: no target selection.
   if (move.isRest) {
-    moveChoices.push({ creatureIndex: currentCreatureIndex, action: 'rest' });
-    currentCreatureIndex++;
-    promptNextCreature();
+    submitCursorAction({ creatureIndex: currentCreatureIndex, action: 'rest' });
     return;
   }
 
@@ -438,18 +453,14 @@ function handleMoveSelected(move, creatureIndex) {
     const enemies = state.combat?.enemies || [];
     const alive = enemies.filter(e => e.hp > 0 && !e.befriended);
     if (alive.length === 0) {
-      // No valid targets — skip target selection, auto-advance
-      moveChoices.push({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 });
-      currentCreatureIndex++;
-      promptNextCreature();
+      // No valid targets — submit with no target.
+      submitCursorAction({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 });
       return;
     }
     if (alive.length === 1) {
-      // Single target — auto-select, skip UI
+      // Single target — auto-select, skip UI.
       const autoIdx = enemies.indexOf(alive[0]);
-      moveChoices.push({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: autoIdx });
-      currentCreatureIndex++;
-      promptNextCreature();
+      submitCursorAction({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: autoIdx });
       return;
     }
     showEnemies(enemies, move);
@@ -457,17 +468,14 @@ function handleMoveSelected(move, creatureIndex) {
     showAllies(state.combat?.allies || state.run?.creatureParty?.active || [], move);
   } else {
     // AoE or self -- no target needed, targetIndex -1
-    moveChoices.push({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 });
-    currentCreatureIndex++;
-    promptNextCreature();
+    submitCursorAction({ creatureIndex: currentCreatureIndex, moveId: move.id, targetIndex: -1 });
   }
 }
 
 function handleTargetSelected(targetIndex) {
-  moveChoices.push({ creatureIndex: currentCreatureIndex, moveId: pendingMove.id, targetIndex });
+  const choice = { creatureIndex: currentCreatureIndex, moveId: pendingMove.id, targetIndex };
   pendingMove = null;
-  currentCreatureIndex++;
-  promptNextCreature();
+  submitCursorAction(choice);
 }
 
 function handleTargetCancelled() {
@@ -832,7 +840,11 @@ function syncFinalState(result) {
       ...gs.combat,
       enemies: result.enemies,
       allies: result.allies || gs.combat.allies,
-      turnCount: result.turnCount ?? gs.combat.turnCount
+      turnCount: result.turnCount ?? gs.combat.turnCount,
+      actionCursor: result.state?.combat?.actionCursor ?? gs.combat.actionCursor,
+      actionCount: result.state?.combat?.actionCount ?? gs.combat.actionCount,
+      cycleCount: result.state?.combat?.cycleCount ?? gs.combat.cycleCount,
+      openingResolved: result.state?.combat?.openingResolved ?? gs.combat.openingResolved
     };
   }
   updateGameState(updates);
@@ -1053,18 +1065,42 @@ async function executeCreatureMovesTurn(choices) {
       // Store server-provided barks for speech bubbles
       _currentRoundBarks = result.barks || [];
 
-      // Show poison/effect ticks
-      await vfx.showEffectEvents(result);
-
       // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
       await vfx.showRoundStartEvents(result);
 
       // Track enemy HP for progressive updates (slot index — duplicate species share id)
       const enemyHpMap = vfx.buildEnemyHpMapForPlayerAttacks(result);
       const allyHpMap = vfx.buildAllyHpMap(result);
-      const merged = vfx.buildMergedInitiativeAttacks(result);
       const allPendingMoveLearn = [];
       const killedEnemies = new Set();
+
+      const actionSegments = Array.isArray(result.actionSegments) ? result.actionSegments : [];
+      let merged = [];
+      if (actionSegments.length > 0) {
+        for (const segment of actionSegments) {
+          const side = segment.actor?.side === 'enemy' ? 'enemy' : 'player';
+          for (const atk of segment.attacks || []) {
+            if (shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)) continue;
+            if (side === 'player') {
+              await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn);
+            } else {
+              await vfx.showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
+            }
+          }
+          for (const counter of segment.counterAttacks || []) {
+            await vfx.showOneCounterAttackAnimated(counter, enemyHpMap, result.enemies);
+          }
+          await vfx.showEffectEvents({
+            ...result,
+            effectEvents: segment.effectEvents || [],
+            mpRegens: segment.mpRegens || []
+          });
+        }
+      } else {
+        // Show poison/effect ticks from the legacy full-round path.
+        await vfx.showEffectEvents(result);
+        merged = vfx.buildMergedInitiativeAttacks(result);
+      }
 
       if (merged.length > 0) {
         for (const { side, atk } of merged) {
@@ -1120,17 +1156,19 @@ async function executeCreatureMovesTurn(choices) {
         }
       }
 
-      // Enemy attacks (only if not already shown in initiative merge)
-      const enemyShownInMerge = merged.some(e => e.side === 'enemy');
-      if (!enemyShownInMerge && result.enemyAttacks?.length > 0) {
-        await delay(400);
-        await vfx.showEnemyAttacksAnimated(result, allyHpMap, false);
-      }
+      if (actionSegments.length === 0) {
+        // Enemy attacks (only if not already shown in initiative merge)
+        const enemyShownInMerge = merged.some(e => e.side === 'enemy');
+        if (!enemyShownInMerge && result.enemyAttacks?.length > 0) {
+          await delay(400);
+          await vfx.showEnemyAttacksAnimated(result, allyHpMap, false);
+        }
 
-      // Counter attack animations — only if not already shown in initiative merge
-      const countersShownInMerge = merged.some(e => e.side === 'player' && e.atk.type === 'counter');
-      if (!countersShownInMerge) {
-        await vfx.showCounterAttacks(result, enemyHpMap);
+        // Counter attack animations — only if not already shown in initiative merge
+        const countersShownInMerge = merged.some(e => e.side === 'player' && e.atk.type === 'counter');
+        if (!countersShownInMerge) {
+          await vfx.showCounterAttacks(result, enemyHpMap);
+        }
       }
 
       // KO swap animations

@@ -103,6 +103,7 @@ export default function createCombatRoutes({
 
   // Creature combat cycle
   // Attack: { actionType: 'attack', moveChoices: [{ creatureIndex, moveId, targetIndex }] }
+  // The attack payload contains exactly one player-owned cursor action.
   // Defend: { actionType: 'defend' }
   // Befriend: { actionType: 'befriend', targetEnemyIndex }
   router.post('/creature-combat-cycle', (req, res) => {

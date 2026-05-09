@@ -263,6 +263,15 @@ export function createCombatState(enemy) {
     allies: [],    // references to run.creatureParty.active
     enemies: [],   // MVP: single enemy creature
 
+    // Action-cursor combat flow
+    actionCursor: null,
+    actionCount: 0,
+    cycleCount: 0,
+    openingResolved: false,
+    openingCursors: null,
+    pendingOpeningActions: null,
+    actionSegments: [],
+
     // Party skills (combat-scoped)
     partyHitCounter: 0,       // Legacy — kept for backward compat
     chainHitsThisTurn: 0,     // Chain Surge threshold counter (resets each turn)

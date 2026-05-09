@@ -9,6 +9,8 @@ import {
   awardBattleXp,
   awardKillXp,
   tickAllEffects,
+  resolveActorMiniRound,
+  resolveSingleActorAction,
   rollTalkAcceptance,
   executeNpcSkill,
   handleBefriendAnswer,
@@ -125,6 +127,57 @@ describe('Creature Combat - Defend Turn', () => {
   });
 });
 
+describe('Creature Combat - Actor Mini Round', () => {
+  it('ticks poison only on the acting creature after its action', () => {
+    const actor = instantiateCreature('mizu');
+    const bystander = instantiateCreature('ki');
+    actor.activeEffects = [{ type: 'poison', damagePerTurn: 7, remainingTurns: 2, sourceId: 'enemy' }];
+    bystander.activeEffects = [{ type: 'poison', damagePerTurn: 7, remainingTurns: 2, sourceId: 'enemy' }];
+    const actorHp = actor.hp;
+    const bystanderHp = bystander.hp;
+
+    const result = resolveActorMiniRound(actor, { side: 'ally', index: 0 });
+
+    assert.equal(actor.hp, actorHp - 7);
+    assert.equal(actor.activeEffects[0].remainingTurns, 1);
+    assert.equal(bystander.hp, bystanderHp);
+    assert.equal(bystander.activeEffects[0].remainingTurns, 2);
+    assert.equal(result.effectEvents.length, 1);
+    assert.equal(result.effectEvents[0].targetSide, 'ally');
+    assert.equal(result.effectEvents[0].targetIndex, 0);
+  });
+
+  it('regenerates MP only on the acting ally', () => {
+    const actor = instantiateCreature('mizu');
+    const bystander = instantiateCreature('ki');
+    actor.mp = 0;
+    bystander.mp = 0;
+
+    const result = resolveActorMiniRound(actor, { side: 'ally', index: 0 });
+
+    assert.equal(actor.mp, Math.floor(actor.maxMp * 0.05));
+    assert.equal(bystander.mp, 0);
+    assert.deepEqual(result.mpRegens, [{
+      creatureId: actor.id,
+      mp: actor.mp,
+      maxMp: actor.maxMp,
+      regen: Math.floor(actor.maxMp * 0.05),
+      side: 'ally',
+      index: 0
+    }]);
+  });
+
+  it('uses enemy MP regen rate for acting enemy', () => {
+    const enemy = instantiateCreature('hi');
+    enemy.mp = 0;
+
+    const result = resolveActorMiniRound(enemy, { side: 'enemy', index: 0 });
+
+    assert.equal(enemy.mp, Math.floor(enemy.maxMp * 0.12));
+    assert.equal(result.mpRegens[0].side, 'enemy');
+  });
+});
+
 describe('Creature Combat - Enemy Turn', () => {
   it('enemy attacks allied creatures using its first move', () => {
     const allies = [instantiateCreature('ki')];
@@ -173,6 +226,59 @@ describe('Creature Combat - Interleaved Initiative', () => {
     );
 
     assert.strictEqual(result.enemyAttacks[0].attackerId, fastLowLevel.id);
+  });
+});
+
+describe('Creature Combat - Single Actor Action', () => {
+  it('resolves only the selected ally primary action and returns one action segment', () => {
+    const allies = [instantiateCreature('mizu'), instantiateCreature('ki')];
+    const enemies = [instantiateCreature('hi')];
+    const startHp = enemies[0].hp;
+
+    const result = resolveSingleActorAction({
+      actorSide: 'ally',
+      actorIndex: 0,
+      allies,
+      enemies,
+      choices: [{ creatureIndex: 0, moveId: 'nagasu', targetIndex: 0 }]
+    });
+
+    assert.equal(result.actionSegments.length, 1);
+    assert.equal(result.actionSegments[0].actor.side, 'ally');
+    assert.equal(result.actionSegments[0].actor.index, 0);
+    assert.ok(enemies[0].hp < startHp);
+    assert.equal(allies[1].mp, allies[1].maxMp, 'bystander ally should not spend or regen MP');
+  });
+
+  it('does not let an inline counter create a mini-round tick for the countering ally', () => {
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('hi')];
+    allies[0].activeEffects = [{ type: 'poison', damagePerTurn: 4, remainingTurns: 2, sourceId: 'hi' }];
+    enemies[0].moves = [{
+      id: 'enemy-hit', name: '打つ', nameEn: 'Hit', reading: 'うつ',
+      element: 'neutral', category: 'damage', target: 'single_enemy',
+      power: 30, mpCost: 0
+    }];
+
+    const origRandom = Math.random;
+    Math.random = () => 0.1;
+    try {
+      const result = resolveSingleActorAction({
+        actorSide: 'enemy',
+        actorIndex: 0,
+        allies,
+        enemies,
+        choices: [{ creatureIndex: 0, moveId: 'enemy-hit', targetIndex: 0 }],
+        runPartySkills: ['retaliationStrike'],
+        combat: {}
+      });
+
+      assert.equal(result.actionSegments.length, 1);
+      assert.ok(result.actionSegments[0].counterAttacks.length > 0, 'retaliationStrike should counter');
+      assert.equal(allies[0].activeEffects[0].remainingTurns, 2, 'countering ally poison should not tick');
+    } finally {
+      Math.random = origRandom;
+    }
   });
 });
 

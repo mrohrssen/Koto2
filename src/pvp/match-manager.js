@@ -1,6 +1,6 @@
 import { writeFileSync, readFileSync, readdirSync, unlinkSync, existsSync } from 'fs';
 import { join } from 'path';
-import { resolveRound } from './pvp-combat.js';
+import { resolveOpeningActions, resolvePvpCursorAction, resolveRound } from './pvp-combat.js';
 import { applyDebugSuperAttack } from '../game/loop.js';
 import { backfillCreatureListUids } from '../game/creatures.js';
 
@@ -20,6 +20,10 @@ export class MatchManager {
     this.socketToMatch = new Map();
     /** @type {Function} */
     this._resolveRound = options.resolveRoundFn || resolveRound;
+    /** @type {Function} */
+    this._resolveOpeningActions = options.resolveOpeningActionsFn || resolveOpeningActions;
+    /** @type {Function} */
+    this._resolveCursorAction = options.resolveCursorActionFn || resolvePvpCursorAction;
     /** @type {Map<string, NodeJS.Timeout>} matchCode -> round timer */
     this._roundTimers = new Map();
     /** @type {string|null} */
@@ -213,19 +217,68 @@ export class MatchManager {
     match.player2.movesSubmitted = null;
     combat.round++;
 
-    // Check for winner
-    if (result.winner) {
-      match.phase = 'finished';
-      if (result.winner === 'sideA') {
-        match.winnerId = match.player1.userId;
-      } else if (result.winner === 'sideB') {
-        match.winnerId = match.player2.userId;
-      } else {
-        // draw
-        match.winnerId = 'draw';
-      }
+    this._applyPvpResult(match, result);
+
+    return result;
+  }
+
+  submitAction(code, userId, action) {
+    const match = this.matches.get(code);
+    if (!match || !match.combat || match.phase !== 'battle') return null;
+
+    const side = this._sideForPlayer(match, userId);
+    if (!side) return null;
+
+    const { combat } = match;
+
+    if (!combat.openingResolved) {
+      combat.openingActions ||= { sideA: null, sideB: null };
+      combat.openingActions[side] = action;
+      if (!combat.openingActions.sideA || !combat.openingActions.sideB) return null;
+
+      const result = this._resolveOpeningActions({
+        sideA: combat.sideA,
+        sideB: combat.sideB,
+        actionA: combat.openingActions.sideA,
+        actionB: combat.openingActions.sideB,
+        options: {
+          partyA: combat.partyA,
+          partyB: combat.partyB,
+          partySkillsA: combat.partySkillsA,
+          partySkillsB: combat.partySkillsB,
+          combatA: combat.combatA,
+          combatB: combat.combatB
+        }
+      });
+
+      combat.openingResolved = true;
+      combat.openingActions = { sideA: null, sideB: null };
+      combat.actionCursor = result.nextCursor;
+      combat.actionCount = (combat.actionCount || 0) + (result.actionSegments?.length || 0);
+      this._applyPvpResult(match, result);
+      return result;
     }
 
+    if (!this._playerOwnsCursor(match, userId, combat.actionCursor)) {
+      throw new Error('User is not the active player');
+    }
+
+    const result = this._resolveCursorAction({
+      sideA: combat.sideA,
+      sideB: combat.sideB,
+      cursor: combat.actionCursor,
+      action,
+      partyA: combat.partyA,
+      partyB: combat.partyB,
+      partySkillsA: combat.partySkillsA,
+      partySkillsB: combat.partySkillsB,
+      combatA: combat.combatA,
+      combatB: combat.combatB
+    });
+
+    combat.actionCursor = result.nextCursor;
+    combat.actionCount = (combat.actionCount || 0) + 1;
+    this._applyPvpResult(match, result);
     return result;
   }
 
@@ -468,8 +521,34 @@ export class MatchManager {
       partySkillsB: teamB.partySkills || [],
       combatA: { partySkillCounters: {} },
       combatB: { partySkillCounters: {} },
-      round: 1
+      round: 1,
+      openingResolved: false,
+      openingActions: { sideA: null, sideB: null },
+      actionCursor: null,
+      actionCount: 0
     };
+  }
+
+  _applyPvpResult(match, result) {
+    if (!result?.winner) return;
+    match.phase = 'finished';
+    if (result.winner === 'sideA') {
+      match.winnerId = match.player1.userId;
+    } else if (result.winner === 'sideB') {
+      match.winnerId = match.player2.userId;
+    } else {
+      match.winnerId = 'draw';
+    }
+  }
+
+  _sideForPlayer(match, userId) {
+    if (match.player1?.userId === userId) return 'sideA';
+    if (match.player2?.userId === userId) return 'sideB';
+    return null;
+  }
+
+  _playerOwnsCursor(match, userId, cursor) {
+    return this._sideForPlayer(match, userId) === cursor?.side;
   }
 
   /**
