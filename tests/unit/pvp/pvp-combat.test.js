@@ -1,6 +1,11 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTurnOrder, resolveRound } from '../../../src/pvp/pvp-combat.js';
+import {
+  buildTurnOrder,
+  resolveOpeningActions,
+  resolvePvpCursorAction,
+  resolveRound
+} from '../../../src/pvp/pvp-combat.js';
 
 function makeCreature(overrides = {}) {
   return {
@@ -337,5 +342,60 @@ describe('resolveRound', () => {
     assert.equal(sideB.length, 0, 'Side B should be empty after compaction');
     // Side A wins
     assert.equal(result.winner, 'sideA', 'Side A should win when all of side B is KO');
+  });
+});
+
+describe('PvP action cursor resolution', () => {
+  it('resolves opening actions by dex and stops if first action wins', () => {
+    const sideA = [makeCreature({ id: 'a-fast', dex: 50, attack: 999 })];
+    const sideB = [makeCreature({ id: 'b-slow', dex: 5, hp: 1, maxHp: 1 })];
+
+    const result = resolveOpeningActions({
+      sideA,
+      sideB,
+      actionA: { creatureIndex: 0, moveId: 'slash', targetIndex: 0 },
+      actionB: { creatureIndex: 0, moveId: 'slash', targetIndex: 0 }
+    });
+
+    assert.equal(result.actionSegments.length, 1);
+    assert.equal(result.winner, 'sideA');
+  });
+
+  it('resolves one sequential PvP action and advances cursor', () => {
+    const sideA = [makeCreature({ id: 'a', dex: 20 })];
+    const sideB = [makeCreature({ id: 'b', dex: 10 })];
+
+    const result = resolvePvpCursorAction({
+      sideA,
+      sideB,
+      cursor: { side: 'sideA', index: 0, opening: false },
+      action: { creatureIndex: 0, moveId: 'slash', targetIndex: 0 }
+    });
+
+    assert.equal(result.actionSegments.length, 1);
+    assert.equal(result.actionSegments[0].actor.side, 'sideA');
+    assert.deepEqual(result.nextCursor, { side: 'sideB', index: 0, opening: false });
+  });
+
+  it('ticks actor poison only after that actor action', () => {
+    const sideA = [makeCreature({
+      id: 'a',
+      activeEffects: [{ type: 'poison', damagePerTurn: 5, remainingTurns: 2, sourceId: 'b' }]
+    })];
+    const sideB = [makeCreature({
+      id: 'b',
+      activeEffects: [{ type: 'poison', damagePerTurn: 5, remainingTurns: 2, sourceId: 'a' }]
+    })];
+
+    const result = resolvePvpCursorAction({
+      sideA,
+      sideB,
+      cursor: { side: 'sideA', index: 0, opening: false },
+      action: { creatureIndex: 0, moveId: 'slash', targetIndex: 0 }
+    });
+
+    assert.equal(sideA[0].activeEffects[0].remainingTurns, 1);
+    assert.equal(sideB[0].activeEffects[0].remainingTurns, 2);
+    assert.equal(result.effectEvents.length, 1);
   });
 });

@@ -95,7 +95,9 @@ export function setupPvpSockets(io, { getSettings } = {}) {
             yourTeam: match.combat.sideA,
             opponentTeam: match.combat.sideB,
             opponentName: match.player2.username,
-            mySide: 'sideA'
+            mySide: 'sideA',
+            actionCursor: match.combat.actionCursor,
+            openingResolved: match.combat.openingResolved
           });
         }
         if (p2Socket) {
@@ -103,7 +105,9 @@ export function setupPvpSockets(io, { getSettings } = {}) {
             yourTeam: match.combat.sideB,
             opponentTeam: match.combat.sideA,
             opponentName: match.player1.username,
-            mySide: 'sideB'
+            mySide: 'sideB',
+            actionCursor: match.combat.actionCursor,
+            openingResolved: match.combat.openingResolved
           });
         }
       } else {
@@ -219,6 +223,67 @@ export function setupPvpSockets(io, { getSettings } = {}) {
             if (s) s.emit('pvp:match-forfeit', { winnerId: forfeitResult.winnerId, reason: 'timeout' });
           });
         });
+      }
+    });
+
+    // ------------------------------------------------------------------ //
+    // pvp:submit-action
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:submit-action', ({ action } = {}) => {
+      const found = mm.findMatchBySocket(socket.id);
+      if (!found) return;
+
+      try {
+        const result = mm.submitAction(found.code, socket.userId, action);
+        const match = mm.getMatch(found.code);
+        if (!match) return;
+
+        if (result === null) {
+          const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
+          const otherPlayer = match[otherPlayerKey];
+          const otherSocket = otherPlayer ? io.sockets.sockets.get(otherPlayer.socketId) : null;
+          if (otherSocket) otherSocket.emit('pvp:opening-action-submitted');
+          return;
+        }
+
+        const p1Socket = io.sockets.sockets.get(match.player1.socketId);
+        const p2Socket = io.sockets.sockets.get(match.player2.socketId);
+        const base = {
+          actionSegments: result.actionSegments,
+          attacks: result.attacks,
+          winner: result.winner,
+          actionCursor: match.combat.actionCursor,
+          openingResolved: match.combat.openingResolved
+        };
+
+        if (p1Socket) {
+          p1Socket.emit('pvp:action-result', {
+            ...base,
+            allies: result.sideA,
+            enemies: result.sideB
+          });
+        }
+        if (p2Socket) {
+          p2Socket.emit('pvp:action-result', {
+            ...base,
+            allies: result.sideB,
+            enemies: result.sideA
+          });
+        }
+
+        mm.saveMatch(found.code);
+
+        if (result.winner) {
+          const winnerId = match.winnerId;
+          const winnerName = winnerId === match.player1.userId
+            ? match.player1.username
+            : winnerId === match.player2?.userId
+              ? match.player2.username
+              : null;
+          io.to(found.code).emit('pvp:match-end', { winnerId, winnerName });
+        }
+      } catch (error) {
+        socket.emit('pvp:error', { message: error.message });
       }
     });
 

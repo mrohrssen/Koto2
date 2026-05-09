@@ -1018,6 +1018,100 @@ export function processInterleavedPvERound(
   };
 }
 
+export function resolveSingleActorAction({
+  actorSide,
+  actorIndex,
+  allies,
+  enemies,
+  choices = [],
+  itemBuffs = null,
+  creatureParty = null,
+  metaMults = null,
+  runPartySkills = null,
+  combat = null,
+  playbackStart = 0
+}) {
+  const isAlly = actorSide === 'ally' || actorSide === 'sideA';
+  const actorList = isAlly ? allies : enemies;
+  const defenderList = isAlly ? enemies : allies;
+  const actor = actorList[actorIndex];
+  const inlineCounters = [];
+  let playbackIndex = playbackStart;
+
+  const segment = {
+    actor: { side: actorSide, index: actorIndex, id: actor?.id || null },
+    attacks: [],
+    counterAttacks: [],
+    effectEvents: [],
+    mpRegens: [],
+    xpEvents: [],
+    skipped: false
+  };
+
+  if (!actor || actor.hp <= 0) {
+    segment.skipped = true;
+    return { actionSegments: [segment], inlineCounters, xpEvents: [], playbackNext: playbackIndex };
+  }
+
+  if (combat && runPartySkills) {
+    combat.chainHitsThisTurn = 0;
+    combat.chainSurgeTriggeredThisTurn = false;
+  }
+
+  const slotResult = executeSlotMoveTurn(actorList, defenderList, actorIndex, choices, {
+    itemBuffs: isAlly ? itemBuffs : null,
+    creatureParty: isAlly ? creatureParty : null,
+    metaMults: isAlly ? metaMults : null,
+    defenderItemBuffs: isAlly ? null : itemBuffs,
+    defeatedIndices: new Set(),
+    onAttack(atk) {
+      atk.playbackIndex = playbackIndex++;
+      atk.combatSide = isAlly ? 'player' : 'enemy';
+      segment.attacks.push(atk);
+
+      if (!isAlly && runPartySkills && combat) {
+        const counter = computeInlineCounter(atk, allies, enemies, runPartySkills, combat);
+        if (counter) {
+          counter.playbackIndex = playbackIndex++;
+          counter.combatSide = 'player';
+          segment.counterAttacks.push(counter);
+          inlineCounters.push(counter);
+        }
+      }
+
+      return actorList[actorIndex]?.hp > 0;
+    }
+  });
+
+  segment.xpEvents.push(...(slotResult.xpEvents || []));
+
+  if (isAlly && runPartySkills && combat && slotResult.attacks.length > 0) {
+    applyPartySkillsAfterPlayerAttacks({
+      attacks: slotResult.attacks,
+      allies,
+      enemies,
+      runPartySkills,
+      combat,
+      resetTurnCounters: false
+    });
+  }
+
+  const miniRound = resolveActorMiniRound(actor, { side: actorSide, index: actorIndex });
+  segment.effectEvents.push(...miniRound.effectEvents);
+  segment.mpRegens.push(...miniRound.mpRegens);
+
+  return {
+    actionSegments: [segment],
+    attacks: segment.attacks,
+    counterAttacks: segment.counterAttacks,
+    inlineCounters,
+    xpEvents: segment.xpEvents,
+    effectEvents: segment.effectEvents,
+    mpRegens: segment.mpRegens,
+    playbackNext: playbackIndex
+  };
+}
+
 export function processEnemyTurn(enemies, allies, defendActive = false, itemBuffs = null) {
   const attacks = [];
   for (let attackerIndex = 0; attackerIndex < enemies.length; attackerIndex++) {
@@ -1079,6 +1173,38 @@ export function tickAllEffects(allies, enemies) {
   (allies || []).forEach((c, i) => appendWithIndex(c, 'ally', i));
   (enemies || []).forEach((c, i) => appendWithIndex(c, 'enemy', i));
   return events;
+}
+
+export function resolveActorMiniRound(actor, cursor) {
+  if (!actor) {
+    return { effectEvents: [], mpRegens: [] };
+  }
+
+  const effectEvents = tickEffects(actor).map(event => ({
+    ...event,
+    targetSide: cursor.side,
+    targetIndex: cursor.index
+  }));
+
+  const maxMp = actor.maxMp || 0;
+  const regenRate = cursor.side === 'enemy' || cursor.side === 'sideB' ? 0.12 : 0.05;
+  const regen = actor.hp > 0 ? Math.floor(maxMp * regenRate) : 0;
+  if (regen > 0) {
+    actor.mp = Math.min(maxMp, (actor.mp || 0) + regen);
+  }
+
+  const mpRegens = actor.hp > 0
+    ? [{
+        creatureId: actor.id,
+        mp: actor.mp || 0,
+        maxMp,
+        regen,
+        side: cursor.side,
+        index: cursor.index
+      }]
+    : [];
+
+  return { effectEvents, mpRegens };
 }
 
 // ============ BEFRIEND NAME QUIZ (Koto2) ============

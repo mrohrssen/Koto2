@@ -14,6 +14,9 @@ import {
   awardBattleXp,
   awardKillXp,
   tickAllEffects,
+  resolveSingleActorAction,
+  pickEnemyMoveChoice,
+  pickEnemyTarget,
   executeNpcSkill,
   CREDITS_PER_KILL,
   applyPartySkillsAfterPlayerAttacks,
@@ -33,6 +36,12 @@ import {
   finalizeCombatVictory,
   resolveDefeat
 } from '../combat/resolution.js';
+import {
+  createPveOpeningCursor,
+  cursorMatchesChoice,
+  getActor,
+  getNextActionCursor
+} from '../combat/action-cursor.js';
 import { rollShopItems, applyItem } from './item-service.js';
 import { addCreatureCopy } from './creature-collection-service.js';
 import {
@@ -151,6 +160,13 @@ export class CombatCycleService {
     this.gm.combat = createCombatState(enemyCreatures[0]);
     this.gm.combat.allies = this.gm.run.creatureParty.active;
     this.gm.combat.enemies = enemyCreatures;
+    this.gm.combat.actionCursor = createPveOpeningCursor({
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies
+    });
+    this.gm.combat.actionCount = 0;
+    this.gm.combat.cycleCount = 0;
+    this.gm.combat.openingResolved = false;
     this.gm.combat.isCreatureCombat = true;
     this.gm.combat.isBoss = isBoss;
     this.gm.combat.swapPhase = true; // Free swap available before first action
@@ -352,6 +368,10 @@ export class CombatCycleService {
     // Once an action is committed, free swap window closes
     this.gm.combat.swapPhase = false;
 
+    if (actionType === 'attack' && this.gm.combat.actionCursor) {
+      return this._handleCreatureActionCursorTurn(moveChoices);
+    }
+
     // Tick active effects at start of round (poison damage, etc.)
     const effectEvents = tickAllEffects(this.gm.combat.allies, this.gm.combat.enemies);
 
@@ -361,6 +381,174 @@ export class CombatCycleService {
       case 'befriend': return this._handleCreatureBefriendTurn(effectEvents);
       default: throw new Error(`Unknown action: ${actionType}`);
     }
+  }
+
+  _resolveCurrentPveCursor(moveChoice = null, playbackStart = 0) {
+    const cursor = this.gm.combat.actionCursor;
+    if (!cursor) throw new Error('No active action cursor');
+
+    const actor = getActor({
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies
+    }, cursor);
+    if (!actor) throw new Error('Action cursor actor not found');
+
+    let choices = [];
+    if (cursor.side === 'ally') {
+      if (!cursorMatchesChoice(cursor, moveChoice)) {
+        throw new Error('Submitted move does not match current action cursor');
+      }
+      choices = [moveChoice];
+    } else {
+      const choice = pickEnemyMoveChoice(actor, this.gm.combat.allies, this.gm.combat.enemies);
+      if (choice) {
+        const { move, mode } = choice;
+        const targeting = pickEnemyTarget(actor, move, mode, this.gm.combat.allies, this.gm.combat.enemies);
+        if (targeting) {
+          const targetIndex = targeting.targetSide === 'player'
+            ? this.gm.combat.allies.indexOf(targeting.target)
+            : this.gm.combat.enemies.indexOf(targeting.target);
+          choices = [{ creatureIndex: cursor.index, moveId: move.id, targetIndex }];
+        }
+      }
+    }
+
+    const result = resolveSingleActorAction({
+      actorSide: cursor.side,
+      actorIndex: cursor.index,
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies,
+      choices,
+      itemBuffs: this.gm.run?.itemBuffs || null,
+      creatureParty: this.gm.run?.creatureParty || null,
+      metaMults: this.gm.run?.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+      runPartySkills: this.gm.run?.partySkills || null,
+      combat: this.gm.combat,
+      playbackStart
+    });
+
+    this.gm.combat.actionCount = (this.gm.combat.actionCount || 0) + 1;
+    this.gm.combat.turnCount = this.gm.combat.actionCount;
+    this.gm.combat.openingResolved = this.gm.combat.openingResolved || cursor.opening === true;
+    this.gm.combat.actionCursor = getNextActionCursor({
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies,
+      previousCursor: cursor
+    });
+
+    return result;
+  }
+
+  _handleCreatureActionCursorTurn(moveChoices = []) {
+    const submittedChoice = moveChoices[0] || null;
+    const actionSegments = [];
+    let playbackStart = 0;
+
+    const firstResult = this._resolveCurrentPveCursor(submittedChoice, playbackStart);
+    actionSegments.push(...firstResult.actionSegments);
+    playbackStart = firstResult.playbackNext || actionSegments.length;
+
+    while (
+      this.gm.combat.active &&
+      this.gm.combat.actionCursor?.side === 'enemy' &&
+      !checkAllDefeated(this.gm.combat.enemies) &&
+      !checkAllDefeated(this.gm.combat.allies)
+    ) {
+      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart);
+      actionSegments.push(...enemyResult.actionSegments);
+      playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
+    }
+
+    const flatPlayerAttacks = actionSegments.flatMap(segment =>
+      segment.actor.side === 'ally' ? segment.attacks : segment.counterAttacks || []
+    );
+    const flatEnemyAttacks = actionSegments.flatMap(segment =>
+      segment.actor.side === 'enemy' ? segment.attacks : []
+    );
+    const effectEvents = actionSegments.flatMap(segment => segment.effectEvents || []);
+    const mpRegens = actionSegments.flatMap(segment => segment.mpRegens || []);
+    const xpEvents = actionSegments.flatMap(segment => segment.xpEvents || []);
+    const counterAttacks = actionSegments.flatMap(segment => segment.counterAttacks || []);
+
+    const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(
+      this.gm.combat.allies,
+      this.gm.run.creatureParty
+    );
+    const koSwaps = rawKoSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
+    const koRemovals = rawKoRemovals.map(r => ({ slot: r.index, name: r.name }));
+    this.gm.combat.allies = this.gm.run.creatureParty.active;
+
+    const allEnemiesDown = checkAllDefeated(this.gm.combat.enemies);
+    const allAlliesDown = checkAllDefeated(this.gm.combat.allies);
+
+    if (allEnemiesDown) {
+      const newCollectionAdditions = this._flushPendingCaptures();
+      collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
+      finalizeCombatVictory(this.gm.combat, this.gm.run, { meta: this.gm.meta, narrate: (t) => this.gm.narrate(t) });
+      const tutorialRewards = this._collectTutorialRewards();
+      this.gm.emitState();
+      return {
+        actionType: 'attack',
+        actionSegments,
+        playerAttacks: flatPlayerAttacks,
+        enemyAttacks: flatEnemyAttacks,
+        counterAttacks,
+        xpEvents,
+        mpRegens,
+        effectEvents,
+        koSwaps,
+        koRemovals,
+        combatEnded: true,
+        victory: true,
+        allies: this.gm.combat.allies,
+        enemies: this.gm.combat.enemies,
+        creatureParty: this.gm.run.creatureParty,
+        newCollectionAdditions,
+        tutorialRewards,
+        elementDropsCollected: getElementDropList(this.gm.combat.enemies)
+      };
+    }
+
+    if (allAlliesDown) {
+      resolveDefeat(this.gm.combat, this.gm.run, this.gm.meta, { onDefeat: () => this.gm._onRunDefeat() });
+      this.gm.emitState();
+      return {
+        actionType: 'attack',
+        actionSegments,
+        playerAttacks: flatPlayerAttacks,
+        enemyAttacks: flatEnemyAttacks,
+        counterAttacks,
+        xpEvents,
+        mpRegens,
+        effectEvents,
+        koSwaps,
+        koRemovals,
+        combatEnded: true,
+        victory: false,
+        turnCount: this.gm.combat.turnCount,
+        creatureParty: this.gm.run.creatureParty
+      };
+    }
+
+    this.gm.combat.swapPhase = true;
+    this.gm.emitState();
+    return {
+      actionType: 'attack',
+      actionSegments,
+      playerAttacks: flatPlayerAttacks,
+      enemyAttacks: flatEnemyAttacks,
+      counterAttacks,
+      xpEvents,
+      mpRegens,
+      effectEvents,
+      koSwaps,
+      koRemovals,
+      combatEnded: false,
+      turnCount: this.gm.combat.turnCount,
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies,
+      creatureParty: this.gm.run.creatureParty
+    };
   }
 
   /**

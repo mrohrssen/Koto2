@@ -46,6 +46,7 @@ export function connect() {
     'pvp:match-created', 'pvp:match-joined', 'pvp:opponent-joined',
     'pvp:opponent-ready', 'pvp:match-start',
     'pvp:opponent-submitted', 'pvp:round-result', 'pvp:match-end',
+    'pvp:opening-action-submitted', 'pvp:action-result',
     'pvp:opponent-wants-rematch', 'pvp:rematch-start', 'pvp:rematch-cancelled',
     'pvp:opponent-disconnected', 'pvp:opponent-reconnected', 'pvp:reconnected',
     'pvp:match-forfeit',
@@ -103,6 +104,11 @@ export function ready() { socket?.emit('pvp:ready'); }
 /** Submit move choices for the current round. */
 export function submitMoves(moveChoices) {
   socket?.emit('pvp:submit-moves', { moveChoices });
+}
+
+/** Submit one action for the active PvP cursor. */
+export function submitAction(action) {
+  socket?.emit('pvp:submit-action', { action });
 }
 
 /** Request a rematch after a match ends. */

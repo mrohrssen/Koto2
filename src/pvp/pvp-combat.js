@@ -4,12 +4,18 @@ import {
   applyRoundStartSkills,
   applyAfterEnemyAttacks,
   executeSlotMoveTurn,
+  resolveSingleActorAction,
   computeInlineCounter,
   checkAfflictionBurstCounter
 } from '../game/services/creature-combat-service.js';
 import { processKOSwaps, checkAllDefeated } from '../game/combat/resolution.js';
 import { getEffectiveDex, isIncapacitated } from '../game/combat/effects.js';
 import { toActivePartySkillIdSet } from '../game/combat/party-skill-engine.js';
+import {
+  compareActionActors,
+  createPvpOpeningCursors,
+  getNextActionCursor
+} from '../game/combat/action-cursor.js';
 
 /**
  * Build a turn-ordered list of creatures from both sides.
@@ -68,6 +74,137 @@ function groupMovesBySlot(moves) {
     m.get(ch.creatureIndex).push(ch);
   }
   return m;
+}
+
+function winnerForSides(sideA, sideB) {
+  const aDown = checkAllDefeated(sideA);
+  const bDown = checkAllDefeated(sideB);
+  if (aDown && bDown) return 'draw';
+  if (aDown) return 'sideB';
+  if (bDown) return 'sideA';
+  return null;
+}
+
+function remapSegmentForPvp(segment, side) {
+  const remapAttack = atk => ({ ...atk, side });
+  return {
+    ...segment,
+    actor: { ...segment.actor, side },
+    attacks: (segment.attacks || []).map(remapAttack),
+    counterAttacks: (segment.counterAttacks || []).map(remapAttack),
+    effectEvents: (segment.effectEvents || []).map(event => ({
+      ...event,
+      targetSide: side
+    })),
+    mpRegens: (segment.mpRegens || []).map(regen => ({
+      ...regen,
+      side
+    }))
+  };
+}
+
+function flattenSegments(segments) {
+  return {
+    attacks: segments.flatMap(segment => [
+      ...(segment.attacks || []),
+      ...(segment.counterAttacks || [])
+    ]),
+    effectEvents: segments.flatMap(segment => segment.effectEvents || []),
+    mpRegens: segments.flatMap(segment => segment.mpRegens || []),
+    xpEvents: segments.flatMap(segment => segment.xpEvents || [])
+  };
+}
+
+export function resolvePvpCursorAction({
+  sideA,
+  sideB,
+  cursor,
+  action,
+  partyA = null,
+  partyB = null,
+  partySkillsA = null,
+  partySkillsB = null,
+  combatA = null,
+  combatB = null,
+  playbackStart = 0
+}) {
+  if (!cursor) throw new Error('No active PvP cursor');
+  if (!action || action.creatureIndex !== cursor.index) {
+    throw new Error('Submitted action does not match active PvP cursor');
+  }
+
+  const isA = cursor.side === 'sideA';
+  const result = resolveSingleActorAction({
+    actorSide: 'ally',
+    actorIndex: cursor.index,
+    allies: isA ? sideA : sideB,
+    enemies: isA ? sideB : sideA,
+    choices: [action],
+    creatureParty: isA ? partyA : partyB,
+    runPartySkills: isA ? partySkillsA : partySkillsB,
+    combat: isA ? combatA : combatB,
+    playbackStart
+  });
+
+  const actionSegments = result.actionSegments.map(segment => remapSegmentForPvp(segment, cursor.side));
+  const winner = winnerForSides(sideA, sideB);
+  const nextCursor = winner ? null : getNextActionCursor({ sideA, sideB, previousCursor: cursor });
+  const flat = flattenSegments(actionSegments);
+
+  return {
+    ...flat,
+    actionSegments,
+    sideA,
+    sideB,
+    winner,
+    nextCursor,
+    playbackNext: result.playbackNext
+  };
+}
+
+export function resolveOpeningActions({ sideA, sideB, actionA, actionB, options = {} }) {
+  const opening = createPvpOpeningCursors({ sideA, sideB });
+  const entries = [
+    opening.sideA && { ...opening.sideA, creature: sideA[opening.sideA.index] },
+    opening.sideB && { ...opening.sideB, creature: sideB[opening.sideB.index] }
+  ].filter(Boolean).map(entry => ({
+    ...entry,
+    dex: getEffectiveDex(entry.creature),
+    level: entry.creature.level || 1
+  })).sort(compareActionActors);
+
+  const segments = [];
+  let playbackStart = 0;
+  let winner = null;
+
+  for (const cursor of entries) {
+    const action = cursor.side === 'sideA' ? actionA : actionB;
+    const result = resolvePvpCursorAction({
+      sideA,
+      sideB,
+      cursor,
+      action,
+      ...options,
+      playbackStart
+    });
+    segments.push(...result.actionSegments);
+    playbackStart = result.playbackNext || playbackStart + result.actionSegments.length;
+    winner = result.winner;
+    if (winner) break;
+  }
+
+  const nextCursor = winner ? null : getNextActionCursor({ sideA, sideB, previousCursor: entries.at(-1) });
+  const flat = flattenSegments(segments);
+
+  return {
+    ...flat,
+    actionSegments: segments,
+    sideA,
+    sideB,
+    winner,
+    nextCursor,
+    openingResolved: true
+  };
 }
 
 /**

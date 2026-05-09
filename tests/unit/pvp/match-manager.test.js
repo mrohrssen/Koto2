@@ -40,6 +40,16 @@ function makeMockResolveRound(overrides = {}) {
   }));
 }
 
+function setupReadyMatch(mm) {
+  const code = mm.createMatch('user1', 'sock1');
+  mm.joinMatch(code, 'user2', 'sock2');
+  mm.selectTeam(code, 'user1', makeTeam());
+  mm.selectTeam(code, 'user2', makeTeam());
+  mm.setReady(code, 'user1');
+  mm.setReady(code, 'user2');
+  return code;
+}
+
 describe('MatchManager', () => {
   let mgr;
   let mockResolve;
@@ -299,6 +309,50 @@ describe('MatchManager', () => {
 
       const match = mgr.getMatch(code);
       assert.strictEqual(match.winnerId, 'draw');
+    });
+  });
+
+  describe('submitAction', () => {
+    it('waits for both opening actions before resolving opening exchange', () => {
+      const mm = new MatchManager({
+        resolveOpeningActionsFn: ({ actionA, actionB }) => ({
+          actionSegments: [
+            { actor: { side: 'sideA', index: actionA.creatureIndex }, attacks: [] },
+            { actor: { side: 'sideB', index: actionB.creatureIndex }, attacks: [] }
+          ],
+          sideA: [{ id: 'a', hp: 10 }],
+          sideB: [{ id: 'b', hp: 10 }],
+          winner: null,
+          nextCursor: { side: 'sideA', index: 0, opening: false },
+          openingResolved: true
+        }),
+        resolveCursorActionFn: null
+      });
+      const code = setupReadyMatch(mm);
+      const match = mm.getMatch(code);
+
+      const first = mm.submitAction(code, match.player1.userId, { creatureIndex: 0, moveId: 'slash', targetIndex: 0 });
+      assert.equal(first, null);
+
+      const second = mm.submitAction(code, match.player2.userId, { creatureIndex: 0, moveId: 'slash', targetIndex: 0 });
+      assert.ok(second);
+      assert.equal(match.combat.openingResolved, true);
+      assert.deepEqual(match.combat.actionCursor, { side: 'sideA', index: 0, opening: false });
+    });
+
+    it('rejects sequential action from non-owner', () => {
+      const mm = new MatchManager({
+        resolveCursorActionFn: () => ({ sideA: [], sideB: [], winner: null, nextCursor: null, actionSegments: [] })
+      });
+      const code = setupReadyMatch(mm);
+      const match = mm.getMatch(code);
+      match.combat.openingResolved = true;
+      match.combat.actionCursor = { side: 'sideA', index: 0, opening: false };
+
+      assert.throws(
+        () => mm.submitAction(code, match.player2.userId, { creatureIndex: 0, moveId: 'slash', targetIndex: 0 }),
+        /not the active player/
+      );
     });
   });
 
