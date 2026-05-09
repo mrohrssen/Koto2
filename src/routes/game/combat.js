@@ -8,6 +8,7 @@ import { getNpcLines, getNpcDefeatFrames } from '../../game/dialogue-loader.js';
 import { selectNpcLine } from '../../game/dialogue-filter.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
+import { getDebugSuperAttackForUser } from '../../game/debug-super-attack-access.js';
 
 export default function createCombatRoutes({
   getUserVocabulary,
@@ -55,7 +56,7 @@ export default function createCombatRoutes({
     const gameManager = req.gameManager;
     try {
       const settings = req.getSettings?.() || {};
-      gameManager._debugSuperAttack = !!settings.debugSuperAttack;
+      gameManager._debugSuperAttack = getDebugSuperAttackForUser(settings, req.user);
       const encounter = gameManager.combatCycleService.startCreatureEncounter();
       req.saveGame();
 
