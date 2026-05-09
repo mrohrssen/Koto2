@@ -2697,6 +2697,112 @@
     "group": "onnanoko_fightStart"
   },
   {
+    "id": "npc_sensei_fightStart_ready",
+    "category": "npc",
+    "raw": "準備はいいですか？",
+    "tokens": [
+      {
+        "surface": "準備",
+        "base": "準備",
+        "reading": "じゅんび",
+        "pos": "Noun"
+      },
+      {
+        "surface": "は"
+      },
+      {
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "ですか",
+        "base": "ですか",
+        "reading": "ですか",
+        "pos": "Auxiliary"
+      },
+      {
+        "surface": "？"
+      }
+    ],
+    "words": [
+      "準備",
+      "いい",
+      "ですか"
+    ],
+    "group": "sensei_fightStart"
+  },
+  {
+    "id": "npc_kyouju_fightStart_begin",
+    "category": "npc",
+    "raw": "始めます！",
+    "tokens": [
+      {
+        "surface": "始め",
+        "base": "始める",
+        "reading": "はじめ",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "始める"
+    ],
+    "group": "kyouju_fightStart"
+  },
+  {
+    "id": "npc_seito_fightStart_effort",
+    "category": "npc",
+    "raw": "頑張ります！",
+    "tokens": [
+      {
+        "surface": "頑張り",
+        "base": "頑張る",
+        "reading": "がんばり",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ます"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "頑張る"
+    ],
+    "group": "seito_fightStart"
+  },
+  {
+    "id": "npc_senpai_fightStart_go",
+    "category": "npc",
+    "raw": "行くぞ！",
+    "tokens": [
+      {
+        "surface": "行く",
+        "base": "行く",
+        "reading": "いく",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ぞ"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "行く"
+    ],
+    "group": "senpai_fightStart"
+  },
+  {
     "id": "npc_kodomo_defeatLine_1",
     "category": "npc",
     "raw": "楽しいです！",
@@ -3553,6 +3659,102 @@
       "人"
     ],
     "group": "onnanoko_defeatLine"
+  },
+  {
+    "id": "npc_sensei_defeatLine_good",
+    "category": "npc",
+    "raw": "上手ですね",
+    "tokens": [
+      {
+        "surface": "上手",
+        "base": "上手",
+        "reading": "じょうず",
+        "pos": "Na-adjective"
+      },
+      {
+        "surface": "です"
+      },
+      {
+        "surface": "ね"
+      }
+    ],
+    "words": [
+      "上手"
+    ],
+    "group": "sensei_defeatLine"
+  },
+  {
+    "id": "npc_kyouju_defeatLine_strong",
+    "category": "npc",
+    "raw": "強いと思います",
+    "tokens": [
+      {
+        "surface": "強い",
+        "base": "強い",
+        "reading": "つよい",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "と"
+      },
+      {
+        "surface": "思い",
+        "base": "思う",
+        "reading": "おもい",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ます"
+      }
+    ],
+    "words": [
+      "強い",
+      "思う"
+    ],
+    "group": "kyouju_defeatLine"
+  },
+  {
+    "id": "npc_seito_defeatLine_great",
+    "category": "npc",
+    "raw": "すごい！",
+    "tokens": [
+      {
+        "surface": "すごい",
+        "base": "すごい",
+        "reading": "すごい",
+        "pos": "Adjective"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "すごい"
+    ],
+    "group": "seito_defeatLine"
+  },
+  {
+    "id": "npc_senpai_defeatLine_yaru",
+    "category": "npc",
+    "raw": "やるね！",
+    "tokens": [
+      {
+        "surface": "やる",
+        "base": "やる",
+        "reading": "やる",
+        "pos": "Verb"
+      },
+      {
+        "surface": "ね"
+      },
+      {
+        "surface": "！"
+      }
+    ],
+    "words": [
+      "やる"
+    ],
+    "group": "senpai_defeatLine"
   },
   {
     "id": "shopGreeting_hello",

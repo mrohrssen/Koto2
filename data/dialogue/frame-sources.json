@@ -659,6 +659,34 @@
     "slots": []
   },
   {
+    "id": "npc_sensei_fightStart_ready",
+    "category": "npc",
+    "group": "sensei_fightStart",
+    "raw": "準備はいいですか？",
+    "slots": []
+  },
+  {
+    "id": "npc_kyouju_fightStart_begin",
+    "category": "npc",
+    "group": "kyouju_fightStart",
+    "raw": "始めます！",
+    "slots": []
+  },
+  {
+    "id": "npc_seito_fightStart_effort",
+    "category": "npc",
+    "group": "seito_fightStart",
+    "raw": "頑張ります！",
+    "slots": []
+  },
+  {
+    "id": "npc_senpai_fightStart_go",
+    "category": "npc",
+    "group": "senpai_fightStart",
+    "raw": "行くぞ！",
+    "slots": []
+  },
+  {
     "id": "npc_kodomo_defeatLine_1",
     "category": "npc",
     "group": "kodomo_defeatLine",
@@ -810,6 +838,34 @@
     "category": "npc",
     "group": "onnanoko_defeatLine",
     "raw": "この方は強い気の人ですね",
+    "slots": []
+  },
+  {
+    "id": "npc_sensei_defeatLine_good",
+    "category": "npc",
+    "group": "sensei_defeatLine",
+    "raw": "上手ですね",
+    "slots": []
+  },
+  {
+    "id": "npc_kyouju_defeatLine_strong",
+    "category": "npc",
+    "group": "kyouju_defeatLine",
+    "raw": "強いと思います",
+    "slots": []
+  },
+  {
+    "id": "npc_seito_defeatLine_great",
+    "category": "npc",
+    "group": "seito_defeatLine",
+    "raw": "すごい！",
+    "slots": []
+  },
+  {
+    "id": "npc_senpai_defeatLine_yaru",
+    "category": "npc",
+    "group": "senpai_defeatLine",
+    "raw": "やるね！",
     "slots": []
   },
   {

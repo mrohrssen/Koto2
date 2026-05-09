@@ -410,14 +410,14 @@ describe('npc dialogue card', () => {
     assert.match(actionArea.innerHTML, /Try again/);
   });
 
-  it('disables Translate for fallback HTML without source text', () => {
+  it('hides utility buttons for fallback HTML without source text', () => {
     showNpcDialogueCard({
       speaker: 'Mira',
       html: '<span>Hello</span>',
     });
 
     const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
-    assert.equal(translateButton.disabled, true);
+    assert.equal(translateButton, undefined);
   });
 
   it('sends protected speaker entity context with translation requests', async () => {

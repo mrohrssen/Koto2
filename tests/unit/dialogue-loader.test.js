@@ -1,5 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'fs';
 import {
   loadDialoguePools,
   getBarkPool,
@@ -67,6 +68,24 @@ describe('dialogue-loader (frames.json)', () => {
     const line = npcLines.kodomo.fightStart[0];
     assert.ok(Array.isArray(line.tokens), 'line should have tokens');
     assert.ok(Array.isArray(line.words), 'line should have words');
+  });
+
+  it('has tokenized fight dialogue for every NPC id', () => {
+    const npcs = JSON.parse(readFileSync(process.cwd() + '/data/npcs.json', 'utf-8'));
+    const npcIds = new Set(Object.values(npcs).map(npc => npc.id));
+    const npcLines = getNpcLines();
+
+    for (const id of npcIds) {
+      assert.ok(npcLines[id]?.fightStart?.length > 0, `${id} should have fightStart lines`);
+      assert.ok(npcLines[id]?.defeatLine?.length > 0, `${id} should have defeatLine lines`);
+
+      for (const slot of ['fightStart', 'defeatLine']) {
+        for (const line of npcLines[id][slot]) {
+          assert.ok(Array.isArray(line.tokens) && line.tokens.length > 0, `${line.id} should have tokens`);
+          assert.ok(Array.isArray(line.words), `${line.id} should have words`);
+        }
+      }
+    }
   });
 
   it('getShopPurchaseFrames returns shopPurchase category frames', () => {
