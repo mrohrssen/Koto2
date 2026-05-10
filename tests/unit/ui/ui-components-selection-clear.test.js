@@ -113,19 +113,19 @@ describe('selection clearing', () => {
     actionArea = new FakeElement('div');
   });
 
-  it('clears async button choices to the continue hint after selection', async () => {
+  it('clears async button choices without showing a false continue hint', async () => {
     const selected = renderButtonsAsync([{ label: 'はなす (Talk)' }]);
 
     const [button] = actionArea.querySelectorAll('.ui-btn');
     button.click();
 
     assert.equal(await selected, 0);
-    assert.match(actionArea.innerHTML, /prologue-continue-hint/);
-    assert.match(actionArea.innerHTML, /Click to continue!/);
+    assert.doesNotMatch(actionArea.innerHTML, /prologue-continue-hint/);
+    assert.doesNotMatch(actionArea.innerHTML, /Click to continue!/);
     assert.equal(actionArea.querySelectorAll('.ui-btn').length, 0);
   });
 
-  it('clears card choices to the continue hint after selection', () => {
+  it('clears card choices without showing a false continue hint', () => {
     let selectedIndex = null;
     renderChoices({
       cards: [{ title: 'Skill A' }, { title: 'Skill B' }],
@@ -136,8 +136,8 @@ describe('selection clearing', () => {
     choice.click();
 
     assert.equal(selectedIndex, 0);
-    assert.match(actionArea.innerHTML, /prologue-continue-hint/);
-    assert.match(actionArea.innerHTML, /Click to continue!/);
+    assert.doesNotMatch(actionArea.innerHTML, /prologue-continue-hint/);
+    assert.doesNotMatch(actionArea.innerHTML, /Click to continue!/);
     assert.equal(actionArea.querySelectorAll('.ui-choice').length, 0);
   });
 
@@ -154,6 +154,6 @@ describe('selection clearing', () => {
     choices[1].click();
 
     assert.equal(await selected, 1);
-    assert.match(actionArea.innerHTML, /prologue-continue-hint/);
+    assert.doesNotMatch(actionArea.innerHTML, /prologue-continue-hint/);
   });
 });

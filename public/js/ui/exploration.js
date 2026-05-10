@@ -765,7 +765,7 @@ export async function renderShrine() {
     return;
   }
 
-  actions.setContent('<div class="prologue-continue-hint">Click to continue!</div>');
+  actions.clear();
 
   if (!shrineState.fetched) {
     shrineState.fetched = true;
@@ -1673,8 +1673,7 @@ export async function renderFriendlyNpc() {
     return;
   }
 
-  // The NPC greeting is click-to-continue, so show the same cue as the prologue.
-  actions.setContent('<div class="prologue-continue-hint">Click to continue!</div>');
+  actions.clear();
 
   // Fetch offers once per room
   if (!friendlyNpcState.fetched) {

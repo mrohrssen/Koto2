@@ -96,7 +96,7 @@ describe('renderFriendlyNpc item prompt', () => {
 
   it('shows the NPC greeting as a dialogue card before item choices', async () => {
     const narrationCalls = [];
-    let actionContent = '';
+    const actionContent = [];
     const room = {
       id: 'friendly-npc-test-room',
       type: 'friendlyNpc',
@@ -113,7 +113,7 @@ describe('renderFriendlyNpc item prompt', () => {
       }),
       updateGameState: () => {},
       updateUI: () => {},
-      actions: { setContent: html => { actionContent = html; }, clear: () => {} },
+      actions: { setContent: html => { actionContent.push(html); }, clear: () => {} },
       scene: {
         showNarration: async (content, options = {}) => {
           narrationCalls.push({ content, options });
@@ -141,9 +141,11 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(narrationCalls.length, 0);
     assert.equal(dialogueCards[0].speaker, 'Guide');
     assert.deepEqual(dialogueCards[0].tokens, [{ text: 'こんにちは！' }]);
-    assert.match(actionContent, /prologue-continue-hint/);
-    assert.match(actionContent, /Click to continue!/);
-    assert.doesNotMatch(actionContent, /Loading/);
+    assert.ok(
+      actionContent.every(html => !/prologue-continue-hint|Click to continue!/i.test(html)),
+      'friendly NPC setup should not show a click-to-continue hint before a clickable continuation exists'
+    );
+    assert.ok(actionContent.every(html => !/Loading/i.test(html)));
     assert.ok(renderedChoices, 'item choices should still render after the prompt');
     assert.equal(renderedChoices.heading, 'Choose an item');
   });

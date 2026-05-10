@@ -1,10 +1,8 @@
 import { playSFX } from '../audio.js';
 import { hapticLight } from '../native/index.js';
 
-const CONTINUE_HINT_HTML = '<div class="prologue-continue-hint">Click to continue!</div>';
-
-function showContinueHint(el) {
-  if (el) el.innerHTML = CONTINUE_HINT_HTML;
+function clearSelectionArea(el) {
+  if (el) el.innerHTML = '';
 }
 
 /**
@@ -56,7 +54,7 @@ export function renderButtonsAsync(buttons, options = {}) {
       onClick: () => {
         if (answered) return;
         answered = true;
-        if (clearAfterSelect) showContinueHint(el);
+        if (clearAfterSelect) clearSelectionArea(el);
         resolve(i);
       },
     }));
@@ -73,7 +71,7 @@ export function renderButtonsAsync(buttons, options = {}) {
  * @param {Array<{sprite?: string, title: string, subtitle?: string, pills?: string, badge?: {text: string, color: string}, helpBtn?: Function}>} options.cards
  * @param {Function} options.onSelect - Called with selected card index
  * @param {boolean} [options.disableAfterSelect=true] - Grey out all cards after selection
- * @param {boolean} [options.clearAfterSelect] - Replace choices with continue hint after selection (defaults to disableAfterSelect)
+ * @param {boolean} [options.clearAfterSelect] - Clear choices after selection (defaults to disableAfterSelect)
  * @param {HTMLElement} [options.container] - Target element (defaults to #action-area)
  */
 export function renderChoices({ heading, cards, onSelect, disableAfterSelect = true, clearAfterSelect = disableAfterSelect, container } = {}) {
@@ -130,7 +128,7 @@ export function renderChoices({ heading, cards, onSelect, disableAfterSelect = t
       hapticLight();
       btn.classList.add('ui-choice--selected');
       if (clearAfterSelect) {
-        showContinueHint(el);
+        clearSelectionArea(el);
       } else if (disableAfterSelect) {
         list.querySelectorAll('.ui-choice').forEach(c => {
           c.classList.add('ui-choice--disabled');
