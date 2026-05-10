@@ -12,23 +12,22 @@ export function getBattleRewardAnchor(doc = globalThis.document) {
     || null;
 }
 
-export function getIngredientDropMessage(drop, useKanji = false) {
+export function getIngredientDropMessage(drop) {
   const ingredient = drop?.ingredient || drop;
-  const name = useKanji
-    ? (ingredient?.word || ingredient?.reading || ingredient?.nameEn)
-    : (ingredient?.reading || ingredient?.word || ingredient?.nameEn);
-  return name ? `Obtained ${name}` : '';
+  const name = ingredient?.nameEn;
+  return name ? `Found ${name}!` : '';
 }
 
-export function showIngredientDropPopups(drops, { useKanji = false, anchorEl = null, staggerMs = 140 } = {}) {
+export function showIngredientDropPopups(drops, { anchorEl = null, staggerMs = 140, delaysMs = null } = {}) {
   if (!Array.isArray(drops) || drops.length === 0) return;
 
   drops.forEach((drop, index) => {
-    const message = getIngredientDropMessage(drop, useKanji);
+    const message = getIngredientDropMessage(drop);
     if (!message) return;
+    const delayMs = Array.isArray(delaysMs) ? delaysMs[index] : index * staggerMs;
     setTimeout(() => {
       showWordLevelUp(anchorEl || getBattleRewardAnchor(), '', { message });
-    }, index * staggerMs);
+    }, delayMs);
   });
 }
 
