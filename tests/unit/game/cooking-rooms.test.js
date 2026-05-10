@@ -22,9 +22,9 @@ describe('cooking room types', () => {
     assert.ok(getRoomActions(campfire).some(action => action.id === 'campfire_cook'));
   });
 
-  it('resolves support room to campfire only when a recipe is cookable', () => {
+  it('resolves support room to campfire only when a real recipe is cookable', () => {
     assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0), ROOM_TYPES.whackAMole);
-    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1 } } }, () => 0), ROOM_TYPES.whackAMole);
+    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0), ROOM_TYPES.whackAMole);
     assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1, miso: 1 } } }, () => 0), ROOM_TYPES.campfire);
   });
 
@@ -33,14 +33,14 @@ describe('cooking room types', () => {
 
     for (const roll of rolls) {
       assert.notEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => roll), 'materials');
-      assert.notEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => roll), 'materials');
+      assert.notEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1, miso: 1 } } }, () => roll), 'materials');
     }
   });
 
-  it('gives campfire a 50 percent support-room window when a recipe is cookable', () => {
+  it('gives campfire a 50 percent support-room window when a real recipe is cookable', () => {
     assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1, miso: 1 } } }, () => 0.49), ROOM_TYPES.campfire);
     assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1, miso: 1 } } }, () => 0.50), ROOM_TYPES.campfire);
-    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1 } } }, () => 0.49), ROOM_TYPES.campfire);
+    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0.49), ROOM_TYPES.campfire);
   });
 
   it('mutates a support room into a persisted concrete room', () => {

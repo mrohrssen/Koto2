@@ -35,6 +35,7 @@ const {
   resultTone,
   effectivenessText,
   buildSplitAttackCard,
+  createAttackCardContinueControl,
 } = await import('../../../public/js/ui/attack-card.js');
 
 describe('attack-card helpers — formatResultValue', () => {
@@ -163,6 +164,162 @@ const SAMPLE_ATTACK = {
   targetMeaning: 'tree',
   targetElement: 'wood',
 };
+
+function createClassList() {
+  const values = new Set();
+  return {
+    add: (...names) => names.forEach(name => values.add(name)),
+    remove: (...names) => names.forEach(name => values.delete(name)),
+    contains: name => values.has(name),
+    toArray: () => [...values],
+  };
+}
+
+function createFakeAttackCard() {
+  const listeners = new Map();
+  const actionAreaListeners = new Map();
+  const continueEl = { textContent: 'tap to continue' };
+  const card = {
+    classList: createClassList(),
+    parentElement: null,
+    isConnected: true,
+    contains(target) {
+      return target === card || target === continueEl;
+    },
+    closest(selector) {
+      return selector === '#action-area' ? actionArea : null;
+    },
+    querySelector(selector) {
+      return selector === '.sac-continue' ? continueEl : null;
+    },
+    addEventListener(type, listener) {
+      if (!listeners.has(type)) listeners.set(type, new Set());
+      listeners.get(type).add(listener);
+    },
+    removeEventListener(type, listener) {
+      listeners.get(type)?.delete(listener);
+    },
+    dispatchClick(target = card) {
+      const event = { target, currentTarget: card };
+      for (const listener of listeners.get('click') || []) listener(event);
+    },
+  };
+  const actionArea = {
+    firstElementChild: card,
+    contains(target) {
+      return target === actionArea || target === card || target === continueEl;
+    },
+    addEventListener(type, listener) {
+      if (!actionAreaListeners.has(type)) actionAreaListeners.set(type, new Set());
+      actionAreaListeners.get(type).add(listener);
+    },
+    removeEventListener(type, listener) {
+      actionAreaListeners.get(type)?.delete(listener);
+    },
+    dispatchClick(target = card) {
+      const event = { target, currentTarget: actionArea };
+      for (const listener of actionAreaListeners.get('click') || []) listener(event);
+    },
+    listenerCount(type) {
+      return actionAreaListeners.get(type)?.size || 0;
+    },
+  };
+  card.parentElement = actionArea;
+  return { card, actionArea, continueEl };
+}
+
+function waitForTimeoutTick() {
+  return new Promise(resolve => setTimeout(resolve, 0));
+}
+
+describe('createAttackCardContinueControl', () => {
+  it('records an early tap before wait and resolves wait without a second tap', async () => {
+    const originalSetTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = (fn) => {
+      fn();
+      return 0;
+    };
+    try {
+      const { card, actionArea, continueEl } = createFakeAttackCard();
+      const control = createAttackCardContinueControl(card);
+
+      actionArea.dispatchClick(card);
+
+      assert.equal(control.wasRequested(), true);
+      assert.equal(card.classList.contains('sac-continue-queued'), true);
+      assert.equal(continueEl.textContent, 'continuing...');
+
+      let resolved = false;
+      await control.wait().then(() => { resolved = true; });
+
+      assert.equal(resolved, true);
+      assert.equal(card.classList.contains('sac-fading-out'), true);
+      assert.equal(actionArea.listenerCount('click'), 0);
+    } finally {
+      globalThis.setTimeout = originalSetTimeout;
+    }
+  });
+
+  it('waits for a tap when no early request was recorded', async () => {
+    const originalSetTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = (fn) => {
+      fn();
+      return 0;
+    };
+    try {
+      const { card, actionArea, continueEl } = createFakeAttackCard();
+      const control = createAttackCardContinueControl(card);
+      let resolved = false;
+
+      const waitPromise = control.wait().then(() => { resolved = true; });
+      await waitForTimeoutTick();
+
+      assert.equal(resolved, false);
+      assert.equal(card.classList.contains('sac-continue-ready'), true);
+      assert.equal(continueEl.textContent, 'tap to continue');
+
+      actionArea.dispatchClick(card);
+      await waitPromise;
+
+      assert.equal(resolved, true);
+      assert.equal(card.classList.contains('sac-fading-out'), true);
+    } finally {
+      globalThis.setTimeout = originalSetTimeout;
+    }
+  });
+
+  it('ignores clicks outside the active attack card', () => {
+    const { card, actionArea } = createFakeAttackCard();
+    const control = createAttackCardContinueControl(card);
+
+    actionArea.dispatchClick({ className: 'outside-node' });
+
+    assert.equal(control.wasRequested(), false);
+    assert.equal(card.classList.contains('sac-continue-queued'), false);
+  });
+
+  it('ignores repeated taps after the first request', () => {
+    const { card, actionArea, continueEl } = createFakeAttackCard();
+    const control = createAttackCardContinueControl(card);
+
+    actionArea.dispatchClick(card);
+    continueEl.textContent = 'manually changed after first tap';
+    actionArea.dispatchClick(card);
+
+    assert.equal(control.wasRequested(), true);
+    assert.equal(continueEl.textContent, 'manually changed after first tap');
+  });
+
+  it('resolves safely if the card was removed before wait', async () => {
+    const { card, actionArea } = createFakeAttackCard();
+    const control = createAttackCardContinueControl(card);
+    card.isConnected = false;
+
+    await control.wait();
+
+    assert.equal(actionArea.listenerCount('click'), 0);
+  });
+});
 
 describe('buildSplitAttackCard — new 3-block layout', () => {
   it('renders an Attack result heading', () => {

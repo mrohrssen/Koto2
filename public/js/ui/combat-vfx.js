@@ -35,6 +35,7 @@ import { t, tPlain } from './i18n.js';
 import { getHpColor, SC_NAMES, getCreatureStatusKeys } from './combat-ui-utils.js';
 import {
   insertAttackCard, insertNpcAttackCard, waitForCardTap,
+  createAttackCardContinueControl,
 } from './attack-card.js';
 
 // ── coordinator context (set via init) ─────────────────────────────────
@@ -738,8 +739,10 @@ export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved)
     atk.elementMultiplier > 1 ? 'dealsStrong' :
     atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
   let attackCard = null;
+  let continueControl = null;
   if (atk.attackerNameJp) {
     attackCard = insertAttackCard(atk, true);
+    continueControl = attackCard ? createAttackCardContinueControl(attackCard) : null;
   } else {
     const actionArea = document.getElementById('action-area');
     if (actionArea) {
@@ -776,8 +779,8 @@ export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved)
     await showMoveEffectsApplied(atk, 'player', targetIdx, result);
   }
 
-  if (attackCard) {
-    await waitForCardTap(attackCard);
+  if (continueControl) {
+    await continueControl.wait();
   } else {
     await ctx.delay(400);
   }
@@ -803,8 +806,10 @@ export async function showNpcSkillAttacksAnimated(result, allyHpMap) {
 
   for (const atk of result.npcSkillAttacks) {
     let attackCard = null;
+    let continueControl = null;
 
     attackCard = insertNpcAttackCard(atk);
+    continueControl = attackCard ? createAttackCardContinueControl(attackCard) : null;
 
     // Sound + visual effects for damage
     if (atk.damage > 0) {
@@ -819,8 +824,8 @@ export async function showNpcSkillAttacksAnimated(result, allyHpMap) {
       updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
     }
 
-    if (attackCard) {
-      await waitForCardTap(attackCard);
+    if (continueControl) {
+      await continueControl.wait();
     } else {
       await ctx.delay(800);
     }

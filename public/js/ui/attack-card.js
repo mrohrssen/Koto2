@@ -274,24 +274,89 @@ export function insertNpcAttackCard(atk) {
  * @param {Element} card - The .split-attack-card element
  * @returns {Promise<void>}
  */
+export function createAttackCardContinueControl(card) {
+  const actionArea = card?.closest?.('#action-area') || card?.parentElement || null;
+  const eventTarget = actionArea || card || null;
+
+  let requested = false;
+  let resolved = false;
+  let waitingResolve = null;
+
+  const getContinueLabel = () => card?.querySelector?.('.sac-continue') || null;
+
+  const setLabel = (text) => {
+    const label = getContinueLabel();
+    if (label) label.textContent = text;
+  };
+
+  const cleanup = () => {
+    if (eventTarget) eventTarget.removeEventListener('click', onTap);
+  };
+
+  const isActiveCardTarget = (event) => {
+    if (!card || card.classList?.contains?.('sac-fading-out')) return false;
+    if (card.isConnected === false) return false;
+    const target = event?.target;
+    if (!target) return false;
+    if (typeof card.contains === 'function' && card.contains(target)) return true;
+    if (target === actionArea && actionArea?.firstElementChild === card) return true;
+    return false;
+  };
+
+  const finish = () => {
+    if (resolved) return;
+    resolved = true;
+    cleanup();
+    if (!card || card.isConnected === false) {
+      if (waitingResolve) waitingResolve();
+      return;
+    }
+    card.classList?.add?.('sac-fading-out');
+    setTimeout(() => {
+      if (waitingResolve) waitingResolve();
+    }, ATTACK_CARD_TIMING.FADE_OUT_DURATION);
+  };
+
+  function requestContinue() {
+    if (requested || resolved) return;
+    requested = true;
+    card?.classList?.add?.('sac-continue-queued');
+    setLabel('continuing...');
+    if (waitingResolve) finish();
+  }
+
+  function onTap(event) {
+    if (!isActiveCardTarget(event)) return;
+    requestContinue();
+  }
+
+  if (eventTarget) {
+    eventTarget.addEventListener('click', onTap);
+  }
+
+  return {
+    wait() {
+      if (!card || card.isConnected === false) {
+        cleanup();
+        return Promise.resolve();
+      }
+      card.classList?.add?.('sac-continue-ready');
+      if (!requested) setLabel('tap to continue');
+      return new Promise((resolve) => {
+        waitingResolve = resolve;
+        if (requested) finish();
+      });
+    },
+    requestContinue,
+    wasRequested() {
+      return requested;
+    },
+    cleanup,
+  };
+}
+
 export function waitForCardTap(card) {
-  return new Promise((resolve) => {
-    if (!card) { resolve(); return; }
-
-    const actionArea = card.closest('#action-area') || card.parentElement;
-
-    let resolved = false;
-    const onTap = () => {
-      if (resolved) return;
-      resolved = true;
-      if (actionArea) actionArea.removeEventListener('click', onTap);
-
-      card.classList.add('sac-fading-out');
-      setTimeout(() => resolve(), ATTACK_CARD_TIMING.FADE_OUT_DURATION);
-    };
-
-    (actionArea || card).addEventListener('click', onTap);
-  });
+  return createAttackCardContinueControl(card).wait();
 }
 
 /**

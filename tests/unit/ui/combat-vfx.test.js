@@ -78,7 +78,17 @@ await mock.module('../../../public/js/ui/combat-ui-utils.js', {
   namedExports: { getHpColor: () => 'green', SC_NAMES: {}, getCreatureStatusKeys: () => [] }
 });
 await mock.module('../../../public/js/ui/attack-card.js', {
-  namedExports: { insertAttackCard: () => null, insertNpcAttackCard: () => null, waitForCardTap: () => Promise.resolve() }
+  namedExports: {
+    insertAttackCard: () => null,
+    insertNpcAttackCard: () => null,
+    waitForCardTap: () => Promise.resolve(),
+    createAttackCardContinueControl: () => ({
+      wait: () => Promise.resolve(),
+      cleanup: () => {},
+      wasRequested: () => false,
+      requestContinue: () => {},
+    }),
+  }
 });
 
 const {

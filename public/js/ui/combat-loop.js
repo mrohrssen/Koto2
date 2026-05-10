@@ -55,6 +55,7 @@ import * as vfx from './combat-vfx.js';
 import * as npcDialogueUI from './npc-dialogue-ui.js';
 import {
   insertAttackCard, insertNpcAttackCard, waitForCardTap,
+  createAttackCardContinueControl,
   showAttackCardAndWait, ATTACK_CARD_TIMING, ELEMENT_THEME,
 } from './attack-card.js';
 
@@ -63,6 +64,7 @@ export { insertAttackCard, waitForCardTap } from './attack-card.js';
 
 export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targetMaxHp = 100, allies: overrideAllies, enemies: overrideEnemies, onImpact }) {
   const attackCard = insertAttackCard(atk, isEnemy);
+  const continueControl = attackCard ? createAttackCardContinueControl(attackCard) : null;
 
   playSFX('attack');
   const element = atk.moveElement || atk.attackerElement || 'neutral';
@@ -113,8 +115,8 @@ export async function showAttackDisplay(atk, { isEnemy, sourceEl, targetEl, targ
   });
 
   // Tap to continue
-  if (attackCard) {
-    await waitForCardTap(attackCard);
+  if (continueControl) {
+    await continueControl.wait();
   } else {
     await vfx.effectDelay(800);
   }
@@ -871,6 +873,7 @@ function syncFinalState(result) {
  */
 async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn) {
   let attackCard = null;
+  let continueControl = null;
   {
     const adaptedAtk = {
       ...atk,
@@ -880,6 +883,7 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
       attackerElement: atk.moveElement || atk.attackerElement
     };
     attackCard = insertAttackCard(adaptedAtk, false);
+    continueControl = attackCard ? createAttackCardContinueControl(attackCard) : null;
   }
 
   // Rest: update the attacker's MP bar immediately so the bar growth is visible
@@ -896,7 +900,7 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
         if (mpText) mpText.textContent = `${atk.attackerMp}/${maxMp}`;
       }
     }
-    if (attackCard) await waitForCardTap(attackCard);
+    if (continueControl) await continueControl.wait();
     return;
   }
 
@@ -987,8 +991,8 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
     killedEnemies.add(`idx:${index}`);
   }
 
-  if (attackCard) {
-    await waitForCardTap(attackCard);
+  if (continueControl) {
+    await continueControl.wait();
   } else {
     await delay(800);
   }
