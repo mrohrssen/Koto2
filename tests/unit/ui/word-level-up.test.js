@@ -35,15 +35,39 @@ describe('battle reward anchor selection', () => {
 });
 
 describe('ingredient drop reward message', () => {
-  it('uses hiragana readings outside kanji mode', () => {
-    const drop = { ingredient: { word: '海老', reading: 'えび' } };
+  it('uses the decorated English ingredient name', () => {
+    const drop = { ingredient: { word: '海老', reading: 'えび', nameEn: 'Shrimp' } };
 
-    assert.equal(wordLevelUp.getIngredientDropMessage(drop, false), 'Obtained えび');
+    assert.equal(wordLevelUp.getIngredientDropMessage(drop, false), 'Found Shrimp!');
+    assert.equal(wordLevelUp.getIngredientDropMessage(drop, true), 'Found Shrimp!');
   });
 
-  it('uses the kanji word in kanji mode', () => {
+  it('does not fall back to Japanese labels when nameEn is missing', () => {
     const drop = { ingredient: { word: '海老', reading: 'えび' } };
 
-    assert.equal(wordLevelUp.getIngredientDropMessage(drop, true), 'Obtained 海老');
+    assert.equal(wordLevelUp.getIngredientDropMessage(drop, false), '');
+    assert.equal(wordLevelUp.getIngredientDropMessage(drop, true), '');
+  });
+});
+
+describe('ingredient drop popup scheduling', () => {
+  it('uses explicit per-drop delays when provided', () => {
+    const originalSetTimeout = globalThis.setTimeout;
+    const calls = [];
+    globalThis.setTimeout = (callback, delayMs) => {
+      calls.push(delayMs);
+      return 1;
+    };
+
+    try {
+      wordLevelUp.showIngredientDropPopups([
+        { ingredient: { nameEn: 'Water' } },
+        { ingredient: { nameEn: 'Miso' } },
+      ], { delaysMs: [900, 1800] });
+    } finally {
+      globalThis.setTimeout = originalSetTimeout;
+    }
+
+    assert.deepEqual(calls, [900, 1800]);
   });
 });

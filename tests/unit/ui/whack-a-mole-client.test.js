@@ -28,8 +28,13 @@ await mock.module('../../../public/js/ui/combat-vfx.js', {
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => ({ currentScene: null }) },
 });
+const roomTransitionCalls = [];
 await mock.module('../../../public/js/ui/room-transition.js', {
-  namedExports: { playRoomTransition: async () => {} },
+  namedExports: {
+    playRoomTransition: async (state, opts) => {
+      roomTransitionCalls.push({ state, opts });
+    },
+  },
 });
 
 const { WhackAMoleGame } = await import('../../../public/js/ui/whack-a-mole.js');
@@ -174,5 +179,53 @@ describe('WhackAMoleGame cancellation', () => {
 
     assert.equal(rendered, '');
     assert.equal(proceedCalls, 1);
+  });
+
+  it('passes ingredient drops into the room transition after completion', async () => {
+    roomTransitionCalls.length = 0;
+    let updateCalls = 0;
+
+    const ingredientDrops = [{ ingredient: { nameEn: 'Water' }, quantity: 1 }];
+    const advancedState = {
+      phase: 'room',
+      run: {
+        currentRoom: 1,
+        rooms: [{ type: 'empty' }, { type: 'empty' }],
+        creatureParty: { active: [{ id: 'hi' }] },
+      },
+    };
+
+    const game = new WhackAMoleGame([
+      { id: 'a', reading: 'あ', sprite: '/a.webp' },
+      { id: 'b', reading: 'い', sprite: '/b.webp' },
+      { id: 'c', reading: 'う', sprite: '/c.webp' },
+      { id: 'd', reading: 'え', sprite: '/d.webp' },
+      { id: 'e', reading: 'お', sprite: '/e.webp' },
+      { id: 'f', reading: 'か', sprite: '/f.webp' },
+      { id: 'g', reading: 'き', sprite: '/g.webp' },
+      { id: 'h', reading: 'く', sprite: '/h.webp' },
+      { id: 'i', reading: 'け', sprite: '/i.webp' },
+    ], {
+      actions: { setContent: () => {} },
+      apiCompleteWhackAMole: async () => ({
+        finishDialogue: null,
+        xpGrants: [],
+        levelUps: [],
+      }),
+      apiProceed: async () => ({
+        state: advancedState,
+        ingredientDrops,
+      }),
+      updateGameState: () => {},
+      updateUI: () => { updateCalls += 1; },
+      playSFX: () => {},
+    });
+
+    await game._endGame();
+
+    assert.equal(roomTransitionCalls.length, 1);
+    assert.equal(roomTransitionCalls[0].state, advancedState);
+    assert.deepEqual(roomTransitionCalls[0].opts, { ingredientDrops });
+    assert.equal(updateCalls, 1);
   });
 });

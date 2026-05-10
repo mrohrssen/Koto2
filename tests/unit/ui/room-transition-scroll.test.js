@@ -65,6 +65,7 @@ await mock.module('../../../public/js/ui/combat-events.js', {
 const roomTransitionEvents = [];
 const scrollStates = [];
 const startedSpeeds = [];
+const ingredientPopupCalls = [];
 await mock.module('../../../public/js/pixi/parallax.js', {
   namedExports: {
     setScrollState: (state) => {
@@ -111,6 +112,12 @@ await mock.module('../../../public/js/scenes/exploration-scene.js', {
 
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => fakeManager },
+});
+
+await mock.module('../../../public/js/ui/word-level-up.js', {
+  namedExports: {
+    showIngredientDropPopups: (drops, opts) => ingredientPopupCalls.push({ drops, opts }),
+  },
 });
 
 const { playRoomTransition } = await import('../../../public/js/ui/room-transition.js');
@@ -274,5 +281,54 @@ describe('playRoomTransition parallax state', () => {
       'showNpcInDisplay',
       'showNpcSprite',
     ]);
+  });
+
+  it('schedules ingredient drops at evenly spaced points during room travel', async () => {
+    ingredientPopupCalls.length = 0;
+    roomTransitionEvents.length = 0;
+    fakeManager.currentScene = null;
+
+    const ingredientDrops = [
+      { ingredient: { nameEn: 'Water' }, quantity: 1 },
+      { ingredient: { nameEn: 'Miso' }, quantity: 1 },
+    ];
+
+    await playRoomTransition({
+      run: {
+        currentRoom: 0,
+        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
+        rooms: [{ type: 'empty' }],
+      },
+    }, {
+      ingredientDrops,
+      waitFn: async (ms) => roomTransitionEvents.push(`wait:${ms}`),
+    });
+
+    assert.equal(ingredientPopupCalls.length, 1);
+    assert.equal(ingredientPopupCalls[0].drops, ingredientDrops);
+    assert.deepEqual(ingredientPopupCalls[0].opts.delaysMs, [900, 1800]);
+    assert.deepEqual(roomTransitionEvents.slice(0, 3), [
+      'setScrollState:scrolling',
+      'startParallax:3.8',
+      'wait:2700',
+    ]);
+  });
+
+  it('does not schedule ingredient popups when no drops are present', async () => {
+    ingredientPopupCalls.length = 0;
+    fakeManager.currentScene = null;
+
+    await playRoomTransition({
+      run: {
+        currentRoom: 0,
+        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
+        rooms: [{ type: 'empty' }],
+      },
+    }, {
+      ingredientDrops: [],
+      waitFn: async () => {},
+    });
+
+    assert.equal(ingredientPopupCalls.length, 0);
   });
 });

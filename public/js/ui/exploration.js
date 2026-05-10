@@ -24,7 +24,7 @@ import {
   getFusionCoreNarration,
   getPostFusionNarration
 } from './tutorial-copy.js';
-import { showIngredientDropPopups, showWordLevelUp } from './word-level-up.js';
+import { showWordLevelUp } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 
 /**
@@ -171,11 +171,6 @@ export function isKanjiModeEnabled(gameState) {
   if (typeof meta.kanjiMode === 'boolean') return meta.kanjiMode;
   if (meta.kanaMode === true) return false;
   return Number(gameState?.run?.currentArea?.stage || 0) >= 4;
-}
-
-export function showProceedIngredientDrops(result, state = getGameState?.()) {
-  const drops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
-  showIngredientDropPopups(drops, { useKanji: isKanjiModeEnabled(state) });
 }
 
 export function init(callbacks) {
@@ -615,8 +610,9 @@ async function proceedToNextRoom() {
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);
-    showProceedIngredientDrops(result, result.state);
-    await playRoomTransition(result.state);
+    await playRoomTransition(result.state, {
+      ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
+    });
     updateUI();
   }
 }
@@ -885,8 +881,9 @@ export async function renderQuiz() {
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);
-    showProceedIngredientDrops(result, result.state);
-    await playRoomTransition(result.state);
+    await playRoomTransition(result.state, {
+      ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
+    });
     updateUI();
   }
 }
@@ -948,8 +945,9 @@ export async function renderWordDiscovery() {
         const result = await apiProceed();
         if (result?.state) {
           updateGameState(result.state);
-          showProceedIngredientDrops(result, result.state);
-          await playRoomTransition(result.state);
+          await playRoomTransition(result.state, {
+            ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
+          });
           updateUI();
         }
       }, primary: true },
@@ -1227,8 +1225,9 @@ export async function renderWhackAMole() {
       const result = await apiProceed();
       if (result?.state) {
         updateGameState(result.state);
-        showProceedIngredientDrops(result, result.state);
-        await playRoomTransition(result.state);
+        await playRoomTransition(result.state, {
+          ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
+        });
       }
     } catch (err) {
       // Fall through to updateUI — server state may already have advanced.
