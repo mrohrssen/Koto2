@@ -1,6 +1,6 @@
 import { dom } from '../dom.js';
 import { SPRITE_VERSION } from './sprite-utils.js';
-import { renderJpSentence, getKnownWords, entityToToken, esc as escHtml } from './bootstrap-client.js';
+import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { hideFormation, hideEnemy } from './combat-dom.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 
@@ -38,14 +38,19 @@ function removePlaceholder() {
 /*  NPC display functions                                              */
 /* ------------------------------------------------------------------ */
 
+function hideNpcNamePill() {
+  dom.enemyName.textContent = '';
+  dom.enemyName.innerHTML = '';
+  dom.enemyInfo.classList.remove('visible');
+  dom.enemyHpBar.style.display = 'none';
+  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+}
+
 /** Helper: show an NPC sprite in the npc-display area (no HP bar) */
 export function showNpcInDisplay(name, spritePath, { skipPixi = false } = {}) {
   dom.npcDisplay.classList.add('visible');
   hideFormation('enemy');
-  dom.enemyName.textContent = name;
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+  hideNpcNamePill();
 
   // Hide DOM sprite — NPC renders on PixiJS canvas now
   dom.enemySprite.src = '';
@@ -87,10 +92,7 @@ export function showDealer({ skipPixi = false } = {}) {
 export function showChippy() {
   dom.npcDisplay.classList.add('visible');
   hideFormation('enemy');
-  dom.enemyName.textContent = 'Chippy';
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+  hideNpcNamePill();
 
   dom.enemySprite.src = `/assets/sprites/chippy.webp?v=${SPRITE_VERSION}`;
   dom.enemySprite.onerror = () => {
@@ -121,14 +123,7 @@ export function showNpcTrainer(npcName, npcId, npc, { skipPixi = false } = {}) {
   // or dead creatures will be rebuilt as ghost sprites.
   if (!skipPixi) hideFormation('enemy');
 
-  const roleHtml = npc?.role
-    ? ' \u2014 ' + renderJpSentence([entityToToken(npc.role)], getKnownWords(), new Map())
-    : '';
-  const npcNameHtml = `${escHtml(npcName)}${roleHtml}`;
-  dom.enemyName.innerHTML = npcNameHtml;
-  dom.enemyInfo.classList.add('visible');
-  dom.enemyHpBar.style.display = 'none';
-  if (dom.enemySkillBar) dom.enemySkillBar.style.display = 'none';
+  hideNpcNamePill();
 
   // Hide DOM sprite — NPC renders on PixiJS canvas now
   dom.enemySprite.src = '';

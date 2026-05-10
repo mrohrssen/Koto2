@@ -707,8 +707,10 @@ textarea,
 }
 .area-header-pill > * { pointer-events: auto; }
 
+.top-hud-left,
 .top-hud-right {
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
