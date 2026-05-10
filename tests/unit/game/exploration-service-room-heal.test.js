@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
-import { createRoom } from '../../../src/game/rooms.js';
+import { createRoom, ROOM_TYPES } from '../../../src/game/rooms.js';
 
 function makeGmWithRoomsAndParty({ rooms, creatureParty }) {
   return {
@@ -29,6 +29,27 @@ function makeGmWithRoomsAndParty({ rooms, creatureParty }) {
 }
 
 describe('ExplorationService room heal (5% per room entry)', () => {
+  it('finalizes the first random room before emitting area entry state', () => {
+    const gm = {
+      meta: {},
+      run: {
+        active: true,
+        currentArea: { id: 'wild-plains', nameEn: 'Wild Plains' },
+        creatureParty: { active: [], reserves: [] },
+        stats: { roomsExplored: 0, areasCleared: 0 },
+        runStats: { roomsCleared: 0 },
+        totalEncounters: 0
+      },
+      narrate() {},
+      emitState() {}
+    };
+    const service = new ExplorationService(gm);
+
+    service.enterArea();
+
+    assert.notEqual(gm.run.rooms[0].type, ROOM_TYPES.randomRoom);
+  });
+
   it('heals all living creatures and never revives KO creatures', () => {
     const room1 = createRoom('friendlyNpc', 'okunomori', 1, 2);
     const room2 = createRoom('friendlyNpc', 'okunomori', 2, 2);

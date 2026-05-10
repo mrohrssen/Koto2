@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import {
   createRoom,
+  generateAreaRooms,
   getRoomActions,
   resolveSupportRoom,
   resolveSupportRoomType,
@@ -50,5 +51,12 @@ describe('cooking room types', () => {
     assert.strictEqual(room.type, ROOM_TYPES.campfire);
     assert.strictEqual(room.id, 'test-area_room1');
     assert.deepStrictEqual(room.subArea, { id: 'sub', name: 'Sub' });
+  });
+
+  it('new area generation creates random slots instead of saved-run support rooms', () => {
+    const rooms = generateAreaRooms('wild-plains');
+
+    assert.equal(rooms.some(room => room.type === ROOM_TYPES.support), false);
+    assert.ok(rooms.some(room => room.type === ROOM_TYPES.randomRoom));
   });
 });

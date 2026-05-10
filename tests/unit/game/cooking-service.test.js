@@ -6,6 +6,7 @@ import {
   createCookedDishItem,
   getCookableRecipeHints,
   getIngredientCount,
+  hasCookableRecipe,
   hasIngredients,
   resolveCookingSelection,
 } from '../../../src/game/services/cooking-service.js';
@@ -127,5 +128,27 @@ describe('cookable recipe hints', () => {
     const hints = getCookableRecipeHints({ a: 1, b: 1, c: 1, d: 1, e: 1, f: 1 }, recipes);
 
     assert.deepStrictEqual(hints, []);
+  });
+
+  it('detects cookable authored recipes with at least two ingredients', () => {
+    const recipes = [
+      {
+        id: 'single-water',
+        rarity: 'common',
+        ingredients: [{ id: 'mizu', quantity: 1 }]
+      },
+      {
+        id: 'miso-soup',
+        rarity: 'common',
+        ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }]
+      }
+    ];
+
+    assert.equal(hasCookableRecipe({ mizu: 1 }, { recipes, minTotalQuantity: 2 }), false);
+    assert.equal(hasCookableRecipe({ mizu: 1, miso: 1 }, { recipes, minTotalQuantity: 2 }), true);
+  });
+
+  it('does not treat fallback single-ingredient cooking as a cookable recipe', () => {
+    assert.equal(hasCookableRecipe({ mizu: 1 }, { recipes: [], minTotalQuantity: 2 }), false);
   });
 });

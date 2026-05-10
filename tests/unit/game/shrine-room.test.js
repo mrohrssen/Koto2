@@ -17,7 +17,7 @@ describe('Shrine Room', () => {
     });
   });
 
-  it('generates support slots without replacing fixed npcBattle or boss slots', () => {
+  it('generates random slots without replacing fixed npcBattle or boss slots', () => {
     const originalRandom = Math.random;
     Math.random = () => 0.99;
     try {
@@ -30,7 +30,7 @@ describe('Shrine Room', () => {
 
       const fixed = new Set([5, 11, 17, 23, 29]);
       const generatedRooms = rooms.filter((_, index) => !fixed.has(index));
-      assert.ok(generatedRooms.every(room => room.type === ROOM_TYPES.support));
+      assert.ok(generatedRooms.every(room => room.type === ROOM_TYPES.randomRoom));
     } finally {
       Math.random = originalRandom;
     }

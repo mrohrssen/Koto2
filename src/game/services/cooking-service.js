@@ -93,6 +93,11 @@ export function getCookableRecipeHints(bag = {}, recipes = COOKING_RECIPES) {
     }));
 }
 
+export function hasCookableRecipe(bag = {}, { recipes = COOKING_RECIPES, minTotalQuantity = 2 } = {}) {
+  return getCookableRecipeHints(bag, recipes)
+    .some(recipe => recipe.totalQuantity >= minTotalQuantity);
+}
+
 export function consumeIngredientsFromBag(bag, requirements) {
   if (!hasIngredients(bag, requirements)) throw new Error('Not enough ingredients');
   for (const requirement of requirements) {

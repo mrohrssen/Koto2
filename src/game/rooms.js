@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { hasCookableRecipe } from './services/cooking-service.js';
 
 // ============ TEST ROOM QUEUE ============
 // Only used when NODE_ENV=test for deterministic E2E tests
@@ -76,6 +77,7 @@ export const ROOM_TYPES = {
   npcBattle: 'npcBattle',
   friendlyNpc: 'friendlyNpc',
   support: 'support',
+  randomRoom: 'randomRoom',
   campfire: 'campfire'
 };
 
@@ -89,6 +91,143 @@ const STARTING_MEADOW_TUTORIAL_SEQUENCE = [
   ROOM_TYPES.friendlyNpc,
   ROOM_TYPES.boss
 ];
+
+const RANDOM_ROOM_BASE_WEIGHTS = Object.freeze({
+  [ROOM_TYPES.encounter]: 45,
+  [ROOM_TYPES.friendlyNpc]: 18,
+  [ROOM_TYPES.whackAMole]: 14,
+  [ROOM_TYPES.shrine]: 10,
+  [ROOM_TYPES.campfire]: 13
+});
+
+const RANDOM_ROOM_TYPES = Object.freeze(Object.keys(RANDOM_ROOM_BASE_WEIGHTS));
+const SUPPORT_RANDOM_ROOM_TYPES = new Set([
+  ROOM_TYPES.friendlyNpc,
+  ROOM_TYPES.whackAMole,
+  ROOM_TYPES.shrine,
+  ROOM_TYPES.campfire
+]);
+const COMBAT_LIKE_ROOM_TYPES = new Set([
+  ROOM_TYPES.encounter,
+  ROOM_TYPES.npcBattle
+]);
+
+export function getRandomRoomBaseWeights() {
+  return { ...RANDOM_ROOM_BASE_WEIGHTS };
+}
+
+function isRandomRoomType(type) {
+  return RANDOM_ROOM_TYPES.includes(type);
+}
+
+function normalizeGenerationHistory(history = []) {
+  return history.map(entry => {
+    if (typeof entry === 'string') {
+      return { type: entry, random: isRandomRoomType(entry) };
+    }
+    return {
+      type: entry?.type,
+      random: entry?.random === true
+    };
+  });
+}
+
+export function getRoomGenerationHistory(rooms = [], beforeRoomNumber = Infinity) {
+  return rooms
+    .filter(room => room?.roomNumber < beforeRoomNumber)
+    .filter(room => room?.type !== ROOM_TYPES.randomRoom)
+    .map(room => ({
+      type: room?.type,
+      random: room?.randomRoomResolved === true
+    }));
+}
+
+function randomSlotsSinceSeen(randomHistory, type) {
+  let slots = 0;
+  for (let i = randomHistory.length - 1; i >= 0; i--) {
+    if (randomHistory[i].type === type) return slots;
+    slots++;
+  }
+  return slots;
+}
+
+function applyPityMultiplier(weight, slotsSinceSeen) {
+  if (slotsSinceSeen >= 9) return weight * 2.25;
+  if (slotsSinceSeen >= 6) return weight * 1.5;
+  return weight;
+}
+
+export function applyRoomPacingModifiers(baseWeights, history = []) {
+  const weights = { ...baseWeights };
+  const normalizedHistory = normalizeGenerationHistory(history);
+  const randomHistory = normalizedHistory.filter(entry => entry.random && isRandomRoomType(entry.type));
+
+  const previousRandomType = randomHistory[randomHistory.length - 1]?.type || null;
+  const twoRandomSlotsAgoType = randomHistory[randomHistory.length - 2]?.type || null;
+
+  for (const type of SUPPORT_RANDOM_ROOM_TYPES) {
+    if (previousRandomType === type) weights[type] = 0;
+    else if (twoRandomSlotsAgoType === type) weights[type] *= 0.35;
+  }
+
+  const lastThreeRandomTypes = randomHistory.slice(-3).map(entry => entry.type);
+  if (
+    lastThreeRandomTypes.length === 3 &&
+    lastThreeRandomTypes.every(type => SUPPORT_RANDOM_ROOM_TYPES.has(type))
+  ) {
+    weights[ROOM_TYPES.encounter] *= 2.5;
+  }
+
+  const lastFourGeneratedTypes = normalizedHistory.slice(-4).map(entry => entry.type);
+  if (
+    lastFourGeneratedTypes.length === 4 &&
+    lastFourGeneratedTypes.every(type => COMBAT_LIKE_ROOM_TYPES.has(type))
+  ) {
+    for (const type of SUPPORT_RANDOM_ROOM_TYPES) {
+      weights[type] *= 1.75;
+    }
+  }
+
+  for (const type of RANDOM_ROOM_TYPES) {
+    const slotsSinceSeen = randomSlotsSinceSeen(randomHistory, type);
+    weights[type] = applyPityMultiplier(weights[type], slotsSinceSeen);
+  }
+
+  return weights;
+}
+
+export function applyRoomEligibilityFilters(weights, run) {
+  const filtered = { ...weights };
+  if (!hasCookableRecipe(run?.cooking?.ingredients || {}, { minTotalQuantity: 2 })) {
+    filtered[ROOM_TYPES.campfire] = 0;
+  }
+  return filtered;
+}
+
+export function pickWeightedRoomType(weights, rng = Math.random) {
+  const entries = RANDOM_ROOM_TYPES
+    .map(type => [type, Math.max(0, weights[type] || 0)])
+    .filter(([, weight]) => weight > 0);
+
+  if (entries.length === 0) return ROOM_TYPES.encounter;
+
+  const totalWeight = entries.reduce((sum, [, weight]) => sum + weight, 0);
+  let roll = rng() * totalWeight;
+
+  for (const [type, weight] of entries) {
+    if (roll < weight) return type;
+    roll -= weight;
+  }
+
+  return entries[entries.length - 1][0];
+}
+
+function pickRandomRoomType(run, room, rng = Math.random) {
+  const history = getRoomGenerationHistory(run?.rooms || [], room?.roomNumber || Infinity);
+  const paced = applyRoomPacingModifiers(getRandomRoomBaseWeights(), history);
+  const eligible = applyRoomEligibilityFilters(paced, run);
+  return pickWeightedRoomType(eligible, rng);
+}
 
 // ============ ROOM GENERATION ============
 
@@ -171,7 +310,7 @@ function createStartingMeadowTutorialRooms(area, subAreas) {
  * Generate rooms for an area — Koto2: area-defined room count, defaulting to 30
  * Tutorial-mode Starting Meadow uses a scripted 7-room playtest layout.
  * Other short areas: room 6 = npcBattle; 30-room areas: rooms 6, 12, 18, 24.
- * Boss is always the final room. Remaining slots are encounter, friendlyNpc, or whackAMole.
+ * Boss is always the final room. Remaining slots are unresolved random slots finalized on entry.
  *
  * @param {string} areaId - Area ID to generate rooms for
  * @param {number} [_roomCount] - Ignored (kept for backwards-compat); use area.roomCount instead
@@ -204,12 +343,7 @@ export function generateAreaRooms(areaId, _roomCount, _lastSpecialType, _encount
     } else if (i === bossIndex) {
       type = ROOM_TYPES.boss;
     } else {
-      const roll = Math.random();
-      if (roll < 0.45) {
-        type = ROOM_TYPES.encounter;
-      } else {
-        type = ROOM_TYPES.support;
-      }
+      type = ROOM_TYPES.randomRoom;
     }
 
     const room = createRoom(type, areaId, i + 1, totalRooms);
@@ -335,6 +469,9 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
     case ROOM_TYPES.support:
       room.support = { resolvedType: null };
       break;
+    case ROOM_TYPES.randomRoom:
+      room.randomRoom = { resolvedType: null };
+      break;
     case ROOM_TYPES.campfire:
       room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
       break;
@@ -367,6 +504,22 @@ export function resolveSupportRoom(room, run, rng = Math.random) {
   resolved.interacted = room.interacted;
   if (room.subArea) resolved.subArea = room.subArea;
   resolved.supportResolved = true;
+
+  Object.keys(room).forEach(key => delete room[key]);
+  Object.assign(room, resolved);
+  return room;
+}
+
+export function finalizeRandomRoom(room, run, rng = Math.random) {
+  if (!room || room.type !== ROOM_TYPES.randomRoom) return room;
+
+  const resolvedType = room.randomRoom?.resolvedType || pickRandomRoomType(run, room, rng);
+  const resolved = createRoom(resolvedType, room.areaId, room.roomNumber, room.totalRooms);
+  resolved.id = room.id;
+  resolved.explored = room.explored;
+  resolved.interacted = room.interacted;
+  resolved.randomRoomResolved = true;
+  if (room.subArea) resolved.subArea = room.subArea;
 
   Object.keys(room).forEach(key => delete room[key]);
   Object.assign(room, resolved);

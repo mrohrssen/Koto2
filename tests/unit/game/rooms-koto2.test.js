@@ -1,9 +1,19 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateAreaRooms, getAreaById, getAreaSelectionOptions, ROOM_TYPES } from '../../../src/game/rooms.js';
+import {
+  applyRoomEligibilityFilters,
+  applyRoomPacingModifiers,
+  finalizeRandomRoom,
+  generateAreaRooms,
+  getAreaById,
+  getAreaSelectionOptions,
+  getRandomRoomBaseWeights,
+  pickWeightedRoomType,
+  ROOM_TYPES
+} from '../../../src/game/rooms.js';
 
 function assertOnlyEnabledRoomTypes(rooms, fixedIndices) {
-  const allowedTypes = new Set(['encounter', 'friendlyNpc', 'whackAMole', 'shrine', 'support']);
+  const allowedTypes = new Set(['randomRoom']);
   const otherRooms = rooms.filter((_, i) => !fixedIndices.has(i));
   for (const room of otherRooms) {
     assert.ok(
@@ -37,6 +47,98 @@ function assertNoDisabledRoomTypes(rooms) {
     assert.ok(!disabledTypes.includes(room.type), `Disabled room type found: ${room.type}`);
   }
 }
+
+describe('weighted room picker helpers', () => {
+  it('defines base weights for every random room candidate', () => {
+    assert.deepEqual(getRandomRoomBaseWeights(), {
+      encounter: 45,
+      friendlyNpc: 18,
+      whackAMole: 14,
+      shrine: 10,
+      campfire: 13
+    });
+  });
+
+  it('selects room types from the weighted range', () => {
+    const weights = getRandomRoomBaseWeights();
+
+    assert.equal(pickWeightedRoomType(weights, () => 0.44), ROOM_TYPES.encounter);
+    assert.equal(pickWeightedRoomType(weights, () => 0.46), ROOM_TYPES.friendlyNpc);
+    assert.equal(pickWeightedRoomType(weights, () => 0.65), ROOM_TYPES.whackAMole);
+    assert.equal(pickWeightedRoomType(weights, () => 0.80), ROOM_TYPES.shrine);
+    assert.equal(pickWeightedRoomType(weights, () => 0.95), ROOM_TYPES.campfire);
+  });
+
+  it('removes campfire from the roll when no real two-plus ingredient recipe is cookable', () => {
+    const weights = applyRoomEligibilityFilters(getRandomRoomBaseWeights(), {
+      cooking: { ingredients: { mizu: 1 } }
+    });
+
+    assert.equal(weights.campfire, 0);
+    assert.equal(weights.shrine, 10);
+    assert.equal(weights.whackAMole, 14);
+  });
+
+  it('keeps campfire eligible when a real two-plus ingredient recipe is cookable', () => {
+    const weights = applyRoomEligibilityFilters(getRandomRoomBaseWeights(), {
+      cooking: { ingredients: { mizu: 1, miso: 1 } }
+    });
+
+    assert.equal(weights.campfire, 13);
+  });
+
+  it('applies support cooldowns without blocking encounters', () => {
+    const base = getRandomRoomBaseWeights();
+    const afterShrine = applyRoomPacingModifiers(base, [
+      { type: ROOM_TYPES.shrine, random: true }
+    ]);
+    const shrineTwoRandomSlotsAgo = applyRoomPacingModifiers(base, [
+      { type: ROOM_TYPES.shrine, random: true },
+      { type: ROOM_TYPES.encounter, random: true }
+    ]);
+
+    assert.equal(afterShrine.shrine, 0);
+    assert.equal(shrineTwoRandomSlotsAgo.shrine, 3.5);
+    assert.equal(afterShrine.encounter, 45);
+  });
+
+  it('boosts encounter after a support-room streak', () => {
+    const weights = applyRoomPacingModifiers(getRandomRoomBaseWeights(), [
+      { type: ROOM_TYPES.friendlyNpc, random: true },
+      { type: ROOM_TYPES.shrine, random: true },
+      { type: ROOM_TYPES.campfire, random: true }
+    ]);
+
+    assert.equal(weights.encounter, 112.5);
+  });
+
+  it('boosts support rooms after a combat-like streak that includes npcBattle', () => {
+    const weights = applyRoomPacingModifiers(getRandomRoomBaseWeights(), [
+      { type: ROOM_TYPES.encounter, random: true },
+      { type: ROOM_TYPES.npcBattle, random: false },
+      { type: ROOM_TYPES.encounter, random: true },
+      { type: ROOM_TYPES.encounter, random: true }
+    ]);
+
+    assert.equal(weights.friendlyNpc, 31.5);
+    assert.equal(weights.whackAMole, 24.5);
+    assert.equal(weights.shrine, 17.5);
+    assert.equal(weights.campfire, 22.75);
+  });
+
+  it('pity-boosts long-unseen room types without forcing fixed counts', () => {
+    const afterSix = applyRoomPacingModifiers(getRandomRoomBaseWeights(), [
+      { type: ROOM_TYPES.friendlyNpc, random: true },
+      { type: ROOM_TYPES.encounter, random: true },
+      { type: ROOM_TYPES.whackAMole, random: true },
+      { type: ROOM_TYPES.encounter, random: true },
+      { type: ROOM_TYPES.campfire, random: true },
+      { type: ROOM_TYPES.encounter, random: true }
+    ]);
+
+    assert.equal(afterSix.shrine, 15);
+  });
+});
 
 describe('Koto2 area room generation', () => {
   it('should have npcBattle and friendlyNpc room types', () => {
@@ -120,6 +222,34 @@ describe('Koto2 area room generation', () => {
     it('fills remaining rooms with encounter, friendlyNpc, or whackAMole', () => {
       const rooms = generateAreaRooms('wild-plains');
       assertOnlyEnabledRoomTypes(rooms, new Set([5, 11, 17, 23, 29]));
+    });
+
+    it('creates unresolved random slots instead of support placeholders', () => {
+      const rooms = generateAreaRooms('wild-plains');
+
+      assert.equal(rooms.some(room => room.type === ROOM_TYPES.support), false);
+      assert.equal(rooms[0].type, ROOM_TYPES.randomRoom);
+      assert.equal(rooms[1].type, ROOM_TYPES.randomRoom);
+      assert.equal(rooms[5].type, ROOM_TYPES.npcBattle);
+      assert.equal(rooms[29].type, ROOM_TYPES.boss);
+    });
+
+    it('finalizes random slots using current cooking eligibility', () => {
+      const rooms = generateAreaRooms('wild-plains');
+      const room = rooms[0];
+      const runWithoutRecipe = { rooms, cooking: { ingredients: { mizu: 1 } } };
+      const finalizedWithoutRecipe = finalizeRandomRoom(room, runWithoutRecipe, () => 0.99);
+
+      assert.strictEqual(finalizedWithoutRecipe, room);
+      assert.notEqual(room.type, ROOM_TYPES.campfire);
+
+      const eligibleRooms = generateAreaRooms('wild-plains');
+      const eligibleRoom = eligibleRooms[0];
+      const runWithRecipe = { rooms: eligibleRooms, cooking: { ingredients: { mizu: 1, miso: 1 } } };
+      finalizeRandomRoom(eligibleRoom, runWithRecipe, () => 0.99);
+
+      assert.equal(eligibleRoom.type, ROOM_TYPES.campfire);
+      assert.equal(eligibleRoom.randomRoomResolved, true);
     });
 
     it('does not generate disabled room types', () => {

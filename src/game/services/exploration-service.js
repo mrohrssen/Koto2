@@ -9,7 +9,8 @@ import {
   createRoom,
   ROOM_TYPES,
   popTestRoomType,
-  resolveSupportRoom
+  resolveSupportRoom,
+  finalizeRandomRoom
 } from '../rooms.js';
 
 import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPrice, getCreatureSellPrice, generateDealerCreatures } from '../creatures.js';
@@ -250,6 +251,9 @@ export class ExplorationService {
     // Generate rooms for this area (area-defined count, defaulting to 30)
     const tutorialMode = shouldFixRoomSequence(this.gm.meta);
     this.gm.run.rooms = generateAreaRooms(areaId, undefined, undefined, undefined, undefined, tutorialMode);
+    if (this.gm.run.rooms[0]) {
+      finalizeRandomRoom(this.gm.run.rooms[0], this.gm.run);
+    }
     // encountersNeeded is kept for backwards-compat with other code.
     this.gm.run.encountersNeeded = this.gm.run.rooms.length;
     this.gm.run.currentRoom = 0;
@@ -394,6 +398,7 @@ export class ExplorationService {
     }
     let room = this.gm.run.rooms[this.gm.run.currentRoom]; // re-read after possible replacement
     resolveSupportRoom(room, this.gm.run);
+    finalizeRandomRoom(room, this.gm.run);
     room = this.gm.run.rooms[this.gm.run.currentRoom];
 
     // Mark as explored
