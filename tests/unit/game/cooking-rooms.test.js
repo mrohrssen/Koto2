@@ -21,9 +21,10 @@ describe('cooking room types', () => {
     assert.ok(getRoomActions(campfire).some(action => action.id === 'campfire_cook'));
   });
 
-  it('resolves support room to campfire only when ingredients exist', () => {
+  it('resolves support room to campfire only when a recipe is cookable', () => {
     assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0), ROOM_TYPES.whackAMole);
-    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0), ROOM_TYPES.campfire);
+    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1 } } }, () => 0), ROOM_TYPES.whackAMole);
+    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1, miso: 1 } } }, () => 0), ROOM_TYPES.campfire);
   });
 
   it('never resolves support rooms to materials rooms', () => {
@@ -35,16 +36,16 @@ describe('cooking room types', () => {
     }
   });
 
-  it('gives campfire a 50 percent support-room window when ingredients exist', () => {
-    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0.49), ROOM_TYPES.campfire);
-    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { ebi: 1 } } }, () => 0.50), ROOM_TYPES.campfire);
-    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: {} } }, () => 0.49), ROOM_TYPES.campfire);
+  it('gives campfire a 50 percent support-room window when a recipe is cookable', () => {
+    assert.strictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1, miso: 1 } } }, () => 0.49), ROOM_TYPES.campfire);
+    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1, miso: 1 } } }, () => 0.50), ROOM_TYPES.campfire);
+    assert.notStrictEqual(resolveSupportRoomType({ cooking: { ingredients: { mizu: 1 } } }, () => 0.49), ROOM_TYPES.campfire);
   });
 
   it('mutates a support room into a persisted concrete room', () => {
     const room = createRoom(ROOM_TYPES.support, 'test-area', 1, 3);
     room.subArea = { id: 'sub', name: 'Sub' };
-    const resolved = resolveSupportRoom(room, { cooking: { ingredients: { ebi: 1 } } }, () => 0);
+    const resolved = resolveSupportRoom(room, { cooking: { ingredients: { mizu: 1, miso: 1 } } }, () => 0);
 
     assert.strictEqual(resolved, room);
     assert.strictEqual(room.type, ROOM_TYPES.campfire);

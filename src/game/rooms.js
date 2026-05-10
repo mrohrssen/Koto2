@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { getCookableRecipeHints } from './services/cooking-service.js';
 
 // ============ TEST ROOM QUEUE ============
 // Only used when NODE_ENV=test for deterministic E2E tests
@@ -343,13 +344,13 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
   return room;
 }
 
-function hasUnusedIngredients(run) {
+function hasCookableRecipe(run) {
   const ingredients = run?.cooking?.ingredients || {};
-  return Object.values(ingredients).some(count => count > 0);
+  return getCookableRecipeHints(ingredients).length > 0;
 }
 
 export function resolveSupportRoomType(run, rng = Math.random) {
-  const canCampfire = hasUnusedIngredients(run);
+  const canCampfire = hasCookableRecipe(run);
   const roll = rng();
   if (canCampfire && roll < 0.50) return ROOM_TYPES.campfire;
   if (roll < 0.45) return ROOM_TYPES.whackAMole;

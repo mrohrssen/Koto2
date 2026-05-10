@@ -439,6 +439,36 @@ export class CombatCycleService {
     return result;
   }
 
+  _remapPveCursorAfterKORemovals(koRemovals = []) {
+    const cursor = this.gm.combat?.actionCursor;
+    if (!cursor || cursor.side !== 'ally' || koRemovals.length === 0) return;
+
+    let nextIndex = cursor.index;
+    let cursorRemoved = false;
+    const removals = [...koRemovals].sort((a, b) => a.index - b.index);
+    for (const removal of removals) {
+      if (removal.index === nextIndex) {
+        cursorRemoved = true;
+        break;
+      }
+      if (removal.index < nextIndex) {
+        nextIndex--;
+      }
+    }
+
+    const ally = cursorRemoved ? null : this.gm.combat.allies?.[nextIndex];
+    if (ally && ally.hp > 0 && !ally.befriended) {
+      this.gm.combat.actionCursor = { ...cursor, index: nextIndex, opening: false };
+      return;
+    }
+
+    const fallback = createPveOpeningCursor({
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies
+    });
+    this.gm.combat.actionCursor = fallback ? { ...fallback, opening: false } : null;
+  }
+
   _handleCreatureActionCursorTurn(moveChoices = []) {
     const submittedChoice = moveChoices[0] || null;
     const actionSegments = [];
@@ -477,6 +507,7 @@ export class CombatCycleService {
     const koSwaps = rawKoSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
     const koRemovals = rawKoRemovals.map(r => ({ slot: r.index, name: r.name }));
     this.gm.combat.allies = this.gm.run.creatureParty.active;
+    this._remapPveCursorAfterKORemovals(rawKoRemovals);
 
     const allEnemiesDown = checkAllDefeated(this.gm.combat.enemies);
     const allAlliesDown = checkAllDefeated(this.gm.combat.allies);

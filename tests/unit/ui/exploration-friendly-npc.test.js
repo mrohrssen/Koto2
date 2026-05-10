@@ -150,6 +150,74 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(renderedChoices.heading, 'Choose an item');
   });
 
+  it('refetches offers and greeting when a new run reuses the same friendly NPC room id', async () => {
+    let offerCalls = 0;
+    let currentState;
+    const makeRoom = () => ({
+      id: 'friendly-npc-same-room-id',
+      type: 'friendlyNpc',
+      npc: { name: '案内人', nameEn: 'Guide' },
+      friendlyNpc: { completed: false },
+    });
+
+    currentState = {
+      phase: 'friendlyNpc',
+      room: makeRoom(),
+      meta: { tutorialStep: 0 },
+      run: {
+        stats: { startTime: 1000 },
+        creatureParty: { active: [] },
+      },
+    };
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => {
+        offerCalls += 1;
+        const id = offerCalls === 1 ? 'first-run-item' : 'second-run-item';
+        const word = offerCalls === 1 ? 'りんご' : 'みず';
+        return {
+          greeting: {
+            tokens: [{ text: `greeting-${offerCalls}` }],
+            overrides: {},
+          },
+          offered: [
+            {
+              id,
+              word,
+              reading: word,
+              nameToken: { text: id },
+              effect: { healAllPercent: 0.2 },
+            },
+          ],
+        };
+      },
+    });
+
+    await renderFriendlyNpc();
+
+    currentState = {
+      phase: 'friendlyNpc',
+      room: makeRoom(),
+      meta: { tutorialStep: 0 },
+      run: {
+        stats: { startTime: 2000 },
+        creatureParty: { active: [] },
+      },
+    };
+
+    await renderFriendlyNpc();
+
+    assert.equal(offerCalls, 2);
+    assert.equal(dialogueCards.length, 2);
+    assert.deepEqual(dialogueCards[1].tokens, [{ text: 'greeting-2' }]);
+    assert.equal(renderedChoices.cards[0].title, 'second-run-item');
+  });
+
   it('spawns the room NPC sprite before the greeting dialogue card', async () => {
     const events = [];
     const room = {

@@ -1,8 +1,9 @@
-import { describe, it, mock } from 'node:test';
+import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 const modelCalls = [];
 const openAiCalls = [];
+const anthropicCalls = [];
 
 await mock.module('@google/generative-ai', {
   namedExports: {
@@ -49,10 +50,13 @@ await mock.module('openai', {
 await mock.module('@anthropic-ai/sdk', {
   defaultExport: class {
     messages = {
-      create: async () => ({
-        content: [{ text: 'Hello.' }],
-        usage: { input_tokens: 2, output_tokens: 1 }
-      })
+      create: async (params) => {
+        anthropicCalls.push(params);
+        return {
+          content: [{ text: 'Hello.' }],
+          usage: { input_tokens: 2, output_tokens: 1 }
+        };
+      }
     };
   }
 });
@@ -60,6 +64,12 @@ await mock.module('@anthropic-ai/sdk', {
 const { chat } = await import('../../src/ai-providers.js');
 
 describe('ai provider model routing', () => {
+  beforeEach(() => {
+    modelCalls.length = 0;
+    openAiCalls.length = 0;
+    anthropicCalls.length = 0;
+  });
+
   it('passes configured Gemini model into GoogleGenerativeAI', async () => {
     const result = await chat({
       provider: 'gemini',
@@ -85,5 +95,31 @@ describe('ai provider model routing', () => {
     });
 
     assert.equal(openAiCalls.at(-1).temperature, 0.1);
+  });
+
+  it('uses a larger OpenAI output budget for dialogue learn lessons', async () => {
+    await chat({
+      provider: 'openai',
+      apiKey: 'key',
+      messages: [{ role: 'user', content: 'Build a lesson.' }],
+      customSystemPrompt: 'Return JSON.',
+      openaiModel: 'gpt-4o-mini',
+      purpose: 'dialogue-learn'
+    });
+
+    assert.equal(openAiCalls.at(-1).max_tokens, 2500);
+  });
+
+  it('uses a larger Anthropic output budget for dialogue learn lessons', async () => {
+    await chat({
+      provider: 'anthropic',
+      apiKey: 'key',
+      messages: [{ role: 'user', content: 'Build a lesson.' }],
+      customSystemPrompt: 'Return JSON.',
+      claudeModel: 'claude-3-5-haiku-latest',
+      purpose: 'dialogue-learn'
+    });
+
+    assert.equal(anthropicCalls.at(-1).max_tokens, 2500);
   });
 });
