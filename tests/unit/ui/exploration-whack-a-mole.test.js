@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const sceneManagerState = { currentScene: null };
 let renderedButtons = [];
+const roomTransitionCalls = [];
 
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
@@ -37,7 +38,11 @@ await mock.module('../../../public/js/ui/item-effect-pills.js', {
   namedExports: { buildItemEffectPills: () => '' },
 });
 await mock.module('../../../public/js/ui/room-transition.js', {
-  namedExports: { playRoomTransition: async () => {} },
+  namedExports: {
+    playRoomTransition: async (state, opts) => {
+      roomTransitionCalls.push({ state, opts });
+    },
+  },
 });
 await mock.module('../../../public/js/ui/ui-components.js', {
   namedExports: {
@@ -74,11 +79,12 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
   },
 });
 
-const { init, renderWhackAMole } = await import('../../../public/js/ui/exploration.js');
+const { init, renderExploring, renderWhackAMole } = await import('../../../public/js/ui/exploration.js');
 
 describe('renderWhackAMole decline flow', () => {
   beforeEach(() => {
     renderedButtons = [];
+    roomTransitionCalls.length = 0;
     sceneManagerState.currentScene = null;
   });
 
@@ -118,5 +124,56 @@ describe('renderWhackAMole decline flow', () => {
 
     resolveSkip({ state: null });
     await decline;
+  });
+
+  it('passes normal proceed ingredient drops into the room transition', async () => {
+    renderedButtons = [];
+    roomTransitionCalls.length = 0;
+
+    const ingredientDrops = [{ ingredient: { nameEn: 'Water' }, quantity: 1 }];
+    const advancedState = {
+      phase: 'room',
+      run: {
+        currentRoom: 1,
+        rooms: [{ type: 'empty' }, { type: 'empty' }],
+        creatureParty: { active: [{ id: 'hi' }] },
+      },
+    };
+
+    let updatedState = null;
+    let updateUiCalls = 0;
+
+    init({
+      getGameState: () => ({
+        phase: 'exploring',
+        run: {
+          currentRoom: 0,
+          rooms: [{ type: 'empty' }],
+        },
+      }),
+      updateGameState: state => { updatedState = state; },
+      updateUI: () => { updateUiCalls += 1; },
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+        triggerEquipBots: () => {},
+      },
+      apiProceed: async () => ({
+        state: advancedState,
+        ingredientDrops,
+      }),
+    });
+
+    renderExploring();
+    const proceedButton = renderedButtons.find(button => button.label.includes('進む'));
+    assert.ok(proceedButton);
+
+    await proceedButton.onClick();
+
+    assert.equal(updatedState, advancedState);
+    assert.equal(roomTransitionCalls.length, 1);
+    assert.equal(roomTransitionCalls[0].state, advancedState);
+    assert.deepEqual(roomTransitionCalls[0].opts, { ingredientDrops });
+    assert.equal(updateUiCalls, 1);
   });
 });
