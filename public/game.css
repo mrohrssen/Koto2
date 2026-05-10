@@ -1809,6 +1809,13 @@ button.hud-chip {
   opacity: 0;
   transition: opacity 100ms ease-out;
 }
+.split-attack-card.sac-continue-ready {
+  cursor: pointer;
+}
+.split-attack-card.sac-continue-queued {
+  --sac-continue-bg: rgba(49,183,224,0.16);
+  animation: sacQueuedPulse 260ms ease-out;
+}
 
 .sac-heading {
   padding: 10px 14px 8px;
@@ -1968,10 +1975,23 @@ button.hud-chip {
   font-size: 8px;
   transform: translateY(-0.5px);
 }
+.split-attack-card.sac-continue-queued .sac-continue {
+  color: rgba(13, 104, 145, 0.98);
+}
+.split-attack-card.sac-continue-queued .sac-continue::before {
+  content: '✓';
+  font-size: 10px;
+  transform: translateY(-0.5px);
+}
 
 @keyframes sacFadeIn {
   from { opacity: 0; transform: scale(0.97); }
   to   { opacity: 1; transform: scale(1); }
+}
+@keyframes sacQueuedPulse {
+  0% { transform: scale(1); }
+  45% { transform: scale(0.985); }
+  100% { transform: scale(1); }
 }
 
 /* ===== MENU SLIDE-UP SHEET ===== */
