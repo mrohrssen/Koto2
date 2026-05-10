@@ -4,6 +4,7 @@ import { SPRITE_VERSION } from './sprite-utils.js';
 import { renderEnFirst } from './bootstrap-client.js';
 import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { combatEvents } from './combat-events.js';
+import { showIngredientDropPopups } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
 import {
@@ -22,6 +23,11 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function getTravelIngredientDropDelays(drops, durationMs) {
+  if (!Array.isArray(drops) || drops.length === 0) return [];
+  return drops.map((_, index) => durationMs * (index + 1) / (drops.length + 1));
+}
+
 /**
  * Play the room entrance transition.
  * Called between updateGameState() and updateUI() after apiProceed().
@@ -32,7 +38,7 @@ function wait(ms) {
  * the outgoing room's NPC sprite — fixes bugs #3 and #5 (NPC sprite did not
  * clear on re-entry or on walking into a new NPC room).
  */
-export async function playRoomTransition(gameState, { waitFn = wait } = {}) {
+export async function playRoomTransition(gameState, { waitFn = wait, ingredientDrops = [] } = {}) {
   const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
   if (!room) return;
 
@@ -40,6 +46,11 @@ export async function playRoomTransition(gameState, { waitFn = wait } = {}) {
   hideFormation('enemy');
   setScrollState('scrolling');
   startParallax(ROOM_TRAVEL_SCROLL_SPEED);
+
+  const ingredientDropDelays = getTravelIngredientDropDelays(ingredientDrops, ROOM_TRAVEL_DURATION_MS);
+  if (ingredientDropDelays.length > 0) {
+    showIngredientDropPopups(ingredientDrops, { delaysMs: ingredientDropDelays });
+  }
 
   // Transition to ExplorationScene. Bumping to a new scene here tears down
   // the previous scene's NPC sprite (via registry disposal + beforeExit) so
