@@ -12,6 +12,10 @@ import {
 
 export { LEARN_LESSON_UNAVAILABLE };
 
+function diagnostic(error, reason) {
+  return { ok: false, error, reason };
+}
+
 export function buildDialogueLearnConfig(env = process.env) {
   const provider = env.DIALOGUE_LEARN_PROVIDER?.trim();
   const apiKey = env.DIALOGUE_LEARN_API_KEY?.trim();
@@ -96,8 +100,11 @@ export async function generateDialogueLearnLesson({
   const sourceText = String(text || '').trim();
   const normalizedTokens = normalizeLearnTokens(tokens);
   const normalizedEntities = normalizeLearnEntities(entities);
-  if (!sourceText || normalizedTokens.length === 0) {
-    return { ok: false, error: LEARN_LESSON_UNAVAILABLE };
+  if (!sourceText) {
+    return diagnostic('learn_lesson_invalid_request', 'missing_text');
+  }
+  if (normalizedTokens.length === 0) {
+    return diagnostic('learn_lesson_invalid_request', 'missing_tokens');
   }
 
   const entitySignature = buildLearnEntitySignature(normalizedEntities, normalizedTokens);
@@ -108,7 +115,7 @@ export async function generateDialogueLearnLesson({
   }
 
   if (!config?.provider || !config?.apiKey || !config?.model || !chatFn) {
-    return { ok: false, error: LEARN_LESSON_UNAVAILABLE };
+    return diagnostic('learn_lesson_config_missing', 'missing_config_or_chat');
   }
 
   const { systemPrompt, userPrompt } = buildDialogueLearnPrompts({ sourceText, tokens: normalizedTokens, entities: normalizedEntities });
@@ -124,13 +131,17 @@ export async function generateDialogueLearnLesson({
     });
 
     const parsed = parseLearnLessonJson(raw);
+    if (!parsed) {
+      return diagnostic('learn_lesson_parse_failed', 'invalid_json');
+    }
     const validation = validateLearnLesson(parsed, {
       sourceText,
       tokens: normalizedTokens,
       entities: normalizedEntities
     });
     if (!validation.ok) {
-      return { ok: false, error: LEARN_LESSON_UNAVAILABLE };
+      logger.warn('[DialogueLearn] Lesson validation failed:', validation.reason);
+      return diagnostic('learn_lesson_validation_failed', validation.reason || 'unknown');
     }
 
     cache.set(cacheKey, validation.lesson, {
@@ -142,6 +153,6 @@ export async function generateDialogueLearnLesson({
     return { ok: true, lesson: validation.lesson, cached: false };
   } catch (error) {
     logger.warn('[DialogueLearn] Lesson generation failed:', error.message);
-    return { ok: false, error: LEARN_LESSON_UNAVAILABLE };
+    return diagnostic('learn_lesson_generation_failed', 'provider_error');
   }
 }

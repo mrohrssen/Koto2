@@ -1,7 +1,8 @@
-import { describe, it, beforeEach, afterEach } from 'node:test';
+import { describe, it, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { DialogueLearnCache } from '../../../src/dialogue-learn/cache.js';
 import { LEARN_LESSON_SCHEMA_VERSION } from '../../../src/dialogue-learn/schema.js';
+import { logger } from '../../../src/logger.js';
 import {
   buildDialogueLearnConfig,
   buildDialogueLearnPrompts,
@@ -112,11 +113,15 @@ describe('dialogue learn service', () => {
     assert.equal(calls[0].openaiModel, 'gpt-5-mini');
   });
 
-  it('fails closed for empty text, missing tokens, missing config, and invalid AI output', async () => {
+  it('fails closed with specific diagnostics for empty text, missing tokens, missing config, and invalid AI output', async () => {
     const cache = new DialogueLearnCache({ inMemory: true });
-    assert.deepEqual(await generateDialogueLearnLesson({ text: '', tokens, entities, cache, chatFn: async () => '{}', config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' } }), { ok: false, error: 'learn_lesson_unavailable' });
-    assert.deepEqual(await generateDialogueLearnLesson({ text: '花は森で光を見た。', tokens: [], entities, cache, chatFn: async () => '{}', config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' } }), { ok: false, error: 'learn_lesson_unavailable' });
-    assert.deepEqual(await generateDialogueLearnLesson({ text: '花は森で光を見た。', tokens, entities, cache, chatFn: async () => JSON.stringify(lesson()), config: null }), { ok: false, error: 'learn_lesson_unavailable' });
-    assert.deepEqual(await generateDialogueLearnLesson({ text: '花は森で光を見た。', tokens, entities, cache, chatFn: async () => '{"bad":true}', config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' } }), { ok: false, error: 'learn_lesson_unavailable' });
+    const warnMock = mock.method(logger, 'warn', () => {});
+    assert.deepEqual(await generateDialogueLearnLesson({ text: '', tokens, entities, cache, chatFn: async () => '{}', config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' } }), { ok: false, error: 'learn_lesson_invalid_request', reason: 'missing_text' });
+    assert.deepEqual(await generateDialogueLearnLesson({ text: '花は森で光を見た。', tokens: [], entities, cache, chatFn: async () => '{}', config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' } }), { ok: false, error: 'learn_lesson_invalid_request', reason: 'missing_tokens' });
+    assert.deepEqual(await generateDialogueLearnLesson({ text: '花は森で光を見た。', tokens, entities, cache, chatFn: async () => JSON.stringify(lesson()), config: null }), { ok: false, error: 'learn_lesson_config_missing', reason: 'missing_config_or_chat' });
+    assert.deepEqual(await generateDialogueLearnLesson({ text: '花は森で光を見た。', tokens, entities, cache, chatFn: async () => '```json\n{}\n```', config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' } }), { ok: false, error: 'learn_lesson_parse_failed', reason: 'invalid_json' });
+    assert.deepEqual(await generateDialogueLearnLesson({ text: '花は森で光を見た。', tokens, entities, cache, chatFn: async () => '{"bad":true}', config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' } }), { ok: false, error: 'learn_lesson_validation_failed', reason: 'top_level_keys' });
+    assert.deepEqual(await generateDialogueLearnLesson({ text: '花は森で光を見た。', tokens, entities, cache, chatFn: async () => { throw new Error('provider exploded'); }, config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' } }), { ok: false, error: 'learn_lesson_generation_failed', reason: 'provider_error' });
+    assert.equal(warnMock.mock.callCount(), 2);
   });
 });
