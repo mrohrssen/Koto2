@@ -95,6 +95,7 @@ describe('ai provider model routing', () => {
     });
 
     assert.equal(openAiCalls.at(-1).temperature, 0.1);
+    assert.equal(openAiCalls.at(-1).max_tokens, 500);
   });
 
   it('uses a larger OpenAI output budget for dialogue learn lessons', async () => {

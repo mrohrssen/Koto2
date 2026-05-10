@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { recordCall, estimateTokens, estimateMessagesTokens } from './ai-metrics.js';
 
 const OUTPUT_TOKEN_LIMITS = {
-  'dialogue-translation': 120,
+  'dialogue-translation': 500,
   'dialogue-learn': 2500,
   default: 500
 };
