@@ -3,6 +3,16 @@ import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { recordCall, estimateTokens, estimateMessagesTokens } from './ai-metrics.js';
 
+const OUTPUT_TOKEN_LIMITS = {
+  'dialogue-translation': 120,
+  'dialogue-learn': 2500,
+  default: 500
+};
+
+function outputTokenLimitForPurpose(purpose) {
+  return OUTPUT_TOKEN_LIMITS[purpose] || OUTPUT_TOKEN_LIMITS.default;
+}
+
 // JLPT Grammar Level Descriptions
 export const JLPT_GRAMMAR = {
   N5: `Basic grammar only:
@@ -78,7 +88,7 @@ async function chatWithOpenAI(apiKey, messages, systemPrompt, model, purpose = '
     params.max_completion_tokens = 10000;
   } else {
     params.temperature = purpose === 'dialogue-translation' ? 0.1 : 0.7;
-    params.max_tokens = purpose === 'dialogue-translation' ? 120 : 500;
+    params.max_tokens = outputTokenLimitForPurpose(purpose);
   }
 
   const response = await client.chat.completions.create(params);
@@ -101,7 +111,7 @@ async function chatWithOpenAI(apiKey, messages, systemPrompt, model, purpose = '
 /**
  * Claude (Anthropic) Provider
  */
-async function chatWithClaude(apiKey, messages, systemPrompt, model, systemBlocks) {
+async function chatWithClaude(apiKey, messages, systemPrompt, model, systemBlocks, purpose = 'other') {
   const client = new Anthropic({ apiKey });
 
   // Build system: structured blocks with cache_control for Claude, or flat string
@@ -126,7 +136,7 @@ async function chatWithClaude(apiKey, messages, systemPrompt, model, systemBlock
 
   const response = await client.messages.create({
     model: model || 'claude-sonnet-4-6',
-    max_tokens: 500,
+    max_tokens: outputTokenLimitForPurpose(purpose),
     system,
     messages: messages.map(m => ({
       role: m.role,
@@ -268,7 +278,7 @@ export async function chat({
 
       case 'claude':
       case 'anthropic':
-        providerResult = await chatWithClaude(apiKey, messages, systemPrompt, claudeModel, systemBlocks);
+        providerResult = await chatWithClaude(apiKey, messages, systemPrompt, claudeModel, systemBlocks, purpose);
         break;
 
       case 'gemini':

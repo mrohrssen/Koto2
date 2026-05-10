@@ -90,6 +90,7 @@ export async function learnDialogue(text, tokens = [], entities = [], idempotenc
       return {
         ok: false,
         error: data?.error || 'learn_lesson_unavailable',
+        reason: data?.reason,
         cost: data?.cost,
         balance: data?.balance
       };

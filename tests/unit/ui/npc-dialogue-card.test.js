@@ -539,8 +539,8 @@ describe('npc dialogue card', () => {
     assert.doesNotMatch(actionArea.innerHTML, /<script/);
   });
 
-  it('renders unavailable Learn state with retry control', async () => {
-    learnResponse = { ok: false, error: 'learn_lesson_unavailable' };
+  it('renders unavailable Learn state with retry control and diagnostic code', async () => {
+    learnResponse = { ok: false, error: 'learn_lesson_validation_failed', reason: 'tokens_length' };
     showNpcDialogueCard({
       speaker: 'Mira',
       tokens: [{ surface: '待って！', baseForm: '待つ', reading: 'まって', meaning: 'wait', pos: 'verb' }],
@@ -552,6 +552,8 @@ describe('npc dialogue card', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     assert.match(actionArea.innerHTML, /Learn lesson is unavailable right now/);
+    assert.match(actionArea.innerHTML, /learn_lesson_validation_failed/);
+    assert.match(actionArea.innerHTML, /tokens_length/);
     assert.match(actionArea.innerHTML, /Try again/);
   });
 

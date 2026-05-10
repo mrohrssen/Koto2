@@ -2,6 +2,7 @@ import { writeFileSync, readFileSync, readdirSync, unlinkSync, existsSync } from
 import { join } from 'path';
 import { resolveOpeningActions, resolvePvpCursorAction, resolveRound } from './pvp-combat.js';
 import { applyDebugSuperAttack } from '../game/loop.js';
+import { getDebugSuperAttackForUser } from '../game/debug-super-attack-access.js';
 import { backfillCreatureListUids } from '../game/creatures.js';
 
 // Characters excluding easily confused ones (no I, O, 0, 1)
@@ -500,8 +501,11 @@ export class MatchManager {
       }
     }
 
-    if (this._getSettings?.()?.debugSuperAttack) {
+    const settings = this._getSettings?.() || {};
+    if (getDebugSuperAttackForUser(settings, match.player1)) {
       applyDebugSuperAttack(sideA);
+    }
+    if (getDebugSuperAttackForUser(settings, match.player2)) {
       applyDebugSuperAttack(sideB);
     }
 

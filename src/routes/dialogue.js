@@ -10,7 +10,6 @@ import {
 } from '../dialogue-translation/service.js';
 import { DialogueLearnCache } from '../dialogue-learn/cache.js';
 import {
-  LEARN_LESSON_UNAVAILABLE,
   buildDialogueLearnConfig,
   generateDialogueLearnLesson
 } from '../dialogue-learn/service.js';
@@ -120,8 +119,11 @@ export default function createDialogueRoutes({
   router.post('/learn', async (req, res) => {
     const text = String(req.body?.text || '').trim();
     const tokens = Array.isArray(req.body?.tokens) ? req.body.tokens : [];
-    if (!text || tokens.length === 0) {
-      return res.status(400).json({ ok: false, error: LEARN_LESSON_UNAVAILABLE });
+    if (!text) {
+      return res.status(400).json({ ok: false, error: 'learn_lesson_invalid_request', reason: 'missing_text' });
+    }
+    if (tokens.length === 0) {
+      return res.status(400).json({ ok: false, error: 'learn_lesson_invalid_request', reason: 'missing_tokens' });
     }
 
     const idempotencyKey = String(req.body?.idempotencyKey || '').trim();

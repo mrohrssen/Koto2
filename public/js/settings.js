@@ -69,7 +69,7 @@ export function setDebugMode(enabled) {
 
 // ============ SERVER SETTINGS ============
 
-import { apiUrl } from './api.js';
+import { apiUrl, getAuthHeaders } from './api.js';
 
 /**
  * Load settings from server
@@ -77,7 +77,9 @@ import { apiUrl } from './api.js';
  */
 export async function loadServerSettings() {
   try {
-    const response = await fetch(apiUrl('/api/settings'));
+    const response = await fetch(apiUrl('/api/settings'), {
+      headers: getAuthHeaders()
+    });
     return await response.json();
   } catch (error) {
     console.error('Failed to load server settings:', error);
@@ -94,7 +96,7 @@ export async function saveServerSettings(settings) {
   try {
     const response = await fetch(apiUrl('/api/settings'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(settings)
     });
     return response.ok;

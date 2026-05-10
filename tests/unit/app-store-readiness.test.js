@@ -18,13 +18,19 @@ describe('App Store readiness static checks', () => {
     assert.equal(authJs.includes('Invite code required'), false);
   });
 
-  it('does not expose playtest or debug controls in settings', () => {
+  it('does not expose broad playtest controls in settings', () => {
     const settingsUi = read('public/js/ui/modals.js');
 
     assert.equal(settingsUi.includes('Force Room Type'), false);
     assert.equal(settingsUi.includes('100 ATK (Debug)'), false);
     assert.equal(settingsUi.includes('Add Fusion Core'), false);
-    assert.equal(settingsUi.includes('debugSuperAttack'), false);
+  });
+
+  it('guards debug super attack behind the server-provided allowlisted setting', () => {
+    const settingsUi = read('public/js/ui/modals.js');
+
+    assert.equal(settingsUi.includes("Object.hasOwn(serverSettings, 'debugSuperAttack')"), true);
+    assert.equal(settingsUi.includes('settings-debug-super-attack'), true);
   });
 
   it('ships an in-app privacy policy link and page', () => {

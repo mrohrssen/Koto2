@@ -283,7 +283,10 @@ function renderLessonNotes(notes = []) {
   `).join('');
 }
 
-function renderLearnTakeover({ state, sourceText, lesson = null }) {
+function renderLearnTakeover({ state, sourceText, lesson = null, diagnostic = null }) {
+  const diagnosticText = diagnostic?.error
+    ? `${diagnostic.error}${diagnostic.reason ? ` / ${diagnostic.reason}` : ''}`
+    : '';
   const body = state === 'loading'
     ? '<div class="npc-dialogue-learn-status">Building lesson...</div>'
     : state === 'success' && lesson
@@ -323,6 +326,7 @@ function renderLearnTakeover({ state, sourceText, lesson = null }) {
       : `
         <section class="npc-dialogue-learn-section">
           <p class="npc-dialogue-learn-error">Learn lesson is unavailable right now.</p>
+          ${diagnosticText ? `<p class="npc-dialogue-learn-secondary">Diagnostic: ${esc(diagnosticText)}</p>` : ''}
           <button class="npc-dialogue-learn-retry" type="button">Try again</button>
         </section>
       `;
@@ -578,10 +582,10 @@ export function showNpcDialogueCard(options = {}) {
       let learnPaidForPage = false;
       let lastLearnResult = null;
 
-      const setLearnTakeover = (state, lesson = null) => {
+      const setLearnTakeover = (state, lesson = null, diagnostic = null) => {
         closeTranslationSheet();
         closeLearnTakeover();
-        actionArea.insertAdjacentHTML('beforeend', renderLearnTakeover({ state, sourceText, lesson }));
+        actionArea.insertAdjacentHTML('beforeend', renderLearnTakeover({ state, sourceText, lesson, diagnostic }));
         actionArea.querySelector('.npc-dialogue-learn-close')?.addEventListener('click', closeLearnTakeover);
         actionArea.querySelector('.npc-dialogue-learn-retry')?.addEventListener('click', requestLearn);
       };
@@ -611,7 +615,11 @@ export function showNpcDialogueCard(options = {}) {
           setLearnTakeover('success', result.lesson);
           return;
         }
-        setLearnTakeover(result?.error === 'insufficient_crystals' ? 'insufficient' : 'unavailable');
+        setLearnTakeover(
+          result?.error === 'insufficient_crystals' ? 'insufficient' : 'unavailable',
+          null,
+          result?.error === 'insufficient_crystals' ? null : { error: result?.error, reason: result?.reason }
+        );
       };
 
       actionArea.querySelector('.npc-dialogue-learn')?.addEventListener('click', requestLearn);

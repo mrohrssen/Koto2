@@ -83,7 +83,7 @@ describe('POST /api/dialogue/learn', () => {
     assert.equal(calls, 1);
   });
 
-  it('returns learn_lesson_unavailable for empty text, missing tokens, missing key, or missing config', async () => {
+  it('returns specific diagnostics for empty text, missing tokens, missing key, or missing config', async () => {
     const app = createApp({
       authBypass: true,
       routeOverrides: {
@@ -94,9 +94,9 @@ describe('POST /api/dialogue/learn', () => {
     });
     fundTestUser();
 
-    assert.deepEqual((await request(app).post('/api/dialogue/learn').send({ text: ' ', tokens, entities, idempotencyKey: 'learn-1' }).expect(400)).body, { ok: false, error: 'learn_lesson_unavailable' });
-    assert.deepEqual((await request(app).post('/api/dialogue/learn').send({ text: '花は森で光を見た。', tokens: [], entities, idempotencyKey: 'learn-1' }).expect(400)).body, { ok: false, error: 'learn_lesson_unavailable' });
+    assert.deepEqual((await request(app).post('/api/dialogue/learn').send({ text: ' ', tokens, entities, idempotencyKey: 'learn-1' }).expect(400)).body, { ok: false, error: 'learn_lesson_invalid_request', reason: 'missing_text' });
+    assert.deepEqual((await request(app).post('/api/dialogue/learn').send({ text: '花は森で光を見た。', tokens: [], entities, idempotencyKey: 'learn-1' }).expect(400)).body, { ok: false, error: 'learn_lesson_invalid_request', reason: 'missing_tokens' });
     assert.deepEqual((await request(app).post('/api/dialogue/learn').send({ text: '花は森で光を見た。', tokens, entities }).expect(400)).body, { ok: false, error: 'missing_idempotency_key' });
-    assert.deepEqual((await request(app).post('/api/dialogue/learn').send({ text: '花は森で光を見た。', tokens, entities, idempotencyKey: 'learn-1' }).expect(503)).body, { ok: false, error: 'learn_lesson_unavailable' });
+    assert.deepEqual((await request(app).post('/api/dialogue/learn').send({ text: '花は森で光を見た。', tokens, entities, idempotencyKey: 'learn-1' }).expect(503)).body, { ok: false, error: 'learn_lesson_config_missing', reason: 'missing_config_or_chat' });
   });
 });

@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import { getProviders, getJLPTLevels } from '../ai-providers.js';
 import { updateTTSConfig } from '../game/prefetch.js';
+import { optionalAuth } from '../auth/middleware.js';
+import {
+  canUseDebugSuperAttack,
+  getDebugSuperAttackForUser,
+  setDebugSuperAttackForUser
+} from '../game/debug-super-attack-access.js';
 
 /**
  * Create settings router
@@ -11,6 +17,8 @@ import { updateTTSConfig } from '../game/prefetch.js';
  */
 export default function createSettingsRoutes({ getSettings, saveSettings }) {
   const router = Router();
+
+  router.use(optionalAuth);
 
   // Config - static configuration info
   router.get('/config', (req, res) => {
@@ -30,7 +38,7 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       volume: settings.gameTtsVolume || 1.0
     });
 
-    res.json({
+    const response = {
       jlptLevel: settings.jlptLevel || 'N4',
       gameTtsEnabled: settings.gameTtsEnabled ?? true,
       gameTtsSpeakerId: settings.gameTtsSpeakerId || 13,
@@ -39,7 +47,13 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       voiceGender: settings.voiceGender || 'boy',
       reviewType: settings.reviewType || 'dialog',
       dailyWordLimit: settings.dailyWordLimit ?? 10
-    });
+    };
+
+    if (canUseDebugSuperAttack(req.user)) {
+      response.debugSuperAttack = getDebugSuperAttackForUser(settings, req.user);
+    }
+
+    res.json(response);
   });
 
   // Settings - POST update settings
@@ -70,6 +84,10 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       if (!isNaN(limit) && limit >= 0 && limit <= 50) {
         settings.dailyWordLimit = limit;
       }
+    }
+
+    if (req.body.debugSuperAttack !== undefined) {
+      setDebugSuperAttackForUser(settings, req.user, req.body.debugSuperAttack);
     }
 
     if (gameTtsEnabled !== undefined || gameTtsSpeakerId !== undefined ||

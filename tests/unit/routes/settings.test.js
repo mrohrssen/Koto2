@@ -6,6 +6,11 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createApp } from '../../../src/app.js';
 import { resetDataDirForTest } from '../../../src/data-dir.js';
+import { signToken } from '../../../src/auth/middleware.js';
+
+function authHeader(username) {
+  return { Authorization: `Bearer ${signToken({ id: `u-${username}`, username })}` };
+}
 
 describe('settings routes App Store readiness', () => {
   let originalNodeEnv;
@@ -44,6 +49,54 @@ describe('settings routes App Store readiness', () => {
     assert.equal(settings.debugSuperAttack, false);
     assert.equal(savedSettings.debugSuperAttack, false);
     assert.equal(savedSettings.voiceGender, 'girl');
+  });
+
+  it('exposes and saves debug super attack only for allowlisted usernames', async () => {
+    const settings = {
+      debugSuperAttack: true,
+      debugSuperAttackByUsername: { michia: false },
+      voiceGender: 'boy'
+    };
+    let savedSettings = null;
+    const app = createApp({
+      routeOverrides: {
+        getSettings: () => settings,
+        saveSettings: (next) => { savedSettings = { ...next }; }
+      }
+    });
+
+    const regularGet = await request(app)
+      .get('/api/settings')
+      .set(authHeader('newplayer'))
+      .expect(200);
+    assert.equal(Object.hasOwn(regularGet.body, 'debugSuperAttack'), false);
+
+    await request(app)
+      .post('/api/settings')
+      .set(authHeader('newplayer'))
+      .send({ debugSuperAttack: true })
+      .expect(200);
+    assert.equal(savedSettings.debugSuperAttackByUsername.michia, false);
+
+    const allowlistedGet = await request(app)
+      .get('/api/settings')
+      .set(authHeader('michia'))
+      .expect(200);
+    assert.equal(allowlistedGet.body.debugSuperAttack, false);
+
+    await request(app)
+      .post('/api/settings')
+      .set(authHeader('michia'))
+      .send({ debugSuperAttack: true })
+      .expect(200);
+    assert.equal(settings.debugSuperAttackByUsername.michia, true);
+    assert.equal(savedSettings.debugSuperAttackByUsername.michia, true);
+
+    const capitalizedGet = await request(app)
+      .get('/api/settings')
+      .set(authHeader('Michia'))
+      .expect(200);
+    assert.equal(capitalizedGet.body.debugSuperAttack, true);
   });
 
   it('does not expose debug game routes in production', async () => {

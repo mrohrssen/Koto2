@@ -34,6 +34,7 @@ export async function openSettings() {
   const voiceGender = serverSettings.voiceGender || 'boy';
   const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
   const kanaMode = getGameState?.()?.meta?.kanaMode ?? false;
+  const showDebugSuperAttack = Object.hasOwn(serverSettings, 'debugSuperAttack');
 
   content.innerHTML = `
     <h3 style="margin:16px">Settings</h3>
@@ -76,6 +77,14 @@ export async function openSettings() {
         Hiragana Learning Mode
         <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">Practice hiragana in combat — cards are auto-answered and kana questions appear instead</small>
       </label>
+      ${showDebugSuperAttack ? `
+        <label class="settings-label" style="margin-top:8px">
+          <input type="checkbox" id="settings-debug-super-attack"
+            ${serverSettings.debugSuperAttack ? 'checked' : ''}>
+          Debug +100 ATK
+          <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">Allowlisted playtest shortcut only</small>
+        </label>
+      ` : ''}
 
       <h4 style="margin:20px 0 8px;color:var(--accent)">Audio</h4>
       <label class="settings-label">
@@ -336,6 +345,9 @@ export async function openSettings() {
     }
     if (!isNaN(dailyWordLimit) && dailyWordLimit !== dailyWordLimitSetting) {
       serverSettingsToSave.dailyWordLimit = dailyWordLimit;
+    }
+    if (showDebugSuperAttack) {
+      serverSettingsToSave.debugSuperAttack = document.getElementById('settings-debug-super-attack')?.checked ?? false;
     }
     if (Object.keys(serverSettingsToSave).length > 0) {
       await saveServerSettings(serverSettingsToSave);

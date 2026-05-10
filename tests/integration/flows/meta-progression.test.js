@@ -112,15 +112,17 @@ async function winCombat(client) {
     if (!stateRes.body?.combat?.active) return { combatEnded: true, victory: true };
 
     const combat = stateRes.body.combat;
-    const ally = combat.allies.find(a => a?.hp > 0 && a.moves?.length > 0);
+    const cursor = combat.actionCursor;
+    assert.ok(cursor, 'combat should expose actionCursor');
+    assert.equal(cursor.side, 'ally', `combat round ${round} expected ally cursor`);
+    const ally = combat.allies[cursor.index];
     if (!ally) return { combatEnded: true };
-    const allyIdx = combat.allies.indexOf(ally);
     const targetIdx = combat.enemies.findIndex(e => e && e.hp > 0);
     if (targetIdx < 0) return { combatEnded: true, victory: true };
 
     const result = await client.post('/api/game/creature-combat-cycle', {
       actionType: 'attack',
-      moveChoices: [{ creatureIndex: allyIdx, moveId: ally.moves[0].id, targetIndex: targetIdx }]
+      moveChoices: [{ creatureIndex: cursor.index, moveId: ally.moves[0].id, targetIndex: targetIdx }]
     });
     assert.equal(result.status, 200, `combat round ${round} failed: ${JSON.stringify(result.body)}`);
 

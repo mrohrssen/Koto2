@@ -480,13 +480,12 @@ export function createRoom(type, areaId, roomNumber, totalRooms) {
   return room;
 }
 
-function hasUnusedIngredients(run) {
-  const ingredients = run?.cooking?.ingredients || {};
-  return Object.values(ingredients).some(count => count > 0);
+function hasCookableCampfireRecipe(run) {
+  return hasCookableRecipe(run?.cooking?.ingredients || {}, { minTotalQuantity: 2 });
 }
 
 export function resolveSupportRoomType(run, rng = Math.random) {
-  const canCampfire = hasUnusedIngredients(run);
+  const canCampfire = hasCookableCampfireRecipe(run);
   const roll = rng();
   if (canCampfire && roll < 0.50) return ROOM_TYPES.campfire;
   if (roll < 0.45) return ROOM_TYPES.whackAMole;

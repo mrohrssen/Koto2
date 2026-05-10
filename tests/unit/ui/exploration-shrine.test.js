@@ -116,7 +116,7 @@ describe('renderShrine encounter flow', () => {
       }),
       updateGameState: overrides.updateGameState || (() => {}),
       updateUI: overrides.updateUI || (() => {}),
-      actions: { setContent: () => {}, clear: () => {} },
+      actions: overrides.actions || { setContent: () => {}, clear: () => {} },
       scene: { showNarration: async () => {} },
       apiGetShrineOffers: overrides.apiGetShrineOffers || (async () => ({
         greeting: { tokens: [{ text: 'こんにちは！' }], overrides: {} },
@@ -131,9 +131,17 @@ describe('renderShrine encounter flow', () => {
   }
 
   it('shows shrine greeting before the three reward choices', async () => {
-    initShrine({ roomId: 'shrine-greeting-room' });
+    const actionContent = [];
+    initShrine({
+      roomId: 'shrine-greeting-room',
+      actions: { setContent: html => { actionContent.push(html); }, clear: () => {} },
+    });
     await renderShrine();
 
+    assert.ok(
+      actionContent.every(html => !/prologue-continue-hint|Click to continue!/i.test(html)),
+      'shrine setup should not show a click-to-continue hint before a clickable continuation exists'
+    );
     assert.equal(dialogueCards[0].speaker, 'Shrine Fox');
     assert.equal(dialogueCards[0].speakerId, 'shrine_fox');
     assert.deepEqual(dialogueCards[0].tokens, [{ text: 'こんにちは！' }]);

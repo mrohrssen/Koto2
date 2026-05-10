@@ -765,7 +765,7 @@ export async function renderShrine() {
     return;
   }
 
-  actions.setContent('<div class="prologue-continue-hint">Click to continue!</div>');
+  actions.clear();
 
   if (!shrineState.fetched) {
     shrineState.fetched = true;
@@ -1648,11 +1648,12 @@ export async function renderFriendlyNpc() {
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
   const roomId = room?.id || room?.type || 'unknown';
+  const roomCacheKey = `${roomId}:${gameState.run?.stats?.startTime ?? ''}`;
 
   // Reset per-room state when entering a new room
-  if (friendlyNpcState.roomId !== roomId) {
+  if (friendlyNpcState.roomId !== roomCacheKey) {
     friendlyNpcState = {
-      roomId,
+      roomId: roomCacheKey,
       fetched: false,
       offered: null,
       greeting: null,
@@ -1673,13 +1674,12 @@ export async function renderFriendlyNpc() {
     return;
   }
 
-  // The NPC greeting is click-to-continue, so show the same cue as the prologue.
-  actions.setContent('<div class="prologue-continue-hint">Click to continue!</div>');
+  actions.clear();
 
   // Fetch offers once per room
   if (!friendlyNpcState.fetched) {
     friendlyNpcState.fetched = true;
-    const fetchRoomId = roomId;
+    const fetchRoomId = roomCacheKey;
     let resp;
     try {
       resp = await apiGetFriendlyNpcOffers?.();
