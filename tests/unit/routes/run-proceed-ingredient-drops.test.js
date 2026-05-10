@@ -45,6 +45,7 @@ describe('run proceed ingredient drops', () => {
     assert.equal(response.body.ingredientDrops.length, 1);
     assert.ok(response.body.ingredientDrops.every(drop => drop.quantity === 1));
     assert.ok(response.body.ingredientDrops.every(drop => drop.ingredient.reading));
+    assert.ok(response.body.ingredientDrops.every(drop => drop.ingredient.nameEn));
     assert.ok(response.body.ingredientDrops.every(drop => drop.nameToken.reading));
     assert.equal(Object.values(gm.run.cooking.ingredients).reduce((sum, count) => sum + count, 0), 1);
   });
