@@ -232,6 +232,22 @@ describe('npc dialogue card', () => {
     assert.doesNotMatch(html, /npc-dialogue-cell jp-punct/);
   });
 
+  it('splits visually wide dialogue before it overflows the card text column', () => {
+    const html = renderDialogueTokenRows({
+      tokens: [
+        { surface: 'こんにちは', baseForm: 'こんにちは', reading: 'こんにちは', meaning: 'hello', pos: 'interjection' },
+        { surface: 'ありがとう', baseForm: 'ありがとう', reading: 'ありがとう', meaning: 'thank you', pos: 'interjection' },
+        { surface: '大丈夫', baseForm: '大丈夫', reading: 'だいじょうぶ', meaning: 'okay', pos: 'adjective' },
+        { surface: '一緒に', baseForm: '一緒に', reading: 'いっしょに', meaning: 'together', pos: 'adverb' },
+      ],
+      knownWords: new Set(),
+      overrides: {},
+      useKanji: false,
+    });
+
+    assert.equal((html.match(/npc-dialogue-line-grid/g) || []).length, 2);
+  });
+
   it('resolves only when Continue is clicked', async () => {
     const promise = showNpcDialogueCard({
       speaker: 'Mira',

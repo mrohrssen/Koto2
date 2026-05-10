@@ -39,6 +39,8 @@ const SPEAKER_HEADSHOT_ALIASES = {
 };
 const MAX_TOKENS_PER_PAGE = 9;
 const MAX_TOKENS_PER_LINE = 4;
+const MAX_DIALOGUE_LINE_WEIGHT = 24;
+const DIALOGUE_COLUMN_GAP_WEIGHT = 1.5;
 const ATTACHABLE_PUNCT_RE = /^[\p{P}\p{S}]+$/u;
 
 function normalizeHeadshotKey(value) {
@@ -107,6 +109,62 @@ function dialogueCellsForTokens(tokens = []) {
     cells.push({ token, trailingPunct: '', standalone: !isContentExposureToken(token) });
   }
   return cells;
+}
+
+function textLength(value) {
+  return Array.from(String(value || '')).length;
+}
+
+function estimateDialogueCellWeight(cell, {
+  knownWords = getKnownWords(),
+  wordDict = null,
+  overrides = {},
+  useKanji = false,
+  includeMeaning = true,
+} = {}) {
+  const token = cell.token;
+  if (!isContentExposureToken(token)) {
+    return Math.max(1, textLength(token?.surface) * 0.8);
+  }
+
+  const base = tokenBase(token);
+  const reading = token.reading || token.surface || base;
+  const display = `${displayReading(token, useKanji)}${cell.trailingPunct || ''}`;
+  const romaji = toRomaji(reading);
+  const isKnown = knownWords?.has?.(base);
+  const meaning = includeMeaning && !isKnown ? tokenMeaning(token, wordDict, overrides) : '';
+
+  return Math.max(
+    textLength(display) * 1.5,
+    textLength(romaji) * 0.75,
+    textLength(meaning) * 0.65,
+    1
+  );
+}
+
+function chunkDialogueCells(cells, options = {}) {
+  const chunks = [];
+  let current = [];
+  let currentWeight = 0;
+
+  for (const cell of cells) {
+    const cellWeight = estimateDialogueCellWeight(cell, options);
+    const gapWeight = current.length > 0 ? DIALOGUE_COLUMN_GAP_WEIGHT : 0;
+    const wouldOverflow = current.length > 0 && currentWeight + gapWeight + cellWeight > MAX_DIALOGUE_LINE_WEIGHT;
+    const wouldExceedCount = current.length >= MAX_TOKENS_PER_LINE;
+
+    if (wouldOverflow || wouldExceedCount) {
+      chunks.push(current);
+      current = [];
+      currentWeight = 0;
+    }
+
+    current.push(cell);
+    currentWeight += (current.length > 1 ? DIALOGUE_COLUMN_GAP_WEIGHT : 0) + cellWeight;
+  }
+
+  if (current.length > 0) chunks.push(current);
+  return chunks;
 }
 
 function paginateTokens(tokens) {
@@ -193,7 +251,7 @@ function renderTranslationSourceRows({
   tokens,
   useKanji = false,
 } = {}) {
-  const lines = chunkByCount(dialogueCellsForTokens(tokens || []), MAX_TOKENS_PER_LINE);
+  const lines = chunkDialogueCells(dialogueCellsForTokens(tokens || []), { useKanji, includeMeaning: false });
   return lines.map(lineCells => {
     const pronunciation = [];
     const jp = [];
@@ -352,7 +410,12 @@ export function renderDialogueTokenRows({
   overrides = {},
   useKanji = false,
 } = {}) {
-  const lines = chunkByCount(dialogueCellsForTokens(tokens || []), MAX_TOKENS_PER_LINE);
+  const lines = chunkDialogueCells(dialogueCellsForTokens(tokens || []), {
+    knownWords,
+    wordDict,
+    overrides,
+    useKanji,
+  });
   return lines.map(lineCells => {
     const romaji = [];
     const jp = [];
