@@ -1648,11 +1648,12 @@ export async function renderFriendlyNpc() {
   const gameState = getGameState();
   const room = gameState.room || getActiveRoomFromRun(gameState.run);
   const roomId = room?.id || room?.type || 'unknown';
+  const roomCacheKey = `${roomId}:${gameState.run?.stats?.startTime ?? ''}`;
 
   // Reset per-room state when entering a new room
-  if (friendlyNpcState.roomId !== roomId) {
+  if (friendlyNpcState.roomId !== roomCacheKey) {
     friendlyNpcState = {
-      roomId,
+      roomId: roomCacheKey,
       fetched: false,
       offered: null,
       greeting: null,
@@ -1678,7 +1679,7 @@ export async function renderFriendlyNpc() {
   // Fetch offers once per room
   if (!friendlyNpcState.fetched) {
     friendlyNpcState.fetched = true;
-    const fetchRoomId = roomId;
+    const fetchRoomId = roomCacheKey;
     let resp;
     try {
       resp = await apiGetFriendlyNpcOffers?.();
