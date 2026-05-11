@@ -114,10 +114,10 @@ export function buildSplitAttackCard(atk, isEnemy, options = {}) {
   const wordDict = new Map();
 
   const attackerToken = entityToToken({
-    word: atk.attackerWord || atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName,
-    reading: atk.attackerReading || atk.attackerBaseReading,
+    word: atk.attackerWord || atk.attackerNameJp || atk.attackerName,
+    reading: atk.attackerReading,
     nameEn: atk.attackerName,
-    meaning: atk.attackerMeaning || atk.attackerBaseMeaning || atk.attackerName,
+    meaning: atk.attackerMeaning || atk.attackerName,
   });
   const moveToken = entityToToken({
     word: atk.attackerSkillName || atk.moveName,
@@ -125,17 +125,17 @@ export function buildSplitAttackCard(atk, isEnemy, options = {}) {
     meaning: atk.attackerSkillEn || atk.moveNameEn,
   });
   const targetToken = entityToToken({
-    word: atk.targetWord || atk.targetBaseWord || atk.targetNameJp || atk.targetName,
-    reading: atk.targetReading || atk.targetBaseReading,
+    word: atk.targetWord || atk.targetNameJp || atk.targetName,
+    reading: atk.targetReading,
     nameEn: atk.targetName,
-    meaning: atk.targetMeaning || atk.targetBaseMeaning || atk.targetName,
+    meaning: atk.targetMeaning || atk.targetName,
   });
 
   const attackerWordHtml = renderJpSentence([attackerToken], knownWords, wordDict);
   const moveWordHtml     = renderJpSentence([moveToken], knownWords, wordDict);
   const targetWordHtml   = renderJpSentence([targetToken], knownWords, wordDict);
 
-  const spriteWord = atk.attackerWord || atk.attackerBaseWord || atk.attackerName || '？';
+  const spriteWord = atk.attackerWord || atk.attackerName || '？';
   const attackerSpriteHtml = creatureSpriteHtml(atk.attackerId, spriteWord, atk.attackerElement, 'sac-sprite');
 
   const moveIcon = actionIconPath(atk.attackerSkillEn || atk.moveNameEn);
@@ -148,7 +148,7 @@ export function buildSplitAttackCard(atk, isEnemy, options = {}) {
   // player's creatures and should not be flipped. Only flip when the player is
   // attacking an enemy, to make the sprite face the attacker.
   const targetSpriteClass = isSelfTarget ? 'sac-sprite' : (isEnemy ? 'sac-sprite' : 'sac-sprite sac-sprite-enemy');
-  const targetSpriteWord = atk.targetWord || atk.targetBaseWord || atk.targetName || '？';
+  const targetSpriteWord = atk.targetWord || atk.targetName || '？';
   const targetSpriteHtml = creatureSpriteHtml(atk.targetId, targetSpriteWord, atk.targetElement, targetSpriteClass);
 
   const resultValue = formatResultValue(atk);
@@ -216,11 +216,11 @@ export function insertAttackCard(atk, isEnemy) {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
 
-  const baseWord = atk.attackerWord || atk.attackerBaseWord;
+  const attackerWord = atk.attackerWord;
   const skillName = atk.attackerSkillName || atk.moveName;
-  if (baseWord) prefetchWord(baseWord);
+  if (attackerWord) prefetchWord(attackerWord);
   if (skillName) prefetchWord(skillName);
-  setTimeout(() => playWordPair(baseWord, skillName), 50);
+  setTimeout(() => playWordPair(attackerWord, skillName), 50);
 
   return card;
 }
@@ -238,10 +238,10 @@ export function insertNpcAttackCard(atk) {
   const knownWords = getKnownWords();
   const wordDict = new Map();
   const npcToken = entityToToken({
-    word: atk.attackerWord || atk.attackerBaseWord || atk.attackerNameJp || atk.attackerName,
-    reading: atk.attackerReading || atk.attackerBaseReading,
+    word: atk.attackerWord || atk.attackerNameJp || atk.attackerName,
+    reading: atk.attackerReading,
     nameEn: atk.attackerName,
-    meaning: atk.attackerMeaning || atk.attackerBaseMeaning || atk.attackerName,
+    meaning: atk.attackerMeaning || atk.attackerName,
   });
   const attackerWordHtml = renderJpSentence([npcToken], knownWords, wordDict);
 
@@ -259,11 +259,11 @@ export function insertNpcAttackCard(atk) {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
 
-  const baseWord = atk.attackerWord || atk.attackerBaseWord;
+  const attackerWord = atk.attackerWord;
   const skillName = atk.attackerSkillName || atk.moveName;
-  if (baseWord) prefetchWord(baseWord);
+  if (attackerWord) prefetchWord(attackerWord);
   if (skillName) prefetchWord(skillName);
-  setTimeout(() => playWordPair(baseWord, skillName), 50);
+  setTimeout(() => playWordPair(attackerWord, skillName), 50);
 
   return card;
 }

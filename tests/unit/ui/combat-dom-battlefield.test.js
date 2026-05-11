@@ -87,9 +87,9 @@ beforeEach(async () => {
 describe('combat-dom battlefield positioning', () => {
   it('marks formation slots for absolute battlefield rows', async () => {
     await showFormation('player', [
-      { uid: 'a', id: 'a', name: 'あ', baseReading: 'あ', hp: 10, currentHp: 10, maxHp: 10, maxMp: 5, currentMp: 5 },
-      { uid: 'b', id: 'b', name: 'い', baseReading: 'い', hp: 10, currentHp: 10, maxHp: 10, maxMp: 5, currentMp: 5 },
-      { uid: 'c', id: 'c', name: 'う', baseReading: 'う', hp: 10, currentHp: 10, maxHp: 10, maxMp: 5, currentMp: 5 },
+      { uid: 'a', id: 'a', name: 'あ', reading: 'あ', hp: 10, currentHp: 10, maxHp: 10, maxMp: 5, currentMp: 5 },
+      { uid: 'b', id: 'b', name: 'い', reading: 'い', hp: 10, currentHp: 10, maxHp: 10, maxMp: 5, currentMp: 5 },
+      { uid: 'c', id: 'c', name: 'う', reading: 'う', hp: 10, currentHp: 10, maxHp: 10, maxMp: 5, currentMp: 5 },
     ], { force: true });
 
     const slots = playerFormation.querySelectorAll('.formation-slot');

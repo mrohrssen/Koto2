@@ -49,33 +49,30 @@ describe('target-select', () => {
 
   it('labels attack target selection with Choose target', () => {
     showEnemies([
-      { id: 'neko', name: '猫', nameEn: 'Cat', baseReading: 'ねこ', element: 'fire', level: 1, hp: 10 },
+      { id: 'neko', name: '猫', nameEn: 'Cat', reading: 'ねこ', element: 'fire', level: 1, hp: 10 },
     ], { element: 'fire' });
 
     assert.equal(renderChoicesArgs?.heading, 'Choose target');
   });
 
-  it('renders target creature names through Japanese sentence tokens', () => {
+  it('renders target creature entity names through Japanese sentence tokens', () => {
     showEnemies([
       {
         id: 'neko',
         name: '猫獣',
         nameEn: 'Cat Beast',
-        baseWord: '猫',
-        baseReading: 'ねこ',
-        baseMeaning: 'cat',
+        reading: 'ねこじゅう',
+        meaning: 'cat',
         element: 'fire',
         level: 1,
         hp: 10,
       },
     ], { element: 'fire' });
 
-    assert.deepEqual(entityToTokenCalls[0], {
-      word: '猫',
-      reading: 'ねこ',
-      meaning: 'cat',
-    });
+    assert.equal(entityToTokenCalls[0].name, '猫獣');
+    assert.equal(entityToTokenCalls[0].reading, 'ねこじゅう');
+    assert.equal(entityToTokenCalls[0].nameEn, 'Cat Beast');
     assert.equal(renderJpSentenceCalls.length, 1);
-    assert.equal(renderChoicesArgs?.cards?.[0]?.title, '猫');
+    assert.equal(renderChoicesArgs?.cards?.[0]?.title, '猫獣');
   });
 });

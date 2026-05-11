@@ -55,10 +55,6 @@ describe('boss-locked fusion roster', () => {
       assert.equal(creature.isStarter, false);
       assert.equal(creature.stage, 1);
       assert.equal(creature.createdAt, '2026-05-06');
-      assert.ok(!('baseWord' in creature));
-      assert.ok(!('baseReading' in creature));
-      assert.ok(!('baseMeaning' in creature));
-      assert.ok(!('baseRank' in creature));
     }
   });
 

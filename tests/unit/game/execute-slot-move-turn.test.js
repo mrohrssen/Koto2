@@ -9,7 +9,7 @@ function makeCreature(overrides = {}) {
     element: 'neutral', level: 5,
     hp: 100, maxHp: 100, mp: 20, maxMp: 20,
     attack: 15, defense: 5,
-    baseWord: '試す', baseReading: 'ためす', baseMeaning: 'test',
+    reading: 'ためす', meaning: 'test',
     activeEffects: [], statStages: { atk: 0, def: 0 },
     itemBuffs: null,
     moves: [{

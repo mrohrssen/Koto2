@@ -42,7 +42,7 @@ export function init(deps) {
 }
 
 function buildCreatureSpeaker(creature = {}, fallbackName = '') {
-  const reading = creature.reading || creature.creatureReading || creature.baseReading || creature.creatureBaseReading || creature.name || fallbackName || '';
+  const reading = creature.reading || creature.creatureReading || creature.name || fallbackName || '';
   const id = creature.id || creature.creatureId || '';
   return { name: reading, reading, meaning: '', id };
 }
@@ -386,7 +386,6 @@ export async function renderBefriendQuiz(quizData, result) {
     id: quizData.creatureId,
     name: quizData.creatureName,
     reading: quizData.creatureReading,
-    baseReading: quizData.creatureBaseReading,
   });
 
   // Ensure the befriend target sprite is fully visible (KO animation is now

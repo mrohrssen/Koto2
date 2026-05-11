@@ -4,7 +4,7 @@ export const SPRITE_VERSION = '20260508-campfire-entry-npc';
 const _noIdle = new Set();
 const _hasIdle = new Set();
 
-/** Kanji shown on text sprites when only element is known (matches starter/base words in data). */
+/** Kanji shown on text sprites when only element is known. */
 const ELEMENT_DISPLAY_WORD = {
   fire: '火',
   water: '水',
@@ -26,7 +26,7 @@ export function creatureStaticPath(id) {
 
 /**
  * Create a text sprite <div> element using the creature's Japanese word.
- * @param {string} word - Japanese text to display (baseWord or name)
+ * @param {string} word - Japanese text to display
  * @param {string} [element] - Element type for color class (fire/water/wood/earth/metal)
  * @returns {HTMLDivElement}
  */
@@ -62,11 +62,11 @@ export function replaceWithTextSprite(img, word, element) {
  * @param {HTMLImageElement} img - The placeholder <img> to configure
  * @param {string} id - Creature ID
  * @param {Function|null} finalFallback - Called if image fails (optional)
- * @param {Object} [creature] - Optional creature data { baseWord, name, element }
+ * @param {Object} [creature] - Optional creature data { name, element }
  */
 export function configureCreatureImg(img, id, finalFallback, creature) {
   const element = creature?.element || '';
-  let word = creature?.baseWord || creature?.name;
+  let word = creature?.name;
   if (!word && element && ELEMENT_DISPLAY_WORD[element]) {
     word = ELEMENT_DISPLAY_WORD[element];
   }
@@ -85,7 +85,7 @@ export function configureCreatureImg(img, id, finalFallback, creature) {
  * Return an HTML string for a creature sprite <img> that falls back to text sprite on error.
  * Use in template literals where you'd previously write a text-sprite <div>.
  * @param {string} id - Creature ID
- * @param {string} [word] - Fallback Japanese word (baseWord or name)
+ * @param {string} [word] - Fallback Japanese word
  * @param {string} [element] - Element type for fallback color class
  * @param {string} [extraClass] - Additional CSS class(es) for the <img>
  * @returns {string} HTML string

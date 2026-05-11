@@ -654,8 +654,8 @@ export default function createRunRoutes({
         id: c.id,
         type: 'creature',
         word: c.name,
-        reading: c.reading || c.baseReading || c.name,
-        meaning: c.meaning || c.baseMeaning || c.nameEn,
+        reading: c.reading || c.name,
+        meaning: c.meaning || c.nameEn,
         element: c.element || '',
         sprite: `/assets/sprites/creatures/${c.id}.webp?v=${SPRITE_VERSION}`
       }));

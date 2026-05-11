@@ -17,16 +17,16 @@ export function collectAttackExposures(words, attacks) {
   if (!Array.isArray(words) || !Array.isArray(attacks)) return words;
 
   for (const attack of attacks) {
-    if (attack?.attackerBaseWord) {
+    if (attack?.attackerWord) {
       collectEntityExposure(words, {
-        baseWord: attack.attackerBaseWord,
-        baseReading: attack.attackerBaseReading,
-        baseMeaning: attack.attackerBaseMeaning
+        name: attack.attackerWord,
+        reading: attack.attackerReading,
+        meaning: attack.attackerMeaning
       });
     }
 
     const skillName = attack?.attackerSkillName || attack?.moveName;
-    if (skillName && skillName !== attack?.attackerBaseWord) {
+    if (skillName && skillName !== attack?.attackerWord) {
       collectEntityExposure(words, {
         name: skillName,
         reading: attack.attackerSkillReading,

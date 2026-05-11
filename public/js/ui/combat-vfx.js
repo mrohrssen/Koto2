@@ -809,7 +809,7 @@ export async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
 
 /**
  * Show NPC skill attack cards sequentially (one per target).
- * Each card is a vocab review opportunity showing NPC base word + skill name + target.
+ * Each card is a vocab review opportunity showing NPC name + skill name + target.
  */
 export async function showNpcSkillAttacksAnimated(result, allyHpMap) {
   if (!result.npcSkillAttacks?.length) return;

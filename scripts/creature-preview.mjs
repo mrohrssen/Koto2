@@ -144,7 +144,7 @@ function findFreePort() {
 // ---------------------------------------------------------------------------
 
 function buildHtml(id, meta) {
-  const { name, modifier, baseMeaning, element, archetype, visualTier, attack, ultimate, descriptions } = meta;
+  const { name, modifier, meaning, element, archetype, visualTier, attack, ultimate, descriptions } = meta;
   const rarity = RARITY_COLORS[visualTier] || RARITY_COLORS.common;
 
   const cards = VARIANTS.map(v => {
@@ -292,7 +292,7 @@ function buildHtml(id, meta) {
 </head>
 <body>
 <div class="container">
-  <h1>${esc(name)} the ${esc(modifier)} ${esc(baseMeaning)}</h1>
+  <h1>${esc(name)} the ${esc(modifier)} ${esc(meaning)}</h1>
   <div class="badges">
     <span class="badge badge-rarity">${esc(visualTier)}</span>
     <span class="badge badge-element">${esc(element)}</span>

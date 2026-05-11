@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Batch lookup JPDB frequency ranks for potential creature base words.
+// Batch lookup JPDB frequency ranks for potential creature words.
 // For each word, finds ALL spelling forms and reports the most common one.
 //
 // Usage: JPDB_API_KEY=$(cat data/.creature-forge-jpdb-key) node scripts/creature-freq-lookup.mjs

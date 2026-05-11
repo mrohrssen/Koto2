@@ -46,8 +46,8 @@ function showPvpCreaturePopup(creature, anchorEl) {
   const popupSubtitle = creature.modifier
     ? renderJpSentence([entityToToken(creature.modifier)], getKnownWords(), new Map())
       + 'の'
-      + renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map())
-    : renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map());
+      + renderJpSentence([entityToToken(creature)], getKnownWords(), new Map())
+    : renderJpSentence([entityToToken(creature)], getKnownWords(), new Map());
 
   const movesHtml = (creature.moves || []).map(m => `
     <div class="creature-popup-move-row">
@@ -264,7 +264,7 @@ export async function renderPvpTeamSelect() {
     const creatures = team.creatureParty?.active || [];
     const creaturesHtml = creatures.map((c, ci) => {
       if (!c) return '';
-      const sprite = creatureSpriteHtml(c.id, c.baseWord || c.name, c.element, 'pvp-mini-sprite');
+      const sprite = creatureSpriteHtml(c.id, c.name, c.element, 'pvp-mini-sprite');
       const name = escapeHtml(c.nameEn || c.name || '?');
       const elRgb = c.element === 'fire' ? '239,83,80' : c.element === 'water' ? '66,165,245' : c.element === 'wood' ? '102,187,106' : c.element === 'earth' ? '141,110,99' : '158,158,158';
       return `

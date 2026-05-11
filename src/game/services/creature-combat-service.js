@@ -60,9 +60,9 @@ export const BASE_KILL_XP = 25;
 
 function creatureVocabFields(creature = {}, prefix) {
   return {
-    [`${prefix}Word`]: creature.name || creature.baseWord || '',
-    [`${prefix}Reading`]: creature.reading || creature.baseReading || '',
-    [`${prefix}Meaning`]: creature.meaning || creature.baseMeaning || creature.nameEn || ''
+    [`${prefix}Word`]: creature.name || '',
+    [`${prefix}Reading`]: creature.reading || '',
+    [`${prefix}Meaning`]: creature.meaning || creature.nameEn || ''
   };
 }
 
@@ -538,8 +538,8 @@ export function executeNpcSkill(npcData, skill, allies, enemies) {
     attack: npcData.attack || 10,
     level: npcData.level || 5,
     defense: npcData.defense ?? 5,
-    reading: npcData.reading || npcData.baseReading || '',
-    meaning: npcData.meaning || npcData.baseMeaning || npcData.nameEn || '',
+    reading: npcData.reading || '',
+    meaning: npcData.meaning || npcData.nameEn || '',
     activeEffects: [],
     hp: 999,
     maxHp: 999
@@ -1278,7 +1278,7 @@ export function generateBefriendQuiz(creature, encounterCreatures = []) {
     creatureId: creature.id,
     creatureName: creature.name,
     creatureNameEn: creature.nameEn,
-    creatureReading: creature.reading || creature.baseReading,
+    creatureReading: creature.reading,
     options
   };
 }

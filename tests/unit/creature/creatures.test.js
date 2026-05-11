@@ -205,9 +205,6 @@ describe('Creature Instantiation', () => {
     assert.strictEqual(creature.reading, '\u307F\u305A');
     assert.strictEqual(creature.meaning, 'water');
     assert.strictEqual(creature.rank, 479);
-    assert.ok(!('baseWord' in creature));
-    assert.ok(!('baseReading' in creature));
-    assert.ok(!('baseMeaning' in creature));
   });
 });
 

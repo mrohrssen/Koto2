@@ -188,7 +188,7 @@ var COLUMNS = {
     { key: 'baseHp', label: 'HP', type: 'num' },
     { key: 'baseAttack', label: 'ATK', type: 'num' },
     { key: 'baseMp', label: 'MP', type: 'num' },
-    { key: 'baseRank', label: 'Rank', type: 'num' },
+    { key: 'rank', label: 'Rank', type: 'num' },
     { key: 'learnset', label: 'Moves', ro: true, computed: function(row) { return row.learnset ? row.learnset.length : 0; } }
   ],
   moves: [
@@ -226,7 +226,7 @@ var COLUMNS = {
     { key: 'nameEn', label: 'Name (EN)' },
     { key: 'area', label: 'Area' },
     { key: 'tier', label: 'Tier', type: 'num' },
-    { key: 'baseRank', label: 'Rank', type: 'num' },
+    { key: 'rank', label: 'Rank', type: 'num' },
     { key: 'skills', label: 'Skills', ro: true, computed: function(row) { return row.skills ? row.skills.length : 0; } },
     { key: 'personality.traits', label: 'Traits', ro: true, computed: function(row) { return row.personality && row.personality.traits ? row.personality.traits.join(', ') : ''; } }
   ],
@@ -493,10 +493,10 @@ function buildCreatureDetailRow(creature, colSpan) {
 
   var html = '<tr class="detail-row"><td colspan="' + colSpan + '"><div class="detail-panel">';
 
-  // Base word info
+  // Vocabulary info
   html += '<div class="detail-section">'
-    + '<span class="detail-label">Base Word</span>'
-    + '<span class="detail-value">' + esc(creature.baseWord || '') + ' (' + esc(creature.baseReading || '') + ') — ' + esc(creature.baseMeaning || '') + '</span>'
+    + '<span class="detail-label">Vocabulary</span>'
+    + '<span class="detail-value">' + esc(creature.name || '') + ' (' + esc(creature.reading || '') + ') — ' + esc(creature.meaning || '') + '</span>'
     + '</div>';
 
   // Modifier
@@ -509,10 +509,10 @@ function buildCreatureDetailRow(creature, colSpan) {
       + '</div>';
   }
 
-  // Base rank
+  // Rank
   html += '<div class="detail-section">'
     + '<span class="detail-label">JPDB Rank</span>'
-    + '<span class="detail-value">' + (creature.baseRank || '—') + '</span>'
+    + '<span class="detail-value">' + (creature.rank || '—') + '</span>'
     + '</div>';
 
   // Created at
@@ -688,10 +688,10 @@ function buildNpcDetailRow(npc, colSpan) {
 
   var html = '<tr class="detail-row"><td colspan="' + colSpan + '"><div class="detail-panel">';
 
-  // Base word info
+  // Vocabulary info
   html += '<div class="detail-section">'
-    + '<span class="detail-label">Base Word</span>'
-    + '<span class="detail-value">' + esc(npc.baseWord || '') + ' (' + esc(npc.baseReading || '') + ') — ' + esc(npc.baseMeaning || '') + '</span>'
+    + '<span class="detail-label">Vocabulary</span>'
+    + '<span class="detail-value">' + esc(npc.name || '') + ' (' + esc(npc.reading || '') + ') — ' + esc(npc.meaning || '') + '</span>'
     + '</div>';
 
   // Modifier

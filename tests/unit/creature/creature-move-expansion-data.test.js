@@ -44,11 +44,7 @@ describe('creature and move expansion data', () => {
         typeof creature.nameEn !== 'string' ||
         typeof creature.reading !== 'string' ||
         typeof creature.meaning !== 'string' ||
-        (typeof creature.rank !== 'number' && creature.rank !== null) ||
-        'baseWord' in creature ||
-        'baseReading' in creature ||
-        'baseMeaning' in creature ||
-        'baseRank' in creature
+        (typeof creature.rank !== 'number' && creature.rank !== null)
       )
       .map(creature => creature.id);
 

@@ -73,8 +73,8 @@ describe('forge-discovery module', () => {
 // ── discoverWords ───────────────────────────────────────────────────
 
 describe('discoverWords', () => {
-  it('returns an array of word objects for creature-base', async () => {
-    const results = await discoverWords({ contentType: 'creature-base', targetStage: 5, limit: 10 });
+  it('returns an array of word objects for creature-name', async () => {
+    const results = await discoverWords({ contentType: 'creature-name', targetStage: 5, limit: 10 });
     assert.ok(Array.isArray(results));
     assert.ok(results.length > 0);
     assert.ok(results.length <= 10);
@@ -135,8 +135,8 @@ describe('discoverWords', () => {
   });
 
   it('excludes words already used in creatures.json (e.g. 火)', async () => {
-    // 火 is baseWord in creatures.json — should NOT appear in results
-    const results = await discoverWords({ contentType: 'creature-base', targetStage: 10, limit: 200 });
+    // 火 is name in creatures.json — should NOT appear in results
+    const results = await discoverWords({ contentType: 'creature-name', targetStage: 10, limit: 200 });
     const hiResult = results.find(r => r.word === '火');
     assert.strictEqual(hiResult, undefined, '火 should be excluded (already in creatures.json)');
   });
@@ -149,7 +149,7 @@ describe('discoverWords', () => {
   });
 
   it('results are sorted by rank (most common first)', async () => {
-    const results = await discoverWords({ contentType: 'creature-base', targetStage: 5, limit: 20 });
+    const results = await discoverWords({ contentType: 'creature-name', targetStage: 5, limit: 20 });
     for (let i = 1; i < results.length; i++) {
       assert.ok(results[i].rank >= results[i - 1].rank,
         `Results not sorted: rank ${results[i].rank} < ${results[i - 1].rank}`);
@@ -157,13 +157,13 @@ describe('discoverWords', () => {
   });
 
   it('respects the limit parameter', async () => {
-    const results = await discoverWords({ contentType: 'creature-base', targetStage: 10, limit: 3 });
+    const results = await discoverWords({ contentType: 'creature-name', targetStage: 10, limit: 3 });
     assert.ok(results.length <= 3);
   });
 
   it('no words above target stage appear', async () => {
     const targetStage = 3;
-    const results = await discoverWords({ contentType: 'creature-base', targetStage, limit: 50 });
+    const results = await discoverWords({ contentType: 'creature-name', targetStage, limit: 50 });
     for (const r of results) {
       assert.ok(r.stage <= targetStage,
         `Word ${r.word} at stage ${r.stage} exceeds target stage ${targetStage}`);
@@ -179,8 +179,8 @@ describe('discoverWords', () => {
   });
 
   it('higher stages return more results than lower stages', async () => {
-    const stage1 = await discoverWords({ contentType: 'creature-base', targetStage: 1, limit: 500 });
-    const stage5 = await discoverWords({ contentType: 'creature-base', targetStage: 5, limit: 500 });
+    const stage1 = await discoverWords({ contentType: 'creature-name', targetStage: 1, limit: 500 });
+    const stage5 = await discoverWords({ contentType: 'creature-name', targetStage: 5, limit: 500 });
     assert.ok(stage5.length >= stage1.length,
       `Stage 5 (${stage5.length}) should have >= results than stage 1 (${stage1.length})`);
   });

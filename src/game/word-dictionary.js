@@ -26,12 +26,12 @@ export function loadWordDictionary({ overlayDir, liveDictPath }) {
 
   // 2. Overlay game data files (always read from overlayDir)
   const overlayConfigs = [
-    { file: 'creatures.json', wordFields: ['name', 'baseWord'], readingFields: ['reading', 'baseReading'], meaningFields: ['meaning', 'baseMeaning'] },
-    { file: 'moves.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
-    { file: 'items.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
-    { file: 'npcs.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
-    { file: 'npc-skills.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
-    { file: 'areas.json', wordField: 'baseWord', readingField: 'baseReading', meaningField: 'baseMeaning' },
+    { file: 'creatures.json', wordField: 'name', readingField: 'reading', meaningField: 'meaning' },
+    { file: 'moves.json', wordField: 'name', readingField: 'reading', meaningField: 'meaning' },
+    { file: 'items.json', wordField: 'word', readingField: 'reading', meaningField: 'meaning' },
+    { file: 'npcs.json', wordField: 'name', readingField: 'reading', meaningField: 'meaning' },
+    { file: 'npc-skills.json', wordField: 'name', readingField: 'reading', meaningField: 'meaning' },
+    { file: 'areas.json', wordField: 'name', readingField: 'reading', meaningField: 'nameEn' },
   ];
 
   for (const config of overlayConfigs) {

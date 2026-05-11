@@ -8,10 +8,10 @@ Read the baton JSON file at the path provided to you. It contains:
 
 ```json
 {
-  "baseWord": "ハサミ",
-  "baseReading": "はさみ",
-  "baseMeaning": "scissors",
-  "baseRank": 13900,
+  "name": "ハサミ",
+  "reading": "はさみ",
+  "meaning": "scissors",
+  "rank": 13900,
   "frequencyTier": "epic",
   "visualTier": "rare",
   "allForms": [{"spelling": "ハサミ", "rank": 13900}, {"spelling": "鋏", "rank": 17000}],
@@ -24,7 +24,7 @@ Read the baton JSON file at the path provided to you. It contains:
 
 ## Your Task
 
-Produce **3 stylized name candidates** and a **vocab table** for the base word.
+Produce **3 stylized name candidates** and a **vocab table** for the Japanese word.
 
 ### Name Rules
 
@@ -47,7 +47,7 @@ For each candidate, provide:
 
 ### Vocab Table
 
-Present the base word data from the baton:
+Present the Japanese word data from the baton:
 - Word (most common spelling)
 - Reading (hiragana)
 - Meaning (raw JPDB meanings array — do NOT paraphrase)

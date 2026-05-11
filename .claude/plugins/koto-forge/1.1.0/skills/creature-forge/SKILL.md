@@ -40,8 +40,8 @@ Parse skill arguments:
 
 1. **Check stage gaps.** Run `node scripts/forge-discovery.mjs --gaps creature` to see which stages need creatures most.
 2. **Pick target stage.** Auto-pick the stage with the largest deficit, or let user specify.
-3. **Discover candidates.** Run `node scripts/forge-discovery.mjs --type creature-base --stage N --limit 10` to get stage-filtered noun candidates from `animals.json`, `objects.json`, and `nature.json`.
-4. Read `data/creatures.json` and `data/new-creatures-staging.json`. The discovery script already excludes existing baseWords.
+3. **Discover candidates.** Run `node scripts/forge-discovery.mjs --type creature-name --stage N --limit 10` to get stage-filtered noun candidates from `animals.json`, `objects.json`, and `nature.json`.
+4. Read `data/creatures.json` and `data/new-creatures-staging.json`. The discovery script already excludes existing names.
 5. Present selection table:
 
 | # | Word | Reading | Meaning | JPDB Rank | WK Level | Stage | Source |
@@ -55,7 +55,7 @@ Same as Discovery but brainstorm 5 words fitting the theme (e.g., `[Schoolyard]`
 
 ## Theme Pool Mode: `/creature-forge --theme school`
 
-When `--theme <themeId>` is provided, draw the base word from the theme pool instead of category files:
+When `--theme <themeId>` is provided, draw the Japanese word from the theme pool instead of category files:
 
 1. Run `node scripts/forge-discovery.mjs --theme school --role creature --limit 10` to get unassigned creature-role words from the theme pool.
 2. Present candidates to user. User picks one.
@@ -125,7 +125,7 @@ Save to `/tmp/creature-jpdb-lookup.mjs` and run with `node /tmp/creature-jpdb-lo
 
 ## Phase 0: Foundation (Main Agent)
 
-1. **JPDB lookup** for the base word. Resolve most common form.
+1. **JPDB lookup** for the Japanese word. Resolve most common form.
 2. **Determine tiers:** frequency tier from rank, visual tier from concept-visual alignment.
 3. **Read roster** from `data/creatures.json` and `data/new-creatures-staging.json` (skip if missing).
 4. **Extract slim roster data:**
@@ -136,10 +136,10 @@ Save to `/tmp/creature-jpdb-lookup.mjs` and run with `node /tmp/creature-jpdb-lo
 
 ```json
 {
-  "baseWord": "ハサミ",
-  "baseReading": "はさみ",
-  "baseMeaning": "scissors",
-  "baseRank": 13900,
+  "name": "ハサミ",
+  "reading": "はさみ",
+  "meaning": "scissors",
+  "rank": 13900,
   "frequencyTier": "epic",
   "visualTier": "rare",
   "allForms": [{"spelling": "ハサミ", "rank": 13900}, {"spelling": "鋏", "rank": 17000}],
@@ -150,13 +150,13 @@ Save to `/tmp/creature-jpdb-lookup.mjs` and run with `node /tmp/creature-jpdb-lo
     "modPreferred": 12000,
     "modCeiling": 20000
   },
-  "rosterNames": ["Kamedor", "Irukami", "Chouri"],
+  "rosterNames": ["亀", "イルカ", "鳥"],
   "stage": 6,
   "baseMp": 80
 }
 ```
 
-The `id` is a kebab-case slug of the base meaning (e.g., "scissors").
+The `id` is a kebab-case slug of the English meaning (e.g., "scissors").
 
 **Announce the tiers before proceeding:**
 
@@ -177,7 +177,7 @@ Fire 3 subagents one at a time. Each reads its mini-skill and the baton, does it
 
 ```
 Task tool (general-purpose, model: sonnet):
-  description: "Generate name candidates for [baseMeaning]"
+  description: "Generate name candidates for [meaning]"
   prompt: |
     Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.1.0/skills/creature-forge/subskills/name-vocab.md
     Then read the baton at /tmp/creature-forge-{id}-baton.json
@@ -191,7 +191,7 @@ Wait for completion. Read the baton to verify `nameCandidates` was added.
 
 ```
 Task tool (general-purpose, model: sonnet):
-  description: "Build learnset for [baseMeaning]"
+  description: "Build learnset for [meaning]"
   prompt: |
     Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.1.0/skills/creature-forge/subskills/learnset-builder.md
     Then read the baton at /tmp/creature-forge-{id}-baton.json
@@ -205,7 +205,7 @@ Wait for completion. Read the baton to verify `learnset` and `learnsetSummary` w
 
 ```
 Task tool (general-purpose, model: sonnet):
-  description: "Generate identity + modifier for [baseMeaning]"
+  description: "Generate identity + modifier for [meaning]"
   prompt: |
     Read the skill file at $CLAUDE_PROJECT_DIR/.claude/plugins/koto-forge/1.1.0/skills/creature-forge/subskills/identity-modifier.md
     Then read the baton at /tmp/creature-forge-{id}-baton.json
@@ -225,7 +225,7 @@ Read the completed baton. Present ALL candidates in one consolidated view:
 | # | Name | Katakana | Language Thesis |
 |---|------|----------|-----------------|
 
-### Base Word
+### Japanese Word
 | Word | Reading | Meaning | Rank | All Forms |
 |------|---------|---------|------|-----------|
 
@@ -253,13 +253,12 @@ The user makes all picks in one message.
 
 ```json
 {
-  "id": "hasamaw",
-  "name": "Hasamaw",
-  "nameKatakana": "ハサマウ",
-  "baseWord": "ハサミ",
-  "baseReading": "はさみ",
-  "baseMeaning": "scissors",
-  "baseRank": 13900,
+  "id": "hasami",
+  "name": "ハサミ",
+  "nameEn": "Scissors",
+  "reading": "はさみ",
+  "meaning": "scissors",
+  "rank": 13900,
   "frequencyTier": "epic",
   "visualTier": "rare",
   "stage": 6,
@@ -306,7 +305,7 @@ Wait for completion. Read the visuals JSON to verify `richDescriptions` and `art
 {
   "name": "Hasamaw",
   "modifier": "Ancient",
-  "baseMeaning": "scissors",
+  "meaning": "scissors",
   "element": "metal",
   "archetype": "Fighter",
   "visualTier": "rare",
@@ -362,13 +361,11 @@ cp /tmp/creature-forge-${ID}-${VARIANT}.png data/creature-staging-images/${ID}.p
 
 ```json
 {
-  "id": "<lowercase-romaji>",
-  "name": "<katakana-name>",
-  "nameEn": "<Romaji-Name>",
-  "baseWord": "<kanji-or-kana>",
-  "baseReading": "<hiragana>",
-  "baseMeaning": "<english>",
-  "baseRank": 1234,
+  "name": "<kanji-or-kana>",
+  "nameEn": "<English name>",
+  "reading": "<hiragana>",
+  "meaning": "<english>",
+  "rank": 1234,
   "rarity": "<common|uncommon|rare|epic|legendary>",
   "baseHp": 100,
   "baseAttack": 10,
@@ -433,4 +430,4 @@ When the user requests changes:
 - [ ] Learnset tier spread: mix of T1, T2, and T3 moves
 - [ ] All learnset moves have stage <= creature's stage
 - [ ] baseMp matches archetype (Fighter=60, Mage=120, Trickster=90, Tank/Healer=80)
-- [ ] stage field computed from baseWord + baseRank
+- [ ] stage field computed from name + rank

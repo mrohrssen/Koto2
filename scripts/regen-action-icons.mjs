@@ -112,7 +112,7 @@ function buildPrompt(batch) {
     `These are NOT characters or creatures — they are compact skill icons and vocabulary flashcard icons for an RPG.`,
     `Think RPG ability buttons or item icons: simple, symbolic, easy to read at small sizes.`,
     `Do NOT draw any full characters, animals, or creatures. Only draw the CONCEPT or ACTION abstractly.`,
-    `For animal base words (fox, frog), draw the animal's face/head only — NOT a full character with personality.`,
+    `For animal words (fox, frog), draw the animal's face/head only — NOT a full character with personality.`,
     ``,
     `Layout (3 rows, 3 columns):`,
     ...layoutLines,

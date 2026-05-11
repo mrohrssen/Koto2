@@ -7,12 +7,12 @@
  * words, and returns ranked candidates ready for creature/move/item/area/npc design.
  *
  * Usage (CLI):
- *   node scripts/forge-discovery.mjs --type creature-base --stage 3 --limit 5
+ *   node scripts/forge-discovery.mjs --type creature-name --stage 3 --limit 5
  *   node scripts/forge-discovery.mjs --gaps creature
  *
  * Usage (library):
  *   import { discoverWords, getStageGaps } from './scripts/forge-discovery.mjs';
- *   const words = await discoverWords({ contentType: 'creature-base', targetStage: 3, limit: 10 });
+ *   const words = await discoverWords({ contentType: 'creature-name', targetStage: 3, limit: 10 });
  *   const gaps = getStageGaps('creature');
  */
 
@@ -28,7 +28,7 @@ const ROOT = join(__dirname, '..');
 // ── Content type → category file mapping ────────────────────────────
 
 const CATEGORY_MAP = {
-  'creature-base':    ['animals.json', 'objects.json', 'nature.json'],
+  'creature-name':    ['animals.json', 'objects.json', 'nature.json'],
   'creature-modifier': ['descriptors.json', 'emotions.json', 'colors.json'],
   'move':             ['actions.json', 'movement.json', 'combat.json'],
   'item-consumable':  ['foods.json'],
@@ -40,7 +40,7 @@ const CATEGORY_MAP = {
 
 // POS filters for WK words (only applied to WK words; non-WK words pass through)
 const POS_FILTER = {
-  'creature-base':    ['noun', 'independent noun', 'proper noun'],
+  'creature-name':    ['noun', 'independent noun', 'proper noun'],
   'creature-modifier': ['adjective', 'い adjective', 'な adjective', 'の adjective'],
   'move':             ['godan verb', 'ichidan verb', 'する verb', 'transitive verb', 'intransitive verb'],
   'item-consumable':  ['noun', 'independent noun'],
@@ -119,10 +119,10 @@ function loadUsedWords() {
 
   _usedWords = new Set();
 
-  // Creatures: baseWord + modifier.word
+  // Creatures: name + modifier.word
   const creatures = loadJsonSafe(join(ROOT, 'data', 'creatures.json'));
   for (const c of creatures) {
-    if (c.baseWord) _usedWords.add(c.baseWord);
+    if (c.name) _usedWords.add(c.name);
     if (c.modifier?.word) _usedWords.add(c.modifier.word);
   }
 
@@ -152,17 +152,17 @@ function loadUsedWords() {
     }
   }
 
-  // NPCs: baseWord + modifier.word
+  // NPCs: name + modifier.word
   const npcsStaging = loadJsonSafe(join(ROOT, 'data', 'new-npcs-staging.json'));
   for (const npc of npcsStaging) {
-    if (npc.baseWord) _usedWords.add(npc.baseWord);
+    if (npc.name) _usedWords.add(npc.name);
     if (npc.modifier?.word) _usedWords.add(npc.modifier.word);
   }
 
   // NPCs (live): check npcs.json too (object keyed by id)
   const npcsLive = loadJsonSafe(join(ROOT, 'data', 'npcs.json'));
   for (const npc of npcsLive) {
-    if (npc.baseWord) _usedWords.add(npc.baseWord);
+    if (npc.name) _usedWords.add(npc.name);
     if (npc.modifier?.word) _usedWords.add(npc.modifier.word);
   }
 
@@ -468,7 +468,7 @@ async function main() {
 
   if (!contentType) {
     console.error('Usage:');
-    console.error('  node scripts/forge-discovery.mjs --type creature-base --stage 3 --limit 5');
+    console.error('  node scripts/forge-discovery.mjs --type creature-name --stage 3 --limit 5');
     console.error('  node scripts/forge-discovery.mjs --gaps creature');
     console.error('  node scripts/forge-discovery.mjs --theme school --role creature --limit 10');
     console.error('  node scripts/forge-discovery.mjs --theme-status');

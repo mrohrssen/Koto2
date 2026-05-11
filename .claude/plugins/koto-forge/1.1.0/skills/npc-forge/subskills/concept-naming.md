@@ -32,7 +32,7 @@ You may supplement with your own ideas, but prefer the discovered candidates as 
 ## Your Task
 
 Produce **5 NPC concepts**, each with:
-- Base word (a person noun — the occupation or role this NPC teaches)
+- Japanese word (a person noun — the occupation or role this NPC teaches)
 - Modifier word (a personality adjective that describes this NPC)
 - 3 natural Japanese given name candidates
 - One-liner character summary
@@ -49,7 +49,7 @@ Produce **5 NPC concepts**, each with:
 
 For each NPC, pick:
 
-1. **Base word — MUST be a person noun.** A word that describes a type of human being. The player learns this word by meeting this NPC. It must fit the area — pick occupations and roles that make sense for the location.
+1. **Japanese word — MUST be a person noun.** A word that describes a type of human being. The player learns this word by meeting this NPC. It must fit the area — pick occupations and roles that make sense for the location.
 
    **Reference list** (pick from these or use similar person nouns):
 
@@ -117,7 +117,7 @@ For each of 3 candidates per NPC, provide:
 
 ### One-liner Summary
 
-Each NPC needs a short (10-15 words) one-liner that captures their occupation, personality, or defining trait. The base word (occupation) should be clearly reflected here.
+Each NPC needs a short (10-15 words) one-liner that captures their occupation, personality, or defining trait. The Japanese word (occupation) should be clearly reflected here.
 
 Example: "Soft-spoken aquarium researcher who talks to the fish like old friends"
 
@@ -130,12 +130,12 @@ Read the baton JSON, add your output fields, write it back. Append this field:
   "npcConcepts": [
     {
       "index": 1,
-      "baseWord": "研究者",
-      "baseReading": "けんきゅうしゃ",
-      "baseMeaning": "researcher",
-      "baseRank": 2400,
-      "rawBaseMeanings": [["researcher; investigator"]],
-      "allBaseForms": "研究者(2,400)",
+      "name": "研究者",
+      "reading": "けんきゅうしゃ",
+      "meaning": "researcher",
+      "rank": 2400,
+      "rawMeanings": [["researcher; investigator"]],
+      "allForms": "研究者(2,400)",
       "modifier": {
         "word": "優しい",
         "reading": "やさしい",

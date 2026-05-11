@@ -33,8 +33,8 @@ describe('entityToToken', () => {
     assert.strictEqual(token.meaning, 'Strike');
   });
 
-  it('maps creature fields (baseWord, baseReading, baseMeaning)', () => {
-    const creature = { baseWord: '炎', baseReading: 'ほのお', baseMeaning: 'flame' };
+  it('maps creature fields (name, reading, meaning)', () => {
+    const creature = { name: '炎', reading: 'ほのお', meaning: 'flame' };
     const token = entityToToken(creature);
     assert.deepStrictEqual(token, {
       surface: '炎',
@@ -88,7 +88,7 @@ describe('assembleFrame', () => {
       ],
       words: ['この'],
     };
-    const entities = { creature: { baseWord: '炎', baseReading: 'ほのお', baseMeaning: 'flame' } };
+    const entities = { creature: { name: '炎', reading: 'ほのお', meaning: 'flame' } };
     const result = assembleFrame(frame, entities);
     assert.deepStrictEqual(result.words, ['この', '炎']);
   });

@@ -880,11 +880,11 @@ function renderCreatureFields(d, jobId) {
   var html = '<div class="field-grid">';
 
   html += fieldText(pfx, 'id', 'ID', d.id);
-  html += fieldText(pfx, 'name', 'Name (Katakana)', d.name);
+  html += fieldText(pfx, 'name', 'Name (Japanese)', d.name);
   html += fieldText(pfx, 'nameEn', 'Name EN', d.nameEn);
-  html += fieldText(pfx, 'baseWord', 'Base Word', d.baseWord);
-  html += fieldText(pfx, 'baseMeaning', 'Base Meaning', d.baseMeaning);
-  html += fieldNumber(pfx, 'baseRank', 'Base Rank', d.baseRank);
+  html += fieldText(pfx, 'reading', 'Reading', d.reading);
+  html += fieldText(pfx, 'meaning', 'Meaning', d.meaning);
+  html += fieldNumber(pfx, 'rank', 'Rank', d.rank);
   html += fieldText(pfx, 'modifier-word', 'Modifier', m.word);
   html += fieldText(pfx, 'modifier-reading', 'Modifier Reading', m.reading);
   html += fieldText(pfx, 'modifier-meaning', 'Modifier Meaning', m.meaning);
@@ -952,8 +952,9 @@ function renderNpcFields(d, jobId) {
   html += fieldText(pfx, 'id', 'ID', d.id);
   html += fieldText(pfx, 'name', 'Name', d.name);
   html += fieldText(pfx, 'nameEn', 'Name EN', d.nameEn);
-  html += fieldText(pfx, 'baseWord', 'Base Word', d.baseWord);
-  html += fieldText(pfx, 'baseMeaning', 'Base Meaning', d.baseMeaning);
+  html += fieldText(pfx, 'reading', 'Reading', d.reading);
+  html += fieldText(pfx, 'meaning', 'Meaning', d.meaning);
+  html += fieldNumber(pfx, 'rank', 'Rank', d.rank);
   html += fieldText(pfx, 'modifier-word', 'Modifier', m.word);
   html += fieldText(pfx, 'modifier-reading', 'Modifier Reading', m.reading);
   html += fieldText(pfx, 'modifier-meaning', 'Modifier Meaning', m.meaning);
@@ -1041,6 +1042,9 @@ function collectSingleItem(role, origData, pfx) {
       id: val('id'),
       name: val('name'),
       nameEn: val('nameEn'),
+      reading: val('reading'),
+      meaning: val('meaning'),
+      rank: numVal('rank'),
       element: val('element'),
       archetype: val('archetype'),
       description: val('description')
@@ -1090,8 +1094,9 @@ function collectSingleItem(role, origData, pfx) {
       id: val('id'),
       name: val('name'),
       nameEn: val('nameEn'),
-      baseWord: val('baseWord'),
-      baseMeaning: val('baseMeaning'),
+      reading: val('reading'),
+      meaning: val('meaning'),
+      rank: numVal('rank'),
       modifier: {
         word: val('modifier-word'),
         reading: val('modifier-reading'),

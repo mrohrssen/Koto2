@@ -411,9 +411,9 @@ describe('insertNpcAttackCard (via buildSplitAttackCard attackerHtml shape)', ()
       attackerId: 'mentor',
       attackerName: 'Mentor',
       attackerNameJp: '先生',
-      attackerBaseWord: '先生',
-      attackerBaseReading: 'せんせい',
-      attackerBaseMeaning: 'teacher',
+      attackerWord: '先生',
+      attackerReading: 'せんせい',
+      attackerMeaning: 'teacher',
     };
     // Simulate what insertNpcAttackCard builds for attackerHtml — a sprite tile
     // with the NPC image + a sac-body with the renderJpSentence output.

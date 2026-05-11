@@ -76,7 +76,7 @@ export function getContentWords(obj, type) {
 
   switch (type) {
     case 'creature':
-      words.push({ word: obj.baseWord, rank: obj.baseRank, source: 'baseWord' });
+      words.push({ word: obj.name, rank: obj.rank, source: 'name' });
       if (obj.modifier) {
         words.push({ word: obj.modifier.word, rank: obj.modifier.rank, source: 'modifier' });
       }

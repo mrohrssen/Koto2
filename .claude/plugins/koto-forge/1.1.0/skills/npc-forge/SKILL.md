@@ -39,7 +39,7 @@ When `--theme <themeId>` is provided, the area is determined by the theme:
 
 1. Read `language/themes/school.json` for the area word and stage.
 2. Look up or create the area — skip Phase 0 area selection if the theme's area already exists in `data/areas.json` or `data/new-areas-staging.json`.
-3. Run `node scripts/forge-discovery.mjs --theme school --role npc --limit 20` for NPC base word candidates from the theme pool.
+3. Run `node scripts/forge-discovery.mjs --theme school --role npc --limit 20` for NPC Japanese word candidates from the theme pool.
 4. Continue with Phase 1 (Concept & Naming) using theme pool candidates as `discoveredOccupations` in the baton.
 5. **After save:** Mark used words as assigned in the theme file via `markAssigned()` from `scripts/lib/theme-utils.mjs`.
 
@@ -122,14 +122,14 @@ Wait for completion. Read the baton to verify `npcConcepts` array was added with
 ### 1.3 JPDB Verification
 
 The subagent performs JPDB lookups as part of its work. After reading the baton, verify that every concept has:
-- `baseRank` — a real JPDB rank (not 0 or null)
-- `rawBaseMeanings` — raw meanings array from JPDB
+- `rank` — a real JPDB rank (not 0 or null)
+- `rawMeanings` — raw meanings array from JPDB
 - `modifier.rank` — a real JPDB rank
 - `modifier.rawMeanings` — raw meanings array from JPDB
 - `nameCandidates` — array of 3 name options (A, B, C) — natural Japanese given names
-- `baseWord` is a **person noun** (occupation, social role, or person type) — NOT a nature word or abstract concept
+- `name` is a **person noun** (occupation, social role, or person type) — NOT a nature word or abstract concept
 
-If any are missing, or if a base word is not a person noun, report the gap and re-dispatch the subagent.
+If any are missing, or if a Japanese word is not a person noun, report the gap and re-dispatch the subagent.
 
 ### 1.4 Present Consolidated Candidate Table
 
@@ -146,9 +146,9 @@ For each of the 5 NPCs, present:
 
 | Field | Value |
 |-------|-------|
-| Base Word (occupation) | 研究者 (けんきゅうしゃ) |
+| Japanese Word (occupation) | 研究者 (けんきゅうしゃ) |
 | Base Rank | 2,400 |
-| Base Meanings | [["researcher; investigator"]] |
+| Meanings | [["researcher; investigator"]] |
 | Modifier | 優しい (やさしい) |
 | Modifier Rank | 600 |
 | Modifier Meanings | [["tender; kind; gentle; graceful; affectionate; amiable"]] |
@@ -188,8 +188,8 @@ From the user's picks, build the locked NPC list:
       "id": "haruka",
       "name": "ハルカ",
       "nameEn": "Haruka",
-      "baseWord": "研究者",
-      "baseMeaning": "researcher",
+      "name": "研究者",
+      "meaning": "researcher",
       "modifier": { "word": "優しい", "meaning": "Gentle" },
       "oneLiner": "Soft-spoken aquarium researcher who talks to the fish like old friends"
     },
@@ -274,10 +274,10 @@ For each of the 5 NPCs, build a game data object from the locked baton + charact
   "id": "haruka",
   "name": "ハルカ",
   "nameEn": "Haruka",
-  "baseWord": "研究者",
-  "baseReading": "けんきゅうしゃ",
-  "baseMeaning": "researcher",
-  "baseRank": 2400,
+  "name": "研究者",
+  "reading": "けんきゅうしゃ",
+  "meaning": "researcher",
+  "rank": 2400,
   "modifier": {
     "word": "優しい",
     "reading": "やさしい",
@@ -419,7 +419,7 @@ Run through this checklist before writing to staging files:
 - [ ] All JPDB ranks from API calls (not guessed)
 - [ ] Raw meanings arrays shown to user and verified
 - [ ] English translations dictionary-accurate — no embellishment, no transitivity changes
-- [ ] Every base word is a person noun (occupation, social role, or person type) — NO nature words or abstract concepts
+- [ ] Every Japanese word is a person noun (occupation, social role, or person type) — NO nature words or abstract concepts
 - [ ] Names are natural Japanese given names written in katakana
 - [ ] No duplicate ids with existing NPCs (checked both `data/npcs.json` and `data/new-npcs-staging.json`)
 - [ ] All 5 NPCs assigned to the chosen area (same `area` field)

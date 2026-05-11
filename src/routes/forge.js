@@ -161,7 +161,7 @@ export function createForgeRouter({ themesDir, dataDir }) {
           const wordToMatch = job ? job.word : null;
 
           if (wordToMatch && theme.words) {
-            // Assign the base word
+            // Assign the matched Japanese word.
             const wordEntry = theme.words.find(w => w.word === wordToMatch);
             if (wordEntry) {
               const ids = items.map(it => it.id).join('+');
@@ -276,7 +276,7 @@ export function createForgeRouter({ themesDir, dataDir }) {
         const entries = JSON.parse(readFileSync(filepath, 'utf8'));
         if (!Array.isArray(entries)) continue;
         for (const entry of entries) {
-          const word = entry.name || entry.baseWord;
+          const word = entry.name;
           if (word) trackWord(word, role, entry.id, 'base');
           if (entry.modifier?.word) trackWord(entry.modifier.word, role, entry.id, 'modifier');
           // NPC skills use word/verb directly
@@ -299,7 +299,7 @@ export function createForgeRouter({ themesDir, dataDir }) {
         const data = JSON.parse(readFileSync(filepath, 'utf8'));
         const entries = Array.isArray(data) ? data : Object.values(data);
         for (const entry of entries) {
-          const word = entry.name || entry.baseWord;
+          const word = entry.name;
           if (word) trackWord(word, role, entry.id, 'base');
           if (entry.modifier?.word) trackWord(entry.modifier.word, role, entry.id, 'modifier');
         }

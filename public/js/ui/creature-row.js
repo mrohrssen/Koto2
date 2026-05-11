@@ -225,8 +225,8 @@ function showPopup(index, creature) {
   const popupSubtitle = creature.modifier
     ? renderJpSentence([entityToToken(creature.modifier)], getKnownWords(), new Map())
       + 'の'
-      + renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map())
-    : renderJpSentence([entityToToken({ word: creature.baseWord, reading: creature.baseReading, nameEn: creature.baseMeaning })], getKnownWords(), new Map());
+      + renderJpSentence([entityToToken(creature)], getKnownWords(), new Map())
+    : renderJpSentence([entityToToken(creature)], getKnownWords(), new Map());
 
   dom.creaturePopup.innerHTML = `
     <div class="creature-popup-name">${creature.name} (${creature.nameEn}) ${rarityStars(creature.rarity)}</div>
