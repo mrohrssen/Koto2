@@ -137,6 +137,26 @@ describe('crystal game routes', { concurrency: false }, () => {
     assert.equal(getManager(registered.user.id).meta.crystals, 200);
   });
 
+  it('lets debug super attack users grant themselves a fusion core', async () => {
+    const app = createApp({ dataDir, usersFile: join(dataDir, '.jrpg-users.json') });
+    const registered = await registerUser(app, 'michia');
+
+    const first = await request(app)
+      .post('/api/game/fusion/debug-add-core')
+      .set('Authorization', `Bearer ${registered.token}`)
+      .send({})
+      .expect(200);
+    const second = await request(app)
+      .post('/api/game/fusion/debug-add-core')
+      .set('Authorization', `Bearer ${registered.token}`)
+      .send({})
+      .expect(200);
+
+    assert.deepEqual(first.body, { ok: true, amount: 1, fusionCores: 1 });
+    assert.deepEqual(second.body, { ok: true, amount: 1, fusionCores: 2 });
+    assert.equal(getManager(registered.user.id).meta.fusionCores, 2);
+  });
+
   it('rejects debug crystal grants for regular users', async () => {
     const app = createApp({ dataDir, usersFile: join(dataDir, '.jrpg-users.json') });
     const registered = await registerUser(app, 'newplayer');
@@ -149,5 +169,19 @@ describe('crystal game routes', { concurrency: false }, () => {
 
     assert.deepEqual(res.body, { ok: false, error: 'debug_crystals_forbidden' });
     assert.equal(getManager(registered.user.id).meta.crystals, 0);
+  });
+
+  it('rejects debug fusion core grants for regular users', async () => {
+    const app = createApp({ dataDir, usersFile: join(dataDir, '.jrpg-users.json') });
+    const registered = await registerUser(app, 'newplayer');
+
+    const res = await request(app)
+      .post('/api/game/fusion/debug-add-core')
+      .set('Authorization', `Bearer ${registered.token}`)
+      .send({})
+      .expect(403);
+
+    assert.deepEqual(res.body, { ok: false, error: 'debug_fusion_core_forbidden' });
+    assert.equal(getManager(registered.user.id).meta.fusionCores, 0);
   });
 });

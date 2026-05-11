@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { getFusionState, startFusion } from '../../game/services/fusion-service.js';
+import { canUseDebugSuperAttack } from '../../game/debug-super-attack-access.js';
+import { addFusionCore, getFusionState, startFusion } from '../../game/services/fusion-service.js';
 
 export default function createFusionRoutes() {
   const router = Router();
@@ -7,6 +8,20 @@ export default function createFusionRoutes() {
   router.get('/fusion', (req, res) => {
     const meta = req.gameManager.getMeta();
     res.json(getFusionState(meta));
+  });
+
+  router.post('/fusion/debug-add-core', (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    if (!canUseDebugSuperAttack(req.user)) {
+      return res.status(403).json({ ok: false, error: 'debug_fusion_core_forbidden' });
+    }
+
+    const meta = req.gameManager.getMeta();
+    const result = addFusionCore(meta);
+    req.saveGame();
+    res.json({ ok: true, amount: 1, ...result });
   });
 
   router.post('/fusion/start', (req, res) => {

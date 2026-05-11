@@ -88,6 +88,8 @@ export async function openSettings() {
         </label>
         <button class="ui-btn" id="settings-debug-add-crystals-btn"
           style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Add 100 Crystals</button>
+        <button class="ui-btn" id="settings-debug-add-fusion-core-btn"
+          style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Add 1 Fusion Core</button>
         <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Allowlisted playtest shortcut only.</small>
       ` : ''}
 
@@ -268,6 +270,41 @@ export async function openSettings() {
     } catch {
       btn.textContent = 'Error';
       setTimeout(() => { btn.textContent = 'Add 100 Crystals'; btn.disabled = false; }, 2000);
+    }
+  });
+
+  document.getElementById('settings-debug-add-fusion-core-btn')?.addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+    try {
+      const resp = await fetch(apiUrl('/api/game/fusion/debug-add-core'), {
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data?.ok && updateGameState && getGameState) {
+          const current = getGameState();
+          updateGameState({
+            ...current,
+            meta: {
+              ...(current?.meta || {}),
+              fusionCores: data.fusionCores
+            }
+          });
+          updateUI?.();
+        }
+        btn.textContent = `Added — cores ${data.fusionCores}`;
+        sceneModule.showToast?.('+1 fusion core', 1600);
+        setTimeout(() => { btn.textContent = 'Add 1 Fusion Core'; btn.disabled = false; }, 2000);
+      } else {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Add 1 Fusion Core'; btn.disabled = false; }, 2000);
+      }
+    } catch {
+      btn.textContent = 'Error';
+      setTimeout(() => { btn.textContent = 'Add 1 Fusion Core'; btn.disabled = false; }, 2000);
     }
   });
 
