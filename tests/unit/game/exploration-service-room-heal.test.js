@@ -50,6 +50,35 @@ describe('ExplorationService room heal (5% per room entry)', () => {
     assert.notEqual(gm.run.rooms[0].type, ROOM_TYPES.randomRoom);
   });
 
+  it('assigns an NPC when the first random room finalizes to a friendly NPC shop', () => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.6;
+    const gm = {
+      meta: {},
+      run: {
+        active: true,
+        currentArea: { id: 'wild-plains', nameEn: 'Wild Plains' },
+        areaPath: ['wild-plains'],
+        creatureParty: { active: [], reserves: [] },
+        stats: { roomsExplored: 0, areasCleared: 0 },
+        runStats: { roomsCleared: 0 },
+        totalEncounters: 0
+      },
+      narrate() {},
+      emitState() {}
+    };
+    const service = new ExplorationService(gm);
+
+    try {
+      service.enterArea();
+    } finally {
+      Math.random = originalRandom;
+    }
+
+    assert.equal(gm.run.rooms[0].type, ROOM_TYPES.friendlyNpc);
+    assert.ok(gm.run.rooms[0].npc, 'friendly NPC shops should have a visible NPC');
+  });
+
   it('heals all living creatures and never revives KO creatures', () => {
     const room1 = createRoom('friendlyNpc', 'okunomori', 1, 2);
     const room2 = createRoom('friendlyNpc', 'okunomori', 2, 2);

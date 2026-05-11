@@ -171,6 +171,21 @@ export class ExplorationService {
     }
   }
 
+  _assignFriendlyNpcIfNeeded(room) {
+    if (room?.type !== 'friendlyNpc' || room.npc) return;
+    try {
+      const npcs = loadNpcs();
+      const npcAreaId = this.gm.run.currentArea?.id || null;
+      const areaNpcs = Object.values(npcs).filter(n => !npcAreaId || n.area === npcAreaId || !n.area);
+      if (areaNpcs.length > 0) {
+        const picked = areaNpcs[Math.floor(Math.random() * areaNpcs.length)];
+        room.npc = { id: picked.id, name: picked.name, nameEn: picked.nameEn };
+      }
+    } catch (err) {
+      logger.error('[Exploration] Failed to assign NPC to friendlyNpc room:', err.message);
+    }
+  }
+
   _rollRoomIngredientDrops() {
     if (!this.gm.run.cooking) this.gm.run.cooking = { ingredients: {}, cookedThisRun: [] };
     if (!this.gm.run.cooking.ingredients) this.gm.run.cooking.ingredients = {};
@@ -253,6 +268,7 @@ export class ExplorationService {
     this.gm.run.rooms = generateAreaRooms(areaId, undefined, undefined, undefined, undefined, tutorialMode);
     if (this.gm.run.rooms[0]) {
       finalizeRandomRoom(this.gm.run.rooms[0], this.gm.run);
+      this._assignFriendlyNpcIfNeeded(this.gm.run.rooms[0]);
     }
     // encountersNeeded is kept for backwards-compat with other code.
     this.gm.run.encountersNeeded = this.gm.run.rooms.length;
@@ -428,19 +444,7 @@ export class ExplorationService {
     }
 
     // Assign area NPC to friendlyNpc rooms for transition display
-    if (room.type === 'friendlyNpc' && !room.npc) {
-      try {
-        const npcs = loadNpcs();
-        const npcAreaId = this.gm.run.currentArea?.id || null;
-        const areaNpcs = Object.values(npcs).filter(n => !npcAreaId || n.area === npcAreaId || !n.area);
-        if (areaNpcs.length > 0) {
-          const picked = areaNpcs[Math.floor(Math.random() * areaNpcs.length)];
-          room.npc = { id: picked.id, name: picked.name, nameEn: picked.nameEn };
-        }
-      } catch (err) {
-        logger.error('[Exploration] Failed to assign NPC to friendlyNpc room:', err.message);
-      }
-    }
+    this._assignFriendlyNpcIfNeeded(room);
 
     // Get narration for new room
     const narration = getRoomEntryNarration(room);
