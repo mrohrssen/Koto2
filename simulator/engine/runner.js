@@ -104,6 +104,8 @@ export async function runSimulation(profile, store, simId, gameServerUrl, adminS
     // Main day loop
     for (let day = startDay; day <= config.durationDays; day++) {
       pos.day = day;
+      await simCall('POST', '/api/game/crystals/daily-login', null, `day ${day} daily crystals`);
+
       const effectiveRuns = Math.min(
         config.runsPerDay,
         Math.floor(config.dailyPlayMinutes / ESTIMATED_MINUTES_PER_RUN)

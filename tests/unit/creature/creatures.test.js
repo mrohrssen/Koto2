@@ -242,7 +242,7 @@ describe('syncCreatureDex', () => {
 
 describe('Creature Damage', () => {
   it('calculates damage with level, DEF, and type multiplier', () => {
-    // L5, atk 14, def 7, power 10, neutral: inner=(2+2)*10*14/7=80, base=10, *1.5 *1 = 15
+    // L5, atk 14, def 7 -> effective DEF 6, power 10: base=11, *1.5 *1 = 16
     const dmg = calculateCreatureDamage({
       attackerLevel: 5,
       attack: 14,
@@ -251,7 +251,7 @@ describe('Creature Damage', () => {
       typeMultiplier: 1.5,
       variance: 1.0
     });
-    assert.strictEqual(dmg, 15);
+    assert.strictEqual(dmg, 16);
   });
 
   it('calculates damage neutral (1.0x type)', () => {
@@ -263,7 +263,51 @@ describe('Creature Damage', () => {
       typeMultiplier: 1.0,
       variance: 1.0
     });
-    assert.strictEqual(dmg, 10);
+    assert.strictEqual(dmg, 11);
+  });
+
+  it('compresses tank DEF toward average DEF', () => {
+    const averageDefDamage = calculateCreatureDamage({
+      attackerLevel: 10,
+      attack: 18,
+      defenderDefense: 5,
+      power: 50,
+      typeMultiplier: 1.0,
+      variance: 1.0
+    });
+    const tankDamage = calculateCreatureDamage({
+      attackerLevel: 10,
+      attack: 18,
+      defenderDefense: 10,
+      power: 50,
+      typeMultiplier: 1.0,
+      variance: 1.0
+    });
+
+    assert.strictEqual(averageDefDamage, 110);
+    assert.strictEqual(tankDamage, 74);
+  });
+
+  it('softens large DEF stage buffs after they are applied', () => {
+    const buffedTankDamage = calculateCreatureDamage({
+      attackerLevel: 10,
+      attack: 18,
+      defenderDefense: 20,
+      power: 50,
+      typeMultiplier: 1.0,
+      variance: 1.0
+    });
+    const cappedTankDamage = calculateCreatureDamage({
+      attackerLevel: 10,
+      attack: 18,
+      defenderDefense: 40,
+      power: 50,
+      typeMultiplier: 1.0,
+      variance: 1.0
+    });
+
+    assert.strictEqual(buffedTankDamage, 45);
+    assert.strictEqual(cappedTankDamage, 26);
   });
 });
 

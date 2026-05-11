@@ -116,6 +116,45 @@ describe('dialogue learn service', () => {
     assert.equal(calls[0].openaiModel, 'gpt-5-mini');
   });
 
+  it('retries validation failures twice before returning a valid learn lesson', async () => {
+    const cache = new DialogueLearnCache({ inMemory: true });
+    const responses = ['{"bad":true}', '{"bad":true}', JSON.stringify(lesson())];
+    const calls = [];
+    const result = await generateDialogueLearnLesson({
+      text: '花は森で光を見た。',
+      tokens,
+      entities,
+      cache,
+      chatFn: async (args) => { calls.push(args); return responses.shift(); },
+      config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' }
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(result.cached, false);
+    assert.equal(result.lesson.translation, 'Flower saw a light in the forest.');
+    assert.equal(calls.length, 3);
+  });
+
+  it('gives up after three validation failures', async () => {
+    const cache = new DialogueLearnCache({ inMemory: true });
+    let calls = 0;
+    const result = await generateDialogueLearnLesson({
+      text: '花は森で光を見た。',
+      tokens,
+      entities,
+      cache,
+      chatFn: async () => { calls += 1; return '{"bad":true}'; },
+      config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' }
+    });
+
+    assert.deepEqual(result, {
+      ok: false,
+      error: 'learn_lesson_validation_failed',
+      reason: 'top_level_keys'
+    });
+    assert.equal(calls, 3);
+  });
+
   it('fails closed with specific diagnostics for empty text, missing tokens, missing config, and invalid AI output', async () => {
     const cache = new DialogueLearnCache({ inMemory: true });
     const warnMock = mock.method(logger, 'warn', () => {});

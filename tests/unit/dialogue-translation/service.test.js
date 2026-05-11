@@ -190,6 +190,48 @@ describe('dialogue translation service', () => {
     assert.equal(cache.get('待って！'), null);
   });
 
+  it('retries invalid plain translation output twice before returning a valid translation', async () => {
+    const cache = new DialogueTranslationCache({ inMemory: true });
+    const responses = ['Translation: Wait!', 'Here is the translation: Wait!', 'Wait!'];
+    const calls = [];
+
+    const result = await translateDialogueText({
+      text: '待って！',
+      cache,
+      chatFn: async (args) => {
+        calls.push(args);
+        return responses.shift();
+      },
+      config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' }
+    });
+
+    assert.deepEqual(result, {
+      ok: true,
+      translation: 'Wait!',
+      entities: [],
+      cached: false
+    });
+    assert.equal(calls.length, 3);
+  });
+
+  it('gives up after three invalid plain translation outputs', async () => {
+    const cache = new DialogueTranslationCache({ inMemory: true });
+    let calls = 0;
+
+    const result = await translateDialogueText({
+      text: '待って！',
+      cache,
+      chatFn: async () => {
+        calls += 1;
+        return 'Translation: Wait!';
+      },
+      config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' }
+    });
+
+    assert.deepEqual(result, { ok: false, error: 'translation_unavailable' });
+    assert.equal(calls, 3);
+  });
+
   it('parses valid entity markers into plain text and spans', () => {
     const result = parseEntityMarkedTranslation('Wow, [[entity:hana|Flower]] is strong!', [
       { id: 'hana', type: 'creature', surface: '花', displayName: 'Flower' }
@@ -235,10 +277,10 @@ describe('dialogue translation service', () => {
     });
 
     assert.deepEqual(result, { ok: false, error: 'translation_unavailable' });
-    assert.equal(calls, 2);
+    assert.equal(calls, 3);
   });
 
-  it('retries once and caches when corrected output contains required markers', async () => {
+  it('retries validation failures twice and caches when corrected output contains required markers', async () => {
     const cache = new DialogueTranslationCache({ inMemory: true });
     const calls = [];
 
@@ -248,7 +290,7 @@ describe('dialogue translation service', () => {
       cache,
       chatFn: async (args) => {
         calls.push(args);
-        return calls.length === 1 ? 'Flowers are strong!' : '[[entity:hana|Flower]] is strong!';
+        return calls.length < 3 ? 'Flowers are strong!' : '[[entity:hana|Flower]] is strong!';
       },
       config: { provider: 'openai', apiKey: 'key', model: 'gpt-5-mini' }
     });
@@ -259,7 +301,8 @@ describe('dialogue translation service', () => {
       entities: [{ id: 'hana', type: 'creature', text: 'Flower', start: 0, end: 6 }],
       cached: false
     });
-    assert.equal(calls.length, 2);
+    assert.equal(calls.length, 3);
     assert.match(calls[1].messages[0].content, /previous answer did not follow/);
+    assert.match(calls[2].messages[0].content, /previous answer did not follow/);
   });
 });

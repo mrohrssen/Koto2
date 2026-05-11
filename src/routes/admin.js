@@ -8,6 +8,7 @@ import { getKnownWordsFromFsrs } from '../game/bootstrap/word-knowledge.js';
 import { loadUsers, saveUsers } from '../auth/users.js';
 import { lookupDictPrimary } from '../../public/js/shared/exposure-extractor.js';
 import { createBalanceSimulationManager } from '../game/balance-simulator.js';
+import { getManager, saveManager } from '../game/manager-registry.js';
 
 const defaultBalanceManager = createBalanceSimulationManager();
 
@@ -51,6 +52,21 @@ export function shiftFsrsTimestamps(filePath, days) {
   return { shifted };
 }
 
+export function shiftCrystalLoginDate(meta, days) {
+  if (!meta || typeof meta.lastCrystalLoginDate !== 'string') {
+    return { crystalLoginShifted: false, lastCrystalLoginDate: meta?.lastCrystalLoginDate ?? null };
+  }
+
+  const current = new Date(`${meta.lastCrystalLoginDate}T00:00:00.000Z`);
+  if (Number.isNaN(current.getTime())) {
+    return { crystalLoginShifted: false, lastCrystalLoginDate: meta.lastCrystalLoginDate };
+  }
+
+  const shifted = new Date(current.getTime() - days * 86400000).toISOString().slice(0, 10);
+  meta.lastCrystalLoginDate = shifted;
+  return { crystalLoginShifted: true, lastCrystalLoginDate: shifted };
+}
+
 /**
  * Admin secret middleware.
  * Returns 404 if ADMIN_SECRET is not configured (hides endpoint existence).
@@ -86,14 +102,18 @@ export default function createAdminRoutes({ dataDir, balanceManager = defaultBal
       }
 
       const filePath = join(dataDir, `srs-${userId}.json`);
+      let result = { shifted: 0 };
       if (!existsSync(filePath)) {
         // No SRS data yet — nothing to shift, which is fine
-        return res.json({ shifted: 0 });
+      } else {
+        result = shiftFsrsTimestamps(filePath, days);
+        clearSrsCache(userId);
       }
 
-      const result = shiftFsrsTimestamps(filePath, days);
-      clearSrsCache(userId);
-      res.json(result);
+      const manager = getManager(userId);
+      const crystalResult = shiftCrystalLoginDate(manager.getMeta(), days);
+      if (crystalResult.crystalLoginShifted) saveManager(userId);
+      res.json({ ...result, ...crystalResult });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

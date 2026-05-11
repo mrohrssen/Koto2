@@ -1,9 +1,13 @@
 // tests/unit/admin-routes.test.js
-import { describe, it, before, after } from 'node:test';
+import { describe, it, before, after, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import express from 'express';
+import createAdminRoutes from '../../src/routes/admin.js';
+import { setDataDirForTest, resetDataDirForTest } from '../../src/data-dir.js';
+import { clearManagersForTest, getManager, saveManager } from '../../src/game/manager-registry.js';
 
 describe('shiftFsrsTimestamps', () => {
   let tempDir;
@@ -99,5 +103,50 @@ describe('shiftFsrsTimestamps', () => {
 
     const result = shiftFsrsTimestamps(filePath, 1);
     assert.equal(result.shifted, 0);
+  });
+});
+
+describe('admin advance-time', () => {
+  afterEach(() => {
+    delete process.env.ADMIN_SECRET;
+    clearManagersForTest();
+    resetDataDirForTest();
+  });
+
+  it('moves crystal login date backward for simulated days', async () => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'admin-advance-'));
+    try {
+      setDataDirForTest(tempDir);
+      process.env.ADMIN_SECRET = 'test-secret';
+
+      const manager = getManager('u-crystal');
+      manager.getMeta().lastCrystalLoginDate = '2026-05-11';
+      saveManager('u-crystal');
+
+      const app = express();
+      app.use(express.json());
+      app.use('/api/admin', createAdminRoutes({ dataDir: tempDir }));
+      const server = await new Promise(resolve => {
+        const listener = app.listen(0, () => resolve(listener));
+      });
+
+      try {
+        const res = await fetch(`http://127.0.0.1:${server.address().port}/api/admin/advance-time`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-secret': 'test-secret' },
+          body: JSON.stringify({ userId: 'u-crystal', days: 1 })
+        });
+
+        assert.equal(res.status, 200);
+        const body = await res.json();
+        assert.equal(body.crystalLoginShifted, true);
+        assert.equal(body.lastCrystalLoginDate, '2026-05-10');
+        assert.equal(manager.getMeta().lastCrystalLoginDate, '2026-05-10');
+      } finally {
+        await new Promise(resolve => server.close(resolve));
+      }
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 });
