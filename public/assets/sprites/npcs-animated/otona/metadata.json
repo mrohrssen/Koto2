@@ -1,0 +1,24 @@
+{
+  "id": "otona",
+  "generatedAt": "2026-05-11T12:41:58.736321+00:00",
+  "source": "Scenario Seedance 2.0 image-to-video from white-background NPC source",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "columns": 6,
+  "frames": 24,
+  "fps": 12,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/npc-animations/otona/idle/source-video.mp4",
+      "sourceSheet": "output/npc-animations/otona/idle/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/otona/idle/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/otona/idle.png"
+    },
+    "walk": {
+      "sourceVideo": "output/npc-animations/otona/walk/source-video.mp4",
+      "sourceSheet": "output/npc-animations/otona/walk/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/otona/walk/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/otona/walk.png"
+    }
+  }
+}

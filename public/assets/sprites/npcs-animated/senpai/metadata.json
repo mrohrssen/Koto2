@@ -1,0 +1,24 @@
+{
+  "id": "senpai",
+  "generatedAt": "2026-05-11T12:41:58.754125+00:00",
+  "source": "Scenario Seedance 2.0 image-to-video from white-background NPC source",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "columns": 6,
+  "frames": 24,
+  "fps": 12,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/npc-animations/senpai/idle/source-video.mp4",
+      "sourceSheet": "output/npc-animations/senpai/idle/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/senpai/idle/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/senpai/idle.png"
+    },
+    "walk": {
+      "sourceVideo": "output/npc-animations/senpai/walk/source-video.mp4",
+      "sourceSheet": "output/npc-animations/senpai/walk/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/senpai/walk/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/senpai/walk.png"
+    }
+  }
+}

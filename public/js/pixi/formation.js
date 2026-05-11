@@ -10,6 +10,11 @@ import {
   loadCreatureAnimationManifest,
 } from './creature-animation-manifest.js';
 import {
+  getAnimatedNpcEntry,
+  loadNpcAnimationManifest,
+} from './npc-animation-manifest.js';
+import {
+  applyAnimationKind,
   createAnimatedCreatureState,
   tickAnimatedCreatureSprite,
 } from './animated-creature-sprite.js';
@@ -26,6 +31,8 @@ const LABEL_PADDING_X = 4;
 const LABEL_PADDING_Y = 2;
 const LABEL_GAP = 3;
 const LABEL_SIDE_OFFSET = 50;
+const NPC_BASE_SPRITE_SIZE = 170;
+const NPC_BATTLEFIELD_ROW_INDEX = 1;
 
 const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF' };
 
@@ -161,6 +168,19 @@ function _shadowYForSprite(sprite, fallbackSpriteSize) {
 
 function _spriteTextureWidth(sprite) {
   return sprite?._animatedCreature?.entry?.frameWidth || sprite?.texture?.width || 0;
+}
+
+function _npcIdFromSpritePath(spritePath) {
+  if (!spritePath || typeof spritePath !== 'string') return null;
+  let pathname = spritePath;
+  try {
+    pathname = new URL(spritePath, 'https://koto.local').pathname;
+  } catch {
+    pathname = spritePath.split('?')[0].split('#')[0];
+  }
+  const fileName = pathname.split('/').filter(Boolean).pop();
+  if (!fileName) return null;
+  return decodeURIComponent(fileName).replace(/\.(webp|png|jpg|jpeg)$/i, '');
 }
 
 // --- Status label rendering (ctx-based) --------------------------------------
@@ -773,20 +793,54 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
   const screenH = app.screen.height;
   const sprite = new Sprite(texture);
   sprite.anchor.set(0.5);
-  sprite.width = 170;
-  sprite.height = 170;
-  sprite.y = screenH * 0.5;
+  const npcId = _npcIdFromSpritePath(spritePath);
+  try {
+    const manifest = await loadNpcAnimationManifest();
+    const entry = getAnimatedNpcEntry(manifest, npcId);
+    if (entry) {
+      const animatedState = await createAnimatedCreatureState(entry);
+      if (scene.disposed) return null;
+      const initialKind = (slideIn && animatedState.textures.walk?.length)
+        ? 'walk'
+        : (animatedState.textures.idle?.length ? 'idle' : 'walk');
+      applyAnimationKind(sprite, animatedState, initialKind);
+      sprite._animatedNpc = animatedState;
+      sprite._npcWalking = slideIn && initialKind === 'walk';
+      if (typeof scene.addUpdater === 'function') {
+        sprite._cancelNpcAnimationUpdater = scene.addUpdater((dt, deltaMS) => {
+          const frameDeltaMS = typeof deltaMS === 'number'
+            ? deltaMS
+            : (typeof dt === 'number' ? dt * 16.6667 : 16.6667);
+          tickAnimatedCreatureSprite(sprite, animatedState, frameDeltaMS, !!sprite._npcWalking);
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('[formation] animated NPC setup failed; using static sprite', npcId, err);
+  }
+  if (scene.disposed) return null;
+  const npcDisplaySize = NPC_BASE_SPRITE_SIZE * (sprite._animatedNpc?.entry?.renderScale || 1);
+  sprite.width = npcDisplaySize;
+  sprite.height = npcDisplaySize;
+  sprite.y = getBattlefieldSlot('enemy', NPC_BATTLEFIELD_ROW_INDEX, screenW, screenH).y;
 
   scene.layers.npcs.addChild(sprite);
 
   if (slideIn) {
-    sprite.x = screenW + 170;
+    sprite.x = screenW + npcDisplaySize;
     try {
       await scene.tween(sprite, { x: screenW * 0.7 }, { duration: 400, ease: 'easeOut' });
+      sprite._npcWalking = false;
+      if (sprite._animatedNpc?.textures?.idle?.length) {
+        applyAnimationKind(sprite, sprite._animatedNpc, 'idle');
+      }
     } catch (e) {
       // Tween rejected (e.g., scene disposed mid-slide). Clean up our
       // orphan sprite so it doesn't linger in the layer while the caller's
       // `this.npcSprite = await ...` assignment never happens.
+      if (typeof sprite._cancelNpcAnimationUpdater === 'function') {
+        sprite._cancelNpcAnimationUpdater();
+      }
       if (sprite.parent) sprite.parent.removeChild(sprite);
       sprite.destroy({ children: true });
       throw e;
@@ -809,6 +863,9 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
  */
 export function removeNpcSprite(scene, sprite) {
   if (!sprite) return;
+  if (typeof sprite._cancelNpcAnimationUpdater === 'function') {
+    sprite._cancelNpcAnimationUpdater();
+  }
   if (sprite.parent) sprite.parent.removeChild(sprite);
   sprite.destroy({ children: true });
 }

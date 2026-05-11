@@ -1,0 +1,55 @@
+{
+  "version": "20260511",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "columns": 6,
+  "frames": 24,
+  "fps": 12,
+  "renderScale": 1.6,
+  "animations": {
+    "cid": {
+      "idle": "/assets/sprites/npcs-animated/cid/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/cid/walk.png?v=20260511"
+    },
+    "game-master": {
+      "idle": "/assets/sprites/npcs-animated/game-master/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/game-master/walk.png?v=20260511"
+    },
+    "kodomo": {
+      "idle": "/assets/sprites/npcs-animated/kodomo/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/kodomo/walk.png?v=20260511"
+    },
+    "kyouju": {
+      "idle": "/assets/sprites/npcs-animated/kyouju/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/kyouju/walk.png?v=20260511"
+    },
+    "onnanoko": {
+      "idle": "/assets/sprites/npcs-animated/onnanoko/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/onnanoko/walk.png?v=20260511"
+    },
+    "otokonoko": {
+      "idle": "/assets/sprites/npcs-animated/otokonoko/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/otokonoko/walk.png?v=20260511"
+    },
+    "otona": {
+      "idle": "/assets/sprites/npcs-animated/otona/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/otona/walk.png?v=20260511"
+    },
+    "seito": {
+      "idle": "/assets/sprites/npcs-animated/seito/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/seito/walk.png?v=20260511"
+    },
+    "senpai": {
+      "idle": "/assets/sprites/npcs-animated/senpai/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/senpai/walk.png?v=20260511"
+    },
+    "sensei": {
+      "idle": "/assets/sprites/npcs-animated/sensei/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/sensei/walk.png?v=20260511"
+    },
+    "shrine_fox": {
+      "idle": "/assets/sprites/npcs-animated/shrine_fox/idle.png?v=20260511",
+      "walk": "/assets/sprites/npcs-animated/shrine_fox/walk.png?v=20260511"
+    }
+  }
+}

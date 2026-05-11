@@ -1,0 +1,24 @@
+{
+  "id": "cid",
+  "generatedAt": "2026-05-11T12:41:58.667838+00:00",
+  "source": "Scenario Seedance 2.0 image-to-video from white-background NPC source",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "columns": 6,
+  "frames": 24,
+  "fps": 12,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/npc-animations/cid/idle/source-video.mp4",
+      "sourceSheet": "output/npc-animations/cid/idle/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/cid/idle/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/cid/idle.png"
+    },
+    "walk": {
+      "sourceVideo": "output/npc-animations/cid/walk/source-video.mp4",
+      "sourceSheet": "output/npc-animations/cid/walk/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/cid/walk/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/cid/walk.png"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "shrine_fox",
+  "generatedAt": "2026-05-11T12:41:58.770779+00:00",
+  "source": "Scenario Seedance 2.0 image-to-video from white-background NPC source",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "columns": 6,
+  "frames": 24,
+  "fps": 12,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/npc-animations/shrine_fox/idle/source-video.mp4",
+      "sourceSheet": "output/npc-animations/shrine_fox/idle/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/shrine_fox/idle/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/shrine_fox/idle.png"
+    },
+    "walk": {
+      "sourceVideo": "output/npc-animations/shrine_fox/walk/source-video.mp4",
+      "sourceSheet": "output/npc-animations/shrine_fox/walk/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/shrine_fox/walk/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/shrine_fox/walk.png"
+    }
+  }
+}

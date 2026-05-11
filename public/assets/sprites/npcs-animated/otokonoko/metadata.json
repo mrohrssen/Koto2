@@ -1,0 +1,24 @@
+{
+  "id": "otokonoko",
+  "generatedAt": "2026-05-11T12:41:58.723978+00:00",
+  "source": "Scenario Seedance 2.0 image-to-video from white-background NPC source",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "columns": 6,
+  "frames": 24,
+  "fps": 12,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/npc-animations/otokonoko/idle/source-video.mp4",
+      "sourceSheet": "output/npc-animations/otokonoko/idle/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/otokonoko/idle/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/otokonoko/idle.png"
+    },
+    "walk": {
+      "sourceVideo": "output/npc-animations/otokonoko/walk/source-video.mp4",
+      "sourceSheet": "output/npc-animations/otokonoko/walk/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/otokonoko/walk/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/otokonoko/walk.png"
+    }
+  }
+}

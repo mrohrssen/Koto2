@@ -1,0 +1,24 @@
+{
+  "id": "kyouju",
+  "generatedAt": "2026-05-11T12:41:58.705268+00:00",
+  "source": "Scenario Seedance 2.0 image-to-video from white-background NPC source",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "columns": 6,
+  "frames": 24,
+  "fps": 12,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/npc-animations/kyouju/idle/source-video.mp4",
+      "sourceSheet": "output/npc-animations/kyouju/idle/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/kyouju/idle/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/kyouju/idle.png"
+    },
+    "walk": {
+      "sourceVideo": "output/npc-animations/kyouju/walk/source-video.mp4",
+      "sourceSheet": "output/npc-animations/kyouju/walk/source-sheet-rgb.png",
+      "cleanedSheet": "output/npc-animations/kyouju/walk/cleaned-source-sheet.png",
+      "runtimeSheet": "public/assets/sprites/npcs-animated/kyouju/walk.png"
+    }
+  }
+}
