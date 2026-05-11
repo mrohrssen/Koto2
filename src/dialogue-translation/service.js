@@ -3,6 +3,7 @@ import { logger } from '../logger.js';
 export const TRANSLATION_UNAVAILABLE = 'translation_unavailable';
 const MAX_DIALOGUE_ENTITIES = 12;
 const MAX_ENTITY_FIELD_LENGTH = 80;
+const TRANSLATION_MAX_ATTEMPTS = 3;
 
 export function buildDialogueTranslationConfig(env = process.env) {
   const provider = env.DIALOGUE_TRANSLATION_PROVIDER?.trim();
@@ -205,38 +206,21 @@ export async function translateDialogueText({
   const { systemPrompt, userPrompt } = buildDialogueTranslationPrompts(sourceText, normalizedEntities);
 
   try {
-    const raw = await chatFn({
-      provider: config.provider,
-      apiKey: config.apiKey,
-      messages: [{ role: 'user', content: userPrompt }],
-      customSystemPrompt: systemPrompt,
-      purpose: 'dialogue-translation',
-      ...modelArgsForProvider(config.provider, config.model)
-    });
-
-    let parsed = parseEntityMarkedTranslation(raw, normalizedEntities);
-    if (parsed.ok && hasRequiredEntityMarkers(parsed, requiredEntities)) {
-      cache.set(cacheKey, parsed.translation, {
-        sourceText,
-        entitySignature,
-        entities: parsed.entities,
-        provider: config.provider,
-        model: config.model
-      });
-      return { ok: true, translation: parsed.translation, entities: parsed.entities, cached: false };
-    }
-
-    if (requiredEntities.length) {
-      const retryRaw = await chatFn({
+    let previousOutput = '';
+    for (let attempt = 1; attempt <= TRANSLATION_MAX_ATTEMPTS; attempt += 1) {
+      const prompt = attempt === 1 || !requiredEntities.length
+        ? userPrompt
+        : buildEntityRetryPrompt({ sourceText, entities: normalizedEntities, previousOutput });
+      const raw = await chatFn({
         provider: config.provider,
         apiKey: config.apiKey,
-        messages: [{ role: 'user', content: buildEntityRetryPrompt({ sourceText, entities: normalizedEntities, previousOutput: raw }) }],
+        messages: [{ role: 'user', content: prompt }],
         customSystemPrompt: systemPrompt,
         purpose: 'dialogue-translation',
         ...modelArgsForProvider(config.provider, config.model)
       });
 
-      parsed = parseEntityMarkedTranslation(retryRaw, normalizedEntities);
+      const parsed = parseEntityMarkedTranslation(raw, normalizedEntities);
       if (parsed.ok && hasRequiredEntityMarkers(parsed, requiredEntities)) {
         cache.set(cacheKey, parsed.translation, {
           sourceText,
@@ -247,6 +231,8 @@ export async function translateDialogueText({
         });
         return { ok: true, translation: parsed.translation, entities: parsed.entities, cached: false };
       }
+
+      previousOutput = raw;
     }
 
     return { ok: false, error: TRANSLATION_UNAVAILABLE };

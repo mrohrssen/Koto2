@@ -12,6 +12,8 @@ import {
 
 export { LEARN_LESSON_UNAVAILABLE };
 
+const LEARN_LESSON_MAX_ATTEMPTS = 3;
+
 function diagnostic(error, reason) {
   return { ok: false, error, reason };
 }
@@ -150,36 +152,44 @@ export async function generateDialogueLearnLesson({
   const { systemPrompt, userPrompt } = buildDialogueLearnPrompts({ sourceText, tokens: normalizedTokens, entities: normalizedEntities });
 
   try {
-    const raw = await chatFn({
-      provider: config.provider,
-      apiKey: config.apiKey,
-      messages: [{ role: 'user', content: userPrompt }],
-      customSystemPrompt: systemPrompt,
-      purpose: 'dialogue-learn',
-      ...modelArgsForProvider(config.provider, config.model)
-    });
+    let lastValidationReason = 'unknown';
+    for (let attempt = 1; attempt <= LEARN_LESSON_MAX_ATTEMPTS; attempt += 1) {
+      const raw = await chatFn({
+        provider: config.provider,
+        apiKey: config.apiKey,
+        messages: [{ role: 'user', content: userPrompt }],
+        customSystemPrompt: systemPrompt,
+        purpose: 'dialogue-learn',
+        ...modelArgsForProvider(config.provider, config.model)
+      });
 
-    const parsed = parseLearnLessonJson(raw);
-    if (!parsed) {
-      return diagnostic('learn_lesson_parse_failed', 'invalid_json');
-    }
-    const validation = validateLearnLesson(parsed, {
-      sourceText,
-      tokens: normalizedTokens,
-      entities: normalizedEntities
-    });
-    if (!validation.ok) {
-      logger.warn('[DialogueLearn] Lesson validation failed:', validation.reason);
-      return diagnostic('learn_lesson_validation_failed', validation.reason || 'unknown');
+      const parsed = parseLearnLessonJson(raw);
+      if (!parsed) {
+        return diagnostic('learn_lesson_parse_failed', 'invalid_json');
+      }
+      const validation = validateLearnLesson(parsed, {
+        sourceText,
+        tokens: normalizedTokens,
+        entities: normalizedEntities
+      });
+      if (!validation.ok) {
+        lastValidationReason = validation.reason || 'unknown';
+        if (attempt < LEARN_LESSON_MAX_ATTEMPTS) continue;
+
+        logger.warn('[DialogueLearn] Lesson validation failed:', lastValidationReason);
+        return diagnostic('learn_lesson_validation_failed', lastValidationReason);
+      }
+
+      cache.set(cacheKey, validation.lesson, {
+        sourceText,
+        entitySignature,
+        provider: config.provider,
+        model: config.model
+      });
+      return { ok: true, lesson: validation.lesson, cached: false };
     }
 
-    cache.set(cacheKey, validation.lesson, {
-      sourceText,
-      entitySignature,
-      provider: config.provider,
-      model: config.model
-    });
-    return { ok: true, lesson: validation.lesson, cached: false };
+    return diagnostic('learn_lesson_validation_failed', lastValidationReason);
   } catch (error) {
     logger.warn('[DialogueLearn] Lesson generation failed:', error.message);
     return diagnostic('learn_lesson_generation_failed', 'provider_error');
