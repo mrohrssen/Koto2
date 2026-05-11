@@ -1,0 +1,106 @@
+{
+  "creatureId": "tako",
+  "sourceAssetId": null,
+  "animations": {
+    "idle": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_YcsSKyorqYHhycHpk7UhHeSE",
+        "sourceSheetAssetId": "asset_e59vb4bQ9UpcXeS72LVJPtxG",
+        "cleanedAssetId": "asset_6aKo2iTq7DkDnGkytb94waym",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/tako/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/tako/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/tako/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 80.688,
+        "opaqueWhitePct": 0.177,
+        "transparentPixels": 2255650,
+        "opaqueWhitePixels": 4947,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_CxxxS4PGiFs5K1y76wwg4dQs",
+        "sourceSheetAssetId": "asset_uTht1E94YozeQxpNfWBHFhVK",
+        "cleanedAssetId": "asset_vtBbyy5tBW2g4N621v9iS3iF",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/tako/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/tako/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/tako/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 81.4432,
+        "opaqueWhitePct": 0.0284,
+        "transparentPixels": 2276760,
+        "opaqueWhitePixels": 795,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

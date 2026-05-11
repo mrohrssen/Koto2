@@ -1,0 +1,100 @@
+{
+  "creatureId": "akuma",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_fRnQFaqmyP2ok9KRBcU2fpyc",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoAssetId": "asset_q23zZBobja6ETXM8kR9h4xgL",
+      "sourceVideo": "output/creature-animations/akuma/idle/source-video.mp4",
+      "sourceSheet": "output/creature-animations/akuma/idle/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/akuma/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/akuma/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 85.7819,
+        "opaqueWhitePct": 0.0011
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoAssetId": "asset_S2Dy8yu1EamXCW4Foy3jdzET",
+      "sourceVideo": "output/creature-animations/akuma/walk/source-video.mp4",
+      "sourceSheet": "output/creature-animations/akuma/walk/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/akuma/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/akuma/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 86.0609,
+        "opaqueWhitePct": 0.0015
+      }
+    }
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "creatureId": "kage",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_tDrLtoE1ZFro2owPmcQ4aHR5",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/kage/idle/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/kage/idle/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/kage/idle/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/kage/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/kage/idle/sheet-256.png",
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 87.9527,
+        "opaqueWhitePct": 0.3367,
+        "passed": true
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_AYvm2yVn6jPxQXXs6hQaGTwL",
+        "backgroundRemovalInputAssetId": "asset_y5W1VtGZ1Lv3b5rmVg9dC8MX",
+        "cleanedAssetId": "asset_EwhEJWZuxLxvebMj96RixPY7"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kage/idle/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/kage/idle/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/kage/idle/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/kage/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kage/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 87.9527,
+        "opaqueWhitePct": 0.3367,
+        "transparentPixels": 2458736,
+        "opaqueWhitePixels": 9412,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      },
+      "finalSheetAlphaMetrics": {
+        "transparentPct": 87.9639,
+        "opaqueWhitePct": 0.34,
+        "transparentPixels": 1383553,
+        "opaqueWhitePixels": 5347,
+        "totalPixels": 1572864,
+        "passed": true,
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/kage/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/kage/walk/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/kage/walk/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/kage/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/kage/walk/sheet-256.png",
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 88.0638,
+        "opaqueWhitePct": 0.1473,
+        "passed": true
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_gHyc5DQsqEdExh7gmeFhNpBx",
+        "backgroundRemovalInputAssetId": "asset_7BCjTDR3u2ZZz45ZfdjLDmsG",
+        "cleanedAssetId": "asset_wrGCgnL26WzvvFtkjtD7fj5K"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kage/walk/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/kage/walk/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/kage/walk/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/kage/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kage/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 88.0638,
+        "opaqueWhitePct": 0.1473,
+        "transparentPixels": 2461842,
+        "opaqueWhitePixels": 4117,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      },
+      "finalSheetAlphaMetrics": {
+        "transparentPct": 88.0695,
+        "opaqueWhitePct": 0.1541,
+        "transparentPixels": 1385214,
+        "opaqueWhitePixels": 2424,
+        "totalPixels": 1572864,
+        "passed": true,
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    }
+  },
+  "updatedAt": "2026-05-11T12:10:39.706034Z"
+}

@@ -1,0 +1,123 @@
+{
+  "creatureId": "sakana",
+  "sourceWhiteBgPath": "/Users/michiarohrssen/Documents/Claude/koto-wt-sprite-white-bg/output/sprite-white-bg/creatures/sakana.png",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_AAAZV7stNRa2M9bGm5sinRc5",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoJobId": "job_xD4pCRF48NSBQFdZkgTCxG46",
+      "videoAssetId": "asset_8TTYLZTzpxXrzBGDgoCaNDU7",
+      "sourceVideo": "output/creature-animations/sakana/idle/source-video.mp4",
+      "sourceSheet": "output/creature-animations/sakana/idle/source-sheet-rgb.png",
+      "sourceSheetAssetId": "asset_AxWwAbDyRgtyNttyJpwnNmC5",
+      "cleanedAssetId": "asset_bAjc72zHUxEQMjezbfaQsVyF",
+      "cleanedSourceSheet": "output/creature-animations/sakana/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/sakana/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "sourceFrameSize": [
+        640,
+        640
+      ],
+      "sourceSheetSize": [
+        3840,
+        2560
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 83.54,
+        "opaqueWhitePct": 0.0269
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoJobId": "job_rMpwpGt8gugRrVe8ZvMH4GQd",
+      "videoAssetId": "asset_aBK1ts7p8d5c1oPBz9ADSesg",
+      "sourceVideo": "output/creature-animations/sakana/walk/source-video.mp4",
+      "sourceSheet": "output/creature-animations/sakana/walk/source-sheet-rgb.png",
+      "sourceSheetAssetId": "asset_zufZC72A2xPT9bkdXz59nP1z",
+      "cleanedAssetId": "asset_u9w1QrZRXYjyEF9wWDvah9Yv",
+      "cleanedSourceSheet": "output/creature-animations/sakana/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/sakana/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "sourceFrameSize": [
+        640,
+        640
+      ],
+      "sourceSheetSize": [
+        3840,
+        2560
+      ],
+      "cleanedSheetSize": [
+        3840,
+        2560
+      ],
+      "alphaVerification": {
+        "transparentPct": 83.16,
+        "opaqueWhitePct": 0.0248
+      }
+    }
+  }
+}

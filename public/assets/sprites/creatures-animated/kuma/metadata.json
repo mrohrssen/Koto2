@@ -1,0 +1,158 @@
+{
+  "creatureId": "kuma",
+  "sourceAssetId": "asset_W9vikigoft7wDFgozZd5TDpJ",
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_7JRXPtLQBGx7n4nN1pTia38F",
+        "sourceVideoAssetId": "asset_s1rcf3zMGDh66rmNpUYWadUf"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_kjYhqytqA3FgcN5FCDo8prBt",
+        "sourceSheetAssetId": "asset_9Zv2pSexoV3PTskLqhAaz5PC",
+        "cleanedAssetId": "asset_BLZiqUKTsoRnhKbuZkHzYuj1",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kuma/idle/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/kuma/idle/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/kuma/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/kuma/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kuma/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 82.7662,
+        "opaqueWhitePct": 0.0025,
+        "transparentPixels": 2313747,
+        "opaqueWhitePixels": 69,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_9jBRjXRjBNCVKLXgm7YsRRb8",
+        "sourceVideoAssetId": "asset_1MHwSToavkxeDx74t4naVhTw"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_zvAJB2ju8FJS3EbDbA8QmBob",
+        "sourceSheetAssetId": "asset_996t2ypp6wTnbhTMYD7ysHV3",
+        "cleanedAssetId": "asset_qA9Mq2ngjTnDozRBKCPV7iVf",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kuma/walk/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/kuma/walk/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/kuma/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/kuma/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kuma/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 82.6332,
+        "opaqueWhitePct": 0.003,
+        "transparentPixels": 2310028,
+        "opaqueWhitePixels": 84,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

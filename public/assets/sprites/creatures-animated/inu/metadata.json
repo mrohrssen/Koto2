@@ -1,0 +1,123 @@
+{
+  "creatureId": "inu",
+  "sourceWhiteBgPath": "/Users/michiarohrssen/Documents/Claude/koto-wt-sprite-white-bg/output/sprite-white-bg/creatures/inu.png",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_5189e9nH2Vfi1oR7925WkxJn",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoJobId": "job_Re8C2AWQ6R6L42dcY2utyLyu",
+      "videoAssetId": "asset_5DpcDovG5waqV8U7VkYbQGr2",
+      "sourceVideo": "output/creature-animations/inu/idle/source-video.mp4",
+      "sourceSheet": "output/creature-animations/inu/idle/source-sheet-rgb.png",
+      "sourceSheetAssetId": "asset_MMYpuVq4mLnKUQcGNn2eAX8e",
+      "cleanedAssetId": "asset_TbDsJf6Si2QAPH6FfSdQyYwp",
+      "cleanedSourceSheet": "output/creature-animations/inu/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/inu/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "sourceFrameSize": [
+        640,
+        640
+      ],
+      "sourceSheetSize": [
+        3840,
+        2560
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 81.63,
+        "opaqueWhitePct": 0.005
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoJobId": "job_m1tcQE6HFKsdgQAZBwrJZF8s",
+      "videoAssetId": "asset_4UhtP5sJ6Yv7P9eQbzoC3WVq",
+      "sourceVideo": "output/creature-animations/inu/walk/source-video.mp4",
+      "sourceSheet": "output/creature-animations/inu/walk/source-sheet-rgb.png",
+      "sourceSheetAssetId": "asset_MeKDybCQfTbkyYoka2TFmD7k",
+      "cleanedAssetId": "asset_zxJHrGPynF646yFJwrw7JEBB",
+      "cleanedSourceSheet": "output/creature-animations/inu/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/inu/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "sourceFrameSize": [
+        640,
+        640
+      ],
+      "sourceSheetSize": [
+        3840,
+        2560
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 81.99,
+        "opaqueWhitePct": 0.0036
+      }
+    }
+  }
+}

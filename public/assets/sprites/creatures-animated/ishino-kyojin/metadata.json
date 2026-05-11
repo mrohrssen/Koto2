@@ -1,0 +1,182 @@
+{
+  "creatureId": "ishino-kyojin",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_TqyMNZ1MpZJBgJ19NxLPNbCz",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "videoAssetId": "asset_wer1zFMLjVgvxYNgxH2CKXZ7",
+      "sourceVideo": "output/creature-animations/ishino-kyojin/idle/source-video.mp4",
+      "sourceSheet": "output/creature-animations/ishino-kyojin/idle/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/ishino-kyojin/idle/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/ishino-kyojin/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/ishino-kyojin/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 80.7454,
+        "opaqueWhitePct": 0.0012
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_KHRcvjUzBi6S43VNbMXR4Lvm",
+        "sourceSheetAssetId": "asset_Cy8Qsa3Z199EiMFcusMe9Rwp",
+        "cleanedAssetId": "asset_Wjr5diBMhTtf1emBJNh3dezR",
+        "note": "Used proportional 2048px-wide RGB derivative because full-size sheet returned opaque output."
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/ishino-kyojin/idle/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/ishino-kyojin/idle/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/ishino-kyojin/idle/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/ishino-kyojin/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/ishino-kyojin/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 80.7454,
+        "opaqueWhitePct": 0.0012,
+        "transparentPixels": 2257255,
+        "opaqueWhitePixels": 34,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      }
+    },
+    "walk": {
+      "videoAssetId": "asset_5n9EHnk8WHp5cvkrzjhFvn3Y",
+      "sourceVideo": "output/creature-animations/ishino-kyojin/walk/source-video.mp4",
+      "sourceSheet": "output/creature-animations/ishino-kyojin/walk/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/ishino-kyojin/walk/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/ishino-kyojin/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/ishino-kyojin/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 81.5694,
+        "opaqueWhitePct": 0.0009
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_R2WX66PpEesuSH4vBVtWSUaQ",
+        "sourceSheetAssetId": "asset_ZMVmGFCq731Pa293C359Ek8g",
+        "cleanedAssetId": "asset_UewzSYnm7rBQNmdhHDJrXcbF",
+        "note": "Used proportional 2048px-wide RGB derivative because full-size sheet returned opaque output."
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/ishino-kyojin/walk/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/ishino-kyojin/walk/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/ishino-kyojin/walk/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/ishino-kyojin/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/ishino-kyojin/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 81.5694,
+        "opaqueWhitePct": 0.0009,
+        "transparentPixels": 2280290,
+        "opaqueWhitePixels": 25,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      }
+    }
+  }
+}

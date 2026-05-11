@@ -1,0 +1,14 @@
+{
+  "creatureId": "uma",
+  "animations": {
+    "idle": {
+      "whitePatchApplied": true
+    },
+    "walk": {
+      "whitePatchApplied": true
+    }
+  },
+  "notes": [
+    "Photoroom left >1% opaque near-white pixels for uma; near-white alpha was cleared after Scenario output without changing non-white pixels."
+  ]
+}

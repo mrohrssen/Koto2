@@ -1,0 +1,193 @@
+{
+  "creatureId": "yuki",
+  "sourceAssetId": "asset_9jKFTFwn2PwBVCZNCTNxUf9b",
+  "teamId": "team_g8yJ6jYJtWj44Um1NrmzYiLC",
+  "projectId": "proj_ZjnKxmdyxtHXaF13xPGsXjWZ",
+  "generatedAt": "2026-05-11T12:29:54.199Z",
+  "animations": {
+    "idle": {
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_NUP5A8W6dbiLotQZDcwcf48H",
+        "sourceVideoAssetId": "asset_d6VugPyxarKKg4E6kStDG4g3",
+        "status": "success"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_KPcQfcy9z1yBwR4EbcEBvBm7",
+        "sourceSheetAssetId": "asset_gktK73MSXAvdmJhiHtKvyzNi",
+        "cleanedAssetId": "asset_PQ8o726qHHkttv9yHRoguE6p",
+        "mode": "scenario-photoroom",
+        "status": "failed-verification"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/yuki/idle/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/yuki/idle/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/yuki/idle/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/yuki/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/yuki/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/yuki/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "slicing": {
+          "method": "proportional-6x4",
+          "columns": 6,
+          "rows": 4
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "sheet256Built": false
+      },
+      "alphaMetrics": {
+        "cleanedSourceSheet": {
+          "width": 2048,
+          "height": 1365,
+          "totalPixels": 2795520,
+          "transparentPct": 0.5121,
+          "opaqueWhitePct": 86.9968,
+          "transparentPixels": 14316,
+          "opaqueWhitePixels": 2432012,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": false,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        }
+      },
+      "failureReason": "cleaned-source-sheet failed transparentPct > 50 and opaqueWhitePct < 1 verification"
+    },
+    "walk": {
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_JFjegSqfKfRTYv8kn6iZc14o",
+        "sourceVideoAssetId": "asset_goXYjympLfxcE1Bi2hxCtqYR",
+        "status": "success"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_RztxNgNCpgWDtm8nAUPxWADY",
+        "sourceSheetAssetId": "asset_D9yJRCAb1R3tgTXQpm89zuuF",
+        "cleanedAssetId": "asset_bKN56H4v6EJyLEzvFZnTfW1S",
+        "mode": "scenario-photoroom",
+        "status": "failed-verification"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/yuki/walk/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/yuki/walk/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/yuki/walk/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/yuki/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/yuki/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/yuki/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "slicing": {
+          "method": "proportional-6x4",
+          "columns": 6,
+          "rows": 4
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "sheet256Built": false
+      },
+      "alphaMetrics": {
+        "cleanedSourceSheet": {
+          "width": 2048,
+          "height": 1365,
+          "totalPixels": 2795520,
+          "transparentPct": 0.5121,
+          "opaqueWhitePct": 86.7363,
+          "transparentPixels": 14316,
+          "opaqueWhitePixels": 2424730,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": false,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        }
+      },
+      "failureReason": "cleaned-source-sheet failed transparentPct > 50 and opaqueWhitePct < 1 verification"
+    }
+  }
+}

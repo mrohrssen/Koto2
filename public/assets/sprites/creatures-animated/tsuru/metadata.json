@@ -1,0 +1,106 @@
+{
+  "creatureId": "tsuru",
+  "sourceAssetId": null,
+  "animations": {
+    "idle": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_mcV4nQstSVUNASCYBF44yYp5",
+        "sourceSheetAssetId": "asset_XJnKTkbbiJsBMzT19abymbyT",
+        "cleanedAssetId": "asset_BD1UgvxwHCLpx8qazPpT75mq",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/tsuru/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/tsuru/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/tsuru/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 93.2587,
+        "opaqueWhitePct": 0.0309,
+        "transparentPixels": 2607065,
+        "opaqueWhitePixels": 865,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_7HtiXEPA21g7d751rs3zKAdW",
+        "sourceSheetAssetId": "asset_rv98gmU698bepxiK3Nh7v4Hn",
+        "cleanedAssetId": "asset_o4xnN6KZnuQd1jdXfYqM2dRW",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/tsuru/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/tsuru/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/tsuru/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 92.6715,
+        "opaqueWhitePct": 0.0304,
+        "transparentPixels": 2590649,
+        "opaqueWhitePixels": 850,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

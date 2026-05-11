@@ -1,0 +1,106 @@
+{
+  "creatureId": "ika",
+  "sourceAssetId": null,
+  "animations": {
+    "idle": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_YKLBkVBegdcktY57ck7rBKSu",
+        "sourceSheetAssetId": "asset_QvrGD42qSgWnDV8MoX6j24n8",
+        "cleanedAssetId": "asset_odeXau7Mfnc5xmJWw3X9Q8XT",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/ika/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/ika/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/ika/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 91.1288,
+        "opaqueWhitePct": 0.0099,
+        "transparentPixels": 2547524,
+        "opaqueWhitePixels": 277,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_QfK7NaUcUExjyzyacCY6EEZh",
+        "sourceSheetAssetId": "asset_xmZifaGJaS3uRHWZr6ngkHEx",
+        "cleanedAssetId": "asset_Zd5Vj15FpjPCsnwgPkP2XkoD",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/ika/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/ika/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/ika/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 90.773,
+        "opaqueWhitePct": 0.0112,
+        "transparentPixels": 2537576,
+        "opaqueWhitePixels": 313,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

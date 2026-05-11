@@ -39,7 +39,7 @@ export class HubScene extends Scene {
 
   async onEnter({ allies = [] } = {}) {
     await this.syncCreatures({ allies, initial: true });
-    this.formation.walkingEnabled = true;
+    this.formation.walkingEnabled = false;
     this.addUpdater((dt) => _updateFormations(this.formation, dt));
     setupCreatureRowListeners(this);
   }

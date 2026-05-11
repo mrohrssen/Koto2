@@ -1,0 +1,165 @@
+{
+  "creatureId": "mushi",
+  "sourceImage": "/Users/michiarohrssen/Documents/Claude/koto-wt-sprite-white-bg/output/sprite-white-bg/creatures/mushi.png",
+  "sourceAssetId": "asset_fQ5QtahSC2YUGuep5pmdwjhx",
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_V1BQmR5RajEGeyukJZuMfAiA",
+        "sourceVideoAssetId": "asset_zV9YzJwxSi4xvqqMbtq25cyo",
+        "parameters": {
+          "duration": 4,
+          "resolution": "480p",
+          "aspectRatio": "adaptive",
+          "generateAudio": false,
+          "image": "asset_fQ5QtahSC2YUGuep5pmdwjhx",
+          "lastFrameImage": "asset_fQ5QtahSC2YUGuep5pmdwjhx"
+        }
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_Dm6e8EgSBDejzEFaW6Ke3VG6",
+        "sourceSheetAssetId": "asset_oHiD3JDraPqPJSx1EaNS5zq6",
+        "cleanedAssetId": "asset_L8YUNQvQwgAyiqA64Ua76oB2"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/mushi/idle/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/mushi/idle/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/mushi/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/mushi/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/mushi/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 79.627,
+        "opaqueWhitePct": 0.0456,
+        "transparentPixels": 2225989,
+        "opaqueWhitePixels": 1274,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_aaHKntkumZHgXe2rpfYFTQ3H",
+        "sourceVideoAssetId": "asset_foyecoPQdXVDriTnZsGcekCj",
+        "parameters": {
+          "duration": 4,
+          "resolution": "480p",
+          "aspectRatio": "adaptive",
+          "generateAudio": false,
+          "image": "asset_fQ5QtahSC2YUGuep5pmdwjhx",
+          "lastFrameImage": "asset_fQ5QtahSC2YUGuep5pmdwjhx"
+        }
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_nyRjzmssJQQX2oKrXsRfSFzc",
+        "sourceSheetAssetId": "asset_FdWN6euPHwzzb9i53z4nmt3H",
+        "cleanedAssetId": "asset_dE544WqxgFLX24AjHrezJW7r"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/mushi/walk/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/mushi/walk/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/mushi/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/mushi/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/mushi/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 79.987,
+        "opaqueWhitePct": 0.0515,
+        "transparentPixels": 2236053,
+        "opaqueWhitePixels": 1440,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

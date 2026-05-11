@@ -1,0 +1,100 @@
+{
+  "creatureId": "tenshi",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_vY251qBQDDhDC1RZhn3z5VB9",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoAssetId": "asset_4HsaKLUwSsveft326ghPTg6q",
+      "sourceVideo": "output/creature-animations/tenshi/idle/source-video.mp4",
+      "sourceSheet": "output/creature-animations/tenshi/idle/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/tenshi/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/tenshi/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 85.1077,
+        "opaqueWhitePct": 0.0142
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoAssetId": "asset_AGuY1BkH19wGesdMN5owXhBH",
+      "sourceVideo": "output/creature-animations/tenshi/walk/source-video.mp4",
+      "sourceSheet": "output/creature-animations/tenshi/walk/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/tenshi/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/tenshi/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 84.9508,
+        "opaqueWhitePct": 0.0259
+      }
+    }
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "creatureId": "hikari",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_ygDXirsAYu9XC282k2XibWpx",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/hikari/idle/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/hikari/idle/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/hikari/idle/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/hikari/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/hikari/idle/sheet-256.png",
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 84.3953,
+        "opaqueWhitePct": 0.1143,
+        "passed": true
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_cm6DS9FYNpiku33PaY5SUoyZ",
+        "backgroundRemovalInputAssetId": "asset_34Mt656YboCYpytHZwNpDu5x",
+        "cleanedAssetId": "asset_xj2c2jRTkmH5JArQz7gcgzbv"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/hikari/idle/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/hikari/idle/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/hikari/idle/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/hikari/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/hikari/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 84.3953,
+        "opaqueWhitePct": 0.1143,
+        "transparentPixels": 2359288,
+        "opaqueWhitePixels": 3195,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      },
+      "finalSheetAlphaMetrics": {
+        "transparentPct": 84.4191,
+        "opaqueWhitePct": 0.1184,
+        "transparentPixels": 1327798,
+        "opaqueWhitePixels": 1862,
+        "totalPixels": 1572864,
+        "passed": true,
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/hikari/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/hikari/walk/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/hikari/walk/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/hikari/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/hikari/walk/sheet-256.png",
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 85.5292,
+        "opaqueWhitePct": 0.0712,
+        "passed": true
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_4Lf9zgPtjSFkDbo1UZDGCRTZ",
+        "backgroundRemovalInputAssetId": "asset_wdjxyKjZmjUxah9L6vsat4nj",
+        "cleanedAssetId": "asset_cYnZdzoUmrGmP7CypNP9Yd43"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/hikari/walk/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/hikari/walk/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/hikari/walk/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/hikari/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/hikari/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 85.5292,
+        "opaqueWhitePct": 0.0712,
+        "transparentPixels": 2390985,
+        "opaqueWhitePixels": 1990,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      },
+      "finalSheetAlphaMetrics": {
+        "transparentPct": 85.5473,
+        "opaqueWhitePct": 0.079,
+        "transparentPixels": 1345543,
+        "opaqueWhitePixels": 1242,
+        "totalPixels": 1572864,
+        "passed": true,
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    }
+  },
+  "updatedAt": "2026-05-11T12:10:39.706034Z"
+}

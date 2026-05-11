@@ -1,0 +1,158 @@
+{
+  "creatureId": "buta",
+  "sourceAssetId": "asset_os8CcztXwSHMdSRjhAuqQtmF",
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_Q6R1XMLAmxgVWBmj7erh2y1y",
+        "sourceVideoAssetId": "asset_MfWtuvtc3Ygb2vRMZGfzXabK"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_8oyqZoWoUxW8GJTij4Xqktg4",
+        "sourceSheetAssetId": "asset_22W3jT22e2Zzzv1Rf3JdSr7k",
+        "cleanedAssetId": "asset_Bubuex7U32cgurAzTGQpecxh",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/buta/idle/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/buta/idle/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/buta/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/buta/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/buta/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 80.6672,
+        "opaqueWhitePct": 0.0072,
+        "transparentPixels": 2255067,
+        "opaqueWhitePixels": 200,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_HPqNcZekmY2hjYmwm48iHEPy",
+        "sourceVideoAssetId": "asset_FiRrZepgZdxnHEaFrvrngu4v"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_MGiZRpLh7gfcVYVQUuTg8fKP",
+        "sourceSheetAssetId": "asset_xiySczmsde3e88sLMUKXcyxK",
+        "cleanedAssetId": "asset_iQQmQysavwGDcmzYxiMCRuf1",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/buta/walk/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/buta/walk/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/buta/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/buta/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/buta/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 80.4149,
+        "opaqueWhitePct": 0.0112,
+        "transparentPixels": 2248015,
+        "opaqueWhitePixels": 314,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

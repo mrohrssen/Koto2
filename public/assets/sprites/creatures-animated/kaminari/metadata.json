@@ -1,0 +1,117 @@
+{
+  "creatureId": "kaminari",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/kaminari/idle/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/kaminari/idle/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/kaminari/idle/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/kaminari/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/kaminari/idle/sheet-256.png",
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "sourceCellSize": {
+        "width": 640,
+        "height": 640
+      },
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 85.6934,
+        "opaqueWhitePct": 0.0634,
+        "passed": true
+      },
+      "finalSheetAlphaVerification": {
+        "transparentPct": 85.4398,
+        "opaqueWhitePct": 0.0659,
+        "passed": true
+      }
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/kaminari/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/kaminari/walk/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/kaminari/walk/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/kaminari/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/kaminari/walk/sheet-256.png",
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "sourceCellSize": {
+        "width": 640,
+        "height": 640
+      },
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 85.5965,
+        "opaqueWhitePct": 0.0705,
+        "passed": true
+      },
+      "finalSheetAlphaVerification": {
+        "transparentPct": 85.6426,
+        "opaqueWhitePct": 0.0708,
+        "passed": true
+      }
+    }
+  },
+  "updatedAt": "2026-05-11T12:09:06.562Z"
+}

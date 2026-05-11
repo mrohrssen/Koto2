@@ -77,4 +77,62 @@ describe('combat cycle action cursor', () => {
     });
     assert.equal(gm.combat.allies[gm.combat.actionCursor.index].id, 'surviving-ally');
   });
+
+  it('triggers the tutorial befriend quiz when the cursor action defeats the first cat', () => {
+    const move = {
+      id: 'hit',
+      name: 'Hit',
+      nameEn: 'Hit',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 999,
+      mpCost: 0
+    };
+    const ally = makeCreature('hi', { attack: 100, element: 'fire', moves: [move] });
+    const enemy = makeCreature('neko', {
+      name: '猫',
+      nameEn: 'Cat',
+      hp: 1,
+      defense: 1,
+      element: 'neutral'
+    });
+    const combat = createCombatState(enemy);
+    combat.allies = [ally];
+    combat.enemies = [enemy];
+    combat.actionCursor = { side: 'ally', index: 0, opening: false };
+    combat.isCreatureCombat = true;
+
+    const gm = {
+      combat,
+      run: {
+        active: true,
+        currentArea: { id: 'hajimari-no-hiroba' },
+        currentRoom: 0,
+        rooms: [{ type: 'encounter' }],
+        creatureParty: {
+          active: [ally],
+          reserves: [],
+          pendingCaptures: [],
+          maxTotal: 3
+        },
+        itemBuffs: null,
+        crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+        partySkills: []
+      },
+      meta: { tutorialStep: 1 },
+      emitState() {},
+      _onRunDefeat() {}
+    };
+    const service = new CombatCycleService(gm);
+
+    const result = service.creatureCombatCycle('attack', [
+      { creatureIndex: 0, moveId: 'hit', targetIndex: 0 }
+    ]);
+
+    assert.equal(result.befriendQuizTriggered, true);
+    assert.equal(result.combatEnded, false);
+    assert.equal(gm.combat.befriendQuiz?.creatureId, 'neko');
+    assert.equal(gm.combat.enemies[0].hp, 1);
+  });
 });

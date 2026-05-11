@@ -1,0 +1,206 @@
+{
+  "creatureId": "erufu",
+  "sourceAssetId": "asset_n7H7jPEeNnvfhNdiuLXs4kgd",
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_6frqtYRn3pAe8UFy7ZszDyvJ",
+        "sourceVideoAssetId": null,
+        "statusFromQueue": "in-progress"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_4JNLGuf2Hyn1C5gKfnccBDkd",
+        "sourceSheetAssetId": "asset_bpcFR33XFGXqj7a4m8HopoV6",
+        "cleanedAssetId": "asset_3r1cD2TrCEjrs2GVuuCTknNQ",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/erufu/idle/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/erufu/idle/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/erufu/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/erufu/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/erufu/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": null,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "slicing": {
+          "method": "proportional-6x4",
+          "columns": 6,
+          "rows": 4
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "cleanedSourceSheet": {
+          "width": 2048,
+          "height": 1365,
+          "totalPixels": 2795520,
+          "transparentPct": 87.0775,
+          "opaqueWhitePct": 0.0005,
+          "transparentPixels": 2434269,
+          "opaqueWhitePixels": 13,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": true,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        },
+        "sheet256": {
+          "width": 1536,
+          "height": 1024,
+          "totalPixels": 1572864,
+          "transparentPct": 86.8817,
+          "opaqueWhitePct": 0.0003,
+          "transparentPixels": 1366531,
+          "opaqueWhitePixels": 5,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": true,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        }
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_yShuPHsvppEh3TpfmHuSHE3C",
+        "sourceVideoAssetId": null,
+        "statusFromQueue": "in-progress"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_aWehTGJEmS845ttaP1kWp5rC",
+        "sourceSheetAssetId": "asset_pbkNawtRyoVGiBJNsLVp89uY",
+        "cleanedAssetId": "asset_zaVup452fCjQvrvzYTCnt8b8",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/erufu/walk/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/erufu/walk/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/erufu/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/erufu/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/erufu/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": null,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "slicing": {
+          "method": "proportional-6x4",
+          "columns": 6,
+          "rows": 4
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "cleanedSourceSheet": {
+          "width": 2048,
+          "height": 1365,
+          "totalPixels": 2795520,
+          "transparentPct": 87.2625,
+          "opaqueWhitePct": 0.0004,
+          "transparentPixels": 2439441,
+          "opaqueWhitePixels": 11,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": true,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        },
+        "sheet256": {
+          "width": 1536,
+          "height": 1024,
+          "totalPixels": 1572864,
+          "transparentPct": 87.0715,
+          "opaqueWhitePct": 0.0006,
+          "transparentPixels": 1369516,
+          "opaqueWhitePixels": 9,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": true,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        }
+      }
+    }
+  }
+}
