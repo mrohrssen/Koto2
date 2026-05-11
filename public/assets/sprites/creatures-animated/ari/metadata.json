@@ -1,0 +1,193 @@
+{
+  "creatureId": "ari",
+  "sourceAssetId": "asset_VbDcj8ML4sVe1LzbUPqhaHPP",
+  "teamId": "team_g8yJ6jYJtWj44Um1NrmzYiLC",
+  "projectId": "proj_ZjnKxmdyxtHXaF13xPGsXjWZ",
+  "generatedAt": "2026-05-11T12:29:54.199Z",
+  "animations": {
+    "idle": {
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_47eWbXhcJX7EcNmqrxNw4xYu",
+        "sourceVideoAssetId": "asset_UGBr2FEzjMrH745M44qjFYLa",
+        "status": "success"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_iE1KaYpstW85Wz2K3ceLbVh3",
+        "sourceSheetAssetId": "asset_2qtcAtBM8RWT3DdDk5Pmso7j",
+        "cleanedAssetId": "asset_4n2sCausC7RFYebQv1mpS7Wm",
+        "mode": "scenario-photoroom",
+        "status": "failed-verification"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/ari/idle/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/ari/idle/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/ari/idle/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/ari/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/ari/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/ari/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "slicing": {
+          "method": "proportional-6x4",
+          "columns": 6,
+          "rows": 4
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "sheet256Built": false
+      },
+      "alphaMetrics": {
+        "cleanedSourceSheet": {
+          "width": 2048,
+          "height": 1365,
+          "totalPixels": 2795520,
+          "transparentPct": 0.5121,
+          "opaqueWhitePct": 91.1532,
+          "transparentPixels": 14316,
+          "opaqueWhitePixels": 2548206,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": false,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        }
+      },
+      "failureReason": "cleaned-source-sheet failed transparentPct > 50 and opaqueWhitePct < 1 verification"
+    },
+    "walk": {
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_8BypcaVCfX8imWjWpVKeW7Yz",
+        "sourceVideoAssetId": "asset_fbB9kdjHmQ1F57oEBZBbcZAn",
+        "status": "success"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_DL9GK8VbVxrzFDregwQXRUim",
+        "sourceSheetAssetId": "asset_4FWm4Ga86UdfcD3Sh5kgQyd4",
+        "cleanedAssetId": "asset_xev5rxm6JjpPWqgkRczunPgf",
+        "mode": "scenario-photoroom",
+        "status": "failed-verification"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/ari/walk/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/ari/walk/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/ari/walk/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/ari/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/ari/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/ari/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "slicing": {
+          "method": "proportional-6x4",
+          "columns": 6,
+          "rows": 4
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "sheet256Built": false
+      },
+      "alphaMetrics": {
+        "cleanedSourceSheet": {
+          "width": 2048,
+          "height": 1365,
+          "totalPixels": 2795520,
+          "transparentPct": 0.5121,
+          "opaqueWhitePct": 91.1375,
+          "transparentPixels": 14316,
+          "opaqueWhitePixels": 2547767,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": false,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        }
+      },
+      "failureReason": "cleaned-source-sheet failed transparentPct > 50 and opaqueWhitePct < 1 verification"
+    }
+  }
+}

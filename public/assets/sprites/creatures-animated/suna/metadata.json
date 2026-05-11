@@ -1,0 +1,106 @@
+{
+  "creatureId": "suna",
+  "sourceAssetId": null,
+  "animations": {
+    "idle": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_5KLRzRS45JhPojFNQeGQiUWy",
+        "sourceSheetAssetId": "asset_XmgRS2gUrmHDp9JbBunqdR3r",
+        "cleanedAssetId": "asset_5BLbhheVY6b278NwbT4YtSoZ",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/suna/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/suna/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/suna/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 86.6252,
+        "opaqueWhitePct": 0.0003,
+        "transparentPixels": 2421624,
+        "opaqueWhitePixels": 9,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_stfxRsYxXqcEkTNdcdQk8Cic",
+        "sourceSheetAssetId": "asset_DC3EqvEC53TvNoXfcgYQToeh",
+        "cleanedAssetId": "asset_oPrgpfDMp23V6AhozbSCxibB",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/suna/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/suna/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/suna/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 87.0648,
+        "opaqueWhitePct": 0.0001,
+        "transparentPixels": 2433913,
+        "opaqueWhitePixels": 2,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

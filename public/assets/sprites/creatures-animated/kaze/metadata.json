@@ -1,0 +1,179 @@
+{
+  "creatureId": "kaze",
+  "sourceWhiteBgPath": "/Users/michiarohrssen/Documents/Claude/koto-wt-sprite-white-bg/output/sprite-white-bg/creatures/kaze.png",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_8SitY59eQhHhD96QAHZH7Ncx",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoAssetId": "asset_RjkopuosxJLdVSQ6u2y3QeHV",
+      "sourceVideo": "output/creature-animations/kaze/idle/source-video.mp4",
+      "sourceSheet": "output/creature-animations/kaze/idle/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/kaze/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/kaze/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 86.8614,
+        "opaqueWhitePct": 0.9224,
+        "transparentPixels": 2428228,
+        "opaqueWhitePixels": 25787,
+        "totalPixels": 2795520,
+        "passed": true
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_po64RhMPPvuoiUTmFFdY1UEi",
+        "sourceSheetAssetId": "asset_RZCVZLQTZTnxEc4ghnzVZEs9",
+        "cleanedAssetId": "asset_F2SSPEsQ5tbpXtoD4XGc9Hxk"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kaze/idle/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/kaze/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/kaze/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kaze/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 86.8614,
+        "opaqueWhitePct": 0.9224,
+        "transparentPixels": 2428228,
+        "opaqueWhitePixels": 25787,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoAssetId": "asset_7YyyV2NXpAU46vArP3gvN5Ec",
+      "sourceVideo": "output/creature-animations/kaze/walk/source-video.mp4",
+      "sourceSheet": "output/creature-animations/kaze/walk/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/kaze/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/kaze/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 87.2992,
+        "opaqueWhitePct": 0.1917,
+        "transparentPixels": 2440467,
+        "opaqueWhitePixels": 5359,
+        "totalPixels": 2795520,
+        "passed": true
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_pKUSo363iyrLmhvygVQYtRi8",
+        "sourceSheetAssetId": "asset_NGky7r9ZydheYrZweq2wNK4E",
+        "cleanedAssetId": "asset_Ntsi3cgkpopjNe3yyutkBV5k"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kaze/walk/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/kaze/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/kaze/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kaze/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 87.2992,
+        "opaqueWhitePct": 0.1917,
+        "transparentPixels": 2440467,
+        "opaqueWhitePixels": 5359,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

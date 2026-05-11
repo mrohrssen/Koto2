@@ -1,0 +1,101 @@
+{
+  "creatureId": "hone",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/hone/idle/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/hone/idle/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/hone/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/hone/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 86.9404,
+        "opaqueWhitePct": 0.4223,
+        "passed": true
+      },
+      "uploadedAssetId": "asset_AozE76atHavLNgg5sh5YUQjB",
+      "cleanedAssetId": "asset_SjyHnLCNkutrAPpedeiQkJrz"
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/hone/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/hone/walk/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/hone/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/hone/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        3840,
+        2560
+      ],
+      "alphaVerification": {
+        "transparentPct": 87.938,
+        "opaqueWhitePct": 0.0,
+        "passed": true
+      }
+    }
+  },
+  "updatedAt": "2026-05-11T11:46:13.957111Z"
+}

@@ -1,0 +1,99 @@
+{
+  "creatureId": "sunano-hebi",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/sunano-hebi/idle/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/sunano-hebi/idle/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/sunano-hebi/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/sunano-hebi/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        3840,
+        2560
+      ],
+      "alphaVerification": {
+        "transparentPct": 91.9455,
+        "opaqueWhitePct": 0.0,
+        "passed": true
+      }
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/sunano-hebi/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/sunano-hebi/walk/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/sunano-hebi/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/sunano-hebi/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        3840,
+        2560
+      ],
+      "alphaVerification": {
+        "transparentPct": 92.0432,
+        "opaqueWhitePct": 0.0,
+        "passed": true
+      }
+    }
+  },
+  "updatedAt": "2026-05-11T11:47:43.438310Z"
+}

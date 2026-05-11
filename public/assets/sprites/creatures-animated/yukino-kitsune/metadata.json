@@ -1,0 +1,99 @@
+{
+  "creatureId": "yukino-kitsune",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/yukino-kitsune/idle/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/yukino-kitsune/idle/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/yukino-kitsune/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/yukino-kitsune/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        3840,
+        2560
+      ],
+      "alphaVerification": {
+        "transparentPct": 85.1324,
+        "opaqueWhitePct": 0.0,
+        "passed": true
+      }
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/yukino-kitsune/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/yukino-kitsune/walk/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/yukino-kitsune/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/yukino-kitsune/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        3840,
+        2560
+      ],
+      "alphaVerification": {
+        "transparentPct": 89.6468,
+        "opaqueWhitePct": 0.0,
+        "passed": true
+      }
+    }
+  },
+  "updatedAt": "2026-05-11T11:48:17.818445Z"
+}

@@ -1,0 +1,207 @@
+{
+  "creatureId": "oni",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_Xsj3rZMtSDEyrdawx6WR7ZUN",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/oni/idle/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/oni/idle/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/oni/idle/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/oni/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/oni/idle/sheet-256.png",
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 86.9466,
+        "opaqueWhitePct": 0.0001,
+        "passed": true
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_G91AQhmFpNemJNHzZvi35sKg",
+        "backgroundRemovalInputAssetId": "asset_uiUxcgzKFJMqpVdLvta3DFdb",
+        "cleanedAssetId": "asset_nwjjmdaG8JAkSZApKtkS2unT"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/oni/idle/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/oni/idle/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/oni/idle/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/oni/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/oni/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 86.9466,
+        "opaqueWhitePct": 0.0001,
+        "transparentPixels": 2430610,
+        "opaqueWhitePixels": 4,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      },
+      "finalSheetAlphaMetrics": {
+        "transparentPct": 86.8823,
+        "opaqueWhitePct": 0.0001,
+        "transparentPixels": 1366541,
+        "opaqueWhitePixels": 2,
+        "totalPixels": 1572864,
+        "passed": true,
+        "size": [
+          1536,
+          1024
+        ]
+      },
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ]
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/oni/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/oni/walk/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/oni/walk/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/oni/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/oni/walk/sheet-256.png",
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 78.0814,
+        "opaqueWhitePct": 0.002,
+        "passed": true
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_8ozmejTzuK983jkSKb4Z4nkn",
+        "backgroundRemovalInputAssetId": "asset_fAJJ4BQSd3st3rkJ26MN6dRm",
+        "cleanedAssetId": "asset_Uqn6Egov86pV51Y4sQs9Bv8n"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/oni/walk/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/oni/walk/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/oni/walk/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/oni/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/oni/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 78.0814,
+        "opaqueWhitePct": 0.002,
+        "transparentPixels": 2182782,
+        "opaqueWhitePixels": 56,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      },
+      "finalSheetAlphaMetrics": {
+        "transparentPct": 78.0123,
+        "opaqueWhitePct": 0.0031,
+        "transparentPixels": 1227027,
+        "opaqueWhitePixels": 49,
+        "totalPixels": 1572864,
+        "passed": true,
+        "size": [
+          1536,
+          1024
+        ]
+      },
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ]
+    }
+  },
+  "updatedAt": "2026-05-11T12:10:39.706034Z"
+}

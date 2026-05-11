@@ -1,0 +1,158 @@
+{
+  "creatureId": "kamo",
+  "sourceAssetId": "asset_RdajxujxorBfKuMp7GW9Gn6i",
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_yNk8pvrPBWUUQMnitdUB5PPb",
+        "sourceVideoAssetId": "asset_JXrPpQ5VwBFT5ipvFeq3Cx8u"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": null,
+        "sourceSheetAssetId": null,
+        "cleanedAssetId": null,
+        "mode": "local-edge-white-fallback"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kamo/idle/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/kamo/idle/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/kamo/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/kamo/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kamo/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 87.677,
+        "opaqueWhitePct": 0.008,
+        "transparentPixels": 8618995,
+        "opaqueWhitePixels": 782,
+        "totalPixels": 9830400,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_T3kijwoAxgwgegb7BxWPPGMF",
+        "sourceVideoAssetId": "asset_GrmtoDAaaCo8mcskN6xjwQMs"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": null,
+        "sourceSheetAssetId": null,
+        "cleanedAssetId": null,
+        "mode": "local-edge-white-fallback"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kamo/walk/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/kamo/walk/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/kamo/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/kamo/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kamo/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 87.9359,
+        "opaqueWhitePct": 0.0098,
+        "transparentPixels": 8644455,
+        "opaqueWhitePixels": 964,
+        "totalPixels": 9830400,
+        "passed": true
+      }
+    }
+  }
+}

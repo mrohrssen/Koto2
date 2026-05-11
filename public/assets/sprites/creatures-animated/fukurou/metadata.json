@@ -1,0 +1,195 @@
+{
+  "creatureId": "fukurou",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_7pst7W9Udjm3XxTAurJoj7r9",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "videoAssetId": "asset_9zvgDgTM1gm5MPRUsd6BwL3a",
+      "sourceVideo": "output/creature-animations/fukurou/idle/source-video.mp4",
+      "sourceSheet": "output/creature-animations/fukurou/idle/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/fukurou/idle/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/fukurou/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/fukurou/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 82.008,
+        "opaqueWhitePct": 0.0102
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_w58ixdNvYPrJwNEA1WwZFPFx",
+        "sourceSheetAssetId": "asset_jNq6SsAJWhPCEMYaMEgiwo6U",
+        "cleanedAssetId": "asset_paqjp53eLArXqHRwiuYYAioX",
+        "note": "Used proportional 2048px-wide RGB derivative because full-size sheet returned opaque output."
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/fukurou/idle/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/fukurou/idle/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/fukurou/idle/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/fukurou/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/fukurou/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 82.008,
+        "opaqueWhitePct": 0.0102,
+        "transparentPixels": 2292550,
+        "opaqueWhitePixels": 284,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      }
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/fukurou/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/fukurou/walk/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/fukurou/walk/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/fukurou/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/fukurou/walk/sheet-256.png",
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 82.0077,
+        "opaqueWhitePct": 0.0163,
+        "passed": true
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_zN6HHfyr7V4cGv7i3MJZuoMV",
+        "backgroundRemovalInputAssetId": "asset_1QeBzcadcTKBGdBfC23Rzvv4",
+        "cleanedAssetId": "asset_11AYSGWfcLtHNw6x8h9nU5aN"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/fukurou/walk/source-video.mp4",
+        "sourceSheetRgb": "output/creature-animations/fukurou/walk/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/fukurou/walk/background-removal-input.png",
+        "cleanedSourceSheet": "output/creature-animations/fukurou/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/fukurou/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 341.3333333333333,
+          "height": 341.25
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 82.0077,
+        "opaqueWhitePct": 0.0163,
+        "transparentPixels": 2292543,
+        "opaqueWhitePixels": 456,
+        "totalPixels": 2795520,
+        "passed": true,
+        "size": [
+          2048,
+          1365
+        ]
+      },
+      "finalSheetAlphaMetrics": {
+        "transparentPct": 81.9616,
+        "opaqueWhitePct": 0.0154,
+        "transparentPixels": 1289144,
+        "opaqueWhitePixels": 243,
+        "totalPixels": 1572864,
+        "passed": true,
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    }
+  },
+  "updatedAt": "2026-05-11T12:10:39.706034Z"
+}

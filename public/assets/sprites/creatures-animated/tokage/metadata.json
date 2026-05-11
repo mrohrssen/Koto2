@@ -1,0 +1,106 @@
+{
+  "creatureId": "tokage",
+  "sourceAssetId": null,
+  "animations": {
+    "idle": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_JBkx8BDcXC7N3DnYtd7a1Lwn",
+        "sourceSheetAssetId": "asset_1o1Bh2cYph3ksTY1XanCA7Ev",
+        "cleanedAssetId": "asset_4uPr1JYFEFqLAVGbjHN8wVny",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/tokage/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/tokage/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/tokage/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 91.0483,
+        "opaqueWhitePct": 0.0038,
+        "transparentPixels": 2545273,
+        "opaqueWhitePixels": 107,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_e68aUjsJSpRoNN5jkCjJ7u7H",
+        "sourceSheetAssetId": "asset_yV15qABBAPaCWtj8BCw1JNf4",
+        "cleanedAssetId": "asset_ATaY2JqLjCrsjfNR3RZqXmYA",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/tokage/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/tokage/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/tokage/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 91.0461,
+        "opaqueWhitePct": 0.0044,
+        "transparentPixels": 2545211,
+        "opaqueWhitePixels": 124,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

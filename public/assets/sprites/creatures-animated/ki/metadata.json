@@ -1,0 +1,46 @@
+{
+  "creatureId": "ki",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/ki/idle/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/ki/idle/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/ki/idle/cleaned-source-sheet.png",
+      "cleanedAssetId": "asset_teropAT5w5nXbTK1nLjdU8u3",
+      "finalSheet": "output/creature-animations/ki/idle/sheet-256.png",
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 86.8754,
+        "opaqueWhitePct": 0.0,
+        "passed": true
+      }
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/ki/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/ki/walk/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/ki/walk/cleaned-source-sheet.png",
+      "cleanedAssetId": "asset_kepydpW7mAtgmMfotw6j9EVZ",
+      "finalSheet": "output/creature-animations/ki/walk/sheet-256.png",
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 87.4925,
+        "opaqueWhitePct": 0.0,
+        "passed": true
+      }
+    }
+  }
+}

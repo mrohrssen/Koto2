@@ -1,0 +1,158 @@
+{
+  "creatureId": "hitsuji",
+  "sourceAssetId": "asset_YLytRHccGFdzTZWfzXg9PMSr",
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_y3WXJ6DKZmKWp2XMWf9MsRiG",
+        "sourceVideoAssetId": "asset_ckLPsYnYd6a3hTHPGTXiwhhM"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": null,
+        "sourceSheetAssetId": null,
+        "cleanedAssetId": null,
+        "mode": "local-edge-white-fallback"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/hitsuji/idle/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/hitsuji/idle/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/hitsuji/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/hitsuji/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/hitsuji/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 89.0965,
+        "opaqueWhitePct": 0.0162,
+        "transparentPixels": 8758544,
+        "opaqueWhitePixels": 1589,
+        "totalPixels": 9830400,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_sVr7vLeuSwNNpF8ArKziAdNM",
+        "sourceVideoAssetId": "asset_kzSx4B4RbBSQsv1BtgRyjjzp"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": null,
+        "sourceSheetAssetId": null,
+        "cleanedAssetId": null,
+        "mode": "local-edge-white-fallback"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/hitsuji/walk/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/hitsuji/walk/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/hitsuji/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/hitsuji/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/hitsuji/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "decodedFrameCount": 97,
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        }
+      },
+      "alphaMetrics": {
+        "transparentPct": 84.8853,
+        "opaqueWhitePct": 0.024,
+        "transparentPixels": 8344566,
+        "opaqueWhitePixels": 2355,
+        "totalPixels": 9830400,
+        "passed": true
+      }
+    }
+  }
+}

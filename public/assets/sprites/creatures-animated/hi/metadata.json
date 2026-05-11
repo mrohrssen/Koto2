@@ -1,0 +1,101 @@
+{
+  "creatureId": "hi",
+  "sourceWhiteBgPath": "/Users/michiarohrssen/Documents/Claude/koto-wt-sprite-white-bg/output/sprite-white-bg/creatures/hi.png",
+  "seedanceModelId": "model_bytedance-seedance-2-0",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "sourceAssetId": "asset_S35kdmyybAQgRpQmgNDhMvnN",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "prompt": "idle animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoAssetId": "asset_cEtAurBqV15TkhfLPBBfh8uK",
+      "sourceVideo": "output/creature-animations/hi/idle/source-video.mp4",
+      "sourceSheet": "output/creature-animations/hi/idle/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/hi/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/hi/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 84.46,
+        "opaqueWhitePct": 0.0038
+      }
+    },
+    "walk": {
+      "prompt": "walking animation for a monster collector game on a plain white background - no shadows or additional details",
+      "videoAssetId": "asset_jyafGusVvwf6avhGR1bPBshC",
+      "sourceVideo": "output/creature-animations/hi/walk/source-video.mp4",
+      "sourceSheet": "output/creature-animations/hi/walk/source-sheet-rgb.png",
+      "cleanedSourceSheet": "output/creature-animations/hi/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/hi/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 84.63,
+        "opaqueWhitePct": 0.002
+      }
+    }
+  }
+}

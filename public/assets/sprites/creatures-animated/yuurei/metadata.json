@@ -1,0 +1,117 @@
+{
+  "creatureId": "yuurei",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/yuurei/idle/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/yuurei/idle/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/yuurei/idle/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/yuurei/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/yuurei/idle/sheet-256.png",
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "sourceCellSize": {
+        "width": 640,
+        "height": 640
+      },
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 87.9,
+        "opaqueWhitePct": 0.2592,
+        "passed": true
+      },
+      "finalSheetAlphaVerification": {
+        "transparentPct": 87.7736,
+        "opaqueWhitePct": 0.2091,
+        "passed": true
+      }
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/yuurei/walk/source-video.mp4",
+      "sourceVideoExists": true,
+      "sourceSheet": "output/creature-animations/yuurei/walk/source-sheet-rgb.png",
+      "backgroundRemovalInput": "output/creature-animations/yuurei/walk/background-removal-input.png",
+      "cleanedSourceSheet": "output/creature-animations/yuurei/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/yuurei/walk/sheet-256.png",
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "sourceCellSize": {
+        "width": 640,
+        "height": 640
+      },
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 87.7171,
+        "opaqueWhitePct": 0.3049,
+        "passed": true
+      },
+      "finalSheetAlphaVerification": {
+        "transparentPct": 87.7389,
+        "opaqueWhitePct": 0.2974,
+        "passed": true
+      }
+    }
+  },
+  "updatedAt": "2026-05-11T12:09:06.562Z"
+}

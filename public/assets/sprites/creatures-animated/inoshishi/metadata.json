@@ -1,0 +1,106 @@
+{
+  "creatureId": "inoshishi",
+  "sourceAssetId": null,
+  "animations": {
+    "idle": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_2wjnhnBpgmwYX5j39hrBVWfk",
+        "sourceSheetAssetId": "asset_MPDJdbsma1QPFf2dm9S7S5uN",
+        "cleanedAssetId": "asset_fvzJVqk2vmUPj4ZT6X9vwchm",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/inoshishi/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/inoshishi/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/inoshishi/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 85.7222,
+        "opaqueWhitePct": 0.0007,
+        "transparentPixels": 2396381,
+        "opaqueWhitePixels": 19,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    },
+    "walk": {
+      "prompt": null,
+      "seedance": {
+        "modelId": null,
+        "jobId": null,
+        "sourceVideoAssetId": null
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_PB2ztm7jTkmDKf2esFw44nfP",
+        "sourceSheetAssetId": "asset_JTnAAcgrvNsUxdtmxyaVGoyD",
+        "cleanedAssetId": "asset_RHJTASMfBEHHHeQV4prEpBi5",
+        "mode": "scenario-photoroom"
+      },
+      "paths": {
+        "sourceVideo": null,
+        "decodedFramesDir": null,
+        "sourceSheetRgb": "output/creature-animations/inoshishi/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/inoshishi/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/inoshishi/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceCellSize": {
+          "width": 640,
+          "height": 640
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "slicing": "proportional-6x4"
+      },
+      "alphaMetrics": {
+        "transparentPct": 85.4664,
+        "opaqueWhitePct": 0.0006,
+        "transparentPixels": 2389230,
+        "opaqueWhitePixels": 17,
+        "totalPixels": 2795520,
+        "passed": true
+      }
+    }
+  }
+}

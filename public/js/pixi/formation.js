@@ -6,6 +6,14 @@ import { tween } from './tween.js';
 import { STATUS_ICON_CONFIG } from '../ui/event-popup.js';
 import { SPRITE_VERSION } from '../ui/sprite-utils.js';
 import {
+  getAnimatedCreatureEntry,
+  loadCreatureAnimationManifest,
+} from './creature-animation-manifest.js';
+import {
+  createAnimatedCreatureState,
+  tickAnimatedCreatureSprite,
+} from './animated-creature-sprite.js';
+import {
   getBattlefieldSlot,
   getBattlefieldSpriteScale,
   getBattlefieldShadowSpec,
@@ -145,10 +153,14 @@ function _drawShadow(shadow, shadowSpec) {
 }
 
 function _shadowYForSprite(sprite, fallbackSpriteSize) {
-  const textureHeight = sprite?.texture?.height || fallbackSpriteSize;
+  const textureHeight = sprite?._animatedCreature?.entry?.frameHeight || sprite?.texture?.height || fallbackSpriteSize;
   const scaledHeight = textureHeight * Math.abs(sprite?.scale?.y || 1);
   const offsetRatio = sprite?._slotI === 1 ? 0.38 : 0.5;
   return sprite.baseY + scaledHeight * offsetRatio;
+}
+
+function _spriteTextureWidth(sprite) {
+  return sprite?._animatedCreature?.entry?.frameWidth || sprite?.texture?.width || 0;
 }
 
 // --- Status label rendering (ctx-based) --------------------------------------
@@ -295,10 +307,14 @@ export function setFormationTravelOffset(ctx, offsetX = 0) {
  */
 export function _updateFormations(ctx, delta) {
   ctx.walkTime += delta * 0.05;
+  const deltaMS = typeof delta === 'number' ? delta * 16.6667 : 16.6667;
 
   for (const side of ['player', 'enemy']) {
     for (const sprite of _spritesArray(ctx, side)) {
       if (sprite._entering) {
+        if (sprite._animatedCreature) {
+          tickAnimatedCreatureSprite(sprite, sprite._animatedCreature, deltaMS, true);
+        }
         sprite.x += (sprite._enterTarget - sprite.x) * 0.1;
         if (Math.abs(sprite.x - sprite._enterTarget) < 1) {
           sprite.x = sprite._enterTarget;
@@ -306,6 +322,12 @@ export function _updateFormations(ctx, delta) {
           sprite._entering = false;
           revealFormationInfo(sprite._side, sprite._dataIndex);
         }
+        continue;
+      }
+      if (sprite._animatedCreature) {
+        tickAnimatedCreatureSprite(sprite, sprite._animatedCreature, deltaMS, !!ctx.walkingEnabled);
+        sprite.y = sprite.baseY;
+        sprite.rotation = 0;
         continue;
       }
       if (!ctx.walkingEnabled) continue;
@@ -412,9 +434,29 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
 
   const sprite = new Sprite(texture);
   sprite.anchor.set(0.5);
+  const shouldEnterWithWalk = side === 'enemy' && !skipEnter && !hadSprites;
+  try {
+    const manifest = await loadCreatureAnimationManifest();
+    const entry = getAnimatedCreatureEntry(manifest, creature.id);
+    if (entry) {
+      const animatedState = await createAnimatedCreatureState(entry);
+      const initialTexture = (shouldEnterWithWalk ? animatedState.textures.walk?.[0] : null)
+        || animatedState.textures.idle?.[0]
+        || animatedState.textures.walk?.[0];
+      if (initialTexture) {
+        sprite.texture = initialTexture;
+        sprite._animatedCreature = animatedState;
+        sprite._animatedRenderScale = entry.renderScale || 1;
+      }
+    }
+  } catch (err) {
+    console.warn('[formation] animated creature setup failed; using static sprite', creature.id, err);
+  }
   const spriteSize = isBoss ? 120 : 60;
-  sprite.width = spriteSize;
-  sprite.height = spriteSize;
+  if (!sprite._animatedCreature) {
+    sprite.width = spriteSize;
+    sprite.height = spriteSize;
+  }
 
   const screenW = app.screen.width;
   const screenH = app.screen.height;
@@ -440,7 +482,9 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   }
 
   sprite.baseY = targetY;
-  sprite.scale.set(getBattlefieldSpriteScale(slotI) * (spriteSize / texture.width));
+  const animationScale = sprite._animatedRenderScale || 1;
+  const textureWidth = _spriteTextureWidth(sprite);
+  sprite.scale.set(getBattlefieldSpriteScale(slotI) * animationScale * (spriteSize / textureWidth));
   if (side === 'enemy') sprite.scale.x *= -1;
   sprite.phaseOffset = Math.random() * Math.PI * 2;
   sprite.creatureData = creature;
@@ -558,9 +602,11 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
       sprite._shadow.x = targetX;
     }
 
-    if (sprite.texture?.width) {
+    const textureWidth = _spriteTextureWidth(sprite);
+    if (textureWidth) {
       const sign = (side === 'enemy') ? -1 : 1;
-      const depth = getBattlefieldSpriteScale(slotI) * (spriteSize / sprite.texture.width);
+      const animationScale = sprite._animatedRenderScale || 1;
+      const depth = getBattlefieldSpriteScale(slotI) * animationScale * (spriteSize / textureWidth);
       sprite.scale.set(depth);
       sprite.scale.x *= sign;
     }

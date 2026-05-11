@@ -1,0 +1,193 @@
+{
+  "creatureId": "kumo",
+  "sourceAssetId": "asset_hLQBKwWt6acFwcZrmWjy3wKj",
+  "teamId": "team_g8yJ6jYJtWj44Um1NrmzYiLC",
+  "projectId": "proj_ZjnKxmdyxtHXaF13xPGsXjWZ",
+  "generatedAt": "2026-05-11T12:29:54.199Z",
+  "animations": {
+    "idle": {
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_nDrrowf6fDAJRUdkm6X4TfY2",
+        "sourceVideoAssetId": "asset_zpxSLY92gJrFxM96hf8iLDeT",
+        "status": "success"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_eMCwuZMfsfNiUAPuMLkMcpbZ",
+        "sourceSheetAssetId": "asset_bTxhLBvd6bsRnpXuGvEd1vi8",
+        "cleanedAssetId": "asset_QSQ8VXZLcBXaKnpow7hcy5bv",
+        "mode": "scenario-photoroom",
+        "status": "failed-verification"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kumo/idle/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/kumo/idle/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/kumo/idle/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/kumo/idle/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/kumo/idle/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kumo/idle/sheet-256.png"
+      },
+      "frameProcessing": {
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "slicing": {
+          "method": "proportional-6x4",
+          "columns": 6,
+          "rows": 4
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "sheet256Built": false
+      },
+      "alphaMetrics": {
+        "cleanedSourceSheet": {
+          "width": 2048,
+          "height": 1365,
+          "totalPixels": 2795520,
+          "transparentPct": 0.5121,
+          "opaqueWhitePct": 90.4346,
+          "transparentPixels": 14316,
+          "opaqueWhitePixels": 2528118,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": false,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        }
+      },
+      "failureReason": "cleaned-source-sheet failed transparentPct > 50 and opaqueWhitePct < 1 verification"
+    },
+    "walk": {
+      "seedance": {
+        "modelId": "model_bytedance-seedance-2-0",
+        "jobId": "job_UrxvSiZviWp5dwSsm9nedEyJ",
+        "sourceVideoAssetId": "asset_5ZyETe6S8xK33rDCZuvE4VF3",
+        "status": "success"
+      },
+      "backgroundRemoval": {
+        "modelId": "model_photoroom-background-removal",
+        "jobId": "job_K3UUTv1Ew2aDdH8uX3vSHqXh",
+        "sourceSheetAssetId": "asset_3N6TEXQtqxBE2BcZ59kE8zpE",
+        "cleanedAssetId": "asset_Pb94F7WvAxgZvBZssEX5keFm",
+        "mode": "scenario-photoroom",
+        "status": "failed-verification"
+      },
+      "paths": {
+        "sourceVideo": "output/creature-animations/kumo/walk/source-video.mp4",
+        "decodedFramesDir": "output/creature-animations/kumo/walk/decoded-frames",
+        "sourceSheetRgb": "output/creature-animations/kumo/walk/source-sheet-rgb.png",
+        "backgroundRemovalInput": "output/creature-animations/kumo/walk/source-sheet-rgb.png",
+        "cleanedSourceSheet": "output/creature-animations/kumo/walk/cleaned-source-sheet.png",
+        "sheet256": "output/creature-animations/kumo/walk/sheet-256.png"
+      },
+      "frameProcessing": {
+        "sampledFrameNumbers": [
+          1,
+          5,
+          9,
+          13,
+          17,
+          21,
+          25,
+          29,
+          33,
+          37,
+          41,
+          45,
+          49,
+          53,
+          57,
+          61,
+          65,
+          69,
+          73,
+          77,
+          81,
+          85,
+          89,
+          93
+        ],
+        "grid": {
+          "columns": 6,
+          "rows": 4,
+          "frames": 24
+        },
+        "sourceSheetSize": {
+          "width": 3840,
+          "height": 2560
+        },
+        "cleanedSheetSize": {
+          "width": 2048,
+          "height": 1365
+        },
+        "slicing": {
+          "method": "proportional-6x4",
+          "columns": 6,
+          "rows": 4
+        },
+        "outputCellSize": {
+          "width": 256,
+          "height": 256
+        },
+        "sheet256Built": false
+      },
+      "alphaMetrics": {
+        "cleanedSourceSheet": {
+          "width": 2048,
+          "height": 1365,
+          "totalPixels": 2795520,
+          "transparentPct": 0.5121,
+          "opaqueWhitePct": 90.5845,
+          "transparentPixels": 14316,
+          "opaqueWhitePixels": 2532309,
+          "transparentThresholdPct": 50,
+          "opaqueWhiteThresholdPct": 1,
+          "passed": false,
+          "transparentDefinition": "alpha <= 5",
+          "opaqueWhiteDefinition": "alpha >= 250 and rgb >= 245"
+        }
+      },
+      "failureReason": "cleaned-source-sheet failed transparentPct > 50 and opaqueWhitePct < 1 verification"
+    }
+  }
+}

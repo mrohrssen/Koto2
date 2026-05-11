@@ -1,0 +1,98 @@
+{
+  "creatureId": "tori",
+  "backgroundRemovalModelId": "model_photoroom-background-removal",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frames": 24,
+  "fps": 12,
+  "columns": 6,
+  "rows": 4,
+  "animations": {
+    "idle": {
+      "sourceVideo": "output/creature-animations/tori/idle/source-video.mp4",
+      "sourceSheet": "output/creature-animations/tori/idle/source-sheet-rgb.png",
+      "uploadedAssetId": "asset_Nw87aKpZdD6Ab9SoXiNQJDpA",
+      "cleanedAssetId": "asset_d9VAnkWjbQzhAQgygebufy2z",
+      "cleanedSourceSheet": "output/creature-animations/tori/idle/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/tori/idle/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 89.46,
+        "opaqueWhitePct": 0.1163
+      }
+    },
+    "walk": {
+      "sourceVideo": "output/creature-animations/tori/walk/source-video.mp4",
+      "sourceSheet": "output/creature-animations/tori/walk/source-sheet-rgb.png",
+      "uploadedAssetId": "asset_jV4vyhni127MF9EBwVBXHkkh",
+      "cleanedAssetId": "asset_ZXSvREFj4Musu66Jw8mHjUu2",
+      "cleanedSourceSheet": "output/creature-animations/tori/walk/cleaned-source-sheet.png",
+      "finalSheet": "output/creature-animations/tori/walk/sheet-256.png",
+      "decodedFrames": 97,
+      "sampledSourceFrames": [
+        1,
+        5,
+        9,
+        13,
+        17,
+        21,
+        25,
+        29,
+        33,
+        37,
+        41,
+        45,
+        49,
+        53,
+        57,
+        61,
+        65,
+        69,
+        73,
+        77,
+        81,
+        85,
+        89,
+        93
+      ],
+      "cleanedSheetSize": [
+        2048,
+        1365
+      ],
+      "alphaVerification": {
+        "transparentPct": 88.99,
+        "opaqueWhitePct": 0.1178
+      }
+    }
+  }
+}
