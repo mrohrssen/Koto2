@@ -28,15 +28,12 @@ function lesson() {
     sourceText: '花は森で光を見た。',
     pronunciation: { kana: 'はな は もり で ひかり を みた', romaji: 'hana wa mori de hikari o mita' },
     translation: 'Flower saw a light in the forest.',
-    tokens: [
-      { surface: '花', reading: 'はな', romaji: 'hana', baseForm: '花', role: 'noun subject', meaning: 'the creature Flower', detail: 'Marked as a Koto creature in this sentence.', entity: { id: 'hana', type: 'creature', displayName: 'Flower', kotoMeaning: 'the creature Flower', ordinaryMeaning: 'flower / blossom' } },
-      { surface: 'は', reading: 'は', romaji: 'wa', baseForm: 'は', role: 'topic marker', meaning: 'marks the topic' },
-      { surface: '森', reading: 'もり', romaji: 'mori', baseForm: '森', role: 'place noun', meaning: 'forest' },
-      { surface: 'で', reading: 'で', romaji: 'de', baseForm: 'で', role: 'location particle', meaning: 'marks where the action happens' },
-      { surface: '光', reading: 'ひかり', romaji: 'hikari', baseForm: '光', role: 'object noun', meaning: 'light' },
-      { surface: 'を', reading: 'を', romaji: 'o', baseForm: 'を', role: 'object marker', meaning: 'marks what was seen' },
-      { surface: '見た', reading: 'みた', romaji: 'mita', baseForm: '見る', role: 'past verb', meaning: 'saw' },
-      { surface: '。', reading: '。', romaji: '.', baseForm: '。', role: 'punctuation', meaning: 'sentence ending punctuation' }
+    breakdown: [
+      { kind: 'entity', text: '花', reading: 'はな', meaning: 'Flower, the creature', explanation: 'In this Koto line, 花 refers to the creature named Flower. In ordinary Japanese, 花 means flower / blossom.' },
+      { kind: 'particle', text: 'は', reading: 'わ', meaning: 'topic marker', explanation: 'After Flower, は marks who the sentence is about.' },
+      { kind: 'phrase', text: '森で', reading: 'もりで', meaning: 'in the forest', explanation: '森 means forest. で marks the place where the action happens.' },
+      { kind: 'phrase', text: '光を', reading: 'ひかりを', meaning: 'a light', explanation: '光 is what was seen. を marks the direct object.' },
+      { kind: 'verb', text: '見た', reading: 'みた', meaning: 'saw', explanation: '見た is the past form of 見る, to see.' }
     ],
     grammarHints: [{ title: 'Verb goes last.', body: 'Japanese sentences put the verb at the end. Read to the end first to find 見た, saw.' }],
     otherTips: [{ title: 'Entity vs ordinary noun.', body: 'In this Koto sentence, 花 is the creature Flower. In ordinary Japanese, 花 means flower / blossom.' }]
@@ -66,13 +63,19 @@ describe('dialogue learn service', () => {
     assert.equal(buildDialogueLearnConfig(), null);
   });
 
-  it('builds strict JSON prompts with source, tokens, entities, and schema version', () => {
+  it('builds game-context JSON prompts with parser hints and flexible breakdown schema', () => {
     const prompts = buildDialogueLearnPrompts({ sourceText: '花は森で光を見た。', tokens, entities });
+    assert.match(prompts.systemPrompt, /Koto, a Japanese vocabulary-learning RPG/);
+    assert.match(prompts.systemPrompt, /game UI/);
     assert.match(prompts.systemPrompt, /Return only valid JSON/);
+    assert.match(prompts.userPrompt, /parser hints are context only/i);
+    assert.match(prompts.userPrompt, /Parser hints/);
+    assert.doesNotMatch(prompts.userPrompt, /Trusted tokens/);
     assert.match(prompts.userPrompt, /schemaVersion/);
+    assert.match(prompts.userPrompt, /breakdown/);
     assert.match(prompts.userPrompt, /花は森で光を見た。/);
     assert.match(prompts.userPrompt, /Flower/);
-    assert.match(prompts.userPrompt, /Do not add Japanese examples/);
+    assert.match(prompts.userPrompt, /Do not introduce new Japanese example sentences/);
   });
 
   it('returns cached lesson without calling AI', async () => {

@@ -28,30 +28,18 @@ function validLesson(overrides = {}) {
     sourceText: '花は森で光を見た。',
     pronunciation: { kana: 'はな は もり で ひかり を みた', romaji: 'hana wa mori de hikari o mita' },
     translation: 'Flower saw a light in the forest.',
-    tokens: [
+    breakdown: [
       {
-        surface: '花',
+        kind: 'entity',
+        text: '花',
         reading: 'はな',
-        romaji: 'hana',
-        baseForm: '花',
-        role: 'noun subject',
-        meaning: 'the creature Flower',
-        detail: 'Marked as a Koto creature in this sentence.',
-        entity: {
-          id: 'hana',
-          type: 'creature',
-          displayName: 'Flower',
-          kotoMeaning: 'the creature Flower',
-          ordinaryMeaning: 'flower / blossom'
-        }
+        meaning: 'Flower, the creature',
+        explanation: 'In this Koto line, 花 refers to the creature named Flower. In ordinary Japanese, 花 means flower / blossom.'
       },
-      { surface: 'は', reading: 'は', romaji: 'wa', baseForm: 'は', role: 'topic marker', meaning: 'marks the topic', detail: 'Read 花は as as for Flower.' },
-      { surface: '森', reading: 'もり', romaji: 'mori', baseForm: '森', role: 'place noun', meaning: 'forest' },
-      { surface: 'で', reading: 'で', romaji: 'de', baseForm: 'で', role: 'location particle', meaning: 'marks where the action happens' },
-      { surface: '光', reading: 'ひかり', romaji: 'hikari', baseForm: '光', role: 'object noun', meaning: 'light' },
-      { surface: 'を', reading: 'を', romaji: 'o', baseForm: 'を', role: 'object marker', meaning: 'marks what was seen' },
-      { surface: '見た', reading: 'みた', romaji: 'mita', baseForm: '見る', role: 'past verb', meaning: 'saw' },
-      { surface: '。', reading: '。', romaji: '.', baseForm: '。', role: 'punctuation', meaning: 'sentence ending punctuation' }
+      { kind: 'particle', text: 'は', reading: 'わ', meaning: 'topic marker', explanation: 'After Flower, は marks who the sentence is about.' },
+      { kind: 'phrase', text: '森で', reading: 'もりで', meaning: 'in the forest', explanation: '森 means forest. で marks the place where the action happens.' },
+      { kind: 'phrase', text: '光を', reading: 'ひかりを', meaning: 'a light', explanation: '光 is what was seen. を marks the direct object.' },
+      { kind: 'verb', text: '見た', reading: 'みた', meaning: 'saw', explanation: '見た is the past form of 見る, to see.' }
     ],
     grammarHints: [
       { title: 'Verb goes last.', body: 'Japanese sentences put the verb at the end. Read to the end first to find 見た, saw.' },
@@ -101,34 +89,42 @@ describe('dialogue learn schema', () => {
     assert.equal(validateLearnLesson(validLesson({ schemaVersion: 999 }), { sourceText: '花は森で光を見た。', tokens, entities }).ok, false);
   });
 
-  it('rejects token mismatches and token count mismatches', () => {
-    const badSurface = validLesson();
-    badSurface.tokens[0] = { ...badSurface.tokens[0], surface: '猫' };
-    assert.equal(validateLearnLesson(badSurface, { sourceText: '花は森で光を見た。', tokens: normalizeLearnTokens(tokens), entities }).ok, false);
-
-    const shortLesson = validLesson({ tokens: validLesson().tokens.slice(0, 2) });
-    assert.equal(validateLearnLesson(shortLesson, { sourceText: '花は森で光を見た。', tokens: normalizeLearnTokens(tokens), entities }).ok, false);
-  });
-
-  it('rejects extra Japanese examples not present in trusted source data', () => {
-    const bad = validLesson({
-      grammarHints: [{ title: 'Example.', body: '猫は走った means the cat ran.' }]
+  it('accepts AI-authored breakdowns that group parser hints into phrases', () => {
+    const groupedLesson = validLesson({
+      breakdown: [
+        { kind: 'entity', text: '花は', reading: 'はなは', meaning: 'as for Flower', explanation: 'The AI may explain the entity together with its topic particle.' },
+        { kind: 'phrase', text: '森で', reading: 'もりで', meaning: 'in the forest', explanation: 'This phrase gives the location of the action.' },
+        { kind: 'phrase', text: '光を見た', reading: 'ひかりをみた', meaning: 'saw a light', explanation: 'The object and verb can be taught together as the main action.' }
+      ]
     });
-    assert.equal(validateLearnLesson(bad, { sourceText: '花は森で光を見た。', tokens: normalizeLearnTokens(tokens), entities: normalizeLearnEntities(entities) }).ok, false);
+    const result = validateLearnLesson(groupedLesson, {
+      sourceText: '花は森で光を見た。',
+      tokens: normalizeLearnTokens(tokens),
+      entities: normalizeLearnEntities(entities)
+    });
+    assert.equal(result.ok, true);
   });
 
-  it('requires protected entity lesson data and an entity tip', () => {
-    const noEntity = validLesson();
-    delete noEntity.tokens[0].entity;
-    assert.equal(validateLearnLesson(noEntity, { sourceText: '花は森で光を見た。', tokens: normalizeLearnTokens(tokens), entities: normalizeLearnEntities(entities) }).ok, false);
-
-    const noTip = validLesson({ otherTips: [{ title: 'Reading habit.', body: 'Scan to 見た first.' }] });
-    assert.equal(validateLearnLesson(noTip, { sourceText: '花は森で光を見た。', tokens: normalizeLearnTokens(tokens), entities: normalizeLearnEntities(entities) }).ok, false);
+  it('does not judge Japanese analysis against parser hints', () => {
+    const aiLedLesson = validLesson({
+      breakdown: [
+        { kind: 'grammar', text: '光を見た', reading: 'ひかりをみた', meaning: 'noticed a light', explanation: 'The AI can choose a natural explanation that is not copied from parser meanings.' }
+      ],
+      grammarHints: [{ title: 'Natural reading.', body: 'The model may explain nuance without matching tokenizer boundaries.' }]
+    });
+    assert.equal(validateLearnLesson(aiLedLesson, { sourceText: '花は森で光を見た。', tokens: normalizeLearnTokens(tokens), entities: normalizeLearnEntities(entities) }).ok, true);
   });
 
-  it('rejects markdown, HTML, filler, quizzes, and SRS instructions in strings', () => {
-    assert.equal(validateLearnLesson(validLesson({ translation: '<b>Flower</b> saw a light.' }), { sourceText: '花は森で光を見た。', tokens, entities }).ok, false);
-    assert.equal(validateLearnLesson(validLesson({ otherTips: [{ title: 'Quiz.', body: 'What does 光 mean?' }] }), { sourceText: '花は森で光を見た。', tokens, entities }).ok, false);
-    assert.equal(validateLearnLesson(validLesson({ grammarHints: [{ title: 'N/A', body: 'No notes' }] }), { sourceText: '花は森で光を見た。', tokens, entities }).ok, false);
+  it('rejects malformed breakdown items without enforcing token correspondence', () => {
+    const missingText = validLesson({
+      breakdown: [{ kind: 'phrase', reading: 'もりで', meaning: 'in the forest', explanation: 'Missing text is invalid JSON shape for this UI.' }]
+    });
+    assert.equal(validateLearnLesson(missingText, { sourceText: '花は森で光を見た。', tokens, entities }).ok, false);
+  });
+
+  it('does not judge lesson prose beyond JSON shape and bounded fields', () => {
+    assert.equal(validateLearnLesson(validLesson({ translation: '<b>Flower</b> saw a light.' }), { sourceText: '花は森で光を見た。', tokens, entities }).ok, true);
+    assert.equal(validateLearnLesson(validLesson({ otherTips: [{ title: 'Quiz.', body: 'What does 光 mean?' }] }), { sourceText: '花は森で光を見た。', tokens, entities }).ok, true);
+    assert.equal(validateLearnLesson(validLesson({ grammarHints: [{ title: 'N/A', body: 'No notes' }] }), { sourceText: '花は森で光を見た。', tokens, entities }).ok, true);
   });
 });

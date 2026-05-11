@@ -308,25 +308,17 @@ function renderTranslationSheet({ sourceText, sourceHtml = '', state, translatio
   `;
 }
 
-function renderLessonToken(token = {}) {
-  const entity = token.entity ? `
-    <div class="npc-dialogue-learn-entity-note">
-      <strong>In Koto:</strong> ${esc(token.entity.kotoMeaning || token.entity.displayName || '')}
-      <br>
-      <strong>Ordinary Japanese:</strong> ${esc(token.entity.ordinaryMeaning || '')}
-    </div>
-  ` : '';
+function renderLessonBreakdownItem(item = {}) {
   return `
     <div class="npc-dialogue-learn-token">
       <div class="npc-dialogue-learn-token-head">
-        <span class="npc-dialogue-learn-token-jp">${esc(token.surface || '')}</span>
-        <span class="npc-dialogue-learn-token-reading">${esc(token.reading || '')}${token.romaji ? ` · ${esc(token.romaji)}` : ''}</span>
+        <span class="npc-dialogue-learn-token-jp">${esc(item.text || '')}</span>
+        <span class="npc-dialogue-learn-token-reading">${esc(item.reading || '')}</span>
       </div>
       <div class="npc-dialogue-learn-token-body">
-        <span class="npc-dialogue-learn-token-role">${esc(token.role || '')}</span>
-        <span class="npc-dialogue-learn-token-meaning">${esc(token.meaning || '')}</span>
-        ${token.detail ? `<span class="npc-dialogue-learn-token-detail">${esc(token.detail)}</span>` : ''}
-        ${entity}
+        <span class="npc-dialogue-learn-token-role">${esc(item.kind || '')}</span>
+        <span class="npc-dialogue-learn-token-meaning">${esc(item.meaning || '')}</span>
+        ${item.explanation ? `<span class="npc-dialogue-learn-token-detail">${esc(item.explanation)}</span>` : ''}
       </div>
     </div>
   `;
@@ -363,8 +355,8 @@ function renderLearnTakeover({ state, sourceText, lesson = null, diagnostic = nu
           <p class="npc-dialogue-learn-translation">${esc(lesson.translation || '')}</p>
         </section>
         <section class="npc-dialogue-learn-section">
-          <h3>Word by word</h3>
-          <div class="npc-dialogue-learn-token-list">${(lesson.tokens || []).map(renderLessonToken).join('')}</div>
+          <h3>Breakdown</h3>
+          <div class="npc-dialogue-learn-token-list">${(lesson.breakdown || []).map(renderLessonBreakdownItem).join('')}</div>
         </section>
         <section class="npc-dialogue-learn-section">
           <h3>Grammar hints</h3>

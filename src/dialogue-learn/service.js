@@ -44,45 +44,74 @@ function modelArgsForProvider(provider, model) {
 export function buildDialogueLearnPrompts({ sourceText, tokens = [], entities = [] }) {
   const normalizedTokens = normalizeLearnTokens(tokens);
   const normalizedEntities = normalizeLearnEntities(entities);
+  const protectedEntities = normalizedEntities.map(entity => ({
+    surface: entity.surface,
+    type: entity.type,
+    displayName: entity.displayName,
+    ordinaryMeaningHint: normalizedTokens.find(token => token.surface === entity.surface)?.meaning || ''
+  }));
+  const parserHints = normalizedTokens.map(token => ({
+    surface: token.surface,
+    reading: token.reading,
+    baseForm: token.baseForm,
+    pos: token.pos,
+    meaningHint: token.meaning,
+    entity: token.entity
+  }));
   const schemaTemplate = {
     schemaVersion: LEARN_LESSON_SCHEMA_VERSION,
     sourceText,
     pronunciation: { kana: '', romaji: '' },
     translation: '',
-    tokens: normalizedTokens.map(token => ({
-      surface: token.surface,
-      reading: token.reading,
-      romaji: '',
-      baseForm: token.baseForm,
-      role: '',
+    breakdown: [{
+      kind: 'word | phrase | particle | grammar | verb | entity',
+      text: '',
+      reading: '',
       meaning: '',
-      detail: ''
-    })),
+      explanation: ''
+    }],
     grammarHints: [{ title: '', body: '' }],
     otherTips: [{ title: '', body: '' }]
   };
 
   return {
-    systemPrompt: 'You are a careful Japanese sentence tutor for a language-learning RPG. Return only valid JSON matching the provided schema. Explain how the given sentence works using concise English. Do not add Japanese examples beyond the provided sentence, token surfaces, readings, base forms, and protected entity surfaces.',
-    userPrompt: `Create a Standard Study Card lesson for this Japanese dialogue sentence.
+    systemPrompt: `You are a careful Japanese sentence tutor for Koto, a Japanese vocabulary-learning RPG.
+
+This lesson appears inside a game UI when the player taps 学ぶ / Learn on an NPC dialogue line. The player is not reading a textbook; they are in a short, mobile-friendly study view inside a bright sci-fi fantasy RPG.
+
+Translate answers "What did this line mean?"
+Learn answers "How do I understand this kind of Japanese next time?"
+
+Your job is to create concise lesson data that the app will render into a fixed UI. The app owns layout, section headings, styling, and interaction. You provide only the teaching content.
+
+Explain the source sentence clearly in English for a beginner. Be accurate, natural, and practical. Prefer the most useful reading strategy over exhaustive grammar detail.
+
+Return only valid JSON matching the requested shape. Do not include markdown, code fences, HTML, comments, or prose outside the JSON.
+
+Important safety rule:
+Do not introduce new Japanese example sentences. You may only use Japanese text that appears in the source sentence, parser hints, readings/base forms, or protected entity surfaces.`,
+    userPrompt: `Create a concise Learn lesson for this Japanese dialogue line.
 
 Rules:
 - Return JSON only.
 - Use schemaVersion ${LEARN_LESSON_SCHEMA_VERSION}.
 - Do not include markdown, code fences, HTML, comments, or labels outside JSON.
-- Do not add Japanese examples beyond the source sentence, token surfaces, readings, base forms, and protected entity surfaces.
+- Do not introduce new Japanese example sentences beyond the source sentence, parser hints, readings/base forms, and protected entity surfaces.
 - Do not personalize to known/new word state.
 - Do not ask quiz questions or request SRS actions.
-- Preserve protected game entities as game entities and explain their ordinary Japanese meaning when supplied by token data.
+- Preserve protected game entities exactly, explain them as game entities when relevant, and use their display names in the English translation.
+- The parser hints are context only. They may be incomplete, awkwardly segmented, or missing linguistic nuance.
+- Use your own Japanese expertise to decide the clearest lesson breakdown.
+- You may group words into phrases, explain particles together with nearby words, explain conjugations, correct awkward parser assumptions, or omit parser hints that are not pedagogically useful.
 
 Source sentence:
 ${sourceText}
 
-Trusted tokens:
-${JSON.stringify(normalizedTokens, null, 2)}
-
 Protected entities:
-${JSON.stringify(normalizedEntities, null, 2)}
+${JSON.stringify(protectedEntities, null, 2)}
+
+Parser hints:
+${JSON.stringify(parserHints, null, 2)}
 
 Required JSON shape:
 ${JSON.stringify(schemaTemplate, null, 2)}`
