@@ -513,6 +513,72 @@ export class CombatCycleService {
     const allAlliesDown = checkAllDefeated(this.gm.combat.allies);
 
     if (allEnemiesDown) {
+      const totalOwnedCreatures = this.gm.run.creatureParty.active.length + (this.gm.run.creatureParty.reserves?.length || 0);
+      const guaranteeBefriend = totalOwnedCreatures <= 1 || shouldProtectBefriend(this.gm.meta);
+      const befriendEligible = !this.gm.combat.isBoss && !this.gm.combat.npcId;
+      const befriendTriggerRoll = befriendEligible
+        ? shouldTriggerBefriendQuiz(this.gm.combat.enemies, { guaranteed: guaranteeBefriend })
+        : false;
+      if (befriendEligible && befriendTriggerRoll) {
+        const killingAttacks = flatPlayerAttacks.filter(a => a.targetDefeated);
+        const lastKillAtk = killingAttacks[killingAttacks.length - 1];
+        const lastKilled = lastKillAtk
+          ? this.gm.combat.enemies[lastKillAtk.targetIndex]
+          : [...this.gm.combat.enemies].reverse().find(e => e.hp <= 0 && !e.befriended);
+        if (lastKilled) {
+          lastKilled.hp = 1;
+          const targetIndex = this.gm.combat.enemies.indexOf(lastKilled);
+          const revokedXpEvents = xpEvents.filter(ev =>
+            (typeof ev.enemyIndex === 'number' ? ev.enemyIndex !== targetIndex : ev.enemyId !== lastKilled.id)
+          );
+          const quiz = generateBefriendQuiz(lastKilled, this.gm.combat.enemies);
+          this.gm.combat.befriendQuiz = {
+            targetIndex,
+            creatureId: lastKilled.id,
+            triggered: true,
+            options: quiz.options,
+            creatureName: quiz.creatureName
+          };
+
+          const befriendFrames = getBefriendFrames();
+          const befriendKnownSet = new Set(getKnownWordsFromFsrs(this.gm.userId));
+          const waitPrompt = selectBestFrame(befriendFrames.wait, befriendKnownSet, { dict: getWordDict() });
+          const namePrompt = selectBestFrame(befriendFrames.name, befriendKnownSet, { dict: getWordDict() });
+          const successPrompt = selectBestFrame(befriendFrames.success, befriendKnownSet, { dict: getWordDict() });
+          const wrongPrompt = selectBestFrame(befriendFrames.wrong, befriendKnownSet, { dict: getWordDict() });
+
+          this.gm.emitState();
+          return {
+            actionType: 'attack',
+            actionSegments,
+            playerAttacks: flatPlayerAttacks,
+            enemyAttacks: flatEnemyAttacks,
+            counterAttacks,
+            xpEvents: revokedXpEvents,
+            mpRegens,
+            effectEvents,
+            koSwaps,
+            koRemovals,
+            befriendQuizTriggered: true,
+            befriendQuiz: {
+              targetIndex,
+              creatureId: lastKilled.id,
+              creatureName: lastKilled.name,
+              creatureNameEn: lastKilled.nameEn,
+              options: quiz.options.map(o => ({ id: o.id, name: o.name })),
+              waitPrompt: serializeBefriendPrompt(waitPrompt),
+              namePrompt: serializeBefriendPrompt(namePrompt),
+              successPrompt: serializeBefriendPrompt(successPrompt),
+              wrongPrompt: serializeBefriendPrompt(wrongPrompt),
+            },
+            combatEnded: false,
+            allies: this.gm.combat.allies,
+            enemies: this.gm.combat.enemies,
+            creatureParty: this.gm.run.creatureParty
+          };
+        }
+      }
+
       const newCollectionAdditions = this._flushPendingCaptures();
       collectElementDrops(this.gm.meta, this.gm.combat.enemies, this.gm.run?.runSummary);
       finalizeCombatVictory(this.gm.combat, this.gm.run, { meta: this.gm.meta, narrate: (t) => this.gm.narrate(t) });
