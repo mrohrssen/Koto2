@@ -77,6 +77,8 @@ export function getElementMultiplier(attackerElement, defenderElement) {
 
 const STARTING_LEVEL = 5;
 const LEVEL_UP_RESTORE_PERCENT = 0.10;
+const DEF_EFFECTIVENESS_SCALE = 0.5;
+const DEF_EFFECTIVENESS_AVERAGE = 5;
 export const MAX_CREATURE_MOVES = 3;
 
 export function syncCreatureMoves(creature) {
@@ -323,7 +325,7 @@ export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = nul
 
 /**
  * Damage formula (level-aware, DEF mitigates):
- * floor(((2*Lv/5 + 2) * Power * ATK / DEF) / 10 + 2) * typeMult * variance
+ * floor(((2*Lv/5 + 2) * Power * ATK / effectiveDEF) / 10 + 2) * typeMult * variance
  * typeMult combines element effectiveness × STAB (and item element edge when applied upstream).
  */
 export function calculateCreatureDamage({
@@ -335,10 +337,12 @@ export function calculateCreatureDamage({
   variance
 }) {
   const def = Math.max(1, Math.floor(Number(defenderDefense) || 1));
+  const effectiveDef = def * DEF_EFFECTIVENESS_SCALE
+    + DEF_EFFECTIVENESS_AVERAGE * (1 - DEF_EFFECTIVENESS_SCALE);
   const atk = Math.max(1, Math.floor(Number(attack) || 1));
   const lvl = Math.max(1, Number(attackerLevel) || 1);
   const pow = Math.max(1, Number(power) || 1);
-  const inner = (2 * lvl / 5 + 2) * pow * atk / def;
+  const inner = (2 * lvl / 5 + 2) * pow * atk / effectiveDef;
   const base = Math.floor(inner / 10 + 2);
   const tm = Number(typeMultiplier) > 0 ? typeMultiplier : 1;
   const v = Number(variance) > 0 ? variance : 1;
