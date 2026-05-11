@@ -19,7 +19,8 @@ export async function createTestUser(baseUrl, profileName, adminSecret) {
     body: JSON.stringify({
       username,
       password,
-      inviteCode: 'neo-tokyo-friends'
+      inviteCode: 'neo-tokyo-friends',
+      aiDataSharingConsent: true
     })
   });
 
