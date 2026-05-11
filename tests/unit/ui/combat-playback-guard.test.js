@@ -1,6 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { shouldSkipAttackRecord } from '../../../public/js/ui/combat-ui-utils.js';
+import {
+  collectPendingEnemyKoAnimationIndices,
+  enemyKoAnimationKey,
+  shouldSkipAttackRecord
+} from '../../../public/js/ui/combat-ui-utils.js';
 
 describe('shouldSkipAttackRecord — dead-target playback pruning', () => {
   it('skips a player damage attack whose enemy target is already at hp=0', () => {
@@ -88,5 +92,46 @@ describe('shouldSkipAttackRecord — dead-target playback pruning', () => {
   it('returns false when attack record is nullish or maps are empty', () => {
     assert.equal(shouldSkipAttackRecord('player', null, {}, {}, {}), false);
     assert.equal(shouldSkipAttackRecord('player', {}, {}, {}, {}), false);
+  });
+});
+
+describe('collectPendingEnemyKoAnimationIndices', () => {
+  it('does not reselect an already animated dead enemy on a later combat response', () => {
+    const enemies = [
+      { uid: 'enemy-a', hp: 0, maxHp: 30 },
+      { uid: 'enemy-b', hp: 12, maxHp: 30 },
+    ];
+    const alreadyAnimated = new Set([enemyKoAnimationKey(enemies[0], 0)]);
+
+    const pending = collectPendingEnemyKoAnimationIndices(enemies, alreadyAnimated, new Set());
+
+    assert.deepEqual(pending, []);
+    assert.equal(alreadyAnimated.size, 1);
+  });
+
+  it('returns and records a newly dead enemy once', () => {
+    const enemies = [
+      { uid: 'enemy-a', hp: 0, maxHp: 30 },
+      { uid: 'enemy-b', hp: 0, maxHp: 30 },
+    ];
+    const alreadyAnimated = new Set([enemyKoAnimationKey(enemies[0], 0)]);
+    const currentPlayback = new Set();
+
+    const pending = collectPendingEnemyKoAnimationIndices(enemies, alreadyAnimated, currentPlayback);
+
+    assert.deepEqual(pending, [1]);
+    assert.equal(alreadyAnimated.has(enemyKoAnimationKey(enemies[1], 1)), true);
+    assert.equal(currentPlayback.has(enemyKoAnimationKey(enemies[1], 1)), true);
+  });
+
+  it('uses uid keys when available so slot movement does not replay KO particles', () => {
+    const firstSlotKey = enemyKoAnimationKey({ uid: 'enemy-a' }, 0);
+    const movedSlotKey = enemyKoAnimationKey({ uid: 'enemy-a' }, 2);
+
+    assert.equal(movedSlotKey, firstSlotKey);
+  });
+
+  it('keeps the target id fallback for attack records without a slot index', () => {
+    assert.equal(enemyKoAnimationKey(null, 0, 'enemy-a'), 'id:enemy-a');
   });
 });

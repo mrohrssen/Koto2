@@ -72,6 +72,50 @@ export function shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)
   return false;
 }
 
+/** Stable key for remembering which enemy KO animations already played. */
+export function enemyKoAnimationKey(enemy, index, fallbackId = null) {
+  if (enemy?.uid) return `uid:${enemy.uid}`;
+  if (fallbackId) return `id:${fallbackId}`;
+  return `idx:${index}`;
+}
+
+/**
+ * Return dead enemy slots that still need their KO animation, recording them
+ * as claimed so later combat responses do not replay the same particle puff.
+ */
+export function collectPendingEnemyKoAnimationIndices(enemies, alreadyAnimatedKeys, currentPlaybackKeys = new Set()) {
+  const pending = [];
+  if (!Array.isArray(enemies)) return pending;
+
+  for (let i = 0; i < enemies.length; i++) {
+    const enemy = enemies[i];
+    if (!enemy || enemy.hp > 0 || enemy.befriended) continue;
+
+    const key = enemyKoAnimationKey(enemy, i);
+    if (alreadyAnimatedKeys?.has(key) || currentPlaybackKeys?.has(key)) continue;
+
+    alreadyAnimatedKeys?.add(key);
+    currentPlaybackKeys?.add(key);
+    pending.push(i);
+  }
+
+  return pending;
+}
+
+export function collectExistingEnemyKoAnimationKeys(enemies) {
+  const keys = new Set();
+  if (!Array.isArray(enemies)) return keys;
+
+  for (let i = 0; i < enemies.length; i++) {
+    const enemy = enemies[i];
+    if (enemy && enemy.hp <= 0 && !enemy.befriended) {
+      keys.add(enemyKoAnimationKey(enemy, i));
+    }
+  }
+
+  return keys;
+}
+
 /** Keep the current BattleScene mounted while the defeated NPC offers a reward. */
 export function shouldKeepNpcBattleSceneForReward(state) {
   return state?.phase === 'npc_skill_selection';
