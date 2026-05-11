@@ -55,4 +55,25 @@ describe('Dead creatures excluded from XP', () => {
     assert.strictEqual(creature.level, 6);
     assert.ok(creature.hp >= hpBefore, 'alive creature should gain HP on level-up');
   });
+
+  it('addXpToCreature restores 10 percent HP and MP for alive creatures on level-up', () => {
+    const creature = instantiateCreature('hi');
+    creature.level = 5;
+    creature.xp = 0;
+    creature.hp = 1;
+    creature.mp = 0;
+
+    const levelUps = addXpToCreature(creature, xpToNextLevel(creature.level));
+    const levelUp = levelUps[0];
+
+    assert.strictEqual(creature.level, 6);
+    assert.strictEqual(
+      creature.hp,
+      Math.min(creature.maxHp, 1 + levelUp.hpGain + Math.floor(creature.maxHp * 0.10))
+    );
+    assert.strictEqual(
+      creature.mp,
+      Math.min(creature.maxMp, levelUp.mpGain + Math.floor(creature.maxMp * 0.10))
+    );
+  });
 });

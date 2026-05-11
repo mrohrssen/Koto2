@@ -76,6 +76,7 @@ export function getElementMultiplier(attackerElement, defenderElement) {
 }
 
 const STARTING_LEVEL = 5;
+const LEVEL_UP_RESTORE_PERCENT = 0.10;
 export const MAX_CREATURE_MOVES = 3;
 
 export function syncCreatureMoves(creature) {
@@ -282,9 +283,11 @@ export function addXpToCreature(creature, xp, metaMults = null, _itemBuffs = nul
       }
     }
     if (creature.hp > 0) {
-      creature.hp += hpDiff;
+      const hpRestore = Math.floor(creature.maxHp * LEVEL_UP_RESTORE_PERCENT);
+      creature.hp = Math.min(creature.maxHp, creature.hp + hpDiff + hpRestore);
     }
-    creature.mp = (creature.mp || 0) + mpDiff;
+    const mpRestore = Math.floor(creature.maxMp * LEVEL_UP_RESTORE_PERCENT);
+    creature.mp = Math.min(creature.maxMp, (creature.mp || 0) + mpDiff + mpRestore);
 
     // Check for new move at this level
     const template = CREATURES_BY_ID[creature.id];
