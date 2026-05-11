@@ -723,8 +723,9 @@ async function autoProceed() {
     const result = await apiProceed();
     if (result?.state) {
       updateGameState(result.state);
-      explorationUI.showProceedIngredientDrops(result, result.state);
-      await playRoomTransition(result.state);
+      await playRoomTransition(result.state, {
+        ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
+      });
       updateUI();
     }
   } finally {

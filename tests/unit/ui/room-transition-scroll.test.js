@@ -225,6 +225,7 @@ describe('playRoomTransition parallax state', () => {
 
     assert.equal(startedSpeeds[0], 3.8);
     assert.deepEqual(waits, [2700]);
+    assert.equal(scrollStates.at(-1), 'stopped');
     assert.equal(startedSpeeds.at(-1), 0.6);
   });
 
@@ -251,6 +252,7 @@ describe('playRoomTransition parallax state', () => {
       'setScrollState:scrolling',
       'startParallax:3.8',
       'wait:2700',
+      'setScrollState:stopped',
       'startParallax:0.6',
       'showNpcTrainer',
       'showNpcSprite',
@@ -277,6 +279,7 @@ describe('playRoomTransition parallax state', () => {
       'setScrollState:scrolling',
       'startParallax:3.8',
       'wait:2700',
+      'setScrollState:stopped',
       'startParallax:0.6',
       'showNpcInDisplay',
       'showNpcSprite',

@@ -89,6 +89,7 @@ export async function playRoomTransition(gameState, { waitFn = wait, ingredientD
   } else {
     await waitFn(ROOM_TRAVEL_DURATION_MS);
   }
+  setScrollState('stopped');
   startParallax(EXPLORATION_SCROLL_SPEED);
 
   const roomType = room.type;
