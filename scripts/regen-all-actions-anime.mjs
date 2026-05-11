@@ -74,7 +74,7 @@ async function loadStyleRefs(dir) {
 // ---------------------------------------------------------------------------
 
 const VISUAL_HINTS = {
-  // --- Creature base words (nouns) ---
+  // --- Creature names (nouns) ---
   'turtle': 'a cute turtle with a patterned shell',
   'horse': 'a horse head with flowing mane',
   'butterfly': 'a beautiful butterfly with colorful wings',
@@ -292,12 +292,12 @@ function extractAllWords(creatures) {
   const seen = new Map();
 
   for (const c of creatures) {
-    if (!seen.has(c.baseWord)) {
-      seen.set(c.baseWord, {
-        word: c.baseWord,
-        reading: c.baseReading,
-        english: c.baseMeaning,
-        category: 'base',
+    if (!seen.has(c.name)) {
+      seen.set(c.name, {
+        word: c.name,
+        reading: c.reading,
+        english: c.meaning,
+        category: 'creature',
       });
     }
     if (c.autoSkill && !seen.has(c.autoSkill.word)) {
@@ -336,7 +336,7 @@ function extractAllWords(creatures) {
 
 /** Get the full list of action icon slugs (creature words + moves on disk) */
 async function getAllIconSlugs(projectRoot) {
-  // Start with creature base words
+  // Start with creature names
   const creatures = JSON.parse(await readFile(resolve(projectRoot, 'data/creatures.json'), 'utf-8'));
   const creatureWords = extractAllWords(creatures);
 

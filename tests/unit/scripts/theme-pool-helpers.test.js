@@ -15,8 +15,8 @@ before(async () => {
 // ── crossReferenceExisting ──────────────────────────────────────────
 
 describe('crossReferenceExisting', () => {
-  it('annotates a word found as creature baseWord', () => {
-    // R1 creature 'hi' has baseWord '火'
+  it('annotates a word found as creature name', () => {
+    // R1 creature 'hi' has name '火'
     const candidates = [{ word: '\u706B', rank: 574 }];
     const result = crossReferenceExisting(candidates);
     assert.ok(Array.isArray(result[0].existingUses));
@@ -63,8 +63,8 @@ describe('crossReferenceExisting', () => {
     assert.strictEqual(areaLocUses.length, 0, 'R1 area has empty subAreas');
   });
 
-  it('annotates a word found as NPC baseWord', () => {
-    // R1 NPC 'kodomo' has baseWord '子供'
+  it('annotates a word found as NPC name', () => {
+    // R1 NPC 'kodomo' has name '子供'
     const candidates = [{ word: '\u5B50\u4F9B', rank: 836 }];
     const result = crossReferenceExisting(candidates);
     assert.ok(result[0].existingUses.includes('npc:kodomo'));
@@ -96,7 +96,7 @@ describe('crossReferenceExisting', () => {
   });
 
   it('handles word used in multiple places', () => {
-    // '子供' appears as NPC baseWord for 'kodomo'
+    // '子供' appears as NPC name for 'kodomo'
     const candidates = [{ word: '\u5B50\u4F9B', rank: 836 }];
     const result = crossReferenceExisting(candidates);
     assert.ok(result[0].existingUses.length >= 1);

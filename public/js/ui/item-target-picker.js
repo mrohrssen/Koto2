@@ -16,7 +16,7 @@ export function showItemTargetPicker(creatures, onPicked) {
     heading: 'Choose target',
     cards: creatures.filter(Boolean).map(c => ({
       sprite: `<img src="${creatureStaticPath(c.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`,
-      title: `${c.reading || c.baseReading || c.name} (${c.nameEn})`,
+      title: `${c.reading || c.name} (${c.nameEn})`,
       subtitle: `Lv${c.level} · HP ${c.hp}/${c.maxHp}`,
     })),
     onSelect: (index) => {

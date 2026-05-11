@@ -34,33 +34,33 @@ Every piece of Japanese text follows the **i+1 principle**: only words the playe
 ## System 1: Creatures (~1,000 words)
 
 ### What It Teaches
-- **500 unique base words** (concrete nouns): animals, plants, celestial/weather, mythical/fantasy, abstract-visual
+- **500 unique Japanese words** (concrete nouns): animals, plants, celestial/weather, mythical/fantasy, abstract-visual
 - **500 unique modifiers** (adjectives): i-adjectives, na-adjectives, colors, temperament, state/condition
 
-Every creature has a unique base word AND a unique modifier. No two creatures share either.
+Every creature has a unique Japanese word AND a unique modifier. No two creatures share either.
 
 ### How the Player Learns
 
-**Split attack card (highest repetition).** Every time any creature acts in combat — the player's or the opponent's — the split attack card displays the creature's base word with its reading and English meaning. A player who fights 10 battles per session with 3 creatures sees creature base words 100+ times per session. This is the single highest-repetition vocabulary in the game.
+**Split attack card (highest repetition).** Every time any creature acts in combat — the player's or the opponent's — the split attack card displays the creature's Japanese word with its reading and English meaning. A player who fights 10 battles per session with 3 creatures sees creature Japanese words 100+ times per session. This is the single highest-repetition vocabulary in the game.
 
-**First encounter introduction.** When the player encounters a new creature species for the first time, the full name is displayed: modifier + base word (e.g., 古代の亀 = "Ancient Turtle"). Both words are introduced with readings and meanings.
+**First encounter introduction.** When the player encounters a new creature species for the first time, the full name is displayed: modifier + Japanese word (e.g., 古代の亀 = "Ancient Turtle"). Both words are introduced with readings and meanings.
 
-**Collection screen.** The player's creature collection shows all creatures with their full names. Browsing the collection reinforces both base words and modifiers passively.
+**Collection screen.** The player's creature collection shows all creatures with their full names. Browsing the collection reinforces both Japanese words and modifiers passively.
 
-**Creature info panel.** Tapping any creature shows its full info: name, modifier, base word, element, moves, stats. The modifier is always visible here.
+**Creature info panel.** Tapping any creature shows its full info: name, modifier, Japanese word, element, moves, stats. The modifier is always visible here.
 
 **Dual role: Exploration or Town Work.** Each creature can either join the player's exploration party OR stay home and work in the town. Creatures assigned to town buildings contribute to that building's function — a creature at the 病院 (hospital) helps heal faster, one at the 市場 (market) unlocks better shop inventory. This creates three vocabulary reinforcement loops:
-1. **Incentive to collect more creatures** — you need workers AND fighters, so you seek out more creatures and encounter more base words/modifiers.
+1. **Incentive to collect more creatures** — you need workers AND fighters, so you seek out more creatures and encounter more Japanese words/modifiers.
 2. **Cross-system word pairing** — the player sees their creature's name next to the building's name repeatedly (古代の亀 works at 病院), linking creature vocabulary to structure vocabulary.
 3. **Rotation reinforcement** — swapping creatures between roles means revisiting their names and stats regularly.
 
-### What Does NOT Belong as Creature Base Words
+### What Does NOT Belong as Creature Japanese Words
 - **Food/life words** (卵, 果物, 茸) → these are consumable items
 - **Materials/objects** (石, 鉄, 鏡, 鍵) → these are equipment or crafting resources
 - **Structures** (塔, 橋, 門, 壁) → these are town buildings
 - **Phenomena** (炎, 氷, 波) → these are move effects or area themes
 
-### Base Word Categories That DO Work
+### Japanese Word Categories That DO Work
 
 | Category | Examples (EN) | Why They Work |
 |---|---|---|
@@ -109,7 +109,7 @@ Moves are NOT limited to "combat verbs." 泣く (cry), 眠る (sleep), 歌う (s
 
 ### How the Player Learns
 
-**Split attack card (shared with creature base word).** Every time a creature uses a move, the card shows both the creature's base word AND the move's verb. The player processes two vocabulary words per combat action.
+**Split attack card (shared with creature Japanese word).** Every time a creature uses a move, the card shows both the creature's Japanese word AND the move's verb. The player processes two vocabulary words per combat action.
 
 **Move selection.** During the player's turn, they choose from their creature's available moves. Each move shows: Japanese verb, reading, English meaning, and move category (damage/heal/buff/debuff/shield). The act of choosing forces the player to read and evaluate each word.
 
@@ -373,7 +373,7 @@ The same word appearing in multiple systems strengthens retention. Overlap is in
 
 A single combat encounter in 凍った湖 (Frozen Lake) exposes the player to:
 - **Area words:** 凍った (frozen) + 湖 (lake) — on screen
-- **Creature bases:** 魚 (fish), 亀 (turtle) — on attack cards
+- **Creature names:** 魚 (fish), 亀 (turtle) — on attack cards
 - **Creature modifiers:** 冷たい (cold), 透明な (transparent) — on creature info
 - **Move verbs:** 凍る (freeze), 流れる (flow), 守る (protect) — every attack
 - **Thematic words:** 反射 (reflection), 沈黙 (silence) — in room descriptions
@@ -405,7 +405,7 @@ The game world is organized by word frequency. Every area, creature, NPC, and it
 
 **The SRS curates the player's options, but the player always chooses.** After completing an area, the player picks from 2–3 next areas — all appropriate for their current vocabulary level. Within an area, which creatures spawn, which NPCs appear, and which items drop are all influenced by what words the player needs exposure to.
 
-Early explorations naturally lead to areas with high-frequency words. As the player progresses, the SRS opens up areas with lower-frequency content. A player who has mastered ~1,000 words will never be offered an area whose creatures use rank-5,000 base words — the SRS ensures every encounter is productive.
+Early explorations naturally lead to areas with high-frequency words. As the player progresses, the SRS opens up areas with lower-frequency content. A player who has mastered ~1,000 words will never be offered an area whose creatures use rank-5,000 Japanese words — the SRS ensures every encounter is productive.
 
 This means **the game is always tailored to the player's vocabulary level**. Two players at different levels exploring the "same" area may encounter different creatures, different item drops, and different narration complexity.
 
@@ -494,7 +494,7 @@ The stages are organized by a **curated word list** that combines WaniKani level
 
 **Player experience:** A player at this stage can understand simple Japanese conversations. The town is thriving — creatures roam the streets alongside humans. Story quests reveal the world's lore. Areas are thematically rich with detailed sub-areas. The player has a diverse creature collection and starts specializing builds.
 
-**What the SRS does:** Introduces review-focused encounters. If the player hasn't seen a word in 2+ weeks, the SRS increases its spawn rate — the creature with that base word appears more often, the area with that thematic word gets offered as a choice.
+**What the SRS does:** Introduces review-focused encounters. If the player hasn't seen a word in 2+ weeks, the SRS increases its spawn rate — the creature with that Japanese word appears more often, the area with that thematic word gets offered as a choice.
 
 | System | Content | Words | Dev Deliverables |
 |---|---|:---:|---|

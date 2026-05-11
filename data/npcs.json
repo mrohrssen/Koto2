@@ -6,10 +6,9 @@
     "speakerId": 3,
     "area": "hajimari-no-hiroba",
     "tier": 1,
-    "baseWord": "子供",
-    "baseReading": "こども",
-    "baseMeaning": "child",
-    "baseRank": 836,
+    "reading": "こども",
+    "meaning": "child",
+    "rank": 836,
     "attack": 10,
     "skills": [
       "asobu"
@@ -36,10 +35,9 @@
     "speakerId": 13,
     "area": "hajimari-no-hiroba",
     "tier": 1,
-    "baseWord": "大人",
-    "baseReading": "おとな",
-    "baseMeaning": "adult",
-    "baseRank": 1263,
+    "reading": "おとな",
+    "meaning": "adult",
+    "rank": 1263,
     "attack": 10,
     "skills": [
       "hataraku"
@@ -66,10 +64,9 @@
     "speakerId": 47,
     "area": "hajimari-no-hiroba",
     "tier": 1,
-    "baseWord": "男の子",
-    "baseReading": "おとこのこ",
-    "baseMeaning": "boy",
-    "baseRank": 2500,
+    "reading": "おとこのこ",
+    "meaning": "boy",
+    "rank": 2500,
     "attack": 10,
     "skills": [
       "hashiru"
@@ -96,10 +93,9 @@
     "speakerId": 9,
     "area": "hajimari-no-hiroba",
     "tier": 1,
-    "baseWord": "女の子",
-    "baseReading": "おんなのこ",
-    "baseMeaning": "girl",
-    "baseRank": 2300,
+    "reading": "おんなのこ",
+    "meaning": "girl",
+    "rank": 2300,
     "attack": 10,
     "skills": [
       "utau"
@@ -126,10 +122,9 @@
     "speakerId": 3,
     "area": "wild-plains",
     "tier": 1,
-    "baseWord": "子供",
-    "baseReading": "こども",
-    "baseMeaning": "child",
-    "baseRank": 836,
+    "reading": "こども",
+    "meaning": "child",
+    "rank": 836,
     "attack": 10,
     "skills": [
       "asobu"
@@ -156,10 +151,9 @@
     "speakerId": 13,
     "area": "wild-plains",
     "tier": 1,
-    "baseWord": "大人",
-    "baseReading": "おとな",
-    "baseMeaning": "adult",
-    "baseRank": 1263,
+    "reading": "おとな",
+    "meaning": "adult",
+    "rank": 1263,
     "attack": 10,
     "skills": [
       "hataraku"
@@ -186,10 +180,9 @@
     "speakerId": 47,
     "area": "wild-plains",
     "tier": 1,
-    "baseWord": "男の子",
-    "baseReading": "おとこのこ",
-    "baseMeaning": "boy",
-    "baseRank": 2500,
+    "reading": "おとこのこ",
+    "meaning": "boy",
+    "rank": 2500,
     "attack": 10,
     "skills": [
       "hashiru"
@@ -216,10 +209,9 @@
     "speakerId": 9,
     "area": "wild-plains",
     "tier": 1,
-    "baseWord": "女の子",
-    "baseReading": "おんなのこ",
-    "baseMeaning": "girl",
-    "baseRank": 2300,
+    "reading": "おんなのこ",
+    "meaning": "girl",
+    "rank": 2300,
     "attack": 10,
     "skills": [
       "utau"
@@ -245,10 +237,9 @@
     "nameEn": "Teacher",
     "speakerId": null,
     "area": "school",
-    "baseWord": "先生",
-    "baseReading": "せんせい",
-    "baseMeaning": "teacher; instructor",
-    "baseRank": 500,
+    "reading": "せんせい",
+    "meaning": "teacher; instructor",
+    "rank": 500,
     "attack": 14,
     "skills": [
       "yomu-npc"
@@ -274,10 +265,9 @@
     "nameEn": "Professor",
     "speakerId": null,
     "area": "school",
-    "baseWord": "教授",
-    "baseReading": "きょうじゅ",
-    "baseMeaning": "professor; teaching",
-    "baseRank": 4200,
+    "reading": "きょうじゅ",
+    "meaning": "professor; teaching",
+    "rank": 4200,
     "attack": 18,
     "skills": [
       "tamesu"
@@ -303,10 +293,9 @@
     "nameEn": "Student",
     "speakerId": null,
     "area": "school",
-    "baseWord": "生徒",
-    "baseReading": "せいと",
-    "baseMeaning": "pupil; student; schoolchild",
-    "baseRank": 1500,
+    "reading": "せいと",
+    "meaning": "pupil; student; schoolchild",
+    "rank": 1500,
     "attack": 10,
     "skills": [
       "benkyou"
@@ -332,10 +321,9 @@
     "nameEn": "Older Student",
     "speakerId": null,
     "area": "school",
-    "baseWord": "先輩",
-    "baseReading": "せんぱい",
-    "baseMeaning": "senior (at school); elder",
-    "baseRank": 1400,
+    "reading": "せんぱい",
+    "meaning": "senior (at school); elder",
+    "rank": 1400,
     "attack": 15,
     "skills": [
       "oboeru"

@@ -202,7 +202,7 @@ function cleanEntityValue(value) {
 export function normalizeTranslationEntity(entity) {
   const id = cleanEntityValue(entity?.id);
   const type = cleanEntityValue(entity?.type) || 'entity';
-  const surface = cleanEntityValue(entity?.surface || entity?.name || entity?.baseWord);
+  const surface = cleanEntityValue(entity?.surface || entity?.name);
   const displayName = cleanEntityValue(entity?.displayName || entity?.nameEn);
   if (!id || !surface || !displayName) return null;
   return { id, type, surface, displayName };

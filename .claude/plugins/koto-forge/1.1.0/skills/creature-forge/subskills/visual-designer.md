@@ -8,13 +8,12 @@ Read the locked identity JSON at the path provided to you:
 
 ```json
 {
-  "id": "kamedor",
-  "name": "Kamedor",
-  "nameKatakana": "カメドル",
-  "baseWord": "亀",
-  "baseReading": "かめ",
-  "baseMeaning": "turtle",
-  "baseRank": 9300,
+  "id": "kame",
+  "name": "亀",
+  "nameEn": "Turtle",
+  "reading": "かめ",
+  "meaning": "turtle",
+  "rank": 9300,
   "frequencyTier": "rare",
   "visualTier": "rare",
   "attack": { "word": "噛む", "meaning": "Bite", ... },
@@ -37,7 +36,7 @@ Produce **3 wildly different visual concepts**, each with a **rich description**
 - 犬 (dog) → clearly canine. NOT a wolf-like fantasy beast.
 - 鋏 (scissors) → bladed limbs, scissor features. NOT a crab with claws.
 
-**Test:** Show the image to someone. They should think the base word, not a different noun.
+**Test:** Show the image to someone. They should think the Japanese word, not a different noun.
 
 ### Visual Tier Directives
 

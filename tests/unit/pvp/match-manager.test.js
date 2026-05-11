@@ -11,7 +11,7 @@ function makeTeam() {
       active: [{
         id: 'c1', name: 'テスト', nameEn: 'Test', element: 'neutral', level: 5,
         hp: 100, maxHp: 100, mp: 20, maxMp: 20, attack: 15, defense: 5,
-        baseWord: '試す', baseReading: 'ためす', baseMeaning: 'test',
+        reading: 'ためす', meaning: 'test',
         activeEffects: [],
         moves: [{ id: 'slash', name: '斬る', nameEn: 'Slash', reading: 'きる',
           element: 'neutral', category: 'damage', power: 40,

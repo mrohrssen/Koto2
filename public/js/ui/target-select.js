@@ -62,13 +62,8 @@ function showTargets(targets, move, type) {
       const elemColor = ELEMENT_COLORS[target.element] || '#888';
       const elemKanji = ELEMENT_KANJI[target.element] || '—';
       const spriteHtml = `<img src="${creatureStaticPath(target.id)}" alt="" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.style.display='none'">`;
-      const nameWord = target.baseWord || target.word || target.name;
-      const nameReading = target.baseWord ? (target.baseReading || target.reading) : (target.reading || target.baseReading);
-      const nameMeaning = target.baseWord
-        ? (target.baseMeaning || target.meaning || target.nameEn)
-        : (target.meaning || target.baseMeaning || target.nameEn);
       const nameHtml = renderJpSentence(
-        [entityToToken({ word: nameWord, reading: nameReading, meaning: nameMeaning })],
+        [entityToToken(target)],
         getKnownWords(), new Map()
       );
       const eff = move ? getEffectiveness(move.element, target.element) : null;

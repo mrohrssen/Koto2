@@ -313,7 +313,7 @@ describe('aggregateWordExposures enrichment', () => {
       // JMdict baseline
       const jmdictBaseline = { '火': { reading: 'ひ', definitions: [{ en: 'fire', primary: true }] } };
       writeFileSync(join(tmp, 'data', 'latest-jm-dict.json'), JSON.stringify(jmdictBaseline));
-      // Overlay: 火 is a creature baseWord
+      // Overlay: 火 is a creature name
       const overlayOwners = new Map([['火', 'creatures.json']]);
       // Word-knowledge fixture
       writeFileSync(join(tmp, 'word-knowledge-u_test.json'), JSON.stringify({

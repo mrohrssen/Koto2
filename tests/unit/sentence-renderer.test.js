@@ -163,7 +163,7 @@ describe('renderJpSentence — attack card entity tokens via entityToToken', () 
     assert.ok(!html.includes('to strike / to hit / to knock'), 'unknown entity should not show full dictionary meaning');
   });
 
-  it('renders unknown attack base word with English gloss', () => {
+  it('renders unknown attack word with English gloss', () => {
     const token = entityToToken({ name: '迷う', reading: 'まよう', meaning: 'get lost / hesitate' });
     const html = renderJpSentence([token], new Set(), new Map());
     assert.ok(html.includes('jp-entity'), 'unknown entity should have jp-entity class');
@@ -171,7 +171,7 @@ describe('renderJpSentence — attack card entity tokens via entityToToken', () 
     assert.ok(html.includes('まよう'), 'should show reading');
   });
 
-  it('renders known attack base word WITHOUT English gloss', () => {
+  it('renders known attack word WITHOUT English gloss', () => {
     const token = entityToToken({ name: '迷う', reading: 'まよう', meaning: 'get lost / hesitate' });
     const html = renderJpSentence([token], new Set(['迷う']), new Map());
     assert.ok(html.includes('jp-known'), 'known entity should have jp-known class');

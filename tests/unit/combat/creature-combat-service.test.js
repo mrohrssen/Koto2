@@ -766,9 +766,8 @@ describe('Creature Combat - executeNpcSkill', () => {
     nameEn: 'Child',
     element: 'neutral',
     attack: 10,
-    baseWord: '\u5B50\u4F9B',
-    baseReading: '\u3053\u3069\u3082',
-    baseMeaning: 'child'
+    reading: '\u3053\u3069\u3082',
+    meaning: 'child'
   };
 
   const damageSkill = {
@@ -1083,7 +1082,7 @@ describe('executeNpcSkill — single_ally random target', () => {
     const npcData = {
       id: 'senpai', name: '先輩', nameEn: 'Older Student',
       attack: 15, element: 'neutral',
-      baseWord: '先輩', baseReading: 'せんぱい', baseMeaning: 'senior'
+      reading: 'せんぱい', meaning: 'senior'
     };
     const buffSkill = {
       id: 'oboeru', name: '覚える', nameEn: 'Memorize',

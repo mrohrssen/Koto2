@@ -9,7 +9,7 @@ Read the baton JSON file at the path provided to you. Key fields:
 - `area` — object with `id`, `name`, `nameEn`, `theme`, `description`
 - `npcs` — array of 5 objects, each with:
   - `id`, `name`, `nameEn` — NPC identity
-  - `baseWord`, `baseMeaning` — base Japanese word
+  - `name`, `meaning` — base Japanese word
   - `modifier` — object with `word`, `meaning` — personality/role descriptor
   - `oneLiner` — brief character concept
 
