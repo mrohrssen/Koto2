@@ -31,7 +31,14 @@ import { ExplorationScene } from '../scenes/exploration-scene.js';
 
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
-import { SC_NAMES, shouldKeepNpcBattleSceneForReward, shouldSkipAttackRecord } from './combat-ui-utils.js';
+import {
+  collectExistingEnemyKoAnimationKeys,
+  collectPendingEnemyKoAnimationIndices,
+  enemyKoAnimationKey,
+  SC_NAMES,
+  shouldKeepNpcBattleSceneForReward,
+  shouldSkipAttackRecord
+} from './combat-ui-utils.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -133,6 +140,7 @@ let enemyAttackPending = false;
 let combatPausedForVocab = false;
 let playerAttackTimer = null;
 let enemyAttackTimer = null;
+let animatedEnemyKoKeys = new Set();
 
 // Move-based combat state
 let currentCreatureIndex = 0;
@@ -534,6 +542,7 @@ export function cleanupCombat() {
   enemyAttackPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
+  animatedEnemyKoKeys = new Set();
   // PIXI status label cleanup is handled by BattleScene.beforeExit via
   // registry disposal when we transition to ExplorationScene.
 }
@@ -686,6 +695,7 @@ export async function startCombatLoop(opts = {}) {
   // active yet, so the transition still fires as expected.
   const mgr = getSceneManager();
   const gs = getGameState();
+  animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(gs.combat?.enemies || []);
   if (!(mgr.currentScene instanceof BattleScene)) {
     try {
       await mgr.transition(BattleScene, {
@@ -955,18 +965,20 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
     showHealPopup(atk.healAmount, drainAttackerPos);
   }
 
-  const killKey = typeof atk.targetIndex === 'number' ? `idx:${atk.targetIndex}` : `id:${atk.targetId}`;
-  if (atk.targetDefeated && !killedEnemies.has(killKey)) {
-    killedEnemies.add(killKey);
+  const defeatedTargetIndex = typeof atk.targetIndex === 'number' ? atk.targetIndex : 0;
+  const killKey = enemyKoAnimationKey(result.enemies?.[defeatedTargetIndex], defeatedTargetIndex, atk.targetId);
+  if (atk.targetDefeated && !killedEnemies.has(killKey) && !animatedEnemyKoKeys.has(killKey)) {
     // Skip KO animation if this creature is the befriend quiz target (it survived at 1 HP)
     const isBefriendTarget = result.befriendQuizTriggered
       && typeof result.befriendQuiz?.targetIndex === 'number'
       && result.befriendQuiz.targetIndex === atk.targetIndex;
     if (!isBefriendTarget) {
+      killedEnemies.add(killKey);
+      animatedEnemyKoKeys.add(killKey);
       // Await the 600ms alpha+scale fade so the next attack in playback can't
       // start against a half-faded sprite — prior fire-and-forget let the next
       // syncCreatures race the tween's final frame, leaving a ghost corpse.
-      await animateKOForScene(getSceneManager().currentScene, 'enemy', typeof atk.targetIndex === 'number' ? atk.targetIndex : 0);
+      await animateKOForScene(getSceneManager().currentScene, 'enemy', defeatedTargetIndex);
     }
     if (result.xpEvents) {
       const xpEvent = result.xpEvents.find(ev =>
@@ -988,7 +1000,9 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
 
   const partySkillKoIndices = await vfx.showPartySkillProcs(atk, enemyHpMap);
   for (const index of partySkillKoIndices || []) {
-    killedEnemies.add(`idx:${index}`);
+    const key = enemyKoAnimationKey(result.enemies?.[index], index);
+    killedEnemies.add(key);
+    animatedEnemyKoKeys.add(key);
   }
 
   if (continueControl) {
@@ -1126,12 +1140,13 @@ async function executeCreatureMovesTurn(choices) {
       // sprite visible.
       if (result.enemies) {
         const koPromises = [];
-        for (let i = 0; i < result.enemies.length; i++) {
-          const e = result.enemies[i];
-          if (e && e.hp <= 0 && !e.befriended && !killedEnemies.has(`idx:${i}`)) {
-            killedEnemies.add(`idx:${i}`);
-            koPromises.push(animateKOForScene(getSceneManager().currentScene, 'enemy', i));
-          }
+        const pendingKoIndices = collectPendingEnemyKoAnimationIndices(
+          result.enemies,
+          animatedEnemyKoKeys,
+          killedEnemies
+        );
+        for (const i of pendingKoIndices) {
+          koPromises.push(animateKOForScene(getSceneManager().currentScene, 'enemy', i));
         }
         if (koPromises.length) await Promise.all(koPromises);
       }
@@ -1572,6 +1587,7 @@ export async function stopCombatLoop(result) {
   enemyAttackPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
+  animatedEnemyKoKeys = new Set();
 
   // Fix A: Immediately mark combat inactive on the client so derivePhase()
   // stops returning 'combat'. Any stray updateUI() during the victory window
