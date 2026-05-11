@@ -47,6 +47,15 @@ class FakeSprite extends FakeContainer {
   }
 }
 
+class FakeRectangle {
+  constructor(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
+}
+
 class FakeGraphics extends FakeContainer {
   ellipse() { return this; }
   circle() { return this; }
@@ -59,9 +68,17 @@ class FakeText extends FakeContainer {
   constructor(opts) { super(); this.text = opts?.text ?? ''; this.width = this.text.length * 6; this.height = 10; }
 }
 
-const FakeTexture = { WHITE: { width: 60, height: 60 } };
+class FakeTexture {
+  constructor(options = {}) {
+    this.source = options.source ?? {};
+    this.frame = options.frame ?? null;
+    this.width = options.frame?.width ?? options.width ?? 60;
+    this.height = options.frame?.height ?? options.height ?? 60;
+  }
+}
+FakeTexture.WHITE = new FakeTexture({ width: 60, height: 60 });
 const FakeAssets = {
-  _loadImpl: async () => ({ width: 60, height: 60 }),
+  _loadImpl: async () => ({ width: 60, height: 60, source: {} }),
   load(path) { return FakeAssets._loadImpl(path); },
 };
 
@@ -72,6 +89,7 @@ await mock.module('pixi.js', {
     Graphics: FakeGraphics,
     Text: FakeText,
     Texture: FakeTexture,
+    Rectangle: FakeRectangle,
     Assets: FakeAssets,
   },
 });
@@ -106,6 +124,26 @@ await mock.module('../../../public/js/pixi/app.js', {
 
 await mock.module('../../../public/js/pixi/image-loader.js', {
   namedExports: { loadImageTexture: (path) => FakeAssets._loadImpl(path) },
+});
+
+let fakeAnimationManifest = null;
+await mock.module('../../../public/js/pixi/creature-animation-manifest.js', {
+  namedExports: {
+    loadCreatureAnimationManifest: async () => fakeAnimationManifest,
+    getAnimatedCreatureEntry: (manifest, creatureId) => {
+      const entry = manifest?.animations?.[creatureId];
+      if (!entry?.idle && !entry?.walk) return null;
+      return {
+        ...entry,
+        frameWidth: manifest.frameWidth,
+        frameHeight: manifest.frameHeight,
+        columns: manifest.columns,
+        frames: manifest.frames,
+        fps: manifest.fps,
+        renderScale: manifest.renderScale,
+      };
+    },
+  },
 });
 
 // Unused in the paths we exercise, but formation.js imports from these.
@@ -434,6 +472,49 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
     assert.equal(top._shadow.y, top.baseY + 60 * 0.90 * 0.50);
     assert.equal(middle._shadow.y, middle.baseY + 60 * 0.98 * 0.38);
     assert.equal(bottom._shadow.y, bottom.baseY + 60 * 1.08 * 0.50);
+  });
+
+  it('pulls animated creature shadows back to the natural foot line', async () => {
+    fakeAnimationManifest = {
+      frameWidth: 256,
+      frameHeight: 256,
+      columns: 6,
+      frames: 1,
+      fps: 12,
+      renderScale: 1.85,
+      animations: {
+        hi: { idle: '/animated-hi.png' },
+      },
+    };
+    const originalLoad = FakeAssets._loadImpl;
+    FakeAssets._loadImpl = async () => ({ width: 256, height: 256, source: {} });
+
+    try {
+      const topCtx = makeSceneCtx();
+      const top = await spawnFormationSprite(topCtx, 'player', { uid: 'top-animated', id: 'hi', hp: 10 }, 0, {
+        slotI: 0,
+        skipEnter: true,
+      });
+
+      const middleCtx = makeSceneCtx();
+      const middle = await spawnFormationSprite(middleCtx, 'player', { uid: 'middle-animated', id: 'hi', hp: 10 }, 0, {
+        slotI: 1,
+        skipEnter: true,
+      });
+
+      const bottomCtx = makeSceneCtx();
+      const bottom = await spawnFormationSprite(bottomCtx, 'player', { uid: 'bottom-animated', id: 'hi', hp: 10 }, 0, {
+        slotI: 2,
+        skipEnter: true,
+      });
+
+      assert.equal(top._shadow.y, top.baseY + 60 * 1.85 * 0.90 * 0.50 - 23);
+      assert.equal(middle._shadow.y, middle.baseY + 60 * 1.85 * 0.98 * 0.38 - 19);
+      assert.equal(bottom._shadow.y, bottom.baseY + 60 * 1.85 * 1.08 * 0.50 - 28);
+    } finally {
+      FakeAssets._loadImpl = originalLoad;
+      fakeAnimationManifest = null;
+    }
   });
 
   it('prefers current idle creature sprites when available', async () => {

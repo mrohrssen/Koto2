@@ -152,11 +152,16 @@ function _drawShadow(shadow, shadowSpec) {
   shadow.fill({ color: 0x000000, alpha: shadowSpec.alpha });
 }
 
+const ANIMATED_SHADOW_Y_OFFSET_BY_SLOT = [23, 19, 28];
+
 function _shadowYForSprite(sprite, fallbackSpriteSize) {
   const textureHeight = sprite?._animatedCreature?.entry?.frameHeight || sprite?.texture?.height || fallbackSpriteSize;
   const scaledHeight = textureHeight * Math.abs(sprite?.scale?.y || 1);
   const offsetRatio = sprite?._slotI === 1 ? 0.38 : 0.5;
-  return sprite.baseY + scaledHeight * offsetRatio;
+  const animatedOffset = sprite?._animatedCreature
+    ? (ANIMATED_SHADOW_Y_OFFSET_BY_SLOT[sprite?._slotI] || 0)
+    : 0;
+  return sprite.baseY + scaledHeight * offsetRatio - animatedOffset;
 }
 
 function _spriteTextureWidth(sprite) {
