@@ -643,9 +643,11 @@ function fireEarthBlast(from, to, onImpact) {
 
     const ec = [0x795548, 0x8D6E63, 0xBCAAA4, 0xD7CCC8, 0xFFFFFF];
     const dx = to.x - from.x;
+    const fromGroundY = from.y + 20;
+    const toGroundY = to.y + 20;
+    const dy = toGroundY - fromGroundY;
     let elapsed = 0;
     const travelTime = 0.5;
-    const baseY = from.y + 20; // ground level
     const totalSpikes = 6;
     const trails = [];
     let spikesSpawned = 0;
@@ -663,9 +665,11 @@ function fireEarthBlast(from, to, onImpact) {
       while (spikesSpawned < targetSpikes) {
         const spikeT = spikesSpawned / (totalSpikes - 1);
         const spikeX = from.x + dx * spikeT;
+        const spikeY = fromGroundY + dy * spikeT;
         const spikeH = 15 + Math.random() * 15;
         const spike = {
           x: spikeX,
+          y: spikeY,
           height: spikeH,
           age: 0,
           riseTime: 0.08,
@@ -681,7 +685,7 @@ function fireEarthBlast(from, to, onImpact) {
             0.6
           );
           dust.x = spikeX + (Math.random() - 0.5) * 10;
-          dust.y = baseY;
+          dust.y = spikeY;
           dust._vx = (Math.random() - 0.5) * 40;
           dust._vy = -15 - Math.random() * 30;
           dust._life = 0.2 + Math.random() * 0.2;
@@ -711,9 +715,9 @@ function fireEarthBlast(from, to, onImpact) {
           // Draw triangle spike
           const g = new Graphics();
           const color = ec[~~(Math.random() * 3)];
-          g.moveTo(spike.x - 4, baseY)
-           .lineTo(spike.x, baseY - currentH)
-           .lineTo(spike.x + 4, baseY)
+          g.moveTo(spike.x - 4, spike.y)
+           .lineTo(spike.x, spike.y - currentH)
+           .lineTo(spike.x + 4, spike.y)
            .fill({ color, alpha: 0.9 });
           c.addChild(g);
           spike.graphics = g;
@@ -752,7 +756,7 @@ function fireEarthBlast(from, to, onImpact) {
             2 + Math.random() * 5
           );
           g.x = to.x + (Math.random() - 0.5) * 12;
-          g.y = baseY;
+          g.y = toGroundY;
           const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.2; // mostly upward
           const speed = 80 + Math.random() * 180;
           g._vx = Math.cos(angle) * speed;
