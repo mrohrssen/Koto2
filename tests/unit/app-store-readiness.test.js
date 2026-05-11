@@ -33,6 +33,13 @@ describe('App Store readiness static checks', () => {
     assert.equal(settingsUi.includes('settings-debug-super-attack'), true);
   });
 
+  it('guards debug crystal grants behind the server-provided allowlisted setting', () => {
+    const settingsUi = read('public/js/ui/modals.js');
+
+    assert.equal(settingsUi.includes("Object.hasOwn(serverSettings, 'debugSuperAttack')"), true);
+    assert.equal(settingsUi.includes('settings-debug-add-crystals-btn'), true);
+  });
+
   it('ships an in-app privacy policy link and page', () => {
     const html = read('public/index.html');
 

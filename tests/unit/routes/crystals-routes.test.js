@@ -11,12 +11,15 @@ import { resetDataDirForTest } from '../../../src/data-dir.js';
 describe('crystal game routes', { concurrency: false }, () => {
   let dataDir;
   let originalNodeEnv;
+  let originalSkipAuth;
 
   beforeEach(() => {
     dataDir = mkdtempSync(join(tmpdir(), 'koto-crystal-routes-'));
     clearManagersForTest();
     originalNodeEnv = process.env.NODE_ENV;
+    originalSkipAuth = process.env.SKIP_AUTH;
     process.env.NODE_ENV = 'test';
+    delete process.env.SKIP_AUTH;
     process.env.CRYSTAL_TEST_NOW = '2026-05-06T01:00:00.000Z';
   });
 
@@ -27,10 +30,25 @@ describe('crystal game routes', { concurrency: false }, () => {
     } else {
       process.env.NODE_ENV = originalNodeEnv;
     }
+    if (originalSkipAuth === undefined) {
+      delete process.env.SKIP_AUTH;
+    } else {
+      process.env.SKIP_AUTH = originalSkipAuth;
+    }
     clearManagersForTest();
     resetDataDirForTest();
     rmSync(dataDir, { recursive: true, force: true });
   });
+
+  async function registerUser(app, username) {
+    const res = await request(app)
+      .post('/api/auth/register')
+      .field('username', username)
+      .field('password', 'pass123')
+      .field('aiDataSharingConsent', 'true')
+      .expect(200);
+    return res.body;
+  }
 
   it('awards daily login crystals once per UTC date', async () => {
     const app = createApp({ authBypass: true, dataDir });
@@ -97,5 +115,39 @@ describe('crystal game routes', { concurrency: false }, () => {
     });
     assert.equal(gm.meta.crystals, 10);
     assert.equal(gm.run, null);
+  });
+
+  it('lets debug super attack users grant themselves 100 crystals', async () => {
+    const app = createApp({ dataDir, usersFile: join(dataDir, '.jrpg-users.json') });
+    const registered = await registerUser(app, 'michia');
+
+    const first = await request(app)
+      .post('/api/game/crystals/debug-add-100')
+      .set('Authorization', `Bearer ${registered.token}`)
+      .send({})
+      .expect(200);
+    const second = await request(app)
+      .post('/api/game/crystals/debug-add-100')
+      .set('Authorization', `Bearer ${registered.token}`)
+      .send({})
+      .expect(200);
+
+    assert.deepEqual(first.body, { ok: true, amount: 100, balance: 100 });
+    assert.deepEqual(second.body, { ok: true, amount: 100, balance: 200 });
+    assert.equal(getManager(registered.user.id).meta.crystals, 200);
+  });
+
+  it('rejects debug crystal grants for regular users', async () => {
+    const app = createApp({ dataDir, usersFile: join(dataDir, '.jrpg-users.json') });
+    const registered = await registerUser(app, 'newplayer');
+
+    const res = await request(app)
+      .post('/api/game/crystals/debug-add-100')
+      .set('Authorization', `Bearer ${registered.token}`)
+      .send({})
+      .expect(403);
+
+    assert.deepEqual(res.body, { ok: false, error: 'debug_crystals_forbidden' });
+    assert.equal(getManager(registered.user.id).meta.crystals, 0);
   });
 });

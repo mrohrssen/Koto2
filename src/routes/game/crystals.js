@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { awardDailyLoginCrystals } from '../../game/services/crystal-wallet-service.js';
+import { canUseDebugSuperAttack } from '../../game/debug-super-attack-access.js';
+import {
+  DAILY_CRYSTAL_BONUS,
+  awardDailyLoginCrystals,
+  ensureCrystalMeta
+} from '../../game/services/crystal-wallet-service.js';
 
 function nowForCrystalAward() {
   return process.env.NODE_ENV === 'test' && process.env.CRYSTAL_TEST_NOW
@@ -15,6 +20,18 @@ export default function createCrystalRoutes() {
     const result = awardDailyLoginCrystals(meta, nowForCrystalAward());
     if (result.awarded) req.saveGame();
     res.json({ ok: true, ...result });
+  });
+
+  router.post('/crystals/debug-add-100', (req, res) => {
+    if (!canUseDebugSuperAttack(req.user)) {
+      return res.status(403).json({ ok: false, error: 'debug_crystals_forbidden' });
+    }
+
+    const meta = req.gameManager.getMeta();
+    ensureCrystalMeta(meta);
+    meta.crystals += DAILY_CRYSTAL_BONUS;
+    req.saveGame();
+    res.json({ ok: true, amount: DAILY_CRYSTAL_BONUS, balance: meta.crystals });
   });
 
   return router;

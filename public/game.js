@@ -2041,6 +2041,7 @@ async function initGame() {
     settings,
     getGameState: () => gameState,
     updateGameState,
+    updateUI,
   });
 
   characterUI.init({

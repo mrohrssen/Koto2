@@ -9,6 +9,7 @@ let sceneModule = null;
 let settingsModule = null;
 let getGameState = null;
 let updateGameState = null;
+let updateUI = null;
 
 export function init(callbacks) {
   takeover = callbacks.takeover;
@@ -16,6 +17,7 @@ export function init(callbacks) {
   settingsModule = callbacks.settings;
   getGameState = callbacks.getGameState || null;
   updateGameState = callbacks.updateGameState || null;
+  updateUI = callbacks.updateUI || null;
 }
 
 /** Open settings takeover */
@@ -84,6 +86,9 @@ export async function openSettings() {
           Debug +100 ATK
           <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">Allowlisted playtest shortcut only</small>
         </label>
+        <button class="ui-btn" id="settings-debug-add-crystals-btn"
+          style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Add 100 Crystals</button>
+        <small style="color:#888;font-size:0.85em;display:block;margin-top:4px">Allowlisted playtest shortcut only.</small>
       ` : ''}
 
       <h4 style="margin:20px 0 8px;color:var(--accent)">Audio</h4>
@@ -228,6 +233,41 @@ export async function openSettings() {
     } catch {
       btn.textContent = 'Error';
       setTimeout(() => { btn.textContent = 'Reset Tutorial'; btn.disabled = false; }, 2000);
+    }
+  });
+
+  document.getElementById('settings-debug-add-crystals-btn')?.addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+    try {
+      const resp = await fetch(apiUrl('/api/game/crystals/debug-add-100'), {
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data?.ok && updateGameState && getGameState) {
+          const current = getGameState();
+          updateGameState({
+            ...current,
+            meta: {
+              ...(current?.meta || {}),
+              crystals: data.balance
+            }
+          });
+          updateUI?.();
+        }
+        btn.textContent = `Added — balance ${data.balance}`;
+        sceneModule.showToast?.('+100 crystals', 1600);
+        setTimeout(() => { btn.textContent = 'Add 100 Crystals'; btn.disabled = false; }, 2000);
+      } else {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Add 100 Crystals'; btn.disabled = false; }, 2000);
+      }
+    } catch {
+      btn.textContent = 'Error';
+      setTimeout(() => { btn.textContent = 'Add 100 Crystals'; btn.disabled = false; }, 2000);
     }
   });
 
