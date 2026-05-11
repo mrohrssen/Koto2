@@ -731,7 +731,9 @@ async function showShrineSprite() {
   const spritePath = `/assets/sprites/shrine_fox.webp?v=${SPRITE_VERSION}`;
   showNpcInDisplay('Shrine Fox', spritePath, { skipPixi: true });
   const scene = await waitForSceneWithNpcs();
-  if (scene) await scene.showNpcSprite(spritePath, { slideIn: true });
+  if (scene && !scene.npcSprite) {
+    await scene.showNpcSprite(spritePath, { slideIn: true });
+  }
 }
 
 /** Shrine phase - modern NPC-style reward room */

@@ -170,6 +170,23 @@ describe('renderShrine encounter flow', () => {
     assert.match(events[0], /\/assets\/sprites\/shrine_fox\.webp\?v=test/);
   });
 
+  it('does not respawn shrine fox when room travel already placed the sprite', async () => {
+    const events = [];
+    sceneManagerState.currentScene = {
+      disposed: false,
+      _exiting: false,
+      layers: { npcs: {} },
+      npcSprite: { spritePath: '/assets/sprites/shrine_fox.webp?v=test' },
+      async showNpcSprite(spritePath) {
+        events.push(spritePath);
+      }
+    };
+    initShrine({ roomId: 'shrine-existing-sprite-room' });
+    await renderShrine();
+
+    assert.deepEqual(events, []);
+  });
+
   it('chooses party-wide rewards without target selection', async () => {
     let chosen = null;
     initShrine({
