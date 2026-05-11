@@ -156,6 +156,13 @@ export async function enemyCreatureAttackEffect(attackerIndex, targetIndex, elem
   await Promise.all([lungeP, blastP]);
 }
 
+async function lungeEnemyCreature(attackerIndex) {
+  const attackerSprite = getCreatureSpriteForScene(getSceneManager().currentScene, 'enemy', attackerIndex);
+  if (attackerSprite) {
+    await pixiLunge(attackerSprite, { distance: -20, duration: 200 });
+  }
+}
+
 // ── slot-finding + HP helpers ──────────────────────────────────────────
 
 /**
@@ -766,17 +773,20 @@ export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved)
     updateCreatureHpBars(result.creatureParty?.active, allyHpMap);
   };
   const atkElement = atk.moveElement || atk.attackerElement;
-  if (atkElement) {
+  const dealsDamage = (atk.damage || 0) > 0;
+  if (dealsDamage && atkElement) {
     playAttackSound(atkElement);
     await enemyCreatureAttackEffect(attackerIdx, targetIdx, atkElement, atk.damage, targetMaxHp, enemyEffectivenessType, hpUpdate);
-  } else {
+  } else if (dealsDamage) {
     ctx.animatePlayerHurt();
     hpUpdate();
+  } else if (atk.category === 'buff') {
+    await lungeEnemyCreature(attackerIdx);
   }
 
   // Real-time buff/debuff indicators for enemy-applied effects
   if (atk.effectApplied || atk.statChangesApplied) {
-    await showMoveEffectsApplied(atk, 'player', targetIdx, result);
+    await showMoveEffectsApplied(atk, atk.targetSide || 'player', targetIdx, result);
   }
 
   if (continueControl) {

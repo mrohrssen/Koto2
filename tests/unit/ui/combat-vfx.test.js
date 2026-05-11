@@ -2,9 +2,12 @@ import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 const popupDebuffMessages = [];
+const elementBlastCalls = [];
+const lungeCalls = [];
 const koAnimations = [];
 const sceneManagerState = { currentScene: null, transitioning: false };
 const showFormationCalls = [];
+const syncStatusCalls = [];
 
 // Mock pixi and audio modules that combat-vfx imports
 await mock.module('../../../public/js/audio.js', {
@@ -13,13 +16,14 @@ await mock.module('../../../public/js/audio.js', {
 await mock.module('../../../public/js/pixi/effects.js', {
   namedExports: {
     screenShake: () => {}, screenFlash: () => {}, hitStop: () => Promise.resolve(),
-    recoil: () => {}, lunge: () => Promise.resolve(), burstParticles: () => {},
+    recoil: () => {}, lunge: (_sprite, opts) => { lungeCalls.push(opts); return Promise.resolve(); }, burstParticles: () => {},
     flowParticles: () => {}, ELEMENT_COLORS: { neutral: 0x888888 }
   }
 });
 await mock.module('../../../public/js/pixi/element-blasts.js', {
   namedExports: {
-    fireElementBlast: (_from, _to, _element, onImpact) => {
+    fireElementBlast: (from, to, element, onImpact) => {
+      elementBlastCalls.push({ from, to, element });
       if (onImpact) onImpact();
       return Promise.resolve();
     }
@@ -39,12 +43,12 @@ await mock.module('../../../public/js/pixi/status-vfx.js', {
 });
 await mock.module('../../../public/js/pixi/formation.js', {
   namedExports: {
-    getCreatureSpriteForScene: () => null,
+    getCreatureSpriteForScene: (_scene, side, index) => ({ side, index, x: 10 + index, y: side === 'enemy' ? 20 : 40 }),
     animateKOForScene: (_scene, side, index) => {
       koAnimations.push({ side, index });
       return Promise.resolve();
     },
-    syncPixiStatusLabelsForScene: () => {},
+    syncPixiStatusLabelsForScene: (...args) => { syncStatusCalls.push(args); },
   }
 });
 await mock.module('../../../public/js/scenes/scene-manager.js', {
@@ -98,6 +102,7 @@ const {
   buildMergedInitiativeAttacks,
   showAttackPartySkillProcs,
   showEffectEvents,
+  showOneEnemyAttackAnimated,
   showKoSwapAnimations,
 } = await import('../../../public/js/ui/combat-vfx.js');
 
@@ -318,6 +323,59 @@ describe('combat-vfx data builders', () => {
       });
 
       assert.equal(popupDebuffMessages[0], 'CONFUSE!');
+    });
+  });
+
+  describe('showOneEnemyAttackAnimated', () => {
+    it('lunges without elemental attack particles for enemy buff moves', async () => {
+      elementBlastCalls.length = 0;
+      lungeCalls.length = 0;
+      syncStatusCalls.length = 0;
+
+      const originalDocument = globalThis.document;
+      globalThis.document = {
+        querySelectorAll: () => [],
+        getElementById: () => ({ innerHTML: '' }),
+      };
+      sceneManagerState.currentScene = {};
+
+      try {
+        init({
+          delay: async () => {},
+          characterUI: {},
+          animatePlayerHurt: () => {
+            throw new Error('buff moves should not hurt the player');
+          },
+          getGameState: () => ({}),
+        });
+
+        const result = {
+          allies: [{ id: 'ally-1', uid: 'ally-uid', hp: 30, maxHp: 50 }],
+          creatureParty: { active: [{ id: 'ally-1', hp: 30, maxHp: 50 }] },
+          enemies: [{ id: 'enemy-1', uid: 'enemy-uid', hp: 40, maxHp: 40, statStages: { atk: 1 } }],
+        };
+
+        await showOneEnemyAttackAnimated(result, {
+          attackerNameJp: '敵',
+          attackerIndex: 0,
+          attackerElement: 'fire',
+          moveElement: 'fire',
+          category: 'buff',
+          targetSide: 'enemy',
+          targetIndex: 0,
+          targetId: 'enemy-1',
+          damage: 0,
+          elementMultiplier: 1,
+          statChangesApplied: { atk: 1 },
+        }, {}, false);
+
+        assert.equal(elementBlastCalls.length, 0);
+        assert.equal(lungeCalls.length, 1);
+        assert.equal(lungeCalls[0].distance, -20);
+        assert.equal(syncStatusCalls.at(-1)?.[1], 'enemy');
+      } finally {
+        globalThis.document = originalDocument;
+      }
     });
   });
 });
