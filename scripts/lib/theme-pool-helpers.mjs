@@ -80,10 +80,10 @@ function buildExistingIndex() {
     index.get(word).push(usage);
   }
 
-  // Creatures: baseWord and modifier.word
+  // Creatures: name and modifier.word
   const creatures = loadJsonSafe(join(cwd, 'data', 'creatures.json'));
   for (const c of creatures) {
-    add(c.baseWord, `creature:${c.id}`);
+    add(c.name, `creature:${c.id}`);
     if (c.modifier?.word) {
       add(c.modifier.word, `creature-mod:${c.id}`);
     }
@@ -119,7 +119,7 @@ function buildExistingIndex() {
     }
   }
 
-  // NPCs: npcs.json (object) + new-npcs-staging.json (array) — baseWord
+  // NPCs: npcs.json (object) + new-npcs-staging.json (array)
   const npcsRaw = loadJsonSafe(join(cwd, 'data', 'npcs.json'), {});
   const npcsStaging = loadJsonSafe(join(cwd, 'data', 'new-npcs-staging.json'));
   const allNpcs = [
@@ -127,8 +127,8 @@ function buildExistingIndex() {
     ...normalizeNpcData(npcsStaging),
   ];
   for (const npc of allNpcs) {
-    if (npc.baseWord) {
-      add(npc.baseWord, `npc:${npc.id}`);
+    if (npc.name) {
+      add(npc.name, `npc:${npc.id}`);
     }
   }
 

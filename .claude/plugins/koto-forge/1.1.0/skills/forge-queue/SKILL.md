@@ -157,7 +157,7 @@ Do NOT wrap in markdown code fences. Return raw JSON only.
 #### CREATURE Rules
 
 **Naming:**
-- The ENTIRE base word's romaji must appear as a contiguous substring in the creature name
+- The ENTIRE Japanese word's romaji must appear as a contiguous substring in the creature name
 - Example: はさみ = "hasami" → "Hasamaw" valid, "Hasaw" invalid
 - Never use raw romaji alone — stylize with suffix/prefix/blend
 - Output name in katakana + romanized form
@@ -195,12 +195,11 @@ Do NOT wrap in markdown code fences. Return raw JSON only.
 ```json
 {
   "id": "string (lowercase, from nameEn)",
-  "name": "string (katakana)",
+  "name": "string (Japanese)",
   "nameEn": "string",
-  "baseWord": "string (Japanese)",
-  "baseReading": "string (hiragana)",
-  "baseMeaning": "string",
-  "baseRank": "number",
+  "reading": "string (hiragana)",
+  "meaning": "string",
+  "rank": "number",
   "modifier": { "word": "string", "reading": "string", "meaning": "string", "rank": "number" },
   "element": "fire|water|earth|wood|metal|neutral",
   "archetype": "Fighter|Mage|Trickster|Tank/Healer",
@@ -295,7 +294,7 @@ Do NOT wrap in markdown code fences. Return raw JSON only.
 
 #### NPC Rules
 
-**Base word MUST be a person noun** — occupation, social role, or person type. NOT objects or nature words.
+**Japanese word MUST be a person noun** — occupation, social role, or person type. NOT objects or nature words.
 
 **Name:** Natural Japanese given name in katakana. Mix of masculine/feminine/neutral. No collision with existing NPC names.
 
@@ -307,12 +306,11 @@ Do NOT wrap in markdown code fences. Return raw JSON only.
 ```json
 {
   "id": "string (from nameEn, lowercase)",
-  "name": "string (katakana)",
+  "name": "string (Japanese)",
   "nameEn": "string",
-  "baseWord": "string (Japanese)",
-  "baseReading": "string",
-  "baseMeaning": "string",
-  "baseRank": "number",
+  "reading": "string",
+  "meaning": "string",
+  "rank": "number",
   "modifier": { "word": "string", "reading": "string", "meaning": "string", "rank": "number" },
   "area": "string (area id from theme)",
   "tier": "number",

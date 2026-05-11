@@ -18,7 +18,7 @@ describe('word-dictionary', () => {
     }));
     // Write minimal game data that overlays
     writeFileSync(join(tmpDir.path, 'creatures.json'), JSON.stringify({
-      hi: { id: 'hi', name: '火', nameEn: 'Hi', baseWord: '火', baseReading: 'ひ', baseMeaning: 'fire' }
+      hi: { id: 'hi', name: '火', nameEn: 'Hi', reading: 'ひ', meaning: 'fire' }
     }));
   });
 

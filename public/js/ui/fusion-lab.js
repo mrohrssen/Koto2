@@ -91,7 +91,7 @@ function renderRecipeTiles() {
     cards: recipes.map(recipe => {
       const result = getCreature(recipe.resultId);
       return {
-        sprite: creatureSpriteHtml(result.id, result.name || result.baseWord, result.element, 'fusion-recipe-sprite'),
+        sprite: creatureSpriteHtml(result.id, result.name, result.element, 'fusion-recipe-sprite'),
         title: escapeHtml(recipe.nameEn),
         subtitle: recipe.canFuse ? 'Ready to fuse' : getRequirementText(recipe),
         pills: `
@@ -150,7 +150,7 @@ function renderScene(recipe, result = null) {
         ${selectedRequirements.map((requirement, index) => renderIngredientSlot(requirement, index)).join('')}
       </div>
       <div class="fusion-result-pedestal ${result ? 'fusion-result-pedestal--revealed' : ''}">
-        ${creatureSpriteHtml(resultCreature.id, resultCreature.name || resultCreature.baseWord, resultCreature.element, 'fusion-result-sprite')}
+        ${creatureSpriteHtml(resultCreature.id, resultCreature.name, resultCreature.element, 'fusion-result-sprite')}
       </div>
       <div class="fusion-result-name">${escapeHtml(getFusionResultName(resultCreature, result))}</div>
       <div class="fusion-requirements">${escapeHtml(getRequirementText(recipe))}</div>
@@ -179,7 +179,7 @@ function renderIngredientSlot(requirement, index) {
   return `
     <div class="fusion-slot ${isMissing ? 'fusion-slot--missing' : ''}">
       <div class="fusion-slot-sprite">
-        ${creatureSpriteHtml(creature.id, creature.name || creature.baseWord, creature.element, 'fusion-ingredient-sprite')}
+        ${creatureSpriteHtml(creature.id, creature.name, creature.element, 'fusion-ingredient-sprite')}
       </div>
       <div class="fusion-slot-name">${escapeHtml(creature.nameEn)}</div>
       <div class="fusion-slot-count">${requirement.owned}/${requirement.required} owned</div>

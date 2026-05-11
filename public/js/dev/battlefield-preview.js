@@ -45,7 +45,7 @@ function createPreviewCreature(template, side) {
     maxMp: 30,
     attack: 18,
     defense: 6,
-    reading: template.reading || template.baseReading,
+    reading: template.reading,
     moves: [
       {
         id: template.moveId,

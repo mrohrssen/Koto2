@@ -44,7 +44,7 @@ export async function renderDealerRoom(actionsModule) {
       return `
         <div class="dealer-offer-card" style="margin-bottom:0.5rem">
           <div class="dealer-offer-top">
-            <div class="shrine-creature-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})">${creatureSpriteHtml(creature.id, creature.baseWord || creature.name, creature.element)}</div>
+            <div class="shrine-creature-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})">${creatureSpriteHtml(creature.id, creature.name, creature.element)}</div>
             <div class="dealer-offer-info">
               <div class="dealer-item-name">${creature.nameEn}</div>
               <div class="shrine-creature-rarity ${creature.rarity || 'common'}">${creature.rarity} \u00B7 ${creature.element} \u00B7 Lv.${creature.level}</div>
@@ -71,7 +71,7 @@ export async function renderDealerRoom(actionsModule) {
     const slotBadge = creature.slot === 'active' ? t('dealerActive') : t('dealerReserve');
     return `
       <div class="dealer-inventory-item" data-creature-id="${creature.id}">
-        <div class="shrine-creature-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})">${creatureSpriteHtml(creature.id, creature.baseWord || creature.name, creature.element)}</div>
+        <div class="shrine-creature-icon" style="border-color: var(--rarity-${creature.rarity || 'common'})">${creatureSpriteHtml(creature.id, creature.name, creature.element)}</div>
         <div class="dealer-item-info">
           <div class="dealer-item-name">${creature.nameEn} Lv.${creature.level}</div>
           <div class="dealer-item-meta">

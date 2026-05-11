@@ -25,7 +25,7 @@ describe('token-format enrichment', () => {
       tokens: [{ slot: 'creature' }],
       words: [],
     };
-    const entities = { creature: { baseWord: '犬', baseReading: 'いぬ', baseMeaning: 'Pup-mon' } };
+    const entities = { creature: { name: '犬', reading: 'いぬ', meaning: 'Pup-mon' } };
     const out = assembleFrame(frame, entities, { dict });
     assert.equal(out.tokens[0].meaning, 'Pup-mon');
     assert.equal(out.tokens[0].entity, true);

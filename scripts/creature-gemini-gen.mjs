@@ -102,8 +102,8 @@ function buildPrompt(meta, visualTier, descriptionText, hasStyleRefs) {
   // moves, "boss-tier presence") causes Gemini to generate bipedal monsters
   // instead of animals. Let the style refs + description handle the design.
   const creature = meta.modifier
-    ? `${meta.modifier} ${meta.baseMeaning}`
-    : meta.baseMeaning;
+    ? `${meta.modifier} ${meta.meaning}`
+    : meta.meaning;
 
   const styleRef = hasStyleRefs
     ? 'Design in the same art style as the reference images.'
@@ -232,8 +232,8 @@ async function main() {
 
   // Build metadata from descriptions JSON (only animal identity, no game mechanics)
   const meta = {
-    modifier:    descriptions.modifier    || '',
-    baseMeaning: descriptions.baseMeaning || '',
+    modifier: descriptions.modifier || '',
+    meaning: descriptions.meaning || '',
   };
 
   // Load style reference images

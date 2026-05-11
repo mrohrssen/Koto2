@@ -659,7 +659,7 @@ export function createSpriteForgeRouter({ projectRoot }) {
             let description = entry.description || '';
             if (!description && type === 'npc') {
               const parts = [];
-              const role = entry.meaning || entry.baseMeaning || '';
+              const role = entry.meaning || '';
               const mod = entry.modifier?.meaning?.toLowerCase() || '';
               const gender = entry.gender || '';
               // Role as standalone phrase: "teacher at the school", "researcher at the aquarium"
@@ -678,7 +678,7 @@ export function createSpriteForgeRouter({ projectRoot }) {
               id: entry._spriteId,
               name: entry.name || entry.word || '',
               nameEn: entry.nameEn || entry.meaning || '',
-              reading: entry.reading || entry.baseReading || '',
+              reading: entry.reading || '',
               source: entry._source,
               description,
             });

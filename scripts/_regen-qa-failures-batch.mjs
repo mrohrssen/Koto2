@@ -83,7 +83,7 @@ function buildPrompt(batch) {
     `Draw 9 small skill/vocabulary icons arranged in a 3×3 layout on a solid white background.`,
     `These are NOT characters or creatures — they are compact skill icons and vocabulary flashcard icons for an RPG.`,
     `Think RPG ability buttons or item icons: simple, symbolic, easy to read at small sizes.`,
-    `For animal base words (fox, bear, frog), draw the animal's face/head only — NOT a full character.`,
+    `For animal words (fox, bear, frog), draw the animal's face/head only — NOT a full character.`,
     ``,
     `Layout (3 rows, 3 columns):`,
     ...layoutLines,

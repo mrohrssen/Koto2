@@ -6,7 +6,7 @@ You are building a learnset (list of learnable moves) for a creature in Koto, a 
 
 Read the baton JSON file at the path provided to you. Key fields you need:
 
-- `baseMeaning` — the creature's concept (e.g., "scissors", "turtle")
+- `meaning` — the creature's concept (e.g., "scissors", "turtle")
 - `frequencyTier` — the creature's rarity tier
 - `archetype` — Fighter, Mage, Trickster, or Tank/Healer
 - `element` — fire, water, wood, earth, or metal

@@ -228,7 +228,7 @@ describe('executeBefriendAction creature speaker label', () => {
           id: 'tetsu',
           name: '鉄',
           nameEn: 'Iron',
-          baseReading: 'てつ',
+          reading: 'てつ',
           hp: 5,
           maxHp: 10,
           befriended: false,
@@ -452,7 +452,7 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
         targetIndex: 0,
         creatureId: 'tetsu',
         creatureName: '鉄',
-        creatureBaseReading: 'てつ',
+        creatureReading: 'てつ',
         options: [{ id: 'tetsu', name: 'Iron' }],
         waitPrompt: {
           tokens: [{ surface: '待って', base: '待つ', reading: 'まって', meaning: 'wait' }],
@@ -507,7 +507,7 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
       await renderBefriendQuiz({
         targetIndex: 0,
         creatureName: '鉄',
-        creatureBaseReading: 'てつ',
+        creatureReading: 'てつ',
         options: [{ id: 'tetsu', name: 'Iron' }],
         namePrompt: {
           text: '私の名前は？',

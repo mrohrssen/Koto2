@@ -23,22 +23,22 @@ describe('simulator exposure sync', () => {
     ]);
   });
 
-  it('collects attack base words and distinct skill names', () => {
+  it('collects attacker words and distinct skill names', () => {
     const words = [];
 
     collectAttackExposures(words, [
       {
-        attackerBaseWord: '迷う',
-        attackerBaseReading: 'まよう',
-        attackerBaseMeaning: 'get lost / hesitate',
+        attackerWord: '迷う',
+        attackerReading: 'まよう',
+        attackerMeaning: 'get lost / hesitate',
         attackerSkillName: '炎',
         attackerSkillReading: 'ほのお',
         attackerSkillEn: 'flame'
       },
       {
-        attackerBaseWord: '水',
-        attackerBaseReading: 'みず',
-        attackerBaseMeaning: 'water',
+        attackerWord: '水',
+        attackerReading: 'みず',
+        attackerMeaning: 'water',
         attackerSkillName: '水',
         attackerSkillReading: 'みず',
         attackerSkillEn: 'water'

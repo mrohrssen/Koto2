@@ -18,7 +18,7 @@ function makeCreature(overrides = {}) {
     hp: 100, maxHp: 100, mp: 20, maxMp: 20,
     attack: 15, defense: 5, dex: 10,
     statStages: { atk: 0, def: 0, dex: 0 },
-    baseWord: '試す', baseReading: 'ためす', baseMeaning: 'test',
+    reading: 'ためす', meaning: 'test',
     activeEffects: [],
     moves: [{
       id: 'slash', name: '斬る', nameEn: 'Slash', reading: 'きる',

@@ -151,9 +151,9 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
  * Works with moves, items, creatures, NPC roles, speakers.
  */
 export function entityToToken(entity) {
-  const surface = entity.word || entity.name || entity.baseWord;
-  const reading = entity.reading || entity.baseReading;
-  const meaning = entity.nameEn || entity.meaning || entity.baseMeaning;
+  const surface = entity.word || entity.name;
+  const reading = entity.reading;
+  const meaning = entity.nameEn || entity.meaning;
   return { surface, base: surface, reading, meaning, entity: true };
 }
 

@@ -137,25 +137,25 @@ describe('computeStageFromAvgRank', () => {
 // ── getContentWords ─────────────────────────────────────────────────
 
 describe('getContentWords', () => {
-  it('extracts baseWord and modifier from a creature', () => {
+  it('extracts name and modifier from a creature', () => {
     const creature = {
       id: 'nekotto',
-      baseWord: '猫', baseMeaning: 'cat', baseRank: 1600,
+      name: '猫', meaning: 'cat', rank: 1600,
       modifier: { word: '鉄', meaning: 'Iron', rank: 2200 }
     };
     const words = getContentWords(creature, 'creature');
     assert.strictEqual(words.length, 2);
-    assert.deepStrictEqual(words[0], { word: '猫', rank: 1600, source: 'baseWord' });
+    assert.deepStrictEqual(words[0], { word: '猫', rank: 1600, source: 'name' });
     assert.deepStrictEqual(words[1], { word: '鉄', rank: 2200, source: 'modifier' });
   });
 
   it('handles creature with no modifier', () => {
     const creature = {
-      id: 'test', baseWord: '犬', baseMeaning: 'dog', baseRank: 1500
+      id: 'test', name: '犬', meaning: 'dog', rank: 1500
     };
     const words = getContentWords(creature, 'creature');
     assert.strictEqual(words.length, 1);
-    assert.deepStrictEqual(words[0], { word: '犬', rank: 1500, source: 'baseWord' });
+    assert.deepStrictEqual(words[0], { word: '犬', rank: 1500, source: 'name' });
   });
 
   it('extracts move name', () => {
@@ -221,7 +221,7 @@ describe('getContentWords', () => {
 describe('suggestStage', () => {
   it('suggests stage 1 for all-stage-1 content', () => {
     // 犬 is WK level 2 = stage 1, 大きい is WK level 1 = stage 1
-    const creature = { baseWord: '犬', baseRank: 1500, modifier: { word: '大きい', rank: 700 } };
+    const creature = { name: '犬', rank: 1500, modifier: { word: '大きい', rank: 700 } };
     const result = suggestStage(creature, 'creature');
     assert.strictEqual(result.stage, 1);
     assert.strictEqual(result.outlierPercent, 0);
@@ -229,14 +229,14 @@ describe('suggestStage', () => {
 
   it('suggests higher stage when words span stages', () => {
     // 猫 = WK15 = stage 3, check that result stage is >= 3
-    const creature = { baseWord: '猫', baseRank: 1600, modifier: { word: '大きい', rank: 700 } };
+    const creature = { name: '猫', rank: 1600, modifier: { word: '大きい', rank: 700 } };
     const result = suggestStage(creature, 'creature');
     assert.ok(result.stage >= 3);
     assert.ok(result.outlierPercent <= 20);
   });
 
   it('returns medianRank and wordStages', () => {
-    const creature = { baseWord: '山', baseRank: 2000, modifier: { word: '大きい', rank: 700 } };
+    const creature = { name: '山', rank: 2000, modifier: { word: '大きい', rank: 700 } };
     const result = suggestStage(creature, 'creature');
     assert.strictEqual(typeof result.medianRank, 'number');
     assert.ok(result.medianRank > 0);

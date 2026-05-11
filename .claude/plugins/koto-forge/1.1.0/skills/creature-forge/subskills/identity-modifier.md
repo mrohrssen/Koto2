@@ -6,8 +6,8 @@ You are suggesting archetype, element, and modifier candidates for a Japanese vo
 
 Read the baton JSON file at the path provided to you. Key fields you need:
 
-- `baseMeaning` — the creature's concept
-- `baseWord`, `baseReading` — Japanese word
+- `meaning` — the creature's concept
+- `name`, `reading` — Japanese word
 - `frequencyTier`, `visualTier` — tiers
 - `tierCeilings.modPreferred` / `tierCeilings.modCeiling` — frequency rank limits for modifier words
 

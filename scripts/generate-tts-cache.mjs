@@ -30,7 +30,7 @@ function loadWords() {
   // Creatures
   const creatures = JSON.parse(readFileSync(join(ROOT, 'data', 'creatures.json'), 'utf-8'));
   for (const c of creatures) {
-    if (c.baseWord) words.set(c.baseWord, `creature-base:${c.id}`);
+    if (c.name) words.set(c.name, `creature:${c.id}`);
     if (c.modifier?.word) words.set(c.modifier.word, `creature-mod:${c.id}`);
   }
 

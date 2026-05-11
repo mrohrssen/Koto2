@@ -4,7 +4,7 @@
  * Action Icon Grid Generator
  *
  * Generates game action/concept icons using Gemini 2.5 Flash.
- * Icons represent creature base words, auto attacks, and ultimate abilities.
+ * Icons represent creature names, auto attacks, and ultimate abilities.
  * Each icon depicts the CONCEPT (e.g., "bite" = teeth biting), not the creature.
  *
  * Reads creatures.json, extracts all unique Japanese words, deduplicates,
@@ -143,7 +143,7 @@ const VISUAL_HINTS = {
   'embrace': 'warm arms embracing softly',
   'scorch': 'scorching burn marks with embers',
   'performance': 'musical notes and instruments playing',
-  // Base word nouns
+  // Creature nouns
   'turtle': 'a cute turtle',
   'horse': 'a horse head',
   'butterfly': 'a beautiful butterfly',
@@ -191,13 +191,13 @@ function extractUniqueWords(creatures) {
   const seen = new Map(); // Japanese word → entry
 
   for (const c of creatures) {
-    // Base word
-    if (!seen.has(c.baseWord)) {
-      seen.set(c.baseWord, {
-        word: c.baseWord,
-        reading: c.baseReading,
-        english: c.baseMeaning,
-        category: 'base',
+    // Creature name
+    if (!seen.has(c.name)) {
+      seen.set(c.name, {
+        word: c.name,
+        reading: c.reading,
+        english: c.meaning,
+        category: 'creature',
       });
     }
 
@@ -356,10 +356,10 @@ async function main() {
   const words = extractUniqueWords(creatures);
   console.error(`Extracted ${words.length} unique words (base + auto + ultimate)`);
 
-  const baseCount = words.filter(w => w.category === 'base').length;
+  const creatureCount = words.filter(w => w.category === 'creature').length;
   const autoCount = words.filter(w => w.category === 'auto').length;
   const ultCount = words.filter(w => w.category === 'ultimate').length;
-  console.error(`  ${baseCount} base words, ${autoCount} auto skills, ${ultCount} ultimates`);
+  console.error(`  ${creatureCount} creature names, ${autoCount} auto skills, ${ultCount} ultimates`);
 
   // --list mode: just print all words and exit
   if (list) {

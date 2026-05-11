@@ -43,7 +43,7 @@ describe('post-combat shop target picker', () => {
 
   it('labels item target selection with Choose target', () => {
     showTargetPicker([
-      { id: 'neko', baseWord: '猫', name: '猫', nameEn: 'Cat', element: 'fire', level: 1, hp: 10, maxHp: 12 },
+      { id: 'neko', name: '猫', nameEn: 'Cat', reading: 'ねこ', element: 'fire', level: 1, hp: 10, maxHp: 12 },
     ], () => {});
 
     assert.equal(renderChoicesArgs?.heading, 'Choose target');

@@ -1,4 +1,4 @@
-import { describe, it, mock } from 'node:test';
+import { beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 // --- Stub pixi.js before the module under test imports it ---
@@ -113,10 +113,48 @@ await mock.module('../../../public/js/ui/event-popup.js', {
 });
 
 let loadImageTextureImpl = async () => ({ width: 170, height: 170 });
+let npcAnimationEntry = null;
+let requestedNpcId = null;
+let tickCalls = [];
 
 await mock.module('../../../public/js/pixi/image-loader.js', {
   namedExports: {
     loadImageTexture: (...args) => loadImageTextureImpl(...args),
+  },
+});
+
+await mock.module('../../../public/js/pixi/npc-animation-manifest.js', {
+  namedExports: {
+    loadNpcAnimationManifest: async () => ({ animations: {} }),
+    getAnimatedNpcEntry: (_manifest, npcId) => {
+      requestedNpcId = npcId;
+      return npcAnimationEntry;
+    },
+  },
+});
+
+await mock.module('../../../public/js/pixi/animated-creature-sprite.js', {
+  namedExports: {
+    createAnimatedCreatureState: async (entry) => ({
+      entry,
+      textures: {
+        idle: entry.idle ? [{ kind: 'idle', frame: 0 }] : [],
+        walk: entry.walk ? [{ kind: 'walk', frame: 0 }] : [],
+      },
+      kind: null,
+      frameIndex: 0,
+      elapsedMs: 0,
+      fps: entry.fps,
+      frames: entry.frames,
+    }),
+    applyAnimationKind: (sprite, state, kind) => {
+      if (!kind || !state.textures[kind]?.length) return;
+      state.kind = kind;
+      sprite.texture = state.textures[kind][0];
+    },
+    tickAnimatedCreatureSprite: (sprite, state, deltaMS, walkingEnabled) => {
+      tickCalls.push({ sprite, state, deltaMS, walkingEnabled });
+    },
   },
 });
 
@@ -133,6 +171,12 @@ const {
   removeNpcSprite,
 } = await import('../../../public/js/pixi/formation.js');
 
+beforeEach(() => {
+  loadImageTextureImpl = async () => ({ width: 170, height: 170 });
+  npcAnimationEntry = null;
+  requestedNpcId = null;
+  tickCalls = [];
+});
 
 // --- Tests ------------------------------------------------------------------
 
@@ -198,6 +242,128 @@ describe('spawnNpcSprite scene contract', () => {
     assert.deepStrictEqual(tweenArgs[1], { x: 280 }, 'target position is screenW * 0.7');
     assert.strictEqual(tweenArgs[2].duration, 400);
     assert.strictEqual(tweenArgs[2].ease, 'easeOut');
+  });
+
+  it('uses walk animation during slide-in, then switches to idle', async () => {
+    const npcs = new FakeContainer();
+    npcAnimationEntry = {
+      idle: '/assets/sprites/npcs-animated/cid/idle.png?v=test',
+      walk: '/assets/sprites/npcs-animated/cid/walk.png?v=test',
+      frameWidth: 256,
+      frameHeight: 256,
+      columns: 6,
+      frames: 24,
+      fps: 12,
+      renderScale: 1,
+    };
+    let textureDuringTween = null;
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async (sprite) => {
+        textureDuringTween = sprite.texture;
+      },
+    };
+
+    const sprite = await spawnNpcSprite(scene, '/assets/sprites/npcs/cid.webp?v=test', { slideIn: true });
+
+    assert.equal(requestedNpcId, 'cid');
+    assert.deepEqual(textureDuringTween, { kind: 'walk', frame: 0 });
+    assert.deepEqual(sprite.texture, { kind: 'idle', frame: 0 });
+    assert.equal(sprite._animatedNpc.kind, 'idle');
+  });
+
+  it('uses idle animation immediately when spawned without slide-in', async () => {
+    const npcs = new FakeContainer();
+    npcAnimationEntry = {
+      idle: '/assets/sprites/npcs-animated/cid/idle.png?v=test',
+      walk: '/assets/sprites/npcs-animated/cid/walk.png?v=test',
+      frameWidth: 256,
+      frameHeight: 256,
+      columns: 6,
+      frames: 24,
+      fps: 12,
+      renderScale: 1,
+    };
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => {},
+    };
+
+    const sprite = await spawnNpcSprite(scene, '/assets/sprites/npcs/cid.webp?v=test');
+
+    assert.equal(requestedNpcId, 'cid');
+    assert.deepEqual(sprite.texture, { kind: 'idle', frame: 0 });
+    assert.equal(sprite._animatedNpc.kind, 'idle');
+  });
+
+  it('scales animated NPCs by the manifest renderScale', async () => {
+    const npcs = new FakeContainer();
+    npcAnimationEntry = {
+      idle: '/assets/sprites/npcs-animated/cid/idle.png?v=test',
+      walk: '/assets/sprites/npcs-animated/cid/walk.png?v=test',
+      frameWidth: 256,
+      frameHeight: 256,
+      columns: 6,
+      frames: 24,
+      fps: 12,
+      renderScale: 1.6,
+    };
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => {},
+    };
+
+    const sprite = await spawnNpcSprite(scene, '/assets/sprites/npcs/cid.webp?v=test');
+
+    assert.equal(sprite.width, 272);
+    assert.equal(sprite.height, 272);
+  });
+
+  it('places NPCs on the middle battlefield row', async () => {
+    const npcs = new FakeContainer();
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => {},
+    };
+
+    const sprite = await spawnNpcSprite(scene, '/assets/sprites/npcs/cid.webp?v=test');
+
+    assert.equal(sprite.y, 391.2);
+  });
+
+  it('ticks animated NPCs as walking during slide-in and idle after arrival', async () => {
+    const npcs = new FakeContainer();
+    npcAnimationEntry = {
+      idle: '/assets/sprites/npcs-animated/cid/idle.png?v=test',
+      walk: '/assets/sprites/npcs-animated/cid/walk.png?v=test',
+      frameWidth: 256,
+      frameHeight: 256,
+      columns: 6,
+      frames: 24,
+      fps: 12,
+      renderScale: 1,
+    };
+    let updater = null;
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      addUpdater: (fn) => { updater = fn; },
+      tween: async () => {
+        updater(1, 16.6667);
+      },
+    };
+
+    const sprite = await spawnNpcSprite(scene, '/assets/sprites/npcs/cid.webp?v=test', { slideIn: true });
+    updater(1, 16.6667);
+
+    assert.equal(tickCalls.length, 2);
+    assert.equal(tickCalls[0].sprite, sprite);
+    assert.equal(tickCalls[0].walkingEnabled, true);
+    assert.equal(tickCalls[1].walkingEnabled, false);
   });
 
   it('does NOT use scene.tween when slideIn is false (default)', async () => {

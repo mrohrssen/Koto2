@@ -8,7 +8,7 @@ function makeTeam() {
       active: [{
         id: 'c1', name: 'テスト', nameEn: 'TestA', element: 'fire', level: 5,
         hp: 100, maxHp: 100, mp: 20, maxMp: 20, attack: 15, defense: 5,
-        baseWord: '火', baseReading: 'ひ', baseMeaning: 'fire',
+        reading: 'ひ', meaning: 'fire',
         activeEffects: [],
         moves: [{ id: 'slash', name: '斬る', nameEn: 'Slash', reading: 'きる',
           element: 'fire', category: 'damage', power: 40,
