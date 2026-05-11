@@ -30,3 +30,16 @@ test('updateUI preserves narration during same-phase refreshes', () => {
     'same-phase updateUI calls must not dismiss active narration'
   );
 });
+
+test('updateScene leaves room-owned NPC and campfire sprites to room renderers', () => {
+  assert.match(
+    gameSrc,
+    /gameState\.phase\s*===\s*'friendlyNpc'\s*\|\|\s*gameState\.phase\s*===\s*'campfire'/,
+    'friendly NPC and campfire phases should no-op in updateScene so room transition/renderers own their sprites'
+  );
+  assert.doesNotMatch(
+    gameSrc,
+    /gameState\.phase\s*===\s*'friendlyNpc'[\s\S]{0,350}scene\.showNpcTrainer/,
+    'updateScene should not respawn friendly NPC sprites after room transition placed them'
+  );
+});

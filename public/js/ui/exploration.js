@@ -1607,7 +1607,7 @@ async function showFriendlyNpcSprite(npc) {
     : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
   showNpcInDisplay(npc.nameEn || npc.name, spritePath, { skipPixi: true });
   const scene = await waitForSceneWithNpcs();
-  if (scene) {
+  if (scene && !scene.npcSprite) {
     await scene.showNpcSprite(spritePath, { slideIn: true });
   }
 }

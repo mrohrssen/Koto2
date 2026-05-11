@@ -259,7 +259,7 @@ describe('playRoomTransition parallax state', () => {
     ]);
   });
 
-  it('shows the campfire sprite after entering a campfire room', async () => {
+  it('does not spawn the campfire during room travel because the campfire UI owns that sprite', async () => {
     scrollStates.length = 0;
     startedSpeeds.length = 0;
     roomTransitionEvents.length = 0;
@@ -281,8 +281,6 @@ describe('playRoomTransition parallax state', () => {
       'wait:2700',
       'setScrollState:stopped',
       'startParallax:0.6',
-      'showNpcInDisplay',
-      'showNpcSprite',
     ]);
   });
 

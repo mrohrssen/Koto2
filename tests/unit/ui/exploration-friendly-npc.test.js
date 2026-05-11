@@ -276,6 +276,59 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(dialogueCards[0].speakerId, 'kodomo');
   });
 
+  it('does not respawn the NPC sprite when room travel already placed it', async () => {
+    const events = [];
+    const room = {
+      id: 'friendly-npc-existing-sprite-room',
+      type: 'friendlyNpc',
+      npc: { id: 'kodomo', name: '子供', nameEn: 'Child' },
+      friendlyNpc: { completed: false },
+    };
+    sceneManagerState.currentScene = {
+      disposed: false,
+      _exiting: false,
+      layers: { npcs: {} },
+      npcSprite: { spritePath: '/assets/sprites/npcs/kodomo.webp?v=test' },
+      async showNpcSprite(spritePath) {
+        events.push(['showNpcSprite', spritePath]);
+      },
+    };
+
+    init({
+      getGameState: () => ({
+        phase: 'friendlyNpc',
+        room,
+        meta: { tutorialStep: 0 },
+        run: { creatureParty: { active: [] } },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      apiGetFriendlyNpcOffers: async () => ({
+        greeting: {
+          tokens: [{ text: 'こんにちは！' }],
+          overrides: {},
+        },
+        offered: [
+          {
+            id: 'test-apple',
+            word: 'りんご',
+            reading: 'りんご',
+            nameToken: { text: 'りんご' },
+            effect: { healAllPercent: 0.2 },
+          },
+        ],
+      }),
+    });
+
+    await renderFriendlyNpc();
+
+    assert.deepEqual(events, []);
+    assert.equal(dialogueCards[0].speaker, 'Child');
+    assert.equal(dialogueCards[0].speakerId, 'kodomo');
+  });
+
   it('in tutorial mode lets Cid interrupt after the NPC greeting before item choices', async () => {
     const narrationCalls = [];
     const spriteCalls = [];

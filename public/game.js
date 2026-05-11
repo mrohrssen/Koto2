@@ -519,13 +519,9 @@ function updateScene() {
     scene.showWordDiscoveryNpc();
   } else if (gameState.phase === 'dealer') {
     scene.showDealer();
-  } else if (gameState.phase === 'friendlyNpc') {
-    // Preserve NPC sprite placed by room transition
-    const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
-    const npc = room?.npc;
-    if (npc) {
-      scene.showNpcTrainer(npc.nameEn || npc.name, npc.id, npc);
-    }
+  } else if (gameState.phase === 'friendlyNpc' || gameState.phase === 'campfire') {
+    // Room transition and room renderers own these sprites; updateScene must not
+    // remove and respawn them during the immediate post-travel updateUI pass.
   } else if (gameState.phase === 'whackAMole') {
     scene.showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`);
   } else if (gameState.phase === 'npc_skill_selection') {
