@@ -18,6 +18,17 @@ class RingBuffer {
 
 const consoleBuffer = new RingBuffer(50);
 
+export function formatDiagnosticArg(arg) {
+  if (typeof arg === 'string') return arg;
+  if (arg instanceof Error) return `${arg.name || 'Error'}: ${arg.message || ''}`.trim();
+  try {
+    const json = JSON.stringify(arg);
+    return json === undefined ? String(arg) : json;
+  } catch {
+    return String(arg);
+  }
+}
+
 function initConsoleCapture() {
   const origError = console.error;
   const origWarn = console.warn;
@@ -27,7 +38,7 @@ function initConsoleCapture() {
     try {
       consoleBuffer.push({
         level: 'error',
-        message: args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ').slice(0, 500),
+        message: args.map(formatDiagnosticArg).join(' ').slice(0, 500),
         timestamp: new Date().toISOString()
       });
     } catch { /* never throw from diagnostic code */ }
@@ -38,7 +49,7 @@ function initConsoleCapture() {
     try {
       consoleBuffer.push({
         level: 'warn',
-        message: args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ').slice(0, 500),
+        message: args.map(formatDiagnosticArg).join(' ').slice(0, 500),
         timestamp: new Date().toISOString()
       });
     } catch { /* silent */ }

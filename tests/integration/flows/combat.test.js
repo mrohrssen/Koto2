@@ -242,6 +242,19 @@ describe('combat flow', () => {
     });
 
     assert.equal(turn.status, 200, `rest cycle failed: ${JSON.stringify(turn.body)}`);
+    const serverCursor = turn.body.state?.combat?.actionCursor;
+    assert.equal(serverCursor?.side, 'ally', `expected server to stop on next ally cursor: ${JSON.stringify(turn.body)}`);
+    const staleIndex = serverCursor.index === 0 ? 1 : 0;
+    const staleTurn = await client.post('/api/game/creature-combat-cycle', {
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: staleIndex, action: 'rest' }]
+    });
+
+    assert.equal(staleTurn.status, 400);
+    assert.equal(staleTurn.body.error, 'Submitted move does not match current action cursor');
+    assert.ok(staleTurn.body.state?.combat, '400 response should include authoritative combat state');
+    assert.deepEqual(staleTurn.body.state.combat.actionCursor, serverCursor);
+
     const restAttack = (turn.body.playerAttacks || turn.body.attacks || [])
       .find(a => a.category === 'rest');
     assert.ok(restAttack, `expected a rest attack in response; got ${JSON.stringify(Object.keys(turn.body))}`);

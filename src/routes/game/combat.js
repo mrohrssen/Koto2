@@ -115,7 +115,13 @@ export default function createCombatRoutes({
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      let state = null;
+      try {
+        state = req.getEnrichedGameState?.() || null;
+      } catch {
+        state = null;
+      }
+      res.status(400).json({ error: error.message, ...(state && { state }) });
     }
   });
 
