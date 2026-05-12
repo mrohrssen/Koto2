@@ -25,6 +25,8 @@ import {
 } from './battlefield-layout.js';
 
 const BATTLEFIELD_SLOT_COUNT = 3;
+const FORMATION_SPRITE_SIZE = 60;
+const BOSS_BATTLE_SCALE = 1.5;
 
 const LABEL_FONT_SIZE = 9;
 const LABEL_PADDING_X = 4;
@@ -157,6 +159,14 @@ function _drawShadow(shadow, shadowSpec) {
     if (shadow.scale) shadow.scale.y = shadowSpec.height / shadowSpec.width;
   }
   shadow.fill({ color: 0x000000, alpha: shadowSpec.alpha });
+}
+
+function _scaledShadowSpec(shadowSpec, scale = 1) {
+  return {
+    ...shadowSpec,
+    width: shadowSpec.width * scale,
+    height: shadowSpec.height * scale,
+  };
 }
 
 const ANIMATED_SHADOW_Y_OFFSET_BY_SLOT = [23, 19, 28];
@@ -417,8 +427,8 @@ async function _animateLevelUp(ctx, side, index) {
  * @param {number} [opts.slotI] - 3-slot visual position (0..2). Caller maps
  *   (1→mid, 2→top+bot, 3→all) via slotFor() in BattleScene._diff. Defaults
  *   to `index` so legacy-style callers continue to work.
- * @param {boolean} [opts.isBoss=false] - boss sprites render at 120px instead
- *   of 60px.
+ * @param {boolean} [opts.isBoss=false] - boss sprites render at 1.5x normal
+ *   battle size.
  * @param {boolean} [opts.skipEnter=false] - skip the enemy slide-in enter
  *   animation. Player sprites always skip enter.
  * @returns {Promise<Sprite|null>} the mounted sprite, or null if no app/container
@@ -477,7 +487,7 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   } catch (err) {
     console.warn('[formation] animated creature setup failed; using static sprite', creature.id, err);
   }
-  const spriteSize = isBoss ? 120 : 60;
+  const spriteSize = FORMATION_SPRITE_SIZE * (isBoss ? BOSS_BATTLE_SCALE : 1);
   if (!sprite._animatedCreature) {
     sprite.width = spriteSize;
     sprite.height = spriteSize;
@@ -524,7 +534,10 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
     sprite.tint = 0x888888;
   }
 
-  const shadowSpec = getBattlefieldShadowSpec(slotI);
+  const shadowSpec = _scaledShadowSpec(
+    getBattlefieldShadowSpec(slotI),
+    isBoss ? BOSS_BATTLE_SCALE : 1
+  );
   const shadow = new Graphics();
   _drawShadow(shadow, shadowSpec);
   shadow.x = targetX;
@@ -610,7 +623,7 @@ export function updateFormationSprite(ctx, side, creature, index, opts = {}) {
   const slotChanged = prevSlot == null || prevSlot !== slotI;
   const { app } = getApp();
   if (app && !sprite._entering && slotChanged) {
-    const spriteSize = isBoss ? 120 : 60;
+    const spriteSize = FORMATION_SPRITE_SIZE * (isBoss ? BOSS_BATTLE_SCALE : 1);
     const screenW = app.screen.width;
     const screenH = app.screen.height;
     const slot = getBattlefieldSlot(side, slotI, screenW, screenH);
