@@ -353,6 +353,35 @@ describe('campfire UI', () => {
     assert.match(cards[2].className, /recipe-valid/);
   });
 
+  it('disables ingredients that cannot be used in any cookable recipe path', () => {
+    campfire.renderForTest(sampleState({
+      ingredients: { mizu: 1, miso: 1, sakana: 1 },
+      ingredientCatalog: [
+        { id: 'mizu', word: '水', reading: 'みず', nameEn: 'Water', meaning: 'water' },
+        { id: 'miso', word: '味噌', reading: 'みそ', nameEn: 'Miso', meaning: 'miso' },
+        { id: 'sakana', word: '魚', reading: 'さかな', nameEn: 'Fish', meaning: 'fish' },
+      ],
+      cookableRecipeHints: [
+        {
+          id: 'miso-soup',
+          rarity: 'common',
+          totalQuantity: 2,
+          ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+        },
+      ],
+    }));
+    openCooking();
+
+    const cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    assert.equal(cards[2].disabled, true);
+    assert.match(cards[2].className, /disabled/);
+
+    cards[2].click();
+
+    assert.match(renderedHtml(), /0\/1/);
+    assert.equal(actionArea.querySelector('.campfire-cook-btn').disabled, true);
+  });
+
   it('prunes unrelated ingredient glow after selecting an ingredient', () => {
     campfire.renderForTest(sampleState({
       ingredients: { mizu: 1, miso: 1, sakana: 1, yasai: 1 },
