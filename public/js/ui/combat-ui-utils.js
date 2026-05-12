@@ -121,6 +121,13 @@ export function shouldKeepNpcBattleSceneForReward(state) {
   return state?.phase === 'npc_skill_selection';
 }
 
+/** NPC battle victories keep BattleScene mounted for reward selection, so do not start room-travel motion yet. */
+export function shouldFreezePostCombatTravelForNpcReward(state, result) {
+  return !!result?.victory
+    && !!state?.combat?.isCreatureCombat
+    && !!state?.combat?.npcId;
+}
+
 /** Derive status icon keys from a creature's activeEffects + statStages. */
 export function getCreatureStatusKeys(creature) {
   // Dead creatures shouldn't show status labels — the effects no longer

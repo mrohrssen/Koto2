@@ -16,4 +16,24 @@ describe('post-combat scene transition guards', () => {
       false
     );
   });
+
+  it('freezes post-combat travel while an NPC battle reward is about to open', () => {
+    assert.equal(
+      combatUiUtils.shouldFreezePostCombatTravelForNpcReward?.(
+        { combat: { isCreatureCombat: true, npcId: 'kodomo' } },
+        { victory: true }
+      ),
+      true
+    );
+  });
+
+  it('allows post-combat travel for normal creature victories', () => {
+    assert.equal(
+      combatUiUtils.shouldFreezePostCombatTravelForNpcReward?.(
+        { combat: { isCreatureCombat: true, npcId: null } },
+        { victory: true }
+      ),
+      false
+    );
+  });
 });
