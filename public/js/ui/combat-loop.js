@@ -36,6 +36,7 @@ import {
   collectPendingEnemyKoAnimationIndices,
   enemyKoAnimationKey,
   SC_NAMES,
+  shouldFreezePostCombatTravelForNpcReward,
   shouldKeepNpcBattleSceneForReward,
   shouldSkipAttackRecord
 } from './combat-ui-utils.js';
@@ -1597,6 +1598,7 @@ export async function stopCombatLoop(result) {
   if (gs.combat) {
     updateGameState({ ...gs, combat: { ...gs.combat, active: false } });
   }
+  const freezePostCombatTravelForNpcReward = shouldFreezePostCombatTravelForNpcReward(gs, result);
 
   if (result?.victory) combatEvents.emit('victory');
 
@@ -1614,14 +1616,13 @@ export async function stopCombatLoop(result) {
   // them via the scene's own diff. syncCreatures({ enemies: [] }) drops all
   // enemy sprites while leaving allies intact. Walking wobble will be
   // re-enabled by ExplorationScene on room entry.
-  setScrollState('accelerating');
+  setScrollState(freezePostCombatTravelForNpcReward ? 'encounter' : 'accelerating');
   const battleSceneForCleanup = mgr.currentScene;
   if (battleSceneForCleanup instanceof BattleScene && !battleSceneForCleanup.disposed && !mgr.transitioning) {
-    // Flip walking wobble on immediately so the ally sprites (kept alive
-    // through the victory modal) animate in lockstep with the BG parallax
-    // acceleration above. ExplorationScene.onEnter will keep it on after
-    // the scene transition below.
-    battleSceneForCleanup.formation.walkingEnabled = true;
+    // Normal victories walk into the room transition immediately. NPC battle
+    // rewards keep BattleScene mounted for skill selection, so stay idle until
+    // the player chooses a skill and the scene actually transitions.
+    battleSceneForCleanup.formation.walkingEnabled = !freezePostCombatTravelForNpcReward;
     try {
       await battleSceneForCleanup.syncCreatures({
         allies: getGameState()?.combat?.allies ?? getGameState()?.run?.creatureParty?.active ?? [],
@@ -1709,6 +1710,11 @@ export async function stopCombatLoop(result) {
   // HP bars but no PIXI sprites because _defaultCtx was unwired).
   const nextState = getGameState();
   if (shouldKeepNpcBattleSceneForReward(nextState)) {
+    setScrollState('encounter');
+    const currentBattleScene = mgr.currentScene;
+    if (currentBattleScene instanceof BattleScene && !currentBattleScene.disposed) {
+      currentBattleScene.formation.walkingEnabled = false;
+    }
     return;
   }
 
