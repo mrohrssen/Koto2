@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const sceneManagerState = { currentScene: null };
 let renderedChoices = null;
+let dialogueCalls = [];
 
 function createElementStub() {
   return {
@@ -63,7 +64,7 @@ await mock.module('../../../public/js/ui/ui-components.js', {
   namedExports: { renderButtons: () => {}, renderChoices: options => { renderedChoices = options; } },
 });
 await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
-  namedExports: { showNpcDialogueCard: async () => {} },
+  namedExports: { showNpcDialogueCard: async options => { dialogueCalls.push(options); } },
 });
 await mock.module('../../../public/js/ui/event-popup.js', {
   namedExports: { buff: () => {}, itemGained: () => {} },
@@ -87,13 +88,14 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
   },
 });
 
-const { init, renderSkillMaster, showTutorialNarration } = await import('../../../public/js/ui/exploration.js');
+const { init, renderSkillMaster, renderNpcBattleSkillSelection, showTutorialNarration } = await import('../../../public/js/ui/exploration.js');
 
 describe('renderSkillMaster tutorial Cid narration', () => {
   beforeEach(() => {
     sceneManagerState.currentScene = null;
     sceneManagerState.transitioning = false;
     renderedChoices = null;
+    dialogueCalls = [];
   });
 
   it('does not restart Cid entrance narration on same-room rerender', async () => {
@@ -291,6 +293,121 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       globalThis.document = originalDocument;
     }
 
+    assert.equal(renderedChoices?.heading, 'Choose a skill');
+  });
+
+  it('shows the non-tutorial skill select prompt with the standard dialogue card', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    let showNarrationCalls = 0;
+    const prompt = {
+      tokens: [{ base: '能力', text: 'のうりょく' }],
+      overrides: { 能力: 'ability' },
+    };
+
+    init({
+      getGameState: () => ({
+        phase: 'skillMaster',
+        meta: { tutorialStep: 1 },
+        run: {
+          stats: { startTime: 555 },
+          creatureParty: { active: [] },
+        },
+        room: { id: 'skill-room-dialogue', type: 'skillMaster' },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: { showNarration: () => { showNarrationCalls += 1; } },
+      apiSkillMasterOffers: async () => ({
+        skillSelectPrompt: prompt,
+        offered: [
+          { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+          { id: 'guard', name: 'Guard', desc: 'Defend' },
+          { id: 'haste', name: 'Haste', desc: 'Speed up' },
+        ],
+      }),
+    });
+
+    try {
+      await renderSkillMaster();
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.equal(showNarrationCalls, 0);
+    assert.equal(dialogueCalls.length, 1);
+    assert.equal(dialogueCalls[0].speaker, 'Cid');
+    assert.equal(dialogueCalls[0].tokens, prompt.tokens);
+    assert.equal(dialogueCalls[0].overrides, prompt.overrides);
+    assert.equal(dialogueCalls[0].useKanji, false);
+    assert.equal(renderedChoices?.heading, 'Choose a skill');
+  });
+
+  it('shows the NPC battle skill select prompt with the standard dialogue card', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+
+    let showNarrationCalls = 0;
+    const prompt = {
+      tokens: [{ base: '能力', text: 'のうりょく' }],
+      overrides: { 能力: 'ability' },
+    };
+
+    init({
+      getGameState: () => ({
+        phase: 'npcSkillSelection',
+        run: {
+          stats: { startTime: 666 },
+          creatureParty: { active: [] },
+        },
+        room: {
+          id: 'npc-battle-dialogue',
+          type: 'npcBattle',
+          npcBattle: {
+            skillSelectionPending: true,
+            npc: { id: 'nagi', name: 'ナギ', nameEn: 'Nagi' },
+          },
+        },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: { showNarration: () => { showNarrationCalls += 1; } },
+    });
+
+    try {
+      await renderNpcBattleSkillSelection({
+        fetchOffers: async () => ({
+          skillSelectPrompt: prompt,
+          offered: [
+            { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+            { id: 'guard', name: 'Guard', desc: 'Defend' },
+            { id: 'haste', name: 'Haste', desc: 'Speed up' },
+          ],
+        }),
+        onSkillChosen: async () => {},
+      });
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.equal(showNarrationCalls, 0);
+    assert.equal(dialogueCalls.length, 1);
+    assert.equal(dialogueCalls[0].speaker, 'Nagi');
+    assert.equal(dialogueCalls[0].speakerId, 'nagi');
+    assert.equal(dialogueCalls[0].tokens, prompt.tokens);
+    assert.equal(dialogueCalls[0].overrides, prompt.overrides);
+    assert.equal(dialogueCalls[0].useKanji, false);
     assert.equal(renderedChoices?.heading, 'Choose a skill');
   });
 });

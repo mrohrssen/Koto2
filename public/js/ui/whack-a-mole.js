@@ -1,8 +1,8 @@
 import { animate as anime } from 'animejs';
 import { toRomaji } from './romaji.js';
-import { renderJpSentence, getKnownWords } from './bootstrap-client.js';
 import * as narrationBox from './narration-box.js';
 import { tPlain } from './i18n.js';
+import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { showXpPopup as pixiXpPopup, showLevelUpPopup as pixiLevelUpPopup } from '../pixi/text.js';
 import { animateLevelUpForScene } from '../pixi/formation.js';
 import { spritePos } from './combat-vfx.js';
@@ -374,10 +374,15 @@ export class WhackAMoleGame {
     // Tear down fullscreen .wam-container so the ExplorationScene is visible.
     this.actions.setContent('');
 
-    // Narration 1: GM i+1 line (skip when no tokens - backend fallback path).
+    // Dialogue 1: GM i+1 line (skip when no tokens - backend fallback path).
     if (finishDialogue?.tokens?.length) {
-      const html = renderJpSentence(finishDialogue.tokens, getKnownWords(), null, finishDialogue.overrides || {}, false);
-      await narrationBox.show(html, { html: true, speaker: 'Game Master' });
+      await showNpcDialogueCard({
+        speaker: 'Game Master',
+        speakerId: 'game-master',
+        tokens: finishDialogue.tokens,
+        overrides: finishDialogue.overrides || {},
+        useKanji: false,
+      });
       if (this.cancelled) return;
     }
 

@@ -1259,11 +1259,15 @@ export async function renderWhackAMole() {
     }
   }
 
-  // Show GM greeting in narration box
-  if (!whackAMoleState.introShown && whackAMoleState.dialogue?.tokens?.length && sceneModule?.showNarration) {
+  if (!whackAMoleState.introShown && whackAMoleState.dialogue?.tokens?.length) {
     whackAMoleState.introShown = true;
-    const html = renderJpSentence(whackAMoleState.dialogue.tokens, getKnownWords(), null, whackAMoleState.dialogue.overrides || {}, false);
-    await sceneModule.showNarration(html, { html: true, speaker: 'Game Master', persistent: true });
+    await showNpcDialogueCard({
+      speaker: 'Game Master',
+      speakerId: 'game-master',
+      tokens: whackAMoleState.dialogue.tokens,
+      overrides: whackAMoleState.dialogue.overrides || {},
+      useKanji: false,
+    });
   }
 
   renderButtons([
@@ -1310,14 +1314,6 @@ export async function renderWhackAMole() {
       }
     }
   ]);
-}
-
-/** Show the どの能力？ prompt in the narration box, attributed to `speaker`. Returns true if shown. */
-function showSkillSelectPrompt(prompt, speaker = 'Cid') {
-  if (!prompt?.tokens?.length || !sceneModule?.showNarration) return false;
-  const html = renderJpSentence(prompt.tokens, getKnownWords(), null, prompt.overrides || {}, false);
-  sceneModule.showNarration(html, { html: true, persistent: true, speaker });
-  return true;
 }
 
 /**
@@ -1489,10 +1485,15 @@ export async function renderSkillMaster() {
     // not awaited — the choices render in parallel with the slide-in so UI
     // doesn't feel gated on animation.
     showCidForSkillMaster();
-    if (!skillMasterState.promptShown) {
-      if (showSkillSelectPrompt(skillMasterState.promptTokens)) {
-        skillMasterState.promptShown = true;
-      }
+    if (!skillMasterState.promptShown && skillMasterState.promptTokens?.tokens?.length) {
+      skillMasterState.promptShown = true;
+      await showNpcDialogueCard({
+        speaker: 'Cid',
+        speakerId: 'cid',
+        tokens: skillMasterState.promptTokens.tokens,
+        overrides: skillMasterState.promptTokens.overrides || {},
+        useKanji: false,
+      });
     }
 
     renderChoices({
@@ -1987,10 +1988,15 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   // player can see who's asking the question. Intentionally not awaited.
   showDefeatedNpcForSkillSelect(defeatedNpc);
 
-  if (!npcBattleSkillState.promptShown) {
-    if (showSkillSelectPrompt(npcBattleSkillState.promptTokens, speakerName)) {
-      npcBattleSkillState.promptShown = true;
-    }
+  if (!npcBattleSkillState.promptShown && npcBattleSkillState.promptTokens?.tokens?.length) {
+    npcBattleSkillState.promptShown = true;
+    await showNpcDialogueCard({
+      speaker: speakerName,
+      ...(defeatedNpc?.id ? { speakerId: defeatedNpc.id } : {}),
+      tokens: npcBattleSkillState.promptTokens.tokens,
+      overrides: npcBattleSkillState.promptTokens.overrides || {},
+      useKanji: false,
+    });
   }
 
   renderChoices({
