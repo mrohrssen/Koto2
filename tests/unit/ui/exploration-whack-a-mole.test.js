@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const sceneManagerState = { currentScene: null };
 let renderedButtons = [];
 const roomTransitionCalls = [];
+let dialogueCalls = [];
 
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
@@ -67,7 +68,7 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
   },
 });
 await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
-  namedExports: { showNpcDialogueCard: async () => {} },
+  namedExports: { showNpcDialogueCard: async options => { dialogueCalls.push(options); } },
 });
 await mock.module('../../../public/js/ui/tutorial-copy.js', {
   namedExports: {
@@ -86,6 +87,7 @@ describe('renderWhackAMole decline flow', () => {
     renderedButtons = [];
     roomTransitionCalls.length = 0;
     sceneManagerState.currentScene = null;
+    dialogueCalls = [];
   });
 
   it('clears the prompt buttons immediately when the player declines', async () => {
@@ -124,6 +126,47 @@ describe('renderWhackAMole decline flow', () => {
 
     resolveSkip({ state: null });
     await decline;
+  });
+
+  it('shows the Game Master greeting with the standard dialogue card', async () => {
+    const prompt = {
+      tokens: [{ base: '始める', text: 'はじめる' }],
+      overrides: { 始める: 'begin' },
+    };
+    let showNarrationCalls = 0;
+
+    init({
+      getGameState: () => ({
+        phase: 'whackAMole',
+        run: {
+          currentRoom: 0,
+          rooms: [{ id: 'wam-dialogue', type: 'whackAMole', interacted: false }],
+        },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+      },
+      scene: { showNarration: () => { showNarrationCalls += 1; } },
+      apiGetWhackAMoleDialogue: async () => ({
+        dialogue: prompt,
+        yesTokens: null,
+        noTokens: null,
+      }),
+    });
+
+    await renderWhackAMole();
+
+    assert.equal(showNarrationCalls, 0);
+    assert.equal(dialogueCalls.length, 1);
+    assert.equal(dialogueCalls[0].speaker, 'Game Master');
+    assert.equal(dialogueCalls[0].speakerId, 'game-master');
+    assert.equal(dialogueCalls[0].tokens, prompt.tokens);
+    assert.equal(dialogueCalls[0].overrides, prompt.overrides);
+    assert.equal(dialogueCalls[0].useKanji, false);
+    assert.equal(renderedButtons.length, 2);
   });
 
   it('passes normal proceed ingredient drops into the room transition', async () => {
