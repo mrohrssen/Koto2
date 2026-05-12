@@ -5231,10 +5231,31 @@ button.hud-chip {
   max-height: 100%;
   overflow-y: auto;
 }
+.move-learn-panel--grid {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+}
 .move-learn-header {
   text-align: center;
   font-size: 14px;
   margin-bottom: 4px;
+}
+.move-learn-panel--grid .move-learn-header {
+  padding: 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+}
+.move-learn-grid {
+  min-height: 0;
+}
+.move-learn-new-slot {
+  cursor: default;
+}
+.move-learn-new-slot:active {
+  transform: none;
 }
 .move-learn-new-name {
   font-size: 18px;
@@ -5291,9 +5312,57 @@ button.hud-chip {
   cursor: pointer;
   transition: background 0.2s;
 }
-.move-learn-replaceable:hover,
-.move-learn-replaceable:active {
+.move-learn-card.move-learn-replaceable:hover,
+.move-learn-card.move-learn-replaceable:active {
   background: rgba(255,255,255,0.1);
+}
+.move-learn-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(11, 18, 28, 0.45);
+  border-radius: 18px;
+}
+.move-learn-confirm-modal {
+  width: min(300px, 100%);
+  padding: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 250, 235, 0.98), rgba(232, 220, 193, 0.98));
+  color: #2f2418;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+  text-align: center;
+}
+.move-learn-confirm-message {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.move-learn-confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.move-learn-confirm-btn {
+  flex: 1;
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.move-learn-confirm-btn--no {
+  background: rgba(64, 48, 32, 0.14);
+  color: #3b2c1d;
+}
+.move-learn-confirm-btn--yes {
+  background: var(--accent);
+  color: #fff;
 }
 .move-learn-auto {
   text-align: center;

@@ -1,10 +1,15 @@
 import { dom } from '../dom.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
+import { buildMoveCell } from './move-select.js';
 
 const ELEMENT_COLORS = {
   wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63',
   metal: '#9E9E9E', water: '#2196F3', neutral: '#888'
 };
+
+function moveDisplayName(move) {
+  return move?.nameEn || move?.name || 'this move';
+}
 
 // Returns a promise that resolves with { action: 'replace', replaceIndex } or { action: 'skip' } or { action: 'auto' }
 // @param {boolean} alreadyLearned - If true, the move was auto-added by the backend (show confirmation only)
@@ -22,11 +27,11 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
     header.innerHTML = `<strong>${creature.nameEn || creature.name}</strong> wants to learn<br><span class="move-learn-new-name" style="color:${ELEMENT_COLORS[newMove.element] || ELEMENT_COLORS.neutral}">${renderJpSentence([entityToToken(newMove)], getKnownWords(), new Map())}</span>`;
     panel.appendChild(header);
 
-    // New move details
-    const newCard = buildMoveCard(newMove, 'NEW');
-    panel.appendChild(newCard);
-
     if (alreadyLearned || creature.moves.length < 3) {
+      // New move details
+      const newCard = buildMoveCard(newMove, 'NEW');
+      panel.appendChild(newCard);
+
       // Auto-learned, just show confirmation
       const msg = document.createElement('div');
       msg.className = 'move-learn-auto';
@@ -42,40 +47,71 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
       });
       panel.appendChild(okBtn);
     } else {
-      // Must choose which move to replace
-      const label = document.createElement('div');
-      label.className = 'move-learn-label';
-      label.textContent = 'Replace which move?';
-      panel.appendChild(label);
+      panel.classList.add('move-learn-panel--grid');
+      header.textContent = 'Which move would you like to forget?';
 
-      const moveList = document.createElement('div');
-      moveList.className = 'move-learn-list';
+      const grid = document.createElement('div');
+      grid.className = 'move-grid move-learn-grid';
 
-      creature.moves.forEach((move, i) => {
-        const row = buildMoveCard(move, null);
-        row.classList.add('move-learn-replaceable');
-        row.addEventListener('click', () => {
-          container.innerHTML = '';
-          resolve({ action: 'replace', replaceIndex: i });
+      creature.moves.forEach((move, replaceIndex) => {
+        const cell = buildMoveCell(move, true);
+        cell.classList.add('move-learn-replaceable');
+        cell.addEventListener('click', () => {
+          showReplaceConfirm(panel, move, newMove, () => {
+            container.innerHTML = '';
+            resolve({ action: 'replace', replaceIndex });
+          });
         });
-        moveList.appendChild(row);
+        grid.appendChild(cell);
       });
 
-      panel.appendChild(moveList);
+      const newMoveCell = buildMoveCell(newMove, true);
+      newMoveCell.classList.add('move-learn-new-slot');
+      newMoveCell.setAttribute('aria-disabled', 'true');
+      grid.appendChild(newMoveCell);
 
-      // Skip button
-      const skipBtn = document.createElement('button');
-      skipBtn.className = 'move-learn-skip-btn';
-      skipBtn.textContent = "Don't learn";
-      skipBtn.addEventListener('click', () => {
-        container.innerHTML = '';
-        resolve({ action: 'skip' });
-      });
-      panel.appendChild(skipBtn);
+      panel.appendChild(grid);
     }
 
     container.appendChild(panel);
   });
+}
+
+function showReplaceConfirm(panel, oldMove, newMove, onConfirm) {
+  const existing = panel.querySelector('.move-learn-confirm-backdrop');
+  if (existing) existing.remove();
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'move-learn-confirm-backdrop';
+
+  const dialog = document.createElement('div');
+  dialog.className = 'move-learn-confirm-modal';
+
+  const message = document.createElement('div');
+  message.className = 'move-learn-confirm-message';
+  message.textContent = `Forget ${moveDisplayName(oldMove)} and learn ${moveDisplayName(newMove)}?`;
+
+  const actions = document.createElement('div');
+  actions.className = 'move-learn-confirm-actions';
+
+  const noBtn = document.createElement('button');
+  noBtn.className = 'move-learn-confirm-btn move-learn-confirm-btn--no';
+  noBtn.textContent = 'No';
+  noBtn.addEventListener('click', () => {
+    backdrop.remove();
+  });
+
+  const yesBtn = document.createElement('button');
+  yesBtn.className = 'move-learn-confirm-btn move-learn-confirm-btn--yes';
+  yesBtn.textContent = 'Yes';
+  yesBtn.addEventListener('click', onConfirm);
+
+  actions.appendChild(noBtn);
+  actions.appendChild(yesBtn);
+  dialog.appendChild(message);
+  dialog.appendChild(actions);
+  backdrop.appendChild(dialog);
+  panel.appendChild(backdrop);
 }
 
 function buildMoveCard(move, badge) {
