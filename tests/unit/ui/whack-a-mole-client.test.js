@@ -1,5 +1,7 @@
-import { describe, it, mock } from 'node:test';
+import { describe, it, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+
+let dialogueCalls = [];
 
 await mock.module('animejs', {
   namedExports: { animate: () => {} },
@@ -12,6 +14,9 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
 });
 await mock.module('../../../public/js/ui/narration-box.js', {
   namedExports: { show: async () => {} },
+});
+await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
+  namedExports: { showNpcDialogueCard: async options => { dialogueCalls.push(options); } },
 });
 await mock.module('../../../public/js/ui/i18n.js', {
   namedExports: { tPlain: (...args) => args.join(' ') },
@@ -40,6 +45,10 @@ await mock.module('../../../public/js/ui/room-transition.js', {
 const { WhackAMoleGame } = await import('../../../public/js/ui/whack-a-mole.js');
 
 describe('WhackAMoleGame cancellation', () => {
+  beforeEach(() => {
+    dialogueCalls = [];
+  });
+
   it('does not submit completion after the game has been cancelled', async () => {
     let completeCalls = 0;
     let proceedCalls = 0;
@@ -227,5 +236,49 @@ describe('WhackAMoleGame cancellation', () => {
     assert.equal(roomTransitionCalls[0].state, advancedState);
     assert.deepEqual(roomTransitionCalls[0].opts, { ingredientDrops });
     assert.equal(updateCalls, 1);
+  });
+
+  it('shows the Game Master success message with the standard dialogue card', async () => {
+    const finishDialogue = {
+      tokens: [{ base: '成功', text: 'せいこう' }],
+      overrides: { 成功: 'success' },
+    };
+    let proceedCalls = 0;
+
+    const game = new WhackAMoleGame([
+      { id: 'a', reading: 'あ', sprite: '/a.webp' },
+      { id: 'b', reading: 'い', sprite: '/b.webp' },
+      { id: 'c', reading: 'う', sprite: '/c.webp' },
+      { id: 'd', reading: 'え', sprite: '/d.webp' },
+      { id: 'e', reading: 'お', sprite: '/e.webp' },
+      { id: 'f', reading: 'か', sprite: '/f.webp' },
+      { id: 'g', reading: 'き', sprite: '/g.webp' },
+      { id: 'h', reading: 'く', sprite: '/h.webp' },
+      { id: 'i', reading: 'け', sprite: '/i.webp' },
+    ], {
+      actions: { setContent: () => {} },
+      apiCompleteWhackAMole: async () => ({
+        finishDialogue,
+        xpGrants: [],
+        levelUps: [],
+      }),
+      apiProceed: async () => {
+        proceedCalls += 1;
+        return {};
+      },
+      updateGameState: () => {},
+      updateUI: () => {},
+      playSFX: () => {},
+    });
+
+    await game._endGame();
+
+    assert.equal(dialogueCalls.length, 1);
+    assert.equal(dialogueCalls[0].speaker, 'Game Master');
+    assert.equal(dialogueCalls[0].speakerId, 'game-master');
+    assert.equal(dialogueCalls[0].tokens, finishDialogue.tokens);
+    assert.equal(dialogueCalls[0].overrides, finishDialogue.overrides);
+    assert.equal(dialogueCalls[0].useKanji, false);
+    assert.equal(proceedCalls, 1);
   });
 });
