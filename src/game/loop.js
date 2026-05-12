@@ -299,6 +299,7 @@ export class GameManager {
         openingCursors: this.combat.openingCursors || null,
         pendingOpeningActions: this.combat.pendingOpeningActions || null,
         isCreatureCombat: this.combat.isCreatureCombat || false,
+        isBoss: this.combat.isBoss || false,
         intent: this.combat.intent,
         lastAction: this.combat.lastAction,
         npcId: this.combat.npcId || null,
