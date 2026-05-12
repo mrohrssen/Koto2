@@ -304,9 +304,11 @@ function renderIngredients() {
           'campfire-ingredient-card',
           selectedCount > 0 ? 'selected' : '',
           highlightedIngredientIds.has(id) ? 'recipe-valid' : '',
+          selectedCount === 0 && !highlightedIngredientIds.has(id) ? 'disabled' : '',
         ].filter(Boolean).join(' ');
+        const disabled = selectedCount === 0 && !highlightedIngredientIds.has(id);
         return `
-          <button class="${cardClasses}" data-id="${escapeHtml(id)}" type="button">
+          <button class="${cardClasses}" data-id="${escapeHtml(id)}" type="button" ${disabled ? 'disabled' : ''}>
             ${renderIngredientIcon(ingredient)}
             <span class="campfire-ingredient-name">${renderJpSentence([entityToToken(ingredient)], getKnownWords(), new Map())}</span>
             <span class="campfire-ingredient-count">${selectedCount}/${count}</span>
@@ -322,6 +324,7 @@ function renderIngredients() {
 
   body.querySelectorAll('.campfire-ingredient-card').forEach(button => {
     button.addEventListener('click', () => {
+      if (button.disabled) return;
       const id = button.dataset.id;
       const owned = campfireState.ingredients[id] || 0;
       const current = selected[id] || 0;
