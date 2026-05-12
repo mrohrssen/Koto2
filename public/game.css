@@ -6252,7 +6252,7 @@ button.hud-chip {
 
 .npc-dialogue-portrait--creature {
   display: grid;
-  place-items: end center;
+  place-items: center;
 }
 
 .npc-dialogue-portrait--creature::before {
@@ -6265,10 +6265,10 @@ button.hud-chip {
 }
 
 .npc-dialogue-portrait--creature img {
-  width: 138%;
-  height: 104%;
+  width: 100%;
+  height: auto;
   object-fit: contain;
-  object-position: center bottom;
+  object-position: center center;
 }
 
 .npc-dialogue-copy {

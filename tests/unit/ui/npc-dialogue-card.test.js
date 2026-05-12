@@ -229,6 +229,28 @@ describe('npc dialogue card', () => {
     assert.doesNotMatch(html, /npc-dialogue-cell jp-punct/);
   });
 
+  it('keeps punctuation with the preceding word across dialogue pages', () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [
+        { surface: '一', baseForm: '一', reading: 'いち', meaning: 'one', pos: 'noun' },
+        { surface: '二', baseForm: '二', reading: 'に', meaning: 'two', pos: 'noun' },
+        { surface: '三', baseForm: '三', reading: 'さん', meaning: 'three', pos: 'noun' },
+        { surface: '四', baseForm: '四', reading: 'よん', meaning: 'four', pos: 'noun' },
+        { surface: '五', baseForm: '五', reading: 'ご', meaning: 'five', pos: 'noun' },
+        { surface: '六', baseForm: '六', reading: 'ろく', meaning: 'six', pos: 'noun' },
+        { surface: '七', baseForm: '七', reading: 'なな', meaning: 'seven', pos: 'noun' },
+        { surface: '八', baseForm: '八', reading: 'はち', meaning: 'eight', pos: 'noun' },
+        { surface: '待つ', baseForm: '待つ', reading: 'まつ', meaning: 'wait', pos: 'verb' },
+        { surface: '。', pos: 'punctuation' },
+      ],
+      knownWords: new Set(),
+    });
+
+    assert.match(actionArea.innerHTML, /data-base="待つ"[^>]*>まつ。<\/span>/);
+    assert.doesNotMatch(actionArea.innerHTML, /<span class="npc-dialogue-cell jp-punct">。<\/span>/);
+  });
+
   it('splits visually wide dialogue before it overflows the card text column', () => {
     const html = renderDialogueTokenRows({
       tokens: [

@@ -169,7 +169,17 @@ function chunkDialogueCells(cells, options = {}) {
 
 function paginateTokens(tokens) {
   if (!Array.isArray(tokens) || tokens.length <= MAX_TOKENS_PER_PAGE) return [tokens || []];
-  return chunkByCount(tokens, MAX_TOKENS_PER_PAGE);
+  const pages = [];
+  let current = [];
+  for (const token of tokens) {
+    if (current.length >= MAX_TOKENS_PER_PAGE && !isAttachablePunctuation(token)) {
+      pages.push(current);
+      current = [];
+    }
+    current.push(token);
+  }
+  if (current.length > 0) pages.push(current);
+  return pages;
 }
 
 function tokenSurface(token, useKanji) {
