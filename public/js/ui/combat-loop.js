@@ -39,6 +39,7 @@ import {
   shouldKeepNpcBattleSceneForReward,
   shouldSkipAttackRecord
 } from './combat-ui-utils.js';
+import { mergeAuthoritativeCombatState } from './combat-state-sync.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -840,25 +841,9 @@ export async function executePlayerAttack() {
 }
 
 function syncFinalState(result) {
-  if (!result.creatureParty && !result.enemies) return;
-
   const gs = getGameState();
-  const updates = { ...gs };
-  if (result.creatureParty) {
-    updates.run = { ...gs.run, creatureParty: result.creatureParty };
-  }
-  if (result.enemies && gs.combat) {
-    updates.combat = {
-      ...gs.combat,
-      enemies: result.enemies,
-      allies: result.allies || gs.combat.allies,
-      turnCount: result.turnCount ?? gs.combat.turnCount,
-      actionCursor: result.state?.combat?.actionCursor ?? gs.combat.actionCursor,
-      actionCount: result.state?.combat?.actionCount ?? gs.combat.actionCount,
-      cycleCount: result.state?.combat?.cycleCount ?? gs.combat.cycleCount,
-      openingResolved: result.state?.combat?.openingResolved ?? gs.combat.openingResolved
-    };
-  }
+  const updates = mergeAuthoritativeCombatState(gs, result);
+  if (updates === gs) return;
   updateGameState(updates);
 
   // Keep formation popup data in sync with latest HP
@@ -1045,13 +1030,23 @@ async function executeCreatureMovesTurn(choices) {
       const result = await response.json();
 
       if (result.error) {
+        if (result.state) {
+          updateGameState(mergeAuthoritativeCombatState(getGameState(), result));
+        }
         if (result.error === 'No active combat') {
           combatActive = false;
           return;
         }
         console.error('Move turn error:', result.error);
         playerAttackPending = false;
+        if (combatActive) {
+          startMoveSelection();
+        }
         return;
+      }
+
+      if (result.state) {
+        updateGameState(mergeAuthoritativeCombatState(getGameState(), result));
       }
 
       // --- Intent Log: record expected outcome from server response ---
