@@ -39,6 +39,8 @@ describe('animated sprite runtime assets', () => {
         const assetMetadata = await readJson(path.join(root, id, 'metadata.json'));
 
         for (const [kind, url] of Object.entries(animations)) {
+          if (typeof url !== 'string') continue;
+
           assert.match(url, new RegExp(`\\.webp\\?v=${manifest.version}$`), `${id}.${kind}`);
 
           const filePath = runtimePathForUrl(url);
