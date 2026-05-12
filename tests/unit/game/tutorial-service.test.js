@@ -294,9 +294,10 @@ describe('tutorial room generation', () => {
       'encounter',
       'npcBattle',
       'whackAMole',
-      'friendlyNpc',
+      'campfire',
       'boss'
     ]);
+    assert.deepEqual(rooms[5].campfire, { cookedDish: null, consumed: null, fed: false, completed: false });
     assert.equal(rooms[6].boss.creatureId, 'hinoneko');
   });
 

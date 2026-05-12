@@ -88,7 +88,7 @@ const STARTING_MEADOW_TUTORIAL_SEQUENCE = [
   ROOM_TYPES.encounter,
   ROOM_TYPES.npcBattle,
   ROOM_TYPES.whackAMole,
-  ROOM_TYPES.friendlyNpc,
+  ROOM_TYPES.campfire,
   ROOM_TYPES.boss
 ];
 

@@ -31,6 +31,13 @@ import { dirname, join } from 'path';
 const __dirname_exploration = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ITEMS_PATH = join(__dirname_exploration, '../../../data/items.json');
 const ROOM_HEAL_PERCENT = 0.05; // 5% maxHp on each room entry, skipping KO'd creatures
+const STARTING_MEADOW_AREA_ID = 'hajimari-no-hiroba';
+const STARTING_MEADOW_TUTORIAL_INGREDIENT_DROPS = Object.freeze([
+  'mizu',
+  'gyuunyuu',
+  'toriniku',
+  'jagaimo'
+]);
 const SHRINE_REWARDS = Object.freeze({
   HEAL_ALL: 'heal_all',
   RESTORE_MP_ALL: 'restore_mp_all',
@@ -117,6 +124,15 @@ function buildSpeedReviewWordKey(word) {
   return String(word);
 }
 
+function getStartingMeadowTutorialIngredientDrops(meta, run) {
+  if (!shouldFixRoomSequence(meta)) return null;
+  if (run?.currentArea?.id !== STARTING_MEADOW_AREA_ID) return null;
+
+  const roomIndex = run?.currentRoom || 0;
+  const ingredientId = STARTING_MEADOW_TUTORIAL_INGREDIENT_DROPS[roomIndex - 1];
+  return ingredientId ? [{ id: ingredientId, quantity: 1 }] : null;
+}
+
 /**
  * ExplorationService - Handles dungeon exploration and room interactions
  */
@@ -191,7 +207,8 @@ export class ExplorationService {
     if (!this.gm.run.cooking.ingredients) this.gm.run.cooking.ingredients = {};
     if (!Array.isArray(this.gm.run.cooking.cookedThisRun)) this.gm.run.cooking.cookedThisRun = [];
 
-    const drops = rollRoomIngredientDrops({ rng: this.ingredientDropRandom });
+    const drops = getStartingMeadowTutorialIngredientDrops(this.gm.meta, this.gm.run)
+      || rollRoomIngredientDrops({ rng: this.ingredientDropRandom });
     if (drops.length === 0) return [];
 
     addIngredientsToBag(this.gm.run.cooking.ingredients, drops);
