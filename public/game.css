@@ -352,6 +352,13 @@
   background: rgba(255, 242, 218, 0.94);
 }
 
+.campfire-ingredient-card.disabled {
+  opacity: 0.42;
+  filter: grayscale(1);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .campfire-ingredient-card.recipe-valid {
   border-color: rgba(239, 143, 53, 0.9);
   box-shadow:
