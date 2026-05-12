@@ -12,8 +12,8 @@ Animated creature sheets live under:
 public/assets/sprites/creatures-animated/
   manifest.json
   <creature-id>/
-    idle.png
-    walk.png
+    idle.webp
+    walk.webp
     metadata.json
 ```
 
@@ -21,7 +21,7 @@ The runtime manifest controls which creatures use animation:
 
 ```json
 {
-  "version": "20260511",
+  "version": "20260512",
   "frameWidth": 256,
   "frameHeight": 256,
   "columns": 6,
@@ -30,8 +30,8 @@ The runtime manifest controls which creatures use animation:
   "renderScale": 1.85,
   "animations": {
     "neko": {
-      "idle": "/assets/sprites/creatures-animated/neko/idle.png?v=20260511",
-      "walk": "/assets/sprites/creatures-animated/neko/walk.png?v=20260511"
+      "idle": "/assets/sprites/creatures-animated/neko/idle.webp?v=20260512",
+      "walk": "/assets/sprites/creatures-animated/neko/walk.webp?v=20260512"
     }
   }
 }
@@ -358,13 +358,26 @@ Verify:
 - `transparentPct > 50`
 - `opaqueWhitePct < 1`
 
+Then create the runtime WebP sheet from the verified PNG intermediate:
+
+```bash
+node --input-type=module <<'NODE'
+import sharp from 'sharp';
+
+const path = 'output/creature-animations/<id>/<kind>/sheet-256.png';
+await sharp(path)
+  .webp({ lossless: true })
+  .toFile(path.replace(/\.png$/u, '.webp'));
+NODE
+```
+
 ## Promote To Runtime Assets
 
 Only after verification:
 
 ```text
-output/creature-animations/<id>/idle/sheet-256.png -> public/assets/sprites/creatures-animated/<id>/idle.png
-output/creature-animations/<id>/walk/sheet-256.png -> public/assets/sprites/creatures-animated/<id>/walk.png
+output/creature-animations/<id>/idle/sheet-256.webp -> public/assets/sprites/creatures-animated/<id>/idle.webp
+output/creature-animations/<id>/walk/sheet-256.webp -> public/assets/sprites/creatures-animated/<id>/walk.webp
 output/creature-animations/<id>/metadata.json -> public/assets/sprites/creatures-animated/<id>/metadata.json
 ```
 
@@ -372,8 +385,8 @@ Then add/update the manifest entry:
 
 ```json
 "<id>": {
-  "idle": "/assets/sprites/creatures-animated/<id>/idle.png?v=20260511",
-  "walk": "/assets/sprites/creatures-animated/<id>/walk.png?v=20260511"
+  "idle": "/assets/sprites/creatures-animated/<id>/idle.webp?v=20260512",
+  "walk": "/assets/sprites/creatures-animated/<id>/walk.webp?v=20260512"
 }
 ```
 
@@ -384,31 +397,42 @@ Keep manifest opt-in. If any creature/kind fails, do not add that creature until
 Verify all manifest assets:
 
 ```bash
-python3 - <<'PY'
-from pathlib import Path
-from PIL import Image
-import numpy as np
-import json
+node --input-type=module <<'NODE'
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import sharp from 'sharp';
 
-root = Path("public/assets/sprites/creatures-animated")
-manifest = json.loads((root / "manifest.json").read_text())
+const root = 'public/assets/sprites/creatures-animated';
+const manifest = JSON.parse(await fs.readFile(path.join(root, 'manifest.json'), 'utf8'));
 
-for creature_id in sorted(manifest["animations"]):
-    for kind in ["idle", "walk"]:
-        path = root / creature_id / f"{kind}.png"
-        image = Image.open(path).convert("RGBA")
-        if image.size != (1536, 1024):
-            raise SystemExit(f"{path} wrong size {image.size}")
-        arr = np.array(image)
-        alpha = arr[:, :, 3]
-        rgb = arr[:, :, :3]
-        transparent_pct = 100 * (alpha < 10).sum() / alpha.size
-        opaque_white_pct = 100 * (((rgb > 245).all(axis=2)) & (alpha > 245)).sum() / alpha.size
-        if transparent_pct <= 50 or opaque_white_pct >= 1:
-            raise SystemExit(f"{path} alpha failed: transparent={transparent_pct}, white={opaque_white_pct}")
+for (const [creatureId, animations] of Object.entries(manifest.animations)) {
+  for (const [kind, url] of Object.entries(animations)) {
+    const { pathname } = new URL(url, 'https://koto.local');
+    const filePath = path.join('public', pathname.replace(/^\/assets\//u, 'assets/'));
+    const image = sharp(filePath).ensureAlpha();
+    const metadata = await image.metadata();
+    if (metadata.width !== 1536 || metadata.height !== 1024 || !metadata.hasAlpha) {
+      throw new Error(`${creatureId}.${kind} wrong sheet metadata ${JSON.stringify(metadata)}`);
+    }
+    const raw = await image.raw().toBuffer();
+    let transparent = 0;
+    let opaqueWhite = 0;
+    for (let i = 0; i < raw.length; i += 4) {
+      const [r, g, b, a] = [raw[i], raw[i + 1], raw[i + 2], raw[i + 3]];
+      if (a < 10) transparent++;
+      if (r > 245 && g > 245 && b > 245 && a > 245) opaqueWhite++;
+    }
+    const pixels = metadata.width * metadata.height;
+    const transparentPct = 100 * transparent / pixels;
+    const opaqueWhitePct = 100 * opaqueWhite / pixels;
+    if (transparentPct <= 50 || opaqueWhitePct >= 1) {
+      throw new Error(`${creatureId}.${kind} alpha failed: transparent=${transparentPct}, white=${opaqueWhitePct}`);
+    }
+  }
+}
 
-print("verified", len(manifest["animations"]), "animated creatures")
-PY
+console.log('verified', Object.keys(manifest.animations).length, 'animated creatures');
+NODE
 ```
 
 Run focused runtime checks:
@@ -420,6 +444,7 @@ node --check public/js/pixi/formation.js
 node --check public/js/scenes/hub-scene.js
 npm run test:unit -- \
   tests/unit/pixi/creature-animation-manifest.test.js \
+  tests/unit/pixi/animated-sprite-runtime-assets.test.js \
   tests/unit/pixi/animated-creature-sprite.test.js \
   tests/unit/pixi/formation-travel-offset.test.js \
   tests/unit/scenes/hub-scene.test.js

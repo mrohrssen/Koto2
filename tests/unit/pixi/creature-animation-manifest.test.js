@@ -17,7 +17,7 @@ describe('creature animation manifest', () => {
       fps: 8,
       renderScale: 1.5,
       animations: {
-        neko: { idle: '/idle.png', walk: '/walk.png' },
+        neko: { idle: '/idle.webp', walk: '/walk.webp' },
       },
     });
 
@@ -49,13 +49,13 @@ describe('creature animation manifest', () => {
       fps: 12,
       renderScale: 1.85,
       animations: {
-        neko: { idle: '/idle.png', walk: '/walk.png' },
+        neko: { idle: '/idle.webp', walk: '/walk.webp' },
       },
     });
 
     assert.deepEqual(getAnimatedCreatureEntry(manifest, 'neko'), {
-      idle: '/idle.png',
-      walk: '/walk.png',
+      idle: '/idle.webp',
+      walk: '/walk.webp',
       frameWidth: 256,
       frameHeight: 256,
       columns: 6,

@@ -12,13 +12,13 @@
       "sourceVideo": "output/npc-animations/kodomo/idle/source-video.mp4",
       "sourceSheet": "output/npc-animations/kodomo/idle/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/kodomo/idle/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/kodomo/idle.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/kodomo/idle.webp"
     },
     "walk": {
       "sourceVideo": "output/npc-animations/kodomo/walk/source-video.mp4",
       "sourceSheet": "output/npc-animations/kodomo/walk/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/kodomo/walk/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/kodomo/walk.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/kodomo/walk.webp"
     }
   }
 }

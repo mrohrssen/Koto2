@@ -12,13 +12,13 @@
       "sourceVideo": "output/npc-animations/shrine_fox/idle/source-video.mp4",
       "sourceSheet": "output/npc-animations/shrine_fox/idle/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/shrine_fox/idle/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/shrine_fox/idle.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/shrine_fox/idle.webp"
     },
     "walk": {
       "sourceVideo": "output/npc-animations/shrine_fox/walk/source-video.mp4",
       "sourceSheet": "output/npc-animations/shrine_fox/walk/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/shrine_fox/walk/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/shrine_fox/walk.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/shrine_fox/walk.webp"
     }
   }
 }

@@ -12,13 +12,13 @@
       "sourceVideo": "output/npc-animations/sensei/idle/source-video.mp4",
       "sourceSheet": "output/npc-animations/sensei/idle/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/sensei/idle/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/sensei/idle.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/sensei/idle.webp"
     },
     "walk": {
       "sourceVideo": "output/npc-animations/sensei/walk/source-video.mp4",
       "sourceSheet": "output/npc-animations/sensei/walk/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/sensei/walk/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/sensei/walk.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/sensei/walk.webp"
     }
   }
 }

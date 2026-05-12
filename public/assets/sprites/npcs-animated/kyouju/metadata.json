@@ -12,13 +12,13 @@
       "sourceVideo": "output/npc-animations/kyouju/idle/source-video.mp4",
       "sourceSheet": "output/npc-animations/kyouju/idle/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/kyouju/idle/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/kyouju/idle.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/kyouju/idle.webp"
     },
     "walk": {
       "sourceVideo": "output/npc-animations/kyouju/walk/source-video.mp4",
       "sourceSheet": "output/npc-animations/kyouju/walk/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/kyouju/walk/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/kyouju/walk.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/kyouju/walk.webp"
     }
   }
 }

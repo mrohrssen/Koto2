@@ -12,13 +12,13 @@
       "sourceVideo": "output/npc-animations/senpai/idle/source-video.mp4",
       "sourceSheet": "output/npc-animations/senpai/idle/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/senpai/idle/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/senpai/idle.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/senpai/idle.webp"
     },
     "walk": {
       "sourceVideo": "output/npc-animations/senpai/walk/source-video.mp4",
       "sourceSheet": "output/npc-animations/senpai/walk/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/senpai/walk/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/senpai/walk.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/senpai/walk.webp"
     }
   }
 }

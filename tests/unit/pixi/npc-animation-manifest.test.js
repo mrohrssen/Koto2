@@ -17,7 +17,7 @@ describe('NPC animation manifest', () => {
       fps: 8,
       renderScale: 1.25,
       animations: {
-        cid: { idle: '/idle.png', walk: '/walk.png' },
+        cid: { idle: '/idle.webp', walk: '/walk.webp' },
       },
     });
 
@@ -49,13 +49,13 @@ describe('NPC animation manifest', () => {
       fps: 12,
       renderScale: 1,
       animations: {
-        cid: { idle: '/idle.png', walk: '/walk.png' },
+        cid: { idle: '/idle.webp', walk: '/walk.webp' },
       },
     });
 
     assert.deepEqual(getAnimatedNpcEntry(manifest, 'cid'), {
-      idle: '/idle.png',
-      walk: '/walk.png',
+      idle: '/idle.webp',
+      walk: '/walk.webp',
       frameWidth: 256,
       frameHeight: 256,
       columns: 6,

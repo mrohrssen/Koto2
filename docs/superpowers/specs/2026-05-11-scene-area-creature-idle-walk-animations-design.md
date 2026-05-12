@@ -117,16 +117,16 @@ Generated runtime assets should live under:
 public/assets/sprites/creatures-animated/
   manifest.json
   neko/
-    idle.png
-    walk.png
+    idle.webp
+    walk.webp
     metadata.json
   hi/
-    idle.png
-    walk.png
+    idle.webp
+    walk.webp
     metadata.json
   ishi/
-    idle.png
-    walk.png
+    idle.webp
+    walk.webp
     metadata.json
 ```
 
@@ -159,7 +159,7 @@ The top-level manifest should be small and runtime-friendly:
 
 ```json
 {
-  "version": "20260511",
+  "version": "20260512",
   "frameWidth": 256,
   "frameHeight": 256,
   "fps": 12,
@@ -167,8 +167,8 @@ The top-level manifest should be small and runtime-friendly:
   "renderScale": 1.85,
   "animations": {
     "neko": {
-      "idle": "/assets/sprites/creatures-animated/neko/idle.png?v=20260511",
-      "walk": "/assets/sprites/creatures-animated/neko/walk.png?v=20260511"
+      "idle": "/assets/sprites/creatures-animated/neko/idle.webp?v=20260512",
+      "walk": "/assets/sprites/creatures-animated/neko/walk.webp?v=20260512"
     }
   }
 }

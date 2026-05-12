@@ -1,5 +1,5 @@
 {
-  "version": "20260511",
+  "version": "20260512",
   "frameWidth": 256,
   "frameHeight": 256,
   "columns": 6,
@@ -8,48 +8,48 @@
   "renderScale": 1.6,
   "animations": {
     "cid": {
-      "idle": "/assets/sprites/npcs-animated/cid/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/cid/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/cid/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/cid/walk.webp?v=20260512"
     },
     "game-master": {
-      "idle": "/assets/sprites/npcs-animated/game-master/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/game-master/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/game-master/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/game-master/walk.webp?v=20260512"
     },
     "kodomo": {
-      "idle": "/assets/sprites/npcs-animated/kodomo/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/kodomo/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/kodomo/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/kodomo/walk.webp?v=20260512"
     },
     "kyouju": {
-      "idle": "/assets/sprites/npcs-animated/kyouju/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/kyouju/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/kyouju/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/kyouju/walk.webp?v=20260512"
     },
     "onnanoko": {
-      "idle": "/assets/sprites/npcs-animated/onnanoko/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/onnanoko/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/onnanoko/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/onnanoko/walk.webp?v=20260512"
     },
     "otokonoko": {
-      "idle": "/assets/sprites/npcs-animated/otokonoko/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/otokonoko/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/otokonoko/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/otokonoko/walk.webp?v=20260512"
     },
     "otona": {
-      "idle": "/assets/sprites/npcs-animated/otona/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/otona/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/otona/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/otona/walk.webp?v=20260512"
     },
     "seito": {
-      "idle": "/assets/sprites/npcs-animated/seito/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/seito/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/seito/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/seito/walk.webp?v=20260512"
     },
     "senpai": {
-      "idle": "/assets/sprites/npcs-animated/senpai/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/senpai/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/senpai/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/senpai/walk.webp?v=20260512"
     },
     "sensei": {
-      "idle": "/assets/sprites/npcs-animated/sensei/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/sensei/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/sensei/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/sensei/walk.webp?v=20260512"
     },
     "shrine_fox": {
-      "idle": "/assets/sprites/npcs-animated/shrine_fox/idle.png?v=20260511",
-      "walk": "/assets/sprites/npcs-animated/shrine_fox/walk.png?v=20260511"
+      "idle": "/assets/sprites/npcs-animated/shrine_fox/idle.webp?v=20260512",
+      "walk": "/assets/sprites/npcs-animated/shrine_fox/walk.webp?v=20260512"
     }
   }
 }

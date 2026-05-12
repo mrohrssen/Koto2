@@ -12,13 +12,13 @@
       "sourceVideo": "output/npc-animations/onnanoko/idle/source-video.mp4",
       "sourceSheet": "output/npc-animations/onnanoko/idle/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/onnanoko/idle/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/onnanoko/idle.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/onnanoko/idle.webp"
     },
     "walk": {
       "sourceVideo": "output/npc-animations/onnanoko/walk/source-video.mp4",
       "sourceSheet": "output/npc-animations/onnanoko/walk/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/onnanoko/walk/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/onnanoko/walk.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/onnanoko/walk.webp"
     }
   }
 }

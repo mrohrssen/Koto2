@@ -54,9 +54,9 @@ describe('animated creature sprite helpers', () => {
   });
 
   it('chooses walk only when walking is enabled and available', () => {
-    assert.equal(chooseAnimationKind({ idle: 'idle.png', walk: 'walk.png' }, true), 'walk');
-    assert.equal(chooseAnimationKind({ idle: 'idle.png', walk: 'walk.png' }, false), 'idle');
-    assert.equal(chooseAnimationKind({ idle: 'idle.png' }, true), 'idle');
-    assert.equal(chooseAnimationKind({ walk: 'walk.png' }, false), 'walk');
+    assert.equal(chooseAnimationKind({ idle: 'idle.webp', walk: 'walk.webp' }, true), 'walk');
+    assert.equal(chooseAnimationKind({ idle: 'idle.webp', walk: 'walk.webp' }, false), 'idle');
+    assert.equal(chooseAnimationKind({ idle: 'idle.webp' }, true), 'idle');
+    assert.equal(chooseAnimationKind({ walk: 'walk.webp' }, false), 'walk');
   });
 });

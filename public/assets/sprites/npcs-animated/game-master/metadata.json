@@ -12,13 +12,13 @@
       "sourceVideo": "output/npc-animations/game-master/idle/source-video.mp4",
       "sourceSheet": "output/npc-animations/game-master/idle/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/game-master/idle/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/game-master/idle.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/game-master/idle.webp"
     },
     "walk": {
       "sourceVideo": "output/npc-animations/game-master/walk/source-video.mp4",
       "sourceSheet": "output/npc-animations/game-master/walk/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/game-master/walk/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/game-master/walk.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/game-master/walk.webp"
     }
   }
 }

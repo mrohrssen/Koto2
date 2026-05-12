@@ -15,14 +15,14 @@
 ### Runtime Assets
 
 - Create: `public/assets/sprites/creatures-animated/manifest.json`
-- Create: `public/assets/sprites/creatures-animated/neko/idle.png`
-- Create: `public/assets/sprites/creatures-animated/neko/walk.png`
+- Create: `public/assets/sprites/creatures-animated/neko/idle.webp`
+- Create: `public/assets/sprites/creatures-animated/neko/walk.webp`
 - Create: `public/assets/sprites/creatures-animated/neko/metadata.json`
-- Create: `public/assets/sprites/creatures-animated/hi/idle.png`
-- Create: `public/assets/sprites/creatures-animated/hi/walk.png`
+- Create: `public/assets/sprites/creatures-animated/hi/idle.webp`
+- Create: `public/assets/sprites/creatures-animated/hi/walk.webp`
 - Create: `public/assets/sprites/creatures-animated/hi/metadata.json`
-- Create: `public/assets/sprites/creatures-animated/ishi/idle.png`
-- Create: `public/assets/sprites/creatures-animated/ishi/walk.png`
+- Create: `public/assets/sprites/creatures-animated/ishi/idle.webp`
+- Create: `public/assets/sprites/creatures-animated/ishi/walk.webp`
 - Create: `public/assets/sprites/creatures-animated/ishi/metadata.json`
 
 ### Generated Intermediates
@@ -156,8 +156,8 @@ Expected: six final sheets with real transparency and no opaque white cells.
 
 **Files:**
 - Create: `public/assets/sprites/creatures-animated/manifest.json`
-- Create: `public/assets/sprites/creatures-animated/<id>/idle.png`
-- Create: `public/assets/sprites/creatures-animated/<id>/walk.png`
+- Create: `public/assets/sprites/creatures-animated/<id>/idle.webp`
+- Create: `public/assets/sprites/creatures-animated/<id>/walk.webp`
 - Create: `public/assets/sprites/creatures-animated/<id>/metadata.json`
 
 - [ ] **Step 1: Copy verified final sheets**
@@ -165,12 +165,12 @@ Expected: six final sheets with real transparency and no opaque white cells.
 Copy:
 
 ```text
-output/creature-animations/neko/idle/sheet-256.png -> public/assets/sprites/creatures-animated/neko/idle.png
-output/creature-animations/neko/walk/sheet-256.png -> public/assets/sprites/creatures-animated/neko/walk.png
-output/creature-animations/hi/idle/sheet-256.png -> public/assets/sprites/creatures-animated/hi/idle.png
-output/creature-animations/hi/walk/sheet-256.png -> public/assets/sprites/creatures-animated/hi/walk.png
-output/creature-animations/ishi/idle/sheet-256.png -> public/assets/sprites/creatures-animated/ishi/idle.png
-output/creature-animations/ishi/walk/sheet-256.png -> public/assets/sprites/creatures-animated/ishi/walk.png
+output/creature-animations/neko/idle/sheet-256.webp -> public/assets/sprites/creatures-animated/neko/idle.webp
+output/creature-animations/neko/walk/sheet-256.webp -> public/assets/sprites/creatures-animated/neko/walk.webp
+output/creature-animations/hi/idle/sheet-256.webp -> public/assets/sprites/creatures-animated/hi/idle.webp
+output/creature-animations/hi/walk/sheet-256.webp -> public/assets/sprites/creatures-animated/hi/walk.webp
+output/creature-animations/ishi/idle/sheet-256.webp -> public/assets/sprites/creatures-animated/ishi/idle.webp
+output/creature-animations/ishi/walk/sheet-256.webp -> public/assets/sprites/creatures-animated/ishi/walk.webp
 ```
 
 Expected: all six runtime sheets exist.
@@ -181,7 +181,7 @@ Create `public/assets/sprites/creatures-animated/manifest.json`:
 
 ```json
 {
-  "version": "20260511",
+  "version": "20260512",
   "frameWidth": 256,
   "frameHeight": 256,
   "columns": 6,
@@ -190,16 +190,16 @@ Create `public/assets/sprites/creatures-animated/manifest.json`:
   "renderScale": 1.85,
   "animations": {
     "neko": {
-      "idle": "/assets/sprites/creatures-animated/neko/idle.png?v=20260511",
-      "walk": "/assets/sprites/creatures-animated/neko/walk.png?v=20260511"
+      "idle": "/assets/sprites/creatures-animated/neko/idle.webp?v=20260512",
+      "walk": "/assets/sprites/creatures-animated/neko/walk.webp?v=20260512"
     },
     "hi": {
-      "idle": "/assets/sprites/creatures-animated/hi/idle.png?v=20260511",
-      "walk": "/assets/sprites/creatures-animated/hi/walk.png?v=20260511"
+      "idle": "/assets/sprites/creatures-animated/hi/idle.webp?v=20260512",
+      "walk": "/assets/sprites/creatures-animated/hi/walk.webp?v=20260512"
     },
     "ishi": {
-      "idle": "/assets/sprites/creatures-animated/ishi/idle.png?v=20260511",
-      "walk": "/assets/sprites/creatures-animated/ishi/walk.png?v=20260511"
+      "idle": "/assets/sprites/creatures-animated/ishi/idle.webp?v=20260512",
+      "walk": "/assets/sprites/creatures-animated/ishi/walk.webp?v=20260512"
     }
   }
 }
@@ -339,9 +339,9 @@ test('frameRectForIndex maps frame index into 6-column sheet', () => {
 });
 
 test('chooseAnimationKind walks only when walking is enabled and walk exists', () => {
-  assert.equal(chooseAnimationKind({ idle: 'idle.png', walk: 'walk.png' }, true), 'walk');
-  assert.equal(chooseAnimationKind({ idle: 'idle.png' }, true), 'idle');
-  assert.equal(chooseAnimationKind({ idle: 'idle.png', walk: 'walk.png' }, false), 'idle');
+  assert.equal(chooseAnimationKind({ idle: 'idle.webp', walk: 'walk.webp' }, true), 'walk');
+  assert.equal(chooseAnimationKind({ idle: 'idle.webp' }, true), 'idle');
+  assert.equal(chooseAnimationKind({ idle: 'idle.webp', walk: 'walk.webp' }, false), 'idle');
 });
 ```
 

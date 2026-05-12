@@ -12,13 +12,13 @@
       "sourceVideo": "output/npc-animations/cid/idle/source-video.mp4",
       "sourceSheet": "output/npc-animations/cid/idle/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/cid/idle/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/cid/idle.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/cid/idle.webp"
     },
     "walk": {
       "sourceVideo": "output/npc-animations/cid/walk/source-video.mp4",
       "sourceSheet": "output/npc-animations/cid/walk/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/cid/walk/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/cid/walk.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/cid/walk.webp"
     }
   }
 }

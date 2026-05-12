@@ -247,8 +247,8 @@ describe('spawnNpcSprite scene contract', () => {
   it('uses walk animation during slide-in, then switches to idle', async () => {
     const npcs = new FakeContainer();
     npcAnimationEntry = {
-      idle: '/assets/sprites/npcs-animated/cid/idle.png?v=test',
-      walk: '/assets/sprites/npcs-animated/cid/walk.png?v=test',
+      idle: '/assets/sprites/npcs-animated/cid/idle.webp?v=test',
+      walk: '/assets/sprites/npcs-animated/cid/walk.webp?v=test',
       frameWidth: 256,
       frameHeight: 256,
       columns: 6,
@@ -276,8 +276,8 @@ describe('spawnNpcSprite scene contract', () => {
   it('uses idle animation immediately when spawned without slide-in', async () => {
     const npcs = new FakeContainer();
     npcAnimationEntry = {
-      idle: '/assets/sprites/npcs-animated/cid/idle.png?v=test',
-      walk: '/assets/sprites/npcs-animated/cid/walk.png?v=test',
+      idle: '/assets/sprites/npcs-animated/cid/idle.webp?v=test',
+      walk: '/assets/sprites/npcs-animated/cid/walk.webp?v=test',
       frameWidth: 256,
       frameHeight: 256,
       columns: 6,
@@ -301,8 +301,8 @@ describe('spawnNpcSprite scene contract', () => {
   it('scales animated NPCs by the manifest renderScale', async () => {
     const npcs = new FakeContainer();
     npcAnimationEntry = {
-      idle: '/assets/sprites/npcs-animated/cid/idle.png?v=test',
-      walk: '/assets/sprites/npcs-animated/cid/walk.png?v=test',
+      idle: '/assets/sprites/npcs-animated/cid/idle.webp?v=test',
+      walk: '/assets/sprites/npcs-animated/cid/walk.webp?v=test',
       frameWidth: 256,
       frameHeight: 256,
       columns: 6,
@@ -338,8 +338,8 @@ describe('spawnNpcSprite scene contract', () => {
   it('ticks animated NPCs as walking during slide-in and idle after arrival', async () => {
     const npcs = new FakeContainer();
     npcAnimationEntry = {
-      idle: '/assets/sprites/npcs-animated/cid/idle.png?v=test',
-      walk: '/assets/sprites/npcs-animated/cid/walk.png?v=test',
+      idle: '/assets/sprites/npcs-animated/cid/idle.webp?v=test',
+      walk: '/assets/sprites/npcs-animated/cid/walk.webp?v=test',
       frameWidth: 256,
       frameHeight: 256,
       columns: 6,

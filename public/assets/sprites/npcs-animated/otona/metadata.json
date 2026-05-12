@@ -12,13 +12,13 @@
       "sourceVideo": "output/npc-animations/otona/idle/source-video.mp4",
       "sourceSheet": "output/npc-animations/otona/idle/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/otona/idle/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/otona/idle.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/otona/idle.webp"
     },
     "walk": {
       "sourceVideo": "output/npc-animations/otona/walk/source-video.mp4",
       "sourceSheet": "output/npc-animations/otona/walk/source-sheet-rgb.png",
       "cleanedSheet": "output/npc-animations/otona/walk/cleaned-source-sheet.png",
-      "runtimeSheet": "public/assets/sprites/npcs-animated/otona/walk.png"
+      "runtimeSheet": "public/assets/sprites/npcs-animated/otona/walk.webp"
     }
   }
 }
