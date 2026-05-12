@@ -64,4 +64,16 @@ describe('NPC animation manifest', () => {
       renderScale: 1,
     });
   });
+
+  it('allows an NPC entry to override the global render scale', () => {
+    const manifest = normalizeNpcAnimationManifest({
+      version: 'test',
+      renderScale: 1.6,
+      animations: {
+        shrine_fox: { idle: '/idle.png', walk: '/walk.png', renderScale: 0.8 },
+      },
+    });
+
+    assert.equal(getAnimatedNpcEntry(manifest, 'shrine_fox').renderScale, 0.8);
+  });
 });

@@ -34,6 +34,7 @@ export function getAnimatedNpcEntry(manifest, npcId) {
   if (!manifest?.animations || !npcId) return null;
   const entry = manifest.animations[npcId];
   if (!entry?.idle && !entry?.walk) return null;
+  const entryRenderScale = Number(entry.renderScale);
   return {
     ...entry,
     frameWidth: manifest.frameWidth,
@@ -41,6 +42,6 @@ export function getAnimatedNpcEntry(manifest, npcId) {
     columns: manifest.columns,
     frames: manifest.frames,
     fps: manifest.fps,
-    renderScale: manifest.renderScale,
+    renderScale: entryRenderScale || manifest.renderScale,
   };
 }
