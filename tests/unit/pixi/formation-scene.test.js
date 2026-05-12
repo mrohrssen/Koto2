@@ -57,7 +57,10 @@ class FakeRectangle {
 }
 
 class FakeGraphics extends FakeContainer {
-  ellipse() { return this; }
+  ellipse(x, y, radiusX, radiusY) {
+    this.lastEllipse = { x, y, radiusX, radiusY };
+    return this;
+  }
   circle() { return this; }
   roundRect() { return this; }
   fill() { return this; }
@@ -386,14 +389,29 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
     return createFormationContext(scene);
   }
 
-  it('isBoss=true renders at 120px', async () => {
+  it('isBoss=true renders at 90px', async () => {
     const ctx = makeSceneCtx();
     const sprite = await spawnFormationSprite(
       ctx, 'enemy', { uid: 'boss', id: 'b' }, 0,
       { isBoss: true, skipEnter: true }
     );
-    assert.strictEqual(sprite.width, 120);
-    assert.strictEqual(sprite.height, 120);
+    assert.strictEqual(sprite.width, 90);
+    assert.strictEqual(sprite.height, 90);
+  });
+
+  it('isBoss=true scales the shadow by 1.5x', async () => {
+    const ctx = makeSceneCtx();
+    const sprite = await spawnFormationSprite(
+      ctx, 'enemy', { uid: 'boss', id: 'b' }, 0,
+      { slotI: 1, isBoss: true, skipEnter: true }
+    );
+
+    assert.deepEqual(sprite._shadow.lastEllipse, {
+      x: 0,
+      y: 0,
+      radiusX: 40.5,
+      radiusY: 10.5,
+    });
   });
 
   it('isBoss=false (default) renders at 60px', async () => {

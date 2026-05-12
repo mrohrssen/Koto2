@@ -108,6 +108,15 @@ describe('combat-dom battlefield positioning', () => {
     assert.doesNotMatch(css, /\.formation-slot\s*\{[^}]*flex-direction:\s*column-reverse/s);
   });
 
+  it('scales boss encounter sprite anchors and info to 1.5x only in boss battles', () => {
+    const css = fs.readFileSync(new URL('../../../public/game.css', import.meta.url), 'utf8');
+
+    assert.match(css, /\.boss-encounter \.formation-sprite\s*\{[^}]*width:\s*90px/s);
+    assert.match(css, /\.boss-encounter \.formation-sprite\s*\{[^}]*height:\s*90px/s);
+    assert.match(css, /\.boss-encounter \.formation-info\s*\{[^}]*scale\(1\.5\)/s);
+    assert.match(css, /\.boss-encounter \.formation-info\s*\{[^}]*bottom:\s*calc\(50% \+ 51px\)/s);
+  });
+
   it('does not transform defeated enemy slots away from their battlefield anchor', () => {
     const css = fs.readFileSync(new URL('../../../public/game.css', import.meta.url), 'utf8');
     const defeatedRule = css.match(/\.enemy-formation \.formation-slot\.defeated\s*\{(?<body>[^}]*)\}/s);
