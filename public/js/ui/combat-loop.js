@@ -143,6 +143,7 @@ let combatPausedForVocab = false;
 let playerAttackTimer = null;
 let enemyAttackTimer = null;
 let animatedEnemyKoKeys = new Set();
+let creatureCombatRequestInFlight = false;
 
 // Move-based combat state
 let currentCreatureIndex = 0;
@@ -182,6 +183,40 @@ let updateCreatureRowData = null;
 let delay = null;
 
 const API_BASE = PLATFORM.apiBase;
+
+async function requestCreatureCombatCycle(actionType, moveChoices = []) {
+  if (typeof apiCreatureCombatCycle !== 'function') {
+    throw new Error('Creature combat API is not configured');
+  }
+  return apiCreatureCombatCycle(actionType, moveChoices);
+}
+
+async function runCreatureCombatRequest(actionType, moveChoices = []) {
+  if (creatureCombatRequestInFlight) return null;
+  creatureCombatRequestInFlight = true;
+
+  const syncingLabel = tPlain('combat.syncingTurn');
+  const actionArea = document.getElementById('action-area');
+  if (actionArea) {
+    const label = syncingLabel === 'combat.syncingTurn' ? 'Syncing turn...' : syncingLabel;
+    actionArea.innerHTML = `<div class="combat-syncing-indicator">${label}</div>`;
+  }
+
+  try {
+    return await requestCreatureCombatCycle(actionType, moveChoices);
+  } finally {
+    creatureCombatRequestInFlight = false;
+  }
+}
+
+export const __combatNetworkTest = {
+  setCreatureCombatApi(fn) {
+    apiCreatureCombatCycle = fn;
+    creatureCombatRequestInFlight = false;
+  },
+  requestCreatureCombatCycle,
+  runCreatureCombatRequest,
+};
 
 /** Wrap an async combat animation sequence with the animation-active guard. */
 async function withAnimationActive(fn) {
@@ -1023,12 +1058,10 @@ async function executeCreatureMovesTurn(choices) {
         _log.act(`Attack: ${moveDesc}`);
       }
 
-      const response = await fetch(`${API_BASE}/api/game/creature-combat-cycle`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ actionType: 'attack', moveChoices: choices })
-      });
-      const result = await response.json();
+      const result = await runCreatureCombatRequest('attack', choices);
+      if (!result) {
+        throw new Error('Combat sync failed');
+      }
 
       if (result.error) {
         if (result.state) {
@@ -1260,12 +1293,10 @@ async function executeCreatureDefendThenPause() {
         log.expect('Enemy attacks only. No ally attacks this turn.');
       }
 
-      const response = await fetch(`${API_BASE}/api/game/creature-combat-cycle`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ actionType: 'defend' })
-      });
-      const result = await response.json();
+      const result = await runCreatureCombatRequest('defend', []);
+      if (!result) {
+        throw new Error('Combat sync failed');
+      }
       logger.info('[CombatLoop] Creature defend result:', { enemyAttacks: result.enemyAttacks?.length });
 
       if (result.error) {

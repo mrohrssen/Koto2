@@ -206,6 +206,7 @@ import {
   chooseFriendlyNpcItem as apiChooseFriendlyNpcItem,
   npcBattleSkillOffers as apiNpcBattleSkillOffers,
   npcBattleSkillChoose as apiNpcBattleSkillChoose,
+  isTransientGameStateFailure,
   setConnectionCallbacks,
 } from './js/api.js';
 
@@ -775,6 +776,11 @@ async function loadKnownWords() {
 
 async function loadGameState() {
   const data = await apiGetGameState();
+  if (isTransientGameStateFailure(data)) {
+    scene.showToast?.('Connection is slow. Retrying...', 3000);
+    return null;
+  }
+
   if (data.player) {
     updateGameState(data);
     // Probe which creatures have animated idle sprites (for background-image contexts)
@@ -793,6 +799,7 @@ async function loadGameState() {
       phase: data.phase || 'no_save'
     });
   }
+  return data;
 }
 
 async function claimDailyCrystalBonus() {
@@ -2144,7 +2151,11 @@ async function initGame() {
     getKanaMode: () => gameState.meta?.kanaMode ?? false,
     onStateUpdate: updateGameState,
   });
-  await loadGameState();
+  const loadedState = await loadGameState();
+  if (loadedState === null) {
+    scene.showToast?.('Connection is slow. Check your connection and reload.', 5000);
+    return;
+  }
   await claimDailyCrystalBonus();
 
   // Freshly registered users should enter prologue immediately without

@@ -8,6 +8,7 @@ import { apiUrl, PLATFORM } from './platform.js';
 // Maps endpoint → in-flight Promise so concurrent callers share the same
 // result instead of the second caller receiving null.
 const inFlightRequests = new Map();
+const DEFAULT_API_TIMEOUT_MS = 10000;
 
 // Connection health tracking (used by offline banner)
 let consecutiveFailures = 0;
@@ -30,6 +31,35 @@ function onApiFailure() {
   if (consecutiveFailures >= 2) {
     connectionCallbacks.onOffline?.();
   }
+}
+
+function isConnectionFailure(error) {
+  return error instanceof TypeError || error?.name === 'AbortError';
+}
+
+async function fetchJsonWithTimeout(url, options = {}, opts = {}) {
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_API_TIMEOUT_MS;
+  const controller = new AbortController();
+  const timeoutId = timeoutMs > 0
+    ? setTimeout(() => controller.abort(), timeoutMs)
+    : null;
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: options.signal || controller.signal
+    });
+    const data = await response.json().catch(() => ({}));
+    return { response, data };
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
+
+function resetNetworkStateForTest() {
+  consecutiveFailures = 0;
+  hasRedirectedFor401 = false;
+  inFlightRequests.clear();
 }
 
 /**
@@ -169,7 +199,7 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
 
   const task = (async () => {
     // GETs always retry; POSTs only if caller opts in
-    const maxAttempts = (method === 'GET' || opts.retryable) ? 3 : 1;
+    const maxAttempts = opts.maxAttempts ?? ((method === 'GET' || opts.retryable) ? 3 : 1);
     let lastError = null;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -186,7 +216,11 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
         const options = { method, headers: getAuthHeaders() };
         if (method !== 'GET' && body) options.body = JSON.stringify(body);
 
-        const response = await fetch(`${PLATFORM.apiBase}/api/game${endpoint}`, options);
+        const { response, data } = await fetchJsonWithTimeout(
+          `${PLATFORM.apiBase}/api/game${endpoint}`,
+          options,
+          { timeoutMs: opts.timeoutMs }
+        );
 
         // 401 handled specifically — don't retry auth errors
         if (response.status === 401) {
@@ -199,8 +233,6 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
           onApiSuccess(); // Server responded — connection is fine
           throw new Error('Session expired');
         }
-
-        const data = await response.json();
 
         // Any HTTP response (even 4xx/5xx) proves the server is reachable
         onApiSuccess();
@@ -226,7 +258,7 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
 
         // Only count as connection failure if fetch itself threw (network error),
         // not if the server returned an error HTTP status
-        if (error instanceof TypeError) onApiFailure();
+        if (isConnectionFailure(error)) onApiFailure();
       }
     }
 
@@ -243,6 +275,13 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
   return task;
 }
 
+export const __networkTest = {
+  apiCall,
+  fetchJsonWithTimeout,
+  isConnectionFailure,
+  reset: resetNetworkStateForTest,
+};
+
 /**
  * Check if an API call is currently in progress
  */
@@ -257,15 +296,23 @@ function isApiLoading() {
  * @returns {Promise<object>} Game state with player, run, combat, phase
  */
 async function getGameState() {
-  try {
-    const response = await fetch(apiUrl('/api/game/state'), {
-      headers: getAuthHeaders()
-    });
-    return await response.json();
-  } catch (error) {
-    logger.error('[API] Failed to fetch game state:', error.message);
-    return { phase: 'no_save' };
+  const data = await apiCall('/state', 'GET', null, null, {
+    returnErrorBody: true,
+    timeoutMs: 10000,
+  });
+
+  if (!data) {
+    return {
+      error: 'network_unavailable',
+      transient: true,
+    };
   }
+
+  return data;
+}
+
+function isTransientGameStateFailure(data) {
+  return data?.transient === true && data?.error === 'network_unavailable';
 }
 
 
@@ -826,6 +873,7 @@ export {
   isApiLoading,
   // Game state endpoints
   getGameState,
+  isTransientGameStateFailure,
   getSettings,
   claimDailyCrystals,
   // Player management endpoints
