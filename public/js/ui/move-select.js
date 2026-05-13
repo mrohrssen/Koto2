@@ -48,7 +48,7 @@ function escapeHtml(value) {
 
 function getMoveTutorialHint(move, opts = {}) {
   if (!opts.tutorialMoveId || move?.id !== opts.tutorialMoveId) return '';
-  return opts.tutorialHintText || 'Click here!';
+  return opts.tutorialHintText || 'Tap here!';
 }
 
 export function buildMoveCell(move, canAfford, opts = {}) {

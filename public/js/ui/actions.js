@@ -111,9 +111,9 @@ export function clear() {
   dom.actionArea.innerHTML = '';
 }
 
-/** Show the prologue-only cue that teaches players where to click to advance dialogue. */
+/** Show the prologue-only cue that teaches players where to tap to advance dialogue. */
 export function showPrologueContinueHint() {
-  dom.actionArea.innerHTML = '<div class="prologue-continue-hint">Click here to continue!</div>';
+  dom.actionArea.innerHTML = '<div class="prologue-continue-hint">Tap here to continue!</div>';
 }
 
 /** Show custom content in action area */

@@ -221,7 +221,7 @@ def generate_html(seeds):
 </head>
 <body>
 <h1>Traveling Merchant — Sprite Candidates</h1>
-<div class="subtitle">Nova v16 | 10 random seeds | RMBG-2.0 transparent | Click to select</div>
+<div class="subtitle">Nova v16 | 10 random seeds | RMBG-2.0 transparent | Tap to select</div>
 <div class="grid">
 """
     for i, seed in enumerate(seeds):

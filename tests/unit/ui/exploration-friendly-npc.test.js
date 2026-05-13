@@ -142,7 +142,7 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(dialogueCards[0].speaker, 'Guide');
     assert.deepEqual(dialogueCards[0].tokens, [{ text: 'こんにちは！' }]);
     assert.ok(
-      actionContent.every(html => !/prologue-continue-hint|Click to continue!/i.test(html)),
+      actionContent.every(html => !/prologue-continue-hint|Tap here to continue!/i.test(html)),
       'friendly NPC setup should not show a click-to-continue hint before a clickable continuation exists'
     );
     assert.ok(actionContent.every(html => !/Loading/i.test(html)));

@@ -26,9 +26,9 @@ function ruleBody(source, selector) {
   return source.slice(open + 1, i - 1);
 }
 
-test('move select can render an anchored Click here tutorial hint inside the target move', () => {
+test('move select can render an anchored Tap here tutorial hint inside the target move', () => {
   assert.match(moveSelectSource, /move-tutorial-hint/, 'move select should render an in-card tutorial hint');
-  assert.match(moveSelectSource, /Click here!/, 'first combat hint copy should be exactly "Click here!"');
+  assert.match(moveSelectSource, /Tap here!/, 'first combat hint copy should be exactly "Tap here!"');
   assert.match(moveSelectSource, /move-cell--tutorial-target/, 'target move should receive a dedicated anchoring class');
   assert.match(moveSelectSource, /tutorial-highlight/, 'target move should reuse the existing tutorial highlight class');
 });

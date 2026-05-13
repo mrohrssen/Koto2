@@ -26,6 +26,6 @@ describe('prologue continue hint', () => {
     actions.showPrologueContinueHint();
 
     assert.match(actionArea.innerHTML, /prologue-continue-hint/);
-    assert.match(actionArea.innerHTML, /Click here to continue!/);
+    assert.match(actionArea.innerHTML, /Tap here to continue!/);
   });
 });

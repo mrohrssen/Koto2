@@ -19,7 +19,7 @@ const TUTORIAL_NARRATION_BY_STEP = {
     'Hey! It looks like you\'re starting to learn some Japanese.',
     'The Translator detected {dueCount} words for you to review.',
     'If you pass the review, you\'ll just see the Japanese for these words from now on.',
-    'But don\'t worry, you can always click them to see the full translation.',
+    'But don\'t worry, you can always tap them to see the full translation.',
     'Keep exploring and watch your Japanese grow!'
   ],
   5: [],
@@ -76,7 +76,7 @@ export function getFusionCoreNarration() {
 export function getFusionLabNarration() {
   return [
     'Look! We unlocked the data for hinoneko. Select it',
-    'Now click Fuse'
+    'Now tap Fuse'
   ];
 }
 

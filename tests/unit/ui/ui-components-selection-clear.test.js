@@ -121,7 +121,7 @@ describe('selection clearing', () => {
 
     assert.equal(await selected, 0);
     assert.doesNotMatch(actionArea.innerHTML, /prologue-continue-hint/);
-    assert.doesNotMatch(actionArea.innerHTML, /Click to continue!/);
+    assert.doesNotMatch(actionArea.innerHTML, /Tap here to continue!/);
     assert.equal(actionArea.querySelectorAll('.ui-btn').length, 0);
   });
 
@@ -137,7 +137,7 @@ describe('selection clearing', () => {
 
     assert.equal(selectedIndex, 0);
     assert.doesNotMatch(actionArea.innerHTML, /prologue-continue-hint/);
-    assert.doesNotMatch(actionArea.innerHTML, /Click to continue!/);
+    assert.doesNotMatch(actionArea.innerHTML, /Tap here to continue!/);
     assert.equal(actionArea.querySelectorAll('.ui-choice').length, 0);
   });
 

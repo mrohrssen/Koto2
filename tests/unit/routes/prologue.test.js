@@ -52,6 +52,14 @@ describe('prologue.json content', () => {
     assert.equal(demo.frameGroup, 'tutorial-translator-demo');
     assert.ok(!demo.tokens, 'tokens should not be inlined — server resolves them');
   });
+
+  it('uses tap language for the word lookup instruction', () => {
+    const prologue = JSON.parse(readFileSync(PROLOGUE_PATH, 'utf-8'));
+    const instruction = prologue.find(s => s.id === 'prologue-translator-click');
+    assert.ok(instruction, 'prologue-translator-click should exist');
+    assert.match(instruction.narration, /tap any Japanese word/);
+    assert.doesNotMatch(instruction.narration, /\bclick\b/i);
+  });
 });
 
 // Helper — spins up the router on an ephemeral port, makes one GET, returns body

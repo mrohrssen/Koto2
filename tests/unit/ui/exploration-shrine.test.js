@@ -139,7 +139,7 @@ describe('renderShrine encounter flow', () => {
     await renderShrine();
 
     assert.ok(
-      actionContent.every(html => !/prologue-continue-hint|Click to continue!/i.test(html)),
+      actionContent.every(html => !/prologue-continue-hint|Tap here to continue!/i.test(html)),
       'shrine setup should not show a click-to-continue hint before a clickable continuation exists'
     );
     assert.equal(dialogueCards[0].speaker, 'Shrine Fox');

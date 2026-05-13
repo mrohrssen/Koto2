@@ -306,7 +306,7 @@ def generate_html(results):
 </head>
 <body>
 <h1>NPC Sprite Candidates</h1>
-<div class="subtitle">Nova v16 | 5 variants each | RMBG-2.0 transparent | Click to select favorites</div>
+<div class="subtitle">Nova v16 | 5 variants each | RMBG-2.0 transparent | Tap to select favorites</div>
 """
     for npc_id, npc_data in NPCS.items():
         html += f'<div class="npc-section">\n'

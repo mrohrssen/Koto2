@@ -445,7 +445,7 @@ export function getFirstCombatMoveTutorialOpts(state, creature, currentCreatureI
 
   return {
     tutorialMoveId: 'honoo',
-    tutorialHintText: 'Click here!',
+    tutorialHintText: 'Tap here!',
     lockToTutorialMove: true
   };
 }
