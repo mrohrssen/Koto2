@@ -1702,6 +1702,12 @@ button.hud-chip {
   padding: 16px;
 }
 
+.flash-card-front ruby rt {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
 .flash-card-back {
   display: none;
   flex-direction: column;
@@ -3429,6 +3435,10 @@ button.hud-chip {
 
 .speed-review-slot .flash-card-front {
   font-size: 28px;
+}
+
+.speed-review-slot .flash-card-front ruby rt {
+  font-size: 14px;
 }
 
 .speed-review-slot .flash-card-word {

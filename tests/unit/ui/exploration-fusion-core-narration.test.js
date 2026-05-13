@@ -172,6 +172,42 @@ describe('renderHub fusion core review narration', () => {
     assert.equal(narrationCalls, 1);
   });
 
+  it('enables romaji annotations when launching knowledge review in kana mode', async () => {
+    let gameState = {
+      phase: 'hub',
+      meta: {
+        kanaMode: true,
+        pvpTeams: [],
+        tutorialStep: 6,
+        tutorialFusionDataUnlocked: [],
+        tutorialFusionCoreAwarded: false,
+        tutorialFusionComplete: false,
+        creatureCollection: [],
+      },
+    };
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: (nextState) => { gameState = nextState; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      startNewRun: () => {},
+      apiGetVocabDueCount: async () => ({ count: 1 }),
+      apiGetDueWords: async () => ({
+        words: [{ word: '火', reading: 'ひ', meanings: ['fire'] }],
+      }),
+    });
+
+    await renderHub();
+    const reviewButton = renderedButtons.find(button => button.label.includes('Knowledge Review'));
+    assert.ok(reviewButton, 'Knowledge Review button should render');
+
+    await reviewButton.onClick();
+
+    assert.equal(speedReviewStartArgs?.options?.showRomaji, true);
+  });
+
   it('refreshes the hub after awarding the tutorial Fusion Core', async () => {
     let gameState = {
       phase: 'hub',

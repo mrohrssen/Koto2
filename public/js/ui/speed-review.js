@@ -5,6 +5,7 @@ import * as takeover from './takeover.js';
 import { animate as anime } from 'animejs';
 import { setKnownWords } from './bootstrap-client.js';
 import { escapeHtml } from './html-utils.js';
+import { buildHeadwordRuby } from './romaji.js';
 import { showWordLevelUp } from './word-level-up.js';
 
 // Module state
@@ -29,7 +30,8 @@ let state = {
     completionTriggered: false,
     commitDeliveryChain: Promise.resolve(),
     completionPromise: null,
-    completing: false
+    completing: false,
+    showRomaji: false
   }
 };
 
@@ -59,7 +61,8 @@ function resolveSessionOptions(options = {}) {
     commitDeliveryChain: Promise.resolve(),
     completionPromise: null,
     exitNotified: false,
-    completing: false
+    completing: false,
+    showRomaji: options.showRomaji === true
   };
 }
 
@@ -320,7 +323,7 @@ function restoreCard(slotIndex, word, direction) {
 
   slot.innerHTML = `
     <div class="flash-card flipped" data-slot="${slotIndex}">
-      <div class="flash-card-front">${escapeHtml(displayWord(word))}</div>
+      <div class="flash-card-front">${displayWordHtml(word)}</div>
       <div class="flash-card-back">
         <div class="flash-card-word">${displayWordHtml(word)}</div>
         <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
@@ -468,7 +471,7 @@ function fillSlot(slotIndex) {
 
   slot.innerHTML = `
     <div class="flash-card pop-in" data-slot="${slotIndex}">
-      <div class="flash-card-front">${escapeHtml(displayWord(word))}</div>
+      <div class="flash-card-front">${displayWordHtml(word)}</div>
       <div class="flash-card-back">
         <div class="flash-card-word">${displayWordHtml(word)}</div>
         <div class="flash-card-meaning">${formatMeanings(word.meanings)}</div>
@@ -843,10 +846,13 @@ function displayWord(word) {
 }
 
 /**
- * Get the back-of-card word HTML.
- * Shows hiragana reading by default (matching the game's dialogue renderer).
+ * Get card word HTML for both front and back.
+ * Shows plain hiragana by default, and hiragana with romaji ruby in hiragana learning mode.
  */
 function displayWordHtml(word) {
+  if (state.session.showRomaji) {
+    return buildHeadwordRuby(word.word, word.reading, false);
+  }
   return escapeHtml(word.reading || word.word);
 }
 

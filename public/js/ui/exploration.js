@@ -490,6 +490,7 @@ export async function renderHub() {
           && !getGameState().meta?.tutorialFusionCoreAwarded;
         let fusionCoreAwardedThisReview = false;
         const reviewOptions = {
+          showRomaji: gameState.meta?.kanaMode === true,
           onExit: async () => {
             if (fusionCoreAwardedThisReview && !fusionCoreNarrationShown) {
               fusionCoreNarrationShown = true;
@@ -1131,6 +1132,7 @@ export async function renderSpeedReviewRoom() {
       mode: 'room',
       maxCards: 10,
       canCloseEarly: false,
+      showRomaji: gameState.meta?.kanaMode === true,
       onCommittedReview: async ({ word, commitIndex }) => {
         speedReviewRoomCommitChain = speedReviewRoomCommitChain.then(async () => {
           let lastError = null;
