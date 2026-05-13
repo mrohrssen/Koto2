@@ -9,6 +9,7 @@ let campfireState = null;
 let selected = {};
 let activeTab = 'ingredients';
 let displayMode = 'entry';
+const DISPLAY_ONLY = { recordExposure: false };
 
 export function init(cbs) {
   callbacks = cbs;
@@ -43,6 +44,14 @@ function ingredientById() {
 
 function getIngredient(id, ingredientsById = ingredientById()) {
   return ingredientsById.get(id) || { id, word: id, reading: id, nameEn: id, meaning: id };
+}
+
+function renderEntityName(entity) {
+  return renderJpSentence([entityToToken(entity)], getKnownWords(), new Map(), {}, false, DISPLAY_ONLY);
+}
+
+function recordIngredientExposure(ingredient) {
+  renderJpSentence([entityToToken(ingredient)], getKnownWords(), new Map());
 }
 
 function escapeAttribute(value) {
@@ -181,7 +190,7 @@ function renderSlotPreview() {
     return `
       <div class="campfire-slot">
         ${renderIngredientIcon(ingredient, 'campfire-slot-icon')}
-        <div class="campfire-slot-name">${renderJpSentence([entityToToken(ingredient)], getKnownWords(), new Map())}</div>
+        <div class="campfire-slot-name">${renderEntityName(ingredient)}</div>
       </div>
     `;
   }).join('');
@@ -213,7 +222,7 @@ function renderCookedDishScene(dish) {
       </div>
       <div class="campfire-cooked-dish-display">
         ${renderIngredientIcon(dish, 'campfire-cooked-dish-icon')}
-        <div class="campfire-cooked-dish-name">${renderJpSentence([entityToToken(dish)], getKnownWords(), new Map())}</div>
+        <div class="campfire-cooked-dish-name">${renderEntityName(dish)}</div>
         <div class="campfire-cooked-dish-effect">${escapeHtml(dish.effectDescription || dish.nameEn || '')}</div>
       </div>
     </div>
@@ -310,7 +319,7 @@ function renderIngredients() {
         return `
           <button class="${cardClasses}" data-id="${escapeHtml(id)}" type="button" ${disabled ? 'disabled' : ''}>
             ${renderIngredientIcon(ingredient)}
-            <span class="campfire-ingredient-name">${renderJpSentence([entityToToken(ingredient)], getKnownWords(), new Map())}</span>
+            <span class="campfire-ingredient-name">${renderEntityName(ingredient)}</span>
             <span class="campfire-ingredient-count">${selectedCount}/${count}</span>
           </button>
         `;
@@ -332,6 +341,7 @@ function renderIngredients() {
         delete selected[id];
       } else if (totalSelected < 5) {
         selected[id] = current + 1;
+        recordIngredientExposure(getIngredient(id));
       }
       render();
     });
@@ -359,7 +369,7 @@ function renderRecipes() {
             <span class="campfire-recipe-badge ${canCook ? 'ready' : 'need'}">${canCook ? 'Ready' : 'Need'}</span>
             ${renderIngredientIcon(recipe)}
             <span class="campfire-recipe-info">
-              <span class="campfire-recipe-title">${renderJpSentence([entityToToken(recipe)], getKnownWords(), new Map())}</span>
+              <span class="campfire-recipe-title">${renderEntityName(recipe)}</span>
               <span class="campfire-recipe-effect">${escapeHtml(recipe.effectDescription || recipe.nameEn || '')}</span>
               <span class="campfire-recipe-pills">${renderRequirementPills(recipe, ingredientsById)}</span>
             </span>
@@ -373,6 +383,9 @@ function renderRecipes() {
     button.addEventListener('click', () => {
       const recipe = recipes[Number(button.dataset.index)];
       selected = Object.fromEntries(recipe.ingredients.map(ingredient => [ingredient.id, ingredient.quantity]));
+      for (const ingredient of recipe.ingredients) {
+        recordIngredientExposure(getIngredient(ingredient.id, ingredientsById));
+      }
       activeTab = 'ingredients';
       render();
     });
@@ -382,6 +395,9 @@ function renderRecipes() {
 async function cookSelected() {
   const ingredients = Object.entries(selected).map(([id, quantity]) => ({ id, quantity }));
   campfireState = await callbacks.apiCookAtCampfire(ingredients);
+  if (campfireState?.room?.cookedDish) {
+    recordIngredientExposure(campfireState.room.cookedDish);
+  }
   render();
 }
 

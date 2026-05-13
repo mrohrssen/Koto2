@@ -77,12 +77,15 @@ export function renderEnFirst(taggedText) {
  *   shared resolver's final fallback and unit-test convenience.
  * @param {Object<string, string>} overrides - baseForm → English override
  * @param {boolean} useKanji - false for Areas 1-3 (hiragana), true for Area 4+
+ * @param {{recordExposure?: boolean}} options - pass recordExposure:false for display-only labels
  * @returns {string} HTML string
  */
-export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, useKanji = false) {
+export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, useKanji = false, options = {}) {
   if (!tokens || tokens.length === 0) return '';
 
-  recordExposure(tokens, wordDict, overrides);
+  if (options.recordExposure !== false) {
+    recordExposure(tokens, wordDict, overrides);
+  }
 
   const isAttachablePunctuation = token => {
     const surface = token?.surface || '';

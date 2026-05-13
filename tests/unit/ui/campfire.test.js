@@ -135,6 +135,7 @@ globalThis.document = {
   querySelectorAll: selector => actionArea.querySelectorAll(selector),
 };
 
+const exposureBuffer = await import('../../../public/js/ui/exposure-buffer.js');
 const campfire = await import('../../../public/js/ui/campfire.js');
 
 function sampleState(overrides = {}) {
@@ -188,6 +189,7 @@ function openCooking() {
 
 describe('campfire UI', () => {
   beforeEach(() => {
+    exposureBuffer.teardown();
     actionArea.innerHTML = '';
     sceneArea.innerHTML = '';
     sceneArea.className = '';
@@ -318,6 +320,30 @@ describe('campfire UI', () => {
     assert.match(renderedHtml(), /<ruby>/);
     assert.match(renderedHtml(), /<rt>/);
     assert.match(renderedHtml(), /water|Water/);
+  });
+
+  it('records ingredient exposure only when an ingredient is added to the cooking slots', async () => {
+    const posted = [];
+    campfire.renderForTest(sampleState());
+    exposureBuffer.init({
+      postFn: async words => posted.push(...words),
+      debounceMs: 100000,
+      document: null,
+      window: null,
+      onlineTarget: null,
+    });
+
+    openCooking();
+    await exposureBuffer.flushNow();
+
+    assert.deepEqual(posted, []);
+
+    actionArea.querySelector('.campfire-ingredient-card').click();
+    await exposureBuffer.flushNow();
+
+    assert.deepEqual(posted, [
+      { word: '水', meaning: 'Water' },
+    ]);
   });
 
   it('renders selected ingredients in the scene slot preview', () => {
@@ -520,6 +546,45 @@ describe('campfire UI', () => {
     assert.deepEqual(cookedIngredients, [
       { id: 'mizu', quantity: 1 },
       { id: 'miso', quantity: 1 },
+    ]);
+  });
+
+  it('records one exposure for the cooked dish returned by cooking', async () => {
+    const posted = [];
+    campfire.renderForTest(sampleState(), {
+      apiCookAtCampfire: async () => sampleState({
+        room: {
+          cookedDish: {
+            id: 'miso-soup',
+            word: '味噌汁',
+            reading: 'みそしる',
+            nameEn: 'Miso soup',
+            meaning: 'miso soup',
+            effectDescription: 'Restores 20% MP.',
+          }
+        }
+      })
+    });
+    exposureBuffer.init({
+      postFn: async words => posted.push(...words),
+      debounceMs: 100000,
+      document: null,
+      window: null,
+      onlineTarget: null,
+    });
+    openCooking();
+
+    const cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[0].click();
+    cards[1].click();
+    await exposureBuffer.flushNow();
+    posted.length = 0;
+
+    await actionArea.querySelector('.campfire-cook-btn').click();
+    await exposureBuffer.flushNow();
+
+    assert.deepEqual(posted, [
+      { word: '味噌汁', meaning: 'Miso soup' },
     ]);
   });
 
