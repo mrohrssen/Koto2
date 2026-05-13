@@ -20,6 +20,10 @@ describe('word-dictionary', () => {
     writeFileSync(join(tmpDir.path, 'creatures.json'), JSON.stringify({
       hi: { id: 'hi', name: '火', nameEn: 'Hi', reading: 'ひ', meaning: 'fire' }
     }));
+    mkdirSync(join(tmpDir.path, 'cooking'));
+    writeFileSync(join(tmpDir.path, 'cooking', 'ingredients.json'), JSON.stringify([
+      { id: 'saba', word: 'サバ', reading: 'サバ', nameEn: 'Mackerel', meaning: 'mackerel' }
+    ]));
   });
 
   afterEach(async () => { await tmpDir.cleanup(); });
@@ -51,7 +55,7 @@ describe('word-dictionary', () => {
       overlayDir: tmpDir.path,
       liveDictPath: join(tmpDir.path, 'nonexistent.json'),
     });
-    assert.equal(dict.size, 1); // still loads the overlay (fire via creatures.json)
+    assert.equal(dict.size, 2); // still loads overlays from game data files
   });
 
   it('loads glue-words overlay', () => {
@@ -61,6 +65,14 @@ describe('word-dictionary', () => {
     const dict = loadFixture();
     assert.ok(dict.has('わたし'));
     assert.equal(dict.get('わたし').definitions[0].en, 'I/me');
+  });
+
+  it('loads cooking ingredients as game data overlays', () => {
+    const dict = loadFixture();
+    assert.deepEqual(dict.get('サバ'), {
+      reading: 'サバ',
+      definitions: [{ en: 'mackerel', primary: true }],
+    });
   });
 
   it('does not load creature-speech (dialogue, not entity data)', () => {

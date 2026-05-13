@@ -29,6 +29,7 @@ export function loadWordDictionary({ overlayDir, liveDictPath }) {
     { file: 'creatures.json', wordField: 'name', readingField: 'reading', meaningField: 'meaning' },
     { file: 'moves.json', wordField: 'name', readingField: 'reading', meaningField: 'meaning' },
     { file: 'items.json', wordField: 'word', readingField: 'reading', meaningField: 'meaning' },
+    { file: 'cooking/ingredients.json', wordField: 'word', readingField: 'reading', meaningField: 'meaning' },
     { file: 'npcs.json', wordField: 'name', readingField: 'reading', meaningField: 'meaning' },
     { file: 'npc-skills.json', wordField: 'name', readingField: 'reading', meaningField: 'meaning' },
     { file: 'areas.json', wordField: 'name', readingField: 'reading', meaningField: 'nameEn' },
