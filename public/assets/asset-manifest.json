@@ -1,0 +1,843 @@
+{
+  "version": "20260508-campfire-entry-npc",
+  "creatures": {
+    "akuma": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/akuma/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/akuma/walk.webp?v=20260512"
+      }
+    },
+    "ari": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/ari/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/ari/walk.webp?v=20260512"
+      }
+    },
+    "buta": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/buta/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/buta/walk.webp?v=20260512"
+      }
+    },
+    "chou": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/chou/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/chou/walk.webp?v=20260512"
+      }
+    },
+    "erufu": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/erufu/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/erufu/walk.webp?v=20260512"
+      }
+    },
+    "fukurou": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/fukurou/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/fukurou/walk.webp?v=20260512"
+      }
+    },
+    "goburin": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/goburin/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/goburin/walk.webp?v=20260512"
+      }
+    },
+    "hachi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hachi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hachi/walk.webp?v=20260512"
+      }
+    },
+    "hana": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hana/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hana/walk.webp?v=20260512"
+      }
+    },
+    "hanano-yousei": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hanano-yousei/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hanano-yousei/walk.webp?v=20260512"
+      }
+    },
+    "hebi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hebi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hebi/walk.webp?v=20260512"
+      }
+    },
+    "hi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hi/walk.webp?v=20260512"
+      }
+    },
+    "hikari": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hikari/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hikari/walk.webp?v=20260512"
+      }
+    },
+    "hikarino-uma": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hikarino-uma/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hikarino-uma/walk.webp?v=20260512"
+      }
+    },
+    "hinoneko": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hinoneko/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hinoneko/walk.webp?v=20260512"
+      }
+    },
+    "hitsuji": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hitsuji/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hitsuji/walk.webp?v=20260512"
+      }
+    },
+    "hone": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hone/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hone/walk.webp?v=20260512"
+      }
+    },
+    "honeno-oni": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/honeno-oni/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/honeno-oni/walk.webp?v=20260512"
+      }
+    },
+    "hoshi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/hoshi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/hoshi/walk.webp?v=20260512"
+      }
+    },
+    "ika": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/ika/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/ika/walk.webp?v=20260512"
+      }
+    },
+    "inoshishi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/inoshishi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/inoshishi/walk.webp?v=20260512"
+      }
+    },
+    "inu": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/inu/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/inu/walk.webp?v=20260512"
+      }
+    },
+    "ishi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/ishi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/ishi/walk.webp?v=20260512"
+      }
+    },
+    "ishino-kyojin": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/ishino-kyojin/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/ishino-kyojin/walk.webp?v=20260512"
+      }
+    },
+    "kaeru": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kaeru/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kaeru/walk.webp?v=20260512"
+      }
+    },
+    "kage": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kage/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kage/walk.webp?v=20260512"
+      }
+    },
+    "kageno-inu": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kageno-inu/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kageno-inu/walk.webp?v=20260512"
+      }
+    },
+    "kame": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kame/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kame/walk.webp?v=20260512"
+      }
+    },
+    "kaminari": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kaminari/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kaminari/walk.webp?v=20260512"
+      }
+    },
+    "kaminarino-tori": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kaminarino-tori/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kaminarino-tori/walk.webp?v=20260512"
+      }
+    },
+    "kamo": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kamo/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kamo/walk.webp?v=20260512"
+      }
+    },
+    "kani": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kani/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kani/walk.webp?v=20260512"
+      }
+    },
+    "kaze": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kaze/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kaze/walk.webp?v=20260512"
+      }
+    },
+    "kemono": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kemono/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kemono/walk.webp?v=20260512"
+      }
+    },
+    "ki": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/ki/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/ki/walk.webp?v=20260512"
+      }
+    },
+    "kitsune": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kitsune/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kitsune/walk.webp?v=20260512"
+      }
+    },
+    "koori": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/koori/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/koori/walk.webp?v=20260512"
+      }
+    },
+    "koorino-kuma": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/koorino-kuma/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/koorino-kuma/walk.webp?v=20260512"
+      }
+    },
+    "kujira": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kujira/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kujira/walk.webp?v=20260512"
+      }
+    },
+    "kuma": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kuma/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kuma/walk.webp?v=20260512"
+      }
+    },
+    "kumo": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kumo/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kumo/walk.webp?v=20260512"
+      }
+    },
+    "kumono-sakana": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/kumono-sakana/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/kumono-sakana/walk.webp?v=20260512"
+      }
+    },
+    "mizu": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/mizu/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/mizu/walk.webp?v=20260512"
+      }
+    },
+    "mushi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/mushi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/mushi/walk.webp?v=20260512"
+      }
+    },
+    "neko": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/neko/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/neko/walk.webp?v=20260512"
+      }
+    },
+    "nezumi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/nezumi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/nezumi/walk.webp?v=20260512"
+      }
+    },
+    "oni": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/oni/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/oni/walk.webp?v=20260512"
+      }
+    },
+    "ookami": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/ookami/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/ookami/walk.webp?v=20260512"
+      }
+    },
+    "ryuu": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/ryuu/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/ryuu/walk.webp?v=20260512"
+      }
+    },
+    "sakana": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/sakana/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/sakana/walk.webp?v=20260512"
+      }
+    },
+    "saru": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/saru/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/saru/walk.webp?v=20260512"
+      }
+    },
+    "shika": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/shika/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/shika/walk.webp?v=20260512"
+      }
+    },
+    "suishou": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/suishou/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/suishou/walk.webp?v=20260512"
+      }
+    },
+    "suna": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/suna/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/suna/walk.webp?v=20260512"
+      }
+    },
+    "sunano-hebi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/sunano-hebi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/sunano-hebi/walk.webp?v=20260512"
+      }
+    },
+    "suraimu": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/suraimu/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/suraimu/walk.webp?v=20260512"
+      }
+    },
+    "tako": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tako/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tako/walk.webp?v=20260512"
+      }
+    },
+    "tenshi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tenshi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tenshi/walk.webp?v=20260512"
+      }
+    },
+    "tetsu": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tetsu/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tetsu/walk.webp?v=20260512"
+      }
+    },
+    "tokage": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tokage/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tokage/walk.webp?v=20260512"
+      }
+    },
+    "tora": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tora/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tora/walk.webp?v=20260512"
+      }
+    },
+    "tori": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tori/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tori/walk.webp?v=20260512"
+      }
+    },
+    "tsuchi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tsuchi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tsuchi/walk.webp?v=20260512"
+      }
+    },
+    "tsuki": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tsuki/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tsuki/walk.webp?v=20260512"
+      }
+    },
+    "tsukino-ookami": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tsukino-ookami/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tsukino-ookami/walk.webp?v=20260512"
+      }
+    },
+    "tsuru": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/tsuru/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/tsuru/walk.webp?v=20260512"
+      }
+    },
+    "uma": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/uma/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/uma/walk.webp?v=20260512"
+      }
+    },
+    "ushi": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/ushi/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/ushi/walk.webp?v=20260512"
+      }
+    },
+    "yousei": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/yousei/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/yousei/walk.webp?v=20260512"
+      }
+    },
+    "yuki": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/yuki/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/yuki/walk.webp?v=20260512"
+      }
+    },
+    "yukino-kitsune": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/yukino-kitsune/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/yukino-kitsune/walk.webp?v=20260512"
+      }
+    },
+    "yuurei": {
+      "static": true,
+      "idle": false,
+      "animated": {
+        "idle": "/assets/sprites/creatures-animated/yuurei/idle.webp?v=20260512",
+        "walk": "/assets/sprites/creatures-animated/yuurei/walk.webp?v=20260512"
+      }
+    }
+  },
+  "backgrounds": {
+    "areas": [
+      "mahouno-gakkou-new-high-school",
+      "mahouno-gakkou-simple-elementary-school",
+      "mahouno-gakkou-splendid-university"
+    ],
+    "hajimari-no-hiroba": [
+      "far",
+      "ground",
+      "mid",
+      "sky"
+    ],
+    "locations": [
+      "convenience",
+      "government",
+      "hospital",
+      "office",
+      "residential",
+      "restaurant",
+      "school",
+      "shopping",
+      "station"
+    ],
+    "pvp_arena": [
+      "background",
+      "battleground",
+      "ground",
+      "sky"
+    ],
+    "school": [
+      "battleground",
+      "far",
+      "ground",
+      "mid",
+      "sky"
+    ],
+    "starter_meadow": [
+      "background",
+      "battleground",
+      "far",
+      "ground",
+      "mid",
+      "sky"
+    ]
+  },
+  "actions": [
+    "abandon",
+    "approach",
+    "assault",
+    "bear",
+    "beat",
+    "bewilder",
+    "bind",
+    "bite",
+    "blanket",
+    "blizzard",
+    "block",
+    "bloom",
+    "blow",
+    "blow-away",
+    "bomb",
+    "book",
+    "bounce",
+    "burn",
+    "burst",
+    "bury",
+    "butterfly",
+    "call",
+    "capture",
+    "cat",
+    "catch",
+    "challenge",
+    "chirp",
+    "chomp",
+    "close",
+    "coil",
+    "conceal",
+    "cover",
+    "crow",
+    "crush",
+    "cry",
+    "cure",
+    "curse",
+    "cut",
+    "dance",
+    "dash",
+    "deceive",
+    "demolish",
+    "destroy",
+    "devour",
+    "dig",
+    "dive",
+    "dodge",
+    "dolphin",
+    "doubt",
+    "dragon",
+    "drink",
+    "embrace",
+    "encircle",
+    "endure",
+    "enlarge",
+    "entangle",
+    "erase",
+    "exam",
+    "exceed",
+    "explosion",
+    "extend",
+    "extinguish",
+    "fall",
+    "fire",
+    "flame",
+    "float",
+    "flower",
+    "fly",
+    "forget",
+    "fox",
+    "freeze",
+    "frog",
+    "full-moon",
+    "gallop",
+    "ghost",
+    "glare",
+    "glitter",
+    "grasp",
+    "guard",
+    "hand-over",
+    "harden",
+    "heal",
+    "help",
+    "hide",
+    "hit",
+    "homework",
+    "horse",
+    "hurry",
+    "illuminate",
+    "inhale",
+    "investigate",
+    "jump",
+    "jump-out",
+    "kick",
+    "knock",
+    "know",
+    "lamp",
+    "launch",
+    "leap",
+    "lesson",
+    "lick",
+    "light",
+    "lightning",
+    "lion",
+    "melt",
+    "memorize",
+    "monkey",
+    "moon",
+    "mouse",
+    "musical-performance",
+    "octopus",
+    "open",
+    "overflow",
+    "peck",
+    "penetrate",
+    "penguin",
+    "performance",
+    "persevere",
+    "pierce",
+    "pillow",
+    "pin-down",
+    "pluck",
+    "ponder",
+    "pour",
+    "practice",
+    "pray",
+    "preserve",
+    "protect",
+    "pull",
+    "punch",
+    "question",
+    "rabbit",
+    "rage",
+    "rampage",
+    "read",
+    "recover",
+    "research",
+    "resound",
+    "rest",
+    "restrict",
+    "revolve",
+    "rip",
+    "roar",
+    "roast",
+    "ruin",
+    "scissors",
+    "scorch",
+    "scratch",
+    "scream",
+    "seize",
+    "shake",
+    "shark",
+    "shine",
+    "shoot",
+    "shout",
+    "sit",
+    "slash",
+    "sleep",
+    "slice",
+    "slide",
+    "smash",
+    "snake",
+    "snap",
+    "sparkle",
+    "speak",
+    "speaker",
+    "spider",
+    "spin",
+    "sprout",
+    "stack",
+    "stance",
+    "stand-up",
+    "star",
+    "stare",
+    "steal",
+    "step-on",
+    "sting",
+    "stretch",
+    "strike",
+    "study",
+    "submerge",
+    "suffer",
+    "sun",
+    "support",
+    "swallow",
+    "swallow-up",
+    "swarm",
+    "swim",
+    "swing",
+    "teach",
+    "tear",
+    "tear-apart",
+    "throw",
+    "throw-away",
+    "thrust",
+    "tie",
+    "tighten",
+    "topple",
+    "touch",
+    "transform",
+    "tremble",
+    "trick",
+    "turtle",
+    "umbrella",
+    "understand",
+    "warm",
+    "wash",
+    "wash-away",
+    "whale",
+    "wind",
+    "wish",
+    "wolf",
+    "wound",
+    "wrap",
+    "write"
+  ]
+}
