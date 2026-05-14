@@ -4,11 +4,9 @@ import {
   creatureStaticUrl,
   itemSpriteUrl,
 } from '../assets/asset-urls.js';
+import { hasCreatureIdle } from '../assets/asset-manifest.js';
 
 export { SPRITE_VERSION };
-
-const _noIdle = new Set();
-const _hasIdle = new Set();
 
 /** Kanji shown on text sprites when only element is known. */
 const ELEMENT_DISPLAY_WORD = {
@@ -21,8 +19,7 @@ const ELEMENT_DISPLAY_WORD = {
 
 /** Idle path (or static if known to 404). */
 export function creatureSpritePath(id) {
-  if (_noIdle.has(id)) return creatureStaticUrl(id);
-  return creatureIdleUrl(id);
+  return hasCreatureIdle(id) ? creatureIdleUrl(id) : creatureStaticUrl(id);
 }
 
 /** Static (non-animated) path — always {id}.webp, no idle. */
@@ -121,22 +118,12 @@ export function itemSpriteHtml(id, word) {
  * Uses cache — returns idle if known, static otherwise.
  */
 export function creatureBgUrl(id) {
-  if (_hasIdle.has(id)) return `url('${creatureIdleUrl(id)}')`;
-  return `url('${creatureStaticUrl(id)}')`;
+  return `url('${hasCreatureIdle(id) ? creatureIdleUrl(id) : creatureStaticUrl(id)}')`;
 }
 
 /**
- * Probe creature IDs for idle sprite existence (populates cache).
- * Call at startup so creatureBgUrl() returns correct paths.
+ * Legacy no-op kept for callers while manifest-backed idle discovery replaces probing.
  */
-export function probeIdleSprites(creatureIds) {
-  return Promise.all(creatureIds.map(id => {
-    if (_hasIdle.has(id) || _noIdle.has(id)) return Promise.resolve();
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => { _hasIdle.add(id); resolve(); };
-      img.onerror = () => { _noIdle.add(id); resolve(); };
-      img.src = creatureIdleUrl(id);
-    });
-  }));
+export function probeIdleSprites(_creatureIds) {
+  return Promise.resolve();
 }

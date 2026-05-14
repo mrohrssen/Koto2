@@ -7,6 +7,7 @@ import { STATUS_ICON_CONFIG } from '../ui/event-popup.js';
 import { creatureIdleUrl, creatureStaticUrl } from '../assets/asset-urls.js';
 import {
   getAnimatedCreatureEntry,
+  getCreatureAnimationManifestSnapshot,
   loadCreatureAnimationManifest,
 } from './creature-animation-manifest.js';
 import {
@@ -413,6 +414,18 @@ async function _animateLevelUp(ctx, side, index) {
 
 // --- New scene-oriented API --------------------------------------------------
 
+async function loadCreatureBaseTexture(creature) {
+  try {
+    return await loadImageTexture(creature.spriteImg || creatureIdleUrl(creature.id));
+  } catch {
+    try {
+      return await loadImageTexture(creatureStaticUrl(creature.id));
+    } catch {
+      return Texture.WHITE;
+    }
+  }
+}
+
 /**
  * Spawn a single creature sprite into `ctx` and register it by uid.
  *
@@ -455,37 +468,35 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   // of those calls bail out because the last increment wins. Storage by
   // uid is idempotent — if a caller kicks off two spawns for the same
   // uid we defensively remove the prior sprite below.
-  let texture;
+  const shouldEnterWithWalk = side === 'enemy' && !skipEnter && !hadSprites;
+  const manifestSnapshot = getCreatureAnimationManifestSnapshot();
+  const manifestEntry = getAnimatedCreatureEntry(manifestSnapshot, creature.id);
+  let animatedState = null;
+  let texture = null;
+
   try {
-    const spritePath = creature.spriteImg || creatureIdleUrl(creature.id);
-    texture = await loadImageTexture(spritePath);
-  } catch {
-    try {
-      texture = await loadImageTexture(creatureStaticUrl(creature.id));
-    } catch {
-      texture = Texture.WHITE;
+    if (manifestEntry) {
+      animatedState = await createAnimatedCreatureState(manifestEntry);
+      texture = (shouldEnterWithWalk ? animatedState.textures.walk?.[0] : null)
+        || animatedState.textures.idle?.[0]
+        || animatedState.textures.walk?.[0]
+        || null;
     }
+  } catch (err) {
+    console.warn('[formation] animated creature setup failed; using static sprite', creature.id, err);
+    animatedState = null;
+    texture = null;
+  }
+
+  if (!texture) {
+    texture = await loadCreatureBaseTexture(creature);
   }
 
   const sprite = new Sprite(texture);
   sprite.anchor.set(0.5);
-  const shouldEnterWithWalk = side === 'enemy' && !skipEnter && !hadSprites;
-  try {
-    const manifest = await loadCreatureAnimationManifest();
-    const entry = getAnimatedCreatureEntry(manifest, creature.id);
-    if (entry) {
-      const animatedState = await createAnimatedCreatureState(entry);
-      const initialTexture = (shouldEnterWithWalk ? animatedState.textures.walk?.[0] : null)
-        || animatedState.textures.idle?.[0]
-        || animatedState.textures.walk?.[0];
-      if (initialTexture) {
-        sprite.texture = initialTexture;
-        sprite._animatedCreature = animatedState;
-        sprite._animatedRenderScale = entry.renderScale || 1;
-      }
-    }
-  } catch (err) {
-    console.warn('[formation] animated creature setup failed; using static sprite', creature.id, err);
+  if (animatedState) {
+    sprite._animatedCreature = animatedState;
+    sprite._animatedRenderScale = manifestEntry.renderScale || 1;
   }
   const spriteSize = FORMATION_SPRITE_SIZE * (isBoss ? BOSS_BATTLE_SCALE : 1);
   if (!sprite._animatedCreature) {
@@ -558,6 +569,21 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
     prior.destroy({ children: true, texture: false });
   }
   ctx.creatureSprites[side].set(key, sprite);
+  if (!manifestSnapshot) {
+    loadCreatureAnimationManifest().then(async manifest => {
+      if (!sprite.parent) return;
+      const entry = getAnimatedCreatureEntry(manifest, creature.id);
+      if (!entry || sprite._animatedCreature) return;
+      const state = await createAnimatedCreatureState(entry);
+      if (!sprite.parent) return;
+      const initialTexture = state.textures.idle?.[0] || state.textures.walk?.[0];
+      if (initialTexture) {
+        sprite.texture = initialTexture;
+        sprite._animatedCreature = state;
+        sprite._animatedRenderScale = entry.renderScale || 1;
+      }
+    }).catch(() => {});
+  }
   return sprite;
 }
 

@@ -133,6 +133,7 @@ let fakeAnimationManifest = null;
 await mock.module('../../../public/js/pixi/creature-animation-manifest.js', {
   namedExports: {
     loadCreatureAnimationManifest: async () => fakeAnimationManifest,
+    getCreatureAnimationManifestSnapshot: () => fakeAnimationManifest,
     getAnimatedCreatureEntry: (manifest, creatureId) => {
       const entry = manifest?.animations?.[creatureId];
       if (!entry?.idle && !entry?.walk) return null;
@@ -551,6 +552,41 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
       assert.deepEqual(seen, [`/assets/sprites/creatures/kitsunova-idle.webp?v=${SPRITE_VERSION}`]);
     } finally {
       FakeAssets._loadImpl = originalLoad;
+    }
+  });
+
+  it('uses animated creature sheets first when the animation manifest snapshot is ready', async () => {
+    fakeAnimationManifest = {
+      frameWidth: 256,
+      frameHeight: 256,
+      columns: 6,
+      frames: 1,
+      fps: 12,
+      renderScale: 1,
+      animations: {
+        inu: { idle: '/assets/sprites/creatures-animated/inu/idle.webp?v=test' },
+      },
+    };
+    const loadedPaths = [];
+    const originalLoad = FakeAssets._loadImpl;
+    FakeAssets._loadImpl = async (path) => {
+      loadedPaths.push(path);
+      return { width: 256, height: 256, source: {}, path };
+    };
+
+    try {
+      const ctx = makeSceneCtx();
+      const sprite = await spawnFormationSprite(ctx, 'player', { uid: 'p-animated', id: 'inu' }, 0, {
+        skipEnter: true,
+      });
+
+      assert.equal(sprite._animatedCreature.entry.idle, '/assets/sprites/creatures-animated/inu/idle.webp?v=test');
+      assert.deepEqual(loadedPaths, [
+        '/assets/sprites/creatures-animated/inu/idle.webp?v=test',
+      ]);
+    } finally {
+      FakeAssets._loadImpl = originalLoad;
+      fakeAnimationManifest = null;
     }
   });
 

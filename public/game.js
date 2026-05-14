@@ -145,6 +145,8 @@ import { ExplorationScene } from './js/scenes/exploration-scene.js';
 import { HubScene } from './js/scenes/hub-scene.js';
 import { sceneKindForPhase } from './js/scenes/phase-scene-map.js';
 import { backgroundImageUrl, npcSpriteUrl } from './js/assets/asset-urls.js';
+import { startAssetManifestLoad } from './js/assets/asset-manifest.js';
+import { startCreatureAnimationManifestLoad } from './js/pixi/creature-animation-manifest.js';
 
 // API imports - these are the server communication functions
 import {
@@ -220,6 +222,9 @@ import {
 } from './js/api.js';
 
 const API_BASE = PLATFORM.apiBase;
+
+startAssetManifestLoad();
+startCreatureAnimationManifestLoad();
 
 // ============ STATE ============
 let gameState = {

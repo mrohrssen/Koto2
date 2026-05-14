@@ -1,6 +1,8 @@
 const MANIFEST_PATH = '/assets/sprites/creatures-animated/manifest.json';
 
 let manifestPromise = null;
+let manifestValue = null;
+let manifestPending = false;
 
 export function normalizeAnimationManifest(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -16,18 +18,42 @@ export function normalizeAnimationManifest(raw) {
   };
 }
 
-export async function loadCreatureAnimationManifest(fetchImpl = fetch) {
+export function startCreatureAnimationManifestLoad(fetchImpl = fetch) {
   if (!manifestPromise) {
+    manifestPending = true;
     manifestPromise = fetchImpl(MANIFEST_PATH)
       .then(response => response.ok ? response.json() : null)
       .then(normalizeAnimationManifest)
-      .catch(() => null);
+      .then(manifest => {
+        manifestValue = manifest;
+        manifestPending = false;
+        return manifest;
+      })
+      .catch(() => {
+        manifestValue = null;
+        manifestPending = false;
+        return null;
+      });
   }
   return manifestPromise;
 }
 
+export async function loadCreatureAnimationManifest(fetchImpl = fetch) {
+  return startCreatureAnimationManifestLoad(fetchImpl);
+}
+
+export function getCreatureAnimationManifestSnapshot() {
+  return manifestValue;
+}
+
+export function isCreatureAnimationManifestPending() {
+  return manifestPending;
+}
+
 export function resetCreatureAnimationManifestForTests() {
   manifestPromise = null;
+  manifestValue = null;
+  manifestPending = false;
 }
 
 export function getAnimatedCreatureEntry(manifest, creatureId) {
