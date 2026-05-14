@@ -26,8 +26,12 @@ import {
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
+import { SPRITE_VERSION } from '../../shared/asset-versions.js';
 
-const SPRITE_VERSION = '20260508-campfire-entry-npc';
+function versionedSpriteUrl(path) {
+  return `/assets/sprites/${path}.webp?v=${SPRITE_VERSION}`;
+}
+
 const SHRINE_REWARDS = [
   {
     id: 'heal_all',
@@ -653,11 +657,12 @@ export default function createRunRoutes({
       const creaturePool = filteredCreatures.map(c => ({
         id: c.id,
         type: 'creature',
+        creatureId: c.id,
         word: c.name,
         reading: c.reading || c.name,
         meaning: c.meaning || c.nameEn,
         element: c.element || '',
-        sprite: `/assets/sprites/creatures/${c.id}.webp?v=${SPRITE_VERSION}`
+        sprite: versionedSpriteUrl(`creatures/${c.id}`)
       }));
 
       // Filter items by area (same as friendly NPC shop)
@@ -668,10 +673,11 @@ export default function createRunRoutes({
       const itemPool = filteredItems.map(i => ({
         id: i.id,
         type: 'item',
+        itemId: i.id,
         word: i.word,
         reading: i.reading,
         meaning: i.meaning,
-        sprite: `/assets/sprites/items/${i.id}.webp?v=${SPRITE_VERSION}`
+        sprite: versionedSpriteUrl(`items/${i.id}`)
       }));
 
       // Filter moves to those in learnsets of area creatures
@@ -687,14 +693,15 @@ export default function createRunRoutes({
         : allMoves;
 
       const skillPool = filteredMoves.map(m => {
-        const slug = (m.nameEn || '').toLowerCase().replace(/ /g, '-');
+        const actionSlug = (m.nameEn || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
         return {
           id: `move-${m.id}`,
           type: 'skill',
+          actionSlug,
           word: m.name,
           reading: m.reading,
           meaning: m.nameEn || m.name,
-          sprite: `/assets/sprites/actions/${slug}.webp?v=${SPRITE_VERSION}`
+          sprite: versionedSpriteUrl(`actions/${actionSlug}`)
         };
       });
 

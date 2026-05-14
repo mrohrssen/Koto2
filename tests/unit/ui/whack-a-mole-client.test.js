@@ -47,6 +47,61 @@ const { WhackAMoleGame } = await import('../../../public/js/ui/whack-a-mole.js')
 describe('WhackAMoleGame cancellation', () => {
   beforeEach(() => {
     dialogueCalls = [];
+    delete globalThis.document;
+  });
+
+  it('resolves tile images from logical asset fields', () => {
+    const tileImgs = new Map();
+    globalThis.document = {
+      querySelector(selector) {
+        const match = selector.match(/\.wam-tile\[data-index="(\d+)"\]/);
+        if (!match) return null;
+        const index = Number(match[1]);
+        const img = { src: '', style: {} };
+        tileImgs.set(index, img);
+        const backEl = {
+          querySelector(backSelector) {
+            if (backSelector === '.text-sprite') return null;
+            if (backSelector === '.wam-tile-img') return img;
+            return null;
+          },
+          appendChild() {},
+        };
+        return {
+          classList: { add() {} },
+          querySelector(tileSelector) {
+            return tileSelector === '.wam-tile-back' ? backEl : null;
+          },
+        };
+      },
+    };
+
+    const game = new WhackAMoleGame([
+      { id: 'a', type: 'creature', creatureId: 'a', word: 'あ', reading: 'あ' },
+      { id: 'rice', type: 'item', itemId: 'rice', word: '米', reading: 'こめ' },
+      { id: 'move-slash', type: 'skill', actionSlug: 'slash', word: '切る', reading: 'きる' },
+      { id: 'b', reading: 'い', sprite: '/b.webp' },
+      { id: 'c', reading: 'う', sprite: '/c.webp' },
+      { id: 'd', reading: 'え', sprite: '/d.webp' },
+      { id: 'e', reading: 'お', sprite: '/e.webp' },
+      { id: 'f', reading: 'か', sprite: '/f.webp' },
+      { id: 'g', reading: 'き', sprite: '/g.webp' },
+    ], {
+      actions: { setContent: () => {} },
+      apiCompleteWhackAMole: async () => ({}),
+      apiProceed: async () => ({}),
+      updateGameState: () => {},
+      updateUI: () => {},
+      playSFX: () => {},
+    });
+
+    game._setTileFaceUp(0, 0);
+    game._setTileFaceUp(1, 1);
+    game._setTileFaceUp(2, 2);
+
+    assert.match(tileImgs.get(0).src, /\/assets\/sprites\/creatures\/a\.webp\?v=/);
+    assert.match(tileImgs.get(1).src, /\/assets\/sprites\/items\/rice\.webp\?v=/);
+    assert.match(tileImgs.get(2).src, /\/assets\/sprites\/actions\/slash\.webp\?v=/);
   });
 
   it('does not submit completion after the game has been cancelled', async () => {

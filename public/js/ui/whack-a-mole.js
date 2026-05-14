@@ -8,6 +8,18 @@ import { animateLevelUpForScene } from '../pixi/formation.js';
 import { spritePos } from './combat-vfx.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { playRoomTransition } from './room-transition.js';
+import {
+  actionIconUrlFromSlug,
+  creatureStaticUrl,
+  itemSpriteUrl,
+} from '../assets/asset-urls.js';
+
+function spriteUrlForPoolItem(item) {
+  if (item?.type === 'creature' && item.creatureId) return creatureStaticUrl(item.creatureId);
+  if (item?.type === 'item' && item.itemId) return itemSpriteUrl(item.itemId);
+  if (item?.type === 'skill' && item.actionSlug) return actionIconUrlFromSlug(item.actionSlug);
+  return item?.sprite || '';
+}
 
 export class WhackAMoleGame {
   /**
@@ -182,7 +194,7 @@ export class WhackAMoleGame {
     const item = this.pool[poolIdx];
     if (img) {
       img.style.display = '';
-      img.src = item.sprite;
+      img.src = spriteUrlForPoolItem(item);
       img.onerror = () => {
         // Fallback to kanji text sprite when image missing
         img.style.display = 'none';
