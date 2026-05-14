@@ -36,4 +36,8 @@ describe('asset URL helpers', () => {
     assert.equal(sfxUrl('attack'), `/assets/audio/sfx/attack.mp3?v=${AUDIO_VERSION}`);
     assert.equal(bgmUrl('battle'), `/assets/audio/bgm/battle.mp3?v=${AUDIO_VERSION}`);
   });
+
+  it('does not expose the retired hard-coded action icon version', () => {
+    assert.equal(actionIconUrl('Slash').includes('20260322'), false);
+  });
 });

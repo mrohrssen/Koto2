@@ -4,6 +4,7 @@ import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-clie
 import { effectLabel } from './move-effect-label.js';
 import { notEnoughMp, fullyRested } from './event-popup.js';
 import { REST_MOVE } from './rest-move.js';
+import { actionIconUrl } from '../assets/asset-urls.js';
 
 const CATEGORY_ICONS = {
   damage: '⚔', drain: '⚔', heal: '❤', shield: '🛡',
@@ -33,10 +34,6 @@ export function init({ onMoveSelectCb, onItemsOpenCb, onMoveHelpCb }) {
   if (onMoveHelpCb) onMoveHelp = onMoveHelpCb;
 }
 
-function iconSlug(nameEn) {
-  return nameEn.split(';')[0].trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-}
-
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -62,7 +59,7 @@ export function buildMoveCell(move, canAfford, opts = {}) {
     cell.classList.add('tutorial-dimmed');
   }
 
-  const slug = iconSlug(move.nameEn);
+  const iconUrl = actionIconUrl(move.nameEn);
   const iconFallback = CATEGORY_ICONS[move.category] || '★';
 
   // MP cost — warn if missing (debug aid for "0 MP" bug)
@@ -79,7 +76,7 @@ export function buildMoveCell(move, canAfford, opts = {}) {
     <div class="move-help-btn" data-move-id="${move.id}">?</div>
     <div class="move-hero">
       <div class="move-badge">
-        <img src="/assets/sprites/actions/${slug}.webp?v=20260322"
+        <img src="${iconUrl}"
              onerror="this.parentElement.textContent='${iconFallback}'; this.remove();"
              alt="">
       </div>

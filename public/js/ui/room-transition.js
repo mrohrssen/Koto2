@@ -1,12 +1,12 @@
 import { showFormation, hideFormation } from './combat-dom.js';
 import { showNpcTrainer, showNpcInDisplay, showDealer } from './exploration-dom.js';
-import { SPRITE_VERSION } from './sprite-utils.js';
 import { renderEnFirst } from './bootstrap-client.js';
 import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { combatEvents } from './combat-events.js';
 import { showIngredientDropPopups } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
+import { npcSpriteUrl, spriteUrl } from '../assets/asset-urls.js';
 import {
   setScrollState,
   startParallax,
@@ -97,21 +97,23 @@ export async function playRoomTransition(gameState, { waitFn = wait, ingredientD
     const npc = room.npc;
     if (npc) {
       const spritePath = npc.id
-        ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
-        : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+        ? npcSpriteUrl(npc.id)
+        : spriteUrl(['enemies', 'systemExecutive']);
       showNpcTrainer(npc.nameEn || npc.name, npc.id, npc, { skipPixi: true });
       if (canShowNpc) await scene.showNpcSprite(spritePath, { slideIn: true });
     }
   } else if (roomType === 'shrine') {
-    const spritePath = `/assets/sprites/shrine_fox.webp?v=${SPRITE_VERSION}`;
+    const spritePath = spriteUrl('shrine_fox');
     showNpcInDisplay('Shrine Fox', spritePath, { skipPixi: true });
     if (canShowNpc) await scene.showNpcSprite(spritePath, { slideIn: true });
   } else if (roomType === 'whackAMole') {
-    showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`, { skipPixi: true });
-    if (canShowNpc) await scene.showNpcSprite(`/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`, { slideIn: true });
+    const spritePath = npcSpriteUrl('game-master');
+    showNpcInDisplay('Game Master', spritePath, { skipPixi: true });
+    if (canShowNpc) await scene.showNpcSprite(spritePath, { slideIn: true });
   } else if (roomType === 'dealer') {
+    const spritePath = spriteUrl('traveling_merchant');
     showDealer({ skipPixi: true });
-    if (canShowNpc) await scene.showNpcSprite(`/assets/sprites/traveling_merchant.webp?v=${SPRITE_VERSION}`, { slideIn: true });
+    if (canShowNpc) await scene.showNpcSprite(spritePath, { slideIn: true });
   }
 
   const hasCreatures = allies.length > 0;
@@ -189,8 +191,8 @@ export async function playNpcBattleIntro(
   // Show NPC name/info in DOM; skip pixi spawn since we slide in below
   showNpcSpriteFn(npcName, npcData.id, npcData, { skipPixi: true });
   const spritePath = npcData.id
-    ? `/assets/sprites/npcs/${npcData.id}.webp?v=${SPRITE_VERSION}`
-    : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+    ? npcSpriteUrl(npcData.id)
+    : spriteUrl(['enemies', 'systemExecutive']);
   if (hasScene) {
     await scene.showNpcSprite(spritePath, { slideIn: true });
   }
@@ -280,8 +282,8 @@ export async function playNpcSkillAnimation(npcData, showNpcSpriteFn, hideNpcSpr
   if (npcData && showNpcSpriteFn) {
     showNpcSpriteFn(npcName, npcData.id, npcData, { skipPixi: true });
     const spritePath = npcData.id
-      ? `/assets/sprites/npcs/${npcData.id}.webp?v=${SPRITE_VERSION}`
-      : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+      ? npcSpriteUrl(npcData.id)
+      : spriteUrl(['enemies', 'systemExecutive']);
     if (hasScene) {
       await scene.showNpcSprite(spritePath, { slideIn: true });
     }

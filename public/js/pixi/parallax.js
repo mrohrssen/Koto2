@@ -1,19 +1,14 @@
 import { TilingSprite } from 'pixi.js';
 import { getApp } from './app.js';
 import { loadImageTexture } from './image-loader.js';
+import { backgroundLayerUrl, BACKGROUND_VERSION } from '../assets/asset-urls.js';
 
 const LAYER_NAMES = ['sky', 'battleground'];
 const LAYER_SPEEDS = [0.1, 1.0];
 const BASE_SCROLL_SPEED = 60; // pixels per second at 1.0x
 const SKY_LAYER_INDEX = 0;
 
-// Cache-bust query string appended to every background asset URL. server.js
-// serves /assets/**/*.webp with Cache-Control: max-age=31536000, immutable,
-// so the browser pins each URL forever. Without a version suffix here, a
-// regenerated sky.webp / battleground.webp keeps showing the old cached
-// bytes. Bump this date string whenever ANY area background is regenerated
-// (mirrors the SPRITE_VERSION convention in public/js/ui/sprite-utils.js).
-export const BACKGROUND_VERSION = '20260508';
+export { BACKGROUND_VERSION };
 
 // Default ExplorationScene walking speed outside authored room transitions.
 export const EXPLORATION_SCROLL_SPEED = 0.6;
@@ -70,7 +65,7 @@ export async function loadParallax(areaId) {
 
   for (let i = 0; i < LAYER_NAMES.length; i++) {
     const name = LAYER_NAMES[i];
-    const path = `/assets/backgrounds/${areaId}/${name}.webp?v=${BACKGROUND_VERSION}`;
+    const path = backgroundLayerUrl(areaId, name);
 
     let texture;
     try {

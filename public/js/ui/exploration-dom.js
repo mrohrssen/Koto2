@@ -1,8 +1,8 @@
 import { dom } from '../dom.js';
-import { SPRITE_VERSION } from './sprite-utils.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { hideFormation, hideEnemy } from './combat-dom.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
+import { npcSpriteUrl, spriteUrl } from '../assets/asset-urls.js';
 
 /**
  * Route an NPC sprite to the active scene's `npcs` layer when available.
@@ -60,22 +60,22 @@ export function showNpcInDisplay(name, spritePath, { skipPixi = false } = {}) {
 
 /** Show shrine fox in scene (no HP bar) */
 export function showShrineFox() {
-  showNpcInDisplay('Shrine Fox', `/assets/sprites/shrine_fox.webp?v=${SPRITE_VERSION}`);
+  showNpcInDisplay('Shrine Fox', spriteUrl('shrine_fox'));
 }
 
 /** Show quiz master in scene (no HP bar) */
 export function showQuizMaster() {
-  showNpcInDisplay('Quiz Master', `/assets/sprites/quiz_master.webp?v=${SPRITE_VERSION}`);
+  showNpcInDisplay('Quiz Master', spriteUrl('quiz_master'));
 }
 
 /** Show word discovery NPC (knowledge scholar spirit, no HP bar) */
 export function showWordDiscoveryNpc() {
-  showNpcInDisplay('Knowledge Spirit', `/assets/sprites/word_discovery_npc.webp?v=${SPRITE_VERSION}`);
+  showNpcInDisplay('Knowledge Spirit', spriteUrl('word_discovery_npc'));
 }
 
 /** Show Cid guide NPC in prologue (no HP bar) */
 export function showCid() {
-  showNpcInDisplay('Cid', `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`);
+  showNpcInDisplay('Cid', npcSpriteUrl('cid'));
 }
 
 /** Hide Cid from scene */
@@ -85,7 +85,7 @@ export function hideCid() {
 
 /** Show traveling merchant NPC (shop merchant, no HP bar) */
 export function showDealer({ skipPixi = false } = {}) {
-  showNpcInDisplay('Traveling Merchant', `/assets/sprites/traveling_merchant.webp?v=${SPRITE_VERSION}`, { skipPixi });
+  showNpcInDisplay('Traveling Merchant', spriteUrl('traveling_merchant'), { skipPixi });
 }
 
 /** Show Chippy companion sprite (no HP bar) */
@@ -94,7 +94,7 @@ export function showChippy() {
   hideFormation('enemy');
   hideNpcNamePill();
 
-  dom.enemySprite.src = `/assets/sprites/chippy.webp?v=${SPRITE_VERSION}`;
+  dom.enemySprite.src = spriteUrl('chippy');
   dom.enemySprite.onerror = () => {
     dom.enemySprite.classList.remove('visible');
     removePlaceholder();
@@ -130,8 +130,8 @@ export function showNpcTrainer(npcName, npcId, npc, { skipPixi = false } = {}) {
   dom.enemySprite.classList.remove('visible');
   if (!skipPixi) {
     const spritePath = npcId
-      ? `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`
-      : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+      ? npcSpriteUrl(npcId)
+      : spriteUrl(['enemies', 'systemExecutive']);
     sceneShowNpc(spritePath);
   }
 }

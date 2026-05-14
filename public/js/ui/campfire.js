@@ -1,8 +1,8 @@
 import { escapeHtml } from './html-utils.js';
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
-import { SPRITE_VERSION } from './sprite-utils.js';
 import { showItemTargetPicker } from './item-target-picker.js';
 import { renderButtons } from './ui-components.js';
+import { itemSpriteUrl, spriteUrl } from '../assets/asset-urls.js';
 
 let callbacks = {};
 let campfireState = null;
@@ -78,14 +78,14 @@ function renderIngredientIcon(entity, className = 'campfire-ingredient-icon') {
   const id = escapeAttribute(entity?.id || 'unknown');
   const word = escapeAttribute(entity?.word || '？');
   const cls = escapeAttribute(className);
-  return `<img class="${cls}" src="/assets/sprites/items/${id}.webp?v=${SPRITE_VERSION}" alt="${word}" onerror="this.outerHTML='<div class=\\'${cls} text-sprite\\'>${word}</div>'">`;
+  return `<img class="${cls}" src="${itemSpriteUrl(id)}" alt="${word}" onerror="this.outerHTML='<div class=\\'${cls} text-sprite\\'>${word}</div>'">`;
 }
 
 function renderCampfireImage() {
   return `
     <img
       class="campfire-fireplace-img"
-      src="/assets/sprites/objects/campfire.webp?v=${SPRITE_VERSION}"
+      src="${spriteUrl(['objects', 'campfire'])}"
       alt="Campfire"
       onerror="this.outerHTML='<div class=\\'campfire-fireplace-fallback\\'>🔥</div>'"
     >

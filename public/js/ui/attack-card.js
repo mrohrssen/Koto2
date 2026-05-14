@@ -4,9 +4,10 @@
  */
 
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
-import { creatureSpriteHtml, SPRITE_VERSION } from './sprite-utils.js';
+import { creatureSpriteHtml } from './sprite-utils.js';
 import { SC_NAMES } from './combat-ui-utils.js';
 import { prefetchWord, playWordPair } from '../tts.js';
+import { actionIconUrl, npcSpriteUrl } from '../assets/asset-urls.js';
 
 /** Map move `category` → tone class used by CSS for color. */
 export function resultTone(atk) {
@@ -89,13 +90,11 @@ export const ELEMENT_THEME = {
 
 /** Map an English skill/base name to the action icon sprite path. */
 function actionIconPath(nameEn) {
-  if (!nameEn) return '';
-  const slug = nameEn.split(';')[0].trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  return slug ? `/assets/sprites/actions/${slug}.webp?v=20260322` : '';
+  return actionIconUrl(nameEn);
 }
 
 function npcSpritePath(npcId) {
-  return `/assets/sprites/npcs/${npcId}.webp?v=${SPRITE_VERSION}`;
+  return npcSpriteUrl(npcId);
 }
 
 /**

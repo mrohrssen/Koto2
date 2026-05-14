@@ -1,5 +1,11 @@
-const BASE = '/assets/sprites/creatures';
-export const SPRITE_VERSION = '20260508-campfire-entry-npc';
+import {
+  SPRITE_VERSION,
+  creatureIdleUrl,
+  creatureStaticUrl,
+  itemSpriteUrl,
+} from '../assets/asset-urls.js';
+
+export { SPRITE_VERSION };
 
 const _noIdle = new Set();
 const _hasIdle = new Set();
@@ -15,13 +21,13 @@ const ELEMENT_DISPLAY_WORD = {
 
 /** Idle path (or static if known to 404). */
 export function creatureSpritePath(id) {
-  if (_noIdle.has(id)) return `${BASE}/${id}.webp?v=${SPRITE_VERSION}`;
-  return `${BASE}/${id}-idle.webp?v=${SPRITE_VERSION}`;
+  if (_noIdle.has(id)) return creatureStaticUrl(id);
+  return creatureIdleUrl(id);
 }
 
 /** Static (non-animated) path — always {id}.webp, no idle. */
 export function creatureStaticPath(id) {
-  return `${BASE}/${id}.webp?v=${SPRITE_VERSION}`;
+  return creatureStaticUrl(id);
 }
 
 /**
@@ -105,7 +111,7 @@ export function creatureSpriteHtml(id, word, element, extraClass) {
  * @returns {string} HTML string
  */
 export function itemSpriteHtml(id, word) {
-  const src = `/assets/sprites/items/${id}.webp?v=${SPRITE_VERSION}`;
+  const src = itemSpriteUrl(id);
   const fallbackWord = (word || '？').replace(/"/g, '&quot;');
   return `<img class="shop-item-sprite-img" src="${src}" alt="${fallbackWord}" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.outerHTML='<div class=\\'text-sprite shop-item-sprite\\'>${fallbackWord}</div>'">`;
 }
@@ -115,8 +121,8 @@ export function itemSpriteHtml(id, word) {
  * Uses cache — returns idle if known, static otherwise.
  */
 export function creatureBgUrl(id) {
-  if (_hasIdle.has(id)) return `url('${BASE}/${id}-idle.webp?v=${SPRITE_VERSION}')`;
-  return `url('${BASE}/${id}.webp?v=${SPRITE_VERSION}')`;
+  if (_hasIdle.has(id)) return `url('${creatureIdleUrl(id)}')`;
+  return `url('${creatureStaticUrl(id)}')`;
 }
 
 /**
@@ -130,7 +136,7 @@ export function probeIdleSprites(creatureIds) {
       const img = new Image();
       img.onload = () => { _hasIdle.add(id); resolve(); };
       img.onerror = () => { _noIdle.add(id); resolve(); };
-      img.src = `${BASE}/${id}-idle.webp?v=${SPRITE_VERSION}`;
+      img.src = creatureIdleUrl(id);
     });
   }));
 }

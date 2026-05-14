@@ -17,9 +17,10 @@ import {
 import { popupBuff } from '../pixi/text.js';
 import { hideEnemy, showFormation } from './combat-dom.js';
 import { showNpcInDisplay } from './exploration-dom.js';
-import { SPRITE_VERSION, creatureStaticPath } from './sprite-utils.js';
+import { creatureStaticPath } from './sprite-utils.js';
 import { renderChoicesAsync } from './ui-components.js';
 import { showNpcDialogueCard } from './npc-dialogue-card.js';
+import { npcSpriteUrl } from '../assets/asset-urls.js';
 import { toRomaji } from './romaji.js';
 import { playDialogueAudio } from '../tts.js';
 import { showMoves, setActiveLabel } from './move-select.js';
@@ -443,7 +444,7 @@ export async function renderBefriendQuiz(quizData, result) {
     const btns = document.querySelectorAll('#action-area .ui-choice');
     if (btns[0]) btns[0].classList.add('tutorial-dimmed');   // Fight — faded, unclickable
     if (btns[1]) btns[1].classList.add('tutorial-highlight'); // Talk — gold glow
-    const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+    const cidSprite = npcSpriteUrl('cid');
 
     // Explicit scene API (replaces the former showNpcInDisplay({ skipPixi })
     // side-effect chain which assumed hideFormation('enemy') would also
@@ -533,7 +534,7 @@ export async function renderBefriendQuiz(quizData, result) {
     }).then(r => r.json());
 
     if (answerResult.tutorialRetry) {
-      const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+      const cidSprite = npcSpriteUrl('cid');
 
       // Same pattern as tutorial step 1 above: pause the enemy formation,
       // slide Cid in, then restore DOM name pill via showNpcInDisplay.

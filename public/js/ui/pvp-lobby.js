@@ -1,6 +1,7 @@
 import * as pvpSocket from '../pvp-socket.js';
 import { getPvpTeams } from '../api.js';
 import { playSFX } from '../audio.js';
+import { backgroundImageUrl } from '../assets/asset-urls.js';
 import { startPvpBattle } from './pvp-battle.js';
 import { escapeHtml } from './html-utils.js';
 import { creatureSpriteHtml } from './sprite-utils.js';
@@ -179,7 +180,7 @@ export function renderPvpLobby() {
 
   // Set a neutral background
   if (sceneModule?.setBackground) {
-    sceneModule.setBackground('/assets/backgrounds/hub.webp');
+    sceneModule.setBackground(backgroundImageUrl('hub'));
   }
 }
 

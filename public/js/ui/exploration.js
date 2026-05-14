@@ -2,9 +2,10 @@ import * as speedReview from './speed-review.js';
 import { WhackAMoleGame } from './whack-a-mole.js';
 import { playSFX } from '../audio.js';
 import { hapticLight } from '../native/index.js';
-import { creatureBgUrl, itemSpriteHtml, creatureStaticPath, SPRITE_VERSION } from './sprite-utils.js';
+import { creatureBgUrl, itemSpriteHtml, creatureStaticPath } from './sprite-utils.js';
 import { hideEnemy } from './combat-dom.js';
 import { showNpcInDisplay } from './exploration-dom.js';
+import { npcSpriteUrl, spriteUrl } from '../assets/asset-urls.js';
 import { t, isJapanified } from './i18n.js';
 import * as chestsUI from './chests.js';
 import * as crestsEquipUI from './crests-equip.js';
@@ -79,7 +80,7 @@ export async function showTutorialNarration(pages, { showSprite = false } = {}) 
   // prologue/skillMaster/hub, ExplorationScene inside rooms, BattleScene
   // during combat interjections). See getSceneWithNpcs() above.
   const scene = showSprite ? await waitForSceneWithNpcs() : null;
-  const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+  const cidSprite = npcSpriteUrl('cid');
   if (showSprite) {
     showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
     if (scene) {
@@ -729,7 +730,7 @@ function shrineCreatures(creatureParty) {
 }
 
 async function showShrineSprite() {
-  const spritePath = `/assets/sprites/shrine_fox.webp?v=${SPRITE_VERSION}`;
+  const spritePath = spriteUrl('shrine_fox');
   showNpcInDisplay('Shrine Fox', spritePath, { skipPixi: true });
   const scene = await waitForSceneWithNpcs();
   if (scene && !scene.npcSprite) {
@@ -1327,7 +1328,7 @@ export async function renderWhackAMole() {
 async function showDefeatedNpcForSkillSelect(npc) {
   if (!npc?.id) return;
   const scene = getSceneWithNpcs();
-  const spritePath = `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`;
+  const spritePath = npcSpriteUrl(npc.id);
   const displayName = npc.nameEn || npc.name || '';
   showNpcInDisplay(displayName, spritePath, { skipPixi: true });
   if (scene && !scene.npcSprite) {
@@ -1343,7 +1344,7 @@ async function showDefeatedNpcForSkillSelect(npc) {
  */
 async function showCidForSkillMaster() {
   const scene = getSceneWithNpcs();
-  const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+  const cidSprite = npcSpriteUrl('cid');
   if (skillMasterState.cidShown) return;
   skillMasterState.cidShown = true;
   showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
@@ -1608,8 +1609,8 @@ let friendlyNpcState = {
 async function showFriendlyNpcSprite(npc) {
   if (!npc) return;
   const spritePath = npc.id
-    ? `/assets/sprites/npcs/${npc.id}.webp?v=${SPRITE_VERSION}`
-    : `/assets/sprites/enemies/systemExecutive.webp?v=${SPRITE_VERSION}`;
+    ? npcSpriteUrl(npc.id)
+    : spriteUrl(['enemies', 'systemExecutive']);
   showNpcInDisplay(npc.nameEn || npc.name, spritePath, { skipPixi: true });
   const scene = await waitForSceneWithNpcs();
   if (scene && !scene.npcSprite) {
@@ -1756,7 +1757,7 @@ export async function renderFriendlyNpc() {
     // then the shopkeeper returns before item choices render.
     if (tutorialStep === 2 && !cidItemShopTutorialShown) {
       cidItemShopTutorialShown = true;
-      const cidSprite = `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`;
+      const cidSprite = npcSpriteUrl('cid');
       showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
       const scene = await waitForSceneWithNpcs();
       if (scene) {

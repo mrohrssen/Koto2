@@ -112,7 +112,7 @@ import * as fusionLabUI from './js/ui/fusion-lab.js';
 import { renderAdventureReport } from './js/ui/adventure-report.js';
 import * as crestsEquipUI from './js/ui/crests-equip.js';
 import { playChestAnimation } from './js/pixi/chest-animation.js';
-import { configureCreatureImg, creatureSpritePath, probeIdleSprites, SPRITE_VERSION } from './js/ui/sprite-utils.js';
+import { configureCreatureImg, probeIdleSprites } from './js/ui/sprite-utils.js';
 import { combatEvents } from './js/ui/combat-events.js';
 import { getHpColor } from './js/ui/combat-ui-utils.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
@@ -144,6 +144,7 @@ import { BattleScene } from './js/scenes/battle-scene.js';
 import { ExplorationScene } from './js/scenes/exploration-scene.js';
 import { HubScene } from './js/scenes/hub-scene.js';
 import { sceneKindForPhase } from './js/scenes/phase-scene-map.js';
+import { backgroundImageUrl, npcSpriteUrl } from './js/assets/asset-urls.js';
 
 // API imports - these are the server communication functions
 import {
@@ -534,7 +535,7 @@ function updateScene() {
     // Room transition and room renderers own these sprites; updateScene must not
     // remove and respawn them during the immediate post-travel updateUI pass.
   } else if (gameState.phase === 'whackAMole') {
-    scene.showNpcInDisplay('Game Master', `/assets/sprites/npcs/game-master.webp?v=${SPRITE_VERSION}`);
+    scene.showNpcInDisplay('Game Master', npcSpriteUrl('game-master'));
   } else if (gameState.phase === 'npc_skill_selection') {
     // NPC sprite stays visible during skill selection — don't hideEnemies().
     // On page reload the pixi sprite is lost, so recreate it.
@@ -550,11 +551,11 @@ function updateScene() {
     scene.hideEnemies();
   }
   if (gameState.phase === 'quiz') {
-    scene.setBackground('/assets/backgrounds/quiz_master_background.webp');
+    scene.setBackground(backgroundImageUrl('quiz_master_background'));
   } else if (gameState.phase === 'wordDiscovery' || gameState.phase === 'speedReviewRoom') {
-    scene.setBackground('/assets/backgrounds/word_discovery_background.webp');
+    scene.setBackground(backgroundImageUrl('word_discovery_background'));
   } else if (gameState.phase === 'dealer') {
-    scene.setBackground('/assets/backgrounds/dealer_background.webp');
+    scene.setBackground(backgroundImageUrl('dealer_background'));
   } else if (gameState.run?.background) {
     // If PixiJS parallax is available for this area, clear the DOM background
     // so it doesn't cover the pixi canvas; otherwise use the old DOM background
@@ -563,10 +564,10 @@ function updateScene() {
       scene.setBackground(null); // Clear DOM background — PixiJS parallax handles it
       // Parallax loading handled centrally by syncBattleStageParallax() in updateUI()
     } else {
-      scene.setBackground(`/assets/backgrounds/${gameState.run.background}`);
+      scene.setBackground(backgroundImageUrl(gameState.run.background.replace(/\.webp$/i, '')));
     }
   } else if (!gameState.run) {
-    scene.setBackground('/assets/backgrounds/hub.webp');
+    scene.setBackground(backgroundImageUrl('hub'));
   }
 }
 
@@ -854,7 +855,7 @@ async function playPrologue() {
     console.error('[playPrologue] no scene with npcs layer mounted — Cid will be invisible');
   }
 
-  scene.setBackground('/assets/backgrounds/areas/hajimari-no-hiroba/hajimari-no-hiroba_01.webp');
+  scene.setBackground(backgroundImageUrl('areas/hajimari-no-hiroba/hajimari-no-hiroba_01'));
 
   let lastChoiceId = null;
 
@@ -1196,7 +1197,7 @@ function showCollectionSelect(catalog, collection) {
           configureCreatureImg(img, cid, el => { el.style.display = 'none'; }, row);
         });
 
-        scene.setBackground('/assets/backgrounds/hub.webp');
+        scene.setBackground(backgroundImageUrl('hub'));
 
         // Bind click handlers once
         overlay.querySelectorAll('.collection-cell').forEach(cell => {
@@ -2063,7 +2064,7 @@ async function initGame() {
     showNarration: (text, opts) => narrationBox.show(text, opts),
     getTutorialStep: () => gameState?.meta?.tutorialStep ?? 6,
     onBack: () => {
-      scene.setBackground('/assets/backgrounds/hub.webp');
+      scene.setBackground(backgroundImageUrl('hub'));
       explorationUI.renderHub();
     },
   });
@@ -2074,7 +2075,7 @@ async function initGame() {
     showNarration: (text, opts) => narrationBox.show(text, opts),
     getTutorialStep: () => gameState?.meta?.tutorialStep ?? 6,
     onBack: () => {
-      scene.setBackground('/assets/backgrounds/hub.webp');
+      scene.setBackground(backgroundImageUrl('hub'));
       explorationUI.renderHub();
     },
   });
@@ -2091,7 +2092,7 @@ async function initGame() {
     onBack: () => {
       const nextState = { ...gameState, phase: 'hub' };
       updateGameState(nextState);
-      scene.setBackground('/assets/backgrounds/hub.webp');
+      scene.setBackground(backgroundImageUrl('hub'));
       updateUI();
     },
   });

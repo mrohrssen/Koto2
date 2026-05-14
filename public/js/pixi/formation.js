@@ -4,7 +4,7 @@ import { getApp } from './app.js';
 import { loadImageTexture } from './image-loader.js';
 import { tween } from './tween.js';
 import { STATUS_ICON_CONFIG } from '../ui/event-popup.js';
-import { SPRITE_VERSION } from '../ui/sprite-utils.js';
+import { creatureIdleUrl, creatureStaticUrl } from '../assets/asset-urls.js';
 import {
   getAnimatedCreatureEntry,
   loadCreatureAnimationManifest,
@@ -457,11 +457,11 @@ export async function spawnFormationSprite(ctx, side, creature, index, opts = {}
   // uid we defensively remove the prior sprite below.
   let texture;
   try {
-    const spritePath = creature.spriteImg || `/assets/sprites/creatures/${creature.id}-idle.webp?v=${SPRITE_VERSION}`;
+    const spritePath = creature.spriteImg || creatureIdleUrl(creature.id);
     texture = await loadImageTexture(spritePath);
   } catch {
     try {
-      texture = await loadImageTexture(`/assets/sprites/creatures/${creature.id}.webp?v=${SPRITE_VERSION}`);
+      texture = await loadImageTexture(creatureStaticUrl(creature.id));
     } catch {
       texture = Texture.WHITE;
     }

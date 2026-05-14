@@ -1,9 +1,9 @@
 import { dom } from '../dom.js';
-import { SPRITE_VERSION } from './sprite-utils.js';
 import { toRomaji } from './romaji.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { BATTLEFIELD_COLUMNS, BATTLEFIELD_ROWS, rowForFormationIndex } from '../pixi/battlefield-layout.js';
 import { getHpColor } from './combat-ui-utils.js';
+import { spriteUrl } from '../assets/asset-urls.js';
 
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
 function creatureNameRuby(creature) {
@@ -11,19 +11,17 @@ function creatureNameRuby(creature) {
   return `<ruby>${reading}<rt>${toRomaji(reading)}</rt></ruby>`;
 }
 
-let _lastBgPath = null;
+let _lastBgUrl = null;
 
 /** Set scene background image */
-export function setBackground(imagePath) {
-  if (imagePath === _lastBgPath) return;
-  _lastBgPath = imagePath;
+export function setBackgroundUrl(backgroundUrl) {
+  if (backgroundUrl === _lastBgUrl) return;
+  _lastBgUrl = backgroundUrl;
+  dom.sceneBackground.style.backgroundImage = backgroundUrl ? `url('${backgroundUrl}')` : 'none';
+}
 
-  if (imagePath) {
-    const sep = imagePath.includes('?') ? '&' : '?';
-    dom.sceneBackground.style.backgroundImage = `url('${imagePath}${sep}v=${SPRITE_VERSION}')`;
-  } else {
-    dom.sceneBackground.style.backgroundImage = 'none';
-  }
+export function setBackground(backgroundUrl) {
+  setBackgroundUrl(backgroundUrl);
 }
 
 /* ------------------------------------------------------------------ */
@@ -292,7 +290,7 @@ export function showEnemy(enemy, { isBoss = false } = {}) {
     dom.enemyInfo.classList.add('visible');
     updateEnemyHP(enemy.hp, enemy.maxHp);
 
-    const spritePath = enemy.sprite || `/assets/sprites/enemies/${enemy.id}.webp?v=${SPRITE_VERSION}`;
+    const spritePath = enemy.sprite || spriteUrl(['enemies', enemy.id]);
     dom.enemySprite.src = spritePath;
     dom.enemySprite.onerror = () => {
       dom.enemySprite.classList.remove('visible');
