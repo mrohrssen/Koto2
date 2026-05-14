@@ -126,6 +126,14 @@ import { playNpcBattleIntro, playRoomTransition, playTutorialBossInterjection } 
 import { updateCrystalBalance, showDailyCrystalBonusModal } from './js/ui/crystals.js';
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
+import {
+  initAnalytics,
+  setAnalyticsUser,
+  updateCurrentUserProperties,
+  setCrashContext,
+  trackMilestone,
+} from './js/analytics.js';
+import { extractGameContext, extractRunEndContext } from './js/analytics-core.js';
 
 // PixiJS battle stage imports
 import { initApp, getApp } from './js/pixi/app.js';
@@ -226,6 +234,8 @@ function updateGameState(newState) {
   console.log('[DEBUG] updateGameState called. phase:', newState.phase, 'pendingBranch:', newState.run?.pendingBranch, 'currentRoom:', newState.run?.currentRoom);
   gameState = newState;
   store.set('gameState', gameState);
+  setCrashContext(gameState);
+  updateCurrentUserProperties(gameState);
 }
 
 // Enemy dialogue state
@@ -936,10 +946,22 @@ async function playPrologue() {
       return;
     }
     if (runResult?.state) updateGameState(runResult.state);
+    if (runResult?.state) {
+      await trackMilestone('koto_first_run_started', extractGameContext(runResult.state), 'first_run_started');
+    }
     const areaResult = await apiSelectArea('hajimari-no-hiroba');
-    if (areaResult?.state) updateGameState(areaResult.state);
+    if (areaResult?.state) {
+      updateGameState(areaResult.state);
+      await trackMilestone('koto_area_selected', extractGameContext(areaResult.state), 'area_selected');
+    }
     const confirmResult = await apiConfirmCreatures(['hi']);
-    if (confirmResult?.state) updateGameState(confirmResult.state);
+    if (confirmResult?.state) {
+      updateGameState(confirmResult.state);
+      await trackMilestone('koto_party_confirmed', {
+        ...extractGameContext(confirmResult.state),
+        party_size: confirmResult.state.run?.creatureParty?.active?.length || 0
+      }, 'party_confirmed');
+    }
   } else {
     // Replaying prologue — just update meta and return to hub
     updateGameState({
@@ -957,7 +979,10 @@ async function createCharacter() {
   const result = await apiCreatePlayer('Hacker', {}, 0);
   if (result?.state) {
     updateGameState(result.state);
+    await trackMilestone('koto_player_created', extractGameContext(result.state), 'player_created');
+    await trackMilestone('koto_prologue_started', extractGameContext(result.state), 'prologue_started');
     await playPrologue();
+    await trackMilestone('koto_prologue_completed', extractGameContext(gameState), 'prologue_completed');
     updateUI();
   }
 }
@@ -978,6 +1003,7 @@ async function startNewRun() {
 
   if (result?.state) {
     updateGameState(result.state);
+    await trackMilestone('koto_first_run_started', extractGameContext(result.state), 'first_run_started');
     updateUI();
 
     // Tutorial: advance step 5→6 (tutorial complete)
@@ -1018,6 +1044,10 @@ async function triggerCreatureSelect() {
   const result = await apiConfirmCreatures(starterIds);
   if (result?.state) {
     updateGameState(result.state);
+    await trackMilestone('koto_party_confirmed', {
+      ...extractGameContext(result.state),
+      party_size: starterIds.length
+    }, 'party_confirmed');
     updateUI();
   }
 }
@@ -1394,7 +1424,18 @@ async function returnToHub() {
   if (combatLoopUI.isCombatActive()) {
     combatLoopUI.cleanupCombat();
   }
+  const endingState = gameState;
   await apiForfeitRun();
+  await trackMilestone('koto_first_run_ended', extractRunEndContext({
+    ...endingState,
+    run: {
+      ...(endingState.run || {}),
+      stats: {
+        ...(endingState.run?.stats || {}),
+        endTime: Date.now()
+      }
+    }
+  }, 'forfeit'), 'first_run_ended');
   await loadGameState();
   updateUI();
 }
@@ -1438,8 +1479,22 @@ function showVictoryModal(result) {
 async function showAdventureReport(isVictory) {
   takeover.open('gameover');
   const content = takeover.getContent('gameover');
+  const endingState = gameState;
   const response = await apiForfeitRun(isVictory);
   const summary = response?.runSummary || {};
+  await trackMilestone('koto_first_run_ended', {
+    ...extractRunEndContext({
+      ...endingState,
+      run: {
+        ...(endingState.run || {}),
+        stats: {
+          ...(endingState.run?.stats || {}),
+          endTime: Date.now()
+        }
+      }
+    }, isVictory ? 'victory' : 'defeat'),
+    ...(summary.durationMs ? { duration_sec: Math.round(summary.durationMs / 1000) } : {})
+  }, 'first_run_ended');
   return new Promise((resolve) => {
     const returnToHubCb = async () => {
       takeover.close('gameover');
@@ -1714,6 +1769,7 @@ document.addEventListener('click', () => { _clickDiagBubbled = true; });
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize Capacitor native plugins (no-op on web)
   await initNative();
+  await initAnalytics();
   onAppLifecycle({
     onPause: () => audio.pauseBGM?.(),
     onResume: () => audio.resumeBGM?.(),
@@ -1726,7 +1782,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initialize auth UI
   auth.init({
-    onAuthenticated: () => initGame()
+    onAuthenticated: async (user) => {
+      await setAnalyticsUser(user);
+      await initGame();
+    }
   });
 
   // Check auth status
@@ -1909,7 +1968,13 @@ async function initGame() {
     startNewRun,
     returnToHub,
     apiGetAreaOptions,
-    apiSelectArea,
+    apiSelectArea: async (areaId) => {
+      const result = await apiSelectArea(areaId);
+      if (result?.state) {
+        await trackMilestone('koto_area_selected', extractGameContext(result.state), 'area_selected');
+      }
+      return result;
+    },
     triggerCreatureSelect,
     apiReturnToHub: returnToHub,
     apiProceed,
@@ -2144,6 +2209,8 @@ async function initGame() {
     }
   });
 
+  const currentUser = await auth.getCurrentUser();
+  if (currentUser) await setAnalyticsUser(currentUser);
   await loadKnownWords();
   dialogueLookup.init({
     showToast: (msg) => scene.showToast(msg, 3000),

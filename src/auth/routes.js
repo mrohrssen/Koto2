@@ -11,6 +11,7 @@ import {
 import { dataPath, getDataDir } from '../data-dir.js';
 import { parseWordList } from '../game/bootstrap/word-list-parser.js';
 import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
+import { getAnalyticsId } from './analytics-id.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } });
 
@@ -21,6 +22,15 @@ const PERMANENT_INVITE_CODE = 'neo-tokyo-friends';
 
 // Rate limiting: 5 login attempts per minute per IP
 const loginAttempts = new Map();
+
+function publicUser(user) {
+  const analyticsId = getAnalyticsId(user?.id);
+  return {
+    id: user.id,
+    username: user.username,
+    ...(analyticsId ? { analyticsId } : {})
+  };
+}
 
 function checkRateLimit(ip) {
   const now = Date.now();
@@ -129,7 +139,7 @@ export default function createAuthRoutes(options = {}) {
       }
 
       const token = signToken(user);
-      res.json({ token, user: { id: user.id, username: user.username } });
+      res.json({ token, user: publicUser(user) });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
@@ -159,7 +169,7 @@ export default function createAuthRoutes(options = {}) {
     }
 
     const token = signToken(user);
-    res.json({ token, user: { id: user.id, username: user.username } });
+    res.json({ token, user: publicUser(user) });
   }
 
   // GET /api/auth/me
@@ -189,7 +199,7 @@ export default function createAuthRoutes(options = {}) {
       }
     }
 
-    res.json({ id: user.id, username: user.username, apiKeys: apiKeysInfo });
+    res.json({ ...publicUser(user), apiKeys: apiKeysInfo });
   }
 
   // PUT /api/auth/api-keys

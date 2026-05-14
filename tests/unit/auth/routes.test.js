@@ -11,14 +11,22 @@ import { loadUsers } from '../../../src/auth/users.js';
 describe('auth routes', { concurrency: false }, () => {
   let dataDir;
   let usersFile;
+  let originalAnalyticsSecret;
 
   beforeEach(() => {
+    originalAnalyticsSecret = process.env.ANALYTICS_ID_SECRET;
+    process.env.ANALYTICS_ID_SECRET = 'unit-test-analytics-secret';
     dataDir = join(tmpdir(), `koto-auth-routes-${Date.now()}-${Math.random().toString(16).slice(2)}`);
     mkdirSync(dataDir, { recursive: true });
     usersFile = join(dataDir, '.jrpg-users.json');
   });
 
   afterEach(() => {
+    if (originalAnalyticsSecret === undefined) {
+      delete process.env.ANALYTICS_ID_SECRET;
+    } else {
+      process.env.ANALYTICS_ID_SECRET = originalAnalyticsSecret;
+    }
     resetDataDirForTest();
     rmSync(dataDir, { recursive: true, force: true });
   });
@@ -41,6 +49,56 @@ describe('auth routes', { concurrency: false }, () => {
       .set('Authorization', `Bearer ${res.body.token}`)
       .expect(200);
     assert.equal(me.body.apiKeys.aiDataSharingConsent, true);
+  });
+
+  it('returns a pseudonymous analytics id on register, login, and me', async () => {
+    const app = createApp({ dataDir, usersFile });
+
+    const register = await request(app)
+      .post('/api/auth/register')
+      .field('username', 'analyticsuser')
+      .field('password', 'pass123')
+      .field('aiDataSharingConsent', 'true')
+      .expect(200);
+
+    assert.match(register.body.user.analyticsId, /^ka_[a-f0-9]{32}$/);
+    assert.equal(register.body.user.analyticsId.includes(register.body.user.id), false);
+    assert.equal(register.body.user.analyticsId.includes('analyticsuser'), false);
+
+    const login = await request(app)
+      .post('/api/auth/login')
+      .send({ username: 'analyticsuser', password: 'pass123' })
+      .expect(200);
+
+    assert.equal(login.body.user.analyticsId, register.body.user.analyticsId);
+
+    const me = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${register.body.token}`)
+      .expect(200);
+
+    assert.equal(me.body.analyticsId, register.body.user.analyticsId);
+  });
+
+  it('omits analytics id when analytics secret is not configured', async () => {
+    delete process.env.ANALYTICS_ID_SECRET;
+    const app = createApp({ dataDir, usersFile });
+
+    const register = await request(app)
+      .post('/api/auth/register')
+      .field('username', 'nosecret')
+      .field('password', 'pass123')
+      .field('aiDataSharingConsent', 'true')
+      .expect(200);
+
+    assert.equal(Object.hasOwn(register.body.user, 'analyticsId'), false);
+
+    const me = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${register.body.token}`)
+      .expect(200);
+
+    assert.equal(Object.hasOwn(me.body, 'analyticsId'), false);
   });
 
   it('requires AI data-sharing consent to register', async () => {

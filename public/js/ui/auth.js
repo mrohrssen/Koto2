@@ -1,4 +1,5 @@
 import { apiUrl } from '../api.js';
+import { setAnalyticsUser, trackEvent } from '../analytics.js';
 
 let currentTab = 'login';
 
@@ -66,6 +67,21 @@ export async function checkAuth() {
     return false;
   } catch {
     return false;
+  }
+}
+
+export async function getCurrentUser() {
+  const token = getToken();
+  if (!token) return null;
+
+  try {
+    const res = await fetch(apiUrl('/api/auth/me'), {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   }
 }
 
@@ -144,9 +160,13 @@ async function handleSubmit(callbacks) {
     }
 
     storeToken(data.token);
+    await setAnalyticsUser(data.user);
+    await trackEvent(currentTab === 'login' ? 'koto_login' : 'koto_sign_up', {
+      method: 'password'
+    });
     hideAuthScreen();
     if (callbacks.onAuthenticated) {
-      callbacks.onAuthenticated(data.user);
+      await callbacks.onAuthenticated(data.user);
     }
   } catch (err) {
     showError('Network error. Please try again.');
