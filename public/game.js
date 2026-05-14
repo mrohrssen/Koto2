@@ -144,8 +144,9 @@ import { BattleScene } from './js/scenes/battle-scene.js';
 import { ExplorationScene } from './js/scenes/exploration-scene.js';
 import { HubScene } from './js/scenes/hub-scene.js';
 import { sceneKindForPhase } from './js/scenes/phase-scene-map.js';
-import { backgroundImageUrl, npcSpriteUrl } from './js/assets/asset-urls.js';
+import { backgroundImageUrl, creatureIdleUrl, creatureStaticUrl, npcSpriteUrl } from './js/assets/asset-urls.js';
 import { startAssetManifestLoad } from './js/assets/asset-manifest.js';
+import { assetPreloader } from './js/assets/asset-preloader.js';
 import { startCreatureAnimationManifestLoad } from './js/pixi/creature-animation-manifest.js';
 
 // API imports - these are the server communication functions
@@ -805,6 +806,10 @@ async function loadGameState() {
       ...(data.creatureParty?.reserves || []),
     ].filter(Boolean).map(r => r.id);
     probeIdleSprites(allCreatureIds);
+    assetPreloader.enqueue(
+      allCreatureIds.flatMap(id => [creatureStaticUrl(id), creatureIdleUrl(id)]),
+      { priority: 'immediate' }
+    );
   } else {
     // Preserve server meta for fresh accounts (e.g., prologueComplete flag).
     updateGameState({

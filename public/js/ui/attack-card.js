@@ -7,7 +7,8 @@ import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-clie
 import { creatureSpriteHtml } from './sprite-utils.js';
 import { SC_NAMES } from './combat-ui-utils.js';
 import { prefetchWord, playWordPair } from '../tts.js';
-import { actionIconUrl, npcSpriteUrl } from '../assets/asset-urls.js';
+import { actionIconUrl, creatureStaticUrl, npcSpriteUrl } from '../assets/asset-urls.js';
+import { assetPreloader } from '../assets/asset-preloader.js';
 
 /** Map move `category` → tone class used by CSS for color. */
 export function resultTone(atk) {
@@ -138,6 +139,9 @@ export function buildSplitAttackCard(atk, isEnemy, options = {}) {
   const attackerSpriteHtml = creatureSpriteHtml(atk.attackerId, spriteWord, atk.attackerElement, 'sac-sprite');
 
   const moveIcon = actionIconPath(atk.attackerSkillEn || atk.moveNameEn);
+  const attackerUrl = atk.attackerId ? creatureStaticUrl(atk.attackerId) : '';
+  const targetUrl = atk.targetId ? creatureStaticUrl(atk.targetId) : '';
+  assetPreloader.enqueue([attackerUrl, targetUrl, moveIcon].filter(Boolean), { priority: 'immediate' });
   const moveIconHtml = moveIcon
     ? `<img class="sac-sprite" src="${moveIcon}" alt="" onerror="this.style.display='none'">`
     : '';

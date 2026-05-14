@@ -3,6 +3,7 @@ import { ELEMENT_COLORS } from './creature-row.js';
 import { creatureStaticPath } from './sprite-utils.js';
 import { renderChoices, renderButtons } from './ui-components.js';
 import { renderJpSentence, entityToToken, getKnownWords } from './bootstrap-client.js';
+import { assetPreloader } from '../assets/asset-preloader.js';
 
 const ELEMENT_KANJI = {
   fire: '火', water: '水', wood: '木',
@@ -55,6 +56,8 @@ function showTargets(targets, move, type) {
     if (onCancel) onCancel();
     return;
   }
+
+  assetPreloader.enqueue(validTargets.map(target => creatureStaticPath(target.id)), { priority: 'immediate' });
 
   renderChoices({
     heading: 'Choose target',

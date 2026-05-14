@@ -5,6 +5,7 @@ import { effectLabel } from './move-effect-label.js';
 import { notEnoughMp, fullyRested } from './event-popup.js';
 import { REST_MOVE } from './rest-move.js';
 import { actionIconUrl } from '../assets/asset-urls.js';
+import { assetPreloader } from '../assets/asset-preloader.js';
 
 const CATEGORY_ICONS = {
   damage: '⚔', drain: '⚔', heal: '❤', shield: '🛡',
@@ -139,6 +140,7 @@ export function showMoves(creature, creatureIndex, opts = {}) {
 
   const moveSelectCb = opts.onMoveSelect || onMoveSelect;
   const includeItems = opts.includeItems !== false;
+  assetPreloader.enqueue(creature.moves.map(move => actionIconUrl(move.nameEn)).filter(Boolean), { priority: 'normal' });
 
   const grid = document.createElement('div');
   grid.className = 'move-grid';
