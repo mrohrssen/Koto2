@@ -185,6 +185,10 @@ let updateCreatureRowData = null;
 let delay = null;
 
 const API_BASE = PLATFORM.apiBase;
+const DEFAULT_COMBAT_SYNC_INDICATOR_DELAY_MS = 500;
+let combatSyncIndicatorDelayMs = DEFAULT_COMBAT_SYNC_INDICATOR_DELAY_MS;
+let activeCombatSyncToken = null;
+let combatSyncTokenCounter = 0;
 
 async function requestCreatureCombatCycle(actionType, moveChoices = []) {
   if (typeof apiCreatureCombatCycle !== 'function') {
@@ -193,20 +197,140 @@ async function requestCreatureCombatCycle(actionType, moveChoices = []) {
   return apiCreatureCombatCycle(actionType, moveChoices);
 }
 
+function getCombatSyncLabel() {
+  const syncingLabel = tPlain('combat.syncingTurn');
+  return syncingLabel === 'combat.syncingTurn' ? 'Syncing turn...' : syncingLabel;
+}
+
+function createCombatSyncToken() {
+  combatSyncTokenCounter += 1;
+  return {
+    id: String(combatSyncTokenCounter),
+    indicatorShown: false,
+  };
+}
+
+function renderCombatSyncIndicator(token) {
+  if (activeCombatSyncToken !== token) return;
+  const actionArea = document.getElementById('action-area');
+  if (!actionArea) return;
+
+  const node = document.createElement('div');
+  node.className = 'combat-syncing-indicator';
+  node.dataset.combatSyncToken = token.id;
+  node.textContent = getCombatSyncLabel();
+  actionArea.replaceChildren(node);
+  token.indicatorShown = true;
+}
+
+function clearCombatSyncIndicator(token) {
+  const actionArea = document.getElementById('action-area');
+  if (!actionArea) return;
+  const indicator = actionArea.querySelector?.(`.combat-syncing-indicator[data-combat-sync-token="${token.id}"]`)
+    || actionArea.querySelector?.('.combat-syncing-indicator');
+  if (!indicator) return;
+  if (indicator.dataset?.combatSyncToken && indicator.dataset.combatSyncToken !== token.id) return;
+  indicator.remove();
+}
+
+const COMBAT_TIMING_SLOW_MS = 1000;
+
+function isCombatTimingEnabled() {
+  try {
+    return globalThis.localStorage?.getItem('kotoCombatTiming') === '1';
+  } catch {
+    return false;
+  }
+}
+
+function shouldLogCombatTiming(totalMs, failed = false) {
+  return failed || totalMs >= COMBAT_TIMING_SLOW_MS || isCombatTimingEnabled();
+}
+
+function logCombatRequestTiming({ actionType, requestMs, indicatorShown, failed = false }) {
+  if (!shouldLogCombatTiming(requestMs, failed)) return;
+  console.log('[Combat Timing] request', {
+    actionType,
+    requestMs,
+    indicatorShown,
+    failed,
+  });
+}
+
+function createCombatTurnTiming(actionType) {
+  return {
+    actionType,
+    startedAt: performance.now(),
+    animationStartedAt: null,
+    requestMs: null,
+    logged: false,
+  };
+}
+
+function markCombatAnimationStart(timing, requestStartedAt) {
+  timing.requestMs = Math.round(performance.now() - requestStartedAt);
+  timing.animationStartedAt = performance.now();
+}
+
+function logCombatTurnTiming(timing, result, outcome, failed = false) {
+  if (timing.logged) return;
+  const now = performance.now();
+  const requestMs = timing.requestMs ?? Math.round(now - timing.startedAt);
+  const animationMs = timing.animationStartedAt
+    ? Math.round(now - timing.animationStartedAt)
+    : 0;
+  const totalMs = Math.round(now - timing.startedAt);
+  if (!shouldLogCombatTiming(totalMs, failed)) return;
+
+  console.log('[Combat Timing] turn', {
+    actionType: timing.actionType,
+    requestMs,
+    animationMs,
+    totalMs,
+    actionSegments: Array.isArray(result?.actionSegments) ? result.actionSegments.length : 0,
+    playerAttacks: Array.isArray(result?.playerAttacks) ? result.playerAttacks.length : 0,
+    enemyAttacks: Array.isArray(result?.enemyAttacks) ? result.enemyAttacks.length : 0,
+    combatEnded: result?.combatEnded === true,
+    outcome,
+    failed,
+  });
+  timing.logged = true;
+}
+
 async function runCreatureCombatRequest(actionType, moveChoices = []) {
   if (creatureCombatRequestInFlight) return null;
   creatureCombatRequestInFlight = true;
 
-  const syncingLabel = tPlain('combat.syncingTurn');
-  const actionArea = document.getElementById('action-area');
-  if (actionArea) {
-    const label = syncingLabel === 'combat.syncingTurn' ? 'Syncing turn...' : syncingLabel;
-    actionArea.innerHTML = `<div class="combat-syncing-indicator">${label}</div>`;
-  }
+  const startedAt = performance.now();
+  const token = createCombatSyncToken();
+  activeCombatSyncToken = token;
+  const timer = setTimeout(() => {
+    renderCombatSyncIndicator(token);
+  }, combatSyncIndicatorDelayMs);
 
   try {
-    return await requestCreatureCombatCycle(actionType, moveChoices);
+    const result = await requestCreatureCombatCycle(actionType, moveChoices);
+    logCombatRequestTiming({
+      actionType,
+      requestMs: Math.round(performance.now() - startedAt),
+      indicatorShown: token.indicatorShown,
+      failed: result == null || result?.error != null,
+    });
+    return result;
+  } catch (error) {
+    logCombatRequestTiming({
+      actionType,
+      requestMs: Math.round(performance.now() - startedAt),
+      indicatorShown: token.indicatorShown,
+      failed: true,
+    });
+    throw error;
   } finally {
+    clearTimeout(timer);
+    clearCombatSyncIndicator(token);
+    if (activeCombatSyncToken === token) {
+      activeCombatSyncToken = null;
+    }
     creatureCombatRequestInFlight = false;
   }
 }
@@ -215,6 +339,10 @@ export const __combatNetworkTest = {
   setCreatureCombatApi(fn) {
     apiCreatureCombatCycle = fn;
     creatureCombatRequestInFlight = false;
+    activeCombatSyncToken = null;
+  },
+  setSyncIndicatorDelayMs(ms) {
+    combatSyncIndicatorDelayMs = ms;
   },
   requestCreatureCombatCycle,
   runCreatureCombatRequest,
@@ -1042,6 +1170,7 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
 async function executeCreatureMovesTurn(choices) {
   if (!combatActive || playerAttackPending || getEnemyDialogueActive()) return;
   playerAttackPending = true;
+  const turnTiming = createCombatTurnTiming('attack');
 
   return withAnimationActive(async () => {
     try {
@@ -1060,8 +1189,11 @@ async function executeCreatureMovesTurn(choices) {
         _log.act(`Attack: ${moveDesc}`);
       }
 
+      const requestStartedAt = performance.now();
       const result = await runCreatureCombatRequest('attack', choices);
+      markCombatAnimationStart(turnTiming, requestStartedAt);
       if (!result) {
+        logCombatTurnTiming(turnTiming, result, 'request_failed', true);
         throw new Error('Combat sync failed');
       }
 
@@ -1071,6 +1203,7 @@ async function executeCreatureMovesTurn(choices) {
         }
         if (result.error === 'No active combat') {
           combatActive = false;
+          logCombatTurnTiming(turnTiming, result, 'no_active_combat', true);
           return;
         }
         console.error('Move turn error:', result.error);
@@ -1078,6 +1211,7 @@ async function executeCreatureMovesTurn(choices) {
         if (combatActive) {
           startMoveSelection();
         }
+        logCombatTurnTiming(turnTiming, result, 'server_error', true);
         return;
       }
 
@@ -1190,6 +1324,7 @@ async function executeCreatureMovesTurn(choices) {
         syncFinalState(result);
         playerAttackPending = false;
         await befriend.renderBefriendQuiz(result.befriendQuiz, result);
+        logCombatTurnTiming(turnTiming, result, 'befriend_quiz');
         return;
       }
 
@@ -1257,6 +1392,7 @@ async function executeCreatureMovesTurn(choices) {
           __logEnd.expect('All combat sprites cleared. Combat UI removed.');
         }
         if (result.victory) await delay(500);
+        logCombatTurnTiming(turnTiming, result, result.victory ? 'victory' : 'defeat');
         stopCombatLoop(result);
         return;
       }
@@ -1265,11 +1401,15 @@ async function executeCreatureMovesTurn(choices) {
 
       // Start next turn's move selection
       await delay(600);
+      logCombatTurnTiming(turnTiming, result, 'next_selection');
       startMoveSelection();
 
     } catch (error) {
       console.error('Move turn error:', error);
       playerAttackPending = false;
+      if (!turnTiming.logged) {
+        logCombatTurnTiming(turnTiming, null, 'exception', true);
+      }
       if (combatActive) {
         startMoveSelection();
       }
@@ -1285,6 +1425,7 @@ async function executeCreatureDefendThenPause() {
   if (!combatActive || enemyAttackPending || getEnemyDialogueActive()) return;
 
   enemyAttackPending = true;
+  const turnTiming = createCombatTurnTiming('defend');
 
   return withAnimationActive(async () => {
     try {
@@ -1295,8 +1436,11 @@ async function executeCreatureDefendThenPause() {
         log.expect('Enemy attacks only. No ally attacks this turn.');
       }
 
+      const requestStartedAt = performance.now();
       const result = await runCreatureCombatRequest('defend', []);
+      markCombatAnimationStart(turnTiming, requestStartedAt);
       if (!result) {
+        logCombatTurnTiming(turnTiming, result, 'request_failed', true);
         throw new Error('Combat sync failed');
       }
       logger.info('[CombatLoop] Creature defend result:', { enemyAttacks: result.enemyAttacks?.length });
@@ -1304,12 +1448,14 @@ async function executeCreatureDefendThenPause() {
       if (result.error) {
         if (result.error === 'No active combat') {
           combatActive = false;
+          logCombatTurnTiming(turnTiming, result, 'no_active_combat', true);
           return;
         }
         console.error('Creature defend error:', result.error);
         if (combatActive) {
           stopCombatLoop({ combatEnded: true, victory: false, error: true });
         }
+        logCombatTurnTiming(turnTiming, result, 'server_error', true);
         return;
       }
 
@@ -1379,6 +1525,7 @@ async function executeCreatureDefendThenPause() {
 
       // Check combat end
       if (result.combatEnded) {
+        logCombatTurnTiming(turnTiming, result, result.victory ? 'victory' : 'defeat');
         stopCombatLoop(result);
         return;
       }
@@ -1387,11 +1534,15 @@ async function executeCreatureDefendThenPause() {
 
       // Start next turn's move selection
       await delay(600);
+      logCombatTurnTiming(turnTiming, result, 'next_selection');
       startMoveSelection();
 
     } catch (error) {
       console.error('Creature defend error:', error);
       enemyAttackPending = false;
+      if (!turnTiming.logged) {
+        logCombatTurnTiming(turnTiming, null, 'exception', true);
+      }
       if (combatActive) {
         startMoveSelection();
       }

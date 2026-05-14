@@ -9,6 +9,22 @@ import { apiUrl, PLATFORM } from './platform.js';
 // result instead of the second caller receiving null.
 const inFlightRequests = new Map();
 const DEFAULT_API_TIMEOUT_MS = 10000;
+const COMBAT_CYCLE_ENDPOINT = '/creature-combat-cycle';
+const COMBAT_CYCLE_TIMEOUT_MS = 15000;
+const API_TIMING_SLOW_MS = 1000;
+
+function isCombatTimingEnabled() {
+  try {
+    return globalThis.localStorage?.getItem('kotoCombatTiming') === '1';
+  } catch {
+    return false;
+  }
+}
+
+function shouldLogApiTiming(endpoint, elapsedMs, isError = false) {
+  if (endpoint !== COMBAT_CYCLE_ENDPOINT) return true;
+  return isError || elapsedMs >= API_TIMING_SLOW_MS || isCombatTimingEnabled();
+}
 
 // Connection health tracking (used by offline banner)
 let consecutiveFailures = 0;
@@ -245,12 +261,16 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
         }
 
         const elapsedMs = Math.round(performance.now() - startedAt);
-        console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
+        if (shouldLogApiTiming(endpoint, elapsedMs, false)) {
+          console.log(`[API Timing] ${method} /api/game${endpoint} -> ${response.status} in ${elapsedMs}ms`);
+        }
 
         return data;
       } catch (error) {
         const elapsedMs = Math.round(performance.now() - startedAt);
-        console.log(`[API Timing] ${method} /api/game${endpoint} -> error in ${elapsedMs}ms`);
+        if (shouldLogApiTiming(endpoint, elapsedMs, true)) {
+          console.log(`[API Timing] ${method} /api/game${endpoint} -> error in ${elapsedMs}ms`);
+        }
         lastError = error;
 
         // Don't retry auth errors
@@ -729,7 +749,9 @@ async function startCreatureEncounter() {
 }
 
 async function creatureCombatCycle(actionType, moveChoices = []) {
-  return apiCall('/creature-combat-cycle', 'POST', { actionType, moveChoices }, null, { retryable: true });
+  return apiCall(COMBAT_CYCLE_ENDPOINT, 'POST', { actionType, moveChoices }, null, {
+    timeoutMs: COMBAT_CYCLE_TIMEOUT_MS,
+  });
 }
 
 async function getCreatureCollection() {

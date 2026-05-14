@@ -10,6 +10,42 @@ import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-kn
 import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
 import { getDebugSuperAttackForUser } from '../../game/debug-super-attack-access.js';
 
+const COMBAT_ROUTE_TIMING_SLOW_MS = 1000;
+
+function shouldLogCombatRouteTiming(totalMs, statusCode) {
+  return process.env.KOTO_COMBAT_TIMING === '1' || statusCode >= 400 || totalMs >= COMBAT_ROUTE_TIMING_SLOW_MS;
+}
+
+function getCombatTimingSnapshot(combat) {
+  return {
+    actionCount: combat?.actionCount ?? null,
+    cycleCount: combat?.cycleCount ?? null,
+  };
+}
+
+function logCombatRouteTiming({
+  actionType,
+  statusCode,
+  before,
+  after,
+  resolveMs,
+  saveMs,
+  totalMs,
+}) {
+  if (!shouldLogCombatRouteTiming(totalMs, statusCode)) return;
+  console.log('[Combat Timing] server', {
+    actionType,
+    statusCode,
+    actionCountBefore: before.actionCount,
+    actionCountAfter: after.actionCount,
+    cycleCountBefore: before.cycleCount,
+    cycleCountAfter: after.cycleCount,
+    resolveMs,
+    saveMs,
+    totalMs,
+  });
+}
+
 export default function createCombatRoutes({
   getUserVocabulary,
   getCreatureDialogueFromCache,
@@ -108,11 +144,35 @@ export default function createCombatRoutes({
   // Defend: { actionType: 'defend' }
   // Befriend: { actionType: 'befriend', targetEnemyIndex }
   router.post('/creature-combat-cycle', (req, res) => {
+    const routeStartedAt = performance.now();
     const gameManager = req.gameManager;
     const { actionType, moveChoices } = req.body;
+    const resolvedActionType = actionType || 'attack';
+    const before = getCombatTimingSnapshot(gameManager.combat);
+    let resolveMs = 0;
+    let saveMs = 0;
+
     try {
-      const result = gameManager.combatCycleService.creatureCombatCycle(actionType || 'attack', moveChoices || []);
+      const resolveStartedAt = performance.now();
+      const result = gameManager.combatCycleService.creatureCombatCycle(resolvedActionType, moveChoices || []);
+      resolveMs = Math.round(performance.now() - resolveStartedAt);
+
+      const saveStartedAt = performance.now();
       req.saveGame();
+      saveMs = Math.round(performance.now() - saveStartedAt);
+
+      const after = getCombatTimingSnapshot(gameManager.combat);
+      const totalMs = Math.round(performance.now() - routeStartedAt);
+      logCombatRouteTiming({
+        actionType: resolvedActionType,
+        statusCode: 200,
+        before,
+        after,
+        resolveMs,
+        saveMs,
+        totalMs,
+      });
+
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
       let state = null;
@@ -121,6 +181,19 @@ export default function createCombatRoutes({
       } catch {
         state = null;
       }
+
+      const after = getCombatTimingSnapshot(gameManager.combat);
+      const totalMs = Math.round(performance.now() - routeStartedAt);
+      logCombatRouteTiming({
+        actionType: resolvedActionType,
+        statusCode: 400,
+        before,
+        after,
+        resolveMs,
+        saveMs,
+        totalMs,
+      });
+
       res.status(400).json({ error: error.message, ...(state && { state }) });
     }
   });

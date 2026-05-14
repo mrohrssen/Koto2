@@ -90,6 +90,20 @@ describe('api network hardening', () => {
     assert.equal(offlineCount, 0);
   });
 
+  it('does not retry creature combat cycle when the POST fails', async () => {
+    const api = await import('../../public/js/api.js');
+    globalThis.fetch = mock.fn(async () => {
+      throw new TypeError('Network request failed');
+    });
+
+    const result = await api.creatureCombatCycle('attack', [
+      { creatureIndex: 0, moveId: 'honoo', targetIndex: 0 },
+    ]);
+
+    assert.equal(result, null);
+    assert.equal(globalThis.fetch.mock.callCount(), 1);
+  });
+
   it('returns a transient error when game state cannot be fetched', async () => {
     const api = await import('../../public/js/api.js');
     globalThis.fetch = mock.fn(async () => {
