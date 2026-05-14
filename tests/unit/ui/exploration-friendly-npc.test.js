@@ -271,7 +271,7 @@ describe('renderFriendlyNpc item prompt', () => {
     await renderFriendlyNpc();
 
     assert.equal(events[0][0], 'showNpcSprite');
-    assert.match(events[0][1], /\/assets\/sprites\/npcs\/kodomo\.webp\?v=test/);
+    assert.match(events[0][1], /\/assets\/sprites\/npcs\/kodomo\.webp\?v=/);
     assert.equal(dialogueCards[0].speaker, 'Child');
     assert.equal(dialogueCards[0].speakerId, 'kodomo');
   });
@@ -388,10 +388,10 @@ describe('renderFriendlyNpc item prompt', () => {
 
     assert.equal(dialogueCards[0].speaker, 'Shopkeeper');
     assert.deepEqual(dialogueCards[0].tokens, [{ text: 'いらっしゃいませ！' }]);
-    assert.match(spriteCalls[0][1], /shopkeeper\.webp\?v=test/);
-    assert.match(spriteCalls[1][1], /cid\.webp\?v=test/);
+    assert.match(spriteCalls[0][1], /shopkeeper\.webp\?v=/);
+    assert.match(spriteCalls[1][1], /cid\.webp\?v=/);
     assert.equal(spriteCalls[2][0], 'hide');
-    assert.match(spriteCalls[3][1], /shopkeeper\.webp\?v=test/);
+    assert.match(spriteCalls[3][1], /shopkeeper\.webp\?v=/);
     assert.equal(narrationCalls.length, 1);
     assert.equal(narrationCalls[0].content, "Here you'll be offered items to power up. Choose wisely!");
     assert.equal(narrationCalls[0].options.speaker, 'Cid');

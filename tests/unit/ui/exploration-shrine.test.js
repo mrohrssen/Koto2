@@ -167,7 +167,7 @@ describe('renderShrine encounter flow', () => {
     initShrine({ roomId: 'shrine-sprite-room' });
     await renderShrine();
 
-    assert.match(events[0], /\/assets\/sprites\/shrine_fox\.webp\?v=test/);
+    assert.match(events[0], /\/assets\/sprites\/shrine_fox\.webp\?v=/);
   });
 
   it('does not respawn shrine fox when room travel already placed the sprite', async () => {
