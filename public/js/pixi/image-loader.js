@@ -1,6 +1,4 @@
-import { Texture } from 'pixi.js';
-
-const _cache = new Map();
+import { loadTexture } from '../assets/asset-loader.js';
 
 /**
  * Load an image via HTMLImageElement + decode() and wrap it in a Pixi Texture.
@@ -11,17 +9,5 @@ const _cache = new Map();
  * of Assets.load() for single-image textures so sprites render on device.
  */
 export function loadImageTexture(url) {
-  const existing = _cache.get(url);
-  if (existing) return existing;
-
-  const promise = (async () => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = url;
-    await img.decode();
-    return Texture.from(img);
-  })();
-  promise.catch(() => _cache.delete(url));
-  _cache.set(url, promise);
-  return promise;
+  return loadTexture(url, { consumer: 'pixi' });
 }

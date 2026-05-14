@@ -39,6 +39,9 @@ function staticFiles() {
 export default defineConfig({
   root: 'public',
   publicDir: false,
+  define: {
+    __ASSET_DIAGNOSTICS__: JSON.stringify(process.env.ASSET_DIAGNOSTICS === '1'),
+  },
   build: {
     outDir: '../dist',
     emptyOutDir: true,
