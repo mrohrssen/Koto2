@@ -1,4 +1,4 @@
-import { beforeEach, describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 function createStorage() {
@@ -66,12 +66,19 @@ globalThis.requestAnimationFrame = callback => setImmediate(() => callback(Date.
 globalThis.cancelAnimationFrame = id => clearImmediate(id);
 
 const combatLoop = await import('../../../public/js/ui/combat-loop.js');
+const originalConsoleLog = console.log;
 
 describe('combat network hardening', () => {
   beforeEach(() => {
     actionArea = createActionArea();
+    localStorage.clear();
+    console.log = () => {};
     combatLoop.__combatNetworkTest.setCreatureCombatApi(null);
     combatLoop.__combatNetworkTest.setSyncIndicatorDelayMs(500);
+  });
+
+  afterEach(() => {
+    console.log = originalConsoleLog;
   });
 
   it('uses the injected creature combat API for attack requests', async () => {
@@ -159,7 +166,6 @@ describe('combat network hardening', () => {
   });
 
   it('logs request timing when combat timing flag is enabled', async () => {
-    const originalConsoleLog = console.log;
     const calls = [];
     console.log = (...args) => calls.push(args);
     localStorage.setItem('kotoCombatTiming', '1');
@@ -168,10 +174,25 @@ describe('combat network hardening', () => {
     try {
       await combatLoop.__combatNetworkTest.runCreatureCombatRequest('attack', []);
     } finally {
-      console.log = originalConsoleLog;
       localStorage.removeItem('kotoCombatTiming');
     }
 
     assert.equal(calls.some(args => args[0] === '[Combat Timing] request'), true);
+  });
+
+  it('logs request timing for every combat request', async () => {
+    const calls = [];
+    console.log = (...args) => calls.push(args);
+    localStorage.removeItem('kotoCombatTiming');
+    combatLoop.__combatNetworkTest.setCreatureCombatApi(async () => ({ ok: true }));
+
+    await combatLoop.__combatNetworkTest.runCreatureCombatRequest('defend', []);
+
+    const timingLog = calls.find(args => args[0] === '[Combat Timing] request');
+    assert.ok(timingLog);
+    assert.equal(timingLog[1].actionType, 'defend');
+    assert.equal(timingLog[1].failed, false);
+    assert.equal(timingLog[1].indicatorShown, false);
+    assert.equal(typeof timingLog[1].requestMs, 'number');
   });
 });

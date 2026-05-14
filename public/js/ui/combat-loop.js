@@ -233,18 +233,8 @@ function clearCombatSyncIndicator(token) {
   indicator.remove();
 }
 
-const COMBAT_TIMING_SLOW_MS = 1000;
-
-function isCombatTimingEnabled() {
-  try {
-    return globalThis.localStorage?.getItem('kotoCombatTiming') === '1';
-  } catch {
-    return false;
-  }
-}
-
-function shouldLogCombatTiming(totalMs, failed = false) {
-  return failed || totalMs >= COMBAT_TIMING_SLOW_MS || isCombatTimingEnabled();
+function shouldLogCombatTiming() {
+  return true;
 }
 
 function logCombatRequestTiming({ actionType, requestMs, indicatorShown, failed = false }) {
