@@ -1,4 +1,6 @@
 import { store } from './store.js';
+import { extractGameContext } from './analytics-core.js';
+import { setCrashContext, trackMilestone, recordNonFatal } from './analytics.js';
 
 // ============ RING BUFFER ============
 
@@ -17,6 +19,7 @@ class RingBuffer {
 // ============ CONSOLE ERROR BUFFER (capacity 50) ============
 
 const consoleBuffer = new RingBuffer(50);
+let globalErrorCaptureInitialized = false;
 
 export function formatDiagnosticArg(arg) {
   if (typeof arg === 'string') return arg;
@@ -41,6 +44,10 @@ function initConsoleCapture() {
         message: args.map(formatDiagnosticArg).join(' ').slice(0, 500),
         timestamp: new Date().toISOString()
       });
+      const firstError = args.find(arg => arg instanceof Error);
+      if (firstError) {
+        recordNonFatal(firstError, extractGameContext(store.get('gameState') || {}));
+      }
     } catch { /* never throw from diagnostic code */ }
   };
 
@@ -122,8 +129,34 @@ function initActionTracking() {
     const phase = state.gameState?.phase;
     if (phase && phase !== lastPhase) {
       logAction('phase_change', { from: lastPhase, to: phase });
+      const context = extractGameContext(state.gameState || {});
+      setCrashContext(context);
+      if (phase === 'room') {
+        trackMilestone('koto_first_room_seen', context, 'first_room_seen');
+      }
+      if (phase === 'combat') {
+        trackMilestone('koto_first_combat_started', context, 'first_combat_started');
+      }
       lastPhase = phase;
     }
+  });
+}
+
+function initGlobalErrorCapture() {
+  if (globalErrorCaptureInitialized) return;
+  globalErrorCaptureInitialized = true;
+
+  window.addEventListener('error', (event) => {
+    recordNonFatal(
+      event.error || new Error(event.message || 'window.error'),
+      extractGameContext(store.get('gameState') || {})
+    );
+  });
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason instanceof Error
+      ? event.reason
+      : new Error(String(event.reason || 'unhandled rejection'));
+    recordNonFatal(reason, extractGameContext(store.get('gameState') || {}));
   });
 }
 
@@ -168,5 +201,6 @@ export function init() {
   initConsoleCapture();
   initNetworkCapture();
   initActionTracking();
+  initGlobalErrorCapture();
   initPerformanceTracking();
 }

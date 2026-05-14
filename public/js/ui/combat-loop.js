@@ -28,6 +28,8 @@ import { getSceneManager } from '../scenes/scene-manager.js';
 import { SceneDisposedError } from '../scenes/scene-errors.js';
 import { BattleScene } from '../scenes/battle-scene.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
+import { trackMilestone } from '../analytics.js';
+import { extractGameContext, normalizeCombatOutcome } from '../analytics-core.js';
 
 import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
@@ -1597,6 +1599,11 @@ async function executeDefendThenPause() {
 export async function stopCombatLoop(result) {
   logger.info('[CombatLoop] Combat ended:', { victory: result?.victory });
   const gameState = getGameState();
+  trackMilestone('koto_first_combat_ended', {
+    ...extractGameContext(gameState),
+    outcome: normalizeCombatOutcome(result),
+    turn_count: result?.turnCount || gameState?.combat?.turnCount
+  }, 'first_combat_ended');
   const mgr = getSceneManager();
 
   // Clear both attack timers
