@@ -10,10 +10,8 @@ import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-kn
 import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
 import { getDebugSuperAttackForUser } from '../../game/debug-super-attack-access.js';
 
-const COMBAT_ROUTE_TIMING_SLOW_MS = 1000;
-
-function shouldLogCombatRouteTiming(totalMs, statusCode) {
-  return process.env.KOTO_COMBAT_TIMING === '1' || statusCode >= 400 || totalMs >= COMBAT_ROUTE_TIMING_SLOW_MS;
+function shouldLogCombatRouteTiming() {
+  return true;
 }
 
 function getCombatTimingSnapshot(combat) {
