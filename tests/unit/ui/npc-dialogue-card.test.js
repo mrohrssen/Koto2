@@ -229,6 +229,42 @@ describe('npc dialogue card', () => {
     assert.doesNotMatch(html, /npc-dialogue-cell jp-punct/);
   });
 
+  it('attaches sentence punctuation to a preceding surface-only particle cell', () => {
+    const html = renderDialogueTokenRows({
+      tokens: [
+        { surface: '私', base: '私', reading: 'わたし', meaning: 'my', pos: 'Pronoun' },
+        { surface: 'の' },
+        { surface: '名前', base: '名前', reading: 'なまえ', meaning: 'name', pos: 'Noun' },
+        { surface: 'は' },
+        { surface: '？' },
+      ],
+      knownWords: new Set(),
+      overrides: { '私': 'my' },
+      useKanji: false,
+    });
+
+    assert.equal((html.match(/npc-dialogue-line-grid/g) || []).length, 1);
+    assert.match(html, /<span class="npc-dialogue-cell jp-punct">は？<\/span>/);
+    assert.doesNotMatch(html, /<span class="npc-dialogue-cell jp-punct">？<\/span>/);
+  });
+
+  it('attaches exclamation punctuation after the surface-only te particle', () => {
+    const html = renderDialogueTokenRows({
+      tokens: [
+        { surface: '待っ', base: '待つ', reading: 'まっ', meaning: 'wait', pos: 'Verb' },
+        { surface: 'て' },
+        { surface: '！' },
+      ],
+      knownWords: new Set(),
+      overrides: {},
+      useKanji: false,
+    });
+
+    assert.equal((html.match(/npc-dialogue-line-grid/g) || []).length, 1);
+    assert.match(html, /<span class="npc-dialogue-cell jp-punct">て！<\/span>/);
+    assert.doesNotMatch(html, /<span class="npc-dialogue-cell jp-punct">！<\/span>/);
+  });
+
   it('keeps punctuation with the preceding word across dialogue pages', () => {
     showNpcDialogueCard({
       speaker: 'Mira',

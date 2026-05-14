@@ -102,7 +102,7 @@ function isAttachablePunctuation(token) {
 function dialogueCellsForTokens(tokens = []) {
   const cells = [];
   for (const token of tokens) {
-    if (isAttachablePunctuation(token) && cells.length > 0 && !cells[cells.length - 1].standalone) {
+    if (isAttachablePunctuation(token) && cells.length > 0) {
       cells[cells.length - 1].trailingPunct += token.surface || '';
       continue;
     }
@@ -124,7 +124,7 @@ function estimateDialogueCellWeight(cell, {
 } = {}) {
   const token = cell.token;
   if (!isContentExposureToken(token)) {
-    return Math.max(1, textLength(token?.surface) * 0.8);
+    return Math.max(1, textLength(`${token?.surface || ''}${cell.trailingPunct || ''}`) * 0.8);
   }
 
   const base = tokenBase(token);
@@ -270,7 +270,7 @@ function renderTranslationSourceRows({
       const token = cell.token;
       if (!isContentExposureToken(token)) {
         pronunciation.push('<span class="npc-dialogue-cell npc-dialogue-cell--punct"></span>');
-        jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(token.surface || '')}</span>`);
+        jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(`${token.surface || ''}${cell.trailingPunct || ''}`)}</span>`);
         continue;
       }
 
@@ -427,7 +427,7 @@ export function renderDialogueTokenRows({
       const token = cell.token;
       if (!isContentExposureToken(token)) {
         romaji.push('<span class="npc-dialogue-cell npc-dialogue-cell--punct"></span>');
-        jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(token.surface || '')}</span>`);
+        jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(`${token.surface || ''}${cell.trailingPunct || ''}`)}</span>`);
         en.push('<span class="npc-dialogue-cell"></span>');
         continue;
       }
