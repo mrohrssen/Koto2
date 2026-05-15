@@ -3425,6 +3425,16 @@ button.hud-chip {
   flex-shrink: 0;
 }
 
+#speed-review-view .takeover-close.speed-review-close-locked {
+  opacity: 0.65;
+}
+
+#speed-review-view .takeover-close.speed-review-close-ready {
+  animation: tutorial-pulse 1.5s ease-in-out infinite;
+  background-color: #FFD700;
+  color: #0b1020;
+}
+
 .speed-review-content {
   flex: 1;
   display: flex;

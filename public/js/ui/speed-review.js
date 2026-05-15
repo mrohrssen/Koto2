@@ -67,7 +67,6 @@ function resolveSessionOptions(options = {}) {
 }
 
 function canCloseNow() {
-  if (state.session.mode !== 'room') return true;
   if (state.session.canCloseEarly) return true;
   return state.session.completionTriggered;
 }
@@ -76,8 +75,15 @@ function updateCloseButtonAvailability() {
   const closeBtn = dom.speedReviewClose;
   if (!closeBtn) return;
   const enabled = canCloseNow();
-  closeBtn.disabled = !enabled;
+  const closeRequiresCompletion = state.session.canCloseEarly === false;
+  closeBtn.disabled = false;
   closeBtn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+  closeBtn.classList.toggle('speed-review-close-locked', closeRequiresCompletion && !enabled);
+  closeBtn.classList.toggle('speed-review-close-ready', closeRequiresCompletion && enabled);
+}
+
+function showCloseBlockedHint() {
+  showWordLevelUp(dom.speedReviewView || document.body, '', { message: 'Not yet!' });
 }
 
 function clearRoomCompletionError() {
@@ -362,6 +368,7 @@ export function init(callbacks) {
     if (canCloseNow()) return;
     event.preventDefault();
     event.stopImmediatePropagation();
+    showCloseBlockedHint();
   }, true);
 
   // Close button handler is set up in takeover.js init

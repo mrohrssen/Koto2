@@ -10,10 +10,47 @@ function createClassList() {
     add: className => classes.add(className),
     remove: className => classes.delete(className),
     contains: className => classes.has(className),
+    toggle: (className, force) => {
+      if (force === true) {
+        classes.add(className);
+        return true;
+      }
+      if (force === false) {
+        classes.delete(className);
+        return false;
+      }
+      if (classes.has(className)) {
+        classes.delete(className);
+        return false;
+      }
+      classes.add(className);
+      return true;
+    },
   };
 }
 
 function createElement(id) {
+  const listeners = new Map();
+  const attributes = new Map();
+  const flashCard = {
+    style: {
+      setProperty(name, value) {
+        this[name] = value;
+      },
+    },
+    classList: createClassList(),
+    addEventListener: (type, listener) => {
+      if (!listeners.has(`card:${type}`)) listeners.set(`card:${type}`, []);
+      listeners.get(`card:${type}`).push(listener);
+    },
+    querySelector: () => null,
+    getBoundingClientRect: () => ({ left: 100, top: 100, width: 200, height: 120 }),
+    dispatchCardEvent(type, event = {}) {
+      for (const listener of listeners.get(`card:${type}`) || []) {
+        listener(event);
+      }
+    },
+  };
   return {
     id,
     innerHTML: '',
@@ -21,24 +58,31 @@ function createElement(id) {
     style: {},
     disabled: false,
     classList: createClassList(),
-    addEventListener: () => {},
-    setAttribute: () => {},
+    addEventListener: (type, listener) => {
+      if (!listeners.has(type)) listeners.set(type, []);
+      listeners.get(type).push(listener);
+    },
+    setAttribute: (name, value) => attributes.set(name, value),
+    getAttribute: name => attributes.get(name),
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 390, height: 844 }),
     querySelector: selector => {
       if (selector === '.flash-card' && id.startsWith('speed-review-slot-')) {
-        return {
-          style: {},
-          classList: createClassList(),
-          addEventListener: () => {},
-          querySelector: () => null,
-        };
+        return flashCard;
       }
       return null;
     },
+    dispatchEvent(type, event = {}) {
+      for (const listener of listeners.get(type) || []) {
+        listener(event);
+      }
+    },
+    flashCard,
     remove: () => {},
   };
 }
 
 let elements;
+let levelUpCalls;
 
 await mock.module('animejs', {
   namedExports: { animate: () => {} },
@@ -60,14 +104,19 @@ await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: { setKnownWords: () => {} },
 });
 await mock.module('../../../public/js/ui/word-level-up.js', {
-  namedExports: { showWordLevelUp: () => {} },
+  namedExports: {
+    showWordLevelUp: (...args) => {
+      levelUpCalls.push(args);
+    },
+  },
 });
 
-const { start } = await import('../../../public/js/ui/speed-review.js');
+const { init, start } = await import('../../../public/js/ui/speed-review.js');
 
 describe('speed review word display', () => {
   beforeEach(() => {
-    elements = new Map();
+    if (!elements) elements = new Map();
+    levelUpCalls = [];
     globalThis.setTimeout = () => 1;
     globalThis.clearTimeout = () => {};
     globalThis.document = {
@@ -75,6 +124,12 @@ describe('speed review word display', () => {
       createElement: () => {
         let html = '';
         return {
+          className: '',
+          style: {
+            setProperty(name, value) {
+              this[name] = value;
+            },
+          },
           set textContent(value) {
             html = String(value || '')
               .replace(/&/g, '&amp;')
@@ -86,6 +141,8 @@ describe('speed review word display', () => {
           get innerHTML() {
             return html;
           },
+          addEventListener: () => {},
+          remove: () => {},
         };
       },
       getElementById: id => {
@@ -115,5 +172,54 @@ describe('speed review word display', () => {
       slotHtml,
       /<div class="flash-card-word"><ruby>たべる<rt>taberu<\/rt><\/ruby><\/div>/
     );
+  });
+
+  it('keeps the forced close button clickable and shows Not yet when clicked early', () => {
+    init({ sendReview: () => Promise.resolve(), playTTS: () => {} });
+    const started = start([
+      { word: '食べる', reading: 'たべる', meanings: ['eat'] },
+    ], { canCloseEarly: false });
+
+    assert.equal(started, true);
+    const closeButton = elements.get('speed-review-close');
+    assert.equal(closeButton.disabled, false);
+    assert.equal(closeButton.getAttribute('aria-disabled'), 'true');
+    assert.equal(closeButton.classList.contains('speed-review-close-ready'), false);
+
+    let prevented = false;
+    let stopped = false;
+    closeButton.dispatchEvent('click', {
+      preventDefault: () => { prevented = true; },
+      stopImmediatePropagation: () => { stopped = true; },
+    });
+
+    assert.equal(prevented, true);
+    assert.equal(stopped, true);
+    assert.equal(levelUpCalls.length, 1);
+    assert.equal(levelUpCalls[0][0], elements.get('speed-review-view'));
+    assert.deepEqual(levelUpCalls[0][2], { message: 'Not yet!' });
+  });
+
+  it('glows the forced close button after the last card is reviewed', async () => {
+    globalThis.setTimeout = (callback, delay) => {
+      if (delay === 100) callback();
+      return 1;
+    };
+    init({ sendReview: () => Promise.resolve(), playTTS: () => {} });
+    start([
+      { word: '食べる', reading: 'たべる', meanings: ['eat'] },
+    ], { canCloseEarly: false });
+
+    const card = elements.get('speed-review-slot-0').flashCard;
+    card.dispatchCardEvent('click', {});
+    card.dispatchCardEvent('click', {
+      clientX: 260,
+    });
+    await new Promise(resolve => realSetTimeout(resolve, 0));
+    await Promise.resolve();
+
+    const closeButton = elements.get('speed-review-close');
+    assert.equal(closeButton.getAttribute('aria-disabled'), 'false');
+    assert.equal(closeButton.classList.contains('speed-review-close-ready'), true);
   });
 });

@@ -482,7 +482,8 @@ export async function renderHub() {
   renderButtons([
     { label: `📚 Knowledge Review${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
       // Tutorial step 4→5: advance when player clicks speed review
-      if (getGameState().meta?.tutorialStep === 4) {
+      const isSpeedReviewTutorial = getGameState().meta?.tutorialStep === 4;
+      if (isSpeedReviewTutorial) {
         await apiTutorialAdvance?.(4);
       }
       const result = await apiGetDueWords();
@@ -492,6 +493,7 @@ export async function renderHub() {
         let fusionCoreAwardedThisReview = false;
         const reviewOptions = {
           showRomaji: gameState.meta?.kanaMode === true,
+          canCloseEarly: !isSpeedReviewTutorial,
           onExit: async () => {
             if (fusionCoreAwardedThisReview && !fusionCoreNarrationShown) {
               fusionCoreNarrationShown = true;
