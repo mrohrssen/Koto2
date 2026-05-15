@@ -255,7 +255,7 @@ async function apiCall(endpoint, method = 'POST', body = null, onError = null, o
 
         if (!response.ok) {
           if (opts.returnErrorBody) {
-            return { error: data.error || `HTTP ${response.status}` };
+            return { ...data, error: data.error || `HTTP ${response.status}` };
           }
           throw new Error(data.error || 'API call failed');
         }
@@ -751,6 +751,7 @@ async function startCreatureEncounter() {
 async function creatureCombatCycle(actionType, moveChoices = []) {
   return apiCall(COMBAT_CYCLE_ENDPOINT, 'POST', { actionType, moveChoices }, null, {
     timeoutMs: COMBAT_CYCLE_TIMEOUT_MS,
+    returnErrorBody: true,
   });
 }
 

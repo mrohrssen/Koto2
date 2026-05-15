@@ -173,6 +173,7 @@ let getDialogueDismissPromise = null;
 let showFlashCards = null;
 let setCombatAnimationActive = null;
 let apiCreatureCombatCycle = null;
+let apiGetGameState = null;
 let showPostCombatShop = null;
 
 let apiStartNpcDialogue = null;
@@ -325,17 +326,97 @@ async function runCreatureCombatRequest(actionType, moveChoices = []) {
   }
 }
 
+function isUsableRecoveredState(state) {
+  return !!state && state.transient !== true && !state.error;
+}
+
+function isRecoveredCombatActive(state) {
+  return state?.phase === 'combat' && !!state?.combat && state.combat.active !== false;
+}
+
+function resetCombatRecoveryPendingFlag(actionType) {
+  if (actionType === 'attack') {
+    playerAttackPending = false;
+  } else if (actionType === 'defend') {
+    enemyAttackPending = false;
+  }
+}
+
+function finishRecoveredCombatState(mergedState, actionType, outcome, options = {}) {
+  resetCombatRecoveryPendingFlag(actionType);
+  combatActive = isRecoveredCombatActive(mergedState);
+
+  if (combatActive) {
+    const restartSelection = options.restartSelection || startMoveSelection;
+    restartSelection();
+  } else {
+    updateUI?.();
+  }
+
+  return {
+    recovered: true,
+    outcome,
+    combatActive,
+  };
+}
+
+function recoverFromCombatErrorState(result, actionType, options = {}) {
+  if (!result?.state) {
+    return { recovered: false, outcome: 'recovery_failed', combatActive };
+  }
+
+  const merged = mergeAuthoritativeCombatState(getGameState(), result);
+  updateGameState(merged);
+  return finishRecoveredCombatState(merged, actionType, 'stale_error_state_recovered', options);
+}
+
+async function recoverFromNullCombatPost(actionType, options = {}) {
+  if (typeof apiGetGameState !== 'function') {
+    return { recovered: false, outcome: 'recovery_failed', combatActive };
+  }
+
+  let fetchedState = null;
+  try {
+    fetchedState = await apiGetGameState();
+  } catch (error) {
+    console.warn('[CombatLoop] Combat recovery state fetch failed:', error?.message || error);
+    return { recovered: false, outcome: 'recovery_failed', combatActive };
+  }
+
+  if (!isUsableRecoveredState(fetchedState)) {
+    return { recovered: false, outcome: 'recovery_failed', combatActive };
+  }
+
+  const merged = mergeAuthoritativeCombatState(getGameState(), { state: fetchedState });
+  updateGameState(merged);
+  return finishRecoveredCombatState(merged, actionType, 'null_post_state_recovered', options);
+}
+
 export const __combatNetworkTest = {
   setCreatureCombatApi(fn) {
     apiCreatureCombatCycle = fn;
     creatureCombatRequestInFlight = false;
     activeCombatSyncToken = null;
+    apiGetGameState = null;
+    playerAttackPending = false;
+    enemyAttackPending = false;
+  },
+  setStateAccessors({ get, update, fetchServerState } = {}) {
+    getGameState = typeof get === 'function' ? get : getGameState;
+    updateGameState = typeof update === 'function' ? update : updateGameState;
+    apiGetGameState = typeof fetchServerState === 'function' ? fetchServerState : apiGetGameState;
+  },
+  resetPendingFlags() {
+    playerAttackPending = false;
+    enemyAttackPending = false;
   },
   setSyncIndicatorDelayMs(ms) {
     combatSyncIndicatorDelayMs = ms;
   },
   requestCreatureCombatCycle,
   runCreatureCombatRequest,
+  recoverFromCombatErrorState,
+  recoverFromNullCombatPost,
 };
 
 /** Wrap an async combat animation sequence with the animation-active guard. */
@@ -389,6 +470,7 @@ export function init(callbacks) {
   delay = callbacks.delay;
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
   apiCreatureCombatCycle = callbacks.apiCreatureCombatCycle;
+  apiGetGameState = callbacks.apiGetGameState;
   showPostCombatShop = callbacks.showPostCombatShop;
   apiStartNpcDialogue = callbacks.apiStartNpcDialogue;
   apiRespondNpcDialogue = callbacks.apiRespondNpcDialogue;
@@ -1183,13 +1265,17 @@ async function executeCreatureMovesTurn(choices) {
       const result = await runCreatureCombatRequest('attack', choices);
       markCombatAnimationStart(turnTiming, requestStartedAt);
       if (!result) {
-        logCombatTurnTiming(turnTiming, result, 'request_failed', true);
+        const recovery = await recoverFromNullCombatPost('attack');
+        logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
+        if (recovery.recovered) return;
         throw new Error('Combat sync failed');
       }
 
       if (result.error) {
         if (result.state) {
-          updateGameState(mergeAuthoritativeCombatState(getGameState(), result));
+          const recovery = recoverFromCombatErrorState(result, 'attack');
+          logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
+          if (recovery.recovered) return;
         }
         if (result.error === 'No active combat') {
           combatActive = false;
@@ -1430,12 +1516,19 @@ async function executeCreatureDefendThenPause() {
       const result = await runCreatureCombatRequest('defend', []);
       markCombatAnimationStart(turnTiming, requestStartedAt);
       if (!result) {
-        logCombatTurnTiming(turnTiming, result, 'request_failed', true);
+        const recovery = await recoverFromNullCombatPost('defend');
+        logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
+        if (recovery.recovered) return;
         throw new Error('Combat sync failed');
       }
       logger.info('[CombatLoop] Creature defend result:', { enemyAttacks: result.enemyAttacks?.length });
 
       if (result.error) {
+        if (result.state) {
+          const recovery = recoverFromCombatErrorState(result, 'defend');
+          logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
+          if (recovery.recovered) return;
+        }
         if (result.error === 'No active combat') {
           combatActive = false;
           logCombatTurnTiming(turnTiming, result, 'no_active_combat', true);

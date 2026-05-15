@@ -195,4 +195,199 @@ describe('combat network hardening', () => {
     assert.equal(timingLog[1].indicatorShown, false);
     assert.equal(typeof timingLog[1].requestMs, 'number');
   });
+
+  it('recovers attack errors by merging authoritative state and restarting selection', () => {
+    const updates = [];
+    let restartCount = 0;
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 1,
+      },
+    };
+    const authoritativeState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        actionCursor: { side: 'ally', index: 1, opening: false },
+        actionCount: 2,
+      },
+    };
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: state => updates.push(state),
+    });
+
+    const result = combatLoop.__combatNetworkTest.recoverFromCombatErrorState(
+      { error: 'Submitted move does not match current action cursor', state: authoritativeState },
+      'attack',
+      { restartSelection: () => { restartCount += 1; } }
+    );
+
+    assert.deepEqual(result, {
+      recovered: true,
+      outcome: 'stale_error_state_recovered',
+      combatActive: true,
+    });
+    assert.equal(updates.length, 1);
+    assert.deepEqual(updates[0].combat.actionCursor, { side: 'ally', index: 1, opening: false });
+    assert.equal(restartCount, 1);
+  });
+
+  it('recovers defend errors by merging authoritative state and restarting selection', () => {
+    const updates = [];
+    let restartCount = 0;
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 1,
+      },
+    };
+    const authoritativeState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        actionCursor: { side: 'ally', index: 1, opening: false },
+        actionCount: 2,
+      },
+    };
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: state => updates.push(state),
+    });
+
+    const result = combatLoop.__combatNetworkTest.recoverFromCombatErrorState(
+      { error: 'Submitted move does not match current action cursor', state: authoritativeState },
+      'defend',
+      { restartSelection: () => { restartCount += 1; } }
+    );
+
+    assert.deepEqual(result, {
+      recovered: true,
+      outcome: 'stale_error_state_recovered',
+      combatActive: true,
+    });
+    assert.equal(updates.length, 1);
+    assert.deepEqual(updates[0].combat.actionCursor, { side: 'ally', index: 1, opening: false });
+    assert.equal(restartCount, 1);
+  });
+
+  it('recovers a null combat POST by fetching server state once', async () => {
+    const updates = [];
+    let fetchCount = 0;
+    let restartCount = 0;
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 1,
+      },
+    };
+    const fetchedState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        actionCursor: { side: 'ally', index: 1, opening: false },
+        actionCount: 2,
+      },
+    };
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => currentState,
+      update: state => updates.push(state),
+      fetchServerState: async () => {
+        fetchCount += 1;
+        return fetchedState;
+      },
+    });
+
+    const result = await combatLoop.__combatNetworkTest.recoverFromNullCombatPost('attack', {
+      restartSelection: () => { restartCount += 1; },
+    });
+
+    assert.deepEqual(result, {
+      recovered: true,
+      outcome: 'null_post_state_recovered',
+      combatActive: true,
+    });
+    assert.equal(fetchCount, 1);
+    assert.equal(updates.length, 1);
+    assert.deepEqual(updates[0].combat.actionCursor, { side: 'ally', index: 1, opening: false });
+    assert.equal(restartCount, 1);
+  });
+
+  it('does not recover a null combat POST when server state fetch is transient', async () => {
+    let fetchCount = 0;
+    let updateCount = 0;
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => ({ phase: 'combat', combat: { active: true } }),
+      update: () => { updateCount += 1; },
+      fetchServerState: async () => {
+        fetchCount += 1;
+        return { error: 'network_unavailable', transient: true };
+      },
+    });
+
+    const result = await combatLoop.__combatNetworkTest.recoverFromNullCombatPost('attack');
+
+    assert.deepEqual(result, {
+      recovered: false,
+      outcome: 'recovery_failed',
+      combatActive: true,
+    });
+    assert.equal(fetchCount, 1);
+    assert.equal(updateCount, 0);
+  });
+
+  it('does not fetch server state for healthy combat requests', async () => {
+    let fetchCount = 0;
+    combatLoop.__combatNetworkTest.setCreatureCombatApi(async () => ({ ok: true }));
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      fetchServerState: async () => {
+        fetchCount += 1;
+        return { phase: 'combat' };
+      },
+    });
+
+    const result = await combatLoop.__combatNetworkTest.runCreatureCombatRequest('attack', []);
+
+    assert.deepEqual(result, { ok: true });
+    assert.equal(fetchCount, 0);
+  });
+
+  it('null recovery fetches state without resubmitting the combat action', async () => {
+    let combatCallCount = 0;
+    let stateFetchCount = 0;
+    combatLoop.__combatNetworkTest.setCreatureCombatApi(async () => {
+      combatCallCount += 1;
+      return null;
+    });
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => ({ phase: 'combat', combat: { active: true } }),
+      update: () => {},
+      fetchServerState: async () => {
+        stateFetchCount += 1;
+        return {
+          phase: 'combat',
+          combat: {
+            active: true,
+            actionCursor: { side: 'ally', index: 0, opening: false },
+          },
+        };
+      },
+    });
+
+    await combatLoop.__combatNetworkTest.runCreatureCombatRequest('attack', []);
+    const recovery = await combatLoop.__combatNetworkTest.recoverFromNullCombatPost('attack', {
+      restartSelection: () => {},
+    });
+
+    assert.equal(recovery.recovered, true);
+    assert.equal(combatCallCount, 1);
+    assert.equal(stateFetchCount, 1);
+  });
 });

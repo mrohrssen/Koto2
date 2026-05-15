@@ -90,6 +90,33 @@ describe('api network hardening', () => {
     assert.equal(offlineCount, 0);
   });
 
+  it('preserves full error bodies when returnErrorBody is enabled', async () => {
+    const api = await import('../../public/js/api.js');
+    const state = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        actionCursor: { side: 'ally', index: 1, opening: false },
+        actionCount: 3,
+      },
+    };
+    globalThis.fetch = mock.fn(async () => jsonResponse({
+      error: 'Submitted move does not match current action cursor',
+      state,
+    }, 400));
+
+    const result = await api.__networkTest.apiCall('/creature-combat-cycle', 'POST', {}, null, {
+      returnErrorBody: true,
+      maxAttempts: 1,
+    });
+
+    assert.deepEqual(result, {
+      error: 'Submitted move does not match current action cursor',
+      state,
+    });
+    assert.equal(globalThis.fetch.mock.callCount(), 1);
+  });
+
   it('does not retry creature combat cycle when the POST fails', async () => {
     const api = await import('../../public/js/api.js');
     globalThis.fetch = mock.fn(async () => {
@@ -101,6 +128,32 @@ describe('api network hardening', () => {
     ]);
 
     assert.equal(result, null);
+    assert.equal(globalThis.fetch.mock.callCount(), 1);
+  });
+
+  it('returns authoritative state from creature combat 400 responses without retrying', async () => {
+    const api = await import('../../public/js/api.js');
+    const state = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        actionCursor: { side: 'ally', index: 1, opening: false },
+        actionCount: 3,
+      },
+    };
+    globalThis.fetch = mock.fn(async () => jsonResponse({
+      error: 'Submitted move does not match current action cursor',
+      state,
+    }, 400));
+
+    const result = await api.creatureCombatCycle('attack', [
+      { creatureIndex: 0, moveId: 'honoo', targetIndex: 0 },
+    ]);
+
+    assert.deepEqual(result, {
+      error: 'Submitted move does not match current action cursor',
+      state,
+    });
     assert.equal(globalThis.fetch.mock.callCount(), 1);
   });
 

@@ -2183,6 +2183,7 @@ async function initGame() {
     },
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
     apiCreatureCombatCycle,
+    apiGetGameState,
     showPostCombatShop: showPostCombatShopFlow,
     apiBefriendReplace: (releaseCreatureId) => apiBefriendReplace(releaseCreatureId),
     apiGetBefriendConversation,
