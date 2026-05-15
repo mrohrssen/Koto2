@@ -7,13 +7,42 @@ import { dirname, resolve } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '../../..');
 const moveLearnSource = readFileSync(resolve(repoRoot, 'public/js/ui/move-learn.js'), 'utf8');
+const css = readFileSync(resolve(repoRoot, 'public/game.css'), 'utf8');
+
+function ruleBody(source, selector) {
+  const idx = source.indexOf(selector);
+  if (idx === -1) return null;
+  const open = source.indexOf('{', idx);
+  if (open === -1) return null;
+  let depth = 1;
+  let i = open + 1;
+  while (i < source.length && depth > 0) {
+    const c = source[i];
+    if (c === '{') depth++;
+    else if (c === '}') depth--;
+    i++;
+  }
+  return source.slice(open + 1, i - 1);
+}
 
 test('learn move replacement uses the move-select grid with the new move in the rest slot', () => {
   assert.match(moveLearnSource, /import \{ buildMoveCell \} from '\.\/move-select\.js';/);
-  assert.match(moveLearnSource, /Which move would you like to forget\?/);
+  assert.match(moveLearnSource, /\$\{hiraganaName\(creature,\s*'This creature'\)\} wants to learn \$\{hiraganaName\(newMove,\s*'this move'\)\}! Choose a move to forget\./);
   assert.match(moveLearnSource, /grid\.className = 'move-grid move-learn-grid'/);
   assert.match(moveLearnSource, /buildMoveCell\(newMove,\s*true/);
   assert.doesNotMatch(moveLearnSource, /textContent = "Don't learn"/);
+});
+
+test('learn move replacement stretches to the same width as regular move buttons', () => {
+  const panelBody = ruleBody(css, '.move-learn-panel--grid {');
+  assert.ok(panelBody, '.move-learn-panel--grid rule not found');
+  assert.match(panelBody, /width:\s*100%\s*;/);
+
+  const gridBody = ruleBody(css, '.move-learn-grid {');
+  assert.ok(gridBody, '.move-learn-grid rule not found');
+  assert.match(gridBody, /width:\s*calc\(100%\s*\+\s*32px\)\s*;/);
+  assert.match(gridBody, /margin-left:\s*-16px\s*;/);
+  assert.match(gridBody, /margin-right:\s*-16px\s*;/);
 });
 
 test('learn move replacement confirms before resolving the selected move', () => {

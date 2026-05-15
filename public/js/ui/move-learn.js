@@ -7,8 +7,12 @@ const ELEMENT_COLORS = {
   metal: '#9E9E9E', water: '#2196F3', neutral: '#888'
 };
 
+function hiraganaName(entity, fallback) {
+  return entity?.reading || entity?.name || entity?.nameEn || fallback;
+}
+
 function moveDisplayName(move) {
-  return move?.nameEn || move?.name || 'this move';
+  return hiraganaName(move, 'this move');
 }
 
 // Returns a promise that resolves with { action: 'replace', replaceIndex } or { action: 'skip' } or { action: 'auto' }
@@ -24,7 +28,7 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
     // Header: "[Creature] wants to learn [Move]!"
     const header = document.createElement('div');
     header.className = 'move-learn-header';
-    header.innerHTML = `<strong>${creature.nameEn || creature.name}</strong> wants to learn<br><span class="move-learn-new-name" style="color:${ELEMENT_COLORS[newMove.element] || ELEMENT_COLORS.neutral}">${renderJpSentence([entityToToken(newMove)], getKnownWords(), new Map())}</span>`;
+    header.textContent = `${hiraganaName(creature, 'This creature')} wants to learn ${hiraganaName(newMove, 'this move')}!`;
     panel.appendChild(header);
 
     if (alreadyLearned || creature.moves.length < 3) {
@@ -48,7 +52,7 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
       panel.appendChild(okBtn);
     } else {
       panel.classList.add('move-learn-panel--grid');
-      header.textContent = 'Which move would you like to forget?';
+      header.textContent = `${hiraganaName(creature, 'This creature')} wants to learn ${hiraganaName(newMove, 'this move')}! Choose a move to forget.`;
 
       const grid = document.createElement('div');
       grid.className = 'move-grid move-learn-grid';
