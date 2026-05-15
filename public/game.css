@@ -368,6 +368,10 @@
   animation: campfire-recipe-glow 1.25s ease-in-out infinite;
 }
 
+.campfire-cook-btn--shake {
+  animation: campfire-cook-btn-shake 260ms ease-in-out;
+}
+
 @keyframes campfire-recipe-glow {
   0%, 100% {
     box-shadow:
@@ -380,6 +384,21 @@
       0 0 0 4px rgba(239, 143, 53, 0.34),
       0 0 24px rgba(239, 143, 53, 0.58),
       0 8px 22px rgba(43, 52, 64, 0.08);
+  }
+}
+
+@keyframes campfire-cook-btn-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-3px);
   }
 }
 

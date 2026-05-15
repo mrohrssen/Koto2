@@ -150,6 +150,14 @@ function getRecipeGuidance() {
   return { candidateRecipes, hasCompleteRecipe, highlightedIngredientIds };
 }
 
+function shakeCookButton(button = document.querySelector('.campfire-cook-btn')) {
+  if (!button) return;
+  button.classList.remove('campfire-cook-btn--shake');
+  void button.offsetWidth;
+  button.classList.add('campfire-cook-btn--shake');
+  setTimeout(() => button.classList.remove('campfire-cook-btn--shake'), 320);
+}
+
 function setCookingFocusActive(active) {
   const sceneArea = document.getElementById('scene-area');
   if (!sceneArea) return;
@@ -302,7 +310,8 @@ function renderIngredients() {
   const ingredientsById = ingredientById();
   const ingredients = Object.entries(campfireState?.ingredients || {});
   const totalSelected = selectedCountTotal();
-  const { highlightedIngredientIds } = getRecipeGuidance();
+  const { highlightedIngredientIds, hasCompleteRecipe } = getRecipeGuidance();
+  const cookButtonLabel = hasCompleteRecipe ? 'Cook' : 'Add more ingredients';
 
   body.innerHTML = `
     <div class="campfire-ingredient-grid">
@@ -327,7 +336,7 @@ function renderIngredients() {
     </div>
     <div class="campfire-action-row">
       <button class="ui-btn campfire-skip-btn" type="button">Skip</button>
-      <button class="ui-btn ui-btn--primary campfire-cook-btn" type="button" ${totalSelected < 1 || totalSelected > 5 ? 'disabled' : ''}>Cook</button>
+      <button class="ui-btn ui-btn--primary campfire-cook-btn" type="button">${cookButtonLabel}</button>
     </div>
   `;
 
@@ -392,7 +401,12 @@ function renderRecipes() {
   });
 }
 
-async function cookSelected() {
+async function cookSelected(event) {
+  if (!getRecipeGuidance().hasCompleteRecipe) {
+    shakeCookButton(event?.currentTarget || event?.target);
+    return;
+  }
+
   const ingredients = Object.entries(selected).map(([id, quantity]) => ({ id, quantity }));
   campfireState = await callbacks.apiCookAtCampfire(ingredients);
   if (campfireState?.room?.cookedDish) {

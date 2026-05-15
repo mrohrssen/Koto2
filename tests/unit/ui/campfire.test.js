@@ -233,7 +233,7 @@ describe('campfire UI', () => {
     assert.ok(sceneArea.querySelector('.campfire-scene--cooking'));
     assert.match(renderedHtml(), />Ingredients</);
     assert.match(renderedHtml(), />Recipes</);
-    assert.match(renderedHtml(), />Cook</);
+    assert.match(renderedHtml(), />Add more ingredients</);
     assert.match(renderedHtml(sceneArea), /Cooking slots/);
     assert.match(renderedHtml(sceneArea), /\/assets\/sprites\/objects\/campfire\.webp/);
   });
@@ -300,15 +300,23 @@ describe('campfire UI', () => {
     assert.ok(actionArea.querySelector('.campfire-ingredient-card'));
   });
 
-  it('renders English tabs and Cook button label', () => {
+  it('renders English tabs and asks for more ingredients until a recipe is ready', () => {
     campfire.renderForTest(sampleState());
     openCooking();
 
     assert.match(renderedHtml(), />Ingredients</);
     assert.match(renderedHtml(), />Recipes</);
-    assert.match(renderedHtml(), />Cook</);
+    assert.match(renderedHtml(), />Add more ingredients</);
     assert.doesNotMatch(renderedHtml(), />材料</);
     assert.doesNotMatch(renderedHtml(), />料理する</);
+
+    let cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[0].click();
+    assert.match(renderedHtml(), />Add more ingredients</);
+
+    cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[1].click();
+    assert.match(renderedHtml(), />Cook</);
   });
 
   it('renders ingredient cards with icon fallback and Japanese renderer output', () => {
@@ -357,15 +365,27 @@ describe('campfire UI', () => {
     assert.match(renderedHtml(), /1 \/ 5/);
   });
 
-  it('enables cook only after selecting 1 to 5 ingredients', () => {
-    campfire.renderForTest(sampleState());
+  it('shakes and does not cook when the selected ingredients do not complete a recipe', async () => {
+    let cookCalls = 0;
+    campfire.renderForTest(sampleState(), {
+      apiCookAtCampfire: async () => {
+        cookCalls += 1;
+        return sampleState();
+      },
+    });
     openCooking();
-    assert.equal(actionArea.querySelector('.campfire-cook-btn').disabled, true);
+
+    await actionArea.querySelector('.campfire-cook-btn').click();
+
+    assert.equal(cookCalls, 0);
+    assert.match(actionArea.querySelector('.campfire-cook-btn').className, /campfire-cook-btn--shake/);
     assert.equal(actionArea.querySelector('.campfire-skip-btn').disabled, false);
 
     actionArea.querySelector('.campfire-ingredient-card').click();
+    await actionArea.querySelector('.campfire-cook-btn').click();
 
-    assert.equal(actionArea.querySelector('.campfire-cook-btn').disabled, false);
+    assert.equal(cookCalls, 0);
+    assert.match(actionArea.querySelector('.campfire-cook-btn').className, /campfire-cook-btn--shake/);
   });
 
   it('glows ingredients that belong to a cookable real recipe path', () => {
@@ -405,7 +425,8 @@ describe('campfire UI', () => {
     cards[2].click();
 
     assert.match(renderedHtml(), /0\/1/);
-    assert.equal(actionArea.querySelector('.campfire-cook-btn').disabled, true);
+    assert.equal(actionArea.querySelector('.campfire-cook-btn').disabled, false);
+    assert.match(renderedHtml(), />Add more ingredients</);
   });
 
   it('prunes unrelated ingredient glow after selecting an ingredient', () => {
