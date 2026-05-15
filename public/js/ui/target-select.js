@@ -4,6 +4,7 @@ import { creatureStaticPath } from './sprite-utils.js';
 import { renderChoices, renderButtons } from './ui-components.js';
 import { renderJpSentence, entityToToken, getKnownWords } from './bootstrap-client.js';
 import { assetPreloader } from '../assets/asset-preloader.js';
+import { prefetchWord, playWord } from '../tts.js';
 
 const ELEMENT_KANJI = {
   fire: '火', water: '水', wood: '木',
@@ -37,6 +38,10 @@ export function showAllies(allies, move) {
   showTargets(allies, move, 'ally');
 }
 
+function targetSpokenName(target) {
+  return target?.name || target?.word || target?.nameJp || '';
+}
+
 function showTargets(targets, move, type) {
   const container = dom.actionArea;
   container.innerHTML = '';
@@ -58,6 +63,10 @@ function showTargets(targets, move, type) {
   }
 
   assetPreloader.enqueue(validTargets.map(target => creatureStaticPath(target.id)), { priority: 'immediate' });
+  validTargets.forEach(target => {
+    const spokenName = targetSpokenName(target);
+    if (spokenName) prefetchWord(spokenName);
+  });
 
   renderChoices({
     heading: 'Choose target',
@@ -82,6 +91,8 @@ function showTargets(targets, move, type) {
       };
     }),
     onSelect: (index) => {
+      const spokenName = targetSpokenName(validTargets[index]);
+      if (spokenName) playWord(spokenName);
       if (onTargetSelect) onTargetSelect(validIndices[index]);
     },
   });

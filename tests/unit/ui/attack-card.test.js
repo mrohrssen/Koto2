@@ -1,6 +1,9 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert';
 
+let prefetchWordCalls = [];
+let playWordPairCalls = [];
+
 // Mock browser-only modules that attack-card.js imports at the module level.
 // All mocks must be set up before dynamically importing attack-card.js so that
 // static imports inside it (e.g. tts.js with top-level localStorage) are intercepted.
@@ -24,8 +27,8 @@ await mock.module('../../../public/js/ui/combat-ui-utils.js', {
 });
 await mock.module('../../../public/js/tts.js', {
   namedExports: {
-    prefetchWord: () => {},
-    playWordPair: () => {},
+    prefetchWord: word => { prefetchWordCalls.push(word); },
+    playWordPair: (...words) => { playWordPairCalls.push(words); },
   }
 });
 
@@ -35,6 +38,8 @@ const {
   resultTone,
   effectivenessText,
   buildSplitAttackCard,
+  insertAttackCard,
+  insertNpcAttackCard,
   createAttackCardContinueControl,
 } = await import('../../../public/js/ui/attack-card.js');
 
@@ -232,6 +237,30 @@ function waitForTimeoutTick() {
   return new Promise(resolve => setTimeout(resolve, 0));
 }
 
+function createFakeDocumentForInsertedCard() {
+  const rows = [
+    { classList: { add: () => {} } },
+    { classList: { add: () => {} } },
+    { classList: { add: () => {} } },
+  ];
+  const card = {
+    querySelectorAll(selector) {
+      return selector === '.sac-row' ? rows : [];
+    },
+  };
+  const actionArea = {
+    innerHTML: '',
+    querySelector(selector) {
+      return selector === '.split-attack-card' ? card : null;
+    },
+  };
+  return {
+    getElementById(id) {
+      return id === 'action-area' ? actionArea : null;
+    },
+  };
+}
+
 describe('createAttackCardContinueControl', () => {
   it('records an early tap before wait and resolves wait without a second tap', async () => {
     const originalSetTimeout = globalThis.setTimeout;
@@ -400,6 +429,60 @@ describe('buildSplitAttackCard — new 3-block layout', () => {
     });
     assert.ok(html.includes('mock-npc-attacker'));
     assert.ok(html.includes('CUSTOM'));
+  });
+});
+
+describe('insertAttackCard audio behavior', () => {
+  it('does not prefetch or play word audio when a split attack card appears', () => {
+    const originalDocument = globalThis.document;
+    const originalSetTimeout = globalThis.setTimeout;
+    globalThis.document = createFakeDocumentForInsertedCard();
+    globalThis.setTimeout = (fn) => {
+      fn();
+      return 0;
+    };
+    prefetchWordCalls = [];
+    playWordPairCalls = [];
+
+    try {
+      insertAttackCard(SAMPLE_ATTACK, false);
+
+      assert.deepEqual(prefetchWordCalls, []);
+      assert.deepEqual(playWordPairCalls, []);
+    } finally {
+      globalThis.document = originalDocument;
+      globalThis.setTimeout = originalSetTimeout;
+    }
+  });
+
+  it('does not prefetch or play word audio when an NPC split attack card appears', () => {
+    const originalDocument = globalThis.document;
+    const originalSetTimeout = globalThis.setTimeout;
+    globalThis.document = createFakeDocumentForInsertedCard();
+    globalThis.setTimeout = (fn) => {
+      fn();
+      return 0;
+    };
+    prefetchWordCalls = [];
+    playWordPairCalls = [];
+
+    try {
+      insertNpcAttackCard({
+        ...SAMPLE_ATTACK,
+        attackerId: 'mentor',
+        attackerName: 'Mentor',
+        attackerNameJp: '先生',
+        attackerWord: '先生',
+        attackerReading: 'せんせい',
+        attackerMeaning: 'teacher',
+      });
+
+      assert.deepEqual(prefetchWordCalls, []);
+      assert.deepEqual(playWordPairCalls, []);
+    } finally {
+      globalThis.document = originalDocument;
+      globalThis.setTimeout = originalSetTimeout;
+    }
   });
 });
 

@@ -4,6 +4,9 @@ import assert from 'node:assert/strict';
 let renderChoicesArgs = null;
 let entityToTokenCalls = [];
 let renderJpSentenceCalls = [];
+let playWordCalls = [];
+let prefetchWordCalls = [];
+let selectedTargets = [];
 
 await mock.module('../../../public/js/dom.js', {
   namedExports: { dom: { actionArea: { innerHTML: '' } } },
@@ -37,14 +40,27 @@ await mock.module('../../../public/js/ui/ui-components.js', {
     renderButtons: () => {},
   },
 });
+await mock.module('../../../public/js/tts.js', {
+  namedExports: {
+    playWord: word => { playWordCalls.push(word); },
+    prefetchWord: word => { prefetchWordCalls.push(word); },
+  },
+});
 
-const { showEnemies } = await import('../../../public/js/ui/target-select.js');
+const { init, showEnemies } = await import('../../../public/js/ui/target-select.js');
 
 describe('target-select', () => {
   beforeEach(() => {
     renderChoicesArgs = null;
     entityToTokenCalls = [];
     renderJpSentenceCalls = [];
+    playWordCalls = [];
+    prefetchWordCalls = [];
+    selectedTargets = [];
+    init({
+      onTargetSelectCb: targetIndex => { selectedTargets.push(targetIndex); },
+      onCancelCb: () => {},
+    });
   });
 
   it('labels attack target selection with Choose target', () => {
@@ -74,5 +90,19 @@ describe('target-select', () => {
     assert.equal(entityToTokenCalls[0].nameEn, 'Cat Beast');
     assert.equal(renderJpSentenceCalls.length, 1);
     assert.equal(renderChoicesArgs?.cards?.[0]?.title, '猫獣');
+  });
+
+  it('prefetches target names and speaks the selected target on explicit target click', () => {
+    showEnemies([
+      { id: 'hi', name: '火', nameEn: 'Fire', reading: 'ひ', element: 'fire', level: 1, hp: 10 },
+      { id: 'neko', name: '猫獣', nameEn: 'Cat Beast', reading: 'ねこじゅう', element: 'fire', level: 2, hp: 12 },
+    ], { element: 'fire' });
+
+    assert.deepEqual(prefetchWordCalls, ['火', '猫獣']);
+
+    renderChoicesArgs.onSelect(1);
+
+    assert.deepEqual(playWordCalls, ['猫獣']);
+    assert.deepEqual(selectedTargets, [1]);
   });
 });

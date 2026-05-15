@@ -6,7 +6,6 @@
 import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { creatureSpriteHtml } from './sprite-utils.js';
 import { SC_NAMES } from './combat-ui-utils.js';
-import { prefetchWord, playWordPair } from '../tts.js';
 import { actionIconUrl, creatureStaticUrl, npcSpriteUrl } from '../assets/asset-urls.js';
 import { assetPreloader } from '../assets/asset-preloader.js';
 
@@ -219,12 +218,6 @@ export function insertAttackCard(atk, isEnemy) {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
 
-  const attackerWord = atk.attackerWord;
-  const skillName = atk.attackerSkillName || atk.moveName;
-  if (attackerWord) prefetchWord(attackerWord);
-  if (skillName) prefetchWord(skillName);
-  setTimeout(() => playWordPair(attackerWord, skillName), 50);
-
   return card;
 }
 
@@ -261,12 +254,6 @@ export function insertNpcAttackCard(atk) {
   rows.forEach((row, i) => {
     setTimeout(() => row.classList.add('sac-visible'), i * ATTACK_CARD_TIMING.ROW_STAGGER);
   });
-
-  const attackerWord = atk.attackerWord;
-  const skillName = atk.attackerSkillName || atk.moveName;
-  if (attackerWord) prefetchWord(attackerWord);
-  if (skillName) prefetchWord(skillName);
-  setTimeout(() => playWordPair(attackerWord, skillName), 50);
 
   return card;
 }
