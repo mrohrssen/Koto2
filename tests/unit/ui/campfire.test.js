@@ -1,4 +1,4 @@
-import { beforeEach, describe, it, mock } from 'node:test';
+import { beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 let playWordCalls = [];
@@ -137,13 +137,6 @@ globalThis.document = {
   querySelector: selector => actionArea.querySelector(selector),
   querySelectorAll: selector => actionArea.querySelectorAll(selector),
 };
-
-await mock.module('../../../public/js/tts.js', {
-  exports: {
-    playWord: word => { playWordCalls.push(word); },
-    prefetchWord: word => { prefetchWordCalls.push(word); },
-  },
-});
 
 const exposureBuffer = await import('../../../public/js/ui/exposure-buffer.js');
 const campfire = await import('../../../public/js/ui/campfire.js');
@@ -367,7 +360,10 @@ describe('campfire UI', () => {
   });
 
   it('prefetches ingredient words and speaks only when an ingredient is added to the cooking slots', () => {
-    campfire.renderForTest(sampleState());
+    campfire.renderForTest(sampleState(), {
+      playTTS: word => { playWordCalls.push(word); },
+      prefetchTTS: word => { prefetchWordCalls.push(word); },
+    });
 
     openCooking();
 

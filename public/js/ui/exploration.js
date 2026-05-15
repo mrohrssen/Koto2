@@ -228,6 +228,8 @@ export function init(callbacks) {
     apiCookAtCampfire,
     apiFeedCampfireDish,
     apiSkipCampfire,
+    playTTS: callbacks.playTTS,
+    prefetchTTS: callbacks.prefetchTTS,
     getGameState,
     updateGameState,
     updateUI,
