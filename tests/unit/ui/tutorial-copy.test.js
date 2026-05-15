@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   getFusionLabNarration,
+  getPostFusionNarration,
   getTutorialNarration,
 } from '../../../public/js/ui/tutorial-copy.js';
 
@@ -19,5 +20,15 @@ describe('tutorial copy', () => {
 
     assert.ok(pages.includes('Now tap Fuse'));
     assert.ok(pages.every(page => !/\bclick\b/i.test(page)));
+  });
+
+  it('capitalizes Hinoneko in fusion tutorial copy', () => {
+    const pages = [
+      ...getFusionLabNarration(),
+      ...getPostFusionNarration(),
+    ];
+
+    assert.ok(pages.some(page => page.includes('Hinoneko')));
+    assert.ok(pages.every(page => !/\bhinoneko\b/.test(page)));
   });
 });
