@@ -112,7 +112,7 @@ import * as fusionLabUI from './js/ui/fusion-lab.js';
 import { renderAdventureReport } from './js/ui/adventure-report.js';
 import * as crestsEquipUI from './js/ui/crests-equip.js';
 import { playChestAnimation } from './js/pixi/chest-animation.js';
-import { configureCreatureImg, probeIdleSprites } from './js/ui/sprite-utils.js';
+import { configureCreatureImg } from './js/ui/sprite-utils.js';
 import { combatEvents } from './js/ui/combat-events.js';
 import { getHpColor } from './js/ui/combat-ui-utils.js';
 import * as speechBubble from './js/ui/speech-bubble.js';
@@ -144,9 +144,10 @@ import { BattleScene } from './js/scenes/battle-scene.js';
 import { ExplorationScene } from './js/scenes/exploration-scene.js';
 import { HubScene } from './js/scenes/hub-scene.js';
 import { sceneKindForPhase } from './js/scenes/phase-scene-map.js';
-import { backgroundImageUrl, creatureIdleUrl, creatureStaticUrl, npcSpriteUrl } from './js/assets/asset-urls.js';
+import { backgroundImageUrl, creatureStaticUrl, npcSpriteUrl } from './js/assets/asset-urls.js';
 import { startAssetManifestLoad } from './js/assets/asset-manifest.js';
 import { assetPreloader } from './js/assets/asset-preloader.js';
+import { startBackgroundAssetWarmup } from './js/assets/asset-warmup.js';
 import { startCreatureAnimationManifestLoad } from './js/pixi/creature-animation-manifest.js';
 
 // API imports - these are the server communication functions
@@ -224,8 +225,9 @@ import {
 
 const API_BASE = PLATFORM.apiBase;
 
-startAssetManifestLoad();
+const assetManifestPromise = startAssetManifestLoad();
 startCreatureAnimationManifestLoad();
+startBackgroundAssetWarmup({ manifestPromise: assetManifestPromise });
 
 // ============ STATE ============
 let gameState = {
@@ -800,14 +802,12 @@ async function loadGameState() {
 
   if (data.player) {
     updateGameState(data);
-    // Probe which creatures have animated idle sprites (for background-image contexts)
     const allCreatureIds = [
       ...(data.creatureParty?.active || []),
       ...(data.creatureParty?.reserves || []),
     ].filter(Boolean).map(r => r.id);
-    probeIdleSprites(allCreatureIds);
     assetPreloader.enqueue(
-      allCreatureIds.flatMap(id => [creatureStaticUrl(id), creatureIdleUrl(id)]),
+      allCreatureIds.map(id => creatureStaticUrl(id)),
       { priority: 'immediate' }
     );
   } else {

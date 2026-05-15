@@ -51,3 +51,10 @@ test('learn move replacement confirms before resolving the selected move', () =>
   assert.match(moveLearnSource, /textContent = 'Yes'/);
   assert.match(moveLearnSource, /resolve\(\{ action: 'replace', replaceIndex \}\)/);
 });
+
+test('learn move replacement lets selecting the new move skip learning', () => {
+  assert.match(moveLearnSource, /newMoveCell\.classList\.add\('move-learn-new-slot'\)/);
+  assert.doesNotMatch(moveLearnSource, /newMoveCell\.setAttribute\('aria-disabled', 'true'\)/);
+  assert.match(moveLearnSource, /Skip learning \$\{moveDisplayName\(newMove\)\}\?/);
+  assert.match(moveLearnSource, /resolve\(\{ action: 'skip' \}\)/);
+});

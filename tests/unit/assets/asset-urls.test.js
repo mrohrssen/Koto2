@@ -11,7 +11,6 @@ import {
   actionIconUrl,
   backgroundLayerUrl,
   bgmUrl,
-  creatureIdleUrl,
   creatureStaticUrl,
   itemSpriteUrl,
   npcSpriteUrl,
@@ -21,7 +20,6 @@ import {
 describe('asset URL helpers', () => {
   it('builds canonical creature, npc, and item sprite URLs', () => {
     assert.equal(creatureStaticUrl('inu'), `/assets/sprites/creatures/inu.webp?v=${SPRITE_VERSION}`);
-    assert.equal(creatureIdleUrl('inu'), `/assets/sprites/creatures/inu-idle.webp?v=${SPRITE_VERSION}`);
     assert.equal(npcSpriteUrl('cid'), `/assets/sprites/npcs/cid.webp?v=${SPRITE_VERSION}`);
     assert.equal(itemSpriteUrl('rice-ball'), `/assets/sprites/items/rice-ball.webp?v=${SPRITE_VERSION}`);
   });

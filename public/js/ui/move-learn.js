@@ -71,7 +71,12 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
 
       const newMoveCell = buildMoveCell(newMove, true);
       newMoveCell.classList.add('move-learn-new-slot');
-      newMoveCell.setAttribute('aria-disabled', 'true');
+      newMoveCell.addEventListener('click', () => {
+        showSkipConfirm(panel, newMove, () => {
+          container.innerHTML = '';
+          resolve({ action: 'skip' });
+        });
+      });
       grid.appendChild(newMoveCell);
 
       panel.appendChild(grid);
@@ -82,6 +87,14 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
 }
 
 function showReplaceConfirm(panel, oldMove, newMove, onConfirm) {
+  showConfirm(panel, `Forget ${moveDisplayName(oldMove)} and learn ${moveDisplayName(newMove)}?`, onConfirm);
+}
+
+function showSkipConfirm(panel, newMove, onConfirm) {
+  showConfirm(panel, `Skip learning ${moveDisplayName(newMove)}?`, onConfirm);
+}
+
+function showConfirm(panel, messageText, onConfirm) {
   const existing = panel.querySelector('.move-learn-confirm-backdrop');
   if (existing) existing.remove();
 
@@ -93,7 +106,7 @@ function showReplaceConfirm(panel, oldMove, newMove, onConfirm) {
 
   const message = document.createElement('div');
   message.className = 'move-learn-confirm-message';
-  message.textContent = `Forget ${moveDisplayName(oldMove)} and learn ${moveDisplayName(newMove)}?`;
+  message.textContent = messageText;
 
   const actions = document.createElement('div');
   actions.className = 'move-learn-confirm-actions';

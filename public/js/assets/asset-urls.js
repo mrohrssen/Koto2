@@ -28,10 +28,6 @@ export function creatureStaticUrl(id) {
   return withVersion(`/assets/sprites/creatures/${encodePathSegment(id)}.webp`, SPRITE_VERSION);
 }
 
-export function creatureIdleUrl(id) {
-  return withVersion(`/assets/sprites/creatures/${encodePathSegment(id)}-idle.webp`, SPRITE_VERSION);
-}
-
 export function npcSpriteUrl(id) {
   return withVersion(`/assets/sprites/npcs/${encodePathSegment(id)}.webp`, SPRITE_VERSION);
 }

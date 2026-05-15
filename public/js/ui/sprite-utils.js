@@ -1,10 +1,8 @@
 import {
   SPRITE_VERSION,
-  creatureIdleUrl,
   creatureStaticUrl,
   itemSpriteUrl,
 } from '../assets/asset-urls.js';
-import { hasCreatureIdle } from '../assets/asset-manifest.js';
 
 export { SPRITE_VERSION };
 
@@ -17,9 +15,9 @@ const ELEMENT_DISPLAY_WORD = {
   metal: '鉄'
 };
 
-/** Idle path (or static if known to 404). */
+/** Static path for non-animated creature display. */
 export function creatureSpritePath(id) {
-  return hasCreatureIdle(id) ? creatureIdleUrl(id) : creatureStaticUrl(id);
+  return creatureStaticUrl(id);
 }
 
 /** Static (non-animated) path — always {id}.webp, no idle. */
@@ -115,15 +113,7 @@ export function itemSpriteHtml(id, word) {
 
 /**
  * CSS background-image url() string.
- * Uses cache — returns idle if known, static otherwise.
  */
 export function creatureBgUrl(id) {
-  return `url('${hasCreatureIdle(id) ? creatureIdleUrl(id) : creatureStaticUrl(id)}')`;
-}
-
-/**
- * Legacy no-op kept for callers while manifest-backed idle discovery replaces probing.
- */
-export function probeIdleSprites(_creatureIds) {
-  return Promise.resolve();
+  return `url('${creatureStaticUrl(id)}')`;
 }

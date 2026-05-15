@@ -536,7 +536,7 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
     }
   });
 
-  it('prefers current idle creature sprites when available', async () => {
+  it('uses static creature sprites for non-animated creatures', async () => {
     const seen = [];
     const originalLoad = FakeAssets._loadImpl;
     FakeAssets._loadImpl = async (path) => {
@@ -548,8 +548,8 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
       const sprite = await spawnFormationSprite(ctx, 'player', { uid: 'p-idle', id: 'kitsunova' }, 0, {
         skipEnter: true,
       });
-      assert.equal(sprite.texture.path, `/assets/sprites/creatures/kitsunova-idle.webp?v=${SPRITE_VERSION}`);
-      assert.deepEqual(seen, [`/assets/sprites/creatures/kitsunova-idle.webp?v=${SPRITE_VERSION}`]);
+      assert.equal(sprite.texture.path, `/assets/sprites/creatures/kitsunova.webp?v=${SPRITE_VERSION}`);
+      assert.deepEqual(seen, [`/assets/sprites/creatures/kitsunova.webp?v=${SPRITE_VERSION}`]);
     } finally {
       FakeAssets._loadImpl = originalLoad;
     }
@@ -590,12 +590,11 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
     }
   });
 
-  it('falls back to static creature sprites when no idle asset exists', async () => {
+  it('does not probe legacy idle sprites before static creature sprites', async () => {
     const seen = [];
     const originalLoad = FakeAssets._loadImpl;
     FakeAssets._loadImpl = async (path) => {
       seen.push(path);
-      if (path.includes('-idle.webp')) throw new Error('missing idle sprite');
       return { width: 60, height: 60, path };
     };
     try {
@@ -605,7 +604,6 @@ describe('spawnFormationSprite opts (IMP-2)', () => {
       });
       assert.equal(sprite.texture.path, `/assets/sprites/creatures/mizu.webp?v=${SPRITE_VERSION}`);
       assert.deepEqual(seen, [
-        `/assets/sprites/creatures/mizu-idle.webp?v=${SPRITE_VERSION}`,
         `/assets/sprites/creatures/mizu.webp?v=${SPRITE_VERSION}`,
       ]);
     } finally {

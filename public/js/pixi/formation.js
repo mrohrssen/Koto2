@@ -4,7 +4,7 @@ import { getApp } from './app.js';
 import { loadImageTexture } from './image-loader.js';
 import { tween } from './tween.js';
 import { STATUS_ICON_CONFIG } from '../ui/event-popup.js';
-import { creatureIdleUrl, creatureStaticUrl } from '../assets/asset-urls.js';
+import { creatureStaticUrl } from '../assets/asset-urls.js';
 import {
   getAnimatedCreatureEntry,
   getCreatureAnimationManifestSnapshot,
@@ -416,13 +416,9 @@ async function _animateLevelUp(ctx, side, index) {
 
 async function loadCreatureBaseTexture(creature) {
   try {
-    return await loadImageTexture(creature.spriteImg || creatureIdleUrl(creature.id));
+    return await loadImageTexture(creature.spriteImg || creatureStaticUrl(creature.id));
   } catch {
-    try {
-      return await loadImageTexture(creatureStaticUrl(creature.id));
-    } catch {
-      return Texture.WHITE;
-    }
+    return Texture.WHITE;
   }
 }
 
