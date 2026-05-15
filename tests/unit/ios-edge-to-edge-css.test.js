@@ -65,19 +65,27 @@ test('.area-header-pill paints at top of screen and honors horizontal safe-area 
   );
 });
 
-test('top HUD groups crystals with the room progress chip on the left', () => {
+test('top HUD places creature grid left and crystals right', () => {
   const headerMatch = html.match(/<div class="area-header-pill" id="area-header-pill">([\s\S]*?)<!-- Combat effect overlays -->/);
   assert.ok(headerMatch, 'top HUD markup not found');
   const header = headerMatch[1];
 
   assert.match(header, /<div class="top-hud-left">/, 'top HUD should have a left-side chip group');
   assert.ok(
-    header.indexOf('id="room-progress-badge"') < header.indexOf('id="crystal-balance"'),
-    'room progress should render before crystal balance'
+    header.indexOf('id="room-progress-badge"') < header.indexOf('id="bots-btn"'),
+    'room progress should render before the creature grid button'
   );
   assert.ok(
-    header.indexOf('id="crystal-balance"') < header.indexOf('class="top-hud-right"'),
-    'crystal balance should sit with room progress, not the right-side controls'
+    header.indexOf('id="bots-btn"') < header.indexOf('class="top-hud-right"'),
+    'creature grid button should sit with room progress, not the right-side controls'
+  );
+  assert.ok(
+    header.indexOf('class="top-hud-right"') < header.indexOf('id="crystal-balance"'),
+    'crystal balance should sit with the right-side controls'
+  );
+  assert.ok(
+    header.indexOf('id="crystal-balance"') < header.indexOf('id="menu-btn"'),
+    'crystal balance should render before the menu button'
   );
 });
 
