@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import {
   getAnimatedNpcEntry,
@@ -75,5 +77,15 @@ describe('NPC animation manifest', () => {
     });
 
     assert.equal(getAnimatedNpcEntry(manifest, 'shrine_fox').renderScale, 0.8);
+  });
+
+  it('keeps the shrine fox smaller than normal NPCs without halving her size', () => {
+    const rawManifest = JSON.parse(readFileSync(
+      join(process.cwd(), 'public/assets/sprites/npcs-animated/manifest.json'),
+      'utf8'
+    ));
+    const manifest = normalizeNpcAnimationManifest(rawManifest);
+
+    assert.equal(getAnimatedNpcEntry(manifest, 'shrine_fox').renderScale, 1.2);
   });
 });
