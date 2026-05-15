@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   getAssetManifestSnapshot,
-  hasCreatureIdle,
+  normalizeAssetManifest,
   resetAssetManifestForTests,
   startAssetManifestLoad,
 } from '../../../public/js/assets/asset-manifest.js';
@@ -11,7 +11,7 @@ import {
 describe('asset manifest client cache', () => {
   beforeEach(() => resetAssetManifestForTests());
 
-  it('loads once and exposes creature idle availability', async () => {
+  it('loads once and exposes the simplified manifest shape', async () => {
     let calls = 0;
     const fetchImpl = async () => {
       calls++;
@@ -20,9 +20,20 @@ describe('asset manifest client cache', () => {
         json: async () => ({
           version: 'test',
           creatures: {
-            inu: { static: true, idle: true },
-            neko: { static: true, idle: false },
+            inu: { static: true },
+            neko: {
+              static: true,
+              animated: {
+                idle: '/assets/sprites/creatures-animated/neko/idle.webp?v=test',
+                walk: '/assets/sprites/creatures-animated/neko/walk.webp?v=test',
+              },
+            },
           },
+          backgrounds: { starter_meadow: ['sky'] },
+          actions: ['punch'],
+          items: ['rice-ball'],
+          npcs: ['cid'],
+          objects: ['campfire'],
         }),
       };
     };
@@ -31,13 +42,39 @@ describe('asset manifest client cache', () => {
     await startAssetManifestLoad(fetchImpl);
 
     assert.equal(calls, 1);
-    assert.equal(hasCreatureIdle('inu'), true);
-    assert.equal(hasCreatureIdle('neko'), false);
-    assert.equal(getAssetManifestSnapshot().version, 'test');
+    assert.deepEqual(getAssetManifestSnapshot(), {
+      version: 'test',
+      creatures: {
+        inu: { static: true },
+        neko: {
+          static: true,
+          animated: {
+            idle: '/assets/sprites/creatures-animated/neko/idle.webp?v=test',
+            walk: '/assets/sprites/creatures-animated/neko/walk.webp?v=test',
+          },
+        },
+      },
+      backgrounds: { starter_meadow: ['sky'] },
+      actions: ['punch'],
+      items: ['rice-ball'],
+      npcs: ['cid'],
+      objects: ['campfire'],
+    });
   });
 
-  it('returns safe static-oriented answers before manifest load', () => {
+  it('normalizes missing sections to empty containers', () => {
+    assert.deepEqual(normalizeAssetManifest(null), {
+      version: '',
+      creatures: {},
+      backgrounds: {},
+      actions: [],
+      items: [],
+      npcs: [],
+      objects: [],
+    });
+  });
+
+  it('returns null before manifest load', () => {
     assert.equal(getAssetManifestSnapshot(), null);
-    assert.equal(hasCreatureIdle('inu'), false);
   });
 });

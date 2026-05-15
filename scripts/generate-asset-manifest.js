@@ -27,14 +27,14 @@ function buildCreatureEntries() {
   const creatures = {};
 
   for (const file of listWebp(creatureDir)) {
-    const id = stripWebp(file).replace(/-idle$/, '');
-    creatures[id] ||= { static: false, idle: false };
-    if (file.endsWith('-idle.webp')) creatures[id].idle = true;
-    else creatures[id].static = true;
+    if (file.endsWith('-idle.webp')) continue;
+    const id = stripWebp(file);
+    creatures[id] ||= { static: false };
+    creatures[id].static = true;
   }
 
   for (const [id, entry] of Object.entries(animated)) {
-    creatures[id] ||= { static: false, idle: false };
+    creatures[id] ||= { static: false };
     creatures[id].animated = entry;
   }
 
@@ -57,11 +57,18 @@ function buildActionEntries() {
   return listWebp(join(SPRITE_DIR, 'actions')).map(stripWebp).sort();
 }
 
+function buildSpriteEntries(folder) {
+  return listWebp(join(SPRITE_DIR, folder)).map(stripWebp).sort();
+}
+
 const manifest = {
   version: SPRITE_VERSION,
   creatures: buildCreatureEntries(),
   backgrounds: buildBackgroundEntries(),
   actions: buildActionEntries(),
+  items: buildSpriteEntries('items'),
+  npcs: buildSpriteEntries('npcs'),
+  objects: buildSpriteEntries('objects'),
 };
 
 writeFileSync(OUT, `${JSON.stringify(manifest, null, 2)}\n`);

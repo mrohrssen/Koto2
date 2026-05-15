@@ -4,12 +4,17 @@ let manifestPromise = null;
 let manifestValue = null;
 
 export function normalizeAssetManifest(raw) {
-  if (!raw || typeof raw !== 'object') return { version: '', creatures: {}, backgrounds: {}, actions: [] };
+  if (!raw || typeof raw !== 'object') {
+    return { version: '', creatures: {}, backgrounds: {}, actions: [], items: [], npcs: [], objects: [] };
+  }
   return {
     version: raw.version || '',
     creatures: raw.creatures && typeof raw.creatures === 'object' ? raw.creatures : {},
     backgrounds: raw.backgrounds && typeof raw.backgrounds === 'object' ? raw.backgrounds : {},
     actions: Array.isArray(raw.actions) ? raw.actions : [],
+    items: Array.isArray(raw.items) ? raw.items : [],
+    npcs: Array.isArray(raw.npcs) ? raw.npcs : [],
+    objects: Array.isArray(raw.objects) ? raw.objects : [],
   };
 }
 
@@ -32,10 +37,6 @@ export function startAssetManifestLoad(fetchImpl = fetch) {
 
 export function getAssetManifestSnapshot() {
   return manifestValue;
-}
-
-export function hasCreatureIdle(id) {
-  return !!manifestValue?.creatures?.[id]?.idle;
 }
 
 export function resetAssetManifestForTests() {

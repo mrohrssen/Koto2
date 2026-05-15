@@ -3,7 +3,6 @@
   "creatures": {
     "akuma": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/akuma/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/akuma/walk.webp?v=20260512"
@@ -11,7 +10,6 @@
     },
     "ari": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/ari/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/ari/walk.webp?v=20260512"
@@ -19,7 +17,6 @@
     },
     "buta": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/buta/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/buta/walk.webp?v=20260512"
@@ -27,7 +24,6 @@
     },
     "chou": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/chou/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/chou/walk.webp?v=20260512"
@@ -35,7 +31,6 @@
     },
     "erufu": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/erufu/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/erufu/walk.webp?v=20260512"
@@ -43,7 +38,6 @@
     },
     "fukurou": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/fukurou/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/fukurou/walk.webp?v=20260512"
@@ -51,7 +45,6 @@
     },
     "goburin": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/goburin/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/goburin/walk.webp?v=20260512"
@@ -59,7 +52,6 @@
     },
     "hachi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hachi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hachi/walk.webp?v=20260512"
@@ -67,7 +59,6 @@
     },
     "hana": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hana/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hana/walk.webp?v=20260512"
@@ -75,7 +66,6 @@
     },
     "hanano-yousei": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hanano-yousei/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hanano-yousei/walk.webp?v=20260512"
@@ -83,7 +73,6 @@
     },
     "hebi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hebi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hebi/walk.webp?v=20260512"
@@ -91,7 +80,6 @@
     },
     "hi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hi/walk.webp?v=20260512"
@@ -99,7 +87,6 @@
     },
     "hikari": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hikari/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hikari/walk.webp?v=20260512"
@@ -107,7 +94,6 @@
     },
     "hikarino-uma": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hikarino-uma/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hikarino-uma/walk.webp?v=20260512"
@@ -115,7 +101,6 @@
     },
     "hinoneko": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hinoneko/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hinoneko/walk.webp?v=20260512"
@@ -123,7 +108,6 @@
     },
     "hitsuji": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hitsuji/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hitsuji/walk.webp?v=20260512"
@@ -131,7 +115,6 @@
     },
     "hone": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hone/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hone/walk.webp?v=20260512"
@@ -139,7 +122,6 @@
     },
     "honeno-oni": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/honeno-oni/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/honeno-oni/walk.webp?v=20260512"
@@ -147,7 +129,6 @@
     },
     "hoshi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/hoshi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/hoshi/walk.webp?v=20260512"
@@ -155,7 +136,6 @@
     },
     "ika": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/ika/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/ika/walk.webp?v=20260512"
@@ -163,7 +143,6 @@
     },
     "inoshishi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/inoshishi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/inoshishi/walk.webp?v=20260512"
@@ -171,7 +150,6 @@
     },
     "inu": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/inu/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/inu/walk.webp?v=20260512"
@@ -179,7 +157,6 @@
     },
     "ishi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/ishi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/ishi/walk.webp?v=20260512"
@@ -187,7 +164,6 @@
     },
     "ishino-kyojin": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/ishino-kyojin/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/ishino-kyojin/walk.webp?v=20260512"
@@ -195,7 +171,6 @@
     },
     "kaeru": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kaeru/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kaeru/walk.webp?v=20260512"
@@ -203,7 +178,6 @@
     },
     "kage": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kage/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kage/walk.webp?v=20260512"
@@ -211,7 +185,6 @@
     },
     "kageno-inu": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kageno-inu/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kageno-inu/walk.webp?v=20260512"
@@ -219,7 +192,6 @@
     },
     "kame": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kame/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kame/walk.webp?v=20260512"
@@ -227,7 +199,6 @@
     },
     "kaminari": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kaminari/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kaminari/walk.webp?v=20260512"
@@ -235,7 +206,6 @@
     },
     "kaminarino-tori": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kaminarino-tori/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kaminarino-tori/walk.webp?v=20260512"
@@ -243,7 +213,6 @@
     },
     "kamo": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kamo/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kamo/walk.webp?v=20260512"
@@ -251,7 +220,6 @@
     },
     "kani": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kani/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kani/walk.webp?v=20260512"
@@ -259,7 +227,6 @@
     },
     "kaze": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kaze/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kaze/walk.webp?v=20260512"
@@ -267,7 +234,6 @@
     },
     "kemono": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kemono/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kemono/walk.webp?v=20260512"
@@ -275,7 +241,6 @@
     },
     "ki": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/ki/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/ki/walk.webp?v=20260512"
@@ -283,7 +248,6 @@
     },
     "kitsune": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kitsune/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kitsune/walk.webp?v=20260512"
@@ -291,7 +255,6 @@
     },
     "koori": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/koori/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/koori/walk.webp?v=20260512"
@@ -299,7 +262,6 @@
     },
     "koorino-kuma": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/koorino-kuma/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/koorino-kuma/walk.webp?v=20260512"
@@ -307,7 +269,6 @@
     },
     "kujira": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kujira/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kujira/walk.webp?v=20260512"
@@ -315,7 +276,6 @@
     },
     "kuma": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kuma/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kuma/walk.webp?v=20260512"
@@ -323,7 +283,6 @@
     },
     "kumo": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kumo/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kumo/walk.webp?v=20260512"
@@ -331,7 +290,6 @@
     },
     "kumono-sakana": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/kumono-sakana/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/kumono-sakana/walk.webp?v=20260512"
@@ -339,7 +297,6 @@
     },
     "mizu": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/mizu/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/mizu/walk.webp?v=20260512"
@@ -347,7 +304,6 @@
     },
     "mushi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/mushi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/mushi/walk.webp?v=20260512"
@@ -355,7 +311,6 @@
     },
     "neko": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/neko/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/neko/walk.webp?v=20260512"
@@ -363,7 +318,6 @@
     },
     "nezumi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/nezumi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/nezumi/walk.webp?v=20260512"
@@ -371,7 +325,6 @@
     },
     "oni": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/oni/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/oni/walk.webp?v=20260512"
@@ -379,7 +332,6 @@
     },
     "ookami": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/ookami/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/ookami/walk.webp?v=20260512"
@@ -387,7 +339,6 @@
     },
     "ryuu": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/ryuu/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/ryuu/walk.webp?v=20260512"
@@ -395,7 +346,6 @@
     },
     "sakana": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/sakana/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/sakana/walk.webp?v=20260512"
@@ -403,7 +353,6 @@
     },
     "saru": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/saru/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/saru/walk.webp?v=20260512"
@@ -411,7 +360,6 @@
     },
     "shika": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/shika/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/shika/walk.webp?v=20260512"
@@ -419,7 +367,6 @@
     },
     "suishou": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/suishou/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/suishou/walk.webp?v=20260512"
@@ -427,7 +374,6 @@
     },
     "suna": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/suna/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/suna/walk.webp?v=20260512"
@@ -435,7 +381,6 @@
     },
     "sunano-hebi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/sunano-hebi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/sunano-hebi/walk.webp?v=20260512"
@@ -443,7 +388,6 @@
     },
     "suraimu": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/suraimu/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/suraimu/walk.webp?v=20260512"
@@ -451,7 +395,6 @@
     },
     "tako": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tako/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tako/walk.webp?v=20260512"
@@ -459,7 +402,6 @@
     },
     "tenshi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tenshi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tenshi/walk.webp?v=20260512"
@@ -467,7 +409,6 @@
     },
     "tetsu": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tetsu/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tetsu/walk.webp?v=20260512"
@@ -475,7 +416,6 @@
     },
     "tokage": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tokage/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tokage/walk.webp?v=20260512"
@@ -483,7 +423,6 @@
     },
     "tora": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tora/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tora/walk.webp?v=20260512"
@@ -491,7 +430,6 @@
     },
     "tori": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tori/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tori/walk.webp?v=20260512"
@@ -499,7 +437,6 @@
     },
     "tsuchi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tsuchi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tsuchi/walk.webp?v=20260512"
@@ -507,7 +444,6 @@
     },
     "tsuki": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tsuki/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tsuki/walk.webp?v=20260512"
@@ -515,7 +451,6 @@
     },
     "tsukino-ookami": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tsukino-ookami/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tsukino-ookami/walk.webp?v=20260512"
@@ -523,7 +458,6 @@
     },
     "tsuru": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/tsuru/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/tsuru/walk.webp?v=20260512"
@@ -531,7 +465,6 @@
     },
     "uma": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/uma/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/uma/walk.webp?v=20260512"
@@ -539,7 +472,6 @@
     },
     "ushi": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/ushi/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/ushi/walk.webp?v=20260512"
@@ -547,7 +479,6 @@
     },
     "yousei": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/yousei/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/yousei/walk.webp?v=20260512"
@@ -555,7 +486,6 @@
     },
     "yuki": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/yuki/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/yuki/walk.webp?v=20260512"
@@ -563,7 +493,6 @@
     },
     "yukino-kitsune": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/yukino-kitsune/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/yukino-kitsune/walk.webp?v=20260512"
@@ -571,7 +500,6 @@
     },
     "yuurei": {
       "static": true,
-      "idle": false,
       "animated": {
         "idle": "/assets/sprites/creatures-animated/yuurei/idle.webp?v=20260512",
         "walk": "/assets/sprites/creatures-animated/yuurei/walk.webp?v=20260512"
@@ -839,5 +767,422 @@
     "wound",
     "wrap",
     "write"
+  ],
+  "items": [
+    "abura",
+    "ally",
+    "anko",
+    "apple-juice",
+    "apple-salad",
+    "autumn",
+    "azuki",
+    "balance-scales",
+    "banana",
+    "banana-milk",
+    "banana-yogurt",
+    "bataa",
+    "bean-rice",
+    "bean-tomato-stew",
+    "beef-bowl",
+    "beef-curry",
+    "beef-curry-small",
+    "beef-saute",
+    "beef-soup",
+    "beef-stew",
+    "beef-vegetable-stir-fry",
+    "beer",
+    "bell",
+    "bento",
+    "bentou",
+    "black-tea",
+    "bone",
+    "bone-broth",
+    "book",
+    "boushi",
+    "bowl-of-rice",
+    "budou",
+    "butaniku",
+    "butter-crab",
+    "cabbage-miso-stir",
+    "cabbage-salad-simple",
+    "cabbage-slaw",
+    "cafe-au-lait",
+    "cake",
+    "carrot-salad-simple",
+    "cha",
+    "cheesecake",
+    "chestnut-rice",
+    "chicken-curry",
+    "chicken-curry-small",
+    "chicken-nabe",
+    "chicken-rice",
+    "chicken-salad",
+    "chicken-saute",
+    "chicken-soup",
+    "chicken-vegetable-stir-fry",
+    "chiizu",
+    "chirashi-sushi",
+    "chocolate",
+    "chocolate-cocoa-cake",
+    "chokoreeto",
+    "claw",
+    "clear-broth",
+    "clock",
+    "clothes",
+    "coffee",
+    "cooking",
+    "corn-butter",
+    "corn-soup-small",
+    "crab-egg-rice",
+    "crab-rice",
+    "cream-stew",
+    "cucumber-salad-simple",
+    "cup-of-coffee",
+    "curry-bread",
+    "curry-rice-basic",
+    "daikon",
+    "daikon-cucumber-salad",
+    "daikon-soup",
+    "daizu",
+    "dashi",
+    "dashi-simmered-pumpkin",
+    "dashi-soup",
+    "dictionary",
+    "ebi",
+    "egg",
+    "egg-rice",
+    "egg-soup",
+    "eggplant-miso-stir",
+    "family",
+    "fang",
+    "feeling",
+    "fish-soup",
+    "fish-sushi",
+    "five-grain-rice",
+    "flavor",
+    "fried-egg",
+    "fried-rice",
+    "fried-tofu",
+    "friend",
+    "fruit-cake",
+    "fruit-juice",
+    "fruit-salad",
+    "fruit-yogurt",
+    "fruit-yogurt-simple",
+    "garlic-meat",
+    "garlic-oil",
+    "garlic-pork",
+    "gemstone",
+    "goma",
+    "grape-yogurt",
+    "green-onion-soup",
+    "green-tea",
+    "gyoza",
+    "gyuuniku",
+    "gyuunyuu",
+    "haabu",
+    "hachimitsu",
+    "heart",
+    "hon",
+    "hone",
+    "honey-lemon-water",
+    "honey-milk",
+    "honey-yogurt",
+    "hot-pepper-stir-fry",
+    "hourglass",
+    "iced-coffee",
+    "iced-tea",
+    "ichigo",
+    "ika",
+    "imo",
+    "jagaimo",
+    "jewel",
+    "juice",
+    "kabocha",
+    "kagami",
+    "kai",
+    "kaisendon",
+    "kaki-persimmon",
+    "kani",
+    "katana",
+    "key",
+    "kinoko",
+    "kinomi",
+    "kokoa",
+    "kombu-dashi",
+    "kombu-soup",
+    "kome",
+    "komugi",
+    "komugiko",
+    "konbu",
+    "koohii",
+    "koori",
+    "koshou",
+    "koucha",
+    "koushinryou",
+    "kudamono",
+    "kuri",
+    "kuriimu",
+    "kutsu",
+    "kyabetsu",
+    "kyuuri",
+    "lemon-water",
+    "letter",
+    "lettuce-with-salt",
+    "lover",
+    "luggage",
+    "mackerel-miso-set",
+    "maguro",
+    "mame",
+    "mandarin-yogurt",
+    "map",
+    "me",
+    "meal",
+    "meat-with-sauce",
+    "medicine",
+    "meron",
+    "mikan",
+    "milk-tea",
+    "minestrone",
+    "mint-tea",
+    "minto",
+    "miso",
+    "miso-eggplant",
+    "miso-mackerel",
+    "miso-soup",
+    "mixed-fruit-parfait",
+    "mizu",
+    "momo",
+    "money",
+    "mountain",
+    "mugi",
+    "mushroom-butter-soy",
+    "mushroom-miso-soup",
+    "mushroom-rice",
+    "mushroom-soup",
+    "mushroom-soy-rice",
+    "music",
+    "nabeyaki-udon",
+    "name",
+    "nashi",
+    "nasu",
+    "natto",
+    "nature",
+    "ne",
+    "needle",
+    "negi",
+    "niku",
+    "nikujaga",
+    "ninjin",
+    "ninniku",
+    "nori-sheet",
+    "ocha",
+    "octopus-saute",
+    "oden",
+    "okonomiyaki",
+    "okonomiyaki-small",
+    "omelet",
+    "omurice",
+    "onion-beef-bowl",
+    "onion-butter-soup",
+    "onion-pork-bowl",
+    "onion-soup-simple",
+    "orange-juice",
+    "orenji",
+    "oyakodon",
+    "paper",
+    "parents",
+    "peach-yogurt",
+    "pen",
+    "pencil",
+    "photograph",
+    "piiman",
+    "ponzu",
+    "pork-bowl",
+    "pork-curry-small",
+    "pork-egg-bowl",
+    "pork-miso-soup",
+    "pork-miso-soup-small",
+    "pork-saute",
+    "pork-soup",
+    "pork-vegetable-stir-fry",
+    "potato-butter",
+    "potato-soup",
+    "power-meat-stew",
+    "present",
+    "promise",
+    "pumpkin-gratin",
+    "pumpkin-milk-soup",
+    "pumpkin-soup-simple",
+    "raamen",
+    "ramen",
+    "red-bean-dessert",
+    "remon",
+    "retasu",
+    "revive-fruit-cake",
+    "rice",
+    "rice-ball",
+    "rich-corn-soup",
+    "riddle",
+    "ring",
+    "ringo",
+    "root-stew",
+    "ryokucha",
+    "saba",
+    "sakana",
+    "sake",
+    "sake-salmon",
+    "sake-steamed-shellfish",
+    "salmon-nori-rice",
+    "salmon-rice",
+    "salmon-set",
+    "salmon-sushi",
+    "salt-butter-potato",
+    "salt-grilled-fish",
+    "salt-grilled-mackerel",
+    "salt-grilled-sea-bream",
+    "salt-grilled-shrimp",
+    "salted-meat",
+    "salted-salmon",
+    "satou",
+    "school-uniform",
+    "scissors",
+    "sea",
+    "sea-bream-rice",
+    "sea-bream-salt-rice",
+    "seafood-curry",
+    "seafood-salad",
+    "seafood-soup-rich",
+    "senior",
+    "sesame-daikon-salad",
+    "sesame-sauce",
+    "sesame-tofu-salad",
+    "shellfish-soup",
+    "shio",
+    "shiru",
+    "shouyu",
+    "shrimp-bowl",
+    "shrimp-egg-rice",
+    "shrimp-tempura",
+    "shrimp-vegetable-stir-fry",
+    "siblings",
+    "simmered-daikon",
+    "simmered-pumpkin",
+    "sky",
+    "smell",
+    "soosu",
+    "soy-sauce-fish",
+    "soy-sauce-meat",
+    "special-curry",
+    "special-herb-soup",
+    "spice-beef",
+    "spice-chicken",
+    "spring",
+    "sprout-salad",
+    "squid-saute",
+    "squid-vegetable-stir-fry",
+    "story",
+    "strawberry-cake",
+    "strawberry-milk",
+    "strawberry-yogurt",
+    "su",
+    "suika",
+    "sukiyaki",
+    "summer",
+    "sushi",
+    "sweet-tuber",
+    "tai",
+    "tako",
+    "takoyaki",
+    "takoyaki-small",
+    "tamago",
+    "tamanegi",
+    "tane",
+    "tea",
+    "textbook",
+    "thing",
+    "time",
+    "tofu-miso-soup",
+    "tofu-salad-simple",
+    "tofu-soup",
+    "tofu-steak",
+    "tomato",
+    "tomato-beef-stew",
+    "tomato-cheese",
+    "tomato-cucumber-salad",
+    "tomato-rice",
+    "tomato-salad-simple",
+    "tomato-sauce",
+    "tomato-soup",
+    "tool",
+    "toriniku",
+    "toufu",
+    "tougarashi",
+    "toumorokoshi",
+    "travel",
+    "tuna-bowl",
+    "tuna-salad",
+    "tuna-soy-bowl",
+    "tuna-steak",
+    "ume",
+    "ume-nori-rice-ball",
+    "ume-rice-ball",
+    "vegetable-curry-small",
+    "vegetable-feast",
+    "vegetable-miso-soup",
+    "vegetable-rice",
+    "vegetable-salad-simple",
+    "vegetable-soup",
+    "vegetable-soy-rice",
+    "vegetable-stew",
+    "vegetable-stir-fry",
+    "vegetable-tempura",
+    "vegetable-tomato-stew",
+    "wain",
+    "wasabi",
+    "water",
+    "water-bottle",
+    "watermelon-juice",
+    "winter",
+    "words",
+    "yakisoba",
+    "yakitori",
+    "yasai",
+    "yooguruto"
+  ],
+  "npcs": [
+    "chiharu",
+    "cid",
+    "emilia",
+    "fumi",
+    "fumika",
+    "game-master",
+    "genta",
+    "haruto",
+    "kanon",
+    "kazuho",
+    "kodomo",
+    "kyouju",
+    "leon",
+    "makoto",
+    "mio",
+    "nagi",
+    "onnanoko",
+    "otokonoko",
+    "otona",
+    "renjiro",
+    "rikka",
+    "seito",
+    "senpai",
+    "sensei",
+    "shinobu",
+    "sora",
+    "tamaki",
+    "tesshou",
+    "toshio",
+    "yuuto"
+  ],
+  "objects": [
+    "campfire"
   ]
 }
