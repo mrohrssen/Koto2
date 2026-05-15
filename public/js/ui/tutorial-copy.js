@@ -75,14 +75,14 @@ export function getFusionCoreNarration() {
 
 export function getFusionLabNarration() {
   return [
-    'Look! We unlocked the data for hinoneko. Select it',
+    'Look! We unlocked the data for Hinoneko. Select it',
     'Now tap Fuse'
   ];
 }
 
 export function getPostFusionNarration() {
   return [
-    'With hinoneko in your party, you should be strong enough for the next area!',
+    'With Hinoneko in your party, you should be strong enough for the next area!',
     'Keep exploring, discovering new creatures, and getting stronger.'
   ];
 }
