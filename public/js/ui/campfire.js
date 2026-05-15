@@ -3,7 +3,6 @@ import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-clie
 import { showItemTargetPicker } from './item-target-picker.js';
 import { renderButtons } from './ui-components.js';
 import { itemSpriteUrl, spriteUrl } from '../assets/asset-urls.js';
-import { prefetchWord, playWord } from '../tts.js';
 
 let callbacks = {};
 let campfireState = null;
@@ -343,7 +342,7 @@ function renderIngredients() {
 
   for (const [id] of ingredients) {
     const ingredient = getIngredient(id, ingredientsById);
-    if (ingredient.word) prefetchWord(ingredient.word);
+    if (ingredient.word) callbacks.prefetchTTS?.(ingredient.word);
   }
 
   body.querySelectorAll('.campfire-ingredient-card').forEach(button => {
@@ -358,7 +357,7 @@ function renderIngredients() {
         const ingredient = getIngredient(id, ingredientsById);
         selected[id] = current + 1;
         recordIngredientExposure(ingredient);
-        if (ingredient.word) playWord(ingredient.word);
+        if (ingredient.word) callbacks.playTTS?.(ingredient.word);
       }
       render();
     });

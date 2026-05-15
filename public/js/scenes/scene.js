@@ -39,6 +39,7 @@ export class Scene {
     // for free via beforeExit() and NPC sprites don't persist across scene
     // transitions (fixes bug #2, #3, #5 from Task 17 smoke test).
     this.npcSprite = null;
+    this._npcSpriteRequestId = 0;
   }
 
   _guard(method) {
@@ -208,12 +209,21 @@ export class Scene {
    */
   async showNpcSprite(spritePath, opts = {}) {
     this._guard('showNpcSprite');
+    const requestId = ++this._npcSpriteRequestId;
     if (this.npcSprite) {
       removeNpcSprite(this, this.npcSprite);
       this.npcSprite = null;
     }
-    this.npcSprite = await spawnNpcSprite(this, spritePath, opts);
-    return this.npcSprite;
+    const sprite = await spawnNpcSprite(this, spritePath, {
+      ...opts,
+      isStale: () => requestId !== this._npcSpriteRequestId,
+    });
+    if (requestId !== this._npcSpriteRequestId || this.disposed || this._exiting) {
+      if (sprite) removeNpcSprite(this, sprite);
+      return null;
+    }
+    this.npcSprite = sprite;
+    return sprite;
   }
 
   /**
@@ -227,8 +237,10 @@ export class Scene {
    */
   async hideNpcSprite({ slideOut = false } = {}) {
     this._guard('hideNpcSprite');
-    if (!this.npcSprite) return;
+    ++this._npcSpriteRequestId;
     const sprite = this.npcSprite;
+    this.npcSprite = null;
+    if (!sprite) return;
     if (slideOut) {
       const screenW = this.app?.screen?.width ?? 400;
       try {
@@ -236,17 +248,14 @@ export class Scene {
       } catch {
         // Scene exited mid-slide; registry disposal destroys the sprite.
         // Clear our reference so subsequent calls are no-ops.
-        this.npcSprite = null;
         return;
       }
     }
     // Re-check: scene may have disposed during the slide-out tween.
     if (this.disposed) {
-      this.npcSprite = null;
       return;
     }
     removeNpcSprite(this, sprite);
-    this.npcSprite = null;
   }
 
   /**

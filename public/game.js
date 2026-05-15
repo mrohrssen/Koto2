@@ -1994,6 +1994,8 @@ async function initGame() {
     apiCookAtCampfire,
     apiFeedCampfireDish,
     apiSkipCampfire,
+    playTTS: (word) => tts.playWord(word),
+    prefetchTTS: (word) => tts.prefetchWord(word),
     apiGetShrineOffers,
     apiChooseShrineReward,
     apiShrineUpgrade,

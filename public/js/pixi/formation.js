@@ -806,10 +806,10 @@ export function destroyAllStatusLabels(ctx) {
  *
  * @param {Scene} scene - ExplorationScene-like scene with layers.npcs
  * @param {string} spritePath - URL to load
- * @param {{ slideIn?: boolean }} [opts]
+ * @param {{ slideIn?: boolean, isStale?: () => boolean }} [opts]
  * @returns {Promise<Sprite|null>} spawned sprite, or null if app is unavailable
  */
-export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}) {
+export async function spawnNpcSprite(scene, spritePath, { slideIn = false, isStale = null } = {}) {
   if (!scene) throw new Error('spawnNpcSprite: scene is required');
   if (!scene.layers?.npcs) {
     throw new Error('spawnNpcSprite: scene.layers.npcs is required');
@@ -827,7 +827,7 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
 
   // Scene may have exited during the texture load. Drop the work rather
   // than mounting a sprite onto a destroyed layer.
-  if (scene.disposed) return null;
+  if (scene.disposed || isStale?.()) return null;
 
   const screenW = app.screen.width;
   const screenH = app.screen.height;
@@ -839,7 +839,7 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
     const entry = getAnimatedNpcEntry(manifest, npcId);
     if (entry) {
       const animatedState = await createAnimatedCreatureState(entry);
-      if (scene.disposed) return null;
+      if (scene.disposed || isStale?.()) return null;
       const initialKind = (slideIn && animatedState.textures.walk?.length)
         ? 'walk'
         : (animatedState.textures.idle?.length ? 'idle' : 'walk');
@@ -858,7 +858,7 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
   } catch (err) {
     console.warn('[formation] animated NPC setup failed; using static sprite', npcId, err);
   }
-  if (scene.disposed) return null;
+  if (scene.disposed || isStale?.()) return null;
   const npcDisplaySize = NPC_BASE_SPRITE_SIZE * (sprite._animatedNpc?.entry?.renderScale || 1);
   sprite.width = npcDisplaySize;
   sprite.height = npcDisplaySize;
@@ -870,6 +870,14 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false } = {}
     sprite.x = screenW + npcDisplaySize;
     try {
       await scene.tween(sprite, { x: screenW * 0.7 }, { duration: 400, ease: 'easeOut' });
+      if (isStale?.()) {
+        if (typeof sprite._cancelNpcAnimationUpdater === 'function') {
+          sprite._cancelNpcAnimationUpdater();
+        }
+        if (sprite.parent) sprite.parent.removeChild(sprite);
+        sprite.destroy({ children: true });
+        return null;
+      }
       sprite._npcWalking = false;
       if (sprite._animatedNpc?.textures?.idle?.length) {
         applyAnimationKind(sprite, sprite._animatedNpc, 'idle');
