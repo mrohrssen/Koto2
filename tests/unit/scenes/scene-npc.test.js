@@ -41,7 +41,10 @@ class FakeSprite extends FakeContainer {
 class FakeGraphics extends FakeContainer { circle(){return this;} roundRect(){return this;} fill(){return this;} stroke(){return this;} }
 class FakeText extends FakeContainer { constructor(opts){ super(); this.text = opts?.text ?? ''; this.width = this.text.length * 6; this.height = 10; } }
 
-const FakeTexture = { WHITE: { width: 170, height: 170 } };
+const FakeTexture = {
+  WHITE: { width: 170, height: 170 },
+  from: img => ({ width: 170, height: 170, src: img?.src }),
+};
 const FakeAssets = {
   _loadImpl: async () => ({ width: 170, height: 170 }),
   load(path) { return FakeAssets._loadImpl(path); },
@@ -141,6 +144,38 @@ describe('Scene.showNpcSprite / hideNpcSprite (base class)', () => {
     assert.strictEqual(scene.npcSprite, b);
     assert.strictEqual(scene.layers.npcs.children.length, 1);
     scene.exit();
+  });
+
+  it('keeps the newest NPC sprite when overlapping show requests resolve out of order', async () => {
+    const scene = new HarnessScene(makeFakeApp());
+    const originalImage = globalThis.Image;
+    let resolveCidDecode;
+    const cidDecode = new Promise(resolve => { resolveCidDecode = resolve; });
+
+    globalThis.Image = class FakeImage {
+      set src(value) { this._src = value; }
+      get src() { return this._src; }
+      decode() {
+        return this._src === '/cid-race.webp' ? cidDecode : Promise.resolve();
+      }
+    };
+
+    try {
+      const staleCidRequest = scene.showNpcSprite('/cid-race.webp');
+      const newNpc = await scene.showNpcSprite('/nagi-race.webp');
+
+      assert.strictEqual(scene.npcSprite, newNpc, 'newer NPC request wins initially');
+
+      resolveCidDecode();
+      await staleCidRequest;
+
+      assert.strictEqual(scene.npcSprite, newNpc, 'stale Cid request must not overwrite newer NPC');
+      assert.strictEqual(scene.layers.npcs.children.length, 1);
+      assert.strictEqual(scene.layers.npcs.children[0], newNpc);
+    } finally {
+      globalThis.Image = originalImage;
+      scene.exit();
+    }
   });
 
   it('hideNpcSprite removes the sprite and clears the ref', async () => {
