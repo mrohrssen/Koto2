@@ -1189,7 +1189,12 @@ function showCollectionSelect(catalog, collection) {
         overlay.innerHTML = `
           <div class="collection-header">
             <span class="collection-title">${t('selectTeam')}</span>
-            <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
+            <div class="collection-header-actions">
+              <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
+              <button class="collection-settings-btn" id="collection-settings-btn" type="button" aria-label="Open settings">
+                &#9881; Settings
+              </button>
+            </div>
           </div>
           <div class="collection-card-area">
             <div class="creature-card-prompt">Tap a creature to view its stats</div>
@@ -1240,6 +1245,10 @@ function showCollectionSelect(catalog, collection) {
           if (selected.size > 0) {
             resolve([...selected]);
           }
+        });
+
+        document.getElementById('collection-settings-btn')?.addEventListener('click', () => {
+          modalsUI.openSettings();
         });
 
         overlayBuilt = true;
