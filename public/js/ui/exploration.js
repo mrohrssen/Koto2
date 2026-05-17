@@ -809,6 +809,7 @@ export async function renderShrine() {
             tokens: greetingTokens,
             overrides: shrineState.greeting?.overrides || {},
             useKanji: false,
+            audio: shrineState.greeting?.audio,
           }
         : { text: 'こんにちは！' }),
     });
@@ -1274,6 +1275,7 @@ export async function renderWhackAMole() {
       tokens: whackAMoleState.dialogue.tokens,
       overrides: whackAMoleState.dialogue.overrides || {},
       useKanji: false,
+      audio: whackAMoleState.dialogue.audio,
     });
   }
 
@@ -1500,6 +1502,7 @@ export async function renderSkillMaster() {
         tokens: skillMasterState.promptTokens.tokens,
         overrides: skillMasterState.promptTokens.overrides || {},
         useKanji: false,
+        audio: skillMasterState.promptTokens.audio,
       });
     }
 
@@ -1629,6 +1632,7 @@ async function showPlayerItemRequest(item) {
       tokens: item.tokens,
       overrides: item.overrides || {},
       useKanji: false,
+      audio: item.requestAudio,
     });
     return;
   }
@@ -1638,6 +1642,7 @@ async function showPlayerItemRequest(item) {
       tokens: item.shopTokens,
       overrides: item.shopOverrides || {},
       useKanji: false,
+      audio: item.shopAudio || item.requestAudio,
     });
     return;
   }
@@ -1753,6 +1758,7 @@ export async function renderFriendlyNpc() {
             tokens: greetingTokens,
             overrides: friendlyNpcState.greeting?.overrides || {},
             useKanji: false,
+            audio: friendlyNpcState.greeting?.audio,
           }
         : { text: 'こんにちは！' }),
     });
@@ -2003,6 +2009,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       tokens: npcBattleSkillState.promptTokens.tokens,
       overrides: npcBattleSkillState.promptTokens.overrides || {},
       useKanji: false,
+      audio: npcBattleSkillState.promptTokens.audio,
     });
   }
 

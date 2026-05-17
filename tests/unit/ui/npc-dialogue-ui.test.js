@@ -112,4 +112,24 @@ describe('npc dialogue ui', () => {
     assert.equal(choiceCalls[0].heading, 'Choose a response');
     assert.equal(choiceCalls[0].cards[0].title, '<option-a>');
   });
+
+  it('passes defeat-line audio metadata into the dialogue card', async () => {
+    init({
+      showNpcSprite: () => {},
+      delay: async () => {},
+      apiStartNpcDialogue: async () => ({
+        mode: 'defeat_line',
+        useKanji: false,
+        npc: { id: 'mira', nameEn: 'Mira', name: 'ミラ' },
+        line: {
+          tokens: [{ surface: 'すごい', reading: 'すごい' }],
+          audio: { userId: 'user-1', key: 'defeat.wav' },
+        },
+      }),
+    });
+
+    await runNpcDialogue();
+
+    assert.deepEqual(dialogueCards[0].audio, { userId: 'user-1', key: 'defeat.wav' });
+  });
 });

@@ -394,6 +394,7 @@ export class WhackAMoleGame {
         tokens: finishDialogue.tokens,
         overrides: finishDialogue.overrides || {},
         useKanji: false,
+        audio: finishDialogue.audio,
       });
       if (this.cancelled) return;
     }

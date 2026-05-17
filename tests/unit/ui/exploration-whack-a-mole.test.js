@@ -132,6 +132,7 @@ describe('renderWhackAMole decline flow', () => {
     const prompt = {
       tokens: [{ base: '始める', text: 'はじめる' }],
       overrides: { 始める: 'begin' },
+      audio: { userId: 'u1', key: 'gm-intro.wav' },
     };
     let showNarrationCalls = 0;
 
@@ -166,6 +167,7 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(dialogueCalls[0].tokens, prompt.tokens);
     assert.equal(dialogueCalls[0].overrides, prompt.overrides);
     assert.equal(dialogueCalls[0].useKanji, false);
+    assert.deepEqual(dialogueCalls[0].audio, { userId: 'u1', key: 'gm-intro.wav' });
     assert.equal(renderedButtons.length, 2);
   });
 

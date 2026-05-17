@@ -252,6 +252,7 @@ async function showConversationRound(round, creatureSpeaker) {
   await showNpcDialogueCard({
     ...dialogueOptionsForCreatureSpeaker(creatureSpeaker),
     text: round.speaker,
+    audio: round.speakerTts && round.userId ? { userId: round.userId, key: round.speakerTts } : null,
   });
 
   return renderChoicesAsync({
@@ -716,7 +717,10 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
       if (rounds[i].speakerTts && convoUserId) {
         playDialogueAudio(convoUserId, rounds[i].speakerTts);
       }
-      const selectedIndex = await showConversationRound(rounds[i], creatureSpeaker);
+      const selectedIndex = await showConversationRound(
+        { ...rounds[i], userId: convoUserId },
+        creatureSpeaker
+      );
       // Play selected option audio if available (fire-and-forget)
       if (rounds[i].optionsTts?.[selectedIndex] && convoUserId) {
         playDialogueAudio(convoUserId, rounds[i].optionsTts[selectedIndex]);
