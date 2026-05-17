@@ -95,7 +95,6 @@ function loadSettings() {
     gameTtsEnabled: true,
     gameTtsSpeakerId: 13, // Cool male narrator voice
     gameTtsSpeed: 0.9,
-    gameTtsVolume: 1.0,
     // Player voice gender ('boy' or 'girl')
     voiceGender: 'boy',
     // Word Review Settings
@@ -218,8 +217,7 @@ function buildTtsOptions() {
     },
     synthesizeFn: async (text, speakerId) => {
       return synthesize(text, speakerId, {
-        speedScale: settings.gameTtsSpeed ?? 0.9,
-        volumeScale: settings.gameTtsVolume ?? 1.0
+        speedScale: settings.gameTtsSpeed ?? 0.9
       });
     }
   };
@@ -251,8 +249,7 @@ const getDialogueCardAudio = createDialogueCardTtsResolver({
   ttsDialogueCache,
   getSpeakerId: getDialogueCardSpeakerId,
   synthesizeFn: async (text, speakerId) => synthesize(text, speakerId, {
-    speedScale: settings.gameTtsSpeed ?? 0.9,
-    volumeScale: settings.gameTtsVolume ?? 1.0
+    speedScale: settings.gameTtsSpeed ?? 0.9
   })
 });
 
@@ -502,8 +499,7 @@ async function ttsSynthesizerFn(text, config) {
       text,
       config.speakerId ?? settings.gameTtsSpeakerId ?? 13,
       {
-        speedScale: config.speed ?? settings.gameTtsSpeed ?? 0.9,
-        volumeScale: config.volume ?? settings.gameTtsVolume ?? 1.0
+        speedScale: config.speed ?? settings.gameTtsSpeed ?? 0.9
       }
     );
   } catch (error) {
@@ -515,8 +511,7 @@ async function ttsSynthesizerFn(text, config) {
 setTTSSynthesizer(ttsSynthesizerFn, {
   enabled: settings.gameTtsEnabled,
   speakerId: settings.gameTtsSpeakerId,
-  speed: settings.gameTtsSpeed,
-  volume: settings.gameTtsVolume
+  speed: settings.gameTtsSpeed
 });
 
 // Start server

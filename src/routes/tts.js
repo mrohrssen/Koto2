@@ -40,7 +40,7 @@ export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCach
 
   // Synthesize speech
   router.post('/synthesize', async (req, res) => {
-    const { text, speakerId, speed, speedScale, volumeScale } = req.body;
+    const { text, speakerId, speed, speedScale } = req.body;
     const settings = getSettings();
 
     if (!text) {
@@ -62,8 +62,7 @@ export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCach
 
     try {
       const audioBuffer = await synthesize(text, resolvedSpeakerId, {
-        speedScale: resolvedSpeed,
-        volumeScale: volumeScale ?? settings.gameTtsVolume ?? 1.0
+        speedScale: resolvedSpeed
       });
 
       res.set('Content-Type', 'audio/wav');
@@ -95,8 +94,7 @@ export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCach
     const resolveWordAudio = createDialogueCardWordTtsResolver({
       ttsDialogueCache,
       synthesizeFn: async (text, resolvedSpeakerId) => synthesize(text, resolvedSpeakerId, {
-        speedScale: settings.gameTtsSpeed ?? 0.9,
-        volumeScale: settings.gameTtsVolume ?? 1.0
+        speedScale: settings.gameTtsSpeed ?? 0.9
       })
     });
     const audio = await resolveWordAudio({ userId: req.user.id, word, speakerId: resolvedSpeakerId });

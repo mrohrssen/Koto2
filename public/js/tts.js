@@ -7,7 +7,7 @@ const API_BASE = PLATFORM.apiBase;
 let ttsEnabled = true;
 let ttsSpeakerId = 13; // 玄野武宏 (クール) - default narrator
 let ttsSpeed = 0.9;
-let ttsVolume = 1.0;
+let ttsVolume = readTtsVolumePreference();
 let muted = localStorage.getItem('jrpg_audioMuted') === 'true';
 let currentAudio = null;
 let lastSpokenNarration = null;
@@ -24,6 +24,17 @@ const WORD_SPEAKER_ID = 11; // 玄野武宏 (ノーマル) - clear pronunciation
 
 // UI audio (for short texts like creature names)
 let currentUiAudio = null;
+
+function readTtsVolumePreference() {
+  try {
+    const saved = globalThis.localStorage?.getItem('jrpg_ttsVolume');
+    if (saved === null || saved === undefined) return 1.0;
+    const parsed = Number.parseFloat(saved);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : 1.0;
+  } catch {
+    return 1.0;
+  }
+}
 
 // ============ PERSONALITY SPEAKERS ============
 
@@ -97,8 +108,9 @@ export function getVolume() {
 }
 
 export function setVolume(volume) {
-  ttsVolume = volume;
-  localStorage.setItem('jrpg_ttsVolume', String(volume));
+  const clamped = Math.max(0, Math.min(1, volume));
+  ttsVolume = clamped;
+  localStorage.setItem('jrpg_ttsVolume', String(clamped));
 }
 
 export function setMuted(val) {
@@ -455,6 +467,6 @@ export function initSettings(settings) {
   ttsEnabled = settings.gameTtsEnabled ?? true;
   ttsSpeakerId = settings.gameTtsSpeakerId ?? 13;
   ttsSpeed = settings.gameTtsSpeed ?? 0.9;
-  ttsVolume = settings.gameTtsVolume ?? 1.0;
+  ttsVolume = readTtsVolumePreference();
 }
 

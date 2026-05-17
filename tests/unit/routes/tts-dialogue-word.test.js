@@ -19,6 +19,26 @@ await mock.module('../../../src/voicevox.js', {
 const { createApp } = await import('../../../src/app.js');
 
 describe('dialogue word TTS route', () => {
+  it('does not bake playback volume into synthesized TTS audio', async () => {
+    synthCalls.length = 0;
+    const app = createApp({
+      routeOverrides: {
+        getSettings: () => ({ gameTtsSpeed: 0.8, gameTtsVolume: 0.2 })
+      }
+    });
+
+    await request(app)
+      .post('/api/tts/synthesize')
+      .send({ text: '森', speakerId: 46 })
+      .expect(200);
+
+    assert.deepEqual(synthCalls, [{
+      text: '森',
+      speakerId: 46,
+      options: { speedScale: 0.8 }
+    }]);
+  });
+
   it('requires authentication', async () => {
     const app = createApp({
       routeOverrides: {
@@ -91,7 +111,7 @@ describe('dialogue word TTS route', () => {
     assert.deepEqual(synthCalls, [{
       text: '森',
       speakerId: 46,
-      options: { speedScale: 0.8, volumeScale: 0.7 }
+      options: { speedScale: 0.8 }
     }]);
   });
 });

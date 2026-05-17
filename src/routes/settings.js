@@ -34,8 +34,7 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     updateTTSConfig({
       enabled: settings.gameTtsEnabled ?? true,
       speakerId: settings.gameTtsSpeakerId ?? 13,
-      speed: settings.gameTtsSpeed ?? 0.9,
-      volume: settings.gameTtsVolume ?? 1.0
+      speed: settings.gameTtsSpeed ?? 0.9
     });
 
     const response = {
@@ -43,7 +42,6 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
       gameTtsEnabled: settings.gameTtsEnabled ?? true,
       gameTtsSpeakerId: settings.gameTtsSpeakerId ?? 13,
       gameTtsSpeed: settings.gameTtsSpeed ?? 0.9,
-      gameTtsVolume: settings.gameTtsVolume ?? 1.0,
       voiceGender: settings.voiceGender || 'boy',
       reviewType: settings.reviewType || 'dialog',
       dailyWordLimit: settings.dailyWordLimit ?? 10
@@ -60,7 +58,7 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
   router.post('/settings', (req, res) => {
     const settings = getSettings();
     const { jlptLevel,
-            gameTtsEnabled, gameTtsSpeakerId, gameTtsSpeed, gameTtsVolume,
+            gameTtsEnabled, gameTtsSpeakerId, gameTtsSpeed,
             reviewType, dailyWordLimit } = req.body;
 
     if (jlptLevel) settings.jlptLevel = jlptLevel;
@@ -68,7 +66,6 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     if (gameTtsEnabled !== undefined) settings.gameTtsEnabled = gameTtsEnabled;
     if (gameTtsSpeakerId !== undefined) settings.gameTtsSpeakerId = gameTtsSpeakerId;
     if (gameTtsSpeed !== undefined) settings.gameTtsSpeed = gameTtsSpeed;
-    if (gameTtsVolume !== undefined) settings.gameTtsVolume = gameTtsVolume;
 
     if (req.body.voiceGender !== undefined) {
       const vg = req.body.voiceGender;
@@ -91,12 +88,11 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     }
 
     if (gameTtsEnabled !== undefined || gameTtsSpeakerId !== undefined ||
-        gameTtsSpeed !== undefined || gameTtsVolume !== undefined) {
+        gameTtsSpeed !== undefined) {
       updateTTSConfig({
         enabled: settings.gameTtsEnabled,
         speakerId: settings.gameTtsSpeakerId,
-        speed: settings.gameTtsSpeed,
-        volume: settings.gameTtsVolume
+        speed: settings.gameTtsSpeed
       });
     }
 

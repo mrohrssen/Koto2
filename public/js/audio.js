@@ -9,8 +9,8 @@ const SFX_FILES = [
 
 let audioCtx = null;
 const sfxBuffers = {};
-let sfxVolume = 0.8;
-let bgmVolume = 0.7;
+let sfxVolume = readVolumePreference('jrpg_sfxVolume', 0.8);
+let bgmVolume = readVolumePreference('jrpg_bgmVolume', 0.7);
 let muted = readMutedPreference();
 
 // BGM state
@@ -25,6 +25,17 @@ function readMutedPreference() {
     return globalThis.localStorage?.getItem('jrpg_audioMuted') === 'true';
   } catch {
     return false;
+  }
+}
+
+function readVolumePreference(key, fallback) {
+  try {
+    const saved = globalThis.localStorage?.getItem(key);
+    if (saved === null || saved === undefined) return fallback;
+    const parsed = Number.parseFloat(saved);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : fallback;
+  } catch {
+    return fallback;
   }
 }
 
@@ -90,11 +101,9 @@ export async function initAudio() {
   await audioCtx.resume(); // Required for mobile autoplay policy
 
   // Load saved preferences
-  const savedSfxVol = localStorage.getItem('jrpg_sfxVolume');
-  const savedBgmVol = localStorage.getItem('jrpg_bgmVolume');
   const savedMuted = localStorage.getItem('jrpg_audioMuted');
-  if (savedSfxVol !== null) sfxVolume = parseFloat(savedSfxVol);
-  if (savedBgmVol !== null) bgmVolume = parseFloat(savedBgmVol);
+  sfxVolume = readVolumePreference('jrpg_sfxVolume', 0.8);
+  bgmVolume = readVolumePreference('jrpg_bgmVolume', 0.7);
   muted = savedMuted === 'true';
 
   // Preload all SFX

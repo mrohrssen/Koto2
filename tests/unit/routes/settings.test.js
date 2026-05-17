@@ -99,12 +99,12 @@ describe('settings routes App Store readiness', () => {
     assert.equal(capitalizedGet.body.debugSuperAttack, true);
   });
 
-  it('preserves zero TTS volume instead of falling back to full volume', async () => {
+  it('does not expose or save global TTS volume', async () => {
     const settings = {
       gameTtsEnabled: true,
       gameTtsSpeakerId: 13,
       gameTtsSpeed: 0.9,
-      gameTtsVolume: 0,
+      gameTtsVolume: 0.2,
       voiceGender: 'boy'
     };
     let savedSettings = null;
@@ -116,14 +116,14 @@ describe('settings routes App Store readiness', () => {
     });
 
     const getRes = await request(app).get('/api/settings').expect(200);
-    assert.equal(getRes.body.gameTtsVolume, 0);
+    assert.equal(Object.hasOwn(getRes.body, 'gameTtsVolume'), false);
 
     await request(app)
       .post('/api/settings')
-      .send({ gameTtsVolume: 0 })
+      .send({ gameTtsVolume: 0.9 })
       .expect(200);
 
-    assert.equal(savedSettings.gameTtsVolume, 0);
+    assert.equal(savedSettings.gameTtsVolume, 0.2);
   });
 
   it('does not expose debug game routes in production', async () => {

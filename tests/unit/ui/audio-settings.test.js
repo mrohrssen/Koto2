@@ -38,11 +38,24 @@ describe('audio settings persistence', () => {
     assert.equal(audio.isMuted(), true);
   });
 
-  it('preserves a zero TTS volume from server settings', async () => {
+  it('restores saved BGM and SFX volume before audio context initialization', async () => {
+    globalThis.localStorage = createStorage({
+      jrpg_bgmVolume: '0.25',
+      jrpg_sfxVolume: '0.15'
+    });
+
+    const audio = await importAudio();
+
+    assert.equal(audio.getVolume('bgm'), 0.25);
+    assert.equal(audio.getVolume('sfx'), 0.15);
+  });
+
+  it('uses saved local TTS volume instead of shared server settings', async () => {
+    globalThis.localStorage = createStorage({ jrpg_ttsVolume: '0.35' });
     const tts = await importTts();
 
-    tts.initSettings({ gameTtsEnabled: true, gameTtsVolume: 0 });
+    tts.initSettings({ gameTtsEnabled: true, gameTtsVolume: 0.8 });
 
-    assert.equal(tts.getVolume(), 0);
+    assert.equal(tts.getVolume(), 0.35);
   });
 });

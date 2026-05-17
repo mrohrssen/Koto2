@@ -36,7 +36,7 @@ export async function openSettings() {
   const voiceGender = serverSettings.voiceGender || 'boy';
   const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
   const ttsEnabledSetting = serverSettings.gameTtsEnabled ?? true;
-  const ttsVolumeSetting = serverSettings.gameTtsVolume ?? tts.getVolume();
+  const ttsVolumeSetting = tts.getVolume();
   const kanaMode = getGameState?.()?.meta?.kanaMode ?? false;
   const showDebugSuperAttack = Object.hasOwn(serverSettings, 'debugSuperAttack');
 
@@ -402,7 +402,6 @@ export async function openSettings() {
     audio.setVolume('sfx', sfxVol);
     tts.setVolume(ttsVol);
     tts.setMuted(audioMuted);
-    localStorage.setItem('jrpg_ttsVolume', String(ttsVol));
     if (audioMuted) { audio.mute(); } else { audio.unmute(); }
 
     // Save learning settings to server.
@@ -420,7 +419,6 @@ export async function openSettings() {
     // Save global server-backed settings.
     const serverSettingsToSave = {};
     serverSettingsToSave.gameTtsEnabled = ttsEnabled;
-    serverSettingsToSave.gameTtsVolume = ttsVol;
     if (selectedVoiceGender !== voiceGender) {
       serverSettingsToSave.voiceGender = selectedVoiceGender;
     }

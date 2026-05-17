@@ -72,14 +72,14 @@ describe('App Store readiness static checks', () => {
     assert.equal(settingsUi.includes('/api/auth/me'), true);
   });
 
-  it('keeps TTS controls wired to server-backed settings', () => {
+  it('keeps TTS volume local instead of server-backed', () => {
     const settingsUi = read('public/js/ui/modals.js');
     const gameJs = read('public/game.js');
 
     assert.equal(settingsUi.includes('const ttsEnabledSetting = serverSettings.gameTtsEnabled ?? true'), true);
-    assert.equal(settingsUi.includes('const ttsVolumeSetting = serverSettings.gameTtsVolume ?? tts.getVolume()'), true);
+    assert.equal(settingsUi.includes('const ttsVolumeSetting = tts.getVolume()'), true);
     assert.equal(settingsUi.includes('serverSettingsToSave.gameTtsEnabled = ttsEnabled'), true);
-    assert.equal(settingsUi.includes('serverSettingsToSave.gameTtsVolume = ttsVol'), true);
+    assert.equal(settingsUi.includes('serverSettingsToSave.gameTtsVolume = ttsVol'), false);
     assert.equal(gameJs.includes("localStorage.getItem('jrpg_ttsVolume')"), false);
   });
 
