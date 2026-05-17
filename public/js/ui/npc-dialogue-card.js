@@ -494,6 +494,7 @@ export function showNpcDialogueCard(options = {}) {
   const pages = options.tokens?.length ? paginateTokens(options.tokens) : [null];
   let pageIndex = 0;
   let resolved = false;
+  let autoplayedAudioKey = null;
 
   return new Promise(resolve => {
     const finish = () => {
@@ -553,7 +554,6 @@ export function showNpcDialogueCard(options = {}) {
                 </div>
                 <div class="npc-dialogue-tools">
                   <button class="npc-dialogue-tool npc-dialogue-audio" type="button" ${hasAudio ? '' : 'disabled'} aria-label="Play audio">♪</button>
-                  <button class="npc-dialogue-tool npc-dialogue-log" type="button" disabled aria-label="Dialogue log">▣</button>
                 </div>
               </header>
               <div class="npc-dialogue-text">${content}</div>
@@ -577,6 +577,11 @@ export function showNpcDialogueCard(options = {}) {
       actionArea.querySelector('.npc-dialogue-audio')?.addEventListener('click', () => {
         if (hasAudio) playDialogueAudio(options.audio.userId, options.audio.key);
       });
+
+      if (hasAudio && autoplayedAudioKey !== options.audio.key) {
+        autoplayedAudioKey = options.audio.key;
+        playDialogueAudio(options.audio.userId, options.audio.key);
+      }
 
       const closeTranslationSheet = () => {
         actionArea.querySelector('.npc-dialogue-translation-backdrop')?.remove();

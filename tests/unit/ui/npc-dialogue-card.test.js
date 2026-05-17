@@ -114,6 +114,7 @@ class FakeElement {
 let actionArea;
 let attachedLookupContainer = null;
 let playedAudio = null;
+let playedAudioCalls = [];
 let translationResponse = { ok: true, translation: 'Wait!', cached: false };
 let translatedRequests = [];
 const DEFAULT_LEARN_RESPONSE = {
@@ -153,7 +154,10 @@ await mock.module('../../../public/js/ui/dialogue-word-lookup.js', {
 
 await mock.module('../../../public/js/tts.js', {
   namedExports: {
-    playDialogueAudio: (userId, audioKey) => { playedAudio = { userId, audioKey }; },
+    playDialogueAudio: (userId, audioKey) => {
+      playedAudio = { userId, audioKey };
+      playedAudioCalls.push(playedAudio);
+    },
   },
 });
 
@@ -183,6 +187,7 @@ describe('npc dialogue card', () => {
     actionArea = new FakeElement('section');
     attachedLookupContainer = null;
     playedAudio = null;
+    playedAudioCalls = [];
     translationResponse = { ok: true, translation: 'Wait!', cached: false };
     translatedRequests = [];
     learnResponse = JSON.parse(JSON.stringify(DEFAULT_LEARN_RESPONSE));
@@ -386,6 +391,19 @@ describe('npc dialogue card', () => {
     audioButton.click();
 
     assert.deepEqual(playedAudio, { userId: 'user-1', audioKey: 'line-1' });
+  });
+
+  it('autoplays dialogue audio on render and omits the inactive log button', () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '不安', baseForm: '不安', reading: 'ふあん', meaning: 'anxiety', pos: 'noun' }],
+      audio: { userId: 'user-1', key: 'line-1' },
+      knownWords: new Set(),
+    });
+
+    assert.deepEqual(playedAudioCalls, [{ userId: 'user-1', audioKey: 'line-1' }]);
+    assert.equal(actionArea.querySelectorAll('.npc-dialogue-audio').length, 1);
+    assert.equal(actionArea.querySelectorAll('.npc-dialogue-log').length, 0);
   });
 
   it('derives exact Japanese source text from token surfaces', () => {
