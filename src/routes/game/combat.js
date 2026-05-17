@@ -95,6 +95,16 @@ export default function createCombatRoutes({
     return process.env.DEV_BEFRIEND_FALLBACK === '1';
   }
 
+  function befriendTargetPayload(target) {
+    return {
+      name: target.name,
+      nameEn: target.nameEn,
+      reading: target.reading,
+      element: target.element,
+      id: target.id
+    };
+  }
+
   // ============ CREATURE COMBAT ============
 
   // Start creature encounter
@@ -470,7 +480,7 @@ export default function createCombatRoutes({
 
             return res.json({
               userId: req.user.id,
-              targetEnemy: { name: target.name, nameEn: target.nameEn, element: target.element, id: target.id },
+              targetEnemy: befriendTargetPayload(target),
               rounds: rounds.map(r => ({ speaker: r.speaker, options: r.options })),
               targetEnemyIndex: targetIdx,
               devFallback: true
@@ -518,7 +528,7 @@ export default function createCombatRoutes({
 
       res.json({
         userId: req.user.id,
-        targetEnemy: { name: target.name, nameEn: target.nameEn, element: target.element, id: target.id },
+        targetEnemy: befriendTargetPayload(target),
         rounds: clientRounds,
         targetEnemyIndex: targetIdx
       });
