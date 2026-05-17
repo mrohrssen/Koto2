@@ -479,7 +479,7 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
     assert.equal(dialogueCardCalls[0].portraitKind, 'creature');
     assert.equal(renderChoicesCalls[0].heading, 'Choose an action');
     assert.deepEqual(renderChoicesCalls[0].cards.map(card => card.title), ['たたかう (Fight)', 'はなす (Talk)']);
-    assert.equal(renderChoicesCalls[1].heading, 'Choose a name');
+    assert.equal(renderChoicesCalls[1].heading, 'Choose your response');
   });
 
   it('passes name prompt overrides to the dialogue card', async () => {
