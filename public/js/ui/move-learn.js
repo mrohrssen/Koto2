@@ -26,18 +26,16 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
     panel.appendChild(header);
 
     if (alreadyLearned || creature.moves.length < 3) {
-      panel.classList.add('move-learn-panel--grid');
+      panel.classList.add('move-learn-panel--grid', 'move-learn-panel--auto');
       header.textContent = `${hiraganaName(creature, 'This creature')} learned ${hiraganaName(newMove, 'this move')}!`;
+
+      const grid = document.createElement('div');
+      grid.className = 'move-grid move-learn-grid move-learn-auto-grid';
 
       const newMoveCell = buildMoveCell(newMove, true);
       newMoveCell.classList.add('move-learn-new-slot');
-      panel.appendChild(newMoveCell);
-
-      // Auto-learned, just show confirmation
-      const msg = document.createElement('div');
-      msg.className = 'move-learn-auto';
-      msg.textContent = `Learned ${newMove.nameEn}!`;
-      panel.appendChild(msg);
+      grid.appendChild(newMoveCell);
+      panel.appendChild(grid);
 
       const okBtn = document.createElement('button');
       okBtn.className = 'move-learn-ok-btn';

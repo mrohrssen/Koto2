@@ -34,9 +34,11 @@ test('learn move replacement uses the move-select grid with the new move in the 
 });
 
 test('learn move auto-learn uses the move-select cell for the learned move', () => {
-  assert.match(moveLearnSource, /if \(alreadyLearned \|\| creature\.moves\.length < 3\) \{\s*panel\.classList\.add\('move-learn-panel--grid'\);/);
-  assert.match(moveLearnSource, /const newMoveCell = buildMoveCell\(newMove,\s*true\);\s*newMoveCell\.classList\.add\('move-learn-new-slot'\);\s*panel\.appendChild\(newMoveCell\);/s);
+  assert.match(moveLearnSource, /if \(alreadyLearned \|\| creature\.moves\.length < 3\) \{\s*panel\.classList\.add\('move-learn-panel--grid',\s*'move-learn-panel--auto'\);/);
+  assert.match(moveLearnSource, /const grid = document\.createElement\('div'\);\s*grid\.className = 'move-grid move-learn-grid move-learn-auto-grid';\s*const newMoveCell = buildMoveCell\(newMove,\s*true\);\s*newMoveCell\.classList\.add\('move-learn-new-slot'\);\s*grid\.appendChild\(newMoveCell\);\s*panel\.appendChild\(grid\);/s);
   assert.doesNotMatch(moveLearnSource, /buildMoveCard\(newMove/);
+  assert.doesNotMatch(moveLearnSource, /msg\.className = 'move-learn-auto'/);
+  assert.doesNotMatch(moveLearnSource, /Learned \$\{newMove\.nameEn\}!/);
 });
 
 test('learn move replacement stretches to the same width as regular move buttons', () => {
@@ -49,6 +51,21 @@ test('learn move replacement stretches to the same width as regular move buttons
   assert.match(gridBody, /width:\s*calc\(100%\s*\+\s*32px\)\s*;/);
   assert.match(gridBody, /margin-left:\s*-16px\s*;/);
   assert.match(gridBody, /margin-right:\s*-16px\s*;/);
+});
+
+test('learn move auto-learn reserves a regular move button row height', () => {
+  const autoHeaderBody = ruleBody(css, '.move-learn-panel--auto .move-learn-header {');
+  assert.ok(autoHeaderBody, '.move-learn-panel--auto .move-learn-header rule not found');
+  assert.match(autoHeaderBody, /min-height:\s*38px\s*;/);
+
+  const autoGridBody = ruleBody(css, '.move-learn-auto-grid {');
+  assert.ok(autoGridBody, '.move-learn-auto-grid rule not found');
+  assert.match(autoGridBody, /grid-template-rows:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)\s*;/);
+
+  const autoOkBody = ruleBody(css, '.move-learn-panel--auto .move-learn-ok-btn {');
+  assert.ok(autoOkBody, '.move-learn-panel--auto .move-learn-ok-btn rule not found');
+  assert.match(autoOkBody, /position:\s*absolute\s*;/);
+  assert.match(autoOkBody, /bottom:\s*0\s*;/);
 });
 
 test('learn move replacement confirms before resolving the selected move', () => {
