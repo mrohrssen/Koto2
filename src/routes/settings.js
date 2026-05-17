@@ -67,13 +67,6 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     if (gameTtsSpeakerId !== undefined) settings.gameTtsSpeakerId = gameTtsSpeakerId;
     if (gameTtsSpeed !== undefined) settings.gameTtsSpeed = gameTtsSpeed;
 
-    if (req.body.voiceGender !== undefined) {
-      const vg = req.body.voiceGender;
-      if (vg === 'boy' || vg === 'girl') {
-        settings.voiceGender = vg;
-      }
-    }
-
     if (reviewType !== undefined) settings.reviewType = reviewType;
 
     if (dailyWordLimit !== undefined) {

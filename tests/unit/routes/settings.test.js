@@ -48,7 +48,26 @@ describe('settings routes App Store readiness', () => {
 
     assert.equal(settings.debugSuperAttack, false);
     assert.equal(savedSettings.debugSuperAttack, false);
-    assert.equal(savedSettings.voiceGender, 'girl');
+    assert.equal(savedSettings.voiceGender, 'boy');
+  });
+
+  it('does not save voice gender through public settings', async () => {
+    const settings = { voiceGender: 'boy' };
+    let savedSettings = null;
+    const app = createApp({
+      routeOverrides: {
+        getSettings: () => settings,
+        saveSettings: (next) => { savedSettings = { ...next }; }
+      }
+    });
+
+    await request(app)
+      .post('/api/settings')
+      .send({ voiceGender: 'girl' })
+      .expect(200);
+
+    assert.equal(settings.voiceGender, 'boy');
+    assert.equal(savedSettings.voiceGender, 'boy');
   });
 
   it('exposes and saves debug super attack only for allowlisted usernames', async () => {

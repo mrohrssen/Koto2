@@ -33,7 +33,6 @@ export async function openSettings() {
     settingsModule.loadApiKeysFromServer(),
     loadServerSettings()
   ]);
-  const voiceGender = serverSettings.voiceGender || 'boy';
   const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
   const ttsVolumeSetting = tts.getVolume();
   const kanaMode = getGameState?.()?.meta?.kanaMode ?? false;
@@ -90,13 +89,6 @@ export async function openSettings() {
         <input type="range" id="settings-tts-volume" min="0" max="100"
           value="${Math.round(ttsVolumeSetting * 100)}" class="settings-range">
       </label>
-      <div class="settings-label" style="margin-top:8px">
-        Voice Gender
-        <div style="display:flex;gap:12px;margin-top:4px">
-          <label><input type="radio" name="voice-gender" value="boy" ${voiceGender === 'boy' ? 'checked' : ''}> Boy</label>
-          <label><input type="radio" name="voice-gender" value="girl" ${voiceGender === 'girl' ? 'checked' : ''}> Girl</label>
-        </div>
-      </div>
       <label class="settings-label">
         <input type="checkbox" id="settings-audio-muted"
           ${audio.isMuted() ? 'checked' : ''}>
@@ -357,7 +349,6 @@ export async function openSettings() {
     const sfxVol = parseInt(document.getElementById('settings-sfx-volume')?.value || '80') / 100;
     const ttsVol = parseInt(document.getElementById('settings-tts-volume')?.value || '100') / 100;
     const audioMuted = document.getElementById('settings-audio-muted')?.checked;
-    const selectedVoiceGender = document.querySelector('input[name="voice-gender"]:checked')?.value || 'boy';
 
     // Apply local-only settings immediately (never blocked by server calls)
     if (settingsModule.setAiNarrationEnabled) {
@@ -393,9 +384,6 @@ export async function openSettings() {
     // Save global server-backed settings.
     const serverSettingsToSave = {};
     serverSettingsToSave.gameTtsEnabled = true;
-    if (selectedVoiceGender !== voiceGender) {
-      serverSettingsToSave.voiceGender = selectedVoiceGender;
-    }
     if (!isNaN(dailyWordLimit) && dailyWordLimit !== dailyWordLimitSetting) {
       serverSettingsToSave.dailyWordLimit = dailyWordLimit;
     }
