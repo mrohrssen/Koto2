@@ -118,7 +118,7 @@ export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCach
     });
   });
 
-  // Synthesize one full dialogue line into the per-user dialogue cache.
+  // Synthesize one full dialogue line into the shared dialogue cache.
   router.post('/dialogue-line', requireAuth, async (req, res) => {
     const { text, speakerId } = req.body || {};
     if (!text) {
@@ -187,7 +187,8 @@ export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCach
     res.send(wav);
   });
 
-  // Serve cached dialogue audio
+  // Serve cached dialogue audio. The userId path segment is retained for old callers,
+  // but files are content-addressed globally by text and speaker.
   router.get('/dialogue/:userId/:filename', (req, res) => {
     const { userId, filename } = req.params;
 

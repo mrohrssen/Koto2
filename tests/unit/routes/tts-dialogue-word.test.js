@@ -119,7 +119,7 @@ describe('dialogue word TTS route', () => {
     }]);
   });
 
-  it('synthesizes a clicked dialogue line through the per-user dialogue cache', async () => {
+  it('synthesizes a clicked dialogue line through the shared dialogue cache', async () => {
     synthCalls.length = 0;
     const cacheCalls = [];
     const ttsDialogueCache = {

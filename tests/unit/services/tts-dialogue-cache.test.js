@@ -25,10 +25,10 @@ describe('TtsDialogueCache', () => {
     rmSync(TEST_DIR, { recursive: true, force: true });
   });
 
-  it('creates user directory on synthesize', async () => {
+  it('creates a shared cache file on synthesize', async () => {
     const cache = new TtsDialogueCache(TEST_DIR);
-    await cache.synthesizeLine('user1', 'こんにちは', 11, fakeSynth);
-    assert.ok(existsSync(join(TEST_DIR, 'user1')));
+    const filename = await cache.synthesizeLine('user1', 'こんにちは', 11, fakeSynth);
+    assert.ok(existsSync(join(TEST_DIR, filename)));
   });
 
   it('returns consistent filename for same text+speaker', async () => {
@@ -54,25 +54,34 @@ describe('TtsDialogueCache', () => {
     assert.equal(buf.toString(), 'WAV:11:hello');
   });
 
+  it('reuses dialogue line audio across users for the same text and speaker', async () => {
+    const cache = new TtsDialogueCache(TEST_DIR);
+    const filename = await cache.synthesizeLine('user1', 'hello', 11, fakeSynth);
+
+    assert.equal(cache.lookupLineKey('user2', 'hello', 11), filename);
+    assert.equal(cache.lookup('user2', filename).toString(), 'WAV:11:hello');
+  });
+
   it('returns null for missing file', () => {
     const cache = new TtsDialogueCache(TEST_DIR);
     const result = cache.lookup('user1', 'nonexistent.wav');
     assert.equal(result, null);
   });
 
-  it('deletes files for an entity', async () => {
+  it('does not delete shared dialogue audio during per-user entity cleanup', async () => {
     const cache = new TtsDialogueCache(TEST_DIR);
     const f1 = await cache.synthesizeLine('user1', 'a', 11, fakeSynth);
     const f2 = await cache.synthesizeLine('user1', 'b', 11, fakeSynth);
 
-    // Files exist before delete
     assert.ok(cache.lookup('user1', f1) !== null);
     assert.ok(cache.lookup('user1', f2) !== null);
 
     cache.deleteFiles('user1', [f1, f2]);
 
-    assert.equal(cache.lookup('user1', f1), null);
-    assert.equal(cache.lookup('user1', f2), null);
+    assert.ok(cache.lookup('user1', f1) !== null);
+    assert.ok(cache.lookup('user2', f1) !== null);
+    assert.ok(cache.lookup('user1', f2) !== null);
+    assert.ok(cache.lookup('user2', f2) !== null);
   });
 
   it('deleteFiles ignores missing files without throwing', () => {
@@ -81,15 +90,14 @@ describe('TtsDialogueCache', () => {
     cache.deleteFiles('user1', ['nonexistent.wav', 'also-missing.wav']);
   });
 
-  it('clears all cached dialogue audio for one user only', async () => {
+  it('leaves shared dialogue audio when clearing one user', async () => {
     const cache = new TtsDialogueCache(TEST_DIR);
-    await cache.synthesizeLine('user1', 'hello', 11, fakeSynth);
-    await cache.synthesizeLine('user2', 'hello', 11, fakeSynth);
+    const filename = await cache.synthesizeLine('user1', 'hello', 11, fakeSynth);
 
     cache.clearUser('user1');
 
     assert.equal(existsSync(join(TEST_DIR, 'user1')), false);
-    assert.equal(existsSync(join(TEST_DIR, 'user2')), true);
+    assert.equal(cache.lookup('user2', filename).toString(), 'WAV:11:hello');
   });
 
   describe('synthesizeDialogue (NPC)', () => {

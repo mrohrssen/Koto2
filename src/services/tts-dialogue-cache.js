@@ -1,12 +1,12 @@
-import { readFileSync, writeFileSync, unlinkSync, mkdirSync, existsSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 
 /**
- * Per-user WAV cache for NPC and creature dialogue lines.
+ * Global WAV cache for NPC and creature dialogue lines.
  *
- * Each user gets a subdirectory under baseDir. Files are named by
- * MD5(speakerId:text) so the same line always maps to the same file.
+ * Files are named by MD5(speakerId:text) so the same line always maps
+ * to the same file and can be reused across users.
  */
 export class TtsDialogueCache {
   constructor(baseDir) {
@@ -19,11 +19,10 @@ export class TtsDialogueCache {
    * If the file already exists on disk, skips synthesis.
    */
   async synthesizeLine(userId, text, speakerId, synthesizeFn) {
-    const userDir = join(this.baseDir, userId);
-    mkdirSync(userDir, { recursive: true });
+    mkdirSync(this.baseDir, { recursive: true });
 
     const filename = hashKey(speakerId, text);
-    const filePath = join(userDir, filename);
+    const filePath = join(this.baseDir, filename);
 
     if (existsSync(filePath)) return filename;
 
@@ -34,7 +33,7 @@ export class TtsDialogueCache {
 
   lookupLineKey(userId, text, speakerId) {
     const filename = hashKey(speakerId, text);
-    const filePath = join(this.baseDir, userId, filename);
+    const filePath = join(this.baseDir, filename);
     return existsSync(filePath) ? filename : null;
   }
 
@@ -42,7 +41,7 @@ export class TtsDialogueCache {
    * Look up a cached WAV file. Returns Buffer or null.
    */
   lookup(userId, filename) {
-    const filePath = join(this.baseDir, userId, filename);
+    const filePath = join(this.baseDir, filename);
     try {
       return readFileSync(filePath);
     } catch {
@@ -51,24 +50,18 @@ export class TtsDialogueCache {
   }
 
   /**
-   * Delete listed WAV files for a user. Ignores missing files.
+   * Dialogue audio is globally shared, so per-user cache cleanup should not
+   * delete content-addressed WAVs that another user or dialogue may reference.
    */
   deleteFiles(userId, filenames) {
-    for (const filename of filenames) {
-      const filePath = join(this.baseDir, userId, filename);
-      try {
-        unlinkSync(filePath);
-      } catch {
-        // Ignore missing files
-      }
-    }
+    return undefined;
   }
 
   /**
-   * Delete every cached dialogue audio file for a user.
+   * Dialogue audio is not user-owned; clearing user data leaves shared audio.
    */
   clearUser(userId) {
-    rmSync(join(this.baseDir, userId), { recursive: true, force: true });
+    return undefined;
   }
 
   /**
