@@ -37,6 +37,7 @@ const LABEL_SIDE_OFFSET = 50;
 const NPC_BASE_SPRITE_SIZE = 170;
 const NPC_BATTLEFIELD_ROW_INDEX = 1;
 const NPC_SHADOW_Y_OFFSET_RATIO = 0.38;
+const NPC_ANIMATED_SHADOW_Y_OFFSET_RATIO = 63 / 256;
 const NPC_SHADOW_SIZE = { width: 78, height: 16 };
 const NPC_SHADOW_SIZE_BY_ID = {
   shrine_fox: { width: 70, height: 14 },
@@ -45,6 +46,9 @@ const NPC_SHADOW_VISUAL_HEIGHT_SCALE_BY_ID = {
   // Shrine Fox is a seated, square-canvas sprite; use the visible character
   // height instead of the full frame so the shadow sits under its paws.
   shrine_fox: 0.62,
+};
+const NPC_SHADOW_Y_PIXEL_OFFSET_BY_ID = {
+  shrine_fox: 2,
 };
 
 const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF' };
@@ -215,8 +219,12 @@ function _npcShadowSpecForSprite(sprite, npcId) {
 function _positionNpcShadow(sprite, npcId) {
   if (!sprite?._shadow) return;
   const visualSize = _npcShadowVisualSize(sprite, npcId);
+  const yOffsetRatio = sprite._animatedNpc && npcId !== 'shrine_fox'
+    ? NPC_ANIMATED_SHADOW_Y_OFFSET_RATIO
+    : NPC_SHADOW_Y_OFFSET_RATIO;
+  const pixelOffset = NPC_SHADOW_Y_PIXEL_OFFSET_BY_ID[npcId] || 0;
   sprite._shadow.x = sprite.x;
-  sprite._shadow.y = sprite.y + visualSize.height * NPC_SHADOW_Y_OFFSET_RATIO;
+  sprite._shadow.y = sprite.y + visualSize.height * yOffsetRatio + pixelOffset;
 }
 
 const ANIMATED_SHADOW_Y_OFFSET_BY_SLOT = [23, 19, 28];

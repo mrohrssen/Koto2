@@ -2,15 +2,16 @@ export function getDialogueLineText(line) {
   if (typeof line === 'string') return line.trim();
   if (!line || typeof line !== 'object') return '';
 
-  const raw = typeof line.raw === 'string' ? line.raw.trim() : '';
-  if (raw) return raw;
-
-  if (Array.isArray(line.tokens)) {
-    return line.tokens
+  const tokenText = Array.isArray(line.tokens)
+    ? line.tokens
       .map(token => String(token?.surface || token?.text || ''))
       .join('')
-      .trim();
-  }
+      .trim()
+    : '';
+
+  const raw = typeof line.raw === 'string' ? line.raw.trim() : '';
+  if (raw && (!raw.match(/\{[A-Za-z0-9_]+\}/) || !tokenText)) return raw;
+  if (tokenText) return tokenText;
 
   const text = typeof line.text === 'string' ? line.text.trim() : '';
   return text;
