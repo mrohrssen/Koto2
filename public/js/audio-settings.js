@@ -11,6 +11,12 @@ const DEFAULT_VOLUMES = {
   tts: 1.0
 };
 
+const OUTPUT_GAINS = {
+  bgm: 0.5,
+  sfx: 1,
+  tts: 3
+};
+
 const listeners = new Set();
 
 let volumes = {
@@ -92,7 +98,7 @@ export function setMuted(nextMuted) {
 }
 
 export function getEffectiveVolume(type) {
-  return muted ? 0 : getVolume(type);
+  return muted ? 0 : getVolume(type) * (OUTPUT_GAINS[type] ?? 1);
 }
 
 export const AUDIO_STORAGE_KEYS = STORAGE_KEYS;

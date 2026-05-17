@@ -18,7 +18,8 @@ let ttsSpeed = 0.9;
 let currentAudio = null;
 let lastSpokenNarration = null;
 let ttsRequestId = 0;
-const activeTtsAudio = new Set();
+const activeTtsAudio = new Map();
+let ttsAudioCtx = null;
 
 // Narration audio prefetch cache
 const narrationCache = new Map();
@@ -113,16 +114,46 @@ function getPlaybackVolume() {
   return getEffectiveVolume('tts');
 }
 
-function applyVolumeToCurrentAudio() {
+function getTtsAudioContext() {
+  if (ttsAudioCtx) return ttsAudioCtx;
+  const Ctor = globalThis.window?.AudioContext || globalThis.window?.webkitAudioContext;
+  if (!Ctor) return null;
+  ttsAudioCtx = new Ctor();
+  return ttsAudioCtx;
+}
+
+function applyVolumeToAudio(audio, gainNode) {
   const volume = getPlaybackVolume();
-  for (const audio of activeTtsAudio) {
-    audio.volume = volume;
+  if (gainNode) {
+    audio.volume = 1;
+    gainNode.gain.value = volume;
+  } else {
+    audio.volume = Math.min(volume, 1);
+  }
+}
+
+function applyVolumeToCurrentAudio() {
+  for (const [audio, gainNode] of activeTtsAudio) {
+    applyVolumeToAudio(audio, gainNode);
   }
 }
 
 function trackTtsAudio(audio, cleanup = () => {}) {
-  activeTtsAudio.add(audio);
-  audio.volume = getPlaybackVolume();
+  let gainNode = null;
+  const ctx = getTtsAudioContext();
+  if (ctx) {
+    try {
+      const source = ctx.createMediaElementSource(audio);
+      gainNode = ctx.createGain();
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+    } catch (e) {
+      console.warn('[TTS] Failed to route audio through Web Audio:', e.message);
+    }
+  }
+  activeTtsAudio.set(audio, gainNode);
+  applyVolumeToAudio(audio, gainNode);
+  if (ttsAudioCtx?.state === 'suspended') ttsAudioCtx.resume().catch(() => {});
   let cleaned = false;
   const finish = () => {
     if (cleaned) return;

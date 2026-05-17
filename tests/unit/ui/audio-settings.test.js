@@ -42,6 +42,34 @@ function installTtsPlaybackMocks() {
   return audioElements;
 }
 
+function installTtsWebAudioMocks() {
+  const audioElements = installTtsPlaybackMocks();
+  const gainNodes = [];
+  globalThis.window = {
+    AudioContext: class {
+      constructor() {
+        this.state = 'running';
+        this.destination = {};
+      }
+
+      resume() {
+        return Promise.resolve();
+      }
+
+      createMediaElementSource() {
+        return { connect: () => {} };
+      }
+
+      createGain() {
+        const gainNode = { gain: { value: 1 }, connect: () => {} };
+        gainNodes.push(gainNode);
+        return gainNode;
+      }
+    }
+  };
+  return { audioElements, gainNodes };
+}
+
 async function importAudio() {
   const settings = await import('../../../public/js/audio-settings.js');
   settings.reloadAudioSettings();
@@ -155,6 +183,15 @@ describe('audio settings persistence', () => {
     assert.equal(audio.getVolume('sfx'), 0.15);
   });
 
+  it('applies output gains without changing stored slider values', async () => {
+    const settings = await importAudioSettings();
+
+    assert.equal(settings.getVolume('bgm'), 0.7);
+    assert.equal(settings.getEffectiveVolume('bgm'), 0.35);
+    assert.equal(settings.getVolume('tts'), 1);
+    assert.equal(settings.getEffectiveVolume('tts'), 3);
+  });
+
   it('controls active BGM through a gain node after audio initialization', async () => {
     const gainNodes = [];
     globalThis.fetch = async () => ({ ok: false });
@@ -199,7 +236,7 @@ describe('audio settings persistence', () => {
 
     audio.setVolume('bgm', 0.2);
 
-    assert.equal(gainNodes.at(-1)?.gain.value, 0.2);
+    assert.equal(gainNodes.at(-1)?.gain.value, 0.1);
   });
 
   it('retries BGM playback when unmuting after a muted load', async () => {
@@ -261,7 +298,7 @@ describe('audio settings persistence', () => {
     assert.equal(tts.getVolume(), 0.35);
   });
 
-  it('updates currently playing TTS when volume changes', async () => {
+  it('updates currently playing TTS with the output gain when volume changes', async () => {
     const audioElements = installTtsPlaybackMocks();
 
     const tts = await importTts();
@@ -270,7 +307,18 @@ describe('audio settings persistence', () => {
 
     tts.setVolume(0.2);
 
-    assert.equal(audioElements[0].volume, 0.2);
+    assert.equal(Math.round(audioElements[0].volume * 100), 60);
+  });
+
+  it('routes TTS through a gain node so the base output can exceed element volume', async () => {
+    const { audioElements, gainNodes } = installTtsWebAudioMocks();
+
+    const tts = await importTts();
+    tts.setVolume(1);
+    await tts.speakNarration('テスト');
+
+    assert.equal(audioElements[0].volume, 1);
+    assert.equal(gainNodes[0].gain.value, 3);
   });
 
   it('mutes currently playing TTS when shared audio mute changes', async () => {
@@ -318,7 +366,7 @@ describe('audio settings persistence', () => {
     tts.setVolume(0.3);
     const playback = tts.playAudioBuffer(new Uint8Array([1, 2, 3]));
 
-    assert.equal(audioElements[0].volume, 0.3);
+    assert.equal(Math.round(audioElements[0].volume * 100), 90);
     audioElements[0].onended();
     await playback;
   });
