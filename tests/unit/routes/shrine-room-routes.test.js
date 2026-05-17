@@ -31,12 +31,22 @@ describe('Shrine room routes', () => {
       queueMissingCreatureDialoguesFn: () => {},
       getUserVocabulary: async () => [],
       queueMissingNpcDialoguesFn: () => {},
-      checkSentenceViolations: () => ({ violations: [] })
+      checkSentenceViolations: () => ({ violations: [] }),
+      getDialogueCardAudio: async ({ userId, speakerKey }) => ({ userId, key: `${speakerKey}.wav` })
     });
   });
 
   it('POST /shrine-offers returns reward options and greeting field', async () => {
-    const room = { type: 'shrine', interacted: false, shrine: { used: false, completed: false, chosenReward: null, greeting: null } };
+    const room = {
+      type: 'shrine',
+      interacted: false,
+      shrine: {
+        used: false,
+        completed: false,
+        chosenReward: null,
+        greeting: { raw: 'こんにちは！', tokens: [{ surface: 'こんにちは', reading: 'こんにちは' }] }
+      }
+    };
     const handler = getHandler(router, 'post', '/shrine-offers');
     const req = {
       user: { id: 'shrine-route-user' },
@@ -51,6 +61,7 @@ describe('Shrine room routes', () => {
     assert.equal(res.statusCode, 200);
     assert.deepEqual(res.body.rewards.map(reward => reward.id), ['heal_all', 'restore_mp_all', 'level_up']);
     assert.ok('greeting' in res.body);
+    assert.deepEqual(res.body.greeting.audio, { userId: 'shrine-route-user', key: 'shrine_fox.wav' });
     assert.deepEqual(res.body.state, { phase: 'shrine' });
   });
 

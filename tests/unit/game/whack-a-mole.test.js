@@ -176,7 +176,7 @@ describe('Whack-a-Mole Pool', () => {
     assert.strictEqual(ids.length, uniqueIds.size, 'all pool entry ids should be unique');
   });
 
-  it('GET /whack-a-mole-dialogue should return dialogue tokens', () => {
+  it('GET /whack-a-mole-dialogue should return dialogue tokens', async () => {
     const handler = getHandler(router, 'get', '/whack-a-mole-dialogue');
     assert.ok(handler, 'GET /whack-a-mole-dialogue handler should exist');
 
@@ -199,7 +199,7 @@ describe('Whack-a-Mole Pool', () => {
       json(d) { this.body = d; return this; }
     };
 
-    handler(req, res);
+    await handler(req, res);
 
     assert.strictEqual(res.statusCode, 200);
     assert.ok(res.body.dialogue, 'response should have dialogue');
@@ -207,7 +207,7 @@ describe('Whack-a-Mole Pool', () => {
     assert.ok(Array.isArray(res.body.dialogue.words), 'dialogue should have words array');
   });
 
-  it('POST /whack-a-mole-complete should include finishDialogue in response', () => {
+  it('POST /whack-a-mole-complete should include finishDialogue in response', async () => {
     const handler = getHandler(router, 'post', '/whack-a-mole-complete');
     assert.ok(handler, 'POST /whack-a-mole-complete handler should exist');
 
@@ -236,7 +236,7 @@ describe('Whack-a-Mole Pool', () => {
       json(d) { this.body = d; return this; },
     };
 
-    handler(req, res);
+    await handler(req, res);
 
     assert.strictEqual(res.statusCode, 200);
     assert.ok(res.body.finishDialogue, 'response should include finishDialogue');
