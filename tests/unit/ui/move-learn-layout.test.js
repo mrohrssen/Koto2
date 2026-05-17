@@ -53,19 +53,28 @@ test('learn move replacement stretches to the same width as regular move buttons
   assert.match(gridBody, /margin-right:\s*-16px\s*;/);
 });
 
-test('learn move auto-learn reserves a regular move button row height', () => {
+test('learn move auto-learn centers the learned move with a green OK button below it', () => {
   const autoHeaderBody = ruleBody(css, '.move-learn-panel--auto .move-learn-header {');
   assert.ok(autoHeaderBody, '.move-learn-panel--auto .move-learn-header rule not found');
   assert.match(autoHeaderBody, /min-height:\s*38px\s*;/);
 
   const autoGridBody = ruleBody(css, '.move-learn-auto-grid {');
   assert.ok(autoGridBody, '.move-learn-auto-grid rule not found');
-  assert.match(autoGridBody, /grid-template-rows:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)\s*;/);
+  assert.match(autoGridBody, /display:\s*flex\s*;/);
+  assert.match(autoGridBody, /justify-content:\s*center\s*;/);
+  assert.match(autoGridBody, /align-items:\s*center\s*;/);
+
+  const autoMoveBody = ruleBody(css, '.move-learn-auto-grid .move-cell {');
+  assert.ok(autoMoveBody, '.move-learn-auto-grid .move-cell rule not found');
+  assert.match(autoMoveBody, /width:\s*calc\(\(100%\s*-\s*8px\)\s*\/\s*2\)\s*;/);
 
   const autoOkBody = ruleBody(css, '.move-learn-panel--auto .move-learn-ok-btn {');
   assert.ok(autoOkBody, '.move-learn-panel--auto .move-learn-ok-btn rule not found');
-  assert.match(autoOkBody, /position:\s*absolute\s*;/);
-  assert.match(autoOkBody, /bottom:\s*0\s*;/);
+  assert.doesNotMatch(autoOkBody, /position:\s*absolute\s*;/);
+  assert.doesNotMatch(autoOkBody, /bottom:\s*0\s*;/);
+  assert.match(autoOkBody, /align-self:\s*center\s*;/);
+  assert.match(autoOkBody, /min-height:\s*48px\s*;/);
+  assert.match(autoOkBody, /background:\s*linear-gradient\(180deg,\s*#57c266\s*0%,\s*#2f9b45\s*100%\)\s*;/);
 });
 
 test('learn move replacement confirms before resolving the selected move', () => {
