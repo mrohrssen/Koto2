@@ -1,11 +1,5 @@
 import { dom } from '../dom.js';
-import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-client.js';
 import { buildMoveCell } from './move-select.js';
-
-const ELEMENT_COLORS = {
-  wood: '#4CAF50', fire: '#F44336', earth: '#8D6E63',
-  metal: '#9E9E9E', water: '#2196F3', neutral: '#888'
-};
 
 function hiraganaName(entity, fallback) {
   return entity?.reading || entity?.name || entity?.nameEn || fallback;
@@ -32,9 +26,12 @@ export function showLearnPrompt(creature, creatureIndex, newMove, alreadyLearned
     panel.appendChild(header);
 
     if (alreadyLearned || creature.moves.length < 3) {
-      // New move details
-      const newCard = buildMoveCard(newMove, 'NEW');
-      panel.appendChild(newCard);
+      panel.classList.add('move-learn-panel--grid');
+      header.textContent = `${hiraganaName(creature, 'This creature')} learned ${hiraganaName(newMove, 'this move')}!`;
+
+      const newMoveCell = buildMoveCell(newMove, true);
+      newMoveCell.classList.add('move-learn-new-slot');
+      panel.appendChild(newMoveCell);
 
       // Auto-learned, just show confirmation
       const msg = document.createElement('div');
@@ -129,28 +126,6 @@ function showConfirm(panel, messageText, onConfirm) {
   dialog.appendChild(actions);
   backdrop.appendChild(dialog);
   panel.appendChild(backdrop);
-}
-
-function buildMoveCard(move, badge) {
-  const card = document.createElement('div');
-  card.className = 'move-learn-card';
-  card.style.borderColor = ELEMENT_COLORS[move.element] || ELEMENT_COLORS.neutral;
-
-  let badgeHtml = badge ? `<span class="move-learn-badge">${badge}</span>` : '';
-  const powerLabel = move.category === 'heal' ? 'Heal' :
-    (move.category === 'buff' || move.category === 'shield' || move.category === 'debuff') ? 'Effect' : 'Pow';
-  const powerValue = move.power || '-';
-
-  card.innerHTML = `
-    ${badgeHtml}
-    <div class="move-learn-card-name">${renderJpSentence([entityToToken(move)], getKnownWords(), new Map())}</div>
-    <div class="move-learn-card-stats">
-      <span>${powerLabel} ${powerValue}</span>
-      <span>${move.mpCost ?? 0}MP</span>
-      <span class="move-learn-card-element" style="color:${ELEMENT_COLORS[move.element] || ELEMENT_COLORS.neutral}">${move.element}</span>
-    </div>
-  `;
-  return card;
 }
 
 export function clear() {

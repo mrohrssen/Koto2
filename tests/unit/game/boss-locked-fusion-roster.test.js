@@ -13,6 +13,7 @@ const moves = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/moves.json'), 'ut
 
 const creaturesById = new Map(creatures.map(creature => [creature.id, creature]));
 const movesById = new Map(moves.map(move => [move.id, move]));
+const ALLOWED_FUSION_AREA_PLACEMENTS = new Set(['school:boss:hanano-yousei']);
 
 const EXPECTED_FUSIONS = [
   { recipeKey: 'shadowDog', recipeId: 'shadow-dog', resultId: 'kageno-inu', name: '影の犬', reading: 'かげのいぬ', nameEn: 'Shadow Dog', rarity: 'uncommon', element: 'water', ingredientIds: ['kage', 'inu'] },
@@ -92,7 +93,7 @@ describe('boss-locked fusion roster', () => {
     }
   });
 
-  it('does not place future fusion bosses in areas yet', () => {
-    assert.deepEqual(placedFusionIds(), []);
+  it('only places approved fusion bosses in areas', () => {
+    assert.deepEqual(placedFusionIds().filter(entry => !ALLOWED_FUSION_AREA_PLACEMENTS.has(entry)), []);
   });
 });
