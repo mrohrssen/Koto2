@@ -58,6 +58,12 @@ function makeAudioResolver() {
   return async ({ userId, speakerKey }) => ({ userId, key: `${speakerKey}.wav` });
 }
 
+function makeSpeakerAudioResolver() {
+  return async ({ userId, speakerKey, speakerId }) => {
+    return { userId, key: `${speakerKey}.wav`, speakerId };
+  };
+}
+
 function createRunRouter() {
   return createRunRoutes({
     cancelPendingPrefetches: () => {},
@@ -149,5 +155,56 @@ describe('static dialogue route TTS metadata', () => {
 
     assert.equal(res.statusCode, 200);
     assert.deepEqual(res.body.line.audio, { userId: 'npc-user', key: 'kodomo.wav' });
+  });
+
+  it('uses the defeated NPC voice for NPC battle skill prompt audio', async () => {
+    const sharedRoom = { type: 'npcBattle', npcBattle: {} };
+    const gameManager = {
+      combat: { npcId: 'kodomo' },
+      run: { creatureParty: { active: [] }, partySkills: [] },
+      getCurrentRoom: () => sharedRoom
+    };
+    const combatRouter = createCombatRoutes({
+      getUserVocabulary: () => ({ words: [] }),
+      getCreatureDialogueFromCache: () => null,
+      regenCreatureDialogueFn: async () => {},
+      getNpcDialogueFromCache: () => null,
+      logNpcEncounterFn: () => {},
+      regenNpcDialogueFn: async () => {},
+      setNpcMemoryFlagFn: () => {},
+      updateNpcMemoryBondFn: () => {},
+      checkSentenceViolations: () => ({ violations: [] }),
+      getDialogueCardAudio: makeSpeakerAudioResolver()
+    });
+    const runRouter = createRunRoutes({
+      cancelPendingPrefetches: () => {},
+      clearPrefetchCache: () => {},
+      queueMissingCreatureDialoguesFn: () => {},
+      getUserVocabulary: async () => [],
+      queueMissingNpcDialoguesFn: () => {},
+      checkSentenceViolations: () => ({ violations: [] }),
+      getDialogueCardAudio: makeSpeakerAudioResolver()
+    });
+
+    const req = {
+      user: { id: 'npc-skill-user' },
+      gameManager,
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'npc_skill_selection' })
+    };
+
+    const defeatRes = makeRes();
+    await getHandler(combatRouter, 'post', '/npc-dialogue-start')(req, defeatRes);
+
+    const offersRes = makeRes();
+    await getHandler(runRouter, 'post', '/npc-battle-skill-offers')(req, offersRes);
+
+    assert.equal(defeatRes.statusCode, 200);
+    assert.equal(offersRes.statusCode, 200);
+    assert.equal(offersRes.body.skillSelectPrompt.audio.key, 'kodomo.wav');
+    assert.equal(
+      offersRes.body.skillSelectPrompt.audio.speakerId,
+      defeatRes.body.npc.speakerId
+    );
   });
 });
