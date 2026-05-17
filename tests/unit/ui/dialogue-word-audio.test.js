@@ -30,7 +30,7 @@ describe('dialogue word audio', () => {
         ok: true,
         json: async () => ({
           ok: true,
-          audio: { userId: 'u1', key: 'abc123def456.wav' }
+          audio: { key: 'abc123def456.wav', url: '/api/tts/word/abc123def456.wav' }
         })
       };
     };
@@ -49,7 +49,7 @@ describe('dialogue word audio', () => {
     };
 
     const { playDialogueWordAudio } = await import('../../../public/js/tts.js');
-    await playDialogueWordAudio({ userId: 'u1', word: '森', speakerId: 46 });
+    await playDialogueWordAudio({ word: '森', speakerId: 46 });
 
     assert.deepEqual(fetchCalls, [{
       url: '/api/tts/dialogue-word',
@@ -59,6 +59,6 @@ describe('dialogue word audio', () => {
       },
       body: { word: '森', speakerId: 46 }
     }]);
-    assert.deepEqual(audioUrls, ['/api/tts/dialogue/u1/abc123def456.wav']);
+    assert.deepEqual(audioUrls, ['/api/tts/word/abc123def456.wav']);
   });
 });

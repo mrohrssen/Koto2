@@ -395,7 +395,7 @@ describe('npc dialogue card', () => {
     });
 
     assert.deepEqual(attachedLookupOptions, {
-      wordAudio: { userId: 'u1', speakerId: 46 }
+      wordAudio: { speakerId: 46 }
     });
   });
 

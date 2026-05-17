@@ -362,13 +362,29 @@ export async function playDialogueAudio(userId, filename) {
   });
 }
 
+async function playAudioUrl(url) {
+  if (!ttsEnabled || isAudioMuted() || !url) return;
+
+  stop();
+
+  const audioUrl = url.startsWith('http') ? url : `${API_BASE}${url}`;
+  return new Promise((resolve) => {
+    const audio = new Audio(audioUrl);
+    currentAudio = trackTtsAudio(audio, () => {
+      if (currentAudio === audio) currentAudio = null;
+      resolve();
+    });
+    audio.play().catch(() => { currentAudio = null; activeTtsAudio.delete(audio); resolve(); });
+  });
+}
+
 /**
- * Synthesize and play a clicked dialogue word through the dialogue TTS cache.
- * @param {{ userId: string, word: string, speakerId: number }} options
+ * Synthesize and play a clicked dialogue word through the global word TTS cache.
+ * @param {{ word: string, speakerId: number }} options
  * @returns {Promise<void>}
  */
-export async function playDialogueWordAudio({ userId, word, speakerId } = {}) {
-  if (!ttsEnabled || isAudioMuted() || !userId || !word) return;
+export async function playDialogueWordAudio({ word, speakerId } = {}) {
+  if (!ttsEnabled || isAudioMuted() || !word) return;
 
   const resolvedSpeakerId = Number(speakerId);
   if (!Number.isFinite(resolvedSpeakerId)) return;
@@ -380,9 +396,9 @@ export async function playDialogueWordAudio({ userId, word, speakerId } = {}) {
       body: JSON.stringify({ word, speakerId: resolvedSpeakerId })
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data?.ok || !data.audio?.userId || !data.audio?.key) return;
+    if (!response.ok || !data?.ok || !data.audio?.url) return;
 
-    return playDialogueAudio(data.audio.userId, data.audio.key);
+    return playAudioUrl(data.audio.url);
   } catch (error) {
     console.warn('[WordAudio] Dialogue word audio failed:', error.message);
   }

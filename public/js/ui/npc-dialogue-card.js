@@ -490,10 +490,9 @@ function renderPageContent(options, pageTokens) {
 
 function getWordLookupOptions(options = {}) {
   const speakerId = Number(options.audio?.speakerId);
-  if (!options.audio?.userId || !Number.isFinite(speakerId)) return undefined;
+  if (!Number.isFinite(speakerId)) return undefined;
   return {
     wordAudio: {
-      userId: options.audio.userId,
       speakerId
     }
   };

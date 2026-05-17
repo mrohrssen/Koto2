@@ -61,6 +61,7 @@ import { loadDialoguePools } from './src/game/dialogue-loader.js';
 import { logger } from './src/logger.js';
 import { TtsCache } from './src/services/tts-cache.js';
 import { TtsDialogueCache } from './src/services/tts-dialogue-cache.js';
+import { TtsWordCache } from './src/services/tts-word-cache.js';
 import { createDialogueCardTtsResolver } from './src/services/dialogue-card-tts.js';
 import { setupPvpSockets } from './src/pvp/socket-handler.js';
 
@@ -190,6 +191,8 @@ ttsCache.generateIfMissing(join(__dirname, 'data'), voicevoxUrl);
 
 // Per-user dialogue TTS cache
 const ttsDialogueCache = new TtsDialogueCache(join(__dirname, 'data', 'tts-dialogue'));
+// Global clicked-word TTS cache, persisted on Railway via getDataDir().
+const ttsWordCache = new TtsWordCache(join(getDataDir(), 'data', 'tts-word-cache'));
 
 // Build TTS options for narration engine dialogue generation
 function buildTtsOptions() {
@@ -261,6 +264,7 @@ const app = createApp({
     saveSettings: saveSettings,
     ttsCache,
     ttsDialogueCache,
+    ttsWordCache,
     getDialogueCardAudio,
     enrichGameState,
     cancelPendingPrefetches,

@@ -80,20 +80,20 @@ describe('dialogue word TTS route', () => {
     assert.equal(synthesized, false);
   });
 
-  it('synthesizes a clicked word through the dialogue audio cache and ignores body userId', async () => {
+  it('synthesizes a clicked word through the global word audio cache and ignores body userId', async () => {
     synthCalls.length = 0;
     const cacheCalls = [];
-    const ttsDialogueCache = {
-      async synthesizeLine(userId, text, speakerId, synthesizeFn) {
-        cacheCalls.push({ userId, text, speakerId });
-        await synthesizeFn(text, speakerId);
-        return 'abc123def456.wav';
+    const ttsWordCache = {
+      async synthesizeWord(text, speakerId, speedScale, synthesizeFn) {
+        cacheCalls.push({ text, speakerId, speedScale });
+        await synthesizeFn(text, speakerId, speedScale);
+        return { filename: 'abc123def456.wav', cacheHit: false };
       }
     };
     const app = createApp({
       authBypass: true,
       routeOverrides: {
-        ttsDialogueCache,
+        ttsWordCache,
         getSettings: () => ({ gameTtsSpeed: 0.8, gameTtsVolume: 0.7 })
       }
     });
@@ -105,13 +105,38 @@ describe('dialogue word TTS route', () => {
 
     assert.deepEqual(res.body, {
       ok: true,
-      audio: { userId: 'test-user', key: 'abc123def456.wav' }
+      audio: {
+        key: 'abc123def456.wav',
+        url: '/api/tts/word/abc123def456.wav',
+        cacheHit: false
+      }
     });
-    assert.deepEqual(cacheCalls, [{ userId: 'test-user', text: '森', speakerId: 46 }]);
+    assert.deepEqual(cacheCalls, [{ text: '森', speakerId: 46, speedScale: 0.8 }]);
     assert.deepEqual(synthCalls, [{
       text: '森',
       speakerId: 46,
       options: { speedScale: 0.8 }
     }]);
+  });
+
+  it('serves global clicked word audio without a user id', async () => {
+    const ttsWordCache = {
+      lookup(filename) {
+        return filename === 'abc123def456.wav' ? Buffer.from('WAV:word') : null;
+      }
+    };
+    const app = createApp({
+      routeOverrides: {
+        ttsWordCache,
+        getSettings: () => ({})
+      }
+    });
+
+    const res = await request(app)
+      .get('/api/tts/word/abc123def456.wav')
+      .expect(200);
+
+    assert.equal(res.headers['content-type'], 'audio/wav');
+    assert.equal(res.body.toString(), 'WAV:word');
   });
 });
