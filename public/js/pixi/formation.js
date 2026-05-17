@@ -37,6 +37,10 @@ const LABEL_SIDE_OFFSET = 50;
 const NPC_BASE_SPRITE_SIZE = 170;
 const NPC_BATTLEFIELD_ROW_INDEX = 1;
 const NPC_SHADOW_Y_OFFSET_RATIO = 0.38;
+const NPC_SHADOW_SIZE = { width: 78, height: 16 };
+const NPC_SHADOW_SIZE_BY_ID = {
+  shrine_fox: { width: 70, height: 14 },
+};
 const NPC_SHADOW_VISUAL_HEIGHT_SCALE_BY_ID = {
   // Shrine Fox is a seated, square-canvas sprite; use the visible character
   // height instead of the full frame so the shadow sits under its paws.
@@ -200,11 +204,11 @@ function _npcShadowVisualSize(sprite, npcId) {
 
 function _npcShadowSpecForSprite(sprite, npcId) {
   const baseSpec = getBattlefieldShadowSpec(NPC_BATTLEFIELD_ROW_INDEX);
-  const visualSize = _npcShadowVisualSize(sprite, npcId);
+  const shadowSize = NPC_SHADOW_SIZE_BY_ID[npcId] || NPC_SHADOW_SIZE;
   return {
     ...baseSpec,
-    width: baseSpec.width * (visualSize.width / FORMATION_SPRITE_SIZE),
-    height: baseSpec.height * (visualSize.height / FORMATION_SPRITE_SIZE),
+    width: shadowSize.width,
+    height: shadowSize.height,
   };
 }
 
