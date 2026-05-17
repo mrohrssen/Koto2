@@ -119,6 +119,58 @@ describe('dialogue-card TTS service', () => {
     assert.match(warnings[0], /Dialogue card TTS failed/);
   });
 
+  it('returns cached audio and queues missing synthesis without waiting when requested', async () => {
+    let resolveSynthesis;
+    const synthCalls = [];
+    const cacheCalls = [];
+    const ttsDialogueCache = {
+      lookupLineKey(userId, text, speakerId) {
+        cacheCalls.push({ type: 'lookup', userId, text, speakerId });
+        return text === '準備できた！' ? 'cached123456.wav' : null;
+      },
+      async synthesizeLine(userId, text, speakerId, synthesizeFn) {
+        cacheCalls.push({ type: 'synthesize', userId, text, speakerId });
+        await synthesizeFn(text, speakerId);
+        return 'generated123.wav';
+      }
+    };
+
+    const resolveAudio = createDialogueCardTtsResolver({
+      ttsDialogueCache,
+      synthesizeFn: async (text, speakerId) => {
+        synthCalls.push({ text, speakerId });
+        await new Promise(resolve => { resolveSynthesis = resolve; });
+        return Buffer.from(`WAV:${speakerId}:${text}`);
+      },
+      getSpeakerId: () => 113,
+      logger: { warn: () => {} }
+    });
+
+    const cached = await resolveAudio({
+      userId: 'u1',
+      speakerKey: 'creature',
+      line: { raw: '準備できた！' },
+      waitForSynthesis: false
+    });
+    const missing = await resolveAudio({
+      userId: 'u1',
+      speakerKey: 'creature',
+      line: { raw: '待って！' },
+      waitForSynthesis: false
+    });
+
+    assert.deepEqual(cached, { userId: 'u1', key: 'cached123456.wav', speakerId: 113 });
+    assert.equal(missing, null);
+    assert.deepEqual(cacheCalls, [
+      { type: 'lookup', userId: 'u1', text: '準備できた！', speakerId: 113 },
+      { type: 'lookup', userId: 'u1', text: '待って！', speakerId: 113 },
+      { type: 'synthesize', userId: 'u1', text: '待って！', speakerId: 113 },
+    ]);
+    assert.deepEqual(synthCalls, [{ text: '待って！', speakerId: 113 }]);
+
+    resolveSynthesis();
+  });
+
   it('synthesizes clicked word audio with the dialogue speaker id', async () => {
     const synthCalls = [];
     const cacheCalls = [];

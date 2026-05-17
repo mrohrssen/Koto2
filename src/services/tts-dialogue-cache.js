@@ -32,6 +32,12 @@ export class TtsDialogueCache {
     return filename;
   }
 
+  lookupLineKey(userId, text, speakerId) {
+    const filename = hashKey(speakerId, text);
+    const filePath = join(this.baseDir, userId, filename);
+    return existsSync(filePath) ? filename : null;
+  }
+
   /**
    * Look up a cached WAV file. Returns Buffer or null.
    */

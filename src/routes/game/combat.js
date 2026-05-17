@@ -64,7 +64,8 @@ export default function createCombatRoutes({
       userId: req.user.id,
       speakerKey,
       speakerId,
-      line
+      line,
+      waitForSynthesis: false
     });
     return audio ? { ...line, audio } : line;
   }
@@ -75,7 +76,8 @@ export default function createCombatRoutes({
     const audio = await getDialogueCardAudio?.({
       userId: req.user.id,
       speakerKey: 'creature',
-      line: { raw, tokens: prompt.tokens || [] }
+      line: { raw, tokens: prompt.tokens || [] },
+      waitForSynthesis: false
     });
     return audio ? { ...prompt, audio } : prompt;
   }
