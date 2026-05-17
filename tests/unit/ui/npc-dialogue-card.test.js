@@ -270,7 +270,7 @@ describe('npc dialogue card', () => {
     assert.doesNotMatch(html, /<span class="npc-dialogue-cell jp-punct">？<\/span>/);
   });
 
-  it('attaches exclamation punctuation after the surface-only te particle', () => {
+  it('renders te-form small-tsu continuations in the preceding word cell', () => {
     const html = renderDialogueTokenRows({
       tokens: [
         { surface: '待っ', base: '待つ', reading: 'まっ', meaning: 'wait', pos: 'Verb' },
@@ -283,7 +283,12 @@ describe('npc dialogue card', () => {
     });
 
     assert.equal((html.match(/npc-dialogue-line-grid/g) || []).length, 1);
-    assert.match(html, /<span class="npc-dialogue-cell jp-punct">て！<\/span>/);
+    assert.match(html, />matte<\/span>/);
+    assert.match(html, /data-reading="まって"/);
+    assert.match(html, /data-audio-text="待って"/);
+    assert.match(html, /<span class="npc-dialogue-cell jp-word jp-unknown"[^>]*>まって！<\/span>/);
+    assert.doesNotMatch(html, />maっ<\/span>/);
+    assert.doesNotMatch(html, /<span class="npc-dialogue-cell jp-punct">て！<\/span>/);
     assert.doesNotMatch(html, /<span class="npc-dialogue-cell jp-punct">！<\/span>/);
   });
 
