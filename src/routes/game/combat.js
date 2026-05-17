@@ -53,9 +53,21 @@ export default function createCombatRoutes({
   regenNpcDialogueFn,
   setNpcMemoryFlagFn,
   updateNpcMemoryBondFn,
-  checkSentenceViolations
+  checkSentenceViolations,
+  getDialogueCardAudio
 }) {
   const router = Router();
+
+  async function attachCombatLineAudio(line, req, speakerKey, speakerId) {
+    if (!line) return line;
+    const audio = await getDialogueCardAudio?.({
+      userId: req.user.id,
+      speakerKey,
+      speakerId,
+      line
+    });
+    return audio ? { ...line, audio } : line;
+  }
 
   function buildDevFallbackBefriendRounds(targetEnemy) {
     const nameEn = targetEnemy?.nameEn || 'Creature';
@@ -112,6 +124,7 @@ export default function createCombatRoutes({
           const npcPool = getNpcLines()[npcData.id];
 
           const mapLine = (l) => l ? {
+            raw: l.raw,
             text: l.raw,
             tokens: l.tokens || [],
             overrides: l.overrides || {},
@@ -121,8 +134,8 @@ export default function createCombatRoutes({
           const defeatLine = selectNpcLine(npcPool.defeatLine || [], knownWords, { dict: getWordDict() });
 
           npcDialogue = {
-            fightStart: mapLine(fightStart),
-            defeatLine: mapLine(defeatLine),
+            fightStart: await attachCombatLineAudio(mapLine(fightStart), req, npcData.id, npcData.speakerId),
+            defeatLine: await attachCombatLineAudio(mapLine(defeatLine), req, npcData.id, npcData.speakerId),
             useKanji: false,
           };
         } catch (e) {
@@ -556,7 +569,7 @@ export default function createCombatRoutes({
   });
 
   // Start NPC post-combat dialogue
-  router.post('/npc-dialogue-start', (req, res) => {
+  router.post('/npc-dialogue-start', async (req, res) => {
     const gameManager = req.gameManager;
     const combat = gameManager.combat;
 
@@ -601,10 +614,17 @@ export default function createCombatRoutes({
 
     req.saveGame();
 
+    const line = await attachCombatLineAudio(
+      { tokens: selectedLine.tokens, raw: selectedLine.raw },
+      req,
+      npc.id,
+      npc.speakerId
+    );
+
     res.json({
       mode: 'defeat_line',
       npc: { id: npc.id, name: npc.name, nameEn: npc.nameEn, speakerId: npc.speakerId }, // speakerId for future TTS
-      line: { tokens: selectedLine.tokens, raw: selectedLine.raw },
+      line,
     });
   });
 

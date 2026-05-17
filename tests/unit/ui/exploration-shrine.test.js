@@ -119,7 +119,11 @@ describe('renderShrine encounter flow', () => {
       actions: overrides.actions || { setContent: () => {}, clear: () => {} },
       scene: { showNarration: async () => {} },
       apiGetShrineOffers: overrides.apiGetShrineOffers || (async () => ({
-        greeting: { tokens: [{ text: 'こんにちは！' }], overrides: {} },
+        greeting: {
+          tokens: [{ text: 'こんにちは！' }],
+          overrides: {},
+          audio: { userId: 'u1', key: 'shrine.wav' },
+        },
         rewards: [
           { id: 'heal_all', title: 'Heal all creatures', description: 'Restore 50% HP.' },
           { id: 'restore_mp_all', title: 'Restore MP', description: 'Restore MP for all creatures to full.' },
@@ -145,6 +149,7 @@ describe('renderShrine encounter flow', () => {
     assert.equal(dialogueCards[0].speaker, 'Shrine Fox');
     assert.equal(dialogueCards[0].speakerId, 'shrine_fox');
     assert.deepEqual(dialogueCards[0].tokens, [{ text: 'こんにちは！' }]);
+    assert.deepEqual(dialogueCards[0].audio, { userId: 'u1', key: 'shrine.wav' });
     assert.equal(renderedChoices.heading, 'Choose shrine blessing');
     assert.deepEqual(renderedChoices.cards.map(card => card.title), [
       'Heal all creatures',

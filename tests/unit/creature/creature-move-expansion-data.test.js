@@ -13,6 +13,10 @@ const areas = JSON.parse(readFileSync(resolve(REPO_ROOT, 'data/areas.json'), 'ut
 
 const EXPANSION_DATE = '2026-05-06';
 const EXPECTED_NEW_CREATURE_COUNT = 54;
+const ALLOWED_AREA_PLACEMENTS = new Set([
+  'school:yousei',
+  'school:boss:hanano-yousei'
+]);
 
 const movesById = new Map(moves.map(move => [move.id, move]));
 const newCreatures = creatures.filter(creature => creature.createdAt === EXPANSION_DATE);
@@ -51,7 +55,7 @@ describe('creature and move expansion data', () => {
     assert.deepEqual(invalid, []);
   });
 
-  it('new creatures are not placed in any area yet', () => {
+  it('only places approved new creatures in area pools', () => {
     const newIds = new Set(newCreatures.map(creature => creature.id));
     const placed = [];
 
@@ -66,7 +70,7 @@ describe('creature and move expansion data', () => {
       }
     }
 
-    assert.deepEqual(placed, []);
+    assert.deepEqual(placed.filter(entry => !ALLOWED_AREA_PLACEMENTS.has(entry)), []);
   });
 
   it('every imported move is used by at least one creature learnset', () => {

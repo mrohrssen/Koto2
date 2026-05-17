@@ -518,12 +518,16 @@ export function showNpcDialogueCard(options = {}) {
       const translationEntities = pageTokens?.length ? getTranslationEntities(options, pageTokens) : [];
       const canTranslate = !!sourceText;
       const canLearn = !!sourceText && !!pageTokens?.length;
-      const translateJpLabel = options.useKanji ? '翻訳する' : 'ほんやくする';
+      const translateJpLabel = options.useKanji ? '訳す' : 'やくす';
       const learnJpLabel = options.useKanji ? '学ぶ' : 'まなぶ';
+      const continueRomanLabel = pageIndex < pages.length - 1 ? 'tsugi' : 'susumu';
+      const continueJpLabel = pageIndex < pages.length - 1
+        ? (options.useKanji ? '次' : 'つぎ')
+        : (options.useKanji ? '進む' : 'すすむ');
       const utilityRow = (canTranslate || canLearn) ? `
           <div class="npc-dialogue-utility-row">
             <button class="npc-dialogue-utility npc-dialogue-translate" type="button" ${canTranslate ? '' : 'disabled'}>
-              <span class="npc-dialogue-btn-roman">honyaku suru</span>
+              <span class="npc-dialogue-btn-roman">yakusu</span>
               <span class="npc-dialogue-jp-line">${crystalCostHtml(5)}<span class="npc-dialogue-btn-jp">${translateJpLabel}</span></span>
               <span class="npc-dialogue-btn-en">Translate</span>
             </button>
@@ -557,8 +561,8 @@ export function showNpcDialogueCard(options = {}) {
           </article>
           ${utilityRow}
           <button class="npc-dialogue-continue" type="button">
-            <span class="npc-dialogue-btn-roman">${pageIndex < pages.length - 1 ? 'tsugi' : 'tsugi e susumu'}</span>
-            <span class="npc-dialogue-btn-jp">${pageIndex < pages.length - 1 ? '次' : '次へ進む'}</span>
+            <span class="npc-dialogue-btn-roman">${continueRomanLabel}</span>
+            <span class="npc-dialogue-btn-jp">${continueJpLabel}</span>
             <span class="npc-dialogue-btn-en">${continueLabel}</span>
             <span class="npc-dialogue-continue-arrow" aria-hidden="true">▶</span>
           </button>

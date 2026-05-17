@@ -266,6 +266,20 @@ describe('Koto2 area room generation', () => {
     });
   });
 
+  describe('School', () => {
+    it('uses Flower Fairy as the boss', () => {
+      const rooms = generateAreaRooms('school');
+      assert.equal(rooms[29].type, 'boss');
+      assert.equal(rooms[29].boss.creatureId, 'hanano-yousei');
+    });
+
+    it('includes Fairy in normal School encounters', () => {
+      const area = getAreaById('school');
+      assert.ok(area);
+      assert.equal(area.creatures.includes('yousei'), true);
+    });
+  });
+
   describe('area unlock ordering', () => {
     it('offers only Starting Meadow before the first clear', () => {
       const options = getAreaSelectionOptions(null, 1);

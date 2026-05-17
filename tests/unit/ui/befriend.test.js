@@ -243,9 +243,14 @@ describe('executeBefriendAction creature speaker label', () => {
       withAnimationActive: async (fn) => fn(),
       getGameState: () => state,
       apiGetBefriendConversation: async () => ({
+        userId: 'u1',
         targetEnemy: state.combat.enemies[0],
         targetEnemyIndex: 0,
-        rounds: [{ speaker: 'こんにちは', options: ['うん', 'いいえ', 'またね'] }],
+        rounds: [{
+          speaker: 'こんにちは',
+          speakerTts: 'creature-line.wav',
+          options: ['うん', 'いいえ', 'またね']
+        }],
       }),
       apiSubmitBefriendAnswer: async () => ({
         correct: true,
@@ -286,6 +291,7 @@ describe('executeBefriendAction creature speaker label', () => {
     assert.equal(dialogueCardCalls[0].speakerReading, 'tetsu');
     assert.equal(dialogueCardCalls[0].speakerPortrait, '/creatures/tetsu.webp');
     assert.equal(dialogueCardCalls[0].portraitKind, 'creature');
+    assert.deepEqual(dialogueCardCalls[0].audio, { userId: 'u1', key: 'creature-line.wav' });
   });
 });
 

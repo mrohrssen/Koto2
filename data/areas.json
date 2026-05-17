@@ -110,9 +110,10 @@
       "fukurou",
       "chou",
       "hachi",
-      "ari"
+      "ari",
+      "yousei"
     ],
-    "bossCreatureId": "fukurou",
+    "bossCreatureId": "hanano-yousei",
     "description": "A bright, lively school filled with eager young trainers and their first companions",
     "tags": "school, indoor, beginner, trainer",
     "background": "areas/school/school_01.webp",

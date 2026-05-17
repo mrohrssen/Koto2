@@ -43,6 +43,41 @@ describe('friendly NPC equipment-only offers', () => {
     assert.ok(gm.getCurrentRoom().friendlyNpc.offered.every(item => item.category === 'equipment'));
   });
 
+  it('attaches dialogue-card audio to existing greeting and item request lines', async () => {
+    const app = createApp({
+      authBypass: true,
+      routeOverrides: {
+        getDialogueCardAudio: async ({ userId, speakerKey }) => ({ userId, key: `${speakerKey}.wav` })
+      }
+    });
+    const gm = setupFriendlyNpcRun();
+    const room = gm.getCurrentRoom();
+    room.npc = { id: 'kodomo', speakerId: 3 };
+    room.friendlyNpc.greeting = {
+      raw: 'こんにちは！',
+      tokens: [{ surface: 'こんにちは', reading: 'こんにちは' }]
+    };
+    room.friendlyNpc.offered = [
+      {
+        id: 'training-sword',
+        category: 'equipment',
+        word: '剣',
+        reading: 'けん',
+        meaning: 'sword',
+        tokens: [{ surface: '剣', reading: 'けん' }],
+        nameToken: { surface: '剣', reading: 'けん' }
+      }
+    ];
+
+    const response = await request(app)
+      .post('/api/game/friendly-npc-offers')
+      .send({})
+      .expect(200);
+
+    assert.deepEqual(response.body.greeting.audio, { userId: 'test-user', key: 'kodomo.wav' });
+    assert.deepEqual(response.body.offered[0].requestAudio, { userId: 'test-user', key: 'you.wav' });
+  });
+
   it('rejects direct selection of stale consumable offers', async () => {
     const app = createApp({ authBypass: true });
     const gm = setupFriendlyNpcRun();

@@ -297,6 +297,7 @@ describe('WhackAMoleGame cancellation', () => {
     const finishDialogue = {
       tokens: [{ base: '成功', text: 'せいこう' }],
       overrides: { 成功: 'success' },
+      audio: { userId: 'u1', key: 'gm-finish.wav' },
     };
     let proceedCalls = 0;
 
@@ -334,6 +335,7 @@ describe('WhackAMoleGame cancellation', () => {
     assert.equal(dialogueCalls[0].tokens, finishDialogue.tokens);
     assert.equal(dialogueCalls[0].overrides, finishDialogue.overrides);
     assert.equal(dialogueCalls[0].useKanji, false);
+    assert.deepEqual(dialogueCalls[0].audio, { userId: 'u1', key: 'gm-finish.wav' });
     assert.equal(proceedCalls, 1);
   });
 });
