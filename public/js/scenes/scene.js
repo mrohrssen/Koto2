@@ -243,8 +243,15 @@ export class Scene {
     if (!sprite) return;
     if (slideOut) {
       const screenW = this.app?.screen?.width ?? 400;
+      const targetX = screenW + 170;
       try {
-        await this.tween(sprite, { x: screenW + 170 }, { duration: 300, ease: 'easeIn' });
+        const tweens = [
+          this.tween(sprite, { x: targetX }, { duration: 300, ease: 'easeIn' }),
+        ];
+        if (sprite._shadow) {
+          tweens.push(this.tween(sprite._shadow, { x: targetX }, { duration: 300, ease: 'easeIn' }));
+        }
+        await Promise.all(tweens);
       } catch {
         // Scene exited mid-slide; registry disposal destroys the sprite.
         // Clear our reference so subsequent calls are no-ops.

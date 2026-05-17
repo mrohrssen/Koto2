@@ -38,7 +38,13 @@ class FakeSprite extends FakeContainer {
     this.alpha = 1; this.tint = 0xFFFFFF; this.rotation = 0;
   }
 }
-class FakeGraphics extends FakeContainer { circle(){return this;} roundRect(){return this;} fill(){return this;} stroke(){return this;} }
+class FakeGraphics extends FakeContainer {
+  ellipse(){return this;}
+  circle(){return this;}
+  roundRect(){return this;}
+  fill(){return this;}
+  stroke(){return this;}
+}
 class FakeText extends FakeContainer { constructor(opts){ super(); this.text = opts?.text ?? ''; this.width = this.text.length * 6; this.height = 10; } }
 
 const FakeTexture = {
@@ -138,11 +144,13 @@ describe('Scene.showNpcSprite / hideNpcSprite (base class)', () => {
   it('showNpcSprite removes any prior sprite before spawning a new one', async () => {
     const scene = new HarnessScene(makeFakeApp());
     const a = await scene.showNpcSprite('/a.webp');
+    const aShadow = a._shadow;
     const b = await scene.showNpcSprite('/b.webp');
     assert.notStrictEqual(a, b, 'new sprite returned');
     assert.strictEqual(a._destroyed, true, 'prior sprite destroyed (fixes bug #3)');
+    assert.strictEqual(aShadow._destroyed, true, 'prior shadow destroyed');
     assert.strictEqual(scene.npcSprite, b);
-    assert.strictEqual(scene.layers.npcs.children.length, 1);
+    assert.strictEqual(scene.layers.npcs.children.length, 2);
     scene.exit();
   });
 
@@ -170,8 +178,9 @@ describe('Scene.showNpcSprite / hideNpcSprite (base class)', () => {
       await staleCidRequest;
 
       assert.strictEqual(scene.npcSprite, newNpc, 'stale Cid request must not overwrite newer NPC');
-      assert.strictEqual(scene.layers.npcs.children.length, 1);
-      assert.strictEqual(scene.layers.npcs.children[0], newNpc);
+      assert.strictEqual(scene.layers.npcs.children.length, 2);
+      assert.strictEqual(scene.layers.npcs.children[0], newNpc._shadow);
+      assert.strictEqual(scene.layers.npcs.children[1], newNpc);
     } finally {
       globalThis.Image = originalImage;
       scene.exit();
@@ -198,12 +207,13 @@ describe('Scene.showNpcSprite / hideNpcSprite (base class)', () => {
   it('hideNpcSprite with slideOut calls scene.tween', async () => {
     const scene = new HarnessScene(makeFakeApp());
     await scene.showNpcSprite('/foo.webp');
-    let tweenArgs = null;
+    const tweenCalls = [];
     const origTween = scene.tween.bind(scene);
-    scene.tween = (...args) => { tweenArgs = args; return Promise.resolve(); };
+    scene.tween = (...args) => { tweenCalls.push(args); return Promise.resolve(); };
     await scene.hideNpcSprite({ slideOut: true });
-    assert.ok(tweenArgs, 'tween called');
-    assert.ok(tweenArgs[1].x >= 400 + 170, 'slides off-screen right');
+    assert.strictEqual(tweenCalls.length, 2, 'sprite and shadow tween together');
+    assert.ok(tweenCalls[0][1].x >= 400 + 170, 'sprite slides off-screen right');
+    assert.ok(tweenCalls[1][1].x >= 400 + 170, 'shadow slides off-screen right');
     assert.strictEqual(scene.npcSprite, null);
     scene.exit();
   });

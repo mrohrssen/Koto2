@@ -47,9 +47,13 @@ class FakeSprite extends FakeContainer {
 }
 
 class FakeGraphics extends FakeContainer {
+  ellipse(x, y, radiusX, radiusY) {
+    this.lastEllipse = { x, y, radiusX, radiusY };
+    return this;
+  }
   circle() { return this; }
   roundRect() { return this; }
-  fill() { return this; }
+  fill(opts) { this.lastFill = opts; return this; }
   stroke() { return this; }
 }
 
@@ -218,30 +222,35 @@ describe('spawnNpcSprite scene contract', () => {
     const sprite = await spawnNpcSprite(scene, '/foo.webp');
     assert.ok(sprite, 'returns a sprite');
     assert.strictEqual(sprite.parent, npcs, 'sprite mounted in scene.layers.npcs');
-    assert.strictEqual(npcs.children.length, 1);
+    assert.strictEqual(npcs.children.length, 2);
+    assert.strictEqual(npcs.children[0], sprite._shadow, 'shadow renders behind sprite');
+    assert.strictEqual(npcs.children[1], sprite, 'sprite renders above shadow');
     // x positioned at 70% of screen width (400 * 0.7 = 280).
     assert.strictEqual(sprite.x, 280);
+    assert.strictEqual(sprite._shadow.x, sprite.x);
     // NPC sprites are authored facing the intended direction; do not mirror them.
     assert.ok(sprite.scale.x > 0, 'sprite keeps authored orientation');
   });
 
   it('uses scene.tween for slide-in animation', async () => {
     const npcs = new FakeContainer();
-    let tweenArgs = null;
+    const tweenCalls = [];
     const scene = {
       disposed: false,
       layers: { npcs },
-      tween: async (...args) => { tweenArgs = args; return Promise.resolve(); },
+      tween: async (...args) => { tweenCalls.push(args); return Promise.resolve(); },
     };
 
     const sprite = await spawnNpcSprite(scene, '/foo.webp', { slideIn: true });
     assert.ok(sprite);
-    assert.ok(tweenArgs, 'scene.tween should be called for slide-in');
-    assert.strictEqual(tweenArgs[0], sprite, 'tweens the spawned sprite');
+    assert.strictEqual(tweenCalls.length, 2, 'scene.tween should be called for sprite and shadow');
+    assert.strictEqual(tweenCalls[0][0], sprite, 'tweens the spawned sprite');
+    assert.strictEqual(tweenCalls[1][0], sprite._shadow, 'tweens the shadow with the sprite');
     // screenW = 400 per fake app stub; 400 * 0.7 = 280.
-    assert.deepStrictEqual(tweenArgs[1], { x: 280 }, 'target position is screenW * 0.7');
-    assert.strictEqual(tweenArgs[2].duration, 400);
-    assert.strictEqual(tweenArgs[2].ease, 'easeOut');
+    assert.deepStrictEqual(tweenCalls[0][1], { x: 280 }, 'sprite target position is screenW * 0.7');
+    assert.deepStrictEqual(tweenCalls[1][1], { x: 280 }, 'shadow target position is screenW * 0.7');
+    assert.strictEqual(tweenCalls[0][2].duration, 400);
+    assert.strictEqual(tweenCalls[0][2].ease, 'easeOut');
   });
 
   it('uses walk animation during slide-in, then switches to idle', async () => {
@@ -261,7 +270,7 @@ describe('spawnNpcSprite scene contract', () => {
       disposed: false,
       layers: { npcs },
       tween: async (sprite) => {
-        textureDuringTween = sprite.texture;
+        if (sprite.texture) textureDuringTween = sprite.texture;
       },
     };
 
@@ -335,6 +344,68 @@ describe('spawnNpcSprite scene contract', () => {
     assert.equal(sprite.y, 391.2);
   });
 
+  it('adds a middle-row contact shadow scaled to NPC size', async () => {
+    const npcs = new FakeContainer();
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => {},
+    };
+
+    const sprite = await spawnNpcSprite(scene, '/assets/sprites/npcs/cid.webp?v=test');
+
+    assert.ok(sprite._shadow, 'NPC has a shadow');
+    assert.equal(sprite._shadow.lastEllipse.x, 0);
+    assert.equal(sprite._shadow.lastEllipse.y, 0);
+    assert.equal(sprite._shadow.lastEllipse.radiusX, 76.5);
+    assert.ok(Math.abs(sprite._shadow.lastEllipse.radiusY - 19.833333333333332) < 1e-9);
+    assert.deepEqual(sprite._shadow.lastFill, { color: 0x000000, alpha: 0.28 });
+    assert.equal(sprite._shadow.y, 391.2 + 170 * 0.38);
+  });
+
+  it('pulls shadows upward and narrows them for shorter NPC textures', async () => {
+    const npcs = new FakeContainer();
+    loadImageTextureImpl = async () => ({ width: 170, height: 100 });
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => {},
+    };
+
+    const sprite = await spawnNpcSprite(scene, '/assets/sprites/npcs/short.webp?v=test');
+
+    assert.equal(sprite.width, 170);
+    assert.equal(sprite.height, 100);
+    assert.deepEqual(sprite._shadow.lastEllipse, {
+      x: 0,
+      y: 0,
+      radiusX: 76.5,
+      radiusY: 11.666666666666668,
+    });
+    assert.equal(sprite._shadow.y, 391.2 + 100 * 0.38);
+  });
+
+  it('uses a shorter visual shadow height for the seated shrine fox', async () => {
+    const npcs = new FakeContainer();
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => {},
+    };
+
+    const sprite = await spawnNpcSprite(scene, '/assets/sprites/shrine_fox.webp?v=test');
+
+    assert.equal(sprite.width, 170);
+    assert.equal(sprite.height, 170);
+    assert.deepEqual(sprite._shadow.lastEllipse, {
+      x: 0,
+      y: 0,
+      radiusX: 76.5,
+      radiusY: 12.296666666666667,
+    });
+    assert.equal(sprite._shadow.y, 391.2 + 170 * 0.62 * 0.38);
+  });
+
   it('ticks animated NPCs as walking during slide-in and idle after arrival', async () => {
     const npcs = new FakeContainer();
     npcAnimationEntry = {
@@ -352,8 +423,8 @@ describe('spawnNpcSprite scene contract', () => {
       disposed: false,
       layers: { npcs },
       addUpdater: (fn) => { updater = fn; },
-      tween: async () => {
-        updater(1, 16.6667);
+      tween: async (target) => {
+        if (target.texture) updater(1, 16.6667);
       },
     };
 
@@ -433,6 +504,22 @@ describe('removeNpcSprite', () => {
     removeNpcSprite(null, sprite);
 
     assert.strictEqual(sprite.parent, null, 'removed from parent');
+    assert.strictEqual(sprite._destroyed, true, 'sprite destroyed');
+  });
+
+  it('removes and destroys the NPC shadow with the sprite', () => {
+    const parent = new FakeContainer();
+    const shadow = new FakeGraphics();
+    const sprite = new FakeSprite({ width: 170, height: 170 });
+    sprite._shadow = shadow;
+    parent.addChild(shadow);
+    parent.addChild(sprite);
+
+    removeNpcSprite(null, sprite);
+
+    assert.strictEqual(shadow.parent, null, 'shadow removed from parent');
+    assert.strictEqual(sprite.parent, null, 'sprite removed from parent');
+    assert.strictEqual(shadow._destroyed, true, 'shadow destroyed');
     assert.strictEqual(sprite._destroyed, true, 'sprite destroyed');
   });
 });

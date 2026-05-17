@@ -36,6 +36,12 @@ const LABEL_GAP = 3;
 const LABEL_SIDE_OFFSET = 50;
 const NPC_BASE_SPRITE_SIZE = 170;
 const NPC_BATTLEFIELD_ROW_INDEX = 1;
+const NPC_SHADOW_Y_OFFSET_RATIO = 0.38;
+const NPC_SHADOW_VISUAL_HEIGHT_SCALE_BY_ID = {
+  // Shrine Fox is a seated, square-canvas sprite; use the visible character
+  // height instead of the full frame so the shadow sits under its paws.
+  shrine_fox: 0.62,
+};
 
 const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF' };
 
@@ -168,6 +174,45 @@ function _scaledShadowSpec(shadowSpec, scale = 1) {
     width: shadowSpec.width * scale,
     height: shadowSpec.height * scale,
   };
+}
+
+function _textureSizeForSprite(sprite, fallbackSize) {
+  const width = sprite?._animatedNpc?.entry?.frameWidth || sprite?.texture?.width || fallbackSize;
+  const height = sprite?._animatedNpc?.entry?.frameHeight || sprite?.texture?.height || width;
+  return { width, height };
+}
+
+function _displaySizeForTexture(sprite, displayWidth) {
+  const textureSize = _textureSizeForSprite(sprite, displayWidth);
+  const aspectHeight = textureSize.width > 0
+    ? displayWidth * (textureSize.height / textureSize.width)
+    : displayWidth;
+  return { width: displayWidth, height: aspectHeight };
+}
+
+function _npcShadowVisualSize(sprite, npcId) {
+  const heightScale = NPC_SHADOW_VISUAL_HEIGHT_SCALE_BY_ID[npcId] || 1;
+  return {
+    width: sprite.width || NPC_BASE_SPRITE_SIZE,
+    height: (sprite.height || NPC_BASE_SPRITE_SIZE) * heightScale,
+  };
+}
+
+function _npcShadowSpecForSprite(sprite, npcId) {
+  const baseSpec = getBattlefieldShadowSpec(NPC_BATTLEFIELD_ROW_INDEX);
+  const visualSize = _npcShadowVisualSize(sprite, npcId);
+  return {
+    ...baseSpec,
+    width: baseSpec.width * (visualSize.width / FORMATION_SPRITE_SIZE),
+    height: baseSpec.height * (visualSize.height / FORMATION_SPRITE_SIZE),
+  };
+}
+
+function _positionNpcShadow(sprite, npcId) {
+  if (!sprite?._shadow) return;
+  const visualSize = _npcShadowVisualSize(sprite, npcId);
+  sprite._shadow.x = sprite.x;
+  sprite._shadow.y = sprite.y + visualSize.height * NPC_SHADOW_Y_OFFSET_RATIO;
 }
 
 const ANIMATED_SHADOW_Y_OFFSET_BY_SLOT = [23, 19, 28];
@@ -859,23 +904,30 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false, isSta
     console.warn('[formation] animated NPC setup failed; using static sprite', npcId, err);
   }
   if (scene.disposed || isStale?.()) return null;
-  const npcDisplaySize = NPC_BASE_SPRITE_SIZE * (sprite._animatedNpc?.entry?.renderScale || 1);
-  sprite.width = npcDisplaySize;
-  sprite.height = npcDisplaySize;
+  const npcDisplayWidth = NPC_BASE_SPRITE_SIZE * (sprite._animatedNpc?.entry?.renderScale || 1);
+  const npcDisplaySize = _displaySizeForTexture(sprite, npcDisplayWidth);
+  sprite.width = npcDisplaySize.width;
+  sprite.height = npcDisplaySize.height;
   sprite.y = getBattlefieldSlot('enemy', NPC_BATTLEFIELD_ROW_INDEX, screenW, screenH).y;
 
+  const shadowSpec = _npcShadowSpecForSprite(sprite, npcId);
+  const shadow = new Graphics();
+  _drawShadow(shadow, shadowSpec);
+  scene.layers.npcs.addChild(shadow);
+  sprite._shadow = shadow;
   scene.layers.npcs.addChild(sprite);
 
+  const targetX = screenW * 0.7;
   if (slideIn) {
-    sprite.x = screenW + npcDisplaySize;
+    sprite.x = screenW + npcDisplaySize.width;
+    _positionNpcShadow(sprite, npcId);
     try {
-      await scene.tween(sprite, { x: screenW * 0.7 }, { duration: 400, ease: 'easeOut' });
+      await Promise.all([
+        scene.tween(sprite, { x: targetX }, { duration: 400, ease: 'easeOut' }),
+        scene.tween(shadow, { x: targetX }, { duration: 400, ease: 'easeOut' }),
+      ]);
       if (isStale?.()) {
-        if (typeof sprite._cancelNpcAnimationUpdater === 'function') {
-          sprite._cancelNpcAnimationUpdater();
-        }
-        if (sprite.parent) sprite.parent.removeChild(sprite);
-        sprite.destroy({ children: true });
+        removeNpcSprite(scene, sprite);
         return null;
       }
       sprite._npcWalking = false;
@@ -886,15 +938,12 @@ export async function spawnNpcSprite(scene, spritePath, { slideIn = false, isSta
       // Tween rejected (e.g., scene disposed mid-slide). Clean up our
       // orphan sprite so it doesn't linger in the layer while the caller's
       // `this.npcSprite = await ...` assignment never happens.
-      if (typeof sprite._cancelNpcAnimationUpdater === 'function') {
-        sprite._cancelNpcAnimationUpdater();
-      }
-      if (sprite.parent) sprite.parent.removeChild(sprite);
-      sprite.destroy({ children: true });
+      removeNpcSprite(scene, sprite);
       throw e;
     }
   } else {
-    sprite.x = screenW * 0.7;
+    sprite.x = targetX;
+    _positionNpcShadow(sprite, npcId);
   }
 
   return sprite;
@@ -914,6 +963,7 @@ export function removeNpcSprite(scene, sprite) {
   if (typeof sprite._cancelNpcAnimationUpdater === 'function') {
     sprite._cancelNpcAnimationUpdater();
   }
+  _destroyShadow(sprite);
   if (sprite.parent) sprite.parent.removeChild(sprite);
   sprite.destroy({ children: true });
 }
