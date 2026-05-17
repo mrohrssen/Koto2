@@ -528,8 +528,11 @@ describe('npc dialogue card', () => {
     assert.match(actionArea.innerHTML, /class="crystal-cost"/);
     assert.match(actionArea.innerHTML, /crystal-cost-number">5</);
     assert.match(actionArea.innerHTML, /crystal-cost-number">15</);
-    assert.match(actionArea.innerHTML, /npc-dialogue-jp-line[\s\S]*crystal-cost[\s\S]*翻訳する/);
+    assert.match(actionArea.innerHTML, /npc-dialogue-jp-line[\s\S]*crystal-cost[\s\S]*訳す/);
     assert.match(actionArea.innerHTML, /npc-dialogue-jp-line[\s\S]*crystal-cost[\s\S]*学ぶ/);
+    assert.match(actionArea.innerHTML, /npc-dialogue-btn-jp">進む</);
+    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-btn-jp">翻訳する</);
+    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-btn-jp">次へ進む</);
     assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-book-icon/);
     assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-learn-icon/);
   });
@@ -542,10 +545,15 @@ describe('npc dialogue card', () => {
       useKanji: false
     });
 
-    assert.match(actionArea.innerHTML, /npc-dialogue-btn-jp">ほんやくする</);
+    assert.match(actionArea.innerHTML, /npc-dialogue-btn-roman">yakusu</);
+    assert.match(actionArea.innerHTML, /npc-dialogue-btn-jp">やくす</);
     assert.match(actionArea.innerHTML, /npc-dialogue-btn-jp">まなぶ</);
+    assert.match(actionArea.innerHTML, /npc-dialogue-btn-jp">すすむ</);
+    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-btn-jp">ほんやくする</);
     assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-btn-jp">翻訳する</);
     assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-btn-jp">学ぶ</);
+    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-btn-jp">次へ進む</);
+    assert.doesNotMatch(actionArea.innerHTML, /npc-dialogue-btn-jp">つぎへすすむ</);
   });
 
   it('sends a stable translation idempotency key and blocks duplicate in-flight clicks', async () => {
