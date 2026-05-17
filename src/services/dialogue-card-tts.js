@@ -31,7 +31,8 @@ export function createDialogueCardTtsResolver({
     userId,
     line,
     speakerKey,
-    speakerId
+    speakerId,
+    waitForSynthesis = true
   } = {}) {
     if (!userId || !ttsDialogueCache || !synthesizeFn) return null;
 
@@ -43,6 +44,17 @@ export function createDialogueCardTtsResolver({
       : Number(getSpeakerId?.({ speakerKey, line }) || 13);
 
     try {
+      if (waitForSynthesis === false) {
+        const cachedKey = ttsDialogueCache.lookupLineKey?.(userId, text, resolvedSpeakerId);
+        if (cachedKey) return { userId, key: cachedKey, speakerId: resolvedSpeakerId };
+
+        ttsDialogueCache.synthesizeLine(userId, text, resolvedSpeakerId, synthesizeFn)
+          .catch(error => {
+            logger?.warn?.(`[DialogueCardTTS] Background dialogue card TTS failed for ${speakerKey || 'unknown'}: ${error.message}`);
+          });
+        return null;
+      }
+
       const key = await ttsDialogueCache.synthesizeLine(
         userId,
         text,

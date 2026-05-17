@@ -223,6 +223,61 @@ describe('static dialogue route TTS metadata', () => {
     });
   });
 
+  it('does not wait for uncached befriend quiz prompt synthesis before responding', async () => {
+    const audioCalls = [];
+    let resolveSynthesis;
+    const pendingSynthesis = new Promise(resolve => { resolveSynthesis = resolve; });
+    const router = createCombatRoutes({
+      getUserVocabulary: () => ({ words: [] }),
+      getCreatureDialogueFromCache: () => null,
+      regenCreatureDialogueFn: async () => {},
+      getNpcDialogueFromCache: () => null,
+      logNpcEncounterFn: () => {},
+      regenNpcDialogueFn: async () => {},
+      setNpcMemoryFlagFn: () => {},
+      updateNpcMemoryBondFn: () => {},
+      checkSentenceViolations: () => ({ violations: [] }),
+      getDialogueCardAudio: ({ userId, speakerKey, line, waitForSynthesis }) => {
+        audioCalls.push({ userId, speakerKey, raw: line.raw, waitForSynthesis });
+        if (waitForSynthesis === false) return null;
+        return pendingSynthesis;
+      }
+    });
+    const handler = getHandler(router, 'post', '/creature-combat-cycle');
+    const req = {
+      body: { actionType: 'attack', moveChoices: [] },
+      user: { id: 'creature-user' },
+      gameManager: {
+        combat: {},
+        combatCycleService: {
+          creatureCombatCycle: () => ({
+            befriendQuizTriggered: true,
+            befriendQuiz: {
+              waitPrompt: { text: '待って！', tokens: [{ surface: '待って' }], words: [] },
+              namePrompt: { text: '名前は？', tokens: [{ surface: '名前' }], words: [] },
+              successPrompt: { text: '友達！', tokens: [{ surface: '友達' }], words: [] },
+              wrongPrompt: { text: '違う！', tokens: [{ surface: '違う' }], words: [] },
+            }
+          })
+        }
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'combat' })
+    };
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(audioCalls.map(call => call.waitForSynthesis), [false, false, false, false]);
+    assert.equal(res.body.befriendQuiz.waitPrompt.audio, undefined);
+    assert.equal(res.body.befriendQuiz.namePrompt.audio, undefined);
+    assert.equal(res.body.befriendQuiz.successPrompt.audio, undefined);
+    assert.equal(res.body.befriendQuiz.wrongPrompt.audio, undefined);
+
+    resolveSynthesis();
+  });
+
   it('uses the defeated NPC voice for NPC battle skill prompt audio', async () => {
     const sharedRoom = { type: 'npcBattle', npcBattle: {} };
     const gameManager = {

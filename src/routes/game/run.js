@@ -107,7 +107,8 @@ export default function createRunRoutes({
       userId: req.user.id,
       speakerKey,
       speakerId,
-      line
+      line,
+      waitForSynthesis: false
     });
     return audio ? { ...line, audio } : line;
   }
@@ -119,14 +120,16 @@ export default function createRunRoutes({
       next.requestAudio = await getDialogueCardAudio?.({
         userId: req.user.id,
         speakerKey: 'you',
-        line: { tokens: item.tokens, raw: item.raw || item.text || '' }
+        line: { tokens: item.tokens, raw: item.raw || item.text || '' },
+        waitForSynthesis: false
       });
     }
     if (item.shopTokens?.length) {
       next.shopAudio = await getDialogueCardAudio?.({
         userId: req.user.id,
         speakerKey: 'you',
-        line: { tokens: item.shopTokens, raw: item.shopRaw || item.shopText || '' }
+        line: { tokens: item.shopTokens, raw: item.shopRaw || item.shopText || '' },
+        waitForSynthesis: false
       });
     }
     return next;
