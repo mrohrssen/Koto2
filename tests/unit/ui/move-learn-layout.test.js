@@ -33,6 +33,12 @@ test('learn move replacement uses the move-select grid with the new move in the 
   assert.doesNotMatch(moveLearnSource, /textContent = "Don't learn"/);
 });
 
+test('learn move auto-learn uses the move-select cell for the learned move', () => {
+  assert.match(moveLearnSource, /if \(alreadyLearned \|\| creature\.moves\.length < 3\) \{\s*panel\.classList\.add\('move-learn-panel--grid'\);/);
+  assert.match(moveLearnSource, /const newMoveCell = buildMoveCell\(newMove,\s*true\);\s*newMoveCell\.classList\.add\('move-learn-new-slot'\);\s*panel\.appendChild\(newMoveCell\);/s);
+  assert.doesNotMatch(moveLearnSource, /buildMoveCard\(newMove/);
+});
+
 test('learn move replacement stretches to the same width as regular move buttons', () => {
   const panelBody = ruleBody(css, '.move-learn-panel--grid {');
   assert.ok(panelBody, '.move-learn-panel--grid rule not found');
