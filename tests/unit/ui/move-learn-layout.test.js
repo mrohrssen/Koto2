@@ -67,6 +67,7 @@ test('learn move auto-learn centers the learned move with a green OK button belo
   const autoMoveBody = ruleBody(css, '.move-learn-auto-grid .move-cell {');
   assert.ok(autoMoveBody, '.move-learn-auto-grid .move-cell rule not found');
   assert.match(autoMoveBody, /width:\s*calc\(\(100%\s*-\s*8px\)\s*\/\s*2\)\s*;/);
+  assert.match(autoMoveBody, /height:\s*calc\(\(100cqh\s*-\s*8px\)\s*\/\s*2\)\s*;/);
 
   const autoOkBody = ruleBody(css, '.move-learn-panel--auto .move-learn-ok-btn {');
   assert.ok(autoOkBody, '.move-learn-panel--auto .move-learn-ok-btn rule not found');
