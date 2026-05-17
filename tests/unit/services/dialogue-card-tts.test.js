@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  createDialogueCardWordTtsResolver,
   createDialogueCardTtsResolver,
   getDialogueLineText
 } from '../../../src/services/dialogue-card-tts.js';
@@ -75,7 +76,7 @@ describe('dialogue-card TTS service', () => {
       line: { raw: 'こんにちは！' }
     });
 
-    assert.deepEqual(audio, { userId: 'u1', key: 'abc123def456.wav' });
+    assert.deepEqual(audio, { userId: 'u1', key: 'abc123def456.wav', speakerId: 46 });
     assert.deepEqual(cacheCalls, [{ userId: 'u1', text: 'こんにちは！', speakerId: 46 }]);
     assert.deepEqual(synthCalls, [{ text: 'こんにちは！', speakerId: 46 }]);
   });
@@ -102,5 +103,36 @@ describe('dialogue-card TTS service', () => {
     assert.equal(audio, null);
     assert.equal(warnings.length, 1);
     assert.match(warnings[0], /Dialogue card TTS failed/);
+  });
+
+  it('synthesizes clicked word audio with the dialogue speaker id', async () => {
+    const synthCalls = [];
+    const cacheCalls = [];
+    const ttsDialogueCache = {
+      async synthesizeLine(userId, text, speakerId, synthesizeFn) {
+        cacheCalls.push({ userId, text, speakerId });
+        await synthesizeFn(text, speakerId);
+        return 'word12345678.wav';
+      }
+    };
+
+    const resolveWordAudio = createDialogueCardWordTtsResolver({
+      ttsDialogueCache,
+      synthesizeFn: async (text, speakerId) => {
+        synthCalls.push({ text, speakerId });
+        return Buffer.from(`WAV:${speakerId}:${text}`);
+      },
+      logger: { warn: () => {} }
+    });
+
+    const audio = await resolveWordAudio({
+      userId: 'u1',
+      word: '森',
+      speakerId: 46
+    });
+
+    assert.deepEqual(audio, { userId: 'u1', key: 'word12345678.wav' });
+    assert.deepEqual(cacheCalls, [{ userId: 'u1', text: '森', speakerId: 46 }]);
+    assert.deepEqual(synthCalls, [{ text: '森', speakerId: 46 }]);
   });
 });

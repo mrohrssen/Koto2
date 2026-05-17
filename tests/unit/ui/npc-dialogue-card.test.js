@@ -113,6 +113,7 @@ class FakeElement {
 
 let actionArea;
 let attachedLookupContainer = null;
+let attachedLookupOptions = null;
 let playedAudio = null;
 let translationResponse = { ok: true, translation: 'Wait!', cached: false };
 let translatedRequests = [];
@@ -146,7 +147,10 @@ globalThis.document = {
 
 await mock.module('../../../public/js/ui/dialogue-word-lookup.js', {
   namedExports: {
-    attachWordClickHandlers: container => { attachedLookupContainer = container; },
+    attachWordClickHandlers: (container, options) => {
+      attachedLookupContainer = container;
+      attachedLookupOptions = options;
+    },
     hidePopup: () => {},
   },
 });
@@ -182,6 +186,7 @@ describe('npc dialogue card', () => {
   beforeEach(() => {
     actionArea = new FakeElement('section');
     attachedLookupContainer = null;
+    attachedLookupOptions = null;
     playedAudio = null;
     translationResponse = { ok: true, translation: 'Wait!', cached: false };
     translatedRequests = [];
@@ -208,6 +213,18 @@ describe('npc dialogue card', () => {
     assert.match(html, /npc-dialogue-en-row/);
     assert.match(html, /data-base="不安"/);
     assert.match(html, />anxiety</);
+  });
+
+  it('keeps clicked-word audio text on the token surface, not the dictionary base', () => {
+    const html = renderDialogueTokenRows({
+      tokens: [{ surface: '見た', baseForm: '見る', reading: 'みた', meaning: 'see', pos: 'verb' }],
+      knownWords: new Set(),
+      overrides: {},
+      useKanji: false,
+    });
+
+    assert.match(html, /data-base="見る"/);
+    assert.match(html, /data-audio-text="見た"/);
   });
 
   it('keeps sentence-ending punctuation attached to the preceding word cell', () => {
@@ -362,6 +379,19 @@ describe('npc dialogue card', () => {
     });
 
     assert.equal(attachedLookupContainer?.className.includes('npc-dialogue-text'), true);
+  });
+
+  it('passes cached dialogue word-audio context to lookup handlers', () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '森', baseForm: '森', reading: 'もり', meaning: 'forest', pos: 'noun' }],
+      audio: { userId: 'u1', key: 'line123.wav', speakerId: 46 },
+      knownWords: new Set(),
+    });
+
+    assert.deepEqual(attachedLookupOptions, {
+      wordAudio: { userId: 'u1', speakerId: 46 }
+    });
   });
 
   it('escapes plain fallback text and skips lookup attachment', () => {
