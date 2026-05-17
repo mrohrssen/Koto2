@@ -142,7 +142,11 @@ function handleClick(e) {
     return;
   }
 
-  // Click is outside narration box — advance dialogue
+  // Click is outside narration box — advance dialogue and consume this click so
+  // it cannot activate the game control underneath the narration.
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
   if (pagedText.length > 0 && currentPage < pagedText.length - 1) {
     currentPage += 1;
     if (textEl) {
