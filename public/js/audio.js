@@ -1,4 +1,13 @@
 import { sfxUrl, bgmUrl } from './assets/asset-urls.js';
+import {
+  getEffectiveVolume,
+  getVolume as getStoredVolume,
+  isMuted as isAudioMuted,
+  reloadAudioSettings,
+  setMuted as setStoredMuted,
+  setVolume as setStoredVolume,
+  subscribeAudioSettings
+} from './audio-settings.js';
 
 const SFX_FILES = [
   'attack', 'player-hit', 'enemy-defeat', 'heal',
@@ -9,34 +18,59 @@ const SFX_FILES = [
 
 let audioCtx = null;
 const sfxBuffers = {};
-let sfxVolume = readVolumePreference('jrpg_sfxVolume', 0.8);
-let bgmVolume = readVolumePreference('jrpg_bgmVolume', 0.7);
-let muted = readMutedPreference();
 
 // BGM state
 let bgmElement = null;
 let bgmPlaying = false;
+let bgmSourceNode = null;
+let bgmGainNode = null;
 
 // Phase-based BGM tracking
 let currentTrack = null;
 
-function readMutedPreference() {
+subscribeAudioSettings((change) => {
+  if (change.type === 'muted' || change.type === 'reload' || change.target === 'bgm') {
+    applyBgmVolume();
+  }
+});
+
+function getBgmPlaybackVolume() {
+  return getEffectiveVolume('bgm');
+}
+
+function ensureBgmGraph() {
+  if (!audioCtx || !bgmElement || bgmGainNode) return;
   try {
-    return globalThis.localStorage?.getItem('jrpg_audioMuted') === 'true';
-  } catch {
-    return false;
+    bgmSourceNode = audioCtx.createMediaElementSource(bgmElement);
+    bgmGainNode = audioCtx.createGain();
+    bgmSourceNode.connect(bgmGainNode);
+    bgmGainNode.connect(audioCtx.destination);
+  } catch (e) {
+    bgmSourceNode = null;
+    bgmGainNode = null;
+    console.warn('[Audio] Failed to route BGM through Web Audio:', e.message);
   }
 }
 
-function readVolumePreference(key, fallback) {
-  try {
-    const saved = globalThis.localStorage?.getItem(key);
-    if (saved === null || saved === undefined) return fallback;
-    const parsed = Number.parseFloat(saved);
-    return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : fallback;
-  } catch {
-    return fallback;
+function setBgmOutputVolume(volume) {
+  if (bgmGainNode) {
+    bgmGainNode.gain.value = volume;
+  } else if (bgmElement) {
+    bgmElement.volume = volume;
   }
+}
+
+function getBgmOutputVolume() {
+  return bgmGainNode ? bgmGainNode.gain.value : (bgmElement?.volume ?? 0);
+}
+
+function applyBgmVolume() {
+  if (!bgmElement) return;
+  ensureBgmGraph();
+  const volume = getBgmPlaybackVolume();
+  bgmElement.muted = isAudioMuted();
+  bgmElement.volume = bgmGainNode ? 1 : volume;
+  setBgmOutputVolume(volume);
 }
 
 const PHASE_TRACKS = {
@@ -100,11 +134,7 @@ export async function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   await audioCtx.resume(); // Required for mobile autoplay policy
 
-  // Load saved preferences
-  const savedMuted = localStorage.getItem('jrpg_audioMuted');
-  sfxVolume = readVolumePreference('jrpg_sfxVolume', 0.8);
-  bgmVolume = readVolumePreference('jrpg_bgmVolume', 0.7);
-  muted = savedMuted === 'true';
+  reloadAudioSettings();
 
   // Preload all SFX
   await Promise.allSettled(SFX_FILES.map(loadSfx));
@@ -114,8 +144,8 @@ export async function initAudio() {
     bgmElement = new Audio();
     bgmElement.loop = true;
   }
-  bgmElement.volume = muted ? 0 : bgmVolume;
-  if (bgmPlaying && !muted) {
+  applyBgmVolume();
+  if (bgmPlaying && !isAudioMuted()) {
     bgmElement.play().catch(() => {});
   }
 }
@@ -138,14 +168,14 @@ async function loadSfx(name) {
  * @param {string} name - SFX name (without extension)
  */
 export function playSFX(name) {
-  if (muted || !audioCtx || !sfxBuffers[name]) return;
+  if (isAudioMuted() || !audioCtx || !sfxBuffers[name]) return;
   if (audioCtx.state === 'suspended') audioCtx.resume();
 
   const source = audioCtx.createBufferSource();
   source.buffer = sfxBuffers[name];
 
   const gainNode = audioCtx.createGain();
-  gainNode.gain.value = sfxVolume;
+  gainNode.gain.value = getEffectiveVolume('sfx');
 
   source.connect(gainNode);
   gainNode.connect(audioCtx.destination);
@@ -163,11 +193,12 @@ export function playBGM(track = 'main') {
     bgmElement = new Audio();
     bgmElement.loop = true;
   }
+  applyBgmVolume();
   const src = bgmUrl(track);
   if (bgmElement.src !== new URL(src, location.href).href) {
     bgmElement.src = src;
   }
-  bgmElement.volume = muted ? 0 : bgmVolume;
+  applyBgmVolume();
   bgmElement.play().catch(() => {}); // ignore autoplay rejection
   bgmPlaying = true;
 }
@@ -182,13 +213,14 @@ export function playBGMRandomStart(track) {
     bgmElement = new Audio();
     bgmElement.loop = true;
   }
+  applyBgmVolume();
   const src = bgmUrl(track);
   const fullSrc = new URL(src, location.href).href;
 
   // If same track, just seek to random position
   if (bgmElement.src === fullSrc && bgmElement.duration) {
     bgmElement.currentTime = Math.random() * bgmElement.duration;
-    bgmElement.volume = muted ? 0 : bgmVolume;
+    applyBgmVolume();
     bgmElement.play().catch(() => {});
     bgmPlaying = true;
     currentTrack = track;
@@ -197,7 +229,7 @@ export function playBGMRandomStart(track) {
 
   // Different track - load and seek once ready
   bgmElement.src = src;
-  bgmElement.volume = muted ? 0 : bgmVolume;
+  applyBgmVolume();
 
   const seekOnLoad = () => {
     if (bgmElement.duration) {
@@ -215,8 +247,9 @@ export function playBGMRandomStart(track) {
 export function stopBGM() {
   if (!bgmElement || !bgmPlaying) return;
   const fadeInterval = setInterval(() => {
-    if (bgmElement.volume > 0.05) {
-      bgmElement.volume = Math.max(0, bgmElement.volume - 0.05);
+    const currentVolume = getBgmOutputVolume();
+    if (currentVolume > 0.05) {
+      setBgmOutputVolume(Math.max(0, currentVolume - 0.05));
     } else {
       clearInterval(fadeInterval);
       bgmElement.pause();
@@ -233,7 +266,7 @@ export function pauseBGM() {
 
 /** Resume BGM (for tab visible) */
 export function resumeBGM() {
-  if (bgmElement && bgmPlaying && !muted) bgmElement.play().catch(() => {});
+  if (bgmElement && bgmPlaying && !isAudioMuted()) bgmElement.play().catch(() => {});
 }
 
 // ============ VOLUME & MUTE ============
@@ -244,15 +277,7 @@ export function resumeBGM() {
  * @param {number} val - 0 to 1
  */
 export function setVolume(type, val) {
-  const clamped = Math.max(0, Math.min(1, val));
-  if (type === 'sfx') {
-    sfxVolume = clamped;
-    localStorage.setItem('jrpg_sfxVolume', String(clamped));
-  } else if (type === 'bgm') {
-    bgmVolume = clamped;
-    localStorage.setItem('jrpg_bgmVolume', String(clamped));
-    if (bgmElement) bgmElement.volume = muted ? 0 : clamped;
-  }
+  setStoredVolume(type, val);
 }
 
 /**
@@ -261,25 +286,22 @@ export function setVolume(type, val) {
  * @returns {number} 0 to 1
  */
 export function getVolume(type) {
-  return type === 'sfx' ? sfxVolume : bgmVolume;
+  return getStoredVolume(type);
 }
 
 /** Mute all audio */
 export function mute() {
-  muted = true;
-  localStorage.setItem('jrpg_audioMuted', 'true');
-  if (bgmElement) bgmElement.volume = 0;
+  setStoredMuted(true);
 }
 
 /** Unmute all audio */
 export function unmute() {
-  muted = false;
-  localStorage.removeItem('jrpg_audioMuted');
-  if (bgmElement) bgmElement.volume = bgmVolume;
+  setStoredMuted(false);
   if (audioCtx?.state === 'suspended') audioCtx.resume();
+  if (bgmElement && bgmPlaying) bgmElement.play().catch(() => {});
 }
 
 /** Check mute state */
 export function isMuted() {
-  return muted;
+  return isAudioMuted();
 }

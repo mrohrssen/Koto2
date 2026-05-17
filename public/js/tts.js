@@ -1,5 +1,13 @@
 import { PLATFORM } from './platform.js';
 import { getAuthHeaders } from './api.js';
+import {
+  getEffectiveVolume,
+  getVolume as getStoredVolume,
+  isMuted as isAudioMuted,
+  setMuted as setStoredMuted,
+  setVolume as setStoredVolume,
+  subscribeAudioSettings
+} from './audio-settings.js';
 const API_BASE = PLATFORM.apiBase;
 
 // ============ TTS STATE ============
@@ -7,11 +15,10 @@ const API_BASE = PLATFORM.apiBase;
 let ttsEnabled = true;
 let ttsSpeakerId = 13; // 玄野武宏 (クール) - default narrator
 let ttsSpeed = 0.9;
-let ttsVolume = readTtsVolumePreference();
-let muted = localStorage.getItem('jrpg_audioMuted') === 'true';
 let currentAudio = null;
 let lastSpokenNarration = null;
 let ttsRequestId = 0;
+const activeTtsAudio = new Set();
 
 // Narration audio prefetch cache
 const narrationCache = new Map();
@@ -25,16 +32,11 @@ const WORD_SPEAKER_ID = 11; // 玄野武宏 (ノーマル) - clear pronunciation
 // UI audio (for short texts like creature names)
 let currentUiAudio = null;
 
-function readTtsVolumePreference() {
-  try {
-    const saved = globalThis.localStorage?.getItem('jrpg_ttsVolume');
-    if (saved === null || saved === undefined) return 1.0;
-    const parsed = Number.parseFloat(saved);
-    return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : 1.0;
-  } catch {
-    return 1.0;
+subscribeAudioSettings((change) => {
+  if (change.type === 'muted' || change.type === 'reload' || change.target === 'tts') {
+    applyVolumeToCurrentAudio();
   }
-}
+});
 
 // ============ PERSONALITY SPEAKERS ============
 
@@ -104,17 +106,41 @@ export function setSpeed(speed) {
 }
 
 export function getVolume() {
-  return ttsVolume;
+  return getStoredVolume('tts');
+}
+
+function getPlaybackVolume() {
+  return getEffectiveVolume('tts');
+}
+
+function applyVolumeToCurrentAudio() {
+  const volume = getPlaybackVolume();
+  for (const audio of activeTtsAudio) {
+    audio.volume = volume;
+  }
+}
+
+function trackTtsAudio(audio, cleanup = () => {}) {
+  activeTtsAudio.add(audio);
+  audio.volume = getPlaybackVolume();
+  let cleaned = false;
+  const finish = () => {
+    if (cleaned) return;
+    cleaned = true;
+    activeTtsAudio.delete(audio);
+    cleanup();
+  };
+  audio.onended = finish;
+  audio.onerror = finish;
+  return audio;
 }
 
 export function setVolume(volume) {
-  const clamped = Math.max(0, Math.min(1, volume));
-  ttsVolume = clamped;
-  localStorage.setItem('jrpg_ttsVolume', String(clamped));
+  setStoredVolume('tts', volume);
 }
 
 export function setMuted(val) {
-  muted = val;
+  setStoredMuted(val);
 }
 
 export function isWordAudioEnabled() {
@@ -166,7 +192,7 @@ async function synthesize(text, options = {}) {
  * @param {object} [options] - Optional overrides (speakerId, speed)
  */
 export function prefetchNarration(text, options = {}) {
-  if (!ttsEnabled || muted || !text || text.trim().length === 0) return;
+  if (!ttsEnabled || isAudioMuted() || !text || text.trim().length === 0) return;
   if (narrationCache.has(text)) return;
 
   // Evict oldest if full
@@ -205,7 +231,7 @@ export async function speakNarration(text) {
   // Store for repeat with 'r' key
   lastSpokenNarration = text;
 
-  if (!ttsEnabled || muted) return;
+  if (!ttsEnabled || isAudioMuted()) return;
 
   // Increment request ID to cancel any pending requests
   const thisRequestId = ++ttsRequestId;
@@ -229,12 +255,11 @@ export async function speakNarration(text) {
     return;
   }
 
-  currentAudio = new Audio(result.url);
-  currentAudio.volume = Math.min(ttsVolume, 1.0);
-  currentAudio.onended = () => {
+  const audio = new Audio(result.url);
+  currentAudio = trackTtsAudio(audio, () => {
     URL.revokeObjectURL(result.url);
-    currentAudio = null;
-  };
+    if (currentAudio === audio) currentAudio = null;
+  });
   currentAudio.play();
 }
 
@@ -243,7 +268,7 @@ export async function speakNarration(text) {
  * Doesn't interrupt narration or manage request cancellation
  */
 export async function speakText(text) {
-  if (!ttsEnabled || muted || !text || text.trim().length === 0) return;
+  if (!ttsEnabled || isAudioMuted() || !text || text.trim().length === 0) return;
 
   const result = await synthesize(text);
   if (!result) return;
@@ -254,10 +279,11 @@ export async function speakText(text) {
     currentUiAudio = null;
   }
 
-  currentUiAudio = new Audio(result.url);
-  currentUiAudio.volume = Math.min(ttsVolume, 1.0);
-  currentUiAudio.onended = () => URL.revokeObjectURL(result.url);
-  currentUiAudio.onerror = () => URL.revokeObjectURL(result.url);
+  const audio = new Audio(result.url);
+  currentUiAudio = trackTtsAudio(audio, () => {
+    URL.revokeObjectURL(result.url);
+    if (currentUiAudio === audio) currentUiAudio = null;
+  });
   currentUiAudio.play();
 }
 
@@ -268,7 +294,7 @@ export async function speakText(text) {
  * @returns {Promise<Audio|null>} Audio element for playback control, or null on error
  */
 export async function speakWithVoice(text, speakerId) {
-  if (!ttsEnabled || muted || !text || text.trim().length === 0) return null;
+  if (!ttsEnabled || isAudioMuted() || !text || text.trim().length === 0) return null;
 
   // Stop any currently playing narration audio
   if (currentAudio) {
@@ -279,15 +305,7 @@ export async function speakWithVoice(text, speakerId) {
   const result = await synthesize(text, { speakerId });
   if (!result) return null;
 
-  const audio = new Audio(result.url);
-  audio.volume = Math.min(ttsVolume, 1.0);
-
-  // Auto-revoke URL when done
-  const cleanup = () => URL.revokeObjectURL(result.url);
-  audio.onended = cleanup;
-  audio.onerror = cleanup;
-
-  return audio;
+  return trackTtsAudio(new Audio(result.url), () => URL.revokeObjectURL(result.url));
 }
 
 /**
@@ -297,19 +315,19 @@ export async function speakWithVoice(text, speakerId) {
  * @returns {Promise<void>}
  */
 export async function playDialogueAudio(userId, filename) {
-  if (!ttsEnabled || muted || !filename) return;
+  if (!ttsEnabled || isAudioMuted() || !filename) return;
 
   stop();
 
   const url = `${API_BASE}/api/tts/dialogue/${userId}/${filename}`;
-  const audio = new Audio(url);
-  audio.volume = Math.min(ttsVolume, 1.0);
-  currentAudio = audio;
 
   return new Promise((resolve) => {
-    audio.onended = () => { currentAudio = null; resolve(); };
-    audio.onerror = () => { currentAudio = null; resolve(); };
-    audio.play().catch(() => { currentAudio = null; resolve(); });
+    const audio = new Audio(url);
+    currentAudio = trackTtsAudio(audio, () => {
+      if (currentAudio === audio) currentAudio = null;
+      resolve();
+    });
+    audio.play().catch(() => { currentAudio = null; activeTtsAudio.delete(audio); resolve(); });
   });
 }
 
@@ -319,7 +337,7 @@ export async function playDialogueAudio(userId, filename) {
  * @returns {Promise<void>}
  */
 export async function playDialogueWordAudio({ userId, word, speakerId } = {}) {
-  if (!ttsEnabled || muted || !userId || !word) return;
+  if (!ttsEnabled || isAudioMuted() || !userId || !word) return;
 
   const resolvedSpeakerId = Number(speakerId);
   if (!Number.isFinite(resolvedSpeakerId)) return;
@@ -340,6 +358,34 @@ export async function playDialogueWordAudio({ userId, word, speakerId } = {}) {
 }
 
 /**
+ * Play an in-memory WAV buffer using the same TTS volume/mute path.
+ * @param {ArrayBuffer|Uint8Array|Buffer} audioData
+ * @returns {Promise<void>}
+ */
+export function playAudioBuffer(audioData) {
+  if (!ttsEnabled || isAudioMuted() || !audioData) return Promise.resolve();
+
+  stop();
+
+  return new Promise((resolve) => {
+    try {
+      const blob = new Blob([audioData], { type: 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      currentAudio = trackTtsAudio(audio, () => {
+        URL.revokeObjectURL(url);
+        if (currentAudio === audio) currentAudio = null;
+        resolve();
+      });
+      audio.play().catch(() => { currentAudio = null; activeTtsAudio.delete(audio); URL.revokeObjectURL(url); resolve(); });
+    } catch (e) {
+      console.warn('[TTS] Failed to play audio buffer:', e.message);
+      resolve();
+    }
+  });
+}
+
+/**
  * Stop any currently playing TTS audio and cancel pending requests
  */
 export function stop() {
@@ -347,6 +393,7 @@ export function stop() {
   ttsRequestId++;
 
   if (currentAudio) {
+    activeTtsAudio.delete(currentAudio);
     currentAudio.pause();
     currentAudio = null;
   }
@@ -358,7 +405,7 @@ export function stop() {
  * Prefetch audio for a single word
  */
 export async function prefetchWord(word) {
-  if (!wordAudioEnabled || !word) return;
+  if (!wordAudioEnabled || isAudioMuted() || !word) return;
 
   // Already cached or pending
   if (wordAudioCache.has(word)) return;
@@ -398,7 +445,7 @@ export async function prefetchWord(word) {
  * Play cached audio for a word
  */
 export function playWord(word) {
-  if (!wordAudioEnabled || muted || !word) return;
+  if (!wordAudioEnabled || isAudioMuted() || !word) return;
 
   const cached = wordAudioCache.get(word);
   if (!cached || cached.status !== 'ready' || !cached.url) {
@@ -407,8 +454,7 @@ export function playWord(word) {
   }
 
   try {
-    const audio = new Audio(cached.url);
-    audio.volume = Math.min(ttsVolume, 1.0);
+    const audio = trackTtsAudio(new Audio(cached.url));
     audio.play().catch(e => console.warn('[WordAudio] Playback failed:', e.message));
   } catch (e) {
     console.warn('[WordAudio] Error playing audio:', e.message);
@@ -422,7 +468,7 @@ export function playWord(word) {
  * @param {number} gapMs - Gap between words in ms (default 150)
  */
 export function playWordPair(word1, word2, gapMs = 300) {
-  if (!wordAudioEnabled || muted) return;
+  if (!wordAudioEnabled || isAudioMuted()) return;
   playWord(word1);
   if (word2) {
     setTimeout(() => playWord(word2), gapMs);
@@ -467,6 +513,5 @@ export function initSettings(settings) {
   ttsEnabled = settings.gameTtsEnabled ?? true;
   ttsSpeakerId = settings.gameTtsSpeakerId ?? 13;
   ttsSpeed = settings.gameTtsSpeed ?? 0.9;
-  ttsVolume = readTtsVolumePreference();
 }
 

@@ -138,7 +138,6 @@ export async function openSettings() {
     if (muteCheckbox?.checked) {
       muteCheckbox.checked = false;
       audio.unmute();
-      tts.setMuted(false);
     }
   }
 
@@ -377,7 +376,6 @@ export async function openSettings() {
     audio.setVolume('bgm', bgmVol);
     audio.setVolume('sfx', sfxVol);
     tts.setVolume(ttsVol);
-    tts.setMuted(audioMuted);
     if (audioMuted) { audio.mute(); } else { audio.unmute(); }
 
     // Save learning settings to server.

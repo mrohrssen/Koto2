@@ -1,3 +1,5 @@
+import { getEffectiveVolume, isMuted } from '../audio-settings.js';
+
 // ============ AUDIO CONTEXT ============
 
 let ctx = null;
@@ -49,24 +51,13 @@ function createEnvelope(audioCtx, attack, decay, sustain, release, peak = 0.3) {
   return gain;
 }
 
-/**
- * Get volume from localStorage settings (match audio.js behavior)
- * @returns {number} 0-1
- */
-function getSfxVolume() {
-  const saved = localStorage.getItem('jrpg_sfxVolume');
-  const muted = localStorage.getItem('jrpg_audioMuted');
-  if (muted === 'true') return 0;
-  return saved !== null ? parseFloat(saved) : 0.8;
-}
-
 // ============ ELEMENT ATTACK SOUNDS ============
 
 /**
  * Fire attack: crackling sizzle burst
  */
 function fireAttack(audioCtx) {
-  const vol = getSfxVolume();
+  const vol = getEffectiveVolume('sfx');
   const now = audioCtx.currentTime;
   const master = audioCtx.createGain();
   master.gain.value = vol * 0.25;
@@ -103,7 +94,7 @@ function fireAttack(audioCtx) {
  * Water attack: splash/bubble
  */
 function waterAttack(audioCtx) {
-  const vol = getSfxVolume();
+  const vol = getEffectiveVolume('sfx');
   const now = audioCtx.currentTime;
   const master = audioCtx.createGain();
   master.gain.value = vol * 0.25;
@@ -146,7 +137,7 @@ function waterAttack(audioCtx) {
  * Earth attack: rumble/thud
  */
 function earthAttack(audioCtx) {
-  const vol = getSfxVolume();
+  const vol = getEffectiveVolume('sfx');
   const now = audioCtx.currentTime;
   const master = audioCtx.createGain();
   master.gain.value = vol * 0.3;
@@ -182,7 +173,7 @@ function earthAttack(audioCtx) {
  * Metal attack: metallic clang/ring
  */
 function metalAttack(audioCtx) {
-  const vol = getSfxVolume();
+  const vol = getEffectiveVolume('sfx');
   const now = audioCtx.currentTime;
   const master = audioCtx.createGain();
   master.gain.value = vol * 0.2;
@@ -221,7 +212,7 @@ function metalAttack(audioCtx) {
  * Wood attack: whoosh/rustle
  */
 function woodAttack(audioCtx) {
-  const vol = getSfxVolume();
+  const vol = getEffectiveVolume('sfx');
   const now = audioCtx.currentTime;
   const master = audioCtx.createGain();
   master.gain.value = vol * 0.25;
@@ -274,6 +265,7 @@ const ATTACK_SOUNDS = {
  */
 export function playAttackSound(element) {
   try {
+    if (isMuted()) return;
     const audioCtx = getCtx();
     const fn = ATTACK_SOUNDS[element];
     if (fn) fn(audioCtx);
