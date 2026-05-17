@@ -63,6 +63,13 @@ import { TtsCache } from './src/services/tts-cache.js';
 import { TtsDialogueCache } from './src/services/tts-dialogue-cache.js';
 import { TtsWordCache } from './src/services/tts-word-cache.js';
 import { createDialogueCardTtsResolver } from './src/services/dialogue-card-tts.js';
+import {
+  CID_SPEAKER_ID,
+  CREATURE_SPEAKER_ID,
+  PLAYER_BOY_SPEAKER_ID,
+  PLAYER_GIRL_SPEAKER_ID,
+  createDialogueCardSpeakerIdResolver
+} from './src/services/dialogue-card-speakers.js';
 import { setupPvpSockets } from './src/pvp/socket-handler.js';
 
 dotenv.config();
@@ -198,10 +205,6 @@ const ttsWordCache = new TtsWordCache(join(getDataDir(), 'data', 'tts-word-cache
 function buildTtsOptions() {
   if (!settings.gameTtsEnabled) return null;
 
-  const PLAYER_BOY_SPEAKER_ID = 11;    // 玄野武宏 ノーマル
-  const PLAYER_GIRL_SPEAKER_ID = 2;    // 四国めたん ノーマル
-  const CREATURE_SPEAKER_ID = 113;     // あんこもん ノーマル
-
   const playerSpeakerId = settings.voiceGender === 'girl'
     ? PLAYER_GIRL_SPEAKER_ID
     : PLAYER_BOY_SPEAKER_ID;
@@ -211,6 +214,7 @@ function buildTtsOptions() {
     playerSpeakerId,
     getEntitySpeakerId: (entityId, entityType) => {
       if (entityType === 'creature') return CREATURE_SPEAKER_ID;
+      if (entityId === 'cid') return CID_SPEAKER_ID;
       try {
         const npcs = JSON.parse(readFileSync(join(__dirname, 'data', 'npcs.json'), 'utf-8'));
         return npcs[entityId]?.speakerId || 13;
@@ -226,27 +230,17 @@ function buildTtsOptions() {
   };
 }
 
-function getDialogueCardSpeakerId({ speakerKey } = {}) {
-  const PLAYER_BOY_SPEAKER_ID = 11;    // 玄野武宏 ノーマル
-  const PLAYER_GIRL_SPEAKER_ID = 2;    // 四国めたん ノーマル
-  const CREATURE_SPEAKER_ID = 113;     // あんこもん ノーマル
-  const GAME_MASTER_SPEAKER_ID = settings.gameTtsSpeakerId ?? 13;
-
-  if (speakerKey === 'you') {
-    return settings.voiceGender === 'girl'
-      ? PLAYER_GIRL_SPEAKER_ID
-      : PLAYER_BOY_SPEAKER_ID;
+const getDialogueCardSpeakerId = createDialogueCardSpeakerIdResolver({
+  getSettings: () => settings,
+  getNpcSpeakerId: speakerKey => {
+    try {
+      const npcs = JSON.parse(readFileSync(join(__dirname, 'data', 'npcs.json'), 'utf-8'));
+      return npcs[speakerKey]?.speakerId ?? null;
+    } catch {
+      return null;
+    }
   }
-  if (speakerKey === 'game-master') return GAME_MASTER_SPEAKER_ID;
-  if (speakerKey === 'creature') return CREATURE_SPEAKER_ID;
-
-  try {
-    const npcs = JSON.parse(readFileSync(join(__dirname, 'data', 'npcs.json'), 'utf-8'));
-    return npcs[speakerKey]?.speakerId || GAME_MASTER_SPEAKER_ID;
-  } catch {
-    return GAME_MASTER_SPEAKER_ID;
-  }
-}
+});
 
 const getDialogueCardAudio = createDialogueCardTtsResolver({
   ttsDialogueCache,
