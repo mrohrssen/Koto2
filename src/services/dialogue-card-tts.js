@@ -52,7 +52,7 @@ export function createDialogueCardTtsResolver({
           .catch(error => {
             logger?.warn?.(`[DialogueCardTTS] Background dialogue card TTS failed for ${speakerKey || 'unknown'}: ${error.message}`);
           });
-        return null;
+        return { userId, speakerId: resolvedSpeakerId, text, pending: true };
       }
 
       const key = await ttsDialogueCache.synthesizeLine(

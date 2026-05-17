@@ -6,7 +6,7 @@ import {
   resolveExposureMeaning,
 } from '../shared/exposure-extractor.js';
 import * as dialogueLookup from './dialogue-word-lookup.js';
-import { playDialogueAudio } from '../tts.js';
+import { playDialogueAudio, playDialogueLineAudio } from '../tts.js';
 import { learnDialogue, translateDialogue } from '../api.js';
 import { crystalCostHtml } from './crystals.js';
 
@@ -559,7 +559,9 @@ export function showNpcDialogueCard(options = {}) {
       const portraitKindClass = options.portraitKind === 'creature' && options.speakerPortrait
         ? ' npc-dialogue-portrait--creature'
         : '';
-      const hasAudio = !!options.audio?.userId && !!options.audio?.key;
+      const hasCachedAudio = !!options.audio?.userId && !!options.audio?.key;
+      const hasRequestableAudio = !!options.audio?.text && Number.isFinite(Number(options.audio?.speakerId));
+      const hasAudio = hasCachedAudio || hasRequestableAudio;
       const content = renderPageContent(options, pageTokens);
       const continueLabel = pageIndex < pages.length - 1 ? 'Next' : 'Continue';
       const sourceText = pageTokens?.length ? getDialogueSourceText(pageTokens, options.useKanji) : '';
@@ -622,11 +624,26 @@ export function showNpcDialogueCard(options = {}) {
         dialogueLookup.attachWordClickHandlers(textEl, getWordLookupOptions(options));
       }
 
-      actionArea.querySelector('.npc-dialogue-audio')?.addEventListener('click', () => {
-        if (hasAudio) playDialogueAudio(options.audio.userId, options.audio.key);
+      actionArea.querySelector('.npc-dialogue-audio')?.addEventListener('click', async (event) => {
+        if (options.audio?.userId && options.audio?.key) {
+          playDialogueAudio(options.audio.userId, options.audio.key);
+          return;
+        }
+        if (!options.audio?.text || !Number.isFinite(Number(options.audio?.speakerId))) return;
+
+        const button = event.currentTarget;
+        if (button) button.disabled = true;
+        const audio = await playDialogueLineAudio({
+          text: options.audio.text,
+          speakerId: Number(options.audio.speakerId)
+        });
+        if (audio?.key) {
+          options.audio = { ...options.audio, ...audio };
+        }
+        if (button && !resolved) button.disabled = false;
       });
 
-      if (hasAudio && autoplayedAudioKey !== options.audio.key) {
+      if (hasCachedAudio && autoplayedAudioKey !== options.audio.key) {
         autoplayedAudioKey = options.audio.key;
         playDialogueAudio(options.audio.userId, options.audio.key);
       }

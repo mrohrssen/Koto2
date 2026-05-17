@@ -119,6 +119,46 @@ describe('dialogue word TTS route', () => {
     }]);
   });
 
+  it('synthesizes a clicked dialogue line through the per-user dialogue cache', async () => {
+    synthCalls.length = 0;
+    const cacheCalls = [];
+    const ttsDialogueCache = {
+      async synthesizeLine(userId, text, speakerId, synthesizeFn) {
+        cacheCalls.push({ userId, text, speakerId });
+        await synthesizeFn(text, speakerId);
+        return 'line12345678.wav';
+      }
+    };
+    const app = createApp({
+      authBypass: true,
+      routeOverrides: {
+        ttsDialogueCache,
+        getSettings: () => ({ gameTtsSpeed: 0.8, gameTtsVolume: 0.7 })
+      }
+    });
+
+    const res = await request(app)
+      .post('/api/tts/dialogue-line')
+      .send({ userId: '../other-user', text: '待って！', speakerId: 113 })
+      .expect(200);
+
+    assert.deepEqual(res.body, {
+      ok: true,
+      audio: {
+        userId: 'test-user',
+        key: 'line12345678.wav',
+        url: '/api/tts/dialogue/test-user/line12345678.wav',
+        speakerId: 113
+      }
+    });
+    assert.deepEqual(cacheCalls, [{ userId: 'test-user', text: '待って！', speakerId: 113 }]);
+    assert.deepEqual(synthCalls, [{
+      text: '待って！',
+      speakerId: 113,
+      options: { speedScale: 0.8 }
+    }]);
+  });
+
   it('serves global clicked word audio without a user id', async () => {
     const ttsWordCache = {
       lookup(filename) {

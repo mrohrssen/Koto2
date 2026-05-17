@@ -239,7 +239,9 @@ describe('static dialogue route TTS metadata', () => {
       checkSentenceViolations: () => ({ violations: [] }),
       getDialogueCardAudio: ({ userId, speakerKey, line, waitForSynthesis }) => {
         audioCalls.push({ userId, speakerKey, raw: line.raw, waitForSynthesis });
-        if (waitForSynthesis === false) return null;
+        if (waitForSynthesis === false) {
+          return { userId, speakerId: 113, text: line.raw, pending: true };
+        }
         return pendingSynthesis;
       }
     });
@@ -270,10 +272,30 @@ describe('static dialogue route TTS metadata', () => {
 
     assert.equal(res.statusCode, 200);
     assert.deepEqual(audioCalls.map(call => call.waitForSynthesis), [false, false, false, false]);
-    assert.equal(res.body.befriendQuiz.waitPrompt.audio, undefined);
-    assert.equal(res.body.befriendQuiz.namePrompt.audio, undefined);
-    assert.equal(res.body.befriendQuiz.successPrompt.audio, undefined);
-    assert.equal(res.body.befriendQuiz.wrongPrompt.audio, undefined);
+    assert.deepEqual(res.body.befriendQuiz.waitPrompt.audio, {
+      userId: 'creature-user',
+      speakerId: 113,
+      text: '待って！',
+      pending: true
+    });
+    assert.deepEqual(res.body.befriendQuiz.namePrompt.audio, {
+      userId: 'creature-user',
+      speakerId: 113,
+      text: '名前は？',
+      pending: true
+    });
+    assert.deepEqual(res.body.befriendQuiz.successPrompt.audio, {
+      userId: 'creature-user',
+      speakerId: 113,
+      text: '友達！',
+      pending: true
+    });
+    assert.deepEqual(res.body.befriendQuiz.wrongPrompt.audio, {
+      userId: 'creature-user',
+      speakerId: 113,
+      text: '違う！',
+      pending: true
+    });
 
     resolveSynthesis();
   });

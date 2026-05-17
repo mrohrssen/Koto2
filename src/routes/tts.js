@@ -118,6 +118,53 @@ export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCach
     });
   });
 
+  // Synthesize one full dialogue line into the per-user dialogue cache.
+  router.post('/dialogue-line', requireAuth, async (req, res) => {
+    const { text, speakerId } = req.body || {};
+    if (!text) {
+      return res.status(400).json({ ok: false, error: 'text is required' });
+    }
+    if (String(text).length > 220) {
+      return res.status(400).json({ ok: false, error: 'text is too long' });
+    }
+    const resolvedSpeakerId = Number(speakerId);
+    if (!Number.isFinite(resolvedSpeakerId)) {
+      return res.status(400).json({ ok: false, error: 'speakerId is required' });
+    }
+    if (!ttsDialogueCache) {
+      return res.status(404).json({ ok: false, error: 'Dialogue TTS not available' });
+    }
+
+    const settings = getSettings?.() || {};
+    const resolvedSpeed = settings.gameTtsSpeed ?? 0.9;
+    let key = null;
+    try {
+      key = await ttsDialogueCache.synthesizeLine(
+        req.user.id,
+        text,
+        resolvedSpeakerId,
+        async (lineText, lineSpeakerId) => synthesize(lineText, lineSpeakerId, {
+          speedScale: resolvedSpeed
+        })
+      );
+    } catch {
+      key = null;
+    }
+
+    if (!key) {
+      return res.status(500).json({ ok: false, error: 'Dialogue line TTS failed' });
+    }
+    res.json({
+      ok: true,
+      audio: {
+        userId: req.user.id,
+        key,
+        url: `/api/tts/dialogue/${req.user.id}/${key}`,
+        speakerId: resolvedSpeakerId
+      }
+    });
+  });
+
   // Serve cached clicked-word audio. These URLs are content-addressed by text/speaker/speed.
   router.get('/word/:filename', (req, res) => {
     const { filename } = req.params;

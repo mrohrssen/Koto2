@@ -119,7 +119,7 @@ describe('dialogue-card TTS service', () => {
     assert.match(warnings[0], /Dialogue card TTS failed/);
   });
 
-  it('returns cached audio and queues missing synthesis without waiting when requested', async () => {
+  it('returns cached audio or pending metadata and queues missing synthesis without waiting when requested', async () => {
     let resolveSynthesis;
     const synthCalls = [];
     const cacheCalls = [];
@@ -160,7 +160,12 @@ describe('dialogue-card TTS service', () => {
     });
 
     assert.deepEqual(cached, { userId: 'u1', key: 'cached123456.wav', speakerId: 113 });
-    assert.equal(missing, null);
+    assert.deepEqual(missing, {
+      userId: 'u1',
+      speakerId: 113,
+      text: '待って！',
+      pending: true
+    });
     assert.deepEqual(cacheCalls, [
       { type: 'lookup', userId: 'u1', text: '準備できた！', speakerId: 113 },
       { type: 'lookup', userId: 'u1', text: '待って！', speakerId: 113 },

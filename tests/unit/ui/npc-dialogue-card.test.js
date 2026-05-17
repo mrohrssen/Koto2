@@ -116,6 +116,7 @@ let attachedLookupContainer = null;
 let attachedLookupOptions = null;
 let playedAudio = null;
 let playedAudioCalls = [];
+let playedLineAudioRequests = [];
 let translationResponse = { ok: true, translation: 'Wait!', cached: false };
 let translatedRequests = [];
 const DEFAULT_LEARN_RESPONSE = {
@@ -162,6 +163,10 @@ await mock.module('../../../public/js/tts.js', {
       playedAudio = { userId, audioKey };
       playedAudioCalls.push(playedAudio);
     },
+    playDialogueLineAudio: async (options) => {
+      playedLineAudioRequests.push(options);
+      return { userId: 'user-1', key: 'line-ready.wav', speakerId: options.speakerId };
+    },
   },
 });
 
@@ -193,6 +198,7 @@ describe('npc dialogue card', () => {
     attachedLookupOptions = null;
     playedAudio = null;
     playedAudioCalls = [];
+    playedLineAudioRequests = [];
     translationResponse = { ok: true, translation: 'Wait!', cached: false };
     translatedRequests = [];
     learnResponse = JSON.parse(JSON.stringify(DEFAULT_LEARN_RESPONSE));
@@ -426,6 +432,23 @@ describe('npc dialogue card', () => {
     audioButton.click();
 
     assert.deepEqual(playedAudio, { userId: 'user-1', audioKey: 'line-1' });
+  });
+
+  it('enables pending dialogue audio and fetches it when clicked', async () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '待って', baseForm: '待つ', reading: 'まって', meaning: 'wait', pos: 'verb' }],
+      audio: { userId: 'user-1', speakerId: 113, text: '待って！', pending: true },
+      knownWords: new Set(),
+    });
+
+    const [audioButton] = actionArea.querySelectorAll('.npc-dialogue-tool');
+    assert.equal(audioButton.disabled, false);
+    assert.deepEqual(playedAudioCalls, []);
+
+    await audioButton.listeners.click[0]({ target: audioButton, currentTarget: audioButton, stopPropagation: () => {} });
+
+    assert.deepEqual(playedLineAudioRequests, [{ text: '待って！', speakerId: 113 }]);
   });
 
   it('autoplays dialogue audio on render and omits the inactive log button', () => {

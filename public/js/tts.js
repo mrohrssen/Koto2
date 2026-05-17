@@ -362,6 +362,29 @@ export async function playDialogueAudio(userId, filename) {
   });
 }
 
+export async function playDialogueLineAudio({ text, speakerId } = {}) {
+  if (!ttsEnabled || isAudioMuted() || !text) return null;
+
+  const resolvedSpeakerId = Number(speakerId);
+  if (!Number.isFinite(resolvedSpeakerId)) return null;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/tts/dialogue-line`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ text, speakerId: resolvedSpeakerId })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.ok || !data.audio?.url) return null;
+
+    await playAudioUrl(data.audio.url);
+    return data.audio;
+  } catch (error) {
+    console.warn('[TTS] Dialogue line audio failed:', error.message);
+    return null;
+  }
+}
+
 async function playAudioUrl(url) {
   if (!ttsEnabled || isAudioMuted() || !url) return;
 
