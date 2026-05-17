@@ -610,6 +610,13 @@ export default function createCombatRoutes({
     const currentRoom = gameManager.getCurrentRoom();
     if (currentRoom?.npcBattle) {
       currentRoom.npcBattle.skillSelectionPending = true;
+      currentRoom.npcBattle.npcId = npc.id;
+      currentRoom.npcBattle.npc = {
+        id: npc.id,
+        name: npc.name,
+        nameEn: npc.nameEn,
+        speakerId: npc.speakerId
+      };
     }
 
     req.saveGame();

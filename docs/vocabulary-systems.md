@@ -5,6 +5,8 @@
 
 This document defines every vocabulary-carrying system in the game, what word types each system teaches, HOW the player learns through each mechanic, and how it all maps to WaniKani's 60-level curriculum (~6,300 words).
 
+For marketing-safe evidence language and study-count references, see [`docs/language-learning-evidence.md`](language-learning-evidence.md).
+
 ## Core Principle
 
 **Vocabulary needs drive game mechanics, not the other way around.** If a word type doesn't have a natural game system to teach it, we design a new mechanic — we don't force words into ill-fitting systems or dump them into narration.

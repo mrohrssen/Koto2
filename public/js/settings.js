@@ -2,10 +2,7 @@
 
 const STORAGE_KEYS = {
   jlptLevel: 'jrpg_jlptLevel',
-  debugMode: 'debugMode',
-  bgmVolume: 'jrpg_bgmVolume',
-  sfxVolume: 'jrpg_sfxVolume',
-  audioMuted: 'jrpg_audioMuted'
+  debugMode: 'debugMode'
 };
 
 // ============ API KEY DEFAULTS ============
@@ -168,17 +165,6 @@ export function setJapanifyUIEnabled(enabled) {
   } else {
     localStorage.removeItem(JAPANIFY_STORAGE_KEY);
   }
-}
-
-// ============ AUDIO SETTINGS ============
-
-/**
- * Get SFX volume (0-1)
- * @returns {number}
- */
-export function getSfxVolume() {
-  const val = localStorage.getItem('jrpg_sfxVolume');
-  return val !== null ? parseFloat(val) : 0.8;
 }
 
 // ============ SERVER-SIDE LEARNING SETTINGS MANAGEMENT ============
