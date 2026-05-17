@@ -35,6 +35,8 @@ export async function openSettings() {
   ]);
   const voiceGender = serverSettings.voiceGender || 'boy';
   const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
+  const ttsEnabledSetting = serverSettings.gameTtsEnabled ?? true;
+  const ttsVolumeSetting = serverSettings.gameTtsVolume ?? tts.getVolume();
   const kanaMode = getGameState?.()?.meta?.kanaMode ?? false;
   const showDebugSuperAttack = Object.hasOwn(serverSettings, 'debugSuperAttack');
 
@@ -60,7 +62,7 @@ export async function openSettings() {
       <hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0">
       <label class="settings-label">
         <input type="checkbox" id="settings-tts-enabled"
-          ${settingsModule.isTtsEnabled?.() ? 'checked' : ''}>
+          ${ttsEnabledSetting ? 'checked' : ''}>
         Enable TTS
       </label>
       <label class="settings-label" style="margin-top:8px">
@@ -107,7 +109,7 @@ export async function openSettings() {
       <label class="settings-label">
         TTS Volume
         <input type="range" id="settings-tts-volume" min="0" max="100"
-          value="${Math.round(tts.getVolume() * 100)}" class="settings-range">
+          value="${Math.round(ttsVolumeSetting * 100)}" class="settings-range">
       </label>
       <div class="settings-label" style="margin-top:8px">
         Voice Gender
@@ -417,6 +419,8 @@ export async function openSettings() {
 
     // Save global server-backed settings.
     const serverSettingsToSave = {};
+    serverSettingsToSave.gameTtsEnabled = ttsEnabled;
+    serverSettingsToSave.gameTtsVolume = ttsVol;
     if (selectedVoiceGender !== voiceGender) {
       serverSettingsToSave.voiceGender = selectedVoiceGender;
     }

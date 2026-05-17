@@ -11,7 +11,7 @@ let audioCtx = null;
 const sfxBuffers = {};
 let sfxVolume = 0.8;
 let bgmVolume = 0.7;
-let muted = true;
+let muted = readMutedPreference();
 
 // BGM state
 let bgmElement = null;
@@ -19,6 +19,14 @@ let bgmPlaying = false;
 
 // Phase-based BGM tracking
 let currentTrack = null;
+
+function readMutedPreference() {
+  try {
+    return globalThis.localStorage?.getItem('jrpg_audioMuted') === 'true';
+  } catch {
+    return false;
+  }
+}
 
 const PHASE_TRACKS = {
   hub: 'main',
@@ -87,7 +95,7 @@ export async function initAudio() {
   const savedMuted = localStorage.getItem('jrpg_audioMuted');
   if (savedSfxVol !== null) sfxVolume = parseFloat(savedSfxVol);
   if (savedBgmVol !== null) bgmVolume = parseFloat(savedBgmVol);
-  if (savedMuted === 'true') muted = true;
+  muted = savedMuted === 'true';
 
   // Preload all SFX
   await Promise.allSettled(SFX_FILES.map(loadSfx));
@@ -98,6 +106,9 @@ export async function initAudio() {
     bgmElement.loop = true;
   }
   bgmElement.volume = muted ? 0 : bgmVolume;
+  if (bgmPlaying && !muted) {
+    bgmElement.play().catch(() => {});
+  }
 }
 
 async function loadSfx(name) {

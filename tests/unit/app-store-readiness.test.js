@@ -72,6 +72,17 @@ describe('App Store readiness static checks', () => {
     assert.equal(settingsUi.includes('/api/auth/me'), true);
   });
 
+  it('keeps TTS controls wired to server-backed settings', () => {
+    const settingsUi = read('public/js/ui/modals.js');
+    const gameJs = read('public/game.js');
+
+    assert.equal(settingsUi.includes('const ttsEnabledSetting = serverSettings.gameTtsEnabled ?? true'), true);
+    assert.equal(settingsUi.includes('const ttsVolumeSetting = serverSettings.gameTtsVolume ?? tts.getVolume()'), true);
+    assert.equal(settingsUi.includes('serverSettingsToSave.gameTtsEnabled = ttsEnabled'), true);
+    assert.equal(settingsUi.includes('serverSettingsToSave.gameTtsVolume = ttsVol'), true);
+    assert.equal(gameJs.includes("localStorage.getItem('jrpg_ttsVolume')"), false);
+  });
+
   it('has the app icon files referenced by the manifest and Apple touch icon', () => {
     for (const icon of ['app-180.webp', 'app-192.webp', 'app-512.webp']) {
       assert.equal(existsSync(join(root, 'public/assets/icons', icon)), true, `${icon} should exist`);

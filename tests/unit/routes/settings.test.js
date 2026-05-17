@@ -99,6 +99,33 @@ describe('settings routes App Store readiness', () => {
     assert.equal(capitalizedGet.body.debugSuperAttack, true);
   });
 
+  it('preserves zero TTS volume instead of falling back to full volume', async () => {
+    const settings = {
+      gameTtsEnabled: true,
+      gameTtsSpeakerId: 13,
+      gameTtsSpeed: 0.9,
+      gameTtsVolume: 0,
+      voiceGender: 'boy'
+    };
+    let savedSettings = null;
+    const app = createApp({
+      routeOverrides: {
+        getSettings: () => settings,
+        saveSettings: (next) => { savedSettings = { ...next }; }
+      }
+    });
+
+    const getRes = await request(app).get('/api/settings').expect(200);
+    assert.equal(getRes.body.gameTtsVolume, 0);
+
+    await request(app)
+      .post('/api/settings')
+      .send({ gameTtsVolume: 0 })
+      .expect(200);
+
+    assert.equal(savedSettings.gameTtsVolume, 0);
+  });
+
   it('does not expose debug game routes in production', async () => {
     process.env.NODE_ENV = 'production';
     const dataDir = mkdtempSync(join(tmpdir(), 'koto-debug-routes-'));

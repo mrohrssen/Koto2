@@ -2255,8 +2255,6 @@ async function initGame() {
   // Initialize TTS from server settings
   const serverSettings = await settings.loadServerSettings();
   tts.initSettings(serverSettings);
-  const savedTtsVol = localStorage.getItem('jrpg_ttsVolume');
-  if (savedTtsVol !== null) tts.setVolume(parseFloat(savedTtsVol));
 
   // Initialize audio on first user interaction (browser autoplay policy)
   let audioInitialized = false;
