@@ -1,5 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import sharp from 'sharp';
 
 import {
   SPRITE_VERSION,
@@ -37,5 +40,21 @@ describe('asset URL helpers', () => {
 
   it('does not expose the retired hard-coded action icon version', () => {
     assert.equal(actionIconUrl('Slash').includes('20260322'), false);
+  });
+
+  it('has the Erase action icon file referenced by the move slug', () => {
+    assert.equal(
+      existsSync(join(process.cwd(), 'public/assets/sprites/actions/erase.webp')),
+      true,
+    );
+  });
+
+  it('keeps the Erase action icon background transparent', async () => {
+    const iconPath = join(process.cwd(), 'public/assets/sprites/actions/erase.webp');
+    const metadata = await sharp(iconPath).metadata();
+    const stats = await sharp(iconPath).ensureAlpha().stats();
+
+    assert.equal(metadata.hasAlpha, true);
+    assert.equal(stats.channels[3].min, 0);
   });
 });
