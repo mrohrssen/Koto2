@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const root = process.cwd();
 
@@ -24,6 +25,51 @@ describe('App Store readiness static checks', () => {
     assert.equal(settingsUi.includes('Force Room Type'), false);
     assert.equal(settingsUi.includes('100 ATK (Debug)'), false);
     assert.equal(settingsUi.includes('Add Fusion Core'), false);
+  });
+
+  it('does not expose lookup or experimental language modes in game menus', () => {
+    const html = read('public/index.html');
+    const settingsUi = read('public/js/ui/modals.js');
+
+    assert.equal(html.includes('lookup-menu-btn'), false);
+    assert.equal(html.includes('> Lookup<'), false);
+    assert.equal(settingsUi.includes('settings-kana-mode'), false);
+    assert.equal(settingsUi.includes('Hiragana Learning Mode'), false);
+    assert.equal(settingsUi.includes('settings-japanify-ui'), false);
+    assert.equal(settingsUi.includes('\u65e5\u672c\u8a9e UI'), false);
+    assert.equal(settingsUi.includes('settings-tts-enabled'), false);
+    assert.equal(settingsUi.includes('Enable TTS'), false);
+    assert.equal(settingsUi.includes('settings-ai-narration'), false);
+    assert.equal(settingsUi.includes('Enable AI Narration'), false);
+  });
+
+  it('keeps hidden narration controls enabled even when old local storage disabled them', async () => {
+    const store = new Map([
+      ['jrpg_ttsEnabled', 'false'],
+      ['jrpg_aiNarrationEnabled', 'false'],
+    ]);
+    const previousLocalStorage = globalThis.localStorage;
+    globalThis.localStorage = {
+      getItem: (key) => store.get(key) ?? null,
+      setItem: (key, value) => { store.set(key, String(value)); },
+      removeItem: (key) => { store.delete(key); },
+    };
+
+    try {
+      const settingsUrl = pathToFileURL(join(root, 'public/js/settings.js')).href;
+      const settings = await import(`${settingsUrl}?forcedNarration=${Date.now()}`);
+
+      assert.equal(settings.isTtsEnabled(), true);
+      assert.equal(settings.isAiNarrationEnabled(), true);
+
+      settings.setTtsEnabled(false);
+      settings.setAiNarrationEnabled(false);
+
+      assert.equal(settings.isTtsEnabled(), true);
+      assert.equal(settings.isAiNarrationEnabled(), true);
+    } finally {
+      globalThis.localStorage = previousLocalStorage;
+    }
   });
 
   it('guards debug super attack behind the server-provided allowlisted setting', () => {

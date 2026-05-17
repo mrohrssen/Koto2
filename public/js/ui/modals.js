@@ -35,7 +35,6 @@ export async function openSettings() {
   ]);
   const voiceGender = serverSettings.voiceGender || 'boy';
   const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
-  const ttsEnabledSetting = serverSettings.gameTtsEnabled ?? true;
   const ttsVolumeSetting = tts.getVolume();
   const kanaMode = getGameState?.()?.meta?.kanaMode ?? false;
   const showDebugSuperAttack = Object.hasOwn(serverSettings, 'debugSuperAttack');
@@ -60,27 +59,7 @@ export async function openSettings() {
         <small style="color:#888;font-size:0.85em">0 = skip discovery rooms, max 50</small>
       </label>
       <hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0">
-      <label class="settings-label">
-        <input type="checkbox" id="settings-tts-enabled"
-          ${ttsEnabledSetting ? 'checked' : ''}>
-        Enable TTS
-      </label>
-      <label class="settings-label" style="margin-top:8px">
-        <input type="checkbox" id="settings-ai-narration"
-          ${settingsModule.isAiNarrationEnabled?.() !== false ? 'checked' : ''}>
-        Enable AI Narration
-      </label>
-      <label class="settings-label" style="margin-top:8px">
-        <input type="checkbox" id="settings-japanify-ui"
-          ${settingsModule.isJapanifyUIEnabled?.() ? 'checked' : ''}>
-        日本語 UI
-      </label>
-      <label class="settings-label" style="margin-top:8px">
-        <input type="checkbox" id="settings-kana-mode"
-          ${kanaMode ? 'checked' : ''}>
-        Hiragana Learning Mode
-        <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">Practice hiragana in combat — cards are auto-answered and kana questions appear instead</small>
-      </label>
+
       ${showDebugSuperAttack ? `
         <label class="settings-label" style="margin-top:8px">
           <input type="checkbox" id="settings-debug-super-attack"
@@ -375,7 +354,6 @@ export async function openSettings() {
   document.getElementById('settings-save-btn')?.addEventListener('click', async () => {
     const jlptLevel = document.getElementById('settings-jlpt')?.value;
     const dailyWordLimit = parseInt(document.getElementById('settings-daily-limit')?.value || '10');
-    const ttsEnabled = document.getElementById('settings-tts-enabled')?.checked;
     const bgmVol = parseInt(document.getElementById('settings-bgm-volume')?.value || '70') / 100;
     const sfxVol = parseInt(document.getElementById('settings-sfx-volume')?.value || '80') / 100;
     const ttsVol = parseInt(document.getElementById('settings-tts-volume')?.value || '100') / 100;
@@ -383,20 +361,18 @@ export async function openSettings() {
     const selectedVoiceGender = document.querySelector('input[name="voice-gender"]:checked')?.value || 'boy';
 
     // Apply local-only settings immediately (never blocked by server calls)
-    const aiNarration = document.getElementById('settings-ai-narration')?.checked;
     if (settingsModule.setAiNarrationEnabled) {
-      settingsModule.setAiNarrationEnabled(aiNarration);
+      settingsModule.setAiNarrationEnabled(true);
     }
     if (settingsModule.setTtsEnabled) {
-      settingsModule.setTtsEnabled(ttsEnabled);
+      settingsModule.setTtsEnabled(true);
     }
-    tts.setEnabled(ttsEnabled);
+    tts.setEnabled(true);
 
-    const japanifyUI = document.getElementById('settings-japanify-ui')?.checked;
     if (settingsModule.setJapanifyUIEnabled) {
-      settingsModule.setJapanifyUIEnabled(japanifyUI);
+      settingsModule.setJapanifyUIEnabled(false);
     }
-    setLang(japanifyUI ? 'ja' : 'en');
+    setLang('en');
 
     audio.setVolume('bgm', bgmVol);
     audio.setVolume('sfx', sfxVol);
@@ -418,7 +394,7 @@ export async function openSettings() {
 
     // Save global server-backed settings.
     const serverSettingsToSave = {};
-    serverSettingsToSave.gameTtsEnabled = ttsEnabled;
+    serverSettingsToSave.gameTtsEnabled = true;
     if (selectedVoiceGender !== voiceGender) {
       serverSettingsToSave.voiceGender = selectedVoiceGender;
     }
@@ -432,14 +408,13 @@ export async function openSettings() {
       await saveServerSettings(serverSettingsToSave);
     }
 
-    // Save kana mode to server (updates meta.kanaMode)
-    const kanaModeEnabled = document.getElementById('settings-kana-mode')?.checked ?? false;
-    if (kanaModeEnabled !== kanaMode) {
+    // Hidden experimental language modes are forced off when settings are saved.
+    if (kanaMode) {
       try {
         const resp = await fetch(apiUrl('/api/game/kana-mode'), {
           method: 'POST',
           headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enabled: kanaModeEnabled }),
+          body: JSON.stringify({ enabled: false }),
         });
         if (resp.ok) {
           const data = await resp.json();

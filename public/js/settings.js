@@ -115,19 +115,15 @@ const AI_NARRATION_STORAGE_KEY = 'jrpg_aiNarrationEnabled';
  * @returns {boolean} True if AI narration is enabled (default: true)
  */
 export function isAiNarrationEnabled() {
-  return localStorage.getItem(AI_NARRATION_STORAGE_KEY) !== 'false';
+  return true;
 }
 
 /**
  * Set AI narration rewrite enabled state
  * @param {boolean} enabled - Whether to enable AI narration
  */
-export function setAiNarrationEnabled(enabled) {
-  if (enabled) {
-    localStorage.removeItem(AI_NARRATION_STORAGE_KEY);
-  } else {
-    localStorage.setItem(AI_NARRATION_STORAGE_KEY, 'false');
-  }
+export function setAiNarrationEnabled(_enabled) {
+  localStorage.removeItem(AI_NARRATION_STORAGE_KEY);
 }
 
 // ============ TTS SETTINGS ============
@@ -139,19 +135,15 @@ const TTS_STORAGE_KEY = 'jrpg_ttsEnabled';
  * @returns {boolean} True if TTS is enabled
  */
 export function isTtsEnabled() {
-  return localStorage.getItem(TTS_STORAGE_KEY) === 'true';
+  return true;
 }
 
 /**
  * Set TTS enabled state
  * @param {boolean} enabled - Whether to enable TTS
  */
-export function setTtsEnabled(enabled) {
-  if (enabled) {
-    localStorage.setItem(TTS_STORAGE_KEY, 'true');
-  } else {
-    localStorage.removeItem(TTS_STORAGE_KEY);
-  }
+export function setTtsEnabled(_enabled) {
+  localStorage.setItem(TTS_STORAGE_KEY, 'true');
 }
 
 // ============ JAPANIFY UI ============
