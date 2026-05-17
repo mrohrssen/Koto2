@@ -37,6 +37,20 @@ describe('dialogue-card TTS service', () => {
     assert.equal(getDialogueLineText(line), '花は森で光を見た。');
   });
 
+  it('uses substituted token text instead of template raw with slots', () => {
+    const line = {
+      raw: '{randomPlayerCreature}、強い！',
+      tokens: [
+        { surface: '花', baseForm: '花', reading: 'はな', entity: true },
+        { surface: '、' },
+        { surface: '強い', baseForm: '強い', reading: 'つよい' },
+        { surface: '！', pos: 'punctuation' }
+      ]
+    };
+
+    assert.equal(getDialogueLineText(line), '花、強い！');
+  });
+
   it('returns null when required TTS dependencies are missing', async () => {
     const resolveAudio = createDialogueCardTtsResolver({
       ttsDialogueCache: null,
