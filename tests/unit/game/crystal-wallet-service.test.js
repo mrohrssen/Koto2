@@ -42,9 +42,9 @@ describe('crystal wallet service', () => {
     const second = awardDailyLoginCrystals(meta, new Date('2026-05-06T22:00:00.000Z'));
     const third = awardDailyLoginCrystals(meta, new Date('2026-05-07T00:00:00.000Z'));
 
-    assert.deepEqual(first, { awarded: true, amount: 100, balance: 125, today: '2026-05-06' });
-    assert.deepEqual(second, { awarded: false, amount: 0, balance: 125, today: '2026-05-06' });
-    assert.deepEqual(third, { awarded: true, amount: 100, balance: 225, today: '2026-05-07' });
+    assert.deepEqual(first, { awarded: true, amount: 500, balance: 525, today: '2026-05-06' });
+    assert.deepEqual(second, { awarded: false, amount: 0, balance: 525, today: '2026-05-06' });
+    assert.deepEqual(third, { awarded: true, amount: 500, balance: 1025, today: '2026-05-07' });
   });
 
   it('returns insufficient_crystals without mutating balance', () => {

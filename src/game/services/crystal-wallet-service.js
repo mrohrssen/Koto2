@@ -1,4 +1,4 @@
-export const DAILY_CRYSTAL_BONUS = 100;
+export const DAILY_CRYSTAL_BONUS = 500;
 
 export const CRYSTAL_COSTS = {
   startRun: 25,
