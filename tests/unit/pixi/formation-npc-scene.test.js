@@ -344,7 +344,7 @@ describe('spawnNpcSprite scene contract', () => {
     assert.equal(sprite.y, 391.2);
   });
 
-  it('adds a middle-row contact shadow scaled to NPC size', async () => {
+  it('adds a compact middle-row contact shadow for NPCs', async () => {
     const npcs = new FakeContainer();
     const scene = {
       disposed: false,
@@ -357,13 +357,13 @@ describe('spawnNpcSprite scene contract', () => {
     assert.ok(sprite._shadow, 'NPC has a shadow');
     assert.equal(sprite._shadow.lastEllipse.x, 0);
     assert.equal(sprite._shadow.lastEllipse.y, 0);
-    assert.equal(sprite._shadow.lastEllipse.radiusX, 76.5);
-    assert.ok(Math.abs(sprite._shadow.lastEllipse.radiusY - 19.833333333333332) < 1e-9);
+    assert.equal(sprite._shadow.lastEllipse.radiusX, 39);
+    assert.equal(sprite._shadow.lastEllipse.radiusY, 8);
     assert.deepEqual(sprite._shadow.lastFill, { color: 0x000000, alpha: 0.28 });
     assert.equal(sprite._shadow.y, 391.2 + 170 * 0.38);
   });
 
-  it('pulls shadows upward and narrows them for shorter NPC textures', async () => {
+  it('keeps shorter NPC shadows compact while positioning them by visual height', async () => {
     const npcs = new FakeContainer();
     loadImageTextureImpl = async () => ({ width: 170, height: 100 });
     const scene = {
@@ -379,13 +379,13 @@ describe('spawnNpcSprite scene contract', () => {
     assert.deepEqual(sprite._shadow.lastEllipse, {
       x: 0,
       y: 0,
-      radiusX: 76.5,
-      radiusY: 11.666666666666668,
+      radiusX: 39,
+      radiusY: 8,
     });
     assert.equal(sprite._shadow.y, 391.2 + 100 * 0.38);
   });
 
-  it('uses a shorter visual shadow height for the seated shrine fox', async () => {
+  it('uses a 70px-wide contact shadow for the seated shrine fox', async () => {
     const npcs = new FakeContainer();
     const scene = {
       disposed: false,
@@ -400,8 +400,8 @@ describe('spawnNpcSprite scene contract', () => {
     assert.deepEqual(sprite._shadow.lastEllipse, {
       x: 0,
       y: 0,
-      radiusX: 76.5,
-      radiusY: 12.296666666666667,
+      radiusX: 35,
+      radiusY: 7,
     });
     assert.equal(sprite._shadow.y, 391.2 + 170 * 0.62 * 0.38);
   });

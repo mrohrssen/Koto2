@@ -33,17 +33,17 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
     const settings = getSettings();
     updateTTSConfig({
       enabled: settings.gameTtsEnabled ?? true,
-      speakerId: settings.gameTtsSpeakerId || 13,
-      speed: settings.gameTtsSpeed || 0.9,
-      volume: settings.gameTtsVolume || 1.0
+      speakerId: settings.gameTtsSpeakerId ?? 13,
+      speed: settings.gameTtsSpeed ?? 0.9,
+      volume: settings.gameTtsVolume ?? 1.0
     });
 
     const response = {
       jlptLevel: settings.jlptLevel || 'N4',
       gameTtsEnabled: settings.gameTtsEnabled ?? true,
-      gameTtsSpeakerId: settings.gameTtsSpeakerId || 13,
-      gameTtsSpeed: settings.gameTtsSpeed || 0.9,
-      gameTtsVolume: settings.gameTtsVolume || 1.0,
+      gameTtsSpeakerId: settings.gameTtsSpeakerId ?? 13,
+      gameTtsSpeed: settings.gameTtsSpeed ?? 0.9,
+      gameTtsVolume: settings.gameTtsVolume ?? 1.0,
       voiceGender: settings.voiceGender || 'boy',
       reviewType: settings.reviewType || 'dialog',
       dailyWordLimit: settings.dailyWordLimit ?? 10

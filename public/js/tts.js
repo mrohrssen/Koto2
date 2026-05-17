@@ -396,7 +396,7 @@ export function playWord(word) {
 
   try {
     const audio = new Audio(cached.url);
-    audio.volume = ttsVolume || 1.0;
+    audio.volume = Math.min(ttsVolume, 1.0);
     audio.play().catch(e => console.warn('[WordAudio] Playback failed:', e.message));
   } catch (e) {
     console.warn('[WordAudio] Error playing audio:', e.message);
@@ -453,8 +453,8 @@ export async function loadSpeakers() {
  */
 export function initSettings(settings) {
   ttsEnabled = settings.gameTtsEnabled ?? true;
-  ttsSpeakerId = settings.gameTtsSpeakerId || 13;
-  ttsSpeed = settings.gameTtsSpeed || 0.9;
-  ttsVolume = settings.gameTtsVolume || 1.0;
+  ttsSpeakerId = settings.gameTtsSpeakerId ?? 13;
+  ttsSpeed = settings.gameTtsSpeed ?? 0.9;
+  ttsVolume = settings.gameTtsVolume ?? 1.0;
 }
 

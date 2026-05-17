@@ -65,15 +65,15 @@ describe('crystal game routes', { concurrency: false }, () => {
     assert.deepEqual(first.body, {
       ok: true,
       awarded: true,
-      amount: 100,
-      balance: 100,
+      amount: 500,
+      balance: 500,
       today: '2026-05-06'
     });
     assert.deepEqual(second.body, {
       ok: true,
       awarded: false,
       amount: 0,
-      balance: 100,
+      balance: 500,
       today: '2026-05-06'
     });
   });

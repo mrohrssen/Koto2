@@ -519,7 +519,7 @@ export async function renderBefriendQuiz(quizData, result) {
     });
 
     const selectedIdx = await renderChoicesAsync({
-      heading: 'Choose a name',
+      heading: 'Choose your response',
       cards: quizData.options.map(opt => ({ title: opt.name })),
     });
 

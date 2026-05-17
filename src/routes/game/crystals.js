@@ -6,6 +6,8 @@ import {
   ensureCrystalMeta
 } from '../../game/services/crystal-wallet-service.js';
 
+const DEBUG_CRYSTAL_GRANT = 100;
+
 function nowForCrystalAward() {
   return process.env.NODE_ENV === 'test' && process.env.CRYSTAL_TEST_NOW
     ? new Date(process.env.CRYSTAL_TEST_NOW)
@@ -29,9 +31,9 @@ export default function createCrystalRoutes() {
 
     const meta = req.gameManager.getMeta();
     ensureCrystalMeta(meta);
-    meta.crystals += DAILY_CRYSTAL_BONUS;
+    meta.crystals += DEBUG_CRYSTAL_GRANT;
     req.saveGame();
-    res.json({ ok: true, amount: DAILY_CRYSTAL_BONUS, balance: meta.crystals });
+    res.json({ ok: true, amount: DEBUG_CRYSTAL_GRANT, balance: meta.crystals });
   });
 
   return router;

@@ -229,7 +229,7 @@ function getDialogueCardSpeakerId({ speakerKey } = {}) {
   const PLAYER_BOY_SPEAKER_ID = 11;    // 玄野武宏 ノーマル
   const PLAYER_GIRL_SPEAKER_ID = 2;    // 四国めたん ノーマル
   const CREATURE_SPEAKER_ID = 21;      // 剣崎雌雄 ノーマル
-  const GAME_MASTER_SPEAKER_ID = settings.gameTtsSpeakerId || 13;
+  const GAME_MASTER_SPEAKER_ID = settings.gameTtsSpeakerId ?? 13;
 
   if (speakerKey === 'you') {
     return settings.voiceGender === 'girl'
@@ -500,10 +500,10 @@ async function ttsSynthesizerFn(text, config) {
 
     return await synthesize(
       text,
-      config.speakerId || settings.gameTtsSpeakerId || 13,
+      config.speakerId ?? settings.gameTtsSpeakerId ?? 13,
       {
-        speedScale: config.speed || settings.gameTtsSpeed || 0.9,
-        volumeScale: config.volume || settings.gameTtsVolume || 1.0
+        speedScale: config.speed ?? settings.gameTtsSpeed ?? 0.9,
+        volumeScale: config.volume ?? settings.gameTtsVolume ?? 1.0
       }
     );
   } catch (error) {
