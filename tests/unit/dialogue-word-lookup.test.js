@@ -1,14 +1,17 @@
-import { describe, it } from 'node:test';
+import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 // Minimal DOM stub — node:test runs in Node so we simulate the popup handler's
 // inputs by directly calling the function under test with a fake span + dict.
 // We test the *meaning-list-building* logic in isolation by extracting it.
 
-// If dialogue-word-lookup.js does not yet export buildPopupMeanings, Task 6
-// refactors handleWordClick to extract that helper.
+await mock.module('../../public/js/tts.js', {
+  namedExports: {
+    playDialogueWordAudio: () => {}
+  }
+});
 
-import { buildPopupMeanings } from '../../public/js/ui/dialogue-word-lookup.js';
+const { buildPopupMeanings } = await import('../../public/js/ui/dialogue-word-lookup.js');
 
 describe('buildPopupMeanings', () => {
   const dictEntry = { definitions: [{ en: 'dog', primary: true }, { en: 'hound' }] };

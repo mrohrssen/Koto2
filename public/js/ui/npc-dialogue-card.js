@@ -76,10 +76,11 @@ function tokenMeaning(token, wordDict, overrides) {
 function attrsForToken(token, { wordDict, overrides, useKanji }) {
   const base = tokenBase(token);
   const reading = token.reading || token.surface || base;
+  const audioText = token.surface || reading || base;
   const meaning = tokenMeaning(token, wordDict, overrides);
   const pos = token.pos || '';
   const meaningsJson = Array.isArray(token.meanings) ? JSON.stringify(token.meanings) : '';
-  let attrs = ` data-base="${esc(base)}" data-reading="${esc(reading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;
+  let attrs = ` data-base="${esc(base)}" data-audio-text="${esc(audioText)}" data-reading="${esc(reading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;
   if (overrides?.[base]) attrs += ' data-override="1"';
   if (meaningsJson) attrs += ` data-meanings="${esc(meaningsJson)}"`;
   if (useKanji) attrs += ' data-kanji-mode="1"';
@@ -487,6 +488,17 @@ function renderPageContent(options, pageTokens) {
   return renderFallbackText(options);
 }
 
+function getWordLookupOptions(options = {}) {
+  const speakerId = Number(options.audio?.speakerId);
+  if (!options.audio?.userId || !Number.isFinite(speakerId)) return undefined;
+  return {
+    wordAudio: {
+      userId: options.audio.userId,
+      speakerId
+    }
+  };
+}
+
 export function showNpcDialogueCard(options = {}) {
   const actionArea = options.container || document.getElementById('action-area');
   if (!actionArea) return Promise.resolve();
@@ -571,7 +583,7 @@ export function showNpcDialogueCard(options = {}) {
 
       const textEl = actionArea.querySelector('.npc-dialogue-text');
       if (pageTokens?.length && textEl) {
-        dialogueLookup.attachWordClickHandlers(textEl);
+        dialogueLookup.attachWordClickHandlers(textEl, getWordLookupOptions(options));
       }
 
       actionArea.querySelector('.npc-dialogue-audio')?.addEventListener('click', () => {

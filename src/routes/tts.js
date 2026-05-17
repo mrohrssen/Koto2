@@ -5,6 +5,8 @@ import {
   synthesize,
   getVersion as getVoicevoxVersion
 } from '../voicevox.js';
+import { requireAuth } from '../auth/middleware.js';
+import { createDialogueCardWordTtsResolver } from '../services/dialogue-card-tts.js';
 
 export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCache }) {
   const router = Router();
@@ -70,6 +72,39 @@ export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCach
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
+  });
+
+  // Synthesize one clicked dialogue word into the same per-user dialogue cache.
+  router.post('/dialogue-word', requireAuth, async (req, res) => {
+    const { word, speakerId } = req.body || {};
+    if (!word) {
+      return res.status(400).json({ ok: false, error: 'word is required' });
+    }
+    if (String(word).length > 40) {
+      return res.status(400).json({ ok: false, error: 'word is too long' });
+    }
+    const resolvedSpeakerId = Number(speakerId);
+    if (!Number.isFinite(resolvedSpeakerId)) {
+      return res.status(400).json({ ok: false, error: 'speakerId is required' });
+    }
+    if (!ttsDialogueCache) {
+      return res.status(404).json({ ok: false, error: 'Dialogue TTS not available' });
+    }
+
+    const settings = getSettings?.() || {};
+    const resolveWordAudio = createDialogueCardWordTtsResolver({
+      ttsDialogueCache,
+      synthesizeFn: async (text, resolvedSpeakerId) => synthesize(text, resolvedSpeakerId, {
+        speedScale: settings.gameTtsSpeed ?? 0.9,
+        volumeScale: settings.gameTtsVolume ?? 1.0
+      })
+    });
+    const audio = await resolveWordAudio({ userId: req.user.id, word, speakerId: resolvedSpeakerId });
+
+    if (!audio) {
+      return res.status(500).json({ ok: false, error: 'Dialogue word TTS failed' });
+    }
+    res.json({ ok: true, audio });
   });
 
   // Serve cached dialogue audio

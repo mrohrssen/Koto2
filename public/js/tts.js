@@ -1,4 +1,5 @@
 import { PLATFORM } from './platform.js';
+import { getAuthHeaders } from './api.js';
 const API_BASE = PLATFORM.apiBase;
 
 // ============ TTS STATE ============
@@ -298,6 +299,32 @@ export async function playDialogueAudio(userId, filename) {
     audio.onerror = () => { currentAudio = null; resolve(); };
     audio.play().catch(() => { currentAudio = null; resolve(); });
   });
+}
+
+/**
+ * Synthesize and play a clicked dialogue word through the dialogue TTS cache.
+ * @param {{ userId: string, word: string, speakerId: number }} options
+ * @returns {Promise<void>}
+ */
+export async function playDialogueWordAudio({ userId, word, speakerId } = {}) {
+  if (!ttsEnabled || muted || !userId || !word) return;
+
+  const resolvedSpeakerId = Number(speakerId);
+  if (!Number.isFinite(resolvedSpeakerId)) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/tts/dialogue-word`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ word, speakerId: resolvedSpeakerId })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.ok || !data.audio?.userId || !data.audio?.key) return;
+
+    return playDialogueAudio(data.audio.userId, data.audio.key);
+  } catch (error) {
+    console.warn('[WordAudio] Dialogue word audio failed:', error.message);
+  }
 }
 
 /**

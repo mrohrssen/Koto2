@@ -2,6 +2,7 @@ import { getKnownWords, addKnownWord } from './bootstrap-client.js';
 import { reviewVocabWord } from '../api.js';
 import { showWordLevelUp } from './word-level-up.js';
 import { buildHeadwordRuby } from './romaji.js';
+import { playDialogueWordAudio } from '../tts.js';
 
 // DOM references (cached on init)
 const dom = {
@@ -100,14 +101,15 @@ export function init({ showToast, pauseAutoDismiss, getKanaMode, onStateUpdate }
  * Attach click handlers to all .jp-word spans inside a container.
  * Call after rendering dialogue HTML into the narration text element.
  * @param {HTMLElement} container
+ * @param {{ wordAudio?: { userId: string, speakerId: number } }} options
  */
-export function attachWordClickHandlers(container) {
+export function attachWordClickHandlers(container, options = {}) {
   if (!container) return;
   const words = container.querySelectorAll('.jp-word');
   for (const span of words) {
     if (!span.dataset.base) continue;
     span.style.cursor = 'pointer';
-    span.addEventListener('click', handleWordClick);
+    span.addEventListener('click', (event) => handleWordClick(event, options.wordAudio));
   }
 }
 
@@ -122,7 +124,7 @@ export function isPopupVisible() {
   return dom.popup?.classList.contains('visible') ?? false;
 }
 
-function handleWordClick(e) {
+function handleWordClick(e, wordAudio = null) {
   e.stopPropagation();
   const span = e.currentTarget;
   const base = span.dataset.base;
@@ -130,6 +132,14 @@ function handleWordClick(e) {
 
   _currentWord = base;
   _currentReading = span.dataset.reading || null;
+
+  if (wordAudio?.userId && Number.isFinite(Number(wordAudio.speakerId))) {
+    playDialogueWordAudio({
+      userId: wordAudio.userId,
+      word: span.dataset.audioText || base,
+      speakerId: Number(wordAudio.speakerId)
+    });
+  }
 
   // Pause auto-dismiss if active (player is exploring words)
   _pauseAutoDismiss?.();

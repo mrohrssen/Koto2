@@ -31,6 +31,12 @@ await mock.module('../../public/js/ui/romaji.js', {
   }
 });
 
+await mock.module('../../public/js/tts.js', {
+  namedExports: {
+    playDialogueWordAudio: () => {}
+  }
+});
+
 function createClassList() {
   const values = new Set();
   return {
