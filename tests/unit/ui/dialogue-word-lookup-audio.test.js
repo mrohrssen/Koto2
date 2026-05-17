@@ -116,10 +116,10 @@ describe('dialogue word lookup audio', () => {
     };
 
     attachWordClickHandlers(container, {
-      wordAudio: { userId: 'u1', speakerId: 46 }
+      wordAudio: { speakerId: 46 }
     });
     span.listeners.click({ currentTarget: span, stopPropagation: () => {} });
 
-    assert.deepEqual(playedWords, [{ userId: 'u1', word: '見た', speakerId: 46 }]);
+    assert.deepEqual(playedWords, [{ word: '見た', speakerId: 46 }]);
   });
 });

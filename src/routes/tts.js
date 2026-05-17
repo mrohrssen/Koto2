@@ -6,9 +6,8 @@ import {
   getVersion as getVoicevoxVersion
 } from '../voicevox.js';
 import { requireAuth } from '../auth/middleware.js';
-import { createDialogueCardWordTtsResolver } from '../services/dialogue-card-tts.js';
 
-export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCache }) {
+export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCache, ttsWordCache }) {
   const router = Router();
 
   // TTS status
@@ -73,7 +72,7 @@ export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCach
     }
   });
 
-  // Synthesize one clicked dialogue word into the same per-user dialogue cache.
+  // Synthesize one clicked dialogue word into the global word-audio cache.
   router.post('/dialogue-word', requireAuth, async (req, res) => {
     const { word, speakerId } = req.body || {};
     if (!word) {
@@ -86,23 +85,59 @@ export default function createTTSRoutes({ getSettings, ttsCache, ttsDialogueCach
     if (!Number.isFinite(resolvedSpeakerId)) {
       return res.status(400).json({ ok: false, error: 'speakerId is required' });
     }
-    if (!ttsDialogueCache) {
-      return res.status(404).json({ ok: false, error: 'Dialogue TTS not available' });
+    if (!ttsWordCache) {
+      return res.status(404).json({ ok: false, error: 'Word TTS not available' });
     }
 
     const settings = getSettings?.() || {};
-    const resolveWordAudio = createDialogueCardWordTtsResolver({
-      ttsDialogueCache,
-      synthesizeFn: async (text, resolvedSpeakerId) => synthesize(text, resolvedSpeakerId, {
-        speedScale: settings.gameTtsSpeed ?? 0.9
-      })
-    });
-    const audio = await resolveWordAudio({ userId: req.user.id, word, speakerId: resolvedSpeakerId });
+    const resolvedSpeed = settings.gameTtsSpeed ?? 0.9;
+    let audio = null;
+    try {
+      audio = await ttsWordCache.synthesizeWord(
+        word,
+        resolvedSpeakerId,
+        resolvedSpeed,
+        async (text, resolvedSpeakerId, speedScale) => synthesize(text, resolvedSpeakerId, {
+          speedScale
+        })
+      );
+    } catch {
+      audio = null;
+    }
 
     if (!audio) {
       return res.status(500).json({ ok: false, error: 'Dialogue word TTS failed' });
     }
-    res.json({ ok: true, audio });
+    res.json({
+      ok: true,
+      audio: {
+        key: audio.filename,
+        url: `/api/tts/word/${audio.filename}`,
+        cacheHit: audio.cacheHit
+      }
+    });
+  });
+
+  // Serve cached clicked-word audio. These URLs are content-addressed by text/speaker/speed.
+  router.get('/word/:filename', (req, res) => {
+    const { filename } = req.params;
+
+    if (!filename.match(/^[a-f0-9]{12}\.wav$/)) {
+      return res.status(400).json({ error: 'Invalid filename' });
+    }
+
+    if (!ttsWordCache) {
+      return res.status(404).json({ error: 'Word TTS not available' });
+    }
+
+    const wav = ttsWordCache.lookup(filename);
+    if (!wav) {
+      return res.status(404).json({ error: 'Audio not found' });
+    }
+
+    res.set('Content-Type', 'audio/wav');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.send(wav);
   });
 
   // Serve cached dialogue audio

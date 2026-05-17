@@ -55,6 +55,7 @@ const DEFAULT_ROUTE_DEPS = {
   saveSettings: () => {},
   ttsCache: null,
   ttsDialogueCache: null,
+  ttsWordCache: null,
   getDialogueCardAudio: async () => null,
   cancelPendingPrefetches: () => {},
   clearPrefetchCache: () => {},

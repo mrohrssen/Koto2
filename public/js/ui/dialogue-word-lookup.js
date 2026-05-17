@@ -101,7 +101,7 @@ export function init({ showToast, pauseAutoDismiss, getKanaMode, onStateUpdate }
  * Attach click handlers to all .jp-word spans inside a container.
  * Call after rendering dialogue HTML into the narration text element.
  * @param {HTMLElement} container
- * @param {{ wordAudio?: { userId: string, speakerId: number } }} options
+ * @param {{ wordAudio?: { speakerId: number } }} options
  */
 export function attachWordClickHandlers(container, options = {}) {
   if (!container) return;
@@ -133,9 +133,8 @@ function handleWordClick(e, wordAudio = null) {
   _currentWord = base;
   _currentReading = span.dataset.reading || null;
 
-  if (wordAudio?.userId && Number.isFinite(Number(wordAudio.speakerId))) {
+  if (Number.isFinite(Number(wordAudio?.speakerId))) {
     playDialogueWordAudio({
-      userId: wordAudio.userId,
       word: span.dataset.audioText || base,
       speakerId: Number(wordAudio.speakerId)
     });
