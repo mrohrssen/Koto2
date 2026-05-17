@@ -87,7 +87,8 @@ export default function createGameRoutes(deps) {
     queueMissingCreatureDialoguesFn: deps.queueMissingCreatureDialoguesFn,
     getUserVocabulary: deps.getUserVocabulary,
     queueMissingNpcDialoguesFn: deps.queueMissingNpcDialoguesFn,
-    checkSentenceViolations: deps.checkSentenceViolations
+    checkSentenceViolations: deps.checkSentenceViolations,
+    getDialogueCardAudio: deps.getDialogueCardAudio
   }));
 
   // Mount cooking routes
@@ -103,7 +104,8 @@ export default function createGameRoutes(deps) {
     regenNpcDialogueFn: deps.regenNpcDialogueFn,
     setNpcMemoryFlagFn: deps.setNpcMemoryFlagFn,
     updateNpcMemoryBondFn: deps.updateNpcMemoryBondFn,
-    checkSentenceViolations: deps.checkSentenceViolations
+    checkSentenceViolations: deps.checkSentenceViolations,
+    getDialogueCardAudio: deps.getDialogueCardAudio
   }));
 
   // Mount economy routes

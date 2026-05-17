@@ -61,6 +61,7 @@ import { loadDialoguePools } from './src/game/dialogue-loader.js';
 import { logger } from './src/logger.js';
 import { TtsCache } from './src/services/tts-cache.js';
 import { TtsDialogueCache } from './src/services/tts-dialogue-cache.js';
+import { createDialogueCardTtsResolver } from './src/services/dialogue-card-tts.js';
 import { setupPvpSockets } from './src/pvp/socket-handler.js';
 
 dotenv.config();
@@ -224,6 +225,37 @@ function buildTtsOptions() {
   };
 }
 
+function getDialogueCardSpeakerId({ speakerKey } = {}) {
+  const PLAYER_BOY_SPEAKER_ID = 11;    // 玄野武宏 ノーマル
+  const PLAYER_GIRL_SPEAKER_ID = 2;    // 四国めたん ノーマル
+  const CREATURE_SPEAKER_ID = 21;      // 剣崎雌雄 ノーマル
+  const GAME_MASTER_SPEAKER_ID = settings.gameTtsSpeakerId || 13;
+
+  if (speakerKey === 'you') {
+    return settings.voiceGender === 'girl'
+      ? PLAYER_GIRL_SPEAKER_ID
+      : PLAYER_BOY_SPEAKER_ID;
+  }
+  if (speakerKey === 'game-master') return GAME_MASTER_SPEAKER_ID;
+  if (speakerKey === 'creature') return CREATURE_SPEAKER_ID;
+
+  try {
+    const npcs = JSON.parse(readFileSync(join(__dirname, 'data', 'npcs.json'), 'utf-8'));
+    return npcs[speakerKey]?.speakerId || GAME_MASTER_SPEAKER_ID;
+  } catch {
+    return GAME_MASTER_SPEAKER_ID;
+  }
+}
+
+const getDialogueCardAudio = createDialogueCardTtsResolver({
+  ttsDialogueCache,
+  getSpeakerId: getDialogueCardSpeakerId,
+  synthesizeFn: async (text, speakerId) => synthesize(text, speakerId, {
+    speedScale: settings.gameTtsSpeed ?? 0.9,
+    volumeScale: settings.gameTtsVolume ?? 1.0
+  })
+});
+
 // ============ Build shared app ============
 
 const app = createApp({
@@ -232,6 +264,7 @@ const app = createApp({
     saveSettings: saveSettings,
     ttsCache,
     ttsDialogueCache,
+    getDialogueCardAudio,
     enrichGameState,
     cancelPendingPrefetches,
     clearPrefetchCache,
