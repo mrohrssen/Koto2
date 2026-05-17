@@ -208,6 +208,7 @@ export async function playNpcBattleIntro(
       tokens: bootstrapLine.tokens,
       overrides: bootstrapLine.overrides || {},
       useKanji: npcDialogue.useKanji || false,
+      audio: bootstrapLine.audio,
     });
     showedIntroLine = true;
   } else if (npcData.greeting) {

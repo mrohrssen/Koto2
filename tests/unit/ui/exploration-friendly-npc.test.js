@@ -123,6 +123,7 @@ describe('renderFriendlyNpc item prompt', () => {
         greeting: {
           tokens: [{ text: 'こんにちは！' }],
           overrides: {},
+          audio: { userId: 'u1', key: 'guide.wav' },
         },
         offered: [
           {
@@ -141,6 +142,7 @@ describe('renderFriendlyNpc item prompt', () => {
     assert.equal(narrationCalls.length, 0);
     assert.equal(dialogueCards[0].speaker, 'Guide');
     assert.deepEqual(dialogueCards[0].tokens, [{ text: 'こんにちは！' }]);
+    assert.deepEqual(dialogueCards[0].audio, { userId: 'u1', key: 'guide.wav' });
     assert.ok(
       actionContent.every(html => !/prologue-continue-hint|Tap here to continue!/i.test(html)),
       'friendly NPC setup should not show a click-to-continue hint before a clickable continuation exists'

@@ -86,6 +86,7 @@ export async function runNpcDialogue() {
         ...npcSpeaker,
         line,
         useKanji: dialogueData.useKanji,
+        audio: line?.audio,
       }));
     } else {
       const { npc, freed, rounds, userId, freedTts } = dialogueData;

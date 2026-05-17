@@ -70,7 +70,8 @@ export default function createRunRoutes({
   queueMissingCreatureDialoguesFn,
   getUserVocabulary,
   queueMissingNpcDialoguesFn,
-  checkSentenceViolations
+  checkSentenceViolations,
+  getDialogueCardAudio
 }) {
   const router = Router();
   const SPEED_REVIEW_TRANSITION_ERROR_CODES = new Set([
@@ -98,6 +99,37 @@ export default function createRunRoutes({
 
     const message = String(error?.message || '');
     return SPEED_REVIEW_TRANSITION_ERROR_MESSAGES.some(knownMessage => message.includes(knownMessage));
+  }
+
+  async function attachAudio(line, req, speakerKey, speakerId) {
+    if (!line) return line;
+    const audio = await getDialogueCardAudio?.({
+      userId: req.user.id,
+      speakerKey,
+      speakerId,
+      line
+    });
+    return audio ? { ...line, audio } : line;
+  }
+
+  async function attachItemRequestAudio(item, req) {
+    if (!item) return item;
+    const next = { ...item };
+    if (item.tokens?.length) {
+      next.requestAudio = await getDialogueCardAudio?.({
+        userId: req.user.id,
+        speakerKey: 'you',
+        line: { tokens: item.tokens, raw: item.raw || item.text || '' }
+      });
+    }
+    if (item.shopTokens?.length) {
+      next.shopAudio = await getDialogueCardAudio?.({
+        userId: req.user.id,
+        speakerKey: 'you',
+        line: { tokens: item.shopTokens, raw: item.shopRaw || item.shopText || '' }
+      });
+    }
+    return next;
   }
 
   /** Fire-and-forget: queue missing creature + NPC dialogues for current run */
@@ -265,7 +297,11 @@ export default function createRunRoutes({
       const { offered } = req.gameManager.explorationService.getSkillMasterOffers();
       req.saveGame();
       const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
-      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet, { dict: getWordDict() });
+      const skillSelectPrompt = await attachAudio(
+        getEligibleFrameTokens(getSkillSelectFrame(), knownSet, { dict: getWordDict() }),
+        req,
+        'cid'
+      );
       res.json({ offered, skillSelectPrompt, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -310,7 +346,13 @@ export default function createRunRoutes({
         .filter(Boolean);
 
       const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
-      const skillSelectPrompt = getEligibleFrameTokens(getSkillSelectFrame(), knownSet, { dict: getWordDict() });
+      const npcKey = room.npcBattle?.npcId || room.npcBattle?.npc?.id || room.npc?.id || 'game-master';
+      const skillSelectPrompt = await attachAudio(
+        getEligibleFrameTokens(getSkillSelectFrame(), knownSet, { dict: getWordDict() }),
+        req,
+        npcKey,
+        room.npcBattle?.npc?.speakerId || room.npc?.speakerId
+      );
       res.json({ offered, skillSelectPrompt, state: req.getEnrichedGameState() });
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -401,9 +443,11 @@ export default function createRunRoutes({
         req.saveGame();
       }
 
+      const greeting = await attachAudio(room.shrine.greeting || null, req, 'shrine_fox');
+
       res.json({
         rewards: SHRINE_REWARDS,
-        greeting: room.shrine.greeting || null,
+        greeting,
         completed: room.shrine.completed === true || room.shrine.used === true,
         state: req.getEnrichedGameState()
       });
@@ -713,7 +757,7 @@ export default function createRunRoutes({
   });
 
   // Whack-a-Mole: complete game and award credits
-  router.post('/whack-a-mole-complete', (req, res) => {
+  router.post('/whack-a-mole-complete', async (req, res) => {
     try {
       const { score } = req.body;
       const result = req.gameManager.completeWhackAMole(score);
@@ -725,25 +769,27 @@ export default function createRunRoutes({
       const finishFrames = getGameMasterFinishFrames();
       const candidates = finishFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
       const finishDialogue = selectBestFrame(candidates, knownSet, { dict: getWordDict() }) || { tokens: [], words: [] };
+      const finishDialogueWithAudio = await attachAudio(finishDialogue, req, 'game-master');
 
-      res.json({ ...result, finishDialogue, state: req.getEnrichedGameState() });
+      res.json({ ...result, finishDialogue: finishDialogueWithAudio, state: req.getEnrichedGameState() });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
   });
 
   // Whack-a-Mole: get GM dialogue (i+1 selected greeting)
-  router.get('/whack-a-mole-dialogue', (req, res) => {
+  router.get('/whack-a-mole-dialogue', async (req, res) => {
     try {
       const knownWords = getKnownWordsFromFsrs(req.user.id);
       const knownSet = new Set(knownWords);
       const askFrames = getGameMasterAskFrames();
       const candidates = askFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
       const dialogue = selectBestFrame(candidates, knownSet, { dict: getWordDict() }) || { tokens: [], words: [] };
+      const dialogueWithAudio = await attachAudio(dialogue, req, 'game-master');
 
       const yesTokens = getEligibleFrameTokens(getGameMasterYesFrame(), knownSet, { dict: getWordDict() });
       const noTokens = getEligibleFrameTokens(getGameMasterNoFrame(), knownSet, { dict: getWordDict() });
-      res.json({ dialogue, yesTokens, noTokens });
+      res.json({ dialogue: dialogueWithAudio, yesTokens, noTokens });
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
@@ -804,9 +850,19 @@ export default function createRunRoutes({
 
         req.saveGame();
       }
+      const offeredWithAudio = await Promise.all(
+        (room.friendlyNpc.offered || []).map(item => attachItemRequestAudio(item, req))
+      );
+      const greeting = await attachAudio(
+        room.friendlyNpc.greeting || null,
+        req,
+        room.npc?.id || 'game-master',
+        room.npc?.speakerId
+      );
+
       res.json({
-        offered: room.friendlyNpc.offered,
-        greeting: room.friendlyNpc.greeting || null,
+        offered: offeredWithAudio,
+        greeting,
         state: req.getEnrichedGameState(),
       });
     } catch (err) {

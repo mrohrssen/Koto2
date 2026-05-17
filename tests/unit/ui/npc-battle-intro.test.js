@@ -199,6 +199,7 @@ describe('playNpcBattleIntro (Bug #9 fix)', () => {
         fightStart: {
           tokens: [{ text: '行くよ！' }],
           overrides: {},
+          audio: { userId: 'u1', key: 'fight-start.wav' },
         },
         useKanji: false,
       },
@@ -206,6 +207,7 @@ describe('playNpcBattleIntro (Bug #9 fix)', () => {
 
     assert.equal(dialogueCards[0].speaker, 'Child');
     assert.deepEqual(dialogueCards[0].tokens, [{ text: '行くよ！' }]);
+    assert.deepEqual(dialogueCards[0].audio, { userId: 'u1', key: 'fight-start.wav' });
     assert.equal(dialogueCards[1].speaker, 'Child');
     assert.equal(dialogueCards[1].text, "Let's see how strong you are!");
     assert.equal(narrationLog.length, 0);
