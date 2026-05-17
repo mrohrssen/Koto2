@@ -3977,12 +3977,6 @@ button.hud-chip {
   color: var(--text-primary, #e0e0e0);
 }
 
-.collection-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .collection-points {
   font-size: 16px;
   font-weight: bold;
@@ -3994,17 +3988,6 @@ button.hud-chip {
 .collection-points.budget-ok { color: var(--text-primary, #e0e0e0); }
 .collection-points.budget-tight { color: #FFD700; }
 .collection-points.budget-full { color: #F44336; }
-
-.collection-settings-btn {
-  border: 1px solid var(--border-color, rgba(255,255,255,0.2));
-  border-radius: 12px;
-  background: rgba(0,0,0,0.3);
-  color: var(--text-primary, #e0e0e0);
-  padding: 4px 10px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-}
 
 .collection-grid {
   display: grid;

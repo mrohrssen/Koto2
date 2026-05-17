@@ -1189,10 +1189,12 @@ function showCollectionSelect(catalog, collection) {
         overlay.innerHTML = `
           <div class="collection-header">
             <span class="collection-title">${t('selectTeam')}</span>
-            <div class="collection-header-actions">
+            <div class="top-hud-right">
               <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
-              <button class="collection-settings-btn" id="collection-settings-btn" type="button" aria-label="Open settings">
-                &#9881; Settings
+              <button class="hud-chip hud-btn" id="collection-menu-btn" type="button" aria-label="Menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
               </button>
             </div>
           </div>
@@ -1247,8 +1249,8 @@ function showCollectionSelect(catalog, collection) {
           }
         });
 
-        document.getElementById('collection-settings-btn')?.addEventListener('click', () => {
-          modalsUI.openSettings();
+        document.getElementById('collection-menu-btn')?.addEventListener('click', () => {
+          modalsUI.toggleMenu();
         });
 
         overlayBuilt = true;

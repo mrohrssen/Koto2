@@ -10,11 +10,15 @@ function read(path) {
 }
 
 describe('team select settings button', () => {
-  it('renders and wires the settings button on the collection team select screen', () => {
+  it('renders and wires the standard menu button on the collection team select screen', () => {
     const gameJs = read('public/game.js');
+    const gameCss = read('public/game.css');
 
-    assert.equal(gameJs.includes('id="collection-settings-btn"'), true);
-    assert.equal(gameJs.includes("document.getElementById('collection-settings-btn')"), true);
-    assert.equal(gameJs.includes('modalsUI.openSettings()'), true);
+    assert.equal(gameJs.includes('id="collection-menu-btn"'), true);
+    assert.equal(gameJs.includes('class="hud-chip hud-btn" id="collection-menu-btn"'), true);
+    assert.equal(gameJs.includes("document.getElementById('collection-menu-btn')"), true);
+    assert.equal(gameJs.includes('modalsUI.toggleMenu()'), true);
+    assert.equal(gameJs.includes('collection-settings-btn'), false);
+    assert.equal(gameCss.includes('.collection-settings-btn'), false);
   });
 });
