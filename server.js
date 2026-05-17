@@ -200,7 +200,7 @@ function buildTtsOptions() {
 
   const PLAYER_BOY_SPEAKER_ID = 11;    // 玄野武宏 ノーマル
   const PLAYER_GIRL_SPEAKER_ID = 2;    // 四国めたん ノーマル
-  const CREATURE_SPEAKER_ID = 21;      // 剣崎雌雄 ノーマル
+  const CREATURE_SPEAKER_ID = 113;     // あんこもん ノーマル
 
   const playerSpeakerId = settings.voiceGender === 'girl'
     ? PLAYER_GIRL_SPEAKER_ID
@@ -229,7 +229,7 @@ function buildTtsOptions() {
 function getDialogueCardSpeakerId({ speakerKey } = {}) {
   const PLAYER_BOY_SPEAKER_ID = 11;    // 玄野武宏 ノーマル
   const PLAYER_GIRL_SPEAKER_ID = 2;    // 四国めたん ノーマル
-  const CREATURE_SPEAKER_ID = 21;      // 剣崎雌雄 ノーマル
+  const CREATURE_SPEAKER_ID = 113;     // あんこもん ノーマル
   const GAME_MASTER_SPEAKER_ID = settings.gameTtsSpeakerId ?? 13;
 
   if (speakerKey === 'you') {

@@ -69,6 +69,32 @@ export default function createCombatRoutes({
     return audio ? { ...line, audio } : line;
   }
 
+  async function attachBefriendPromptAudio(prompt, req) {
+    if (!prompt) return prompt;
+    const raw = prompt.raw || prompt.text || '';
+    const audio = await getDialogueCardAudio?.({
+      userId: req.user.id,
+      speakerKey: 'creature',
+      line: { raw, tokens: prompt.tokens || [] }
+    });
+    return audio ? { ...prompt, audio } : prompt;
+  }
+
+  async function attachBefriendQuizAudio(result, req) {
+    if (!result?.befriendQuiz) return result;
+    const quiz = result.befriendQuiz;
+    return {
+      ...result,
+      befriendQuiz: {
+        ...quiz,
+        waitPrompt: await attachBefriendPromptAudio(quiz.waitPrompt, req),
+        namePrompt: await attachBefriendPromptAudio(quiz.namePrompt, req),
+        successPrompt: await attachBefriendPromptAudio(quiz.successPrompt, req),
+        wrongPrompt: await attachBefriendPromptAudio(quiz.wrongPrompt, req),
+      }
+    };
+  }
+
   function buildDevFallbackBefriendRounds(targetEnemy) {
     const nameEn = targetEnemy?.nameEn || 'Creature';
     return [
@@ -164,7 +190,7 @@ export default function createCombatRoutes({
   // The attack payload contains exactly one player-owned cursor action.
   // Defend: { actionType: 'defend' }
   // Befriend: { actionType: 'befriend', targetEnemyIndex }
-  router.post('/creature-combat-cycle', (req, res) => {
+  router.post('/creature-combat-cycle', async (req, res) => {
     const routeStartedAt = performance.now();
     const gameManager = req.gameManager;
     const { actionType, moveChoices } = req.body;
@@ -194,7 +220,8 @@ export default function createCombatRoutes({
         totalMs,
       });
 
-      res.json({ ...result, state: req.getEnrichedGameState() });
+      const resultWithAudio = await attachBefriendQuizAudio(result, req);
+      res.json({ ...resultWithAudio, state: req.getEnrichedGameState() });
     } catch (error) {
       let state = null;
       try {
