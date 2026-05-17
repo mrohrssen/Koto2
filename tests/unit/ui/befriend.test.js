@@ -463,10 +463,12 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
         waitPrompt: {
           tokens: [{ surface: '待って', base: '待つ', reading: 'まって', meaning: 'wait' }],
           overrides: {},
+          audio: { userId: 'u1', key: 'wait.wav', speakerId: 113 },
         },
         namePrompt: {
           tokens: [{ surface: '名前', base: '名前', reading: 'なまえ', meaning: 'name' }],
           overrides: {},
+          audio: { userId: 'u1', key: 'name.wav', speakerId: 113 },
         },
       }, { enemies: [{ hp: 1, maxHp: 10 }] });
     } finally {
@@ -477,6 +479,8 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
     assert.equal(dialogueCardCalls[0].speakerReading, 'tetsu');
     assert.equal(dialogueCardCalls[0].speakerPortrait, '/creatures/tetsu.webp');
     assert.equal(dialogueCardCalls[0].portraitKind, 'creature');
+    assert.deepEqual(dialogueCardCalls[0].audio, { userId: 'u1', key: 'wait.wav', speakerId: 113 });
+    assert.deepEqual(dialogueCardCalls[1].audio, { userId: 'u1', key: 'name.wav', speakerId: 113 });
     assert.equal(renderChoicesCalls[0].heading, 'Choose an action');
     assert.deepEqual(renderChoicesCalls[0].cards.map(card => card.title), ['たたかう (Fight)', 'はなす (Talk)']);
     assert.equal(renderChoicesCalls[1].heading, 'Choose your response');

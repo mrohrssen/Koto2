@@ -78,16 +78,18 @@ function dialogueOptionsForCreatureSpeaker(speaker) {
 
 async function showCreatureDialogue({ speaker, prompt, fallbackText }) {
   const dialogueSpeaker = dialogueOptionsForCreatureSpeaker(speaker);
+  const audio = prompt?.audio || null;
   if (prompt?.tokens?.length) {
     await showNpcDialogueCard({
       ...dialogueSpeaker,
       tokens: prompt.tokens,
       overrides: prompt.overrides || {},
       useKanji: false,
+      ...(audio ? { audio } : {}),
     });
     return;
   }
-  await showNpcDialogueCard({ ...dialogueSpeaker, text: fallbackText });
+  await showNpcDialogueCard({ ...dialogueSpeaker, text: fallbackText, ...(audio ? { audio } : {}) });
 }
 
 // ---- Pure helpers (explicit state inputs) ----

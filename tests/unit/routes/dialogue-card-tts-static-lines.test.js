@@ -157,6 +157,72 @@ describe('static dialogue route TTS metadata', () => {
     assert.deepEqual(res.body.line.audio, { userId: 'npc-user', key: 'kodomo.wav' });
   });
 
+  it('attaches creature audio to befriend quiz prompt lines', async () => {
+    const audioCalls = [];
+    const router = createCombatRoutes({
+      getUserVocabulary: () => ({ words: [] }),
+      getCreatureDialogueFromCache: () => null,
+      regenCreatureDialogueFn: async () => {},
+      getNpcDialogueFromCache: () => null,
+      logNpcEncounterFn: () => {},
+      regenNpcDialogueFn: async () => {},
+      setNpcMemoryFlagFn: () => {},
+      updateNpcMemoryBondFn: () => {},
+      checkSentenceViolations: () => ({ violations: [] }),
+      getDialogueCardAudio: async ({ userId, speakerKey, line }) => {
+        audioCalls.push({ userId, speakerKey, raw: line.raw });
+        return { userId, key: `${speakerKey}-${line.raw}.wav`, speakerId: 113 };
+      }
+    });
+    const handler = getHandler(router, 'post', '/creature-combat-cycle');
+    const req = {
+      body: { actionType: 'attack', moveChoices: [] },
+      user: { id: 'creature-user' },
+      gameManager: {
+        combat: {},
+        combatCycleService: {
+          creatureCombatCycle: () => ({
+            befriendQuizTriggered: true,
+            befriendQuiz: {
+              waitPrompt: { text: '待って！', tokens: [{ surface: '待って' }], words: [] },
+              namePrompt: { text: '名前は？', tokens: [{ surface: '名前' }], words: [] },
+              successPrompt: { text: '友達！', tokens: [{ surface: '友達' }], words: [] },
+              wrongPrompt: { text: '違う！', tokens: [{ surface: '違う' }], words: [] },
+            }
+          })
+        }
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'combat' })
+    };
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(audioCalls.map(call => call.speakerKey), ['creature', 'creature', 'creature', 'creature']);
+    assert.deepEqual(res.body.befriendQuiz.waitPrompt.audio, {
+      userId: 'creature-user',
+      key: 'creature-待って！.wav',
+      speakerId: 113
+    });
+    assert.deepEqual(res.body.befriendQuiz.namePrompt.audio, {
+      userId: 'creature-user',
+      key: 'creature-名前は？.wav',
+      speakerId: 113
+    });
+    assert.deepEqual(res.body.befriendQuiz.successPrompt.audio, {
+      userId: 'creature-user',
+      key: 'creature-友達！.wav',
+      speakerId: 113
+    });
+    assert.deepEqual(res.body.befriendQuiz.wrongPrompt.audio, {
+      userId: 'creature-user',
+      key: 'creature-違う！.wav',
+      speakerId: 113
+    });
+  });
+
   it('uses the defeated NPC voice for NPC battle skill prompt audio', async () => {
     const sharedRoom = { type: 'npcBattle', npcBattle: {} };
     const gameManager = {
