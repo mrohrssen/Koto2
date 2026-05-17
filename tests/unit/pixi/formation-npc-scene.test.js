@@ -385,6 +385,30 @@ describe('spawnNpcSprite scene contract', () => {
     assert.equal(sprite._shadow.y, 391.2 + 100 * 0.38);
   });
 
+  it('places animated NPC shadows at the measured sprite feet', async () => {
+    const npcs = new FakeContainer();
+    npcAnimationEntry = {
+      idle: '/assets/sprites/npcs-animated/cid/idle.webp?v=test',
+      walk: '/assets/sprites/npcs-animated/cid/walk.webp?v=test',
+      frameWidth: 256,
+      frameHeight: 256,
+      columns: 6,
+      frames: 24,
+      fps: 12,
+      renderScale: 1.6,
+    };
+    const scene = {
+      disposed: false,
+      layers: { npcs },
+      tween: async () => {},
+    };
+
+    const sprite = await spawnNpcSprite(scene, '/assets/sprites/npcs/cid.webp?v=test');
+
+    assert.equal(sprite.height, 272);
+    assert.equal(sprite._shadow.y, 391.2 + 272 * (63 / 256));
+  });
+
   it('uses a 70px-wide contact shadow for the seated shrine fox', async () => {
     const npcs = new FakeContainer();
     const scene = {
@@ -403,7 +427,7 @@ describe('spawnNpcSprite scene contract', () => {
       radiusX: 35,
       radiusY: 7,
     });
-    assert.equal(sprite._shadow.y, 391.2 + 170 * 0.62 * 0.38);
+    assert.equal(sprite._shadow.y, 391.2 + 170 * 0.62 * 0.38 + 2);
   });
 
   it('ticks animated NPCs as walking during slide-in and idle after arrival', async () => {
