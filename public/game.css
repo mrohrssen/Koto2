@@ -6586,17 +6586,19 @@ button.hud-chip {
   left: 10px;
   right: 10px;
   top: 22px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
   height: 18px;
   line-height: 1;
   white-space: nowrap;
 }
 
 .npc-dialogue-jp-line .crystal-cost {
-  justify-self: start;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
   margin: 0;
   font-size: 12px;
 }
@@ -6604,7 +6606,7 @@ button.hud-chip {
 .npc-dialogue-jp-line .npc-dialogue-btn-jp {
   position: static;
   min-width: 0;
-  text-align: right;
+  text-align: center;
 }
 
 .npc-dialogue-btn-jp {
