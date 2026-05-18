@@ -15,6 +15,10 @@ let showRequestCounter = 0;
 const MAX_VISIBLE_LINES = 3;
 const BREAK_CHARS = /[。！？!?、，,.\s\n]/u;
 
+function isDailyCrystalBonusClick(target) {
+  return !!target?.closest?.('.crystal-daily-modal-backdrop');
+}
+
 function clearPagination() {
   pagedText = [];
   currentPage = 0;
@@ -139,6 +143,12 @@ function handleClick(e) {
   // If click is inside the dictionary popup, don't dismiss — the popup is a DOM sibling
   // of the narration box but logically part of the dialogue interaction
   if (dialogueLookup.isPopupVisible() && document.getElementById('lookup-popup')?.contains(e.target)) {
+    return;
+  }
+
+  // The daily login bonus can appear before startup Cid dialogue finishes.
+  // Keep it dismissible without reopening all underlying game controls.
+  if (isDailyCrystalBonusClick(e.target)) {
     return;
   }
 
