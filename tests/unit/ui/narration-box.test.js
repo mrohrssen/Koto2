@@ -54,6 +54,16 @@ function createElement(id) {
       if (target === element) return true;
       return element.children.some(child => child.contains?.(target));
     },
+    closest(selector) {
+      if (!selector?.startsWith('.')) return null;
+      const className = selector.slice(1);
+      let current = element;
+      while (current) {
+        if (current.classList?.contains?.(className)) return current;
+        current = current.parentElement;
+      }
+      return null;
+    },
   };
   return element;
 }
@@ -228,6 +238,30 @@ describe('narration box click gating', () => {
 
     assert.equal(event.defaultPrevented, false);
     assert.equal(event.immediatePropagationStopped, false);
+
+    narrationBox.forceHide();
+    await dismissed;
+  });
+
+  it('allows daily login bonus modal clicks while narration is visible', async () => {
+    let dismissClicks = 0;
+    outsideButtonClickHandler = () => {
+      dismissClicks += 1;
+    };
+    const dailyBackdrop = createElement('daily-bonus-backdrop');
+    dailyBackdrop.classList.add('crystal-daily-modal-backdrop');
+    const dailyDismissButton = createClickableElement('daily-dismiss');
+    dailyBackdrop.appendChild(dailyDismissButton);
+
+    const dismissed = narrationBox.show('Cid line', { speaker: 'Cid' });
+    await waitForDeferredListener();
+
+    const event = dailyDismissButton.click();
+
+    assert.equal(event.defaultPrevented, false);
+    assert.equal(event.immediatePropagationStopped, false);
+    assert.equal(dismissClicks, 1);
+    assert.equal(dom.narrationBox.classList.contains('visible'), true);
 
     narrationBox.forceHide();
     await dismissed;
