@@ -37,6 +37,18 @@ test('.game-app does not apply safe-area-inset-top padding', () => {
   );
 });
 
+test('phone app shell and fixed overlays allow 450px wide devices', () => {
+  for (const selector of ['.game-app {', '.menu-sheet {', '.takeover {']) {
+    const body = ruleBody(css, selector);
+    assert.ok(body, `${selector} rule not found`);
+    assert.match(
+      body,
+      /(?:^|\s|;)max-width:\s*450px\s*;/,
+      `${selector} should cap at 450px`
+    );
+  }
+});
+
 test('.area-header-pill paints at top of screen and honors horizontal safe-area insets', () => {
   const body = ruleBody(css, '.area-header-pill {');
   assert.ok(body, '.area-header-pill rule not found');
