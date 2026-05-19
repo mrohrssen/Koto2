@@ -6,7 +6,7 @@ import {
   resolveExposureMeaning,
 } from '../shared/exposure-extractor.js';
 import * as dialogueLookup from './dialogue-word-lookup.js';
-import { playDialogueAudio, playDialogueLineAudio } from '../tts.js';
+import { playDialogueAudio, playDialogueLineAudio, playNeutralLearnAudio } from '../tts.js';
 import { learnDialogue, translateDialogue } from '../api.js';
 import { crystalCostHtml } from './crystals.js';
 
@@ -356,17 +356,46 @@ function renderTranslationSheet({ sourceText, sourceHtml = '', state, translatio
   `;
 }
 
+function cleanLearnAudioText(value) {
+  return String(value || '').trim();
+}
+
+function renderLearnAudioButton(text, ariaLabel, extraClass = '') {
+  const audioText = cleanLearnAudioText(text);
+  if (!audioText) return '';
+  const classes = [
+    'npc-dialogue-tool',
+    'npc-dialogue-audio',
+    'npc-dialogue-learn-audio',
+    extraClass
+  ].filter(Boolean).join(' ');
+  return `
+    <button class="${classes}" type="button" data-learn-audio-text="${esc(audioText)}" aria-label="${esc(ariaLabel)}">♪</button>
+  `;
+}
+
 function renderLessonBreakdownItem(item = {}) {
+  const audioText = cleanLearnAudioText(item?.text);
+  const audioButton = renderLearnAudioButton(
+    audioText,
+    `Play audio for ${audioText}`,
+    'npc-dialogue-learn-token-audio'
+  );
   return `
     <div class="npc-dialogue-learn-token">
-      <div class="npc-dialogue-learn-token-head">
-        <span class="npc-dialogue-learn-token-jp">${esc(item.text || '')}</span>
-        <span class="npc-dialogue-learn-token-reading">${esc(item.reading || '')}</span>
-      </div>
-      <div class="npc-dialogue-learn-token-body">
-        <span class="npc-dialogue-learn-token-role">${esc(item.kind || '')}</span>
-        <span class="npc-dialogue-learn-token-meaning">${esc(item.meaning || '')}</span>
-        ${item.explanation ? `<span class="npc-dialogue-learn-token-detail">${esc(item.explanation)}</span>` : ''}
+      <div class="npc-dialogue-learn-token-grid">
+        <div class="npc-dialogue-learn-token-copy">
+          <div class="npc-dialogue-learn-token-head">
+            <span class="npc-dialogue-learn-token-jp">${esc(item.text || '')}</span>
+            <span class="npc-dialogue-learn-token-reading">${esc(item.reading || '')}</span>
+          </div>
+          <div class="npc-dialogue-learn-token-body">
+            <span class="npc-dialogue-learn-token-role">${esc(item.kind || '')}</span>
+            <span class="npc-dialogue-learn-token-meaning">${esc(item.meaning || '')}</span>
+            ${item.explanation ? `<span class="npc-dialogue-learn-token-detail">${esc(item.explanation)}</span>` : ''}
+          </div>
+        </div>
+        ${audioButton ? `<div class="npc-dialogue-learn-token-action">${audioButton}</div>` : ''}
       </div>
     </div>
   `;
@@ -390,7 +419,12 @@ function renderLearnTakeover({ state, sourceText, lesson = null, diagnostic = nu
     : state === 'success' && lesson
       ? `
         <section class="npc-dialogue-learn-section">
-          <h3>Sentence</h3>
+          <div class="npc-dialogue-learn-section-head">
+            <h3>Sentence</h3>
+            <div class="npc-dialogue-learn-section-action">
+              ${renderLearnAudioButton(lesson.sourceText || sourceText, 'Play sentence audio', 'npc-dialogue-learn-sentence-audio')}
+            </div>
+          </div>
           <p class="npc-dialogue-learn-source">${esc(lesson.sourceText || sourceText)}</p>
         </section>
         <section class="npc-dialogue-learn-section">
@@ -721,12 +755,28 @@ export function showNpcDialogueCard(options = {}) {
       let learnPaidForPage = false;
       let lastLearnResult = null;
 
+      const attachLearnAudioHandlers = () => {
+        for (const button of actionArea.querySelectorAll('.npc-dialogue-learn-audio')) {
+          button.addEventListener('click', async (event) => {
+            event.stopPropagation?.();
+            const text = cleanLearnAudioText(event.currentTarget?.dataset?.learnAudioText);
+            if (!text) return;
+            event.currentTarget.disabled = true;
+            await playNeutralLearnAudio(text);
+            if (!resolved && actionArea.querySelector('.npc-dialogue-learn-takeover')) {
+              event.currentTarget.disabled = false;
+            }
+          });
+        }
+      };
+
       const setLearnTakeover = (state, lesson = null, diagnostic = null) => {
         closeTranslationSheet();
         closeLearnTakeover();
         actionArea.insertAdjacentHTML('beforeend', renderLearnTakeover({ state, sourceText, lesson, diagnostic }));
         actionArea.querySelector('.npc-dialogue-learn-close')?.addEventListener('click', closeLearnTakeover);
         actionArea.querySelector('.npc-dialogue-learn-retry')?.addEventListener('click', requestLearn);
+        attachLearnAudioHandlers();
       };
 
       const requestLearn = async () => {

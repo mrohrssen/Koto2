@@ -24,7 +24,12 @@ await mock.module('../../../public/js/ui/sprite-utils.js', {
 // (which calls playDialogueAudio) as well as room-transition's speakText
 // fallback. Single mock with both exports.
 await mock.module('../../../public/js/tts.js', {
-  namedExports: { speakText: () => {}, playDialogueAudio: () => {}, playDialogueLineAudio: async () => null },
+  namedExports: {
+    speakText: () => {},
+    playDialogueAudio: () => {},
+    playDialogueLineAudio: async () => null,
+    playNeutralLearnAudio: async () => null,
+  },
 });
 
 await mock.module('../../../public/js/ui/narration-box.js', {

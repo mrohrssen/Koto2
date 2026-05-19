@@ -6876,6 +6876,24 @@ button.hud-chip {
   letter-spacing: 0.05em;
 }
 
+.npc-dialogue-learn-section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.npc-dialogue-learn-section-head h3 {
+  margin: 0;
+}
+
+.npc-dialogue-learn-section-action,
+.npc-dialogue-learn-token-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .npc-dialogue-learn-source {
   margin: 0;
   font-size: clamp(24px, 8vw, 34px);
@@ -6905,6 +6923,17 @@ button.hud-chip {
   border-radius: 14px;
   padding: 10px;
   background: rgba(255, 255, 255, 0.55);
+}
+
+.npc-dialogue-learn-token-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  align-items: start;
+  gap: 12px;
+}
+
+.npc-dialogue-learn-token-copy {
+  min-width: 0;
 }
 
 .npc-dialogue-learn-token-head {

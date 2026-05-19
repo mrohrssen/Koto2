@@ -28,7 +28,8 @@ const MAX_NARRATION_CACHE = 10;
 // Word audio cache
 const wordAudioCache = new Map();
 let wordAudioEnabled = true;
-const WORD_SPEAKER_ID = 11; // 玄野武宏 (ノーマル) - clear pronunciation for dictionary words
+export const NEUTRAL_PRONUNCIATION_SPEAKER_ID = 11; // 玄野武宏 (ノーマル) - clear pronunciation
+const WORD_SPEAKER_ID = NEUTRAL_PRONUNCIATION_SPEAKER_ID;
 
 // UI audio (for short texts like creature names)
 let currentUiAudio = null;
@@ -383,6 +384,13 @@ export async function playDialogueLineAudio({ text, speakerId } = {}) {
     console.warn('[TTS] Dialogue line audio failed:', error.message);
     return null;
   }
+}
+
+export async function playNeutralLearnAudio(text) {
+  return playDialogueLineAudio({
+    text,
+    speakerId: NEUTRAL_PRONUNCIATION_SPEAKER_ID
+  });
 }
 
 async function playAudioUrl(url) {

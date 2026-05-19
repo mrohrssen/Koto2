@@ -21,6 +21,7 @@ class FakeElement {
     this.parentNode = null;
     this.style = {};
     this.dataset = {};
+    this.attributes = {};
     this.className = '';
     this.disabled = false;
     this.textContent = '';
@@ -56,6 +57,22 @@ class FakeElement {
     this.listeners[type].push(handler);
   }
 
+  getAttribute(name) {
+    return this.attributes[name] ?? null;
+  }
+
+  setAttribute(name, value) {
+    this.attributes[name] = String(value);
+    if (name === 'class') this.className = String(value);
+    if (name === 'disabled') this.disabled = true;
+    if (name.startsWith('data-')) {
+      const key = name
+        .slice(5)
+        .replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+      this.dataset[key] = String(value);
+    }
+  }
+
   click() {
     for (const handler of this.listeners.click || []) {
       handler({ target: this, currentTarget: this, stopPropagation: () => {} });
@@ -86,6 +103,12 @@ class FakeElement {
       child.parentNode = this;
       child.className = className;
       child.disabled = /\sdisabled(?:\s|>|$)/.test(attrs);
+      const attrRe = /\s([a-zA-Z0-9:-]+)(?:="([^"]*)")?/g;
+      let attrMatch;
+      while ((attrMatch = attrRe.exec(attrs))) {
+        const [, name, value = ''] = attrMatch;
+        child.setAttribute(name, value);
+      }
       this._parsedElements.push(child);
     }
     return this._parsedElements;
@@ -117,6 +140,7 @@ let attachedLookupOptions = null;
 let playedAudio = null;
 let playedAudioCalls = [];
 let playedLineAudioRequests = [];
+let playedLearnAudioRequests = [];
 let translationResponse = { ok: true, translation: 'Wait!', cached: false };
 let translatedRequests = [];
 const DEFAULT_LEARN_RESPONSE = {
@@ -167,6 +191,10 @@ await mock.module('../../../public/js/tts.js', {
       playedLineAudioRequests.push(options);
       return { userId: 'user-1', key: 'line-ready.wav', speakerId: options.speakerId };
     },
+    playNeutralLearnAudio: async (text) => {
+      playedLearnAudioRequests.push(text);
+      return { userId: 'user-1', key: 'learn-line.wav', speakerId: 11 };
+    },
   },
 });
 
@@ -199,6 +227,7 @@ describe('npc dialogue card', () => {
     playedAudio = null;
     playedAudioCalls = [];
     playedLineAudioRequests = [];
+    playedLearnAudioRequests = [];
     translationResponse = { ok: true, translation: 'Wait!', cached: false };
     translatedRequests = [];
     learnResponse = JSON.parse(JSON.stringify(DEFAULT_LEARN_RESPONSE));
@@ -694,6 +723,92 @@ describe('npc dialogue card', () => {
     assert.match(actionArea.innerHTML, /森で/);
     assert.match(actionArea.innerHTML, /in the forest/);
     assert.doesNotMatch(actionArea.innerHTML, /<script/);
+  });
+
+  it('renders Learn replay buttons with dialogue audio styling and right-aligned wrappers', async () => {
+    showNpcDialogueCard({
+      speaker: 'Flower',
+      tokens: [
+        { surface: '花', baseForm: '花', reading: 'はな', meaning: 'flower / blossom', pos: 'noun', entity: true },
+        { surface: 'は', baseForm: 'は', reading: 'は', pos: 'particle' },
+        { surface: '森', baseForm: '森', reading: 'もり', meaning: 'forest', pos: 'noun' },
+        { surface: 'で', baseForm: 'で', reading: 'で', pos: 'particle' },
+        { surface: '光', baseForm: '光', reading: 'ひかり', meaning: 'light', pos: 'noun' },
+        { surface: 'を', baseForm: 'を', reading: 'を', pos: 'particle' },
+        { surface: '見た', baseForm: '見る', reading: 'みた', meaning: 'saw', pos: 'verb' },
+        { surface: '。', pos: 'punctuation' }
+      ],
+      knownWords: new Set()
+    });
+
+    const [, learnButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    learnButton.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const learnAudioButtons = actionArea.querySelectorAll('.npc-dialogue-learn-audio');
+    assert.equal(learnAudioButtons.length, 1 + DEFAULT_LEARN_RESPONSE.lesson.breakdown.length);
+    assert.match(actionArea.innerHTML, /npc-dialogue-learn-section-head/);
+    assert.match(actionArea.innerHTML, /npc-dialogue-learn-section-action/);
+    assert.match(actionArea.innerHTML, /npc-dialogue-learn-token-grid/);
+    assert.match(actionArea.innerHTML, /npc-dialogue-learn-token-action/);
+    assert.match(actionArea.innerHTML, /npc-dialogue-tool npc-dialogue-audio npc-dialogue-learn-audio/);
+    assert.match(actionArea.innerHTML, /aria-label="Play sentence audio"/);
+    assert.match(actionArea.innerHTML, /aria-label="Play audio for 花"/);
+    assert.doesNotMatch(actionArea.innerHTML, /Play word/);
+    assert.doesNotMatch(actionArea.innerHTML, /Listen/);
+  });
+
+  it('plays neutral Learn audio without re-requesting the lesson', async () => {
+    showNpcDialogueCard({
+      speaker: 'Flower',
+      tokens: [
+        { surface: '花', baseForm: '花', reading: 'はな', meaning: 'flower / blossom', pos: 'noun', entity: true },
+        { surface: 'は', baseForm: 'は', reading: 'は', pos: 'particle' },
+        { surface: '森', baseForm: '森', reading: 'もり', meaning: 'forest', pos: 'noun' },
+        { surface: 'で', baseForm: 'で', reading: 'で', pos: 'particle' },
+        { surface: '光', baseForm: '光', reading: 'ひかり', meaning: 'light', pos: 'noun' },
+        { surface: 'を', baseForm: 'を', reading: 'を', pos: 'particle' },
+        { surface: '見た', baseForm: '見る', reading: 'みた', meaning: 'saw', pos: 'verb' },
+        { surface: '。', pos: 'punctuation' }
+      ],
+      knownWords: new Set()
+    });
+
+    const [, learnButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    learnButton.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const [sentenceButton, firstBreakdownButton] = actionArea.querySelectorAll('.npc-dialogue-learn-audio');
+    sentenceButton.click();
+    firstBreakdownButton.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.deepEqual(playedLearnAudioRequests, ['花は森で光を見た。', '花']);
+    assert.equal(learnRequests.length, 1);
+  });
+
+  it('omits replay buttons for missing Learn audio text', async () => {
+    learnResponse = JSON.parse(JSON.stringify(DEFAULT_LEARN_RESPONSE));
+    learnResponse.lesson.breakdown = [
+      { kind: 'particle', text: '', reading: 'わ', meaning: 'topic marker', explanation: 'Missing text should not render replay.' },
+      { kind: 'noun', text: '森', reading: 'もり', meaning: 'forest', explanation: 'Valid text should render replay.' }
+    ];
+
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [{ surface: '森', baseForm: '森', reading: 'もり', meaning: 'forest', pos: 'noun' }],
+      knownWords: new Set(),
+    });
+
+    const [, learnButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    learnButton.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const learnAudioButtons = actionArea.querySelectorAll('.npc-dialogue-learn-audio');
+    assert.equal(learnAudioButtons.length, 2); // sentence + valid 森 breakdown item
+    assert.doesNotMatch(actionArea.innerHTML, /Play audio for "/);
+    assert.doesNotMatch(actionArea.innerHTML, /data-learn-audio-text=""/);
+    assert.match(actionArea.innerHTML, /aria-label="Play audio for 森"/);
   });
 
   it('renders unavailable Learn state with retry control and diagnostic code', async () => {
