@@ -101,7 +101,12 @@ export function startPvpBattle(data) {
   });
 
   pvpSocket.on('pvp:opening-action-submitted', () => {
-    showWaitingForOpponent('Opponent chose their opening move. Waiting for your opening move...');
+    const statusEl = typeof document !== 'undefined'
+      ? document.getElementById('pvp-battle-status')
+      : null;
+    if (statusEl) {
+      statusEl.textContent = 'Opponent chose their opening move.';
+    }
   });
 
   pvpSocket.on('pvp:action-result', (result) => {
