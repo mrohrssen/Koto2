@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.koto.app',
+  appId: 'l7v.koto.app',
   appName: 'Koto',
   webDir: 'dist',
   server: {

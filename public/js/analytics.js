@@ -42,7 +42,13 @@ async function createNativeTransport() {
   ]);
   const FirebaseCrashlytics = crashlyticsModule.FirebaseCrashlytics || null;
   return {
-    init: async () => {},
+    init: async () => {
+      try {
+        await FirebaseAnalytics.setEnabled?.({ enabled: true });
+      } catch (err) {
+        console.warn('[Analytics] native collection enable failed:', err?.message || err);
+      }
+    },
     logEvent: async (name, params) => FirebaseAnalytics.logEvent({ name, params }),
     setUserId: async (userId) => {
       await FirebaseAnalytics.setUserId({ userId });
