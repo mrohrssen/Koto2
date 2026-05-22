@@ -79,6 +79,42 @@ export class MatchManager {
     return code;
   }
 
+  createPairedMatch(player1, player2, options = {}) {
+    const code = this._generateCode();
+    const match = {
+      code,
+      player1: {
+        userId: player1.userId,
+        username: player1.username,
+        socketId: player1.socketId,
+        team: null,
+        ready: false,
+        movesSubmitted: null,
+        wantsRematch: false
+      },
+      player2: {
+        userId: player2.userId,
+        username: player2.username,
+        socketId: player2.socketId,
+        team: null,
+        ready: false,
+        movesSubmitted: null,
+        wantsRematch: false
+      },
+      phase: 'team_select',
+      combat: null,
+      winnerId: null,
+      winnerName: null,
+      ranked: options.ranked === true,
+      rankedRatingBefore: options.rankedRatingBefore || null,
+      createdAt: Date.now()
+    };
+    this.matches.set(code, match);
+    this.socketToMatch.set(player1.socketId, code);
+    this.socketToMatch.set(player2.socketId, code);
+    return code;
+  }
+
   /**
    * Join an existing match.
    * @param {string} code
@@ -111,6 +147,15 @@ export class MatchManager {
    */
   getMatch(code) {
     return this.matches.get(code) || null;
+  }
+
+  isUserInMatch(userId) {
+    for (const match of this.matches.values()) {
+      if (match.player1?.userId === userId || match.player2?.userId === userId) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

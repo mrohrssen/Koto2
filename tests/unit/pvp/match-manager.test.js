@@ -579,4 +579,34 @@ describe('MatchManager', () => {
       mm.saveMatch(code);
     });
   });
+
+  describe('createPairedMatch', () => {
+    it('creates a full team_select match for two queued players', () => {
+      const code = mgr.createPairedMatch(
+        { userId: 'user1', username: 'Alpha', socketId: 'sock1' },
+        { userId: 'user2', username: 'Beta', socketId: 'sock2' },
+        { ranked: true, rankedRatingBefore: { user1: { displayRating: 1200 }, user2: { displayRating: 1210 } } }
+      );
+
+      const match = mgr.getMatch(code);
+      assert.strictEqual(match.phase, 'team_select');
+      assert.strictEqual(match.ranked, true);
+      assert.deepStrictEqual(match.rankedRatingBefore, {
+        user1: { displayRating: 1200 },
+        user2: { displayRating: 1210 }
+      });
+      assert.strictEqual(match.player1.username, 'Alpha');
+      assert.strictEqual(match.player2.username, 'Beta');
+      assert.strictEqual(mgr.findMatchBySocket('sock1').code, code);
+      assert.strictEqual(mgr.findMatchBySocket('sock2').code, code);
+    });
+
+    it('reports whether a user is already in any match', () => {
+      const code = mgr.createMatch('user1', 'sock1');
+      assert.strictEqual(mgr.isUserInMatch('user1'), true);
+      assert.strictEqual(mgr.isUserInMatch('user2'), false);
+      mgr.joinMatch(code, 'user2', 'sock2');
+      assert.strictEqual(mgr.isUserInMatch('user2'), true);
+    });
+  });
 });
