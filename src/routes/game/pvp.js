@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { refreshCreatureListUids } from '../../game/creatures.js';
+import { normalizeRankedState, toPublicRankedSummary } from '../../pvp/ranked-rating.js';
 
 /**
  * Save the current run's team to a PvP slot.
@@ -40,6 +41,16 @@ export function savePvpTeam(gm, slotIndex) {
   return true;
 }
 
+export function getPvpSummary(gm) {
+  if (!gm.meta) gm.meta = {};
+  if (!gm.meta.pvpTeams) gm.meta.pvpTeams = [null, null, null];
+  gm.meta.pvpRanked = normalizeRankedState(gm.meta.pvpRanked);
+  return {
+    pvpTeams: gm.meta.pvpTeams,
+    ranked: toPublicRankedSummary(gm.meta.pvpRanked)
+  };
+}
+
 export function createPvpRoutes() {
   const router = Router();
 
@@ -58,9 +69,8 @@ export function createPvpRoutes() {
   });
 
   router.get('/pvp-teams', (req, res) => {
-    const gm = req.gameManager;
-    const pvpTeams = gm.meta?.pvpTeams || [null, null, null];
-    res.json({ pvpTeams });
+    const summary = getPvpSummary(req.gameManager);
+    res.json(summary);
   });
 
   // Seed PvP teams directly (for playtesting without completing a run)

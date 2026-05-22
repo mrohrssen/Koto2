@@ -1,7 +1,8 @@
 // tests/unit/routes/pvp.test.js
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { savePvpTeam } from '../../../src/routes/game/pvp.js';
+import { createDefaultRankedState } from '../../../src/pvp/ranked-rating.js';
+import { getPvpSummary, savePvpTeam } from '../../../src/routes/game/pvp.js';
 
 // Helper to build a minimal GameManager-like object
 function makeGm(overrides = {}) {
@@ -103,5 +104,41 @@ describe('savePvpTeam', () => {
     savePvpTeam(gm, 0);
     assert.ok(Array.isArray(gm.meta.pvpTeams));
     assert.ok(gm.meta.pvpTeams[0]);
+  });
+});
+
+describe('getPvpSummary', () => {
+  it('returns team slots and default ranked summary', () => {
+    const gm = makeGm();
+    const summary = getPvpSummary(gm);
+    assert.deepStrictEqual(summary.pvpTeams, [null, null, null]);
+    assert.deepStrictEqual(summary.ranked, {
+      rating: 1200,
+      wins: 0,
+      losses: 0,
+      matchesPlayed: 0,
+      lastMatch: null
+    });
+  });
+
+  it('normalizes existing ranked state for older saves', () => {
+    const gm = makeGm({
+      meta: {
+        pvpTeams: [null, { savedAt: 1 }, null],
+        pvpRanked: {
+          ...createDefaultRankedState(),
+          wins: 4,
+          losses: 2,
+          matchesPlayed: 6,
+          lastMatch: { result: 'win' }
+        }
+      }
+    });
+    const summary = getPvpSummary(gm);
+    assert.strictEqual(summary.ranked.rating, 1200);
+    assert.strictEqual(summary.ranked.wins, 4);
+    assert.strictEqual(summary.ranked.losses, 2);
+    assert.strictEqual(summary.ranked.matchesPlayed, 6);
+    assert.deepStrictEqual(summary.ranked.lastMatch, { result: 'win' });
   });
 });
