@@ -33,7 +33,7 @@ export function init(callbacks) {
   onPvpBattleStart = callbacks.onPvpBattleStart || null;
 }
 
-/** True while a PvP match UI session is active (until returnToHub clears pvpState). */
+/** True while a PvP match UI session is active (until returnFromPvp clears pvpState). */
 export function isPvpBattleActive() {
   return pvpState !== null;
 }
@@ -68,6 +68,8 @@ export function startPvpBattle(data) {
     mySide: mySide || 'sideA', // Which side we are (for attack card perspective)
     actionCursor: data.actionCursor || null,
     openingResolved: data.openingResolved === true,
+    ranked: data.ranked === true,
+    rankedResult: null,
     waitingForOpponent: false,
     actionPlaybackActive: false
   };
@@ -428,6 +430,7 @@ function handleMatchEnd(data) {
   if (!pvpState) return;
 
   const { winnerName } = data;
+  pvpState.rankedResult = data.rankedResult || null;
 
   // Determine if we won by comparing winnerName to opponentName.
   // If winnerName === opponentName, we lost. If different, we won.
@@ -446,13 +449,32 @@ function handleMatchEnd(data) {
     playSFX('victory');
   }
 
-  renderResult(resultText, resultColor, winnerName);
+  renderResult(resultText, resultColor, winnerName, data.rankedResult || null);
+}
+
+function rankedResultHtml(rankedResult) {
+  const lastMatch = rankedResult?.lastMatch;
+  if (!lastMatch) return '';
+  const before = Number(lastMatch.ratingBefore) || Number(rankedResult.rating) || 1200;
+  const after = Number(lastMatch.ratingAfter) || Number(rankedResult.rating) || before;
+  return `
+    <div class="pvp-ranked-card" style="width:100%;">
+      <div class="pvp-ranked-label">Ranked Rating</div>
+      <div class="pvp-rating-transition" data-rating-before="${before}" data-rating-after="${after}">
+        <span class="pvp-rating-before">${before}</span>
+        <span aria-hidden="true">→</span>
+        <strong class="pvp-rating-after">${before}</strong>
+      </div>
+    </div>
+  `;
 }
 
 /**
  * Render the end-of-match result screen.
  */
-function renderResult(resultText, resultColor, winnerName) {
+function renderResult(resultText, resultColor, winnerName, rankedResult = null) {
+  const isRanked = !!rankedResult;
+
   // Register rematch handlers
   pvpSocket.on('pvp:rematch-start', () => {
     // Both want rematch — go back to team select
@@ -472,7 +494,7 @@ function renderResult(resultText, resultColor, winnerName) {
       </div>
     `);
     document.getElementById('pvp-end-hub-btn')?.addEventListener('click', () => {
-      returnToHub();
+      returnFromPvp();
     });
   });
 
@@ -496,37 +518,58 @@ function renderResult(resultText, resultColor, winnerName) {
       ${winnerLabel ? `<div style="font-size:0.95em;color:var(--text-secondary);">${winnerLabel}</div>` : ''}
       <div id="pvp-result-status" style="text-align:center;color:var(--text-secondary);font-size:0.85em;min-height:1.2em;">
       </div>
+      ${rankedResultHtml(rankedResult)}
       <div style="display:flex;flex-direction:column;gap:10px;width:100%;">
-        <button class="action-btn action-btn-primary" id="pvp-rematch-btn">
-          Rematch
-        </button>
+        ${isRanked ? '' : `<button class="action-btn action-btn-primary" id="pvp-rematch-btn">Rematch</button>`}
         <button class="action-btn action-btn-tertiary" id="pvp-result-hub-btn">
-          Return to Hub
+          ${isRanked ? 'Return to Multiplayer' : 'Return to Hub'}
         </button>
       </div>
     </div>
   `);
 
-  document.getElementById('pvp-rematch-btn')?.addEventListener('click', () => {
-    playSFX('button-tap');
-    pvpSocket.requestRematch();
-    const btn = document.getElementById('pvp-rematch-btn');
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = 'Waiting for opponent...';
-    }
-  });
+  if (!isRanked) {
+    document.getElementById('pvp-rematch-btn')?.addEventListener('click', () => {
+      playSFX('button-tap');
+      pvpSocket.requestRematch();
+      const btn = document.getElementById('pvp-rematch-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Waiting for opponent...';
+      }
+    });
+  }
 
   document.getElementById('pvp-result-hub-btn')?.addEventListener('click', () => {
     playSFX('button-tap');
-    returnToHub();
+    returnFromPvp({ toMultiplayer: isRanked });
   });
+
+  animateRankedRating();
+}
+
+function animateRankedRating() {
+  const el = document.querySelector('.pvp-rating-transition');
+  const afterEl = el?.querySelector('.pvp-rating-after');
+  if (!el || !afterEl) return;
+  const before = Number(el.dataset.ratingBefore);
+  const after = Number(el.dataset.ratingAfter);
+  if (!Number.isFinite(before) || !Number.isFinite(after)) return;
+  const duration = 700;
+  const start = performance.now();
+  const tick = (now) => {
+    const progress = Math.min(1, (now - start) / duration);
+    const value = Math.round(before + (after - before) * progress);
+    afterEl.textContent = String(value);
+    if (progress < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 /**
- * Return to hub: clean up PvP state and socket, restore hub phase.
+ * Leave PvP: clean up state and socket, then restore hub or multiplayer phase.
  */
-function returnToHub() {
+function returnFromPvp({ toMultiplayer = false } = {}) {
   // PvP currently renders status via DOM slots (it doesn't own a
   // BattleScene-style Pixi formation ctx). The legacy
   // clearAllPixiStatusLabels target was the removed _defaultCtx sprite
@@ -536,7 +579,7 @@ function returnToHub() {
   pvpState = null;
 
   const gameState = getGameState();
-  gameState.phase = 'hub';
+  gameState.phase = toMultiplayer ? 'pvp_lobby' : 'hub';
   updateUI();
 }
 
