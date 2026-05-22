@@ -71,6 +71,7 @@ import {
   createDialogueCardSpeakerIdResolver
 } from './src/services/dialogue-card-speakers.js';
 import { setupPvpSockets } from './src/pvp/socket-handler.js';
+import { getManager, saveManager } from './src/game/manager-registry.js';
 
 dotenv.config();
 
@@ -323,7 +324,7 @@ const io = new SocketIOServer(httpServer, {
     methods: ['GET', 'POST']
   }
 });
-setupPvpSockets(io, { getSettings: () => settings });
+setupPvpSockets(io, { getSettings: () => settings, getManager, saveManager });
 
 // Dev tools (sprite review dashboard)
 const devPassword = process.env.DEV_DASHBOARD_PASSWORD || '';

@@ -1,22 +1,114 @@
 import { MatchManager } from './match-manager.js';
 import { verifyToken } from '../auth/middleware.js';
 import { getDataDir } from '../data-dir.js';
+import { getManager as defaultGetManager, saveManager as defaultSaveManager } from '../game/manager-registry.js';
+import { RankedMatchQueue } from './ranked-match-queue.js';
+import { normalizeRankedState, getDisplayRating } from './ranked-rating.js';
+import { applyRankedMatchResult, rankedResultForUser } from './ranked-result-service.js';
 
 const ROUND_TIMEOUT_MS = 60000;
 
 /**
  * Set up all PvP Socket.IO event handlers.
  * @param {import('socket.io').Server} io
- * @returns {{ mm: MatchManager, io: import('socket.io').Server }}
+ * @returns {{ mm: MatchManager, io: import('socket.io').Server, rankedQueue: RankedMatchQueue }}
  */
-export function setupPvpSockets(io, { getSettings } = {}) {
+export function setupPvpSockets(io, { getSettings, getManager = defaultGetManager, saveManager = defaultSaveManager } = {}) {
   const mm = new MatchManager({ dataDir: getDataDir(), getSettings });
+  const rankedQueue = new RankedMatchQueue();
 
   const restored = mm.restoreMatches();
   if (restored > 0) console.log(`[PvP] Restored ${restored} active match(es) from disk`);
 
   // Map<userId, { timeout: NodeJS.Timeout, matchCode: string }>
   const disconnectTimers = new Map();
+
+  function createRankedMatchForPair(player1, player2) {
+    const code = mm.createPairedMatch(player1, player2, {
+      ranked: true,
+      rankedRatingBefore: {
+        [player1.userId]: { rating: player1.rating, displayRating: player1.displayRating },
+        [player2.userId]: { rating: player2.rating, displayRating: player2.displayRating }
+      }
+    });
+    const p1Socket = io.sockets.sockets.get(player1.socketId);
+    const p2Socket = io.sockets.sockets.get(player2.socketId);
+    p1Socket?.join(code);
+    p2Socket?.join(code);
+    p1Socket?.emit('pvp:ranked-match-found', {
+      code,
+      opponentName: player2.username,
+      opponentRating: player2.displayRating
+    });
+    p2Socket?.emit('pvp:ranked-match-found', {
+      code,
+      opponentName: player1.username,
+      opponentRating: player1.displayRating
+    });
+  }
+
+  function tryCreateRankedPair(now = Date.now()) {
+    const pair = rankedQueue.findMatch(now);
+    if (!pair) return false;
+    createRankedMatchForPair(pair[0], pair[1]);
+    return true;
+  }
+
+  const queueTick = setInterval(() => {
+    const now = Date.now();
+    for (const entry of rankedQueue.getEntries()) {
+      const queuedSocket = io.sockets.sockets.get(entry.socketId);
+      queuedSocket?.emit('pvp:ranked-queue-update', {
+        elapsedMs: Math.max(0, now - entry.enqueuedAt),
+        searchRange: rankedQueue.getSearchRange(entry, now)
+      });
+    }
+    tryCreateRankedPair(now);
+  }, 1000);
+  queueTick.unref?.();
+
+  function persistRankedResult(match, winnerId) {
+    try {
+      return applyRankedMatchResult({ match, winnerId, getManager, saveManager });
+    } catch (error) {
+      console.warn('[PvP] Failed to persist ranked result:', error.message);
+      return null;
+    }
+  }
+
+  function emitMatchEndToPlayers(match, winnerId, winnerName) {
+    const rankedUpdate = persistRankedResult(match, winnerId);
+    const p1Socket = io.sockets.sockets.get(match.player1.socketId);
+    const p2Socket = match.player2 ? io.sockets.sockets.get(match.player2.socketId) : null;
+    if (p1Socket) {
+      p1Socket.emit('pvp:match-end', {
+        winnerId,
+        winnerName,
+        rankedResult: rankedResultForUser(rankedUpdate, match.player1.userId)
+      });
+    }
+    if (p2Socket) {
+      p2Socket.emit('pvp:match-end', {
+        winnerId,
+        winnerName,
+        rankedResult: rankedResultForUser(rankedUpdate, match.player2.userId)
+      });
+    }
+  }
+
+  function emitForfeitToPlayers(match, forfeitResult, reason) {
+    const rankedUpdate = persistRankedResult(match, forfeitResult.winnerId);
+    for (const player of [match.player1, match.player2]) {
+      if (!player) continue;
+      const playerSocket = io.sockets.sockets.get(player.socketId);
+      if (!playerSocket) continue;
+      playerSocket.emit('pvp:match-forfeit', {
+        winnerId: forfeitResult.winnerId,
+        reason,
+        rankedResult: rankedResultForUser(rankedUpdate, player.userId)
+      });
+    }
+  }
 
   // JWT auth middleware — runs before every connection
   io.use((socket, next) => {
@@ -38,9 +130,59 @@ export function setupPvpSockets(io, { getSettings } = {}) {
     }
 
     // ------------------------------------------------------------------ //
+    // pvp:ranked-enqueue
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:ranked-enqueue', () => {
+      if (rankedQueue.hasUser(socket.userId)) {
+        socket.emit('pvp:error', { message: 'Already in ranked queue' });
+        return;
+      }
+      if (mm.isUserInMatch(socket.userId)) {
+        socket.emit('pvp:error', { message: 'Already in a PvP match' });
+        return;
+      }
+
+      const gm = getManager(socket.userId);
+      const meta = gm.getMeta ? gm.getMeta() : gm.meta;
+      const hasTeam = (meta.pvpTeams || []).some(Boolean);
+      if (!hasTeam) {
+        socket.emit('pvp:error', { message: 'Save a PvP team before entering ranked queue' });
+        return;
+      }
+
+      meta.pvpRanked = normalizeRankedState(meta.pvpRanked);
+      const entry = {
+        userId: socket.userId,
+        username: socket.username,
+        socketId: socket.id,
+        rating: meta.pvpRanked.rating,
+        displayRating: getDisplayRating(meta.pvpRanked.rating),
+        enqueuedAt: Date.now()
+      };
+      rankedQueue.enqueue(entry);
+      socket.emit('pvp:ranked-queued', {
+        rating: entry.displayRating,
+        searchRange: rankedQueue.getSearchRange(entry)
+      });
+      tryCreateRankedPair();
+    });
+
+    // ------------------------------------------------------------------ //
+    // pvp:ranked-dequeue
+    // ------------------------------------------------------------------ //
+    socket.on('pvp:ranked-dequeue', () => {
+      rankedQueue.dequeue(socket.userId);
+      socket.emit('pvp:ranked-dequeued');
+    });
+
+    // ------------------------------------------------------------------ //
     // pvp:create-match
     // ------------------------------------------------------------------ //
     socket.on('pvp:create-match', () => {
+      if (rankedQueue.hasUser(socket.userId)) {
+        socket.emit('pvp:error', { message: 'Leave ranked queue before creating a casual match' });
+        return;
+      }
       const code = mm.createMatch(socket.userId, socket.id);
       const match = mm.getMatch(code);
       match.player1.username = socket.username;
@@ -52,6 +194,10 @@ export function setupPvpSockets(io, { getSettings } = {}) {
     // pvp:join-match
     // ------------------------------------------------------------------ //
     socket.on('pvp:join-match', ({ code } = {}) => {
+      if (rankedQueue.hasUser(socket.userId)) {
+        socket.emit('pvp:error', { message: 'Leave ranked queue before joining a casual match' });
+        return;
+      }
       const joined = mm.joinMatch(code, socket.userId, socket.id);
       if (!joined) {
         socket.emit('pvp:error', { message: 'Match not found or already full' });
@@ -97,7 +243,8 @@ export function setupPvpSockets(io, { getSettings } = {}) {
             opponentName: match.player2.username,
             mySide: 'sideA',
             actionCursor: match.combat.actionCursor,
-            openingResolved: match.combat.openingResolved
+            openingResolved: match.combat.openingResolved,
+            ranked: match.ranked === true
           });
         }
         if (p2Socket) {
@@ -107,7 +254,8 @@ export function setupPvpSockets(io, { getSettings } = {}) {
             opponentName: match.player1.username,
             mySide: 'sideB',
             actionCursor: match.combat.actionCursor,
-            openingResolved: match.combat.openingResolved
+            openingResolved: match.combat.openingResolved,
+            ranked: match.ranked === true
           });
         }
       } else {
@@ -188,7 +336,7 @@ export function setupPvpSockets(io, { getSettings } = {}) {
         } else if (match.player2 && match.player2.userId === winnerId) {
           winnerName = match.player2.username;
         }
-        io.to(found.code).emit('pvp:match-end', { winnerId, winnerName });
+        emitMatchEndToPlayers(match, winnerId, winnerName);
       } else if (match.phase === 'battle') {
         // Start timer for next round's move submission
         mm.startRoundTimer(found.code, ROUND_TIMEOUT_MS, (timedOutCode) => {
@@ -216,12 +364,7 @@ export function setupPvpSockets(io, { getSettings } = {}) {
           const forfeitResult = mm.forfeitMatch(timedOutCode, forfeitUserId);
           if (!forfeitResult) return;
 
-          // Notify both players
-          [player1, player2].forEach(p => {
-            if (!p) return;
-            const s = io.sockets.sockets.get(p.socketId);
-            if (s) s.emit('pvp:match-forfeit', { winnerId: forfeitResult.winnerId, reason: 'timeout' });
-          });
+          emitForfeitToPlayers({ ...m, player1, player2 }, forfeitResult, 'timeout');
         });
       }
     });
@@ -280,7 +423,7 @@ export function setupPvpSockets(io, { getSettings } = {}) {
             : winnerId === match.player2?.userId
               ? match.player2.username
               : null;
-          io.to(found.code).emit('pvp:match-end', { winnerId, winnerName });
+          emitMatchEndToPlayers(match, winnerId, winnerName);
         }
       } catch (error) {
         socket.emit('pvp:error', { message: error.message });
@@ -294,12 +437,17 @@ export function setupPvpSockets(io, { getSettings } = {}) {
       const found = mm.findMatchBySocket(socket.id);
       if (!found) return;
 
+      const match = mm.getMatch(found.code);
+      if (match?.ranked) {
+        socket.emit('pvp:error', { message: 'Ranked rematch is not available' });
+        return;
+      }
+
       const rematchResult = mm.requestRematch(found.code, socket.userId);
 
       if (rematchResult === 'rematch') {
         io.to(found.code).emit('pvp:rematch-start');
       } else if (rematchResult === 'waiting') {
-        const match = mm.getMatch(found.code);
         if (match) {
           const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
           const otherPlayer = match[otherPlayerKey];
@@ -333,7 +481,8 @@ export function setupPvpSockets(io, { getSettings } = {}) {
     // ------------------------------------------------------------------ //
     // pvp:reconnect
     // ------------------------------------------------------------------ //
-    socket.on('pvp:reconnect', ({ matchCode } = {}) => {
+    socket.on('pvp:reconnect', ({ matchCode, code } = {}) => {
+      matchCode ||= code;
       const reconnected = mm.reconnect(matchCode, socket.userId, socket.id);
       if (!reconnected) {
         socket.emit('pvp:error', { message: 'Match not found or cannot reconnect' });
@@ -363,6 +512,7 @@ export function setupPvpSockets(io, { getSettings } = {}) {
     // disconnect
     // ------------------------------------------------------------------ //
     socket.on('disconnect', () => {
+      rankedQueue.removeBySocket(socket.id);
       const found = mm.findMatchBySocket(socket.id);
       if (!found) return;
 
@@ -379,23 +529,12 @@ export function setupPvpSockets(io, { getSettings } = {}) {
         // Award victory to the remaining player
         const forfeitResult = mm.forfeitMatch(code, socket.userId);
 
-        // Notify the remaining player they won by forfeit
-        const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
-        const otherPlayer = match[otherPlayerKey];
-        if (otherPlayer && forfeitResult) {
-          const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
-          if (otherSocket) {
-            otherSocket.emit('pvp:match-forfeit', {
-              winnerId: forfeitResult.winnerId,
-              reason: 'opponent_disconnected'
-            });
-          }
-        }
+        if (forfeitResult) emitForfeitToPlayers(match, forfeitResult, 'opponent_disconnected');
       }, 30000);
 
       disconnectTimers.set(socket.userId, { timeout, matchCode: code });
     });
   });
 
-  return { mm, io };
+  return { mm, io, rankedQueue };
 }
