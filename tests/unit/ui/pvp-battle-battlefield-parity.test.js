@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const socketHandlers = {};
 const moveSelections = [];
+let attackDisplayImpl = () => {};
 
 await mock.module('../../../public/js/pvp-socket.js', {
   namedExports: {
@@ -30,7 +31,7 @@ await mock.module('../../../public/js/ui/target-select.js', {
   namedExports: { init: () => {}, showEnemies: () => {}, showAllies: () => {} },
 });
 await mock.module('../../../public/js/ui/combat-loop.js', {
-  namedExports: { showAttackDisplay: () => {} },
+  namedExports: { showAttackDisplay: (...args) => attackDisplayImpl(...args) },
 });
 await mock.module('../../../public/js/ui/combat-ui-utils.js', {
   namedExports: { getHpColor: () => 'green' },
@@ -54,6 +55,13 @@ describe('PvP battlefield layout parity', () => {
   beforeEach(() => {
     for (const event of Object.keys(socketHandlers)) delete socketHandlers[event];
     moveSelections.length = 0;
+    attackDisplayImpl = () => {};
+    globalThis.document = {
+      getElementById: () => null,
+      querySelector: () => null,
+    };
+    globalThis.performance = { now: () => 0 };
+    globalThis.requestAnimationFrame = () => {};
   });
 
   it('renders PvP formations through the shared showFormation path', () => {
@@ -114,5 +122,67 @@ describe('PvP battlefield layout parity', () => {
       'opponent opening submission must not replace the local move picker with a waiting screen'
     );
     assert.equal(moveSelections.length, 1, 'move picker remains the active UI');
+  });
+
+  it('waits for terminal action playback before rendering match end', async () => {
+    const contentRenders = [];
+    let finishAttackDisplay;
+    attackDisplayImpl = () => new Promise(resolve => { finishAttackDisplay = resolve; });
+
+    init({
+      getGameState: () => ({}),
+      updateUI: () => {},
+      actions: { setContent: (html) => contentRenders.push(html) },
+      scene: {
+        setBackground: () => {},
+        showFormation: () => {},
+      },
+      onPvpBattleStart: () => {},
+    });
+
+    startPvpBattle({
+      yourTeam: [{ id: 'a', hp: 10, maxHp: 10, dex: 5, moves: [] }],
+      opponentTeam: [{ id: 'x', hp: 10, maxHp: 10, dex: 5, moves: [] }],
+      opponentName: 'RankedBot',
+      mySide: 'sideA',
+      openingResolved: true,
+      actionCursor: { side: 'sideB', index: 0 },
+    });
+
+    socketHandlers['pvp:action-result']?.({
+      actionSegments: [{
+        actor: { side: 'sideB', index: 0 },
+        attacks: [{ side: 'sideB', attackerIndex: 0, targetIndex: 0, damage: 10 }],
+      }],
+      allies: [{ id: 'a', hp: 0, maxHp: 10, dex: 5, moves: [] }],
+      enemies: [{ id: 'x', hp: 10, maxHp: 10, dex: 5, moves: [] }],
+      winner: 'sideB',
+      actionCursor: null,
+      openingResolved: true,
+    });
+
+    socketHandlers['pvp:match-end']?.({
+      winnerId: 'bot-user',
+      winnerName: 'RankedBot',
+      rankedResult: {
+        rating: 1190,
+        lastMatch: { ratingBefore: 1200, ratingAfter: 1190 },
+      },
+    });
+
+    assert.equal(
+      contentRenders.some(html => html.includes('Defeat')),
+      false,
+      'terminal result must not render while action playback can still repaint combat UI'
+    );
+
+    finishAttackDisplay();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.equal(
+      contentRenders.some(html => html.includes('Defeat')),
+      true,
+      'terminal result should render after action playback settles'
+    );
   });
 });

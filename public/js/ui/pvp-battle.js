@@ -71,7 +71,8 @@ export function startPvpBattle(data) {
     ranked: data.ranked === true,
     rankedResult: null,
     waitingForOpponent: false,
-    actionPlaybackActive: false
+    actionPlaybackActive: false,
+    pendingMatchEnd: null
   };
 
   if (typeof onPvpBattleStart === 'function') {
@@ -258,6 +259,7 @@ function showWaitingForOpponent(message = "Waiting for opponent's moves...") {
 async function handleRoundResult(result) {
   if (!pvpState) return;
 
+  pvpState.actionPlaybackActive = true;
   pvpState.waitingForOpponent = false;
 
   // Show attacks with progressive HP drain (pre-round state still in pvpState)
@@ -277,11 +279,14 @@ async function handleRoundResult(result) {
 
   syncAllStatusLabels();
 
-  // If no winner, continue to next round's move selection
-  if (!result.winner) {
-    showMoveSelection();
+  pvpState.actionPlaybackActive = false;
+
+  if (result.winner) {
+    flushPendingMatchEnd();
+    return;
   }
-  // If there is a winner, pvp:match-end handler will take over
+
+  showMoveSelection();
 }
 
 async function handleActionResult(result) {
@@ -308,9 +313,12 @@ async function handleActionResult(result) {
 
   pvpState.actionPlaybackActive = false;
 
-  if (!result.winner) {
-    showMoveSelection();
+  if (result.winner) {
+    flushPendingMatchEnd();
+    return;
   }
+
+  showMoveSelection();
 }
 
 async function showActionSegments(segments) {
@@ -427,6 +435,24 @@ function updateSlotHp(formationId, index, hp, maxHp) {
  * @param {object} data - { winnerId, winnerName }
  */
 function handleMatchEnd(data) {
+  if (!pvpState) return;
+  if (pvpState.actionPlaybackActive) {
+    pvpState.pendingMatchEnd = data;
+    return;
+  }
+
+  renderMatchEnd(data);
+}
+
+function flushPendingMatchEnd() {
+  if (!pvpState?.pendingMatchEnd) return false;
+  const data = pvpState.pendingMatchEnd;
+  pvpState.pendingMatchEnd = null;
+  renderMatchEnd(data);
+  return true;
+}
+
+function renderMatchEnd(data) {
   if (!pvpState) return;
 
   const { winnerName } = data;
