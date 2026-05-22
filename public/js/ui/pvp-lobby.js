@@ -22,6 +22,7 @@ let getGameState = null;
 let updateUI = null;
 let actions = null;
 let sceneModule = null;
+let latestPvpSummary = null;
 
 /**
  * Initialize PvP lobby with callbacks from game.js.
@@ -98,10 +99,34 @@ function showPvpCreaturePopup(creature, anchorEl) {
 
 // ============ LOBBY SCREEN ============
 
+function rankedRecordText(ranked) {
+  return `${ranked?.wins || 0}W - ${ranked?.losses || 0}L`;
+}
+
+function lastMatchHtml(lastMatch) {
+  if (!lastMatch) return '';
+  const resultText = lastMatch.result === 'win' ? 'Victory' : 'Defeat';
+  const resultColor = lastMatch.result === 'win' ? 'var(--accent-green)' : 'var(--accent-red)';
+  return `
+    <div class="pvp-ranked-card">
+      <div class="pvp-ranked-label">Last Ranked Match</div>
+      <div class="pvp-last-match-result" style="color:${resultColor};">
+        ${resultText} vs ${escapeHtml(lastMatch.opponentName || 'Opponent')}
+      </div>
+      <div class="pvp-ranked-muted">Opponent rating ${Number(lastMatch.opponentRatingBefore) || 1200}</div>
+      <div class="pvp-rating-transition">
+        <span>${Number(lastMatch.ratingBefore) || 1200}</span>
+        <span aria-hidden="true">→</span>
+        <strong>${Number(lastMatch.ratingAfter) || 1200}</strong>
+      </div>
+    </div>
+  `;
+}
+
 /**
  * Render the main lobby screen with Create Match and Join Match options.
  */
-export function renderPvpLobby() {
+export async function renderPvpLobby() {
   // Connect socket when entering lobby
   pvpSocket.connect();
 
@@ -118,8 +143,22 @@ export function renderPvpLobby() {
     renderPvpTeamSelect();
   });
 
+  pvpSocket.on('pvp:ranked-queued', ({ searchRange }) => {
+    renderRankedQueue(searchRange);
+  });
+
+  pvpSocket.on('pvp:ranked-queue-update', ({ searchRange }) => {
+    renderRankedQueue(searchRange);
+  });
+
+  pvpSocket.on('pvp:ranked-match-found', () => {
+    renderPvpTeamSelect();
+  });
+
   pvpSocket.on('pvp:error', ({ message }) => {
-    alert(message);
+    const joinInput = document.getElementById('pvp-join-code');
+    if (joinInput) renderJoinCasual(message);
+    else alert(message);
   });
 
   // Wire up match-start for transition to battle
@@ -127,20 +166,40 @@ export function renderPvpLobby() {
     startPvpBattle(data);
   });
 
+  const summary = await getPvpTeams();
+  latestPvpSummary = summary || {
+    pvpTeams: [null, null, null],
+    ranked: { rating: 1200, wins: 0, losses: 0, matchesPlayed: 0, lastMatch: null }
+  };
+  const ranked = latestPvpSummary.ranked;
+  const rating = Number(ranked?.rating) || 1200;
+
   actions.setContent(`
     <div class="pvp-lobby" style="display:flex;flex-direction:column;align-items:stretch;gap:14px;width:100%;max-width:340px;margin:0 auto;padding:8px 0;">
       <div style="text-align:center;color:var(--text-secondary);font-size:0.9em;margin-bottom:4px;">
         PvP Battle Lobby
       </div>
-      <button class="action-btn action-btn-primary" id="pvp-create-btn">
-        Create Match
+      <div class="pvp-ranked-card">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;">
+          <div>
+            <div class="pvp-ranked-label">Ranked Rating</div>
+            <div class="pvp-ranked-rating">${rating}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="pvp-ranked-label">Record</div>
+            <div class="pvp-ranked-record">${escapeHtml(rankedRecordText(ranked))}</div>
+          </div>
+        </div>
+      </div>
+      <button class="action-btn action-btn-primary" id="pvp-ranked-btn">
+        Find Ranked Match
+        <span class="pvp-btn-subtitle">Estimated range: ${rating - 75} - ${rating + 75}</span>
       </button>
-      <input type="text" id="pvp-join-code" placeholder="Enter code"
-        maxlength="4" autocapitalize="characters" autocomplete="off"
-        style="width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--border-color);background:var(--surface);color:var(--text-primary);font-size:1.1em;text-transform:uppercase;text-align:center;letter-spacing:4px;font-weight:600;box-sizing:border-box;">
-      <button class="action-btn action-btn-secondary" id="pvp-join-btn">
-        Join Match
-      </button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <button class="action-btn" id="pvp-create-btn">Create Casual</button>
+        <button class="action-btn" id="pvp-join-casual-btn">Join Casual</button>
+      </div>
+      ${lastMatchHtml(ranked?.lastMatch)}
       <button class="action-btn action-btn-tertiary" id="pvp-back-btn">
         Back
       </button>
@@ -152,21 +211,15 @@ export function renderPvpLobby() {
     pvpSocket.createMatch();
   });
 
-  document.getElementById('pvp-join-btn')?.addEventListener('click', () => {
+  document.getElementById('pvp-ranked-btn')?.addEventListener('click', () => {
     playSFX('button-tap');
-    const code = document.getElementById('pvp-join-code')?.value?.trim().toUpperCase();
-    if (!code || code.length !== 4) {
-      alert('Enter a 4-character match code');
-      return;
-    }
-    pvpSocket.joinMatch(code);
+    renderRankedQueue();
+    pvpSocket.enqueueRanked();
   });
 
-  // Also allow Enter key in the code input
-  document.getElementById('pvp-join-code')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      document.getElementById('pvp-join-btn')?.click();
-    }
+  document.getElementById('pvp-join-casual-btn')?.addEventListener('click', () => {
+    playSFX('button-tap');
+    renderJoinCasual();
   });
 
   document.getElementById('pvp-back-btn')?.addEventListener('click', () => {
@@ -182,6 +235,75 @@ export function renderPvpLobby() {
   if (sceneModule?.setBackground) {
     sceneModule.setBackground(backgroundImageUrl('hub'));
   }
+}
+
+function renderJoinCasual(errorMessage = '') {
+  actions.setContent(`
+    <div class="pvp-lobby" style="display:flex;flex-direction:column;align-items:stretch;gap:14px;width:100%;max-width:340px;margin:0 auto;padding:8px 0;">
+      <div style="text-align:center;color:var(--text-secondary);font-size:0.9em;margin-bottom:4px;">
+        Join Casual Match
+      </div>
+      <div class="pvp-ranked-card">
+        <div class="pvp-ranked-label" style="text-align:center;margin-bottom:10px;">Room Code</div>
+        <input type="text" id="pvp-join-code" placeholder="Enter code"
+          maxlength="4" autocapitalize="characters" autocomplete="off"
+          style="width:100%;padding:10px 14px;border-radius:12px;border:1px solid var(--border-color);background:var(--bg-panel);color:var(--text-primary);font-size:1.1em;text-transform:uppercase;text-align:center;letter-spacing:4px;font-weight:600;box-sizing:border-box;">
+        <div class="pvp-ranked-muted" style="text-align:center;margin-top:10px;">
+          Enter the 4-character code from your friend. Casual matches do not affect ranked rating.
+        </div>
+      </div>
+      <button class="action-btn action-btn-primary" id="pvp-join-btn">Join Match</button>
+      ${errorMessage ? `<div class="pvp-inline-error">${escapeHtml(errorMessage)}</div>` : ''}
+      <button class="action-btn action-btn-tertiary" id="pvp-join-cancel-btn">Cancel</button>
+    </div>
+  `);
+
+  document.getElementById('pvp-join-btn')?.addEventListener('click', () => {
+    playSFX('button-tap');
+    const code = document.getElementById('pvp-join-code')?.value?.trim().toUpperCase();
+    if (!code || code.length !== 4) {
+      renderJoinCasual('Enter a 4-character match code');
+      return;
+    }
+    pvpSocket.joinMatch(code);
+  });
+
+  document.getElementById('pvp-join-code')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('pvp-join-btn')?.click();
+  });
+
+  document.getElementById('pvp-join-cancel-btn')?.addEventListener('click', () => {
+    playSFX('button-tap');
+    renderPvpLobby();
+  });
+}
+
+function renderRankedQueue(searchRange = null) {
+  const rating = Number(latestPvpSummary?.ranked?.rating) || 1200;
+  const rangeText = searchRange?.range === Infinity
+    ? 'Any available rating'
+    : `${searchRange?.min ?? rating - 75} - ${searchRange?.max ?? rating + 75}`;
+  actions.setContent(`
+    <div class="pvp-lobby" style="display:flex;flex-direction:column;align-items:stretch;gap:14px;width:100%;max-width:340px;margin:0 auto;padding:8px 0;">
+      <div style="text-align:center;color:var(--text-secondary);font-size:0.9em;margin-bottom:4px;">
+        Finding Ranked Match
+      </div>
+      <div class="pvp-ranked-card" style="text-align:center;">
+        <div class="pvp-ranked-label">Your Ranked Rating</div>
+        <div class="pvp-ranked-rating">${rating}</div>
+        <div class="pvp-ranked-muted">Searching: ${escapeHtml(rangeText)}</div>
+      </div>
+      <div style="text-align:center;color:var(--text-secondary);font-size:0.85em;animation:pulse 2s ease-in-out infinite;">
+        Looking for an opponent...
+      </div>
+      <button class="action-btn action-btn-tertiary" id="pvp-ranked-cancel-btn">Cancel</button>
+    </div>
+  `);
+  document.getElementById('pvp-ranked-cancel-btn')?.addEventListener('click', () => {
+    playSFX('button-tap');
+    pvpSocket.dequeueRanked();
+    renderPvpLobby();
+  });
 }
 
 // ============ WAITING SCREEN ============

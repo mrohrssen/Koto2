@@ -7212,6 +7212,87 @@ button.hud-chip {
   background: rgba(40, 167, 69, 0.92);
 }
 
+.pvp-ranked-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--card-radius);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-soft);
+}
+
+.pvp-ranked-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.3px;
+  color: var(--text-secondary);
+}
+
+.pvp-ranked-rating {
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 800;
+  color: var(--accent-amber);
+  margin-top: 3px;
+}
+
+.pvp-ranked-record {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 4px;
+}
+
+.pvp-ranked-muted {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.pvp-btn-subtitle {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.88;
+  margin-top: 2px;
+}
+
+.pvp-last-match-result {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 4px;
+}
+
+.pvp-rating-transition {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.pvp-rating-transition strong {
+  color: var(--accent-amber);
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.pvp-inline-error {
+  background: rgba(239, 83, 80, 0.08);
+  border: 1px solid rgba(239, 83, 80, 0.18);
+  border-radius: var(--card-radius);
+  padding: 10px 12px;
+  color: var(--accent-red);
+  font-size: 12px;
+  text-align: center;
+  font-weight: 600;
+}
+
 /* ── Sentence renderer (B2 token display) ─────────────────────── */
 .jp-word { display: inline-block; margin: 0; }
 .jp-known { /* blends into sentence flow */ }
