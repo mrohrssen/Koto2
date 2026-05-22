@@ -17,6 +17,9 @@ let onPvpBattleStart = null;
 
 // Module-level PvP battle state
 let pvpState = null;
+let queuedActionResults = [];
+let actionResultProcessing = false;
+let actionResultsPending = 0;
 
 // Pending move state for target selection callbacks
 let pendingMove = null;
@@ -46,6 +49,9 @@ export function isPvpBattleActive() {
  */
 export function startPvpBattle(data) {
   const { yourTeam, opponentTeam, opponentName, mySide } = data;
+  queuedActionResults = [];
+  actionResultProcessing = false;
+  actionResultsPending = 0;
 
   // Initialize shared target-select with PvP callbacks
   initTargetSelect({
@@ -113,7 +119,7 @@ export function startPvpBattle(data) {
   });
 
   pvpSocket.on('pvp:action-result', (result) => {
-    handleActionResult(result);
+    return enqueueActionResult(result);
   });
 
   pvpSocket.on('pvp:match-end', (data) => {
@@ -139,6 +145,32 @@ export function startPvpBattle(data) {
 
   // Start move selection
   showMoveSelection();
+}
+
+function enqueueActionResult(result) {
+  actionResultsPending++;
+  return new Promise((resolve) => {
+    queuedActionResults.push({ result, resolve });
+    if (!actionResultProcessing) {
+      processQueuedActionResults();
+    }
+  });
+}
+
+async function processQueuedActionResults() {
+  actionResultProcessing = true;
+  while (queuedActionResults.length > 0) {
+    const item = queuedActionResults.shift();
+    try {
+      await handleActionResult(item.result);
+    } catch (err) {
+      console.warn('[PvP] Action result handling failed:', err);
+    } finally {
+      actionResultsPending = Math.max(0, actionResultsPending - 1);
+      item.resolve();
+    }
+  }
+  actionResultProcessing = false;
 }
 
 // ============ MOVE SELECTION ============
@@ -436,7 +468,7 @@ function updateSlotHp(formationId, index, hp, maxHp) {
  */
 function handleMatchEnd(data) {
   if (!pvpState) return;
-  if (pvpState.actionPlaybackActive) {
+  if (pvpState.actionPlaybackActive || actionResultsPending > 0) {
     pvpState.pendingMatchEnd = data;
     return;
   }

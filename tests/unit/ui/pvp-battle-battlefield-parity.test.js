@@ -185,4 +185,73 @@ describe('PvP battlefield layout parity', () => {
       'terminal result should render after action playback settles'
     );
   });
+
+  it('serializes rapid PvP action results from bot follow-up turns', async () => {
+    const displayOrder = [];
+    let finishOpeningDisplay;
+    attackDisplayImpl = (atk) => {
+      displayOrder.push(atk.moveId);
+      if (atk.moveId === 'opening-hit') {
+        return new Promise(resolve => { finishOpeningDisplay = resolve; });
+      }
+      return Promise.resolve();
+    };
+
+    init({
+      getGameState: () => ({}),
+      updateUI: () => {},
+      actions: { setContent: () => {} },
+      scene: {
+        setBackground: () => {},
+        showFormation: () => {},
+      },
+      onPvpBattleStart: () => {},
+    });
+
+    startPvpBattle({
+      yourTeam: [{ id: 'a', hp: 10, maxHp: 10, dex: 5, moves: [] }],
+      opponentTeam: [{ id: 'x', hp: 10, maxHp: 10, dex: 8, moves: [] }],
+      opponentName: 'RankedBot',
+      mySide: 'sideA',
+      openingResolved: false,
+    });
+
+    socketHandlers['pvp:action-result']?.({
+      actionSegments: [{
+        actor: { side: 'sideB', index: 0 },
+        attacks: [{ side: 'sideB', attackerIndex: 0, targetIndex: 0, damage: 1, moveId: 'opening-hit' }],
+      }],
+      allies: [{ id: 'a', hp: 9, maxHp: 10, dex: 5, moves: [] }],
+      enemies: [{ id: 'x', hp: 10, maxHp: 10, dex: 8, moves: [] }],
+      winner: null,
+      actionCursor: { side: 'sideB', index: 0 },
+      openingResolved: true,
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    socketHandlers['pvp:action-result']?.({
+      actionSegments: [{
+        actor: { side: 'sideB', index: 0 },
+        attacks: [{ side: 'sideB', attackerIndex: 0, targetIndex: 0, damage: 1, moveId: 'bot-follow-up' }],
+      }],
+      allies: [{ id: 'a', hp: 8, maxHp: 10, dex: 5, moves: [] }],
+      enemies: [{ id: 'x', hp: 10, maxHp: 10, dex: 8, moves: [] }],
+      winner: null,
+      actionCursor: { side: 'sideA', index: 0 },
+      openingResolved: true,
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.deepEqual(
+      displayOrder,
+      ['opening-hit'],
+      'bot follow-up playback must wait until the opening playback finishes'
+    );
+
+    finishOpeningDisplay();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.deepEqual(displayOrder, ['opening-hit', 'bot-follow-up']);
+  });
 });
