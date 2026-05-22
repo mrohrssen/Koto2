@@ -1,3 +1,5 @@
+import { createDefaultRankedState } from '../pvp/ranked-rating.js';
+
 // ============ META-PROGRESSION STATE ============
 
 /**
@@ -55,6 +57,7 @@ export function createMetaProgression() {
     kanaMode: false,
 
     pvpTeams: [null, null, null],  // 3 saved PvP team slots
+    pvpRanked: createDefaultRankedState(),
 
     // CID scripts already shown (avoid repeats across runs)
     seenCidScripts: [],

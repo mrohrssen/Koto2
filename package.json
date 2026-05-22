@@ -46,6 +46,7 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "openai": "^4.70.0",
+    "openskill": "^4.1.1",
     "pixi-filters": "^6.1.5",
     "pixi.js": "^8.17.1",
     "socket.io": "^4.8.3",
