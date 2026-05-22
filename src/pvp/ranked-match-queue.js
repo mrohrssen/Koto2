@@ -1,7 +1,8 @@
 export const SEARCH_WINDOWS = [
   { afterMs: 0, range: 75 },
-  { afterMs: 5000, range: 150 },
-  { afterMs: 10000, range: 250 }
+  { afterMs: 3000, range: 150 },
+  { afterMs: 6000, range: 250 },
+  { afterMs: 9000, range: Infinity }
 ];
 
 export class RankedMatchQueue {

@@ -66,9 +66,13 @@ describe('RankedMatchQueue', () => {
   it('uses faster ranked search windows before bot fallback', () => {
     const queue = new RankedMatchQueue();
     const queued = entry({ displayRating: 1200, enqueuedAt: 1000 });
-    assert.strictEqual(queue.getSearchRange(queued, 4000).range, 75);
-    assert.strictEqual(queue.getSearchRange(queued, 7000).range, 150);
-    assert.strictEqual(queue.getSearchRange(queued, 12000).range, 250);
+    assert.strictEqual(queue.getSearchRange(queued, 2000).range, 75);
+    assert.strictEqual(queue.getSearchRange(queued, 3999).range, 75);
+    assert.strictEqual(queue.getSearchRange(queued, 4000).range, 150);
+    assert.strictEqual(queue.getSearchRange(queued, 6999).range, 150);
+    assert.strictEqual(queue.getSearchRange(queued, 7000).range, 250);
+    assert.strictEqual(queue.getSearchRange(queued, 9999).range, 250);
+    assert.strictEqual(queue.getSearchRange(queued, 10000).range, Infinity);
   });
 
   it('returns bot fallback eligible entries in queue order', () => {

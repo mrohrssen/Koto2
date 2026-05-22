@@ -71,7 +71,8 @@ import {
   createDialogueCardSpeakerIdResolver
 } from './src/services/dialogue-card-speakers.js';
 import { setupPvpSockets } from './src/pvp/socket-handler.js';
-import { getManager, saveManager } from './src/game/manager-registry.js';
+import { ensureRankedBotAccounts } from './src/pvp/ranked-bot-seeder.js';
+import { getManager, saveManager, removeManager } from './src/game/manager-registry.js';
 
 dotenv.config();
 
@@ -110,8 +111,7 @@ function loadSettings() {
     reviewType: 'typing',
     // Word Discovery Settings
     dailyWordLimit: 10,  // 0-50, 0 = skip discovery rooms
-    debugSuperAttack: false,
-    rankedBotFallbackEnabled: process.env.RANKED_BOT_FALLBACK_ENABLED === 'true'
+    debugSuperAttack: false
   };
 
   if (existsSync(SETTINGS_FILE)) {
@@ -325,6 +325,14 @@ const io = new SocketIOServer(httpServer, {
     methods: ['GET', 'POST']
   }
 });
+try {
+  const seededBots = await ensureRankedBotAccounts({ getManager, saveManager, removeManager });
+  if (seededBots.created > 0 || seededBots.repaired > 0) {
+    console.log(`[PvP] Seeded ranked bots: created=${seededBots.created}, repaired=${seededBots.repaired}, totalBots=${seededBots.totalBots}`);
+  }
+} catch (error) {
+  console.warn('[PvP] Failed to seed ranked bots:', error.message);
+}
 setupPvpSockets(io, { getSettings: () => settings, getManager, saveManager });
 
 // Dev tools (sprite review dashboard)

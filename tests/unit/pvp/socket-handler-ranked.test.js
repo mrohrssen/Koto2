@@ -1,6 +1,10 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { setupPvpSockets } from '../../../src/pvp/socket-handler.js';
+import { readFileSync } from 'fs';
+import {
+  calculateRankedBotFallbackDelay,
+  setupPvpSockets
+} from '../../../src/pvp/socket-handler.js';
 
 function fakeIo() {
   return {
@@ -36,11 +40,22 @@ describe('setupPvpSockets ranked dependencies', () => {
     const result = setupPvpSockets(io, {
       getManager: mock.fn(),
       saveManager: mock.fn(),
-      getSettings: () => ({ rankedBotFallbackEnabled: true }),
       listRankedBots: () => [],
       getBotTeam: () => null
     });
     assert.ok(result.botTracker);
     assert.ok(result.rankedQueue);
+  });
+
+  it('does not gate ranked bot fallback behind server configuration', () => {
+    const source = readFileSync(new URL('../../../src/pvp/socket-handler.js', import.meta.url), 'utf8');
+    assert.equal(source.includes('rankedBotFallbackEnabled'), false);
+    assert.equal(source.includes('RANKED_BOT_FALLBACK_ENABLED'), false);
+  });
+
+  it('schedules bot fallback between 10 and 15 seconds', () => {
+    assert.equal(calculateRankedBotFallbackDelay(() => 0), 10000);
+    assert.equal(calculateRankedBotFallbackDelay(() => 0.5), 12500);
+    assert.equal(calculateRankedBotFallbackDelay(() => 0.999999), 15000);
   });
 });
