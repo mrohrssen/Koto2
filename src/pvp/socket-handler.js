@@ -5,6 +5,10 @@ import { getManager as defaultGetManager, saveManager as defaultSaveManager } fr
 import { RankedMatchQueue } from './ranked-match-queue.js';
 import { normalizeRankedState, getDisplayRating } from './ranked-rating.js';
 import { applyRankedMatchResult, rankedResultForUser } from './ranked-result-service.js';
+import { listBotUsers } from './bot-account-service.js';
+import { selectBotForRating, ActiveBotTracker } from './bot-match-service.js';
+import { chooseBotPvpAction } from './bot-action-ai.js';
+import { getPvpSummary } from '../routes/game/pvp.js';
 
 const ROUND_TIMEOUT_MS = 60000;
 
@@ -13,9 +17,16 @@ const ROUND_TIMEOUT_MS = 60000;
  * @param {import('socket.io').Server} io
  * @returns {{ mm: MatchManager, io: import('socket.io').Server, rankedQueue: RankedMatchQueue }}
  */
-export function setupPvpSockets(io, { getSettings, getManager = defaultGetManager, saveManager = defaultSaveManager } = {}) {
+export function setupPvpSockets(io, {
+  getSettings,
+  getManager = defaultGetManager,
+  saveManager = defaultSaveManager,
+  listRankedBots = listBotUsers,
+  getBotTeam = null
+} = {}) {
   const mm = new MatchManager({ dataDir: getDataDir(), getSettings });
   const rankedQueue = new RankedMatchQueue();
+  const botTracker = new ActiveBotTracker();
 
   const restored = mm.restoreMatches();
   if (restored > 0) console.log(`[PvP] Restored ${restored} active match(es) from disk`);
@@ -54,6 +65,67 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
     return true;
   }
 
+  function loadRankedBotCandidates() {
+    const users = listRankedBots();
+    return users.map(user => {
+      const gm = getManager(user.id);
+      const summary = getPvpSummary(gm);
+      const team = getBotTeam?.(user.id, gm) || summary.pvpTeams?.find(Boolean);
+      if (!team) return null;
+      return {
+        id: user.id,
+        userId: user.id,
+        username: user.username,
+        displayRating: summary.ranked.rating,
+        rating: gm.meta.pvpRanked.rating,
+        team
+      };
+    }).filter(Boolean);
+  }
+
+  function createRankedBotMatch(human, bot) {
+    rankedQueue.dequeue(human.userId);
+    const code = mm.createPairedMatch(human, {
+      userId: bot.userId,
+      username: bot.username,
+      socketId: null,
+      isBot: true
+    }, {
+      ranked: true,
+      rankedRatingBefore: {
+        [human.userId]: { rating: human.rating, displayRating: human.displayRating },
+        [bot.userId]: { rating: bot.rating, displayRating: bot.displayRating }
+      }
+    });
+    botTracker.markActive(bot.userId, code);
+    const humanSocket = io.sockets.sockets.get(human.socketId);
+    humanSocket?.join(code);
+    humanSocket?.emit('pvp:ranked-match-found', {
+      code,
+      opponentName: bot.username,
+      opponentRating: bot.displayRating
+    });
+    mm.selectBotTeamAndReady(code, bot.userId, bot.team);
+    return code;
+  }
+
+  function tryCreateRankedBotMatches(now = Date.now()) {
+    if (getSettings?.()?.rankedBotFallbackEnabled !== true) return false;
+    let created = false;
+    for (const entry of rankedQueue.getBotFallbackEntries(now)) {
+      const bot = selectBotForRating({
+        targetRating: entry.displayRating,
+        bots: loadRankedBotCandidates(),
+        activeBotIds: botTracker.activeBotIds
+      });
+      if (bot) {
+        createRankedBotMatch(entry, bot);
+        created = true;
+      }
+    }
+    return created;
+  }
+
   const queueTick = setInterval(() => {
     const now = Date.now();
     for (const entry of rankedQueue.getEntries()) {
@@ -64,6 +136,7 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
       });
     }
     tryCreateRankedPair(now);
+    tryCreateRankedBotMatches(now);
   }, 1000);
   queueTick.unref?.();
 
@@ -94,6 +167,7 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
         rankedResult: rankedResultForUser(rankedUpdate, match.player2.userId)
       });
     }
+    botTracker.releaseByMatch(match.code);
   }
 
   function emitForfeitToPlayers(match, forfeitResult, reason) {
@@ -107,6 +181,131 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
         reason,
         rankedResult: rankedResultForUser(rankedUpdate, player.userId)
       });
+    }
+    botTracker.releaseByMatch(match.code);
+  }
+
+  function emitMatchStartToPlayers(match) {
+    const p1Socket = io.sockets.sockets.get(match.player1.socketId);
+    const p2Socket = match.player2 ? io.sockets.sockets.get(match.player2.socketId) : null;
+
+    if (p1Socket) {
+      p1Socket.emit('pvp:match-start', {
+        yourTeam: match.combat.sideA,
+        opponentTeam: match.combat.sideB,
+        opponentName: match.player2.username,
+        mySide: 'sideA',
+        actionCursor: match.combat.actionCursor,
+        openingResolved: match.combat.openingResolved,
+        ranked: match.ranked === true
+      });
+    }
+    if (p2Socket) {
+      p2Socket.emit('pvp:match-start', {
+        yourTeam: match.combat.sideB,
+        opponentTeam: match.combat.sideA,
+        opponentName: match.player1.username,
+        mySide: 'sideB',
+        actionCursor: match.combat.actionCursor,
+        openingResolved: match.combat.openingResolved,
+        ranked: match.ranked === true
+      });
+    }
+  }
+
+  function emitActionResultToPlayers(match, result) {
+    const p1Socket = io.sockets.sockets.get(match.player1.socketId);
+    const p2Socket = match.player2 ? io.sockets.sockets.get(match.player2.socketId) : null;
+    const base = {
+      actionSegments: result.actionSegments,
+      attacks: result.attacks,
+      winner: result.winner,
+      actionCursor: match.combat.actionCursor,
+      openingResolved: match.combat.openingResolved
+    };
+
+    if (p1Socket) {
+      p1Socket.emit('pvp:action-result', {
+        ...base,
+        allies: result.sideA,
+        enemies: result.sideB
+      });
+    }
+    if (p2Socket) {
+      p2Socket.emit('pvp:action-result', {
+        ...base,
+        allies: result.sideB,
+        enemies: result.sideA
+      });
+    }
+  }
+
+  function emitOpeningSubmittedToHuman(match) {
+    for (const player of [match.player1, match.player2]) {
+      if (!player || player.isBot) continue;
+      const playerSocket = io.sockets.sockets.get(player.socketId);
+      playerSocket?.emit('pvp:opening-action-submitted');
+    }
+  }
+
+  function findHighestDexLivingIndex(creatures) {
+    let bestIndex = null;
+    let bestDex = -Infinity;
+    let bestLevel = -Infinity;
+    for (let i = 0; i < creatures.length; i++) {
+      const c = creatures[i];
+      if (!c || c.hp <= 0) continue;
+      const dex = c.dex || 1;
+      const level = c.level || 1;
+      if (dex > bestDex || (dex === bestDex && level > bestLevel)) {
+        bestIndex = i;
+        bestDex = dex;
+        bestLevel = level;
+      }
+    }
+    return bestIndex;
+  }
+
+  function maybeRunBotAction(match) {
+    if (!match?.combat || match.phase !== 'battle') return;
+    const botKey = match.player1?.isBot ? 'player1' : match.player2?.isBot ? 'player2' : null;
+    if (!botKey) return;
+    const botSide = botKey === 'player1' ? 'sideA' : 'sideB';
+    const botIndex = botSide === 'sideA'
+      ? findHighestDexLivingIndex(match.combat.sideA)
+      : findHighestDexLivingIndex(match.combat.sideB);
+    const cursor = match.combat.openingResolved
+      ? match.combat.actionCursor
+      : { side: botSide, index: botIndex };
+    const action = chooseBotPvpAction({
+      botSide,
+      cursor,
+      sideA: match.combat.sideA,
+      sideB: match.combat.sideB
+    });
+    if (!action) return;
+
+    const result = mm.submitAction(match.code, match[botKey].userId, action);
+    const updated = mm.getMatch(match.code);
+    if (!updated) return;
+    if (result === null) {
+      emitOpeningSubmittedToHuman(updated);
+      return;
+    }
+
+    emitActionResultToPlayers(updated, result);
+    mm.saveMatch(updated.code);
+
+    if (result.winner) {
+      const winnerId = updated.winnerId;
+      const winnerName = winnerId === updated.player1.userId
+        ? updated.player1.username
+        : winnerId === updated.player2?.userId
+          ? updated.player2.username
+          : null;
+      emitMatchEndToPlayers(updated, winnerId, winnerName);
+    } else {
+      maybeRunBotAction(updated);
     }
   }
 
@@ -151,13 +350,16 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
       }
 
       meta.pvpRanked = normalizeRankedState(meta.pvpRanked);
+      const now = Date.now();
+      const botDelayMs = 15000 + Math.floor(Math.random() * 7001);
       const entry = {
         userId: socket.userId,
         username: socket.username,
         socketId: socket.id,
         rating: meta.pvpRanked.rating,
         displayRating: getDisplayRating(meta.pvpRanked.rating),
-        enqueuedAt: Date.now()
+        enqueuedAt: now,
+        botFallbackAt: now + botDelayMs
       };
       rankedQueue.enqueue(entry);
       socket.emit('pvp:ranked-queued', {
@@ -232,32 +434,8 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
       const match = mm.getMatch(found.code);
 
       if (bothReady && match.phase === 'battle') {
-        // Emit match-start to each player with their perspective
-        const p1Socket = io.sockets.sockets.get(match.player1.socketId);
-        const p2Socket = io.sockets.sockets.get(match.player2.socketId);
-
-        if (p1Socket) {
-          p1Socket.emit('pvp:match-start', {
-            yourTeam: match.combat.sideA,
-            opponentTeam: match.combat.sideB,
-            opponentName: match.player2.username,
-            mySide: 'sideA',
-            actionCursor: match.combat.actionCursor,
-            openingResolved: match.combat.openingResolved,
-            ranked: match.ranked === true
-          });
-        }
-        if (p2Socket) {
-          p2Socket.emit('pvp:match-start', {
-            yourTeam: match.combat.sideB,
-            opponentTeam: match.combat.sideA,
-            opponentName: match.player1.username,
-            mySide: 'sideB',
-            actionCursor: match.combat.actionCursor,
-            openingResolved: match.combat.openingResolved,
-            ranked: match.ranked === true
-          });
-        }
+        emitMatchStartToPlayers(match);
+        maybeRunBotAction(match);
       } else {
         // Notify the other player that this player is ready
         const otherPlayerKey = found.playerKey === 'player1' ? 'player2' : 'player1';
@@ -386,33 +564,11 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
           const otherPlayer = match[otherPlayerKey];
           const otherSocket = otherPlayer ? io.sockets.sockets.get(otherPlayer.socketId) : null;
           if (otherSocket) otherSocket.emit('pvp:opening-action-submitted');
+          if (otherPlayer?.isBot) maybeRunBotAction(match);
           return;
         }
 
-        const p1Socket = io.sockets.sockets.get(match.player1.socketId);
-        const p2Socket = io.sockets.sockets.get(match.player2.socketId);
-        const base = {
-          actionSegments: result.actionSegments,
-          attacks: result.attacks,
-          winner: result.winner,
-          actionCursor: match.combat.actionCursor,
-          openingResolved: match.combat.openingResolved
-        };
-
-        if (p1Socket) {
-          p1Socket.emit('pvp:action-result', {
-            ...base,
-            allies: result.sideA,
-            enemies: result.sideB
-          });
-        }
-        if (p2Socket) {
-          p2Socket.emit('pvp:action-result', {
-            ...base,
-            allies: result.sideB,
-            enemies: result.sideA
-          });
-        }
+        emitActionResultToPlayers(match, result);
 
         mm.saveMatch(found.code);
 
@@ -424,6 +580,8 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
               ? match.player2.username
               : null;
           emitMatchEndToPlayers(match, winnerId, winnerName);
+        } else {
+          maybeRunBotAction(match);
         }
       } catch (error) {
         socket.emit('pvp:error', { message: error.message });
@@ -469,6 +627,7 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
       if (!found) return;
 
       const otherPlayer = mm.leaveMatch(found.code, socket.userId);
+      botTracker.releaseByMatch(found.code);
       if (otherPlayer) {
         const otherSocket = io.sockets.sockets.get(otherPlayer.socketId);
         if (otherSocket) {
@@ -536,5 +695,5 @@ export function setupPvpSockets(io, { getSettings, getManager = defaultGetManage
     });
   });
 
-  return { mm, io, rankedQueue };
+  return { mm, io, rankedQueue, botTracker };
 }

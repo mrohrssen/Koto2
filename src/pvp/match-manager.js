@@ -87,6 +87,7 @@ export class MatchManager {
         userId: player1.userId,
         username: player1.username,
         socketId: player1.socketId,
+        isBot: player1.isBot === true,
         team: null,
         ready: false,
         movesSubmitted: null,
@@ -96,6 +97,7 @@ export class MatchManager {
         userId: player2.userId,
         username: player2.username,
         socketId: player2.socketId,
+        isBot: player2.isBot === true,
         team: null,
         ready: false,
         movesSubmitted: null,
@@ -110,8 +112,8 @@ export class MatchManager {
       createdAt: Date.now()
     };
     this.matches.set(code, match);
-    this.socketToMatch.set(player1.socketId, code);
-    this.socketToMatch.set(player2.socketId, code);
+    if (player1.socketId) this.socketToMatch.set(player1.socketId, code);
+    if (player2.socketId) this.socketToMatch.set(player2.socketId, code);
     return code;
   }
 
@@ -214,6 +216,20 @@ export class MatchManager {
     player.ready = true;
 
     if (match.player1 && match.player1.ready && match.player2 && match.player2.ready) {
+      this._startBattle(match);
+      return true;
+    }
+    return false;
+  }
+
+  selectBotTeamAndReady(code, botUserId, teamData) {
+    const match = this.matches.get(code);
+    if (!match) return false;
+    const bot = this._findPlayer(match, botUserId);
+    if (!bot?.isBot) return false;
+    bot.team = teamData;
+    bot.ready = true;
+    if (match.player1?.ready && match.player2?.ready) {
       this._startBattle(match);
       return true;
     }

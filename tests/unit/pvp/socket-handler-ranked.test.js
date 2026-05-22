@@ -30,4 +30,17 @@ describe('setupPvpSockets ranked dependencies', () => {
     assert.strictEqual(io.middlewares.length, 1);
     assert.strictEqual(typeof io.handlers.get('connection'), 'function');
   });
+
+  it('accepts ranked bot fallback dependencies', () => {
+    const io = fakeIo();
+    const result = setupPvpSockets(io, {
+      getManager: mock.fn(),
+      saveManager: mock.fn(),
+      getSettings: () => ({ rankedBotFallbackEnabled: true }),
+      listRankedBots: () => [],
+      getBotTeam: () => null
+    });
+    assert.ok(result.botTracker);
+    assert.ok(result.rankedQueue);
+  });
 });

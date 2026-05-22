@@ -609,4 +609,33 @@ describe('MatchManager', () => {
       assert.strictEqual(mgr.isUserInMatch('user2'), true);
     });
   });
+
+  describe('socketless bot matches', () => {
+    it('creates paired matches without mapping a null bot socket', () => {
+      const code = mgr.createPairedMatch(
+        { userId: 'human', username: 'Human', socketId: 'sock-human' },
+        { userId: 'bot', username: 'taro1995', socketId: null, isBot: true },
+        { ranked: true }
+      );
+      assert.strictEqual(mgr.findMatchBySocket('sock-human').code, code);
+      assert.strictEqual(mgr.socketToMatch.has(null), false);
+      assert.strictEqual(mgr.getMatch(code).player2.isBot, true);
+    });
+
+    it('selects and readies a bot team', () => {
+      const code = mgr.createPairedMatch(
+        { userId: 'human', username: 'Human', socketId: 'sock-human' },
+        { userId: 'bot', username: 'taro1995', socketId: null, isBot: true },
+        { ranked: true }
+      );
+      const team = makeTeam();
+      assert.equal(mgr.selectBotTeamAndReady(code, 'bot', team), false);
+      mgr.selectTeam(code, 'human', makeTeam());
+      mgr.setReady(code, 'human');
+      assert.equal(mgr.selectBotTeamAndReady(code, 'bot', team), true);
+      const match = mgr.getMatch(code);
+      assert.equal(match.player2.ready, true);
+      assert.equal(match.phase, 'battle');
+    });
+  });
 });

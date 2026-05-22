@@ -30,6 +30,27 @@ export function saveUsers(data, filePath = DEFAULT_FILE) {
   writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
+export async function createUserRecord(fields, filePath = DEFAULT_FILE) {
+  const data = loadUsers(filePath);
+
+  if (data.users.some(u => u.username === fields.username)) {
+    throw new Error('Username already taken');
+  }
+
+  const user = {
+    id: fields.id || `u_${randomBytes(8).toString('hex')}`,
+    username: fields.username,
+    passwordHash: fields.passwordHash || await hashPassword(fields.password),
+    encryptedApiKeys: fields.encryptedApiKeys ?? null,
+    createdAt: fields.createdAt || new Date().toISOString(),
+    ...(fields.isBot ? { isBot: true, botProfile: fields.botProfile || {} } : {})
+  };
+
+  data.users.push(user);
+  saveUsers(data, filePath);
+  return user;
+}
+
 /**
  * Create a new user with hashed password
  * @param {string} username
@@ -38,23 +59,7 @@ export function saveUsers(data, filePath = DEFAULT_FILE) {
  * @returns {Promise<object>} Created user
  */
 export async function createUser(username, password, filePath = DEFAULT_FILE) {
-  const data = loadUsers(filePath);
-
-  if (data.users.some(u => u.username === username)) {
-    throw new Error('Username already taken');
-  }
-
-  const user = {
-    id: `u_${randomBytes(8).toString('hex')}`,
-    username,
-    passwordHash: await hashPassword(password),
-    encryptedApiKeys: null,
-    createdAt: new Date().toISOString()
-  };
-
-  data.users.push(user);
-  saveUsers(data, filePath);
-  return user;
+  return createUserRecord({ username, password }, filePath);
 }
 
 /**

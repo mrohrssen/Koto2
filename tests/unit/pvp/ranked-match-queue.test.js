@@ -9,7 +9,8 @@ function entry(overrides = {}) {
     socketId: overrides.socketId || 'sock-a',
     rating: overrides.rating || { mu: 25, sigma: 25 / 3 },
     displayRating: overrides.displayRating ?? 1200,
-    enqueuedAt: overrides.enqueuedAt ?? 1000
+    enqueuedAt: overrides.enqueuedAt ?? 1000,
+    botFallbackAt: overrides.botFallbackAt
   };
 }
 
@@ -53,5 +54,27 @@ describe('RankedMatchQueue', () => {
     assert.strictEqual(queue.dequeue('a'), true);
     assert.strictEqual(queue.removeBySocket('s2'), true);
     assert.strictEqual(queue.size, 0);
+  });
+
+  it('assigns bot fallback timestamps from entries', () => {
+    const queue = new RankedMatchQueue();
+    queue.enqueue(entry({ userId: 'a', socketId: 's1', enqueuedAt: 1000, botFallbackAt: 17000 }));
+    const queued = queue.getEntries()[0];
+    assert.strictEqual(queued.botFallbackAt, 17000);
+  });
+
+  it('uses faster ranked search windows before bot fallback', () => {
+    const queue = new RankedMatchQueue();
+    const queued = entry({ displayRating: 1200, enqueuedAt: 1000 });
+    assert.strictEqual(queue.getSearchRange(queued, 4000).range, 75);
+    assert.strictEqual(queue.getSearchRange(queued, 7000).range, 150);
+    assert.strictEqual(queue.getSearchRange(queued, 12000).range, 250);
+  });
+
+  it('returns bot fallback eligible entries in queue order', () => {
+    const queue = new RankedMatchQueue();
+    queue.enqueue(entry({ userId: 'late', socketId: 's1', enqueuedAt: 1000, botFallbackAt: 25000 }));
+    queue.enqueue(entry({ userId: 'ready', socketId: 's2', enqueuedAt: 2000, botFallbackAt: 17000 }));
+    assert.deepStrictEqual(queue.getBotFallbackEntries(18000).map(e => e.userId), ['ready']);
   });
 });

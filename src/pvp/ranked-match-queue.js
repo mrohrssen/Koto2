@@ -1,8 +1,7 @@
 export const SEARCH_WINDOWS = [
   { afterMs: 0, range: 75 },
-  { afterMs: 10000, range: 150 },
-  { afterMs: 20000, range: 250 },
-  { afterMs: 40000, range: Infinity }
+  { afterMs: 5000, range: 150 },
+  { afterMs: 10000, range: 250 }
 ];
 
 export class RankedMatchQueue {
@@ -79,5 +78,11 @@ export class RankedMatchQueue {
 
   getEntries() {
     return [...this.entries.values()].sort((a, b) => a.enqueuedAt - b.enqueuedAt);
+  }
+
+  getBotFallbackEntries(now = Date.now()) {
+    return this.getEntries().filter(entry =>
+      Number.isFinite(entry.botFallbackAt) && now >= entry.botFallbackAt
+    );
   }
 }
