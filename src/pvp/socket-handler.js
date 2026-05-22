@@ -11,6 +11,12 @@ import { chooseBotPvpAction } from './bot-action-ai.js';
 import { getPvpSummary } from '../routes/game/pvp.js';
 
 const ROUND_TIMEOUT_MS = 60000;
+const BOT_FALLBACK_MIN_MS = 10000;
+const BOT_FALLBACK_MAX_MS = 15000;
+
+export function calculateRankedBotFallbackDelay(random = Math.random) {
+  return BOT_FALLBACK_MIN_MS + Math.floor(random() * (BOT_FALLBACK_MAX_MS - BOT_FALLBACK_MIN_MS + 1));
+}
 
 /**
  * Set up all PvP Socket.IO event handlers.
@@ -350,7 +356,7 @@ export function setupPvpSockets(io, {
 
       meta.pvpRanked = normalizeRankedState(meta.pvpRanked);
       const now = Date.now();
-      const botDelayMs = 15000 + Math.floor(Math.random() * 7001);
+      const botDelayMs = calculateRankedBotFallbackDelay();
       const entry = {
         userId: socket.userId,
         username: socket.username,

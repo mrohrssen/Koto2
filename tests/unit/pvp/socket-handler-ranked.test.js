@@ -1,7 +1,10 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'fs';
-import { setupPvpSockets } from '../../../src/pvp/socket-handler.js';
+import {
+  calculateRankedBotFallbackDelay,
+  setupPvpSockets
+} from '../../../src/pvp/socket-handler.js';
 
 function fakeIo() {
   return {
@@ -48,5 +51,11 @@ describe('setupPvpSockets ranked dependencies', () => {
     const source = readFileSync(new URL('../../../src/pvp/socket-handler.js', import.meta.url), 'utf8');
     assert.equal(source.includes('rankedBotFallbackEnabled'), false);
     assert.equal(source.includes('RANKED_BOT_FALLBACK_ENABLED'), false);
+  });
+
+  it('schedules bot fallback between 10 and 15 seconds', () => {
+    assert.equal(calculateRankedBotFallbackDelay(() => 0), 10000);
+    assert.equal(calculateRankedBotFallbackDelay(() => 0.5), 12500);
+    assert.equal(calculateRankedBotFallbackDelay(() => 0.999999), 15000);
   });
 });
