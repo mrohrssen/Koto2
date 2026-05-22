@@ -5,35 +5,12 @@ import { getManager as defaultGetManager, saveManager as defaultSaveManager } fr
 import { RankedMatchQueue } from './ranked-match-queue.js';
 import { normalizeRankedState, getDisplayRating } from './ranked-rating.js';
 import { applyRankedMatchResult, rankedResultForUser } from './ranked-result-service.js';
-import { createBotUsernameBatch, listBotUsers } from './bot-account-service.js';
-import { generateRankedBotBatch } from './bot-generation.js';
+import { listBotUsers } from './bot-account-service.js';
 import { selectBotForRating, ActiveBotTracker } from './bot-match-service.js';
 import { chooseBotPvpAction } from './bot-action-ai.js';
 import { getPvpSummary } from '../routes/game/pvp.js';
 
 const ROUND_TIMEOUT_MS = 60000;
-const BUILT_IN_BOT_COUNT = 100;
-const BUILT_IN_BOT_SEED = 'ranked-bots-v1';
-
-function createBuiltInRankedBotCandidates() {
-  const usernames = createBotUsernameBatch({
-    count: BUILT_IN_BOT_COUNT,
-    seed: BUILT_IN_BOT_SEED,
-    existingUsernames: new Set()
-  });
-  return generateRankedBotBatch({
-    count: BUILT_IN_BOT_COUNT,
-    seed: BUILT_IN_BOT_SEED,
-    usernames
-  }).map(bot => ({
-    id: `built-in-ranked-bot-${bot.index}`,
-    userId: `built-in-ranked-bot-${bot.index}`,
-    username: bot.username,
-    displayRating: bot.displayRating,
-    rating: bot.ranked.rating,
-    team: bot.team
-  }));
-}
 
 /**
  * Set up all PvP Socket.IO event handlers.
@@ -50,7 +27,6 @@ export function setupPvpSockets(io, {
   const mm = new MatchManager({ dataDir: getDataDir(), getSettings });
   const rankedQueue = new RankedMatchQueue();
   const botTracker = new ActiveBotTracker();
-  const builtInRankedBots = createBuiltInRankedBotCandidates();
 
   const restored = mm.restoreMatches();
   if (restored > 0) console.log(`[PvP] Restored ${restored} active match(es) from disk`);
@@ -91,7 +67,7 @@ export function setupPvpSockets(io, {
 
   function loadRankedBotCandidates() {
     const users = listRankedBots();
-    const persisted = users.map(user => {
+    return users.map(user => {
       const gm = getManager(user.id);
       const summary = getPvpSummary(gm);
       const team = getBotTeam?.(user.id, gm) || summary.pvpTeams?.find(Boolean);
@@ -105,7 +81,6 @@ export function setupPvpSockets(io, {
         team
       };
     }).filter(Boolean);
-    return persisted.length > 0 ? persisted : builtInRankedBots;
   }
 
   function createRankedBotMatch(human, bot) {
