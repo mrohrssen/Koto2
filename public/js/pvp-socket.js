@@ -50,6 +50,8 @@ export function connect() {
     'pvp:opponent-wants-rematch', 'pvp:rematch-start', 'pvp:rematch-cancelled',
     'pvp:opponent-disconnected', 'pvp:opponent-reconnected', 'pvp:reconnected',
     'pvp:match-forfeit',
+    'pvp:ranked-queued', 'pvp:ranked-dequeued', 'pvp:ranked-queue-update',
+    'pvp:ranked-match-found',
     'pvp:error'
   ];
   for (const event of events) {
@@ -62,7 +64,7 @@ export function connect() {
     const code = currentMatchCode || sessionStorage.getItem('pvpMatchCode');
     if (code) {
       console.log('[PvP] Auto-reconnecting to match:', code);
-      socket.emit('pvp:reconnect', { code });
+      socket.emit('pvp:reconnect', { matchCode: code });
     }
     handlers['pvp:socket-reconnected']?.();
   });
@@ -91,6 +93,14 @@ export function joinMatch(code) {
   currentMatchCode = code;
   sessionStorage.setItem('pvpMatchCode', code);
   socket?.emit('pvp:join-match', { code });
+}
+
+export function enqueueRanked() {
+  socket?.emit('pvp:ranked-enqueue');
+}
+
+export function dequeueRanked() {
+  socket?.emit('pvp:ranked-dequeue');
 }
 
 /** Send selected team data to server. */
@@ -131,6 +141,11 @@ export function enterLobby() {
 
 // Store match code when we create a match
 on('pvp:match-created', ({ code }) => {
+  currentMatchCode = code;
+  sessionStorage.setItem('pvpMatchCode', code);
+});
+
+on('pvp:ranked-match-found', ({ code }) => {
   currentMatchCode = code;
   sessionStorage.setItem('pvpMatchCode', code);
 });
