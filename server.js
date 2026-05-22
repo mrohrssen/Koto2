@@ -110,8 +110,7 @@ function loadSettings() {
     reviewType: 'typing',
     // Word Discovery Settings
     dailyWordLimit: 10,  // 0-50, 0 = skip discovery rooms
-    debugSuperAttack: false,
-    rankedBotFallbackEnabled: process.env.RANKED_BOT_FALLBACK_ENABLED === 'true'
+    debugSuperAttack: false
   };
 
   if (existsSync(SETTINGS_FILE)) {

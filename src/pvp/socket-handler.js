@@ -110,7 +110,6 @@ export function setupPvpSockets(io, {
   }
 
   function tryCreateRankedBotMatches(now = Date.now()) {
-    if (getSettings?.()?.rankedBotFallbackEnabled !== true) return false;
     let created = false;
     for (const entry of rankedQueue.getBotFallbackEntries(now)) {
       const bot = selectBotForRating({
