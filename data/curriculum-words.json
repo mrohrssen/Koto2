@@ -1,0 +1,19 @@
+[
+  { "word": "こんにちは", "reading": "こんにちは", "en": "hello", "stage": "area1-early" },
+  { "word": "おはよう", "reading": "おはよう", "en": "good morning", "stage": "area1-early" },
+  { "word": "ありがとう", "reading": "ありがとう", "en": "thank you", "stage": "area1-early" },
+  { "word": "はい", "reading": "はい", "en": "yes", "stage": "area1-early" },
+  { "word": "いいえ", "reading": "いいえ", "en": "no", "stage": "area1-early" },
+  { "word": "なに", "reading": "なに", "en": "what", "stage": "area1-early" },
+  { "word": "どこ", "reading": "どこ", "en": "where", "stage": "area1-early" },
+  { "word": "ください", "reading": "ください", "en": "please", "stage": "area1-early" },
+  { "word": "すみません", "reading": "すみません", "en": "excuse me / sorry", "stage": "area1-early" },
+  { "word": "うん", "reading": "うん", "en": "yeah", "stage": "area1-early" },
+  { "word": "ある", "reading": "ある", "en": "to exist", "stage": "area1-mid" },
+  { "word": "いる", "reading": "いる", "en": "to exist / to be", "stage": "area1-mid" },
+  { "word": "する", "reading": "する", "en": "to do", "stage": "area1-mid" },
+  { "word": "なる", "reading": "なる", "en": "to become", "stage": "area1-mid" },
+  { "word": "こと", "reading": "こと", "en": "thing / fact", "stage": "area1-mid" },
+  { "word": "もの", "reading": "もの", "en": "thing", "stage": "area1-mid" },
+  { "word": "よう", "reading": "よう", "en": "appearance / way", "stage": "area1-mid" }
+]

@@ -4,6 +4,9 @@ import { join } from 'path';
 import { tokenizeBatch } from '../src/tokenizer.js';
 import { loadWordDictionary } from '../src/game/word-dictionary.js';
 import { resolveLiveDictPath } from '../src/game/live-dict-path.js';
+import { loadGrammarCatalog, loadGrammarMatchers } from '../src/game/grammar/grammar-loader.js';
+import { findGrammarMatches } from '../src/game/grammar/grammar-matcher.js';
+import { annotateRenderTokens } from '../src/game/grammar/annotate-tokens.js';
 
 const ROOT = join(import.meta.dirname, '..');
 const SOURCES_PATH = join(ROOT, 'data', 'dialogue', 'frame-sources.json');
@@ -56,13 +59,28 @@ const SUDACHI_POS_EN = {
  */
 function toUniversalToken(st, wordDict) {
   if (isDemoted(st)) {
-    return { token: { surface: st.surface }, isContent: false };
+    return {
+      token: {
+        surface: st.surface,
+        reading: st.reading || st.surface,
+        rawTokenStart: st.rawTokenStart ?? st.index,
+        rawTokenEnd: st.rawTokenEnd ?? st.index,
+      },
+      isContent: false
+    };
   }
   const reading = st.baseForm === '私'
     ? wordDict.get(st.baseForm)?.reading || st.reading
     : st.reading;
   return {
-    token: { surface: st.surface, base: st.baseForm, reading, pos: SUDACHI_POS_EN[st.pos] || st.pos },
+    token: {
+      surface: st.surface,
+      base: st.baseForm,
+      reading,
+      pos: SUDACHI_POS_EN[st.pos] || st.pos,
+      rawTokenStart: st.rawTokenStart ?? st.index,
+      rawTokenEnd: st.rawTokenEnd ?? st.index,
+    },
     isContent: true,
   };
 }
@@ -109,6 +127,8 @@ function main() {
   // Batch tokenize all non-empty segments
   const textsToTokenize = segmentMap.map(s => s.segmentText);
   const allSegmentTokens = tokenizeBatch(textsToTokenize);
+  const grammarCatalog = loadGrammarCatalog();
+  const grammarMatchers = loadGrammarMatchers();
 
   // Merge adjacent Sudachi tokens that form dictionary entries.
   // Sudachi splits morphologically (すみません → すむ+ます+ぬ) but learners
@@ -135,6 +155,8 @@ function main() {
             pos: contentPos,
             _isMerged: true,             // signals this was merged from dictionary — skip demotion
             reading: dictEntry.reading || combined,
+            rawTokenStart: sudachiTokens[i].index,
+            rawTokenEnd: sudachiTokens[i + len - 1].index,
           });
           i += len;
           matched = true;
@@ -142,7 +164,12 @@ function main() {
         }
       }
       if (!matched) {
-        merged.push(sudachiTokens[i]);
+        const token = sudachiTokens[i];
+        merged.push({
+          ...token,
+          rawTokenStart: token.index,
+          rawTokenEnd: token.index,
+        });
         i++;
       }
     }
@@ -157,12 +184,22 @@ function main() {
     const frame = frameTokens[frameIdx];
 
     // Process this segment's text tokens first
-    const mergedTokens = mergeSudachiTokens(allSegmentTokens[i]);
+    const rawTokens = allSegmentTokens[i];
+    const matches = findGrammarMatches(rawTokens, {
+      catalog: grammarCatalog,
+      matchers: grammarMatchers,
+    });
+    const mergedTokens = mergeSudachiTokens(rawTokens);
+    const segmentRenderTokens = [];
+    const segmentWords = [];
     for (const st of mergedTokens) {
       const { token, isContent } = toUniversalToken(st, wordDict);
-      frame.tokens.push(token);
-      if (isContent) frame.words.push(token.base);
+      segmentRenderTokens.push(token);
+      if (isContent) segmentWords.push(token.base);
     }
+    const annotated = annotateRenderTokens(segmentRenderTokens, rawTokens, matches);
+    frame.tokens.push(...annotated);
+    frame.words.push(...segmentWords);
 
     // Insert slot token after this segment's tokens
     if (slotAfter) {

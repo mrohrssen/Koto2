@@ -5,7 +5,7 @@ import { gradeCard, getDueCards, getDueCount, createCard, getDeckCards } from '.
 import { getBarkPool } from '../../game/dialogue-loader.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../../game/live-dict-path.js';
-import { tokenize } from '../../tokenizer.js';
+import { tokenizeAndAnnotate } from '../../game/grammar/tokenize-and-annotate.js';
 import { incrementDiscoveryCount, getDiscoveryStatus } from '../../word-tracking.js';
 import { addReview } from '../../auth/users.js';
 import {
@@ -161,7 +161,14 @@ export function createKnownWordsRoutes({ reviewFusionCoreRandom = Math.random } 
     }
     try {
       const dict = getWordDict();
-      const tokens = tokenize(text);
+      const annotated = tokenizeAndAnnotate(text);
+      const tokens = annotated.rawTokens;
+      const grammarByIndex = new Map();
+      for (const token of annotated.tokens) {
+        if (Array.isArray(token.grammarHints)) {
+          grammarByIndex.set(token.rawTokenStart, token.grammarHints);
+        }
+      }
       const enriched = tokens.map(t => {
         const entry = dict.get(t.baseForm) || dict.get(t.surface);
         return {
@@ -170,7 +177,8 @@ export function createKnownWordsRoutes({ reviewFusionCoreRandom = Math.random } 
           reading: entry?.reading || t.reading || t.baseForm,
           meanings: entry?.definitions?.map(d => d.en).filter(Boolean) || [],
           partOfSpeech: t.pos ? [t.pos.split(',')[0]] : [],
-          lookupable: !!entry
+          lookupable: !!entry,
+          grammarHints: grammarByIndex.get(t.index) || []
         };
       });
       res.json({ tokens: enriched });

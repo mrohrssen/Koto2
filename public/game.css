@@ -2210,6 +2210,33 @@ button.hud-chip {
   margin-right: 2px;
 }
 
+.lookup-grammar-hint {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+}
+
+.lookup-grammar-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-blue, #68b7ff);
+  margin-bottom: 4px;
+}
+
+.lookup-grammar-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.lookup-grammar-explanation {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
 .lookup-popup-state {
   padding: 8px 12px;
   font-size: 12px;
@@ -7295,6 +7322,15 @@ button.hud-chip {
 
 /* ── Sentence renderer (B2 token display) ─────────────────────── */
 .jp-word { display: inline-block; margin: 0; }
+.jp-grammar {
+  cursor: pointer;
+  display: inline-block;
+  color: inherit;
+}
+.jp-grammar ruby rt {
+  font-size: 0.65em;
+  color: var(--text-secondary);
+}
 .jp-known { /* blends into sentence flow */ }
 /* Unknown/entity: inline-flex made the box as wide as the English gloss, pushing
    following Japanese (e.g. まっ … て！) apart. Inline layout width follows the ruby

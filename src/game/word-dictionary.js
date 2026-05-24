@@ -40,7 +40,7 @@ export function loadWordDictionary({ overlayDir, liveDictPath }) {
   }
 
   // 3. Overlay curriculum files
-  for (const file of ['glue-words.json', 'grammar-words.json']) {
+  for (const file of ['glue-words.json', 'curriculum-words.json']) {
     const filePath = join(overlayDir, file);
     if (!existsSync(filePath)) continue;
     try {

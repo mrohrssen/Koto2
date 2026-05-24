@@ -11,6 +11,11 @@ const ATTACHABLE_PUNCT_RE = /^[\p{P}\p{S}]+$/u;
 
 let _knownWords = new Set();
 
+function grammarHintsAttr(token) {
+  if (!Array.isArray(token.grammarHints) || token.grammarHints.length === 0) return '';
+  return ` data-grammar-hints="${esc(JSON.stringify(token.grammarHints))}"`;
+}
+
 /** Set the player's known words (called on game load). */
 export function setKnownWords(words) {
   _knownWords = new Set(words);
@@ -100,6 +105,15 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     const baseForm = getTokenBaseForm(token);
     const reading = token.reading;
 
+    if (!isContentExposureToken(token) && Array.isArray(token.grammarHints) && token.grammarHints.length > 0) {
+      const displayReading = token.grammarHints.find(h => h.readingOverride)?.readingOverride || token.reading || surface;
+      const dataAttrs = ` data-reading="${esc(displayReading)}"${grammarHintsAttr(token)}`;
+      rendered.push(`<span class="jp-grammar"${dataAttrs}>`
+        + `<ruby>${esc(surface)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
+        + `</span>`);
+      continue;
+    }
+
     if (!isContentExposureToken(token)) {
       rendered.push(`<span class="jp-punct">${esc(surface)}</span>`);
       continue;
@@ -126,6 +140,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     if (isFromOverride) dataAttrs += ' data-override="1"';
     if (meaningsJson) dataAttrs += ` data-meanings="${esc(meaningsJson)}"`;
     if (useKanji) dataAttrs += ' data-kanji-mode="1"';
+    dataAttrs += grammarHintsAttr(token);
 
     if (isKnown) {
       const display = useKanji ? surface : displayReading;

@@ -11,7 +11,7 @@ await mock.module('../../public/js/tts.js', {
   }
 });
 
-const { buildPopupMeanings } = await import('../../public/js/ui/dialogue-word-lookup.js');
+const { buildPopupMeanings, parseGrammarHints } = await import('../../public/js/ui/dialogue-word-lookup.js');
 
 describe('buildPopupMeanings', () => {
   const dictEntry = { definitions: [{ en: 'dog', primary: true }, { en: 'hound' }] };
@@ -57,5 +57,25 @@ describe('buildPopupMeanings', () => {
       dictEntry: null,
     });
     assert.deepEqual(result, []);
+  });
+});
+
+describe('parseGrammarHints', () => {
+  it('parses grammar hints from data attribute JSON', () => {
+    const hints = parseGrammarHints(JSON.stringify([
+      {
+        grammarId: 'n5-wo-object',
+        title: 'を',
+        meaning: 'object marker',
+        shortExplanation: 'Marks the thing that receives the action.',
+        matchedText: 'を',
+      }
+    ]));
+    assert.equal(hints.length, 1);
+    assert.equal(hints[0].grammarId, 'n5-wo-object');
+  });
+
+  it('returns empty array for invalid grammar JSON', () => {
+    assert.deepEqual(parseGrammarHints('{bad json'), []);
   });
 });

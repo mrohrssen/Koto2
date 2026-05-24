@@ -3,6 +3,9 @@ import { readFileSync } from 'fs';
 import { adminAuth } from './admin.js';
 import { resolveLiveDictPath } from '../game/live-dict-path.js';
 import { tokenizeBatch } from '../tokenizer.js';
+import { loadGrammarCatalog, loadGrammarMatchers } from '../game/grammar/grammar-loader.js';
+import { findGrammarMatches } from '../game/grammar/grammar-matcher.js';
+import { annotateRenderTokens } from '../game/grammar/annotate-tokens.js';
 
 // Match the demotion logic used by scripts/tokenize-static.js so preview
 // tokenizations line up with what the game actually renders.
@@ -88,8 +91,18 @@ export default function createFrameAuditRoutes({ framesPath, sourcesPath }) {
 
       const raws = texts.map(t => t.raw || '');
       const batches = tokenizeBatch(raws);
+      const grammarCatalog = loadGrammarCatalog();
+      const grammarMatchers = loadGrammarMatchers();
       const tokens = {};
-      texts.forEach((t, i) => { tokens[t.id] = normalizeTokens(batches[i] || []); });
+      texts.forEach((t, i) => {
+        const rawTokens = batches[i] || [];
+        const renderTokens = normalizeTokens(rawTokens);
+        const matches = findGrammarMatches(rawTokens, {
+          catalog: grammarCatalog,
+          matchers: grammarMatchers,
+        });
+        tokens[t.id] = annotateRenderTokens(renderTokens, rawTokens, matches);
+      });
 
       // Return dict subset for any NEW baseforms not in the main frames.json
       const liveDictPath = resolveLiveDictPath();

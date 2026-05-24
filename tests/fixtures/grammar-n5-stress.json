@@ -1,0 +1,1364 @@
+[
+  {
+    "sentence": "犬は走る。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "私は学生だ。",
+    "expected": [
+      "n5-da-copula",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "本は重い。",
+    "expected": [
+      "n5-i-adjective",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "田中さんは先生です。",
+    "expected": [
+      "n5-desu-copula",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "日本人は親切だ。",
+    "expected": [
+      "n5-da-copula",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "これは本です。",
+    "expected": [
+      "n5-desu-copula",
+      "n5-kore",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "猫は寝ている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "先生は本を読んでいる。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wa-topic",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "All three reliable starter patterns together."
+  },
+  {
+    "sentence": "学校は大きい。",
+    "expected": [
+      "n5-i-adjective",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "朝は寒い。",
+    "expected": [
+      "n5-i-adjective",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "水はある。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "山は見えている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "「犬」は名詞です。",
+    "expected": [
+      "n5-desu-copula",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "彼は東京に住んでいる。",
+    "expected": [
+      "n5-ni-particle",
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "今日は雨です。",
+    "expected": [
+      "n5-desu-copula",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Clear noun or pronoun topic は."
+  },
+  {
+    "sentence": "雨ではない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Embedded は in ではない is not basic topic."
+  },
+  {
+    "sentence": "大学には行く。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Compound particle には is not basic topic."
+  },
+  {
+    "sentence": "犬は犬でも大きい。",
+    "expected": [
+      "n5-i-adjective"
+    ],
+    "knownMisses": [],
+    "notes": "Concessive XはXでも is not basic topic."
+  },
+  {
+    "sentence": "誰は来ますか。",
+    "expected": [
+      "n5-dare",
+      "n5-ka-question",
+      "n5-masu-polite"
+    ],
+    "knownMisses": [],
+    "notes": "Wh-pronoun は is rejected as a safer no-hint."
+  },
+  {
+    "sentence": "多くは知らない。",
+    "expected": [
+      "n5-u-verb-negative"
+    ],
+    "knownMisses": [],
+    "notes": "Quantifier は is not basic topic."
+  },
+  {
+    "sentence": "一人は来た。",
+    "expected": [
+      "n5-kuru"
+    ],
+    "knownMisses": [],
+    "notes": "Numeric/quantifier は is not basic topic."
+  },
+  {
+    "sentence": "本ではありません。",
+    "expected": [
+      "n5-masu-polite"
+    ],
+    "knownMisses": [],
+    "notes": "ではありません should not trigger topic."
+  },
+  {
+    "sentence": "今日は行かない。",
+    "expected": [
+      "n5-u-verb-negative",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Today as topic is allowed by current matcher?"
+  },
+  {
+    "sentence": "本を読む。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "水を飲む。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "彼を信じる。",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "何を食べる？",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "車を運転する。",
+    "expected": [
+      "n5-suru",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "本を、読む。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "リンゴを一つ食べる。",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "肉を少し食べる。",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "手紙を書く。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "映画を見る。",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "先生は本を読む。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wa-topic",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "私は水を飲んでいる。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wa-topic",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "薬を飲んでください。",
+    "expected": [
+      "n5-te-kudasai",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "部屋を掃除する。",
+    "expected": [
+      "n5-suru",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "日本語を勉強する。",
+    "expected": [
+      "n5-suru",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Clear direct object を before an action."
+  },
+  {
+    "sentence": "公園を歩く。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Motion/path を must not be taught as object."
+  },
+  {
+    "sentence": "空を飛ぶ。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Motion/path を must not be taught as object."
+  },
+  {
+    "sentence": "家を出る。",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Departure/source を must not be taught as object."
+  },
+  {
+    "sentence": "橋を渡る。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path traversal を must not be taught as object."
+  },
+  {
+    "sentence": "角を曲がる。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Turning path を must not be taught as object."
+  },
+  {
+    "sentence": "階段を上る。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path traversal を must not be taught as object."
+  },
+  {
+    "sentence": "東京を離れる。",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Source/departure を must not be taught as object."
+  },
+  {
+    "sentence": "本を。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "No following verb."
+  },
+  {
+    "sentence": "道を急ぐ。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path-like を with motion verb is rejected."
+  },
+  {
+    "sentence": "駅を過ぎる。",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Passing point を is rejected."
+  },
+  {
+    "sentence": "本がある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "水がある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "これがある。",
+    "expected": [
+      "n5-ga-aru-existence",
+      "n5-kore"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "机がある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "時間がある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "お金がある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "本が二冊ある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Counter-separated existence."
+  },
+  {
+    "sentence": "椅子が六脚ある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "靴が一足ある。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "学校には図書館がある。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある. Compound に は is intentionally not counted as basic topic coverage."
+  },
+  {
+    "sentence": "私には夢がある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある. Compound に は is intentionally not counted as basic topic coverage."
+  },
+  {
+    "sentence": "箱の中に鍵がある。",
+    "expected": [
+      "n5-ga-aru-existence",
+      "n5-no-possessive"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "庭に花がある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "問題が三つある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "質問がたくさんある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Concrete thing-exists or has がある."
+  },
+  {
+    "sentence": "行ったことがある。",
+    "expected": [
+      "n5-ta-koto-ga-aru"
+    ],
+    "knownMisses": [],
+    "notes": "Experience ことがある is not concrete existence."
+  },
+  {
+    "sentence": "勉強したいことがある。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-tai-want",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Abstract ことがある should not receive concrete existence hint."
+  },
+  {
+    "sentence": "お金がありません。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-masu-polite"
+    ],
+    "knownMisses": [],
+    "notes": "Polite negative flips the meaning."
+  },
+  {
+    "sentence": "本が二冊ありません。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-masu-polite"
+    ],
+    "knownMisses": [],
+    "notes": "Polite negative counter form is rejected."
+  },
+  {
+    "sentence": "犬がいる。",
+    "expected": [
+      "n5-ga-iru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Existence いる is not ている."
+  },
+  {
+    "sentence": "彼が走る。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Subject が before another verb is not がある."
+  },
+  {
+    "sentence": "雨が降っている。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "読むことがある。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Occasional ことがある is not concrete existence."
+  },
+  {
+    "sentence": "理由がある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Abstract but still a concrete noun-like existence; current matcher allows it."
+  },
+  {
+    "sentence": "ことがある。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Bare ことがある rejected as abstract."
+  },
+  {
+    "sentence": "見ている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "読んでいる。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "食べている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "走っている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "待っている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "書いている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "遊んでいる。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "読まれている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "食べさせている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "見てる。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "読んでる。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "私は先生を知っている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wa-topic",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "ドアが閉まっている。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "本を読んでいる。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "音楽を聞いている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "店が開いている。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "窓が割れている。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Continuing action or state in ～ている."
+  },
+  {
+    "sentence": "走っていく。",
+    "expected": [
+      "n5-te-conjunction",
+      "n5-te-sequence",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "ていく is different from ている."
+  },
+  {
+    "sentence": "帰ってくる。",
+    "expected": [
+      "n5-te-conjunction",
+      "n5-te-sequence",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "てくる is different from ている."
+  },
+  {
+    "sentence": "元気でいる。",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Adjectival でいる is not verb ている."
+  },
+  {
+    "sentence": "読んでいません。",
+    "expected": [
+      "n5-masu-polite",
+      "n5-te-conjunction",
+      "n5-te-sequence"
+    ],
+    "knownMisses": [],
+    "notes": "Negative ていません should not show positive continuing hint."
+  },
+  {
+    "sentence": "まだ読んでいません。",
+    "expected": [
+      "n5-mada-te-imasen"
+    ],
+    "knownMisses": [],
+    "notes": "Still-not-done is not currently enabled as a separate hint."
+  },
+  {
+    "sentence": "読んでいた。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Past progressive is outside current enabled matcher claim."
+  },
+  {
+    "sentence": "食べてある。",
+    "expected": [
+      "n5-te-conjunction",
+      "n5-te-sequence",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "てある is different from ている."
+  },
+  {
+    "sentence": "見てください。",
+    "expected": [
+      "n5-te-kudasai"
+    ],
+    "knownMisses": [],
+    "notes": "Request てください is different from ている."
+  },
+  {
+    "sentence": "本を読んでいません。",
+    "expected": [
+      "n5-masu-polite",
+      "n5-te-conjunction",
+      "n5-te-sequence",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Negative with object should only keep object marker."
+  },
+  {
+    "sentence": "私はお金がある。",
+    "expected": [
+      "n5-ga-aru-existence",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Topic plus concrete possession/existence."
+  },
+  {
+    "sentence": "彼は公園を歩いている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Path を suppressed while ている survives."
+  },
+  {
+    "sentence": "私は行ったことがある。",
+    "expected": [
+      "n5-ta-koto-ga-aru",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Topic survives; experience ことがある is not concrete existence."
+  },
+  {
+    "sentence": "水を飲んでいる。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Object and ongoing action."
+  },
+  {
+    "sentence": "犬は庭にいる。",
+    "expected": [
+      "n5-ni-particle",
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Topic only; living いる not enabled."
+  },
+  {
+    "sentence": "本を読んではいけない。",
+    "expected": [
+      "n5-tewa-ikenai",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Object marker only; prohibition not enabled in current matcher set."
+  },
+  {
+    "sentence": "この部屋には机がある。",
+    "expected": [
+      "n5-ga-aru-existence",
+      "n5-kono"
+    ],
+    "knownMisses": [],
+    "notes": "Compound には is safer as no topic hint; concrete 机がある still matches existence."
+  },
+  {
+    "sentence": "多くは本を読まない。",
+    "expected": [
+      "n5-u-verb-negative",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Quantifier は rejected, object marker remains."
+  },
+  {
+    "sentence": "二つは箱に入れてください。",
+    "expected": [
+      "n5-ni-particle",
+      "n5-te-kudasai"
+    ],
+    "knownMisses": [],
+    "notes": "Quantified は should not be taught as basic topic."
+  },
+  {
+    "sentence": "少なくとも二人は話しています。",
+    "expected": [
+      "n5-i-adjective",
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Quantified は is rejected; continuing action remains."
+  },
+  {
+    "sentence": "何冊は読みましたか。",
+    "expected": [
+      "n5-ka-question",
+      "n5-masu-polite"
+    ],
+    "knownMisses": [],
+    "notes": "Wh/counter は is rejected as safer no-hint."
+  },
+  {
+    "sentence": "私には時間があります。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Compound には is accepted miss for topic; concrete 時間があります still matches existence."
+  },
+  {
+    "sentence": "道をゆっくり歩きます。",
+    "expected": [
+      "n5-masu-polite"
+    ],
+    "knownMisses": [],
+    "notes": "Path を separated from motion verb by adverb must not be object marker."
+  },
+  {
+    "sentence": "橋を一つ渡ります。",
+    "expected": [
+      "n5-masu-polite"
+    ],
+    "knownMisses": [],
+    "notes": "Path を separated by quantity phrase must not be object marker."
+  },
+  {
+    "sentence": "公園を、走ります。",
+    "expected": [
+      "n5-masu-polite"
+    ],
+    "knownMisses": [],
+    "notes": "Path を separated by punctuation must not be object marker."
+  },
+  {
+    "sentence": "日本に行ったことがある。",
+    "expected": [
+      "n5-ni-particle",
+      "n5-ta-koto-ga-aru"
+    ],
+    "knownMisses": [],
+    "notes": "Experience ことがある must not trigger concrete がある."
+  },
+  {
+    "sentence": "机の上に本がありません。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-masu-polite",
+      "n5-no-possessive"
+    ],
+    "knownMisses": [],
+    "notes": "Negative existence must not trigger positive がある."
+  },
+  {
+    "sentence": "私は読んでいません。",
+    "expected": [
+      "n5-masu-polite",
+      "n5-te-conjunction",
+      "n5-te-sequence",
+      "n5-wa-topic"
+    ],
+    "knownMisses": [],
+    "notes": "Topic remains, but negative ていません should not trigger positive ている."
+  },
+  {
+    "sentence": "バスを降りる。",
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path/source を with descent must not be object marker."
+  },
+  {
+    "sentence": "廊下を進む。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path/source を with progress must not be object marker."
+  },
+  {
+    "sentence": "道を戻る。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path/source を with return must not be object marker."
+  },
+  {
+    "sentence": "近道を帰る。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path/source を with returning home must not be object marker."
+  },
+  {
+    "sentence": "海岸を散歩する。",
+    "expected": [
+      "n5-suru",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path/source を with walking-around verbal noun must not be object marker."
+  },
+  {
+    "sentence": "空を舞う。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path/source を with aerial motion must not be object marker."
+  },
+  {
+    "sentence": "坂を滑る。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path/source を with sliding must not be object marker."
+  },
+  {
+    "sentence": "交差点を右折する。",
+    "expected": [
+      "n5-suru",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path/source を with turning verbal noun must not be object marker."
+  },
+  {
+    "sentence": "川を下る。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Path/source を with descending a route must not be object marker."
+  },
+  {
+    "sentence": "駅を出発する。",
+    "expected": [
+      "n5-suru",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Source を with departure verbal noun must not be object marker."
+  },
+  {
+    "sentence": "学校を卒業する。",
+    "expected": [
+      "n5-suru",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Source を with graduation verbal noun must not be object marker."
+  },
+  {
+    "sentence": "席を立つ。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Source を with leaving a seat must not be object marker."
+  },
+  {
+    "sentence": "本を、ゆっくり読む。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Bounded punctuation plus adverb gap still marks object を."
+  },
+  {
+    "sentence": "水を今飲む。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Bounded adverb gap still marks object を."
+  },
+  {
+    "sentence": "薬を毎日飲む。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Bounded noun-adverb gap still marks object を."
+  },
+  {
+    "sentence": "部屋をきれいにする。",
+    "expected": [
+      "n5-ni-suru",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Object を before adjectival complement plus する is in scope."
+  },
+  {
+    "sentence": "旗を振る。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Object を with 振る is in scope when the noun is a thing being waved."
+  },
+  {
+    "sentence": "手を振る。",
+    "expected": [
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Object を with 振る is in scope when the noun is the thing being waved."
+  },
+  {
+    "sentence": "読んでいない。",
+    "expected": [
+      "n5-ru-verb-negative",
+      "n5-te-conjunction",
+      "n5-te-sequence"
+    ],
+    "knownMisses": [],
+    "notes": "Negative ていない must not trigger enabled ている senses."
+  },
+  {
+    "sentence": "見ていなかった。",
+    "expected": [
+      "n5-ru-verb-negative-past",
+      "n5-te-conjunction",
+      "n5-te-sequence"
+    ],
+    "knownMisses": [],
+    "notes": "Negative past ていなかった must not trigger enabled ている senses."
+  },
+  {
+    "sentence": "私は薬を飲んでいない。",
+    "expected": [
+      "n5-ru-verb-negative",
+      "n5-te-conjunction",
+      "n5-te-sequence",
+      "n5-wa-topic",
+      "n5-wo-object"
+    ],
+    "knownMisses": [],
+    "notes": "Negative ていない with object must not trigger enabled ている senses."
+  },
+  {
+    "sentence": "ドアが開いていない。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-ru-verb-negative",
+      "n5-te-conjunction",
+      "n5-te-sequence"
+    ],
+    "knownMisses": [],
+    "notes": "Negative result-state ていない must not trigger enabled ている senses."
+  },
+  {
+    "sentence": "食べさせられている。",
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "knownMisses": [],
+    "notes": "Causative-passive auxiliary chain should still trigger enabled ている senses."
+  },
+  {
+    "sentence": "居場所がある。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Lexicalized abstract 居場所がある should not receive concrete existence hint."
+  },
+  {
+    "sentence": "必要がある。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Necessity 必要がある should not receive concrete existence hint."
+  },
+  {
+    "sentence": "人気がある。",
+    "expected": [
+      "n5-ga-subject",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "knownMisses": [],
+    "notes": "Popularity 人気がある should not receive concrete existence hint."
+  },
+  {
+    "sentence": "理由がいくつかある。",
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "knownMisses": [],
+    "notes": "Indefinite quantity between が and ある is still concrete existence."
+  }
+]

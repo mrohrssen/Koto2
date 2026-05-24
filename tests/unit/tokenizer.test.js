@@ -65,6 +65,34 @@ describe('tokenizer', () => {
     assert.equal(verb.pos, '動詞');
   });
 
+  it('preserves top-level pos while adding full Sudachi POS fields', () => {
+    const tokens = tokenize('読んでいる。');
+    const verb = tokens.find(t => t.surface === '読ん');
+    assert.ok(verb, 'should find conjugated verb token');
+    assert.equal(verb.pos, '動詞');
+    assert.equal(verb.pos0, '動詞');
+    assert.equal(verb.pos1, '一般');
+    assert.equal(verb.pos4, '五段-マ行');
+    assert.equal(verb.pos5, '連用形-撥音便');
+    assert.equal(verb.conjugationType, '五段-マ行');
+    assert.equal(verb.conjugationForm, '連用形-撥音便');
+    assert.equal(verb.normalizedForm, '読む');
+    assert.equal(verb.index, 0);
+  });
+
+  it('keeps raw particle readings for grammar UI overrides', () => {
+    const tokens = tokenize('本を読んでいる。');
+    const wo = tokens.find(t => t.surface === 'を');
+    assert.ok(wo, 'should find を');
+    assert.equal(wo.pos0, '助詞');
+    assert.equal(wo.reading, 'を');
+
+    const heTokens = tokenize('東京へ行く。');
+    const he = heTokens.find(t => t.surface === 'へ');
+    assert.ok(he, 'should find へ');
+    assert.equal(he.reading, 'へ');
+  });
+
   it('produces correct baseForm for こんにちは (not 今日は)', () => {
     const tokens = tokenize('こんにちは');
     const greeting = tokens.find(t => t.surface === 'こんにちは');

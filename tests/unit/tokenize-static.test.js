@@ -46,6 +46,37 @@ describe('tokenize-static output (frames.json)', () => {
     }
   });
 
+  it('surface-only particles preserve reading and raw token span for grammar', () => {
+    const frame = frames.find(f => f.raw.includes('私の名前'));
+    assert.ok(frame, 'expected a frame containing 私の名前');
+    const particle = frame.tokens.find(t => t.surface === 'の' && !t.base);
+    assert.ok(particle, 'should find surface-only の particle');
+    assert.equal(particle.reading, 'の');
+    assert.equal(typeof particle.rawTokenStart, 'number');
+    assert.equal(typeof particle.rawTokenEnd, 'number');
+  });
+
+  it('merged dictionary tokens preserve the raw token span they came from', () => {
+    const frame = frames.find(f => f.id === 'shopPurchase_excuse');
+    assert.ok(frame, 'shopPurchase_excuse frame should exist');
+    const sumimasen = frame.tokens.find(t => t.base === 'すみません');
+    assert.ok(sumimasen, 'should find merged すみません');
+    assert.equal(typeof sumimasen.rawTokenStart, 'number');
+    assert.equal(typeof sumimasen.rawTokenEnd, 'number');
+    assert.ok(sumimasen.rawTokenEnd >= sumimasen.rawTokenStart);
+  });
+
+  it('bakes grammar hints into static frames without changing words', () => {
+    const frame = frames.find(f => f.raw === '心は強いです！');
+    assert.ok(frame, 'expected 心は強いです！ frame');
+    const originalWords = frame.words.slice();
+    const particle = frame.tokens.find(t => t.surface === 'は' && !t.base);
+    assert.ok(particle, 'should find surface-only は particle');
+    assert.ok(Array.isArray(particle.grammarHints), 'particle should carry grammarHints when matched');
+    assert.ok(particle.grammarHints.some(h => h.grammarId === 'n5-wa-topic'));
+    assert.deepEqual(frame.words, originalWords, 'grammar hints must not affect words');
+  });
+
   it('content words have base, reading, and pos but NOT meaning', () => {
     const polite = frames.find(f => f.id === 'shopPurchase_please');
     const kudasai = polite.tokens.find(t => t.base === 'くださる');

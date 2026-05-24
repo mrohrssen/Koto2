@@ -54,6 +54,16 @@ export function buildPopupMeanings({ dataMeaning, dataOverride, dictEntry }) {
   return result;
 }
 
+export function parseGrammarHints(value) {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Initialize the module. Call once after DOM is ready.
  * @param {{ showToast: Function, pauseAutoDismiss: Function, getKanaMode: Function, onStateUpdate?: Function }} options
@@ -105,9 +115,12 @@ export function init({ showToast, pauseAutoDismiss, getKanaMode, onStateUpdate }
  */
 export function attachWordClickHandlers(container, options = {}) {
   if (!container) return;
-  const words = container.querySelectorAll('.jp-word');
+  const words = [
+    ...container.querySelectorAll('.jp-word'),
+    ...container.querySelectorAll('.jp-grammar')
+  ];
   for (const span of words) {
-    if (!span.dataset.base) continue;
+    if (!span.dataset.base && !span.dataset.grammarHints) continue;
     span.style.cursor = 'pointer';
     span.addEventListener('click', (event) => handleWordClick(event, options.wordAudio));
   }
@@ -127,13 +140,14 @@ export function isPopupVisible() {
 function handleWordClick(e, wordAudio = null) {
   e.stopPropagation();
   const span = e.currentTarget;
-  const base = span.dataset.base;
-  if (!base) return;
+  const base = span.dataset.base || '';
+  const grammarHints = parseGrammarHints(span.dataset.grammarHints || '');
+  if (!base && grammarHints.length === 0) return;
 
-  _currentWord = base;
+  _currentWord = base || null;
   _currentReading = span.dataset.reading || null;
 
-  if (Number.isFinite(Number(wordAudio?.speakerId))) {
+  if (base && Number.isFinite(Number(wordAudio?.speakerId))) {
     playDialogueWordAudio({
       word: span.dataset.audioText || base,
       speakerId: Number(wordAudio.speakerId)
@@ -153,7 +167,8 @@ function handleWordClick(e, wordAudio = null) {
   const pos = span.dataset.pos || '';
 
   const useKanji = span.dataset.kanjiMode === '1';
-  dom.word.innerHTML = buildHeadwordRuby(base, reading, useKanji);
+  const headword = base || grammarHints[0]?.matchedText || span.textContent || '';
+  dom.word.innerHTML = buildHeadwordRuby(headword, reading, useKanji);
   dom.pos.textContent = pos;
 
   // Meanings: override (labeled "In this context") + dict definitions
@@ -185,6 +200,37 @@ function handleWordClick(e, wordAudio = null) {
     }
     dom.meanings.appendChild(li);
   }
+
+  for (const hint of grammarHints) {
+    const section = document.createElement('div');
+    section.className = 'lookup-grammar-hint';
+
+    const label = document.createElement('div');
+    label.className = 'lookup-grammar-label';
+    label.textContent = 'Grammar Hint';
+
+    const title = document.createElement('div');
+    title.className = 'lookup-grammar-title';
+    title.textContent = `${hint.title}${hint.meaning ? ` - ${hint.meaning}` : ''}`;
+
+    const explanation = document.createElement('div');
+    explanation.className = 'lookup-grammar-explanation';
+    explanation.textContent = hint.shortExplanation || '';
+
+    section.append(label, title, explanation);
+    dom.meanings.appendChild(section);
+  }
+
+  if (!base) {
+    if (dom.stateContainer) dom.stateContainer.style.display = 'none';
+    if (dom.forgotBtn) dom.forgotBtn.style.display = 'none';
+    if (dom.knewBtn) dom.knewBtn.style.display = 'none';
+    dom.popup.classList.add('visible');
+    return;
+  }
+
+  if (dom.forgotBtn) dom.forgotBtn.style.display = '';
+  if (dom.knewBtn) dom.knewBtn.style.display = '';
 
   // SRS state
   const isKnown = getKnownWords().has(base);

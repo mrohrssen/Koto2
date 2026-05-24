@@ -1,0 +1,1215 @@
+[
+  {
+    "grammarId": "n5-da-copula",
+    "positive": [
+      "学生だ。"
+    ],
+    "negative": [
+      "学生です。"
+    ]
+  },
+  {
+    "grammarId": "n5-desu-copula",
+    "positive": [
+      "学生です。"
+    ],
+    "negative": [
+      "学生だ。"
+    ]
+  },
+  {
+    "grammarId": "n5-wa-topic",
+    "positive": [
+      "犬は走る。",
+      "田中さんは先生です。",
+      "「犬」は名詞です。"
+    ],
+    "negative": [
+      "雨ではない。"
+    ]
+  },
+  {
+    "grammarId": "n5-mo-too",
+    "positive": [
+      "犬も走る。"
+    ],
+    "negative": [
+      "犬は走る。"
+    ]
+  },
+  {
+    "grammarId": "n5-kore",
+    "positive": [
+      "これは本です。"
+    ],
+    "negative": [
+      "それは本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-sore",
+    "positive": [
+      "それは本です。"
+    ],
+    "negative": [
+      "これは本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-are",
+    "positive": [
+      "あれは山です。"
+    ],
+    "negative": [
+      "これは本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-no-possessive",
+    "positive": [
+      "私の本です。"
+    ],
+    "negative": [
+      "行くの？"
+    ]
+  },
+  {
+    "grammarId": "n5-ii-adjective",
+    "positive": [
+      "いい。"
+    ],
+    "negative": [
+      "青い。"
+    ]
+  },
+  {
+    "grammarId": "n5-i-adjective",
+    "positive": [
+      "青い。"
+    ],
+    "negative": [
+      "学生だ。"
+    ]
+  },
+  {
+    "grammarId": "n5-na-adjective",
+    "positive": [
+      "静か。"
+    ],
+    "negative": [
+      "青い。"
+    ]
+  },
+  {
+    "grammarId": "n5-ka-question",
+    "positive": [
+      "学生ですか。"
+    ],
+    "negative": [
+      "本かペン。"
+    ]
+  },
+  {
+    "grammarId": "n5-ga-subject",
+    "positive": [
+      "彼が走る。"
+    ],
+    "negative": [
+      "本がある。"
+    ]
+  },
+  {
+    "grammarId": "n5-yo-emphasis",
+    "positive": [
+      "行くよ。"
+    ],
+    "negative": [
+      "行くね。"
+    ]
+  },
+  {
+    "grammarId": "n5-ne-confirmation",
+    "positive": [
+      "行くね。"
+    ],
+    "negative": [
+      "行くよ。"
+    ]
+  },
+  {
+    "grammarId": "n5-ru-verb-dictionary",
+    "positive": [
+      "食べる。"
+    ],
+    "negative": [
+      "読む。"
+    ]
+  },
+  {
+    "grammarId": "n5-u-verb-dictionary",
+    "positive": [
+      "読む。"
+    ],
+    "negative": [
+      "食べる。"
+    ]
+  },
+  {
+    "grammarId": "n5-wo-object",
+    "positive": [
+      "本を読む。",
+      "本を、読む。",
+      "リンゴを一つ食べる。",
+      "肉を少し食べる。",
+      "日本語を勉強する。",
+      "本を、ゆっくり読む。",
+      "薬を毎日飲む。",
+      "部屋をきれいにする。"
+    ],
+    "negative": [
+      "本を。"
+    ]
+  },
+  {
+    "grammarId": "n5-masu-polite",
+    "positive": [
+      "行きます。"
+    ],
+    "negative": [
+      "行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-ru-verb-negative",
+    "positive": [
+      "食べない。"
+    ],
+    "negative": [
+      "読まない。"
+    ]
+  },
+  {
+    "grammarId": "n5-u-verb-negative",
+    "positive": [
+      "読まない。"
+    ],
+    "negative": [
+      "食べない。"
+    ]
+  },
+  {
+    "grammarId": "n5-to-and",
+    "positive": [
+      "犬と猫。"
+    ],
+    "negative": [
+      "友達と行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-koko",
+    "positive": [
+      "ここです。"
+    ],
+    "negative": [
+      "そこです。"
+    ]
+  },
+  {
+    "grammarId": "n5-soko",
+    "positive": [
+      "そこです。"
+    ],
+    "negative": [
+      "ここです。"
+    ]
+  },
+  {
+    "grammarId": "n5-asoko",
+    "positive": [
+      "あそこです。"
+    ],
+    "negative": [
+      "ここです。"
+    ]
+  },
+  {
+    "grammarId": "n5-de-location",
+    "positive": [
+      "学校で読む。"
+    ],
+    "negative": [
+      "学校にいる。"
+    ]
+  },
+  {
+    "grammarId": "n5-ni-particle",
+    "positive": [
+      "学校にいる。"
+    ],
+    "negative": [
+      "学校で読む。"
+    ]
+  },
+  {
+    "grammarId": "n5-ka-or",
+    "positive": [
+      "本かペン。"
+    ],
+    "negative": [
+      "学生ですか。"
+    ]
+  },
+  {
+    "grammarId": "n5-to-with",
+    "positive": [
+      "友達と行く。"
+    ],
+    "negative": [
+      "犬と猫。"
+    ]
+  },
+  {
+    "grammarId": "n5-deshou-probably",
+    "positive": [
+      "学生でしょう。"
+    ],
+    "negative": [
+      "学生だろう。"
+    ]
+  },
+  {
+    "grammarId": "n5-darou-probably",
+    "positive": [
+      "学生だろう。"
+    ],
+    "negative": [
+      "学生でしょう。"
+    ]
+  },
+  {
+    "grammarId": "n5-ga-aru-existence",
+    "positive": [
+      "本がある。",
+      "本が二冊ある。",
+      "本が二ページある。",
+      "質問がたくさんある。",
+      "理由がいくつかある。"
+    ],
+    "negative": [
+      "犬がいる。"
+    ]
+  },
+  {
+    "grammarId": "n5-ga-iru-existence",
+    "positive": [
+      "犬がいる。"
+    ],
+    "negative": [
+      "本がある。"
+    ]
+  },
+  {
+    "grammarId": "n5-kono",
+    "positive": [
+      "この本です。"
+    ],
+    "negative": [
+      "その本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-sono",
+    "positive": [
+      "その本です。"
+    ],
+    "negative": [
+      "この本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-ano",
+    "positive": [
+      "あの山です。"
+    ],
+    "negative": [
+      "この本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-ndesu-nodesu",
+    "positive": [
+      "行くんです。"
+    ],
+    "negative": [
+      "行きます。"
+    ]
+  },
+  {
+    "grammarId": "n5-no-question",
+    "positive": [
+      "行くの？"
+    ],
+    "negative": [
+      "私の本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-i-adjective-past",
+    "positive": [
+      "高かった。"
+    ],
+    "negative": [
+      "高い。"
+    ]
+  },
+  {
+    "grammarId": "n5-no-wa-no-ga-nominalizer",
+    "positive": [
+      "走るのが楽しい。"
+    ],
+    "negative": [
+      "私の本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-i-adjective-noun",
+    "positive": [
+      "青い本です。"
+    ],
+    "negative": [
+      "青い。"
+    ]
+  },
+  {
+    "grammarId": "n5-na-adjective-noun",
+    "positive": [
+      "静かな部屋です。"
+    ],
+    "negative": [
+      "静かです。"
+    ]
+  },
+  {
+    "grammarId": "n5-he-iku",
+    "positive": [
+      "東京へ行く。"
+    ],
+    "negative": [
+      "東京に行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-suru",
+    "positive": [
+      "勉強する。"
+    ],
+    "negative": [
+      "勉強だ。"
+    ]
+  },
+  {
+    "grammarId": "n5-kuru",
+    "positive": [
+      "来る。"
+    ],
+    "negative": [
+      "行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-ru-verb-past",
+    "positive": [
+      "食べた。"
+    ],
+    "negative": [
+      "読んだ。"
+    ]
+  },
+  {
+    "grammarId": "n5-u-verb-past",
+    "positive": [
+      "読んだ。"
+    ],
+    "negative": [
+      "食べた。"
+    ]
+  },
+  {
+    "grammarId": "n5-suki",
+    "positive": [
+      "本が好き。"
+    ],
+    "negative": [
+      "本がある。"
+    ]
+  },
+  {
+    "grammarId": "n5-kirai",
+    "positive": [
+      "虫が嫌い。"
+    ],
+    "negative": [
+      "本が好き。"
+    ]
+  },
+  {
+    "grammarId": "n5-no-ga-suki",
+    "positive": [
+      "走るのが好き。"
+    ],
+    "negative": [
+      "本が好き。"
+    ]
+  },
+  {
+    "grammarId": "n5-ga-aru-noun-modifier",
+    "positive": [
+      "時間がある人。"
+    ],
+    "negative": [
+      "時間がある。"
+    ]
+  },
+  {
+    "grammarId": "n5-i-adjective-negative",
+    "positive": [
+      "暑くない。"
+    ],
+    "negative": [
+      "暑い。"
+    ]
+  },
+  {
+    "grammarId": "n5-de-means",
+    "positive": [
+      "鉛筆で書く。"
+    ],
+    "negative": [
+      "鉛筆に書く。"
+    ]
+  },
+  {
+    "grammarId": "n5-node-because",
+    "positive": [
+      "雨なので行かない。"
+    ],
+    "negative": [
+      "雨だから行かない。"
+    ]
+  },
+  {
+    "grammarId": "n5-kara-because",
+    "positive": [
+      "雨だから行かない。"
+    ],
+    "negative": [
+      "学校から来る。"
+    ]
+  },
+  {
+    "grammarId": "n5-kara-from",
+    "positive": [
+      "学校から来る。"
+    ],
+    "negative": [
+      "雨だから行かない。"
+    ]
+  },
+  {
+    "grammarId": "n5-kedo-but",
+    "positive": [
+      "雨だけど行く。"
+    ],
+    "negative": [
+      "雨だから行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-ga-but",
+    "positive": [
+      "寒いが行く。"
+    ],
+    "negative": [
+      "彼が行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-ru-verb-negative-past",
+    "positive": [
+      "食べなかった。"
+    ],
+    "negative": [
+      "読まなかった。"
+    ]
+  },
+  {
+    "grammarId": "n5-u-verb-negative-past",
+    "positive": [
+      "読まなかった。"
+    ],
+    "negative": [
+      "食べなかった。"
+    ]
+  },
+  {
+    "grammarId": "n5-te-conjunction",
+    "positive": [
+      "読んで食べる。"
+    ],
+    "negative": [
+      "読んでいる。"
+    ]
+  },
+  {
+    "grammarId": "n5-te-iru-progressive",
+    "positive": [
+      "読んでいる。",
+      "読まれている。",
+      "見てる。",
+      "食べさせられている。"
+    ],
+    "negative": [
+      "読んでいない。"
+    ]
+  },
+  {
+    "grammarId": "n5-he-direction",
+    "positive": [
+      "学校へ走る。"
+    ],
+    "negative": [
+      "学校に走る。"
+    ]
+  },
+  {
+    "grammarId": "n5-verb-ni-iku",
+    "positive": [
+      "食べに行く。"
+    ],
+    "negative": [
+      "東京に行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-dare",
+    "positive": [
+      "誰ですか。"
+    ],
+    "negative": [
+      "どこですか。"
+    ]
+  },
+  {
+    "grammarId": "n5-naze",
+    "positive": [
+      "なぜ行くの？"
+    ],
+    "negative": [
+      "どこへ行くの？"
+    ]
+  },
+  {
+    "grammarId": "n5-doushite",
+    "positive": [
+      "どうして行くの？"
+    ],
+    "negative": [
+      "どこへ行くの？"
+    ]
+  },
+  {
+    "grammarId": "n5-nande",
+    "positive": [
+      "なんで行くの？"
+    ],
+    "negative": [
+      "どこへ行くの？"
+    ]
+  },
+  {
+    "grammarId": "n5-i-adjective-predicate",
+    "positive": [
+      "青いです。"
+    ],
+    "negative": [
+      "青い本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-na-adjective-da-predicate",
+    "positive": [
+      "静かだ。"
+    ],
+    "negative": [
+      "静かな部屋です。"
+    ]
+  },
+  {
+    "grammarId": "n5-datta-deshita",
+    "positive": [
+      "学生だった。"
+    ],
+    "negative": [
+      "学生だ。"
+    ]
+  },
+  {
+    "grammarId": "n5-janai",
+    "positive": [
+      "学生じゃない。"
+    ],
+    "negative": [
+      "学生だ。"
+    ]
+  },
+  {
+    "grammarId": "n5-janakatta",
+    "positive": [
+      "学生じゃなかった。"
+    ],
+    "negative": [
+      "学生じゃない。"
+    ]
+  },
+  {
+    "grammarId": "n5-i-adjective-kunakatta",
+    "positive": [
+      "高くなかった。"
+    ],
+    "negative": [
+      "高くない。"
+    ]
+  },
+  {
+    "grammarId": "n5-to-quotation",
+    "positive": [
+      "行くと言う。"
+    ],
+    "negative": [
+      "犬と猫。"
+    ]
+  },
+  {
+    "grammarId": "n5-tte-quotation",
+    "positive": [
+      "行くって。"
+    ],
+    "negative": [
+      "行くと。"
+    ]
+  },
+  {
+    "grammarId": "n5-verb-non-past",
+    "positive": [
+      "走る。"
+    ],
+    "negative": [
+      "走った。"
+    ]
+  },
+  {
+    "grammarId": "n5-ta-noun-relative",
+    "positive": [
+      "読んだ本です。"
+    ],
+    "negative": [
+      "本を読んだ。"
+    ]
+  },
+  {
+    "grammarId": "n5-ga-no-subject",
+    "positive": [
+      "私の作ったケーキ。"
+    ],
+    "negative": [
+      "私のケーキ。"
+    ]
+  },
+  {
+    "grammarId": "n5-no-noun-omission",
+    "positive": [
+      "赤いのください。"
+    ],
+    "negative": [
+      "赤い本ください。"
+    ]
+  },
+  {
+    "grammarId": "n5-na-prohibitive",
+    "positive": [
+      "走るな。"
+    ],
+    "negative": [
+      "走るね。"
+    ]
+  },
+  {
+    "grammarId": "n5-dake-only",
+    "positive": [
+      "水だけ飲む。"
+    ],
+    "negative": [
+      "水も飲む。"
+    ]
+  },
+  {
+    "grammarId": "n5-dore",
+    "positive": [
+      "どれですか。"
+    ],
+    "negative": [
+      "どこですか。"
+    ]
+  },
+  {
+    "grammarId": "n5-doko",
+    "positive": [
+      "どこですか。"
+    ],
+    "negative": [
+      "どれですか。"
+    ]
+  },
+  {
+    "grammarId": "n5-dono",
+    "positive": [
+      "どの本ですか。"
+    ],
+    "negative": [
+      "この本です。"
+    ]
+  },
+  {
+    "grammarId": "n5-te-iru-result-state",
+    "positive": [
+      "開いている。",
+      "閉まられている。",
+      "開いてる。",
+      "食べさせられている。"
+    ],
+    "negative": [
+      "開いていない。"
+    ]
+  },
+  {
+    "grammarId": "n5-te-kara",
+    "positive": [
+      "食べてから行く。"
+    ],
+    "negative": [
+      "食べて行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-te-sequence",
+    "positive": [
+      "読んで食べる。"
+    ],
+    "negative": [
+      "読んでいる。"
+    ]
+  },
+  {
+    "grammarId": "n5-mou",
+    "positive": [
+      "もう行く。"
+    ],
+    "negative": [
+      "まだ行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-mada",
+    "positive": [
+      "まだ行く。"
+    ],
+    "negative": [
+      "もう行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-mada-te-imasen",
+    "positive": [
+      "まだ読んでいません。"
+    ],
+    "negative": [
+      "読んでいます。"
+    ]
+  },
+  {
+    "grammarId": "n5-temo-ii-permission",
+    "positive": [
+      "読んでもいい。"
+    ],
+    "negative": [
+      "読んでいる。"
+    ]
+  },
+  {
+    "grammarId": "n5-tai-want",
+    "positive": [
+      "食べたい。"
+    ],
+    "negative": [
+      "食べます。"
+    ]
+  },
+  {
+    "grammarId": "n5-tari-tari-suru",
+    "positive": [
+      "食べたり飲んだりする。"
+    ],
+    "negative": [
+      "食べたりする。"
+    ]
+  },
+  {
+    "grammarId": "n5-kekkou",
+    "positive": [
+      "けっこう高い。"
+    ],
+    "negative": [
+      "とても高い。"
+    ]
+  },
+  {
+    "grammarId": "n5-takusan",
+    "positive": [
+      "たくさん食べる。"
+    ],
+    "negative": [
+      "少し食べる。"
+    ]
+  },
+  {
+    "grammarId": "n5-mae-ni",
+    "positive": [
+      "寝る前に読む。"
+    ],
+    "negative": [
+      "寝た後に読む。"
+    ]
+  },
+  {
+    "grammarId": "n5-kurai-approx",
+    "positive": [
+      "一時間くらい待つ。"
+    ],
+    "negative": [
+      "一時間待つ。"
+    ]
+  },
+  {
+    "grammarId": "n5-noun-made",
+    "positive": [
+      "駅まで行く。"
+    ],
+    "negative": [
+      "着くまで待つ。"
+    ]
+  },
+  {
+    "grammarId": "n5-verb-made",
+    "positive": [
+      "着くまで待つ。"
+    ],
+    "negative": [
+      "駅まで行く。"
+    ]
+  },
+  {
+    "grammarId": "n5-sugiru-too-much",
+    "positive": [
+      "食べ過ぎる。"
+    ],
+    "negative": [
+      "食べる。"
+    ]
+  },
+  {
+    "grammarId": "n5-ni-suru",
+    "positive": [
+      "静かにする。",
+      "これにする。"
+    ],
+    "negative": [
+      "静かになる。"
+    ]
+  },
+  {
+    "grammarId": "n5-ni-naru-ku-naru",
+    "positive": [
+      "高くなる。",
+      "静かになる。"
+    ],
+    "negative": [
+      "高くする。"
+    ]
+  },
+  {
+    "grammarId": "n5-no-naka-de-ichiban",
+    "positive": [
+      "日本の中で東京が一番大きい。"
+    ],
+    "negative": [
+      "日本で東京が大きい。"
+    ]
+  },
+  {
+    "grammarId": "n5-yori-no-hou-ga",
+    "positive": [
+      "犬より猫の方が好きです。"
+    ],
+    "negative": [
+      "犬と猫が好きです。"
+    ]
+  },
+  {
+    "grammarId": "n5-nanika-nanimo",
+    "positive": [
+      "何かある。"
+    ],
+    "negative": [
+      "何がある。"
+    ]
+  },
+  {
+    "grammarId": "n5-dareka-dokoka-daremo-dokomo",
+    "positive": [
+      "誰かいる。"
+    ],
+    "negative": [
+      "誰がいる。"
+    ]
+  },
+  {
+    "grammarId": "n5-mashou",
+    "positive": [
+      "行きましょう。"
+    ],
+    "negative": [
+      "行きます。"
+    ]
+  },
+  {
+    "grammarId": "n5-mashou-ka",
+    "positive": [
+      "行きましょうか。"
+    ],
+    "negative": [
+      "行きましょう。"
+    ]
+  },
+  {
+    "grammarId": "n5-masen-ka",
+    "positive": [
+      "行きませんか。"
+    ],
+    "negative": [
+      "行きません。"
+    ]
+  },
+  {
+    "grammarId": "n5-verb-temo-ii",
+    "positive": [
+      "読んでもいい。"
+    ],
+    "negative": [
+      "読んでいる。"
+    ]
+  },
+  {
+    "grammarId": "n5-te-kudasai",
+    "positive": [
+      "読んでください。"
+    ],
+    "negative": [
+      "読んでいる。"
+    ]
+  },
+  {
+    "grammarId": "n5-nai-de-kudasai",
+    "positive": [
+      "読まないでください。"
+    ],
+    "negative": [
+      "読んでください。"
+    ]
+  },
+  {
+    "grammarId": "n5-tewa-ikenai",
+    "positive": [
+      "読んではいけない。"
+    ],
+    "negative": [
+      "読んでください。"
+    ]
+  },
+  {
+    "grammarId": "n5-nakuteha-ikenai",
+    "positive": [
+      "読まなくてはいけない。"
+    ],
+    "negative": [
+      "読まないでください。"
+    ]
+  },
+  {
+    "grammarId": "n5-nakuteha-naranai",
+    "positive": [
+      "読まなくてはならない。"
+    ],
+    "negative": [
+      "読まなくてはいけない。"
+    ]
+  },
+  {
+    "grammarId": "n5-ta-hou-ga-ii",
+    "positive": [
+      "読んだ方がいい。"
+    ],
+    "negative": [
+      "読まない方がいい。"
+    ]
+  },
+  {
+    "grammarId": "n5-nai-hou-ga-ii",
+    "positive": [
+      "読まない方がいい。"
+    ],
+    "negative": [
+      "読んだ方がいい。"
+    ]
+  },
+  {
+    "grammarId": "n5-nakucha-nakya",
+    "positive": [
+      "読まなきゃ。",
+      "読まなくちゃ。"
+    ],
+    "negative": [
+      "読まない。"
+    ]
+  },
+  {
+    "grammarId": "n5-ya-and-like",
+    "positive": [
+      "犬や猫。"
+    ],
+    "negative": [
+      "犬と猫。"
+    ]
+  },
+  {
+    "grammarId": "n5-ta-koto-ga-aru",
+    "positive": [
+      "読んだことがある。"
+    ],
+    "negative": [
+      "本がある。"
+    ]
+  },
+  {
+    "grammarId": "n5-te-iru-repetition",
+    "positive": [
+      "毎日走っている。",
+      "話されている。",
+      "走ってる。",
+      "食べさせられている。"
+    ],
+    "negative": [
+      "走っていない。"
+    ]
+  },
+  {
+    "grammarId": "n5-adjective-te-noun-de",
+    "positive": [
+      "静かで便利です。"
+    ],
+    "negative": [
+      "静かな部屋です。"
+    ]
+  },
+  {
+    "grammarId": "n5-adjective-te-qualities",
+    "positive": [
+      "安くておいしい。"
+    ],
+    "negative": [
+      "安いです。"
+    ]
+  },
+  {
+    "grammarId": "n5-no-ga-heta",
+    "positive": [
+      "走るのが下手。"
+    ],
+    "negative": [
+      "走るのが好き。"
+    ]
+  },
+  {
+    "grammarId": "n5-no-ga-jouzu",
+    "positive": [
+      "走るのが上手。"
+    ],
+    "negative": [
+      "走るのが好き。"
+    ]
+  },
+  {
+    "grammarId": "n5-adjective-no-wa",
+    "positive": [
+      "赤いのは高い。"
+    ],
+    "negative": [
+      "赤い本は高い。"
+    ]
+  },
+  {
+    "grammarId": "n5-ageru",
+    "positive": [
+      "私が本をあげる。"
+    ],
+    "negative": [
+      "私が本をくれる。"
+    ]
+  },
+  {
+    "grammarId": "n5-kureru",
+    "positive": [
+      "母が本をくれる。"
+    ],
+    "negative": [
+      "母が本をあげる。"
+    ]
+  },
+  {
+    "grammarId": "n5-morau",
+    "positive": [
+      "友達に本をもらう。"
+    ],
+    "negative": [
+      "友達に本をあげる。"
+    ]
+  },
+  {
+    "grammarId": "n5-keredomo",
+    "positive": [
+      "寒いけれども行く。"
+    ],
+    "negative": [
+      "寒いから行かない。"
+    ]
+  },
+  {
+    "grammarId": "n5-tsumori-da",
+    "positive": [
+      "行くつもりだ。"
+    ],
+    "negative": [
+      "行く予定だ。"
+    ]
+  }
+]
