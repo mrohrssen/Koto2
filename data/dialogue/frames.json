@@ -10217,16 +10217,29 @@
       {
         "surface": "を",
         "reading": "を",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
       },
       {
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
         "pos": "Verb",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
       }
     ],
     "words": [
@@ -10271,16 +10284,29 @@
       {
         "surface": "を",
         "reading": "を",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 5,
+            "tokenEnd": 5
+          }
+        ]
       },
       {
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
         "pos": "Verb",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1
+        "rawTokenStart": 6,
+        "rawTokenEnd": 6
       }
     ],
     "words": [
@@ -10320,16 +10346,29 @@
       {
         "surface": "を",
         "reading": "を",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
       },
       {
         "surface": "ください",
         "base": "くださる",
         "reading": "ください",
         "pos": "Verb",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
       }
     ],
     "words": [
@@ -10407,33 +10446,27 @@
       {
         "surface": "を",
         "reading": "を",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wo-object",
+            "title": "を",
+            "meaning": "object marker",
+            "shortExplanation": "Marks the thing that receives the action.",
+            "displayPattern": "Noun + を + Verb",
+            "readingOverride": "",
+            "matchedText": "を",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
       },
       {
         "surface": "買い",
         "base": "買う",
         "reading": "かい",
         "pos": "Verb",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1,
-        "grammarHints": [
-          {
-            "grammarId": "n5-masu-polite",
-            "title": "ます",
-            "meaning": "polite verb ending",
-            "shortExplanation": "Makes a verb polite in non-past statements.",
-            "displayPattern": "Verb stem + ます",
-            "readingOverride": "",
-            "matchedText": "買います",
-            "tokenStart": 1,
-            "tokenEnd": 2
-          }
-        ]
-      },
-      {
-        "surface": "ます",
-        "reading": "ます",
         "rawTokenStart": 2,
         "rawTokenEnd": 2,
         "grammarHints": [
@@ -10445,16 +10478,35 @@
             "displayPattern": "Verb stem + ます",
             "readingOverride": "",
             "matchedText": "買います",
-            "tokenStart": 1,
-            "tokenEnd": 2
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-masu-polite",
+            "title": "ます",
+            "meaning": "polite verb ending",
+            "shortExplanation": "Makes a verb polite in non-past statements.",
+            "displayPattern": "Verb stem + ます",
+            "readingOverride": "",
+            "matchedText": "買います",
+            "tokenStart": 2,
+            "tokenEnd": 3
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
       }
     ],
     "words": [
@@ -10472,33 +10524,27 @@
       {
         "surface": "が",
         "reading": "が",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ga-subject",
+            "title": "が",
+            "meaning": "subject marker",
+            "shortExplanation": "Marks the subject or the thing being identified.",
+            "displayPattern": "Noun + が",
+            "readingOverride": "",
+            "matchedText": "が",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
       },
       {
         "surface": "いい",
         "base": "いい",
         "reading": "いい",
         "pos": "Adjective",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1,
-        "grammarHints": [
-          {
-            "grammarId": "n5-i-adjective-predicate",
-            "title": "い-Adjective + です",
-            "meaning": "is adjective",
-            "shortExplanation": "Lets an i-adjective end a polite sentence.",
-            "displayPattern": "い-adjective + です",
-            "readingOverride": "",
-            "matchedText": "いいです",
-            "tokenStart": 1,
-            "tokenEnd": 2
-          }
-        ]
-      },
-      {
-        "surface": "です",
-        "reading": "です",
         "rawTokenStart": 2,
         "rawTokenEnd": 2,
         "grammarHints": [
@@ -10510,16 +10556,35 @@
             "displayPattern": "い-adjective + です",
             "readingOverride": "",
             "matchedText": "いいです",
-            "tokenStart": 1,
-            "tokenEnd": 2
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "です",
+        "reading": "です",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-predicate",
+            "title": "い-Adjective + です",
+            "meaning": "is adjective",
+            "shortExplanation": "Lets an i-adjective end a polite sentence.",
+            "displayPattern": "い-adjective + です",
+            "readingOverride": "",
+            "matchedText": "いいです",
+            "tokenStart": 2,
+            "tokenEnd": 3
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
       }
     ],
     "words": [
@@ -10558,14 +10623,27 @@
       {
         "surface": "です",
         "reading": "です",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-desu-copula",
+            "title": "です",
+            "meaning": "to be / is",
+            "shortExplanation": "Marks a polite statement that something is something.",
+            "displayPattern": "Noun + です",
+            "readingOverride": "",
+            "matchedText": "です",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
       },
       {
         "surface": "ね",
         "reading": "ね",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1,
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
         "grammarHints": [
           {
             "grammarId": "n5-ne-confirmation",
@@ -10575,16 +10653,16 @@
             "displayPattern": "Sentence + ね",
             "readingOverride": "",
             "matchedText": "ね",
-            "tokenStart": 1,
-            "tokenEnd": 1
+            "tokenStart": 3,
+            "tokenEnd": 3
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 2,
-        "rawTokenEnd": 2
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
       }
     ],
     "words": [
@@ -10623,16 +10701,29 @@
       {
         "surface": "は",
         "reading": "は",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wa-topic",
+            "title": "は",
+            "meaning": "as for",
+            "shortExplanation": "Marks what the sentence is talking about.",
+            "displayPattern": "Noun + は",
+            "readingOverride": "わ",
+            "matchedText": "は",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
       },
       {
         "surface": "嬉しい",
         "base": "嬉しい",
         "reading": "うれしい",
         "pos": "Adjective",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1,
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
         "grammarHints": [
           {
             "grammarId": "n5-i-adjective-predicate",
@@ -10642,16 +10733,16 @@
             "displayPattern": "い-adjective + です",
             "readingOverride": "",
             "matchedText": "嬉しいです",
-            "tokenStart": 1,
-            "tokenEnd": 2
+            "tokenStart": 3,
+            "tokenEnd": 4
           }
         ]
       },
       {
         "surface": "です",
         "reading": "です",
-        "rawTokenStart": 2,
-        "rawTokenEnd": 2,
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
         "grammarHints": [
           {
             "grammarId": "n5-i-adjective-predicate",
@@ -10661,16 +10752,16 @@
             "displayPattern": "い-adjective + です",
             "readingOverride": "",
             "matchedText": "嬉しいです",
-            "tokenStart": 1,
-            "tokenEnd": 2
+            "tokenStart": 3,
+            "tokenEnd": 4
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
       }
     ],
     "words": [
@@ -10689,16 +10780,16 @@
       {
         "surface": "を",
         "reading": "を",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1
       },
       {
         "surface": "ありがとうございます",
         "base": "ありがとうございます",
         "reading": "ありがとうございます",
         "pos": "Interjection",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 3,
+        "rawTokenStart": 2,
+        "rawTokenEnd": 4,
         "grammarHints": [
           {
             "grammarId": "n5-masu-polite",
@@ -10708,16 +10799,16 @@
             "displayPattern": "Verb stem + ます",
             "readingOverride": "",
             "matchedText": "ございます",
-            "tokenStart": 2,
-            "tokenEnd": 3
+            "tokenStart": 3,
+            "tokenEnd": 4
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 4,
-        "rawTokenEnd": 4
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
       }
     ],
     "words": [
@@ -11962,16 +12053,16 @@
       {
         "surface": "、",
         "reading": "、",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1
       },
       {
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
         "pos": "Adjective",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1,
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
         "grammarHints": [
           {
             "grammarId": "n5-i-adjective",
@@ -11981,16 +12072,16 @@
             "displayPattern": "い-adjective",
             "readingOverride": "",
             "matchedText": "強い",
-            "tokenStart": 1,
-            "tokenEnd": 1
+            "tokenStart": 2,
+            "tokenEnd": 2
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 2,
-        "rawTokenEnd": 2
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
       }
     ],
     "words": [
@@ -12191,16 +12282,29 @@
       {
         "surface": "は",
         "reading": "は",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wa-topic",
+            "title": "は",
+            "meaning": "as for",
+            "shortExplanation": "Marks what the sentence is talking about.",
+            "displayPattern": "Noun + は",
+            "readingOverride": "わ",
+            "matchedText": "は",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          }
+        ]
       },
       {
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
         "pos": "Adjective",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1,
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
         "grammarHints": [
           {
             "grammarId": "n5-i-adjective",
@@ -12210,16 +12314,16 @@
             "displayPattern": "い-adjective",
             "readingOverride": "",
             "matchedText": "強い",
-            "tokenStart": 1,
-            "tokenEnd": 1
+            "tokenStart": 4,
+            "tokenEnd": 4
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 2,
-        "rawTokenEnd": 2
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
       }
     ],
     "words": [
@@ -12372,24 +12476,37 @@
       {
         "surface": "は",
         "reading": "は",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wa-topic",
+            "title": "は",
+            "meaning": "as for",
+            "shortExplanation": "Marks what the sentence is talking about.",
+            "displayPattern": "Noun + は",
+            "readingOverride": "わ",
+            "matchedText": "は",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
       },
       {
         "surface": "とても",
         "base": "とても",
         "reading": "とても",
         "pos": "Adverb",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
       },
       {
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
         "pos": "Adjective",
-        "rawTokenStart": 2,
-        "rawTokenEnd": 2,
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
         "grammarHints": [
           {
             "grammarId": "n5-i-adjective",
@@ -12399,16 +12516,16 @@
             "displayPattern": "い-adjective",
             "readingOverride": "",
             "matchedText": "強い",
-            "tokenStart": 2,
-            "tokenEnd": 2
+            "tokenStart": 3,
+            "tokenEnd": 3
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
       }
     ],
     "words": [
@@ -12531,7 +12648,20 @@
         "surface": "と",
         "reading": "と",
         "rawTokenStart": 1,
-        "rawTokenEnd": 1
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-to-and",
+            "title": "と",
+            "meaning": "and",
+            "shortExplanation": "Connects nouns as a complete list.",
+            "displayPattern": "Noun + と + Noun",
+            "readingOverride": "",
+            "matchedText": "と",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
       },
       {
         "slot": "randomPlayerCreature"
@@ -12539,24 +12669,37 @@
       {
         "surface": "は",
         "reading": "は",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-wa-topic",
+            "title": "は",
+            "meaning": "as for",
+            "shortExplanation": "Marks what the sentence is talking about.",
+            "displayPattern": "Noun + は",
+            "readingOverride": "わ",
+            "matchedText": "は",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          }
+        ]
       },
       {
         "surface": "本当に",
         "base": "本当に",
         "reading": "ほんとうに",
         "pos": "Noun",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 2
+        "rawTokenStart": 4,
+        "rawTokenEnd": 5
       },
       {
         "surface": "すごい",
         "base": "すごい",
         "reading": "すごい",
         "pos": "Adjective",
-        "rawTokenStart": 3,
-        "rawTokenEnd": 3,
+        "rawTokenStart": 6,
+        "rawTokenEnd": 6,
         "grammarHints": [
           {
             "grammarId": "n5-i-adjective",
@@ -12566,16 +12709,16 @@
             "displayPattern": "い-adjective",
             "readingOverride": "",
             "matchedText": "すごい",
-            "tokenStart": 3,
-            "tokenEnd": 3
+            "tokenStart": 6,
+            "tokenEnd": 6
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 4,
-        "rawTokenEnd": 4
+        "rawTokenStart": 7,
+        "rawTokenEnd": 7
       }
     ],
     "words": [
@@ -12838,22 +12981,35 @@
       {
         "surface": "の",
         "reading": "の",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n5-no-possessive",
+            "title": "の",
+            "meaning": "of / belonging to",
+            "shortExplanation": "Links two nouns so the first describes or owns the second.",
+            "displayPattern": "Noun + の + Noun",
+            "readingOverride": "",
+            "matchedText": "の",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
       },
       {
         "surface": "力",
         "base": "力",
         "reading": "ちから",
         "pos": "Noun",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
       },
       {
         "surface": "は",
         "reading": "は",
-        "rawTokenStart": 2,
-        "rawTokenEnd": 2,
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
         "grammarHints": [
           {
             "grammarId": "n5-wa-topic",
@@ -12863,8 +13019,8 @@
             "displayPattern": "Noun + は",
             "readingOverride": "わ",
             "matchedText": "は",
-            "tokenStart": 2,
-            "tokenEnd": 2
+            "tokenStart": 3,
+            "tokenEnd": 3
           }
         ]
       },
@@ -12873,8 +13029,8 @@
         "base": "すごい",
         "reading": "すごい",
         "pos": "Adjective",
-        "rawTokenStart": 3,
-        "rawTokenEnd": 3,
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
         "grammarHints": [
           {
             "grammarId": "n5-i-adjective",
@@ -12884,30 +13040,30 @@
             "displayPattern": "い-adjective",
             "readingOverride": "",
             "matchedText": "すごい",
-            "tokenStart": 3,
-            "tokenEnd": 3
+            "tokenStart": 4,
+            "tokenEnd": 4
           }
         ]
       },
       {
         "surface": "、",
         "reading": "、",
-        "rawTokenStart": 4,
-        "rawTokenEnd": 4
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
       },
       {
         "surface": "私",
         "base": "私",
         "reading": "わたし",
         "pos": "Pronoun",
-        "rawTokenStart": 5,
-        "rawTokenEnd": 5
+        "rawTokenStart": 6,
+        "rawTokenEnd": 6
       },
       {
         "surface": "も",
         "reading": "も",
-        "rawTokenStart": 6,
-        "rawTokenEnd": 6,
+        "rawTokenStart": 7,
+        "rawTokenEnd": 7,
         "grammarHints": [
           {
             "grammarId": "n5-mo-too",
@@ -12917,8 +13073,8 @@
             "displayPattern": "Noun + も",
             "readingOverride": "",
             "matchedText": "も",
-            "tokenStart": 6,
-            "tokenEnd": 6
+            "tokenStart": 7,
+            "tokenEnd": 7
           }
         ]
       },
@@ -12927,8 +13083,8 @@
         "base": "頑張る",
         "reading": "がんばる",
         "pos": "Verb",
-        "rawTokenStart": 7,
-        "rawTokenEnd": 7,
+        "rawTokenStart": 8,
+        "rawTokenEnd": 8,
         "grammarHints": [
           {
             "grammarId": "n5-u-verb-dictionary",
@@ -12938,8 +13094,8 @@
             "displayPattern": "う-verb dictionary form",
             "readingOverride": "",
             "matchedText": "頑張る",
-            "tokenStart": 7,
-            "tokenEnd": 7
+            "tokenStart": 8,
+            "tokenEnd": 8
           },
           {
             "grammarId": "n5-verb-non-past",
@@ -12949,16 +13105,16 @@
             "displayPattern": "Verb non-past",
             "readingOverride": "",
             "matchedText": "頑張る",
-            "tokenStart": 7,
-            "tokenEnd": 7
+            "tokenStart": 8,
+            "tokenEnd": 8
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 8,
-        "rawTokenEnd": 8
+        "rawTokenStart": 9,
+        "rawTokenEnd": 9
       }
     ],
     "words": [

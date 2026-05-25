@@ -77,6 +77,20 @@ describe('tokenize-static output (frames.json)', () => {
     assert.deepEqual(frame.words, originalWords, 'grammar hints must not affect words');
   });
 
+  it('annotates particles that follow a slot (cross-slot grammar matching)', () => {
+    const frame = frames.find(f => f.id === 'npcDefeat_10');
+    assert.ok(frame, 'expected npcDefeat_10 frame');
+    const slotIdx = frame.tokens.findIndex(t => t.slot === 'randomPlayerCreature');
+    assert.ok(slotIdx >= 0, 'slot should be present');
+    const particle = frame.tokens[slotIdx + 1];
+    assert.equal(particle.surface, 'は', 'token after slot should be は');
+    assert.ok(Array.isArray(particle.grammarHints), 'は after slot should carry grammarHints');
+    assert.ok(
+      particle.grammarHints.some(h => h.grammarId === 'n5-wa-topic'),
+      'は after slot should be annotated as n5-wa-topic'
+    );
+  });
+
   it('content words have base, reading, and pos but NOT meaning', () => {
     const polite = frames.find(f => f.id === 'shopPurchase_please');
     const kudasai = polite.tokens.find(t => t.base === 'くださる');
