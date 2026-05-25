@@ -1,20 +1,13 @@
 import { toRomaji } from './romaji.js';
-import {
-  getTokenBaseForm,
-  isContentExposureToken,
-  resolveExposureMeaning
-} from '../shared/exposure-extractor.js';
 import { record as recordExposure } from './exposure-buffer.js';
+import {
+  buildJapaneseTokenCells,
+  tokenDataAttrs,
+} from './japanese-token-cells.js';
 
 const TAG_RE = /\{([^|{}]*)\|([^|{}]*)\|([^|}]*)\}/g;
-const ATTACHABLE_PUNCT_RE = /^[\p{P}\p{S}]+$/u;
 
 let _knownWords = new Set();
-
-function grammarHintsAttr(token) {
-  if (!Array.isArray(token.grammarHints) || token.grammarHints.length === 0) return '';
-  return ` data-grammar-hints="${esc(JSON.stringify(token.grammarHints))}"`;
-}
 
 /** Set the player's known words (called on game load). */
 export function setKnownWords(words) {
@@ -92,76 +85,42 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     recordExposure(tokens, wordDict, overrides);
   }
 
-  const isAttachablePunctuation = token => {
-    const surface = token?.surface || '';
-    return !!surface && !isContentExposureToken(token) && ATTACHABLE_PUNCT_RE.test(surface);
-  };
+  const cells = buildJapaneseTokenCells({
+    tokens,
+    knownWords,
+    wordDict,
+    overrides,
+    useKanji,
+    mergeSmallTsuContinuation: false,
+  });
 
-  const rendered = [];
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-    const { surface } = token;
-
-    const baseForm = getTokenBaseForm(token);
-    const reading = token.reading;
-
-    if (!isContentExposureToken(token) && Array.isArray(token.grammarHints) && token.grammarHints.length > 0) {
-      const displayReading = token.grammarHints.find(h => h.readingOverride)?.readingOverride || token.reading || surface;
-      const dataAttrs = ` data-reading="${esc(displayReading)}"${grammarHintsAttr(token)}`;
-      rendered.push(`<span class="jp-grammar"${dataAttrs}>`
-        + `<ruby>${esc(surface)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
-        + `</span>`);
-      continue;
+  return cells.map(cell => {
+    if (cell.kind === 'punctuation') {
+      return `<span class="jp-punct">${esc(cell.display)}</span>`;
     }
 
-    if (!isContentExposureToken(token)) {
-      rendered.push(`<span class="jp-punct">${esc(surface)}</span>`);
-      continue;
+    if (cell.kind === 'grammar') {
+      return `<span class="jp-grammar"${tokenDataAttrs(cell)}>`
+        + `<ruby>${esc(cell.displayBase)}<rt>${esc(cell.romaji)}</rt></ruby>`
+        + `${esc(cell.trailingPunct || '')}</span>`;
     }
 
-    let trailingPunct = '';
-    while (i + 1 < tokens.length && isAttachablePunctuation(tokens[i + 1])) {
-      i += 1;
-      trailingPunct += tokens[i].surface || '';
+    const typeClass = cell.token?.entity ? 'jp-entity' : cell.isKnown ? 'jp-known' : 'jp-unknown';
+    if (cell.isKnown) {
+      return `<span class="jp-word ${typeClass}"${tokenDataAttrs(cell)}>`
+        + `<ruby>${esc(cell.displayBase)}<rt>${esc(cell.romaji)}</rt></ruby>`
+        + `${esc(cell.trailingPunct || '')}</span>`;
     }
 
-    const isKnown = knownWords.has(baseForm);
-    const displayReading = reading || surface;
-
-    const meaning = resolveExposureMeaning(token, wordDict, overrides);
-    const isFromOverride = !!overrides?.[baseForm];
-
-    const pos = token.pos || '';
-    const meaningsJson = Array.isArray(token.meanings)
-      ? JSON.stringify(token.meanings)
-      : '';
-
-    let dataAttrs = ` data-base="${esc(baseForm)}" data-reading="${esc(displayReading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;
-    if (isFromOverride) dataAttrs += ' data-override="1"';
-    if (meaningsJson) dataAttrs += ` data-meanings="${esc(meaningsJson)}"`;
-    if (useKanji) dataAttrs += ' data-kanji-mode="1"';
-    dataAttrs += grammarHintsAttr(token);
-
-    if (isKnown) {
-      const display = useKanji ? surface : displayReading;
-      rendered.push(`<span class="jp-word jp-known"${dataAttrs}>`
-        + `<ruby>${esc(display)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
-        + `${esc(trailingPunct)}</span>`);
-      continue;
-    }
-
-    const typeClass = token.entity ? 'jp-entity' : 'jp-unknown';
-    const firstSense = meaning.split('/')[0].trim();
+    const firstSense = cell.meaning.split('/')[0].trim();
     const parenIdx = firstSense.indexOf('(');
     const primaryEn = parenIdx > 0 ? firstSense.slice(0, parenIdx).trim() : firstSense;
-    rendered.push(`<span class="jp-word ${typeClass}"${dataAttrs}>`
-      + `<ruby>${esc(displayReading)}<rt>${esc(toRomaji(displayReading))}</rt></ruby>`
-      + `${esc(trailingPunct)}`
+    return `<span class="jp-word ${typeClass}"${tokenDataAttrs(cell)}>`
+      + `<ruby>${esc(cell.displayBase)}<rt>${esc(cell.romaji)}</rt></ruby>`
+      + `${esc(cell.trailingPunct || '')}`
       + `<span class="jp-stack-en">${esc(primaryEn)}</span>`
-      + `</span>`);
-  }
-
-  return rendered.join('');
+      + `</span>`;
+  }).join('');
 }
 
 /**
