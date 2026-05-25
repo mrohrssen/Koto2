@@ -105,7 +105,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
         + `${esc(cell.trailingPunct || '')}</span>`;
     }
 
-    const typeClass = cell.token?.entity ? 'jp-entity' : cell.isKnown ? 'jp-known' : 'jp-unknown';
+    const typeClass = cell.isKnown ? 'jp-known' : cell.token?.entity ? 'jp-entity' : 'jp-unknown';
     if (cell.isKnown) {
       return `<span class="jp-word ${typeClass}"${tokenDataAttrs(cell)}>`
         + `<ruby>${esc(cell.displayBase)}<rt>${esc(cell.romaji)}</rt></ruby>`
