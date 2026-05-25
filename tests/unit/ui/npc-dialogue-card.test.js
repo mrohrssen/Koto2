@@ -218,6 +218,7 @@ const {
   getDialogueSourceText,
   resolvePortraitSrc,
 } = await import('../../../public/js/ui/npc-dialogue-card.js');
+const { renderJpSentence } = await import('../../../public/js/ui/bootstrap-client.js');
 
 describe('npc dialogue card', () => {
   beforeEach(() => {
@@ -253,6 +254,99 @@ describe('npc dialogue card', () => {
     assert.match(html, /npc-dialogue-en-row/);
     assert.match(html, /data-base="不安"/);
     assert.match(html, />anxiety</);
+  });
+
+  it('renders non-content grammar hints as clickable grammar cells in grid dialogue', () => {
+    const grammarHints = [{
+      grammarId: 'n5-desu-copula',
+      title: 'です',
+      meaning: 'to be / is',
+      shortExplanation: 'Marks a polite statement that something is something.',
+      displayPattern: 'Noun + です',
+      readingOverride: '',
+      matchedText: 'です',
+    }];
+
+    const html = renderDialogueTokenRows({
+      tokens: [
+        { surface: '友達', base: '友達', reading: 'ともだち', meaning: 'friend', pos: 'Noun' },
+        { surface: 'です', reading: 'です', grammarHints },
+        { surface: '！', reading: '!' },
+      ],
+      knownWords: new Set(),
+      overrides: {},
+      useKanji: false,
+    });
+
+    assert.match(html, />desu<\/span>/);
+    assert.match(html, /class="npc-dialogue-cell jp-grammar"/);
+    assert.match(html, /data-reading="です"/);
+    assert.match(html, /data-grammar-hints="/);
+    assert.match(html, /n5-desu-copula/);
+    assert.match(html, />です！<\/span>/);
+    assert.doesNotMatch(html, /<span class="npc-dialogue-cell jp-punct">です！<\/span>/);
+  });
+
+  it('uses grammar readingOverride in grid dialogue pronunciation', () => {
+    const html = renderDialogueTokenRows({
+      tokens: [
+        { surface: '道', base: '道', reading: 'みち', meaning: 'road', pos: 'Noun' },
+        {
+          surface: 'は',
+          reading: 'は',
+          grammarHints: [{
+            grammarId: 'n5-wa-topic',
+            title: 'は',
+            meaning: 'as for',
+            shortExplanation: 'Marks what the sentence is talking about.',
+            displayPattern: 'Noun + は',
+            readingOverride: 'わ',
+            matchedText: 'は',
+          }],
+        },
+      ],
+      knownWords: new Set(['道']),
+      overrides: {},
+      useKanji: false,
+    });
+
+    assert.match(html, />wa<\/span>/);
+    assert.match(html, /data-reading="わ"/);
+    assert.match(html, />は<\/span>/);
+  });
+
+  it('keeps grammar lookup attrs in parity between inline and grid renderers', () => {
+    const grammarHints = [{
+      grammarId: 'n5-ne-confirmation',
+      title: 'ね',
+      meaning: "right? / isn't it?",
+      shortExplanation: 'Invites agreement or shared feeling from the listener.',
+      displayPattern: 'Sentence + ね',
+      readingOverride: '',
+      matchedText: 'ね',
+    }];
+    const tokens = [
+      { surface: '強い', base: '強い', reading: 'つよい', meaning: 'strong', pos: 'Adjective' },
+      { surface: 'ね', reading: 'ね', grammarHints },
+      { surface: '！', reading: '!' },
+    ];
+
+    const inlineHtml = renderJpSentence(tokens, new Set(), null, {}, false, { recordExposure: false });
+    const gridHtml = renderDialogueTokenRows({
+      tokens,
+      knownWords: new Set(),
+      overrides: {},
+      useKanji: false,
+    });
+
+    assert.match(inlineHtml, /class="jp-grammar"/);
+    assert.match(gridHtml, /class="npc-dialogue-cell jp-grammar"/);
+    assert.match(inlineHtml, /data-reading="ね"/);
+    assert.match(gridHtml, /data-reading="ね"/);
+    assert.match(inlineHtml, /data-grammar-hints="/);
+    assert.match(gridHtml, /data-grammar-hints="/);
+    assert.match(inlineHtml, /n5-ne-confirmation/);
+    assert.match(gridHtml, /n5-ne-confirmation/);
   });
 
   it('keeps clicked-word audio text on the token surface, not the dictionary base', () => {
@@ -566,6 +660,41 @@ describe('npc dialogue card', () => {
     assert.match(translationSourceHtml, /npc-dialogue-romaji-row/);
     assert.match(translationSourceHtml, />まつ</);
     assert.doesNotMatch(translationSourceHtml, />matsu</);
+  });
+
+  it('shows grammar pronunciation in translation source rows without lookup attrs', async () => {
+    showNpcDialogueCard({
+      speaker: 'Mira',
+      tokens: [
+        { surface: '友達', base: '友達', reading: 'ともだち', meaning: 'friend', pos: 'Noun' },
+        {
+          surface: 'です',
+          reading: 'です',
+          grammarHints: [{
+            grammarId: 'n5-desu-copula',
+            title: 'です',
+            meaning: 'to be / is',
+            shortExplanation: 'Marks a polite statement that something is something.',
+            displayPattern: 'Noun + です',
+            readingOverride: '',
+            matchedText: 'です',
+          }],
+        },
+      ],
+      knownWords: new Set(),
+      useKanji: false,
+    });
+
+    const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
+    translateButton.click();
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const translationSourceHtml = actionArea.innerHTML.slice(actionArea.innerHTML.indexOf('npc-dialogue-translation-source'));
+    assert.match(translationSourceHtml, />desu<\/span>/);
+    assert.match(translationSourceHtml, /class="npc-dialogue-cell jp-grammar"/);
+    assert.doesNotMatch(translationSourceHtml, /data-grammar-hints=/);
+    assert.doesNotMatch(translationSourceHtml, /data-base=/);
   });
 
   it('renders unavailable translation state with retry control', async () => {
