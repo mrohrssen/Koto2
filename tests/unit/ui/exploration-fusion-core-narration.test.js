@@ -29,6 +29,7 @@ await mock.module('../../../public/js/ui/speed-review.js', {
       speedReviewStartArgs = { words, options };
       return true;
     },
+    isActive: () => false,
   },
 });
 await mock.module('../../../public/js/ui/whack-a-mole.js', {
@@ -100,7 +101,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
   },
 });
 
-const { init, renderHub } = await import('../../../public/js/ui/exploration.js');
+const { init, renderHub, renderSpeedReviewRoom } = await import('../../../public/js/ui/exploration.js');
 
 describe('renderHub fusion core review narration', () => {
   beforeEach(() => {
@@ -204,6 +205,77 @@ describe('renderHub fusion core review narration', () => {
     assert.ok(reviewButton, 'Knowledge Review button should render');
 
     await reviewButton.onClick();
+
+    assert.equal(speedReviewStartArgs?.options?.showRomaji, true);
+  });
+
+  it('enables romaji annotations when launching knowledge review outside kana mode', async () => {
+    let gameState = {
+      phase: 'hub',
+      meta: {
+        pvpTeams: [],
+        tutorialStep: 6,
+        tutorialFusionDataUnlocked: [],
+        tutorialFusionCoreAwarded: false,
+        tutorialFusionComplete: false,
+        creatureCollection: [],
+      },
+    };
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: (nextState) => { gameState = nextState; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      startNewRun: () => {},
+      apiGetVocabDueCount: async () => ({ count: 1 }),
+      apiGetDueWords: async () => ({
+        words: [{ word: '火', reading: 'ひ', meanings: ['fire'] }],
+      }),
+    });
+
+    await renderHub();
+    const reviewButton = renderedButtons.find(button => button.label.includes('Knowledge Review'));
+    assert.ok(reviewButton, 'Knowledge Review button should render');
+
+    await reviewButton.onClick();
+
+    assert.equal(speedReviewStartArgs?.options?.showRomaji, true);
+  });
+
+  it('enables romaji annotations when launching a speed review room outside kana mode', async () => {
+    let gameState = {
+      phase: 'speedReviewRoom',
+      meta: {
+        pvpTeams: [],
+        tutorialStep: 6,
+      },
+      run: {
+        currentRoom: 0,
+        rooms: [{
+          id: 'speed-room-1',
+          type: 'speedReviewRoom',
+          speedReviewRoom: { completed: false },
+        }],
+      },
+    };
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: (nextState) => { gameState = nextState; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: async () => {} },
+      startNewRun: () => {},
+      apiStartSpeedReviewRoom: async () => ({
+        snapshotWords: [{ word: '火', reading: 'ひ', meanings: ['fire'] }],
+      }),
+      apiProgressSpeedReviewRoom: async () => ({}),
+      apiCompleteSpeedReviewRoom: async () => ({}),
+    });
+
+    await renderSpeedReviewRoom();
 
     assert.equal(speedReviewStartArgs?.options?.showRomaji, true);
   });
