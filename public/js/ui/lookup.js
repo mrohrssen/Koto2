@@ -1,6 +1,6 @@
 import { dom } from '../dom.js';
 import { escapeHtml } from './html-utils.js';
-import { buildHeadwordRuby } from './romaji.js';
+import { buildHeadwordRuby, toRomaji } from './romaji.js';
 
 let isActive = false;
 let isLoading = false;
@@ -272,8 +272,31 @@ function findTokenInText(spelling, text, startIndex) {
   return null;
 }
 
+function hasGrammarHints(token) {
+  return Array.isArray(token?.grammarHints) && token.grammarHints.length > 0;
+}
+
+function grammarReading(token, fallbackText) {
+  return token?.grammarHints?.find(hint => hint.readingOverride)?.readingOverride
+    || token?.reading
+    || fallbackText
+    || '';
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/"/g, '&quot;');
+}
+
+function buildGrammarTokenHtml(token, originalSpelling) {
+  const reading = grammarReading(token, originalSpelling);
+  const grammarHints = escapeAttr(JSON.stringify(token.grammarHints || []));
+  return `<span class="lookup-grammar jp-grammar" data-reading="${escapeAttr(reading)}" data-grammar-hints="${grammarHints}">`
+    + `<ruby>${escapeHtml(originalSpelling)}<rt>${escapeHtml(toRomaji(reading))}</rt></ruby>`
+    + `</span>`;
+}
+
 /** Build HTML string from tokens matching a specific text */
-function buildHtmlFromTokens(tokens, targetText) {
+export function buildHtmlFromTokens(tokens, targetText) {
   let html = '';
   let textIndex = 0;
 
@@ -295,7 +318,9 @@ function buildHtmlFromTokens(tokens, targetText) {
     const originalSpelling = targetText.substring(idx, idx + length);
 
     // Add the token
-    if (token.lookupable && token.word) {
+    if (hasGrammarHints(token)) {
+      html += buildGrammarTokenHtml(token, originalSpelling);
+    } else if (token.lookupable && token.word) {
       // Lookupable word — keyed by dictionary form
       html += `<span class="lookup-word" data-word="${escapeHtml(token.word)}">${escapeHtml(originalSpelling)}</span>`;
     } else {
