@@ -51,6 +51,10 @@ describe('japanese token cells', () => {
     assert.equal(cells[0].base, '友達');
     assert.equal(cells[0].display, 'ともだち');
     assert.equal(cells[0].romaji, 'tomodachi');
+    assert.equal(cells[0].mainText, 'ともだち');
+    assert.equal(cells[0].guideText, 'tomodachi');
+    assert.equal(cells[0].lookupHeadword, 'ともだち');
+    assert.equal(cells[0].guideKind, 'romaji');
     assert.equal(cells[0].meaning, 'friend');
     assert.equal(cells[0].trailingPunct, '');
 
@@ -82,6 +86,8 @@ describe('japanese token cells', () => {
     assert.equal(cells[1].reading, 'わ');
     assert.equal(cells[1].romaji, 'wa');
     assert.equal(cells[1].display, 'は');
+    assert.equal(cells[1].mainText, 'は');
+    assert.equal(cells[1].guideText, 'wa');
   });
 
   it('keeps content tokens as word cells even when they also carry grammar hints', () => {
@@ -152,7 +158,7 @@ describe('japanese token cells', () => {
     assert.equal(gridCells[0].surfaceWithContinuation, '待って');
   });
 
-  it('builds escaped shared lookup attrs without renderer-owned audio text', () => {
+  it('marks natural-mode cells for lookup compatibility', () => {
     const cells = buildJapaneseTokenCells({
       tokens: [{
         surface: '森',
@@ -161,19 +167,23 @@ describe('japanese token cells', () => {
         meaning: 'forest & woods',
         meanings: [{ en: 'forest & woods' }],
         pos: 'Noun',
+        preferredSurface: '森',
       }],
       knownWords: new Set(),
       wordDict: null,
       overrides: {},
-      useKanji: true,
+      japaneseDisplayMode: 'natural',
     });
 
+    assert.equal(cells[0].mainText, '森');
+    assert.equal(cells[0].guideText, 'もり');
     const attrs = tokenDataAttrs(cells[0]);
 
     assert.match(attrs, /data-base="森"/);
     assert.match(attrs, /data-reading="もり"/);
     assert.match(attrs, /data-meaning="forest &amp; woods"/);
     assert.match(attrs, /data-pos="Noun"/);
+    assert.match(attrs, /data-display-mode="natural"/);
     assert.match(attrs, /data-kanji-mode="1"/);
     assert.match(attrs, /data-meanings="/);
     assert.doesNotMatch(attrs, /data-audio-text/);

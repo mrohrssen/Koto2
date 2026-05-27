@@ -1,4 +1,7 @@
-import { toRomaji } from './romaji.js';
+import {
+  normalizeJapaneseDisplayMode,
+  resolveJapaneseDisplay,
+} from './japanese-display-resolver.js';
 import {
   getTokenBaseForm,
   isContentExposureToken,
@@ -45,7 +48,10 @@ export function tokenDataAttrs(cell) {
     if (Array.isArray(cell.meanings) && cell.meanings.length > 0) {
       attrs += ` data-meanings="${esc(JSON.stringify(cell.meanings))}"`;
     }
-    if (cell.useKanji) attrs += ' data-kanji-mode="1"';
+    if (cell.japaneseDisplayMode === 'natural') {
+      attrs += ' data-display-mode="natural"';
+      attrs += ' data-kanji-mode="1"';
+    }
   }
 
   attrs += grammarHintsAttr(cell);
@@ -58,34 +64,36 @@ export function buildJapaneseTokenCells({
   wordDict = null,
   overrides = {},
   useKanji = false,
+  japaneseDisplayMode = null,
   mergeSmallTsuContinuation = false,
 } = {}) {
   const cells = [];
+  const mode = normalizeJapaneseDisplayMode({ japaneseDisplayMode, useKanji });
 
   for (const token of tokens || []) {
     const previousCell = cells[cells.length - 1];
     if (mergeSmallTsuContinuation && isSmallTsuContinuation(token, previousCell)) {
       previousCell.continuationSurface += token.surface || '';
       previousCell.continuationReading += token.reading || token.surface || '';
-      finalizeCell(previousCell, { useKanji });
+      finalizeCell(previousCell, { mode });
       continue;
     }
 
     if (isAttachablePunctuation(token) && cells.length > 0) {
       previousCell.trailingPunct += token.surface || '';
-      finalizeCell(previousCell, { useKanji });
+      finalizeCell(previousCell, { mode });
       continue;
     }
 
-    const cell = createCell(token, { knownWords, wordDict, overrides, useKanji });
-    finalizeCell(cell, { useKanji });
+    const cell = createCell(token, { knownWords, wordDict, overrides, useKanji, mode });
+    finalizeCell(cell, { mode });
     cells.push(cell);
   }
 
   return cells;
 }
 
-function createCell(token, { knownWords, wordDict, overrides, useKanji }) {
+function createCell(token, { knownWords, wordDict, overrides, useKanji, mode }) {
   const content = isContentExposureToken(token);
   if (content) {
     const base = getTokenBaseForm(token);
@@ -106,6 +114,7 @@ function createCell(token, { knownWords, wordDict, overrides, useKanji }) {
       isKnown: knownWords?.has?.(base) || false,
       isFromOverride: !!overrides?.[base],
       useKanji,
+      japaneseDisplayMode: mode,
       clickable: true,
       continuationSurface: '',
       continuationReading: '',
@@ -129,6 +138,7 @@ function createCell(token, { knownWords, wordDict, overrides, useKanji }) {
       isKnown: false,
       isFromOverride: false,
       useKanji,
+      japaneseDisplayMode: mode,
       clickable: true,
       continuationSurface: '',
       continuationReading: '',
@@ -151,6 +161,7 @@ function createCell(token, { knownWords, wordDict, overrides, useKanji }) {
     isKnown: false,
     isFromOverride: false,
     useKanji,
+    japaneseDisplayMode: mode,
     clickable: false,
     continuationSurface: '',
     continuationReading: '',
@@ -158,31 +169,64 @@ function createCell(token, { knownWords, wordDict, overrides, useKanji }) {
   };
 }
 
-function finalizeCell(cell, { useKanji }) {
+function finalizeCell(cell, { mode }) {
   const continuationSurface = cell.continuationSurface || '';
   const continuationReading = cell.continuationReading || continuationSurface;
+  cell.japaneseDisplayMode = mode;
 
   if (cell.kind === 'word') {
     const readingBase = baseReading(cell);
-    const baseDisplay = useKanji ? cell.surface : readingBase;
-    const continuation = useKanji ? continuationSurface : continuationReading;
-    cell.reading = `${readingBase}${continuationReading}`;
-    cell.surfaceWithContinuation = `${cell.surface}${continuationSurface}`;
-    cell.displayBase = `${baseDisplay}${continuation}`;
-    cell.display = `${cell.displayBase}${cell.trailingPunct || ''}`;
-    cell.romaji = toRomaji(cell.reading);
+    const reading = `${readingBase}${continuationReading}`;
+    const surfaceWithContinuation = `${cell.surface}${continuationSurface}`;
+    const displayToken = {
+      ...cell.token,
+      surface: surfaceWithContinuation,
+      base: cell.base,
+      baseForm: cell.base,
+      reading,
+      hiraganaSurface: cell.token?.hiraganaSurface || reading,
+      naturalSurface: cell.token?.naturalSurface || surfaceWithContinuation,
+      preferredSurface: cell.token?.preferredSurface || cell.base,
+      preferredReading: cell.token?.preferredReading,
+    };
+    const display = resolveJapaneseDisplay(displayToken, { mode });
+
+    cell.reading = reading;
+    cell.surfaceWithContinuation = surfaceWithContinuation;
+    cell.mainText = display.mainText;
+    cell.guideText = display.guideText;
+    cell.guideKind = display.guideKind;
+    cell.lookupHeadword = display.lookupHeadword;
+    cell.displayBase = display.mainText;
+    cell.display = `${display.mainText}${cell.trailingPunct || ''}`;
+    cell.romaji = display.guideText;
     return;
   }
 
   if (cell.kind === 'grammar') {
+    const display = resolveJapaneseDisplay({
+      surface: cell.surface,
+      reading: cell.reading,
+      hiraganaSurface: cell.surface,
+      naturalSurface: cell.surface,
+    }, { mode });
+
     cell.surfaceWithContinuation = cell.surface;
-    cell.displayBase = cell.surface;
-    cell.display = `${cell.surface}${cell.trailingPunct || ''}`;
-    cell.romaji = toRomaji(cell.reading);
+    cell.mainText = display.mainText;
+    cell.guideText = display.guideText;
+    cell.guideKind = display.guideKind;
+    cell.lookupHeadword = display.lookupHeadword;
+    cell.displayBase = display.mainText;
+    cell.display = `${display.mainText}${cell.trailingPunct || ''}`;
+    cell.romaji = display.guideText;
     return;
   }
 
   cell.surfaceWithContinuation = cell.surface;
+  cell.mainText = cell.surface;
+  cell.guideText = '';
+  cell.guideKind = 'none';
+  cell.lookupHeadword = cell.surface;
   cell.displayBase = cell.surface;
   cell.display = `${cell.surface}${cell.trailingPunct || ''}`;
   cell.romaji = '';
