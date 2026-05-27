@@ -1,6 +1,7 @@
 import { dom } from '../dom.js';
 import { escapeHtml } from './html-utils.js';
-import { buildHeadwordRuby, toRomaji } from './romaji.js';
+import { resolveJapaneseDisplay } from './japanese-display-resolver.js';
+import { buildHeadwordRuby } from './romaji.js';
 
 let isActive = false;
 let isLoading = false;
@@ -289,9 +290,14 @@ function escapeAttr(value) {
 
 function buildGrammarTokenHtml(token, originalSpelling) {
   const reading = grammarReading(token, originalSpelling);
+  const display = resolveJapaneseDisplay({
+    surface: originalSpelling,
+    reading,
+    hiraganaSurface: originalSpelling,
+  }, { japaneseDisplayMode: 'hiragana' });
   const grammarHints = escapeAttr(JSON.stringify(token.grammarHints || []));
   return `<span class="lookup-grammar jp-grammar" data-reading="${escapeAttr(reading)}" data-grammar-hints="${grammarHints}">`
-    + `<ruby>${escapeHtml(originalSpelling)}<rt>${escapeHtml(toRomaji(reading))}</rt></ruby>`
+    + `<ruby>${escapeHtml(display.mainText)}<rt>${escapeHtml(display.guideText)}</rt></ruby>`
     + `</span>`;
 }
 

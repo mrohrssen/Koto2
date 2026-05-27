@@ -31,7 +31,6 @@ import { ExplorationScene } from '../scenes/exploration-scene.js';
 import { trackMilestone } from '../analytics.js';
 import { extractGameContext, normalizeCombatOutcome } from '../analytics-core.js';
 
-import { toRomaji } from './romaji.js';
 import { combatEvents } from './combat-events.js';
 import {
   collectExistingEnemyKoAnimationKeys,

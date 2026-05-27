@@ -1,5 +1,5 @@
 import { dom } from '../dom.js';
-import { toRomaji } from './romaji.js';
+import { resolveJapaneseDisplay } from './japanese-display-resolver.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { BATTLEFIELD_COLUMNS, BATTLEFIELD_ROWS, rowForFormationIndex } from '../pixi/battlefield-layout.js';
 import { getHpColor } from './combat-ui-utils.js';
@@ -8,7 +8,8 @@ import { spriteUrl } from '../assets/asset-urls.js';
 /** Render creature name as hiragana with romaji ruby -- matches creature-slot-name style */
 function creatureNameRuby(creature) {
   const reading = creature.reading || creature.name || '';
-  return `<ruby>${reading}<rt>${toRomaji(reading)}</rt></ruby>`;
+  const display = resolveJapaneseDisplay({ surface: reading, reading }, { japaneseDisplayMode: 'hiragana' });
+  return `<ruby>${display.mainText}<rt>${display.guideText}</rt></ruby>`;
 }
 
 let _lastBgUrl = null;
@@ -135,9 +136,10 @@ export async function showFormation(side, creatures, { isBoss = false, force = f
     const nameCol = document.createElement('div');
     nameCol.className = 'formation-name-col';
     const reading = creature.reading || creature.name || '';
+    const display = resolveJapaneseDisplay({ surface: reading, reading }, { japaneseDisplayMode: 'hiragana' });
     const romajiEl = document.createElement('div');
     romajiEl.className = 'formation-romaji';
-    romajiEl.textContent = toRomaji(reading);
+    romajiEl.textContent = display.guideText;
     const hiraEl = document.createElement('div');
     hiraEl.className = 'formation-hira';
     hiraEl.textContent = reading;

@@ -1,4 +1,4 @@
-import { toRomaji } from './romaji.js';
+import { resolveJapaneseDisplay } from './japanese-display-resolver.js';
 import { record as recordExposure } from './exposure-buffer.js';
 import {
   buildJapaneseTokenCells,
@@ -45,7 +45,8 @@ export function renderEnFirst(taggedText) {
     if (isKnown || i === teachIdx) {
       let html = '<span class="bs-word">';
       if (reading) {
-        html += `<ruby>${esc(reading)}<rt>${esc(toRomaji(reading))}</rt></ruby>`;
+        const display = resolveJapaneseDisplay({ surface: reading, reading }, { japaneseDisplayMode: 'hiragana' });
+        html += `<ruby>${esc(display.mainText)}<rt>${esc(display.guideText)}</rt></ruby>`;
       } else {
         html += esc(reading || kanji);
       }
