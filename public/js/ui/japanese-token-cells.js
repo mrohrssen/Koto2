@@ -41,6 +41,9 @@ export function tokenDataAttrs(cell) {
     attrs += ` data-base="${esc(cell.base)}"`;
   }
   attrs += ` data-reading="${esc(cell.reading)}"`;
+  attrs += ` data-lookup-headword="${esc(cell.lookupHeadword || cell.displayBase || cell.reading)}"`;
+  attrs += ` data-guide-text="${esc(cell.guideText || '')}"`;
+  attrs += ` data-guide-kind="${esc(cell.guideKind || 'none')}"`;
 
   if (cell.kind === 'word') {
     attrs += ` data-meaning="${esc(cell.meaning)}" data-pos="${esc(cell.pos)}"`;

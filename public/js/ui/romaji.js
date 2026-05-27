@@ -156,3 +156,10 @@ export function buildHeadwordRuby(base, reading, useKanji) {
   if (b === r) return escapeHtml(r);
   return `<ruby>${escapeHtml(b)}<rt>${escapeHtml(r)}</rt></ruby>`;
 }
+
+export function buildResolvedHeadwordRuby(headword, guideText, guideKind = 'romaji') {
+  const h = headword || '';
+  const guide = guideText || '';
+  if (!guide || guideKind === 'none') return escapeHtml(h);
+  return `<ruby>${escapeHtml(h)}<rt>${escapeHtml(guide)}</rt></ruby>`;
+}

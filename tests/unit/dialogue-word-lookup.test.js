@@ -11,7 +11,11 @@ await mock.module('../../public/js/tts.js', {
   }
 });
 
-const { buildPopupMeanings, parseGrammarHints } = await import('../../public/js/ui/dialogue-word-lookup.js');
+const {
+  buildLookupHeadwordHtml,
+  buildPopupMeanings,
+  parseGrammarHints,
+} = await import('../../public/js/ui/dialogue-word-lookup.js');
 
 describe('buildPopupMeanings', () => {
   const dictEntry = { definitions: [{ en: 'dog', primary: true }, { en: 'hound' }] };
@@ -77,5 +81,32 @@ describe('parseGrammarHints', () => {
 
   it('returns empty array for invalid grammar JSON', () => {
     assert.deepEqual(parseGrammarHints('{bad json'), []);
+  });
+});
+
+describe('buildLookupHeadwordHtml', () => {
+  it('uses resolved lookup fields instead of deciding from kanji mode', () => {
+    const html = buildLookupHeadwordHtml({
+      lookupHeadword: '森',
+      guideText: 'もり',
+      guideKind: 'hiragana',
+      base: '森',
+      reading: 'もり',
+      kanjiMode: '1',
+    });
+
+    assert.equal(html, '<ruby>森<rt>もり</rt></ruby>');
+  });
+
+  it('uses romaji guide text for hiragana-mode headwords', () => {
+    const html = buildLookupHeadwordHtml({
+      lookupHeadword: 'もり',
+      guideText: 'mori',
+      guideKind: 'romaji',
+      base: '森',
+      reading: 'もり',
+    });
+
+    assert.equal(html, '<ruby>もり<rt>mori</rt></ruby>');
   });
 });
