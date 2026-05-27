@@ -169,6 +169,8 @@ let apiTutorialAdvance = null;
 
 export function isKanjiModeEnabled(gameState) {
   const meta = gameState?.meta || {};
+  if (meta.japaneseDisplayMode === 'natural') return true;
+  if (meta.japaneseDisplayMode === 'hiragana') return false;
   if (typeof meta.kanjiMode === 'boolean') return meta.kanjiMode;
   if (meta.kanaMode === true) return false;
   return Number(gameState?.run?.currentArea?.stage || 0) >= 4;

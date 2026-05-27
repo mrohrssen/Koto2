@@ -2231,7 +2231,7 @@ async function initGame() {
   dialogueLookup.init({
     showToast: (msg) => scene.showToast(msg, 3000),
     pauseAutoDismiss: narrationBox.pauseAutoDismiss,
-    getKanaMode: () => gameState.meta?.kanaMode ?? false,
+    getKanaMode: () => (gameState.meta?.japaneseDisplayMode || 'hiragana') === 'hiragana',
     onStateUpdate: updateGameState,
   });
   const loadedState = await loadGameState();

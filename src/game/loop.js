@@ -322,6 +322,7 @@ export class GameManager {
         crests: this.meta.crests || [],
         equippedCrests: this.meta.equippedCrests || { fire: null, water: null, earth: null, wood: null, metal: null },
         kanaMode: this.meta.kanaMode || false,
+        japaneseDisplayMode: this.meta.japaneseDisplayMode || 'hiragana',
         pvpTeams: this.meta.pvpTeams || [null, null, null],
         tutorialStep: this.meta.tutorialStep ?? 6,
         tutorialFusionDataUnlocked: Array.isArray(this.meta.tutorialFusionDataUnlocked) ? this.meta.tutorialFusionDataUnlocked : [],

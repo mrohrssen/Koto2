@@ -35,7 +35,6 @@ export async function openSettings() {
   ]);
   const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
   const ttsVolumeSetting = tts.getVolume();
-  const kanaMode = getGameState?.()?.meta?.kanaMode ?? false;
   const showDebugSuperAttack = Object.hasOwn(serverSettings, 'debugSuperAttack');
 
   content.innerHTML = `
@@ -392,27 +391,6 @@ export async function openSettings() {
     }
     if (Object.keys(serverSettingsToSave).length > 0) {
       await saveServerSettings(serverSettingsToSave);
-    }
-
-    // Hidden experimental language modes are forced off when settings are saved.
-    if (kanaMode) {
-      try {
-        const resp = await fetch(apiUrl('/api/game/kana-mode'), {
-          method: 'POST',
-          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enabled: false }),
-        });
-        if (resp.ok) {
-          const data = await resp.json();
-          if (updateGameState && getGameState) {
-            const current = getGameState();
-            updateGameState({ ...current, meta: { ...current.meta, kanaMode: data.kanaMode } });
-          }
-        }
-      } catch {
-        sceneModule.showToast('Failed to save kana mode', 2000);
-        return;
-      }
     }
 
     sceneModule.showToast('Settings saved', 2000);

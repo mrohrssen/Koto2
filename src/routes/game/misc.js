@@ -383,8 +383,13 @@ export default function createMiscRoutes({
     const meta = gameManager.getMeta();
     const { enabled } = req.body;
     meta.kanaMode = !!enabled;
+    meta.japaneseDisplayMode = 'hiragana';
     req.saveGame();
-    res.json({ ok: true, kanaMode: meta.kanaMode });
+    res.json({
+      ok: true,
+      kanaMode: meta.kanaMode,
+      japaneseDisplayMode: meta.japaneseDisplayMode,
+    });
   });
 
   // Select starter creature during prologue
