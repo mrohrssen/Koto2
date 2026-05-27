@@ -57,12 +57,15 @@ describe('renderJpSentence', () => {
     assert.ok(html.includes('！'));
   });
 
-  it('uses kanji surface form when useKanji=true', () => {
+  it('uses natural surface form when japaneseDisplayMode=natural', () => {
     const tokens = [{ surface: '一緒', baseForm: '一緒', pos: '名詞', reading: 'いっしょ' }];
-    const html = renderJpSentence(tokens, new Set(['一緒']), wordDict, {}, true);
+    const html = renderJpSentence(tokens, new Set(['一緒']), wordDict, {}, false, {
+      japaneseDisplayMode: 'natural',
+    });
     assert.ok(html.includes('<ruby>一緒<'));
-    assert.ok(html.includes('<rt>issho</rt>'));
+    assert.ok(html.includes('<rt>いっしょ</rt>'));
     assert.ok(html.includes('jp-known'));
+    assert.ok(html.includes('data-display-mode="natural"'));
     assert.ok(html.includes('data-kanji-mode="1"'));
   });
 

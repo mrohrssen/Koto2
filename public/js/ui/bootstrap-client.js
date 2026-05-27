@@ -74,8 +74,8 @@ export function renderEnFirst(taggedText) {
  *   now carry their own meaning. Kept in the signature for compatibility with the
  *   shared resolver's final fallback and unit-test convenience.
  * @param {Object<string, string>} overrides - baseForm → English override
- * @param {boolean} useKanji - false for Areas 1-3 (hiragana), true for Area 4+
- * @param {{recordExposure?: boolean}} options - pass recordExposure:false for display-only labels
+ * @param {boolean} useKanji - legacy compatibility hint; prefer options.japaneseDisplayMode
+ * @param {{recordExposure?: boolean, japaneseDisplayMode?: 'hiragana'|'natural'}} options - pass recordExposure:false for display-only labels
  * @returns {string} HTML string
  */
 export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, useKanji = false, options = {}) {
@@ -91,6 +91,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     wordDict,
     overrides,
     useKanji,
+    japaneseDisplayMode: options.japaneseDisplayMode,
     mergeSmallTsuContinuation: false,
   });
 
@@ -101,14 +102,14 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
 
     if (cell.kind === 'grammar') {
       return `<span class="jp-grammar"${tokenDataAttrs(cell)}>`
-        + `<ruby>${esc(cell.displayBase)}<rt>${esc(cell.romaji)}</rt></ruby>`
+        + `<ruby>${esc(cell.mainText)}<rt>${esc(cell.guideText)}</rt></ruby>`
         + `${esc(cell.trailingPunct || '')}</span>`;
     }
 
     const typeClass = cell.isKnown ? 'jp-known' : cell.token?.entity ? 'jp-entity' : 'jp-unknown';
     if (cell.isKnown) {
       return `<span class="jp-word ${typeClass}"${tokenDataAttrs(cell)}>`
-        + `<ruby>${esc(cell.displayBase)}<rt>${esc(cell.romaji)}</rt></ruby>`
+        + `<ruby>${esc(cell.mainText)}<rt>${esc(cell.guideText)}</rt></ruby>`
         + `${esc(cell.trailingPunct || '')}</span>`;
     }
 
@@ -116,7 +117,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     const parenIdx = firstSense.indexOf('(');
     const primaryEn = parenIdx > 0 ? firstSense.slice(0, parenIdx).trim() : firstSense;
     return `<span class="jp-word ${typeClass}"${tokenDataAttrs(cell)}>`
-      + `<ruby>${esc(cell.displayBase)}<rt>${esc(cell.romaji)}</rt></ruby>`
+      + `<ruby>${esc(cell.mainText)}<rt>${esc(cell.guideText)}</rt></ruby>`
       + `${esc(cell.trailingPunct || '')}`
       + `<span class="jp-stack-en">${esc(primaryEn)}</span>`
       + `</span>`;

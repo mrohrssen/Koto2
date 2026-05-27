@@ -68,6 +68,7 @@ function dialogueCellsForTokens(tokens = [], options = {}) {
     wordDict: options.wordDict || null,
     overrides: options.overrides || {},
     useKanji: !!options.useKanji,
+    japaneseDisplayMode: options.japaneseDisplayMode,
     mergeSmallTsuContinuation: true,
   });
 }
@@ -230,8 +231,12 @@ export function renderTranslationWithEntities(translation = '', entities = []) {
 function renderTranslationSourceRows({
   tokens,
   useKanji = false,
+  japaneseDisplayMode = null,
 } = {}) {
-  const lines = chunkDialogueCells(dialogueCellsForTokens(tokens || [], { useKanji }), { includeMeaning: false });
+  const lines = chunkDialogueCells(dialogueCellsForTokens(tokens || [], {
+    useKanji,
+    japaneseDisplayMode,
+  }), { includeMeaning: false });
   return lines.map(lineCells => {
     const pronunciation = [];
     const jp = [];
@@ -243,8 +248,7 @@ function renderTranslationSourceRows({
         continue;
       }
 
-      const pronunciationText = useKanji ? cell.reading : cell.romaji;
-      pronunciation.push(`<span class="npc-dialogue-cell">${esc(pronunciationText)}</span>`);
+      pronunciation.push(`<span class="npc-dialogue-cell">${esc(cell.guideText)}</span>`);
 
       const className = cell.kind === 'grammar' ? 'jp-grammar' : 'jp-word';
       jp.push(`<span class="npc-dialogue-cell ${className}">${esc(cell.display)}</span>`);
@@ -412,12 +416,14 @@ export function renderDialogueTokenRows({
   wordDict = null,
   overrides = {},
   useKanji = false,
+  japaneseDisplayMode = null,
 } = {}) {
   const lines = chunkDialogueCells(dialogueCellsForTokens(tokens || [], {
     knownWords,
     wordDict,
     overrides,
     useKanji,
+    japaneseDisplayMode,
   }), {
     includeMeaning: true,
   });
@@ -435,7 +441,7 @@ export function renderDialogueTokenRows({
       }
 
       if (cell.kind === 'grammar') {
-        romaji.push(`<span class="npc-dialogue-cell">${esc(cell.romaji)}</span>`);
+        romaji.push(`<span class="npc-dialogue-cell">${esc(cell.guideText)}</span>`);
         jp.push(`<span class="npc-dialogue-cell jp-grammar"${tokenDataAttrs(cell)}>${esc(cell.display)}</span>`);
         en.push('<span class="npc-dialogue-cell"></span>');
         continue;
@@ -444,7 +450,7 @@ export function renderDialogueTokenRows({
       const meaning = cell.isKnown ? '' : primaryMeaning(cell);
       const typeClass = cell.token?.entity ? 'jp-entity' : cell.isKnown ? 'jp-known' : 'jp-unknown';
 
-      romaji.push(`<span class="npc-dialogue-cell">${esc(cell.romaji)}</span>`);
+      romaji.push(`<span class="npc-dialogue-cell">${esc(cell.guideText)}</span>`);
       jp.push(`<span class="npc-dialogue-cell jp-word ${typeClass}"${dialogueAttrsForCell(cell)}>${esc(cell.display)}</span>`);
       en.push(`<span class="npc-dialogue-cell">${esc(meaning)}</span>`);
     }
@@ -531,7 +537,11 @@ export function showNpcDialogueCard(options = {}) {
       const content = renderPageContent(options, pageTokens);
       const continueLabel = pageIndex < pages.length - 1 ? 'Next' : 'Continue';
       const sourceText = pageTokens?.length ? getDialogueSourceText(pageTokens, options.useKanji) : '';
-      const sourceHtml = pageTokens?.length ? renderTranslationSourceRows({ tokens: pageTokens, useKanji: options.useKanji }) : '';
+      const sourceHtml = pageTokens?.length ? renderTranslationSourceRows({
+        tokens: pageTokens,
+        useKanji: options.useKanji,
+        japaneseDisplayMode: options.japaneseDisplayMode,
+      }) : '';
       const translationEntities = pageTokens?.length ? getTranslationEntities(options, pageTokens) : [];
       const canTranslate = !!sourceText;
       const canLearn = !!sourceText && !!pageTokens?.length;

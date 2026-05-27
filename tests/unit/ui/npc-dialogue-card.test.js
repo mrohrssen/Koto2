@@ -642,12 +642,12 @@ describe('npc dialogue card', () => {
     assert.match(actionArea.innerHTML, />matsu</);
   });
 
-  it('shows hiragana pronunciation for translated tokenized dialogue when kanji mode is enabled', async () => {
+  it('shows hiragana pronunciation for translated tokenized dialogue in natural mode', async () => {
     showNpcDialogueCard({
       speaker: 'Mira',
       tokens: [{ surface: '待つ', baseForm: '待つ', reading: 'まつ', meaning: 'wait', pos: 'verb' }],
       knownWords: new Set(),
-      useKanji: true,
+      japaneseDisplayMode: 'natural',
     });
 
     const [translateButton] = actionArea.querySelectorAll('.npc-dialogue-utility');
