@@ -21,7 +21,7 @@ import { creatureStaticPath } from './sprite-utils.js';
 import { renderChoicesAsync } from './ui-components.js';
 import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { npcSpriteUrl } from '../assets/asset-urls.js';
-import { toRomaji } from './romaji.js';
+import { resolveJapaneseDisplay } from './japanese-display-resolver.js';
 import { playDialogueAudio } from '../tts.js';
 import { showMoves, setActiveLabel } from './move-select.js';
 import { clear as clearTargetSelect } from './target-select.js';
@@ -56,7 +56,9 @@ function dialogueOptionsForCreatureSpeaker(speaker) {
   const speakerName = typeof speaker === 'string' ? speaker : (speaker?.name || '');
   const speakerReading = typeof speaker === 'object' ? speaker?.reading : '';
   const creatureId = typeof speaker === 'object' ? speaker?.id : '';
-  const speakerReadingLabel = speakerReading ? toRomaji(speakerReading) : '';
+  const speakerReadingLabel = speakerReading
+    ? resolveJapaneseDisplay({ surface: speakerReading, reading: speakerReading }, { japaneseDisplayMode: 'hiragana' }).guideText
+    : '';
   const speakerEntity = typeof speaker === 'object' && creatureId
     ? {
         id: creatureId,

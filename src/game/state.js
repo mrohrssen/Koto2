@@ -56,6 +56,10 @@ export function createMetaProgression() {
     // Whether the player is in hiragana learning mode
     kanaMode: false,
 
+    // Preferred Japanese display mode. Existing players default to hiragana;
+    // natural mode is opt-in after display metadata is validated.
+    japaneseDisplayMode: 'hiragana',
+
     pvpTeams: [null, null, null],  // 3 saved PvP team slots
     pvpRanked: createDefaultRankedState(),
 

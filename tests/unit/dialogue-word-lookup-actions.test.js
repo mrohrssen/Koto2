@@ -27,7 +27,7 @@ await mock.module('../../public/js/ui/word-level-up.js', {
 
 await mock.module('../../public/js/ui/romaji.js', {
   namedExports: {
-    buildHeadwordRuby: word => word
+    buildResolvedHeadwordRuby: word => word
   }
 });
 

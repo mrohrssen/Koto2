@@ -30,6 +30,27 @@ const DEMOTED_BASE_FORMS = new Set([
   'だ', 'です', 'ます', 'する',
 ]);
 
+// Generic 普通名詞 stand-in for a {slot} so matchers like n5-wa-topic
+// ([Noun] + は) can fire when the noun lives in a slot fill.
+function virtualSlotNounToken(index) {
+  return {
+    surface: '',
+    baseForm: '',
+    reading: '',
+    pos: '名詞',
+    pos0: '名詞',
+    pos1: '普通名詞',
+    pos2: '一般',
+    pos3: '*',
+    pos4: '*',
+    pos5: '*',
+    conjugationType: '*',
+    conjugationForm: '*',
+    normalizedForm: '',
+    index,
+  };
+}
+
 function isDemoted(sudachiToken) {
   if (sudachiToken._isMerged) return false; // dictionary-merged tokens are always content
   if (DEMOTED_POS.has(sudachiToken.pos)) return true;
@@ -176,34 +197,66 @@ function main() {
     return merged;
   }
 
-  // Reassemble frames from tokenized segments
-  const frameTokens = sources.map(() => ({ tokens: [], words: [] }));
-
+  // Reassemble frames from tokenized segments.
+  //
+  // Grammar matching runs once per FRAME over a unified raw-token sequence with
+  // virtual noun tokens standing in for each {slot}. Without this, matchers like
+  // n5-wa-topic that require [Noun + は] silently fail when the noun is in a slot
+  // (e.g. "{randomPlayerCreature}はとても強い！") because per-segment tokenization
+  // would only see "はとても強い！" with no preceding noun.
+  const frameSegments = sources.map(() => []);
   for (let i = 0; i < segmentMap.length; i++) {
     const { frameIdx, slotAfter } = segmentMap[i];
+    frameSegments[frameIdx].push({ rawTokens: allSegmentTokens[i], slotAfter });
+  }
+
+  const frameTokens = sources.map(() => ({ tokens: [], words: [] }));
+
+  for (let frameIdx = 0; frameIdx < frameSegments.length; frameIdx++) {
+    const segments = frameSegments[frameIdx];
     const frame = frameTokens[frameIdx];
 
-    // Process this segment's text tokens first
-    const rawTokens = allSegmentTokens[i];
-    const matches = findGrammarMatches(rawTokens, {
+    // Build a unified raw-token sequence across segments with virtual nouns at
+    // slot boundaries, so cross-slot matchers can fire.
+    const unifiedRaw = [];
+    const segmentOffsets = [];
+    for (const seg of segments) {
+      segmentOffsets.push(unifiedRaw.length);
+      for (const rawTok of seg.rawTokens) {
+        unifiedRaw.push({ ...rawTok, index: unifiedRaw.length });
+      }
+      if (seg.slotAfter) {
+        unifiedRaw.push(virtualSlotNounToken(unifiedRaw.length));
+      }
+    }
+
+    const matches = findGrammarMatches(unifiedRaw, {
       catalog: grammarCatalog,
       matchers: grammarMatchers,
     });
-    const mergedTokens = mergeSudachiTokens(rawTokens);
-    const segmentRenderTokens = [];
-    const segmentWords = [];
-    for (const st of mergedTokens) {
-      const { token, isContent } = toUniversalToken(st, wordDict);
-      segmentRenderTokens.push(token);
-      if (isContent) segmentWords.push(token.base);
-    }
-    const annotated = annotateRenderTokens(segmentRenderTokens, rawTokens, matches);
-    frame.tokens.push(...annotated);
-    frame.words.push(...segmentWords);
 
-    // Insert slot token after this segment's tokens
-    if (slotAfter) {
-      frame.tokens.push({ slot: slotAfter });
+    for (let s = 0; s < segments.length; s++) {
+      const seg = segments[s];
+      const offset = segmentOffsets[s];
+      const mergedTokens = mergeSudachiTokens(seg.rawTokens);
+      const segmentRenderTokens = [];
+      const segmentWords = [];
+      for (const st of mergedTokens) {
+        const { token, isContent } = toUniversalToken(st, wordDict);
+        segmentRenderTokens.push({
+          ...token,
+          rawTokenStart: token.rawTokenStart + offset,
+          rawTokenEnd: token.rawTokenEnd + offset,
+        });
+        if (isContent) segmentWords.push(token.base);
+      }
+      const annotated = annotateRenderTokens(segmentRenderTokens, unifiedRaw, matches);
+      frame.tokens.push(...annotated);
+      frame.words.push(...segmentWords);
+
+      if (seg.slotAfter) {
+        frame.tokens.push({ slot: seg.slotAfter });
+      }
     }
   }
 

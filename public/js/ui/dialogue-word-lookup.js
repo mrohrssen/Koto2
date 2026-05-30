@@ -1,7 +1,7 @@
 import { getKnownWords, addKnownWord } from './bootstrap-client.js';
 import { reviewVocabWord } from '../api.js';
 import { showWordLevelUp } from './word-level-up.js';
-import { buildHeadwordRuby } from './romaji.js';
+import { buildResolvedHeadwordRuby } from './romaji.js';
 import { playDialogueWordAudio } from '../tts.js';
 
 // DOM references (cached on init)
@@ -62,6 +62,13 @@ export function parseGrammarHints(value) {
   } catch {
     return [];
   }
+}
+
+export function buildLookupHeadwordHtml(dataset = {}) {
+  const headword = dataset.lookupHeadword || dataset.base || '';
+  const guideText = dataset.guideText || dataset.reading || '';
+  const guideKind = dataset.guideKind || 'romaji';
+  return buildResolvedHeadwordRuby(headword, guideText, guideKind);
 }
 
 /**
@@ -166,9 +173,12 @@ function handleWordClick(e, wordAudio = null) {
   const meaning = span.dataset.meaning || '';
   const pos = span.dataset.pos || '';
 
-  const useKanji = span.dataset.kanjiMode === '1';
-  const headword = base || grammarHints[0]?.matchedText || span.textContent || '';
-  dom.word.innerHTML = buildHeadwordRuby(headword, reading, useKanji);
+  const fallbackHeadword = base || grammarHints[0]?.matchedText || span.textContent || '';
+  dom.word.innerHTML = buildLookupHeadwordHtml({
+    ...span.dataset,
+    lookupHeadword: span.dataset.lookupHeadword || fallbackHeadword,
+    guideText: span.dataset.guideText || reading,
+  });
   dom.pos.textContent = pos;
 
   // Meanings: override (labeled "In this context") + dict definitions

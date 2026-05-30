@@ -1,10 +1,8 @@
-import { toRomaji } from './romaji.js';
 import { getKnownWords, esc } from './bootstrap-client.js';
 import {
-  getTokenBaseForm,
-  isContentExposureToken,
-  resolveExposureMeaning,
-} from '../shared/exposure-extractor.js';
+  buildJapaneseTokenCells,
+  tokenDataAttrs,
+} from './japanese-token-cells.js';
 import * as dialogueLookup from './dialogue-word-lookup.js';
 import { playDialogueAudio, playDialogueLineAudio, playNeutralLearnAudio } from '../tts.js';
 import { learnDialogue, translateDialogue } from '../api.js';
@@ -41,8 +39,6 @@ const MAX_TOKENS_PER_PAGE = 9;
 const MAX_TOKENS_PER_LINE = 4;
 const MAX_DIALOGUE_LINE_WEIGHT = 24;
 const DIALOGUE_COLUMN_GAP_WEIGHT = 1.5;
-const ATTACHABLE_PUNCT_RE = /^[\p{P}\p{S}]+$/u;
-const HIRAGANA_RE = /^[\u3040-\u309F]+$/u;
 
 function normalizeHeadshotKey(value) {
   return String(value || '')
@@ -57,37 +53,6 @@ function headshotPath(id) {
   return `${HEADSHOT_BASE}/${id}.webp?v=${HEADSHOT_VERSION}`;
 }
 
-function tokenBase(token) {
-  return getTokenBaseForm(token);
-}
-
-function displayReading(token, useKanji) {
-  if (!isContentExposureToken(token)) return token.surface || '';
-  if (useKanji) return token.surface || token.reading || token.baseForm || '';
-  return token.reading || token.surface || token.baseForm || '';
-}
-
-function tokenMeaning(token, wordDict, overrides) {
-  const meaning = resolveExposureMeaning(token, wordDict, overrides) || '';
-  const firstSense = meaning.split('/')[0].trim();
-  const parenIdx = firstSense.indexOf('(');
-  return parenIdx > 0 ? firstSense.slice(0, parenIdx).trim() : firstSense;
-}
-
-function attrsForToken(token, { wordDict, overrides, useKanji }, cell = null) {
-  const base = tokenBase(token);
-  const reading = cell ? cellReading(cell) : (token.reading || token.surface || base);
-  const audioText = `${token.surface || reading || base}${cell?.continuationSurface || ''}`;
-  const meaning = tokenMeaning(token, wordDict, overrides);
-  const pos = token.pos || '';
-  const meaningsJson = Array.isArray(token.meanings) ? JSON.stringify(token.meanings) : '';
-  let attrs = ` data-base="${esc(base)}" data-audio-text="${esc(audioText)}" data-reading="${esc(reading)}" data-meaning="${esc(meaning)}" data-pos="${esc(pos)}"`;
-  if (overrides?.[base]) attrs += ' data-override="1"';
-  if (meaningsJson) attrs += ` data-meanings="${esc(meaningsJson)}"`;
-  if (useKanji) attrs += ' data-kanji-mode="1"';
-  return attrs;
-}
-
 function chunkByCount(items, count) {
   const chunks = [];
   for (let i = 0; i < items.length; i += count) {
@@ -96,57 +61,34 @@ function chunkByCount(items, count) {
   return chunks;
 }
 
-function isAttachablePunctuation(token) {
-  const surface = token?.surface || '';
-  return !!surface && !isContentExposureToken(token) && ATTACHABLE_PUNCT_RE.test(surface);
+function dialogueCellsForTokens(tokens = [], options = {}) {
+  return buildJapaneseTokenCells({
+    tokens,
+    knownWords: options.knownWords || getKnownWords(),
+    wordDict: options.wordDict || null,
+    overrides: options.overrides || {},
+    useKanji: !!options.useKanji,
+    japaneseDisplayMode: options.japaneseDisplayMode,
+    mergeSmallTsuContinuation: true,
+  });
 }
 
-function isSmallTsuContinuation(token, previousCell) {
-  if (!previousCell || !isContentExposureToken(previousCell.token)) return false;
-  if (isContentExposureToken(token)) return false;
-
-  const previousReading = previousCell.token.reading || previousCell.token.surface || tokenBase(previousCell.token);
-  const continuationReading = token?.reading || token?.surface || '';
-  return previousReading.endsWith('っ') && HIRAGANA_RE.test(continuationReading);
+function primaryMeaning(cell) {
+  const firstSense = String(cell.meaning || '').split('/')[0].trim();
+  const parenIdx = firstSense.indexOf('(');
+  return parenIdx > 0 ? firstSense.slice(0, parenIdx).trim() : firstSense;
 }
 
-function dialogueCellsForTokens(tokens = []) {
-  const cells = [];
-  for (const token of tokens) {
-    const previousCell = cells[cells.length - 1];
-    if (isSmallTsuContinuation(token, previousCell)) {
-      previousCell.continuationSurface += token.surface || '';
-      previousCell.continuationReading += token.reading || token.surface || '';
-      continue;
-    }
-
-    if (isAttachablePunctuation(token) && cells.length > 0) {
-      cells[cells.length - 1].trailingPunct += token.surface || '';
-      continue;
-    }
-    cells.push({
-      token,
-      continuationSurface: '',
-      continuationReading: '',
-      trailingPunct: '',
-      standalone: !isContentExposureToken(token),
-    });
-  }
-  return cells;
+function audioTextForCell(cell) {
+  if (cell.kind !== 'word') return '';
+  return cell.surfaceWithContinuation || cell.surface || cell.reading || cell.base || '';
 }
 
-function cellReading(cell) {
-  const token = cell.token;
-  const reading = token.reading || token.surface || tokenBase(token);
-  return `${reading}${cell.continuationReading || cell.continuationSurface || ''}`;
-}
-
-function cellDisplay(cell, useKanji) {
-  const token = cell.token;
-  const continuation = useKanji
-    ? cell.continuationSurface
-    : (cell.continuationReading || cell.continuationSurface);
-  return `${displayReading(token, useKanji)}${continuation || ''}${cell.trailingPunct || ''}`;
+function dialogueAttrsForCell(cell) {
+  const sharedAttrs = tokenDataAttrs(cell);
+  const audioText = audioTextForCell(cell);
+  if (!audioText) return sharedAttrs;
+  return `${sharedAttrs} data-audio-text="${esc(audioText)}"`;
 }
 
 function textLength(value) {
@@ -154,27 +96,19 @@ function textLength(value) {
 }
 
 function estimateDialogueCellWeight(cell, {
-  knownWords = getKnownWords(),
-  wordDict = null,
-  overrides = {},
-  useKanji = false,
   includeMeaning = true,
 } = {}) {
-  const token = cell.token;
-  if (!isContentExposureToken(token)) {
-    return Math.max(1, textLength(`${token?.surface || ''}${cell.trailingPunct || ''}`) * 0.8);
+  if (cell.kind === 'punctuation') {
+    return Math.max(1, textLength(cell.display) * 0.8);
   }
 
-  const base = tokenBase(token);
-  const reading = cellReading(cell);
-  const display = cellDisplay(cell, useKanji);
-  const romaji = toRomaji(reading);
-  const isKnown = knownWords?.has?.(base);
-  const meaning = includeMeaning && !isKnown ? tokenMeaning(token, wordDict, overrides) : '';
+  const meaning = includeMeaning && cell.kind === 'word' && !cell.isKnown
+    ? primaryMeaning(cell)
+    : '';
 
   return Math.max(
-    textLength(display) * 1.5,
-    textLength(romaji) * 0.75,
+    textLength(cell.display) * 1.5,
+    textLength(cell.romaji) * 0.75,
     textLength(meaning) * 0.65,
     1
   );
@@ -210,7 +144,8 @@ function paginateTokens(tokens) {
   const pages = [];
   let current = [];
   for (const token of tokens) {
-    if (current.length >= MAX_TOKENS_PER_PAGE && !isAttachablePunctuation(token)) {
+    const tokenCell = buildJapaneseTokenCells({ tokens: [token], mergeSmallTsuContinuation: false })[0];
+    if (current.length >= MAX_TOKENS_PER_PAGE && tokenCell?.kind !== 'punctuation') {
       pages.push(current);
       current = [];
     }
@@ -220,15 +155,13 @@ function paginateTokens(tokens) {
   return pages;
 }
 
-function tokenSurface(token, useKanji) {
+function tokenSurface(token) {
   if (!token) return '';
-  if (!isContentExposureToken(token)) return token.surface || '';
-  if (useKanji) return token.surface || token.reading || token.baseForm || '';
   return token.surface || token.reading || token.baseForm || '';
 }
 
 export function getDialogueSourceText(tokens, useKanji = false) {
-  return (tokens || []).map(token => tokenSurface(token, useKanji)).join('').trim();
+  return (tokens || []).map(token => tokenSurface(token)).join('').trim();
 }
 
 function stableEntitySignature(entities = []) {
@@ -298,27 +231,27 @@ export function renderTranslationWithEntities(translation = '', entities = []) {
 function renderTranslationSourceRows({
   tokens,
   useKanji = false,
+  japaneseDisplayMode = null,
 } = {}) {
-  const lines = chunkDialogueCells(dialogueCellsForTokens(tokens || []), { useKanji, includeMeaning: false });
+  const lines = chunkDialogueCells(dialogueCellsForTokens(tokens || [], {
+    useKanji,
+    japaneseDisplayMode,
+  }), { includeMeaning: false });
   return lines.map(lineCells => {
     const pronunciation = [];
     const jp = [];
 
     for (const cell of lineCells) {
-      const token = cell.token;
-      if (!isContentExposureToken(token)) {
+      if (cell.kind === 'punctuation') {
         pronunciation.push('<span class="npc-dialogue-cell npc-dialogue-cell--punct"></span>');
-        jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(`${token.surface || ''}${cell.trailingPunct || ''}`)}</span>`);
+        jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(cell.display)}</span>`);
         continue;
       }
 
-      const base = tokenBase(token);
-      const reading = cellReading(cell);
-      const display = cellDisplay(cell, useKanji);
-      const pronunciationText = useKanji ? reading : toRomaji(reading);
+      pronunciation.push(`<span class="npc-dialogue-cell">${esc(cell.guideText)}</span>`);
 
-      pronunciation.push(`<span class="npc-dialogue-cell">${esc(pronunciationText)}</span>`);
-      jp.push(`<span class="npc-dialogue-cell jp-word">${esc(display)}</span>`);
+      const className = cell.kind === 'grammar' ? 'jp-grammar' : 'jp-word';
+      jp.push(`<span class="npc-dialogue-cell ${className}">${esc(cell.display)}</span>`);
     }
 
     return `
@@ -483,12 +416,16 @@ export function renderDialogueTokenRows({
   wordDict = null,
   overrides = {},
   useKanji = false,
+  japaneseDisplayMode = null,
 } = {}) {
-  const lines = chunkDialogueCells(dialogueCellsForTokens(tokens || []), {
+  const lines = chunkDialogueCells(dialogueCellsForTokens(tokens || [], {
     knownWords,
     wordDict,
     overrides,
     useKanji,
+    japaneseDisplayMode,
+  }), {
+    includeMeaning: true,
   });
   return lines.map(lineCells => {
     const romaji = [];
@@ -496,24 +433,25 @@ export function renderDialogueTokenRows({
     const en = [];
 
     for (const cell of lineCells) {
-      const token = cell.token;
-      if (!isContentExposureToken(token)) {
+      if (cell.kind === 'punctuation') {
         romaji.push('<span class="npc-dialogue-cell npc-dialogue-cell--punct"></span>');
-        jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(`${token.surface || ''}${cell.trailingPunct || ''}`)}</span>`);
+        jp.push(`<span class="npc-dialogue-cell jp-punct">${esc(cell.display)}</span>`);
         en.push('<span class="npc-dialogue-cell"></span>');
         continue;
       }
 
-      const base = tokenBase(token);
-      const reading = cellReading(cell);
-      const display = cellDisplay(cell, useKanji);
-      const isKnown = knownWords?.has?.(base);
-      const meaning = isKnown ? '' : tokenMeaning(token, wordDict, overrides);
-      const attrs = attrsForToken(token, { wordDict, overrides, useKanji }, cell);
-      const typeClass = token.entity ? 'jp-entity' : isKnown ? 'jp-known' : 'jp-unknown';
+      if (cell.kind === 'grammar') {
+        romaji.push(`<span class="npc-dialogue-cell">${esc(cell.guideText)}</span>`);
+        jp.push(`<span class="npc-dialogue-cell jp-grammar"${tokenDataAttrs(cell)}>${esc(cell.display)}</span>`);
+        en.push('<span class="npc-dialogue-cell"></span>');
+        continue;
+      }
 
-      romaji.push(`<span class="npc-dialogue-cell">${esc(toRomaji(reading))}</span>`);
-      jp.push(`<span class="npc-dialogue-cell jp-word ${typeClass}"${attrs}>${esc(display)}</span>`);
+      const meaning = cell.isKnown ? '' : primaryMeaning(cell);
+      const typeClass = cell.token?.entity ? 'jp-entity' : cell.isKnown ? 'jp-known' : 'jp-unknown';
+
+      romaji.push(`<span class="npc-dialogue-cell">${esc(cell.guideText)}</span>`);
+      jp.push(`<span class="npc-dialogue-cell jp-word ${typeClass}"${dialogueAttrsForCell(cell)}>${esc(cell.display)}</span>`);
       en.push(`<span class="npc-dialogue-cell">${esc(meaning)}</span>`);
     }
 
@@ -599,7 +537,11 @@ export function showNpcDialogueCard(options = {}) {
       const content = renderPageContent(options, pageTokens);
       const continueLabel = pageIndex < pages.length - 1 ? 'Next' : 'Continue';
       const sourceText = pageTokens?.length ? getDialogueSourceText(pageTokens, options.useKanji) : '';
-      const sourceHtml = pageTokens?.length ? renderTranslationSourceRows({ tokens: pageTokens, useKanji: options.useKanji }) : '';
+      const sourceHtml = pageTokens?.length ? renderTranslationSourceRows({
+        tokens: pageTokens,
+        useKanji: options.useKanji,
+        japaneseDisplayMode: options.japaneseDisplayMode,
+      }) : '';
       const translationEntities = pageTokens?.length ? getTranslationEntities(options, pageTokens) : [];
       const canTranslate = !!sourceText;
       const canLearn = !!sourceText && !!pageTokens?.length;

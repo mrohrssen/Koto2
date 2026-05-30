@@ -1,5 +1,5 @@
 import { animate as anime } from 'animejs';
-import { toRomaji } from './romaji.js';
+import { resolveJapaneseDisplay } from './japanese-display-resolver.js';
 import * as narrationBox from './narration-box.js';
 import { tPlain } from './i18n.js';
 import { showNpcDialogueCard } from './npc-dialogue-card.js';
@@ -19,6 +19,10 @@ function spriteUrlForPoolItem(item) {
   if (item?.type === 'item' && item.itemId) return itemSpriteUrl(item.itemId);
   if (item?.type === 'skill' && item.actionSlug) return actionIconUrlFromSlug(item.actionSlug);
   return item?.sprite || '';
+}
+
+function romajiGuideForReading(reading = '') {
+  return resolveJapaneseDisplay({ surface: reading, reading }, { japaneseDisplayMode: 'hiragana' }).guideText;
 }
 
 export class WhackAMoleGame {
@@ -124,7 +128,7 @@ export class WhackAMoleGame {
         </div>
         <div class="wam-word-card">
           <div class="wam-word-kanji">${target.reading}</div>
-          <div class="wam-word-reading">${toRomaji(target.reading)}</div>
+          <div class="wam-word-reading">${romajiGuideForReading(target.reading)}</div>
           <div class="wam-word-timer-bar"><div class="wam-word-timer-fill" id="wam-word-timer-fill"></div></div>
         </div>
         <div class="wam-grid" id="wam-grid">
@@ -162,7 +166,7 @@ export class WhackAMoleGame {
     const kanji = document.querySelector('.wam-word-kanji');
     const reading = document.querySelector('.wam-word-reading');
     if (kanji) kanji.textContent = target.reading;
-    if (reading) reading.textContent = toRomaji(target.reading);
+    if (reading) reading.textContent = romajiGuideForReading(target.reading);
   }
 
   _updateScoreDisplay() {
