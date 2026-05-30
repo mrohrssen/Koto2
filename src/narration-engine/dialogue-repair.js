@@ -109,6 +109,8 @@ export async function enforceDialogueVocab({
         systemBlocks,
         openaiModel: aiConfig.openaiModel,
         openrouterModel: aiConfig.openrouterModel,
+        claudeModel: aiConfig.claudeModel,
+        geminiModel: aiConfig.geminiModel,
         purpose: 'npc-dialogue-repair'
       });
 

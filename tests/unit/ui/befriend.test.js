@@ -435,103 +435,126 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
     assert.ok(tutorialErr, 'expected console.error for missing scene, got ' + JSON.stringify(errorCalls));
   });
 
-  it('renders befriend quiz creature dialogue and choices as action-area cards', async () => {
-    renderChoicesResults.push(1, 0); // choose Talk, then first name option
+  it('routes Wait -> Talk to the AI befriend conversation path', async () => {
+    renderChoicesResults.push(1, 0); // choose Talk, then first AI answer
+    let conversationStarted = false;
+
+    const state = {
+      meta: { tutorialStep: 0 },
+      combat: {
+        active: true,
+        enemies: [{ id: 'tetsu', name: '鉄', nameEn: 'Iron', reading: 'てつ', hp: 5, maxHp: 10, befriended: false }],
+        allies: []
+      },
+      run: { creatureParty: { active: [] } }
+    };
 
     const ctx = {
-      getGameState: () => ({ meta: { tutorialStep: 0 } }),
-      narration: { showNarration: async () => {} },
+      isCombatActive: () => true,
+      withAnimationActive: async (fn) => fn(),
+      getGameState: () => state,
+      apiGetBefriendConversation: async () => {
+        conversationStarted = true;
+        return {
+          userId: 'u1',
+          targetEnemy: state.combat.enemies[0],
+          targetEnemyIndex: 0,
+          rounds: [{
+            speaker: {
+              raw: '水が好き？',
+              tokens: [{ surface: '水', base: '水', reading: 'みず', meaning: 'water' }]
+            },
+            options: [
+              { raw: 'うん', tokens: [{ surface: 'うん', base: 'うん', reading: 'うん', meaning: 'yeah' }] },
+              { raw: 'いいえ', tokens: [{ surface: 'いいえ', base: 'いいえ', reading: 'いいえ', meaning: 'no' }] },
+              { raw: 'またね', tokens: [{ surface: 'またね', base: 'またね', reading: 'またね', meaning: 'see you' }] }
+            ]
+          }]
+        };
+      },
+      apiSubmitBefriendAnswer: async () => ({
+        correct: true,
+        correctIndex: 0,
+        conversationComplete: true,
+        befriend: { success: true, captured: { id: 'tetsu' } },
+        enemies: state.combat.enemies
+      }),
+      narration: { showNarration: async () => {}, forceHideNarration: () => {} },
+      delay: async () => {},
       updateGameState: () => {},
-      syncFinalState: () => {},
+      updateUI: () => {},
+      startMoveSelection: () => {},
       stopCombatLoop: () => {},
       spritePos: () => ({ x: 0, y: 0 }),
+      buildAllyHpMap: () => new Map(),
+      syncFinalState: () => {}
     };
     init(ctx);
 
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = async () => ({
-      json: async () => ({ correct: true, combatEnded: false }),
-    });
+    await renderBefriendQuiz({
+      targetIndex: 0,
+      creatureId: 'tetsu',
+      creatureName: '鉄',
+      creatureReading: 'てつ',
+      options: [{ id: 'tetsu', name: 'Iron' }],
+      waitPrompt: {
+        tokens: [{ surface: '待って', base: '待つ', reading: 'まって', meaning: 'wait' }],
+        audio: { userId: 'u1', key: 'wait.wav', speakerId: 113 }
+      }
+    }, { enemies: state.combat.enemies });
 
-    try {
-      await renderBefriendQuiz({
-        targetIndex: 0,
-        creatureId: 'tetsu',
-        creatureName: '鉄',
-        creatureReading: 'てつ',
-        options: [{ id: 'tetsu', name: 'Iron' }],
-        waitPrompt: {
-          tokens: [{ surface: '待って', base: '待つ', reading: 'まって', meaning: 'wait' }],
-          overrides: {},
-          audio: { userId: 'u1', key: 'wait.wav', speakerId: 113 },
-        },
-        namePrompt: {
-          tokens: [{ surface: '名前', base: '名前', reading: 'なまえ', meaning: 'name' }],
-          overrides: {},
-          audio: { userId: 'u1', key: 'name.wav', speakerId: 113 },
-        },
-      }, { enemies: [{ hp: 1, maxHp: 10 }] });
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
-
-    assert.equal(dialogueCardCalls[0].speaker, 'てつ');
-    assert.equal(dialogueCardCalls[0].speakerReading, 'tetsu');
-    assert.equal(dialogueCardCalls[0].speakerPortrait, '/creatures/tetsu.webp');
-    assert.equal(dialogueCardCalls[0].portraitKind, 'creature');
-    assert.deepEqual(dialogueCardCalls[0].audio, { userId: 'u1', key: 'wait.wav', speakerId: 113 });
-    assert.deepEqual(dialogueCardCalls[1].audio, { userId: 'u1', key: 'name.wav', speakerId: 113 });
+    assert.equal(conversationStarted, true);
     assert.equal(renderChoicesCalls[0].heading, 'Choose an action');
-    assert.deepEqual(renderChoicesCalls[0].cards.map(card => card.title), ['たたかう (Fight)', 'はなす (Talk)']);
-    assert.equal(renderChoicesCalls[1].heading, 'Choose your response');
   });
 
-  it('passes name prompt overrides to the dialogue card', async () => {
-    const nameTokens = [
-      { surface: '私', base: '私', reading: 'わたし', pos: 'Pronoun', meaning: 'my', meanings: ['I/me'] },
-      { surface: 'の' },
-      { surface: '名前', base: '名前', reading: 'なまえ', pos: 'Noun', meaning: 'name', meanings: ['name'] },
-      { surface: 'は' },
-      { surface: '？' },
-    ];
-    const overrides = { '私': 'my' };
-
-    renderChoicesResults.push(1, 0); // choose Talk, then first name option
-
-    const ctx = {
-      getGameState: () => ({ meta: { tutorialStep: 0 } }),
-      narration: { showNarration: async () => {} },
+  it('renders AI befriend answer options from tokenized data', async () => {
+    renderChoicesResults.push(0);
+    const state = {
+      combat: {
+        enemies: [{ id: 'mizu', name: '水', nameEn: 'Water', reading: 'みず', hp: 5, maxHp: 10, befriended: false }],
+        allies: []
+      },
+      run: { creatureParty: { active: [] } }
+    };
+    init({
+      isCombatActive: () => true,
+      withAnimationActive: async (fn) => fn(),
+      getGameState: () => state,
+      apiGetBefriendConversation: async () => ({
+        userId: 'u1',
+        targetEnemy: state.combat.enemies[0],
+        targetEnemyIndex: 0,
+        rounds: [{
+          speaker: {
+            raw: '水が好き？',
+            tokens: [{ surface: '水', base: '水', reading: 'みず', meaning: 'water' }]
+          },
+          options: [
+            { raw: 'うん', tokens: [{ surface: 'うん', base: 'うん', reading: 'うん', meaning: 'yeah' }] },
+            { raw: 'いいえ', tokens: [{ surface: 'いいえ', base: 'いいえ', reading: 'いいえ', meaning: 'no' }] },
+            { raw: 'またね', tokens: [{ surface: 'またね', base: 'またね', reading: 'またね', meaning: 'see you' }] }
+          ]
+        }]
+      }),
+      apiSubmitBefriendAnswer: async () => ({
+        correct: false,
+        correctIndex: 1,
+        enemyAttacks: [],
+        allies: [],
+        enemies: state.combat.enemies
+      }),
+      narration: { showNarration: async () => {}, forceHideNarration: () => {} },
+      delay: async () => {},
       updateGameState: () => {},
-      syncFinalState: () => {},
+      updateUI: () => {},
+      startMoveSelection: () => {},
       stopCombatLoop: () => {},
       spritePos: () => ({ x: 0, y: 0 }),
-    };
-    init(ctx);
-
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = async () => ({
-      json: async () => ({ correct: true, combatEnded: false }),
+      buildAllyHpMap: () => new Map(),
     });
 
-    try {
-      await renderBefriendQuiz({
-        targetIndex: 0,
-        creatureName: '鉄',
-        creatureReading: 'てつ',
-        options: [{ id: 'tetsu', name: 'Iron' }],
-        namePrompt: {
-          text: '私の名前は？',
-          tokens: nameTokens,
-          words: ['私', '名前'],
-          overrides,
-        },
-      }, { enemies: [{ hp: 1, maxHp: 10 }] });
-    } finally {
-      globalThis.fetch = originalFetch;
-    }
+    await executeBefriendAction();
 
-    const namePromptCall = dialogueCardCalls.find(call => call.tokens === nameTokens);
-    assert.ok(namePromptCall, 'expected namePrompt tokens to be rendered');
-    assert.deepEqual(namePromptCall.overrides, overrides);
+    assert.equal(renderChoicesCalls[0].cards[0].title, '<jp>');
   });
 });

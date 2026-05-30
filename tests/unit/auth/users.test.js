@@ -93,6 +93,45 @@ describe('auth/users', () => {
     assert.equal(keys.aiDataSharingConsent, true);
   });
 
+  it('migrates users without aiConversationsEnabled to enabled by default', async () => {
+    const encryptionKey = 'e'.repeat(64);
+    const user = await createUser('legacydialogue', 'pass123', TEST_FILE);
+    updateUserKeys(user.id, { aiDataSharingConsent: true }, encryptionKey, TEST_FILE);
+
+    const result = migrateAiConsentForExistingUsers({ filePath: TEST_FILE, encryptionKey });
+    assert.equal(result.totalUsers, 1);
+    assert.equal(result.migratedUsers, 1);
+
+    const migrated = findUserById(user.id, TEST_FILE);
+    const keys = decryptKeys(migrated.encryptedApiKeys, encryptionKey);
+    assert.equal(keys.aiDataSharingConsent, true);
+    assert.equal(keys.aiConversationsEnabled, true);
+  });
+
+  it('does not overwrite explicit aiConversationsEnabled false', () => {
+    const encryptionKey = 'f'.repeat(64);
+    saveUsers({
+      users: [{
+        id: 'u_dialogue_false',
+        username: 'dialoguefalse',
+        passwordHash: 'hash',
+        encryptedApiKeys: encryptKeys({
+          aiDataSharingConsent: true,
+          aiConversationsEnabled: false
+        }, encryptionKey),
+        createdAt: '2026-01-03T00:00:00.000Z'
+      }],
+      inviteCodes: []
+    }, TEST_FILE);
+
+    migrateAiConsentForExistingUsers({ filePath: TEST_FILE, encryptionKey });
+
+    const data = loadUsers(TEST_FILE);
+    const user = data.users.find(u => u.id === 'u_dialogue_false');
+    const keys = decryptKeys(user.encryptedApiKeys, encryptionKey);
+    assert.equal(keys.aiConversationsEnabled, false);
+  });
+
   it('migrates users with no encrypted keys and does not overwrite explicit consent', () => {
     const encryptionKey = 'd'.repeat(64);
     saveUsers({
@@ -105,7 +144,7 @@ describe('auth/users', () => {
 
     const result = migrateAiConsentForExistingUsers({ filePath: TEST_FILE, encryptionKey });
     assert.equal(result.totalUsers, 2);
-    assert.equal(result.migratedUsers, 1);
+    assert.equal(result.migratedUsers, 2);
     assert.equal(result.skippedUsers, 0);
 
     const data = loadUsers(TEST_FILE);
@@ -116,5 +155,6 @@ describe('auth/users', () => {
     const explicitFalse = data.users.find(u => u.id === 'u_false');
     const explicitFalsePayload = decryptKeys(explicitFalse.encryptedApiKeys, encryptionKey);
     assert.equal(explicitFalsePayload.aiDataSharingConsent, false);
+    assert.equal(explicitFalsePayload.aiConversationsEnabled, true);
   });
 });

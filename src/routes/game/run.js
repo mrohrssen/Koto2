@@ -11,6 +11,7 @@ import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.j
 import { getAreaById } from '../../game/rooms.js';
 import { applyItem } from '../../game/services/item-service.js';
 import { buildGlobalAiConfig } from './route-helpers.js';
+import { buildAiDialogueConfig, canUseAiDialogue } from '../../ai-dialogue/config.js';
 import {
   CRYSTAL_COSTS,
   CRYSTAL_REASONS,
@@ -58,6 +59,13 @@ const movesPath = join(__dirname, '../../../data/moves.json');
 const allCreatures = JSON.parse(readFileSync(creaturesPath, 'utf8'));
 const allItems = JSON.parse(readFileSync(itemsPath, 'utf8'));
 const allMoves = JSON.parse(readFileSync(movesPath, 'utf8'));
+
+export function getCurrentAreaDialogueEntityIds(run = {}) {
+  const area = run.currentArea || null;
+  const areaCreatureIds = Array.isArray(area?.creatures) ? area.creatures : [];
+  const bossCreatureId = area?.bossCreatureId ? [area.bossCreatureId] : [];
+  return [...new Set([...areaCreatureIds, ...bossCreatureId])];
+}
 
 function loadQuizQuestions() {
   const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));
@@ -138,21 +146,30 @@ export default function createRunRoutes({
   /** Fire-and-forget: queue missing creature + NPC dialogues for current run */
   function queueBackgroundDialogues(req) {
     const userKeys = req.userKeys || {};
-    if (userKeys.aiDataSharingConsent !== true) return;
 
+    const aiDialogueConfig = buildAiDialogueConfig();
+    if (queueMissingCreatureDialoguesFn && getUserVocabulary && canUseAiDialogue(userKeys, aiDialogueConfig)) {
+      const entityIds = getCurrentAreaDialogueEntityIds(req.gameManager?.run);
+      if (entityIds.length > 0) {
+        const { words: vocabulary } = getUserVocabulary(req.user.id);
+        const vocabSet = new Set(vocabulary);
+        const checkViolationsFn = checkSentenceViolations
+          ? (text) => checkSentenceViolations(text, vocabSet, new Set())
+          : null;
+        queueMissingCreatureDialoguesFn(
+          req.user.id,
+          aiDialogueConfig,
+          { words: vocabulary, checkViolationsFn },
+          { entityIds }
+        ).catch(e => {
+          console.error('[CreatureDialogue] Background generation failed:', e.message);
+        });
+      }
+    }
+
+    if (userKeys.aiDataSharingConsent !== true) return;
     const aiConfig = buildGlobalAiConfig(userKeys.jlptLevel || 'N4');
     if (!aiConfig) return;
-
-    if (queueMissingCreatureDialoguesFn && getUserVocabulary) {
-      const { words: vocabulary } = getUserVocabulary(req.user.id);
-      const vocabSet = new Set(vocabulary);
-      const checkViolationsFn = checkSentenceViolations
-        ? (text) => checkSentenceViolations(text, vocabSet, new Set())
-        : null;
-      queueMissingCreatureDialoguesFn(req.user.id, aiConfig, { words: vocabulary, checkViolationsFn }).catch(e => {
-        console.error('[CreatureDialogue] Background generation failed:', e.message);
-      });
-    }
 
     if (queueMissingNpcDialoguesFn && getUserVocabulary) {
       const { words: vocabulary } = getUserVocabulary(req.user.id);

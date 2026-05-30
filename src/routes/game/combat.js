@@ -9,6 +9,8 @@ import { selectNpcLine } from '../../game/dialogue-filter.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
 import { getDebugSuperAttackForUser } from '../../game/debug-super-attack-access.js';
+import { buildAiDialogueConfig, canUseAiDialogue } from '../../ai-dialogue/config.js';
+import { buildBefriendDisplayRounds } from '../../game/services/befriend-dialogue-display-service.js';
 
 function shouldLogCombatRouteTiming() {
   return true;
@@ -54,7 +56,8 @@ export default function createCombatRoutes({
   setNpcMemoryFlagFn,
   updateNpcMemoryBondFn,
   checkSentenceViolations,
-  getDialogueCardAudio
+  getDialogueCardAudio,
+  isCreatureDialogueStaleFn
 }) {
   const router = Router();
 
@@ -491,9 +494,20 @@ export default function createCombatRoutes({
     }
 
     try {
+      const aiConfig = buildAiDialogueConfig();
+      if (!canUseAiDialogue(req.userKeys || {}, aiConfig)) {
+        return res.status(403).json({
+          error: 'AI conversations are unavailable. Enable AI Conversations in Settings, or try again later if server AI is not configured.'
+        });
+      }
+
       let cached = getCreatureDialogueFromCache?.(req.user.id, target.id);
-      if (!cached?.rounds) {
-        const vocabConfig = buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSentenceViolations);
+      const vocabConfig = buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSentenceViolations);
+      const stale = cached?.rounds && isCreatureDialogueStaleFn
+        ? isCreatureDialogueStaleFn(req.user.id, target.id, { words: vocabConfig?.vocabulary || [] }, 'creature')
+        : false;
+
+      if (!cached?.rounds || stale) {
         if (!vocabConfig) {
           if (allowDevBefriendFallback()) {
             const rounds = buildDevFallbackBefriendRounds(target);
@@ -516,12 +530,12 @@ export default function createCombatRoutes({
             });
           }
 
-          console.warn('[BefriendConversation] No AI config: add API keys in Settings or set OPENAI_API_KEY (etc.) in .env');
+          console.warn('[BefriendConversation] AI dialogue unavailable: missing consent, toggle, vocab, or AI_DIALOGUE_* config');
           return res.status(503).json({
-            error: 'Befriend dialogue needs an AI API key. Add one in Settings, or for local play set OPENAI_API_KEY in .env.'
+            error: 'AI conversations are unavailable. Try again later.'
           });
         }
-        console.log(`[CreatureDialogue] No cached dialogue for ${target.id}, generating on-demand`);
+        console.log(`[CreatureDialogue] ${stale ? 'Stale' : 'No'} cached dialogue for ${target.id}, generating on-demand`);
         await regenCreatureDialogueFn(
           req.user.id, target.id, vocabConfig.aiConfig,
           { words: vocabConfig.vocabulary, checkViolationsFn: vocabConfig.checkViolationsFn }
@@ -533,7 +547,7 @@ export default function createCombatRoutes({
       if (!rounds) {
         console.error(`[BefriendConversation] Generation produced no cache for ${target.id} (AI error, vocab repair, or missing creature data)`);
         return res.status(503).json({
-          error: 'Creature dialogue generation failed. Check server logs; try again or ensure AI keys are configured.'
+          error: 'AI conversations are unavailable. Try again later.'
         });
       }
 
@@ -547,13 +561,12 @@ export default function createCombatRoutes({
 
       req.saveGame();
 
-      // Return rounds WITHOUT correctIndex, but include TTS fields
-      const clientRounds = rounds.map(r => ({
-        speaker: r.speaker,
-        speakerTts: r.speakerTts || undefined,
-        options: r.options,
-        optionsTts: r.optionsTts || undefined
-      }));
+      // Return display rounds WITHOUT correctIndex. The server-side combat state
+      // keeps raw rounds with correctIndex for /befriend-answer validation.
+      const clientRounds = buildBefriendDisplayRounds(rounds, {
+        userId: req.user.id,
+        dict: getWordDict()
+      });
 
       res.json({
         userId: req.user.id,
@@ -589,7 +602,7 @@ export default function createCombatRoutes({
     req.saveGame();
 
     if (result.needsDialogueRegen && regenCreatureDialogueFn) {
-      const vocabConfig = buildVocabConfig(req, getUserVocabulary, checkSentenceViolations);
+      const vocabConfig = buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSentenceViolations);
       if (vocabConfig) {
         regenCreatureDialogueFn(
           req.user.id, result.targetEnemy?.id, vocabConfig.aiConfig,

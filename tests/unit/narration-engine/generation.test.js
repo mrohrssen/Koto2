@@ -206,5 +206,29 @@ describe('generation', () => {
       assert.ok(result);
       assert.strictEqual(result.greeting, 'やあ！');
     });
+
+    it('forwards Claude and Gemini model fields to chatFn', async () => {
+      const calls = [];
+      const mockChat = async (args) => {
+        calls.push(args);
+        return JSON.stringify(validBefriend);
+      };
+      const result = await generateDialogue({
+        chatFn: mockChat,
+        systemPrompt: 'system',
+        userPrompt: 'user',
+        aiConfig: {
+          provider: 'anthropic',
+          apiKey: 'key',
+          claudeModel: 'claude-test',
+          geminiModel: 'gemini-test'
+        },
+        entityType: 'creature'
+      });
+
+      assert.ok(result);
+      assert.equal(calls[0].claudeModel, 'claude-test');
+      assert.equal(calls[0].geminiModel, 'gemini-test');
+    });
   });
 });

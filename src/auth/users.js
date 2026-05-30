@@ -136,8 +136,9 @@ export function updateUserKeys(userId, keys, encryptionKey, filePath = DEFAULT_F
 }
 
 /**
- * Backfill aiDataSharingConsent for existing users that predate the consent field.
- * Preserves existing encrypted key payloads and only writes when consent is missing.
+ * Backfill AI consent/conversation defaults for existing users that predate
+ * those fields. Preserves existing encrypted key payloads and only writes when
+ * a field is missing.
  *
  * @param {{ filePath?: string, encryptionKey?: string }} options
  * @returns {{ totalUsers: number, migratedUsers: number, skippedUsers: number }}
@@ -163,9 +164,20 @@ export function migrateAiConsentForExistingUsers({
       }
     }
 
-    if (typeof keys.aiDataSharingConsent === 'boolean') continue;
+    let changed = false;
 
-    keys.aiDataSharingConsent = true;
+    if (typeof keys.aiDataSharingConsent !== 'boolean') {
+      keys.aiDataSharingConsent = true;
+      changed = true;
+    }
+
+    if (typeof keys.aiConversationsEnabled !== 'boolean') {
+      keys.aiConversationsEnabled = true;
+      changed = true;
+    }
+
+    if (!changed) continue;
+
     user.encryptedApiKeys = encryptKeys(keys, encryptionKey);
     migratedUsers += 1;
   }

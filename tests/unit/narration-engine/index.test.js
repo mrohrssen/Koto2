@@ -7,6 +7,8 @@ import {
   queueMissingDialogues,
   logEncounter,
   regenerateDialogue,
+  normalizeEntityAllowlist,
+  isDialogueCacheStale,
   setMemoryFlag,
   updateMemoryBond,
   setNarrative
@@ -21,6 +23,24 @@ describe('narration-engine public interface', () => {
   });
 
   describe('creature entity type support', () => {
+    it('normalizes entity allowlist to existing card ids only', () => {
+      const result = normalizeEntityAllowlist(['hi', 'missing', 'hi'], {
+        hi: {},
+        mizu: {}
+      });
+      assert.deepStrictEqual(result, ['hi']);
+    });
+
+    it('treats a missing cache entry as stale', () => {
+      const result = isDialogueCacheStale(
+        'test-user-stale-missing',
+        'hi',
+        { words: ['水'] },
+        'creature'
+      );
+      assert.strictEqual(result, true);
+    });
+
     it('getDialogueFromCache accepts entityType', () => {
       const result = getDialogueFromCache('test-user-creature', 'kamedor', 'creature');
       assert.strictEqual(result, null);

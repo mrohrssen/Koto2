@@ -56,6 +56,16 @@ export async function openSettings() {
           min="0" max="50" value="${dailyWordLimitSetting}">
         <small style="color:#888;font-size:0.85em">0 = skip discovery rooms, max 50</small>
       </label>
+      <label class="settings-label" style="margin-top:12px">
+        <input type="checkbox" id="settings-ai-conversations"
+          ${keyInfo.aiConversationsEnabled !== false ? 'checked' : ''}
+          ${keyInfo.aiDataSharingConsent === true ? '' : 'disabled'}>
+        AI Conversations
+        <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">
+          Uses server-configured AI to generate character dialogue from your known vocabulary.
+          ${keyInfo.aiDataSharingConsent === true ? '' : 'AI data-sharing consent is required.'}
+        </small>
+      </label>
       <hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0">
 
       ${showDebugSuperAttack ? `
@@ -348,6 +358,7 @@ export async function openSettings() {
     const sfxVol = parseInt(document.getElementById('settings-sfx-volume')?.value || '80') / 100;
     const ttsVol = parseInt(document.getElementById('settings-tts-volume')?.value || '100') / 100;
     const audioMuted = document.getElementById('settings-audio-muted')?.checked;
+    const aiConversationsEnabled = document.getElementById('settings-ai-conversations')?.checked;
 
     // Apply local-only settings immediately (never blocked by server calls)
     if (settingsModule.setAiNarrationEnabled) {
@@ -371,6 +382,7 @@ export async function openSettings() {
     // Save learning settings to server.
     const keysToSave = {};
     if (jlptLevel) keysToSave.jlptLevel = jlptLevel;
+    keysToSave.aiConversationsEnabled = aiConversationsEnabled === true;
 
     if (Object.keys(keysToSave).length > 0) {
       const saved = await settingsModule.saveApiKeysToServer(keysToSave);

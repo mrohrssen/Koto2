@@ -135,11 +135,11 @@ describe('character-cards', () => {
     });
 
     it('retrieves individual creature card by id', () => {
-      const card = getCharacterCard('kamedor', 'creature');
+      const card = getCharacterCard('hi', 'creature');
       assert.ok(card);
-      assert.strictEqual(card.id, 'kamedor');
-      assert.strictEqual(card.element, 'water');
-      assert.strictEqual(card.archetype, 'Tank/Healer');
+      assert.strictEqual(card.id, 'hi');
+      assert.strictEqual(card.element, 'fire');
+      assert.strictEqual(card.archetype, 'Fighter');
     });
 
     it('returns null for unknown creature id', () => {

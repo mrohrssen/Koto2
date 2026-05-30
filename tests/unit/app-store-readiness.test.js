@@ -43,9 +43,18 @@ describe('App Store readiness static checks', () => {
     assert.equal(settingsUi.includes('Enable AI Narration'), false);
   });
 
-  it('keeps hidden narration controls enabled even when old local storage disabled them', async () => {
+  it('exposes AI Conversations as a user setting while keeping consent in registration', () => {
+    const html = read('public/index.html');
+    const settingsUi = read('public/js/ui/modals.js');
+
+    assert.equal(html.includes('third-party AI providers'), true);
+    assert.equal(settingsUi.includes('settings-ai-conversations'), true);
+    assert.equal(settingsUi.includes('AI Conversations'), true);
+    assert.equal(settingsUi.includes('settings-ai-consent'), false);
+  });
+
+  it('keeps legacy AI narration localStorage from disabling server AI conversations', async () => {
     const store = new Map([
-      ['jrpg_ttsEnabled', 'false'],
       ['jrpg_aiNarrationEnabled', 'false'],
     ]);
     const previousLocalStorage = globalThis.localStorage;
@@ -57,15 +66,12 @@ describe('App Store readiness static checks', () => {
 
     try {
       const settingsUrl = pathToFileURL(join(root, 'public/js/settings.js')).href;
-      const settings = await import(`${settingsUrl}?forcedNarration=${Date.now()}`);
+      const settings = await import(`${settingsUrl}?aiConversations=${Date.now()}`);
 
-      assert.equal(settings.isTtsEnabled(), true);
       assert.equal(settings.isAiNarrationEnabled(), true);
 
-      settings.setTtsEnabled(false);
       settings.setAiNarrationEnabled(false);
 
-      assert.equal(settings.isTtsEnabled(), true);
       assert.equal(settings.isAiNarrationEnabled(), true);
     } finally {
       globalThis.localStorage = previousLocalStorage;

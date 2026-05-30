@@ -46,6 +46,7 @@ import {
   queueMissingDialogues as queueNpcDialogues,
   logEncounter as logNpcEncounter,
   regenerateDialogue as regenNpcDialogue,
+  isDialogueCacheStale,
   setMemoryFlag as setNpcMemoryFlag,
   updateMemoryBond as updateNpcMemoryBond
 } from './src/narration-engine/index.js';
@@ -276,10 +277,12 @@ const app = createApp({
       getNpcDialogueFromCache(userId, creatureId, 'creature'),
     getAllCreatureDialogueCache: (userId) =>
       getAllNpcDialogueCache(userId, 'creature'),
-    queueMissingCreatureDialoguesFn: async (userId, aiConfig, vocabContext) =>
-      queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
+    queueMissingCreatureDialoguesFn: async (userId, aiConfig, vocabContext, options = {}) =>
+      queueNpcDialogues(userId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions(), options),
     regenCreatureDialogueFn: async (userId, creatureId, aiConfig, vocabContext) =>
       regenNpcDialogue(userId, creatureId, chat, aiConfig, vocabContext, 'creature', buildTtsOptions()),
+    isCreatureDialogueStaleFn: (userId, creatureId, vocabContext) =>
+      isDialogueCacheStale(userId, creatureId, vocabContext, 'creature'),
     // NPC narration engine deps
     getNpcDialogueFromCache,
     getAllNpcDialogueCache,

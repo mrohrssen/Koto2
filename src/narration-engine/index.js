@@ -10,6 +10,7 @@ import { logger } from '../logger.js';
 // Per-user instances, keyed by `${userId}:${entityType}`
 const _memories = new Map();
 const _caches = new Map();
+const _inFlightGenerations = new Map();
 
 function getMemory(userId, entityType = 'npc') {
   const key = `${userId}:${entityType}`;
@@ -64,11 +65,32 @@ export function invalidateNarrationUser(userId) {
  * Queue generation for all entities that are missing or stale in cache.
  * Fire-and-forget — runs in background with concurrency limit.
  */
-export async function queueMissingDialogues(userId, chatFn, aiConfig, vocabContext, entityType = 'npc', ttsOptions = null) {
+export function normalizeEntityAllowlist(entityIds, cards) {
+  if (!Array.isArray(entityIds) || entityIds.length === 0) return Object.keys(cards || {});
+  const cardSet = new Set(Object.keys(cards || {}));
+  const seen = new Set();
+  const result = [];
+  for (const id of entityIds) {
+    if (!cardSet.has(id) || seen.has(id)) continue;
+    seen.add(id);
+    result.push(id);
+  }
+  return result;
+}
+
+export async function queueMissingDialogues(
+  userId,
+  chatFn,
+  aiConfig,
+  vocabContext,
+  entityType = 'npc',
+  ttsOptions = null,
+  options = {}
+) {
   const vocab = vocabContext?.words || vocabContext || [];
   const vocabCount = Array.isArray(vocab) ? vocab.length : 0;
   const cards = loadCharacterCards(entityType === 'creature' ? 'creature' : 'npc');
-  const entityIds = Object.keys(cards);
+  const entityIds = normalizeEntityAllowlist(options.entityIds, cards);
   const cache = getCache(userId, entityType);
   const memory = getMemory(userId, entityType);
   const { getMemorySnapshot } = getEntityType(entityType);
@@ -96,9 +118,19 @@ export async function queueMissingDialogues(userId, chatFn, aiConfig, vocabConte
   for (let i = 0; i < toGenerate.length; i += CONCURRENCY) {
     const batch = toGenerate.slice(i, i + CONCURRENCY);
     await Promise.allSettled(
-      batch.map(id => generateAndCache(userId, id, chatFn, aiConfig, vocabContext, entityType, ttsOptions))
+      batch.map(id => generateAndCacheDeduped(userId, id, chatFn, aiConfig, vocabContext, entityType, ttsOptions))
     );
   }
+}
+
+export function isDialogueCacheStale(userId, entityId, vocabContext, entityType = 'npc') {
+  const vocab = vocabContext?.words || vocabContext || [];
+  const vocabCount = Array.isArray(vocab) ? vocab.length : 0;
+  const memory = getMemory(userId, entityType);
+  const cache = getCache(userId, entityType);
+  const { getMemorySnapshot } = getEntityType(entityType);
+  const mem = memory.getMemory(entityId);
+  return cache.isStale(entityId, vocabCount, getMemorySnapshot(mem));
 }
 
 /**
@@ -113,7 +145,7 @@ export function logEncounter(userId, entityId, outcome, summary, entityType = 'n
  * Runs in background — returns a promise.
  */
 export async function regenerateDialogue(userId, entityId, chatFn, aiConfig, vocabContext, entityType = 'npc', ttsOptions = null) {
-  return generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext, entityType, ttsOptions);
+  return generateAndCacheDeduped(userId, entityId, chatFn, aiConfig, vocabContext, entityType, ttsOptions);
 }
 
 /**
@@ -138,6 +170,15 @@ export function setNarrative(userId, entityId, narrative, entityType = 'npc') {
 }
 
 // --- Internal ---
+
+async function generateAndCacheDeduped(userId, entityId, chatFn, aiConfig, vocabContext, entityType, ttsOptions) {
+  const key = `${userId}:${entityType}:${entityId}`;
+  if (_inFlightGenerations.has(key)) return _inFlightGenerations.get(key);
+  const promise = generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext, entityType, ttsOptions)
+    .finally(() => _inFlightGenerations.delete(key));
+  _inFlightGenerations.set(key, promise);
+  return promise;
+}
 
 async function generateAndCache(userId, entityId, chatFn, aiConfig, vocabContext, entityType = 'npc', ttsOptions = null) {
   const cardType = entityType === 'creature' ? 'creature' : 'npc';

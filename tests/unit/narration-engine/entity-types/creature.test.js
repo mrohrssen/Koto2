@@ -123,6 +123,25 @@ describe('entity-types/creature', () => {
       const labels = result.systemBlocks.map(b => b.label);
       assert.ok(!labels.includes('lorebook'));
     });
+    it('instructs AI creature speaker lines to be questions or clear prompts', () => {
+      const { userPrompt, systemBlocks } = assemblePrompt({
+        characterCard: {
+          id: 'hi',
+          name: '火',
+          nameEn: 'Fire',
+          personality: 'Brave and direct',
+          exampleDialogue: ['行こう！']
+        },
+        vocabWords: ['行く', '水', '好き'],
+        jlptLevel: 'N4',
+        memory: null,
+        previousLines: []
+      });
+
+      const allPromptText = [userPrompt, ...systemBlocks.map(b => b.text)].join('\n');
+      assert.match(allPromptText, /question or clear conversational prompt/i);
+      assert.match(allPromptText, /contextually wrong/i);
+    });
   });
 
   describe('getPreviousLines', () => {

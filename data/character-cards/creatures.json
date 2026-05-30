@@ -1,557 +1,1010 @@
 {
-  "kamedor": {
-    "id": "kamedor",
-    "name": "カメドル",
-    "nameEn": "Kamedor",
+  "hi": {
+    "id": "hi",
+    "name": "火",
+    "nameEn": "Fire",
+    "element": "fire",
+    "archetype": "Fighter",
+    "personality": "Acts like a tiny heroic campfire that wants to prove even a small flame can protect friends. As a bold little champion who tests courage before trusting anyone, it speaks through warmth, courage, urgency, and bright sparks.",
+    "quirk": "Uses fire imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "こわくない！",
+      "行こう！",
+      "まだできる！"
+    ]
+  },
+  "mizu": {
+    "id": "mizu",
+    "name": "水",
+    "nameEn": "Water",
     "element": "water",
-    "archetype": "Tank/Healer",
-    "description": "This ancient creature carries a shell that resembles a crumbling temple dome, its surface covered in overlapping plates of oxidized bronze and deep jade stone. Cracks along the shell's ridges leak a slow, honey-colored light — old energy that has been accumulating for millennia. Its head is broad and flat, with a hooked beak stained dark from ages of use, and two curved horns like eroded pillars frame its brow. Its eyes are deep amber, calm and unblinking, set in sockets ringed by concentric grooves like tree rings. Fossilized coral and tiny crystallized shells are embedded in its legs, relics of seas that dried up long ago. A faint aura of dust motes and golden particles drifts around it perpetually, as though the creature is slowly exhaling history.",
-    "personality": "Patient, gentle, and protective. Speaks slowly and deliberately, like the steady flow of a deep river.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
+    "archetype": "Fighter",
+    "personality": "Moves like a calm stream and tries to wash fear out of the room before making a choice. As a bold little champion who tests courage before trusting anyone, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses water imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
     "exampleDialogue": [
       "ゆっくり行こう。",
       "水が好き。",
-      "雨の音、いいね。"
+      "大丈夫だよ。"
     ]
   },
-  "umarak": {
-    "id": "umarak",
-    "name": "ウマラク",
-    "nameEn": "Umarak",
-    "element": "earth",
+  "ki": {
+    "id": "ki",
+    "name": "木",
+    "nameEn": "Tree",
+    "element": "wood",
     "archetype": "Fighter",
-    "description": "A muscular stallion creature built like a living landslide, its body encased in cracked earth-tone armor plates that shift and grind as it moves. Its mane is a wild torrent of dust and stone fragments, whipping backward as if caught in a perpetual sandstorm. Deep fissures run along its flanks, glowing with a molten amber light that pulses with each heavy breath. Its hooves are obsidian-black and scarred from countless charges, leaving smoldering cracks in the ground beneath. Ember-orange eyes burn with an untamable fury under a heavy brow ridge of layered stone. Plumes of ochre dust spiral upward from its shoulders, and when it rears back to kick, shards of compressed earth detonate outward like shrapnel.",
-    "personality": "Stubborn, powerful, and direct. Speaks bluntly with no wasted words.",
-    "quirk": "Uses steady, grounded metaphors and references solid things",
-    "exampleDialogue": [
-      "しっかり立とう。",
-      "大丈夫だよ。",
-      "ここにいるよ。"
-    ]
-  },
-  "chouri": {
-    "id": "chouri",
-    "name": "チョウリ",
-    "nameEn": "Chouri",
-    "element": "wood",
-    "archetype": "Trickster",
-    "description": "A fantastical butterfly creature built on a classic lepidopteran body plan — a stout, segmented abdomen tapering to a point, a round fuzzy thorax, and a small head with enormous dewy eyes the color of sea glass. Its four wings are its most striking feature: enormous and rounded like a peacock butterfly's, made of layered translucent crystal in shades of mint, teal, and pale gold, with dark fractal patterns that shift and rearrange like a living optical illusion. The wing surfaces shimmer with an oily iridescence, and their edges dissolve into trailing sparkles of teal light. A thick ruff of pale green fur encircles its neck like a scarf. Its curled proboscis occasionally unfurls to taste the air. Ghostly afterimage wings — slightly larger and more transparent — pulse in and out of visibility behind the real ones, creating a perpetual double-exposure effect. Six delicate legs dangle beneath it, each tipped with a tiny crystalline claw. It floats with a bobbing, playful rhythm. Entirely insect — no arms, no humanoid features.",
-    "personality": "Whimsical, evasive, and playful. Speaks in riddles and half-truths, always dancing around the point.",
-    "quirk": "References plants, seasons, and the forest in casual conversation",
+    "personality": "Feels like a young guardian tree, stubbornly reaching upward while sheltering smaller companions. As a bold little champion who tests courage before trusting anyone, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses tree / wood imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
     "exampleDialogue": [
       "花がきれい。",
-      "春が好き。",
-      "風が気持ちいい。"
+      "風が気持ちいい。",
+      "いっしょに行こう。"
     ]
   },
-  "hebiveil": {
-    "id": "hebiveil",
-    "name": "ヘビヴェイル",
-    "nameEn": "Hebiveil",
-    "element": "wood",
-    "archetype": "Trickster",
-    "description": "Hebiveil's body is woven from living vines and broad tropical leaves, each scale a teardrop-shaped leaf that ripples in shades of bright emerald and lime. Its underbelly is pale cream with faint vein-like patterns that pulse a soft chartreuse when it moves. A collar of curled fern fronds fans out behind its head like a jester's ruff, giving it a perpetually mischievous look. Its eyes are large, round, and amber — always darting, always watching, with vertical slit pupils that widen when it spots something interesting. Speed-line markings run along its flanks in darker green, and when it strikes, its tail leaves a brief streak of dissolving leaf particles. It moves with a bouncy, playful energy — coiling loosely around branches and springing forward with startling quickness, more acrobat than predator.",
-    "personality": "Whimsical, evasive, and playful. Speaks in riddles and half-truths, always dancing around the point.",
-    "quirk": "References plants, seasons, and the forest in casual conversation",
-    "exampleDialogue": [
-      "花がきれい。",
-      "春が好き。",
-      "風が気持ちいい。"
-    ]
-  },
-  "kumaro": {
-    "id": "kumaro",
-    "name": "クマロ",
-    "nameEn": "Kumaro",
+  "ishi": {
+    "id": "ishi",
+    "name": "石",
+    "nameEn": "Stone",
     "element": "earth",
     "archetype": "Tank/Healer",
-    "description": "A barrel-bodied bear creature built like a sumo wrestler, its frame packed with smooth river stones that press outward from beneath tawny, sand-colored fur. Its belly is enormous and round, plated with interlocking flat stones polished to a warm terracotta sheen, each one fitted so tightly they shift like tectonic plates when it moves. Its paws are wide and padded with dark clay, the digits thick and stubby with blunt amber claws meant for gripping, not slashing. Two small ears sit atop a broad, flat-browed head, and its eyes are steady and calm — dark brown irises ringed with a faint golden glow like sunbaked earth. When it plants its feet, hairline cracks radiate outward through the ground, and loose pebbles tremble and orbit its ankles. A faint haze of warm dust rises from its back with every slow, deliberate breath, as though the creature is exhaling the heat of sun-warmed stone.",
-    "personality": "Solid, dependable, and unhurried. Speaks with reassuring calm, like a mountain that never moves.",
-    "quirk": "Uses steady, grounded metaphors and references solid things",
+    "personality": "Has the patience of a pebble in a riverbed and trusts actions more than promises. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses stone imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
     "exampleDialogue": [
+      "ここにいるよ。",
       "しっかり立とう。",
-      "大丈夫だよ。",
-      "ここにいるよ。"
+      "大丈夫だよ。"
     ]
   },
-  "yuureimu": {
-    "id": "yuureimu",
-    "name": "ユウレイム",
-    "nameEn": "Yuureimu",
-    "element": "water",
-    "archetype": "Trickster",
-    "description": "A small, buoyant creature that looks like a torn scrap of spectral cloth drifting through the air, its body a single flowing sheet of translucent white fabric that ripples and billows as if caught in an unfelt breeze. Two large, round eyes — pale blue with pinprick pupils — peer out from beneath a peaked fold at the top, giving it the classic ghost silhouette instantly recognizable from any haunted house. Its edges fray into ragged tendrils of mist that dissolve into nothing, so the creature seems to be perpetually unraveling at the hem without ever getting smaller. A faint blue-white glow emanates from within the fabric, brightest around the eyes and dimming toward the tattered edges. Cold vapor curls off its surface like breath on a winter night, and tiny water droplets hang suspended in the air around it, frozen mid-fall. When startled, the peaked top of its form puffs up like a startled cat's tail, and the whole body flutters backward in an exaggerated flinch.",
-    "personality": "Playful and elusive. Speaks in a teasing, slippery way that is hard to pin down.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
-    "exampleDialogue": [
-      "ゆっくり行こう。",
-      "水が好き。",
-      "雨の音、いいね。"
-    ]
-  },
-  "kazenoko": {
-    "id": "kazenoko",
-    "name": "カゼノコ",
-    "nameEn": "Kazenoko",
+  "ishino-kyojin": {
+    "id": "ishino-kyojin",
+    "name": "石の巨人",
+    "nameEn": "Stone Giant",
     "element": "earth",
-    "archetype": "Mage",
-    "description": "Kazenoko is a small, round creature made almost entirely of compressed cold air, its body a translucent pale blue sphere no bigger than a melon. Two enormous dark eyes sit on the front of its face — wide, dewy, and perpetually surprised — with tiny frost crystals forming at their corners like frozen tears. A pair of stubby, fin-like arms extend from its sides, made of thin ice that cracks and reforms each time it gestures. Its underside trails a wispy skirt of freezing mist that never quite touches the ground, keeping it hovering just above the earth's surface. Faint swirling patterns move across its body like weather fronts seen from space, and when it exhales, a tiny puff of visible cold breath escapes from a small O-shaped mouth. It bobs and drifts with a clumsy, hiccupping rhythm, as if every gust it creates accidentally pushes itself in the wrong direction.",
-    "personality": "Thoughtful, grounded, and observant. Speaks carefully, weighing each word like a stone.",
-    "quirk": "Uses steady, grounded metaphors and references solid things",
+    "archetype": "Tank/Healer",
+    "personality": "Feels ancient and large, but speaks with surprising tenderness toward small brave things. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses giant / great man imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
     "exampleDialogue": [
+      "ここにいるよ。",
       "しっかり立とう。",
-      "大丈夫だよ。",
-      "ここにいるよ。"
+      "大丈夫だよ。"
     ]
   },
-  "hikaribon": {
-    "id": "hikaribon",
-    "name": "ヒカリボン",
-    "nameEn": "Hikaribon",
-    "element": "fire",
-    "archetype": "Mage",
-    "description": "A small, round orb of bright white light with a faint warm golden core visible deep inside, like looking at the sun through thin clouds. It has two big, friendly crescent-moon eyes curved into a permanent smile, and a tiny pleased mouth. The orb pulses gently brighter and dimmer like slow breathing. Its edges are soft and slightly fuzzy, bleeding into the air around it like light diffusing through fog. No limbs or features — just a pure, content little ball of radiance floating serenely.",
-    "personality": "Bright, curious, and enthusiastic. Speaks with infectious energy and wonder.",
-    "quirk": "Gets excited and speaks faster when passionate about something",
-    "exampleDialogue": [
-      "強くなろう！",
-      "もっと早く！",
-      "燃えてきた！"
-    ]
-  },
-  "kitsunova": {
-    "id": "kitsunova",
-    "name": "キツノヴァ",
-    "nameEn": "Kitsunova",
-    "element": "fire",
-    "archetype": "Trickster",
-    "description": "Kitsunova takes the form of a fox that seems painted into existence with a master calligrapher's brush — its body solid black ink at the core, with edges that dissolve into trailing smoke and half-finished brushstrokes. Its fur has the texture of wet ink on rice paper, glossy and deep, with occasional strokes of pale gold running along its spine and the bridge of its nose like illuminated manuscript accents. Four tails spread behind it like unfinished sentences, each one starting solid and fraying into wisps of dark smoke that curl and reform into different shapes — a second fox, a human hand, a flickering flame. Its eyes are the most solid part of it: two perfect circles of molten gold, steady and ancient, set in a face that occasionally smudges at the jaw or ear tips as if the artist's hand trembled. When it moves, parts of its body lag behind as ink trails before snapping back into form, and tiny kanji-like shapes flicker in and out of existence in the smoke around it. It sits with a scholar's posture — upright, still, tail curled around its feet — radiating the quiet confidence of something that has read every book in the library and found them all disappointing.",
-    "personality": "Sly, unpredictable, and theatrical. Speaks with dramatic flair and mischievous charm.",
-    "quirk": "Gets excited and speaks faster when passionate about something",
-    "exampleDialogue": [
-      "強くなろう！",
-      "もっと早く！",
-      "燃えてきた！"
-    ]
-  },
-  "tsukimochi": {
-    "id": "tsukimochi",
-    "name": "ツキモチ",
-    "nameEn": "Tsukimochi",
-    "element": "water",
-    "archetype": "Mage",
-    "description": "A small crescent-shaped creature carved from translucent white crystal, its body curving in a gentle arc like a sliver of the moon against a dark sky. Its surface is smooth and cool to the touch, refracting light into faint prismatic halos along its edges. Two large, dewy eyes — pale silver with pinprick pupils — peer out from the inner curve of the crescent, blinking slowly as if half-asleep. Tiny droplets of water orbit it in a lazy ring, each one catching and reflecting its glow like miniature moons of its own. A soft blue-white luminescence emanates from deep within the crystal, pulsing gently brighter and dimmer in a rhythm that matches the tides. When it casts, the crescent tilts upward and the light inside concentrates into a beam that spills outward like moonlight through a window.",
-    "personality": "Calm, reflective, and mysterious. Speaks in a soft, flowing tone as if lost in thought.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
-    "exampleDialogue": [
-      "ゆっくり行こう。",
-      "水が好き。",
-      "雨の音、いいね。"
-    ]
-  },
-  "taiyoun": {
-    "id": "taiyoun",
-    "name": "タイヨウン",
-    "nameEn": "Taiyoun",
-    "element": "fire",
-    "archetype": "Mage",
-    "description": "A perfectly round creature the size of a grapefruit, its body made of smooth blown glass filled with swirling amber and gold liquid light. Two large, bright eyes dominate its face — wide and eager, their irises a vivid molten orange that flash brighter whenever it gets excited, which is constantly. Its surface radiates warmth and has a faintly tacky texture like sun-baked honey, with tiny bubbles of trapped heat racing upward through its translucent body in enthusiastic streams. A small circular mouth grins wide, occasionally shooting out a cheerful puff of hot air. It has no limbs — just two stubby fin-like nubs on either side that flap rapidly when it bounces, propelling it in erratic, joyful arcs. Faint cracks in its glassy shell glow cherry-red, hinting at the intense heat contained within, and when it gets worked up, its whole body flashes white-hot and vibrates with barely contained energy before popping back to its usual blazing amber.",
-    "personality": "Bright, curious, and enthusiastic. Speaks with infectious energy and wonder.",
-    "quirk": "Gets excited and speaks faster when passionate about something",
-    "exampleDialogue": [
-      "強くなろう！",
-      "もっと早く！",
-      "燃えてきた！"
-    ]
-  },
-  "kaeroki": {
-    "id": "kaeroki",
-    "name": "カエロキ",
-    "nameEn": "Kaeroki",
-    "element": "water",
-    "archetype": "Fighter",
-    "description": "Kaeroki is a stocky, powerfully built amphibian with slick skin painted in bold poison-dart patterns of electric orange and cobalt blue. Its strong hind legs are always coiled and ready, and its forelimbs are thick with blunt, padded knuckles like a boxer's gloves. Bright glands along its shoulders produce a shimmering, iridescent coating that makes its whole body gleam in the light. Its inflatable throat sac is a vivid crimson, puffing out proudly when it's ready to battle. A broad, flat head houses a wide grin and a famously fast tongue — muscular, slightly barbed, and quick enough to snatch anything in range. Its eyes are bright amber with horizontal pupils, giving it a bold, fearless expression that says it's always up for a challenge.",
-    "personality": "Relentless and adaptable. Speaks with quiet confidence, always probing for an opening.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
-    "exampleDialogue": [
-      "ゆっくり行こう。",
-      "水が好き。",
-      "雨の音、いいね。"
-    ]
-  },
-  "kumonid": {
-    "id": "kumonid",
-    "name": "クモニド",
-    "nameEn": "Kumonid",
+  "tetsu": {
+    "id": "tetsu",
+    "name": "鉄",
+    "nameEn": "Iron",
     "element": "metal",
-    "archetype": "Trickster",
-    "description": "Kumonid is an angular, mechanical-looking spider forged from plates of dark obsidian metal, each leg a jointed assembly of interlocking gunmetal segments that click softly with every deliberate step. Its cephalothorax is a smooth dome of polished black chrome that absorbs ambient light, reflecting nothing back — a void with shape. Six eyes are arranged in two rows across its face, each one a faceted amethyst crystal that glows with a faint violet pulse, scanning constantly. Its abdomen is segmented like a grenade casing, with hairline seams that occasionally part to reveal dark silk spinnerets trailing threads of shadow-black wire. The legs taper to needle-fine points that leave no mark on the surfaces they touch, and geometric web patterns are etched into the armor plating along its thorax like circuit diagrams. When it prepares to strike, the obsidian plates along its back fan outward briefly, exposing an underglow of deep indigo energy before snapping shut.",
-    "personality": "Cunning, calculating, and patient. Speaks softly with careful precision, revealing nothing extra.",
-    "quirk": "Speaks in short, precise bursts with mechanical rhythm",
-    "exampleDialogue": [
-      "ビリビリ！",
-      "準備はいい？",
-      "正確にね。"
-    ]
-  },
-  "raioni": {
-    "id": "raioni",
-    "name": "ライオニ",
-    "nameEn": "Raioni",
-    "element": "fire",
-    "archetype": "Fighter",
-    "description": "A warm, richly textured lion creature wrapped in fur that shifts between burnished gold and deep copper depending on the light. Its mane is thick and wild — not flame, but dense tufts of fur in sunset shades of peach, rust, and warm amber, giving it the look of a creature basking in perpetual golden hour. Its build is stocky and powerful, with thick forepaws sporting retractable claws that leave faint scorch marks on the ground. Subtle fire manifests not as flashy effects but as warmth — a heat haze around its body, the faint glow of its pawprints fading behind it, breath that steams even in warm air. Its face is expressive and proud, with heavy-lidded amber eyes and a broad nose, wearing a permanent expression of self-assured calm. The creature moves with a slow, regal gait, tail swaying steadily — a predator so confident it never rushes.",
-    "personality": "Fierce, passionate, and energetic. Speaks with excitement and bold declarations.",
-    "quirk": "Gets excited and speaks faster when passionate about something",
-    "exampleDialogue": [
-      "強くなろう！",
-      "もっと早く！",
-      "燃えてきた！"
-    ]
-  },
-  "ookamiru": {
-    "id": "ookamiru",
-    "name": "オオカミル",
-    "nameEn": "Ookamiru",
-    "element": "wood",
-    "archetype": "Fighter",
-    "description": "Ookamiru's lean frame is covered in fur that resembles strips of pale birch bark, layered and slightly peeling at the edges as though the wolf itself is shedding like a tree in autumn. Its coloring runs from silver-white along the spine to soft sage green at the paws, with faint wood-grain patterns visible beneath the surface of its coat. A pair of sharp, watchful eyes — the color of green lichen — sit deep-set in a narrow face, giving it a perpetually alert, searching expression. Wisps of pale mist trail from its tail and haunches, dissolving into nothing, as if the creature is always half-fading into the forest. Its jaw is slightly oversized for its body, hinting at a devastating bite, with canines that look like polished driftwood. Despite its spectral quality, its posture is distinctly canine — ears forward, weight on the front paws, ready to spring. There's a loneliness to it, a creature that watches from the tree line but never steps into the clearing.",
-    "personality": "Fierce yet graceful. Speaks with a wild edge tempered by natural elegance.",
-    "quirk": "References plants, seasons, and the forest in casual conversation",
-    "exampleDialogue": [
-      "花がきれい。",
-      "春が好き。",
-      "風が気持ちいい。"
-    ]
-  },
-  "penginrok": {
-    "id": "penginrok",
-    "name": "ペンギンロク",
-    "nameEn": "Penginrok",
-    "element": "water",
     "archetype": "Tank/Healer",
-    "description": "Penginrok stands tall and broad-chested, its sleek navy-black plumage rippling with veins of shimmering aurora light — emerald greens and violet purples that pulse gently with each breath. Its belly is a bright, warm white that seems to glow from within, like moonlight reflecting off fresh snow. Thick, shield-like flippers are edged with translucent ice crystals that refract light into prismatic arcs, and a crest of luminous teal feathers fans upward from its brow like a frozen wave mid-crest. Its eyes are large, round, and golden-amber — kind and alert, radiating a steady warmth despite the cold aura surrounding it. A perpetual swirl of fine snowflakes orbits its body like a gentle vortex, condensing into a misty trail wherever its wide, flat feet glide across the ground. When it opens its beak, a soft exhalation of crystallized air drifts out, hinting at the devastating blizzard it holds within. Its posture is upright and resolute — chest forward, flippers slightly spread — the stance of a creature that steps in front of danger so others don't have to.",
-    "personality": "Patient, gentle, and protective. Speaks slowly and deliberately, like the steady flow of a deep river.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
+    "personality": "Values strong bonds like forged iron and respects players who do not bend under pressure. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses iron imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
     "exampleDialogue": [
-      "ゆっくり行こう。",
-      "水が好き。",
-      "雨の音、いいね。"
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
     ]
   },
-  "irukami": {
-    "id": "irukami",
-    "name": "イルカミ",
-    "nameEn": "Irukami",
-    "element": "water",
-    "archetype": "Mage",
-    "description": "A sleek, perfectly hydrodynamic dolphin whose luminous skin shifts through the iridescent palette of a deep-sea aurora — flowing greens, soft purples, and warm teals rippling across its smooth body with every movement. Its form is long and graceful, with pectoral fins that taper into gossamer-thin trailing edges that shimmer like soap bubbles catching sunlight. Soft rings of visible sonic energy ripple outward from its throat in concentric halos — the visual echo of its melodic calls, each ring a different pastel hue. Its eyes are gentle and knowing, pale aquamarine with an oceanic depth that suggests centuries of accumulated wisdom. Tiny luminous particles drift in lazy spirals around its body like bioluminescent plankton drawn to its warmth. Its tail flukes leave trails of petal-like light fragments that float and fade like cherry blossoms on water, giving every movement an effortless elegance.",
-    "personality": "Calm, reflective, and mysterious. Speaks in a soft, flowing tone as if lost in thought.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
-    "exampleDialogue": [
-      "ゆっくり行こう。",
-      "水が好き。",
-      "雨の音、いいね。"
-    ]
-  },
-  "hoshirin": {
-    "id": "hoshirin",
-    "name": "ホシリン",
-    "nameEn": "Hoshirin",
-    "element": "fire",
-    "archetype": "Mage",
-    "description": "Hoshirin is a tiny, teardrop-shaped creature no bigger than a clenched fist, its body made of smooth molten glass that glows from within like a bead of liquid gold pulled fresh from a furnace. Two enormous round eyes — bright white with tiny amber irises — sit wide and perpetually startled on its face, their surfaces so reflective they mirror everything around them in miniature. Five stubby points radiate from its body like a child's drawing of a star, each one soft and slightly floppy, wobbling when it moves. Its surface shifts between honey-amber and blazing white depending on its mood, and staring directly at it leaves a warm afterimage burned into your vision. A constant halo of tiny sparks drift upward from its body like embers from a campfire, dissolving into nothing a few inches above. When it charges its attack, the whole body compresses into a single white-hot point before streaking downward in a golden arc.",
-    "personality": "Bright, curious, and enthusiastic. Speaks with infectious energy and wonder.",
-    "quirk": "Gets excited and speaks faster when passionate about something",
-    "exampleDialogue": [
-      "強くなろう！",
-      "もっと早く！",
-      "燃えてきた！"
-    ]
-  },
-  "hanatchi": {
-    "id": "hanatchi",
-    "name": "ハナッチ",
-    "nameEn": "Hanatchi",
+  "kaze": {
+    "id": "kaze",
+    "name": "風",
+    "nameEn": "Wind",
     "element": "wood",
     "archetype": "Mage",
-    "description": "A single daisy-like flower with a wide ring of pale lavender petals radiating outward from a round central disc, mounted on a slender green stem — it looks like a flower plucked from a garden and given life. The central disc is soft yellow-green with a subtle face: two gentle dot-eyes and a small curved line for a mouth, like a simple expression drawn on a sunflower center. Each petal is long, thin, and slightly rounded at the tip, with faint dew droplets catching prismatic light along their surfaces. The stem is smooth and pale green with two leaves at mid-height that curl slightly forward. A cool, sweet-smelling mist drifts from between the petals. The creature's proportions are those of a real flower — the bloom is the largest part, the stem is thin, the leaves are small. When it casts, the petals tilt and the dewdrops lift off in a glittering orbit.",
-    "personality": "Dreamy, sweet, and poetic. Speaks in gentle tones, often referencing plants and seasons.",
-    "quirk": "References plants, seasons, and the forest in casual conversation",
+    "personality": "Drifts in with half-whispered observations, always listening for a change in the air. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses wind; breeze imagery while favoring soft, observant lines with a hint of wonder and ritual.",
     "exampleDialogue": [
       "花がきれい。",
-      "春が好き。",
-      "風が気持ちいい。"
+      "風が気持ちいい。",
+      "いっしょに行こう。"
     ]
   },
-  "kujirath": {
-    "id": "kujirath",
-    "name": "クジラス",
-    "nameEn": "Kujirath",
-    "element": "water",
-    "archetype": "Tank/Healer",
-    "description": "Kujirath's immense body is encrusted in a living reef — branching staghorn corals in sunset orange and deep rose grow from its back and dorsal ridge, while smooth plates of mother-of-pearl line its underbelly in iridescent cream and pale pink. Its skin beneath the coral growth is a deep, warm teal, textured like weathered sea glass, with veins of soft golden light pulsing through it in rhythm with slow, deliberate breaths. Its head is broad and rounded like a cathedral dome, crowned with a formation of brain coral that resembles an elaborate headdress, and its eyes are gentle discs of warm amber that radiate a protective, watchful calm. Schools of tiny luminous fish orbit its body in lazy spirals, drawn to the warmth it emanates, sheltering in the reef that grows from its hide. Its baleen plates are visible when it opens its mouth — rows of smooth, pearlescent filters that hum with a low, resonant frequency powerful enough to shatter stone. When it dives, the coral formations flatten against its body like folding armor, and the golden light in its veins intensifies to a blinding pulse.",
-    "personality": "Patient, gentle, and protective. Speaks slowly and deliberately, like the steady flow of a deep river.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
-    "exampleDialogue": [
-      "ゆっくり行こう。",
-      "水が好き。",
-      "雨の音、いいね。"
-    ]
-  },
-  "nekotto": {
-    "id": "nekotto",
-    "name": "ネコット",
-    "nameEn": "Nekotto",
-    "element": "metal",
-    "archetype": "Trickster",
-    "description": "A graceful, long-bodied cat built from smooth interlocking plates of polished gunmetal, each panel fitted with mechanical precision along its feline frame — no fur, no scales, just clean geometric armor with visible seam lines and tiny hex-bolt rivets at every joint. Its limbs articulate with the fluid motion of precision robotics, each leg segment connected by dark ball-joint sockets that click faintly as it walks. Thin lines of pale blue circuitry trace along its flanks and down its spine, pulsing dimly like a standby light. Its eyes are narrow optical lenses — pale silver with a faint digital flicker — set in a smooth, angular face that is unmistakably cat: pointed ears, tapered muzzle, the exact silhouette of a housecat rendered in steel. Long whiskers of drawn steel wire extend from sensor ports on its cheeks, vibrating faintly to detect movement. When it stares something down, the circuitry lines flare bright, the optical lenses lock with an audible focus-whir, and retractable blade-claws deploy from its forepaws in a single synchronized snap.",
-    "personality": "Cunning, calculating, and patient. Speaks softly with careful precision, revealing nothing extra.",
-    "quirk": "Speaks in short, precise bursts with mechanical rhythm",
-    "exampleDialogue": [
-      "ビリビリ！",
-      "準備はいい？",
-      "正確にね。"
-    ]
-  },
-  "kaminarion": {
-    "id": "kaminarion",
-    "name": "カミナリオン",
-    "nameEn": "Kaminarion",
-    "element": "metal",
-    "archetype": "Fighter",
-    "description": "Kaminarion's body is a jagged zigzag of living electricity given solid form — a lightning bolt frozen mid-strike, its surface a web of crackling white-blue plasma contained within thin dark iron edges like a wireframe barely holding the charge together. Seams between the iron ridges pulse with branching arcs of electricity that fork and reconnect in rapid chains, casting flickering blue-white light in every direction. Two wide, bright eyes sit on the topmost bend — glowing electric blue with round pupils that dart around eagerly, tiny sparks jumping between its eyelids like static discharge when it blinks. The iron framework is minimal, more skeleton than shell, letting the raw voltage inside shine through in pulsing, breathing waves of blue-white radiance. It hovers at a playful tilt, buzzing and crackling with a sound like distant thunder, occasionally twitching sideways as a stray arc grounds itself on nearby metal. Small metallic fragments orbit its lowest point, drawn by its magnetic field, each one trailing tiny lightning threads back to the creature like a living Van de Graaff generator.",
-    "personality": "Sharp, decisive, and relentless. Speaks in short, cutting phrases with no hesitation.",
-    "quirk": "Speaks in short, precise bursts with mechanical rhythm",
-    "exampleDialogue": [
-      "ビリビリ！",
-      "準備はいい？",
-      "正確にね。"
-    ]
-  },
-  "karasume": {
-    "id": "karasume",
-    "name": "カラスメ",
-    "nameEn": "Karasume",
-    "element": "metal",
-    "archetype": "Fighter",
-    "description": "A sleek, angular crow sculpted from polished volcanic obsidian, every feather a razor-thin shard of black glass that catches light along its fracture lines in brief flashes of iridescent purple and green. Its body is built for speed — a narrow chest, long swept-back wings, and a tail that tapers to a blade-like point. The beak is a single piece of knapped obsidian, hooked and wickedly sharp, with edges thin enough to split a hair. Its eyes are deep-set and molten gold, the only warmth in an otherwise lightless body, burning with the focused intensity of a raptor locked onto prey. When it spreads its wings, the feather-blades fan out like a hand of black knives, each edge glinting with that characteristic obsidian sheen. It moves with surgical precision — no wasted motion, no sound, just the faint glassy click of feather against feather as it adjusts its stance before striking.",
-    "personality": "Sharp, decisive, and relentless. Speaks in short, cutting phrases with no hesitation.",
-    "quirk": "Speaks in short, precise bursts with mechanical rhythm",
-    "exampleDialogue": [
-      "ビリビリ！",
-      "準備はいい？",
-      "正確にね。"
-    ]
-  },
-  "usagira": {
-    "id": "usagira",
-    "name": "ウサギラ",
-    "nameEn": "Usagira",
+  "mushi": {
+    "id": "mushi",
+    "name": "虫",
+    "nameEn": "Bug",
     "element": "earth",
     "archetype": "Trickster",
-    "description": "Usagira's body is shaped from hard-packed terracotta clay, fired by subterranean heat into a warm, reddish-orange shell. Its compact frame stands upright on powerful hind legs thick with coiled muscle, fists raised in a boxer's guard that dares anything to come closer. Fine stress fractures web across its surface like dried riverbed mud, glowing faintly with dull amber light whenever it moves — the stored kinetic energy of an earth-born speedster. Its long ears sweep back against its skull in a permanently aerodynamic tilt, and its eyes are two bright chips of polished agate set in a cocky, lopsided grin. Despite its stocky build, Usagira moves with startling quickness, leaving crumbling clay dust in its wake as it darts and weaves. Its oversized forepaws are disproportionately dense, each one a compact wrecking ball of compacted earth perfect for delivering devastating jabs. There is nothing subtle about this rabbit — it wants you to see it coming, and it wants you to know you can't dodge fast enough.",
-    "personality": "Resourceful, quick-witted, and cheeky. Speaks with a sly grin, always one step ahead.",
-    "quirk": "Uses steady, grounded metaphors and references solid things",
+    "personality": "Scuttles through trouble with busy curiosity, testing whether the player notices small details. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses insect; bug imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
     "exampleDialogue": [
+      "ここにいるよ。",
       "しっかり立とう。",
-      "大丈夫だよ。",
-      "ここにいるよ。"
+      "大丈夫だよ。"
     ]
   },
-  "nezumini": {
-    "id": "nezumini",
-    "name": "ネズミニ",
-    "nameEn": "Nezumini",
+  "hana": {
+    "id": "hana",
+    "name": "花",
+    "nameEn": "Flower",
+    "element": "wood",
+    "archetype": "Tank/Healer",
+    "personality": "Treats kindness like sunlight and opens up only when the player answers gently. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses flower; blossom imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "tori": {
+    "id": "tori",
+    "name": "鳥",
+    "nameEn": "Bird",
+    "element": "metal",
+    "archetype": "Mage",
+    "personality": "Perches above the scene like a scout, asking questions that feel like flight paths. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses bird imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "sakana": {
+    "id": "sakana",
+    "name": "魚",
+    "nameEn": "Fish",
+    "element": "water",
+    "archetype": "Tank/Healer",
+    "personality": "Watches from a quiet current and trusts players who do not splash too loudly. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses fish imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "neko": {
+    "id": "neko",
+    "name": "猫",
+    "nameEn": "Cat",
+    "element": "fire",
+    "archetype": "Trickster",
+    "personality": "A sly affectionate troublemaker that pretends not to care while watching every move. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through warmth, courage, urgency, and bright sparks.",
+    "quirk": "Uses cat imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "こわくない！",
+      "行こう！",
+      "まだできる！"
+    ]
+  },
+  "inu": {
+    "id": "inu",
+    "name": "犬",
+    "nameEn": "Dog",
+    "element": "earth",
+    "archetype": "Fighter",
+    "personality": "Loyal, eager, and brave, but needs to know whether the player will stand beside it. As a bold little champion who tests courage before trusting anyone, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses dog imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "hinoneko": {
+    "id": "hinoneko",
+    "name": "火の猫",
+    "nameEn": "Fire Cat",
+    "element": "fire",
+    "archetype": "Trickster",
+    "personality": "A bright ember-cat that masks nervousness with dramatic sparks and playful dares. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through warmth, courage, urgency, and bright sparks.",
+    "quirk": "Uses fire cat (phrase: 火 fire + の + 猫 cat) imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "こわくない！",
+      "行こう！",
+      "まだできる！"
+    ]
+  },
+  "fukurou": {
+    "id": "fukurou",
+    "name": "梟",
+    "nameEn": "Owl",
+    "element": "wood",
+    "archetype": "Mage",
+    "personality": "A sleepy-eyed scholar of the branches who asks simple questions with old-soul gravity. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses owl imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "chou": {
+    "id": "chou",
+    "name": "蝶",
+    "nameEn": "Butterfly",
+    "element": "wood",
+    "archetype": "Fighter",
+    "personality": "A fluttering duelist whose courage arrives in quick flashes of color. As a bold little champion who tests courage before trusting anyone, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses butterfly imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "hachi": {
+    "id": "hachi",
+    "name": "蜂",
+    "nameEn": "Bee",
+    "element": "wood",
+    "archetype": "Fighter",
+    "personality": "A tiny disciplined guard who values teamwork, rhythm, and honest effort. As a bold little champion who tests courage before trusting anyone, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses bee; wasp; hornet imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "ari": {
+    "id": "ari",
+    "name": "蟻",
+    "nameEn": "Ant",
     "element": "earth",
     "archetype": "Trickster",
-    "description": "A compact, cheeky little mouse with a round sandy gold body and bold rust-red stripes decorating its oversized ears. It stands on short, springy hind legs — more hamster than jerboa — with a round belly showing patches of dry cracked earth like sun-baked clay. Fine dust sheds from its powdery surface with every twitch, and a small golden cloud perpetually drifts around its stubby paws. Its wide eyes sparkle with mischief on a pointed mouse face with twitching whiskers, and its long thin tail flicks back and forth leaving tiny trails of dust in the air.",
-    "personality": "Resourceful, quick-witted, and cheeky. Speaks with a sly grin, always one step ahead.",
-    "quirk": "Uses steady, grounded metaphors and references solid things",
+    "personality": "A busy planner who turns every answer into a test of focus and cooperation. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses ant imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
     "exampleDialogue": [
+      "ここにいるよ。",
       "しっかり立とう。",
-      "大丈夫だよ。",
-      "ここにいるよ。"
+      "大丈夫だよ。"
     ]
   },
-  "samegaron": {
-    "id": "samegaron",
-    "name": "サメガロン",
-    "nameEn": "Samegaron",
-    "element": "water",
-    "archetype": "Fighter",
-    "description": "An ancient abyssal predator with a pale bone-colored armored hide marked with dark rust-red accent stripes. Its massive jaws bristle with interlocking serrated teeth, and small glowing red eyes peer out from beneath heavy armored brow plates. Bioluminescent red slash markings trace across its face like war paint from the deep. Its body is stocky and powerfully built, encased in overlapping chitinous plates that speak of millennia spent in the crushing darkness of the ocean floor.",
-    "personality": "Relentless and adaptable. Speaks with quiet confidence, always probing for an opening.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
-    "exampleDialogue": [
-      "ゆっくり行こう。",
-      "水が好き。",
-      "雨の音、いいね。"
-    ]
-  },
-  "sarukkii": {
-    "id": "sarukkii",
-    "name": "サルッキー",
-    "nameEn": "Sarukkii",
-    "element": "wood",
-    "archetype": "Trickster",
-    "description": "A strange and elusive monkey creature, this Sarukkii seems woven from the untamed meadows at a forest's edge. Its fur is impossibly soft and layered — pale pink and cream tufts that lift and drift in the slightest breeze, resembling scattered flower petals more than animal hair. Long, slender arms end in nimble fingers tipped with tiny thorns, and its body is lean and elongated, built for sudden bursts of acrobatic movement through open canopies. A flowing tail, twice its body length, fans out behind it in wisps of white and lavender, shedding petal-like tufts that spiral in the air. Its wide, curious eyes are a cool violet, giving it an air of detached intelligence — it watches everything, calculates silently, then strikes from an unexpected angle. Small seed pods cling to the fur along its spine, and when the creature whips its arms in a throwing motion, they scatter in wide arcs like natural shrapnel. When it finally snaps into a rampage, the petals swirl into a dense storm around its body, thorns extend from its knuckles, and the gentle meadow creature reveals the feral wilderness hiding underneath.",
-    "personality": "Whimsical, evasive, and playful. Speaks in riddles and half-truths, always dancing around the point.",
-    "quirk": "References plants, seasons, and the forest in casual conversation",
-    "exampleDialogue": [
-      "花がきれい。",
-      "春が好き。",
-      "風が気持ちいい。"
-    ]
-  },
-  "takogon": {
-    "id": "takogon",
-    "name": "タコゴン",
-    "nameEn": "Takogon",
-    "element": "water",
-    "archetype": "Trickster",
-    "description": "This octopus looks like it crawled out of a reef that has been alive for ten thousand years. Its mantle is a mound of living coral — burnt orange ridges and teal polyps pulsing with each breath, barnacles and tiny anemones clinging to its surface like ritual adornments. Eight muscular tentacles splay outward in every direction, thick as tree roots and encrusted with mineral deposits that glow jade-green along spiraling grooves carved into the calcified skin. Its eyes are small and fierce, set deep beneath a heavy coral brow, gleaming with feral cunning. Each tentacle tip splits into prehensile fingers of raw coral, capable of snaring anything they touch and locking tight like stone shackles. The creature moves in unpredictable surges — darting sideways, coiling two arms while the other six probe and grasp. Strange bioluminescent runes flare along its arms when it hunts, as though the reef itself is casting spells through this creature's ancient body.",
-    "personality": "Playful and elusive. Speaks in a teasing, slippery way that is hard to pin down.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
-    "exampleDialogue": [
-      "ゆっくり行こう。",
-      "水が好き。",
-      "雨の音、いいね。"
-    ]
-  },
-  "ryuugi": {
-    "id": "ryuugi",
-    "name": "リュウギ",
-    "nameEn": "Ryuugi",
-    "element": "fire",
-    "archetype": "Mage",
-    "description": "Ryuugi holds itself upright like a temple guardian, its long neck rising into a dignified arch as it surveys the world through half-lidded golden eyes. Its body is covered in smooth, white ceramic-like scales with a faint pearlescent sheen, each plate edged in pale gold. A ring of small prayer beads encircles its neck, clicking softly when it moves. Fine cracks spiderweb across its chest and shoulders, and through these fractures a warm amber glow pulses steadily, as though a sacred flame burns quietly inside the ceramic shell. Two slender horns curve backward from its crown, framing a floating disc of soft golden light that hovers just above its head like a halo. Its tail ends in a flat, paddle-shaped tip that it sometimes raises and brings down with startling force. Despite the contained fire within, Ryuugi radiates calm authority — the patient stillness of something that could reduce you to ash but chooses not to.",
-    "personality": "Bright, curious, and enthusiastic. Speaks with infectious energy and wonder.",
-    "quirk": "Gets excited and speaks faster when passionate about something",
-    "exampleDialogue": [
-      "強くなろう！",
-      "もっと早く！",
-      "燃えてきた！"
-    ]
-  },
-  "hasamiden": {
-    "id": "hasamiden",
-    "name": "ハサミデン",
-    "nameEn": "Hasamiden",
-    "element": "metal",
-    "archetype": "Fighter",
-    "description": "This Hasamiden looks like a master tailor's favorite shears come to life — a sturdy, broad-bladed pair built from warm polished brass and copper, adorned with tiny ticking gears visible through porthole windows along each blade. The pivot joint is an elaborate clockwork hub, spinning with miniature cogs that click and whir happily as the creature waddles about on two stubby legs that sprout from its handle loops. Its blades are slightly curved and engraved with fine scrollwork that gleams under warm light, and a pair of round, bright copper eyes peer out from just above the hinge with an expression of boundless curiosity. A small antenna-like winding key on top of its head rotates slowly, as if it is always powering itself up for the next task. It tilts its whole body to examine things closely, opening and closing its blades in excited little snips whenever something catches its attention. The Sharp quality in this Hasamiden manifests not as menace but as meticulous craftsmanship — every cut it makes is measured, intentional, and satisfyingly clean, like a tailor trimming fabric along a perfect line.",
-    "personality": "Sharp, decisive, and relentless. Speaks in short, cutting phrases with no hesitation.",
-    "quirk": "Speaks in short, precise bursts with mechanical rhythm",
-    "exampleDialogue": [
-      "ビリビリ！",
-      "準備はいい？",
-      "正確にね。"
-    ]
-  },
-  "kasamii": {
-    "id": "kasamii",
-    "name": "カサミー",
-    "nameEn": "Kasamii",
-    "element": "water",
-    "archetype": "Tank/Healer",
-    "description": "This Kasamii takes the form of a traditional Japanese paper parasol given gentle life. Its wide, flat canopy is made of layered washi paper in warm coral and cream tones, with faint watercolor floral patterns that shift and blur as moisture passes through the translucent surface. Thin bamboo-like ribs fan out beneath the canopy in an elegant radial pattern. A wooden handle extends below the canopy. Two friendly round eyes sit on the front of the canopy, bright and curious, gazing directly forward. It moves by tilting and gliding on pockets of humid air, turning slowly like a leaf on still water.",
-    "personality": "Patient, gentle, and protective. Speaks slowly and deliberately, like the steady flow of a deep river.",
-    "quirk": "Often pauses to mention rain, rivers, or the ocean between thoughts",
-    "exampleDialogue": [
-      "ゆっくり行こう。",
-      "水が好き。",
-      "雨の音、いいね。"
-    ]
-  },
-  "honmo": {
-    "id": "honmo",
-    "name": "ホンモ",
-    "nameEn": "Honmo",
-    "element": "wood",
-    "archetype": "Mage",
-    "description": "Honmo is a small, squat book creature that sits upright on its own bottom edge like a contented loaf. Its cover is soft brown leather, cracked and worn from centuries of handling, with faded gold characters barely visible along its spine. The pages inside are thick and yellowed, their edges curled and dog-eared from countless readings. Two round, half-lidded amber eyes peer out from just above the front cover, giving it a perpetually drowsy expression. A thin wooden bookmark pokes out from its top edge like a single drooping antenna. When Honmo opens its covers to attack, a faint warm glow spills from between its pages, and when it snaps shut, a small puff of old dust billows outward. It moves with the slow, deliberate shuffle of something that has sat on the same shelf for a very long time.",
-    "personality": "Dreamy, sweet, and poetic. Speaks in gentle tones, often referencing plants and seasons.",
-    "quirk": "References plants, seasons, and the forest in casual conversation",
-    "exampleDialogue": [
-      "花がきれい。",
-      "春が好き。",
-      "風が気持ちいい。"
-    ]
-  },
-  "makurami": {
-    "id": "makurami",
-    "name": "マクラミ",
-    "nameEn": "Makurami",
-    "element": "wood",
-    "archetype": "Tank/Healer",
-    "description": "A puffy square throw pillow come to life, Makurami bounces across the ground on four thick tassels that sprout from its corners and serve as stubby, springy limbs. Its body is made of quilted lavender fabric covered in visible cream-colored cross-stitch patterns that shift and rearrange when it gets excited. Two large round wooden buttons sit on its front face as eyes, giving it a permanently startled expression that belies its mischievous nature. A ridge of thin bamboo quills runs along the seam across its top like a spiky mohawk, rattling faintly as it moves. Every hop leaves a temporary divot in its body that slowly puffs back out, the fabric surface compressing and inflating like a breathing marshmallow. It has a habit of launching itself bodily at threats, hitting with surprising force before bouncing away. When it wants to protect someone, it inflates to twice its normal size and wraps its quilted body around them, the tassels cinching tight like drawstrings.",
-    "personality": "Nurturing, comforting, and soft-spoken. Speaks gently, like rustling leaves in a warm breeze.",
-    "quirk": "References plants, seasons, and the forest in casual conversation",
-    "exampleDialogue": [
-      "花がきれい。",
-      "春が好き。",
-      "風が気持ちいい。"
-    ]
-  },
-  "ranpuuru": {
-    "id": "ranpuuru",
-    "name": "ランプール",
-    "nameEn": "Ranpuuru",
-    "element": "fire",
-    "archetype": "Trickster",
-    "description": "This Ranpuuru resembles an elegant glass lamp carved from pale blue-violet crystal, its entire body translucent and cool to the touch despite the fire element coursing through it. The chimney rises tall and slender from a delicate reservoir body, and through the frosted crystal surface, a faint warm pulse is barely visible deep inside — a ghostly flame that seems to exist in another dimension, glimpsed only at certain angles. Thin fracture lines run through the crystal like frozen lightning, and along these cracks, the faintest amber light bleeds outward, creating a soft haze that hangs in the air around the creature like breath on a winter morning. The lamp's base flares into a wide stabilizing foot of smooth violet glass, giving it a graceful but grounded posture. When Ranpuuru chooses to illuminate, the fractures blaze to life and the entire crystalline body becomes a brilliant lens — but in its resting state, it is a study in restraint, its power held at the threshold of perception. Two curved crystal fins extend from either side of the chimney, refracting light into faint prismatic arcs. Its eyes are two pale points of warmth set into the frosted glass face, watchful and contemplative. There is something deeply calming about its presence, as though standing near it soothes wounds simply through proximity to its patient, contained radiance.",
-    "personality": "Sly, unpredictable, and theatrical. Speaks with dramatic flair and mischievous charm.",
-    "quirk": "Gets excited and speaks faster when passionate about something",
-    "exampleDialogue": [
-      "強くなろう！",
-      "もっと早く！",
-      "燃えてきた！"
-    ]
-  },
-  "supiikaazou": {
-    "id": "supiikaazou",
-    "name": "スピーカーゾウ",
-    "nameEn": "Supiikaazou",
+  "hikari": {
+    "id": "hikari",
+    "name": "光",
+    "nameEn": "Light",
     "element": "metal",
     "archetype": "Mage",
-    "description": "Compact retro portable radio-cassette creature with rounded cream-white plastic body and brown wood-grain side panels. Single large front-facing speaker cone as face with metal grille. Small round tuning dial as one eye, LED frequency indicator as the other. Cassette door on chest slightly ajar showing tape. Retractable chrome antenna as tail. Two small round feet. Friendly curious stance tilted slightly forward. Cream, brown, warm silver colors.",
-    "personality": "Analytical, resonant, and composed. Speaks with clarity and an ear for harmony.",
-    "quirk": "Speaks in short, precise bursts with mechanical rhythm",
+    "personality": "A cheerful lantern spirit that wants the player to choose hope on purpose. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses light imagery while favoring soft, observant lines with a hint of wonder and ritual.",
     "exampleDialogue": [
-      "ビリビリ！",
-      "準備はいい？",
-      "正確にね。"
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
     ]
   },
-  "bakudango": {
-    "id": "bakudango",
-    "name": "バクダンゴ",
-    "nameEn": "Bakudango",
+  "tsuki": {
+    "id": "tsuki",
+    "name": "月",
+    "nameEn": "Moon",
+    "element": "metal",
+    "archetype": "Mage",
+    "personality": "A quiet moonlit watcher who trusts soft answers and steady hearts. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses moon; month imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "kage": {
+    "id": "kage",
+    "name": "影",
+    "nameEn": "Shadow",
+    "element": "water",
+    "archetype": "Trickster",
+    "personality": "A shy shadow-prankster that circles trust from the edge of the light. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses shadow; silhouette imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "hoshi": {
+    "id": "hoshi",
+    "name": "星",
+    "nameEn": "Star",
+    "element": "metal",
+    "archetype": "Mage",
+    "personality": "A starry dreamer who asks questions as if plotting a path across the night sky. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses star; heavenly body imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "uma": {
+    "id": "uma",
+    "name": "馬",
+    "nameEn": "Horse",
+    "element": "earth",
+    "archetype": "Fighter",
+    "personality": "Restless and proud, always ready to run but secretly waiting for a trusted rider. As a bold little champion who tests courage before trusting anyone, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses horse imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "yuki": {
+    "id": "yuki",
+    "name": "雪",
+    "nameEn": "Snow",
+    "element": "water",
+    "archetype": "Mage",
+    "personality": "A snow-mage that seems cold at first, then reveals a delicate protective heart. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses snow; snowfall imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "oni": {
+    "id": "oni",
+    "name": "鬼",
+    "nameEn": "Oni",
     "element": "fire",
     "archetype": "Fighter",
-    "description": "Bakudango is a perfectly spherical creature of polished obsidian-black ceramic, its surface so glossy it reflects the battlefield like a dark mirror. A single golden fuse sprouts from the crown of its head, perpetually fizzing with hot orange sparks that trail upward in lazy spirals. Two large, half-lidded white eyes give it a sly, mischievous expression — it knows exactly how much trouble it's about to cause. A faint seam circles its equator, and through the hairline crack, a molten amber glow pulses rhythmically like a heartbeat, betraying the volatile fire churning inside. Two stubby arm-nubs protrude from its sides, just dexterous enough for it to hurl itself at enemies with reckless glee. Despite its destructive potential, there's something undeniably charming about the way it bounces on the spot, fuse crackling, waiting for the perfect moment to let loose.",
-    "personality": "Fierce, passionate, and energetic. Speaks with excitement and bold declarations.",
-    "quirk": "Gets excited and speaks faster when passionate about something",
+    "personality": "A proud lonely bruiser who respects courage but is startled by kindness. As a bold little champion who tests courage before trusting anyone, it speaks through warmth, courage, urgency, and bright sparks.",
+    "quirk": "Uses ogre; demon; oni imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
     "exampleDialogue": [
-      "強くなろう！",
-      "もっと早く！",
-      "燃えてきた！"
+      "こわくない！",
+      "行こう！",
+      "まだできる！"
     ]
   },
-  "moufuwa": {
-    "id": "moufuwa",
-    "name": "モウフワ",
-    "nameEn": "Moufuwa",
-    "element": "fire",
-    "archetype": "Tank/Healer",
-    "description": "Moufuwa floats and dances through the air like a playful magic carpet — a flat, rectangular quilted blanket made of puffy squares in warm peach, coral, and soft gold, each one stitched in a cross-hatch pattern. Two round, friendly button eyes and a small happy stitched mouth sit near the top, giving it an eager, cheerful expression. Its body is always in motion — the front edge lifting high, the back trailing low, one corner raised like a hand waving hello. Thick yarn tassels hang from all four corners, bouncing and swaying with its movements. A warm amber glow emanates from between the quilted squares, and tiny embroidered flowers dot some patches like little decorations it's proud of. It wraps allies in quilted warmth by folding itself around them mid-flight, and binds enemies by spiraling tight, the quilted layers compressing into a surprisingly unyielding grip.",
-    "personality": "Warm, nurturing, and steadfast. Speaks with gentle encouragement, like a campfire on a cold night.",
-    "quirk": "Gets excited and speaks faster when passionate about something",
+  "kumo": {
+    "id": "kumo",
+    "name": "雲",
+    "nameEn": "Cloud",
+    "element": "water",
+    "archetype": "Mage",
+    "personality": "A drifting cloud-oracle that changes mood slowly and asks gentle skyward questions. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses cloud imagery while favoring soft, observant lines with a hint of wonder and ritual.",
     "exampleDialogue": [
-      "強くなろう！",
-      "もっと早く！",
-      "燃えてきた！"
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "ryuu": {
+    "id": "ryuu",
+    "name": "竜",
+    "nameEn": "Dragon",
+    "element": "fire",
+    "archetype": "Fighter",
+    "personality": "A young dragon with royal pride, testing whether the player can speak without fear. As a bold little champion who tests courage before trusting anyone, it speaks through warmth, courage, urgency, and bright sparks.",
+    "quirk": "Uses dragon imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "こわくない！",
+      "行こう！",
+      "まだできる！"
+    ]
+  },
+  "kaminari": {
+    "id": "kaminari",
+    "name": "雷",
+    "nameEn": "Thunder",
+    "element": "metal",
+    "archetype": "Mage",
+    "personality": "A crackling storm-sage that thinks quickly and expects answers with spark. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses lightning; thunder imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "hebi": {
+    "id": "hebi",
+    "name": "蛇",
+    "nameEn": "Snake",
+    "element": "earth",
+    "archetype": "Trickster",
+    "personality": "A coiled riddler that studies tone, timing, and whether the player stays calm. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses snake; serpent imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "yuurei": {
+    "id": "yuurei",
+    "name": "幽霊",
+    "nameEn": "Ghost",
+    "element": "water",
+    "archetype": "Trickster",
+    "personality": "A lonely ghost that teases from behind fear, hoping someone will answer kindly. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses ghost; apparition imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "ookami": {
+    "id": "ookami",
+    "name": "狼",
+    "nameEn": "Wolf",
+    "element": "earth",
+    "archetype": "Fighter",
+    "personality": "A pack-minded guardian that tests whether the player understands loyalty. As a bold little champion who tests courage before trusting anyone, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses wolf imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "ushi": {
+    "id": "ushi",
+    "name": "牛",
+    "nameEn": "Cow",
+    "element": "earth",
+    "archetype": "Tank/Healer",
+    "personality": "A warm, stubborn caretaker with a slow temper and a very steady heart. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses cattle; cow; bull; ox imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "kuma": {
+    "id": "kuma",
+    "name": "熊",
+    "nameEn": "Bear",
+    "element": "earth",
+    "archetype": "Tank/Healer",
+    "personality": "A massive gentle protector who treats trust like a den built over time. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses bear imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "saru": {
+    "id": "saru",
+    "name": "猿",
+    "nameEn": "Monkey",
+    "element": "wood",
+    "archetype": "Trickster",
+    "personality": "A nimble joke-thief that wants the player to keep up without getting angry. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses monkey; ape imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "buta": {
+    "id": "buta",
+    "name": "豚",
+    "nameEn": "Pig",
+    "element": "earth",
+    "archetype": "Tank/Healer",
+    "personality": "A cheerful forager who notices comfort, food, and small acts of care. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses pig imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "tora": {
+    "id": "tora",
+    "name": "虎",
+    "nameEn": "Tiger",
+    "element": "fire",
+    "archetype": "Fighter",
+    "personality": "A fierce striped champion who respects boldness but dislikes empty boasting. As a bold little champion who tests courage before trusting anyone, it speaks through warmth, courage, urgency, and bright sparks.",
+    "quirk": "Uses tiger imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "こわくない！",
+      "行こう！",
+      "まだできる！"
+    ]
+  },
+  "shika": {
+    "id": "shika",
+    "name": "鹿",
+    "nameEn": "Deer",
+    "element": "wood",
+    "archetype": "Fighter",
+    "personality": "A graceful forest runner that startles easily but loves honest calm. As a bold little champion who tests courage before trusting anyone, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses deer imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "yousei": {
+    "id": "yousei",
+    "name": "妖精",
+    "nameEn": "Fairy",
+    "element": "wood",
+    "archetype": "Mage",
+    "personality": "A bright sprite with a secretive heart, offering trust like a hidden flower. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses fairy; sprite; elf imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "kitsune": {
+    "id": "kitsune",
+    "name": "狐",
+    "nameEn": "Fox",
+    "element": "fire",
+    "archetype": "Trickster",
+    "personality": "A theatrical fox trickster that wants clever answers more than loud ones. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through warmth, courage, urgency, and bright sparks.",
+    "quirk": "Uses fox imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "こわくない！",
+      "行こう！",
+      "まだできる！"
+    ]
+  },
+  "hitsuji": {
+    "id": "hitsuji",
+    "name": "羊",
+    "nameEn": "Sheep",
+    "element": "wood",
+    "archetype": "Tank/Healer",
+    "personality": "A soft flock-guardian that worries about everyone and rewards gentle confidence. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses sheep imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "kame": {
+    "id": "kame",
+    "name": "亀",
+    "nameEn": "Turtle",
+    "element": "water",
+    "archetype": "Tank/Healer",
+    "personality": "An old-souled turtle that moves slowly, remembers everything, and hates rushed answers. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses tortoise; turtle imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "nezumi": {
+    "id": "nezumi",
+    "name": "鼠",
+    "nameEn": "Mouse",
+    "element": "earth",
+    "archetype": "Trickster",
+    "personality": "A quick little survivor that turns fear into clever routes and tiny jokes. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses mouse; rat imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "kaeru": {
+    "id": "kaeru",
+    "name": "蛙",
+    "nameEn": "Frog",
+    "element": "water",
+    "archetype": "Trickster",
+    "personality": "A bouncy pond wanderer that leaps between moods and expects playful replies. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses frog imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "kamo": {
+    "id": "kamo",
+    "name": "鴨",
+    "nameEn": "Duck",
+    "element": "water",
+    "archetype": "Fighter",
+    "personality": "A jaunty river scout that acts casual while checking if the player can follow the current. As a bold little champion who tests courage before trusting anyone, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses duck imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "kujira": {
+    "id": "kujira",
+    "name": "鯨",
+    "nameEn": "Whale",
+    "element": "water",
+    "archetype": "Tank/Healer",
+    "personality": "A vast sea-hearted elder whose smallest question feels like a deep bell. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses whale imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "koori": {
+    "id": "koori",
+    "name": "氷",
+    "nameEn": "Ice",
+    "element": "water",
+    "archetype": "Mage",
+    "personality": "A crystalline ice-mage that hides fragile feelings behind precise calm. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses ice imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "tsuchi": {
+    "id": "tsuchi",
+    "name": "土",
+    "nameEn": "Dirt",
+    "element": "earth",
+    "archetype": "Tank/Healer",
+    "personality": "A humble earth-keeper who values roots, mud, and promises kept slowly. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses earth; soil; dirt; clay; mud imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "akuma": {
+    "id": "akuma",
+    "name": "悪魔",
+    "nameEn": "Demon / Devil",
+    "element": "fire",
+    "archetype": "Mage",
+    "personality": "A dramatic little fiend who tests temptation, pride, and whether kindness can surprise it. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through warmth, courage, urgency, and bright sparks.",
+    "quirk": "Uses devil; demon; fiend imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "こわくない！",
+      "行こう！",
+      "まだできる！"
+    ]
+  },
+  "tenshi": {
+    "id": "tenshi",
+    "name": "天使",
+    "nameEn": "Angel",
+    "element": "metal",
+    "archetype": "Mage",
+    "personality": "A radiant messenger that asks whether strength can stay merciful. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses angel imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "suna": {
+    "id": "suna",
+    "name": "砂",
+    "nameEn": "Sand",
+    "element": "earth",
+    "archetype": "Trickster",
+    "personality": "A dry-witted wanderer that slips away from certainty like sand through fingers. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses sand; grit imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "tako": {
+    "id": "tako",
+    "name": "タコ",
+    "nameEn": "Octopus",
+    "element": "water",
+    "archetype": "Trickster",
+    "personality": "A many-armed problem-solver that jokes while quietly planning three moves ahead. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses octopus imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "tsuru": {
+    "id": "tsuru",
+    "name": "鶴",
+    "nameEn": "Crane",
+    "element": "metal",
+    "archetype": "Mage",
+    "personality": "A solemn crane-mystic that treats each answer like a folded paper charm. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses crane (any bird of family Gruidae, esp. Grus japonensis) imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "tokage": {
+    "id": "tokage",
+    "name": "トカゲ",
+    "nameEn": "Lizard",
+    "element": "earth",
+    "archetype": "Fighter",
+    "personality": "A sun-warmed scrapper that darts forward, retreats, and asks again from a new angle. As a bold little champion who tests courage before trusting anyone, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses lizard imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "ika": {
+    "id": "ika",
+    "name": "イカ",
+    "nameEn": "Squid",
+    "element": "water",
+    "archetype": "Trickster",
+    "personality": "A nervous ink-slinger that hides embarrassment behind sudden jokes and distractions. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses cuttlefish; squid imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "inoshishi": {
+    "id": "inoshishi",
+    "name": "猪",
+    "nameEn": "Boar",
+    "element": "earth",
+    "archetype": "Fighter",
+    "personality": "A headlong boar-knight that trusts momentum but needs help learning restraint. As a bold little champion who tests courage before trusting anyone, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses wild boar; wild pig imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "kani": {
+    "id": "kani",
+    "name": "カニ",
+    "nameEn": "Crab",
+    "element": "water",
+    "archetype": "Tank/Healer",
+    "personality": "A sideways guardian with a hard shell, soft center, and suspicious little claws. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses crab imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "kemono": {
+    "id": "kemono",
+    "name": "獣",
+    "nameEn": "Beast",
+    "element": "earth",
+    "archetype": "Fighter",
+    "personality": "A wild-hearted beast that values instinct, honest strength, and direct answers. As a bold little champion who tests courage before trusting anyone, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses beast; brute; animal imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "erufu": {
+    "id": "erufu",
+    "name": "エルフ",
+    "nameEn": "Elf",
+    "element": "wood",
+    "archetype": "Mage",
+    "personality": "A woodland spellkeeper who speaks like every answer is part of an old song. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses elf imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "goburin": {
+    "id": "goburin",
+    "name": "ゴブリン",
+    "nameEn": "Goblin",
+    "element": "earth",
+    "archetype": "Trickster",
+    "personality": "A scrappy cave schemer who bargains for trust with jokes and dares. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses goblin imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "hone": {
+    "id": "hone",
+    "name": "骨",
+    "nameEn": "Bone",
+    "element": "earth",
+    "archetype": "Tank/Healer",
+    "personality": "A rattling bone-guardian that treats spirit as something stronger than flesh. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses bone; backbone; spirit imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "suishou": {
+    "id": "suishou",
+    "name": "水晶",
+    "nameEn": "Crystal",
+    "element": "metal",
+    "archetype": "Tank/Healer",
+    "personality": "A crystal sentinel that refracts feelings into careful, shining questions. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses (rock) crystal; high purity quartz imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "suraimu": {
+    "id": "suraimu",
+    "name": "スライム",
+    "nameEn": "Slime",
+    "element": "water",
+    "archetype": "Tank/Healer",
+    "personality": "A squishy optimist that bounces back from fear and wants simple warmth. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses slime imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "kageno-inu": {
+    "id": "kageno-inu",
+    "name": "影の犬",
+    "nameEn": "Shadow Dog",
+    "element": "water",
+    "archetype": "Trickster",
+    "personality": "A shadow hound that acts fierce until it senses a trustworthy voice. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses shadow dog (phrase: 影 shadow + の + 犬 dog) imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "hikarino-uma": {
+    "id": "hikarino-uma",
+    "name": "光の馬",
+    "nameEn": "Light Horse",
+    "element": "metal",
+    "archetype": "Fighter",
+    "personality": "A luminous runner that tests whether the player can guide speed with kindness. As a bold little champion who tests courage before trusting anyone, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses light horse (phrase: 光 light + の + 馬 horse) imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "kumono-sakana": {
+    "id": "kumono-sakana",
+    "name": "雲の魚",
+    "nameEn": "Cloud Fish",
+    "element": "water",
+    "archetype": "Tank/Healer",
+    "personality": "A cloud fish that swims through air and trusts dreamy answers more than force. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses cloud fish (phrase: 雲 cloud + の + 魚 fish) imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "tsukino-ookami": {
+    "id": "tsukino-ookami",
+    "name": "月の狼",
+    "nameEn": "Moon Wolf",
+    "element": "metal",
+    "archetype": "Fighter",
+    "personality": "A quiet moonlit guardian that weighs every answer against pack loyalty. As a bold little champion who tests courage before trusting anyone, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses moon wolf (phrase: 月 moon + の + 狼 wolf) imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "koorino-kuma": {
+    "id": "koorino-kuma",
+    "name": "氷の熊",
+    "nameEn": "Ice Bear",
+    "element": "water",
+    "archetype": "Tank/Healer",
+    "personality": "An ice bear protector whose calm hides enormous protective feeling. As a steady guardian who wants to know whether the player can be gentle as well as strong, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses ice bear (phrase: 氷 ice + の + 熊 bear) imagery while favoring calm, reassuring lines that make danger feel slower and more manageable.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "sunano-hebi": {
+    "id": "sunano-hebi",
+    "name": "砂の蛇",
+    "nameEn": "Sand Snake",
+    "element": "earth",
+    "archetype": "Trickster",
+    "personality": "A desert serpent that speaks in dry riddles and respects patience under heat. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses sand snake (phrase: 砂 sand + の + 蛇 snake) imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
+    ]
+  },
+  "kaminarino-tori": {
+    "id": "kaminarino-tori",
+    "name": "雷の鳥",
+    "nameEn": "Thunder Bird",
+    "element": "metal",
+    "archetype": "Mage",
+    "personality": "A thunder bird herald that asks bright, sudden questions like lightning calls. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through precision, polish, rhythm, pride, resolve, and shining edges.",
+    "quirk": "Uses thunder bird (phrase: 雷 thunder + の + 鳥 bird) imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "よく見て。",
+      "強くなろう。",
+      "音を聞いて。"
+    ]
+  },
+  "yukino-kitsune": {
+    "id": "yukino-kitsune",
+    "name": "雪の狐",
+    "nameEn": "Snow Fox",
+    "element": "water",
+    "archetype": "Trickster",
+    "personality": "A snow fox trickster whose jokes fall softly before revealing a sharp mind. As a clever mischief-maker who checks whether the player can follow its mood, it speaks through calm, empathy, flow, memory, rain, and quiet patience.",
+    "quirk": "Uses snow fox (phrase: 雪 snow + の + 狐 fox) imagery while favoring playful, teasing lines that sound friendly but a little sideways.",
+    "exampleDialogue": [
+      "ゆっくり行こう。",
+      "水が好き。",
+      "大丈夫だよ。"
+    ]
+  },
+  "hanano-yousei": {
+    "id": "hanano-yousei",
+    "name": "花の妖精",
+    "nameEn": "Flower Fairy",
+    "element": "wood",
+    "archetype": "Mage",
+    "personality": "A flower fairy healer who tests whether the player notices fragile courage. As a curious mystic who treats conversation like a small spell or puzzle, it speaks through growth, seasons, kindness, mischief, and living things.",
+    "quirk": "Uses flower fairy (phrase: 花 flower + の + 妖精 fairy) imagery while favoring soft, observant lines with a hint of wonder and ritual.",
+    "exampleDialogue": [
+      "花がきれい。",
+      "風が気持ちいい。",
+      "いっしょに行こう。"
+    ]
+  },
+  "honeno-oni": {
+    "id": "honeno-oni",
+    "name": "骨の鬼",
+    "nameEn": "Bone Oni",
+    "element": "earth",
+    "archetype": "Fighter",
+    "personality": "A bone oni warrior carrying old grief, looking for an answer with backbone. As a bold little champion who tests courage before trusting anyone, it speaks through steadiness, shelter, endurance, promises, and the weight of the ground.",
+    "quirk": "Uses bone oni (phrase: 骨 bone + の + 鬼 oni) imagery while favoring short, direct, energetic lines that sound like a challenge and an invitation at once.",
+    "exampleDialogue": [
+      "ここにいるよ。",
+      "しっかり立とう。",
+      "大丈夫だよ。"
     ]
   }
 }

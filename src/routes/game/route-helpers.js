@@ -1,3 +1,5 @@
+import { buildAiDialogueConfig, canUseAiDialogue } from '../../ai-dialogue/config.js';
+
 export function buildGlobalAiConfig(jlptLevel = 'N4') {
   const openai = process.env.OPENAI_API_KEY;
   const anthropic = process.env.ANTHROPIC_API_KEY;
@@ -65,9 +67,25 @@ export function buildVocabConfig(req, getUserVocabulary, checkSentenceViolations
 }
 
 /**
- * Kept as a named helper for befriend flows, but all AI config now comes from
- * server environment variables rather than per-user settings.
+ * Named helper for AI befriend dialogue. Uses the shared AI Dialogue server
+ * environment config and requires both data-sharing consent and the user-facing
+ * AI Conversations toggle.
  */
 export function buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSentenceViolations) {
-  return buildVocabConfig(req, getUserVocabulary, checkSentenceViolations);
+  const userKeys = req.userKeys || {};
+  const aiConfig = buildAiDialogueConfig();
+  if (!canUseAiDialogue(userKeys, aiConfig) || !getUserVocabulary) return null;
+
+  const { words: vocabulary } = getUserVocabulary(req.user.id);
+  const vocabSet = new Set(vocabulary);
+  const checkViolationsFn = checkSentenceViolations
+    ? async (text) => checkSentenceViolations(text, vocabSet, new Set())
+    : null;
+
+  return {
+    aiConfig,
+    vocabulary,
+    vocabSet,
+    checkViolationsFn
+  };
 }

@@ -7,7 +7,7 @@ import { playSFX } from '../audio.js';
 import { getAuthHeaders } from '../api.js';
 import { PLATFORM } from '../platform.js';
 import { logger } from '../logger.js';
-import { renderEnFirst } from './bootstrap-client.js';
+import { getKnownWords, renderEnFirst, renderJpSentence } from './bootstrap-client.js';
 import { t, tPlain } from './i18n.js';
 import { burstParticles } from '../pixi/effects.js';
 import {
@@ -253,19 +253,46 @@ function showBefriendTargetSelect(enemies) {
  * Returns the selected option index.
  */
 async function showConversationRound(round, creatureSpeaker) {
+  const speakerLine = normalizeDialogueLine(round.speaker, round.userId, round.speakerTts);
   await showNpcDialogueCard({
     ...dialogueOptionsForCreatureSpeaker(creatureSpeaker),
-    text: round.speaker,
-    audio: round.speakerTts && round.userId ? { userId: round.userId, key: round.speakerTts } : null,
+    ...(speakerLine.tokens.length
+      ? { tokens: speakerLine.tokens, audio: speakerLine.audio }
+      : { text: speakerLine.raw, audio: speakerLine.audio }),
   });
 
   return renderChoicesAsync({
     heading: 'Choose a response',
     clearAfterSelect: false,
     cards: round.options.map(o => ({
-      title: renderEnFirst(typeof o === 'string' ? o : o.text),
+      title: renderChoiceTitle(o),
     })),
   });
+}
+
+function normalizeDialogueLine(line, userId, ttsKey = null) {
+  if (line && typeof line === 'object' && Array.isArray(line.tokens)) {
+    return {
+      raw: line.raw || '',
+      tokens: line.tokens,
+      words: line.words || [],
+      audio: line.audio || (ttsKey && userId ? { userId, key: ttsKey } : null)
+    };
+  }
+  return {
+    raw: String(line || ''),
+    tokens: [],
+    words: [],
+    audio: ttsKey && userId ? { userId, key: ttsKey } : null
+  };
+}
+
+function renderChoiceTitle(option) {
+  const line = normalizeDialogueLine(option);
+  if (line.tokens.length > 0) {
+    return renderJpSentence(line.tokens, getKnownWords(), null, {}, false, { recordExposure: false });
+  }
+  return renderEnFirst(line.raw);
 }
 
 /**
@@ -512,163 +539,8 @@ export async function renderBefriendQuiz(quizData, result) {
     return;
   }
 
-  // Talk path — show "なまえは？" in narration, then name options as plain buttons
-  // Wrapped in a loop to handle tutorial retry on wrong answers
-  let quizDone = false;
-  while (!quizDone) {
-    await showCreatureDialogue({
-      speaker: creatureSpeaker,
-      prompt: quizData.namePrompt,
-      fallbackText: 'なまえは？',
-    });
-
-    const selectedIdx = await renderChoicesAsync({
-      heading: 'Choose your response',
-      cards: quizData.options.map(opt => ({ title: opt.name })),
-    });
-
-    const selectedId = quizData.options[selectedIdx]?.id ?? null;
-
-    if (!selectedId) return;
-
-    // Submit answer
-    const answerResult = await fetch(`${API_BASE}/api/game/befriend-quiz-answer`, {
-      method: 'POST',
-      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'talk', answerId: selectedId })
-    }).then(r => r.json());
-
-    if (answerResult.tutorialRetry) {
-      const cidSprite = npcSpriteUrl('cid');
-
-      // Same pattern as tutorial step 1 above: pause the enemy formation,
-      // slide Cid in, then restore DOM name pill via showNpcInDisplay.
-      const retryScene = getSceneManager()?.currentScene;
-      if (retryScene && !retryScene.disposed && !retryScene._exiting && retryScene.layers?.npcs) {
-        await retryScene.pauseForNpcInterjection({ fadeEnemies: true });
-        await retryScene.showNpcSprite(cidSprite, { slideIn: true });
-      } else {
-        console.error('[befriend] tutorial retry: no scene with npcs layer');
-      }
-
-      showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
-
-      await ctx.narration.showNarration(getBefriendWrongNarration(), { speaker: 'Cid' });
-
-      const retrySceneOut = getSceneManager()?.currentScene;
-      if (retrySceneOut && !retrySceneOut.disposed && !retrySceneOut._exiting) {
-        if (retrySceneOut.npcSprite) {
-          await retrySceneOut.hideNpcSprite({ slideOut: true });
-        }
-        await retrySceneOut.resumeFromNpcInterjection();
-      }
-      restoreBefriendQuizEnemyUi({
-        quizData,
-        result: answerResult,
-        gameState: ctx.getGameState(),
-        hideEnemy,
-        showFormation,
-      });
-      continue;
-    }
-    quizDone = true;
-
-  if (answerResult.correct) {
-    // Befriended!
-    playSFX('creature-skill');
-    await showCreatureDialogue({
-      speaker: creatureSpeaker,
-      prompt: quizData.successPrompt,
-      fallbackText: 'じゃあ、友達になろう！',
-    });
-
-    const capturedId = answerResult.capturedId;
-    const capturedIdx = answerResult.capturedIndex;
-    if (capturedId != null || capturedIdx != null) {
-      const slot = (typeof capturedIdx === 'number'
-        ? document.querySelector(`#enemy-formation .formation-slot[data-index="${capturedIdx}"]`)
-        : null) || (capturedId
-        ? document.querySelector(`#enemy-formation .formation-slot[data-creature-id="${capturedId}"]`)
-        : null);
-      if (slot) slot.classList.add('befriended');
-    }
-
-    if (answerResult.state) {
-      ctx.updateGameState(answerResult.state);
-    }
-    ctx.syncFinalState(answerResult);
-
-    // Show "New Ally!" popup on the last player formation slot
-    const allySlots = document.querySelectorAll('#player-formation .formation-slot');
-    const newAllyIdx = allySlots.length - 1;
-    if (newAllyIdx >= 0) {
-      setTimeout(() => {
-        const pos = ctx.spritePos('player', newAllyIdx);
-        popupBuff('New Ally!', pos);
-        burstParticles(pos, { count: 8, color: 0x4CAF50 });
-      }, 500);
-    }
-
-    if (answerResult.combatEnded) {
-      ctx.stopCombatLoop({ ...answerResult, victory: true });
-    }
-    return;
-  }
-
-  // Wrong answer — creature fights back
-  await showCreatureDialogue({
-    speaker: creatureSpeaker,
-    prompt: quizData.wrongPrompt,
-    fallbackText: 'ちがう！',
-  });
-
-  await showBefriendEnemyAttacksAnimated(
-    answerResult.counterAttack,
-    answerResult.allies || ctx.getGameState()?.combat?.allies || []
-  );
-
-  // Update state after counter-attack
-  if (answerResult.allies || answerResult.enemies) {
-    const gs = ctx.getGameState();
-    if (gs.combat) {
-      ctx.updateGameState({
-        ...gs,
-        combat: {
-          ...gs.combat,
-          ...(answerResult.allies && { allies: answerResult.allies }),
-          ...(answerResult.enemies && { enemies: answerResult.enemies })
-        },
-        ...(answerResult.creatureParty && {
-          run: { ...gs.run, creatureParty: answerResult.creatureParty }
-        })
-      });
-      // Sync HP bars in-place — don't call updateUI() which re-renders
-      // formations and resurrects KO-animated dead enemy sprites as ghosts
-      if (answerResult.enemies?.length > 1) {
-        answerResult.enemies.forEach((e, i) => ctx.characterUI.updateEnemyHPAtIndex(i, e.hp, e.maxHp));
-      } else if (answerResult.enemies?.[0]) {
-        ctx.characterUI.updateEnemyHPBar({ current: answerResult.enemies[0].hp, max: answerResult.enemies[0].maxHp });
-      }
-      ctx.updateCreatureHpBars(answerResult.creatureParty?.active || ctx.getGameState().run?.creatureParty?.active, null);
-      if (ctx.updateCreatureRowData) {
-        const updated = ctx.getGameState();
-        ctx.updateCreatureRowData(updated.run?.creatureParty, updated.combat);
-      }
-    }
-  }
-
-  if (answerResult.combatEnded) {
-    ctx.setCombatActive(false);
-    if (answerResult.victory === false) {
-      if (ctx.showGameOverModal) ctx.showGameOverModal();
-    }
-    return;
-  }
-
-  // Combat resumes — start next move selection
-  await ctx.delay(600);
-  ctx.startMoveSelection();
-  } // end while (!quizDone)
+  await executeBefriendAction(null);
+  return;
 }
 
 /**
@@ -718,7 +590,10 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
     // 3-round conversation loop
     for (let i = 0; i < rounds.length; i++) {
       // Play creature speaker line audio if available (fire-and-forget)
-      if (rounds[i].speakerTts && convoUserId) {
+      const speakerAudio = rounds[i].speaker?.audio;
+      if (speakerAudio?.key && speakerAudio?.userId) {
+        playDialogueAudio(speakerAudio.userId, speakerAudio.key);
+      } else if (rounds[i].speakerTts && convoUserId) {
         playDialogueAudio(convoUserId, rounds[i].speakerTts);
       }
       const selectedIndex = await showConversationRound(
@@ -726,7 +601,10 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
         creatureSpeaker
       );
       // Play selected option audio if available (fire-and-forget)
-      if (rounds[i].optionsTts?.[selectedIndex] && convoUserId) {
+      const optionAudio = rounds[i].options?.[selectedIndex]?.audio;
+      if (optionAudio?.key && optionAudio?.userId) {
+        playDialogueAudio(optionAudio.userId, optionAudio.key);
+      } else if (rounds[i].optionsTts?.[selectedIndex] && convoUserId) {
         playDialogueAudio(convoUserId, rounds[i].optionsTts[selectedIndex]);
       }
       const answerResult = await ctx.apiSubmitBefriendAnswer(i, selectedIndex);

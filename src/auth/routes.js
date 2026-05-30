@@ -127,7 +127,10 @@ export default function createAuthRoutes(options = {}) {
       if (inviteCode && inviteCode !== PERMANENT_INVITE_CODE) {
         useInviteCode(inviteCode, user.id, usersFile);
       }
-      updateUserKeys(user.id, { aiDataSharingConsent: true }, encryptionKey, usersFile);
+      updateUserKeys(user.id, {
+        aiDataSharingConsent: true,
+        aiConversationsEnabled: true
+      }, encryptionKey, usersFile);
 
       // Seed FSRS vocab deck from uploaded word list
       if (req.file) {
@@ -185,14 +188,16 @@ export default function createAuthRoutes(options = {}) {
 
     let apiKeysInfo = {
       jlptLevel: 'N4',
-      aiDataSharingConsent: false
+      aiDataSharingConsent: false,
+      aiConversationsEnabled: false
     };
     if (user.encryptedApiKeys) {
       try {
         const keys = decryptKeys(user.encryptedApiKeys, encryptionKey);
         apiKeysInfo = {
           jlptLevel: keys.jlptLevel || 'N4',
-          aiDataSharingConsent: keys.aiDataSharingConsent === true
+          aiDataSharingConsent: keys.aiDataSharingConsent === true,
+          aiConversationsEnabled: keys.aiConversationsEnabled !== false
         };
       } catch {
         // Keep defaults on decryption failure
@@ -204,10 +209,11 @@ export default function createAuthRoutes(options = {}) {
 
   // PUT /api/auth/api-keys
   function updateKeys(req, res) {
-    const { jlptLevel, aiDataSharingConsent } = req.body;
+    const { jlptLevel, aiDataSharingConsent, aiConversationsEnabled } = req.body;
     const keys = {};
     if (jlptLevel !== undefined) keys.jlptLevel = jlptLevel;
     if (aiDataSharingConsent !== undefined) keys.aiDataSharingConsent = aiDataSharingConsent === true;
+    if (aiConversationsEnabled !== undefined) keys.aiConversationsEnabled = aiConversationsEnabled === true;
 
     // Merge with existing keys (partial update)
     const user = findUserById(req.user.id, usersFile);

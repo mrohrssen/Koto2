@@ -223,7 +223,8 @@ describe('auth routes', { concurrency: false }, () => {
         openrouterModel: 'openai/gpt-5-mini',
         bunproToken: 'bunpro-test-token',
         jlptLevel: 'N3',
-        aiDataSharingConsent: true
+        aiDataSharingConsent: true,
+        aiConversationsEnabled: false
       })
       .expect(200);
 
@@ -233,7 +234,8 @@ describe('auth routes', { concurrency: false }, () => {
       .expect(200);
     assert.deepEqual(me.body.apiKeys, {
       jlptLevel: 'N3',
-      aiDataSharingConsent: true
+      aiDataSharingConsent: true,
+      aiConversationsEnabled: false
     });
   });
 });

@@ -99,6 +99,7 @@ export default function createGameRoutes(deps) {
     getUserVocabulary: deps.getUserVocabulary,
     getCreatureDialogueFromCache: deps.getCreatureDialogueFromCache,
     regenCreatureDialogueFn: deps.regenCreatureDialogueFn,
+    isCreatureDialogueStaleFn: deps.isCreatureDialogueStaleFn,
     getNpcDialogueFromCache: deps.getNpcDialogueFromCache,
     logNpcEncounterFn: deps.logNpcEncounterFn,
     regenNpcDialogueFn: deps.regenNpcDialogueFn,

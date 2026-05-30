@@ -310,6 +310,37 @@ describe('dialogue-repair', () => {
       assert.strictEqual(capturedMessages[2].role, 'user');
       assert.ok(capturedMessages[2].content.includes('greeting'));
     });
+
+    it('forwards Claude and Gemini model fields to repair chatFn', async () => {
+      let capturedArgs = null;
+      const checkFn = async (text) => {
+        if (text === 'BAD') return { unknownWords: ['x', 'y'], count: 2 };
+        return { unknownWords: [], count: 0 };
+      };
+      const mockChat = async (opts) => {
+        capturedArgs = opts;
+        return JSON.stringify(cleanDialogue);
+      };
+
+      const dirty = { ...cleanDialogue, greeting: 'BAD' };
+      const result = await enforceDialogueVocab({
+        dialogue: dirty,
+        checkViolationsFn: checkFn,
+        chatFn: mockChat,
+        systemPrompt: 'test-system',
+        userPrompt: 'test-user',
+        aiConfig: {
+          provider: 'anthropic',
+          apiKey: 'k',
+          claudeModel: 'claude-test',
+          geminiModel: 'gemini-test'
+        }
+      });
+
+      assert.equal(result.repaired, true);
+      assert.equal(capturedArgs.claudeModel, 'claude-test');
+      assert.equal(capturedArgs.geminiModel, 'gemini-test');
+    });
   });
 
   describe('creature entity type support', () => {

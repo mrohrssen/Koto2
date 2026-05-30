@@ -119,8 +119,9 @@ CRITICAL RULES (i+1 comprehensible input):
 - You MUST only use words from the player's vocabulary list below, plus at most 1 unknown word per sentence.
 - Every Japanese string (speaker lines and options) must follow this rule.
 - If you cannot express something with the allowed vocabulary, simplify the sentence.
-- The "correct" option for each round should be a natural, contextually appropriate response to the creature's speaker line.
-- The 2 incorrect options should be grammatically valid Japanese but contextually wrong (off-topic or nonsensical as a reply).`
+- Each "speaker" line must be a question or clear conversational prompt that the player can answer naturally.
+- The correct option must directly answer the creature's prompt.
+- The 2 incorrect options should be valid Japanese and plausible-looking, but contextually wrong replies to that specific prompt.`
   });
 
   // Layer 2: Vocab constraints
@@ -176,17 +177,17 @@ Return ONLY valid JSON matching this schema:
 {
   "rounds": [
     {
-      "speaker": "<creature's Japanese line>",
+      "speaker": "<creature's Japanese question or clear conversational prompt>",
       "options": ["<correct response>", "<wrong response>", "<wrong response>"],
       "correctIndex": 0
     },
     {
-      "speaker": "<creature's Japanese line>",
+      "speaker": "<creature's Japanese question or clear conversational prompt>",
       "options": ["<wrong response>", "<correct response>", "<wrong response>"],
       "correctIndex": 1
     },
     {
-      "speaker": "<creature's Japanese line>",
+      "speaker": "<creature's Japanese question or clear conversational prompt>",
       "options": ["<wrong response>", "<wrong response>", "<correct response>"],
       "correctIndex": 2
     }
@@ -198,7 +199,7 @@ Rules:
 - Each round has: speaker (string), options (array of 3 strings), correctIndex (integer 0-2)
 - correctIndex indicates which option is the contextually appropriate response
 - Vary the correctIndex position across rounds (don't always use the same index)
-- The creature's speaker lines should reflect its personality
+- The creature's speaker lines should reflect its personality and be answerable questions or prompts
 - All Japanese text must follow the vocab constraints`;
 
   return { systemBlocks, userPrompt };
