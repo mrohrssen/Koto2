@@ -1112,6 +1112,101 @@ export function resolveSingleActorAction({
   };
 }
 
+export function resolveSyntheticActorAction({
+  actorSide,
+  actorIndex,
+  allies,
+  enemies,
+  syntheticMove,
+  targetIndex,
+  itemBuffs = null,
+  creatureParty = null,
+  metaMults = null,
+  playbackStart = 0,
+}) {
+  const isAlly = actorSide === 'ally' || actorSide === 'sideA';
+  const actorList = isAlly ? allies : enemies;
+  const defenderList = isAlly ? enemies : allies;
+  const actor = actorList[actorIndex];
+  let playbackIndex = playbackStart;
+  const segment = {
+    actor: { side: actorSide, index: actorIndex, id: actor?.id || null },
+    attacks: [],
+    counterAttacks: [],
+    effectEvents: [],
+    mpRegens: [],
+    xpEvents: [],
+    skipped: false,
+    synthetic: true,
+  };
+
+  if (!actor || actor.hp <= 0 || isIncapacitated(actor)) {
+    segment.skipped = true;
+    return { actionSegments: [segment], attacks: [], xpEvents: [], playbackNext: playbackIndex };
+  }
+
+  const move = {
+    category: 'damage',
+    target: 'single_enemy',
+    mpCost: 0,
+    ...syntheticMove,
+  };
+  const result = executeMove(
+    actor,
+    actorIndex,
+    move,
+    targetIndex,
+    actorList,
+    defenderList,
+    isAlly ? itemBuffs : null,
+    isAlly ? creatureParty : null,
+    new Set(),
+    isAlly ? metaMults : null,
+    isAlly ? null : itemBuffs
+  );
+
+  for (const atk of result.attacks) {
+    atk.playbackIndex = playbackIndex++;
+    atk.combatSide = isAlly ? 'player' : 'enemy';
+    atk.synthetic = true;
+    segment.attacks.push(atk);
+  }
+  segment.xpEvents.push(...(result.xpEvents || []));
+  return {
+    actionSegments: [segment],
+    attacks: segment.attacks,
+    counterAttacks: [],
+    inlineCounters: [],
+    xpEvents: segment.xpEvents,
+    effectEvents: [],
+    mpRegens: [],
+    playbackNext: playbackIndex,
+  };
+}
+
+export function resolveNoopActorAction({ actorSide, actorIndex, allies, enemies, playbackStart = 0 }) {
+  const actor = actorSide === 'ally' ? allies?.[actorIndex] : enemies?.[actorIndex];
+  return {
+    actionSegments: [{
+      actor: { side: actorSide, index: actorIndex, id: actor?.id || null },
+      attacks: [],
+      counterAttacks: [],
+      effectEvents: [],
+      mpRegens: [],
+      xpEvents: [],
+      skipped: !actor || actor.hp <= 0 || isIncapacitated(actor),
+      noop: true,
+    }],
+    attacks: [],
+    counterAttacks: [],
+    inlineCounters: [],
+    xpEvents: [],
+    effectEvents: [],
+    mpRegens: [],
+    playbackNext: playbackStart,
+  };
+}
+
 export function processEnemyTurn(enemies, allies, defendActive = false, itemBuffs = null) {
   const attacks = [];
   for (let attackerIndex = 0; attackerIndex < enemies.length; attackerIndex++) {

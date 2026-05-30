@@ -107,6 +107,7 @@ import * as pvpLobbyUI from './js/ui/pvp-lobby.js';
 import * as pvpBattleUI from './js/ui/pvp-battle.js';
 import { isPvpBattleActive } from './js/ui/pvp-battle.js';
 import * as speedReview from './js/ui/speed-review.js';
+import * as kanjiKombatUI from './js/ui/kanji-kombat.js';
 import * as chestsUI from './js/ui/chests.js';
 import * as fusionLabUI from './js/ui/fusion-lab.js';
 import { renderAdventureReport } from './js/ui/adventure-report.js';
@@ -194,6 +195,10 @@ import {
   dealerLeave as apiDealerLeave,
   startCreatureEncounter as apiStartCreatureEncounter,
   creatureCombatCycle as apiCreatureCombatCycle,
+  getKanjiKombatAvailability as apiGetKanjiKombatAvailability,
+  startKanjiKombat as apiStartKanjiKombat,
+  submitKanjiKombatIntro as apiSubmitKanjiKombatIntro,
+  submitKanjiKombatAnswer as apiSubmitKanjiKombatAnswer,
   getCreatureCollection as apiGetCreatureCollection,
   getFusionState as apiGetFusionState,
   startFusion as apiStartFusion,
@@ -1061,6 +1066,22 @@ async function triggerCreatureSelect() {
     }, 'party_confirmed');
     updateUI();
   }
+}
+
+async function startKanjiKombatSetup() {
+  const collection = gameState.meta?.creatureCollection || [];
+  if (collection.length === 0) {
+    narrationBox.show('Befriend a creature before entering Kanji Kombat.', { autoDismiss: 2000 });
+    return;
+  }
+  kanjiKombatUI.showKanjiKombatCreatureChooser(gameState, {
+    onConfirm: async creatureId => {
+      const result = await apiStartKanjiKombat(creatureId);
+      if (result?.state) updateGameState(result.state);
+      combatLoopUI.startCombatLoop();
+      updateUI();
+    },
+  });
 }
 
 function showCollectionSelect(catalog, collection) {
@@ -1980,6 +2001,13 @@ async function initGame() {
     },
   });
 
+  kanjiKombatUI.initKanjiKombatUI({
+    submitIntro: apiSubmitKanjiKombatIntro,
+    submitAnswer: apiSubmitKanjiKombatAnswer,
+    updateGameState,
+    updateUI,
+  });
+
   explorationUI.init({
     getGameState: () => gameState,
     updateGameState,
@@ -1998,6 +2026,8 @@ async function initGame() {
       return result;
     },
     triggerCreatureSelect,
+    apiGetKanjiKombatAvailability,
+    startKanjiKombatSetup,
     apiReturnToHub: returnToHub,
     apiProceed,
     apiRoomEncounter,

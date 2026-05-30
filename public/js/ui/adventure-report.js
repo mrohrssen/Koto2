@@ -22,6 +22,67 @@ function renderMasteredList(words) {
   `).join('')}</ul>`;
 }
 
+function renderKanjiKombatReport(container, summary, isVictory, onReturnToHub) {
+  const report = summary.kanjiKombat || {};
+  const title = isVictory ? 'Kanji Kombat Complete!' : 'Kanji Kombat Report';
+  const flavor = isVictory ? 'Daily script training complete.' : 'Your script streak ends here.';
+
+  container.innerHTML = `
+    <div class="adventure-report kanji-kombat-report">
+      <div class="ar-header">
+        <div class="ar-icon">\u{1F94B}</div>
+        <div class="ar-title">${title}</div>
+        <div class="ar-subtitle">${report.scriptDeck || 'script'} practice</div>
+        <div class="ar-flavor">${flavor}</div>
+      </div>
+
+      <div class="ar-section">
+        <div class="ar-section-label">KANJI KOMBAT</div>
+        <div class="ar-metrics-grid">
+          <div class="ar-metric featured">
+            <div class="ar-metric-icon">\u2694\uFE0F</div>
+            <div class="ar-metric-value">${report.wavesCleared || 0}</div>
+            <div class="ar-metric-label">Waves Cleared</div>
+          </div>
+          <div class="ar-metric">
+            <div class="ar-metric-icon">\u{1F525}</div>
+            <div class="ar-metric-value">${report.highestStreak || 0}</div>
+            <div class="ar-metric-label">Highest Streak</div>
+          </div>
+          <div class="ar-metric">
+            <div class="ar-metric-icon">\u2705</div>
+            <div class="ar-metric-value">${report.accuracy || 0}%</div>
+            <div class="ar-metric-label">Accuracy</div>
+          </div>
+          <div class="ar-metric">
+            <div class="ar-metric-icon">\u{1F4DA}</div>
+            <div class="ar-metric-value">${report.cardsReviewed || 0}</div>
+            <div class="ar-metric-label">Cards Reviewed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ar-section">
+        <div class="ar-section-label">SCRIPT PROGRESS</div>
+        <div class="ar-word-summary">
+          <div class="ar-word-box">
+            <div class="ar-word-value immersed">${report.newCardsIntroduced || 0}</div>
+            <div class="ar-word-label">New Cards</div>
+          </div>
+          <div class="ar-word-box">
+            <div class="ar-word-value mastered">${report.minibossesDefeated || 0}</div>
+            <div class="ar-word-label">Minibosses</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="ar-btn" id="ar-hub-btn">Return to Hub</button>
+    </div>
+  `;
+
+  container.querySelector('#ar-hub-btn')?.addEventListener('click', onReturnToHub);
+}
+
 /**
  * Render the adventure report into a container element.
  * @param {HTMLElement} container
@@ -31,6 +92,11 @@ function renderMasteredList(words) {
  */
 export function renderAdventureReport(container, summary, isVictory, onReturnToHub) {
   const s = summary || {};
+  if (s.mode === 'kanjiKombat') {
+    renderKanjiKombatReport(container, s, isVictory, onReturnToHub);
+    return;
+  }
+
   const icon = isVictory ? '\u{1F3C6}' : '\u{1F4DC}';
   const title = isVictory ? 'Adventure Complete!' : 'Adventure Report';
   const flavor = isVictory

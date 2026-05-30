@@ -64,6 +64,7 @@ import { playNpcSkillAnimation } from './room-transition.js';
 import * as befriend from './befriend.js';
 import * as vfx from './combat-vfx.js';
 import * as npcDialogueUI from './npc-dialogue-ui.js';
+import * as kanjiKombatUI from './kanji-kombat.js';
 import {
   insertAttackCard, insertNpcAttackCard, waitForCardTap,
   createAttackCardContinueControl,
@@ -675,6 +676,9 @@ function promptNextCreature() {
   clearTargetSelect();
   setActiveLabel(creature);
   showActiveGlowForScene(getSceneManager().currentScene, currentCreatureIndex);
+  if (state.run?.mode === 'kanjiKombat' && kanjiKombatUI.renderKanjiKombatAction(state)) {
+    return;
+  }
   showMoves(creature, currentCreatureIndex, {
     ...befriend.getMoveSelectBefriendOpts(currentCreatureIndex),
     ...getFirstCombatMoveTutorialOpts(state, creature, currentCreatureIndex)

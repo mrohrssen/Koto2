@@ -7,6 +7,61 @@
   margin: 0 auto;
 }
 
+.kanji-kombat-panel,
+.kanji-kombat-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: stretch;
+  padding: 0.75rem;
+}
+
+.kanji-kombat-label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.kanji-kombat-prompt {
+  font-size: clamp(3rem, 14vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.kanji-kombat-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.kanji-kombat-choice,
+.kanji-kombat-intro-action {
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text-primary);
+  min-height: 52px;
+  font-weight: 700;
+}
+
+.kanji-kombat-intro-card {
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 18px;
+  padding: 1rem;
+  background: rgba(0,0,0,0.20);
+}
+
+.kanji-kombat-reading,
+.kanji-kombat-answer {
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+}
+
 #action-area:has(.campfire-panel) {
   justify-content: flex-start !important;
   align-items: stretch !important;

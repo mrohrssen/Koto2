@@ -136,6 +136,8 @@ let apiCompleteTutorialFusion = null;
 let apiGetCreatureCollection = null;
 let showCollectionSelect = null;
 let triggerCreatureSelect = null;
+let apiGetKanjiKombatAvailability = null;
+let startKanjiKombatSetup = null;
 
 let speedReviewRoomLaunchState = {
   roomId: null,
@@ -207,6 +209,8 @@ export function init(callbacks) {
   apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
   triggerCreatureSelect = callbacks.triggerCreatureSelect;
+  apiGetKanjiKombatAvailability = callbacks.apiGetKanjiKombatAvailability;
+  startKanjiKombatSetup = callbacks.startKanjiKombatSetup;
   apiGetWhackAMolePool = callbacks.apiGetWhackAMolePool;
   apiCompleteWhackAMole = callbacks.apiCompleteWhackAMole;
   apiGetWhackAMoleDialogue = callbacks.apiGetWhackAMoleDialogue;
@@ -480,6 +484,9 @@ export async function renderHub() {
   const dueCount = apiGetVocabDueCount ? (await apiGetVocabDueCount().catch(() => ({ count: 0 }))).count : 0;
   const fusionLabDisabled = !hasHinonekoFusionData(gameState);
   const guideFusionLab = needsFusionLabTutorial(gameState);
+  const kanjiKombat = (apiGetKanjiKombatAvailability
+    ? await apiGetKanjiKombatAvailability().catch(() => ({ available: false }))
+    : { available: false }) || { available: false };
 
   renderButtons([
     { label: `📚 Knowledge Review${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
@@ -519,6 +526,7 @@ export async function renderHub() {
         updateUI();
       }
     }},
+    { label: 'Kanji Kombat', onClick: () => startKanjiKombatSetup?.(), disabled: kanjiKombat.available === false },
     { label: '⚔️ Multiplayer Battle', onClick: () => {
       const gs = getGameState();
       gs.phase = 'pvp_lobby';
