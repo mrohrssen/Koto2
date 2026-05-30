@@ -108,9 +108,9 @@ describe('grammar-matcher', () => {
       { surface: 'で', baseForm: 'で', pos0: '助詞', pos1: '接続助詞' },
       { surface: 'いる', baseForm: 'いる', pos0: '動詞' },
     ];
-    const matcher = grammarId => ({
+    const matcher = (grammarId, priority) => ({
       grammarId,
-      priority: 10,
+      priority,
       tokens: [
         { pos0: '動詞', conjugationFormPrefix: '連用形' },
         { surfaceOneOf: ['て', 'で'], pos0: '助詞' },
@@ -118,7 +118,74 @@ describe('grammar-matcher', () => {
       ],
     });
 
-    const matches = findGrammarMatches(tokens, { catalog, matchers: [matcher('test-te-iru-a'), matcher('test-te-iru-b')] });
+    const matches = findGrammarMatches(tokens, { catalog, matchers: [matcher('test-te-iru-a', 10), matcher('test-te-iru-b', 10)] });
     assert.deepEqual(matches.map(match => match.grammarId), ['test-te-iru-a', 'test-te-iru-b']);
+  });
+
+  it('keeps overlapping matches from different grammar levels', () => {
+    const catalog = [
+      { id: 'n5-test-te', title: 'て' },
+      { id: 'n4-test-te-iku', title: 'ていく' },
+    ];
+    const tokens = [
+      { surface: '読ん', baseForm: '読む', pos0: '動詞', conjugationForm: '連用形-撥音便' },
+      { surface: 'で', baseForm: 'で', pos0: '助詞', pos1: '接続助詞' },
+      { surface: 'いく', baseForm: 'いく', pos0: '動詞' },
+    ];
+    const matchers = [
+      {
+        grammarId: 'n5-test-te',
+        priority: 30,
+        tokens: [
+          { pos0: '動詞', conjugationFormPrefix: '連用形' },
+          { surfaceOneOf: ['て', 'で'], pos0: '助詞' },
+        ],
+      },
+      {
+        grammarId: 'n4-test-te-iku',
+        priority: 5,
+        tokens: [
+          { pos0: '動詞', conjugationFormPrefix: '連用形' },
+          { surfaceOneOf: ['て', 'で'], pos0: '助詞' },
+          { baseForm: 'いく', pos0: '動詞' },
+        ],
+      },
+    ];
+
+    const matches = findGrammarMatches(tokens, { catalog, matchers });
+    assert.deepEqual(matches.map(match => match.grammarId), ['n5-test-te', 'n4-test-te-iku']);
+  });
+
+  it('does not emit cataloged-not-detectable grammar points', () => {
+    const catalog = [
+      { id: 'test-disabled-grammar', title: 'disabled', status: 'cataloged-not-detectable' },
+    ];
+    const matchers = [{
+      grammarId: 'test-disabled-grammar',
+      priority: 1,
+      tokens: [
+        { surface: '猫', pos0: '名詞' },
+      ],
+    }];
+
+    const matches = findGrammarMatches(tokenized('猫です。'), { catalog, matchers });
+    assert.deepEqual(matches, []);
+  });
+
+  it('dedupes duplicate matcher rows for the same grammar span', () => {
+    const catalog = [
+      { id: 'test-duplicate-row', title: 'duplicate' },
+    ];
+    const matcher = {
+      grammarId: 'test-duplicate-row',
+      priority: 1,
+      tokens: [
+        { surface: '猫', pos0: '名詞' },
+        { surface: 'は', pos0: '助詞' },
+      ],
+    };
+
+    const matches = findGrammarMatches(tokenized('猫は走る。'), { catalog, matchers: [matcher, matcher] });
+    assert.deepEqual(matches.map(match => match.grammarId), ['test-duplicate-row']);
   });
 });

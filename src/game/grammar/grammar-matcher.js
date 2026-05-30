@@ -12,6 +12,7 @@ export function findGrammarMatches(tokens, { catalog = [], matchers = [] } = {})
       const tokenStart = resolveDisplayToken(sequenceMatch, display.startTokenOffset ?? 0, 'start');
       const tokenEnd = resolveDisplayToken(sequenceMatch, display.endTokenOffset ?? matcher.tokens.length - 1, 'end');
       const point = catalogMap.get(matcher.grammarId) || {};
+      if (point.status && point.status !== 'enabled') continue;
       matches.push({
         grammarId: matcher.grammarId,
         title: point.title || matcher.grammarId,
@@ -24,6 +25,7 @@ export function findGrammarMatches(tokens, { catalog = [], matchers = [] } = {})
         tokenEnd,
         priority: matcher.priority || 0,
         matcherType: matcher.type || 'token-sequence',
+        allowOverlap: Boolean(matcher.allowOverlap),
       });
     }
   }
@@ -87,12 +89,21 @@ function tokenMatches(token, spec, tokens = [], start = 0) {
     if (key === 'offset') continue;
     if (key === 'optional') continue;
     if (key === 'gap') continue;
+    if (key === 'max') continue;
     if (key === 'sameBaseFormAsOffset') {
       if (token.baseForm !== tokens[start + expected]?.baseForm) return false;
       continue;
     }
     if (key === 'surfaceOneOf') {
       if (!expected.includes(token.surface)) return false;
+      continue;
+    }
+    if (key === 'surfacePrefix') {
+      if (!String(token.surface || '').startsWith(expected)) return false;
+      continue;
+    }
+    if (key === 'surfaceSuffix') {
+      if (!String(token.surface || '').endsWith(expected)) return false;
       continue;
     }
     if (key === 'baseFormOneOf') {
@@ -119,14 +130,30 @@ function isRejected(tokens, start, rejectGroups = []) {
       const offset = spec.offset ?? 0;
       return tokenMatches(tokens[start + offset], spec, tokens, start);
     })
+    && (!group.previousWithin || hasPreviousTokenMatch(tokens, start, group.previousWithin))
   );
+}
+
+function hasPreviousTokenMatch(tokens, start, spec) {
+  const max = spec.max ?? 1;
+  for (let offset = 1; offset <= max; offset++) {
+    if (tokenMatches(tokens[start - offset], spec, tokens, start)) return true;
+  }
+  return false;
 }
 
 function resolveOverlaps(matches) {
   const sorted = [...matches].sort(compareMatches);
   const accepted = [];
   for (const candidate of sorted) {
-    const conflict = accepted.some(existing => overlaps(existing, candidate) && !isSharedExactSpan(existing, candidate));
+    if (accepted.some(existing => isSameGrammarSpan(existing, candidate))) continue;
+    const conflict = accepted.some(existing =>
+      overlaps(existing, candidate)
+      && !isSharedExactSpan(existing, candidate)
+      && !isCrossLevelMatch(existing, candidate)
+      && !existing.allowOverlap
+      && !candidate.allowOverlap
+    );
     if (!conflict) accepted.push(candidate);
   }
   return accepted.sort((a, b) =>
@@ -151,5 +178,21 @@ function overlaps(a, b) {
 function isSharedExactSpan(a, b) {
   return a.tokenStart === b.tokenStart
     && a.tokenEnd === b.tokenEnd
-    && a.priority === b.priority;
+    && (a.priority === b.priority || isCrossLevelMatch(a, b));
+}
+
+function isSameGrammarSpan(a, b) {
+  return a.grammarId === b.grammarId
+    && a.tokenStart === b.tokenStart
+    && a.tokenEnd === b.tokenEnd;
+}
+
+function isCrossLevelMatch(a, b) {
+  const aLevel = grammarLevel(a.grammarId);
+  const bLevel = grammarLevel(b.grammarId);
+  return aLevel && bLevel && aLevel !== bLevel;
+}
+
+function grammarLevel(grammarId = '') {
+  return String(grammarId).match(/^n[1-5]-/)?.[0] || '';
 }

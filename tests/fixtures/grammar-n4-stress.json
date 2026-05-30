@@ -1,0 +1,2790 @@
+[
+  {
+    "sentence": "でも。",
+    "expected": [
+      "n4-l01-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "誰でも参加できます。",
+    "expected": [
+      "n4-l01-01",
+      "n4-l08-07-potential"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読みやすい。",
+    "expected": [
+      "n4-l01-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "書きやすい。",
+    "expected": [
+      "n4-l01-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "食べやすい。",
+    "expected": [
+      "n4-l01-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読みにくい。",
+    "expected": [
+      "n4-l01-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読みづらい。",
+    "expected": [
+      "n4-l01-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "だんだん。",
+    "expected": [
+      "n4-l01-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "どんどん。",
+    "expected": [
+      "n4-l01-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "私ら。",
+    "expected": [
+      "n4-l01-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼ら。",
+    "expected": [
+      "n4-l01-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでいく。",
+    "expected": [
+      "n4-l01-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "見ていく。",
+    "expected": [
+      "n4-l01-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでくる。",
+    "expected": [
+      "n4-l01-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読み方。",
+    "expected": [
+      "n4-l01-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むだけで。",
+    "expected": [
+      "n4-l01-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "だが。",
+    "expected": [
+      "n4-l01-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読まなくて。",
+    "expected": [
+      "n4-l01-13",
+      "n4-l01-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "時間がなくて行けなかった。",
+    "expected": [
+      "n4-l01-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読まないで。",
+    "expected": [
+      "n4-l01-15",
+      "n4-l07-06-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読まれる。",
+    "expected": [
+      "n4-l01-16-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "先生に名前を呼ばれた。",
+    "expected": [
+      "n4-l01-16-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "開ける。",
+    "expected": [
+      "n4-l01-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ドアを開けると音がした。",
+    "expected": [
+      "n4-l01-17",
+      "n4-l03-17",
+      "n4-l08-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読み直す。",
+    "expected": [
+      "n4-l01-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むということ。",
+    "expected": [
+      "n4-l01-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼が来ないということを知っていた。",
+    "expected": [
+      "n4-l01-19",
+      "n4-l02-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むとき。",
+    "expected": [
+      "n4-l02-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "子どものとき、よく泳いだ。",
+    "expected": [
+      "n4-l02-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "まず。",
+    "expected": [
+      "n4-l02-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "子どもまで手伝った。",
+    "expected": [
+      "n4-l02-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "までに。",
+    "expected": [
+      "n4-l02-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "明日までに払わなければいけません。",
+    "expected": [
+      "n4-l02-04",
+      "n4-l09-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "また。",
+    "expected": [
+      "n4-l02-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "はじめる。",
+    "expected": [
+      "n4-l02-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨が降り始めました。",
+    "expected": [
+      "n4-l02-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "おわる。",
+    "expected": [
+      "n4-l02-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "子どもたちは歌い終わりました。",
+    "expected": [
+      "n4-l02-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "三時ごろ。",
+    "expected": [
+      "n4-l02-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "七時ごろ帰る。",
+    "expected": [
+      "n4-l02-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "あとで。",
+    "expected": [
+      "n4-l02-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでいた。",
+    "expected": [
+      "n4-l02-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "一日に。",
+    "expected": [
+      "n4-l02-11-frequency"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "一週間に三回泳ぐ。",
+    "expected": [
+      "n4-l02-11-frequency"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "週に三回運動する。",
+    "expected": [
+      "n4-l02-11-frequency"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "とうとう。",
+    "expected": [
+      "n4-l02-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "とうとう合格した。",
+    "expected": [
+      "n4-l02-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "去年より忙しい。",
+    "expected": [
+      "n4-l02-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ごとに。",
+    "expected": [
+      "n4-l02-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "一ページごとに名前を書く。",
+    "expected": [
+      "n4-l02-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "なるべく。",
+    "expected": [
+      "n4-l02-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "なるべく早く来てください。",
+    "expected": [
+      "n4-l02-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むところだ。",
+    "expected": [
+      "n4-l02-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むのに。",
+    "expected": [
+      "n4-l02-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨なのに出かけた。",
+    "expected": [
+      "n4-l02-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "忙しいのに手伝ってくれた。",
+    "expected": [
+      "n4-l02-17",
+      "n4-l07-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むと思う。",
+    "expected": [
+      "n4-l03-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "私は正しいと思う。",
+    "expected": [
+      "n4-l03-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読もうと思う。",
+    "expected": [
+      "n4-l03-01",
+      "n4-l04-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "明日行こうと思う。",
+    "expected": [
+      "n4-l04-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "など。",
+    "expected": [
+      "n4-l03-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "みたい。",
+    "expected": [
+      "n4-l03-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むこと。",
+    "expected": [
+      "n4-l03-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨が降りそう。",
+    "expected": [
+      "n4-l03-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "高さ。",
+    "expected": [
+      "n4-l03-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "部屋の広さを測った。",
+    "expected": [
+      "n4-l03-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "本とかペンとか。",
+    "expected": [
+      "n4-l03-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "寿司とかラーメンとかを食べる。",
+    "expected": [
+      "n4-l03-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "そういう。",
+    "expected": [
+      "n4-l03-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読もう。",
+    "expected": [
+      "n4-l03-09-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "寝よう。",
+    "expected": [
+      "n4-l03-09-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "今日は早く寝よう。",
+    "expected": [
+      "n4-l03-09-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ようだ。",
+    "expected": [
+      "n4-l03-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ぜんぜん。",
+    "expected": [
+      "n4-l03-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "全然寒くない。",
+    "expected": [
+      "n4-l03-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "かな。",
+    "expected": [
+      "n4-l03-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "あまりない。",
+    "expected": [
+      "n4-l03-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "あまり高くない。",
+    "expected": [
+      "n4-l03-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読めば。",
+    "expected": [
+      "n4-l03-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "安ければ買う。",
+    "expected": [
+      "n4-l03-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "なら。",
+    "expected": [
+      "n4-l03-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "欲しがる。",
+    "expected": [
+      "n4-l03-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "犬が怖がる。",
+    "expected": [
+      "n4-l03-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "音がする。",
+    "expected": [
+      "n4-l03-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "青い目をしている。",
+    "expected": [
+      "n4-l03-18-have-wear"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "赤いネクタイをしている。",
+    "expected": [
+      "n4-l03-18-have-wear"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読みたがる。",
+    "expected": [
+      "n4-l03-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "妹は犬を飼いたがっている。",
+    "expected": [
+      "n4-l03-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "かもしれない。",
+    "expected": [
+      "n4-l04-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫みたいに。",
+    "expected": [
+      "n4-l04-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "静かそうに。",
+    "expected": [
+      "n4-l04-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "楽しそうに話す。",
+    "expected": [
+      "n4-l04-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫のように。",
+    "expected": [
+      "n4-l04-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "静かに。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "急に雨が降り出した。",
+    "expected": [
+      "n4-l04-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "早く寝なさい。",
+    "expected": [
+      "n4-l07-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "静かにする。",
+    "expected": [
+      "n4-l04-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "部屋をきれいにする。",
+    "expected": [
+      "n4-l04-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "部屋を明るくする。",
+    "expected": [
+      "n4-l04-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "高くは。",
+    "expected": [
+      "n4-l04-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "甘くはない。",
+    "expected": [
+      "n4-l04-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "晴れるといい。",
+    "expected": [
+      "n4-l04-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "休みが取れるといい。",
+    "expected": [
+      "n4-l04-09",
+      "n4-l08-07-potential"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読めるようになる。",
+    "expected": [
+      "n4-l04-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "日本語が読めるようになった。",
+    "expected": [
+      "n4-l04-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "毎日のように。",
+    "expected": [
+      "n4-l04-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "毎朝のように雨が降る。",
+    "expected": [
+      "n4-l04-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "いいじゃないか。",
+    "expected": [
+      "n4-l04-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "冗談じゃないか。",
+    "expected": [
+      "n4-l04-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨らしい。",
+    "expected": [
+      "n4-l04-13-1"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでおく。",
+    "expected": [
+      "n4-l04-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "本が欲しい。",
+    "expected": [
+      "n4-l04-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "新しい靴がほしい。",
+    "expected": [
+      "n4-l04-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでほしい。",
+    "expected": [
+      "n4-l04-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むと聞いた。",
+    "expected": [
+      "n4-l04-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "試験は難しいと聞いた。",
+    "expected": [
+      "n4-l04-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は来ないと聞いた。",
+    "expected": [
+      "n4-l04-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "聞こえる。",
+    "expected": [
+      "n4-l04-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "見える。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読み出す。",
+    "expected": [
+      "n4-l04-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "二十代。",
+    "expected": [
+      "n4-l05-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "電気代を払った。",
+    "expected": [
+      "n4-l05-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "時間がかかる。",
+    "expected": [
+      "n4-l05-02-time-price"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "千円する。",
+    "expected": [
+      "n4-l05-03-cost"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "三人も。",
+    "expected": [
+      "n4-l05-04-number"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ほとんど。",
+    "expected": [
+      "n4-l05-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "そんな。",
+    "expected": [
+      "n4-l05-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "そんな話は信じない。",
+    "expected": [
+      "n4-l05-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼がそんなことを言うはずがないです。",
+    "expected": [
+      "n4-l05-06",
+      "n4-l08-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "各。",
+    "expected": [
+      "n4-l05-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "日本の次に。",
+    "expected": [
+      "n4-l05-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "三つ以上。",
+    "expected": [
+      "n4-l05-09-1"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "二十歳以上です。",
+    "expected": [
+      "n4-l05-09-1"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "三つ以下。",
+    "expected": [
+      "n4-l05-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫以外。",
+    "expected": [
+      "n4-l05-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ずっと読む。",
+    "expected": [
+      "n4-l05-12-1"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "だいたい。",
+    "expected": [
+      "n4-l05-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "町の中で。",
+    "expected": [
+      "n4-l05-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫のような。",
+    "expected": [
+      "n4-l05-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "三つは。",
+    "expected": [
+      "n4-l05-16-number-amount"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "何冊か。",
+    "expected": [
+      "n4-l05-17-counter"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "真っ白。",
+    "expected": [
+      "n4-l05-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "三つしかない。",
+    "expected": [
+      "n4-l05-19-number"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この部屋には三人しかいません。",
+    "expected": [
+      "n4-l05-19-number",
+      "n4-l08-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "一つしか残っていない。",
+    "expected": [
+      "n4-l05-19-number",
+      "n4-l08-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "残りは一つしかありません。",
+    "expected": [
+      "n4-l05-19-number",
+      "n4-l08-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫は動物の一つだ。",
+    "expected": [
+      "n4-l05-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "富士山は日本の山の一つだ。",
+    "expected": [
+      "n4-l05-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読まないことはない。",
+    "expected": [
+      "n4-l05-21"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "少しも読まない。",
+    "expected": [
+      "n4-l05-22"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "少しも寒くない。",
+    "expected": [
+      "n4-l05-22"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "少なくない。",
+    "expected": [
+      "n4-l05-23"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読む場合は。",
+    "expected": [
+      "n4-l06-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "火事の場合は危険です。",
+    "expected": [
+      "n4-l06-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んで。",
+    "expected": [
+      "n4-l06-02-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでよかった。",
+    "expected": [
+      "n4-l06-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読ませる。",
+    "expected": [
+      "n4-l06-04-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨といってもいい。",
+    "expected": [
+      "n4-l06-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでも。",
+    "expected": [
+      "n4-l06-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでしまう。",
+    "expected": [
+      "n4-l06-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んで帰る。",
+    "expected": [
+      "n4-l06-08-verb-b",
+      "n4-l06-10-verb-noun-b",
+      "n4-l07-05-verb-b"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読ませられる。",
+    "expected": [
+      "n4-l06-09-causative-passive"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "書いてある。",
+    "expected": [
+      "n4-l06-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読めるようになってほしい。",
+    "expected": [
+      "n4-l06-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでいる間に。",
+    "expected": [
+      "n4-l06-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読まなくてもいい。",
+    "expected": [
+      "n4-l06-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでみる。",
+    "expected": [
+      "n4-l06-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "遅れてすみません。",
+    "expected": [
+      "n4-l06-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んであげる。",
+    "expected": [
+      "n4-l07-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでくれる。",
+    "expected": [
+      "n4-l07-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでもらう。",
+    "expected": [
+      "n4-l07-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "なさい。",
+    "expected": [
+      "n4-l07-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでくれてありがとう。",
+    "expected": [
+      "n4-l07-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでくれない。",
+    "expected": [
+      "n4-l07-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むのだろうか。",
+    "expected": [
+      "n4-l07-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "本当なのだろうか。",
+    "expected": [
+      "n4-l07-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "お読みになる。",
+    "expected": [
+      "n4-l07-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "先生がお帰りになる。",
+    "expected": [
+      "n4-l07-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "なさる。",
+    "expected": [
+      "n4-l07-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "お読みください。",
+    "expected": [
+      "n4-l07-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "お待ちください。",
+    "expected": [
+      "n4-l07-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "いらっしゃる。",
+    "expected": [
+      "n4-l07-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ございます。",
+    "expected": [
+      "n4-l07-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "でございます。",
+    "expected": [
+      "n4-l07-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "お読みする。",
+    "expected": [
+      "n4-l07-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "後でお話しします。",
+    "expected": [
+      "n4-l07-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "いたす。",
+    "expected": [
+      "n4-l07-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "私が確認いたします。",
+    "expected": [
+      "n4-l07-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでいただけませんか。",
+    "expected": [
+      "n4-l07-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んだら。",
+    "expected": [
+      "n4-l08-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "駅に着いたら電話してください。",
+    "expected": [
+      "n4-l08-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "安かったら買うつもりです。",
+    "expected": [
+      "n4-l08-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ほかにも。",
+    "expected": [
+      "n4-l08-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "水が必要。",
+    "expected": [
+      "n4-l08-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "そんなに。",
+    "expected": [
+      "n4-l08-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読む必要がある。",
+    "expected": [
+      "n4-l08-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "たとえば。",
+    "expected": [
+      "n4-l08-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読める。",
+    "expected": [
+      "n4-l08-07-potential"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "できるはずだ。",
+    "expected": [
+      "n4-l08-07-potential",
+      "n4-l08-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むんだけど。",
+    "expected": [
+      "n4-l08-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むはずだ。",
+    "expected": [
+      "n4-l08-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この説明は正しいはずです。",
+    "expected": [
+      "n4-l08-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むかどうか。",
+    "expected": [
+      "n4-l08-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "右に曲がると危ないです。",
+    "expected": [
+      "n4-l08-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読まないと。",
+    "expected": [
+      "n4-l08-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むはずがない。",
+    "expected": [
+      "n4-l08-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "本しかない。",
+    "expected": [
+      "n4-l08-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫だけでなく。",
+    "expected": [
+      "n4-l08-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むことができる。",
+    "expected": [
+      "n4-l08-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ここでは泳ぐことができます。",
+    "expected": [
+      "n4-l08-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "かい。",
+    "expected": [
+      "n4-l08-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "もし。",
+    "expected": [
+      "n4-l08-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "安いし近いし。",
+    "expected": [
+      "n4-l09-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "駅に近いし、店も多いし便利です。",
+    "expected": [
+      "n4-l09-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "木でできる。",
+    "expected": [
+      "n4-l09-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読みながら。",
+    "expected": [
+      "n4-l09-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んだところだ。",
+    "expected": [
+      "n4-l09-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "今、店を出たところです。",
+    "expected": [
+      "n4-l09-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んでいるところだ。",
+    "expected": [
+      "n4-l09-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "今、昼ごはんを食べているところです。",
+    "expected": [
+      "n4-l09-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫と犬とどちらが。",
+    "expected": [
+      "n4-l09-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むようにする。",
+    "expected": [
+      "n4-l09-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読まなければいけない。",
+    "expected": [
+      "n4-l09-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読まなければならない。",
+    "expected": [
+      "n4-l09-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読み続ける。",
+    "expected": [
+      "n4-l09-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "メモを書き続けてください。",
+    "expected": [
+      "n4-l09-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読むように言う。",
+    "expected": [
+      "n4-l09-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読む予定だ。",
+    "expected": [
+      "n4-l09-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "日本語を勉強する予定です。",
+    "expected": [
+      "n4-l09-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "晴れるように祈る。",
+    "expected": [
+      "n4-l09-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んだばかり。",
+    "expected": [
+      "n4-l09-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "駅に着いたばかりです。",
+    "expected": [
+      "n4-l09-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "変化する。",
+    "expected": [
+      "n4-l09-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読め。",
+    "expected": [
+      "n4-l09-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ように。",
+    "expected": [
+      "n4-l10-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "かしら。",
+    "expected": [
+      "n4-l10-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "男らしい。",
+    "expected": [
+      "n4-l10-03-2"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫って感じ。",
+    "expected": [
+      "n4-l10-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫に見える。",
+    "expected": [
+      "n4-l10-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "田中さんは先生に見えます。",
+    "expected": [
+      "n4-l10-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨と見える。",
+    "expected": [
+      "n4-l10-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は疲れていると見えます。",
+    "expected": [
+      "n4-l10-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "日本風。",
+    "expected": [
+      "n4-l10-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "変化が見られる。",
+    "expected": [
+      "n4-l10-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "変化が見られます。",
+    "expected": [
+      "n4-l10-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "音に気がつく。",
+    "expected": [
+      "n4-l10-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "間違いに気がつきました。",
+    "expected": [
+      "n4-l10-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫でも犬でも。",
+    "expected": [
+      "n4-l10-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "赤でも青でも好きな方を選べます。",
+    "expected": [
+      "n4-l10-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "それに。",
+    "expected": [
+      "n4-l10-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "それで。",
+    "expected": [
+      "n4-l10-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "何か。",
+    "expected": [
+      "n4-l10-13-question-phrase"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "それでも。",
+    "expected": [
+      "n4-l10-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読んだらどう。",
+    "expected": [
+      "n4-l10-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "疲れたらどうですか、少し休みましょう。",
+    "expected": [
+      "n4-l10-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "大切と考えられている。",
+    "expected": [
+      "n4-l10-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "大切とされている。",
+    "expected": [
+      "n4-l10-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "大切と言われている。",
+    "expected": [
+      "n4-l10-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読めばよかった。",
+    "expected": [
+      "n4-l10-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "行けばよかった。",
+    "expected": [
+      "n4-l10-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N4 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫です。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Common N5 copula sentence should not trigger N4-specific hints."
+  },
+  {
+    "sentence": "本を読む。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Basic N5 object sentence should not trigger N4-specific hints."
+  },
+  {
+    "sentence": "犬がいる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Basic N5 existence sentence should not trigger N4-specific hints."
+  },
+  {
+    "sentence": "彼は来ないと言った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Quotation negative for N4 ないと; the と marks quoted content, not the must/have-to grammar point."
+  },
+  {
+    "sentence": "彼は来ないと思った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Quotation negative for N4 ないと; the と marks quoted content, not the must/have-to grammar point."
+  },
+  {
+    "sentence": "急に休んですみません。",
+    "expected": [
+      "n4-l06-16"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "早く寝ないと明日起きられない。",
+    "expected": [
+      "n4-l08-12",
+      "n4-l08-07-potential"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "彼はもう帰ったと思う。",
+    "expected": [
+      "n4-l03-01"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "彼は行かないと思う。",
+    "expected": [
+      "n4-l03-01"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "誰でもこの箱を開けられる。",
+    "expected": [
+      "n4-l01-01",
+      "n4-l08-07-potential"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "家族まで手伝ってくれた。",
+    "expected": [
+      "n4-l02-03",
+      "n4-l07-02"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "駅まで三十分かかる。",
+    "expected": [
+      "n4-l05-02-time-price"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "学生が五人も来た。",
+    "expected": [
+      "n4-l05-04-number"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "五千円以下なら買います。",
+    "expected": [
+      "n4-l05-10",
+      "n4-l03-15"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "ここから駅までは十分はかかる。",
+    "expected": [
+      "n4-l05-16-number-amount",
+      "n4-l05-02-time-price"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "財布には三百円しかない。",
+    "expected": [
+      "n4-l05-19-number",
+      "n4-l08-14"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "ドアを閉めると音がした。",
+    "expected": [
+      "n4-l01-17",
+      "n4-l08-11",
+      "n4-l03-17"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "このケーキは甘そうだ。",
+    "expected": [
+      "n4-l03-05"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "子どもが眠がっている。",
+    "expected": [
+      "n4-l03-16"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "急に雨が降りだした。",
+    "expected": [
+      "n4-l04-20"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "あとでお電話する。",
+    "expected": [
+      "n4-l02-09",
+      "n4-l07-16"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "まず名前を書いてください。",
+    "expected": [
+      "n4-l02-02"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "来週また会いましょう。",
+    "expected": [
+      "n4-l02-05"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "子どもらしい笑い方だ。",
+    "expected": [
+      "n4-l10-03-2",
+      "n4-l01-10"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "彼は元気に見える。",
+    "expected": [
+      "n4-l10-05"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "もう帰ったと見える。",
+    "expected": [
+      "n4-l10-06"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "雨が降ると思います。",
+    "expected": [
+      "n4-l03-01"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 benchmark regression case."
+  },
+  {
+    "sentence": "荷物を持って帰る。",
+    "expected": [
+      "n4-l06-08-verb-b"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "学校で勉強する。",
+    "expected": [
+      "n4-l06-10-verb-noun-b"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "寒ければ窓を閉める。",
+    "expected": [
+      "n4-l03-14"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "駅に着いたら電話して。",
+    "expected": [
+      "n4-l08-01"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "五時までに終わる。",
+    "expected": [
+      "n4-l02-04"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "ほとんど終わった。",
+    "expected": [
+      "n4-l05-05"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "なるべく早く来て。",
+    "expected": [
+      "n4-l02-15"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "ここで走らないで。",
+    "expected": [
+      "n4-l07-06-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "静かにするように言う。",
+    "expected": [
+      "n4-l09-11"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "便利だと思う。",
+    "expected": [
+      "n4-l03-01"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "何でも聞いてください。",
+    "expected": [
+      "n4-l01-01",
+      "n4-l07-12"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "各国の人が来た。",
+    "expected": [
+      "n4-l05-07"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "田中さんの次に読む。",
+    "expected": [
+      "n4-l05-08"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "三冊しかない。",
+    "expected": [
+      "n4-l05-19-number",
+      "n4-l08-14"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "使い方を教える。",
+    "expected": [
+      "n4-l01-10"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "また会いましょう。",
+    "expected": [
+      "n4-l02-05",
+      "n4-l03-09-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "父は眼鏡をする。",
+    "expected": [
+      "n4-l03-18-have-wear"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "雨が降りそうになる。",
+    "expected": [
+      "n4-l03-05",
+      "n4-l04-03"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "彼は学生らしい。",
+    "expected": [
+      "n4-l04-13-1",
+      "n4-l10-03-2"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "手伝ってもらえない。",
+    "expected": [
+      "n4-l07-08"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "疲れたんだけど、行く。",
+    "expected": [
+      "n4-l08-08"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "映画化する。",
+    "expected": [
+      "n4-l09-15"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "いいって感じだ。",
+    "expected": [
+      "n4-l10-04"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "早く行けばよかった。",
+    "expected": [
+      "n4-l03-14",
+      "n4-l10-19"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 stress regression case."
+  },
+  {
+    "sentence": "窓を開けておいた。",
+    "expected": [
+      "n4-l01-17",
+      "n4-l04-14"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "宿題をしてしまった。",
+    "expected": [
+      "n4-l06-07"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "食べているあいだに電話が来た。",
+    "expected": [
+      "n4-l06-13"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "荷物を持って帰ってください。",
+    "expected": [
+      "n4-l06-08-verb-b"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "鍵を持って行く。",
+    "expected": [
+      "n4-l06-08-verb-b"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "今日は休もうと思います。",
+    "expected": [
+      "n4-l04-05"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "五時まで働く。",
+    "expected": [
+      "n4-l02-03"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "田中さん以外来ない。",
+    "expected": [
+      "n4-l05-11"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "三人は必要です。",
+    "expected": [
+      "n4-l08-03"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "彼は友達の一人だ。",
+    "expected": [
+      "n4-l05-20"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "読まない日はない。",
+    "expected": [
+      "n4-l05-21"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "ドアが開いた。",
+    "expected": [
+      "n4-l01-17"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "ずっと待っていた。",
+    "expected": [
+      "n4-l05-12-1"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "一人で行ける。",
+    "expected": [
+      "n4-l08-07-potential"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "窓を閉めてください。",
+    "expected": [
+      "n4-l01-17"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "早く書け。",
+    "expected": [
+      "n4-l09-16"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "春らしい天気だ。",
+    "expected": [
+      "n4-l10-03-2"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "薬を飲むように言われた。",
+    "expected": [
+      "n4-l01-16-verb",
+      "n4-l09-11"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "静かにしなさい。",
+    "expected": [
+      "n4-l07-04"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "一日に二時間勉強する。",
+    "expected": [
+      "n4-l02-11-frequency"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "二人しか来なかった。",
+    "expected": [
+      "n4-l05-19-number"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "夢みたいな話だ。",
+    "expected": [
+      "n4-l04-02"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "本を読まないでください。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "ここで写真を撮らないでください。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "静かにしてほしい。",
+    "expected": [
+      "n4-l04-07",
+      "n4-l04-16"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "窓を閉めていただけませんか。",
+    "expected": [
+      "n4-l01-17",
+      "n4-l07-18"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "必要かどうか確認してください。",
+    "expected": [
+      "n4-l08-10"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "毎日練習しなければなりません。",
+    "expected": [
+      "n4-l09-09"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "もう一度確認する必要があります。",
+    "expected": [
+      "n4-l08-05"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "これしか方法がない。",
+    "expected": [
+      "n4-l08-14"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "電話して。",
+    "expected": [
+      "n4-l06-02-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "ちょっと待って。",
+    "expected": [
+      "n4-l06-02-verb"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "このかばんは五千円する。",
+    "expected": [
+      "n4-l05-03-cost"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "箱を閉める。",
+    "expected": [
+      "n4-l01-17"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  },
+  {
+    "sentence": "鍵を閉めて帰る。",
+    "expected": [
+      "n4-l01-17",
+      "n4-l06-08-verb-b"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh N4 loop regression case."
+  }
+]

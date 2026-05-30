@@ -4775,5 +4775,7177 @@
       "startTokenOffset": 1,
       "endTokenOffset": 5
     }
+  },
+  {
+    "grammarId": "n4-l01-01",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l01-02",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "やすい",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l01-03",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "にくい",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l01-04",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "づらい",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l01-05",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "だんだん",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l01-06",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "どんどん",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l01-07",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "代名詞"
+      },
+      {
+        "surface": "ら",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l01-08",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "baseForm": "いく",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l01-09",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "baseForm": "くる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l01-10",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surface": "方",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l01-11",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "だけ",
+        "pos0": "助詞"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l01-12",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l01-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "なく",
+        "pos0": "助動詞",
+        "baseForm": "ない"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l01-14",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "なく",
+        "pos0": "助動詞",
+        "baseForm": "ない"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "pos0": "補助記号",
+            "pos1": "読点"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l01-15",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "で",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 4
+        }
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "baseForm": "くださる",
+            "pos0": "動詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l01-16-verb",
+    "type": "token-sequence",
+    "priority": 4,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseFormOneOf": [
+          "れる",
+          "られる"
+        ],
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l01-17",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "開ける",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l01-18",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "直す",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l01-19",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞",
+          "助動詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseFormOneOf": [
+          "いう",
+          "言う"
+        ],
+        "pos0": "動詞"
+      },
+      {
+        "surface": "こと",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l02-01",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "とき",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l02-02",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "まず",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l02-03",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseFormOneOf": [
+          "子ども",
+          "誰",
+          "何",
+          "私",
+          "先生",
+          "大人",
+          "家族"
+        ],
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "まで",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "に",
+            "pos0": "助詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l02-04",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "surface": "まで",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l02-05",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "また",
+        "pos0OneOf": [
+          "接続詞",
+          "副詞"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l02-06",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "始める",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l02-07",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "終わる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l02-08",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "gap": {
+          "min": 0,
+          "max": 2
+        }
+      },
+      {
+        "surface": "ごろ",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l02-09",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "あと",
+        "pos0": "名詞"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l02-10",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "surface": "い",
+        "pos0": "動詞",
+        "baseForm": "いる"
+      },
+      {
+        "surface": "た",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": -1,
+            "surface": "ずっと",
+            "pos0": "副詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l02-11-frequency",
+    "type": "token-sequence",
+    "priority": 4,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "gap": {
+          "min": 0,
+          "max": 2
+        }
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 2
+        }
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "まで",
+            "pos0": "助詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l02-12",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "とうとう",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l02-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "より",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l02-14",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "ごと",
+        "pos0OneOf": [
+          "名詞",
+          "接尾辞"
+        ]
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l02-15",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "なるべく",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l02-16",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "ところ",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "だ",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l02-17",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l03-01",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞",
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "思う",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "終止形"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "conjugationFormPrefix": "意志推量形"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l03-02",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "など",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l03-03",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "みたい",
+        "pos0": "形状詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "baseForm": "だ",
+            "pos0": "助動詞",
+            "conjugationFormPrefix": "連体形"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "baseForm": "だ",
+            "pos0": "助動詞",
+            "conjugationFormPrefix": "連体形"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l03-04",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "こと",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l03-05",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "降り",
+        "pos0": "動詞",
+        "baseForm": "降る"
+      },
+      {
+        "surface": "そう",
+        "pos0": "形状詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l03-06",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "形容詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "さ",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l03-07",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 4
+        }
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l03-08",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "そう",
+        "pos0": "副詞"
+      },
+      {
+        "surface": "いう",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l03-09-verb",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "意志推量形"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true,
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surface": "読もう"
+          },
+          {
+            "offset": 1,
+            "surface": "と",
+            "pos0": "助詞"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surface": "と",
+            "pos0": "助詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l03-10",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "だ",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l03-11",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surfaceOneOf": [
+          "全然",
+          "ぜんぜん"
+        ],
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l03-12",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "な",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l03-13",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "あまり",
+        "pos0": "副詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 4
+        }
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l03-14",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞"
+        ],
+        "conjugationFormPrefix": "仮定形"
+      },
+      {
+        "surface": "ば",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "allowOverlap": true,
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "baseForm": "よい",
+            "pos0": "形容詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l03-15",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "なら",
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l03-16",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "がる",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l03-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-01",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "しれ",
+        "pos0": "動詞",
+        "baseForm": "しれる"
+      },
+      {
+        "surface": "ない",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l04-02",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "みたい",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-03",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "そう",
+        "pos0OneOf": [
+          "形状詞",
+          "接尾辞"
+        ]
+      },
+      {
+        "surfaceOneOf": [
+          "に",
+          "な"
+        ],
+        "pos0OneOf": [
+          "助動詞",
+          "助詞"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l04-04",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l04-05",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "意志推量形"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "pos0": "動詞",
+        "baseForm": "思う"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-07",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "に",
+        "pos0OneOf": [
+          "助動詞",
+          "助詞"
+        ]
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "baseForm": "する",
+            "pos0": "動詞"
+          },
+          {
+            "offset": 3,
+            "surface": "よう",
+            "pos0": "形状詞"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "baseForm": "する",
+            "pos0": "動詞"
+          },
+          {
+            "offset": 3,
+            "baseForm": "なさる",
+            "pos0": "動詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l04-08",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "形容詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surface": "は",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l04-09",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "いい",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 1,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-10",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "なる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l04-11",
+    "type": "token-sequence",
+    "priority": 9,
+    "tokens": [
+      {
+        "surfaceOneOf": [
+          "毎日",
+          "毎朝",
+          "毎晩",
+          "毎週"
+        ],
+        "pos0": "名詞"
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l04-12",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "形容詞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-13-1",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "らしい",
+        "pos0OneOf": [
+          "助動詞",
+          "接尾辞"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "baseFormOneOf": [
+              "男",
+              "子ども"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "pos0": "名詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l04-14",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "baseForm": "おく",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-15",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "baseFormOneOf": [
+          "欲しい",
+          "ほしい"
+        ],
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-16",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "surface": "ほしい",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 3,
+          "surface": "よう"
+        }
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l04-17",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "gap": {
+          "min": 1,
+          "max": 4
+        }
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "聞く",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-18",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "聞こえる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l04-20",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "動詞",
+        "baseFormOneOf": [
+          "出す",
+          "だす"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-01",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "代",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-02-time-price",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "かかる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l05-03-cost",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "surface": "千",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "円",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l05-04-number",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0": "接尾辞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l05-05",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "ほとんど",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l05-06",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surfaceOneOf": [
+          "そんな",
+          "こんな",
+          "あんな",
+          "どんな"
+        ],
+        "pos0": "連体詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l05-07",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surfacePrefix": "各",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l05-08",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "次",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l05-09-1",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "以上",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-10",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0OneOf": [
+          "名詞",
+          "接尾辞"
+        ],
+        "optional": true
+      },
+      {
+        "surface": "以下",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l05-11",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "以外",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-12-1",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "ずっと",
+        "pos0": "副詞"
+      },
+      {
+        "surface": "読む",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "だいたい",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l05-14",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "中",
+        "pos0": "名詞"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l05-15",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "な",
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l05-16-number-amount",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0OneOf": [
+          "名詞",
+          "接尾辞"
+        ],
+        "optional": true
+      },
+      {
+        "surface": "は",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "は",
+            "pos0": "助詞"
+          },
+          {
+            "offset": 3,
+            "baseForm": "必要"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l05-17-counter",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "何",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "冊",
+        "pos0": "接尾辞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l05-18",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "真っ白",
+        "pos0": "形状詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l05-20",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "は",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 6
+        }
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l05-21",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "ない",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "こと",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "は",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "ない",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l05-22",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "少し",
+        "pos0": "副詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 4
+        }
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l05-23",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "少なく",
+        "pos0": "形容詞",
+        "baseForm": "少ない"
+      },
+      {
+        "surface": "ない",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l06-01",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "場合",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "は",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l06-02-verb",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "pos0": "補助記号",
+        "pos1": "句点"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": -1,
+            "pos0OneOf": [
+              "名詞",
+              "副詞",
+              "助動詞"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": -1,
+            "pos0": "形容詞"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 4,
+          "conjugationFormPrefix": "仮定形"
+        }
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l06-03",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "surface": "よかっ",
+        "pos0": "形容詞",
+        "baseForm": "よい"
+      },
+      {
+        "surface": "た",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l06-04-verb",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "せる",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l06-05",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "いっ",
+        "pos0": "動詞",
+        "baseForm": "いう"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "いい",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l06-06",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l06-07",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "baseForm": "しまう",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l06-08-verb-b",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "surface": "帰る",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l06-09-causative-passive",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "せ",
+        "pos0": "助動詞",
+        "baseForm": "せる"
+      },
+      {
+        "surface": "られる",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l06-11",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "baseForm": "ある",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l06-12",
+    "type": "token-sequence",
+    "priority": 9,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "なる",
+        "pos0": "動詞"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ほしい",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l06-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "surface": "いる",
+        "pos0": "動詞"
+      },
+      {
+        "surface": "間",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l06-14",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "なく",
+        "pos0": "助動詞",
+        "baseForm": "ない"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "いい",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l06-15",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "baseForm": "みる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l06-16",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "surface": "すみ",
+        "pos0": "動詞",
+        "baseForm": "すむ"
+      },
+      {
+        "surface": "ませ",
+        "pos0": "助動詞",
+        "baseForm": "ます"
+      },
+      {
+        "surface": "ん",
+        "pos0": "助動詞",
+        "baseForm": "ぬ"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l07-01",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "baseForm": "あげる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l07-02",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "baseForm": "くれる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l07-03",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "baseForm": "もらう",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l07-04",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "なさい",
+        "pos0": "動詞",
+        "baseForm": "なさる"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l07-06-verb",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "で",
+        "pos0": "助詞"
+      },
+      {
+        "pos0": "補助記号",
+        "pos1": "句点"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l07-07",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "くれる",
+        "pos0": "動詞"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "ありがとう",
+        "pos0": "感動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l07-08",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "くれる",
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l07-09",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l07-10",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "お",
+        "pos0": "接頭辞"
+      },
+      {
+        "pos0OneOf": [
+          "動詞",
+          "名詞"
+        ]
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "なる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l07-11",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "なさる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l07-12",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "お",
+        "pos0": "接頭辞"
+      },
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "くださる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "baseForm": "続ける"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l07-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "いらっしゃる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l07-14",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseForm": "ござる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l07-15",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "で",
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      },
+      {
+        "surface": "ござい",
+        "pos0": "動詞",
+        "baseForm": "ござる"
+      },
+      {
+        "surface": "ます",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l07-16",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "お",
+        "pos0": "接頭辞"
+      },
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l07-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "いたす",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l07-18",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "surface": "いただけ",
+        "pos0": "動詞",
+        "baseForm": "いただける"
+      },
+      {
+        "surface": "ませ",
+        "pos0": "助動詞",
+        "baseForm": "ます"
+      },
+      {
+        "surface": "ん",
+        "pos0": "助動詞",
+        "baseForm": "ぬ"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l08-01",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞",
+          "助動詞"
+        ]
+      },
+      {
+        "surface": "たら",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l08-02",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "ほか",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l08-03",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "必要",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l08-04",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "そんな",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l08-05",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "必要",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "ある",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l08-06",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "たとえば",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l08-07-potential",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "読める",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l08-08",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "ん",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "けど",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l08-09",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "はず",
+        "pos0": "名詞"
+      },
+      {
+        "baseFormOneOf": [
+          "だ",
+          "です"
+        ],
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l08-10",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "どう",
+        "pos0": "副詞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l08-11",
+    "type": "token-sequence",
+    "priority": 4,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞"
+        ],
+        "conjugationFormPrefix": "終止形"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 4
+        }
+      }
+    ],
+    "display": {
+      "startTokenOffset": 1,
+      "endTokenOffset": 1
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "baseFormOneOf": [
+              "聞く",
+              "言う",
+              "思う",
+              "考える",
+              "見える",
+              "する"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l08-12",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "ない",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "baseFormOneOf": [
+              "言う",
+              "聞く",
+              "思う",
+              "考える",
+              "いう"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l08-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "はず",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l08-15",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "だけ",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "で",
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      },
+      {
+        "surface": "なく",
+        "pos0": "形容詞",
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l08-16",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "こと",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "できる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l08-17",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "い",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l08-18",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "もし",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l09-01",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "し",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 6
+        }
+      },
+      {
+        "surface": "し",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l09-02",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "木",
+        "pos0": "名詞"
+      },
+      {
+        "pos0": "助詞",
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ]
+      },
+      {
+        "surface": "できる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l09-03",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surface": "ながら",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l09-04",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseForm": "た",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "ところ",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l09-05",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "いる",
+        "pos0": "動詞"
+      },
+      {
+        "surface": "ところ",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l09-06",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "犬",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "どちら",
+        "pos0": "代名詞"
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l09-07",
+    "type": "token-sequence",
+    "priority": 9,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l09-08",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "なけれ",
+        "pos0OneOf": [
+          "助動詞",
+          "助詞"
+        ]
+      },
+      {
+        "surface": "ば",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "いける",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l09-09",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "なけれ",
+        "pos0": "助動詞",
+        "baseForm": "ない"
+      },
+      {
+        "surface": "ば",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "なら",
+        "pos0": "動詞",
+        "baseForm": "なる"
+      },
+      {
+        "surface": "ない",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l09-10",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "続ける",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l09-11",
+    "type": "token-sequence",
+    "priority": 9,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "言う",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l09-12",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "予定",
+        "pos0": "名詞"
+      },
+      {
+        "baseFormOneOf": [
+          "だ",
+          "です"
+        ],
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l09-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      },
+      {
+        "surface": "祈る",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l09-14",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseForm": "た",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "ばかり",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l09-15",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "surface": "変化",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l09-16",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "読め",
+        "pos0": "動詞",
+        "baseForm": "読む"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surface": "ば",
+            "pos0": "助詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l10-01",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "よう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助動詞",
+        "baseForm": "だ"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": -1,
+            "baseForm": "する",
+            "pos0": "動詞"
+          },
+          {
+            "offset": 2,
+            "baseForm": "言う",
+            "pos0": "動詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l10-02",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "かしら",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l10-03-2",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "男",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "らしい",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l10-04",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "って",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "感じ",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l10-05",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "に",
+        "pos0OneOf": [
+          "助詞",
+          "助動詞"
+        ]
+      },
+      {
+        "baseForm": "見える",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l10-06",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞",
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "見える",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l10-07",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "風",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l10-08",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "見る",
+        "pos0": "動詞"
+      },
+      {
+        "baseFormOneOf": [
+          "れる",
+          "られる"
+        ],
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l10-09",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "気",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "つく",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l10-10",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "で",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 4
+        }
+      },
+      {
+        "surface": "で",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l10-11",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "それ",
+        "pos0": "代名詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l10-12",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "それ",
+        "pos0": "代名詞"
+      },
+      {
+        "surface": "で",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l10-13-question-phrase",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "代名詞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l10-14",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "それ",
+        "pos0": "代名詞"
+      },
+      {
+        "surface": "で",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l10-15",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞",
+        "conjugationFormPrefix": "仮定形"
+      },
+      {
+        "surface": "どう",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l10-16",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "大切",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "考え",
+        "pos0": "動詞",
+        "baseForm": "考える"
+      },
+      {
+        "surface": "られ",
+        "pos0": "助動詞",
+        "baseForm": "られる"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "いる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l10-17",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "大切",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "さ",
+        "pos0": "動詞",
+        "baseForm": "する"
+      },
+      {
+        "surface": "れ",
+        "pos0": "助動詞",
+        "baseForm": "れる"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "いる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l10-18",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "大切",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "言わ",
+        "pos0": "動詞",
+        "baseForm": "言う"
+      },
+      {
+        "surface": "れ",
+        "pos0": "助動詞",
+        "baseForm": "れる"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "いる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l10-19",
+    "type": "token-sequence",
+    "priority": 9,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞"
+        ],
+        "conjugationFormPrefix": "仮定形"
+      },
+      {
+        "surface": "ば",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "よい",
+        "pos0": "形容詞"
+      },
+      {
+        "baseForm": "た",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l02-06",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseForm": "始める",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l09-10",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "baseForm": "続ける",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l09-08",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "なけれ",
+        "pos0OneOf": [
+          "助動詞",
+          "助詞"
+        ]
+      },
+      {
+        "surface": "ば",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "いける",
+        "pos0": "動詞"
+      },
+      {
+        "surface": "ませ",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "ん",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l02-06",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseForm": "はじめる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l08-14",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "しか",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 1,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surface": "三"
+          },
+          {
+            "offset": 1,
+            "surface": "つ"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surfaceSuffix": "人"
+          }
+        ]
+      }
+    ],
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l05-19-number",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "surface": "しか",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l08-01",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞",
+        "conjugationFormPrefix": "仮定形"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-19-number",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "surface": "しか",
+        "pos0": "助詞"
+      },
+      {
+        "baseFormOneOf": [
+          "ある",
+          "いる"
+        ],
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ます",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "ぬ",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l08-14",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "surface": "しか",
+        "pos0": "助詞"
+      },
+      {
+        "baseFormOneOf": [
+          "ある",
+          "いる"
+        ],
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ます",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "ぬ",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 2,
+      "endTokenOffset": 5
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surface": "三"
+          },
+          {
+            "offset": 1,
+            "surface": "つ"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surfaceSuffix": "人"
+          }
+        ]
+      }
+    ],
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l01-01",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "代名詞",
+          "名詞"
+        ]
+      },
+      {
+        "surface": "で",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l02-17",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞",
+        "optional": true
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l03-16",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "形容詞",
+          "名詞"
+        ]
+      },
+      {
+        "surface": "がる",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-19-number",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "surface": "しか",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 5
+        }
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l08-14",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "surface": "しか",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 5
+        }
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 2,
+      "endTokenOffset": 4
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surface": "三"
+          },
+          {
+            "offset": 1,
+            "surface": "つ"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surfaceSuffix": "人"
+          }
+        ]
+      }
+    ],
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l02-12",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "とうとう"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l02-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "より",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l03-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "あまり",
+        "pos0": "副詞"
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-06",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surfaceOneOf": [
+          "そんな",
+          "こんな",
+          "あんな",
+          "どんな"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l05-09-1",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "surface": "以上",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l09-04",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "ところ",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l09-14",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "ばかり",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l10-15",
+    "type": "token-sequence",
+    "priority": 9,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞",
+        "conjugationFormPrefix": "仮定形"
+      },
+      {
+        "surface": "どう",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l05-01",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "surface": "代",
+        "pos0OneOf": [
+          "名詞",
+          "接尾辞"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l10-15",
+    "type": "token-sequence",
+    "priority": 9,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞"
+        ],
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "た",
+        "pos0": "助動詞",
+        "conjugationFormPrefix": "仮定形"
+      },
+      {
+        "surface": "どう",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l08-07-potential",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "できる",
+        "baseForm": "できる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l08-07-potential",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseFormOneOf": [
+          "取れる",
+          "読める"
+        ],
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l01-14",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseForm": "ない",
+        "pos0OneOf": [
+          "形容詞",
+          "助動詞"
+        ]
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l02-01",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "とき",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l02-11-frequency",
+    "type": "token-sequence",
+    "priority": 4,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      },
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0": "名詞",
+        "optional": true
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "まで",
+            "pos0": "助詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l02-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "形容詞",
+          "助動詞"
+        ]
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-07",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "形容詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "baseForm": "する",
+            "pos0": "動詞"
+          },
+          {
+            "offset": 3,
+            "surface": "よう",
+            "pos0": "形状詞"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "baseForm": "する",
+            "pos0": "動詞"
+          },
+          {
+            "offset": 3,
+            "baseForm": "なさる",
+            "pos0": "動詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l01-15",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "で",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "baseForm": "くださる",
+            "pos0": "動詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l03-18-have-wear",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ],
+        "baseFormOneOf": [
+          "目",
+          "ネクタイ",
+          "眼鏡"
+        ]
+      },
+      {
+        "surface": "を",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "いる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l03-19",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "たがる",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l08-07-potential",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "できる",
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ます",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l04-19",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "見える",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l01-16-verb",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 0,
+          "max": 3
+        }
+      },
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseFormOneOf": [
+          "れる",
+          "られる"
+        ],
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "た",
+        "pos0": "助動詞",
+        "optional": true
+      }
+    ],
+    "display": {
+      "startTokenOffset": 3,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l01-16-verb",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "読ま",
+        "baseForm": "読む",
+        "pos0": "動詞"
+      },
+      {
+        "baseFormOneOf": [
+          "れる",
+          "られる"
+        ],
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l08-07-potential",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "baseFormOneOf": [
+          "起きる",
+          "開ける"
+        ],
+        "pos0": "動詞"
+      },
+      {
+        "baseFormOneOf": [
+          "れる",
+          "られる"
+        ],
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "助動詞",
+        "optional": true
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l03-01",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseFormOneOf": [
+          "た",
+          "ない"
+        ],
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "思う",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "終止形"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "conjugationFormPrefix": "意志推量形"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l03-05",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "形容詞",
+        "conjugationFormPrefix": "語幹"
+      },
+      {
+        "surface": "そう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "だ",
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l03-16",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "形容詞",
+          "名詞"
+        ]
+      },
+      {
+        "baseForm": "がる",
+        "pos0": "接尾辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-02-time-price",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0OneOf": [
+          "名詞",
+          "接尾辞",
+          "副詞"
+        ],
+        "optional": true
+      },
+      {
+        "surface": "は",
+        "pos0": "助詞",
+        "optional": true
+      },
+      {
+        "baseForm": "かかる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 3,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l05-19-number",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0OneOf": [
+          "名詞",
+          "接尾辞"
+        ],
+        "optional": true
+      },
+      {
+        "surface": "しか",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l07-16",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "お",
+        "pos0": "接頭辞"
+      },
+      {
+        "pos0": "名詞"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l01-10",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0": "名詞"
+      },
+      {
+        "surface": "方",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l10-03-2",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseFormOneOf": [
+          "男",
+          "子ども",
+          "学生",
+          "春"
+        ],
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "baseForm": "らしい",
+        "pos0OneOf": [
+          "助動詞",
+          "接尾辞"
+        ]
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l10-06",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "た",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "見える",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l03-01",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞",
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "思う",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "ます",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "conjugationFormPrefix": "意志推量形"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l03-01",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "思う",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l05-08",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "次",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l08-14",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "surface": "しか",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 2,
+      "endTokenOffset": 3
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surface": "三"
+          },
+          {
+            "offset": 1,
+            "surface": "つ"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surfaceSuffix": "人"
+          }
+        ]
+      }
+    ],
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l03-18-have-wear",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ],
+        "baseFormOneOf": [
+          "目",
+          "ネクタイ",
+          "眼鏡"
+        ]
+      },
+      {
+        "surface": "を",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l04-03",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "そう",
+        "pos0": "形状詞"
+      },
+      {
+        "surface": "に",
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "なる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l07-08",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "もらえる",
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l08-08",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "た",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "ん",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "けど",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l09-15",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos0": "名詞"
+      },
+      {
+        "surface": "化",
+        "pos0": "接尾辞"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l10-04",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞",
+          "形容詞"
+        ]
+      },
+      {
+        "surface": "って",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "感じ",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l06-10-verb-noun-b",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "勉強",
+        "pos0": "名詞"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "予定"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": -3,
+            "pos1": "数詞"
+          },
+          {
+            "offset": -1,
+            "surface": "に",
+            "pos0": "助詞"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 5,
+          "pos1": "数詞"
+        }
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l01-15",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "baseForm": "読む",
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "で",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "baseForm": "くださる",
+            "pos0": "動詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l01-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "閉める",
+        "pos0": "動詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "音",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l02-07",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseForm": "おわる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l03-01",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "読もう",
+        "baseForm": "読む",
+        "pos0": "動詞"
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "思う",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l05-07",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "各",
+        "pos0": "接頭辞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l06-10-verb-noun-b",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "読む",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "帰る",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l07-05-verb-b",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "読む",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "帰る",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l07-12",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "baseForm": "聞く",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "くださる",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "命令形"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l03-09-verb",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "また",
+        "pos0": "副詞"
+      },
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "ます",
+        "pos0": "助動詞",
+        "conjugationFormPrefix": "意志推量形"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 1,
+      "endTokenOffset": 2
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": -1
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surface": "読もう"
+          },
+          {
+            "offset": 1,
+            "surface": "と",
+            "pos0": "助詞"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surface": "と",
+            "pos0": "助詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l03-14",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "早く",
+        "pos0": "形容詞"
+      },
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "仮定形"
+      },
+      {
+        "surface": "ば",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "よい",
+        "pos0": "形容詞"
+      },
+      {
+        "baseForm": "た",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 1,
+      "endTokenOffset": 2
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l01-10",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseFormOneOf": [
+          "使い方",
+          "笑い方"
+        ],
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l01-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "開ける",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l01-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "閉める",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "くださる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l01-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "開く",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "baseForm": "た",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l06-13",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "いる",
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "あいだ",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 2,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l06-08-verb-b",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "baseForm": "持つ",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseFormOneOf": [
+          "帰る",
+          "行く"
+        ],
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l02-03",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "pos0OneOf": [
+          "名詞",
+          "接尾辞"
+        ],
+        "optional": true
+      },
+      {
+        "surface": "まで",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l05-11",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "pos0": "接尾辞",
+        "optional": true
+      },
+      {
+        "surface": "以外",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l08-03",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "surface": "必要",
+        "pos0": "名詞"
+      },
+      {
+        "baseFormOneOf": [
+          "だ",
+          "です"
+        ],
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-20",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "の",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "一人",
+        "pos0": "名詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    }
+  },
+  {
+    "grammarId": "n4-l05-21",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "助動詞"
+      },
+      {
+        "pos0": "名詞"
+      },
+      {
+        "surface": "は",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l05-12-1",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "ずっと",
+        "pos0": "副詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l08-07-potential",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "行ける",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "baseForm": "ない",
+            "pos0": "助動詞"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l09-16",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "書く",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "命令形"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
+  },
+  {
+    "grammarId": "n4-l01-16-verb",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "baseForm": "言う",
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "れる",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "た",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l04-16",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "動詞",
+          "形容詞",
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ほしい",
+        "pos0": "形容詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    },
+    "allowOverlap": true,
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 3,
+          "surface": "よう"
+        }
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l01-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "閉める",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "いただける",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l08-10",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "どう",
+        "pos0": "副詞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    }
+  },
+  {
+    "grammarId": "n4-l09-09",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ない",
+        "pos0": "助動詞",
+        "conjugationFormPrefix": "仮定形"
+      },
+      {
+        "surface": "ば",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "なる",
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ます",
+        "pos0": "助動詞"
+      },
+      {
+        "baseForm": "ぬ",
+        "pos0": "助動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l08-05",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0": "動詞"
+      },
+      {
+        "surface": "必要",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ある",
+        "pos0": "動詞"
+      },
+      {
+        "baseForm": "ます",
+        "pos0": "助動詞",
+        "optional": true
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l08-14",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "surface": "し",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "か",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 4
+        }
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    },
+    "allowOverlap": true,
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surfaceSuffix": "人"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l06-02-verb",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseFormOneOf": [
+          "する",
+          "待つ"
+        ],
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "pos0": "補助記号",
+        "pos1": "句点"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 4,
+          "conjugationFormPrefix": "仮定形"
+        }
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l05-03-cost",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "pos1": "数詞"
+      },
+      {
+        "baseForm": "円",
+        "pos0": "名詞"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l01-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "閉める",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "終止形"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 4,
+          "surfaceOneOf": [
+            "ば",
+            "たら"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l01-17",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "baseForm": "閉める",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "連用形"
+      },
+      {
+        "surfaceOneOf": [
+          "て",
+          "で"
+        ],
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "帰る",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    },
+    "allowOverlap": true
+  },
+  {
+    "grammarId": "n4-l04-02",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "代名詞"
+        ]
+      },
+      {
+        "surface": "みたい",
+        "pos0": "形状詞"
+      },
+      {
+        "baseForm": "だ",
+        "pos0": "助動詞",
+        "conjugationFormPrefix": "連体形"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 2
+    }
+  },
+  {
+    "grammarId": "n4-l05-19-number",
+    "type": "token-sequence",
+    "priority": 8,
+    "tokens": [
+      {
+        "surfaceSuffix": "人",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "しか",
+        "pos0": "助詞"
+      },
+      {
+        "gap": {
+          "min": 1,
+          "max": 3
+        }
+      },
+      {
+        "baseForm": "ない"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 0
+    }
   }
 ]
