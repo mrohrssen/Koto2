@@ -8,7 +8,10 @@ import { getNpcLines, getNpcDefeatFrames } from '../../game/dialogue-loader.js';
 import { selectNpcLine } from '../../game/dialogue-filter.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
-import { getDebugSuperAttackForUser } from '../../game/debug-super-attack-access.js';
+import {
+  getDebugForceBefriendForUser,
+  getDebugSuperAttackForUser
+} from '../../game/debug-super-attack-access.js';
 import { buildAiDialogueConfig, canUseAiDialogue } from '../../ai-dialogue/config.js';
 import { buildBefriendDisplayRounds } from '../../game/services/befriend-dialogue-display-service.js';
 
@@ -144,6 +147,7 @@ export default function createCombatRoutes({
     try {
       const settings = req.getSettings?.() || {};
       gameManager._debugSuperAttack = getDebugSuperAttackForUser(settings, req.user);
+      gameManager._debugForceBefriend = getDebugForceBefriendForUser(settings, req.user);
       const encounter = gameManager.combatCycleService.startCreatureEncounter();
       req.saveGame();
 

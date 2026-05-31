@@ -4,7 +4,9 @@ import { updateTTSConfig } from '../game/prefetch.js';
 import { optionalAuth } from '../auth/middleware.js';
 import {
   canUseDebugSuperAttack,
+  getDebugForceBefriendForUser,
   getDebugSuperAttackForUser,
+  setDebugForceBefriendForUser,
   setDebugSuperAttackForUser
 } from '../game/debug-super-attack-access.js';
 
@@ -49,6 +51,7 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
 
     if (canUseDebugSuperAttack(req.user)) {
       response.debugSuperAttack = getDebugSuperAttackForUser(settings, req.user);
+      response.debugForceBefriend = getDebugForceBefriendForUser(settings, req.user);
     }
 
     res.json(response);
@@ -78,6 +81,9 @@ export default function createSettingsRoutes({ getSettings, saveSettings }) {
 
     if (req.body.debugSuperAttack !== undefined) {
       setDebugSuperAttackForUser(settings, req.user, req.body.debugSuperAttack);
+    }
+    if (req.body.debugForceBefriend !== undefined) {
+      setDebugForceBefriendForUser(settings, req.user, req.body.debugForceBefriend);
     }
 
     if (gameTtsEnabled !== undefined || gameTtsSpeakerId !== undefined ||

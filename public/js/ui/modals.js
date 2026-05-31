@@ -36,6 +36,7 @@ export async function openSettings() {
   const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
   const ttsVolumeSetting = tts.getVolume();
   const showDebugSuperAttack = Object.hasOwn(serverSettings, 'debugSuperAttack');
+  const showDebugForceBefriend = Object.hasOwn(serverSettings, 'debugForceBefriend');
 
   content.innerHTML = `
     <h3 style="margin:16px">Settings</h3>
@@ -75,6 +76,14 @@ export async function openSettings() {
           Debug +100 ATK
           <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">Allowlisted playtest shortcut only</small>
         </label>
+        ${showDebugForceBefriend ? `
+          <label class="settings-label" style="margin-top:8px">
+            <input type="checkbox" id="settings-debug-force-befriend"
+              ${serverSettings.debugForceBefriend ? 'checked' : ''}>
+            Debug Force Befriend
+            <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">Sets the befriend quiz roll to 100%</small>
+          </label>
+        ` : ''}
         <button class="ui-btn" id="settings-debug-add-crystals-btn"
           style="width:100%;background:var(--surface-2);color:var(--text);margin-top:10px">Add 100 Crystals</button>
         <button class="ui-btn" id="settings-debug-add-fusion-core-btn"
@@ -400,6 +409,9 @@ export async function openSettings() {
     }
     if (showDebugSuperAttack) {
       serverSettingsToSave.debugSuperAttack = document.getElementById('settings-debug-super-attack')?.checked ?? false;
+    }
+    if (showDebugForceBefriend) {
+      serverSettingsToSave.debugForceBefriend = document.getElementById('settings-debug-force-befriend')?.checked ?? false;
     }
     if (Object.keys(serverSettingsToSave).length > 0) {
       await saveServerSettings(serverSettingsToSave);

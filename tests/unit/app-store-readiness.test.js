@@ -85,6 +85,13 @@ describe('App Store readiness static checks', () => {
     assert.equal(settingsUi.includes('settings-debug-super-attack'), true);
   });
 
+  it('guards debug force befriend behind the server-provided allowlisted setting', () => {
+    const settingsUi = read('public/js/ui/modals.js');
+
+    assert.equal(settingsUi.includes("Object.hasOwn(serverSettings, 'debugForceBefriend')"), true);
+    assert.equal(settingsUi.includes('settings-debug-force-befriend'), true);
+  });
+
   it('guards debug crystal grants behind the server-provided allowlisted setting', () => {
     const settingsUi = read('public/js/ui/modals.js');
 

@@ -25,3 +25,25 @@ export function setDebugSuperAttackForUser(settings, user, enabled) {
   settings.debugSuperAttackByUsername[user.username] = !!enabled;
   return true;
 }
+
+export function getDebugForceBefriendForUser(settings = {}, user = null) {
+  if (!canUseDebugSuperAttack(user)) return false;
+
+  const byUsername = settings.debugForceBefriendByUsername;
+  if (byUsername && Object.hasOwn(byUsername, user.username)) {
+    return !!byUsername[user.username];
+  }
+
+  return !!settings.debugForceBefriend;
+}
+
+export function setDebugForceBefriendForUser(settings, user, enabled) {
+  if (!canUseDebugSuperAttack(user)) return false;
+
+  if (!settings.debugForceBefriendByUsername || Array.isArray(settings.debugForceBefriendByUsername)) {
+    settings.debugForceBefriendByUsername = {};
+  }
+
+  settings.debugForceBefriendByUsername[user.username] = !!enabled;
+  return true;
+}
