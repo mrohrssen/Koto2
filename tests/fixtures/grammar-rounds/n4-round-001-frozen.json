@@ -1,0 +1,482 @@
+[
+  {
+    "id": "n4-round-001-a-001",
+    "sentence": "彼女は「今日は早く帰ると思う」と言った。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l03-01"],
+    "expected": ["n4-l03-01"],
+    "kind": "positive",
+    "source": "n4-discourse-agent",
+    "rationale": "Live quoted dialogue contains a genuine とおもう clause."
+  },
+  {
+    "id": "n4-round-001-a-011",
+    "sentence": "「ということ」は名詞化の名前です。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-19"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "n4-discourse-agent",
+    "rationale": "The string ということ is being named as a grammar item, not used to nominalize a clause."
+  },
+  {
+    "id": "n4-round-001-a-013",
+    "sentence": "黒板に「かどうか」と書いた。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l08-10"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "n4-discourse-agent",
+    "rationale": "かどうか is a quoted expression on a blackboard, not an embedded whether question."
+  },
+  {
+    "id": "n4-round-001-a-016",
+    "sentence": "「かな」と「かしら」を比べた。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l03-12", "n4-l10-02"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "n4-discourse-agent",
+    "rationale": "Both particles are mentioned as strings for comparison, not used to express wondering."
+  },
+  {
+    "id": "n4-round-001-a-021",
+    "sentence": "犬とか。猫とか好きだ。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l03-07"],
+    "expected": [],
+    "kind": "punctuation-gap-negative",
+    "source": "n4-discourse-agent",
+    "rationale": "The two とか fragments are split across a sentence boundary."
+  },
+  {
+    "id": "n4-round-001-a-027",
+    "sentence": "今日は忙しい。ですが、少し話せます。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-12"],
+    "expected": ["n4-l01-12"],
+    "kind": "positive",
+    "source": "n4-discourse-agent",
+    "rationale": "ですが starts a contrastive follow-up sentence and belongs to the だが family."
+  },
+  {
+    "id": "n4-round-001-a-029",
+    "sentence": "雨がやんだ。それで、出発した。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l10-12"],
+    "expected": ["n4-l10-12"],
+    "kind": "positive",
+    "source": "n4-discourse-agent",
+    "rationale": "それで functions as therefore, linking the prior situation to the departure."
+  },
+  {
+    "id": "n4-round-001-a-033",
+    "sentence": "それに名前を書いた。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l10-11"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "n4-discourse-agent",
+    "rationale": "それに is pronoun plus dative/location particle, not the connector besides."
+  },
+  {
+    "id": "n4-round-001-a-035",
+    "sentence": "古い布を取り、それで机をふいた。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l10-12"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "n4-discourse-agent",
+    "rationale": "それで refers instrumentally to the cloth, not to a discourse relation meaning therefore."
+  },
+  {
+    "id": "n4-round-001-a-043",
+    "sentence": "この方法は安全と考えられている。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l10-16", "n4-l01-16-verb"],
+    "expected": ["n4-l10-16"],
+    "kind": "positive",
+    "source": "n4-discourse-agent",
+    "rationale": "安全と考えられている is a generic considered/thought-to-be construction."
+  },
+  {
+    "id": "n4-round-001-a-044",
+    "sentence": "その案は無理とされている。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l10-17", "n4-l01-16-verb"],
+    "expected": ["n4-l10-17"],
+    "kind": "positive",
+    "source": "n4-discourse-agent",
+    "rationale": "無理とされている is a valid deemed/considered construction."
+  },
+  {
+    "id": "n4-round-001-a-045",
+    "sentence": "この町は安全と言われている。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l10-18", "n4-l01-16-verb"],
+    "expected": ["n4-l10-18"],
+    "kind": "positive",
+    "source": "n4-discourse-agent",
+    "rationale": "安全と言われている is a valid said-to-be construction."
+  },
+  {
+    "id": "n4-round-001-a-049",
+    "sentence": "「怒った」と見える字で書いた。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l10-06"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "n4-discourse-agent",
+    "rationale": "と is a quotation marker before 見える字で, not the inferential と見える construction."
+  },
+  {
+    "id": "n4-round-001-b-001",
+    "sentence": "この漢字は覚えやすかったです。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-02"],
+    "expected": ["n4-l01-02"],
+    "kind": "positive",
+    "source": "n4-morphology-agent",
+    "rationale": "覚えやすかった is a past polite inflection of the verb-stem + やすい pattern."
+  },
+  {
+    "id": "n4-round-001-b-002",
+    "sentence": "駅のアナウンスは聞きにくくありませんでした。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-03"],
+    "expected": ["n4-l01-03"],
+    "kind": "positive",
+    "source": "n4-morphology-agent",
+    "rationale": "聞きにくくありませんでした is a polite negative-past inflection of verb-stem + にくい."
+  },
+  {
+    "id": "n4-round-001-b-003",
+    "sentence": "この靴は歩きづらかった。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-04"],
+    "expected": ["n4-l01-04"],
+    "kind": "positive",
+    "source": "n4-morphology-agent",
+    "rationale": "歩きづらかった is the past form of verb-stem + づらい."
+  },
+  {
+    "id": "n4-round-001-b-007",
+    "sentence": "説明が足りなくて困りました。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-14"],
+    "expected": ["n4-l01-14"],
+    "kind": "positive",
+    "source": "n4-morphology-agent",
+    "rationale": "足りなくて links the negative form to a resulting problem."
+  },
+  {
+    "id": "n4-round-001-b-016",
+    "sentence": "姉は長い髪をしていました。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l03-18-have-wear"],
+    "expected": ["n4-l03-18-have-wear"],
+    "kind": "positive",
+    "source": "n4-morphology-agent",
+    "rationale": "髪をしていました describes having/wearing a physical feature."
+  },
+  {
+    "id": "n4-round-001-b-029",
+    "sentence": "誰も手伝ってくれなかった。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l07-08"],
+    "expected": ["n4-l07-08"],
+    "kind": "positive",
+    "source": "n4-morphology-agent",
+    "rationale": "手伝ってくれなかった is a past negative variant of てくれない."
+  },
+  {
+    "id": "n4-round-001-b-033",
+    "sentence": "彼女が忘れるはずがありません。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l08-13"],
+    "expected": ["n4-l08-13"],
+    "kind": "positive",
+    "source": "n4-morphology-agent",
+    "rationale": "忘れるはずがありません is a polite negative variant of はずがない."
+  },
+  {
+    "id": "n4-round-001-b-037",
+    "sentence": "今日中に申し込まなければいけません。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l09-08"],
+    "expected": ["n4-l09-08"],
+    "kind": "positive",
+    "source": "n4-morphology-agent",
+    "rationale": "申し込まなければいけません is the polite obligation pattern."
+  },
+  {
+    "id": "n4-round-001-b-038",
+    "sentence": "この書類を出さなければなりません。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l09-09"],
+    "expected": ["n4-l09-09"],
+    "kind": "positive",
+    "source": "n4-morphology-agent",
+    "rationale": "出さなければなりません is the polite なければならない obligation form."
+  },
+  {
+    "id": "n4-round-001-b-045",
+    "sentence": "もっと早く聞けばよかった。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l03-14", "n4-l10-19"],
+    "expected": ["n4-l03-14", "n4-l10-19"],
+    "kind": "mixed",
+    "source": "n4-morphology-agent",
+    "rationale": "聞けば is conditional ば, and 聞けばよかった is the regret pattern should-have-done."
+  },
+  {
+    "id": "n4-round-001-b-046",
+    "sentence": "カードに『読まないで』とだけ書いた。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-15", "n4-l07-06-verb"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "n4-morphology-agent",
+    "rationale": "読まないで is quoted as card text, not used as live without-doing or prohibition grammar."
+  },
+  {
+    "id": "n4-round-001-b-049",
+    "sentence": "読まなければ。いけません。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l09-08"],
+    "expected": [],
+    "kind": "punctuation-gap-negative",
+    "source": "n4-morphology-agent",
+    "rationale": "The obligation chunks are split by punctuation."
+  },
+  {
+    "id": "n4-round-001-b-052",
+    "sentence": "手紙を書いてください。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l06-02-verb"],
+    "expected": [],
+    "kind": "near-miss-negative",
+    "source": "n4-morphology-agent",
+    "rationale": "書いてください is a polite request, not the standalone casual verb-te request."
+  },
+  {
+    "id": "n4-round-001-b-053",
+    "sentence": "ここで話さないでください。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l07-06-verb"],
+    "expected": [],
+    "kind": "near-miss-negative",
+    "source": "n4-morphology-agent",
+    "rationale": "話さないでください is the polite prohibition variant and should not trigger the bare casual ないで matcher."
+  },
+  {
+    "id": "n4-round-001-b-054",
+    "sentence": "古代の話を読んだ。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l05-01"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "n4-morphology-agent",
+    "rationale": "代 is embedded in 古代 meaning ancient times, not the age-range/cost suffix 代."
+  },
+  {
+    "id": "n4-round-001-b-057",
+    "sentence": "『かしら』を辞書で引いた。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l10-02"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "n4-morphology-agent",
+    "rationale": "かしら is quoted as a dictionary lookup item, not used as the I-wonder sentence ending."
+  },
+  {
+    "id": "n4-round-001-c-001",
+    "sentence": "誰でも読めるはずです。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-01", "n4-l08-07-potential", "n4-l08-09"],
+    "expected": ["n4-l01-01", "n4-l08-07-potential", "n4-l08-09"],
+    "kind": "positive",
+    "source": "n4-overlap-agent",
+    "rationale": "誰でも is any/every, 読める is potential, and はずです is expectation."
+  },
+  {
+    "id": "n4-round-001-c-007",
+    "sentence": "日本語が読めるようになってほしい。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l06-12", "n4-l04-16", "n4-l04-10"],
+    "expected": ["n4-l06-12"],
+    "kind": "overlap-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "The full ようになってほしい construction should dominate shorter ようになる and てほしい fragments."
+  },
+  {
+    "id": "n4-round-001-c-010",
+    "sentence": "ここで泳がないでください。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-15", "n4-l07-06-verb"],
+    "expected": [],
+    "kind": "overlap-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "ないでください is a polite request not to do something; casual ないで rows should not fire."
+  },
+  {
+    "id": "n4-round-001-c-012",
+    "sentence": "作文を書いているところです。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l09-05", "n4-l02-16"],
+    "expected": ["n4-l09-05"],
+    "kind": "overlap-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "ているところです is the in-the-process pattern, not the shorter about-to るところだ."
+  },
+  {
+    "id": "n4-round-001-c-014",
+    "sentence": "説明を聞くことができる。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l08-16", "n4-l03-04"],
+    "expected": ["n4-l08-16"],
+    "kind": "overlap-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "ことができる is the full ability construction and should suppress standalone nominalizer こと."
+  },
+  {
+    "id": "n4-round-001-c-018",
+    "sentence": "二冊しか机に残っていない。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l05-19-number", "n4-l08-14"],
+    "expected": ["n4-l05-19-number", "n4-l08-14"],
+    "kind": "positive",
+    "source": "n4-overlap-agent",
+    "rationale": "The sentence contains both number + しか〜ない and the generic しか〜ない meaning only."
+  },
+  {
+    "id": "n4-round-001-c-021",
+    "sentence": "窓を開けると音が聞こえる。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-17", "n4-l08-11", "n4-l04-18"],
+    "expected": ["n4-l01-17", "n4-l08-11", "n4-l04-18"],
+    "kind": "positive",
+    "source": "n4-overlap-agent",
+    "rationale": "開ける is the open/close row, と is conditional/when, and 聞こえる is audible/can hear."
+  },
+  {
+    "id": "n4-round-001-c-023",
+    "sentence": "春らしい色を選んだ。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l10-03-2", "n4-l04-13-1"],
+    "expected": ["n4-l10-03-2"],
+    "kind": "overlap-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "春らしい means spring-like, so typicality らしい should emit, not hearsay/apparently."
+  },
+  {
+    "id": "n4-round-001-c-030",
+    "sentence": "本棚の中で猫が寝ている。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l05-14"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "中で is literal physical inside-location, not the comparative among/within grammar point."
+  },
+  {
+    "id": "n4-round-001-c-037",
+    "sentence": "「かもしれない」をノートに写した。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l04-01"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "かもしれない is quoted as text to copy, not used as a live modal expression."
+  },
+  {
+    "id": "n4-round-001-c-039",
+    "sentence": "「ごとに」という表現を辞書で調べた。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l02-14"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "ごとに is explicitly mentioned as an expression being looked up."
+  },
+  {
+    "id": "n4-round-001-c-042",
+    "sentence": "メモには「読まなく。てもいい」とあった。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l06-14"],
+    "expected": [],
+    "kind": "punctuation-gap-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "なく and てもいい are separated by a sentence boundary inside quoted text."
+  },
+  {
+    "id": "n4-round-001-c-044",
+    "sentence": "紙には「三冊しか。ない」と書かれていた。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l05-19-number", "n4-l08-14", "n4-l01-16-verb"],
+    "expected": ["n4-l01-16-verb"],
+    "kind": "punctuation-gap-negative",
+    "source": "n4-overlap-agent",
+    "rationale": "しか and ない are split by punctuation, so neither しか〜ない pattern is live."
+  },
+  {
+    "id": "n4-round-001-d-001",
+    "sentence": "誰にでもチャンスがある。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-01"],
+    "expected": ["n4-l01-01"],
+    "kind": "positive",
+    "source": "n4-random-agent",
+    "rationale": "誰にでも is an indefinite + でも use meaning anyone/everyone."
+  },
+  {
+    "id": "n4-round-001-d-015",
+    "sentence": "『読みやすい』という言葉を説明した。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l01-02"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "n4-random-agent",
+    "rationale": "The form 読みやすい is mentioned as a word, not used predicatively to describe ease."
+  },
+  {
+    "id": "n4-round-001-d-021",
+    "sentence": "会議が急に始まった。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l02-06"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "n4-random-agent",
+    "rationale": "始まった is the lexical intransitive verb start, not stem + 始める."
+  },
+  {
+    "id": "n4-round-001-d-040",
+    "sentence": "そういう考え方もある。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l03-08", "n4-l01-10"],
+    "expected": ["n4-l03-08", "n4-l01-10"],
+    "kind": "mixed",
+    "source": "n4-random-agent",
+    "rationale": "そういう means that kind of, and 考え方 is stem + 方."
+  },
+  {
+    "id": "n4-round-001-d-045",
+    "sentence": "あまり、寒くない。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l03-13"],
+    "expected": [],
+    "kind": "punctuation-gap-negative",
+    "source": "n4-random-agent",
+    "rationale": "The comma interrupts あまり〜ない; this guards against matchers crossing punctuation gaps."
+  },
+  {
+    "id": "n4-round-001-d-052",
+    "sentence": "「かもしれない」という表現を練習した。",
+    "level": "N4",
+    "targetGrammarIds": ["n4-l04-01"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "n4-random-agent",
+    "rationale": "かもしれない is named as an expression, not used to express possibility."
+  }
+]

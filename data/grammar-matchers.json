@@ -4807,7 +4807,21 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 1,
+          "pos1": "句点"
+        }
+      },
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
+      }
+    ]
   },
   {
     "grammarId": "n4-l01-02",
@@ -4826,7 +4840,40 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 3,
+          "surfaceOneOf": [
+            "「",
+            "『"
+          ]
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l01-03",
@@ -4845,7 +4892,81 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l01-04",
@@ -5027,7 +5148,15 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 1,
+          "pos1": "括弧開"
+        }
+      }
+    ]
   },
   {
     "grammarId": "n4-l01-13",
@@ -5050,7 +5179,17 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 2
-    }
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "baseForm": "困る"
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l01-14",
@@ -5122,6 +5261,15 @@
             "pos0": "動詞"
           }
         ]
+      },
+      {
+        "previousWithin": {
+          "max": 3,
+          "surfaceOneOf": [
+            "「",
+            "『"
+          ]
+        }
       }
     ]
   },
@@ -5144,7 +5292,195 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "考える"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "する"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "言う"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 3,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 4,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 5,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 6,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 7,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l01-17",
@@ -5555,7 +5891,40 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 3,
+          "surfaceOneOf": [
+            "「",
+            "『"
+          ]
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l02-15",
@@ -5651,6 +6020,126 @@
             "conjugationFormPrefix": "意志推量形"
           }
         ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 3,
+            "surface": "と"
+          },
+          {
+            "offset": 4,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 4,
+            "surface": "と"
+          },
+          {
+            "offset": 5,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 5,
+            "surface": "と"
+          },
+          {
+            "offset": 6,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 6,
+            "surface": "と"
+          },
+          {
+            "offset": 7,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 7,
+            "surface": "と"
+          },
+          {
+            "offset": 8,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
       }
     ]
   },
@@ -5722,7 +6211,40 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 3,
+          "surfaceOneOf": [
+            "「",
+            "『"
+          ]
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l03-05",
@@ -5798,7 +6320,10 @@
       {
         "gap": {
           "min": 1,
-          "max": 4
+          "max": 4,
+          "disallow": {
+            "pos0": "補助記号"
+          }
         }
       },
       {
@@ -5928,7 +6453,40 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 3,
+          "surfaceOneOf": [
+            "「",
+            "『"
+          ]
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l03-13",
@@ -5942,7 +6500,10 @@
       {
         "gap": {
           "min": 1,
-          "max": 4
+          "max": 4,
+          "disallow": {
+            "pos0": "補助記号"
+          }
         }
       },
       {
@@ -5952,7 +6513,17 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 2
-    }
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "pos0": "補助記号"
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l03-14",
@@ -5983,6 +6554,78 @@
             "offset": 2,
             "baseForm": "よい",
             "pos0": "形容詞"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
           }
         ]
       }
@@ -6070,7 +6713,40 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 3
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 3,
+          "surfaceOneOf": [
+            "「",
+            "『"
+          ]
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l04-02",
@@ -6854,7 +7530,23 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 3
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 1,
+          "surface": "棚"
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 0,
+            "surface": "本棚"
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l05-15",
@@ -8825,7 +9517,40 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 0
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 3,
+          "surfaceOneOf": [
+            "「",
+            "『"
+          ]
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l10-03-2",
@@ -9063,7 +9788,34 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "pos0OneOf": [
+              "名詞",
+              "動詞",
+              "代名詞"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "pos0OneOf": [
+              "名詞",
+              "動詞",
+              "代名詞",
+              "形容詞"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l10-12",
@@ -9082,7 +9834,29 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "pos0OneOf": [
+              "名詞",
+              "動詞",
+              "代名詞"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "も"
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l10-13-question-phrase",
@@ -9123,7 +9897,81 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 2
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l10-15",
@@ -9254,7 +10102,81 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 5
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l10-19",
@@ -9412,6 +10334,12 @@
             "surfaceSuffix": "人"
           }
         ]
+      },
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
       }
     ],
     "allowOverlap": true
@@ -9441,7 +10369,15 @@
       "startTokenOffset": 0,
       "endTokenOffset": 0
     },
-    "allowOverlap": true
+    "allowOverlap": true,
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
+      }
+    ]
   },
   {
     "grammarId": "n4-l08-01",
@@ -9499,7 +10435,15 @@
       "startTokenOffset": 0,
       "endTokenOffset": 0
     },
-    "allowOverlap": true
+    "allowOverlap": true,
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
+      }
+    ]
   },
   {
     "grammarId": "n4-l08-14",
@@ -9560,6 +10504,12 @@
             "surfaceSuffix": "人"
           }
         ]
+      },
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
       }
     ],
     "allowOverlap": true
@@ -9587,7 +10537,21 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 2
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 1,
+          "pos1": "句点"
+        }
+      },
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
+      }
+    ]
   },
   {
     "grammarId": "n4-l02-17",
@@ -9659,7 +10623,10 @@
       {
         "gap": {
           "min": 1,
-          "max": 5
+          "max": 5,
+          "disallow": {
+            "pos0": "補助記号"
+          }
         }
       },
       {
@@ -9670,7 +10637,15 @@
       "startTokenOffset": 0,
       "endTokenOffset": 0
     },
-    "allowOverlap": true
+    "allowOverlap": true,
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
+      }
+    ]
   },
   {
     "grammarId": "n4-l08-14",
@@ -9694,7 +10669,10 @@
       {
         "gap": {
           "min": 1,
-          "max": 5
+          "max": 5,
+          "disallow": {
+            "pos0": "補助記号"
+          }
         }
       },
       {
@@ -9725,6 +10703,12 @@
             "surfaceSuffix": "人"
           }
         ]
+      },
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
       }
     ],
     "allowOverlap": true
@@ -9774,7 +10758,17 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "pos0": "補助記号"
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l05-06",
@@ -10152,6 +11146,15 @@
             "pos0": "動詞"
           }
         ]
+      },
+      {
+        "previousWithin": {
+          "max": 3,
+          "surfaceOneOf": [
+            "「",
+            "『"
+          ]
+        }
       }
     ]
   },
@@ -10168,7 +11171,8 @@
         "baseFormOneOf": [
           "目",
           "ネクタイ",
-          "眼鏡"
+          "眼鏡",
+          "髪"
         ]
       },
       {
@@ -10299,7 +11303,195 @@
     "display": {
       "startTokenOffset": 3,
       "endTokenOffset": 5
-    }
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "考える"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "する"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "言う"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 3,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 4,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 5,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 6,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 7,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l01-16-verb",
@@ -10322,7 +11514,195 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 1
-    }
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "考える"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "する"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "言う"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 3,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 4,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 5,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 6,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 7,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l08-07-potential",
@@ -10389,6 +11769,126 @@
           {
             "offset": 0,
             "conjugationFormPrefix": "意志推量形"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 3,
+            "surface": "と"
+          },
+          {
+            "offset": 4,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 4,
+            "surface": "と"
+          },
+          {
+            "offset": 5,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 5,
+            "surface": "と"
+          },
+          {
+            "offset": 6,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 6,
+            "surface": "と"
+          },
+          {
+            "offset": 7,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 7,
+            "surface": "と"
+          },
+          {
+            "offset": 8,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
           }
         ]
       }
@@ -10498,7 +11998,15 @@
       "startTokenOffset": 0,
       "endTokenOffset": 0
     },
-    "allowOverlap": true
+    "allowOverlap": true,
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
+      }
+    ]
   },
   {
     "grammarId": "n4-l07-16",
@@ -10636,6 +12144,126 @@
             "conjugationFormPrefix": "意志推量形"
           }
         ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 3,
+            "surface": "と"
+          },
+          {
+            "offset": 4,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 4,
+            "surface": "と"
+          },
+          {
+            "offset": 5,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 5,
+            "surface": "と"
+          },
+          {
+            "offset": 6,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 6,
+            "surface": "と"
+          },
+          {
+            "offset": 7,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 7,
+            "surface": "と"
+          },
+          {
+            "offset": 8,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
       }
     ]
   },
@@ -10666,7 +12294,129 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 3
-    }
+    },
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 3,
+            "surface": "と"
+          },
+          {
+            "offset": 4,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 4,
+            "surface": "と"
+          },
+          {
+            "offset": 5,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 5,
+            "surface": "と"
+          },
+          {
+            "offset": 6,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 6,
+            "surface": "と"
+          },
+          {
+            "offset": 7,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 7,
+            "surface": "と"
+          },
+          {
+            "offset": 8,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l05-08",
@@ -10745,6 +12495,12 @@
             "surfaceSuffix": "人"
           }
         ]
+      },
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
       }
     ],
     "allowOverlap": true
@@ -10762,7 +12518,8 @@
         "baseFormOneOf": [
           "目",
           "ネクタイ",
-          "眼鏡"
+          "眼鏡",
+          "髪"
         ]
       },
       {
@@ -10990,6 +12747,15 @@
             "pos0": "動詞"
           }
         ]
+      },
+      {
+        "previousWithin": {
+          "max": 3,
+          "surfaceOneOf": [
+            "「",
+            "『"
+          ]
+        }
       }
     ]
   },
@@ -11055,7 +12821,129 @@
       "startTokenOffset": 0,
       "endTokenOffset": 2
     },
-    "allowOverlap": true
+    "allowOverlap": true,
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 3,
+            "surface": "と"
+          },
+          {
+            "offset": 4,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 4,
+            "surface": "と"
+          },
+          {
+            "offset": 5,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 5,
+            "surface": "と"
+          },
+          {
+            "offset": 6,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 6,
+            "surface": "と"
+          },
+          {
+            "offset": 7,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 7,
+            "surface": "と"
+          },
+          {
+            "offset": 8,
+            "baseFormOneOf": [
+              "印刷",
+              "書く",
+              "読む",
+              "写す"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l05-07",
@@ -11241,7 +13129,81 @@
       "startTokenOffset": 1,
       "endTokenOffset": 2
     },
-    "allowOverlap": true
+    "allowOverlap": true,
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l01-10",
@@ -11605,7 +13567,195 @@
       "startTokenOffset": 0,
       "endTokenOffset": 2
     },
-    "allowOverlap": true
+    "allowOverlap": true,
+    "reject": [
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "考える"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "する"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surface": "と"
+          },
+          {
+            "offset": 3,
+            "baseForm": "言う"
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 3,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 4,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 5,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 6,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          },
+          {
+            "offset": 7,
+            "surface": "を"
+          }
+        ]
+      },
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        },
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "grammarId": "n4-l04-16",
@@ -11785,7 +13935,10 @@
       {
         "gap": {
           "min": 1,
-          "max": 4
+          "max": 4,
+          "disallow": {
+            "pos0": "補助記号"
+          }
         }
       },
       {
@@ -11805,6 +13958,12 @@
             "surfaceSuffix": "人"
           }
         ]
+      },
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
       }
     ]
   },
@@ -11965,7 +14124,10 @@
       {
         "gap": {
           "min": 1,
-          "max": 3
+          "max": 3,
+          "disallow": {
+            "pos0": "補助記号"
+          }
         }
       },
       {
@@ -11975,7 +14137,15 @@
     "display": {
       "startTokenOffset": 0,
       "endTokenOffset": 0
-    }
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
+      }
+    ]
   },
   {
     "grammarId": "n3-l01-01",
@@ -25503,6 +27673,319 @@
     "display": {
       "startTokenOffset": 2,
       "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l01-01",
+    "type": "token-sequence",
+    "priority": 6,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "代名詞",
+          "名詞"
+        ]
+      },
+      {
+        "surface": "に",
+        "pos0": "助詞"
+      },
+      {
+        "surface": "で",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "も",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 3
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 1,
+          "pos1": "句点"
+        }
+      },
+      {
+        "previousWithin": {
+          "max": 4,
+          "pos1": "括弧開"
+        }
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l08-13",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "surface": "はず",
+        "pos0": "名詞"
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "ある"
+      },
+      {
+        "baseForm": "ます"
+      },
+      {
+        "baseForm": "ぬ"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 4
+    }
+  },
+  {
+    "grammarId": "n4-l10-16",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "考える",
+        "pos0": "動詞"
+      },
+      {
+        "baseFormOneOf": [
+          "れる",
+          "られる"
+        ],
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "いる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l10-17",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "する",
+        "pos0": "動詞"
+      },
+      {
+        "baseFormOneOf": [
+          "れる",
+          "られる"
+        ],
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "いる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    }
+  },
+  {
+    "grammarId": "n4-l10-18",
+    "type": "token-sequence",
+    "priority": 7,
+    "tokens": [
+      {
+        "pos0OneOf": [
+          "名詞",
+          "形状詞"
+        ]
+      },
+      {
+        "surface": "と",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "言う",
+        "pos0": "動詞"
+      },
+      {
+        "baseFormOneOf": [
+          "れる",
+          "られる"
+        ],
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "て",
+        "pos0": "助詞"
+      },
+      {
+        "baseForm": "いる",
+        "pos0": "動詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 5
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 6,
+          "pos1": "括弧開"
+        }
+      },
+      {
+        "tokens": [
+          {
+            "offset": 1,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 2,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 3,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 4,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 5,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      },
+      {
+        "tokens": [
+          {
+            "offset": 6,
+            "surfaceOneOf": [
+              "」",
+              "』"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l01-12",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseForm": "です",
+        "pos0": "助動詞"
+      },
+      {
+        "surface": "が",
+        "pos0": "助詞",
+        "pos1": "接続助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
+    },
+    "reject": [
+      {
+        "previousWithin": {
+          "max": 1,
+          "pos1": "括弧開"
+        }
+      }
+    ]
+  },
+  {
+    "grammarId": "n4-l03-14",
+    "type": "token-sequence",
+    "priority": 5,
+    "tokens": [
+      {
+        "baseForm": "する",
+        "pos0": "動詞",
+        "conjugationFormPrefix": "仮定形"
+      },
+      {
+        "surface": "ば",
+        "pos0": "助詞"
+      }
+    ],
+    "display": {
+      "startTokenOffset": 0,
+      "endTokenOffset": 1
     }
   }
 ]
