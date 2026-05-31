@@ -1,0 +1,482 @@
+[
+  {
+    "id": "round-001-audit-001",
+    "sentence": "この記録は公的な資料である。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-02"],
+    "expected": ["n3-l02-02"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "である is the live formal copula marking 資料 as the predicate noun."
+  },
+  {
+    "id": "round-001-audit-005",
+    "sentence": "「である」という文末表現を避けた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-02"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "The form is explicitly discussed as a 文末表現, not used as a predicate."
+  },
+  {
+    "id": "round-001-audit-006",
+    "sentence": "北斗という星を探した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": ["n3-l02-12"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "という identifies a star called 北斗."
+  },
+  {
+    "id": "round-001-audit-007",
+    "sentence": "ミナトという名前で予約した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": ["n3-l02-12"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "という名前 expresses a name called Minato."
+  },
+  {
+    "id": "round-001-audit-008",
+    "sentence": "「ミナト」という名前で登録した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": ["n3-l02-12"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "The name itself is quoted, but the live grammar is still called/name という名前."
+  },
+  {
+    "id": "round-001-audit-009",
+    "sentence": "電車が遅れるという連絡が来た。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": ["n3-l02-12"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "The existing N3 fixture scope treats content-modifying という + noun as in-scope for n3-l02-12."
+  },
+  {
+    "id": "round-001-audit-010",
+    "sentence": "「という」という助詞を説明した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "という is itself the item being discussed as a particle/expression."
+  },
+  {
+    "id": "round-001-audit-011",
+    "sentence": "安全というのは毎日の確認で守られる。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12", "n3-l02-14"],
+    "expected": ["n3-l02-14"],
+    "kind": "overlap-negative",
+    "source": "audit-agent",
+    "rationale": "というのは is the definitional/topic pattern; standalone called という should not be emitted."
+  },
+  {
+    "id": "round-001-audit-012",
+    "sentence": "春といえば桜を思い出す。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l03-14"],
+    "expected": ["n3-l03-14"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "といえば means speaking of spring."
+  },
+  {
+    "id": "round-001-audit-014",
+    "sentence": "合言葉は春と言えばいいですか。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-01", "n3-l03-14"],
+    "expected": ["n3-l01-01"],
+    "kind": "mixed",
+    "source": "audit-agent",
+    "rationale": "と言えば is literal if I say spring, while 言えばいい is the real conditional-advice pattern."
+  },
+  {
+    "id": "round-001-audit-015",
+    "sentence": "「春といえば、」という書き出しを直した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l03-14"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "audit-agent",
+    "rationale": "The phrase is quoted as a written opening, not used as a discourse connector."
+  },
+  {
+    "id": "round-001-audit-016",
+    "sentence": "春と言えば、を文頭に置かないでください。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l03-14"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "と言えば is being manipulated as a phrase before を, not used to mean speaking of."
+  },
+  {
+    "id": "round-001-audit-017",
+    "sentence": "さて、次の問題に移りましょう。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-01"],
+    "expected": ["n3-l06-01"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "さて marks a transition to the next topic."
+  },
+  {
+    "id": "round-001-audit-019",
+    "sentence": "さてという副詞を辞書で調べた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-01"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "さて is mentioned as a 副詞, not used as a transition marker."
+  },
+  {
+    "id": "round-001-audit-020",
+    "sentence": "さては彼も事情を知っているな。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-01"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "audit-agent",
+    "rationale": "さては is a separate suspicion expression, not discourse さて."
+  },
+  {
+    "id": "round-001-audit-021",
+    "sentence": "さて。はじめに注意点を確認します。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-01", "n3-l02-22"],
+    "expected": ["n3-l06-01", "n3-l02-22"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "さて is used as a standalone transition marker."
+  },
+  {
+    "id": "round-001-audit-022",
+    "sentence": "値段は高いが、むしろ品質は安心できる。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": ["n3-l06-02"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "むしろ introduces a contrary/rather evaluation."
+  },
+  {
+    "id": "round-001-audit-024",
+    "sentence": "むしろという副詞を例に出した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "むしろ is discussed as a 副詞, not used adverbially."
+  },
+  {
+    "id": "round-001-audit-025",
+    "sentence": "むしろを床に敷いて昼寝した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "audit-agent",
+    "rationale": "むしろ means a straw mat here, not the grammar adverb rather."
+  },
+  {
+    "id": "round-001-audit-027",
+    "sentence": "部品が三つ足りない。つまり完成できない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": ["n3-l06-03"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "つまり summarizes the previous fact as a conclusion."
+  },
+  {
+    "id": "round-001-audit-029",
+    "sentence": "つまりという接続詞を別の言葉に替えた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "つまり is being discussed as a 接続詞, not used to summarize."
+  },
+  {
+    "id": "round-001-audit-030",
+    "sentence": "排水口のつまりを直した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "audit-agent",
+    "rationale": "つまり is a noun meaning clog/blockage, not the connector in short."
+  },
+  {
+    "id": "round-001-audit-031",
+    "sentence": "つまり、ではなく、だからを使ってください。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03", "n3-l09-02"],
+    "expected": ["n3-l09-02"],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "つまり is an expression being edited/replaced, not functioning as a connector."
+  },
+  {
+    "id": "round-001-audit-032",
+    "sentence": "彼は編集長、すなわち最終責任者だ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-04"],
+    "expected": ["n3-l06-04"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "すなわち restates 編集長 as 最終責任者."
+  },
+  {
+    "id": "round-001-audit-033",
+    "sentence": "この印は許可済み、即ち入場できるという意味だ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-04", "n3-l02-12"],
+    "expected": ["n3-l06-04", "n3-l02-12"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "即ち introduces an equivalent restatement."
+  },
+  {
+    "id": "round-001-audit-035",
+    "sentence": "すなわちという接続詞を習った。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-04"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "すなわち is mentioned as a 接続詞."
+  },
+  {
+    "id": "round-001-audit-036",
+    "sentence": "即ちを漢字で書けるようにした。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-04"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "即ち is the object being written, not an in-other-words connector."
+  },
+  {
+    "id": "round-001-audit-037",
+    "sentence": "近道を選んだら、かえって時間がかかった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-05"],
+    "expected": ["n3-l06-05"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "かえって marks an opposite-than-expected result."
+  },
+  {
+    "id": "round-001-audit-039",
+    "sentence": "かえってという副詞を黒板に書いた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-05"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "かえって is discussed as a 副詞, not used to mark a contrary result."
+  },
+  {
+    "id": "round-001-audit-041",
+    "sentence": "急いだ。かえって忘れ物が増えた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-05"],
+    "expected": ["n3-l06-05"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "かえって links the previous situation to an opposite result across a sentence boundary."
+  },
+  {
+    "id": "round-001-audit-042",
+    "sentence": "窓口あるいはウェブで申し込めます。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-10"],
+    "expected": ["n3-l08-10"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "あるいは coordinates two alternatives."
+  },
+  {
+    "id": "round-001-audit-043",
+    "sentence": "窓口、あるいはウェブで申し込めます。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-10"],
+    "expected": ["n3-l08-10"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "The comma does not break the alternative coordinator あるいは."
+  },
+  {
+    "id": "round-001-audit-045",
+    "sentence": "あるいはという接続詞を使わないでください。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-10"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "audit-agent",
+    "rationale": "あるいは is discussed as a 接続詞, not used to connect alternatives."
+  },
+  {
+    "id": "round-001-audit-046",
+    "sentence": "窓口あるいは。ウェブで申し込めます。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-10"],
+    "expected": [],
+    "kind": "punctuation-gap-negative",
+    "source": "audit-agent",
+    "rationale": "A sentence boundary after あるいは prevents it from coordinating the following noun phrase."
+  },
+  {
+    "id": "round-001-audit-047",
+    "sentence": "第一、時間が足りない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-13"],
+    "expected": ["n3-l08-13"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "第一、 introduces the first reason."
+  },
+  {
+    "id": "round-001-audit-048",
+    "sentence": "第一に、手順を確認しましょう。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-13"],
+    "expected": ["n3-l08-13"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "第一に、 starts an enumerated point."
+  },
+  {
+    "id": "round-001-audit-049",
+    "sentence": "第一印象はとても良かった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-13"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "audit-agent",
+    "rationale": "第一 is part of the compound 第一印象, not a discourse starter."
+  },
+  {
+    "id": "round-001-audit-051",
+    "sentence": "第一という見出しを削除した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-13", "n3-l02-12"],
+    "expected": ["n3-l02-12"],
+    "kind": "mixed",
+    "source": "audit-agent",
+    "rationale": "第一 is only a heading label and should not emit the discourse starter; という見出し is a legitimate called/labeled use."
+  },
+  {
+    "id": "round-001-audit-052",
+    "sentence": "説明を読まずに同意した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19"],
+    "expected": ["n3-l08-19"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "読まずに means without reading."
+  },
+  {
+    "id": "round-001-audit-054",
+    "sentence": "説明を読まず。に同意した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19"],
+    "expected": [],
+    "kind": "punctuation-gap-negative",
+    "source": "audit-agent",
+    "rationale": "ず and に cross a sentence boundary, so they do not form ずに."
+  },
+  {
+    "id": "round-001-audit-055",
+    "sentence": "「読まずに」とメモに書いた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "audit-agent",
+    "rationale": "読まずに is quoted as text, not used as without doing."
+  },
+  {
+    "id": "round-001-audit-056",
+    "sentence": "その冗談を聞いて、笑わずにはいられない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "overlap-negative",
+    "source": "audit-agent",
+    "rationale": "The longer ずにはいられない pattern should emit and suppress standalone ずに."
+  },
+  {
+    "id": "round-001-audit-057",
+    "sentence": "その映画を見ると、泣かずにはいられません。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "Polite いられません is an inflected variant of cannot help doing."
+  },
+  {
+    "id": "round-001-audit-058",
+    "sentence": "その手紙を読んで、泣かずにはいられませんでした。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "Polite past いられませんでした is still the ずにはいられない grammar."
+  },
+  {
+    "id": "round-001-audit-059",
+    "sentence": "あの態度には、注意せずにはいられなかった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "Past negative いられなかった is an inflected use of cannot help doing."
+  },
+  {
+    "id": "round-001-audit-060",
+    "sentence": "その知らせを聞き、叫ばずにはいられず、外へ飛び出した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20", "n3-l09-02"],
+    "expected": ["n3-l08-20", "n3-l09-02"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "Continuative いられず is an inflected variant of the same cannot-help construction."
+  },
+  {
+    "id": "round-001-audit-061",
+    "sentence": "その絵を見ると、笑わずにはいられぬ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "positive",
+    "source": "audit-agent",
+    "rationale": "Classical/literary negative いられぬ preserves the cannot-help meaning."
+  },
+  {
+    "id": "round-001-audit-062",
+    "sentence": "「ずにはいられない」という形を練習した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "audit-agent",
+    "rationale": "The whole expression is quoted and discussed as a form, not used in a sentence."
+  }
+]

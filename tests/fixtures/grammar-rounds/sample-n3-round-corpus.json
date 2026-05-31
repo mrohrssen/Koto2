@@ -1,0 +1,22 @@
+[
+  {
+    "id": "sample-positive-001",
+    "sentence": "約束は守るべきだ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-07"],
+    "expected": ["n3-l01-07"],
+    "kind": "positive",
+    "source": "sample",
+    "rationale": "The sentence uses べき to express obligation: promises should be kept."
+  },
+  {
+    "id": "sample-negative-001",
+    "sentence": "そのべきという言葉を調べた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-07"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "sample",
+    "rationale": "The sentence mentions the word べき rather than using the grammar point."
+  }
+]

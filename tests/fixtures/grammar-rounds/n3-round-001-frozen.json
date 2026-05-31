@@ -1,0 +1,672 @@
+[
+  {
+    "id": "round-001-core-001",
+    "sentence": "これは重要な資料である。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-02"],
+    "expected": ["n3-l02-02"],
+    "kind": "positive",
+    "source": "core-adjudication",
+    "rationale": "である is used as the formal/literary copula in a complete statement."
+  },
+  {
+    "id": "round-001-core-002",
+    "sentence": "『である』という形を練習した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-02"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "core-adjudication",
+    "rationale": "である is quoted and discussed as a form, not used as a live copula."
+  },
+  {
+    "id": "round-001-a-019",
+    "sentence": "佐藤という先生に会った。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": ["n3-l02-12"],
+    "kind": "positive",
+    "source": "corpus-agent-a",
+    "rationale": "という names or identifies a teacher called Sato."
+  },
+  {
+    "id": "round-001-a-020",
+    "sentence": "彼は行かないという。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": [],
+    "kind": "near-miss-negative",
+    "source": "corpus-agent-a",
+    "rationale": "という here is a report/says-that construction, not the called/named という grammar point."
+  },
+  {
+    "id": "round-001-a-021",
+    "sentence": "『という』という表現を読んだ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-a",
+    "rationale": "The form という is quoted and mentioned as an expression."
+  },
+  {
+    "id": "round-001-a-028",
+    "sentence": "冬といえばこたつだ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l03-14"],
+    "expected": ["n3-l03-14"],
+    "kind": "positive",
+    "source": "corpus-agent-a",
+    "rationale": "といえば means speaking of winter."
+  },
+  {
+    "id": "round-001-a-029",
+    "sentence": "田中と言えばいいですか。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-01", "n3-l03-14"],
+    "expected": ["n3-l01-01"],
+    "kind": "mixed",
+    "source": "corpus-agent-a",
+    "rationale": "と言えば is literal if I say Tanaka and should not trigger discourse n3-l03-14, while 言えばいい is a real n3-l01-01 use."
+  },
+  {
+    "id": "round-001-a-030",
+    "sentence": "「冬といえば」を例文として読んだ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l03-14", "n3-l05-09"],
+    "expected": ["n3-l05-09"],
+    "kind": "quote-negative",
+    "source": "corpus-agent-a",
+    "rationale": "The phrase といえば is quoted and not used as a connector, while 例文として is a real as-an-example use."
+  },
+  {
+    "id": "round-001-a-043",
+    "sentence": "さて、新しい話題に入りましょう。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-01"],
+    "expected": ["n3-l06-01"],
+    "kind": "positive",
+    "source": "corpus-agent-a",
+    "rationale": "さて introduces a transition to a new topic."
+  },
+  {
+    "id": "round-001-a-044",
+    "sentence": "「さて」とだけ書いてあった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-01"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-a",
+    "rationale": "さて is quoted as written text, not used as a discourse marker."
+  },
+  {
+    "id": "round-001-a-045",
+    "sentence": "さては君が隠したのだな。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-01"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-a",
+    "rationale": "さては is a different lexical expression indicating suspicion, not the transition marker さて."
+  },
+  {
+    "id": "round-001-a-046",
+    "sentence": "高いが、むしろ安心できる。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": ["n3-l06-02"],
+    "kind": "positive",
+    "source": "corpus-agent-a",
+    "rationale": "むしろ contrasts with the preceding clause and means rather/instead."
+  },
+  {
+    "id": "round-001-a-047",
+    "sentence": "『むしろ』という語を辞書で引いた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-a",
+    "rationale": "むしろ is quoted and discussed as a word."
+  },
+  {
+    "id": "round-001-a-048",
+    "sentence": "むしろを漢字で書けますか。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "corpus-agent-a",
+    "rationale": "むしろ is treated as an object to write, not used adverbially."
+  },
+  {
+    "id": "round-001-a-049",
+    "sentence": "彼は毎日走る。つまり体力がある。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": ["n3-l06-03"],
+    "kind": "positive",
+    "source": "corpus-agent-a",
+    "rationale": "つまり summarizes the previous statement as a conclusion."
+  },
+  {
+    "id": "round-001-a-050",
+    "sentence": "「つまり」と言う練習をした。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-a",
+    "rationale": "つまり is quoted as a pronunciation/speech practice item."
+  },
+  {
+    "id": "round-001-a-051",
+    "sentence": "つまりを短く説明してください。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "corpus-agent-a",
+    "rationale": "つまり is used as the object being explained, not as an in-short connector."
+  },
+  {
+    "id": "round-001-a-052",
+    "sentence": "彼は店長、すなわち責任者だ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-04"],
+    "expected": ["n3-l06-04"],
+    "kind": "positive",
+    "source": "corpus-agent-a",
+    "rationale": "すなわち restates 店長 as 責任者, meaning in other words."
+  },
+  {
+    "id": "round-001-a-053",
+    "sentence": "即ちという表記を確認した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-04"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "corpus-agent-a",
+    "rationale": "即ち is mentioned as an orthographic form, not used to restate a prior term."
+  },
+  {
+    "id": "round-001-a-054",
+    "sentence": "「すなわち」とノートに書いた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-04"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-a",
+    "rationale": "すなわち is quoted as text being written."
+  },
+  {
+    "id": "round-001-a-055",
+    "sentence": "急いだため、かえって遅くなった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-05"],
+    "expected": ["n3-l06-05"],
+    "kind": "positive",
+    "source": "corpus-agent-a",
+    "rationale": "かえって marks an opposite-than-expected result."
+  },
+  {
+    "id": "round-001-a-056",
+    "sentence": "かえってという語の意味を調べた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-05"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "corpus-agent-a",
+    "rationale": "かえって is mentioned as a vocabulary item, not used adverbially."
+  },
+  {
+    "id": "round-001-a-057",
+    "sentence": "『却って』をひらがなに直した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-05"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-a",
+    "rationale": "却って is quoted as written text to convert, not used in a sentence."
+  },
+  {
+    "id": "round-001-a-079",
+    "sentence": "メールあるいは電話で知らせてください。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-10"],
+    "expected": ["n3-l08-10"],
+    "kind": "positive",
+    "source": "corpus-agent-a",
+    "rationale": "あるいは coordinates alternatives, email or phone."
+  },
+  {
+    "id": "round-001-a-080",
+    "sentence": "あるいはという語をカードに書いた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-10"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "corpus-agent-a",
+    "rationale": "あるいは is mentioned as a vocabulary item, not used to join alternatives."
+  },
+  {
+    "id": "round-001-a-081",
+    "sentence": "「あるいは」と読んでください。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-10"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-a",
+    "rationale": "The word is quoted for reading aloud, not functioning as or."
+  },
+  {
+    "id": "round-001-a-082",
+    "sentence": "第一、予算が足りません。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-13"],
+    "expected": ["n3-l08-13"],
+    "kind": "positive",
+    "source": "corpus-agent-a",
+    "rationale": "第一 starts a listed reason or argument."
+  },
+  {
+    "id": "round-001-a-083",
+    "sentence": "第一希望は大阪だ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-13"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-a",
+    "rationale": "第一 is part of 第一希望, an ordinal preference, not a discourse starter."
+  },
+  {
+    "id": "round-001-a-084",
+    "sentence": "『第一』という番号を付けた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-13"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-a",
+    "rationale": "第一 is quoted as a label/number, not used to introduce a point."
+  },
+  {
+    "id": "round-001-b-001",
+    "sentence": "会議中に停電が起きた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-03"],
+    "expected": ["n3-l01-03"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "中 is a suffix after an activity noun, meaning during the meeting."
+  },
+  {
+    "id": "round-001-b-002",
+    "sentence": "袋の中に財布が入っている。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-03"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "中 is the literal inside of a bag, not the suffix meaning during an activity."
+  },
+  {
+    "id": "round-001-b-004",
+    "sentence": "父が電話している間に夕食を温めた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-04"],
+    "expected": ["n3-l01-04"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "している間に marks doing something while another action is in progress."
+  },
+  {
+    "id": "round-001-b-005",
+    "sentence": "病院と薬局の間に小さな公園がある。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-04"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "間に describes a physical location between two places, not while/during an event."
+  },
+  {
+    "id": "round-001-b-007",
+    "sentence": "明るいうちに写真を撮ろう。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-05"],
+    "expected": ["n3-l01-05"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "うちに means while the condition of being bright still holds."
+  },
+  {
+    "id": "round-001-b-008",
+    "sentence": "祖母のうちに古い時計がある。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-05"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "うち means house/home here, not the temporal grammar pattern."
+  },
+  {
+    "id": "round-001-b-010",
+    "sentence": "佐藤さんって面白い人だね。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-09"],
+    "expected": ["n3-l01-09"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "って marks 佐藤さん as the casual topic under discussion."
+  },
+  {
+    "id": "round-001-b-011",
+    "sentence": "来週休むって聞いた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-09"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-b",
+    "rationale": "って quotes reported content, not the as-for topic marker."
+  },
+  {
+    "id": "round-001-b-013",
+    "sentence": "彼女は来月退職するそうです。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-17"],
+    "expected": ["n3-l01-17"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "そうです reports hearsay about someone retiring next month."
+  },
+  {
+    "id": "round-001-b-014",
+    "sentence": "このケーキは甘そうです。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-17"],
+    "expected": [],
+    "kind": "near-miss-negative",
+    "source": "corpus-agent-b",
+    "rationale": "そうです expresses appearance, not hearsay."
+  },
+  {
+    "id": "round-001-b-019",
+    "sentence": "研究室を見学させてもらった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-23"],
+    "expected": ["n3-l01-23"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "The causative plus てもらう means the speaker was allowed to tour the lab."
+  },
+  {
+    "id": "round-001-b-020",
+    "sentence": "友達に研究室を見学してもらった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l01-23"],
+    "expected": [],
+    "kind": "near-miss-negative",
+    "source": "corpus-agent-b",
+    "rationale": "This is てもらう without causative させ, so it lacks the allow/have-the-honor pattern."
+  },
+  {
+    "id": "round-001-b-025",
+    "sentence": "弟はゲームばかりしている。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l03-04"],
+    "expected": ["n3-l03-04"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "ばかり means only/nothing but games."
+  },
+  {
+    "id": "round-001-b-026",
+    "sentence": "荷物は増えるばかりだ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l03-04", "n3-l03-05"],
+    "expected": ["n3-l03-05"],
+    "kind": "overlap-negative",
+    "source": "corpus-agent-b",
+    "rationale": "The longer Verb + ばかりだ pattern means continues to increase; standalone ばかり should be suppressed."
+  },
+  {
+    "id": "round-001-b-032",
+    "sentence": "住所さえ分かれば届けられる。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l05-20", "n3-l05-21"],
+    "expected": ["n3-l05-21"],
+    "kind": "overlap-negative",
+    "source": "corpus-agent-b",
+    "rationale": "さえ pairs with ば to mean if only; the standalone さえ matcher should not double-emit."
+  },
+  {
+    "id": "round-001-b-033",
+    "sentence": "住所さえ知らなかった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l05-20"],
+    "expected": ["n3-l05-20"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "さえ means even: the speaker did not even know the address."
+  },
+  {
+    "id": "round-001-b-036",
+    "sentence": "この修理代はとても払えない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-08"],
+    "expected": ["n3-l06-08"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "とても with a negative potential means cannot possibly pay."
+  },
+  {
+    "id": "round-001-b-037",
+    "sentence": "この部屋はとても広くない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-08"],
+    "expected": [],
+    "kind": "near-miss-negative",
+    "source": "corpus-agent-b",
+    "rationale": "とても modifies an adjective in an ordinary negative statement, not the cannot possibly pattern."
+  },
+  {
+    "id": "round-001-b-039",
+    "sentence": "別に困っていない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-09"],
+    "expected": ["n3-l06-09"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "別に with a negative means not particularly/not really troubled."
+  },
+  {
+    "id": "round-001-b-040",
+    "sentence": "写真を別に保存したので問題はない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-09"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "別に means separately, while ない appears later in a different clause."
+  },
+  {
+    "id": "round-001-b-042",
+    "sentence": "三人だけしか会場に残っていない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-13"],
+    "expected": ["n3-l06-13"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "だけしか with a negative emphasizes only three people remain."
+  },
+  {
+    "id": "round-001-b-043",
+    "sentence": "「だけしか」を例文に入れた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-13"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "corpus-agent-b",
+    "rationale": "The expression is quoted as text and should not be emitted."
+  },
+  {
+    "id": "round-001-b-045",
+    "sentence": "靴は泥だらけになった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l07-03"],
+    "expected": ["n3-l07-03"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "だらけ is a suffix meaning covered in mud."
+  },
+  {
+    "id": "round-001-b-046",
+    "sentence": "休日はだらけた姿勢で過ごした。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l07-03"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "だらけた is the verb/adjective meaning lazy/slovenly, not the covered-in suffix."
+  },
+  {
+    "id": "round-001-b-048",
+    "sentence": "一冊当たり二百円かかる。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l07-11"],
+    "expected": ["n3-l07-11"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "当たり is a suffix meaning per book."
+  },
+  {
+    "id": "round-001-b-049",
+    "sentence": "ボールが頭に当たり、彼は倒れた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l07-11"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "当たり is the renyou form of the verb hit, not the per-unit suffix."
+  },
+  {
+    "id": "round-001-b-051",
+    "sentence": "注意を読まずに契約した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19"],
+    "expected": ["n3-l08-19"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "ずに means without reading the warning."
+  },
+  {
+    "id": "round-001-b-052",
+    "sentence": "その映画を見て、泣かずにはいられなかった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "overlap-negative",
+    "source": "corpus-agent-b",
+    "rationale": "The longer ずにはいられない pattern should suppress standalone ずに."
+  },
+  {
+    "id": "round-001-b-060",
+    "sentence": "この説明は初心者向きだ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l09-03"],
+    "expected": ["n3-l09-03"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "向き is a suffix meaning suitable for beginners."
+  },
+  {
+    "id": "round-001-b-061",
+    "sentence": "北を向き、星を探した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l09-02", "n3-l09-03"],
+    "expected": ["n3-l09-02"],
+    "kind": "mixed",
+    "source": "corpus-agent-b",
+    "rationale": "向き is a real continuative connector for n3-l09-02, not the suitability suffix n3-l09-03."
+  },
+  {
+    "id": "round-001-b-066",
+    "sentence": "長い小説を一晩で読み切った。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l09-06"],
+    "expected": ["n3-l09-06"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "読み切った means finished reading completely."
+  },
+  {
+    "id": "round-001-b-067",
+    "sentence": "包丁で野菜を細かく切った。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l09-06"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "切った is the lexical verb cut, not an auxiliary meaning finish completely."
+  },
+  {
+    "id": "round-001-b-081",
+    "sentence": "この判断は理解しがたい。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l10-01"],
+    "expected": ["n3-l10-01"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "しがたい means hard to understand."
+  },
+  {
+    "id": "round-001-b-082",
+    "sentence": "親切にしてくれてありがたい。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l10-01"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "ありがたい is a lexical adjective meaning grateful, not Verb-stem + がたい."
+  },
+  {
+    "id": "round-001-b-090",
+    "sentence": "彼の話し方は少し子どもっぽい。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l10-09"],
+    "expected": ["n3-l10-09"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "っぽい is a suffix meaning childish/childlike."
+  },
+  {
+    "id": "round-001-b-091",
+    "sentence": "紙くずをぽいっと箱に投げた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l10-09"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "ぽいっと is an adverb for tossing, not the suffix っぽい."
+  },
+  {
+    "id": "round-001-b-096",
+    "sentence": "一体どこに財布を置いたの。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l10-12"],
+    "expected": ["n3-l10-12"],
+    "kind": "positive",
+    "source": "corpus-agent-b",
+    "rationale": "一体 intensifies the wh-question どこ."
+  },
+  {
+    "id": "round-001-b-097",
+    "sentence": "画面と本体が一体型になっている。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l10-12"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "corpus-agent-b",
+    "rationale": "一体型 means integrated/one-piece, not the question intensifier."
+  }
+]

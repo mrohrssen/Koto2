@@ -1,0 +1,3836 @@
+[
+  {
+    "sentence": "疲れたら休めばいい。",
+    "expected": [
+      "n3-l01-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "困ったら先生に聞いたらいい。",
+    "expected": [
+      "n3-l01-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "若いうちに旅行したい。",
+    "expected": [
+      "n3-l01-05"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l01-05 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "暗くならないうちに帰る。",
+    "expected": [
+      "n3-l01-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "約束は守るべきだ。",
+    "expected": [
+      "n3-l01-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "人を傷つけるべきではない。",
+    "expected": [
+      "n3-l01-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この問題はなかなか難しい。",
+    "expected": [
+      "n3-l01-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この漢字はなかなか覚えられない。",
+    "expected": [
+      "n3-l01-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "天気予報によると明日は雨だ。",
+    "expected": [
+      "n3-l01-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "結果は努力によって変わる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage. Reclassified as expected after late-audit enablement. Disabled after adversarial review: によって sense is not token-local."
+  },
+  {
+    "sentence": "今日は全く寒くない。",
+    "expected": [
+      "n3-l01-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "健康のためにはよく寝ることだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "角を曲がると、すると駅が見えた。",
+    "expected": [
+      "n3-l01-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "薬を飲む。そうすると楽になる。",
+    "expected": [
+      "n3-l01-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "これは新型のロボットだ。",
+    "expected": [
+      "n3-l01-21"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l01-21."
+  },
+  {
+    "sentence": "この本を読んでごらん。",
+    "expected": [
+      "n3-l01-22"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "これは事実である。",
+    "expected": [
+      "n3-l02-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "急いだ。ところが電車は遅れた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ところで、明日は暇ですか。",
+    "expected": [
+      "n3-l02-04"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l02-04 based on local Sudachi token evidence."
+  },
+  {
+    "sentence": "泣くほど嬉しかった。",
+    "expected": [
+      "n3-l02-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読めば読むほど面白い。",
+    "expected": [
+      "n3-l02-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "今日は昨日ほど寒くない。",
+    "expected": [
+      "n3-l02-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は論理的に話す。",
+    "expected": [
+      "n3-l02-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "会議の最中に電話が鳴った。",
+    "expected": [
+      "n3-l02-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "説明を聞いた上で決める。",
+    "expected": [
+      "n3-l02-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "友達のおかげで助かった。",
+    "expected": [
+      "n3-l02-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "資料にもとづいて判断する。",
+    "expected": [
+      "n3-l02-21"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この点が大切だ。",
+    "expected": [
+      "n3-l02-22"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "行けない。なぜなら熱があるからだ。",
+    "expected": [
+      "n3-l03-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "今年こそ合格したい。",
+    "expected": [
+      "n3-l03-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "好きだからこそ続けられる。",
+    "expected": [
+      "n3-l03-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は漫画ばかり読んでいる。",
+    "expected": [
+      "n3-l03-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "物価は上がるばかりだ。",
+    "expected": [
+      "n3-l03-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "急いだばかりに失敗した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage. Disabled: causal ばかりに is token-ambiguous with just-did たばかりに."
+  },
+  {
+    "sentence": "毎朝走ることにする。",
+    "expected": [
+      "n3-l03-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "来月引っ越すことになる。",
+    "expected": [
+      "n3-l03-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "京都は寺で有名だ。",
+    "expected": [
+      "n3-l03-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "心配することはない。",
+    "expected": [
+      "n3-l03-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "春といえば桜だ。",
+    "expected": [
+      "n3-l03-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "友達と助け合う。",
+    "expected": [
+      "n3-l03-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "音楽に合わせて踊る。",
+    "expected": [
+      "n3-l03-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "日本語について勉強する。",
+    "expected": [
+      "n3-l03-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "これは成功と言える。",
+    "expected": [
+      "n3-l03-19"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l03-19 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "ちゃんと手を洗った。",
+    "expected": [
+      "n3-l03-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨が降った。そのために試合は中止だ。",
+    "expected": [
+      "n3-l03-21"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "毎日練習した。その結果、上達した。",
+    "expected": [
+      "n3-l03-22"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "去年に比べて今年は暑い。",
+    "expected": [
+      "n3-l04-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "どんなに寒くても行く。",
+    "expected": [
+      "n3-l04-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "いくら頼んでも彼は来ない。",
+    "expected": [
+      "n3-l04-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "今日はかなり寒い。",
+    "expected": [
+      "n3-l04-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "あまりに忙しくて忘れた。",
+    "expected": [
+      "n3-l04-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "道が混んでいる。遅れるわけだ。",
+    "expected": [
+      "n3-l04-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "嫌いなわけではない。",
+    "expected": [
+      "n3-l04-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ベルが鳴ると同時に走った。",
+    "expected": [
+      "n3-l04-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "もう少しで転ぶところだった。",
+    "expected": [
+      "n3-l04-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は来ないんだって。",
+    "expected": [
+      "n3-l04-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "環境に関する本を読む。",
+    "expected": [
+      "n3-l04-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "質問に対して答える。",
+    "expected": [
+      "n3-l04-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "私ができるのは待つくらいです。",
+    "expected": [
+      "n3-l04-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "学生はそれぞれ意見を言った。",
+    "expected": [
+      "n3-l04-21"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ドアを開けたままにした。",
+    "expected": [
+      "n3-l05-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "道に迷った。そこで地図を見た。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "もう待つしかない。",
+    "expected": [
+      "n3-l05-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ここで休んでもかまわない。",
+    "expected": [
+      "n3-l05-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "食べても食べなくてもいい。",
+    "expected": [
+      "n3-l05-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼が知らないわけがない。",
+    "expected": [
+      "n3-l05-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "行くとしたら明日だ。",
+    "expected": [
+      "n3-l05-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "医者として働いている。",
+    "expected": [
+      "n3-l05-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "子どもにしては背が高い。",
+    "expected": [
+      "n3-l05-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "忙しいにしても連絡してほしい。",
+    "expected": [
+      "n3-l05-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "経験から言うと、それは難しい。",
+    "expected": [
+      "n3-l05-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "私にとって大切な本だ。",
+    "expected": [
+      "n3-l05-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "足跡があることから、誰かが来たと分かる。",
+    "expected": [
+      "n3-l05-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は先生というより友達だ。",
+    "expected": [
+      "n3-l05-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "日本語はもちろん英語も話せる。",
+    "expected": [
+      "n3-l05-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "東京をはじめ多くの町で雨が降った。",
+    "expected": [
+      "n3-l05-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "失敗して初めて大切さが分かった。",
+    "expected": [
+      "n3-l05-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "子どもでさえ分かる。",
+    "expected": [
+      "n3-l05-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "水さえあれば大丈夫だ。",
+    "expected": [
+      "n3-l05-21"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "昔はよく川で遊んだものだ。",
+    "expected": [
+      "n3-l05-22"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage. Reclassified as expected after late-audit enablement."
+  },
+  {
+    "sentence": "さて、次の問題に進もう。",
+    "expected": [
+      "n3-l06-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "むしろ行きたい。",
+    "expected": [
+      "n3-l06-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は医者だ。つまり病気に詳しい。",
+    "expected": [
+      "n3-l06-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は学生、即ち勉強する人だ。",
+    "expected": [
+      "n3-l06-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "急ぐと却って危ない。",
+    "expected": [
+      "n3-l06-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "まるで夢のようだ。",
+    "expected": [
+      "n3-l06-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨が降るような気がする。",
+    "expected": [
+      "n3-l06-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この荷物はとても持てない。",
+    "expected": [
+      "n3-l06-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "別に怒っていない。",
+    "expected": [
+      "n3-l06-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は英語ばかりでなく日本語も話す。",
+    "expected": [
+      "n3-l06-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "これは水ではなくてお茶だ。",
+    "expected": [
+      "n3-l06-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は勉強だけでなく運動も得意だ。",
+    "expected": [
+      "n3-l06-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "千円だけしか持っていない。",
+    "expected": [
+      "n3-l06-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "安全が大切なのは言うまでもない。",
+    "expected": [
+      "n3-l06-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "決して忘れない。",
+    "expected": [
+      "n3-l06-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "約束を破るわけにはいかない。",
+    "expected": [
+      "n3-l06-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "もしかしたら雨が降るかもしれない。",
+    "expected": [
+      "n3-l06-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "たとえ負けても諦めない。",
+    "expected": [
+      "n3-l06-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "何度助けられたことか。",
+    "expected": [
+      "n3-l06-21"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "季節で言うと春が好きだ。",
+    "expected": [
+      "n3-l06-24"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "一人ずつ入ってください。",
+    "expected": [
+      "n3-l07-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "今日は昨日よりずっと寒い。",
+    "expected": [
+      "n3-l07-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "机の上は本だらけだ。",
+    "expected": [
+      "n3-l07-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は再び走り出した。",
+    "expected": [
+      "n3-l07-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この料理には甘みがある。",
+    "expected": [
+      "n3-l07-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "犬は猫と同じくらい好きだ。",
+    "expected": [
+      "n3-l07-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "兄と同じで背が高い。",
+    "expected": [
+      "n3-l07-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "友達と並んで歩く。",
+    "expected": [
+      "n3-l07-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は先生に違いない。",
+    "expected": [
+      "n3-l07-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "一人当たり千円です。",
+    "expected": [
+      "n3-l07-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この仕事は彼に当たる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "暑い日は水に限る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "高い物が良いとは限らない。",
+    "expected": [
+      "n3-l07-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼はめったに怒らない。",
+    "expected": [
+      "n3-l07-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "値段の割においしい。",
+    "expected": [
+      "n3-l07-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "言うまでもないことだ。",
+    "expected": [
+      "n3-l07-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨は降りそうもない。",
+    "expected": [
+      "n3-l07-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "できないことはない。",
+    "expected": [
+      "n3-l07-21"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "漫画なんか読まない。",
+    "expected": [
+      "n3-l08-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "また彼も来た。",
+    "expected": [
+      "n3-l08-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "買い物のついでに本屋へ行く。",
+    "expected": [
+      "n3-l08-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "家族と共に暮らす。",
+    "expected": [
+      "n3-l08-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "時間がたつにつれて暗くなる。",
+    "expected": [
+      "n3-l08-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "直ちに出発してください。",
+    "expected": [
+      "n3-l08-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "外に出たとたんに雨が降った。",
+    "expected": [
+      "n3-l08-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "一日おきに運動する。",
+    "expected": [
+      "n3-l08-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "会うたびに元気をもらう。",
+    "expected": [
+      "n3-l08-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "電車あるいはバスで行く。",
+    "expected": [
+      "n3-l08-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は疲れながらも働いた。",
+    "expected": [
+      "n3-l08-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "会議において説明した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage. Disabled after late audit because local token evidence is unsafe."
+  },
+  {
+    "sentence": "第一、時間が足りない。",
+    "expected": [
+      "n3-l08-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨がますます強くなる。",
+    "expected": [
+      "n3-l08-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "物価は上がる一方だ。",
+    "expected": [
+      "n3-l08-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は優しい一方で厳しい。",
+    "expected": [
+      "n3-l08-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は遂に成功した。",
+    "expected": [
+      "n3-l08-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "宿題はすでに終わった。",
+    "expected": [
+      "n3-l08-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "朝ご飯を食べずに出た。",
+    "expected": [
+      "n3-l08-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "笑わずにはいられない。",
+    "expected": [
+      "n3-l08-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "予約なしで入れる。",
+    "expected": [
+      "n3-l08-21"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "質問ありです。",
+    "expected": [
+      "n3-l08-22"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "そんなことは考えられない。",
+    "expected": [
+      "n3-l08-23"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "必ずしも必要ではない。",
+    "expected": [
+      "n3-l09-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この本は子ども向きだ。",
+    "expected": [
+      "n3-l09-03"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "これは初心者向けの本だ。",
+    "expected": [
+      "n3-l09-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "最後まで走り切る。",
+    "expected": [
+      "n3-l09-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この本は一日では読み切れない。",
+    "expected": [
+      "n3-l09-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼とは一度会ったきりだ。",
+    "expected": [
+      "n3-l09-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "読みかけの本を置いた。",
+    "expected": [
+      "n3-l09-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "朝から昼にかけて雨が降る。",
+    "expected": [
+      "n3-l09-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "焼きたてのパンを食べた。",
+    "expected": [
+      "n3-l09-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "寝たふりをする。",
+    "expected": [
+      "n3-l09-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "できれば明日行きたい。",
+    "expected": [
+      "n3-l09-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "私でよければ手伝います。",
+    "expected": [
+      "n3-l09-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "準備ができ次第出発する。",
+    "expected": [
+      "n3-l09-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "説明のとおりに作る。",
+    "expected": [
+      "n3-l09-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は先生でもある。",
+    "expected": [
+      "n3-l09-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "どうしても行きたい。",
+    "expected": [
+      "n3-l09-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "もしも雨なら中止です。",
+    "expected": [
+      "n3-l09-21"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "友達同士で話す。",
+    "expected": [
+      "n3-l09-22"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "それは信じがたい話だ。",
+    "expected": [
+      "n3-l10-01"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "まさか彼が来るとは思わなかった。",
+    "expected": [
+      "n3-l10-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "前者は安く、後者は高い。",
+    "expected": [
+      "n3-l10-03",
+      "n3-l09-02"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "つい笑ってしまった。",
+    "expected": [
+      "n3-l10-04"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "雨のせいで遅れた。",
+    "expected": [
+      "n3-l10-05"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "子どものくせに難しい本を読む。",
+    "expected": [
+      "n3-l10-06"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "彼は遅れがちだ。",
+    "expected": [
+      "n3-l10-07"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "今日は疲れぎみだ。",
+    "expected": [
+      "n3-l10-08"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "この服は子どもっぽい。",
+    "expected": [
+      "n3-l10-09"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "ドアを開けっぱなしにした。",
+    "expected": [
+      "n3-l10-10"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "わざわざ来てくれてありがとう。",
+    "expected": [
+      "n3-l10-11"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "一体何があったの。",
+    "expected": [
+      "n3-l10-12"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "折角来たのだから楽しもう。",
+    "expected": [
+      "n3-l10-13"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "明日は何曜日だっけ。",
+    "expected": [
+      "n3-l10-14"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "兄の代わりに行く。",
+    "expected": [
+      "n3-l10-15"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "父に代わって挨拶する。",
+    "expected": [
+      "n3-l10-16"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "寒いどころか暑い。",
+    "expected": [
+      "n3-l10-17"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "病気という理由で休んだ。",
+    "expected": [
+      "n3-l10-18"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "大会は中止となっている。",
+    "expected": [
+      "n3-l10-19"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage. Reclassified as expected after late-audit enablement."
+  },
+  {
+    "sentence": "天気が結果を左右する。",
+    "expected": [
+      "n3-l10-20"
+    ],
+    "knownMisses": [],
+    "notes": "Positive N3 fixture sentence used for level stress coverage."
+  },
+  {
+    "sentence": "猫です。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Generic negative stress case with no enabled N3 grammar expected."
+  },
+  {
+    "sentence": "机の上で本を読む。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Physical location use of 上で must not trigger the N3 after-doing 上で grammar point."
+  },
+  {
+    "sentence": "紙を切る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical 切る must not trigger the N3 completion suffix."
+  },
+  {
+    "sentence": "色が合う。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical 合う must not trigger the N3 reciprocal auxiliary."
+  },
+  {
+    "sentence": "風が強いにもかかわらず出かけた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical 出かけた must not trigger the N3 かけ half-finished suffix."
+  },
+  {
+    "sentence": "答えがあります。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical あります must not trigger the N3 あり noun grammar point."
+  },
+  {
+    "sentence": "上を向きなさい。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical verb 向き must not trigger the N3 向き suffix grammar point."
+  },
+  {
+    "sentence": "駅へ向けて歩く。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical verb 向けて must not trigger the N3 向け suffix grammar point."
+  },
+  {
+    "sentence": "宝くじに当たり、喜んだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical verb 当たり must not trigger the N3 当たり per-unit suffix grammar point."
+  },
+  {
+    "sentence": "本とノートの間にペンがある。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Spatial between use of の間に must not trigger the N3 while/during grammar point."
+  },
+  {
+    "sentence": "勉強すると眠くなる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Ordinary conditional Vすると must not trigger the N3 discourse connector すると."
+  },
+  {
+    "sentence": "そこで写真を撮る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Literal location そこで must not trigger the N3 discourse connector そこで."
+  },
+  {
+    "sentence": "第一の理由は時間だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Ordinal 第一 modifying a noun must not trigger the N3 discourse starter 第一."
+  },
+  {
+    "sentence": "結果は状況次第です。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Dependent-on-circumstances 次第 must not trigger the N3 as-soon-as suffix."
+  },
+  {
+    "sentence": "二つの部品が一体になる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Noun 一体 meaning one body/unit must not trigger the N3 emphatic question adverb."
+  },
+  {
+    "sentence": "彼は三十歳くらいです。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Approximate age は〜くらいです must not trigger the N3 about-the-only pattern."
+  },
+  {
+    "sentence": "テーブルの一方で猫が寝ている。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Physical one-side 一方で must not trigger the N3 contrast connector."
+  },
+  {
+    "sentence": "テストで百点を取った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Score 点 must not trigger the N3 aspect/point grammar point."
+  },
+  {
+    "sentence": "紙に点を書く。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Literal dot 点 must not trigger the N3 aspect/point grammar point."
+  },
+  {
+    "sentence": "なかなかおいしい。問題はない。",
+    "expected": [
+      "n3-l01-10"
+    ],
+    "knownMisses": [],
+    "notes": "Sentence-boundary negative: positive なかなか and unrelated later ない must not combine into なかなか～ない."
+  },
+  {
+    "sentence": "全く新しい。問題はない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Sentence-boundary negative: positive 全く and unrelated later ない must not combine into 全く～ない."
+  },
+  {
+    "sentence": "驚くほど静かだ。問題はない。",
+    "expected": [
+      "n3-l02-05"
+    ],
+    "knownMisses": [],
+    "notes": "Sentence-boundary negative: degree ほど and unrelated later ない must not become ほど～ない."
+  },
+  {
+    "sentence": "ここまで来れば、泣くほど安心する。",
+    "expected": [
+      "n3-l02-05"
+    ],
+    "knownMisses": [],
+    "notes": "Ordinary conditional plus degree ほど is not the repeated ば～ほど pattern."
+  },
+  {
+    "sentence": "なぜなら、私は駅から来た。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Source particle から must not satisfy the reason-final なぜなら～から pattern."
+  },
+  {
+    "sentence": "私が見たところが入口です。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l02-03: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "宿題をしているところで電話が鳴った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l02-04: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "棚を見た。そこで本を読んだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Locative そこで is not therefore/accordingly connector そこで."
+  },
+  {
+    "sentence": "友達としたら楽しかったです。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Compositional と + したら is not hypothetical としたら."
+  },
+  {
+    "sentence": "静かにしてはだめです。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Adverbial 静かに + してはだめ is not considering にしては."
+  },
+  {
+    "sentence": "選択によると思います。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Depending-on による plus quotative と must not trigger according-to によると."
+  },
+  {
+    "sentence": "駅によって帰ります。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical 寄って/stop by shares local tokens with によって and must not trigger a grammar hint."
+  },
+  {
+    "sentence": "彼は「と同時に」と言った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Quoted connector text must not trigger と同時に."
+  },
+  {
+    "sentence": "彼は「と共に」と書いた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Quoted connector text must not trigger と共に."
+  },
+  {
+    "sentence": "子どもを公園につれて行く。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical 連れて行く must not trigger につれて."
+  },
+  {
+    "sentence": "机においてください。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical 置いてください must not trigger において."
+  },
+  {
+    "sentence": "壁にかけてください。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical 掛けてください must not trigger にかけて."
+  },
+  {
+    "sentence": "これは図の一方だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Literal one side must not trigger increasing 一方だ."
+  },
+  {
+    "sentence": "彼は私の友達となっている。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Compositional has become must not trigger the formal は～となっている pattern."
+  },
+  {
+    "sentence": "ずっと待っていた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Continuous ずっと is N4-style whole-time usage, not N3 by-far comparison."
+  },
+  {
+    "sentence": "彼は帰ったばかりです。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "N4 たばかり just-did must not trigger standalone N3 ばかり."
+  },
+  {
+    "sentence": "彼は帰ったばかりだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "N4 たばかり just-did must not trigger N3 ばかりだ continue-only."
+  },
+  {
+    "sentence": "的を射る発言だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Noun 的 target must not trigger suffix 的."
+  },
+  {
+    "sentence": "五分ほど待った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Approximate amount ほど must not trigger degree ほど."
+  },
+  {
+    "sentence": "時間があれば五分ほど待てる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Conditional ば and approximate amount ほど are unrelated."
+  },
+  {
+    "sentence": "五分ほど待たないといけない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Approximate amount ほど plus obligation negative is not comparison ほど～ない."
+  },
+  {
+    "sentence": "なかなか覚えられません。",
+    "expected": [
+      "n3-l01-12"
+    ],
+    "knownMisses": [],
+    "notes": "Polite negative variant for なかなか～ない."
+  },
+  {
+    "sentence": "さえない顔だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical 冴えない must not trigger particle さえ."
+  },
+  {
+    "sentence": "だらけた生活を送る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical だらける must not trigger suffix だらけ."
+  },
+  {
+    "sentence": "ありを見た。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Kana noun あり/蟻 must not trigger colloquial possibility あり."
+  },
+  {
+    "sentence": "きりが濃い。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Kana noun きり/霧 must not trigger きり only/since."
+  },
+  {
+    "sentence": "このとおりは静かだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Street/avenue とおり must not trigger as/in-accordance とおり."
+  },
+  {
+    "sentence": "つい先日会った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "つい meaning just/recently must not trigger accidental つい."
+  },
+  {
+    "sentence": "うちに猫がいる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Home/location うちに is not temporal while/before うちに."
+  },
+  {
+    "sentence": "大切なのは毎日続けることだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Nominalized copular ことだ is not advice ことだ."
+  },
+  {
+    "sentence": "新しい型を作る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Ordinary noun 型 is not suffix/model 型."
+  },
+  {
+    "sentence": "転ぶところが見えた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical ところ + が in a relative clause is not discourse ところが."
+  },
+  {
+    "sentence": "駅のところで待っている。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Location ところで is not discourse ところで."
+  },
+  {
+    "sentence": "昼ご飯を食べたばかりだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "N4 たばかり just-did is not N3 ばかりだ."
+  },
+  {
+    "sentence": "漫画ばかりにお金を使う。",
+    "expected": [
+      "n3-l03-04"
+    ],
+    "knownMisses": [],
+    "notes": "Only-focused ばかりに is not causal ばかりに."
+  },
+  {
+    "sentence": "そんなことはない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Fixed denial そんなことはない is not no-need-to ことはない."
+  },
+  {
+    "sentence": "彼は英語で「ありがとう」と言える。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Literal can say must not trigger と言える could-be-said grammar."
+  },
+  {
+    "sentence": "駅から学校まで歩くことから始めた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Start-from-doing ことから is not causal/inference ことから."
+  },
+  {
+    "sentence": "授業をはじめます。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical begin はじめる must not trigger をはじめ."
+  },
+  {
+    "sentence": "昨日見たものだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Literal thing + だ is not reminiscence たものだ."
+  },
+  {
+    "sentence": "この部屋はとても寒くない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Ordinary not very cold must not trigger cannot-possibly とても～ない."
+  },
+  {
+    "sentence": "それが本当のことか確認した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Embedded question ことか is not exclamatory ことか."
+  },
+  {
+    "sentence": "石が窓に当たる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical hit 当たる is not correspond-to に当たる grammar."
+  },
+  {
+    "sentence": "人数を二十人に限る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Lexical limit-to に限る is not nothing-better-than に限る."
+  },
+  {
+    "sentence": "利益は三割に増えた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Percentage 割に is not considering 割に."
+  },
+  {
+    "sentence": "この話はなしだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Cancellation/no-deal なし is not without なし."
+  },
+  {
+    "sentence": "きりがない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Fixed phrase きりがない is not きり only/since."
+  },
+  {
+    "sentence": "この本を読んだらいいです。",
+    "expected": [
+      "n3-l01-02"
+    ],
+    "knownMisses": [],
+    "notes": "だら tokenization variant for たらいい after voiced past stems."
+  },
+  {
+    "sentence": "この町で見るものは寺くらいです。",
+    "expected": [
+      "n3-l04-17"
+    ],
+    "knownMisses": [],
+    "notes": "Noun before くらいです is valid は～くらいです and must not be limited to verbs."
+  },
+  {
+    "sentence": "本を読んだとたんに電話が鳴った。",
+    "expected": [
+      "n3-l08-07"
+    ],
+    "knownMisses": [],
+    "notes": "だとたんに tokenization variant after voiced past stems."
+  },
+  {
+    "sentence": "物価は上がる一方です。",
+    "expected": [
+      "n3-l08-15"
+    ],
+    "knownMisses": [],
+    "notes": "Polite 一方です variant for increasing 一方だ."
+  },
+  {
+    "sentence": "一方で、弟は家にいた。",
+    "expected": [
+      "n3-l08-16"
+    ],
+    "knownMisses": [],
+    "notes": "Sentence-initial discourse connector 一方で."
+  },
+  {
+    "sentence": "なかなか覚えられなかった。",
+    "expected": [
+      "n3-l01-12"
+    ],
+    "knownMisses": [],
+    "notes": "Negative-past variant for なかなか～ない."
+  },
+  {
+    "sentence": "説明の通りに作る。",
+    "expected": [
+      "n3-l09-18"
+    ],
+    "knownMisses": [],
+    "notes": "Kanji 通り variant for とおり."
+  },
+  {
+    "sentence": "それは信じ難い話だ。",
+    "expected": [
+      "n3-l10-01"
+    ],
+    "knownMisses": [],
+    "notes": "Kanji 難い suffix variant for がたい."
+  },
+  {
+    "sentence": "信じがたかった。",
+    "expected": [
+      "n3-l10-01"
+    ],
+    "knownMisses": [],
+    "notes": "Conjugated がたい suffix variant."
+  },
+  {
+    "sentence": "今日は疲れ気味だ。",
+    "expected": [
+      "n3-l10-08"
+    ],
+    "knownMisses": [],
+    "notes": "Kanji 気味 variant for ぎみ."
+  },
+  {
+    "sentence": "この服は子どもっぽかった。",
+    "expected": [
+      "n3-l10-09"
+    ],
+    "knownMisses": [],
+    "notes": "Conjugated っぽい suffix variant."
+  },
+  {
+    "sentence": "ドアを開けっ放しにした。",
+    "expected": [
+      "n3-l10-10"
+    ],
+    "knownMisses": [],
+    "notes": "Kanji っ放し variant for っぱなし."
+  },
+  {
+    "sentence": "いったい何があったの。",
+    "expected": [
+      "n3-l10-12"
+    ],
+    "knownMisses": [],
+    "notes": "Kana いったい variant for 一体."
+  },
+  {
+    "sentence": "一体どんな人なの。",
+    "expected": [
+      "n3-l10-12"
+    ],
+    "knownMisses": [],
+    "notes": "Interrogative どんな variant for 一体."
+  },
+  {
+    "sentence": "一体どれが正しいの。",
+    "expected": [
+      "n3-l10-12"
+    ],
+    "knownMisses": [],
+    "notes": "Interrogative どれ variant for 一体."
+  },
+  {
+    "sentence": "一体どういう意味ですか。",
+    "expected": [
+      "n3-l10-12"
+    ],
+    "knownMisses": [],
+    "notes": "Interrogative どういう variant for 一体."
+  },
+  {
+    "sentence": "せっかく来たのだから楽しもう。",
+    "expected": [
+      "n3-l10-13"
+    ],
+    "knownMisses": [],
+    "notes": "Kana せっかく variant for 折角."
+  },
+  {
+    "sentence": "ただちに出発してください。",
+    "expected": [
+      "n3-l08-06"
+    ],
+    "knownMisses": [],
+    "notes": "Kana ただちに variant for 直ちに."
+  },
+  {
+    "sentence": "ふたたび走り出した。",
+    "expected": [
+      "n3-l07-05"
+    ],
+    "knownMisses": [],
+    "notes": "Kana ふたたび variant for 再び."
+  },
+  {
+    "sentence": "学生どうしで話す。",
+    "expected": [
+      "n3-l09-22"
+    ],
+    "knownMisses": [],
+    "notes": "Kana どうし suffix variant for 同士."
+  },
+  {
+    "sentence": "今日は全く寒くありません。",
+    "expected": [
+      "n3-l01-15"
+    ],
+    "knownMisses": [],
+    "notes": "Polite negative variant for 全く～ない."
+  },
+  {
+    "sentence": "本を読んだばかりだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l03-04 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "ご飯にふりかけをかけた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l09-09 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "部屋のたては三メートルです。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l09-11 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "この料理は気味が悪い。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l10-08 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "京都は好きだ。東京で有名な店に行った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l03-11 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "別に置いた。問題はない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l06-09 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "漢字さえ読めない。時間があれば大丈夫だ。",
+    "expected": [
+      "n3-l05-20"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l05-21 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "まるで違う。鳥のようだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l06-06 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "また雨が降った。明日も雨だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l08-02 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "何のことか確認した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l06-21 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "食べても行く。お金がなくても行く。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l05-05 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "たとえを一つ出しても分からない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Second-pass N3 false-positive regression: this sentence must not trigger n3-l06-19 because the required grammar evidence is absent or crosses a sentence/clause boundary."
+  },
+  {
+    "sentence": "資料に基づいて判断する。",
+    "expected": [
+      "n3-l02-21"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l02-21."
+  },
+  {
+    "sentence": "東京を始め多くの町で雨が降った。",
+    "expected": [
+      "n3-l05-18"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l05-18."
+  },
+  {
+    "sentence": "彼は学生、すなわち勉強する人だ。",
+    "expected": [
+      "n3-l06-04"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l06-04."
+  },
+  {
+    "sentence": "急ぐとかえって危ない。",
+    "expected": [
+      "n3-l06-05"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l06-05."
+  },
+  {
+    "sentence": "決して忘れません。",
+    "expected": [
+      "n3-l06-15"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l06-15."
+  },
+  {
+    "sentence": "宿題は既に終わった。",
+    "expected": [
+      "n3-l08-18"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l08-18."
+  },
+  {
+    "sentence": "彼はついに成功した。",
+    "expected": [
+      "n3-l08-17"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l08-17."
+  },
+  {
+    "sentence": "ここで休んでも構わない。",
+    "expected": [
+      "n3-l05-04"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l05-04."
+  },
+  {
+    "sentence": "雨のお陰で助かった。",
+    "expected": [
+      "n3-l02-20"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l02-20."
+  },
+  {
+    "sentence": "質問にたいして答える。",
+    "expected": [
+      "n3-l04-15"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l04-15."
+  },
+  {
+    "sentence": "電車或いはバスで行く。",
+    "expected": [
+      "n3-l08-10"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l08-10."
+  },
+  {
+    "sentence": "彼とは一度会ったっきりだ。",
+    "expected": [
+      "n3-l09-08"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l09-08."
+  },
+  {
+    "sentence": "本を読みかけた。",
+    "expected": [
+      "n3-l09-09"
+    ],
+    "knownMisses": [],
+    "notes": "Second-pass N3 missed-positive regression: real Sudachi tokenization provides a safe local variant for n3-l09-09."
+  },
+  {
+    "sentence": "彼は来るそうだ。",
+    "expected": [
+      "n3-l01-17"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l01-17 based on local Sudachi token evidence."
+  },
+  {
+    "sentence": "雨が降りそうだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l01-17: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "食べさせてもらう。",
+    "expected": [
+      "n3-l01-23"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l01-23 based on local Sudachi token evidence."
+  },
+  {
+    "sentence": "食べてもらう。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l01-23: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "私への手紙を読んだ。",
+    "expected": [
+      "n3-l02-01"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l02-01 based on local Sudachi token evidence."
+  },
+  {
+    "sentence": "行くのは楽しい。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l02-01: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "ところが、電車は遅れた。",
+    "expected": [
+      "n3-l02-03"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l02-03 based on local Sudachi token evidence."
+  },
+  {
+    "sentence": "毎日走ることがある。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l03-07 based on local Sudachi token evidence. Disabled after late audit because local token evidence is unsafe."
+  },
+  {
+    "sentence": "行ったことがある。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l03-07: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "その話は事件に関係がある。",
+    "expected": [
+      "n3-l04-13"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l04-13 based on local Sudachi token evidence."
+  },
+  {
+    "sentence": "関係が悪くなった。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l04-13: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "彼が来たというのは事実だ。",
+    "expected": [
+      "n3-l05-12"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l05-12 based on local Sudachi token evidence."
+  },
+  {
+    "sentence": "彼は事実だと言った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l05-12: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "彼は食べようとしない。",
+    "expected": [
+      "n3-l06-17"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit positive for n3-l06-17 and negative for generic n3-l07-17: the negative しない form should only teach not-willing ようとしない."
+  },
+  {
+    "sentence": "今から食べようとする。",
+    "expected": [
+      "n3-l07-17"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit positive for n3-l07-17 and negative for n3-l06-17/n3-l07-18: non-past ようとする is the try-to form."
+  },
+  {
+    "sentence": "うれしいことに合格した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l06-20 based on local Sudachi token evidence. Disabled after late audit because local token evidence is unsafe."
+  },
+  {
+    "sentence": "毎日走ることにした。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l06-20: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "もっとも、彼は来なかった。",
+    "expected": [
+      "n3-l07-04"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l07-04 based on local Sudachi token evidence."
+  },
+  {
+    "sentence": "彼が最も強い。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Re-audit negative for n3-l07-04: same nearby surface risk should not trigger the newly enabled matcher."
+  },
+  {
+    "sentence": "食べようとしたが時間がなかった。",
+    "expected": [
+      "n3-l07-18"
+    ],
+    "knownMisses": [],
+    "notes": "Re-audit enabled N3 deterministic matcher for n3-l07-18 based on local Sudachi token evidence."
+  },
+  {
+    "sentence": "彼は東京で有名な店を探した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Read-only review blocker regression: must not trigger n3-l03-11 on same-sentence non-grammar use."
+  },
+  {
+    "sentence": "彼は店で有名な人に会った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Read-only review blocker regression: must not trigger n3-l03-11 on same-sentence non-grammar use."
+  },
+  {
+    "sentence": "駅は五分くらいです。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Read-only review blocker regression: must not trigger n3-l04-17 on same-sentence non-grammar use."
+  },
+  {
+    "sentence": "授業中に寝ないでください。",
+    "expected": [
+      "n3-l01-03"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l01-03 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "箱の中に鍵がある。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l01-03; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "授業の間にメモを取った。",
+    "expected": [
+      "n3-l01-04"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l01-04 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "駅と学校の間に店がある。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l01-04; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "うちに帰る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l01-05; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "猫ってかわいいね。",
+    "expected": [
+      "n3-l01-09"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l01-09 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "明日行くって話だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l01-09; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "忙しさのあまり倒れた。",
+    "expected": [
+      "n3-l01-11"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l01-11 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "あまり食べない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l01-11; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "努力によって結果が変わる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l01-14 with real Sudachi token evidence. Disabled after adversarial review: によって sense is not token-local."
+  },
+  {
+    "sentence": "店に寄って帰る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l01-14; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "走ったのは田中の方だ。",
+    "expected": [
+      "n3-l01-20"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l01-20 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "田中の方を見た。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l01-20; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "都市型の生活だ。",
+    "expected": [
+      "n3-l01-21"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l01-21 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "型を取る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l01-21; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "説明は終わった。では、始めましょう。",
+    "expected": [
+      "n3-l02-08"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l02-08 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "学校では、日本語を話す。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l02-08; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "田中という人を知っていますか。",
+    "expected": [
+      "n3-l02-12"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l02-12 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "行くという。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l02-12; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "友情というのは大切なものだ。",
+    "expected": [
+      "n3-l02-14"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l02-14 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "私が言うというのは本当だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l02-14; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "だって寒いんだもの。",
+    "expected": [
+      "n3-l02-16"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l02-16 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "机の上にものがある。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l02-16; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "東京と言っても広い。",
+    "expected": [
+      "n3-l03-13"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l03-13 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "田中と言ってもいい。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l03-13; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "走る姿が美しい。",
+    "expected": [
+      "n3-l03-18"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l03-18 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "姿を見た。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l03-18; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "彼ははっきりと言える。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l03-19; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "どこに行くかは天気によって違う。",
+    "expected": [
+      "n3-l04-04"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l04-04 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "どこに行くかは分からない。天気によって違う。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l04-04; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "明日は雨だって。",
+    "expected": [
+      "n3-l04-11"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l04-11 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "だって、寒いんだもん。子供だって分かる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l04-11; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "さ、始めよう。",
+    "expected": [
+      "n3-l04-18"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l04-19; same surface family lacks the conservative token evidence. Reclassified as expected after late-audit enablement."
+  },
+  {
+    "sentence": "僕は行くさ。",
+    "expected": [
+      "n3-l04-20"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l04-20 with real Sudachi token evidence. Reclassified as expected after late-audit enablement."
+  },
+  {
+    "sentence": "彼はさ、来ないよ。",
+    "expected": [
+      "n3-l04-19"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l04-20; same surface family lacks the conservative token evidence. Reclassified as expected after late-audit enablement."
+  },
+  {
+    "sentence": "昔はよく公園で遊んだものだ。",
+    "expected": [
+      "n3-l05-22"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l05-22 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "買ったものだ。よくここまで来たものだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l05-22; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "なぜかというと、時間がないからだ。",
+    "expected": [
+      "n3-l06-22"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l06-23; same surface family lacks the conservative token evidence. Reclassified as expected after late-audit enablement."
+  },
+  {
+    "sentence": "どちらかというと、猫が好きです。",
+    "expected": [
+      "n3-l06-23"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l06-23 with real Sudachi token evidence. Reclassified as expected after late-audit enablement."
+  },
+  {
+    "sentence": "その数は全体の三十パーセントに当たる。",
+    "expected": [
+      "n3-l07-12"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l07-12 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "宝くじで五千円に当たる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l07-12; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "宝くじは五千円に当たる。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l07-12; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "疲れた時は寝るに限る。",
+    "expected": [
+      "n3-l07-13"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l07-13 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "応募を学生に限る。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l07-13; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "資料を確認し、結果を報告する。",
+    "expected": [
+      "n3-l09-02"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l09-02 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "彼の話し方は丁寧だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l09-02; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "会議は中止となっている。",
+    "expected": [
+      "n3-l10-19"
+    ],
+    "knownMisses": [],
+    "notes": "Late N3 audit safe-enable positive for n3-l10-19 with real Sudachi token evidence."
+  },
+  {
+    "sentence": "雨は雪となっている。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit negative for n3-l10-19; same surface family lacks the conservative token evidence."
+  },
+  {
+    "sentence": "集合場所は駅のところだった。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit false-positive regression: must not trigger n3-l04-10."
+  },
+  {
+    "sentence": "本をはじめから読んだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit false-positive regression: must not trigger n3-l05-18."
+  },
+  {
+    "sentence": "別にした資料はない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit false-positive regression: must not trigger n3-l06-09."
+  },
+  {
+    "sentence": "これは別に保存したファイルではない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit false-positive regression: must not trigger n3-l06-09."
+  },
+  {
+    "sentence": "本をおきに行く。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit false-positive regression: must not trigger n3-l08-08."
+  },
+  {
+    "sentence": "資料を机において、帰った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Late N3 audit false-positive regression: must not trigger n3-l08-12."
+  },
+  {
+    "sentence": "私が座ったところが、少し冷たかった。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Fresh review adversarial false-positive regression: must not trigger n3-l02-03."
+  },
+  {
+    "sentence": "話しているところで、電話が鳴った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Fresh review adversarial false-positive regression: must not trigger n3-l02-04."
+  },
+  {
+    "sentence": "猫って読む。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Fresh review adversarial false-positive regression: must not trigger n3-l01-09."
+  },
+  {
+    "sentence": "予定の変更によって会議が中止になった。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Fresh review adversarial false-positive regression: must not trigger n3-l01-14."
+  },
+  {
+    "sentence": "昔のよく光ったものだった。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Fresh review adversarial false-positive regression: must not trigger n3-l05-22."
+  },
+  {
+    "sentence": "規則は予約制となっている。",
+    "expected": [
+      "n3-l10-19"
+    ],
+    "knownMisses": [],
+    "notes": "Fresh review missed-positive regression for n3-l10-19."
+  },
+  {
+    "sentence": "急いだ。ところが、電車は遅れた。",
+    "expected": [
+      "n3-l02-03"
+    ],
+    "knownMisses": [],
+    "notes": "Conservative discourse ところが requires preceding sentence boundary punctuation."
+  },
+  {
+    "sentence": "少し休んだ。ところで、明日は暇ですか。",
+    "expected": [
+      "n3-l02-04"
+    ],
+    "knownMisses": [],
+    "notes": "Conservative discourse ところで requires preceding sentence boundary punctuation."
+  },
+  {
+    "sentence": "先生について歩く。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Parent loop adversarial false-positive regression: must not trigger n3-l03-17."
+  },
+  {
+    "sentence": "ボタンについている糸が取れた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Parent loop adversarial false-positive regression: must not trigger n3-l03-17."
+  },
+  {
+    "sentence": "この点を押してください。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Parent loop adversarial false-positive regression: must not trigger n3-l02-22."
+  },
+  {
+    "sentence": "できることはない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Parent loop adversarial false-positive regression: must not trigger n3-l03-12."
+  },
+  {
+    "sentence": "会うことはないと思う。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Parent loop adversarial false-positive regression: must not trigger n3-l03-12."
+  },
+  {
+    "sentence": "考えるほど分からない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Parent loop adversarial false-positive regression: must not trigger n3-l02-07."
+  },
+  {
+    "sentence": "昔はよく光ったものだった。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Parent loop adversarial false-positive regression: must not trigger n3-l05-22."
+  },
+  {
+    "sentence": "話そうとしている。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Parent loop adversarial false-positive regression: must not trigger n3-l05-09."
+  },
+  {
+    "sentence": "日本語って何ですか。",
+    "expected": [
+      "n3-l01-09"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l01-09."
+  },
+  {
+    "sentence": "彼って親切だ。",
+    "expected": [
+      "n3-l01-09"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l01-09."
+  },
+  {
+    "sentence": "雨だって母が言った。",
+    "expected": [
+      "n3-l04-11"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l04-11."
+  },
+  {
+    "sentence": "増えるばかりだ。",
+    "expected": [
+      "n3-l03-05"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l03-05."
+  },
+  {
+    "sentence": "悪くなるばかりだ。",
+    "expected": [
+      "n3-l03-05"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l03-05."
+  },
+  {
+    "sentence": "彼だけでなく、彼女も来た。",
+    "expected": [
+      "n3-l06-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-12."
+  },
+  {
+    "sentence": "見るだけでなく、作ることも好きだ。",
+    "expected": [
+      "n3-l06-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-12."
+  },
+  {
+    "sentence": "一つだけしかない。",
+    "expected": [
+      "n3-l06-13"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-13."
+  },
+  {
+    "sentence": "子どもさえ知っている。",
+    "expected": [
+      "n3-l05-20"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l05-20."
+  },
+  {
+    "sentence": "一度さえ会ったことがない。",
+    "expected": [
+      "n3-l05-20"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l05-20."
+  },
+  {
+    "sentence": "帰ってもかまいません。",
+    "expected": [
+      "n3-l05-04"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l05-04."
+  },
+  {
+    "sentence": "帰ってもかまわん。",
+    "expected": [
+      "n3-l05-04"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l05-04."
+  },
+  {
+    "sentence": "初心者にしては上手だ。",
+    "expected": [
+      "n3-l05-10"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l05-10."
+  },
+  {
+    "sentence": "議長を始め副議長も来た。",
+    "expected": [
+      "n3-l05-18"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l05-18."
+  },
+  {
+    "sentence": "今日は行かないもの。",
+    "expected": [
+      "n3-l02-16"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-16."
+  },
+  {
+    "sentence": "大型の車を買った。",
+    "expected": [
+      "n3-l01-21"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l01-21."
+  },
+  {
+    "sentence": "箱型の機械を置いた。",
+    "expected": [
+      "n3-l01-21"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l01-21."
+  },
+  {
+    "sentence": "日本的な雰囲気がある。",
+    "expected": [
+      "n3-l02-15"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-15."
+  },
+  {
+    "sentence": "その点について説明した。",
+    "expected": [
+      "n3-l02-22",
+      "n3-l03-17"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-22."
+  },
+  {
+    "sentence": "どの点を直せばいいですか。",
+    "expected": [
+      "n3-l02-22",
+      "n3-l01-01"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-22."
+  },
+  {
+    "sentence": "安全性の点で問題がある。",
+    "expected": [
+      "n3-l02-22"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-22."
+  },
+  {
+    "sentence": "改善すべき点を三つ挙げた。",
+    "expected": [
+      "n3-l02-22",
+      "n3-l01-07"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-22."
+  },
+  {
+    "sentence": "今は仕事の最中だ。",
+    "expected": [
+      "n3-l02-18"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-18."
+  },
+  {
+    "sentence": "真っ最中に邪魔された。",
+    "expected": [
+      "n3-l02-18"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-18."
+  },
+  {
+    "sentence": "入れたてのコーヒーを飲む。",
+    "expected": [
+      "n3-l09-11"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-11."
+  },
+  {
+    "sentence": "焼きたてを買った。",
+    "expected": [
+      "n3-l09-11"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-11."
+  },
+  {
+    "sentence": "焼きたてだ。",
+    "expected": [
+      "n3-l09-11"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-11."
+  },
+  {
+    "sentence": "読みかけだ。",
+    "expected": [
+      "n3-l09-09"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-09."
+  },
+  {
+    "sentence": "読みかけを机に置いた。",
+    "expected": [],
+    "knownMisses": [
+      "n3-l09-09"
+    ],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-09."
+  },
+  {
+    "sentence": "寝たきりの祖父を介護する。",
+    "expected": [
+      "n3-l09-08"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-08."
+  },
+  {
+    "sentence": "食べ切ったら教えて。",
+    "expected": [
+      "n3-l09-06"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-06."
+  },
+  {
+    "sentence": "飲み切れません。",
+    "expected": [
+      "n3-l09-07"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-07."
+  },
+  {
+    "sentence": "使い切れなかった。",
+    "expected": [
+      "n3-l09-07"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-07."
+  },
+  {
+    "sentence": "風邪気味なので休む。",
+    "expected": [
+      "n3-l10-08"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l10-08."
+  },
+  {
+    "sentence": "不安ぎみだ。",
+    "expected": [
+      "n3-l10-08"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l10-08."
+  },
+  {
+    "sentence": "雨が降り、風が吹いた。",
+    "expected": [
+      "n3-l09-02"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-02."
+  },
+  {
+    "sentence": "本を読み、感想を書いた。",
+    "expected": [
+      "n3-l09-02"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-02."
+  },
+  {
+    "sentence": "安く、便利な店だ。",
+    "expected": [
+      "n3-l09-02"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l09-02."
+  },
+  {
+    "sentence": "料金は無料となっている。",
+    "expected": [
+      "n3-l10-19"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l10-19."
+  },
+  {
+    "sentence": "価格は百円となっている。",
+    "expected": [
+      "n3-l10-19"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l10-19."
+  },
+  {
+    "sentence": "受付時間は九時から五時までとなっている。",
+    "expected": [
+      "n3-l10-19"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l10-19."
+  },
+  {
+    "sentence": "この金額は給料の一割に当たる。",
+    "expected": [
+      "n3-l07-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l07-12."
+  },
+  {
+    "sentence": "今日は記念日に当たる。",
+    "expected": [
+      "n3-l07-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l07-12."
+  },
+  {
+    "sentence": "これは規則違反に当たる。",
+    "expected": [
+      "n3-l07-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l07-12."
+  },
+  {
+    "sentence": "夏はビールに限る。",
+    "expected": [],
+    "knownMisses": [
+      "n3-l07-13"
+    ],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l07-13. Noun + に限る overlaps restriction uses, kept as known miss for now."
+  },
+  {
+    "sentence": "寒い日は鍋に限る。",
+    "expected": [],
+    "knownMisses": [
+      "n3-l07-13"
+    ],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l07-13. Noun + に限る overlaps restriction uses, kept as known miss for now."
+  },
+  {
+    "sentence": "いくら勉強しても合格できない。",
+    "expected": [
+      "n3-l04-03"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l04-03."
+  },
+  {
+    "sentence": "どんなに静かでも集中できない。",
+    "expected": [
+      "n3-l04-02"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l04-02."
+  },
+  {
+    "sentence": "読んでも読まなくても結果は同じだ。",
+    "expected": [
+      "n3-l05-05"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l05-05."
+  },
+  {
+    "sentence": "まるで夢のようです。",
+    "expected": [
+      "n3-l06-06"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-06."
+  },
+  {
+    "sentence": "まるで夢のような話だ。",
+    "expected": [
+      "n3-l06-06"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-06."
+  },
+  {
+    "sentence": "まるで夢のように美しい。",
+    "expected": [
+      "n3-l06-06"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-06."
+  },
+  {
+    "sentence": "別に嫌ではない。",
+    "expected": [
+      "n3-l06-09"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-09."
+  },
+  {
+    "sentence": "めったに雪は降りません。",
+    "expected": [
+      "n3-l07-15"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l07-15."
+  },
+  {
+    "sentence": "急ぐことはない。",
+    "expected": [
+      "n3-l03-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l03-12."
+  },
+  {
+    "sentence": "とても信じられない。",
+    "expected": [
+      "n3-l06-08"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-08."
+  },
+  {
+    "sentence": "彼ほど背が高くない。",
+    "expected": [
+      "n3-l02-07"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-07."
+  },
+  {
+    "sentence": "ところが、今日は雨だ。",
+    "expected": [
+      "n3-l02-03"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-03."
+  },
+  {
+    "sentence": "ところで、次の話題に移ろう。",
+    "expected": [
+      "n3-l02-04"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-04."
+  },
+  {
+    "sentence": "では、始めましょう。",
+    "expected": [
+      "n3-l02-08"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-08."
+  },
+  {
+    "sentence": "すると、音がした。",
+    "expected": [
+      "n3-l01-18"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l01-18."
+  },
+  {
+    "sentence": "彼が来るという噂だ。",
+    "expected": [
+      "n3-l02-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-12."
+  },
+  {
+    "sentence": "赤いという印だ。",
+    "expected": [
+      "n3-l02-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-12."
+  },
+  {
+    "sentence": "日本と言う国だ。",
+    "expected": [
+      "n3-l02-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-12."
+  },
+  {
+    "sentence": "勉強するというのは大変だ。",
+    "expected": [
+      "n3-l02-14"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-14."
+  },
+  {
+    "sentence": "便利だというのは分かる。",
+    "expected": [
+      "n3-l02-14"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l02-14."
+  },
+  {
+    "sentence": "高いといっても、千円だ。",
+    "expected": [
+      "n3-l03-13"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l03-13."
+  },
+  {
+    "sentence": "正しいといえる。",
+    "expected": [
+      "n3-l03-19"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l03-19."
+  },
+  {
+    "sentence": "春と言えば桜だ。",
+    "expected": [
+      "n3-l03-14"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l03-14."
+  },
+  {
+    "sentence": "どうしてかというと、眠いからだ。",
+    "expected": [
+      "n3-l06-22"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-22."
+  },
+  {
+    "sentence": "なぜ必要かというと、費用が高いからだ。",
+    "expected": [
+      "n3-l06-22"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-22."
+  },
+  {
+    "sentence": "必要かというと、そうではない。",
+    "expected": [
+      "n3-l06-23"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l06-23."
+  },
+  {
+    "sentence": "もっとも問題は残る。",
+    "expected": [
+      "n3-l07-04"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l07-04."
+  },
+  {
+    "sentence": "第一に、時間がない。",
+    "expected": [
+      "n3-l08-13"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l08-13."
+  },
+  {
+    "sentence": "そのため、出発が遅れた。",
+    "expected": [
+      "n3-l03-21"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent missed-positive regression for n3-l03-21."
+  },
+  {
+    "sentence": "何だって？",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l04-11."
+  },
+  {
+    "sentence": "なんだって？",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l04-11."
+  },
+  {
+    "sentence": "安いばかりだ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l03-05."
+  },
+  {
+    "sentence": "着いたばかりに電話が来た。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l03-06."
+  },
+  {
+    "sentence": "買ったばかりに壊れた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l03-06."
+  },
+  {
+    "sentence": "さえ言えばいい。",
+    "expected": [
+      "n3-l01-01"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l05-21."
+  },
+  {
+    "sentence": "帰ってもかまわないでください。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l05-04."
+  },
+  {
+    "sentence": "一人にしては危ない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l05-10."
+  },
+  {
+    "sentence": "説明をはじめに読む。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l05-18."
+  },
+  {
+    "sentence": "だけしかという表現を習った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l06-13."
+  },
+  {
+    "sentence": "ばかりという言葉を使う。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l03-04."
+  },
+  {
+    "sentence": "「ばかりに」と書いた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l03-04."
+  },
+  {
+    "sentence": "二つの会議の間に電話した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l01-04."
+  },
+  {
+    "sentence": "橋かけの工事を見た。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l09-09."
+  },
+  {
+    "sentence": "右向け右。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l09-04."
+  },
+  {
+    "sentence": "前向けに並べた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l09-04."
+  },
+  {
+    "sentence": "がちで勝負した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l10-07."
+  },
+  {
+    "sentence": "その点が取れたので勝った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l02-22."
+  },
+  {
+    "sentence": "なかなか便利な道具で使わない日はない。",
+    "expected": [
+      "n3-l01-10"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l01-12."
+  },
+  {
+    "sentence": "全く新しい道具で使わない日はない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l01-15."
+  },
+  {
+    "sentence": "別に新しい本を買わない日はない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l06-09."
+  },
+  {
+    "sentence": "成功したというのは事実ではない。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l05-12."
+  },
+  {
+    "sentence": "成功したというのは事実関係の問題だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l05-12."
+  },
+  {
+    "sentence": "さてという語を調べた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l06-01."
+  },
+  {
+    "sentence": "さては犯人だな。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l06-01."
+  },
+  {
+    "sentence": "つまりという語を調べた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l06-03."
+  },
+  {
+    "sentence": "すなわちという語を調べた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l06-04."
+  },
+  {
+    "sentence": "かえってという語を調べた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l06-05."
+  },
+  {
+    "sentence": "むしろという語を調べた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l06-02."
+  },
+  {
+    "sentence": "あるいはという語を調べた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l08-10."
+  },
+  {
+    "sentence": "第一希望は東京だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l08-13."
+  },
+  {
+    "sentence": "そのために道具を買った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l03-21."
+  },
+  {
+    "sentence": "その結果を見た。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 subagent false-positive regression: must not trigger n3-l03-22."
+  },
+  {
+    "sentence": "田中さんって親切だね。",
+    "expected": [
+      "n3-l01-09"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 review missed-positive regression for n3-l01-09."
+  },
+  {
+    "sentence": "忙しいもの、行けない。",
+    "expected": [
+      "n3-l02-16"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 review missed-positive regression for n3-l02-16."
+  },
+  {
+    "sentence": "五月五日は祝日に当たる。",
+    "expected": [
+      "n3-l07-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 review missed-positive regression for n3-l07-12."
+  },
+  {
+    "sentence": "五月五日は祝日に当たり、店が休みだ。",
+    "expected": [
+      "n3-l07-12"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 2 review missed-positive regression for n3-l07-12."
+  },
+  {
+    "sentence": "「といえば」という表現を習った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 2 review quoted mention false-positive regression: must not trigger n3-l03-14."
+  },
+  {
+    "sentence": "母が出かけている間に掃除した。",
+    "expected": [
+      "n3-l01-04"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 3 review missed-positive regression for n3-l01-04."
+  },
+  {
+    "sentence": "試験は来週だって先生が話した。",
+    "expected": [
+      "n3-l04-11"
+    ],
+    "knownMisses": [],
+    "notes": "Loop 3 review missed-positive regression for n3-l04-11."
+  },
+  {
+    "sentence": "会議を始めます。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 3 review false-positive regression: must not trigger n3-l05-18."
+  },
+  {
+    "sentence": "箱のたてを測った。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 3 review false-positive regression: must not trigger n3-l09-11."
+  },
+  {
+    "sentence": "といえばという表現を練習した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 3 review false-positive regression: must not trigger n3-l03-14."
+  },
+  {
+    "sentence": "といえばを何度も書いた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 3 re-review expression-mention false-positive regression: must not trigger n3-l03-14."
+  },
+  {
+    "sentence": "『といえば』という言葉を調べた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Loop 3 re-review expression-mention false-positive regression: must not trigger n3-l03-14."
+  },
+  {
+    "sentence": "と言えばという表記を確認した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Focused toieba mention false-positive regression: must not trigger n3-l03-14."
+  },
+  {
+    "sentence": "といえば、という形を練習した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Focused toieba mention false-positive regression: must not trigger n3-l03-14."
+  },
+  {
+    "sentence": "と言えば、という形をノートに写した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Focused toieba mention false-positive regression: must not trigger n3-l03-14."
+  },
+  {
+    "sentence": "『である』という形を練習した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Round 001 quote false-positive regression: quoted である must not trigger n3-l02-02."
+  },
+  {
+    "sentence": "田中と言えばいいですか。",
+    "expected": [
+      "n3-l01-01"
+    ],
+    "knownMisses": [],
+    "notes": "Round 001 near-miss regression: literal if-say wording must not trigger discourse n3-l03-14; 言えばいい is a real n3-l01-01 use."
+  },
+  {
+    "sentence": "「さて」とだけ書いてあった。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Round 001 quote false-positive regression: quoted さて must not trigger n3-l06-01."
+  },
+  {
+    "sentence": "むしろを漢字で書けますか。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Round 001 mention false-positive regression: object-marked むしろ must not trigger n3-l06-02."
+  },
+  {
+    "sentence": "つまりを短く説明してください。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Round 001 mention false-positive regression: object-marked つまり must not trigger n3-l06-03."
+  },
+  {
+    "sentence": "「すなわち」とノートに書いた。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Round 001 quote false-positive regression: quoted すなわち must not trigger n3-l06-04."
+  },
+  {
+    "sentence": "『却って』をひらがなに直した。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Round 001 quote false-positive regression: quoted 却って must not trigger n3-l06-05."
+  },
+  {
+    "sentence": "「あるいは」と読んでください。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Round 001 quote false-positive regression: quoted あるいは must not trigger n3-l08-10."
+  },
+  {
+    "sentence": "「冬といえば」を例文として読んだ。",
+    "expected": [
+      "n3-l05-09"
+    ],
+    "knownMisses": [],
+    "notes": "Round 001 quote false-positive regression: quoted といえば fragment must not trigger n3-l03-14; 例文として is a real n3-l05-09 use."
+  },
+  {
+    "sentence": "その映画を見て、泣かずにはいられなかった。",
+    "expected": [
+      "n3-l08-20"
+    ],
+    "knownMisses": [],
+    "notes": "Round 001 missed-positive and overlap regression: past negative ずにはいられなかった should trigger n3-l08-20 and suppress standalone n3-l08-19."
+  },
+  {
+    "sentence": "北を向き、星を探した。",
+    "expected": [
+      "n3-l09-02"
+    ],
+    "knownMisses": [],
+    "notes": "Round 001 adjudication correction: 向き is a real conjunctive continuative form for n3-l09-02."
+  },
+  {
+    "sentence": "排水管のつまりが原因だ。",
+    "expected": [],
+    "knownMisses": [],
+    "notes": "Code review lexical false-positive regression: noun つまり must not trigger connector n3-l06-03."
+  },
+  {
+    "sentence": "彼は「さて、始めましょう」と言った。",
+    "expected": [
+      "n3-l06-01"
+    ],
+    "knownMisses": [],
+    "notes": "Code review quote regression: live quoted dialogue should still expose discourse n3-l06-01."
+  },
+  {
+    "sentence": "彼は「つまり完成できない」と説明した。",
+    "expected": [
+      "n3-l06-03"
+    ],
+    "knownMisses": [],
+    "notes": "Code review quote regression: live quoted dialogue should still expose connector n3-l06-03."
+  }
+]

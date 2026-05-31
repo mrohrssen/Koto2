@@ -1,0 +1,282 @@
+[
+  {
+    "id": "round-001-final-audit-001",
+    "sentence": "司会者は「つまり、投票はやり直しです」と告げた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": ["n3-l06-03"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "つまり is used inside live quoted speech to summarize the situation."
+  },
+  {
+    "id": "round-001-final-audit-002",
+    "sentence": "彼女は「むしろ、今出発しましょう」と言った。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": ["n3-l06-02"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "むしろ is a live adverbial connector in quoted dialogue."
+  },
+  {
+    "id": "round-001-final-audit-003",
+    "sentence": "彼は「つまり」とだけ返事した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "final-audit-agent",
+    "rationale": "The token つまり is quoted alone and does not summarize a following proposition."
+  },
+  {
+    "id": "round-001-final-audit-004",
+    "sentence": "ノートに『むしろ』とだけ書いてあった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "final-audit-agent",
+    "rationale": "むしろ is quoted as written text, not used adverbially."
+  },
+  {
+    "id": "round-001-final-audit-005",
+    "sentence": "台所のつまりで水が逆流した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "final-audit-agent",
+    "rationale": "つまり is a noun meaning clog/blockage, not the connector in short."
+  },
+  {
+    "id": "round-001-final-audit-006",
+    "sentence": "鼻のつまりがひどくて眠れない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "final-audit-agent",
+    "rationale": "つまり refers to nasal blockage and should not emit the summary connector grammar."
+  },
+  {
+    "id": "round-001-final-audit-007",
+    "sentence": "古いむしろの上で猫が寝ていた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": [],
+    "kind": "lexical-negative",
+    "source": "final-audit-agent",
+    "rationale": "むしろ is a straw mat here, not the adverb rather."
+  },
+  {
+    "id": "round-001-final-audit-009",
+    "sentence": "説明は長いが、むしろ要点は一つだ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": ["n3-l06-02"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "むしろ contrasts the long explanation with the simpler real point."
+  },
+  {
+    "id": "round-001-final-audit-010",
+    "sentence": "在庫がない。つまり今日は発送できない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": ["n3-l06-03"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "つまり summarizes the previous fact as a conclusion."
+  },
+  {
+    "id": "round-001-final-audit-011",
+    "sentence": "「つまり」は接続の言葉だと説明された。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-03"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "final-audit-agent",
+    "rationale": "つまり is the term being explained, not a connector in the sentence."
+  },
+  {
+    "id": "round-001-final-audit-012",
+    "sentence": "授業で、むしろという副詞だけを発音した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l06-02"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "final-audit-agent",
+    "rationale": "むしろ is discussed as a vocabulary item and pronounced, not used adverbially."
+  },
+  {
+    "id": "round-001-final-audit-015",
+    "sentence": "困っている友人を見ると、助けずにはいられない。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "overlap-negative",
+    "source": "final-audit-agent",
+    "rationale": "助けずにはいられない is the longer cannot-help construction and should suppress standalone ずに."
+  },
+  {
+    "id": "round-001-final-audit-016",
+    "sentence": "その話を聞いて、謝らずにはいられませんでした。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "Polite past いられませんでした is still the ずにはいられない grammar."
+  },
+  {
+    "id": "round-001-final-audit-017",
+    "sentence": "失礼な態度に、注意せずにはいられなかった。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "Past いられなかった expresses cannot help warning someone."
+  },
+  {
+    "id": "round-001-final-audit-018",
+    "sentence": "あの演奏を聞けば、拍手せずにはいられぬ。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "Literary いられぬ preserves the cannot-help meaning."
+  },
+  {
+    "id": "round-001-final-audit-019",
+    "sentence": "真相を知って、調べずにはいられず、夜更かしした。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "mixed",
+    "source": "final-audit-agent",
+    "rationale": "Continuative いられず is an inflected cannot-help variant; standalone ずに should remain suppressed."
+  },
+  {
+    "id": "round-001-final-audit-020",
+    "sentence": "『ずにはいられない』は感情の例文で使われた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "final-audit-agent",
+    "rationale": "The grammar form is quoted as a token/example label, not used as a live cannot-help construction."
+  },
+  {
+    "id": "round-001-final-audit-022",
+    "sentence": "彼は「助けずにはいられない」と言って走り出した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": ["n3-l08-20"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "This is live quoted speech expressing that he cannot help helping."
+  },
+  {
+    "id": "round-001-final-audit-023",
+    "sentence": "ずにはいられないという形をカードに書いた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19", "n3-l08-20"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "final-audit-agent",
+    "rationale": "ずにはいられない is discussed as a form written on a card, not used grammatically."
+  },
+  {
+    "id": "round-001-final-audit-024",
+    "sentence": "泣かずに話し続けた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19"],
+    "expected": ["n3-l08-19"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "泣かずに means without crying and is standalone ずに."
+  },
+  {
+    "id": "round-001-final-audit-025",
+    "sentence": "泣かず。に話す練習をした。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l08-19"],
+    "expected": [],
+    "kind": "punctuation-gap-negative",
+    "source": "final-audit-agent",
+    "rationale": "ず and に are separated by a sentence boundary, so they do not form ずに."
+  },
+  {
+    "id": "round-001-final-audit-026",
+    "sentence": "「青い港」という店で昼食を食べた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": ["n3-l02-12"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "The quoted name 青い港 is used with という店 to identify a shop called that."
+  },
+  {
+    "id": "round-001-final-audit-027",
+    "sentence": "春風という列車に乗った。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": ["n3-l02-12"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "という identifies a train called 春風."
+  },
+  {
+    "id": "round-001-final-audit-029",
+    "sentence": "『という』という文法項目を復習した。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "final-audit-agent",
+    "rationale": "The quoted token という is the grammar item being studied, not a live called/named use."
+  },
+  {
+    "id": "round-001-final-audit-030",
+    "sentence": "先生は「という」を黒板に大きく書いた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "final-audit-agent",
+    "rationale": "という is quoted as text written on the board."
+  },
+  {
+    "id": "round-001-final-audit-031",
+    "sentence": "彼は来週退職するという。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": [],
+    "kind": "near-miss-negative",
+    "source": "final-audit-agent",
+    "rationale": "という reports hearsay/says-that content, not a called/named construction."
+  },
+  {
+    "id": "round-001-final-audit-033",
+    "sentence": "「白い鳥」という合図が聞こえた。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": ["n3-l02-12"],
+    "kind": "positive",
+    "source": "final-audit-agent",
+    "rationale": "The quoted phrase is the name of a signal, so という is a live called/labeled use."
+  },
+  {
+    "id": "round-001-final-audit-034",
+    "sentence": "その文では、というが二回出てくる。",
+    "level": "N3",
+    "targetGrammarIds": ["n3-l02-12"],
+    "expected": [],
+    "kind": "mention-negative",
+    "source": "final-audit-agent",
+    "rationale": "という is treated as a token counted in a sentence, not as the called grammar."
+  }
+]
