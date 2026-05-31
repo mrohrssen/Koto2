@@ -755,6 +755,26 @@ async function creatureCombatCycle(actionType, moveChoices = []) {
   });
 }
 
+async function getKanjiKombatAvailability() {
+  return apiCall('/kanji-kombat/availability', 'GET');
+}
+
+async function startKanjiKombat(creatureId) {
+  return apiCall('/kanji-kombat/start', 'POST', { creatureId }, null, { bypassLoadingGate: true });
+}
+
+async function submitKanjiKombatIntro(cardId, choice) {
+  return apiCall('/kanji-kombat/intro', 'POST', { cardId, choice }, null, { bypassLoadingGate: true });
+}
+
+async function submitKanjiKombatAnswer(answerId) {
+  return apiCall('/kanji-kombat/answer', 'POST', { answerId }, null, {
+    bypassLoadingGate: true,
+    timeoutMs: COMBAT_CYCLE_TIMEOUT_MS,
+    returnErrorBody: true,
+  });
+}
+
 async function getCreatureCollection() {
   return apiCall('/creature-collection', 'GET');
 }
@@ -924,6 +944,10 @@ export {
   startEncounter,
   startCreatureEncounter,
   creatureCombatCycle,
+  getKanjiKombatAvailability,
+  startKanjiKombat,
+  submitKanjiKombatIntro,
+  submitKanjiKombatAnswer,
   getCreatureCollection,
   rollPostCombatShop,
   selectShopItem,

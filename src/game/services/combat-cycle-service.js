@@ -14,7 +14,9 @@ import {
   awardBattleXp,
   awardKillXp,
   tickAllEffects,
+  resolveNoopActorAction,
   resolveSingleActorAction,
+  resolveSyntheticActorAction,
   pickEnemyMoveChoice,
   pickEnemyTarget,
   executeNpcSkill,
@@ -645,6 +647,111 @@ export class CombatCycleService {
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
       creatureParty: this.gm.run.creatureParty
+    };
+  }
+
+  resolveKanjiKombatCursorAction({ correct, targetIndex = 0 } = {}) {
+    const cursor = this.gm.combat?.actionCursor;
+    if (!this.gm.run || this.gm.run.mode !== 'kanjiKombat') {
+      throw new Error('Not in Kanji Kombat');
+    }
+    if (!cursor || cursor.side !== 'ally') {
+      throw new Error('Kanji Kombat answer requires ally action cursor');
+    }
+
+    const actor = this.gm.combat.allies[cursor.index];
+    const result = correct
+      ? resolveSyntheticActorAction({
+          actorSide: 'ally',
+          actorIndex: cursor.index,
+          allies: this.gm.combat.allies,
+          enemies: this.gm.combat.enemies,
+          targetIndex,
+          syntheticMove: {
+            id: 'kanji-kombat-strike',
+            name: 'Kanji Kombat Strike',
+            nameEn: 'Kanji Kombat Strike',
+            power: 15,
+            element: actor.element,
+            target: 'single_enemy',
+            mpCost: 0,
+          },
+          itemBuffs: this.gm.run.itemBuffs,
+          creatureParty: this.gm.run.creatureParty,
+          metaMults: this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+        })
+      : resolveNoopActorAction({
+          actorSide: 'ally',
+          actorIndex: cursor.index,
+          allies: this.gm.combat.allies,
+          enemies: this.gm.combat.enemies,
+        });
+
+    this.gm.combat.actionCount = (this.gm.combat.actionCount || 0) + 1;
+    this.gm.combat.turnCount = this.gm.combat.actionCount;
+    this.gm.combat.actionCursor = getNextActionCursor({
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies,
+      previousCursor: cursor
+    });
+
+    let playbackStart = result.playbackNext || 0;
+    while (
+      this.gm.combat.active &&
+      this.gm.combat.actionCursor?.side === 'enemy' &&
+      !checkAllDefeated(this.gm.combat.enemies) &&
+      !checkAllDefeated(this.gm.combat.allies)
+    ) {
+      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart);
+      result.actionSegments.push(...enemyResult.actionSegments);
+      playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
+    }
+
+    return this._finalizeKanjiKombatActionResult(result);
+  }
+
+  _finalizeKanjiKombatActionResult(result) {
+    const actionSegments = result.actionSegments || [];
+    const flatPlayerAttacks = actionSegments.flatMap(segment =>
+      segment.actor.side === 'ally' ? segment.attacks : []
+    );
+    const flatEnemyAttacks = actionSegments.flatMap(segment =>
+      segment.actor.side === 'enemy' ? segment.attacks : []
+    );
+    const xpEvents = actionSegments.flatMap(segment => segment.xpEvents || []);
+    const allEnemiesDown = checkAllDefeated(this.gm.combat.enemies);
+    const allAlliesDown = checkAllDefeated(this.gm.combat.allies);
+
+    if (allAlliesDown) {
+      return this.gm.kanjiKombatService.finalizeDefeat({
+        actionSegments,
+        flatPlayerAttacks,
+        flatEnemyAttacks,
+        xpEvents
+      });
+    }
+
+    if (allEnemiesDown) {
+      return this.gm.kanjiKombatService.completeWaveAndMaybeStartNext({
+        actionSegments,
+        flatPlayerAttacks,
+        flatEnemyAttacks,
+        xpEvents
+      });
+    }
+
+    this.gm.emitState();
+    return {
+      actionType: 'kanjiKombat',
+      actionSegments,
+      playerAttacks: flatPlayerAttacks,
+      enemyAttacks: flatEnemyAttacks,
+      xpEvents,
+      combatEnded: false,
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies,
+      creatureParty: this.gm.run.creatureParty,
+      kanjiKombat: this.gm.run.kanjiKombat
     };
   }
 

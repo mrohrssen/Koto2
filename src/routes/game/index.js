@@ -15,6 +15,7 @@ import createCrestRoutes from './crests.js';
 import createFusionRoutes from './fusion.js';
 import createTutorialRoutes from './tutorial.js';
 import createKanaRoutes from './kana.js';
+import createKanjiKombatRoutes from './kanji-kombat.js';
 import { createPvpRoutes } from './pvp.js';
 import createCookingRoutes from './cooking.js';
 
@@ -138,6 +139,9 @@ export default function createGameRoutes(deps) {
 
   // Mount known-words routes
   router.use('/known-words', createKnownWordsRoutes());
+
+  // Mount Kanji Kombat routes
+  router.use('/kanji-kombat', createKanjiKombatRoutes());
 
   // Mount PvP routes
   router.use('/pvp', createPvpRoutes());

@@ -11,6 +11,14 @@ const ITEMS = JSON.parse(readFileSync(join(__dirname, '../../data/items.json'), 
  * Called just before run state is cleared.
  */
 export function buildRunSummary(run, meta) {
+  if (run.mode === 'kanjiKombat') {
+    return {
+      mode: 'kanjiKombat',
+      isVictory: run.kanjiKombat?.finalReport?.completedDaily === true,
+      kanjiKombat: run.kanjiKombat?.finalReport || run.kanjiKombat?.report || {},
+    };
+  }
+
   const rs = run.runSummary || {};
   return {
     areasCompleted: run.areasCompleted || 0,

@@ -8,7 +8,7 @@ import {
 
 import { getRoomActions, getAreaSelectionOptions, ROOM_TYPES, AREAS } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
-import { ExplorationService, CombatCycleService } from './services/index.js';
+import { ExplorationService, CombatCycleService, KanjiKombatService } from './services/index.js';
 import { logger } from '../logger.js';
 import {
   instantiateCreature,
@@ -69,6 +69,7 @@ export class GameManager {
     // Services (extracted from monolithic GameManager)
     this.explorationService = new ExplorationService(this);
     this.combatCycleService = new CombatCycleService(this);
+    this.kanjiKombatService = new KanjiKombatService(this);
   }
 
   // ============ META-PROGRESSION ============
@@ -256,6 +257,7 @@ export class GameManager {
     return {
       player: player,
       run: this.run ? {
+        mode: this.run.mode || null,
         // Area system
         currentArea: this.run.currentArea,
         areasCompleted: this.run.areasCompleted,
@@ -279,13 +281,15 @@ export class GameManager {
         partySkills: this.run.partySkills || [],
         itemBuffs: this.run.itemBuffs || null,
         npcDialogue: this.run?.npcDialogue || null,
-        postCombatShop: this.run.postCombatShop || null
+        postCombatShop: this.run.postCombatShop || null,
+        kanjiKombat: this.run.kanjiKombat || null
       } : null,
       room: currentRoom ? {
         ...currentRoom,
         actions: getRoomActions(currentRoom)
       } : null,
       combat: this.combat ? {
+        mode: this.combat.mode || null,
         active: this.combat.active,
         turn: this.combat.turn,
         turnCount: this.combat.turnCount,
@@ -577,6 +581,9 @@ export class GameManager {
 
   startCreatureEncounter() { return this.combatCycleService.startCreatureEncounter(); }
   creatureCombatCycle(actionType = 'attack', moveChoices = []) { return this.combatCycleService.creatureCombatCycle(actionType, moveChoices); }
+  startKanjiKombat(creature) { return this.kanjiKombatService.startRunWithCreature(creature); }
+  submitKanjiKombatIntro(cardId, choice) { return this.kanjiKombatService.submitIntroChoice(cardId, choice); }
+  submitKanjiKombatAnswer(answerId) { return this.kanjiKombatService.submitAnswer(answerId); }
   rollPostCombatShop() { return this.combatCycleService.rollPostCombatShop(); }
   selectShopItem(itemIndex, targetIndex = 0) { return this.combatCycleService.selectShopItem(itemIndex, targetIndex); }
   swapCreature(activeIndex, reserveIndex) { return this.combatCycleService.swapCreature(activeIndex, reserveIndex); }
