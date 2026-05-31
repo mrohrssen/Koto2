@@ -6,7 +6,10 @@
   },
   "steps": {
     "build": {
-      "commands": ["python3 -m pip install --target .python-packages -r requirements.txt", "...", "npm run build"]
+      "variables": {
+        "PYTHONPATH": "/app/.python-packages"
+      },
+      "commands": ["python3 -m pip install --target .python-packages -r requirements.txt", "..."]
     }
   },
   "deploy": {

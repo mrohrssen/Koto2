@@ -10,6 +10,7 @@ const repoRoot = resolve(__dirname, '../..');
 test('railpack config makes Python dependencies available at runtime', () => {
   const config = JSON.parse(readFileSync(resolve(repoRoot, 'railpack.json'), 'utf8'));
   const buildCommands = config.steps?.build?.commands || [];
+  const buildVariables = config.steps?.build?.variables || {};
   const deployVariables = config.deploy?.variables || {};
 
   assert.ok(
@@ -20,6 +21,11 @@ test('railpack config makes Python dependencies available at runtime', () => {
       command.includes('-r requirements.txt')
     ),
     'expected Railpack build to install requirements into /app-local Python packages'
+  );
+  assert.equal(
+    buildVariables.PYTHONPATH,
+    '/app/.python-packages',
+    'expected build step to add app-local Python packages to PYTHONPATH for tokenizer generation'
   );
   assert.equal(
     deployVariables.PYTHONPATH,
