@@ -27,7 +27,8 @@ export function compareActionActors(a, b) {
   if (dexDiff !== 0) return dexDiff;
   const levelDiff = (b.level || 1) - (a.level || 1);
   if (levelDiff !== 0) return levelDiff;
-  return Math.random() - 0.5;
+  if (a.side !== b.side) return a.side.localeCompare(b.side);
+  return a.index - b.index;
 }
 
 export function buildActionOrder(context) {
