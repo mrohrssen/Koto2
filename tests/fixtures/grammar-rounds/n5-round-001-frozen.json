@@ -1,0 +1,662 @@
+[
+  {
+    "id": "n5-round-001-a-001",
+    "sentence": "母は「明日行く」と言います。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-to-quotation"
+    ],
+    "expected": [
+      "n5-wa-topic",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-to-quotation"
+    ],
+    "kind": "positive",
+    "source": "n5-discourse-agent",
+    "rationale": "The quoted clause is live reported speech and と言います functions as quotation."
+  },
+  {
+    "id": "n5-round-001-a-002",
+    "sentence": "ノートに「行くと言います」とだけ写した。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-to-quotation"
+    ],
+    "expected": [
+      "n5-u-verb-past"
+    ],
+    "kind": "quote-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "The quoted 行くと言います is copied as text, so the internal quotation pattern should not emit."
+  },
+  {
+    "id": "n5-round-001-a-005",
+    "sentence": "先生は明日休むって。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tte-quotation"
+    ],
+    "expected": [
+      "n5-wa-topic",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-tte-quotation"
+    ],
+    "kind": "positive",
+    "source": "n5-discourse-agent",
+    "rationale": "って reports what someone said or heard."
+  },
+  {
+    "id": "n5-round-001-a-006",
+    "sentence": "カードに『って』だけ残した。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tte-quotation"
+    ],
+    "expected": [
+      "n5-u-verb-past"
+    ],
+    "kind": "quote-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "って is quoted as card text, not functioning as colloquial quotation."
+  },
+  {
+    "id": "n5-round-001-a-008",
+    "sentence": "りんごとみかんを買う。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-to-and",
+      "n5-wo-object"
+    ],
+    "expected": [
+      "n5-to-and",
+      "n5-wo-object",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "kind": "positive",
+    "source": "n5-discourse-agent",
+    "rationale": "と coordinates two nouns, and みかんを買う is a direct-object clause."
+  },
+  {
+    "id": "n5-round-001-a-010",
+    "sentence": "友達と。帰ります。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-to-with"
+    ],
+    "expected": [
+      "n5-masu-polite"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "The sentence break after と prevents it from forming a single accompaniment phrase with 帰ります."
+  },
+  {
+    "id": "n5-round-001-a-014",
+    "sentence": "お茶か。水を選ぶ。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ka-or"
+    ],
+    "expected": [
+      "n5-ka-question",
+      "n5-wo-object",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "The sentence boundary blocks お茶か水 as one alternative pair."
+  },
+  {
+    "id": "n5-round-001-a-015",
+    "sentence": "『か』は質問の印です。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ka-question",
+      "n5-ka-or"
+    ],
+    "expected": [
+      "n5-no-possessive",
+      "n5-desu-copula"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "The token か is named as a question marker, not used as a question or alternative particle."
+  },
+  {
+    "id": "n5-round-001-a-018",
+    "sentence": "机には本があります。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-wa-topic",
+      "n5-ga-aru-existence"
+    ],
+    "expected": [
+      "n5-ga-aru-existence"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "には is a compound particle and should not count as basic topic は."
+  },
+  {
+    "id": "n5-round-001-a-020",
+    "sentence": "『も』を丸で囲んだ。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-mo-too"
+    ],
+    "expected": [
+      "n5-de-location",
+      "n5-de-means",
+      "n5-u-verb-past"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "も is a quoted character being circled, not the additive particle."
+  },
+  {
+    "id": "n5-round-001-a-023",
+    "sentence": "寒い。が、出かける。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ga-but"
+    ],
+    "expected": [
+      "n5-i-adjective",
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "A sentence boundary before が blocks the simple clause-final contrastive connector."
+  },
+  {
+    "id": "n5-round-001-a-026",
+    "sentence": "紙に『を』だけ書いた。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-wo-object"
+    ],
+    "expected": [
+      "n5-u-verb-past"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "を is quoted as a character, so it should not emit the object-particle label."
+  },
+  {
+    "id": "n5-round-001-a-031",
+    "sentence": "辞書で『で』を調べた。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-de-means"
+    ],
+    "expected": [
+      "n5-ru-verb-past"
+    ],
+    "kind": "mixed",
+    "source": "n5-discourse-agent",
+    "rationale": "辞書で is live means, but the quoted で itself is only a looked-up token."
+  },
+  {
+    "id": "n5-round-001-a-034",
+    "sentence": "看板に『です』とあった。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-desu-copula"
+    ],
+    "expected": [
+      "n5-u-verb-past"
+    ],
+    "kind": "quote-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "です is quoted as text on a sign and should not count as a live copula."
+  },
+  {
+    "id": "n5-round-001-a-039",
+    "sentence": "辞書に『だろう』と載っていた。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-darou-probably"
+    ],
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "だろう is a dictionary entry being cited, not a live conjectural predicate."
+  },
+  {
+    "id": "n5-round-001-a-043",
+    "sentence": "暑い。から、窓を開けます。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-kara-because"
+    ],
+    "expected": [
+      "n5-i-adjective",
+      "n5-wo-object",
+      "n5-masu-polite"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "The period after 暑い prevents から from forming a normal because-clause."
+  },
+  {
+    "id": "n5-round-001-a-045",
+    "sentence": "『なので』という言葉を消した。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-node-because"
+    ],
+    "expected": [
+      "n5-wo-object",
+      "n5-u-verb-past"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "なので is named as a word, not used as a reason connector."
+  },
+  {
+    "id": "n5-round-001-a-047",
+    "sentence": "『けど』は会話で使う。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-kedo-but"
+    ],
+    "expected": [
+      "n5-de-location",
+      "n5-de-means",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-discourse-agent",
+    "rationale": "けど is the topic of an explanation, not a live contrastive connector."
+  },
+  {
+    "id": "n5-round-001-b-001",
+    "sentence": "夕ご飯を食べる。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past",
+      "n5-wo-object"
+    ],
+    "kind": "positive",
+    "source": "n5-morphology-agent",
+    "rationale": "食べる is an ichidan dictionary/non-past verb, and 夕ご飯を marks its object."
+  },
+  {
+    "id": "n5-round-001-b-012",
+    "sentence": "今日は寒いです。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-wa-topic",
+      "n5-i-adjective",
+      "n5-i-adjective-predicate"
+    ],
+    "expected": [
+      "n5-i-adjective-predicate",
+      "n5-wa-topic"
+    ],
+    "kind": "positive",
+    "source": "n5-morphology-agent",
+    "rationale": "寒いです is a polite i-adjective predicate, and 今日は is a topic."
+  },
+  {
+    "id": "n5-round-001-b-017",
+    "sentence": "この町は静かだ。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-kono",
+      "n5-wa-topic",
+      "n5-na-adjective",
+      "n5-na-adjective-da-predicate",
+      "n5-da-copula"
+    ],
+    "expected": [
+      "n5-kono",
+      "n5-wa-topic",
+      "n5-na-adjective-da-predicate"
+    ],
+    "kind": "positive",
+    "source": "n5-morphology-agent",
+    "rationale": "静かだ is a na-adjective plain predicate and also uses the plain copula."
+  },
+  {
+    "id": "n5-round-001-b-024",
+    "sentence": "「です」は助動詞です。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-desu-copula",
+      "n5-wa-topic"
+    ],
+    "expected": [
+      "n5-desu-copula"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-morphology-agent",
+    "rationale": "The quoted です is only mentioned as a form; the live copula is 助動詞です."
+  },
+  {
+    "id": "n5-round-001-b-027",
+    "sentence": "写真が五枚ありません。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ga-aru-existence",
+      "n5-ga-subject",
+      "n5-masu-polite"
+    ],
+    "expected": [
+      "n5-ga-subject",
+      "n5-masu-polite"
+    ],
+    "kind": "near-miss-negative",
+    "source": "n5-morphology-agent",
+    "rationale": "ありません is negative existence, so it should not emit positive がある existence."
+  },
+  {
+    "id": "n5-round-001-b-028",
+    "sentence": "二本は使いましたか。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-wa-topic",
+      "n5-ka-question",
+      "n5-masu-polite"
+    ],
+    "expected": [
+      "n5-ka-question",
+      "n5-masu-polite"
+    ],
+    "kind": "near-miss-negative",
+    "source": "n5-morphology-agent",
+    "rationale": "Counter-marked 二本は should not be taught as the basic topic は."
+  },
+  {
+    "id": "n5-round-001-b-038",
+    "sentence": "立って、名前を言ってください。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-conjunction",
+      "n5-te-sequence",
+      "n5-te-kudasai",
+      "n5-wo-object"
+    ],
+    "expected": [
+      "n5-te-conjunction",
+      "n5-te-kudasai",
+      "n5-te-sequence",
+      "n5-wo-object"
+    ],
+    "kind": "mixed",
+    "source": "n5-morphology-agent",
+    "rationale": "立って links a prior action, and 言ってください is a live polite request."
+  },
+  {
+    "id": "n5-round-001-b-047",
+    "sentence": "書いて。ください。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-kudasai"
+    ],
+    "expected": [],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-morphology-agent",
+    "rationale": "Sentence punctuation splits 書いて from ください, so it is not a contiguous てください request."
+  },
+  {
+    "id": "n5-round-001-b-048",
+    "sentence": "「読んでください」と書いた。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-kudasai"
+    ],
+    "expected": [
+      "n5-u-verb-past"
+    ],
+    "kind": "quote-negative",
+    "source": "n5-morphology-agent",
+    "rationale": "読んでください is quoted text, not a live request; 書いた is live past verb."
+  },
+  {
+    "id": "n5-round-001-b-049",
+    "sentence": "『行きましょう』という形を聞いた。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-mashou",
+      "n5-to-quotation"
+    ],
+    "expected": [
+      "n5-u-verb-past",
+      "n5-wo-object"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-morphology-agent",
+    "rationale": "行きましょう is mentioned as a form, not used as a suggestion."
+  },
+  {
+    "id": "n5-round-001-d-004",
+    "sentence": "ナイフでパンを切る。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-de-means",
+      "n5-de-location"
+    ],
+    "expected": [
+      "n5-wo-object",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "kind": "lexical-negative",
+    "source": "n5-random-agent",
+    "rationale": "ナイフで is an instrument, not a location."
+  },
+  {
+    "id": "n5-round-001-d-016",
+    "sentence": "必要がある。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ga-aru-existence"
+    ],
+    "expected": [
+      "n5-ga-subject",
+      "n5-u-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "kind": "lexical-negative",
+    "source": "n5-random-agent",
+    "rationale": "必要がある is lexicalized necessity, not concrete existence."
+  },
+  {
+    "id": "n5-round-001-d-020",
+    "sentence": "泳ぐのが上手です。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-no-ga-jouzu",
+      "n5-no-wa-no-ga-nominalizer"
+    ],
+    "expected": [
+      "n5-no-ga-jouzu",
+      "n5-desu-copula"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-random-agent",
+    "rationale": "The full のが上手 construction should dominate the shorter nominalizer."
+  },
+  {
+    "id": "n5-round-001-d-028",
+    "sentence": "駅へ行く。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-he-iku",
+      "n5-he-direction"
+    ],
+    "expected": [
+      "n5-he-iku"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-random-agent",
+    "rationale": "The specific へ行く movement pattern should dominate the generic direction marker."
+  },
+  {
+    "id": "n5-round-001-d-033",
+    "sentence": "まだ宿題をしていません。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-mada-te-imasen",
+      "n5-te-iru-progressive"
+    ],
+    "expected": [
+      "n5-mada-te-imasen"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-random-agent",
+    "rationale": "まだ...ていません is the still-not-done pattern and should not emit positive ている senses."
+  },
+  {
+    "id": "n5-round-001-d-037",
+    "sentence": "読んで。から寝る。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-kara"
+    ],
+    "expected": [
+      "n5-ru-verb-dictionary",
+      "n5-verb-non-past"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-random-agent",
+    "rationale": "A sentence boundary separates 読んで and から, so てから is not live."
+  },
+  {
+    "id": "n5-round-001-d-038",
+    "sentence": "本を読んではいけない。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tewa-ikenai",
+      "n5-te-conjunction"
+    ],
+    "expected": [
+      "n5-wo-object",
+      "n5-tewa-ikenai"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-random-agent",
+    "rationale": "The full prohibition 読んではいけない should dominate the shorter て conjunction."
+  },
+  {
+    "id": "n5-round-001-d-039",
+    "sentence": "名前を書いてください。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-kudasai",
+      "n5-te-sequence"
+    ],
+    "expected": [
+      "n5-wo-object",
+      "n5-te-kudasai"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-random-agent",
+    "rationale": "書いてください is a request and should not reduce to a generic て sequence."
+  },
+  {
+    "id": "n5-round-001-d-046",
+    "sentence": "映画を見たことがある。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ta-koto-ga-aru",
+      "n5-ga-aru-existence"
+    ],
+    "expected": [
+      "n5-wo-object",
+      "n5-ta-koto-ga-aru"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-random-agent",
+    "rationale": "見たことがある is experience, not concrete existence."
+  },
+  {
+    "id": "n5-round-001-d-056",
+    "sentence": "「です」。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-desu-copula"
+    ],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "n5-random-agent",
+    "rationale": "です is quoted as a token, not used as a live polite copula."
+  },
+  {
+    "id": "n5-round-001-d-057",
+    "sentence": "『読んでいる』。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-result-state",
+      "n5-te-iru-repetition"
+    ],
+    "expected": [],
+    "kind": "quote-negative",
+    "source": "n5-random-agent",
+    "rationale": "The whole ている phrase is quoted as text and should not emit live grammar."
+  },
+  {
+    "id": "n5-round-001-d-060",
+    "sentence": "学生。だ。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-da-copula"
+    ],
+    "expected": [],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-random-agent",
+    "rationale": "A sentence boundary separates the noun and だ, so this is not a noun + だ copula clause."
+  },
+  {
+    "id": "n5-round-001-d-061",
+    "sentence": "これは本。です。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-desu-copula",
+      "n5-kore",
+      "n5-wa-topic"
+    ],
+    "expected": [
+      "n5-kore",
+      "n5-wa-topic"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-random-agent",
+    "rationale": "これ and は are live, but punctuation blocks 本です as a copula predicate."
+  },
+  {
+    "id": "n5-round-001-d-065",
+    "sentence": "三人は待っています。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-wa-topic",
+      "n5-te-iru-progressive"
+    ],
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "kind": "near-miss-negative",
+    "source": "n5-random-agent",
+    "rationale": "三人は is a counted quantity topic-like phrase that should not emit basic topic は."
+  }
+]

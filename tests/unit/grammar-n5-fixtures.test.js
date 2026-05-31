@@ -9,6 +9,7 @@ import { findGrammarMatches } from '../../src/game/grammar/grammar-matcher.js';
 const LEVELS = [
   { level: 'N5', fixturePath: join(import.meta.dirname, '../fixtures/grammar-n5.json'), expectedCount: 132 },
   { level: 'N4', fixturePath: join(import.meta.dirname, '../fixtures/grammar-n4.json'), expectedCount: 185 },
+  { level: 'N3', fixturePath: join(import.meta.dirname, '../fixtures/grammar-n3.json'), expectedCount: 220 },
 ];
 
 function loadFixtures(path) {

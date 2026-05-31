@@ -9,6 +9,7 @@ import { findGrammarMatches } from '../../src/game/grammar/grammar-matcher.js';
 const LEVELS = [
   { level: 'N5', stressPath: join(import.meta.dirname, '../fixtures/grammar-n5-stress.json') },
   { level: 'N4', stressPath: join(import.meta.dirname, '../fixtures/grammar-n4-stress.json') },
+  { level: 'N3', stressPath: join(import.meta.dirname, '../fixtures/grammar-n3-stress.json') },
 ];
 const MIN_HIT_RATE = 0.98;
 

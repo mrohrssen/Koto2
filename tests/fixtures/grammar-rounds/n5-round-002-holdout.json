@@ -1,0 +1,656 @@
+[
+  {
+    "id": "n5-holdout-001",
+    "sentence": "「は」は助詞です。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-wa-topic"
+    ],
+    "expected": [
+      "n5-wa-topic",
+      "n5-desu-copula"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "The quoted は is being named as a particle, not used as a topic marker; only the live polite copula should emit."
+  },
+  {
+    "id": "n5-holdout-002",
+    "sentence": "ノートに「薬を飲んでください」と写した。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-kudasai",
+      "n5-wo-object"
+    ],
+    "expected": [
+      "n5-u-verb-past"
+    ],
+    "kind": "quote-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "薬を飲んでください is copied as quoted text, so its internal object and request grammar should not emit."
+  },
+  {
+    "id": "n5-holdout-003",
+    "sentence": "先生は明日来るって。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tte-quotation"
+    ],
+    "expected": [
+      "n5-wa-topic",
+      "n5-kuru",
+      "n5-verb-non-past",
+      "n5-tte-quotation"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "って is live casual quotation, with 先生は as topic and 来る as the quoted N5 verb."
+  },
+  {
+    "id": "n5-holdout-004",
+    "sentence": "カードに『てはいけない』と書いた。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tewa-ikenai"
+    ],
+    "expected": [
+      "n5-u-verb-past"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "てはいけない is mentioned as written text, not used as a prohibition."
+  },
+  {
+    "id": "n5-holdout-005",
+    "sentence": "辞書に「つもりだ」と載っている。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tsumori-da",
+      "n5-da-copula"
+    ],
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "つもりだ is a dictionary entry being cited; the live grammar is 辞書に plus 載っている."
+  },
+  {
+    "id": "n5-holdout-006",
+    "sentence": "『を』はここに書いてください。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-wo-object",
+      "n5-wa-topic"
+    ],
+    "expected": [
+      "n5-koko",
+      "n5-ni-particle",
+      "n5-te-kudasai"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "を is a quoted character, not an object marker; the live request is to write it here."
+  },
+  {
+    "id": "n5-holdout-007",
+    "sentence": "兄と行きます。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-to-with"
+    ],
+    "expected": [
+      "n5-to-with",
+      "n5-masu-polite"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "兄と marks accompaniment with a motion predicate, not noun coordination."
+  },
+  {
+    "id": "n5-holdout-008",
+    "sentence": "犬と猫が庭にいます。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-to-and",
+      "n5-ga-subject",
+      "n5-ni-particle"
+    ],
+    "expected": [
+      "n5-to-and",
+      "n5-ga-subject",
+      "n5-ni-particle",
+      "n5-masu-polite"
+    ],
+    "kind": "mixed",
+    "source": "n5-holdout-agent",
+    "rationale": "犬と猫 coordinates nouns; が marks the subject, に marks location, and います is polite."
+  },
+  {
+    "id": "n5-holdout-009",
+    "sentence": "お茶か水を飲みますか。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ka-or",
+      "n5-ka-question"
+    ],
+    "expected": [
+      "n5-ka-or",
+      "n5-wo-object",
+      "n5-masu-polite",
+      "n5-ka-question"
+    ],
+    "kind": "mixed",
+    "source": "n5-holdout-agent",
+    "rationale": "The first か links alternatives, while the final か marks the question."
+  },
+  {
+    "id": "n5-holdout-010",
+    "sentence": "お茶か。水を飲みますか。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ka-or"
+    ],
+    "expected": [
+      "n5-ka-question",
+      "n5-wo-object",
+      "n5-masu-polite"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "The period after お茶か prevents a single alternative pair, but the final question remains live."
+  },
+  {
+    "id": "n5-holdout-011",
+    "sentence": "駅から家まで歩きます。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-kara-from",
+      "n5-noun-made"
+    ],
+    "expected": [
+      "n5-kara-from",
+      "n5-noun-made",
+      "n5-masu-polite"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "から marks the starting point and まで marks the endpoint."
+  },
+  {
+    "id": "n5-holdout-012",
+    "sentence": "雨です。から行きません。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-kara-because"
+    ],
+    "expected": [
+      "n5-desu-copula",
+      "n5-masu-polite"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "The period blocks ですから as one because-clause connector."
+  },
+  {
+    "id": "n5-holdout-013",
+    "sentence": "名前を書いてください。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-kudasai",
+      "n5-wo-object"
+    ],
+    "expected": [
+      "n5-wo-object",
+      "n5-te-kudasai"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "名前を is the object and 書いてください is a live request."
+  },
+  {
+    "id": "n5-holdout-014",
+    "sentence": "名前を書いて。ください。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-kudasai"
+    ],
+    "expected": [
+      "n5-wo-object"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "The sentence boundary separates 書いて from ください, so only the object marker remains."
+  },
+  {
+    "id": "n5-holdout-015",
+    "sentence": "ここで走らないでください。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-nai-de-kudasai",
+      "n5-de-location"
+    ],
+    "expected": [
+      "n5-koko",
+      "n5-de-location",
+      "n5-de-means",
+      "n5-nai-de-kudasai"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "ここで is a place of action and 走らないでください is a live negative request."
+  },
+  {
+    "id": "n5-holdout-016",
+    "sentence": "ここで走らない。でください。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-nai-de-kudasai"
+    ],
+    "expected": [
+      "n5-koko",
+      "n5-de-location",
+      "n5-de-means",
+      "n5-u-verb-negative"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "Punctuation breaks ないでください; 走らない remains a finite negative verb."
+  },
+  {
+    "id": "n5-holdout-017",
+    "sentence": "教室で走ってはいけない。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tewa-ikenai"
+    ],
+    "expected": [
+      "n5-de-location",
+      "n5-de-means",
+      "n5-tewa-ikenai"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "The full prohibition should emit instead of a shorter generic て-linking pattern."
+  },
+  {
+    "id": "n5-holdout-018",
+    "sentence": "教室で走って。はいけない。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tewa-ikenai"
+    ],
+    "expected": [
+      "n5-de-location",
+      "n5-de-means"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "The period blocks 走ってはいけない as a contiguous prohibition."
+  },
+  {
+    "id": "n5-holdout-019",
+    "sentence": "明日までに読まなくてはいけない。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-nakuteha-ikenai",
+      "n5-noun-made"
+    ],
+    "expected": [
+      "n5-noun-made",
+      "n5-nakuteha-ikenai"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "明日まで is an endpoint and 読まなくてはいけない is a live obligation."
+  },
+  {
+    "id": "n5-holdout-020",
+    "sentence": "明日までに読まなくて。はいけない。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-nakuteha-ikenai"
+    ],
+    "expected": [
+      "n5-noun-made",
+      "n5-u-verb-negative"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "Punctuation separates 読まなくて from はいけない, so the obligation pattern should not emit."
+  },
+  {
+    "id": "n5-holdout-021",
+    "sentence": "朝ご飯を食べてから学校へ行く。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-kara"
+    ],
+    "expected": [
+      "n5-wo-object",
+      "n5-te-kara",
+      "n5-he-iku"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "食べてから is the longer after-doing pattern; 学校へ行く is the specific へ行く movement pattern."
+  },
+  {
+    "id": "n5-holdout-022",
+    "sentence": "朝ご飯を食べて。から学校へ行く。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-te-kara"
+    ],
+    "expected": [
+      "n5-wo-object",
+      "n5-he-iku"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "The period blocks てから while leaving the object and destination movement intact."
+  },
+  {
+    "id": "n5-holdout-023",
+    "sentence": "京都に行ったことがある。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ta-koto-ga-aru"
+    ],
+    "expected": [
+      "n5-ni-particle",
+      "n5-ta-koto-ga-aru"
+    ],
+    "kind": "overlap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "行ったことがある is experience and should not be treated as concrete がある existence."
+  },
+  {
+    "id": "n5-holdout-024",
+    "sentence": "辞書に「行ったことがある」と載っている。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ta-koto-ga-aru"
+    ],
+    "expected": [
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "kind": "quote-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "行ったことがある is quoted as dictionary text; 載っている is the live ている expression."
+  },
+  {
+    "id": "n5-holdout-025",
+    "sentence": "来年行くつもりだ。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tsumori-da"
+    ],
+    "expected": [
+      "n5-tsumori-da"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "行くつもりだ expresses a live intention."
+  },
+  {
+    "id": "n5-holdout-026",
+    "sentence": "ノートに「つもりだ」と書いた。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-tsumori-da",
+      "n5-da-copula"
+    ],
+    "expected": [
+      "n5-u-verb-past"
+    ],
+    "kind": "mention-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "つもりだ is cited as text; 書いた is the only live N5 grammar."
+  },
+  {
+    "id": "n5-holdout-027",
+    "sentence": "犬より猫の方が静かです。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-yori-no-hou-ga"
+    ],
+    "expected": [
+      "n5-yori-no-hou-ga",
+      "n5-na-adjective",
+      "n5-desu-copula"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "The full comparison AよりBの方が is live, with 静かです as a na-adjective polite predicate."
+  },
+  {
+    "id": "n5-holdout-028",
+    "sentence": "犬より。猫の方が静かです。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-yori-no-hou-ga"
+    ],
+    "expected": [
+      "n5-no-possessive",
+      "n5-ga-subject",
+      "n5-na-adjective",
+      "n5-desu-copula"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "The period after より blocks the comparison gap."
+  },
+  {
+    "id": "n5-holdout-029",
+    "sentence": "果物の中でりんごが一番好きです。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-no-naka-de-ichiban"
+    ],
+    "expected": [
+      "n5-no-naka-de-ichiban",
+      "n5-na-adjective",
+      "n5-desu-copula"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "の中で...が一番 forms the superlative comparison, and 好きです is a na-adjective polite predicate."
+  },
+  {
+    "id": "n5-holdout-030",
+    "sentence": "果物の中で。りんごが一番好きです。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-no-naka-de-ichiban"
+    ],
+    "expected": [
+      "n5-no-possessive",
+      "n5-ga-subject",
+      "n5-na-adjective",
+      "n5-desu-copula"
+    ],
+    "kind": "punctuation-gap-negative",
+    "source": "n5-holdout-agent",
+    "rationale": "The sentence boundary after 中で prevents the grouped superlative pattern."
+  },
+  {
+    "id": "n5-holdout-031",
+    "sentence": "この赤い本は高かったです。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-kono",
+      "n5-i-adjective-noun",
+      "n5-wa-topic",
+      "n5-i-adjective-past"
+    ],
+    "expected": [
+      "n5-kono",
+      "n5-i-adjective-noun",
+      "n5-wa-topic",
+      "n5-i-adjective-past"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "This is a legitimate multi-hit sentence with demonstrative, adjective-noun modification, topic は, and past i-adjective."
+  },
+  {
+    "id": "n5-holdout-032",
+    "sentence": "赤いのはどれですか。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-adjective-no-wa",
+      "n5-dore",
+      "n5-ka-question"
+    ],
+    "expected": [
+      "n5-adjective-no-wa",
+      "n5-dore",
+      "n5-desu-copula",
+      "n5-ka-question"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "赤いのは nominalizes an adjective phrase, and どれですか is a live question."
+  },
+  {
+    "id": "n5-holdout-033",
+    "sentence": "私は友達に本をもらう。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-morau",
+      "n5-wa-topic",
+      "n5-wo-object"
+    ],
+    "expected": [
+      "n5-wa-topic",
+      "n5-wo-object",
+      "n5-morau"
+    ],
+    "kind": "mixed",
+    "source": "n5-holdout-agent",
+    "rationale": "The sentence combines topic, direct object, and the receiving verb もらう."
+  },
+  {
+    "id": "n5-holdout-034",
+    "sentence": "母が私にお茶をくれる。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-kureru",
+      "n5-ga-subject",
+      "n5-wo-object"
+    ],
+    "expected": [
+      "n5-ga-subject",
+      "n5-wo-object",
+      "n5-kureru"
+    ],
+    "kind": "mixed",
+    "source": "n5-holdout-agent",
+    "rationale": "母が is the subject, お茶を is the object, and くれる is the inward giving verb."
+  },
+  {
+    "id": "n5-holdout-035",
+    "sentence": "先生に花をあげる。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ageru",
+      "n5-wo-object"
+    ],
+    "expected": [
+      "n5-wo-object",
+      "n5-ageru"
+    ],
+    "kind": "mixed",
+    "source": "n5-holdout-agent",
+    "rationale": "花を is the object and あげる is the outward giving verb."
+  },
+  {
+    "id": "n5-holdout-036",
+    "sentence": "犬や猫が好きです。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-ya-and-like",
+      "n5-suki"
+    ],
+    "expected": [
+      "n5-ya-and-like",
+      "n5-suki",
+      "n5-desu-copula"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "や lists examples, and 好きです is the live liking predicate."
+  },
+  {
+    "id": "n5-holdout-037",
+    "sentence": "赤くて大きい家です。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-adjective-te-qualities",
+      "n5-i-adjective-noun"
+    ],
+    "expected": [
+      "n5-adjective-te-qualities",
+      "n5-i-adjective-noun",
+      "n5-desu-copula"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "赤くて links qualities and 大きい modifies 家."
+  },
+  {
+    "id": "n5-holdout-038",
+    "sentence": "静かで便利な町です。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-adjective-te-noun-de"
+    ],
+    "expected": [
+      "n5-adjective-te-noun-de",
+      "n5-desu-copula"
+    ],
+    "kind": "positive",
+    "source": "n5-holdout-agent",
+    "rationale": "静かで links adjectival qualities before the polite copula."
+  },
+  {
+    "id": "n5-holdout-039",
+    "sentence": "何か食べましたか。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-nanika-nanimo",
+      "n5-ka-question"
+    ],
+    "expected": [
+      "n5-nanika-nanimo",
+      "n5-masu-polite",
+      "n5-ka-question"
+    ],
+    "kind": "mixed",
+    "source": "n5-holdout-agent",
+    "rationale": "何か is the indefinite question-word compound, and the final か marks a polite question."
+  },
+  {
+    "id": "n5-holdout-040",
+    "sentence": "誰かが来ています。",
+    "level": "N5",
+    "targetGrammarIds": [
+      "n5-dareka-dokoka-daremo-dokomo",
+      "n5-te-iru-progressive"
+    ],
+    "expected": [
+      "n5-dareka-dokoka-daremo-dokomo",
+      "n5-te-iru-progressive",
+      "n5-te-iru-repetition",
+      "n5-te-iru-result-state"
+    ],
+    "kind": "mixed",
+    "source": "n5-holdout-agent",
+    "rationale": "誰か is an indefinite person expression and 来ています is live ている."
+  }
+]
