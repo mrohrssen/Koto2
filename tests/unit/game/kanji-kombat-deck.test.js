@@ -42,6 +42,11 @@ describe('kanji-kombat deck controller', () => {
   });
 
   it('chooses a due card before introducing a new card when interval has not fired', () => {
+    const data = loadSrsData(userId);
+    const dueCard = data.script.cards.find(c => c.id === 'hiragana:あ');
+    dueCard.due = new Date('2026-05-30T00:00:00Z');
+    dueCard.reps = 1;
+    saveSrsData(userId, data);
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
     const work = chooseNextScriptWork(userId, state, { random: () => 0.5, now: new Date('2026-05-31T00:00:00Z') });
     assert.equal(work.kind, 'quiz');
