@@ -22,6 +22,45 @@ function creature(id, overrides = {}) {
 }
 
 describe('action cursor helpers', () => {
+  it('does not repeat the same enemy before an ally gets another action', () => {
+    const originalRandom = Math.random;
+    const randomSequence = [
+      0.8016340953316331, 0.6648016679394301, 0.9676372486587039,
+      0.8597490199023237, 0.6753711138346347, 0.23072842318766218,
+      0.365513895823838, 0.46110678489002377, 0.7624221931751386,
+      0.13505501659469477, 0.4922620801816967, 0.40675582956302614,
+      0.11237884074411597, 0.678918343576411, 0.7308715628813979,
+      0.23522069066637175, 0.448870773318903, 0.8045960083336168
+    ];
+    let randomIndex = 0;
+    Math.random = () => randomSequence[randomIndex++] ?? 0.5;
+
+    try {
+      const allies = [creature('slow-ally', { dex: 6 })];
+      const enemies = [
+        creature('ant-a', { dex: 10 }),
+        creature('ant-b', { dex: 10 }),
+        creature('ant-c', { dex: 10 })
+      ];
+      let cursor = createPveOpeningCursor({ allies, enemies });
+      const seenEnemies = new Set();
+
+      for (let i = 0; i < 10; i++) {
+        cursor = getNextActionCursor({ allies, enemies, previousCursor: cursor });
+        if (cursor.side === 'ally') {
+          seenEnemies.clear();
+          continue;
+        }
+
+        const key = `${cursor.side}:${cursor.index}`;
+        assert.equal(seenEnemies.has(key), false, `${key} acted twice before an ally acted`);
+        seenEnemies.add(key);
+      }
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+
   it('sorts eligible actors by effective dex then level', () => {
     const allies = [
       creature('slow-high-level', { level: 99, dex: 5 }),
