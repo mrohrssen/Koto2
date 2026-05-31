@@ -19,6 +19,7 @@ class RingBuffer {
 // ============ CONSOLE ERROR BUFFER (capacity 50) ============
 
 const consoleBuffer = new RingBuffer(50);
+let diagnosticsInitialized = false;
 let globalErrorCaptureInitialized = false;
 
 export function formatDiagnosticArg(arg) {
@@ -198,6 +199,8 @@ export function snapshot() {
 }
 
 export function init() {
+  if (diagnosticsInitialized) return;
+  diagnosticsInitialized = true;
   initConsoleCapture();
   initNetworkCapture();
   initActionTracking();

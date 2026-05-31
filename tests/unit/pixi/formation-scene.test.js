@@ -759,6 +759,26 @@ describe('BattleScene._diff lifecycle', () => {
       scene.exit();
     }
   });
+
+  it('clears the active glow ticker when the battle scene exits', async () => {
+    const app = makeFakeApp();
+    fakeAppState = {
+      ...fakeAppState,
+      app,
+    };
+    const scene = new BattleScene(app);
+    const creature = { uid: 'active', id: 'hi' };
+
+    await scene.syncCreatures({ allies: [creature], enemies: [], initial: true });
+    scene.formation.lastFormationInput.player = { creatures: [creature], opts: {} };
+
+    showActiveGlowForScene(scene, 0);
+    assert.equal(app.ticker.count, 1);
+
+    scene.exit();
+
+    assert.equal(app.ticker.count, 0);
+  });
 });
 
 describe('scene-facing sprite-lookup variants null-scene guards', () => {
