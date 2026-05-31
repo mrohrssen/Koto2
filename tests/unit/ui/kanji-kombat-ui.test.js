@@ -10,14 +10,32 @@ class FakeButton {
   constructor(dataset = {}, textContent = '') {
     this.dataset = dataset;
     this.textContent = textContent;
+    this.disabled = false;
+    this.listeners = new Map();
   }
 
-  addEventListener() {}
+  addEventListener(type, handler) {
+    this.listeners.set(type, handler);
+  }
+
+  click() {
+    return this.listeners.get('click')?.({ currentTarget: this });
+  }
 }
 
 class FakeActionArea {
   constructor() {
-    this.innerHTML = '';
+    this._innerHTML = '';
+    this._buttons = new Map();
+  }
+
+  get innerHTML() {
+    return this._innerHTML;
+  }
+
+  set innerHTML(value) {
+    this._innerHTML = value;
+    this._buttons.clear();
   }
 
   querySelector(selector) {
@@ -34,16 +52,25 @@ class FakeActionArea {
 
   querySelectorAll(selector) {
     if (selector === '.kanji-kombat-choice') {
-      return [...this.innerHTML.matchAll(/class="kanji-kombat-choice"[^>]*data-(?:answer-id|creature-id)="([^"]*)"/g)]
-        .map(match => new FakeButton({ answerId: match[1], creatureId: match[1] }));
+      if (!this._buttons.has(selector)) {
+        this._buttons.set(selector, [...this.innerHTML.matchAll(/class="kanji-kombat-choice"[^>]*data-(?:answer-id|creature-id)="([^"]*)"/g)]
+          .map(match => new FakeButton({ answerId: match[1], creatureId: match[1] })));
+      }
+      return this._buttons.get(selector);
     }
     if (selector === '.kanji-kombat-intro-action') {
-      return [...this.innerHTML.matchAll(/class="kanji-kombat-intro-action"[^>]*data-choice="([^"]*)"/g)]
-        .map(match => new FakeButton({ choice: match[1] }));
+      if (!this._buttons.has(selector)) {
+        this._buttons.set(selector, [...this.innerHTML.matchAll(/class="kanji-kombat-intro-action"[^>]*data-choice="([^"]*)"/g)]
+          .map(match => new FakeButton({ choice: match[1] })));
+      }
+      return this._buttons.get(selector);
     }
     if (selector === '[data-creature-id]') {
-      return [...this.innerHTML.matchAll(/data-creature-id="([^"]*)"/g)]
-        .map(match => new FakeButton({ creatureId: match[1] }));
+      if (!this._buttons.has(selector)) {
+        this._buttons.set(selector, [...this.innerHTML.matchAll(/data-creature-id="([^"]*)"/g)]
+          .map(match => new FakeButton({ creatureId: match[1] })));
+      }
+      return this._buttons.get(selector);
     }
     return [];
   }
@@ -101,5 +128,35 @@ describe('kanji-kombat ui', () => {
   it('renders a one-creature chooser from the collection', () => {
     showKanjiKombatCreatureChooser({ meta: { creatureCollection: ['hi', 'neko'] } }, { onConfirm: () => {} });
     assert.equal(actionArea.querySelectorAll('[data-creature-id]').length, 2);
+  });
+
+  it('ignores duplicate quiz answer taps while the first answer is in flight', async () => {
+    const quiz = {
+      prompt: 'あ',
+      choices: [
+        { id: 'a', answer: 'a' },
+        { id: 'i', answer: 'i' },
+      ],
+    };
+    let calls = 0;
+    let resolveAnswer;
+    const pending = new Promise(resolve => { resolveAnswer = resolve; });
+
+    renderKanjiKombatQuiz(quiz, {
+      onAnswer: async () => {
+        calls++;
+        await pending;
+      },
+    });
+
+    const [first] = actionArea.querySelectorAll('.kanji-kombat-choice');
+    const firstClick = first.click();
+    first.click();
+
+    assert.equal(calls, 1);
+    assert.equal(first.disabled, true);
+
+    resolveAnswer();
+    await firstClick;
   });
 });

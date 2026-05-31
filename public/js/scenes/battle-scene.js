@@ -6,6 +6,7 @@ import {
   spawnFormationSprite,
   removeFormationSprite,
   updateFormationSprite,
+  clearActiveGlowForScene,
   destroyAllStatusLabels,
   _updateFormations,
 } from '../pixi/formation.js';
@@ -69,6 +70,7 @@ export class BattleScene extends Scene {
   beforeExit() {
     stopParallax();
     releaseAllParticles();
+    clearActiveGlowForScene(this);
     // Pills are parented to the *global* labels layer (pixi/app.js), not to
     // this scene's container tree — registry.dispose() cascade won't reach
     // them. Tear them down explicitly here before the sprites that reference

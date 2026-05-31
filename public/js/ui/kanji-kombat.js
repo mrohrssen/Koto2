@@ -15,6 +15,24 @@ function actionArea() {
   return document.getElementById('action-area');
 }
 
+function bindSingleFlightButtons(buttons, getValue, handler) {
+  let inFlight = false;
+  for (const button of buttons) {
+    button.addEventListener('click', async () => {
+      if (inFlight) return;
+      inFlight = true;
+      buttons.forEach(btn => { btn.disabled = true; });
+      try {
+        await handler?.(getValue(button));
+      } catch (err) {
+        inFlight = false;
+        buttons.forEach(btn => { btn.disabled = false; });
+        throw err;
+      }
+    });
+  }
+}
+
 export function renderKanjiKombatQuiz(quiz, { onAnswer } = {}) {
   const root = actionArea();
   if (!root || !quiz) return;
@@ -31,9 +49,11 @@ export function renderKanjiKombatQuiz(quiz, { onAnswer } = {}) {
       </div>
     </div>
   `;
-  for (const button of root.querySelectorAll('.kanji-kombat-choice')) {
-    button.addEventListener('click', () => onAnswer?.(button.dataset.answerId));
-  }
+  bindSingleFlightButtons(
+    [...root.querySelectorAll('.kanji-kombat-choice')],
+    button => button.dataset.answerId,
+    onAnswer
+  );
 }
 
 export function renderKanjiKombatIntro(card, { onChoice } = {}) {
@@ -52,9 +72,11 @@ export function renderKanjiKombatIntro(card, { onChoice } = {}) {
       </div>
     </div>
   `;
-  for (const button of root.querySelectorAll('.kanji-kombat-intro-action')) {
-    button.addEventListener('click', () => onChoice?.(button.dataset.choice));
-  }
+  bindSingleFlightButtons(
+    [...root.querySelectorAll('.kanji-kombat-intro-action')],
+    button => button.dataset.choice,
+    onChoice
+  );
 }
 
 export function showKanjiKombatCreatureChooser(gameState, { onConfirm } = {}) {
@@ -73,9 +95,11 @@ export function showKanjiKombatCreatureChooser(gameState, { onConfirm } = {}) {
       </div>
     </div>
   `;
-  for (const button of root.querySelectorAll('.kanji-kombat-choice')) {
-    button.addEventListener('click', () => onConfirm?.(button.dataset.creatureId));
-  }
+  bindSingleFlightButtons(
+    [...root.querySelectorAll('.kanji-kombat-choice')],
+    button => button.dataset.creatureId,
+    onConfirm
+  );
 }
 
 export function renderKanjiKombatAction(gameState) {
