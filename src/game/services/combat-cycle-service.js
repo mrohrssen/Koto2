@@ -740,6 +740,15 @@ export class CombatCycleService {
       });
     }
 
+    const nextWork = this.gm.kanjiKombatService.queueNextPrompt();
+    if (nextWork?.kind === 'complete') {
+      return this.gm.kanjiKombatService.finalizeDailyComplete({
+        actionSegments,
+        flatPlayerAttacks,
+        flatEnemyAttacks,
+        xpEvents
+      });
+    }
     this.gm.emitState();
     return {
       actionType: 'kanjiKombat',

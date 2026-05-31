@@ -40,10 +40,15 @@ export function renderKanjiKombatQuiz(quiz, { onAnswer } = {}) {
     <div class="kanji-kombat-panel">
       <div class="kanji-kombat-label">Kanji Kombat</div>
       <div class="kanji-kombat-prompt">${escapeHtml(quiz.prompt)}</div>
-      <div class="kanji-kombat-choices">
+      <div class="move-grid kanji-kombat-choice-grid">
         ${quiz.choices.map(choice => `
-          <button class="kanji-kombat-choice" data-answer-id="${escapeHtml(choice.id)}">
-            ${escapeHtml(choice.answer)}
+          <button class="move-cell move-cell--neutral kanji-kombat-choice" type="button" data-answer-id="${escapeHtml(choice.id)}">
+            <div class="move-hero">
+              <div class="move-badge">答</div>
+              <div class="move-text">
+                <div class="move-name-jp">${escapeHtml(choice.answer)}</div>
+              </div>
+            </div>
           </button>
         `).join('')}
       </div>
@@ -79,29 +84,6 @@ export function renderKanjiKombatIntro(card, { onChoice } = {}) {
   );
 }
 
-export function showKanjiKombatCreatureChooser(gameState, { onConfirm } = {}) {
-  const root = actionArea();
-  const collection = gameState.meta?.creatureCollection || [];
-  if (!root) return;
-  root.innerHTML = `
-    <div class="kanji-kombat-panel">
-      <div class="kanji-kombat-label">Choose One Creature</div>
-      <div class="kanji-kombat-choices">
-        ${collection.map(id => `
-          <button class="kanji-kombat-choice" data-creature-id="${escapeHtml(id)}">
-            ${escapeHtml(id)}
-          </button>
-        `).join('')}
-      </div>
-    </div>
-  `;
-  bindSingleFlightButtons(
-    [...root.querySelectorAll('.kanji-kombat-choice')],
-    button => button.dataset.creatureId,
-    onConfirm
-  );
-}
-
 export function renderKanjiKombatAction(gameState) {
   const kk = gameState.run?.kanjiKombat;
   const cursor = gameState.combat?.actionCursor;
@@ -123,7 +105,7 @@ export function renderKanjiKombatAction(gameState) {
       onAnswer: async answerId => {
         const result = await api.submitAnswer(answerId);
         if (result?.state) api.updateGameState(result.state);
-        api.updateUI();
+        if (result) api.updateUI();
       },
     });
     return true;

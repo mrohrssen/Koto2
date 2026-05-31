@@ -475,7 +475,9 @@ function updateStatusBar() {
   const rpb = dom.roomProgressBadge;
   if (rpb) {
     const r = gameState.run;
-    if (r?.active && Array.isArray(r.rooms) && r.rooms.length > 0) {
+    if (r?.active && r.mode === 'kanjiKombat') {
+      rpb.textContent = String(r.kanjiKombat?.wave || 1);
+    } else if (r?.active && Array.isArray(r.rooms) && r.rooms.length > 0) {
       const total = r.totalRooms || r.rooms.length;
       const idx = Number.isInteger(r.currentRoom) ? r.currentRoom : 0;
       const current = Math.min(idx + 1, total);
@@ -1074,19 +1076,35 @@ async function startKanjiKombatSetup() {
     narrationBox.show('Befriend a creature before entering Kanji Kombat.', { autoDismiss: 2000 });
     return;
   }
-  kanjiKombatUI.showKanjiKombatCreatureChooser(gameState, {
-    onConfirm: async creatureId => {
-      const result = await apiStartKanjiKombat(creatureId);
-      if (result?.state) updateGameState(result.state);
-      combatLoopUI.startCombatLoop();
-      updateUI();
-    },
+
+  const collectionResult = await apiGetCreatureCollection();
+  const catalog = collectionResult?.catalog;
+  const ownedCollection = collectionResult?.collection;
+  if (!catalog || catalog.length === 0) return;
+
+  const starterIds = await showCollectionSelect(catalog, ownedCollection || collection, {
+    title: 'Choose One Creature',
+    confirmLabel: 'Start Kanji Kombat',
+    maxSelections: 1,
+    usePointBudget: false,
   });
+  const creatureId = starterIds?.[0];
+  removeCollectionOverlay();
+  if (!creatureId) return;
+
+  const result = await apiStartKanjiKombat(creatureId);
+  if (result?.state) updateGameState(result.state);
+  combatLoopUI.startCombatLoop();
+  updateUI();
 }
 
-function showCollectionSelect(catalog, collection) {
+function showCollectionSelect(catalog, collection, options = {}) {
   const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
-  const MAX_POINTS = 10;
+  const MAX_POINTS = options.maxPoints ?? 10;
+  const maxSelections = options.maxSelections ?? Infinity;
+  const usePointBudget = options.usePointBudget !== false;
+  const title = options.title || t('selectTeam');
+  const confirmLabel = options.confirmLabel || null;
 
   return new Promise((resolve) => {
     const selected = new Set();
@@ -1180,8 +1198,10 @@ function showCollectionSelect(catalog, collection) {
     let overlayBuilt = false;
 
     function render() {
-      const remaining = MAX_POINTS - usedPoints;
-      const budgetClass = remaining <= 0 ? 'budget-full' : remaining <= 3 ? 'budget-tight' : 'budget-ok';
+      const remaining = usePointBudget ? MAX_POINTS - usedPoints : Infinity;
+      const budgetClass = usePointBudget
+        ? (remaining <= 0 ? 'budget-full' : remaining <= 3 ? 'budget-tight' : 'budget-ok')
+        : 'budget-ok';
 
       const gameApp = document.querySelector('.game-app');
       let overlay = gameApp.querySelector('.collection-select');
@@ -1209,9 +1229,9 @@ function showCollectionSelect(catalog, collection) {
 
         overlay.innerHTML = `
           <div class="collection-header">
-            <span class="collection-title">${t('selectTeam')}</span>
+            <span class="collection-title">${title}</span>
             <div class="top-hud-right">
-              <span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>
+              ${usePointBudget ? `<span class="collection-points ${budgetClass}">${usedPoints} / ${MAX_POINTS} pts</span>` : ''}
               <button class="hud-chip hud-btn" id="collection-menu-btn" type="button" aria-label="Menu">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
@@ -1250,14 +1270,18 @@ function showCollectionSelect(catalog, collection) {
             if (owned) {
               if (selected.has(id)) {
                 selected.delete(id);
-                usedPoints -= creature.pointCost;
+                if (usePointBudget) usedPoints -= creature.pointCost;
               } else {
-                if (creature.pointCost > MAX_POINTS - usedPoints) {
+                if (selected.size >= maxSelections) {
+                  selected.clear();
+                  usedPoints = 0;
+                }
+                if (usePointBudget && creature.pointCost > MAX_POINTS - usedPoints) {
                   render();
                   return;
                 }
                 selected.add(id);
-                usedPoints += creature.pointCost;
+                if (usePointBudget) usedPoints += creature.pointCost;
               }
             }
             render();
@@ -1285,14 +1309,14 @@ function showCollectionSelect(catalog, collection) {
         const row = sorted.find(r => r.id === id);
         const owned = row ? isAvailable(row) : false;
         const isSelected = selected.has(id);
-        const tooExpensive = owned && !isSelected && (row?.pointCost || 0) > remaining;
+        const tooExpensive = usePointBudget && owned && !isSelected && (row?.pointCost || 0) > remaining;
         cell.classList.toggle('selected', isSelected);
         cell.classList.toggle('too-expensive', tooExpensive);
       });
 
       // Update budget
       const pointsEl = overlay.querySelector('.collection-points');
-      if (pointsEl) {
+      if (pointsEl && usePointBudget) {
         pointsEl.textContent = `${usedPoints} / ${MAX_POINTS} pts`;
         pointsEl.className = `collection-points ${budgetClass}`;
       }
@@ -1322,7 +1346,7 @@ function showCollectionSelect(catalog, collection) {
       const confirmBtn = document.getElementById('collection-confirm-btn');
       if (confirmBtn) {
         confirmBtn.disabled = selected.size === 0;
-        confirmBtn.innerHTML = t('startRun', selected.size, selected.size !== 1 ? 's' : '');
+        confirmBtn.innerHTML = confirmLabel || t('startRun', selected.size, selected.size !== 1 ? 's' : '');
       }
     }
 
@@ -2003,7 +2027,7 @@ async function initGame() {
 
   kanjiKombatUI.initKanjiKombatUI({
     submitIntro: apiSubmitKanjiKombatIntro,
-    submitAnswer: apiSubmitKanjiKombatAnswer,
+    submitAnswer: answerId => combatLoopUI.submitKanjiKombatAnswer(answerId),
     updateGameState,
     updateUI,
   });
@@ -2218,6 +2242,7 @@ async function initGame() {
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
     apiCreatureCombatCycle,
     apiGetGameState,
+    apiSubmitKanjiKombatAnswer,
     showPostCombatShop: showPostCombatShopFlow,
     apiBefriendReplace: (releaseCreatureId) => apiBefriendReplace(releaseCreatureId),
     apiGetBefriendConversation,
