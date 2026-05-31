@@ -80,7 +80,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
   },
 });
 
-const { init, renderExploring, renderWhackAMole } = await import('../../../public/js/ui/exploration.js');
+const { init, renderExploring, renderRunEnded, renderWhackAMole } = await import('../../../public/js/ui/exploration.js');
 
 describe('renderWhackAMole decline flow', () => {
   beforeEach(() => {
@@ -88,6 +88,30 @@ describe('renderWhackAMole decline flow', () => {
     roomTransitionCalls.length = 0;
     sceneManagerState.currentScene = null;
     dialogueCalls = [];
+  });
+
+  it('treats completed Kanji Kombat run-ended state as a victory report', () => {
+    const reportCalls = [];
+    init({
+      getGameState: () => ({
+        phase: 'run_ended',
+        run: {
+          mode: 'kanjiKombat',
+          kanjiKombat: {
+            report: { completedDaily: true },
+          },
+        },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: { showNarration: () => {} },
+      showAdventureReport: isVictory => { reportCalls.push(isVictory); },
+    });
+
+    renderRunEnded();
+
+    assert.deepEqual(reportCalls, [true]);
   });
 
   it('clears the prompt buttons immediately when the player declines', async () => {

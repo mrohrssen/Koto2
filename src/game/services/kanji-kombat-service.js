@@ -210,6 +210,43 @@ export class KanjiKombatService {
     });
   }
 
+  queueNextPrompt(opts = {}) {
+    const state = this.gm.run?.kanjiKombat;
+    if (!state || state.currentQuiz || state.pendingIntro) return null;
+    const work = chooseNextScriptWork(this.gm.userId, state, opts);
+    state.currentQuiz = work.quiz || null;
+    state.pendingIntro = work.kind === 'intro'
+      ? { cardId: work.card.id, card: work.card }
+      : null;
+    return work;
+  }
+
+  finalizeDailyComplete({
+    actionSegments = [],
+    flatPlayerAttacks = [],
+    flatEnemyAttacks = [],
+    xpEvents = []
+  } = {}) {
+    this.gm.combat.active = false;
+    this.gm.run.active = false;
+    this.gm.run.stats.endTime = Date.now();
+    this.gm.run.kanjiKombat.report.completedDaily = true;
+    this.gm.run.kanjiKombat.finalReport = this.buildReport();
+    this.gm.emitState();
+    return {
+      actionType: 'kanjiKombat',
+      actionSegments,
+      playerAttacks: flatPlayerAttacks,
+      enemyAttacks: flatEnemyAttacks,
+      xpEvents,
+      combatEnded: true,
+      victory: true,
+      kanjiKombatReport: this.gm.run.kanjiKombat.finalReport,
+      creatureParty: this.gm.run.creatureParty,
+      enemies: this.gm.combat.enemies,
+    };
+  }
+
   getAvailability() {
     const collection = this.gm.meta?.creatureCollection || [];
     if (collection.length === 0) {
@@ -364,24 +401,12 @@ export class KanjiKombatService {
     this.recordWaveClear({ miniboss: wasMiniboss });
     const work = chooseNextScriptWork(this.gm.userId, this.gm.run.kanjiKombat);
     if (work.kind === 'complete') {
-      this.gm.combat.active = false;
-      this.gm.run.active = false;
-      this.gm.run.stats.endTime = Date.now();
-      this.gm.run.kanjiKombat.report.completedDaily = true;
-      this.gm.run.kanjiKombat.finalReport = this.buildReport();
-      this.gm.emitState();
-      return {
-        actionType: 'kanjiKombat',
+      return this.finalizeDailyComplete({
         actionSegments,
-        playerAttacks: flatPlayerAttacks,
-        enemyAttacks: flatEnemyAttacks,
+        flatPlayerAttacks,
+        flatEnemyAttacks,
         xpEvents,
-        combatEnded: true,
-        victory: true,
-        kanjiKombatReport: this.gm.run.kanjiKombat.finalReport,
-        creatureParty: this.gm.run.creatureParty,
-        enemies: this.gm.combat.enemies,
-      };
+      });
     }
 
     this.spawnNextWave();

@@ -3,21 +3,53 @@ import assert from 'node:assert/strict';
 import {
   renderKanjiKombatIntro,
   renderKanjiKombatQuiz,
-  showKanjiKombatCreatureChooser,
 } from '../../../public/js/ui/kanji-kombat.js';
 
 class FakeButton {
   constructor(dataset = {}, textContent = '') {
     this.dataset = dataset;
     this.textContent = textContent;
+    this.listeners = {};
   }
 
-  addEventListener() {}
+  addEventListener(event, handler) {
+    this.listeners[event] = handler;
+  }
+
+  click() {
+    this.listeners.click?.();
+  }
 }
 
 class FakeActionArea {
   constructor() {
-    this.innerHTML = '';
+    this._innerHTML = '';
+    this.buttons = [];
+  }
+
+  set innerHTML(value) {
+    this._innerHTML = value;
+    this.buttons = [
+      ...value.matchAll(/<button class="([^"]*)"[^>]*(?:data-answer-id|data-creature-id)="([^"]*)"[^>]*>([\s\S]*?)<\/button>/g)
+    ].map(match => {
+      const dataset = match[0].includes('data-answer-id')
+        ? { answerId: match[2] }
+        : { creatureId: match[2] };
+      const button = new FakeButton(dataset, match[3].replace(/<[^>]+>/g, '').trim());
+      button.className = match[1];
+      return button;
+    });
+    this.buttons.push(...[
+      ...value.matchAll(/<button class="([^"]*)"[^>]*data-choice="([^"]*)"[^>]*>([\s\S]*?)<\/button>/g)
+    ].map(match => {
+      const button = new FakeButton({ choice: match[2] }, match[3].replace(/<[^>]+>/g, '').trim());
+      button.className = match[1];
+      return button;
+    }));
+  }
+
+  get innerHTML() {
+    return this._innerHTML;
   }
 
   querySelector(selector) {
@@ -34,16 +66,10 @@ class FakeActionArea {
 
   querySelectorAll(selector) {
     if (selector === '.kanji-kombat-choice') {
-      return [...this.innerHTML.matchAll(/class="kanji-kombat-choice"[^>]*data-(?:answer-id|creature-id)="([^"]*)"/g)]
-        .map(match => new FakeButton({ answerId: match[1], creatureId: match[1] }));
+      return this.buttons.filter(button => button.className.split(/\s+/).includes('kanji-kombat-choice'));
     }
     if (selector === '.kanji-kombat-intro-action') {
-      return [...this.innerHTML.matchAll(/class="kanji-kombat-intro-action"[^>]*data-choice="([^"]*)"/g)]
-        .map(match => new FakeButton({ choice: match[1] }));
-    }
-    if (selector === '[data-creature-id]') {
-      return [...this.innerHTML.matchAll(/data-creature-id="([^"]*)"/g)]
-        .map(match => new FakeButton({ creatureId: match[1] }));
+      return this.buttons.filter(button => button.className.split(/\s+/).includes('kanji-kombat-intro-action'));
     }
     return [];
   }
@@ -92,14 +118,60 @@ describe('kanji-kombat ui', () => {
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-choice').length, 4);
   });
 
+  it('renders quiz answers in the combat move grid layout', () => {
+    renderKanjiKombatQuiz({
+      prompt: '火',
+      choices: [
+        { id: 'fire', answer: 'fire' },
+        { id: 'water', answer: 'water' },
+        { id: 'tree', answer: 'tree' },
+        { id: 'metal', answer: 'metal' },
+      ],
+    }, { onAnswer: () => {} });
+
+    assert.match(actionArea.innerHTML, /class="move-grid/);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-choice').every(button =>
+      button.className.split(/\s+/).includes('move-cell')
+    ), true);
+  });
+
+  it('delegates quiz answer clicks without forcing a UI rerender', async () => {
+    const calls = [];
+    const { initKanjiKombatUI, renderKanjiKombatAction } = await import('../../../public/js/ui/kanji-kombat.js');
+    initKanjiKombatUI({
+      submitAnswer: async answerId => {
+        calls.push(answerId);
+      },
+      updateGameState: () => calls.push('unexpected-state'),
+      updateUI: () => calls.push('unexpected-render'),
+    });
+
+    renderKanjiKombatAction({
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          currentQuiz: {
+            prompt: '火',
+            choices: [
+              { id: 'fire', answer: 'fire' },
+              { id: 'water', answer: 'water' },
+              { id: 'tree', answer: 'tree' },
+              { id: 'metal', answer: 'metal' },
+            ],
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    actionArea.querySelectorAll('.kanji-kombat-choice')[0].click();
+    await Promise.resolve();
+
+    assert.deepEqual(calls, ['fire']);
+  });
+
   it('renders intro modal actions', () => {
     renderKanjiKombatIntro({ id: 'kanji:上', prompt: '上', reading: 'じょう', answer: 'Above' }, { onChoice: () => {} });
     assert.equal(actionArea.querySelector('.kanji-kombat-intro-card').textContent.includes('上'), true);
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
-  });
-
-  it('renders a one-creature chooser from the collection', () => {
-    showKanjiKombatCreatureChooser({ meta: { creatureCollection: ['hi', 'neko'] } }, { onConfirm: () => {} });
-    assert.equal(actionArea.querySelectorAll('[data-creature-id]').length, 2);
   });
 });

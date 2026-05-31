@@ -174,6 +174,7 @@ let showFlashCards = null;
 let setCombatAnimationActive = null;
 let apiCreatureCombatCycle = null;
 let apiGetGameState = null;
+let apiSubmitKanjiKombatAnswer = null;
 let showPostCombatShop = null;
 
 let apiStartNpcDialogue = null;
@@ -471,6 +472,7 @@ export function init(callbacks) {
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
   apiCreatureCombatCycle = callbacks.apiCreatureCombatCycle;
   apiGetGameState = callbacks.apiGetGameState;
+  apiSubmitKanjiKombatAnswer = callbacks.apiSubmitKanjiKombatAnswer;
   showPostCombatShop = callbacks.showPostCombatShop;
   apiStartNpcDialogue = callbacks.apiStartNpcDialogue;
   apiRespondNpcDialogue = callbacks.apiRespondNpcDialogue;
@@ -687,6 +689,17 @@ function promptNextCreature() {
 function submitCursorAction(choice) {
   clearActiveGlowForScene(getSceneManager().currentScene);
   executeCreatureMovesTurn([choice]);
+}
+
+export async function submitKanjiKombatAnswer(answerId) {
+  if (typeof apiSubmitKanjiKombatAnswer !== 'function') {
+    throw new Error('Kanji Kombat answer API is not configured');
+  }
+  return executeCreatureMovesTurn([], {
+    actionType: 'kanjiKombat',
+    request: () => apiSubmitKanjiKombatAnswer(answerId),
+    describeIntent: () => `Kanji Kombat answer: ${answerId}`,
+  });
 }
 
 function handleMoveSelected(move, creatureIndex) {
@@ -1242,10 +1255,12 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
  * Execute a full turn of creature moves — calls /creature-combat-cycle with 'attack' + moveChoices.
  * @param {Array} choices - Array of { creatureIndex, moveId, targetIndex }
  */
-async function executeCreatureMovesTurn(choices) {
+async function executeCreatureMovesTurn(choices, options = {}) {
   if (!combatActive || playerAttackPending || getEnemyDialogueActive()) return;
   playerAttackPending = true;
-  const turnTiming = createCombatTurnTiming('attack');
+  const actionType = options.actionType || 'attack';
+  const recoveryActionType = options.recoveryActionType || 'attack';
+  const turnTiming = createCombatTurnTiming(actionType);
 
   return withAnimationActive(async () => {
     try {
@@ -1255,20 +1270,22 @@ async function executeCreatureMovesTurn(choices) {
         const gs = getGameState();
         const allies = gs?.combat?.allies || gs?.run?.creatureParty?.active || [];
         const enemies = gs?.combat?.enemies || [];
-        const moveDesc = choices.map(c => {
+        const moveDesc = options.describeIntent?.() || choices.map(c => {
           const creature = allies[c.creatureIndex];
           const moveName = creature?.moves?.find(m => m.id === c.moveId)?.nameEn || '?';
           const target = c.targetIndex >= 0 ? (enemies[c.targetIndex]?.nameEn || '?') : 'AoE/Self';
           return `${creature?.nameEn || '?'}→${moveName}→${target}`;
         }).join(', ');
-        _log.act(`Attack: ${moveDesc}`);
+        _log.act(actionType === 'attack' ? `Attack: ${moveDesc}` : moveDesc);
       }
 
       const requestStartedAt = performance.now();
-      const result = await runCreatureCombatRequest('attack', choices);
+      const result = options.request
+        ? await options.request()
+        : await runCreatureCombatRequest('attack', choices);
       markCombatAnimationStart(turnTiming, requestStartedAt);
       if (!result) {
-        const recovery = await recoverFromNullCombatPost('attack');
+        const recovery = await recoverFromNullCombatPost(recoveryActionType);
         logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
         if (recovery.recovered) return;
         throw new Error('Combat sync failed');
@@ -1276,7 +1293,7 @@ async function executeCreatureMovesTurn(choices) {
 
       if (result.error) {
         if (result.state) {
-          const recovery = recoverFromCombatErrorState(result, 'attack');
+          const recovery = recoverFromCombatErrorState(result, recoveryActionType);
           logCombatTurnTiming(turnTiming, result, recovery.outcome, !recovery.recovered);
           if (recovery.recovered) return;
         }

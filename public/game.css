@@ -38,7 +38,6 @@
   gap: 0.5rem;
 }
 
-.kanji-kombat-choice,
 .kanji-kombat-intro-action {
   border: 1px solid rgba(255,255,255,0.16);
   border-radius: 14px;
@@ -46,6 +45,21 @@
   color: var(--text-primary);
   min-height: 52px;
   font-weight: 700;
+}
+
+.kanji-kombat-choice-grid.move-grid {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  flex: 0 0 auto;
+}
+
+.kanji-kombat-choice.move-cell {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  text-align: left;
+  min-height: 72px;
 }
 
 .kanji-kombat-intro-card {

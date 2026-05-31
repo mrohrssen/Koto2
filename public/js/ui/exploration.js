@@ -715,7 +715,10 @@ async function showPvpTeamSaveSlots() {
 /** Run ended — show adventure report (or fallback to simple button) */
 export function renderRunEnded() {
   if (showAdventureReport) {
-    showAdventureReport(false);
+    const state = getGameState?.();
+    const isKanjiKombatDailyComplete = state?.run?.mode === 'kanjiKombat'
+      && state.run?.kanjiKombat?.report?.completedDaily === true;
+    showAdventureReport(isKanjiKombatDailyComplete);
   } else {
     renderButtons([
       { label: 'ハブに戻る', onClick: () => returnToHub(), primary: true },
