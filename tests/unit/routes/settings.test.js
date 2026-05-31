@@ -28,8 +28,8 @@ describe('settings routes App Store readiness', () => {
     resetDataDirForTest();
   });
 
-  it('does not expose debug super attack through public settings', async () => {
-    const settings = { debugSuperAttack: false, voiceGender: 'boy' };
+  it('does not expose debug super attack or force befriend through public settings', async () => {
+    const settings = { debugSuperAttack: false, debugForceBefriend: false, voiceGender: 'boy' };
     let savedSettings = null;
     const app = createApp({
       routeOverrides: {
@@ -40,6 +40,7 @@ describe('settings routes App Store readiness', () => {
 
     const getRes = await request(app).get('/api/settings').expect(200);
     assert.equal(Object.hasOwn(getRes.body, 'debugSuperAttack'), false);
+    assert.equal(Object.hasOwn(getRes.body, 'debugForceBefriend'), false);
 
     await request(app)
       .post('/api/settings')
@@ -47,7 +48,9 @@ describe('settings routes App Store readiness', () => {
       .expect(200);
 
     assert.equal(settings.debugSuperAttack, false);
+    assert.equal(settings.debugForceBefriend, false);
     assert.equal(savedSettings.debugSuperAttack, false);
+    assert.equal(savedSettings.debugForceBefriend, false);
     assert.equal(savedSettings.voiceGender, 'boy');
   });
 
@@ -70,10 +73,12 @@ describe('settings routes App Store readiness', () => {
     assert.equal(savedSettings.voiceGender, 'boy');
   });
 
-  it('exposes and saves debug super attack only for allowlisted usernames', async () => {
+  it('exposes and saves debug super attack and force befriend only for allowlisted usernames', async () => {
     const settings = {
       debugSuperAttack: true,
       debugSuperAttackByUsername: { michia: false },
+      debugForceBefriend: true,
+      debugForceBefriendByUsername: { michia: false },
       voiceGender: 'boy'
     };
     let savedSettings = null;
@@ -89,33 +94,39 @@ describe('settings routes App Store readiness', () => {
       .set(authHeader('newplayer'))
       .expect(200);
     assert.equal(Object.hasOwn(regularGet.body, 'debugSuperAttack'), false);
+    assert.equal(Object.hasOwn(regularGet.body, 'debugForceBefriend'), false);
 
     await request(app)
       .post('/api/settings')
       .set(authHeader('newplayer'))
-      .send({ debugSuperAttack: true })
+      .send({ debugSuperAttack: true, debugForceBefriend: true })
       .expect(200);
     assert.equal(savedSettings.debugSuperAttackByUsername.michia, false);
+    assert.equal(savedSettings.debugForceBefriendByUsername.michia, false);
 
     const allowlistedGet = await request(app)
       .get('/api/settings')
       .set(authHeader('michia'))
       .expect(200);
     assert.equal(allowlistedGet.body.debugSuperAttack, false);
+    assert.equal(allowlistedGet.body.debugForceBefriend, false);
 
     await request(app)
       .post('/api/settings')
       .set(authHeader('michia'))
-      .send({ debugSuperAttack: true })
+      .send({ debugSuperAttack: true, debugForceBefriend: true })
       .expect(200);
     assert.equal(settings.debugSuperAttackByUsername.michia, true);
+    assert.equal(settings.debugForceBefriendByUsername.michia, true);
     assert.equal(savedSettings.debugSuperAttackByUsername.michia, true);
+    assert.equal(savedSettings.debugForceBefriendByUsername.michia, true);
 
     const capitalizedGet = await request(app)
       .get('/api/settings')
       .set(authHeader('Michia'))
       .expect(200);
     assert.equal(capitalizedGet.body.debugSuperAttack, true);
+    assert.equal(capitalizedGet.body.debugForceBefriend, true);
   });
 
   it('does not expose or save global TTS volume', async () => {

@@ -1312,12 +1312,14 @@ const BEFRIEND_QUIZ_CHANCE = 0.25; // 25% chance on killing blow to last enemy
  * @param {object[]} enemies - Enemy creatures array
  * @param {object} [options]
  * @param {boolean} [options.guaranteed] - If true, always trigger (new player protection)
+ * @param {boolean} [options.force] - If true, always trigger (debug-only)
  * @returns {boolean}
  */
-export function shouldTriggerBefriendQuiz(enemies, { guaranteed = false } = {}) {
+export function shouldTriggerBefriendQuiz(enemies, { guaranteed = false, force = false } = {}) {
   // Find the last enemy that just died (hp === 0, was alive this turn)
   const justDefeated = enemies.filter(e => e.hp <= 0 && !e.befriended);
   if (justDefeated.length === 0) return false;
+  if (force) return true;
   if (guaranteed) return true;
   return Math.random() < BEFRIEND_QUIZ_CHANCE;
 }

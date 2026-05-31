@@ -517,9 +517,10 @@ export class CombatCycleService {
     if (allEnemiesDown) {
       const totalOwnedCreatures = this.gm.run.creatureParty.active.length + (this.gm.run.creatureParty.reserves?.length || 0);
       const guaranteeBefriend = totalOwnedCreatures <= 1 || shouldProtectBefriend(this.gm.meta);
+      const forceBefriend = this.gm._debugForceBefriend === true;
       const befriendEligible = !this.gm.combat.isBoss && !this.gm.combat.npcId;
       const befriendTriggerRoll = befriendEligible
-        ? shouldTriggerBefriendQuiz(this.gm.combat.enemies, { guaranteed: guaranteeBefriend })
+        ? shouldTriggerBefriendQuiz(this.gm.combat.enemies, { guaranteed: guaranteeBefriend, force: forceBefriend })
         : false;
       if (befriendEligible && befriendTriggerRoll) {
         const killingAttacks = flatPlayerAttacks.filter(a => a.targetDefeated);
@@ -848,9 +849,10 @@ export class CombatCycleService {
       // New player protection: guarantee befriend when player only has 1 creature
       const totalOwnedCreatures = this.gm.run.creatureParty.active.length + (this.gm.run.creatureParty.reserves?.length || 0);
       const guaranteeBefriend = totalOwnedCreatures <= 1 || shouldProtectBefriend(this.gm.meta);
+      const forceBefriend = this.gm._debugForceBefriend === true;
       const befriendEligible = !this.gm.combat.isBoss && !this.gm.combat.npcId;
       const befriendTriggerRoll = befriendEligible
-        ? shouldTriggerBefriendQuiz(this.gm.combat.enemies, { guaranteed: guaranteeBefriend })
+        ? shouldTriggerBefriendQuiz(this.gm.combat.enemies, { guaranteed: guaranteeBefriend, force: forceBefriend })
         : false;
       if (befriendEligible && befriendTriggerRoll) {
         // Find the creature killed by the player's last killing blow
