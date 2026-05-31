@@ -98,6 +98,34 @@ describe('grammar-matcher', () => {
     assert.equal(matches[0].matchedText, 'より猫の方が');
   });
 
+  it('supports disallowing punctuation inside bounded gaps', () => {
+    const catalog = [{
+      id: 'test-adverb-negative',
+      title: 'adverb negative',
+      meaning: 'not really',
+      shortExplanation: 'test',
+      displayPattern: 'adverb〜ない',
+    }];
+    const matchers = [{
+      grammarId: 'test-adverb-negative',
+      priority: 1,
+      tokens: [
+        { surface: 'なかなか' },
+        { gap: { min: 0, max: 4, disallow: { pos0: '補助記号' } } },
+        { baseForm: 'ない' },
+      ],
+      display: { startTokenOffset: 0, endTokenOffset: 2 },
+    }];
+
+    assert.ok(findGrammarMatches(tokenized('なかなか覚えられない。'), { catalog, matchers })
+      .some(match => match.grammarId === 'test-adverb-negative'));
+    assert.equal(
+      findGrammarMatches(tokenized('なかなかおいしい。問題はない。'), { catalog, matchers })
+        .some(match => match.grammarId === 'test-adverb-negative'),
+      false
+    );
+  });
+
   it('keeps equal-priority exact-span matches for shared surface grammar senses', () => {
     const catalog = [
       { id: 'test-te-iru-a', title: 'ている A' },

@@ -47,6 +47,7 @@ function matchSequenceFrom(tokens, start, specs, specIndex, tokenIndex, specStar
     const min = spec.gap.min ?? 0;
     const max = spec.gap.max ?? min;
     for (let width = min; width <= max && tokenIndex + width <= tokens.length; width++) {
+      if (gapContainsDisallowedToken(tokens, tokenIndex, width, spec.gap.disallow)) continue;
       const nextStarts = [...specStarts];
       const nextEnds = [...specEnds];
       nextStarts[specIndex] = tokenIndex;
@@ -58,7 +59,7 @@ function matchSequenceFrom(tokens, start, specs, specIndex, tokenIndex, specStar
   }
 
   if (spec.optional) {
-    if (tokenMatches(tokens[tokenIndex], spec, tokens, start)) {
+    if (tokenMatches(tokens[tokenIndex], spec, tokens, start, tokenIndex)) {
       const nextStarts = [...specStarts];
       const nextEnds = [...specEnds];
       nextStarts[specIndex] = tokenIndex;
@@ -69,12 +70,22 @@ function matchSequenceFrom(tokens, start, specs, specIndex, tokenIndex, specStar
     return matchSequenceFrom(tokens, start, specs, specIndex + 1, tokenIndex, [...specStarts], [...specEnds]);
   }
 
-  if (!tokenMatches(tokens[tokenIndex], spec, tokens, start)) return null;
+  if (!tokenMatches(tokens[tokenIndex], spec, tokens, start, tokenIndex)) return null;
   const nextStarts = [...specStarts];
   const nextEnds = [...specEnds];
   nextStarts[specIndex] = tokenIndex;
   nextEnds[specIndex] = tokenIndex;
   return matchSequenceFrom(tokens, start, specs, specIndex + 1, tokenIndex + 1, nextStarts, nextEnds);
+}
+
+function gapContainsDisallowedToken(tokens, tokenIndex, width, disallow) {
+  if (!disallow) return false;
+  const disallowedSpecs = Array.isArray(disallow) ? disallow : [disallow];
+  for (let offset = 0; offset < width; offset++) {
+    const token = tokens[tokenIndex + offset];
+    if (disallowedSpecs.some(spec => tokenMatches(token, spec, tokens, tokenIndex, tokenIndex + offset))) return true;
+  }
+  return false;
 }
 
 function resolveDisplayToken(sequenceMatch, specOffset, edge) {
@@ -83,13 +94,22 @@ function resolveDisplayToken(sequenceMatch, specOffset, edge) {
   return edge === 'start' ? sequenceMatch.tokenStart : sequenceMatch.tokenEnd;
 }
 
-function tokenMatches(token, spec, tokens = [], start = 0) {
+function tokenMatches(token, spec, tokens = [], start = 0, tokenIndex = start) {
   if (!token) return false;
   for (const [key, expected] of Object.entries(spec)) {
     if (key === 'offset') continue;
     if (key === 'optional') continue;
     if (key === 'gap') continue;
     if (key === 'max') continue;
+    if (key === 'disallow') continue;
+    if (key === 'notNext') {
+      if (tokenMatches(tokens[tokenIndex + 1], expected, tokens, start, tokenIndex + 1)) return false;
+      continue;
+    }
+    if (key === 'atStart') {
+      if (Boolean(expected) && tokenIndex !== 0) return false;
+      continue;
+    }
     if (key === 'sameBaseFormAsOffset') {
       if (token.baseForm !== tokens[start + expected]?.baseForm) return false;
       continue;
@@ -128,7 +148,7 @@ function isRejected(tokens, start, rejectGroups = []) {
   return rejectGroups.some(group =>
     (group.tokens || []).every(spec => {
       const offset = spec.offset ?? 0;
-      return tokenMatches(tokens[start + offset], spec, tokens, start);
+      return tokenMatches(tokens[start + offset], spec, tokens, start, start + offset);
     })
     && (!group.previousWithin || hasPreviousTokenMatch(tokens, start, group.previousWithin))
   );
@@ -137,7 +157,7 @@ function isRejected(tokens, start, rejectGroups = []) {
 function hasPreviousTokenMatch(tokens, start, spec) {
   const max = spec.max ?? 1;
   for (let offset = 1; offset <= max; offset++) {
-    if (tokenMatches(tokens[start - offset], spec, tokens, start)) return true;
+    if (tokenMatches(tokens[start - offset], spec, tokens, start, start - offset)) return true;
   }
   return false;
 }
