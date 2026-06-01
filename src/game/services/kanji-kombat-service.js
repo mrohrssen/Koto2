@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { createCombatState, createNewRun } from '../state.js';
 import { AREAS } from '../rooms.js';
 import { createPveOpeningCursor } from '../combat/action-cursor.js';
+import { applyStatChange } from '../combat/effects.js';
 import {
   generateEnemyCreature,
   generateEnemyCreatures,
@@ -22,6 +23,7 @@ import {
 } from '../script-srs.js';
 
 export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 5;
+const STREAK_BUFF_STATS = ['atk', 'def', 'dex'];
 
 export function getLocalDateKey(date = new Date()) {
   return date.toLocaleDateString('en-CA');
@@ -205,6 +207,16 @@ function healAll(allies, percent) {
     if (!ally || ally.hp <= 0) continue;
     ally.hp = Math.min(ally.maxHp, ally.hp + Math.ceil(ally.maxHp * percent));
   }
+}
+
+function applyRandomStreakBuff(allies, random = Math.random) {
+  const livingAllies = (allies || []).filter(ally => ally && ally.hp > 0);
+  if (livingAllies.length === 0) return null;
+
+  const ally = livingAllies[Math.floor(random() * livingAllies.length)];
+  const stat = STREAK_BUFF_STATS[Math.floor(random() * STREAK_BUFF_STATS.length)];
+  const delta = applyStatChange(ally, stat, 1);
+  return { ally, stat, delta };
 }
 
 export class KanjiKombatService {
@@ -415,6 +427,7 @@ export class KanjiKombatService {
     kk.reviewsSinceIntro += 1;
 
     if (kk.streak === 5) healAll(this.gm.run.creatureParty.active, 0.10);
+    if (kk.streak === 10) applyRandomStreakBuff(this.gm.run.creatureParty.active);
     if (kk.streak === 15) healAll(this.gm.run.creatureParty.active, 0.35);
     if (kk.streak === 20) {
       this.addRandomUnlockedAllyOrFullHeal();
