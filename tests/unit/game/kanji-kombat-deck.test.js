@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { clearSrsCache, configureSrs, loadSrsData, saveSrsData } from '../../../src/game/internal-srs.js';
-import { ensureScriptDeckSeeded, getScriptDailyState } from '../../../src/game/script-srs.js';
+import { ensureScriptDeckSeeded, getScriptDailyState, gradeScriptCard } from '../../../src/game/script-srs.js';
 import {
   buildQuizForCard,
   chooseNextScriptWork,
@@ -134,7 +134,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(result.next.kind, 'quiz');
   });
 
-  it('chains up to five discoveries when no cards are due', () => {
+  it('chains up to five discoveries when no cards are due, then tests that batch', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
       card.due = new Date('2099-01-01T00:00:00Z');
@@ -158,13 +158,87 @@ describe('kanji-kombat deck controller', () => {
       work = result.next;
     }
 
-    assert.equal(work.kind, 'complete');
+    assert.equal(work.kind, 'quiz');
+    assert.equal(seen.includes(work.quiz.cardId), true);
     assert.equal(state.noDueDiscoveryChainCount, NO_DUE_DISCOVERY_CHAIN_LIMIT);
     assert.equal(new Set(seen).size, NO_DUE_DISCOVERY_CHAIN_LIMIT);
-    assert.deepEqual(getScriptDailyState(userId, '2026-05-31'), {
-      date: '2026-05-31',
-      introducedCount: NO_DUE_DISCOVERY_CHAIN_LIMIT,
-      completed: true,
+    assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, NO_DUE_DISCOVERY_CHAIN_LIMIT);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
+  });
+
+  it('starts another no-due discovery batch after testing the previous batch', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    let work = chooseNextScriptWork(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
     });
+
+    for (let i = 0; i < NO_DUE_DISCOVERY_CHAIN_LIMIT; i++) {
+      work = resolveIntroChoice(userId, state, work.card.id, 'known', {
+        random: () => 0,
+        now: new Date('2026-05-31T00:00:00Z'),
+      }).next;
+    }
+
+    const practiced = [];
+    for (let i = 0; i < NO_DUE_DISCOVERY_CHAIN_LIMIT; i++) {
+      assert.equal(work.kind, 'quiz');
+      practiced.push(work.quiz.cardId);
+      gradeScriptCard(userId, work.quiz.cardId, 'good');
+      state.currentQuiz = null;
+      work = chooseNextScriptWork(userId, state, {
+        random: () => 0,
+        now: new Date('2026-05-31T00:00:00Z'),
+      });
+    }
+
+    assert.equal(new Set(practiced).size, NO_DUE_DISCOVERY_CHAIN_LIMIT);
+    assert.equal(work.kind, 'intro');
+    assert.equal(state.noDueDiscoveryChainCount, 1);
+  });
+
+  it('returns to pending no-due practice after an interrupted due review', () => {
+    const data = loadSrsData(userId);
+    const hiragana = data.script.cards.filter(c => c.type === 'hiragana');
+    const practiceIds = hiragana.slice(0, NO_DUE_DISCOVERY_CHAIN_LIMIT).map(card => card.id);
+    for (const card of hiragana) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    for (const card of hiragana.slice(0, NO_DUE_DISCOVERY_CHAIN_LIMIT)) {
+      card.reps = 1;
+    }
+    hiragana[NO_DUE_DISCOVERY_CHAIN_LIMIT].reps = 1;
+    hiragana[NO_DUE_DISCOVERY_CHAIN_LIMIT].due = new Date('2026-05-30T00:00:00Z');
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    state.noDueDiscoveryChainCount = NO_DUE_DISCOVERY_CHAIN_LIMIT;
+    state.noDuePracticeQueue = [...practiceIds];
+
+    const due = chooseNextScriptWork(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+    assert.equal(due.kind, 'quiz');
+    assert.equal(due.quiz.cardId, hiragana[NO_DUE_DISCOVERY_CHAIN_LIMIT].id);
+    assert.equal(state.noDueDiscoveryChainCount, 0);
+
+    const updated = loadSrsData(userId);
+    updated.script.cards.find(card => card.id === due.quiz.cardId).due = new Date('2099-01-01T00:00:00Z');
+    saveSrsData(userId, updated);
+    state.currentQuiz = null;
+
+    const practice = chooseNextScriptWork(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+    assert.equal(practice.kind, 'quiz');
+    assert.equal(practice.quiz.cardId, practiceIds[0]);
   });
 });

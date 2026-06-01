@@ -39,6 +39,7 @@ export function createInitialKanjiKombatState({ localDate = getLocalDateKey(), r
     reviewsSinceIntro: 0,
     nextIntroAfter: rollIntroInterval(random),
     noDueDiscoveryChainCount: 0,
+    noDuePracticeQueue: [],
     localDate,
     currentQuiz: null,
     pendingIntro: null,
@@ -100,6 +101,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   const excludedIds = opts.excludeCardIds || [];
   const activeType = getActiveScriptType(userId);
   state.report.scriptDeck = activeType;
+  if (!Array.isArray(state.noDuePracticeQueue)) state.noDuePracticeQueue = [];
 
   const daily = getScriptDailyState(userId, state.localDate);
   if (daily.completed === true) {
@@ -112,30 +114,53 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   const dueCards = excludeCards(getDueScriptCards(userId, activeType, now), excludedIds);
   const newCards = excludeCards(getNewScriptCards(userId, activeType), excludedIds);
   const canIntroduce = daily.introducedCount < DAILY_NEW_LIMIT && newCards.length > 0;
+  const allCards = getScriptCards(userId, activeType);
 
   if (dueCards.length > 0 && state.reviewsSinceIntro >= state.nextIntroAfter && canIntroduce) {
     state.noDueDiscoveryChainCount = 0;
     const card = newCards[0];
     state.currentQuiz = null;
-    state.pendingIntro = { cardId: card.id, card };
-    return { kind: 'intro', card };
+    state.pendingIntro = { cardId: card.id, card, source: 'reviewCadence' };
+    return { kind: 'intro', card, source: 'reviewCadence' };
   }
 
   if (dueCards.length > 0) {
     state.noDueDiscoveryChainCount = 0;
     const card = dueCards[0];
-    const quiz = buildQuizForCard(card, getScriptCards(userId, activeType), random);
+    const quiz = buildQuizForCard(card, allCards, random);
     state.currentQuiz = quiz;
     state.pendingIntro = null;
     return { kind: 'quiz', card, quiz };
   }
 
-  if (canIntroduce && (state.noDueDiscoveryChainCount || 0) < NO_DUE_DISCOVERY_CHAIN_LIMIT) {
+  const noDueChainCount = state.noDueDiscoveryChainCount || 0;
+  const canContinueNoDueDiscoveryBatch = state.noDuePracticeQueue.length === noDueChainCount;
+  if (canIntroduce && noDueChainCount < NO_DUE_DISCOVERY_CHAIN_LIMIT && canContinueNoDueDiscoveryBatch) {
     state.noDueDiscoveryChainCount = (state.noDueDiscoveryChainCount || 0) + 1;
     const card = newCards[0];
     state.currentQuiz = null;
-    state.pendingIntro = { cardId: card.id, card };
-    return { kind: 'intro', card };
+    state.pendingIntro = { cardId: card.id, card, source: 'noDueBatch' };
+    return { kind: 'intro', card, source: 'noDueBatch' };
+  }
+
+  while (state.noDuePracticeQueue.length > 0) {
+    const practiceCardId = state.noDuePracticeQueue.shift();
+    if (excludedIds.includes(practiceCardId)) continue;
+    const card = allCards.find(candidate => candidate.id === practiceCardId);
+    if (!card) continue;
+    const quiz = buildQuizForCard(card, allCards, random);
+    state.currentQuiz = quiz;
+    state.pendingIntro = null;
+    return { kind: 'quiz', card, quiz };
+  }
+
+  if (canIntroduce) {
+    state.noDueDiscoveryChainCount = 0;
+    const card = newCards[0];
+    state.noDueDiscoveryChainCount = 1;
+    state.currentQuiz = null;
+    state.pendingIntro = { cardId: card.id, card, source: 'noDueBatch' };
+    return { kind: 'intro', card, source: 'noDueBatch' };
   }
 
   markScriptDailyComplete(userId, state.localDate);
@@ -146,6 +171,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
 }
 
 export function resolveIntroChoice(userId, state, cardId, choice, opts = {}) {
+  const introSource = state.pendingIntro?.source || null;
   const grade = choice === 'known' ? 'good' : 'again';
   const graded = gradeScriptCard(userId, cardId, grade);
   recordScriptIntro(userId, state.localDate);
@@ -153,6 +179,12 @@ export function resolveIntroChoice(userId, state, cardId, choice, opts = {}) {
   state.report.newCardsIntroduced += 1;
   state.reviewsSinceIntro = 0;
   state.nextIntroAfter = rollIntroInterval(opts.random || Math.random);
+  if (introSource === 'noDueBatch') {
+    if (!Array.isArray(state.noDuePracticeQueue)) state.noDuePracticeQueue = [];
+    if (!state.noDuePracticeQueue.includes(cardId)) {
+      state.noDuePracticeQueue.push(cardId);
+    }
+  }
   const next = chooseNextScriptWork(userId, state, {
     ...opts,
     excludeCardIds: [...(opts.excludeCardIds || []), cardId],
@@ -201,7 +233,7 @@ export class KanjiKombatService {
     }
     this.gm.run.kanjiKombat.currentQuiz = work.quiz || null;
     this.gm.run.kanjiKombat.pendingIntro = work.kind === 'intro'
-      ? { cardId: work.card.id, card: work.card }
+      ? { cardId: work.card.id, card: work.card, source: work.source }
       : null;
     this.spawnNextWave();
     this.gm.emitState();
@@ -261,7 +293,7 @@ export class KanjiKombatService {
     const work = chooseNextScriptWork(this.gm.userId, state, opts);
     state.currentQuiz = work.quiz || null;
     state.pendingIntro = work.kind === 'intro'
-      ? { cardId: work.card.id, card: work.card }
+      ? { cardId: work.card.id, card: work.card, source: work.source }
       : null;
     return work;
   }
@@ -469,7 +501,7 @@ export class KanjiKombatService {
     const nextWaveEnemies = cloneCombatants(this.gm.combat.enemies);
     this.gm.run.kanjiKombat.currentQuiz = work.quiz || null;
     this.gm.run.kanjiKombat.pendingIntro = work.kind === 'intro'
-      ? { cardId: work.card.id, card: work.card }
+      ? { cardId: work.card.id, card: work.card, source: work.source }
       : null;
     this.gm.emitState();
     return {
