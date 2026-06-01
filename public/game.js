@@ -2003,7 +2003,7 @@ async function initGame() {
 
   kanjiKombatUI.initKanjiKombatUI({
     submitIntro: apiSubmitKanjiKombatIntro,
-    submitAnswer: apiSubmitKanjiKombatAnswer,
+    submitAnswer: combatLoopUI.executeKanjiKombatAnswer,
     updateGameState,
     updateUI,
   });
@@ -2217,6 +2217,7 @@ async function initGame() {
     },
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
     apiCreatureCombatCycle,
+    apiSubmitKanjiKombatAnswer,
     apiGetGameState,
     showPostCombatShop: showPostCombatShopFlow,
     apiBefriendReplace: (releaseCreatureId) => apiBefriendReplace(releaseCreatureId),

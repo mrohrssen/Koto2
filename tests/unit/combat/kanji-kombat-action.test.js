@@ -63,4 +63,41 @@ describe('Kanji Kombat synthetic combat actions', () => {
     assert.equal(result.actionSegments[0].noop, true);
     assert.equal(enemy.hp, 30);
   });
+
+  it('applies ally mini-round MP regen after a synthetic action', () => {
+    const ally = creature('ally', { mp: 0, maxMp: 100 });
+    const enemy = creature('enemy', { hp: 20, maxHp: 20 });
+    const result = resolveSyntheticActorAction({
+      actorSide: 'ally',
+      actorIndex: 0,
+      allies: [ally],
+      enemies: [enemy],
+      syntheticMove: {
+        id: 'kanji-kombat-strike',
+        name: 'Kanji Kombat Strike',
+        power: 15,
+        element: 'fire',
+        target: 'single_enemy',
+        mpCost: 0,
+      },
+      targetIndex: 0,
+    });
+
+    assert.equal(ally.mp, 5);
+    assert.equal(result.actionSegments[0].mpRegens[0].regen, 5);
+  });
+
+  it('applies ally mini-round MP regen after a no-op action', () => {
+    const ally = creature('ally', { mp: 0, maxMp: 100 });
+    const enemy = creature('enemy');
+    const result = resolveNoopActorAction({
+      actorSide: 'ally',
+      actorIndex: 0,
+      allies: [ally],
+      enemies: [enemy],
+    });
+
+    assert.equal(ally.mp, 5);
+    assert.equal(result.actionSegments[0].mpRegens[0].regen, 5);
+  });
 });

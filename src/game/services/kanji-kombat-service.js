@@ -2,7 +2,13 @@ import { randomUUID } from 'crypto';
 import { createCombatState, createNewRun } from '../state.js';
 import { AREAS } from '../rooms.js';
 import { createPveOpeningCursor } from '../combat/action-cursor.js';
-import { generateEnemyCreature, generateEnemyCreatures, getEnemyLevel } from '../creatures.js';
+import {
+  generateEnemyCreature,
+  generateEnemyCreatures,
+  getEnemyLevel,
+  instantiateCreatureForCombat
+} from '../creatures.js';
+import { getCrestMultipliers, applyCrestBonuses } from './crest-service.js';
 import {
   DAILY_NEW_LIMIT,
   getActiveScriptType,
@@ -143,6 +149,10 @@ function cloneCreature(creature) {
   return JSON.parse(JSON.stringify(creature));
 }
 
+function cloneCombatants(combatants = []) {
+  return JSON.parse(JSON.stringify(combatants || []));
+}
+
 function healAll(allies, percent) {
   for (const ally of allies || []) {
     if (!ally || ally.hp <= 0) continue;
@@ -157,12 +167,18 @@ export class KanjiKombatService {
 
   startRunWithCreature(creature) {
     this.gm.run = createNewRun(this.gm.player);
+    const crestMults = getCrestMultipliers(this.gm.meta);
+    this.gm.run.crestMults = crestMults;
+    this.gm.run.itemBuffs.xpMultiplier = crestMults.xpMult;
     this.gm.run.mode = 'kanjiKombat';
     this.gm.run.areaSelectionRequired = false;
     this.gm.run.initialSkillPick.chosenId = 'kanjiKombat';
     this.gm.run.creatureParty.active = [cloneCreature(creature)];
     this.gm.run.creatureParty.reserves = [];
     this.gm.run.creatureParty.maxTotal = 3;
+    for (const ally of this.gm.run.creatureParty.active) {
+      applyCrestBonuses(ally, crestMults);
+    }
     this.gm.run.kanjiKombat = createInitialKanjiKombatState();
     const work = chooseNextScriptWork(this.gm.userId, this.gm.run.kanjiKombat);
     if (work.kind === 'complete') {
@@ -182,7 +198,7 @@ export class KanjiKombatService {
     if (!collection.includes(creatureId)) {
       throw new Error('Selected creature is not unlocked');
     }
-    const starter = generateEnemyCreature(1, [creatureId]);
+    const starter = instantiateCreatureForCombat(creatureId, 1);
     return this.startRunWithCreature(starter);
   }
 
@@ -358,8 +374,11 @@ export class KanjiKombatService {
     actionSegments = [],
     flatPlayerAttacks = [],
     flatEnemyAttacks = [],
-    xpEvents = []
+    xpEvents = [],
+    koSwaps = [],
+    koRemovals = []
   } = {}) {
+    const clearedEnemies = cloneCombatants(this.gm.combat?.enemies || []);
     const wasMiniboss = this.gm.run.kanjiKombat.currentWaveIsMiniboss === true;
     this.recordWaveClear({ miniboss: wasMiniboss });
     const work = chooseNextScriptWork(this.gm.userId, this.gm.run.kanjiKombat);
@@ -376,15 +395,18 @@ export class KanjiKombatService {
         playerAttacks: flatPlayerAttacks,
         enemyAttacks: flatEnemyAttacks,
         xpEvents,
+        koSwaps,
+        koRemovals,
         combatEnded: true,
         victory: true,
         kanjiKombatReport: this.gm.run.kanjiKombat.finalReport,
         creatureParty: this.gm.run.creatureParty,
-        enemies: this.gm.combat.enemies,
+        enemies: clearedEnemies,
       };
     }
 
     this.spawnNextWave();
+    const nextWaveEnemies = cloneCombatants(this.gm.combat.enemies);
     this.gm.run.kanjiKombat.currentQuiz = work.quiz || null;
     this.gm.run.kanjiKombat.pendingIntro = work.kind === 'intro'
       ? { cardId: work.card.id, card: work.card }
@@ -396,11 +418,14 @@ export class KanjiKombatService {
       playerAttacks: flatPlayerAttacks,
       enemyAttacks: flatEnemyAttacks,
       xpEvents,
+      koSwaps,
+      koRemovals,
       combatEnded: false,
       nextWave: true,
       kanjiKombat: this.gm.run.kanjiKombat,
       allies: this.gm.combat.allies,
-      enemies: this.gm.combat.enemies,
+      enemies: clearedEnemies,
+      nextWaveEnemies,
       creatureParty: this.gm.run.creatureParty,
     };
   }
@@ -409,7 +434,9 @@ export class KanjiKombatService {
     actionSegments = [],
     flatPlayerAttacks = [],
     flatEnemyAttacks = [],
-    xpEvents = []
+    xpEvents = [],
+    koSwaps = [],
+    koRemovals = []
   } = {}) {
     this.gm.combat.active = false;
     this.gm.run.active = false;
@@ -422,6 +449,8 @@ export class KanjiKombatService {
       playerAttacks: flatPlayerAttacks,
       enemyAttacks: flatEnemyAttacks,
       xpEvents,
+      koSwaps,
+      koRemovals,
       combatEnded: true,
       victory: false,
       kanjiKombatReport: this.gm.run.kanjiKombat.finalReport,

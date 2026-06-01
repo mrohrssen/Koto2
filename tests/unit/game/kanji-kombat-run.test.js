@@ -90,4 +90,20 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.currentAreaEncounters, 0);
     assert.equal(gm.run.rooms[0].interacted, false);
   });
+
+  it('starts with a run-scoped creature that has normal combat fields', () => {
+    const gm = buildGm();
+    gm.meta.crests = [];
+    gm.meta.equippedCrests = { fire: null, water: null, earth: null, wood: null, metal: null };
+    const service = new KanjiKombatService(gm);
+
+    service.startRunWithCreatureId('hi');
+
+    const ally = gm.run.creatureParty.active[0];
+    assert.equal(ally.id, 'hi');
+    assert.equal(typeof ally.uid, 'string');
+    assert.equal(Array.isArray(ally.moves), true);
+    assert.equal(ally.hp, ally.maxHp);
+    assert.equal(ally.mp, ally.maxMp);
+  });
 });

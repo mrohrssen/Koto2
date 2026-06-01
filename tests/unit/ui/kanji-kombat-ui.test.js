@@ -1,6 +1,8 @@
 import { beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  initKanjiKombatUI,
+  renderKanjiKombatAction,
   renderKanjiKombatIntro,
   renderKanjiKombatQuiz,
   showKanjiKombatCreatureChooser,
@@ -158,5 +160,62 @@ describe('kanji-kombat ui', () => {
 
     resolveAnswer();
     await firstClick;
+  });
+
+  it('delegates quiz answers to the injected combat playback handler', async () => {
+    const quiz = {
+      prompt: '火',
+      choices: [
+        { id: 'fire', answer: 'Fire' },
+        { id: 'water', answer: 'Water' },
+      ],
+    };
+    const calls = [];
+
+    renderKanjiKombatQuiz(quiz, {
+      onAnswer: async answerId => {
+        calls.push(answerId);
+        return { handledByCombatLoop: true };
+      },
+    });
+
+    const [first] = actionArea.querySelectorAll('.kanji-kombat-choice');
+    await first.click();
+
+    assert.deepEqual(calls, ['fire']);
+  });
+
+  it('uses submitAnswer as the owner of quiz result playback', async () => {
+    const state = {
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          currentQuiz: {
+            prompt: '火',
+            choices: [{ id: 'fire', answer: 'Fire' }],
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
+    let updateUICalls = 0;
+    const submitted = [];
+
+    initKanjiKombatUI({
+      submitAnswer: async answerId => {
+        submitted.push(answerId);
+        return { handledByCombatLoop: true };
+      },
+      submitIntro: async () => ({}),
+      updateGameState: () => {},
+      updateUI: () => { updateUICalls += 1; },
+    });
+
+    assert.equal(renderKanjiKombatAction(state), true);
+    const [first] = actionArea.querySelectorAll('.kanji-kombat-choice');
+    await first.click();
+
+    assert.deepEqual(submitted, ['fire']);
+    assert.equal(updateUICalls, 0);
   });
 });

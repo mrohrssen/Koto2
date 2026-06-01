@@ -122,6 +122,7 @@ export function renderKanjiKombatAction(gameState) {
     renderKanjiKombatQuiz(kk.currentQuiz, {
       onAnswer: async answerId => {
         const result = await api.submitAnswer(answerId);
+        if (result?.handledByCombatLoop) return;
         if (result?.state) api.updateGameState(result.state);
         api.updateUI();
       },

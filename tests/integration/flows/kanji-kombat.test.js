@@ -38,6 +38,11 @@ describe('Kanji Kombat integration flow', () => {
     const result = gm.submitKanjiKombatAnswer(correct.id);
 
     assert.equal(result.actionType, 'kanjiKombat');
+    assert.equal(Array.isArray(result.actionSegments), true);
+    assert.equal(Array.isArray(result.enemies), true);
+    if (result.nextWave) {
+      assert.equal(Array.isArray(result.nextWaveEnemies), true);
+    }
     assert.equal(gm.run.currentAreaEncounters, 0);
     assert.equal(gm.run.areasCompleted, 0);
     assert.equal(gm.run.postCombatShop == null, true);
