@@ -117,7 +117,19 @@ describe('combat network hardening', () => {
 
   it('refreshes scene and HUD after Kanji Kombat starts a next wave', () => {
     assert.match(combatLoopSource, /if \(result\.nextWave\) \{/);
+    assert.match(combatLoopSource, /playKanjiKombatNextWaveTransition\(result\)/);
+    assert.match(combatLoopSource, /result\.nextWaveEnemies/);
+    assert.match(combatLoopSource, /ROOM_TRAVEL_DURATION_MS/);
+    assert.match(combatLoopSource, /battleScene\.formation\.walkingEnabled = true/);
+    assert.match(combatLoopSource, /syncCreatures\(\{ allies, enemies, initial: true \}\)/);
     assert.match(combatLoopSource, /updateUI\?\.\(\);/);
+  });
+
+  it('shows a centered correctness banner for Kanji Kombat answers', () => {
+    assert.match(combatLoopSource, /showKanjiKombatAnswerBanner\(result\.kanjiAnswerCorrect\)/);
+    assert.match(combatVfxSource, /showKanjiKombatAnswerBanner/);
+    assert.match(combatVfxSource, /Correct!/);
+    assert.match(combatVfxSource, /Wrong!/);
   });
 
   it('throws a clear setup error when the injected API is missing', async () => {

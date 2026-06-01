@@ -232,10 +232,12 @@ export class KanjiKombatService {
     else this.recordWrongAnswer();
 
     kk.currentQuiz = null;
-    return this.gm.combatCycleService.resolveKanjiKombatCursorAction({
+    const result = this.gm.combatCycleService.resolveKanjiKombatCursorAction({
       correct: choice.correct,
       targetIndex: 0,
     });
+    result.kanjiAnswerCorrect = choice.correct;
+    return result;
   }
 
   queueNextPrompt(opts = {}) {
