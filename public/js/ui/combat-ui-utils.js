@@ -1,5 +1,5 @@
 /** Display names for stat stages (used in stat-change labels). */
-export const SC_NAMES = { atk: 'ATK', def: 'DEF' };
+export const SC_NAMES = { atk: 'ATK', def: 'DEF', dex: 'DEX' };
 
 /**
  * CSS variable token for HP bar fill color from current HP percentage.

@@ -68,7 +68,13 @@ class FakeGraphics extends FakeContainer {
 }
 
 class FakeText extends FakeContainer {
-  constructor(opts) { super(); this.text = opts?.text ?? ''; this.width = this.text.length * 6; this.height = 10; }
+  constructor(opts) {
+    super();
+    this.text = opts?.text ?? '';
+    this.width = this.text.length * 6;
+    this.height = 10;
+    this.anchor = { set: (x, y) => { this.anchor.x = x; this.anchor.y = y ?? x; } };
+  }
 }
 
 class FakeTexture {
@@ -188,6 +194,8 @@ await mock.module('../../../public/js/ui/event-popup.js', {
       atk_down: { label: 'ATK-', bg: 0, text: 0 },
       def_up: { label: 'DEF+', bg: 0, text: 0 },
       def_down: { label: 'DEF-', bg: 0, text: 0 },
+      dex_up: { label: 'DEX+', bg: 0, text: 0 },
+      dex_down: { label: 'DEX-', bg: 0, text: 0 },
       poison: { label: 'PSN', bg: 0, text: 0 },
     },
   },
@@ -872,6 +880,32 @@ describe('scene-facing sprite-lookup variants null-scene guards', () => {
     assert.strictEqual(syncPixiStatusLabelsForScene(null, 'player', 0, [], {}), undefined);
     assert.strictEqual(syncPixiStatusLabelsForScene(undefined, 'enemy', 1, ['poison'], {}), undefined);
     assert.strictEqual(syncPixiStatusLabelsForScene({}, 'player', 0, [], {}), undefined);
+  });
+
+  it('renders dex stat-stage pills with numeric stage labels', async () => {
+    fakeAppState.layers.labels = new FakeContainer();
+    const formations = new FakeContainer();
+    const scene = {
+      layers: { formations },
+      addContainer: (c) => c,
+    };
+    scene.formation = createFormationContext(scene);
+
+    const creature = { uid: 'p1', id: 'hi', hp: 10, statStages: { dex: 2 } };
+    const sprite = await spawnFormationSprite(
+      scene.formation,
+      'player',
+      creature,
+      0,
+      { slotI: 0, skipEnter: true }
+    );
+    scene.formation.lastFormationInput.player = { creatures: [creature] };
+
+    syncPixiStatusLabelsForScene(scene, 'player', 0, ['dex_up'], creature.statStages);
+
+    assert.equal(sprite.statusLabels.length, 1);
+    const text = sprite.statusLabels[0].children.find(child => child instanceof FakeText);
+    assert.equal(text?.text, 'DEX +2');
   });
 });
 

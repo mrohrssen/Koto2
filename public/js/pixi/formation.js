@@ -51,7 +51,7 @@ const NPC_SHADOW_Y_PIXEL_OFFSET_BY_ID = {
   shrine_fox: 2,
 };
 
-const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF' };
+const STAT_STAGE_NAMES = { atk: 'ATK', def: 'DEF', dex: 'DEX' };
 
 // Active-creature glow (spec: 2026-04-23-active-creature-golden-glow-design.md)
 const GLOW_COLOR = 0xFFC94A;
@@ -282,12 +282,11 @@ function _syncPixiStatusLabels(ctx, side, index, keys, statStages) {
     if (!config) continue;
 
     let label;
-    if (key === 'atk_up' || key === 'atk_down') {
-      const val = statStages?.atk || 0;
-      label = `${STAT_STAGE_NAMES.atk} ${val > 0 ? '+' : ''}${val}`;
-    } else if (key === 'def_up' || key === 'def_down') {
-      const val = statStages?.def || 0;
-      label = `${STAT_STAGE_NAMES.def} ${val > 0 ? '+' : ''}${val}`;
+    const statStageMatch = key.match(/^([a-z]+)_(up|down)$/);
+    const stat = statStageMatch?.[1];
+    if (stat && STAT_STAGE_NAMES[stat]) {
+      const val = statStages?.[stat] || 0;
+      label = `${STAT_STAGE_NAMES[stat]} ${val > 0 ? '+' : ''}${val}`;
     } else {
       label = config.label;
     }
@@ -820,7 +819,7 @@ export function clearActiveGlowForScene(scene) {
  * @param {'player'|'enemy'} side
  * @param {number} index - data-array index
  * @param {string[]} keys - ordered list of status keys (e.g. ['atk_up','poison'])
- * @param {Object} [statStages] - { atk, def } stage deltas for atk/def pills
+ * @param {Object} [statStages] - { atk, def, dex } stage deltas for stat pills
  */
 export function syncPixiStatusLabelsForScene(scene, side, index, keys, statStages) {
   if (!scene?.formation) return;

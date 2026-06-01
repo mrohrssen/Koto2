@@ -146,6 +146,8 @@ export const STATUS_ICON_CONFIG = {
   atk_down:      { label: 'ATK↓', bg: '#7B1FA2', text: '#fff' },
   def_up:        { label: 'DEF↑', bg: '#1976D2', text: '#fff' },
   def_down:      { label: 'DEF↓', bg: '#E65100', text: '#fff' },
+  dex_up:        { label: 'DEX↑', bg: '#00897B', text: '#fff' },
+  dex_down:      { label: 'DEX↓', bg: '#C2185B', text: '#fff' },
   // Duration-based effects
   shield:        { label: 'SHD',  bg: '#00ACC1', text: '#fff' },
   team_shield:   { label: 'SHD',  bg: '#00ACC1', text: '#fff' },

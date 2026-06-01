@@ -92,7 +92,8 @@ global.setTimeout = (_fn, _ms) => { /* no-op in tests */ };
 const {
   showEventPopup,
   credits,
-  animateCounter
+  animateCounter,
+  STATUS_ICON_CONFIG
 } = await import('../../../public/js/ui/event-popup.js');
 
 // ============ HELPERS ============
@@ -251,5 +252,14 @@ describe('animateCounter', () => {
 
   it('does nothing when el is null', () => {
     assert.doesNotThrow(() => animateCounter(null, 0, 100));
+  });
+});
+
+describe('STATUS_ICON_CONFIG', () => {
+  it('defines sprite-side icons for dex stat stages', () => {
+    assert.deepEqual(
+      { up: STATUS_ICON_CONFIG.dex_up?.label, down: STATUS_ICON_CONFIG.dex_down?.label },
+      { up: 'DEX↑', down: 'DEX↓' }
+    );
   });
 });
