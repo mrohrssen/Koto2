@@ -1172,37 +1172,50 @@ export function resolveSyntheticActorAction({
     segment.attacks.push(atk);
   }
   segment.xpEvents.push(...(result.xpEvents || []));
+  const miniRound = resolveActorMiniRound(actor, { side: actorSide, index: actorIndex });
+  segment.effectEvents.push(...miniRound.effectEvents);
+  segment.mpRegens.push(...miniRound.mpRegens);
   return {
     actionSegments: [segment],
     attacks: segment.attacks,
     counterAttacks: [],
     inlineCounters: [],
     xpEvents: segment.xpEvents,
-    effectEvents: [],
-    mpRegens: [],
+    effectEvents: segment.effectEvents,
+    mpRegens: segment.mpRegens,
     playbackNext: playbackIndex,
   };
 }
 
 export function resolveNoopActorAction({ actorSide, actorIndex, allies, enemies, playbackStart = 0 }) {
-  const actor = actorSide === 'ally' ? allies?.[actorIndex] : enemies?.[actorIndex];
+  const actor = actorSide === 'ally' || actorSide === 'sideA'
+    ? allies?.[actorIndex]
+    : enemies?.[actorIndex];
+  const segment = {
+    actor: { side: actorSide, index: actorIndex, id: actor?.id || null },
+    attacks: [],
+    counterAttacks: [],
+    effectEvents: [],
+    mpRegens: [],
+    xpEvents: [],
+    skipped: !actor || actor.hp <= 0 || isIncapacitated(actor),
+    noop: true,
+  };
+
+  if (!segment.skipped) {
+    const miniRound = resolveActorMiniRound(actor, { side: actorSide, index: actorIndex });
+    segment.effectEvents.push(...miniRound.effectEvents);
+    segment.mpRegens.push(...miniRound.mpRegens);
+  }
+
   return {
-    actionSegments: [{
-      actor: { side: actorSide, index: actorIndex, id: actor?.id || null },
-      attacks: [],
-      counterAttacks: [],
-      effectEvents: [],
-      mpRegens: [],
-      xpEvents: [],
-      skipped: !actor || actor.hp <= 0 || isIncapacitated(actor),
-      noop: true,
-    }],
+    actionSegments: [segment],
     attacks: [],
     counterAttacks: [],
     inlineCounters: [],
     xpEvents: [],
-    effectEvents: [],
-    mpRegens: [],
+    effectEvents: segment.effectEvents,
+    mpRegens: segment.mpRegens,
     playbackNext: playbackStart,
   };
 }

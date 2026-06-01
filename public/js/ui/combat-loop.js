@@ -173,8 +173,8 @@ let getDialogueDismissPromise = null;
 let showFlashCards = null;
 let setCombatAnimationActive = null;
 let apiCreatureCombatCycle = null;
-let apiGetGameState = null;
 let apiSubmitKanjiKombatAnswer = null;
+let apiGetGameState = null;
 let showPostCombatShop = null;
 
 let apiStartNpcDialogue = null;
@@ -471,8 +471,8 @@ export function init(callbacks) {
   delay = callbacks.delay;
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
   apiCreatureCombatCycle = callbacks.apiCreatureCombatCycle;
-  apiGetGameState = callbacks.apiGetGameState;
   apiSubmitKanjiKombatAnswer = callbacks.apiSubmitKanjiKombatAnswer;
+  apiGetGameState = callbacks.apiGetGameState;
   showPostCombatShop = callbacks.showPostCombatShop;
   apiStartNpcDialogue = callbacks.apiStartNpcDialogue;
   apiRespondNpcDialogue = callbacks.apiRespondNpcDialogue;
@@ -695,11 +695,12 @@ export async function submitKanjiKombatAnswer(answerId) {
   if (typeof apiSubmitKanjiKombatAnswer !== 'function') {
     throw new Error('Kanji Kombat answer API is not configured');
   }
-  return executeCreatureMovesTurn([], {
+  await executeCreatureMovesTurn([], {
     actionType: 'kanjiKombat',
     request: () => apiSubmitKanjiKombatAnswer(answerId),
     describeIntent: () => `Kanji Kombat answer: ${answerId}`,
   });
+  return { handledByCombatLoop: true };
 }
 
 function handleMoveSelected(move, creatureIndex) {
@@ -1311,194 +1312,10 @@ async function executeCreatureMovesTurn(choices, options = {}) {
         return;
       }
 
-      if (result.state) {
-        updateGameState(mergeAuthoritativeCombatState(getGameState(), result));
-      }
-
-      // --- Intent Log: record expected outcome from server response ---
-      if (_log) {
-        const aliveEnemies = (result.enemies || []).filter(e => e.hp > 0 && !e.befriended).length;
-        const aliveAllies = (result.allies || []).filter(a => a.hp > 0).length;
-        _log.expect(`Enemies alive: ${aliveEnemies}/${(result.enemies || []).length}. Allies alive: ${aliveAllies}/${(result.allies || []).length}`);
-
-        for (const atk of [...(result.playerAttacks || []), ...(result.enemyAttacks || [])]) {
-          if (atk.targetDefeated) {
-            const side = result.playerAttacks?.includes(atk) ? 'enemy' : 'ally';
-            _log.expect(`KO: ${side}[${atk.targetIndex}] — sprite fade, HP bar zero`);
-          }
-        }
-      }
-
-      // --- Game Rule Validation: check server result for logic invariants ---
-      if (window.__inspector?.checkGameRules) {
-        const ruleCheck = window.__inspector.checkGameRules(result);
-        if (!ruleCheck.ok) {
-          const log = getLog();
-          for (const m of ruleCheck.mismatches) {
-            if (log) log.expect(`RULE VIOLATION: ${m.detail}`);
-            console.warn(`[RULE] ${m.type}: ${m.detail}`);
-          }
-        }
-      }
-
-      // Store server-provided barks for speech bubbles
-      _currentRoundBarks = result.barks || [];
-
-      // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
-      await vfx.showRoundStartEvents(result);
-
-      // Track enemy HP for progressive updates (slot index — duplicate species share id)
-      const enemyHpMap = vfx.buildEnemyHpMapForPlayerAttacks(result);
-      const allyHpMap = vfx.buildAllyHpMap(result);
-      const allPendingMoveLearn = [];
-      const killedEnemies = new Set();
-
-      const actionSegments = Array.isArray(result.actionSegments) ? result.actionSegments : [];
-      let merged = [];
-      if (actionSegments.length > 0) {
-        for (const segment of actionSegments) {
-          const side = segment.actor?.side === 'enemy' ? 'enemy' : 'player';
-          for (const atk of segment.attacks || []) {
-            if (shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)) continue;
-            if (side === 'player') {
-              await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn);
-            } else {
-              await vfx.showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
-            }
-          }
-          for (const counter of segment.counterAttacks || []) {
-            await vfx.showOneCounterAttackAnimated(counter, enemyHpMap, result.enemies);
-          }
-          await vfx.showEffectEvents({
-            ...result,
-            effectEvents: segment.effectEvents || [],
-            mpRegens: segment.mpRegens || []
-          });
-        }
-      } else {
-        // Show poison/effect ticks from the legacy full-round path.
-        await vfx.showEffectEvents(result);
-        merged = vfx.buildMergedInitiativeAttacks(result);
-      }
-
-      if (merged.length > 0) {
-        for (const { side, atk } of merged) {
-          if (shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)) continue;
-          if (side === 'player' && atk.type === 'counter') {
-            await vfx.showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
-          } else if (side === 'player') {
-            await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn);
-          } else {
-            await vfx.showOneEnemyAttackAnimated(result, atk, allyHpMap, false);
-          }
-        }
-      }
-
-      // Catch-all KO: ensure all dead enemies get their KO animation, even if killed
-      // by party skill chain damage (e.g. Arc Strike) that doesn't set targetDefeated.
-      // Await so the fade fully resolves before any follow-up syncCreatures runs —
-      // otherwise the tween can fight updateFormationSprite and leave the corpse
-      // sprite visible.
-      if (result.enemies) {
-        const koPromises = [];
-        const pendingKoIndices = collectPendingEnemyKoAnimationIndices(
-          result.enemies,
-          animatedEnemyKoKeys,
-          killedEnemies
-        );
-        for (const i of pendingKoIndices) {
-          koPromises.push(animateKOForScene(getSceneManager().currentScene, 'enemy', i));
-        }
-        if (koPromises.length) await Promise.all(koPromises);
-      }
-
-      vfx.syncStatusIconsFromResult(result);
-
-      // === BEFRIEND NAME QUIZ CHECK ===
-      // If the killing blow triggered the befriend quiz, show it instead of continuing combat
-      if (result.befriendQuizTriggered && result.befriendQuiz) {
-        syncFinalState(result);
-        playerAttackPending = false;
-        await befriend.renderBefriendQuiz(result.befriendQuiz, result);
-        logCombatTurnTiming(turnTiming, result, 'befriend_quiz');
-        return;
-      }
-
-      // === NPC Skill Phase ===
-      if (result.npcSkillAttacks?.length > 0) {
-        const npcData = getCombatNpcData();
-        if (npcData) {
-          await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
-            await vfx.showNpcSkillAttacksAnimated(result, allyHpMap);
-          }, result.enemies);
-        } else {
-          await delay(400);
-          await vfx.showNpcSkillAttacksAnimated(result, allyHpMap);
-        }
-      }
-
-      if (actionSegments.length === 0) {
-        // Enemy attacks (only if not already shown in initiative merge)
-        const enemyShownInMerge = merged.some(e => e.side === 'enemy');
-        if (!enemyShownInMerge && result.enemyAttacks?.length > 0) {
-          await delay(400);
-          await vfx.showEnemyAttacksAnimated(result, allyHpMap, false);
-        }
-
-        // Counter attack animations — only if not already shown in initiative merge
-        const countersShownInMerge = merged.some(e => e.side === 'player' && e.atk.type === 'counter');
-        if (!countersShownInMerge) {
-          await vfx.showCounterAttacks(result, enemyHpMap);
-        }
-      }
-
-      // KO swap animations
-      await vfx.showKoSwapAnimations(result);
-
-      // Sync state
-      syncFinalState(result);
-
-      // Handle pending move learns (after state sync so creature data is current)
-      if (allPendingMoveLearn.length > 0) {
-        await processPendingMoveLearn(allPendingMoveLearn);
-      }
-
-      // --- Intent Log: check UI consistency after all animations ---
-      if (window.__inspector) {
-        const scanResult = window.__inspector.checkCreatures();
-        const __log = getLog();
-        if (__log) {
-          if (scanResult.ok) {
-            __log.check({ ok: true });
-          } else {
-            const first = scanResult.mismatches[0];
-            __log.check({ ok: false, tag: first.type, detail: first.detail });
-            for (const m of scanResult.mismatches.slice(1)) {
-              console.warn(`[CHK] additional: ${m.type}: ${m.detail}`);
-            }
-          }
-        }
-      }
-
-      if (result.combatEnded) {
-        // --- Intent Log: combat ended ---
-        const __logEnd = getLog();
-        if (__logEnd) {
-          __logEnd.act(`Combat ended: ${result.victory ? 'VICTORY' : 'DEFEAT'}`);
-          __logEnd.expect('All combat sprites cleared. Combat UI removed.');
-        }
-        if (result.victory) await delay(500);
-        logCombatTurnTiming(turnTiming, result, result.victory ? 'victory' : 'defeat');
-        stopCombatLoop(result);
-        return;
-      }
-
-      playerAttackPending = false;
-
-      // Start next turn's move selection
-      await delay(600);
-      logCombatTurnTiming(turnTiming, result, 'next_selection');
-      startMoveSelection();
+      await playCreatureCombatResult(result, turnTiming, {
+        choices,
+        logMoveIntent: false,
+      });
 
     } catch (error) {
       console.error('Move turn error:', error);

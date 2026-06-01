@@ -2241,6 +2241,7 @@ async function initGame() {
     },
     setCombatAnimationActive: (active) => { combatAnimationActive = active; },
     apiCreatureCombatCycle,
+    apiSubmitKanjiKombatAnswer,
     apiGetGameState,
     apiSubmitKanjiKombatAnswer,
     showPostCombatShop: showPostCombatShopFlow,

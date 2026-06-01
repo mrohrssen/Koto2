@@ -90,6 +90,7 @@ export const ELEMENT_THEME = {
 
 /** Map an English skill/base name to the action icon sprite path. */
 function actionIconPath(nameEn) {
+  if (nameEn === 'Kanji Kombat Strike') return actionIconUrl('Strike');
   return actionIconUrl(nameEn);
 }
 

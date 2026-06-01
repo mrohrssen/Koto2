@@ -67,7 +67,7 @@ import { getKnownWordsFromFsrs, getWordDict } from '../bootstrap/word-knowledge.
 import { selectBark } from '../dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from '../dialogue-loader.js';
 import { selectBestFrame } from '../token-format.js';
-import { applyDebugSuperAttack } from '../loop.js';
+import { applyDebugSuperAttack } from '../debug-super-attack.js';
 
 export function serializeBefriendPrompt(prompt) {
   if (!prompt) return null;
@@ -720,6 +720,13 @@ export class CombatCycleService {
       segment.actor.side === 'enemy' ? segment.attacks : []
     );
     const xpEvents = actionSegments.flatMap(segment => segment.xpEvents || []);
+    const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(
+      this.gm.run.creatureParty.active,
+      this.gm.run.creatureParty
+    );
+    const koSwaps = rawKoSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
+    const koRemovals = rawKoRemovals.map(r => ({ slot: r.index, name: r.name }));
+    this.gm.combat.allies = this.gm.run.creatureParty.active;
     const allEnemiesDown = checkAllDefeated(this.gm.combat.enemies);
     const allAlliesDown = checkAllDefeated(this.gm.combat.allies);
 
@@ -728,7 +735,9 @@ export class CombatCycleService {
         actionSegments,
         flatPlayerAttacks,
         flatEnemyAttacks,
-        xpEvents
+        xpEvents,
+        koSwaps,
+        koRemovals
       });
     }
 
@@ -737,7 +746,9 @@ export class CombatCycleService {
         actionSegments,
         flatPlayerAttacks,
         flatEnemyAttacks,
-        xpEvents
+        xpEvents,
+        koSwaps,
+        koRemovals
       });
     }
 
@@ -747,7 +758,9 @@ export class CombatCycleService {
         actionSegments,
         flatPlayerAttacks,
         flatEnemyAttacks,
-        xpEvents
+        xpEvents,
+        koSwaps,
+        koRemovals
       });
     }
     this.gm.emitState();
@@ -757,6 +770,8 @@ export class CombatCycleService {
       playerAttacks: flatPlayerAttacks,
       enemyAttacks: flatEnemyAttacks,
       xpEvents,
+      koSwaps,
+      koRemovals,
       combatEnded: false,
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
