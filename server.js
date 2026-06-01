@@ -74,8 +74,15 @@ import {
 import { setupPvpSockets } from './src/pvp/socket-handler.js';
 import { ensureRankedBotAccounts } from './src/pvp/ranked-bot-seeder.js';
 import { getManager, saveManager, removeManager } from './src/game/manager-registry.js';
+import { DEV_TEST_PASSWORD, DEV_TEST_USERNAME, seedDevTestUserForLocalDev } from './src/dev/dev-test-user.js';
 
 dotenv.config();
+
+const devTestUserSeed = await seedDevTestUserForLocalDev();
+if (!devTestUserSeed.skipped) {
+  logger.info('[Dev] Seeded local test user:', { username: DEV_TEST_USERNAME });
+  console.log(`[Dev] Test login: ${DEV_TEST_USERNAME} / ${DEV_TEST_PASSWORD}`);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

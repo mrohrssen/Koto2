@@ -9,6 +9,7 @@
     "dev": "npx concurrently --names server,vite --prefix-colors blue,green \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "node --watch server.js",
     "dev:client": "vite",
+    "seed:dev-user": "node src/dev/dev-test-user.js",
     "build": "node scripts/tokenize-static.js && node scripts/generate-asset-manifest.js && vite build",
     "preview": "vite preview",
     "test": "npm run test:unit && npm run test:integration",

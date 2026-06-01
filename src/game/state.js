@@ -29,13 +29,13 @@ export function createMetaProgression() {
     achievements: [],
 
     // Permanent creature collection (persists across runs)
-    creatureCollection: ['hikaribon', 'hanatchi', 'tsukimochi'],
+    creatureCollection: ['hi', 'mizu', 'ki'],
 
     // Current spendable creature copies (persists across runs)
     creatureCounts: {
-      hikaribon: 1,
-      hanatchi: 1,
-      tsukimochi: 1
+      hi: 1,
+      mizu: 1,
+      ki: 1
     },
 
     // Befriend counts per creature (persists across runs)

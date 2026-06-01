@@ -18,7 +18,7 @@ export const RARITY_POINT_COST = {
 
 export const MAX_TEAM_POINTS = 10;
 
-export const DEFAULT_COLLECTION = ['hikaribon', 'hanatchi', 'tsukimochi'];
+export const DEFAULT_COLLECTION = ['hi', 'mizu', 'ki'];
 
 export function validateTeamSelection(collection, selectedIds, creatureCounts = null) {
   if (!selectedIds || selectedIds.length === 0) {

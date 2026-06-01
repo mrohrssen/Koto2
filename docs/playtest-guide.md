@@ -22,6 +22,13 @@ Playtesting with Playwright MCP fails when you improvise. You lose track of what
 **CRITICAL: Use `npm run dev` (Vite + Express), NOT `npm start` (Express only).**
 Bare module imports like `animejs` only resolve through Vite. Without Vite, the entire JS module graph fails to load silently — the game appears to load but nothing works.
 
+**Default local login:** `npm run dev` automatically seeds a real local account named `devtester` with password `test1234`. This account has completed the prologue and tutorial, owns 10 creatures, has beaten Starting Meadow, and starts in the hub with Wild Plains unlocked. Use this account for feature playtesting unless you are specifically testing registration, onboarding, tutorial, or first-run behavior.
+
+If the account is missing or you need to repair its baseline save, run:
+```bash
+npm run seed:dev-user
+```
+
 ```bash
 # 1. Kill any stale processes on game ports
 lsof -ti :3000 2>/dev/null | xargs kill -9 2>/dev/null
@@ -80,6 +87,8 @@ When a new feature is added:
 - Login / Register tab buttons
 
 **Auth details:**
+- Default local test account: `devtester` / `test1234`
+- Future agents should use `devtester` for routine feature testing instead of creating throwaway users.
 - Auth token is stored in `localStorage` under key `authToken` (NOT `token`)
 - Registration requires an invite code: `neo-tokyo-friends`
 - To register via API: `POST /api/auth/register` with `{ username, password, inviteCode: "neo-tokyo-friends" }`
@@ -89,10 +98,10 @@ When a new feature is added:
 **Quick login via evaluate (fastest for playtesting):**
 ```javascript
 await page.evaluate(async () => {
-  const res = await fetch('/api/auth/register', {
+  const res = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: 'playtest_' + Date.now(), password: 'test123', inviteCode: 'neo-tokyo-friends' })
+    body: JSON.stringify({ username: 'devtester', password: 'test1234' })
   });
   const { token } = await res.json();
   localStorage.setItem('authToken', token);

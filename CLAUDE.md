@@ -166,6 +166,8 @@ For detailed architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 **Before playtesting, READ [`docs/playtest-guide.md`](docs/playtest-guide.md).** It contains phase-by-phase instructions for what to expect at every screen, how to interact, and what bugs to look for.
 
+**Default local test account:** `npm run dev` auto-seeds `devtester` / `test1234` in every checkout/worktree. This account has completed prologue + tutorial, owns 10 creatures, has beaten Starting Meadow, and starts in the hub with Wild Plains unlocked. Use it for routine feature testing instead of creating throwaway users, unless you are specifically testing registration, onboarding, tutorial, or first-run behavior. Repair/reset it with `npm run seed:dev-user`.
+
 **For CSS/visual work**, Playwright is configured to use WebKit (Safari's engine) with iPhone 15 Pro emulation via `.mcp.json`. See the "Visual CSS Audit" section in the playtest guide. Inject safe-area mocks at session start:
 ```js
 await page.addStyleTag({ path: 'public/dev-safe-area.css' });
