@@ -575,7 +575,7 @@
     "effect": {
       "healAllPercent": 0.36
     },
-    "description": "Light snack for the whole team.",
+    "description": "Heals all living creatures for 12% of max HP.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -592,7 +592,7 @@
     "effect": {
       "xpGrant": "killEquivalent"
     },
-    "description": "Sugar rush — grants XP equal to one enemy kill.",
+    "description": "Grants party XP equal to one enemy kill.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07",
@@ -610,7 +610,7 @@
     "effect": {
       "mpRestorePercent": 0.675
     },
-    "description": "Sweet pick-me-up restores 22% MP.",
+    "description": "Restores 22% MP to all creatures.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -627,7 +627,7 @@
     "effect": {
       "healPercent": 1.125
     },
-    "description": "Hearty rice ball, heals one creature for 37% HP.",
+    "description": "Heals one creature for 37% of max HP.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -653,7 +653,7 @@
         }
       ]
     },
-    "description": "Balanced meal, balanced boost.",
+    "description": "+4% attack, +4% max HP to one creature.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -671,7 +671,7 @@
       "field": "baseAttackBonus",
       "value": 9
     },
-    "description": "A sharp point helps in a pinch.",
+    "description": "+3 base attack (scales with level).",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -689,7 +689,7 @@
       "field": "elementEdge",
       "value": 0.135
     },
-    "description": "Precise strokes exploit elemental weakness.",
+    "description": "4% super effective damage bonus.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -707,7 +707,7 @@
       "field": "baseMpBonus",
       "value": 36
     },
-    "description": "Extra pages, extra mental stamina.",
+    "description": "+12 base MP (scales with level).",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -725,7 +725,7 @@
       "field": "xpMultiplier",
       "value": 0.45
     },
-    "description": "Study hard, learn faster — 15% more XP.",
+    "description": "Boosts one creature's XP gain by 15%.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -751,7 +751,7 @@
         }
       ]
     },
-    "description": "Knowledge is power.",
+    "description": "+15 base MP, +3 base attack (scales with level).",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -777,7 +777,7 @@
         }
       ]
     },
-    "description": "Carries everything you need.",
+    "description": "+12 base HP, +12 base MP (scales with level).",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
@@ -795,7 +795,7 @@
       "field": "flatDamageReduction",
       "value": 9
     },
-    "description": "Good timing means fewer clean hits.",
+    "description": "-3 incoming damage per hit.",
     "stage": 1,
     "area": "school",
     "createdAt": "2026-04-07"
