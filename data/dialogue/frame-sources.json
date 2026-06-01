@@ -351,7 +351,7 @@
   {
     "id": "befriend_success_very",
     "category": "befriend_success",
-    "raw": "とても嬉しい友達です！",
+    "raw": "友達です！嬉しいです！",
     "slots": []
   },
   {
@@ -557,7 +557,7 @@
     "id": "npc_otona_fightStart_power",
     "category": "npc",
     "group": "otona_fightStart",
-    "raw": "力を見る！",
+    "raw": "力がありますか？",
     "slots": []
   },
   {
@@ -592,7 +592,7 @@
     "id": "npc_otokonoko_fightStart_power",
     "category": "npc",
     "group": "otokonoko_fightStart",
-    "raw": "力を見るぞ！",
+    "raw": "力があるか？",
     "slots": []
   },
   {
@@ -830,7 +830,7 @@
     "id": "npc_onnanoko_defeatLine_3",
     "category": "npc",
     "group": "onnanoko_defeatLine",
-    "raw": "あの人も強いと思います…",
+    "raw": "強いです…",
     "slots": []
   },
   {
@@ -931,7 +931,7 @@
   {
     "id": "shopGreeting_eat",
     "category": "shopGreeting",
-    "raw": "食べる物です！",
+    "raw": "いい物があります！",
     "slots": []
   },
   {
@@ -1015,7 +1015,7 @@
   {
     "id": "shopPurchase_happy",
     "category": "shopPurchase",
-    "raw": "この{item}は嬉しいです！",
+    "raw": "この{item}がいいです！",
     "slots": [
       "item"
     ]

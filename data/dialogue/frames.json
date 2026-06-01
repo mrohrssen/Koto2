@@ -258,22 +258,11 @@
         "rawTokenEnd": 0,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "やめて",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "やめて",
             "tokenStart": 0,
@@ -288,22 +277,11 @@
         "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "やめて",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "やめて",
             "tokenStart": 0,
@@ -897,22 +875,11 @@
         "rawTokenEnd": 0,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "見て",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "見て",
             "tokenStart": 0,
@@ -927,22 +894,11 @@
         "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "見て",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "見て",
             "tokenStart": 0,
@@ -1127,6 +1083,17 @@
         "rawTokenEnd": 1,
         "grammarHints": [
           {
+            "grammarId": "n4-l10-13-question-phrase",
+            "title": "Question-phrase + か",
+            "meaning": "an embedded question inside a sentence",
+            "shortExplanation": "Adds the idea of an embedded question inside a sentence to the sentence.",
+            "displayPattern": "Question-phrase + か",
+            "readingOverride": "",
+            "matchedText": "何か",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          },
+          {
             "grammarId": "n5-nanika-nanimo",
             "title": "何か・何も",
             "meaning": "something / nothing",
@@ -1191,7 +1158,20 @@
         "reading": "いこう",
         "pos": "Verb",
         "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l03-09-verb",
+            "title": "Verb[よう]",
+            "meaning": "Volitional)Let's, I shall (Casual volitional)",
+            "shortExplanation": "Adds the idea of volitional)Let's, I shall (Casual volitional) to the sentence.",
+            "displayPattern": "Verb[よう]",
+            "readingOverride": "",
+            "matchedText": "行こう",
+            "tokenStart": 0,
+            "tokenEnd": 0
+          }
+        ]
       },
       {
         "surface": "！",
@@ -1811,22 +1791,11 @@
         "rawTokenEnd": 0,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "待って",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "待って",
             "tokenStart": 0,
@@ -1841,22 +1810,11 @@
         "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "待って",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "待って",
             "tokenStart": 0,
@@ -1889,22 +1847,11 @@
         "rawTokenEnd": 0,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "やめて",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "やめて",
             "tokenStart": 0,
@@ -1919,22 +1866,11 @@
         "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "やめて",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "やめて",
             "tokenStart": 0,
@@ -2106,22 +2042,11 @@
         "rawTokenEnd": 0,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "助けて",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "助けて",
             "tokenStart": 0,
@@ -2136,22 +2061,11 @@
         "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "助けて",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "助けて",
             "tokenStart": 0,
@@ -2680,63 +2594,21 @@
   {
     "id": "befriend_success_very",
     "category": "befriend_success",
-    "raw": "とても嬉しい友達です！",
+    "raw": "友達です！嬉しいです！",
     "tokens": [
-      {
-        "surface": "とても",
-        "base": "とても",
-        "reading": "とても",
-        "pos": "Adverb",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 0
-      },
-      {
-        "surface": "嬉しい",
-        "base": "嬉しい",
-        "reading": "うれしい",
-        "pos": "Adjective",
-        "rawTokenStart": 1,
-        "rawTokenEnd": 1,
-        "grammarHints": [
-          {
-            "grammarId": "n5-i-adjective-noun",
-            "title": "い-Adjective + Noun",
-            "meaning": "describes a noun",
-            "shortExplanation": "Lets an i-adjective describe the noun after it.",
-            "displayPattern": "い-adjective + Noun",
-            "readingOverride": "",
-            "matchedText": "嬉しい友達",
-            "tokenStart": 1,
-            "tokenEnd": 2
-          }
-        ]
-      },
       {
         "surface": "友達",
         "base": "友達",
         "reading": "ともだち",
         "pos": "Noun",
-        "rawTokenStart": 2,
-        "rawTokenEnd": 2,
-        "grammarHints": [
-          {
-            "grammarId": "n5-i-adjective-noun",
-            "title": "い-Adjective + Noun",
-            "meaning": "describes a noun",
-            "shortExplanation": "Lets an i-adjective describe the noun after it.",
-            "displayPattern": "い-adjective + Noun",
-            "readingOverride": "",
-            "matchedText": "嬉しい友達",
-            "tokenStart": 1,
-            "tokenEnd": 2
-          }
-        ]
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0
       },
       {
         "surface": "です",
         "reading": "です",
-        "rawTokenStart": 3,
-        "rawTokenEnd": 3,
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
         "grammarHints": [
           {
             "grammarId": "n5-desu-copula",
@@ -2746,22 +2618,67 @@
             "displayPattern": "Noun + です",
             "readingOverride": "",
             "matchedText": "です",
-            "tokenStart": 3,
-            "tokenEnd": 3
+            "tokenStart": 1,
+            "tokenEnd": 1
           }
         ]
       },
       {
         "surface": "！",
         "reading": "!",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
+      },
+      {
+        "surface": "嬉しい",
+        "base": "嬉しい",
+        "reading": "うれしい",
+        "pos": "Adjective",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-predicate",
+            "title": "い-Adjective + です",
+            "meaning": "is adjective",
+            "shortExplanation": "Lets an i-adjective end a polite sentence.",
+            "displayPattern": "い-adjective + です",
+            "readingOverride": "",
+            "matchedText": "嬉しいです",
+            "tokenStart": 3,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "です",
+        "reading": "です",
         "rawTokenStart": 4,
-        "rawTokenEnd": 4
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-predicate",
+            "title": "い-Adjective + です",
+            "meaning": "is adjective",
+            "shortExplanation": "Lets an i-adjective end a polite sentence.",
+            "displayPattern": "い-adjective + です",
+            "readingOverride": "",
+            "matchedText": "嬉しいです",
+            "tokenStart": 3,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "！",
+        "reading": "!",
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
       }
     ],
     "words": [
-      "とても",
-      "嬉しい",
-      "友達"
+      "友達",
+      "嬉しい"
     ]
   },
   {
@@ -3238,22 +3155,11 @@
         "rawTokenEnd": 0,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "待って",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "待って",
             "tokenStart": 0,
@@ -3268,22 +3174,11 @@
         "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "待って",
-            "tokenStart": 0,
-            "tokenEnd": 1
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "待って",
             "tokenStart": 0,
@@ -3324,22 +3219,11 @@
         "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "待って",
-            "tokenStart": 1,
-            "tokenEnd": 2
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "待って",
             "tokenStart": 1,
@@ -3354,22 +3238,11 @@
         "rawTokenEnd": 2,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "待って",
-            "tokenStart": 1,
-            "tokenEnd": 2
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "待って",
             "tokenStart": 1,
@@ -3400,7 +3273,20 @@
         "reading": "おねがい",
         "pos": "Prefix",
         "rawTokenStart": 0,
-        "rawTokenEnd": 1
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n3-l09-02",
+            "title": "連用形",
+            "meaning": "Formal Conjunctive",
+            "shortExplanation": "Adds the idea of formal Conjunctive to the sentence.",
+            "displayPattern": "連用形",
+            "readingOverride": "",
+            "matchedText": "願い",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
       },
       {
         "surface": "、",
@@ -3510,22 +3396,11 @@
         "rawTokenEnd": 2,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "待って",
-            "tokenStart": 2,
-            "tokenEnd": 3
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "待って",
             "tokenStart": 2,
@@ -3540,22 +3415,11 @@
         "rawTokenEnd": 3,
         "grammarHints": [
           {
-            "grammarId": "n5-te-conjunction",
-            "title": "～て",
-            "meaning": "and / then",
-            "shortExplanation": "Links actions or clauses with the te-form.",
-            "displayPattern": "Verbて + phrase",
-            "readingOverride": "",
-            "matchedText": "待って",
-            "tokenStart": 2,
-            "tokenEnd": 3
-          },
-          {
-            "grammarId": "n5-te-sequence",
-            "title": "～て",
-            "meaning": "and then",
-            "shortExplanation": "Links actions in sequence with the te-form.",
-            "displayPattern": "Verbて + phrase",
+            "grammarId": "n4-l06-02-verb",
+            "title": "Verb[て]",
+            "meaning": "Casual Request)Please do for me (Casual request)",
+            "shortExplanation": "Adds the idea of casual Request)Please do for me (Casual request) to the sentence.",
+            "displayPattern": "Verb[て]",
             "readingOverride": "",
             "matchedText": "待って",
             "tokenStart": 2,
@@ -4793,6 +4657,17 @@
         "rawTokenEnd": 0,
         "grammarHints": [
           {
+            "grammarId": "n4-l02-06",
+            "title": "はじめる",
+            "meaning": "To start, To begin to",
+            "shortExplanation": "Adds the idea of to start, To begin to to the sentence.",
+            "displayPattern": "はじめる",
+            "readingOverride": "",
+            "matchedText": "始め",
+            "tokenStart": 0,
+            "tokenEnd": 0
+          },
+          {
             "grammarId": "n5-masu-polite",
             "title": "ます",
             "meaning": "polite verb ending",
@@ -5234,7 +5109,7 @@
   {
     "id": "npc_otona_fightStart_power",
     "category": "npc",
-    "raw": "力を見る！",
+    "raw": "力がありますか？",
     "tokens": [
       {
         "surface": "力",
@@ -5245,66 +5120,77 @@
         "rawTokenEnd": 0
       },
       {
-        "surface": "を",
-        "reading": "を",
+        "surface": "が",
+        "reading": "が",
         "rawTokenStart": 1,
         "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-wo-object",
-            "title": "を",
-            "meaning": "object marker",
-            "shortExplanation": "Marks the thing that receives the action.",
-            "displayPattern": "Noun + を + Verb",
+            "grammarId": "n5-ga-aru-existence",
+            "title": "がある",
+            "meaning": "there is / has",
+            "shortExplanation": "Says that a thing exists or that someone has it.",
+            "displayPattern": "Noun + が + ある",
             "readingOverride": "",
-            "matchedText": "を",
+            "matchedText": "があり",
             "tokenStart": 1,
-            "tokenEnd": 1
+            "tokenEnd": 2
           }
         ]
       },
       {
-        "surface": "見る",
-        "base": "見る",
-        "reading": "みる",
-        "pos": "Verb",
+        "surface": "あり",
+        "reading": "あり",
         "rawTokenStart": 2,
         "rawTokenEnd": 2,
         "grammarHints": [
           {
-            "grammarId": "n5-ru-verb-dictionary",
-            "title": "る-Verb",
-            "meaning": "ichidan verb",
-            "shortExplanation": "Names verbs whose dictionary form commonly ends in る and attach ます by dropping る.",
-            "displayPattern": "る-verb dictionary form",
+            "grammarId": "n5-ga-aru-existence",
+            "title": "がある",
+            "meaning": "there is / has",
+            "shortExplanation": "Says that a thing exists or that someone has it.",
+            "displayPattern": "Noun + が + ある",
             "readingOverride": "",
-            "matchedText": "見る",
-            "tokenStart": 2,
-            "tokenEnd": 2
-          },
-          {
-            "grammarId": "n5-verb-non-past",
-            "title": "Verb (Non-Past)",
-            "meaning": "do / will do",
-            "shortExplanation": "Uses dictionary or polite form for present and future meaning.",
-            "displayPattern": "Verb non-past",
-            "readingOverride": "",
-            "matchedText": "見る",
-            "tokenStart": 2,
+            "matchedText": "があり",
+            "tokenStart": 1,
             "tokenEnd": 2
           }
         ]
       },
       {
-        "surface": "！",
-        "reading": "!",
+        "surface": "ます",
+        "reading": "ます",
         "rawTokenStart": 3,
         "rawTokenEnd": 3
+      },
+      {
+        "surface": "か",
+        "reading": "か",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ka-question",
+            "title": "か",
+            "meaning": "question marker",
+            "shortExplanation": "Turns a statement into a question.",
+            "displayPattern": "Sentence + か",
+            "readingOverride": "",
+            "matchedText": "か",
+            "tokenStart": 4,
+            "tokenEnd": 4
+          }
+        ]
+      },
+      {
+        "surface": "？",
+        "reading": "?",
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
       }
     ],
     "words": [
-      "力",
-      "見る"
+      "力"
     ],
     "group": "otona_fightStart"
   },
@@ -5542,7 +5428,7 @@
   {
     "id": "npc_otokonoko_fightStart_power",
     "category": "npc",
-    "raw": "力を見るぞ！",
+    "raw": "力があるか？",
     "tokens": [
       {
         "surface": "力",
@@ -5553,72 +5439,71 @@
         "rawTokenEnd": 0
       },
       {
-        "surface": "を",
-        "reading": "を",
+        "surface": "が",
+        "reading": "が",
         "rawTokenStart": 1,
         "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-wo-object",
-            "title": "を",
-            "meaning": "object marker",
-            "shortExplanation": "Marks the thing that receives the action.",
-            "displayPattern": "Noun + を + Verb",
+            "grammarId": "n5-ga-aru-existence",
+            "title": "がある",
+            "meaning": "there is / has",
+            "shortExplanation": "Says that a thing exists or that someone has it.",
+            "displayPattern": "Noun + が + ある",
             "readingOverride": "",
-            "matchedText": "を",
+            "matchedText": "がある",
             "tokenStart": 1,
-            "tokenEnd": 1
+            "tokenEnd": 2
           }
         ]
       },
       {
-        "surface": "見る",
-        "base": "見る",
-        "reading": "みる",
-        "pos": "Verb",
+        "surface": "ある",
+        "reading": "ある",
         "rawTokenStart": 2,
         "rawTokenEnd": 2,
         "grammarHints": [
           {
-            "grammarId": "n5-ru-verb-dictionary",
-            "title": "る-Verb",
-            "meaning": "ichidan verb",
-            "shortExplanation": "Names verbs whose dictionary form commonly ends in る and attach ます by dropping る.",
-            "displayPattern": "る-verb dictionary form",
+            "grammarId": "n5-ga-aru-existence",
+            "title": "がある",
+            "meaning": "there is / has",
+            "shortExplanation": "Says that a thing exists or that someone has it.",
+            "displayPattern": "Noun + が + ある",
             "readingOverride": "",
-            "matchedText": "見る",
-            "tokenStart": 2,
-            "tokenEnd": 2
-          },
-          {
-            "grammarId": "n5-verb-non-past",
-            "title": "Verb (Non-Past)",
-            "meaning": "do / will do",
-            "shortExplanation": "Uses dictionary or polite form for present and future meaning.",
-            "displayPattern": "Verb non-past",
-            "readingOverride": "",
-            "matchedText": "見る",
-            "tokenStart": 2,
+            "matchedText": "がある",
+            "tokenStart": 1,
             "tokenEnd": 2
           }
         ]
       },
       {
-        "surface": "ぞ",
-        "reading": "ぞ",
+        "surface": "か",
+        "reading": "か",
         "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ka-question",
+            "title": "か",
+            "meaning": "question marker",
+            "shortExplanation": "Turns a statement into a question.",
+            "displayPattern": "Sentence + か",
+            "readingOverride": "",
+            "matchedText": "か",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          }
+        ]
       },
       {
-        "surface": "！",
-        "reading": "!",
+        "surface": "？",
+        "reading": "?",
         "rawTokenStart": 4,
         "rawTokenEnd": 4
       }
     ],
     "words": [
-      "力",
-      "見る"
+      "力"
     ],
     "group": "otokonoko_fightStart"
   },
@@ -5801,6 +5686,17 @@
         "rawTokenStart": 2,
         "rawTokenEnd": 4,
         "grammarHints": [
+          {
+            "grammarId": "n4-l02-06",
+            "title": "はじめる",
+            "meaning": "To start, To begin to",
+            "shortExplanation": "Adds the idea of to start, To begin to to the sentence.",
+            "displayPattern": "はじめる",
+            "readingOverride": "",
+            "matchedText": "始め",
+            "tokenStart": 4,
+            "tokenEnd": 4
+          },
           {
             "grammarId": "n5-masu-polite",
             "title": "ます",
@@ -6488,6 +6384,17 @@
         "rawTokenEnd": 0,
         "grammarHints": [
           {
+            "grammarId": "n4-l02-06",
+            "title": "はじめる",
+            "meaning": "To start, To begin to",
+            "shortExplanation": "Adds the idea of to start, To begin to to the sentence.",
+            "displayPattern": "はじめる",
+            "readingOverride": "",
+            "matchedText": "始め",
+            "tokenStart": 0,
+            "tokenEnd": 0
+          },
+          {
             "grammarId": "n5-masu-polite",
             "title": "ます",
             "meaning": "polite verb ending",
@@ -6711,7 +6618,20 @@
         "reading": "また",
         "pos": "Conjunction",
         "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l02-05",
+            "title": "また",
+            "meaning": "Also, As well, Moreover, Again, Additionally",
+            "shortExplanation": "Adds the idea of also, As well, Moreover, Again, Additionally to the sentence.",
+            "displayPattern": "また",
+            "readingOverride": "",
+            "matchedText": "また",
+            "tokenStart": 0,
+            "tokenEnd": 0
+          }
+        ]
       },
       {
         "surface": "遊ぶ",
@@ -6789,6 +6709,17 @@
             "matchedText": "強い",
             "tokenStart": 1,
             "tokenEnd": 1
+          },
+          {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思う",
+            "tokenStart": 1,
+            "tokenEnd": 3
           }
         ]
       },
@@ -6798,6 +6729,17 @@
         "rawTokenStart": 2,
         "rawTokenEnd": 2,
         "grammarHints": [
+          {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思う",
+            "tokenStart": 1,
+            "tokenEnd": 3
+          },
           {
             "grammarId": "n5-to-quotation",
             "title": "と",
@@ -6819,6 +6761,17 @@
         "rawTokenStart": 3,
         "rawTokenEnd": 3,
         "grammarHints": [
+          {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思う",
+            "tokenStart": 1,
+            "tokenEnd": 3
+          },
           {
             "grammarId": "n5-to-quotation",
             "title": "と",
@@ -7047,7 +7000,20 @@
         "surface": "と",
         "reading": "と",
         "rawTokenStart": 4,
-        "rawTokenEnd": 4
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l08-11",
+            "title": "と",
+            "meaning": "If, When, Whenever, And, [Conditional]",
+            "shortExplanation": "Adds the idea of if, When, Whenever, And, [Conditional] to the sentence.",
+            "displayPattern": "と",
+            "readingOverride": "",
+            "matchedText": "と",
+            "tokenStart": 4,
+            "tokenEnd": 4
+          }
+        ]
       },
       {
         "surface": "嬉しい",
@@ -7333,6 +7299,17 @@
             "matchedText": "強い",
             "tokenStart": 0,
             "tokenEnd": 0
+          },
+          {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思います",
+            "tokenStart": 0,
+            "tokenEnd": 3
           }
         ]
       },
@@ -7342,6 +7319,17 @@
         "rawTokenStart": 1,
         "rawTokenEnd": 1,
         "grammarHints": [
+          {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思います",
+            "tokenStart": 0,
+            "tokenEnd": 3
+          },
           {
             "grammarId": "n5-to-quotation",
             "title": "と",
@@ -7364,6 +7352,17 @@
         "rawTokenEnd": 2,
         "grammarHints": [
           {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思います",
+            "tokenStart": 0,
+            "tokenEnd": 3
+          },
+          {
             "grammarId": "n5-to-quotation",
             "title": "と",
             "meaning": "quote marker",
@@ -7380,7 +7379,20 @@
         "surface": "ます",
         "reading": "ます",
         "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思います",
+            "tokenStart": 0,
+            "tokenEnd": 3
+          }
+        ]
       }
     ],
     "words": [
@@ -7518,7 +7530,20 @@
         "reading": "また",
         "pos": "Adverb",
         "rawTokenStart": 2,
-        "rawTokenEnd": 2
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l02-05",
+            "title": "また",
+            "meaning": "Also, As well, Moreover, Again, Additionally",
+            "shortExplanation": "Adds the idea of also, As well, Moreover, Again, Additionally to the sentence.",
+            "displayPattern": "また",
+            "readingOverride": "",
+            "matchedText": "また",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
       },
       {
         "surface": "会い",
@@ -8088,7 +8113,20 @@
         "reading": "また",
         "pos": "Adverb",
         "rawTokenStart": 1,
-        "rawTokenEnd": 1
+        "rawTokenEnd": 1,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l02-05",
+            "title": "また",
+            "meaning": "Also, As well, Moreover, Again, Additionally",
+            "shortExplanation": "Adds the idea of also, As well, Moreover, Again, Additionally to the sentence.",
+            "displayPattern": "また",
+            "readingOverride": "",
+            "matchedText": "また",
+            "tokenStart": 1,
+            "tokenEnd": 1
+          }
+        ]
       },
       {
         "surface": "来る",
@@ -8188,7 +8226,20 @@
         "reading": "また",
         "pos": "Adverb",
         "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l02-05",
+            "title": "また",
+            "meaning": "Also, As well, Moreover, Again, Additionally",
+            "shortExplanation": "Adds the idea of also, As well, Moreover, Again, Additionally to the sentence.",
+            "displayPattern": "また",
+            "readingOverride": "",
+            "matchedText": "また",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          }
+        ]
       },
       {
         "surface": "やる",
@@ -8562,138 +8613,69 @@
   {
     "id": "npc_onnanoko_defeatLine_3",
     "category": "npc",
-    "raw": "あの人も強いと思います…",
+    "raw": "強いです…",
     "tokens": [
-      {
-        "surface": "あの人",
-        "base": "あの人",
-        "reading": "あのひと",
-        "pos": "Pre-noun",
-        "rawTokenStart": 0,
-        "rawTokenEnd": 1,
-        "grammarHints": [
-          {
-            "grammarId": "n5-ano",
-            "title": "あの",
-            "meaning": "that over there",
-            "shortExplanation": "Places that before a noun away from both speaker and listener.",
-            "displayPattern": "あの + Noun",
-            "readingOverride": "",
-            "matchedText": "あの",
-            "tokenStart": 0,
-            "tokenEnd": 0
-          }
-        ]
-      },
-      {
-        "surface": "も",
-        "reading": "も",
-        "rawTokenStart": 2,
-        "rawTokenEnd": 2,
-        "grammarHints": [
-          {
-            "grammarId": "n5-mo-too",
-            "title": "も",
-            "meaning": "also / too",
-            "shortExplanation": "Adds another matching thing or person to the statement.",
-            "displayPattern": "Noun + も",
-            "readingOverride": "",
-            "matchedText": "も",
-            "tokenStart": 2,
-            "tokenEnd": 2
-          }
-        ]
-      },
       {
         "surface": "強い",
         "base": "強い",
         "reading": "つよい",
         "pos": "Adjective",
-        "rawTokenStart": 3,
-        "rawTokenEnd": 3,
+        "rawTokenStart": 0,
+        "rawTokenEnd": 0,
         "grammarHints": [
           {
-            "grammarId": "n5-i-adjective",
-            "title": "い-Adjective",
-            "meaning": "i-adjective",
-            "shortExplanation": "Names the class of adjectives that usually end in い.",
-            "displayPattern": "い-adjective",
+            "grammarId": "n5-i-adjective-predicate",
+            "title": "い-Adjective + です",
+            "meaning": "is adjective",
+            "shortExplanation": "Lets an i-adjective end a polite sentence.",
+            "displayPattern": "い-adjective + です",
             "readingOverride": "",
-            "matchedText": "強い",
-            "tokenStart": 3,
-            "tokenEnd": 3
+            "matchedText": "強いです",
+            "tokenStart": 0,
+            "tokenEnd": 1
           }
         ]
       },
       {
-        "surface": "と",
-        "reading": "と",
-        "rawTokenStart": 4,
-        "rawTokenEnd": 4,
+        "surface": "です",
+        "reading": "です",
+        "rawTokenStart": 1,
+        "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-to-quotation",
-            "title": "と",
-            "meaning": "quote marker",
-            "shortExplanation": "Marks quoted speech or thought.",
-            "displayPattern": "Quote + と",
+            "grammarId": "n5-i-adjective-predicate",
+            "title": "い-Adjective + です",
+            "meaning": "is adjective",
+            "shortExplanation": "Lets an i-adjective end a polite sentence.",
+            "displayPattern": "い-adjective + です",
             "readingOverride": "",
-            "matchedText": "と思い",
-            "tokenStart": 4,
-            "tokenEnd": 5
+            "matchedText": "強いです",
+            "tokenStart": 0,
+            "tokenEnd": 1
           }
         ]
-      },
-      {
-        "surface": "思い",
-        "base": "思う",
-        "reading": "おもい",
-        "pos": "Verb",
-        "rawTokenStart": 5,
-        "rawTokenEnd": 5,
-        "grammarHints": [
-          {
-            "grammarId": "n5-to-quotation",
-            "title": "と",
-            "meaning": "quote marker",
-            "shortExplanation": "Marks quoted speech or thought.",
-            "displayPattern": "Quote + と",
-            "readingOverride": "",
-            "matchedText": "と思い",
-            "tokenStart": 4,
-            "tokenEnd": 5
-          }
-        ]
-      },
-      {
-        "surface": "ます",
-        "reading": "ます",
-        "rawTokenStart": 6,
-        "rawTokenEnd": 6
       },
       {
         "surface": "…",
         "reading": "．",
-        "rawTokenStart": 7,
-        "rawTokenEnd": 7
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2
       },
       {
         "surface": "",
         "reading": "．",
-        "rawTokenStart": 8,
-        "rawTokenEnd": 8
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3
       },
       {
         "surface": "",
         "reading": "．",
-        "rawTokenStart": 9,
-        "rawTokenEnd": 9
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
       }
     ],
     "words": [
-      "あの人",
-      "強い",
-      "思う"
+      "強い"
     ],
     "group": "onnanoko_defeatLine"
   },
@@ -8960,6 +8942,17 @@
             "matchedText": "強い",
             "tokenStart": 0,
             "tokenEnd": 0
+          },
+          {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思います",
+            "tokenStart": 0,
+            "tokenEnd": 3
           }
         ]
       },
@@ -8969,6 +8962,17 @@
         "rawTokenStart": 1,
         "rawTokenEnd": 1,
         "grammarHints": [
+          {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思います",
+            "tokenStart": 0,
+            "tokenEnd": 3
+          },
           {
             "grammarId": "n5-to-quotation",
             "title": "と",
@@ -8991,6 +8995,17 @@
         "rawTokenEnd": 2,
         "grammarHints": [
           {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思います",
+            "tokenStart": 0,
+            "tokenEnd": 3
+          },
+          {
             "grammarId": "n5-to-quotation",
             "title": "と",
             "meaning": "quote marker",
@@ -9007,7 +9022,20 @@
         "surface": "ます",
         "reading": "ます",
         "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l03-01",
+            "title": "とおもう",
+            "meaning": "I think",
+            "shortExplanation": "Adds the idea of i think to the sentence.",
+            "displayPattern": "とおもう",
+            "readingOverride": "",
+            "matchedText": "強いと思います",
+            "tokenStart": 0,
+            "tokenEnd": 3
+          }
+        ]
       }
     ],
     "words": [
@@ -9810,15 +9838,28 @@
   {
     "id": "shopGreeting_eat",
     "category": "shopGreeting",
-    "raw": "食べる物です！",
+    "raw": "いい物があります！",
     "tokens": [
       {
-        "surface": "食べる",
-        "base": "食べる",
-        "reading": "たべる",
-        "pos": "Verb",
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
+        "pos": "Adjective",
         "rawTokenStart": 0,
-        "rawTokenEnd": 0
+        "rawTokenEnd": 0,
+        "grammarHints": [
+          {
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
+            "readingOverride": "",
+            "matchedText": "いい物",
+            "tokenStart": 0,
+            "tokenEnd": 1
+          }
+        ]
       },
       {
         "surface": "物",
@@ -9826,36 +9867,74 @@
         "reading": "もの",
         "pos": "Noun",
         "rawTokenStart": 1,
-        "rawTokenEnd": 1
-      },
-      {
-        "surface": "です",
-        "reading": "です",
-        "rawTokenStart": 2,
-        "rawTokenEnd": 2,
+        "rawTokenEnd": 1,
         "grammarHints": [
           {
-            "grammarId": "n5-desu-copula",
-            "title": "です",
-            "meaning": "to be / is",
-            "shortExplanation": "Marks a polite statement that something is something.",
-            "displayPattern": "Noun + です",
+            "grammarId": "n5-i-adjective-noun",
+            "title": "い-Adjective + Noun",
+            "meaning": "describes a noun",
+            "shortExplanation": "Lets an i-adjective describe the noun after it.",
+            "displayPattern": "い-adjective + Noun",
             "readingOverride": "",
-            "matchedText": "です",
-            "tokenStart": 2,
-            "tokenEnd": 2
+            "matchedText": "いい物",
+            "tokenStart": 0,
+            "tokenEnd": 1
           }
         ]
       },
       {
+        "surface": "が",
+        "reading": "が",
+        "rawTokenStart": 2,
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ga-aru-existence",
+            "title": "がある",
+            "meaning": "there is / has",
+            "shortExplanation": "Says that a thing exists or that someone has it.",
+            "displayPattern": "Noun + が + ある",
+            "readingOverride": "",
+            "matchedText": "があり",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "あり",
+        "reading": "あり",
+        "rawTokenStart": 3,
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n5-ga-aru-existence",
+            "title": "がある",
+            "meaning": "there is / has",
+            "shortExplanation": "Says that a thing exists or that someone has it.",
+            "displayPattern": "Noun + が + ある",
+            "readingOverride": "",
+            "matchedText": "があり",
+            "tokenStart": 2,
+            "tokenEnd": 3
+          }
+        ]
+      },
+      {
+        "surface": "ます",
+        "reading": "ます",
+        "rawTokenStart": 4,
+        "rawTokenEnd": 4
+      },
+      {
         "surface": "！",
         "reading": "!",
-        "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenStart": 5,
+        "rawTokenEnd": 5
       }
     ],
     "words": [
-      "食べる",
+      "いい",
       "物"
     ]
   },
@@ -10672,7 +10751,7 @@
   {
     "id": "shopPurchase_happy",
     "category": "shopPurchase",
-    "raw": "この{item}は嬉しいです！",
+    "raw": "この{item}がいいです！",
     "tokens": [
       {
         "surface": "この",
@@ -10699,28 +10778,28 @@
         "slot": "item"
       },
       {
-        "surface": "は",
-        "reading": "は",
+        "surface": "が",
+        "reading": "が",
         "rawTokenStart": 2,
         "rawTokenEnd": 2,
         "grammarHints": [
           {
-            "grammarId": "n5-wa-topic",
-            "title": "は",
-            "meaning": "as for",
-            "shortExplanation": "Marks what the sentence is talking about.",
-            "displayPattern": "Noun + は",
-            "readingOverride": "わ",
-            "matchedText": "は",
+            "grammarId": "n5-ga-subject",
+            "title": "が",
+            "meaning": "subject marker",
+            "shortExplanation": "Marks the subject or the thing being identified.",
+            "displayPattern": "Noun + が",
+            "readingOverride": "",
+            "matchedText": "が",
             "tokenStart": 2,
             "tokenEnd": 2
           }
         ]
       },
       {
-        "surface": "嬉しい",
-        "base": "嬉しい",
-        "reading": "うれしい",
+        "surface": "いい",
+        "base": "いい",
+        "reading": "いい",
         "pos": "Adjective",
         "rawTokenStart": 3,
         "rawTokenEnd": 3,
@@ -10732,7 +10811,7 @@
             "shortExplanation": "Lets an i-adjective end a polite sentence.",
             "displayPattern": "い-adjective + です",
             "readingOverride": "",
-            "matchedText": "嬉しいです",
+            "matchedText": "いいです",
             "tokenStart": 3,
             "tokenEnd": 4
           }
@@ -10751,7 +10830,7 @@
             "shortExplanation": "Lets an i-adjective end a polite sentence.",
             "displayPattern": "い-adjective + です",
             "readingOverride": "",
-            "matchedText": "嬉しいです",
+            "matchedText": "いいです",
             "tokenStart": 3,
             "tokenEnd": 4
           }
@@ -10766,7 +10845,7 @@
     ],
     "words": [
       "この",
-      "嬉しい"
+      "いい"
     ]
   },
   {
@@ -10791,6 +10870,17 @@
         "rawTokenStart": 2,
         "rawTokenEnd": 4,
         "grammarHints": [
+          {
+            "grammarId": "n4-l07-14",
+            "title": "ございます",
+            "meaning": "To be, To exist (Polite)",
+            "shortExplanation": "Adds the idea of to be, To exist (Polite) to the sentence.",
+            "displayPattern": "ございます",
+            "readingOverride": "",
+            "matchedText": "ござい",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          },
           {
             "grammarId": "n5-masu-polite",
             "title": "ます",
@@ -11027,7 +11117,20 @@
         "reading": "また",
         "pos": "Adverb",
         "rawTokenStart": 2,
-        "rawTokenEnd": 2
+        "rawTokenEnd": 2,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l02-05",
+            "title": "また",
+            "meaning": "Also, As well, Moreover, Again, Additionally",
+            "shortExplanation": "Adds the idea of also, As well, Moreover, Again, Additionally to the sentence.",
+            "displayPattern": "また",
+            "readingOverride": "",
+            "matchedText": "また",
+            "tokenStart": 2,
+            "tokenEnd": 2
+          }
+        ]
       },
       {
         "surface": "来",
@@ -12792,7 +12895,20 @@
         "reading": "また",
         "pos": "Adverb",
         "rawTokenStart": 4,
-        "rawTokenEnd": 4
+        "rawTokenEnd": 4,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l02-05",
+            "title": "また",
+            "meaning": "Also, As well, Moreover, Again, Additionally",
+            "shortExplanation": "Adds the idea of also, As well, Moreover, Again, Additionally to the sentence.",
+            "displayPattern": "また",
+            "readingOverride": "",
+            "matchedText": "また",
+            "tokenStart": 4,
+            "tokenEnd": 4
+          }
+        ]
       },
       {
         "surface": "戦う",
@@ -13339,7 +13455,20 @@
         "reading": "また",
         "pos": "Adverb",
         "rawTokenStart": 3,
-        "rawTokenEnd": 3
+        "rawTokenEnd": 3,
+        "grammarHints": [
+          {
+            "grammarId": "n4-l02-05",
+            "title": "また",
+            "meaning": "Also, As well, Moreover, Again, Additionally",
+            "shortExplanation": "Adds the idea of also, As well, Moreover, Again, Additionally to the sentence.",
+            "displayPattern": "また",
+            "readingOverride": "",
+            "matchedText": "また",
+            "tokenStart": 3,
+            "tokenEnd": 3
+          }
+        ]
       },
       {
         "surface": "会う",
