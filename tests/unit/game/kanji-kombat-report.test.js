@@ -26,4 +26,20 @@ describe('Kanji Kombat report summary', () => {
     assert.equal(summary.kanjiKombat.wavesCleared, 4);
     assert.equal(summary.kanjiKombat.accuracy, 80);
   });
+
+  it('does not treat an endless Kanji Kombat defeat as victory', () => {
+    const summary = buildRunSummary({
+      mode: 'kanjiKombat',
+      kanjiKombat: {
+        finalReport: {
+          completedDaily: true,
+          defeated: true,
+          wavesCleared: 8,
+        },
+      },
+    }, {});
+
+    assert.equal(summary.isVictory, false);
+    assert.equal(summary.kanjiKombat.completedDaily, true);
+  });
 });

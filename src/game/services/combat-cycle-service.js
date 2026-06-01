@@ -763,6 +763,24 @@ export class CombatCycleService {
         koRemovals
       });
     }
+    if (nextWork?.kind === 'completePrompt') {
+      this.gm.emitState();
+      return {
+        actionType: 'kanjiKombat',
+        actionSegments,
+        playerAttacks: flatPlayerAttacks,
+        enemyAttacks: flatEnemyAttacks,
+        xpEvents,
+        koSwaps,
+        koRemovals,
+        combatEnded: false,
+        completionChoicePending: true,
+        allies: this.gm.combat.allies,
+        enemies: this.gm.combat.enemies,
+        creatureParty: this.gm.run.creatureParty,
+        kanjiKombat: this.gm.run.kanjiKombat
+      };
+    }
     this.gm.emitState();
     return {
       actionType: 'kanjiKombat',

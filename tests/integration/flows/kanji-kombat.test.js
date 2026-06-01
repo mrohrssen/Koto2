@@ -152,7 +152,7 @@ describe('Kanji Kombat integration flow', () => {
     assert.equal(state.run.kanjiKombat.pendingIntro.card.answer, cards[0].answer);
   });
 
-  it('ends cleanly when the script queue is exhausted mid-wave', async () => {
+  it('prompts before ending when the script queue is exhausted mid-wave', async () => {
     const { GameManager } = await import('../../../src/game/loop.js');
     const userId = 'kk-integration-user';
     ensureScriptDeckSeeded(userId);
@@ -186,10 +186,68 @@ describe('Kanji Kombat integration flow', () => {
     const correct = quiz.choices.find(choice => choice.correct);
     const result = gm.submitKanjiKombatAnswer(correct.id);
 
-    assert.equal(result.combatEnded, true);
-    assert.equal(result.victory, true);
+    assert.equal(result.combatEnded, false);
+    assert.equal(result.completionChoicePending, true);
+    assert.equal(gm.run.active, true);
+    assert.equal(gm.combat.active, true);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+    assert.equal(gm.run.kanjiKombat.report.completedDaily, true);
+
+    const finished = gm.kanjiKombatService.resolveCompletionChoice(false);
+
+    assert.equal(finished.combatEnded, true);
+    assert.equal(finished.victory, true);
     assert.equal(gm.run.active, false);
     assert.equal(gm.combat.active, false);
     assert.equal(gm.run.kanjiKombat.report.completedDaily, true);
+  });
+
+  it('continues with early FSRS reviews after the completion prompt is accepted', async () => {
+    const { GameManager } = await import('../../../src/game/loop.js');
+    const userId = 'kk-integration-user';
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    data[SCRIPT_DECK].cards = data[SCRIPT_DECK].cards.map((card, index) => ({
+      ...card,
+      reps: 1,
+      due: index === 0 ? new Date('2000-01-01') : new Date('2100-01-01'),
+    }));
+    saveSrsData(userId, data);
+
+    const gm = new GameManager();
+    gm.userId = userId;
+    gm.player = { name: 'Tester', hp: 100, maxHp: 100, credits: 0 };
+    gm.meta = {
+      levels: { highestUnlocked: 1 },
+      creatureCollection: ['hi'],
+      creatureCounts: { hi: 1 },
+      bossesDefeated: [],
+      lifetimeStats: {},
+    };
+
+    gm.kanjiKombatService.startRunWithCreatureId('hi');
+    gm.combat.enemies.forEach(enemy => {
+      enemy.hp = 999;
+      enemy.maxHp = 999;
+    });
+
+    const firstQuiz = gm.run.kanjiKombat.currentQuiz;
+    gm.submitKanjiKombatAnswer(firstQuiz.choices.find(choice => choice.correct).id);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+
+    const continued = gm.kanjiKombatService.resolveCompletionChoice(true);
+
+    assert.equal(continued.combatEnded, false);
+    assert.equal(gm.run.kanjiKombat.endlessMode, true);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
+    assert.ok(gm.run.kanjiKombat.currentQuiz, 'endless mode should queue an early review');
+
+    const earlyQuiz = gm.run.kanjiKombat.currentQuiz;
+    const before = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === earlyQuiz.cardId);
+    gm.submitKanjiKombatAnswer(earlyQuiz.choices.find(choice => choice.correct).id);
+    const after = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === earlyQuiz.cardId);
+
+    assert.equal(after.reps, before.reps + 1);
+    assert.ok(after.last_review instanceof Date);
   });
 });

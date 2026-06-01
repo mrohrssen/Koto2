@@ -8,7 +8,8 @@
 }
 
 .kanji-kombat-panel,
-.kanji-kombat-intro {
+.kanji-kombat-intro,
+.kanji-kombat-completion {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -55,7 +56,14 @@
   margin-top: 0;
 }
 
-.kanji-kombat-intro-action.lookup-action-btn {
+.kanji-kombat-completion-actions.lookup-popup-actions {
+  padding: 0;
+  border-top: 0;
+  margin-top: 0;
+}
+
+.kanji-kombat-intro-action.lookup-action-btn,
+.kanji-kombat-completion-action.lookup-action-btn {
   min-height: 52px;
   border-radius: 14px;
   font-size: 14px;
@@ -124,6 +132,29 @@
 .kanji-kombat-reading {
   font-size: clamp(18px, 5vw, 26px);
   font-weight: 800;
+}
+
+.kanji-kombat-completion-card {
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 18px;
+  padding: 1rem;
+  background: rgba(0,0,0,0.20);
+}
+
+.kanji-kombat-completion-title {
+  color: #f7fbff;
+  font-size: clamp(22px, 6vw, 30px);
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.kanji-kombat-completion-copy {
+  color: rgba(247, 251, 255, 0.78);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 0.5rem;
 }
 
 #action-area:has(.campfire-panel) {

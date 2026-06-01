@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   initKanjiKombatUI,
   renderKanjiKombatAction,
+  renderKanjiKombatCompletionChoice,
   renderKanjiKombatIntro,
   renderKanjiKombatQuiz,
 } from '../../../public/js/ui/kanji-kombat.js';
@@ -96,6 +97,9 @@ class FakeActionArea {
     }
     if (selector === '.kanji-kombat-intro-action') {
       return this.buttons.filter(button => button.className.split(/\s+/).includes('kanji-kombat-intro-action'));
+    }
+    if (selector === '.kanji-kombat-completion-action') {
+      return this.buttons.filter(button => button.className.split(/\s+/).includes('kanji-kombat-completion-action'));
     }
     return [];
   }
@@ -275,6 +279,73 @@ describe('kanji-kombat ui', () => {
     assert.match(actionArea.innerHTML, /lookup-action-forgot/);
     assert.match(actionArea.innerHTML, /lookup-action-knew/);
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
+  });
+
+  it('renders completion choice actions', () => {
+    renderKanjiKombatCompletionChoice({ onChoice: () => {} });
+    assert.match(actionArea.innerHTML, /Your reviews are done for the day!/);
+    assert.match(actionArea.innerHTML, /Would you like to keep going\?/);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-completion-action').length, 2);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-completion-action')[0].textContent, 'No');
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-completion-action')[1].textContent, 'Yes');
+  });
+
+  it('continues after the completion prompt without ending combat', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      submitCompletionChoice: async keepGoing => {
+        calls.push(['submitCompletionChoice', keepGoing]);
+        return { state: { phase: 'combat' } };
+      },
+      updateGameState: state => calls.push(['updateGameState', state.phase]),
+      refreshAction: () => calls.push(['refreshAction']),
+      updateUI: () => calls.push(['updateUI']),
+      finishCombatResult: () => calls.push(['unexpected-finish']),
+    });
+
+    renderKanjiKombatAction({
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: { completionChoicePending: true },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-completion-action')[1].click();
+
+    assert.deepEqual(calls, [
+      ['submitCompletionChoice', true],
+      ['updateGameState', 'combat'],
+      ['refreshAction'],
+    ]);
+  });
+
+  it('finishes combat after the completion prompt is declined', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      submitCompletionChoice: async keepGoing => {
+        calls.push(['submitCompletionChoice', keepGoing]);
+        return { state: { phase: 'combat' }, combatEnded: true, victory: true };
+      },
+      updateGameState: state => calls.push(['updateGameState', state.phase]),
+      finishCombatResult: result => calls.push(['finishCombatResult', result.victory]),
+      refreshAction: () => calls.push(['unexpected-refresh']),
+      updateUI: () => calls.push(['unexpected-update']),
+    });
+
+    renderKanjiKombatAction({
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: { completionChoicePending: true },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-completion-action')[0].click();
+
+    assert.deepEqual(calls, [
+      ['submitCompletionChoice', false],
+      ['updateGameState', 'combat'],
+      ['finishCombatResult', true],
+    ]);
   });
 
   it('refreshes the combat action after intro choice state updates', async () => {

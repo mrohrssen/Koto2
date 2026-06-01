@@ -4,9 +4,11 @@ import { getSpeakerId, playDialogueLineAudio } from '../tts.js';
 let api = {
   submitAnswer: null,
   submitIntro: null,
+  submitCompletionChoice: null,
   updateGameState: null,
   updateUI: null,
   refreshAction: null,
+  finishCombatResult: null,
   playCorrectAnswerAudio: null,
 };
 
@@ -123,10 +125,51 @@ export function renderKanjiKombatIntro(card, { onChoice } = {}) {
   );
 }
 
+export function renderKanjiKombatCompletionChoice({ onChoice } = {}) {
+  const root = actionArea();
+  if (!root) return;
+  root.innerHTML = `
+    <div class="kanji-kombat-completion">
+      <div class="kanji-kombat-completion-card">
+        <div class="kanji-kombat-completion-title">Your reviews are done for the day!</div>
+        <div class="kanji-kombat-completion-copy">Would you like to keep going?</div>
+      </div>
+      <div class="kanji-kombat-completion-actions lookup-popup-actions">
+        <button class="lookup-action-btn lookup-action-forgot kanji-kombat-completion-action" type="button" data-keep-going="false">No</button>
+        <button class="lookup-action-btn lookup-action-knew kanji-kombat-completion-action" type="button" data-keep-going="true">Yes</button>
+      </div>
+    </div>
+  `;
+  bindSingleFlightButtons(
+    [...root.querySelectorAll('.kanji-kombat-completion-action')],
+    button => button.dataset.keepGoing === 'true',
+    onChoice
+  );
+}
+
 export function renderKanjiKombatAction(gameState) {
   const kk = gameState.run?.kanjiKombat;
   const cursor = gameState.combat?.actionCursor;
   if (!kk || cursor?.side !== 'ally') return false;
+
+  if (kk.completionChoicePending) {
+    renderKanjiKombatCompletionChoice({
+      onChoice: async keepGoing => {
+        const result = await api.submitCompletionChoice(keepGoing);
+        if (result?.state) api.updateGameState(result.state);
+        if (result?.combatEnded) {
+          api.finishCombatResult?.(result);
+          return;
+        }
+        if (result?.state && typeof api.refreshAction === 'function') {
+          api.refreshAction();
+          return;
+        }
+        api.updateUI();
+      },
+    });
+    return true;
+  }
 
   if (kk.pendingIntro?.card) {
     renderKanjiKombatIntro(kk.pendingIntro.card, {

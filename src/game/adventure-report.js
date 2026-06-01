@@ -12,10 +12,11 @@ const ITEMS = JSON.parse(readFileSync(join(__dirname, '../../data/items.json'), 
  */
 export function buildRunSummary(run, meta) {
   if (run.mode === 'kanjiKombat') {
+    const report = run.kanjiKombat?.finalReport || run.kanjiKombat?.report || {};
     return {
       mode: 'kanjiKombat',
-      isVictory: run.kanjiKombat?.finalReport?.completedDaily === true,
-      kanjiKombat: run.kanjiKombat?.finalReport || run.kanjiKombat?.report || {},
+      isVictory: report.completedDaily === true && report.defeated !== true,
+      kanjiKombat: report,
     };
   }
 

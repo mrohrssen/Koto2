@@ -68,7 +68,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(state.pendingIntro.cardId, work.card.id);
   });
 
-  it('stops for the day when no due cards exist and daily cap is exhausted', () => {
+  it('prompts for a completion choice when no due cards exist and daily cap is exhausted', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
       card.due = new Date('2099-01-01T00:00:00Z');
@@ -78,8 +78,10 @@ describe('kanji-kombat deck controller', () => {
     saveSrsData(userId, data);
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
     const work = chooseNextScriptWork(userId, state, { random: () => 0.5, now: new Date('2026-05-31T00:00:00Z') });
-    assert.equal(work.kind, 'complete');
+    assert.equal(work.kind, 'completePrompt');
+    assert.equal(state.completionChoicePending, true);
     assert.equal(state.report.completedDaily, true);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, true);
   });
 
   it('honors completed daily state even if new cards remain', () => {
@@ -92,6 +94,28 @@ describe('kanji-kombat deck controller', () => {
 
     assert.equal(work.kind, 'complete');
     assert.equal(state.report.completedDaily, true);
+  });
+
+  it('reviews future cards early after the player chooses endless mode', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+      card.reps = 1;
+    }
+    data.kanjiKombatDaily = { date: '2026-05-31', introducedCount: 20, completed: true };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    state.endlessMode = true;
+    const work = chooseNextScriptWork(userId, state, {
+      random: () => 0.5,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(work.kind, 'quiz');
+    assert.equal(work.card.type, 'hiragana');
+    assert.equal(state.currentQuiz.cardId, work.card.id);
+    assert.equal(state.completionChoicePending, false);
   });
 
   it('intro choice grades the card and increments daily count without returning a quiz for same presentation', () => {

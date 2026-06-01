@@ -42,6 +42,8 @@ export function createInitialKanjiKombatState({ localDate = getLocalDateKey(), r
     nextIntroAfter: rollIntroInterval(random),
     noDueDiscoveryChainCount: 0,
     noDuePracticeQueue: [],
+    completionChoicePending: false,
+    endlessMode: false,
     localDate,
     currentQuiz: null,
     pendingIntro: null,
@@ -97,6 +99,27 @@ function excludeCards(cards, excludedIds = []) {
   return cards.filter(card => !excluded.has(card.id));
 }
 
+function sortByDueDate(cards) {
+  return [...cards].sort((a, b) => {
+    const aDue = a.due instanceof Date ? a.due : new Date(a.due);
+    const bDue = b.due instanceof Date ? b.due : new Date(b.due);
+    return aDue - bDue;
+  });
+}
+
+function getEarlyReviewCards(cards, excludedIds = []) {
+  return sortByDueDate(excludeCards(cards, excludedIds).filter(card => (card.reps || 0) > 0));
+}
+
+function promptForDailyCompletion(userId, state) {
+  markScriptDailyComplete(userId, state.localDate);
+  state.currentQuiz = null;
+  state.pendingIntro = null;
+  state.completionChoicePending = true;
+  state.report.completedDaily = true;
+  return { kind: 'completePrompt' };
+}
+
 export function chooseNextScriptWork(userId, state, opts = {}) {
   const now = opts.now || new Date();
   const random = opts.random || Math.random;
@@ -104,9 +127,18 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   const activeType = getActiveScriptType(userId);
   state.report.scriptDeck = activeType;
   if (!Array.isArray(state.noDuePracticeQueue)) state.noDuePracticeQueue = [];
+  state.completionChoicePending = state.completionChoicePending === true;
+  state.endlessMode = state.endlessMode === true;
+
+  if (state.completionChoicePending) {
+    state.currentQuiz = null;
+    state.pendingIntro = null;
+    state.report.completedDaily = true;
+    return { kind: 'completePrompt' };
+  }
 
   const daily = getScriptDailyState(userId, state.localDate);
-  if (daily.completed === true) {
+  if (daily.completed === true && !state.endlessMode) {
     state.currentQuiz = null;
     state.pendingIntro = null;
     state.report.completedDaily = true;
@@ -115,7 +147,10 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
 
   const dueCards = excludeCards(getDueScriptCards(userId, activeType, now), excludedIds);
   const newCards = excludeCards(getNewScriptCards(userId, activeType), excludedIds);
-  const canIntroduce = daily.introducedCount < DAILY_NEW_LIMIT && newCards.length > 0;
+  const canIntroduce = !state.endlessMode
+    && daily.completed !== true
+    && daily.introducedCount < DAILY_NEW_LIMIT
+    && newCards.length > 0;
   const allCards = getScriptCards(userId, activeType);
 
   if (dueCards.length > 0 && state.reviewsSinceIntro >= state.nextIntroAfter && canIntroduce) {
@@ -165,11 +200,19 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     return { kind: 'intro', card, source: 'noDueBatch' };
   }
 
-  markScriptDailyComplete(userId, state.localDate);
-  state.currentQuiz = null;
-  state.pendingIntro = null;
-  state.report.completedDaily = true;
-  return { kind: 'complete' };
+  if (state.endlessMode) {
+    const earlyReviewCards = getEarlyReviewCards(allCards, excludedIds);
+    if (earlyReviewCards.length > 0) {
+      const card = earlyReviewCards[0];
+      const quiz = buildQuizForCard(card, allCards, random);
+      state.currentQuiz = quiz;
+      state.pendingIntro = null;
+      state.completionChoicePending = false;
+      return { kind: 'quiz', card, quiz, source: 'earlyReview' };
+    }
+  }
+
+  return promptForDailyCompletion(userId, state);
 }
 
 export function resolveIntroChoice(userId, state, cardId, choice, opts = {}) {
@@ -299,6 +342,51 @@ export class KanjiKombatService {
     return result;
   }
 
+  resolveCompletionChoice(keepGoing) {
+    const kk = this.gm.run?.kanjiKombat;
+    if (!kk?.completionChoicePending) {
+      throw new Error('No Kanji Kombat completion choice is pending');
+    }
+
+    kk.completionChoicePending = false;
+    kk.report.completedDaily = true;
+
+    if (!keepGoing) {
+      return this.finalizeDailyComplete();
+    }
+
+    kk.endlessMode = true;
+
+    let nextWave = false;
+    let nextWaveEnemies = null;
+    if ((this.gm.combat?.enemies || []).length === 0
+      || (this.gm.combat?.enemies || []).every(enemy => enemy.hp <= 0 || enemy.befriended)) {
+      this.spawnNextWave();
+      nextWave = true;
+      nextWaveEnemies = cloneCombatants(this.gm.combat.enemies);
+    }
+
+    const work = this.queueNextPrompt();
+    if (work?.kind === 'complete' || work?.kind === 'completePrompt') {
+      kk.completionChoicePending = false;
+      return this.finalizeDailyComplete();
+    }
+
+    this.gm.emitState();
+    return {
+      actionType: 'kanjiKombat',
+      combatEnded: false,
+      completionChoicePending: false,
+      endlessMode: true,
+      nextWave,
+      nextWaveEnemies,
+      kanjiKombat: this.gm.run.kanjiKombat,
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies,
+      creatureParty: this.gm.run.creatureParty,
+    };
+  }
+
   queueNextPrompt(opts = {}) {
     const state = this.gm.run?.kanjiKombat;
     if (!state || state.currentQuiz || state.pendingIntro) return null;
@@ -323,6 +411,7 @@ export class KanjiKombatService {
     this.gm.run.active = false;
     this.gm.run.stats.endTime = Date.now();
     this.gm.run.kanjiKombat.report.completedDaily = true;
+    this.gm.run.kanjiKombat.report.defeated = false;
     this.gm.run.kanjiKombat.finalReport = this.buildReport();
     this.gm.emitState();
     return {
@@ -349,7 +438,7 @@ export class KanjiKombatService {
 
     const state = createInitialKanjiKombatState();
     const work = chooseNextScriptWork(this.gm.userId, state);
-    if (work.kind === 'complete') {
+    if (work.kind === 'complete' || work.kind === 'completePrompt') {
       return {
         available: false,
         reason: 'complete_for_day',
@@ -509,6 +598,24 @@ export class KanjiKombatService {
         enemies: clearedEnemies
       });
     }
+    if (work.kind === 'completePrompt') {
+      this.gm.emitState();
+      return {
+        actionType: 'kanjiKombat',
+        actionSegments,
+        playerAttacks: flatPlayerAttacks,
+        enemyAttacks: flatEnemyAttacks,
+        xpEvents,
+        koSwaps,
+        koRemovals,
+        combatEnded: false,
+        completionChoicePending: true,
+        kanjiKombat: this.gm.run.kanjiKombat,
+        allies: this.gm.combat.allies,
+        enemies: clearedEnemies,
+        creatureParty: this.gm.run.creatureParty,
+      };
+    }
 
     this.spawnNextWave();
     const nextWaveEnemies = cloneCombatants(this.gm.combat.enemies);
@@ -546,6 +653,7 @@ export class KanjiKombatService {
     this.gm.combat.active = false;
     this.gm.run.active = false;
     this.gm.run.stats.endTime = Date.now();
+    this.gm.run.kanjiKombat.report.defeated = true;
     this.gm.run.kanjiKombat.finalReport = this.buildReport();
     this.gm.emitState();
     return {

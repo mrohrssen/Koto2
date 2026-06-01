@@ -60,4 +60,19 @@ describe('Kanji Kombat routes', () => {
     assert.equal(res.status, 200);
     assert.equal(res.body.actionType, 'kanjiKombat');
   });
+
+  it('submits a completion choice', async () => {
+    const manager = {
+      kanjiKombatService: {
+        resolveCompletionChoice: keepGoing => ({ keepGoing, actionType: 'kanjiKombat' }),
+      },
+    };
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/completion-choice')
+      .send({ keepGoing: true });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.actionType, 'kanjiKombat');
+    assert.equal(res.body.keepGoing, true);
+    assert.equal(manager.saved, true);
+  });
 });

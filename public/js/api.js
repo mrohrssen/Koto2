@@ -775,6 +775,14 @@ async function submitKanjiKombatAnswer(answerId) {
   });
 }
 
+async function submitKanjiKombatCompletionChoice(keepGoing) {
+  return apiCall('/kanji-kombat/completion-choice', 'POST', { keepGoing }, null, {
+    bypassLoadingGate: true,
+    timeoutMs: COMBAT_CYCLE_TIMEOUT_MS,
+    returnErrorBody: true,
+  });
+}
+
 async function getCreatureCollection() {
   return apiCall('/creature-collection', 'GET');
 }
@@ -948,6 +956,7 @@ export {
   startKanjiKombat,
   submitKanjiKombatIntro,
   submitKanjiKombatAnswer,
+  submitKanjiKombatCompletionChoice,
   getCreatureCollection,
   rollPostCombatShop,
   selectShopItem,

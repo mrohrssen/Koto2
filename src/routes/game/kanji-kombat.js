@@ -54,5 +54,19 @@ export default function createKanjiKombatRoutes() {
     }
   });
 
+  router.post('/completion-choice', (req, res) => {
+    try {
+      const { keepGoing } = req.body || {};
+      if (typeof keepGoing !== 'boolean') {
+        return res.status(400).json({ error: 'keepGoing boolean required' });
+      }
+      const result = req.gameManager.kanjiKombatService.resolveCompletionChoice(keepGoing);
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   return router;
 }
