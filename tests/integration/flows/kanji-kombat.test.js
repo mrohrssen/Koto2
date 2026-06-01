@@ -59,6 +59,31 @@ describe('Kanji Kombat integration flow', () => {
     }
   });
 
+  it('hydrates saved pending intro cards before exposing state to the UI', async () => {
+    const { GameManager } = await import('../../../src/game/loop.js');
+    const userId = 'kk-integration-user';
+    const cards = ensureScriptDeckSeeded(userId);
+    const gm = new GameManager();
+    gm.userId = userId;
+    gm.player = { name: 'Tester', hp: 100, maxHp: 100, credits: 0 };
+    gm.meta = {
+      levels: { highestUnlocked: 1 },
+      creatureCollection: ['hi'],
+      creatureCounts: { hi: 1 },
+      bossesDefeated: [],
+      lifetimeStats: {},
+    };
+
+    gm.kanjiKombatService.startRunWithCreatureId('hi');
+    gm.run.kanjiKombat.currentQuiz = null;
+    gm.run.kanjiKombat.pendingIntro = { cardId: cards[0].id };
+
+    const state = gm.getState();
+
+    assert.equal(state.run.kanjiKombat.pendingIntro.card.id, cards[0].id);
+    assert.equal(state.run.kanjiKombat.pendingIntro.card.answer, cards[0].answer);
+  });
+
   it('ends cleanly when the script queue is exhausted mid-wave', async () => {
     const { GameManager } = await import('../../../src/game/loop.js');
     const userId = 'kk-integration-user';

@@ -1121,10 +1121,11 @@ function syncFinalState(result) {
 /**
  * One player-side attack line (move turn) — effects, HP, party skills, card tap.
  */
-async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn) {
+async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn, options = {}) {
+  const { skipAttackCards = false } = options;
   let attackCard = null;
   let continueControl = null;
-  {
+  if (!skipAttackCards) {
     const adaptedAtk = {
       ...atk,
       attackerSkillName: atk.moveName || atk.attackerSkillName,
@@ -1151,6 +1152,7 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
       }
     }
     if (continueControl) await continueControl.wait();
+    else if (!skipAttackCards) await delay(800);
     return;
   }
 
@@ -1247,9 +1249,203 @@ async function playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnem
 
   if (continueControl) {
     await continueControl.wait();
-  } else {
+  } else if (!skipAttackCards) {
     await delay(800);
   }
+}
+
+async function playCreatureCombatResult(result, turnTiming, options = {}) {
+  const {
+    choices = [],
+    logMoveIntent = true,
+    nextSelectionDelayMs = 600,
+    skipAttackCards = false,
+  } = options;
+  const _log = getLog();
+
+  if (result.state) {
+    updateGameState(mergeAuthoritativeCombatState(getGameState(), result));
+  }
+
+  if (logMoveIntent && _log) {
+    const gs = getGameState();
+    const allies = gs?.combat?.allies || gs?.run?.creatureParty?.active || [];
+    const enemies = gs?.combat?.enemies || [];
+    const moveDesc = choices.map(c => {
+      const creature = allies[c.creatureIndex];
+      const moveName = creature?.moves?.find(m => m.id === c.moveId)?.nameEn || '?';
+      const target = c.targetIndex >= 0 ? (enemies[c.targetIndex]?.nameEn || '?') : 'AoE/Self';
+      return `${creature?.nameEn || '?'}→${moveName}→${target}`;
+    }).join(', ');
+    _log.act(`Attack: ${moveDesc}`);
+  }
+
+  if (_log) {
+    const aliveEnemies = (result.enemies || []).filter(e => e.hp > 0 && !e.befriended).length;
+    const aliveAllies = (result.allies || []).filter(a => a.hp > 0).length;
+    _log.expect(`Enemies alive: ${aliveEnemies}/${(result.enemies || []).length}. Allies alive: ${aliveAllies}/${(result.allies || []).length}`);
+
+    for (const atk of [...(result.playerAttacks || []), ...(result.enemyAttacks || [])]) {
+      if (atk.targetDefeated) {
+        const side = result.playerAttacks?.includes(atk) ? 'enemy' : 'ally';
+        _log.expect(`KO: ${side}[${atk.targetIndex}] — sprite fade, HP bar zero`);
+      }
+    }
+  }
+
+  if (window.__inspector?.checkGameRules) {
+    const ruleCheck = window.__inspector.checkGameRules(result);
+    if (!ruleCheck.ok) {
+      const log = getLog();
+      for (const m of ruleCheck.mismatches) {
+        if (log) log.expect(`RULE VIOLATION: ${m.detail}`);
+        console.warn(`[RULE] ${m.type}: ${m.detail}`);
+      }
+    }
+  }
+
+  _currentRoundBarks = result.barks || [];
+
+  await vfx.showRoundStartEvents(result);
+
+  const enemyHpMap = vfx.buildEnemyHpMapForPlayerAttacks(result);
+  const allyHpMap = vfx.buildAllyHpMap(result);
+  const allPendingMoveLearn = [];
+  const killedEnemies = new Set();
+
+  const actionSegments = Array.isArray(result.actionSegments) ? result.actionSegments : [];
+  let merged = [];
+  if (actionSegments.length > 0) {
+    for (const segment of actionSegments) {
+      const side = segment.actor?.side === 'enemy' ? 'enemy' : 'player';
+      for (const atk of segment.attacks || []) {
+        if (shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)) continue;
+        if (side === 'player') {
+          await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn, { skipAttackCards });
+        } else {
+          await vfx.showOneEnemyAttackAnimated(result, atk, allyHpMap, false, { skipAttackCards });
+        }
+      }
+      for (const counter of segment.counterAttacks || []) {
+        await vfx.showOneCounterAttackAnimated(counter, enemyHpMap, result.enemies);
+      }
+      await vfx.showEffectEvents({
+        ...result,
+        effectEvents: segment.effectEvents || [],
+        mpRegens: segment.mpRegens || []
+      });
+    }
+  } else {
+    await vfx.showEffectEvents(result);
+    merged = vfx.buildMergedInitiativeAttacks(result);
+  }
+
+  if (merged.length > 0) {
+    for (const { side, atk } of merged) {
+      if (shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)) continue;
+      if (side === 'player' && atk.type === 'counter') {
+        await vfx.showOneCounterAttackAnimated(atk, enemyHpMap, result.enemies);
+      } else if (side === 'player') {
+        await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn, { skipAttackCards });
+      } else {
+        await vfx.showOneEnemyAttackAnimated(result, atk, allyHpMap, false, { skipAttackCards });
+      }
+    }
+  }
+
+  if (result.enemies) {
+    const koPromises = [];
+    const pendingKoIndices = collectPendingEnemyKoAnimationIndices(
+      result.enemies,
+      animatedEnemyKoKeys,
+      killedEnemies
+    );
+    for (const i of pendingKoIndices) {
+      koPromises.push(animateKOForScene(getSceneManager().currentScene, 'enemy', i));
+    }
+    if (koPromises.length) await Promise.all(koPromises);
+  }
+
+  vfx.syncStatusIconsFromResult(result);
+
+  if (result.befriendQuizTriggered && result.befriendQuiz) {
+    syncFinalState(result);
+    playerAttackPending = false;
+    await befriend.renderBefriendQuiz(result.befriendQuiz, result);
+    logCombatTurnTiming(turnTiming, result, 'befriend_quiz');
+    return;
+  }
+
+  if (result.npcSkillAttacks?.length > 0) {
+    const npcData = getCombatNpcData();
+    if (npcData) {
+      await playNpcSkillAnimation(npcData, showNpcSprite, hideNpcSprite, async () => {
+        await vfx.showNpcSkillAttacksAnimated(result, allyHpMap);
+      }, result.enemies);
+    } else {
+      await delay(400);
+      await vfx.showNpcSkillAttacksAnimated(result, allyHpMap);
+    }
+  }
+
+  if (actionSegments.length === 0) {
+    const enemyShownInMerge = merged.some(e => e.side === 'enemy');
+    if (!enemyShownInMerge && result.enemyAttacks?.length > 0) {
+      await delay(400);
+      await vfx.showEnemyAttacksAnimated(result, allyHpMap, false, { skipAttackCards });
+    }
+
+    const countersShownInMerge = merged.some(e => e.side === 'player' && e.atk.type === 'counter');
+    if (!countersShownInMerge) {
+      await vfx.showCounterAttacks(result, enemyHpMap);
+    }
+  }
+
+  await vfx.showKoSwapAnimations(result);
+
+  syncFinalState(result);
+  if (result.nextWave) {
+    animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
+    updateUI?.();
+  }
+
+  if (allPendingMoveLearn.length > 0) {
+    await processPendingMoveLearn(allPendingMoveLearn);
+  }
+
+  if (window.__inspector) {
+    const scanResult = window.__inspector.checkCreatures();
+    const __log = getLog();
+    if (__log) {
+      if (scanResult.ok) {
+        __log.check({ ok: true });
+      } else {
+        const first = scanResult.mismatches[0];
+        __log.check({ ok: false, tag: first.type, detail: first.detail });
+        for (const m of scanResult.mismatches.slice(1)) {
+          console.warn(`[CHK] additional: ${m.type}: ${m.detail}`);
+        }
+      }
+    }
+  }
+
+  if (result.combatEnded) {
+    const __logEnd = getLog();
+    if (__logEnd) {
+      __logEnd.act(`Combat ended: ${result.victory ? 'VICTORY' : 'DEFEAT'}`);
+      __logEnd.expect('All combat sprites cleared. Combat UI removed.');
+    }
+    if (result.victory) await delay(500);
+    logCombatTurnTiming(turnTiming, result, result.victory ? 'victory' : 'defeat');
+    stopCombatLoop(result);
+    return;
+  }
+
+  playerAttackPending = false;
+
+  await delay(nextSelectionDelayMs);
+  logCombatTurnTiming(turnTiming, result, 'next_selection');
+  startMoveSelection();
 }
 
 /**
@@ -1315,6 +1511,8 @@ async function executeCreatureMovesTurn(choices, options = {}) {
       await playCreatureCombatResult(result, turnTiming, {
         choices,
         logMoveIntent: false,
+        nextSelectionDelayMs: actionType === 'kanjiKombat' ? 150 : 600,
+        skipAttackCards: actionType === 'kanjiKombat',
       });
 
     } catch (error) {

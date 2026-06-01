@@ -741,16 +741,17 @@ export function buildMergedInitiativeAttacks(result) {
 /**
  * One enemy strike animation (used by full enemy phase and initiative merge).
  */
-export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved) {
+export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved, options = {}) {
+  const { skipAttackCards = false } = options;
   const effectKey = halved ? 'dealsHalved' :
     atk.elementMultiplier > 1 ? 'dealsStrong' :
     atk.elementMultiplier < 1 ? 'dealsWeak' : 'dealsDamage';
   let attackCard = null;
   let continueControl = null;
-  if (atk.attackerNameJp) {
+  if (atk.attackerNameJp && !skipAttackCards) {
     attackCard = insertAttackCard(atk, true);
     continueControl = attackCard ? createAttackCardContinueControl(attackCard) : null;
-  } else {
+  } else if (!skipAttackCards) {
     const actionArea = document.getElementById('action-area');
     if (actionArea) {
       actionArea.innerHTML = `<div class="combat-creature-attack enemy">${t(effectKey, atk.attackerName, atk.damage)}</div>`;
@@ -791,7 +792,7 @@ export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved)
 
   if (continueControl) {
     await continueControl.wait();
-  } else {
+  } else if (!skipAttackCards) {
     await ctx.delay(400);
   }
 }
@@ -799,10 +800,10 @@ export async function showOneEnemyAttackAnimated(result, atk, allyHpMap, halved)
 /**
  * Animate enemy attacks against player creatures with real-time HP bar updates.
  */
-export async function showEnemyAttacksAnimated(result, allyHpMap, halved) {
+export async function showEnemyAttacksAnimated(result, allyHpMap, halved, options = {}) {
   if (!result.enemyAttacks?.length) return;
   for (const atk of result.enemyAttacks) {
-    await showOneEnemyAttackAnimated(result, atk, allyHpMap, halved);
+    await showOneEnemyAttackAnimated(result, atk, allyHpMap, halved, options);
   }
   syncStatusIconsFromResult(result);
 }

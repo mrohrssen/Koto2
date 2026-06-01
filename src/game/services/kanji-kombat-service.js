@@ -106,7 +106,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   if (dueCards.length > 0 && state.reviewsSinceIntro >= state.nextIntroAfter && canIntroduce) {
     const card = newCards[0];
     state.currentQuiz = null;
-    state.pendingIntro = { cardId: card.id };
+    state.pendingIntro = { cardId: card.id, card };
     return { kind: 'intro', card };
   }
 
@@ -121,7 +121,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   if (canIntroduce) {
     const card = newCards[0];
     state.currentQuiz = null;
-    state.pendingIntro = { cardId: card.id };
+    state.pendingIntro = { cardId: card.id, card };
     return { kind: 'intro', card };
   }
 
@@ -198,7 +198,7 @@ export class KanjiKombatService {
     if (!collection.includes(creatureId)) {
       throw new Error('Selected creature is not unlocked');
     }
-    const starter = instantiateCreatureForCombat(creatureId, 1);
+    const starter = instantiateCreatureForCombat(creatureId);
     return this.startRunWithCreature(starter);
   }
 
@@ -206,6 +206,18 @@ export class KanjiKombatService {
     const state = this.gm.run?.kanjiKombat;
     if (!state) throw new Error('No active Kanji Kombat run');
     return resolveIntroChoice(this.gm.userId, state, cardId, choice);
+  }
+
+  hydratePendingIntroCard() {
+    const kk = this.gm.run?.kanjiKombat;
+    const cardId = kk?.pendingIntro?.cardId;
+    if (!cardId || kk.pendingIntro.card) return kk?.pendingIntro || null;
+
+    const card = getScriptCards(this.gm.userId).find(candidate => candidate.id === cardId);
+    if (card) {
+      kk.pendingIntro = { cardId: card.id, card };
+    }
+    return kk.pendingIntro;
   }
 
   submitAnswer(answerId) {

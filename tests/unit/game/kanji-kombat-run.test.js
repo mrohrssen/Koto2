@@ -101,6 +101,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
 
     const ally = gm.run.creatureParty.active[0];
     assert.equal(ally.id, 'hi');
+    assert.equal(ally.level, 5);
     assert.equal(typeof ally.uid, 'string');
     assert.equal(Array.isArray(ally.moves), true);
     assert.equal(ally.hp, ally.maxHp);

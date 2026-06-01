@@ -2030,6 +2030,7 @@ async function initGame() {
     submitAnswer: answerId => combatLoopUI.submitKanjiKombatAnswer(answerId),
     updateGameState,
     updateUI,
+    refreshAction: () => combatLoopUI.startMoveSelection(),
   });
 
   explorationUI.init({

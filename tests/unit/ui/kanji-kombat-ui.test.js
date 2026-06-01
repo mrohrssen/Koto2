@@ -61,7 +61,7 @@ class FakeActionArea {
       return match ? { textContent: match[1] } : null;
     }
     if (selector === '.kanji-kombat-intro-card') {
-      const match = this.innerHTML.match(/<div class="kanji-kombat-intro-card">([\s\S]*?)<\/div>\s*<div class="kanji-kombat-intro-actions">/);
+      const match = this.innerHTML.match(/<div class="kanji-kombat-intro-card">([\s\S]*?)<\/div>\s*<div class="[^"]*kanji-kombat-intro-actions[^"]*">/);
       return match ? { textContent: match[1].replace(/<[^>]+>/g, '') } : null;
     }
     return null;
@@ -133,6 +133,8 @@ describe('kanji-kombat ui', () => {
     }, { onAnswer: () => {} });
 
     assert.match(actionArea.innerHTML, /class="move-grid/);
+    assert.doesNotMatch(actionArea.innerHTML, /Kanji Kombat/);
+    assert.doesNotMatch(actionArea.innerHTML, /move-badge|答/);
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-choice').every(button =>
       button.className.split(/\s+/).includes('move-cell')
     ), true);
@@ -175,7 +177,50 @@ describe('kanji-kombat ui', () => {
   it('renders intro modal actions', () => {
     renderKanjiKombatIntro({ id: 'kanji:上', prompt: '上', reading: 'じょう', answer: 'Above' }, { onChoice: () => {} });
     assert.equal(actionArea.querySelector('.kanji-kombat-intro-card').textContent.includes('上'), true);
+    assert.match(actionArea.innerHTML, /New discovery!/);
+    assert.match(actionArea.innerHTML, /I didn't know it yet/);
+    assert.match(actionArea.innerHTML, /I already know it/);
+    assert.match(actionArea.innerHTML, /lookup-action-forgot/);
+    assert.match(actionArea.innerHTML, /lookup-action-knew/);
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
+  });
+
+  it('refreshes the combat action after intro choice state updates', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      submitIntro: async (cardId, choice) => {
+        calls.push(['submitIntro', cardId, choice]);
+        return { state: { phase: 'combat' } };
+      },
+      updateGameState: state => calls.push(['updateGameState', state.phase]),
+      updateUI: () => calls.push(['updateUI']),
+      refreshAction: () => calls.push(['refreshAction']),
+    });
+
+    renderKanjiKombatAction({
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: {
+            card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' },
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+
+    assert.deepEqual(calls, [
+      ['submitIntro', 'hiragana:か', 'unknown'],
+      ['updateGameState', 'combat'],
+      ['refreshAction'],
+    ]);
+  });
+
+  it('omits duplicate intro readings when the reading matches the prompt', () => {
+    renderKanjiKombatIntro({ id: 'hiragana:お', prompt: 'お', reading: 'お', answer: 'o' }, { onChoice: () => {} });
+    assert.doesNotMatch(actionArea.innerHTML, /kanji-kombat-reading/);
+    assert.match(actionArea.innerHTML, /kanji-kombat-answer/);
   });
 
   it('ignores duplicate quiz answer taps while the first answer is in flight', async () => {

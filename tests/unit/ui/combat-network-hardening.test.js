@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 function createStorage() {
   const values = new Map();
@@ -67,6 +69,8 @@ globalThis.cancelAnimationFrame = id => clearImmediate(id);
 
 const combatLoop = await import('../../../public/js/ui/combat-loop.js');
 const originalConsoleLog = console.log;
+const combatLoopSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/combat-loop.js'), 'utf8');
+const combatVfxSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/combat-vfx.js'), 'utf8');
 
 describe('combat network hardening', () => {
   beforeEach(() => {
@@ -97,6 +101,23 @@ describe('combat network hardening', () => {
       actionType: 'attack',
       choices: [{ creatureIndex: 0, moveId: 'tackle', targetIndex: 0 }],
     }]);
+  });
+
+  it('defines the shared creature combat playback helper used by attack submissions', () => {
+    assert.match(combatLoopSource, /async function playCreatureCombatResult\(/);
+    assert.match(combatLoopSource, /await playCreatureCombatResult\(result, turnTiming,/);
+  });
+
+  it('skips attack result cards for Kanji Kombat answer playback', () => {
+    assert.match(combatLoopSource, /skipAttackCards: actionType === 'kanjiKombat'/);
+    assert.match(combatLoopSource, /if \(!skipAttackCards\) \{/);
+    assert.match(combatLoopSource, /showOneEnemyAttackAnimated\(result, atk, allyHpMap, false, \{ skipAttackCards \}\)/);
+    assert.match(combatVfxSource, /if \(atk\.attackerNameJp && !skipAttackCards\) \{/);
+  });
+
+  it('refreshes scene and HUD after Kanji Kombat starts a next wave', () => {
+    assert.match(combatLoopSource, /if \(result\.nextWave\) \{/);
+    assert.match(combatLoopSource, /updateUI\?\.\(\);/);
   });
 
   it('throws a clear setup error when the injected API is missing', async () => {

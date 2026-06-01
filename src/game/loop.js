@@ -221,6 +221,9 @@ export class GameManager {
         }
       }
     }
+    if (this.run?.mode === 'kanjiKombat') {
+      this.kanjiKombatService.hydratePendingIntroCard();
+    }
 
     const player = this.run?.player || this.player;
 

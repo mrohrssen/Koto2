@@ -14,6 +14,9 @@
   gap: 0.75rem;
   align-items: stretch;
   padding: 0.75rem;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 .kanji-kombat-label {
@@ -38,28 +41,44 @@
   gap: 0.5rem;
 }
 
-.kanji-kombat-intro-action {
-  border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 14px;
-  background: rgba(255,255,255,0.08);
+.kanji-kombat-intro-heading {
   color: var(--text-primary);
+  font-size: clamp(20px, 6vw, 28px);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.kanji-kombat-intro-actions.lookup-popup-actions {
+  padding: 0;
+  border-top: 0;
+  margin-top: 0;
+}
+
+.kanji-kombat-intro-action.lookup-action-btn {
   min-height: 52px;
-  font-weight: 700;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .kanji-kombat-choice-grid.move-grid {
-  width: 100%;
-  margin-left: 0;
-  margin-right: 0;
-  flex: 0 0 auto;
+  flex: 1;
 }
 
 .kanji-kombat-choice.move-cell {
   appearance: none;
   -webkit-appearance: none;
   font: inherit;
-  text-align: left;
-  min-height: 72px;
+}
+
+.kanji-kombat-choice .move-hero {
+  justify-content: center;
+  padding-right: 0;
+}
+
+.kanji-kombat-choice .move-text {
+  text-align: center;
 }
 
 .kanji-kombat-intro-card {
@@ -74,6 +93,18 @@
 .kanji-kombat-answer {
   color: var(--text-secondary);
   margin-top: 0.35rem;
+}
+
+.kanji-kombat-answer {
+  color: var(--text-primary);
+  font-size: clamp(26px, 8vw, 40px);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.kanji-kombat-reading {
+  font-size: clamp(18px, 5vw, 26px);
+  font-weight: 800;
 }
 
 #action-area:has(.campfire-panel) {
