@@ -28,21 +28,21 @@ describe('script-decks static data', () => {
     assert.equal(first.answer, 'a');
   });
 
-  it('loads the first 100 WaniKani Pleasant kanji entries in order', () => {
-    assert.equal(KANJI_SCRIPT_CARDS.length, 100);
+  it('loads the Koto top-4000 kanji entries in frequency order', () => {
+    assert.equal(KANJI_SCRIPT_CARDS.length, 4000);
     assert.deepEqual(KANJI_SCRIPT_CARDS[0], {
-      id: 'kanji:上',
+      id: 'kanji:人',
       type: 'kanji',
-      prompt: '上',
-      answer: 'Above',
-      reading: 'じょう',
-      keyword: 'Above',
+      prompt: '人',
+      answer: 'person',
+      reading: 'ひと',
+      keyword: 'person',
       sortIndex: 1,
-      source: 'wanikani-pleasant-100',
+      source: 'koto-kanji-dictionary',
+      frequencyRank: 1,
     });
-    assert.equal(KANJI_SCRIPT_CARDS[37].id, 'kanji:々');
-    assert.equal(KANJI_SCRIPT_CARDS[99].id, 'kanji:虫');
-    assert.equal(KANJI_SCRIPT_CARDS[99].answer, 'Insect');
+    assert.deepEqual(KANJI_SCRIPT_CARDS.slice(0, 4).map(card => card.prompt), ['人', '言', '見', '一']);
+    assert.equal(KANJI_SCRIPT_CARDS.some(card => card.source === 'wanikani-pleasant-100'), false);
   });
 
   it('returns cards by script type only', () => {

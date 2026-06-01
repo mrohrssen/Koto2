@@ -1,0 +1,47 @@
+{
+  "人": {
+    "primaryMeaning": "person",
+    "secondaryMeanings": ["human being", "people"],
+    "primaryReading": "ひと",
+    "secondaryReadings": ["ジン", "ニン"],
+    "examples": [
+      {
+        "word": "人",
+        "reading": "ひと",
+        "meaning": "person",
+        "source": "jmdict"
+      }
+    ]
+  },
+  "髙": {
+    "primaryMeaning": "tall / high",
+    "secondaryMeanings": [],
+    "primaryReading": "たか",
+    "secondaryReadings": ["コウ"],
+    "examples": [
+      {
+        "word": "髙い",
+        "reading": "たかい",
+        "meaning": "tall / high",
+        "source": "manual"
+      }
+    ],
+    "notes": "Variant of 高."
+  },
+  "屛": {
+    "primaryMeaning": "wall / fence",
+    "secondaryMeanings": [],
+    "primaryReading": "びょう",
+    "secondaryReadings": ["ヘイ", "ビョウ", "おおう", "しりぞく"],
+    "examples": [],
+    "notes": "Variant of 屏."
+  },
+  "驎": {
+    "primaryMeaning": "piebald horse",
+    "secondaryMeanings": [],
+    "primaryReading": "まだらうま",
+    "secondaryReadings": ["リン"],
+    "examples": [],
+    "notes": "Rare kanji; manual gloss from the Japanese reading."
+  }
+}

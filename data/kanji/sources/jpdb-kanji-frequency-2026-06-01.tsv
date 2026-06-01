@@ -1,0 +1,4001 @@
+rank	kanji	kind
+1	人	Kyōiku (1st grade)
+2	言	Kyōiku (2nd grade)
+3	見	Kyōiku (1st grade)
+4	一	Kyōiku (1st grade)
+5	出	Kyōiku (1st grade)
+6	気	Kyōiku (1st grade)
+7	思	Kyōiku (2nd grade)
+8	手	Kyōiku (1st grade)
+9	何	Kyōiku (2nd grade)
+10	分	Kyōiku (2nd grade)
+11	俺	Jōyō
+12	大	Kyōiku (1st grade)
+13	上	Kyōiku (1st grade)
+14	私	Kyōiku (6th grade)
+15	前	Kyōiku (2nd grade)
+16	間	Kyōiku (2nd grade)
+17	女	Kyōiku (1st grade)
+18	事	Kyōiku (3rd grade)
+19	今	Kyōiku (2nd grade)
+20	子	Kyōiku (1st grade)
+21	中	Kyōiku (1st grade)
+22	自	Kyōiku (2nd grade)
+23	目	Kyōiku (1st grade)
+24	生	Kyōiku (1st grade)
+25	日	Kyōiku (1st grade)
+26	時	Kyōiku (2nd grade)
+27	行	Kyōiku (2nd grade)
+28	方	Kyōiku (2nd grade)
+29	来	Kyōiku (2nd grade)
+30	彼	Jōyō
+31	様	Kyōiku (3rd grade)
+32	本	Kyōiku (1st grade)
+33	力	Kyōiku (1st grade)
+34	魔	Jōyō
+35	話	Kyōiku (2nd grade)
+36	体	Kyōiku (2nd grade)
+37	者	Kyōiku (3rd grade)
+38	入	Kyōiku (1st grade)
+39	下	Kyōiku (1st grade)
+40	先	Kyōiku (1st grade)
+41	感	Kyōiku (3rd grade)
+42	当	Kyōiku (2nd grade)
+43	合	Kyōiku (2nd grade)
+44	後	Kyōiku (2nd grade)
+45	顔	Kyōiku (2nd grade)
+46	無	Kyōiku (4th grade)
+47	動	Kyōiku (3rd grade)
+48	部	Kyōiku (3rd grade)
+49	少	Kyōiku (2nd grade)
+50	持	Kyōiku (3rd grade)
+51	物	Kyōiku (3rd grade)
+52	知	Kyōiku (2nd grade)
+53	意	Kyōiku (3rd grade)
+54	心	Kyōiku (2nd grade)
+55	度	Kyōiku (3rd grade)
+56	聞	Kyōiku (2nd grade)
+57	二	Kyōiku (1st grade)
+58	立	Kyōiku (1st grade)
+59	全	Kyōiku (3rd grade)
+60	理	Kyōiku (2nd grade)
+61	声	Kyōiku (2nd grade)
+62	場	Kyōiku (2nd grade)
+63	身	Kyōiku (3rd grade)
+64	会	Kyōiku (2nd grade)
+65	向	Kyōiku (3rd grade)
+66	僕	Jōyō
+67	同	Kyōiku (2nd grade)
+68	取	Kyōiku (3rd grade)
+69	笑	Kyōiku (4th grade)
+70	戦	Kyōiku (4th grade)
+71	的	Kyōiku (4th grade)
+72	通	Kyōiku (2nd grade)
+73	最	Kyōiku (4th grade)
+74	地	Kyōiku (2nd grade)
+75	込	Jōyō
+76	不	Kyōiku (4th grade)
+77	長	Kyōiku (2nd grade)
+78	口	Kyōiku (1st grade)
+79	考	Kyōiku (2nd grade)
+80	変	Kyōiku (4th grade)
+81	実	Kyōiku (3rd grade)
+82	達	Kyōiku (4th grade)
+83	年	Kyōiku (1st grade)
+84	違	Jōyō
+85	回	Kyōiku (2nd grade)
+86	家	Kyōiku (2nd grade)
+87	王	Kyōiku (1st grade)
+88	葉	Kyōiku (3rd grade)
+89	味	Kyōiku (3rd grade)
+90	食	Kyōiku (2nd grade)
+91	情	Kyōiku (5th grade)
+92	面	Kyōiku (3rd grade)
+93	男	Kyōiku (1st grade)
+94	使	Kyōiku (3rd grade)
+95	作	Kyōiku (2nd grade)
+96	外	Kyōiku (2nd grade)
+97	悪	Kyōiku (3rd grade)
+98	付	Kyōiku (4th grade)
+99	小	Kyōiku (1st grade)
+100	切	Kyōiku (2nd grade)
+101	強	Kyōiku (2nd grade)
+102	確	Kyōiku (5th grade)
+103	性	Kyōiku (5th grade)
+104	国	Kyōiku (2nd grade)
+105	明	Kyōiku (2nd grade)
+106	対	Kyōiku (3rd grade)
+107	所	Kyōiku (3rd grade)
+108	死	Kyōiku (3rd grade)
+109	世	Kyōiku (3rd grade)
+110	相	Kyōiku (3rd grade)
+111	真	Kyōiku (3rd grade)
+112	屋	Kyōiku (3rd grade)
+113	君	Kyōiku (3rd grade)
+114	神	Kyōiku (3rd grade)
+115	学	Kyōiku (1st grade)
+116	着	Kyōiku (3rd grade)
+117	開	Kyōiku (3rd grade)
+118	引	Kyōiku (2nd grade)
+119	返	Kyōiku (3rd grade)
+120	界	Kyōiku (3rd grade)
+121	然	Kyōiku (4th grade)
+122	足	Kyōiku (1st grade)
+123	頭	Kyōiku (2nd grade)
+124	近	Kyōiku (2nd grade)
+125	法	Kyōiku (4th grade)
+126	待	Kyōiku (3rd grade)
+127	以	Kyōiku (4th grade)
+128	名	Kyōiku (1st grade)
+129	用	Kyōiku (2nd grade)
+130	音	Kyōiku (1st grade)
+131	好	Kyōiku (4th grade)
+132	結	Kyōiku (4th grade)
+133	仕	Kyōiku (3rd grade)
+134	誰	Jōyō
+135	高	Kyōiku (2nd grade)
+136	落	Kyōiku (3rd grade)
+137	直	Kyōiku (2nd grade)
+138	空	Kyōiku (1st grade)
+139	内	Kyōiku (2nd grade)
+140	問	Kyōiku (3rd grade)
+141	解	Kyōiku (5th grade)
+142	発	Kyōiku (3rd grade)
+143	撃	Jōyō
+144	色	Kyōiku (2nd grade)
+145	現	Kyōiku (5th grade)
+146	決	Kyōiku (3rd grade)
+147	教	Kyōiku (2nd grade)
+148	士	Kyōiku (5th grade)
+149	続	Kyōiku (4th grade)
+150	能	Kyōiku (5th grade)
+151	振	Jōyō
+152	覚	Kyōiku (4th grade)
+153	良	Kyōiku (4th grade)
+154	三	Kyōiku (1st grade)
+155	指	Kyōiku (3rd grade)
+156	正	Kyōiku (1st grade)
+157	数	Kyōiku (2nd grade)
+158	白	Kyōiku (1st grade)
+159	要	Kyōiku (4th grade)
+160	視	Kyōiku (6th grade)
+161	受	Kyōiku (3rd grade)
+162	信	Kyōiku (4th grade)
+163	張	Kyōiku (5th grade)
+164	表	Kyōiku (3rd grade)
+165	十	Kyōiku (1st grade)
+166	飛	Kyōiku (4th grade)
+167	突	Jōyō
+168	別	Kyōiku (4th grade)
+169	初	Kyōiku (4th grade)
+170	連	Kyōiku (4th grade)
+171	道	Kyōiku (2nd grade)
+172	殺	Kyōiku (5th grade)
+173	止	Kyōiku (2nd grade)
+174	愛	Kyōiku (4th grade)
+175	必	Kyōiku (4th grade)
+176	戻	Jōyō
+177	早	Kyōiku (1st grade)
+178	定	Kyōiku (3rd grade)
+179	残	Kyōiku (4th grade)
+180	元	Kyōiku (2nd grade)
+181	終	Kyōiku (3rd grade)
+182	可	Kyōiku (5th grade)
+183	関	Kyōiku (4th grade)
+184	夫	Kyōiku (4th grade)
+185	多	Kyōiku (2nd grade)
+186	金	Kyōiku (1st grade)
+187	呼	Kyōiku (6th grade)
+188	姿	Kyōiku (6th grade)
+189	機	Kyōiku (4th grade)
+190	代	Kyōiku (3rd grade)
+191	始	Kyōiku (3rd grade)
+192	主	Kyōiku (3rd grade)
+193	父	Kyōiku (2nd grade)
+194	歩	Kyōiku (2nd grade)
+195	重	Kyōiku (3rd grade)
+196	族	Kyōiku (3rd grade)
+197	勝	Kyōiku (3rd grade)
+198	書	Kyōiku (2nd grade)
+199	光	Kyōiku (2nd grade)
+200	楽	Kyōiku (2nd grade)
+201	命	Kyōiku (3rd grade)
+202	配	Kyōiku (3rd grade)
+203	息	Kyōiku (3rd grade)
+204	帰	Kyōiku (2nd grade)
+205	起	Kyōiku (3rd grade)
+206	風	Kyōiku (2nd grade)
+207	他	Kyōiku (3rd grade)
+208	流	Kyōiku (3rd grade)
+209	化	Kyōiku (3rd grade)
+210	線	Kyōiku (2nd grade)
+211	想	Kyōiku (3rd grade)
+212	応	Kyōiku (5th grade)
+213	状	Kyōiku (5th grade)
+214	水	Kyōiku (1st grade)
+215	美	Kyōiku (3rd grade)
+216	剣	Jōyō
+217	離	Jōyō
+218	得	Kyōiku (5th grade)
+219	過	Kyōiku (5th grade)
+220	我	Kyōiku (6th grade)
+221	次	Kyōiku (3rd grade)
+222	在	Kyōiku (5th grade)
+223	置	Kyōiku (4th grade)
+224	放	Kyōiku (3rd grade)
+225	調	Kyōiku (3rd grade)
+226	安	Kyōiku (3rd grade)
+227	背	Kyōiku (6th grade)
+228	親	Kyōiku (2nd grade)
+229	絶	Kyōiku (5th grade)
+230	緒	Jōyō
+231	丈	Jōyō
+232	失	Kyōiku (4th grade)
+233	首	Kyōiku (2nd grade)
+234	室	Kyōiku (2nd grade)
+235	反	Kyōiku (3rd grade)
+236	伝	Kyōiku (4th grade)
+237	貴	Kyōiku (6th grade)
+238	天	Kyōiku (1st grade)
+239	成	Kyōiku (4th grade)
+240	母	Kyōiku (2nd grade)
+241	夜	Kyōiku (2nd grade)
+242	倒	Jōyō
+243	術	Kyōiku (5th grade)
+244	苦	Kyōiku (3rd grade)
+245	瞬	Jōyō
+246	番	Kyōiku (2nd grade)
+247	員	Kyōiku (3rd grade)
+248	嫌	Jōyō
+249	抜	Jōyō
+250	題	Kyōiku (3rd grade)
+251	消	Kyōiku (3rd grade)
+252	月	Kyōiku (1st grade)
+253	兄	Kyōiku (2nd grade)
+254	逃	Jōyō
+255	乗	Kyōiku (3rd grade)
+256	浮	Jōyō
+257	新	Kyōiku (2nd grade)
+258	答	Kyōiku (2nd grade)
+259	存	Kyōiku (6th grade)
+260	果	Kyōiku (4th grade)
+261	集	Kyōiku (3rd grade)
+262	由	Kyōiku (3rd grade)
+263	態	Kyōiku (5th grade)
+264	馬	Kyōiku (2nd grade)
+265	頼	Jōyō
+266	認	Kyōiku (6th grade)
+267	敵	Kyōiku (6th grade)
+268	報	Kyōiku (5th grade)
+269	特	Kyōiku (4th grade)
+270	断	Kyōiku (5th grade)
+271	黒	Kyōiku (2nd grade)
+272	校	Kyōiku (1st grade)
+273	軍	Kyōiku (4th grade)
+274	素	Kyōiku (5th grade)
+275	進	Kyōiku (3rd grade)
+276	優	Kyōiku (6th grade)
+277	助	Kyōiku (3rd grade)
+278	業	Kyōiku (3rd grade)
+279	輩	Jōyō
+280	車	Kyōiku (1st grade)
+281	願	Kyōiku (4th grade)
+282	血	Kyōiku (3rd grade)
+283	守	Kyōiku (3rd grade)
+284	追	Kyōiku (3rd grade)
+285	抱	Jōyō
+286	文	Kyōiku (1st grade)
+287	囲	Kyōiku (5th grade)
+288	形	Kyōiku (2nd grade)
+289	精	Kyōiku (5th grade)
+290	構	Kyōiku (5th grade)
+291	転	Kyōiku (3rd grade)
+292	押	Jōyō
+293	走	Kyōiku (2nd grade)
+294	腕	Jōyō
+295	説	Kyōiku (4th grade)
+296	姉	Kyōiku (2nd grade)
+297	胸	Kyōiku (6th grade)
+298	負	Kyōiku (3rd grade)
+299	兵	Kyōiku (4th grade)
+300	痛	Kyōiku (6th grade)
+301	赤	Kyōiku (1st grade)
+302	店	Kyōiku (2nd grade)
+303	座	Kyōiku (6th grade)
+304	段	Kyōiku (6th grade)
+305	識	Kyōiku (5th grade)
+306	備	Kyōiku (5th grade)
+307	遠	Kyōiku (2nd grade)
+308	加	Kyōiku (4th grade)
+309	点	Kyōiku (2nd grade)
+310	深	Kyōiku (3rd grade)
+311	打	Kyōiku (3rd grade)
+312	師	Kyōiku (5th grade)
+313	限	Kyōiku (5th grade)
+314	寄	Kyōiku (5th grade)
+315	攻	Jōyō
+316	半	Kyōiku (2nd grade)
+317	予	Kyōiku (3rd grade)
+318	差	Kyōiku (4th grade)
+319	触	Jōyō
+320	常	Kyōiku (5th grade)
+321	急	Kyōiku (3rd grade)
+322	両	Kyōiku (3rd grade)
+323	普	Jōyō
+324	山	Kyōiku (1st grade)
+325	広	Kyōiku (2nd grade)
+326	告	Kyōiku (5th grade)
+327	殿	Jōyō
+328	周	Kyōiku (4th grade)
+329	石	Kyōiku (1st grade)
+330	運	Kyōiku (3rd grade)
+331	恐	Jōyō
+332	寝	Jōyō
+333	程	Kyōiku (5th grade)
+334	険	Kyōiku (5th grade)
+335	件	Kyōiku (5th grade)
+336	花	Kyōiku (1st grade)
+337	格	Kyōiku (5th grade)
+338	任	Kyōiku (5th grade)
+339	髪	Jōyō
+340	望	Kyōiku (4th grade)
+341	記	Kyōiku (2nd grade)
+342	服	Kyōiku (3rd grade)
+343	供	Kyōiku (6th grade)
+344	平	Kyōiku (3rd grade)
+345	隊	Kyōiku (4th grade)
+346	木	Kyōiku (1st grade)
+347	都	Kyōiku (3rd grade)
+348	約	Kyōiku (4th grade)
+349	活	Kyōiku (2nd grade)
+350	海	Kyōiku (2nd grade)
+351	四	Kyōiku (1st grade)
+352	勢	Kyōiku (5th grade)
+353	期	Kyōiku (3rd grade)
+354	火	Kyōiku (1st grade)
+355	器	Kyōiku (4th grade)
+356	単	Kyōiku (4th grade)
+357	組	Kyōiku (2nd grade)
+358	鳴	Kyōiku (2nd grade)
+359	選	Kyōiku (4th grade)
+360	完	Kyōiku (4th grade)
+361	電	Kyōiku (2nd grade)
+362	利	Kyōiku (4th grade)
+363	語	Kyōiku (2nd grade)
+364	異	Kyōiku (6th grade)
+365	装	Kyōiku (6th grade)
+366	料	Kyōiku (4th grade)
+367	野	Kyōiku (2nd grade)
+368	隠	Jōyō
+369	係	Kyōiku (3rd grade)
+370	驚	Jōyō
+371	肉	Kyōiku (2nd grade)
+372	第	Kyōiku (3rd grade)
+373	騎	Jōyō
+374	団	Kyōiku (5th grade)
+375	再	Kyōiku (5th grade)
+376	経	Kyōiku (5th grade)
+377	満	Kyōiku (4th grade)
+378	側	Kyōiku (4th grade)
+379	公	Kyōiku (2nd grade)
+380	掛	Jōyō
+381	怒	Jōyō
+382	欲	Kyōiku (6th grade)
+383	仲	Kyōiku (4th grade)
+384	際	Kyōiku (5th grade)
+385	礼	Kyōiku (3rd grade)
+386	奴	Jōyō
+387	破	Kyōiku (5th grade)
+388	有	Kyōiku (3rd grade)
+389	冷	Kyōiku (4th grade)
+390	余	Kyōiku (5th grade)
+391	探	Kyōiku (6th grade)
+392	難	Kyōiku (6th grade)
+393	五	Kyōiku (1st grade)
+394	交	Kyōiku (2nd grade)
+395	友	Kyōiku (2nd grade)
+396	横	Kyōiku (3rd grade)
+397	画	Kyōiku (2nd grade)
+398	微	Jōyō
+399	訳	Kyōiku (6th grade)
+400	静	Kyōiku (4th grade)
+401	夢	Kyōiku (5th grade)
+402	怖	Jōyō
+403	飲	Kyōiku (3rd grade)
+404	計	Kyōiku (2nd grade)
+405	念	Kyōiku (4th grade)
+406	許	Kyōiku (5th grade)
+407	送	Kyōiku (3rd grade)
+408	似	Kyōiku (5th grade)
+409	幸	Kyōiku (3rd grade)
+410	質	Kyōiku (5th grade)
+411	速	Kyōiku (3rd grade)
+412	役	Kyōiku (3rd grade)
+413	渡	Jōyō
+414	危	Kyōiku (6th grade)
+415	街	Kyōiku (4th grade)
+416	奥	Jōyō
+417	居	Kyōiku (5th grade)
+418	熱	Kyōiku (4th grade)
+419	青	Kyōiku (1st grade)
+420	傷	Kyōiku (6th grade)
+421	去	Kyōiku (3rd grade)
+422	議	Kyōiku (4th grade)
+423	警	Kyōiku (6th grade)
+424	細	Kyōiku (2nd grade)
+425	位	Kyōiku (4th grade)
+426	朝	Kyōiku (2nd grade)
+427	御	Jōyō
+428	肩	Jōyō
+429	社	Kyōiku (2nd grade)
+430	読	Kyōiku (2nd grade)
+431	品	Kyōiku (3rd grade)
+432	聖	Kyōiku (6th grade)
+433	茶	Kyōiku (2nd grade)
+434	端	Jōyō
+435	階	Kyōiku (3rd grade)
+436	軽	Kyōiku (3rd grade)
+437	買	Kyōiku (2nd grade)
+438	右	Kyōiku (1st grade)
+439	徒	Kyōiku (4th grade)
+440	城	Kyōiku (4th grade)
+441	影	Jōyō
+442	休	Kyōiku (1st grade)
+443	降	Kyōiku (6th grade)
+444	共	Kyōiku (4th grade)
+445	婚	Jōyō
+446	太	Kyōiku (2nd grade)
+447	移	Kyōiku (5th grade)
+448	響	Jōyō
+449	護	Kyōiku (5th grade)
+450	制	Kyōiku (5th grade)
+451	頃	Jōyō
+452	皆	Jōyō
+453	官	Kyōiku (4th grade)
+454	弾	Jōyō
+455	裏	Kyōiku (6th grade)
+456	片	Kyōiku (6th grade)
+457	霊	Jōyō
+458	眼	Kyōiku (5th grade)
+459	武	Kyōiku (5th grade)
+460	台	Kyōiku (2nd grade)
+461	困	Kyōiku (6th grade)
+462	原	Kyōiku (2nd grade)
+463	耳	Kyōiku (1st grade)
+464	腹	Kyōiku (6th grade)
+465	況	Jōyō
+466	黙	Jōyō
+467	握	Jōyō
+468	壁	Jōyō
+469	忘	Kyōiku (6th grade)
+470	激	Kyōiku (6th grade)
+471	怪	Jōyō
+472	示	Kyōiku (5th grade)
+473	具	Kyōiku (3rd grade)
+474	帝	Jōyō
+475	嬉	Jinmeiyō
+476	園	Kyōiku (2nd grade)
+477	辺	Kyōiku (4th grade)
+478	容	Kyōiku (5th grade)
+479	吸	Kyōiku (6th grade)
+480	腰	Jōyō
+481	判	Kyōiku (5th grade)
+482	式	Kyōiku (3rd grade)
+483	暗	Kyōiku (3rd grade)
+484	悲	Kyōiku (3rd grade)
+485	義	Kyōiku (5th grade)
+486	宮	Kyōiku (3rd grade)
+487	迷	Kyōiku (5th grade)
+488	申	Kyōiku (3rd grade)
+489	験	Kyōiku (4th grade)
+490	和	Kyōiku (3rd grade)
+491	泣	Kyōiku (4th grade)
+492	像	Kyōiku (5th grade)
+493	務	Kyōiku (5th grade)
+494	接	Kyōiku (5th grade)
+495	故	Kyōiku (5th grade)
+496	論	Kyōiku (6th grade)
+497	支	Kyōiku (5th grade)
+498	娘	Jōyō
+499	壊	Jōyō
+500	察	Kyōiku (4th grade)
+501	左	Kyōiku (1st grade)
+502	頷	Hyōgai
+503	案	Kyōiku (4th grade)
+504	未	Kyōiku (4th grade)
+505	談	Kyōiku (3rd grade)
+506	村	Kyōiku (1st grade)
+507	吐	Jōyō
+508	乱	Kyōiku (6th grade)
+509	民	Kyōiku (4th grade)
+510	試	Kyōiku (4th grade)
+511	保	Kyōiku (5th grade)
+512	駄	Jōyō
+513	惑	Jōyō
+514	割	Kyōiku (6th grade)
+515	客	Kyōiku (3rd grade)
+516	技	Kyōiku (5th grade)
+517	震	Jōyō
+518	散	Kyōiku (4th grade)
+519	揺	Jōyō
+520	途	Jōyō
+521	興	Kyōiku (5th grade)
+522	伸	Jōyō
+523	闘	Jōyō
+524	紙	Kyōiku (2nd grade)
+525	閉	Kyōiku (6th grade)
+526	種	Kyōiku (4th grade)
+527	土	Kyōiku (1st grade)
+528	為	Jōyō
+529	若	Kyōiku (6th grade)
+530	竜	Jōyō
+531	束	Kyōiku (4th grade)
+532	恋	Jōyō
+533	注	Kyōiku (3rd grade)
+534	頑	Jōyō
+535	疑	Kyōiku (6th grade)
+536	病	Kyōiku (3rd grade)
+537	証	Kyōiku (5th grade)
+538	練	Kyōiku (3rd grade)
+539	爵	Jōyō
+540	舞	Jōyō
+541	治	Kyōiku (4th grade)
+542	恥	Jōyō
+543	叫	Jōyō
+544	襲	Jōyō
+545	路	Kyōiku (3rd grade)
+546	逆	Kyōiku (5th grade)
+547	獣	Jōyō
+548	売	Kyōiku (2nd grade)
+549	万	Kyōiku (2nd grade)
+550	並	Kyōiku (6th grade)
+551	昨	Kyōiku (4th grade)
+552	門	Kyōiku (2nd grade)
+553	根	Kyōiku (3rd grade)
+554	駆	Jōyō
+555	参	Kyōiku (4th grade)
+556	量	Kyōiku (4th grade)
+557	図	Kyōiku (2nd grade)
+558	遊	Kyōiku (3rd grade)
+559	収	Kyōiku (6th grade)
+560	眠	Jōyō
+561	妹	Kyōiku (2nd grade)
+562	妙	Jōyō
+563	邪	Jōyō
+564	弱	Kyōiku (2nd grade)
+565	観	Kyōiku (4th grade)
+566	令	Kyōiku (4th grade)
+567	嬢	Jōyō
+568	瞳	Jōyō
+569	衛	Kyōiku (5th grade)
+570	院	Kyōiku (3rd grade)
+571	謝	Kyōiku (5th grade)
+572	席	Kyōiku (4th grade)
+573	星	Kyōiku (2nd grade)
+574	遅	Jōyō
+575	投	Kyōiku (3rd grade)
+576	船	Kyōiku (2nd grade)
+577	巻	Kyōiku (6th grade)
+578	隣	Jōyō
+579	増	Kyōiku (5th grade)
+580	領	Kyōiku (5th grade)
+581	滅	Jōyō
+582	退	Kyōiku (6th grade)
+583	処	Kyōiku (6th grade)
+584	古	Kyōiku (2nd grade)
+585	暴	Kyōiku (5th grade)
+586	効	Kyōiku (5th grade)
+587	甘	Jōyō
+588	与	Jōyō
+589	準	Kyōiku (5th grade)
+590	防	Kyōiku (5th grade)
+591	踏	Jōyō
+592	千	Kyōiku (1st grade)
+593	復	Kyōiku (5th grade)
+594	類	Kyōiku (4th grade)
+595	求	Kyōiku (4th grade)
+596	疲	Jōyō
+597	憶	Jōyō
+598	罪	Kyōiku (5th grade)
+599	景	Kyōiku (4th grade)
+600	犯	Kyōiku (5th grade)
+601	姫	Jōyō
+602	越	Jōyō
+603	住	Kyōiku (3rd grade)
+604	市	Kyōiku (2nd grade)
+605	刺	Jōyō
+606	害	Kyōiku (4th grade)
+607	巨	Jōyō
+608	絡	Jōyō
+609	習	Kyōiku (3rd grade)
+610	詰	Jōyō
+611	射	Kyōiku (6th grade)
+612	混	Kyōiku (5th grade)
+613	商	Kyōiku (3rd grade)
+614	字	Kyōiku (1st grade)
+615	捨	Kyōiku (6th grade)
+616	叩	Hyōgai
+617	密	Kyōiku (6th grade)
+618	焼	Kyōiku (4th grade)
+619	局	Kyōiku (3rd grade)
+620	森	Kyōiku (1st grade)
+621	届	Kyōiku (6th grade)
+622	丸	Kyōiku (2nd grade)
+623	百	Kyōiku (1st grade)
+624	扉	Jōyō
+625	映	Kyōiku (6th grade)
+626	簡	Kyōiku (6th grade)
+627	吹	Jōyō
+628	避	Jōyō
+629	育	Kyōiku (3rd grade)
+630	将	Kyōiku (6th grade)
+631	冒	Jōyō
+632	更	Jōyō
+633	勇	Kyōiku (4th grade)
+634	雪	Kyōiku (2nd grade)
+635	喜	Kyōiku (5th grade)
+636	町	Kyōiku (1st grade)
+637	派	Kyōiku (6th grade)
+638	帯	Kyōiku (4th grade)
+639	染	Kyōiku (6th grade)
+640	東	Kyōiku (2nd grade)
+641	薄	Jōyō
+642	極	Kyōiku (4th grade)
+643	薬	Kyōiku (3rd grade)
+644	済	Kyōiku (6th grade)
+645	導	Kyōiku (5th grade)
+646	刻	Kyōiku (6th grade)
+647	八	Kyōiku (1st grade)
+648	象	Kyōiku (5th grade)
+649	救	Kyōiku (5th grade)
+650	払	Jōyō
+651	筋	Kyōiku (6th grade)
+652	低	Kyōiku (4th grade)
+653	田	Kyōiku (1st grade)
+654	鹿	Kyōiku (4th grade)
+655	包	Kyōiku (4th grade)
+656	等	Kyōiku (3rd grade)
+657	秘	Kyōiku (6th grade)
+658	呟	Hyōgai
+659	例	Kyōiku (4th grade)
+660	六	Kyōiku (1st grade)
+661	工	Kyōiku (2nd grade)
+662	島	Kyōiku (3rd grade)
+663	草	Kyōiku (1st grade)
+664	折	Kyōiku (4th grade)
+665	宿	Kyōiku (3rd grade)
+666	唇	Jōyō
+667	納	Kyōiku (6th grade)
+668	介	Jōyō
+669	従	Kyōiku (6th grade)
+670	互	Jōyō
+671	超	Jōyō
+672	鬼	Jōyō
+673	歳	Jōyō
+674	脱	Jōyō
+675	級	Kyōiku (3rd grade)
+676	固	Kyōiku (4th grade)
+677	迎	Jōyō
+678	温	Kyōiku (3rd grade)
+679	非	Kyōiku (5th grade)
+680	夏	Kyōiku (2nd grade)
+681	昼	Kyōiku (2nd grade)
+682	敷	Jōyō
+683	設	Kyōiku (5th grade)
+684	替	Jōyō
+685	属	Kyōiku (5th grade)
+686	昔	Kyōiku (3rd grade)
+687	距	Jōyō
+688	底	Kyōiku (4th grade)
+689	捕	Jōyō
+690	角	Kyōiku (2nd grade)
+691	快	Kyōiku (5th grade)
+692	闇	Jōyō
+693	減	Kyōiku (5th grade)
+694	久	Kyōiku (5th grade)
+695	香	Kyōiku (4th grade)
+696	皇	Kyōiku (6th grade)
+697	陽	Kyōiku (3rd grade)
+698	造	Kyōiku (5th grade)
+699	涙	Jōyō
+700	爆	Jōyō
+701	整	Kyōiku (3rd grade)
+702	衣	Kyōiku (4th grade)
+703	七	Kyōiku (1st grade)
+704	産	Kyōiku (4th grade)
+705	奇	Jōyō
+706	慣	Kyōiku (5th grade)
+707	個	Kyōiku (5th grade)
+708	型	Kyōiku (5th grade)
+709	刀	Kyōiku (2nd grade)
+710	職	Kyōiku (5th grade)
+711	夕	Kyōiku (1st grade)
+712	比	Kyōiku (5th grade)
+713	球	Kyōiku (3rd grade)
+714	材	Kyōiku (4th grade)
+715	狙	Jōyō
+716	敗	Kyōiku (4th grade)
+717	慌	Jōyō
+718	騒	Jōyō
+719	建	Kyōiku (4th grade)
+720	川	Kyōiku (1st grade)
+721	郎	Jōyō
+722	圧	Kyōiku (5th grade)
+723	窓	Kyōiku (6th grade)
+724	布	Kyōiku (5th grade)
+725	誘	Jōyō
+726	改	Kyōiku (4th grade)
+727	呪	Jōyō
+728	照	Kyōiku (4th grade)
+729	末	Kyōiku (4th grade)
+730	雑	Kyōiku (5th grade)
+731	戸	Kyōiku (2nd grade)
+732	奪	Jōyō
+733	除	Kyōiku (6th grade)
+734	輝	Jōyō
+735	銃	Jōyō
+736	値	Kyōiku (6th grade)
+737	司	Kyōiku (4th grade)
+738	争	Kyōiku (4th grade)
+739	炎	Jōyō
+740	短	Kyōiku (3rd grade)
+741	働	Kyōiku (4th grade)
+742	毎	Kyōiku (2nd grade)
+743	否	Kyōiku (6th grade)
+744	責	Kyōiku (5th grade)
+745	祭	Kyōiku (3rd grade)
+746	跡	Jōyō
+747	研	Kyōiku (3rd grade)
+748	麗	Jōyō
+749	印	Kyōiku (4th grade)
+750	崩	Jōyō
+751	酒	Kyōiku (3rd grade)
+752	歌	Kyōiku (2nd grade)
+753	弟	Kyōiku (2nd grade)
+754	凄	Jōyō
+755	液	Kyōiku (5th grade)
+756	波	Kyōiku (3rd grade)
+757	銀	Kyōiku (3rd grade)
+758	独	Kyōiku (5th grade)
+759	演	Kyōiku (5th grade)
+760	基	Kyōiku (5th grade)
+761	弁	Kyōiku (5th grade)
+762	抗	Jōyō
+763	価	Kyōiku (5th grade)
+764	権	Kyōiku (6th grade)
+765	提	Kyōiku (5th grade)
+766	旅	Kyōiku (3rd grade)
+767	尽	Jōyō
+768	老	Kyōiku (4th grade)
+769	尋	Jōyō
+770	床	Jōyō
+771	緊	Jōyō
+772	繰	Jōyō
+773	鼻	Kyōiku (3rd grade)
+774	査	Kyōiku (5th grade)
+775	被	Jōyō
+776	館	Kyōiku (3rd grade)
+777	悟	Jōyō
+778	庭	Kyōiku (3rd grade)
+779	労	Kyōiku (4th grade)
+780	暮	Kyōiku (6th grade)
+781	了	Jōyō
+782	脳	Kyōiku (6th grade)
+783	沈	Jōyō
+784	慢	Jōyō
+785	描	Jōyō
+786	号	Kyōiku (3rd grade)
+787	陣	Jōyō
+788	幼	Kyōiku (6th grade)
+789	毛	Kyōiku (2nd grade)
+790	絵	Kyōiku (2nd grade)
+791	鳥	Kyōiku (2nd grade)
+792	留	Kyōiku (5th grade)
+793	適	Kyōiku (5th grade)
+794	究	Kyōiku (3rd grade)
+795	仮	Kyōiku (5th grade)
+796	写	Kyōiku (3rd grade)
+797	締	Jōyō
+798	羽	Kyōiku (2nd grade)
+799	操	Kyōiku (6th grade)
+800	傾	Jōyō
+801	迫	Jōyō
+802	純	Kyōiku (6th grade)
+803	呆	Hyōgai
+804	撫	Jinmeiyō
+805	北	Kyōiku (2nd grade)
+806	境	Kyōiku (5th grade)
+807	頂	Kyōiku (6th grade)
+808	己	Kyōiku (6th grade)
+809	堂	Kyōiku (5th grade)
+810	資	Kyōiku (5th grade)
+811	鉄	Kyōiku (3rd grade)
+812	舌	Kyōiku (6th grade)
+813	骨	Kyōiku (6th grade)
+814	甲	Jōyō
+815	雨	Kyōiku (1st grade)
+816	威	Jōyō
+817	頬	Hyōgai
+818	飯	Kyōiku (4th grade)
+819	拠	Jōyō
+820	衝	Jōyō
+821	華	Jōyō
+822	嘘	Hyōgai
+823	悔	Jōyō
+824	修	Kyōiku (5th grade)
+825	猫	Jōyō
+826	晴	Kyōiku (2nd grade)
+827	毒	Kyōiku (5th grade)
+828	協	Kyōiku (4th grade)
+829	積	Kyōiku (4th grade)
+830	厳	Kyōiku (6th grade)
+831	政	Kyōiku (5th grade)
+832	尻	Jōyō
+833	荒	Jōyō
+834	希	Kyōiku (4th grade)
+835	扱	Jōyō
+836	眺	Jōyō
+837	輪	Kyōiku (4th grade)
+838	補	Kyōiku (6th grade)
+839	曲	Kyōiku (3rd grade)
+840	紅	Kyōiku (6th grade)
+841	春	Kyōiku (2nd grade)
+842	授	Kyōiku (5th grade)
+843	担	Kyōiku (6th grade)
+844	既	Jōyō
+845	裂	Jōyō
+846	漏	Jōyō
+847	志	Kyōiku (5th grade)
+848	枚	Kyōiku (6th grade)
+849	医	Kyōiku (3rd grade)
+850	犬	Kyōiku (1st grade)
+851	玉	Kyōiku (1st grade)
+852	層	Kyōiku (6th grade)
+853	洗	Kyōiku (6th grade)
+854	率	Kyōiku (5th grade)
+855	登	Kyōiku (3rd grade)
+856	陰	Jōyō
+857	綺	Jinmeiyō
+858	伏	Jōyō
+859	遣	Jōyō
+860	週	Kyōiku (2nd grade)
+861	才	Kyōiku (2nd grade)
+862	穴	Kyōiku (6th grade)
+863	至	Kyōiku (6th grade)
+864	宝	Kyōiku (6th grade)
+865	鏡	Kyōiku (4th grade)
+866	円	Kyōiku (1st grade)
+867	耐	Jōyō
+868	屈	Jōyō
+869	井	Kyōiku (4th grade)
+870	亡	Kyōiku (6th grade)
+871	因	Kyōiku (5th grade)
+872	盛	Kyōiku (6th grade)
+873	里	Kyōiku (2nd grade)
+874	継	Jōyō
+875	盗	Jōyō
+876	悩	Jōyō
+877	斬	Jōyō
+878	柄	Jōyō
+879	条	Kyōiku (5th grade)
+880	九	Kyōiku (1st grade)
+881	矢	Kyōiku (2nd grade)
+882	肌	Jōyō
+883	系	Kyōiku (6th grade)
+884	援	Jōyō
+885	訪	Kyōiku (6th grade)
+886	儀	Jōyō
+887	依	Jōyō
+888	焦	Jōyō
+889	西	Kyōiku (2nd grade)
+890	管	Kyōiku (4th grade)
+891	箱	Kyōiku (3rd grade)
+892	含	Jōyō
+893	総	Kyōiku (5th grade)
+894	廊	Jōyō
+895	拳	Jōyō
+896	眉	Jōyō
+897	睨	Hyōgai
+898	樹	Kyōiku (6th grade)
+899	展	Kyōiku (6th grade)
+900	京	Kyōiku (2nd grade)
+901	跳	Jōyō
+902	艦	Jōyō
+903	勘	Jōyō
+904	荷	Kyōiku (3rd grade)
+905	誤	Kyōiku (6th grade)
+906	裕	Jōyō
+907	汚	Jōyō
+908	佐	Kyōiku (4th grade)
+909	科	Kyōiku (2nd grade)
+910	狂	Jōyō
+911	宙	Kyōiku (6th grade)
+912	砂	Kyōiku (6th grade)
+913	柔	Jōyō
+914	珍	Jōyō
+915	織	Kyōiku (5th grade)
+916	模	Kyōiku (6th grade)
+917	諦	Jōyō
+918	遺	Kyōiku (6th grade)
+919	尾	Jōyō
+920	潰	Jōyō
+921	執	Jōyō
+922	辛	Jōyō
+923	借	Kyōiku (4th grade)
+924	到	Jōyō
+925	椅	Jōyō
+926	句	Kyōiku (5th grade)
+927	勉	Kyōiku (3rd grade)
+928	縁	Jōyō
+929	封	Jōyō
+930	功	Kyōiku (4th grade)
+931	膝	Jōyō
+932	陛	Kyōiku (6th grade)
+933	捜	Jōyō
+934	雰	Jōyō
+935	額	Kyōiku (5th grade)
+936	携	Jōyō
+937	妖	Jōyō
+938	覗	Hyōgai
+939	寂	Jōyō
+940	欠	Kyōiku (4th grade)
+941	訊	Jinmeiyō
+942	討	Kyōiku (6th grade)
+943	掴	Hyōgai
+944	臓	Kyōiku (6th grade)
+945	隙	Jōyō
+946	慮	Jōyō
+947	鋭	Jōyō
+948	南	Kyōiku (2nd grade)
+949	歯	Kyōiku (3rd grade)
+950	袋	Jōyō
+951	覆	Jōyō
+952	策	Kyōiku (6th grade)
+953	伯	Jōyō
+954	順	Kyōiku (4th grade)
+955	氏	Kyōiku (4th grade)
+956	溜	Jinmeiyō
+957	課	Kyōiku (4th grade)
+958	雄	Jōyō
+959	陸	Kyōiku (4th grade)
+960	板	Kyōiku (3rd grade)
+961	懐	Jōyō
+962	規	Kyōiku (5th grade)
+963	匂	Jōyō
+964	冗	Jōyō
+965	噂	Jinmeiyō
+966	丁	Kyōiku (3rd grade)
+967	杯	Jōyō
+968	酷	Jōyō
+969	群	Kyōiku (4th grade)
+970	刃	Jōyō
+971	仰	Jōyō
+972	虫	Kyōiku (1st grade)
+973	乳	Kyōiku (6th grade)
+974	露	Jōyō
+975	皮	Kyōiku (3rd grade)
+976	承	Kyōiku (6th grade)
+977	妻	Kyōiku (5th grade)
+978	那	Jōyō
+979	棒	Kyōiku (6th grade)
+980	汗	Jōyō
+981	換	Jōyō
+982	氷	Kyōiku (3rd grade)
+983	潜	Jōyō
+984	禁	Kyōiku (5th grade)
+985	各	Kyōiku (4th grade)
+986	蹴	Jōyō
+987	域	Kyōiku (6th grade)
+988	魚	Kyōiku (2nd grade)
+989	貰	Jinmeiyō
+990	略	Kyōiku (5th grade)
+991	繋	Hyōgai
+992	菜	Kyōiku (4th grade)
+993	製	Kyōiku (5th grade)
+994	燃	Kyōiku (5th grade)
+995	検	Kyōiku (5th grade)
+996	即	Jōyō
+997	臭	Jōyō
+998	戒	Jōyō
+999	史	Kyōiku (5th grade)
+1000	詳	Jōyō
+1001	英	Kyōiku (4th grade)
+1002	列	Kyōiku (3rd grade)
+1003	庫	Kyōiku (3rd grade)
+1004	魂	Jōyō
+1005	透	Jōyō
+1006	算	Kyōiku (2nd grade)
+1007	浴	Kyōiku (4th grade)
+1008	複	Kyōiku (5th grade)
+1009	統	Kyōiku (5th grade)
+1010	呂	Jōyō
+1011	房	Jōyō
+1012	槍	Jinmeiyō
+1013	如	Jōyō
+1014	評	Kyōiku (5th grade)
+1015	傍	Jōyō
+1016	埋	Jōyō
+1017	監	Jōyō
+1018	致	Jōyō
+1019	桜	Kyōiku (5th grade)
+1020	巡	Jōyō
+1021	硬	Jōyō
+1022	拶	Jōyō
+1023	挨	Jōyō
+1024	推	Kyōiku (6th grade)
+1025	秒	Kyōiku (3rd grade)
+1026	黄	Kyōiku (2nd grade)
+1027	云	Jinmeiyō
+1028	砲	Jōyō
+1029	測	Kyōiku (5th grade)
+1030	冬	Kyōiku (2nd grade)
+1031	貸	Kyōiku (5th grade)
+1032	召	Jōyō
+1033	及	Jōyō
+1034	飾	Jōyō
+1035	干	Kyōiku (6th grade)
+1036	褒	Jōyō
+1037	幾	Jōyō
+1038	奈	Kyōiku (4th grade)
+1039	舎	Kyōiku (5th grade)
+1040	奮	Kyōiku (6th grade)
+1041	祖	Kyōiku (5th grade)
+1042	寒	Kyōiku (3rd grade)
+1043	煙	Jōyō
+1044	健	Kyōiku (4th grade)
+1045	穏	Jōyō
+1046	訓	Kyōiku (4th grade)
+1047	挙	Kyōiku (4th grade)
+1048	易	Kyōiku (5th grade)
+1049	営	Kyōiku (5th grade)
+1050	秋	Kyōiku (2nd grade)
+1051	殴	Jōyō
+1052	幻	Jōyō
+1053	歴	Kyōiku (5th grade)
+1054	喉	Jōyō
+1055	刑	Jōyō
+1056	雲	Kyōiku (2nd grade)
+1057	区	Kyōiku (3rd grade)
+1058	暇	Jōyō
+1059	侵	Jōyō
+1060	充	Jōyō
+1061	節	Kyōiku (4th grade)
+1062	湯	Kyōiku (3rd grade)
+1063	抵	Jōyō
+1064	忙	Jōyō
+1065	濡	Jinmeiyō
+1066	盾	Jōyō
+1067	賊	Jōyō
+1068	録	Kyōiku (4th grade)
+1069	辞	Kyōiku (4th grade)
+1070	鍵	Jōyō
+1071	狼	Jinmeiyō
+1072	宇	Kyōiku (6th grade)
+1073	努	Kyōiku (4th grade)
+1074	撮	Jōyō
+1075	喚	Jōyō
+1076	揃	Jinmeiyō
+1077	施	Jōyō
+1078	灯	Kyōiku (4th grade)
+1079	索	Jōyō
+1080	机	Kyōiku (6th grade)
+1081	央	Kyōiku (3rd grade)
+1082	抑	Jōyō
+1083	油	Kyōiku (3rd grade)
+1084	晩	Kyōiku (6th grade)
+1085	雷	Jōyō
+1086	双	Jōyō
+1087	婦	Kyōiku (5th grade)
+1088	揮	Kyōiku (6th grade)
+1089	随	Jōyō
+1090	択	Jōyō
+1091	清	Kyōiku (4th grade)
+1092	偽	Jōyō
+1093	憎	Jōyō
+1094	懸	Jōyō
+1095	障	Kyōiku (6th grade)
+1096	旦	Jōyō
+1097	沢	Jōyō
+1098	滑	Jōyō
+1099	忍	Jōyō
+1100	専	Kyōiku (6th grade)
+1101	溢	Jinmeiyō
+1102	砕	Jōyō
+1103	称	Jōyō
+1104	岩	Kyōiku (2nd grade)
+1105	匹	Jōyō
+1106	逸	Jōyō
+1107	福	Kyōiku (3rd grade)
+1108	費	Kyōiku (5th grade)
+1109	候	Kyōiku (4th grade)
+1110	脚	Jōyō
+1111	狩	Jōyō
+1112	妃	Jōyō
+1113	敬	Kyōiku (6th grade)
+1114	便	Kyōiku (4th grade)
+1115	誇	Jōyō
+1116	匠	Jōyō
+1117	芸	Kyōiku (4th grade)
+1118	歪	Hyōgai
+1119	愚	Jōyō
+1120	霧	Jōyō
+1121	緩	Jōyō
+1122	療	Jōyō
+1123	給	Kyōiku (4th grade)
+1124	養	Kyōiku (4th grade)
+1125	獄	Jōyō
+1126	躍	Jōyō
+1127	挑	Jōyō
+1128	児	Kyōiku (4th grade)
+1129	宅	Kyōiku (6th grade)
+1130	委	Kyōiku (3rd grade)
+1131	怯	Hyōgai
+1132	預	Kyōiku (6th grade)
+1133	歓	Jōyō
+1134	坊	Jōyō
+1135	貫	Jōyō
+1136	恵	Jōyō
+1137	般	Jōyō
+1138	午	Kyōiku (2nd grade)
+1139	幕	Kyōiku (6th grade)
+1140	蔵	Kyōiku (6th grade)
+1141	膨	Jōyō
+1142	紹	Jōyō
+1143	虚	Jōyō
+1144	挟	Jōyō
+1145	源	Kyōiku (6th grade)
+1146	招	Kyōiku (5th grade)
+1147	縮	Kyōiku (6th grade)
+1148	駅	Kyōiku (3rd grade)
+1149	編	Kyōiku (5th grade)
+1150	載	Jōyō
+1151	噛	Hyōgai
+1152	菓	Jōyō
+1153	宣	Kyōiku (6th grade)
+1154	劇	Kyōiku (6th grade)
+1155	喋	Jinmeiyō
+1156	泊	Jōyō
+1157	翼	Jōyō
+1158	龍	Jinmeiyō
+1159	損	Kyōiku (5th grade)
+1160	祝	Kyōiku (4th grade)
+1161	泉	Kyōiku (6th grade)
+1162	標	Kyōiku (4th grade)
+1163	祈	Jōyō
+1164	拾	Kyōiku (3rd grade)
+1165	緑	Kyōiku (3rd grade)
+1166	停	Kyōiku (5th grade)
+1167	紫	Jōyō
+1168	範	Jōyō
+1169	倍	Kyōiku (3rd grade)
+1170	糸	Kyōiku (1st grade)
+1171	拭	Jōyō
+1172	稼	Jōyō
+1173	掃	Jōyō
+1174	厚	Kyōiku (5th grade)
+1175	善	Kyōiku (6th grade)
+1176	倉	Kyōiku (4th grade)
+1177	永	Kyōiku (5th grade)
+1178	崎	Kyōiku (4th grade)
+1179	章	Kyōiku (3rd grade)
+1180	唱	Kyōiku (4th grade)
+1181	狭	Jōyō
+1182	脇	Jōyō
+1183	添	Jōyō
+1184	環	Jōyō
+1185	脅	Jōyō
+1186	濃	Jōyō
+1187	趣	Jōyō
+1188	偉	Jōyō
+1189	玄	Jōyō
+1190	麻	Jōyō
+1191	聴	Jōyō
+1192	縛	Jōyō
+1193	谷	Kyōiku (2nd grade)
+1194	延	Kyōiku (6th grade)
+1195	烈	Jōyō
+1196	昇	Jōyō
+1197	擦	Jōyō
+1198	塔	Jōyō
+1199	塞	Jōyō
+1200	魅	Jōyō
+1201	垂	Kyōiku (6th grade)
+1202	呑	Hyōgai
+1203	涼	Jōyō
+1204	酔	Jōyō
+1205	唯	Jōyō
+1206	契	Jōyō
+1207	河	Kyōiku (5th grade)
+1208	舐	Hyōgai
+1209	栄	Kyōiku (4th grade)
+1210	坂	Kyōiku (3rd grade)
+1211	嫁	Jōyō
+1212	占	Jōyō
+1213	藤	Jōyō
+1214	橋	Kyōiku (3rd grade)
+1215	省	Kyōiku (4th grade)
+1216	哀	Jōyō
+1217	偶	Jōyō
+1218	渉	Jōyō
+1219	頰	Jōyō
+1220	拍	Jōyō
+1221	副	Kyōiku (4th grade)
+1222	蛇	Jōyō
+1223	乾	Jōyō
+1224	植	Kyōiku (3rd grade)
+1225	遭	Jōyō
+1226	亜	Jōyō
+1227	賢	Jōyō
+1228	奏	Kyōiku (6th grade)
+1229	拒	Jōyō
+1230	瀬	Jōyō
+1231	馴	Jinmeiyō
+1232	江	Jōyō
+1233	鎧	Jinmeiyō
+1234	侍	Jōyō
+1235	溶	Jōyō
+1236	絞	Jōyō
+1237	豪	Jōyō
+1238	鮮	Jōyō
+1239	淡	Jōyō
+1240	衆	Kyōiku (6th grade)
+1241	府	Kyōiku (4th grade)
+1242	粉	Kyōiku (5th grade)
+1243	杖	Jinmeiyō
+1244	膣	Hyōgai
+1245	猛	Jōyō
+1246	企	Jōyō
+1247	郷	Kyōiku (6th grade)
+1248	尊	Kyōiku (6th grade)
+1249	孤	Jōyō
+1250	審	Jōyō
+1251	沙	Jōyō
+1252	弓	Kyōiku (2nd grade)
+1253	踊	Jōyō
+1254	纏	Jinmeiyō
+1255	恨	Jōyō
+1256	鍛	Jōyō
+1257	筈	Jinmeiyō
+1258	針	Kyōiku (6th grade)
+1259	詞	Kyōiku (6th grade)
+1260	零	Jōyō
+1261	貨	Kyōiku (4th grade)
+1262	看	Kyōiku (6th grade)
+1263	秀	Jōyō
+1264	隅	Jōyō
+1265	則	Kyōiku (5th grade)
+1266	創	Kyōiku (6th grade)
+1267	隷	Jōyō
+1268	卒	Kyōiku (4th grade)
+1269	築	Kyōiku (5th grade)
+1270	博	Kyōiku (4th grade)
+1271	伊	Jinmeiyō
+1272	諸	Kyōiku (6th grade)
+1273	忠	Kyōiku (6th grade)
+1274	控	Jōyō
+1275	裸	Jōyō
+1276	柱	Kyōiku (3rd grade)
+1277	裁	Kyōiku (6th grade)
+1278	林	Kyōiku (1st grade)
+1279	札	Kyōiku (4th grade)
+1280	謎	Jōyō
+1281	爪	Jōyō
+1282	堪	Jōyō
+1283	寧	Jōyō
+1284	採	Kyōiku (5th grade)
+1285	財	Kyōiku (5th grade)
+1286	械	Kyōiku (4th grade)
+1287	塗	Jōyō
+1288	凍	Jōyō
+1289	摘	Jōyō
+1290	灰	Kyōiku (6th grade)
+1291	靴	Jōyō
+1292	曜	Kyōiku (2nd grade)
+1293	雅	Jōyō
+1294	咲	Jōyō
+1295	筆	Kyōiku (3rd grade)
+1296	齢	Jōyō
+1297	喧	Jinmeiyō
+1298	癒	Jōyō
+1299	侯	Jōyō
+1300	獲	Jōyō
+1301	嘆	Jōyō
+1302	遇	Jōyō
+1303	律	Kyōiku (6th grade)
+1304	慎	Jōyō
+1305	宗	Kyōiku (6th grade)
+1306	誓	Jōyō
+1307	殊	Jōyō
+1308	鎖	Jōyō
+1309	噴	Jōyō
+1310	揚	Jōyō
+1311	詩	Kyōiku (3rd grade)
+1312	謀	Jōyō
+1313	乃	Jinmeiyō
+1314	這	Jinmeiyō
+1315	恩	Kyōiku (6th grade)
+1316	璧	Jōyō
+1317	臣	Kyōiku (4th grade)
+1318	厄	Jōyō
+1319	洋	Kyōiku (3rd grade)
+1320	羅	Jōyō
+1321	誕	Kyōiku (6th grade)
+1322	辿	Jinmeiyō
+1323	浅	Kyōiku (4th grade)
+1324	誠	Kyōiku (6th grade)
+1325	徴	Jōyō
+1326	晶	Jōyō
+1327	脈	Kyōiku (5th grade)
+1328	籠	Jōyō
+1329	喰	Jinmeiyō
+1330	罰	Jōyō
+1331	腐	Jōyō
+1332	偵	Jōyō
+1333	湧	Jōyō
+1334	鈍	Jōyō
+1335	泳	Kyōiku (3rd grade)
+1336	賞	Kyōiku (5th grade)
+1337	漂	Jōyō
+1338	僅	Jōyō
+1339	賛	Kyōiku (5th grade)
+1340	乙	Jōyō
+1341	泥	Jōyō
+1342	癖	Jōyō
+1343	翌	Kyōiku (6th grade)
+1344	卿	Jinmeiyō
+1345	唐	Jōyō
+1346	伐	Jōyō
+1347	棚	Jōyō
+1348	苛	Jōyō
+1349	叶	Jinmeiyō
+1350	把	Jōyō
+1351	股	Jōyō
+1352	惜	Jōyō
+1353	請	Jōyō
+1354	塊	Jōyō
+1355	紛	Jōyō
+1356	訴	Jōyō
+1357	囁	Hyōgai
+1358	枝	Kyōiku (5th grade)
+1359	惚	Jinmeiyō
+1360	仁	Kyōiku (6th grade)
+1361	釣	Jōyō
+1362	徹	Jōyō
+1363	譲	Jōyō
+1364	噓	Hyōgai
+1365	寮	Jōyō
+1366	米	Kyōiku (2nd grade)
+1367	豊	Kyōiku (5th grade)
+1368	寺	Kyōiku (2nd grade)
+1369	勿	Jinmeiyō
+1370	皿	Kyōiku (3rd grade)
+1371	悠	Jōyō
+1372	症	Jōyō
+1373	顎	Jōyō
+1374	粋	Jōyō
+1375	彩	Jōyō
+1376	促	Jōyō
+1377	勤	Kyōiku (6th grade)
+1378	牙	Jōyō
+1379	凶	Jōyō
+1380	松	Kyōiku (4th grade)
+1381	剥	Hyōgai
+1382	棄	Jōyō
+1383	凝	Jōyō
+1384	鈴	Jōyō
+1385	縦	Kyōiku (6th grade)
+1386	削	Jōyō
+1387	遮	Jōyō
+1388	遂	Jōyō
+1389	績	Kyōiku (5th grade)
+1390	還	Jōyō
+1391	据	Jōyō
+1392	革	Kyōiku (6th grade)
+1393	肢	Jōyō
+1394	賭	Jōyō
+1395	掲	Jōyō
+1396	卵	Kyōiku (6th grade)
+1397	講	Kyōiku (5th grade)
+1398	掻	Hyōgai
+1399	漫	Jōyō
+1400	災	Kyōiku (5th grade)
+1401	劣	Jōyō
+1402	季	Kyōiku (4th grade)
+1403	牛	Kyōiku (2nd grade)
+1404	戯	Jōyō
+1405	幽	Jōyō
+1406	亀	Jōyō
+1407	掘	Jōyō
+1408	就	Kyōiku (6th grade)
+1409	摑	Jinmeiyō
+1410	洞	Jōyō
+1411	犠	Jōyō
+1412	牲	Jōyō
+1413	盤	Jōyō
+1414	嘩	Jinmeiyō
+1415	浜	Jōyō
+1416	廃	Jōyō
+1417	鼓	Jōyō
+1418	湖	Kyōiku (3rd grade)
+1419	寸	Kyōiku (6th grade)
+1420	紋	Jōyō
+1421	惨	Jōyō
+1422	憩	Jōyō
+1423	蒼	Jinmeiyō
+1424	肝	Jōyō
+1425	港	Kyōiku (3rd grade)
+1426	貧	Kyōiku (5th grade)
+1427	督	Jōyō
+1428	盟	Kyōiku (6th grade)
+1429	熟	Kyōiku (6th grade)
+1430	堵	Jinmeiyō
+1431	旧	Kyōiku (5th grade)
+1432	陥	Jōyō
+1433	紀	Kyōiku (5th grade)
+1434	暖	Kyōiku (6th grade)
+1435	拘	Jōyō
+1436	暑	Kyōiku (3rd grade)
+1437	競	Kyōiku (4th grade)
+1438	述	Kyōiku (5th grade)
+1439	躇	Hyōgai
+1440	躊	Hyōgai
+1441	揉	Hyōgai
+1442	騙	Hyōgai
+1443	幅	Jōyō
+1444	唾	Jōyō
+1445	鑑	Jōyō
+1446	釈	Jōyō
+1447	畳	Jōyō
+1448	斉	Jōyō
+1449	吉	Jōyō
+1450	錬	Jōyō
+1451	赦	Jōyō
+1452	卑	Jōyō
+1453	捉	Jōyō
+1454	益	Kyōiku (5th grade)
+1455	飼	Kyōiku (5th grade)
+1456	伴	Jōyō
+1457	維	Jōyō
+1458	渋	Jōyō
+1459	掌	Jōyō
+1460	催	Jōyō
+1461	浸	Jōyō
+1462	澄	Jōyō
+1463	蓋	Jōyō
+1464	州	Kyōiku (3rd grade)
+1465	幹	Kyōiku (5th grade)
+1466	粒	Jōyō
+1467	愉	Jōyō
+1468	眩	Hyōgai
+1469	憧	Jōyō
+1470	尉	Jōyō
+1471	臨	Kyōiku (6th grade)
+1472	墓	Kyōiku (5th grade)
+1473	訝	Hyōgai
+1474	岸	Kyōiku (3rd grade)
+1475	農	Kyōiku (3rd grade)
+1476	瓶	Jōyō
+1477	袖	Jōyō
+1478	津	Jōyō
+1479	僧	Jōyō
+1480	徐	Jōyō
+1481	患	Jōyō
+1482	拝	Kyōiku (6th grade)
+1483	貌	Jōyō
+1484	概	Jōyō
+1485	磨	Jōyō
+1486	診	Jōyō
+1487	童	Kyōiku (3rd grade)
+1488	蓮	Jinmeiyō
+1489	孫	Kyōiku (4th grade)
+1490	愕	Hyōgai
+1491	免	Jōyō
+1492	雫	Jinmeiyō
+1493	雇	Jōyō
+1494	罠	Hyōgai
+1495	俯	Hyōgai
+1496	富	Kyōiku (4th grade)
+1497	豆	Kyōiku (3rd grade)
+1498	粘	Jōyō
+1499	卓	Jōyō
+1500	智	Jinmeiyō
+1501	拡	Kyōiku (6th grade)
+1502	排	Jōyō
+1503	帳	Kyōiku (3rd grade)
+1504	誌	Kyōiku (6th grade)
+1505	隔	Jōyō
+1506	筒	Jōyō
+1507	酸	Kyōiku (5th grade)
+1508	壇	Jōyō
+1509	航	Kyōiku (5th grade)
+1510	敏	Jōyō
+1511	爺	Hyōgai
+1512	妬	Jōyō
+1513	鋼	Kyōiku (6th grade)
+1514	塩	Kyōiku (4th grade)
+1515	典	Kyōiku (4th grade)
+1516	康	Kyōiku (4th grade)
+1517	汁	Jōyō
+1518	窺	Jinmeiyō
+1519	骸	Jōyō
+1520	煮	Jōyō
+1521	畑	Kyōiku (3rd grade)
+1522	葵	Jinmeiyō
+1523	也	Jinmeiyō
+1524	蘇	Jinmeiyō
+1525	弄	Jōyō
+1526	閣	Kyōiku (6th grade)
+1527	嚙	Hyōgai
+1528	覧	Kyōiku (6th grade)
+1529	忌	Jōyō
+1530	胆	Jōyō
+1531	之	Jinmeiyō
+1532	錯	Jōyō
+1533	虐	Jōyō
+1534	没	Jōyō
+1535	斐	Jinmeiyō
+1536	尖	Jinmeiyō
+1537	却	Jōyō
+1538	狐	Hyōgai
+1539	虎	Jōyō
+1540	繁	Jōyō
+1541	帽	Jōyō
+1542	穂	Jōyō
+1543	巫	Jinmeiyō
+1544	託	Jōyō
+1545	唸	Hyōgai
+1546	斜	Jōyō
+1547	序	Kyōiku (5th grade)
+1548	潤	Jōyō
+1549	慰	Jōyō
+1550	旗	Kyōiku (4th grade)
+1551	叔	Jōyō
+1552	叱	Hyōgai
+1553	芝	Jōyō
+1554	兼	Jōyō
+1555	寿	Jōyō
+1556	縄	Kyōiku (4th grade)
+1557	撤	Jōyō
+1558	苗	Jōyō
+1559	億	Kyōiku (4th grade)
+1560	邸	Jōyō
+1561	妄	Jōyō
+1562	痕	Jōyō
+1563	勧	Jōyō
+1564	徳	Kyōiku (4th grade)
+1565	飽	Jōyō
+1566	党	Kyōiku (6th grade)
+1567	滲	Hyōgai
+1568	償	Jōyō
+1569	傭	Jinmeiyō
+1570	麦	Kyōiku (2nd grade)
+1571	奉	Jōyō
+1572	班	Kyōiku (6th grade)
+1573	池	Kyōiku (2nd grade)
+1574	閃	Jinmeiyō
+1575	滴	Jōyō
+1576	潔	Kyōiku (5th grade)
+1577	朱	Jōyō
+1578	渦	Jōyō
+1579	紗	Jinmeiyō
+1580	羊	Kyōiku (3rd grade)
+1581	捧	Jinmeiyō
+1582	嵐	Jōyō
+1583	痺	Hyōgai
+1584	網	Jōyō
+1585	梨	Kyōiku (4th grade)
+1586	往	Kyōiku (5th grade)
+1587	阻	Jōyō
+1588	潮	Kyōiku (6th grade)
+1589	窟	Jōyō
+1590	翻	Jōyō
+1591	讐	Hyōgai
+1592	仏	Kyōiku (5th grade)
+1593	濁	Jōyō
+1594	嘲	Jōyō
+1595	羨	Jōyō
+1596	婆	Jōyō
+1597	版	Kyōiku (5th grade)
+1598	堅	Jōyō
+1599	憂	Jōyō
+1600	凛	Jinmeiyō
+1601	励	Jōyō
+1602	貼	Jōyō
+1603	漢	Kyōiku (3rd grade)
+1604	贈	Jōyō
+1605	滞	Jōyō
+1606	枕	Jōyō
+1607	核	Jōyō
+1608	巣	Kyōiku (4th grade)
+1609	詠	Jōyō
+1610	伺	Jōyō
+1611	沿	Kyōiku (6th grade)
+1612	艶	Jōyō
+1613	署	Kyōiku (6th grade)
+1614	項	Jōyō
+1615	肯	Jōyō
+1616	丘	Jōyō
+1617	鞄	Jinmeiyō
+1618	牢	Hyōgai
+1619	憑	Hyōgai
+1620	珠	Jōyō
+1621	辱	Jōyō
+1622	較	Jōyō
+1623	岡	Kyōiku (4th grade)
+1624	鍋	Jōyō
+1625	鉱	Kyōiku (5th grade)
+1626	鬱	Jōyō
+1627	喫	Jōyō
+1628	痴	Jōyō
+1629	轟	Jinmeiyō
+1630	誉	Jōyō
+1631	睡	Jōyō
+1632	廷	Jōyō
+1633	塵	Hyōgai
+1634	豚	Jōyō
+1635	泡	Jōyō
+1636	妾	Hyōgai
+1637	是	Jōyō
+1638	嫉	Jōyō
+1639	葬	Jōyō
+1640	析	Jōyō
+1641	莉	Jinmeiyō
+1642	咳	Hyōgai
+1643	嗟	Hyōgai
+1644	湿	Jōyō
+1645	璃	Jōyō
+1646	履	Jōyō
+1647	晒	Jinmeiyō
+1648	酬	Jōyō
+1649	軌	Jōyō
+1650	販	Jōyō
+1651	昧	Jōyō
+1652	悶	Hyōgai
+1653	旋	Jōyō
+1654	挿	Jōyō
+1655	遥	Jinmeiyō
+1656	蒸	Kyōiku (6th grade)
+1657	宴	Jōyō
+1658	漠	Jōyō
+1659	竹	Kyōiku (1st grade)
+1660	膜	Jōyō
+1661	慈	Jōyō
+1662	征	Jōyō
+1663	捻	Jōyō
+1664	購	Jōyō
+1665	桃	Jōyō
+1666	融	Jōyō
+1667	巧	Jōyō
+1668	楓	Jinmeiyō
+1669	鎮	Jōyō
+1670	剤	Jōyō
+1671	吊	Hyōgai
+1672	庁	Kyōiku (6th grade)
+1673	熊	Kyōiku (4th grade)
+1674	裾	Jōyō
+1675	弥	Jōyō
+1676	擬	Jōyō
+1677	庇	Jinmeiyō
+1678	綾	Jinmeiyō
+1679	砦	Jinmeiyō
+1680	淫	Jōyō
+1681	傘	Jōyō
+1682	憤	Jōyō
+1683	稽	Jōyō
+1684	棟	Jōyō
+1685	胃	Kyōiku (6th grade)
+1686	浄	Jōyō
+1687	咄	Hyōgai
+1688	尚	Jōyō
+1689	呻	Hyōgai
+1690	刹	Jōyō
+1691	嗅	Jōyō
+1692	賀	Kyōiku (4th grade)
+1693	献	Jōyō
+1694	餌	Jōyō
+1695	詮	Jōyō
+1696	此	Jinmeiyō
+1697	輸	Kyōiku (5th grade)
+1698	醒	Jōyō
+1699	敢	Jōyō
+1700	琴	Jōyō
+1701	冊	Kyōiku (6th grade)
+1702	曖	Jōyō
+1703	隼	Jinmeiyō
+1704	募	Jōyō
+1705	鐘	Jōyō
+1706	銭	Kyōiku (6th grade)
+1707	胴	Jōyō
+1708	縫	Jōyō
+1709	壮	Jōyō
+1710	凪	Jinmeiyō
+1711	駐	Jōyō
+1712	醜	Jōyō
+1713	囚	Jōyō
+1714	翠	Jinmeiyō
+1715	梅	Kyōiku (4th grade)
+1716	紡	Jōyō
+1717	斗	Jōyō
+1718	駒	Jōyō
+1719	沸	Jōyō
+1720	攣	Hyōgai
+1721	薇	Hyōgai
+1722	憐	Jinmeiyō
+1723	阿	Jinmeiyō
+1724	奢	Hyōgai
+1725	薔	Hyōgai
+1726	曇	Jōyō
+1727	蜜	Jōyō
+1728	殻	Jōyō
+1729	胞	Jōyō
+1730	猿	Jōyō
+1731	怠	Jōyō
+1732	杏	Jinmeiyō
+1733	稿	Jōyō
+1734	殆	Jinmeiyō
+1735	疎	Jōyō
+1736	瓦	Jōyō
+1737	枯	Jōyō
+1738	矛	Jōyō
+1739	勃	Jōyō
+1740	兎	Jinmeiyō
+1741	瑞	Jinmeiyō
+1742	均	Kyōiku (5th grade)
+1743	穢	Hyōgai
+1744	架	Jōyō
+1745	芽	Kyōiku (4th grade)
+1746	罵	Jōyō
+1747	鱗	Jinmeiyō
+1748	峰	Jōyō
+1749	蜘	Hyōgai
+1750	蛛	Hyōgai
+1751	翔	Jinmeiyō
+1752	炭	Kyōiku (3rd grade)
+1753	缶	Jōyō
+1754	汰	Jōyō
+1755	符	Jōyō
+1756	拐	Jōyō
+1757	侮	Jōyō
+1758	笛	Kyōiku (3rd grade)
+1759	茂	Jōyō
+1760	儂	Hyōgai
+1761	乏	Jōyō
+1762	竦	Hyōgai
+1763	爽	Jōyō
+1764	佳	Jōyō
+1765	濯	Jōyō
+1766	漆	Jōyō
+1767	扇	Jōyō
+1768	籍	Jōyō
+1769	搔	Hyōgai
+1770	糖	Kyōiku (6th grade)
+1771	須	Jōyō
+1772	粗	Jōyō
+1773	県	Kyōiku (3rd grade)
+1774	畜	Jōyō
+1775	牧	Kyōiku (4th grade)
+1776	喪	Jōyō
+1777	僚	Jōyō
+1778	繫	Jinmeiyō
+1779	賑	Jinmeiyō
+1780	浪	Jōyō
+1781	税	Kyōiku (5th grade)
+1782	軒	Jōyō
+1783	漁	Kyōiku (4th grade)
+1784	疾	Jōyō
+1785	窮	Jōyō
+1786	拙	Jōyō
+1787	剝	Jōyō
+1788	彫	Jōyō
+1789	綱	Jōyō
+1790	妨	Jōyō
+1791	肘	Jōyō
+1792	梓	Jinmeiyō
+1793	橘	Jinmeiyō
+1794	票	Kyōiku (4th grade)
+1795	蔑	Jōyō
+1796	膚	Jōyō
+1797	著	Kyōiku (6th grade)
+1798	拗	Hyōgai
+1799	絆	Jinmeiyō
+1800	凡	Jōyō
+1801	啓	Jōyō
+1802	宰	Jōyō
+1803	藩	Jōyō
+1804	茜	Jinmeiyō
+1805	沼	Jōyō
+1806	撒	Jinmeiyō
+1807	斧	Jinmeiyō
+1808	荘	Jōyō
+1809	斎	Jōyō
+1810	炉	Jōyō
+1811	妊	Jōyō
+1812	紐	Jinmeiyō
+1813	崖	Jōyō
+1814	箇	Jōyō
+1815	覇	Jōyō
+1816	棋	Jōyō
+1817	剛	Jōyō
+1818	厨	Jinmeiyō
+1819	顧	Jōyō
+1820	枠	Jōyō
+1821	鷹	Jinmeiyō
+1822	暫	Jōyō
+1823	薙	Jinmeiyō
+1824	霞	Jinmeiyō
+1825	粧	Jōyō
+1826	磁	Kyōiku (6th grade)
+1827	蓄	Jōyō
+1828	披	Jōyō
+1829	渇	Jōyō
+1830	逢	Jinmeiyō
+1831	煽	Hyōgai
+1832	稲	Jōyō
+1833	陶	Jōyō
+1834	欺	Jōyō
+1835	帆	Jōyō
+1836	鎌	Jōyō
+1837	鞭	Jinmeiyō
+1838	耗	Jōyō
+1839	皺	Hyōgai
+1840	芳	Jōyō
+1841	沖	Kyōiku (4th grade)
+1842	錠	Jōyō
+1843	銅	Kyōiku (5th grade)
+1844	恭	Jōyō
+1845	旨	Jōyō
+1846	逮	Jōyō
+1847	垣	Jōyō
+1848	踵	Hyōgai
+1849	滝	Jōyō
+1850	瑠	Jōyō
+1851	屍	Hyōgai
+1852	瞼	Hyōgai
+1853	釘	Jinmeiyō
+1854	哲	Jōyō
+1855	貞	Jōyō
+1856	仇	Hyōgai
+1857	襟	Jōyō
+1858	惹	Jinmeiyō
+1859	冠	Jōyō
+1860	朗	Kyōiku (6th grade)
+1861	迂	Jinmeiyō
+1862	貯	Kyōiku (5th grade)
+1863	蝶	Jinmeiyō
+1864	糧	Jōyō
+1865	脂	Jōyō
+1866	些	Jinmeiyō
+1867	暁	Jōyō
+1868	堕	Jōyō
+1869	萌	Jinmeiyō
+1870	偏	Jōyō
+1871	冥	Jōyō
+1872	槌	Jinmeiyō
+1873	繕	Jōyō
+1874	穫	Jōyō
+1875	悦	Jōyō
+1876	佇	Hyōgai
+1877	雀	Jinmeiyō
+1878	昏	Jinmeiyō
+1879	蜂	Jōyō
+1880	秩	Jōyō
+1881	猟	Jōyō
+1882	喘	Hyōgai
+1883	吾	Jinmeiyō
+1884	繊	Jōyō
+1885	箸	Jōyō
+1886	礎	Jōyō
+1887	頻	Jōyō
+1888	珀	Jinmeiyō
+1889	琥	Jinmeiyō
+1890	馳	Jinmeiyō
+1891	軋	Hyōgai
+1892	鞘	Jinmeiyō
+1893	胡	Jinmeiyō
+1894	薫	Jōyō
+1895	畏	Jōyō
+1896	艇	Jōyō
+1897	雛	Jinmeiyō
+1898	蟲	Hyōgai
+1899	痙	Hyōgai
+1900	吠	Hyōgai
+1901	摩	Jōyō
+1902	廻	Jinmeiyō
+1903	顕	Jōyō
+1904	髭	Hyōgai
+1905	掠	Jinmeiyō
+1906	慕	Jōyō
+1907	臆	Jōyō
+1908	詫	Jinmeiyō
+1909	軟	Jōyō
+1910	邦	Jōyō
+1911	禍	Jōyō
+1912	溺	Jōyō
+1913	咎	Hyōgai
+1914	昂	Jinmeiyō
+1915	懇	Jōyō
+1916	埃	Hyōgai
+1917	蛍	Jōyō
+1918	閥	Jōyō
+1919	俗	Jōyō
+1920	咆	Hyōgai
+1921	湊	Jinmeiyō
+1922	瞑	Hyōgai
+1923	剰	Jōyō
+1924	獅	Jinmeiyō
+1925	倫	Jōyō
+1926	奔	Jōyō
+1927	衰	Jōyō
+1928	紳	Jōyō
+1929	柳	Jōyō
+1930	餅	Jōyō
+1931	塾	Jōyō
+1932	戴	Jōyō
+1933	隻	Jōyō
+1934	銘	Jōyō
+1935	飢	Jōyō
+1936	舟	Jōyō
+1937	峙	Hyōgai
+1938	株	Kyōiku (6th grade)
+1939	贅	Hyōgai
+1940	礫	Hyōgai
+1941	赴	Jōyō
+1942	緯	Jōyō
+1943	燥	Jōyō
+1944	冴	Jinmeiyō
+1945	涯	Jōyō
+1946	慨	Jōyō
+1947	鉢	Jōyō
+1948	顰	Hyōgai
+1949	摂	Jōyō
+1950	眷	Hyōgai
+1951	刷	Kyōiku (4th grade)
+1952	戚	Jōyō
+1953	冶	Jōyō
+1954	澪	Jinmeiyō
+1955	姓	Jōyō
+1956	拓	Jōyō
+1957	遙	Jinmeiyō
+1958	鶴	Jōyō
+1959	苑	Jinmeiyō
+1960	墜	Jōyō
+1961	淹	Hyōgai
+1962	径	Kyōiku (4th grade)
+1963	穿	Jinmeiyō
+1964	藍	Jōyō
+1965	稀	Jinmeiyō
+1966	抽	Jōyō
+1967	虹	Jōyō
+1968	妥	Jōyō
+1969	枢	Jōyō
+1970	蠢	Hyōgai
+1971	哮	Hyōgai
+1972	怨	Jōyō
+1973	圏	Jōyō
+1974	抉	Hyōgai
+1975	亭	Jōyō
+1976	玲	Jinmeiyō
+1977	瞥	Jinmeiyō
+1978	謙	Jōyō
+1979	丹	Jōyō
+1980	漬	Jōyō
+1981	綿	Kyōiku (5th grade)
+1982	噌	Jinmeiyō
+1983	烏	Jinmeiyō
+1984	腫	Jōyō
+1985	淵	Jinmeiyō
+1986	兆	Kyōiku (4th grade)
+1987	柊	Jinmeiyō
+1988	其	Jinmeiyō
+1989	燐	Hyōgai
+1990	宜	Jōyō
+1991	煩	Jōyō
+1992	括	Jōyō
+1993	塚	Jōyō
+1994	柚	Jinmeiyō
+1995	殲	Hyōgai
+1996	櫂	Jinmeiyō
+1997	亮	Jinmeiyō
+1998	貪	Jōyō
+1999	刊	Kyōiku (5th grade)
+2000	翡	Hyōgai
+2001	儲	Jinmeiyō
+2002	羞	Jōyō
+2003	拷	Jōyō
+2004	併	Jōyō
+2005	闊	Hyōgai
+2006	巾	Jōyō
+2007	鳳	Jinmeiyō
+2008	浦	Jōyō
+2009	娠	Jōyō
+2010	孔	Jōyō
+2011	宵	Jōyō
+2012	虜	Jōyō
+2013	詐	Jōyō
+2014	煌	Jinmeiyō
+2015	椿	Jinmeiyō
+2016	汝	Jinmeiyō
+2017	杉	Jōyō
+2018	仙	Jōyō
+2019	謁	Jōyō
+2020	菊	Jōyō
+2021	咥	Hyōgai
+2022	肥	Kyōiku (5th grade)
+2023	蘭	Jinmeiyō
+2024	傲	Jōyō
+2025	嵌	Hyōgai
+2026	庶	Jōyō
+2027	鶏	Jōyō
+2028	郭	Jōyō
+2029	躱	Hyōgai
+2030	檻	Hyōgai
+2031	朧	Hyōgai
+2032	肺	Kyōiku (6th grade)
+2033	串	Jōyō
+2034	桐	Jinmeiyō
+2035	貢	Jōyō
+2036	孝	Kyōiku (6th grade)
+2037	崇	Jōyō
+2038	睦	Jōyō
+2039	綻	Jōyō
+2040	弦	Jōyō
+2041	汐	Jinmeiyō
+2042	懲	Jōyō
+2043	辻	Jinmeiyō
+2044	彷	Hyōgai
+2045	芯	Jōyō
+2046	碧	Jinmeiyō
+2047	券	Kyōiku (6th grade)
+2048	贄	Hyōgai
+2049	凌	Jinmeiyō
+2050	壺	Hyōgai
+2051	曰	Hyōgai
+2052	鉛	Jōyō
+2053	稚	Jōyō
+2054	寛	Jōyō
+2055	縋	Hyōgai
+2056	炊	Jōyō
+2057	牽	Jinmeiyō
+2058	曹	Jōyō
+2059	岐	Kyōiku (4th grade)
+2060	蛮	Jōyō
+2061	舗	Jōyō
+2062	硝	Jōyō
+2063	鳩	Jinmeiyō
+2064	薦	Jōyō
+2065	葛	Jōyō
+2066	茉	Jinmeiyō
+2067	宛	Jōyō
+2068	洩	Hyōgai
+2069	痩	Jōyō
+2070	諾	Jōyō
+2071	吟	Jōyō
+2072	軸	Jōyō
+2073	焚	Jinmeiyō
+2074	芋	Jōyō
+2075	盆	Jōyō
+2076	諭	Jōyō
+2077	隆	Jōyō
+2078	粛	Jōyō
+2079	絨	Hyōgai
+2080	狽	Hyōgai
+2081	侶	Jōyō
+2082	恰	Jinmeiyō
+2083	慄	Jōyō
+2084	匿	Jōyō
+2085	刈	Jōyō
+2086	頓	Jōyō
+2087	抹	Jōyō
+2088	批	Kyōiku (6th grade)
+2089	錆	Jinmeiyō
+2090	篠	Jinmeiyō
+2091	某	Jōyō
+2092	腸	Kyōiku (6th grade)
+2093	攫	Hyōgai
+2094	殖	Jōyō
+2095	遜	Jōyō
+2096	婿	Jōyō
+2097	俊	Jōyō
+2098	傑	Jōyō
+2099	喝	Jōyō
+2100	兜	Jinmeiyō
+2101	咽	Jōyō
+2102	飴	Hyōgai
+2103	貝	Kyōiku (1st grade)
+2104	乞	Jōyō
+2105	湾	Jōyō
+2106	彦	Jinmeiyō
+2107	眸	Jinmeiyō
+2108	柵	Jōyō
+2109	搾	Jōyō
+2110	毯	Hyōgai
+2111	洒	Hyōgai
+2112	絹	Kyōiku (6th grade)
+2113	蕩	Hyōgai
+2114	灼	Jinmeiyō
+2115	桁	Jōyō
+2116	慶	Jōyō
+2117	沌	Jinmeiyō
+2118	竿	Jinmeiyō
+2119	弊	Jōyō
+2120	套	Jinmeiyō
+2121	塀	Jōyō
+2122	棺	Jōyō
+2123	紺	Jōyō
+2124	姻	Jōyō
+2125	冑	Hyōgai
+2126	髄	Jōyō
+2127	圭	Jinmeiyō
+2128	萎	Jōyō
+2129	哉	Jinmeiyō
+2130	腑	Hyōgai
+2131	汲	Jinmeiyō
+2132	躙	Hyōgai
+2133	燈	Jinmeiyō
+2134	炸	Hyōgai
+2135	搬	Jōyō
+2136	岬	Jōyō
+2137	袈	Jinmeiyō
+2138	裟	Jinmeiyō
+2139	嗜	Hyōgai
+2140	栖	Jinmeiyō
+2141	暦	Jōyō
+2142	搭	Jōyō
+2143	又	Jōyō
+2144	棲	Jinmeiyō
+2145	槽	Jōyō
+2146	瘴	Hyōgai
+2147	賃	Kyōiku (6th grade)
+2148	茎	Jōyō
+2149	渾	Jinmeiyō
+2150	堀	Jōyō
+2151	辰	Jinmeiyō
+2152	垢	Hyōgai
+2153	或	Jinmeiyō
+2154	蔽	Jōyō
+2155	昭	Kyōiku (3rd grade)
+2156	厭	Hyōgai
+2157	阪	Kyōiku (4th grade)
+2158	莫	Jinmeiyō
+2159	渚	Jinmeiyō
+2160	墨	Jōyō
+2161	甚	Jōyō
+2162	脆	Hyōgai
+2163	擁	Jōyō
+2164	跪	Hyōgai
+2165	鷲	Jinmeiyō
+2166	撲	Jōyō
+2167	椎	Jōyō
+2168	巴	Jinmeiyō
+2169	沫	Jinmeiyō
+2170	胎	Jōyō
+2171	閑	Jōyō
+2172	培	Jōyō
+2173	媚	Hyōgai
+2174	螺	Jinmeiyō
+2175	爛	Hyōgai
+2176	謹	Jōyō
+2177	嗚	Hyōgai
+2178	淑	Jōyō
+2179	媒	Jōyō
+2180	玩	Jōyō
+2181	菌	Jōyō
+2182	狗	Hyōgai
+2183	衡	Jōyō
+2184	葱	Hyōgai
+2185	逐	Jōyō
+2186	腿	Hyōgai
+2187	娼	Hyōgai
+2188	欧	Jōyō
+2189	淀	Jinmeiyō
+2190	蝕	Hyōgai
+2191	蹂	Hyōgai
+2192	唖	Hyōgai
+2193	楼	Jōyō
+2194	桶	Jinmeiyō
+2195	賜	Jōyō
+2196	只	Jinmeiyō
+2197	栗	Jinmeiyō
+2198	燭	Jinmeiyō
+2199	徨	Hyōgai
+2200	颯	Jinmeiyō
+2201	韻	Jōyō
+2202	帥	Jōyō
+2203	朔	Jinmeiyō
+2204	擲	Hyōgai
+2205	丼	Jōyō
+2206	挫	Jōyō
+2207	朽	Jōyō
+2208	囮	Hyōgai
+2209	糞	Hyōgai
+2210	克	Jōyō
+2211	嚇	Jōyō
+2212	捌	Hyōgai
+2213	伽	Jinmeiyō
+2214	嬌	Hyōgai
+2215	猪	Jinmeiyō
+2216	繍	Hyōgai
+2217	訂	Jōyō
+2218	耕	Kyōiku (5th grade)
+2219	瞭	Jōyō
+2220	劫	Jinmeiyō
+2221	鼠	Hyōgai
+2222	蒔	Jinmeiyō
+2223	恒	Jōyō
+2224	餓	Jōyō
+2225	簿	Jōyō
+2226	櫻	Jinmeiyō
+2227	憲	Kyōiku (6th grade)
+2228	膳	Jōyō
+2229	耶	Jinmeiyō
+2230	奨	Jōyō
+2231	壬	Jinmeiyō
+2232	倣	Jōyō
+2233	儚	Hyōgai
+2234	駕	Jinmeiyō
+2235	豹	Jinmeiyō
+2236	嗤	Hyōgai
+2237	賓	Jōyō
+2238	呈	Jōyō
+2239	祐	Jinmeiyō
+2240	儘	Hyōgai
+2241	薩	Jinmeiyō
+2242	尿	Jōyō
+2243	祓	Hyōgai
+2244	斥	Jōyō
+2245	盲	Jōyō
+2246	踪	Jōyō
+2247	采	Jōyō
+2248	墟	Hyōgai
+2249	躯	Hyōgai
+2250	捲	Jinmeiyō
+2251	菫	Jinmeiyō
+2252	欄	Jōyō
+2253	聡	Jinmeiyō
+2254	樽	Jinmeiyō
+2255	陳	Jōyō
+2256	孕	Hyōgai
+2257	榊	Jinmeiyō
+2258	巳	Jinmeiyō
+2259	薪	Jōyō
+2260	猶	Jōyō
+2261	凜	Jinmeiyō
+2262	綴	Jinmeiyō
+2263	廉	Jōyō
+2264	猥	Hyōgai
+2265	跨	Jinmeiyō
+2266	咒	Hyōgai
+2267	蔓	Jinmeiyō
+2268	諜	Hyōgai
+2269	疼	Hyōgai
+2270	朴	Jōyō
+2271	緋	Jinmeiyō
+2272	后	Kyōiku (6th grade)
+2273	棘	Hyōgai
+2274	桂	Jinmeiyō
+2275	坐	Jinmeiyō
+2276	迸	Hyōgai
+2277	需	Jōyō
+2278	餐	Hyōgai
+2279	疫	Jōyō
+2280	柏	Jinmeiyō
+2281	溝	Jōyō
+2282	褐	Jōyō
+2283	腔	Jinmeiyō
+2284	轄	Jōyō
+2285	躰	Hyōgai
+2286	篭	Hyōgai
+2287	啜	Hyōgai
+2288	杭	Jinmeiyō
+2289	仔	Jinmeiyō
+2290	昴	Jinmeiyō
+2291	痒	Hyōgai
+2292	泰	Jōyō
+2293	癪	Hyōgai
+2294	譜	Jōyō
+2295	蟻	Hyōgai
+2296	逡	Hyōgai
+2297	屑	Jinmeiyō
+2298	蚊	Jōyō
+2299	摯	Jōyō
+2300	郵	Kyōiku (6th grade)
+2301	秤	Jinmeiyō
+2302	蜥	Hyōgai
+2303	蜴	Hyōgai
+2304	喩	Jōyō
+2305	躾	Hyōgai
+2306	凹	Jōyō
+2307	雌	Jōyō
+2308	茫	Hyōgai
+2309	鞠	Jinmeiyō
+2310	肖	Jōyō
+2311	祥	Jōyō
+2312	醸	Jōyō
+2313	騰	Jōyō
+2314	拉	Jōyō
+2315	藻	Jōyō
+2316	姐	Hyōgai
+2317	遡	Jōyō
+2318	迅	Jōyō
+2319	勲	Jōyō
+2320	埒	Hyōgai
+2321	践	Jōyō
+2322	煉	Jinmeiyō
+2323	檎	Jinmeiyō
+2324	唄	Jōyō
+2325	芹	Jinmeiyō
+2326	麺	Jōyō
+2327	皐	Jinmeiyō
+2328	郊	Jōyō
+2329	惰	Jōyō
+2330	狸	Hyōgai
+2331	枷	Hyōgai
+2332	遍	Jōyō
+2333	瀕	Jinmeiyō
+2334	娯	Jōyō
+2335	逝	Jōyō
+2336	摺	Jinmeiyō
+2337	舵	Jinmeiyō
+2338	謳	Hyōgai
+2339	昆	Jōyō
+2340	梯	Jinmeiyō
+2341	該	Jōyō
+2342	琢	Jinmeiyō
+2343	蝋	Hyōgai
+2344	醤	Hyōgai
+2345	靄	Hyōgai
+2346	毅	Jinmeiyō
+2347	涎	Hyōgai
+2348	寵	Jinmeiyō
+2349	郡	Kyōiku (4th grade)
+2350	吼	Hyōgai
+2351	戮	Hyōgai
+2352	岳	Jōyō
+2353	於	Jinmeiyō
+2354	辣	Jōyō
+2355	閲	Jōyō
+2356	楚	Jinmeiyō
+2357	梢	Jinmeiyō
+2358	惧	Jōyō
+2359	祟	Hyōgai
+2360	瓜	Jinmeiyō
+2361	郁	Jinmeiyō
+2362	斑	Jōyō
+2363	笠	Jinmeiyō
+2364	峯	Jinmeiyō
+2365	弧	Jōyō
+2366	恍	Hyōgai
+2367	篤	Jōyō
+2368	焔	Hyōgai
+2369	翁	Jōyō
+2370	宥	Jinmeiyō
+2371	靡	Hyōgai
+2372	牡	Jinmeiyō
+2373	洲	Jinmeiyō
+2374	陵	Jōyō
+2375	蔭	Jinmeiyō
+2376	釜	Jōyō
+2377	怜	Jinmeiyō
+2378	填	Hyōgai
+2379	逞	Jinmeiyō
+2380	炒	Hyōgai
+2381	糾	Jōyō
+2382	嶋	Jinmeiyō
+2383	鯨	Jōyō
+2384	慧	Jinmeiyō
+2385	庵	Jinmeiyō
+2386	幡	Jinmeiyō
+2387	湛	Jinmeiyō
+2388	酌	Jōyō
+2389	貶	Hyōgai
+2390	嫡	Jōyō
+2391	詛	Hyōgai
+2392	措	Jōyō
+2393	梗	Jōyō
+2394	幣	Jōyō
+2395	翳	Hyōgai
+2396	襖	Jinmeiyō
+2397	厩	Jinmeiyō
+2398	賄	Jōyō
+2399	笹	Jinmeiyō
+2400	杜	Jinmeiyō
+2401	獰	Hyōgai
+2402	幌	Jinmeiyō
+2403	汽	Kyōiku (2nd grade)
+2404	碗	Jinmeiyō
+2405	輿	Jinmeiyō
+2406	繭	Jōyō
+2407	循	Jōyō
+2408	瞠	Hyōgai
+2409	焉	Hyōgai
+2410	尺	Kyōiku (6th grade)
+2411	襞	Hyōgai
+2412	筧	Hyōgai
+2413	橙	Jinmeiyō
+2414	蔦	Jinmeiyō
+2415	隈	Jinmeiyō
+2416	啞	Hyōgai
+2417	嘉	Jinmeiyō
+2418	漕	Jinmeiyō
+2419	藁	Jinmeiyō
+2420	蛙	Hyōgai
+2421	碑	Jōyō
+2422	愁	Jōyō
+2423	坑	Jōyō
+2424	朦	Hyōgai
+2425	堤	Jōyō
+2426	鞍	Jinmeiyō
+2427	弛	Jinmeiyō
+2428	讃	Jinmeiyō
+2429	耽	Jinmeiyō
+2430	箒	Hyōgai
+2431	駿	Jinmeiyō
+2432	夷	Jinmeiyō
+2433	呉	Jōyō
+2434	挽	Jinmeiyō
+2435	旬	Jōyō
+2436	貿	Kyōiku (5th grade)
+2437	准	Jōyō
+2438	滓	Hyōgai
+2439	栽	Jōyō
+2440	叉	Jinmeiyō
+2441	煎	Jōyō
+2442	掟	Hyōgai
+2443	錦	Jōyō
+2444	剖	Jōyō
+2445	仄	Hyōgai
+2446	蹟	Jinmeiyō
+2447	萩	Jinmeiyō
+2448	憫	Hyōgai
+2449	謂	Jinmeiyō
+2450	俳	Kyōiku (6th grade)
+2451	嶺	Jinmeiyō
+2452	燻	Hyōgai
+2453	磐	Jinmeiyō
+2454	狡	Hyōgai
+2455	茨	Kyōiku (4th grade)
+2456	姦	Hyōgai
+2457	禄	Jinmeiyō
+2458	窪	Jinmeiyō
+2459	傀	Hyōgai
+2460	儡	Hyōgai
+2461	挺	Jinmeiyō
+2462	咀	Hyōgai
+2463	嚼	Hyōgai
+2464	桑	Jōyō
+2465	栞	Jinmeiyō
+2466	揄	Hyōgai
+2467	揶	Hyōgai
+2468	矜	Hyōgai
+2469	樫	Jinmeiyō
+2470	澤	Hyōgai
+2471	棍	Hyōgai
+2472	痣	Hyōgai
+2473	甦	Hyōgai
+2474	旭	Jinmeiyō
+2475	葡	Jinmeiyō
+2476	撥	Hyōgai
+2477	弘	Jinmeiyō
+2478	萄	Jinmeiyō
+2479	屠	Hyōgai
+2480	叡	Jinmeiyō
+2481	榴	Hyōgai
+2482	壱	Jōyō
+2483	梁	Jinmeiyō
+2484	熾	Hyōgai
+2485	睫	Hyōgai
+2486	疇	Hyōgai
+2487	掬	Jinmeiyō
+2488	妓	Hyōgai
+2489	苔	Jinmeiyō
+2490	屯	Jōyō
+2491	唆	Jōyō
+2492	噤	Hyōgai
+2493	柴	Jinmeiyō
+2494	桔	Jinmeiyō
+2495	憚	Hyōgai
+2496	鵜	Jinmeiyō
+2497	蟹	Jinmeiyō
+2498	禅	Jōyō
+2499	膏	Jinmeiyō
+2500	藪	Hyōgai
+2501	昌	Jinmeiyō
+2502	暢	Jinmeiyō
+2503	轢	Hyōgai
+2504	淋	Jinmeiyō
+2505	麓	Jōyō
+2506	隕	Hyōgai
+2507	蹲	Hyōgai
+2508	祠	Hyōgai
+2509	洛	Jinmeiyō
+2510	齧	Hyōgai
+2511	鴨	Jinmeiyō
+2512	燦	Jinmeiyō
+2513	碌	Hyōgai
+2514	祀	Hyōgai
+2515	卯	Jinmeiyō
+2516	戟	Jinmeiyō
+2517	塁	Jōyō
+2518	董	Jinmeiyō
+2519	穀	Kyōiku (6th grade)
+2520	俄	Jinmeiyō
+2521	酢	Jōyō
+2522	姪	Jinmeiyō
+2523	瘦	Jinmeiyō
+2524	贋	Hyōgai
+2525	呵	Hyōgai
+2526	享	Jōyō
+2527	俵	Kyōiku (6th grade)
+2528	鴉	Hyōgai
+2529	濤	Hyōgai
+2530	吏	Jōyō
+2531	渓	Jōyō
+2532	忽	Jinmeiyō
+2533	彰	Jōyō
+2534	楯	Jinmeiyō
+2535	芻	Hyōgai
+2536	窒	Jōyō
+2537	謡	Jōyō
+2538	杞	Hyōgai
+2539	茹	Hyōgai
+2540	捩	Hyōgai
+2541	霜	Jōyō
+2542	勅	Jōyō
+2543	緻	Jōyō
+2544	燕	Jinmeiyō
+2545	暈	Hyōgai
+2546	飄	Hyōgai
+2547	贔	Hyōgai
+2548	坦	Jinmeiyō
+2549	駈	Jinmeiyō
+2550	浩	Jinmeiyō
+2551	粥	Jinmeiyō
+2552	蝙	Hyōgai
+2553	蝠	Hyōgai
+2554	屓	Hyōgai
+2555	櫛	Jinmeiyō
+2556	肪	Jōyō
+2557	禿	Hyōgai
+2558	峡	Jōyō
+2559	魁	Jinmeiyō
+2560	鉤	Hyōgai
+2561	咤	Hyōgai
+2562	裔	Hyōgai
+2563	剃	Hyōgai
+2564	苺	Jinmeiyō
+2565	李	Jinmeiyō
+2566	迦	Jinmeiyō
+2567	捗	Jōyō
+2568	褪	Hyōgai
+2569	悍	Hyōgai
+2570	栓	Jōyō
+2571	碁	Jōyō
+2572	輔	Jinmeiyō
+2573	凰	Jinmeiyō
+2574	詣	Jōyō
+2575	債	Jōyō
+2576	姑	Hyōgai
+2577	叙	Jōyō
+2578	肋	Jinmeiyō
+2579	箋	Jōyō
+2580	峠	Jōyō
+2581	癇	Hyōgai
+2582	曾	Jinmeiyō
+2583	捏	Hyōgai
+2584	佑	Jinmeiyō
+2585	篝	Hyōgai
+2586	甥	Jinmeiyō
+2587	珈	Jinmeiyō
+2588	琲	Hyōgai
+2589	舷	Jōyō
+2590	蒲	Jinmeiyō
+2591	鋏	Hyōgai
+2592	洪	Jōyō
+2593	尼	Jōyō
+2594	附	Jōyō
+2595	憮	Hyōgai
+2596	頸	Hyōgai
+2597	叛	Hyōgai
+2598	肛	Hyōgai
+2599	粟	Jinmeiyō
+2600	冤	Hyōgai
+2601	弔	Jōyō
+2602	袴	Jinmeiyō
+2603	條	Jinmeiyō
+2604	尤	Jinmeiyō
+2605	悧	Hyōgai
+2606	遽	Hyōgai
+2607	梳	Hyōgai
+2608	蕾	Jinmeiyō
+2609	炙	Hyōgai
+2610	靭	Hyōgai
+2611	矯	Jōyō
+2612	屁	Hyōgai
+2613	斃	Hyōgai
+2614	寡	Jōyō
+2615	玖	Jinmeiyō
+2616	鍔	Hyōgai
+2617	蕎	Jinmeiyō
+2618	凸	Jōyō
+2619	捷	Jinmeiyō
+2620	哨	Jinmeiyō
+2621	徊	Hyōgai
+2622	裡	Jinmeiyō
+2623	韓	Jōyō
+2624	癌	Hyōgai
+2625	桟	Jōyō
+2626	徘	Hyōgai
+2627	吻	Jinmeiyō
+2628	朋	Jinmeiyō
+2629	惣	Jinmeiyō
+2630	煤	Jinmeiyō
+2631	伍	Jinmeiyō
+2632	菱	Jinmeiyō
+2633	滾	Hyōgai
+2634	鹸	Hyōgai
+2635	佃	Jinmeiyō
+2636	嘔	Hyōgai
+2637	悸	Hyōgai
+2638	鉈	Hyōgai
+2639	卸	Jōyō
+2640	遷	Jōyō
+2641	堰	Jinmeiyō
+2642	僭	Hyōgai
+2643	澱	Hyōgai
+2644	茸	Jinmeiyō
+2645	榛	Jinmeiyō
+2646	賽	Hyōgai
+2647	鷺	Jinmeiyō
+2648	譚	Hyōgai
+2649	窘	Hyōgai
+2650	播	Jinmeiyō
+2651	錐	Jinmeiyō
+2652	饅	Hyōgai
+2653	猾	Hyōgai
+2654	宦	Hyōgai
+2655	累	Jōyō
+2656	噪	Hyōgai
+2657	鋒	Jinmeiyō
+2658	嬲	Hyōgai
+2659	柿	Jōyō
+2660	侘	Hyōgai
+2661	哄	Hyōgai
+2662	楠	Jinmeiyō
+2663	饒	Hyōgai
+2664	贖	Hyōgai
+2665	酵	Jōyō
+2666	賦	Jōyō
+2667	懺	Hyōgai
+2668	漸	Jōyō
+2669	匙	Hyōgai
+2670	汎	Jōyō
+2671	伎	Jōyō
+2672	硯	Jinmeiyō
+2673	椛	Jinmeiyō
+2674	蠟	Jinmeiyō
+2675	畔	Jōyō
+2676	翅	Hyōgai
+2677	蠅	Hyōgai
+2678	刎	Hyōgai
+2679	拮	Hyōgai
+2680	轍	Hyōgai
+2681	磯	Jinmeiyō
+2682	琉	Jinmeiyō
+2683	鵺	Hyōgai
+2684	蒙	Jinmeiyō
+2685	蹄	Jinmeiyō
+2686	但	Jōyō
+2687	椀	Jinmeiyō
+2688	稟	Jinmeiyō
+2689	螢	Hyōgai
+2690	辟	Hyōgai
+2691	漲	Hyōgai
+2692	軀	Hyōgai
+2693	倦	Jinmeiyō
+2694	曝	Jinmeiyō
+2695	漣	Jinmeiyō
+2696	膠	Hyōgai
+2697	諫	Hyōgai
+2698	嘗	Jinmeiyō
+2699	錫	Jinmeiyō
+2700	樋	Jinmeiyō
+2701	瑛	Jinmeiyō
+2702	腺	Jōyō
+2703	盃	Jinmeiyō
+2704	膂	Hyōgai
+2705	賠	Jōyō
+2706	旺	Jōyō
+2707	嗣	Jōyō
+2708	蝉	Hyōgai
+2709	弩	Hyōgai
+2710	髏	Hyōgai
+2711	髑	Hyōgai
+2712	泌	Jōyō
+2713	弐	Jōyō
+2714	謐	Hyōgai
+2715	殉	Jōyō
+2716	簾	Jinmeiyō
+2717	悴	Hyōgai
+2718	窃	Jōyō
+2719	哭	Hyōgai
+2720	芦	Jinmeiyō
+2721	彿	Hyōgai
+2722	恕	Jinmeiyō
+2723	攪	Hyōgai
+2724	瘍	Jōyō
+2725	壕	Jinmeiyō
+2726	顛	Hyōgai
+2727	曽	Jōyō
+2728	芒	Hyōgai
+2729	囃	Hyōgai
+2730	憔	Hyōgai
+2731	遼	Jinmeiyō
+2732	蠍	Hyōgai
+2733	糊	Jinmeiyō
+2734	雁	Jinmeiyō
+2735	褄	Hyōgai
+2736	蚕	Kyōiku (6th grade)
+2737	几	Hyōgai
+2738	屹	Hyōgai
+2739	楔	Hyōgai
+2740	鯉	Jinmeiyō
+2741	莪	Hyōgai
+2742	脊	Jōyō
+2743	嶽	Hyōgai
+2744	朶	Hyōgai
+2745	麟	Jinmeiyō
+2746	噺	Hyōgai
+2747	勾	Jōyō
+2748	晦	Jinmeiyō
+2749	孵	Hyōgai
+2750	躓	Hyōgai
+2751	娶	Hyōgai
+2752	珊	Jinmeiyō
+2753	滸	Hyōgai
+2754	庸	Jōyō
+2755	裳	Jinmeiyō
+2756	窄	Jinmeiyō
+2757	沁	Hyōgai
+2758	聳	Hyōgai
+2759	戌	Hyōgai
+2760	瑚	Jinmeiyō
+2761	鮫	Hyōgai
+2762	毟	Hyōgai
+2763	猊	Hyōgai
+2764	汀	Jinmeiyō
+2765	憾	Jōyō
+2766	倖	Jinmeiyō
+2767	瞰	Hyōgai
+2768	諒	Jinmeiyō
+2769	痍	Hyōgai
+2770	棗	Hyōgai
+2771	悉	Jinmeiyō
+2772	脛	Hyōgai
+2773	櫓	Jinmeiyō
+2774	賤	Hyōgai
+2775	祷	Jinmeiyō
+2776	縞	Jinmeiyō
+2777	氣	Jinmeiyō
+2778	鮎	Jinmeiyō
+2779	蓼	Hyōgai
+2780	扮	Hyōgai
+2781	慟	Hyōgai
+2782	窯	Jōyō
+2783	諏	Jinmeiyō
+2784	臥	Jinmeiyō
+2785	逅	Hyōgai
+2786	邂	Hyōgai
+2787	睥	Hyōgai
+2788	凱	Jinmeiyō
+2789	禽	Jinmeiyō
+2790	媛	Kyōiku (4th grade)
+2791	泄	Hyōgai
+2792	嚢	Hyōgai
+2793	塡	Jōyō
+2794	廟	Jinmeiyō
+2795	庄	Jinmeiyō
+2796	僥	Hyōgai
+2797	醍	Jinmeiyō
+2798	醐	Jinmeiyō
+2799	筐	Hyōgai
+2800	椒	Hyōgai
+2801	餃	Hyōgai
+2802	罹	Hyōgai
+2803	悼	Jōyō
+2804	搦	Hyōgai
+2805	簪	Hyōgai
+2806	膿	Hyōgai
+2807	臼	Jōyō
+2808	蝦	Jinmeiyō
+2809	撰	Jinmeiyō
+2810	樵	Hyōgai
+2811	篇	Jinmeiyō
+2812	且	Jōyō
+2813	鱈	Hyōgai
+2814	埼	Kyōiku (4th grade)
+2815	慇	Hyōgai
+2816	懃	Hyōgai
+2817	粕	Hyōgai
+2818	賂	Jōyō
+2819	菩	Jinmeiyō
+2820	蠱	Hyōgai
+2821	頁	Jinmeiyō
+2822	瞞	Hyōgai
+2823	箔	Jinmeiyō
+2824	爬	Hyōgai
+2825	芙	Jinmeiyō
+2826	巷	Jinmeiyō
+2827	陀	Jinmeiyō
+2828	柑	Jinmeiyō
+2829	函	Jinmeiyō
+2830	嵩	Jinmeiyō
+2831	縷	Hyōgai
+2832	檀	Jinmeiyō
+2833	絢	Jinmeiyō
+2834	眇	Hyōgai
+2835	芥	Jinmeiyō
+2836	濫	Jōyō
+2837	鯛	Jinmeiyō
+2838	矮	Hyōgai
+2839	扶	Jōyō
+2840	榎	Jinmeiyō
+2841	稜	Jinmeiyō
+2842	詭	Hyōgai
+2843	涜	Hyōgai
+2844	呷	Hyōgai
+2845	啖	Hyōgai
+2846	巌	Jinmeiyō
+2847	麒	Jinmeiyō
+2848	鮭	Hyōgai
+2849	嘯	Hyōgai
+2850	鑽	Hyōgai
+2851	袂	Hyōgai
+2852	荊	Hyōgai
+2853	蓉	Jinmeiyō
+2854	諍	Hyōgai
+2855	琵	Jinmeiyō
+2856	琶	Jinmeiyō
+2857	彙	Jōyō
+2858	涛	Hyōgai
+2859	彗	Jinmeiyō
+2860	魄	Hyōgai
+2861	敦	Jinmeiyō
+2862	槻	Jinmeiyō
+2863	驕	Hyōgai
+2864	蛾	Hyōgai
+2865	腎	Jōyō
+2866	狛	Hyōgai
+2867	靖	Jinmeiyō
+2868	茅	Jinmeiyō
+2869	鳶	Jinmeiyō
+2870	壌	Jōyō
+2871	蜃	Hyōgai
+2872	絃	Jinmeiyō
+2873	肴	Jinmeiyō
+2874	鰻	Hyōgai
+2875	曳	Jinmeiyō
+2876	磔	Hyōgai
+2877	酎	Jōyō
+2878	毬	Jinmeiyō
+2879	嘴	Hyōgai
+2880	紬	Jinmeiyō
+2881	穣	Jinmeiyō
+2882	牌	Hyōgai
+2883	樺	Jinmeiyō
+2884	筑	Jinmeiyō
+2885	瀧	Jinmeiyō
+2886	窩	Hyōgai
+2887	蒐	Jinmeiyō
+2888	亘	Jinmeiyō
+2889	斡	Jinmeiyō
+2890	烙	Hyōgai
+2891	虔	Hyōgai
+2892	滋	Kyōiku (4th grade)
+2893	笥	Hyōgai
+2894	壷	Hyōgai
+2895	惠	Jinmeiyō
+2896	誅	Hyōgai
+2897	梶	Jinmeiyō
+2898	鍬	Jinmeiyō
+2899	湘	Jinmeiyō
+2900	硫	Jōyō
+2901	蓑	Jinmeiyō
+2902	奧	Jinmeiyō
+2903	訟	Jōyō
+2904	吃	Hyōgai
+2905	泪	Hyōgai
+2906	楊	Jinmeiyō
+2907	梟	Hyōgai
+2908	穹	Jinmeiyō
+2909	鴻	Jinmeiyō
+2910	藉	Hyōgai
+2911	黛	Jinmeiyō
+2912	柩	Hyōgai
+2913	牝	Hyōgai
+2914	攘	Hyōgai
+2915	餉	Hyōgai
+2916	臀	Hyōgai
+2917	擢	Jinmeiyō
+2918	礁	Jōyō
+2919	齎	Hyōgai
+2920	憊	Hyōgai
+2921	夥	Hyōgai
+2922	靱	Hyōgai
+2923	竄	Hyōgai
+2924	鋳	Jōyō
+2925	宏	Jinmeiyō
+2926	拵	Hyōgai
+2927	楕	Jinmeiyō
+2928	竈	Hyōgai
+2929	訣	Jinmeiyō
+2930	鏃	Hyōgai
+2931	國	Jinmeiyō
+2932	迄	Jinmeiyō
+2933	叢	Jinmeiyō
+2934	晰	Hyōgai
+2935	誹	Hyōgai
+2936	秦	Jinmeiyō
+2937	繡	Jinmeiyō
+2938	僻	Hyōgai
+2939	憬	Jōyō
+2940	朕	Jōyō
+2941	箪	Hyōgai
+2942	齟	Hyōgai
+2943	齬	Hyōgai
+2944	訛	Hyōgai
+2945	臍	Hyōgai
+2946	腱	Hyōgai
+2947	蛸	Hyōgai
+2948	墳	Jōyō
+2949	遁	Jinmeiyō
+2950	恫	Hyōgai
+2951	姜	Hyōgai
+2952	跋	Hyōgai
+2953	燎	Jinmeiyō
+2954	埠	Hyōgai
+2955	輌	Hyōgai
+2956	逗	Jinmeiyō
+2957	罅	Hyōgai
+2958	囓	Hyōgai
+2959	簒	Hyōgai
+2960	倶	Hyōgai
+2961	涸	Hyōgai
+2962	鋸	Jinmeiyō
+2963	祉	Jōyō
+2964	鼬	Hyōgai
+2965	淘	Hyōgai
+2966	咬	Hyōgai
+2967	莢	Hyōgai
+2968	淳	Jinmeiyō
+2969	鯱	Hyōgai
+2970	蟬	Jinmeiyō
+2971	胤	Jinmeiyō
+2972	銛	Hyōgai
+2973	腋	Hyōgai
+2974	扈	Hyōgai
+2975	荻	Jinmeiyō
+2976	邁	Hyōgai
+2977	藝	Jinmeiyō
+2978	誑	Hyōgai
+2979	誼	Jinmeiyō
+2980	燼	Hyōgai
+2981	舶	Jōyō
+2982	啼	Hyōgai
+2983	葦	Jinmeiyō
+2984	蓬	Jinmeiyō
+2985	劒	Hyōgai
+2986	疹	Hyōgai
+2987	阜	Kyōiku (4th grade)
+2988	劉	Jinmeiyō
+2989	簀	Hyōgai
+2990	疵	Hyōgai
+2991	毘	Jinmeiyō
+2992	餡	Hyōgai
+2993	匣	Hyōgai
+2994	桿	Hyōgai
+2995	貘	Hyōgai
+2996	丞	Jinmeiyō
+2997	柘	Jinmeiyō
+2998	塹	Hyōgai
+2999	韋	Hyōgai
+3000	升	Jōyō
+3001	魎	Hyōgai
+3002	祇	Jinmeiyō
+3003	站	Hyōgai
+3004	轡	Hyōgai
+3005	蛆	Hyōgai
+3006	詈	Hyōgai
+3007	侭	Hyōgai
+3008	堆	Jōyō
+3009	闖	Hyōgai
+3010	袁	Hyōgai
+3011	瘤	Hyōgai
+3012	嗄	Hyōgai
+3013	斯	Jinmeiyō
+3014	纂	Jinmeiyō
+3015	葎	Hyōgai
+3016	蝿	Hyōgai
+3017	謗	Hyōgai
+3018	嚥	Hyōgai
+3019	氾	Jōyō
+3020	蝗	Hyōgai
+3021	潟	Kyōiku (4th grade)
+3022	餞	Hyōgai
+3023	托	Jinmeiyō
+3024	竪	Jinmeiyō
+3025	勒	Hyōgai
+3026	猩	Hyōgai
+3027	睾	Hyōgai
+3028	饉	Hyōgai
+3029	鬨	Hyōgai
+3030	帛	Hyōgai
+3031	鄙	Hyōgai
+3032	楢	Jinmeiyō
+3033	諌	Hyōgai
+3034	乖	Hyōgai
+3035	菅	Jinmeiyō
+3036	綜	Jinmeiyō
+3037	鍾	Hyōgai
+3038	邏	Hyōgai
+3039	帖	Jinmeiyō
+3040	皓	Jinmeiyō
+3041	眦	Hyōgai
+3042	魏	Hyōgai
+3043	凭	Hyōgai
+3044	奸	Hyōgai
+3045	而	Jinmeiyō
+3046	杓	Hyōgai
+3047	撹	Hyōgai
+3048	猜	Hyōgai
+3049	遵	Jōyō
+3050	佩	Hyōgai
+3051	鶯	Hyōgai
+3052	酊	Hyōgai
+3053	酩	Hyōgai
+3054	灌	Hyōgai
+3055	碍	Hyōgai
+3056	咫	Hyōgai
+3057	駁	Hyōgai
+3058	兇	Hyōgai
+3059	鑢	Hyōgai
+3060	瑕	Hyōgai
+3061	蠕	Hyōgai
+3062	炬	Hyōgai
+3063	訥	Hyōgai
+3064	巽	Jinmeiyō
+3065	顚	Jinmeiyō
+3066	宋	Jinmeiyō
+3067	艘	Hyōgai
+3068	惟	Jinmeiyō
+3069	閨	Hyōgai
+3070	坪	Jōyō
+3071	衾	Hyōgai
+3072	竺	Jinmeiyō
+3073	罷	Jōyō
+3074	漿	Hyōgai
+3075	墾	Jōyō
+3076	滔	Hyōgai
+3077	閻	Hyōgai
+3078	懊	Hyōgai
+3079	騨	Hyōgai
+3080	做	Hyōgai
+3081	鯖	Hyōgai
+3082	饗	Jinmeiyō
+3083	茄	Jinmeiyō
+3084	嘶	Hyōgai
+3085	閂	Hyōgai
+3086	埴	Jinmeiyō
+3087	杵	Jinmeiyō
+3088	沃	Jōyō
+3089	鑓	Hyōgai
+3090	抓	Hyōgai
+3091	囀	Hyōgai
+3092	哺	Jōyō
+3093	鏖	Hyōgai
+3094	亥	Jinmeiyō
+3095	鉾	Hyōgai
+3096	魍	Hyōgai
+3097	砥	Jinmeiyō
+3098	痢	Jōyō
+3099	寥	Hyōgai
+3100	擽	Hyōgai
+3101	醬	Jinmeiyō
+3102	趨	Hyōgai
+3103	揆	Hyōgai
+3104	麾	Hyōgai
+3105	寅	Jinmeiyō
+3106	侠	Hyōgai
+3107	燵	Hyōgai
+3108	荼	Hyōgai
+3109	諺	Jinmeiyō
+3110	愴	Hyōgai
+3111	璽	Jōyō
+3112	紆	Hyōgai
+3113	帷	Hyōgai
+3114	瀉	Hyōgai
+3115	舳	Hyōgai
+3116	洸	Jinmeiyō
+3117	悄	Hyōgai
+3118	撼	Hyōgai
+3119	黎	Jinmeiyō
+3120	檜	Jinmeiyō
+3121	衷	Jōyō
+3122	啄	Jinmeiyō
+3123	梱	Hyōgai
+3124	澹	Hyōgai
+3125	晋	Jinmeiyō
+3126	藹	Hyōgai
+3127	碇	Hyōgai
+3128	綽	Hyōgai
+3129	膵	Hyōgai
+3130	櫃	Hyōgai
+3131	醇	Jinmeiyō
+3132	欒	Hyōgai
+3133	菖	Jinmeiyō
+3134	畿	Jōyō
+3135	焙	Hyōgai
+3136	拌	Hyōgai
+3137	犀	Jinmeiyō
+3138	吋	Hyōgai
+3139	懣	Hyōgai
+3140	爾	Jinmeiyō
+3141	鬚	Hyōgai
+3142	灸	Jinmeiyō
+3143	頽	Hyōgai
+3144	徽	Jinmeiyō
+3145	肚	Hyōgai
+3146	鴎	Hyōgai
+3147	狒	Hyōgai
+3148	黴	Hyōgai
+3149	禱	Jinmeiyō
+3150	檄	Hyōgai
+3151	錨	Hyōgai
+3152	捺	Jinmeiyō
+3153	毀	Jōyō
+3154	租	Jōyō
+3155	蜻	Hyōgai
+3156	凧	Jinmeiyō
+3157	蛭	Hyōgai
+3158	禊	Hyōgai
+3159	蛉	Hyōgai
+3160	邑	Jinmeiyō
+3161	傅	Hyōgai
+3162	洟	Hyōgai
+3163	瓢	Jinmeiyō
+3164	籐	Hyōgai
+3165	鰹	Hyōgai
+3166	峻	Jinmeiyō
+3167	螂	Hyōgai
+3168	瀟	Hyōgai
+3169	誂	Hyōgai
+3170	蟷	Hyōgai
+3171	鬣	Hyōgai
+3172	俸	Jōyō
+3173	髯	Hyōgai
+3174	盧	Hyōgai
+3175	羹	Hyōgai
+3176	鰐	Hyōgai
+3177	椋	Jinmeiyō
+3178	鋲	Hyōgai
+3179	恣	Jōyō
+3180	瑤	Hyōgai
+3181	鏑	Hyōgai
+3182	筏	Hyōgai
+3183	撓	Hyōgai
+3184	玻	Hyōgai
+3185	陪	Jōyō
+3186	蠣	Hyōgai
+3187	丑	Jinmeiyō
+3188	漱	Jinmeiyō
+3189	噎	Hyōgai
+3190	雹	Hyōgai
+3191	逼	Hyōgai
+3192	斛	Hyōgai
+3193	鍮	Hyōgai
+3194	濠	Hyōgai
+3195	鳰	Hyōgai
+3196	剪	Hyōgai
+3197	霹	Hyōgai
+3198	靂	Hyōgai
+3199	廓	Hyōgai
+3200	沽	Hyōgai
+3201	魯	Jinmeiyō
+3202	厠	Hyōgai
+3203	喊	Hyōgai
+3204	鹼	Hyōgai
+3205	剌	Hyōgai
+3206	夾	Hyōgai
+3207	眈	Hyōgai
+3208	襦	Hyōgai
+3209	痘	Jōyō
+3210	閤	Jinmeiyō
+3211	輛	Hyōgai
+3212	剋	Hyōgai
+3213	卜	Jinmeiyō
+3214	磋	Hyōgai
+3215	亨	Jinmeiyō
+3216	婉	Hyōgai
+3217	愾	Hyōgai
+3218	鵠	Hyōgai
+3219	赫	Hyōgai
+3220	隘	Hyōgai
+3221	舜	Jinmeiyō
+3222	肆	Hyōgai
+3223	儒	Jōyō
+3224	曙	Jinmeiyō
+3225	卍	Hyōgai
+3226	倅	Hyōgai
+3227	忸	Hyōgai
+3228	怩	Hyōgai
+3229	註	Jinmeiyō
+3230	慾	Hyōgai
+3231	獪	Hyōgai
+3232	胱	Hyōgai
+3233	膀	Hyōgai
+3234	渕	Hyōgai
+3235	諧	Jōyō
+3236	劾	Jōyō
+3237	鵬	Jinmeiyō
+3238	劈	Hyōgai
+3239	溌	Hyōgai
+3240	蜀	Hyōgai
+3241	蟇	Hyōgai
+3242	坤	Hyōgai
+3243	倹	Jōyō
+3244	褸	Hyōgai
+3245	襤	Hyōgai
+3246	瀆	Hyōgai
+3247	柾	Jinmeiyō
+3248	吝	Hyōgai
+3249	鐵	Hyōgai
+3250	鑿	Hyōgai
+3251	刮	Hyōgai
+3252	袱	Hyōgai
+3253	盥	Hyōgai
+3254	萬	Jinmeiyō
+3255	謬	Hyōgai
+3256	濾	Hyōgai
+3257	酪	Jōyō
+3258	栃	Kyōiku (4th grade)
+3259	仗	Hyōgai
+3260	涌	Hyōgai
+3261	偲	Jinmeiyō
+3262	覿	Hyōgai
+3263	濘	Hyōgai
+3264	訶	Hyōgai
+3265	崑	Hyōgai
+3266	崙	Hyōgai
+3267	畠	Jinmeiyō
+3268	吞	Jinmeiyō
+3269	甕	Hyōgai
+3270	廠	Hyōgai
+3271	魑	Hyōgai
+3272	袢	Hyōgai
+3273	錘	Jinmeiyō
+3274	憺	Hyōgai
+3275	卦	Hyōgai
+3276	愧	Hyōgai
+3277	麹	Hyōgai
+3278	辜	Hyōgai
+3279	尭	Jinmeiyō
+3280	瑣	Hyōgai
+3281	偃	Hyōgai
+3282	馨	Jinmeiyō
+3283	鰭	Hyōgai
+3284	按	Jinmeiyō
+3285	銜	Hyōgai
+3286	熔	Hyōgai
+3287	截	Hyōgai
+3288	壜	Hyōgai
+3289	邯	Hyōgai
+3290	鄲	Hyōgai
+3291	鑼	Hyōgai
+3292	棹	Hyōgai
+3293	亦	Jinmeiyō
+3294	葺	Jinmeiyō
+3295	盪	Hyōgai
+3296	歎	Jinmeiyō
+3297	峨	Jinmeiyō
+3298	倭	Jinmeiyō
+3299	槐	Hyōgai
+3300	俣	Jinmeiyō
+3301	嘱	Jōyō
+3302	蝮	Hyōgai
+3303	鐙	Hyōgai
+3304	蛹	Hyōgai
+3305	蕉	Jinmeiyō
+3306	吽	Hyōgai
+3307	茗	Hyōgai
+3308	牆	Hyōgai
+3309	鞋	Hyōgai
+3310	蘆	Hyōgai
+3311	駝	Hyōgai
+3312	檬	Hyōgai
+3313	檸	Hyōgai
+3314	梃	Hyōgai
+3315	褻	Hyōgai
+3316	繚	Hyōgai
+3317	槇	Jinmeiyō
+3318	摸	Hyōgai
+3319	椰	Jinmeiyō
+3320	芭	Jinmeiyō
+3321	鸚	Hyōgai
+3322	瀑	Hyōgai
+3323	蛟	Hyōgai
+3324	脹	Jinmeiyō
+3325	屏	Hyōgai
+3326	𠮟	Jōyō
+3327	鵡	Hyōgai
+3328	鹵	Hyōgai
+3329	薊	Hyōgai
+3330	忖	Hyōgai
+3331	匕	Hyōgai
+3332	蟠	Hyōgai
+3333	嵯	Jinmeiyō
+3334	烹	Hyōgai
+3335	霆	Hyōgai
+3336	沱	Hyōgai
+3337	滂	Hyōgai
+3338	寓	Jinmeiyō
+3339	瘡	Hyōgai
+3340	訃	Jōyō
+3341	厘	Jōyō
+3342	畝	Jōyō
+3343	譫	Hyōgai
+3344	籤	Hyōgai
+3345	駱	Hyōgai
+3346	鈎	Hyōgai
+3347	鴇	Hyōgai
+3348	迭	Jōyō
+3349	冽	Hyōgai
+3350	舅	Hyōgai
+3351	詔	Jōyō
+3352	匪	Hyōgai
+3353	耄	Hyōgai
+3354	躅	Hyōgai
+3355	躑	Hyōgai
+3356	躁	Hyōgai
+3357	灘	Jinmeiyō
+3358	闢	Hyōgai
+3359	髷	Hyōgai
+3360	簞	Jinmeiyō
+3361	恃	Hyōgai
+3362	筵	Hyōgai
+3363	虱	Hyōgai
+3364	鍼	Hyōgai
+3365	浚	Hyōgai
+3366	曼	Hyōgai
+3367	縊	Hyōgai
+3368	聊	Hyōgai
+3369	緞	Hyōgai
+3370	娩	Jinmeiyō
+3371	蜩	Hyōgai
+3372	掩	Hyōgai
+3373	竟	Hyōgai
+3374	箍	Hyōgai
+3375	驢	Hyōgai
+3376	雉	Hyōgai
+3377	衿	Jinmeiyō
+3378	縺	Hyōgai
+3379	漉	Hyōgai
+3380	蕗	Jinmeiyō
+3381	幟	Hyōgai
+3382	痔	Hyōgai
+3383	頚	Hyōgai
+3384	匍	Hyōgai
+3385	聾	Hyōgai
+3386	濛	Hyōgai
+3387	臂	Hyōgai
+3388	鵞	Hyōgai
+3389	坩	Hyōgai
+3390	堝	Hyōgai
+3391	竃	Hyōgai
+3392	棕	Hyōgai
+3393	炮	Hyōgai
+3394	俱	Jinmeiyō
+3395	餮	Hyōgai
+3396	饕	Hyōgai
+3397	嬰	Hyōgai
+3398	桧	Jinmeiyō
+3399	隧	Hyōgai
+3400	褥	Hyōgai
+3401	箝	Hyōgai
+3402	皙	Hyōgai
+3403	笏	Hyōgai
+3404	兌	Hyōgai
+3405	棠	Hyōgai
+3406	蟄	Hyōgai
+3407	笈	Jinmeiyō
+3408	炯	Hyōgai
+3409	櫚	Hyōgai
+3410	埜	Jinmeiyō
+3411	榜	Hyōgai
+3412	艱	Hyōgai
+3413	斂	Hyōgai
+3414	嬪	Hyōgai
+3415	糠	Hyōgai
+3416	臙	Hyōgai
+3417	眞	Jinmeiyō
+3418	肱	Hyōgai
+3419	酋	Hyōgai
+3420	聘	Hyōgai
+3421	髙	Hyōgai
+3422	娑	Hyōgai
+3423	箏	Hyōgai
+3424	襷	Hyōgai
+3425	銚	Hyōgai
+3426	瀾	Hyōgai
+3427	樟	Jinmeiyō
+3428	疚	Hyōgai
+3429	誦	Hyōgai
+3430	姥	Jinmeiyō
+3431	橇	Hyōgai
+3432	耀	Jinmeiyō
+3433	孺	Hyōgai
+3434	掏	Hyōgai
+3435	慚	Hyōgai
+3436	斟	Hyōgai
+3437	牒	Jinmeiyō
+3438	鼾	Hyōgai
+3439	釉	Jinmeiyō
+3440	箕	Jinmeiyō
+3441	燗	Hyōgai
+3442	槙	Jinmeiyō
+3443	畢	Jinmeiyō
+3444	俟	Hyōgai
+3445	庚	Jinmeiyō
+3446	麿	Jinmeiyō
+3447	吶	Hyōgai
+3448	頤	Hyōgai
+3449	賎	Hyōgai
+3450	瑶	Jinmeiyō
+3451	梧	Jinmeiyō
+3452	梵	Hyōgai
+3453	痰	Hyōgai
+3454	葫	Hyōgai
+3455	來	Jinmeiyō
+3456	蕃	Jinmeiyō
+3457	閾	Hyōgai
+3458	槃	Hyōgai
+3459	脾	Hyōgai
+3460	丙	Jōyō
+3461	蕪	Jinmeiyō
+3462	涅	Hyōgai
+3463	蛤	Hyōgai
+3464	剽	Hyōgai
+3465	馭	Hyōgai
+3466	圃	Jinmeiyō
+3467	匐	Hyōgai
+3468	薯	Hyōgai
+3469	鬩	Hyōgai
+3470	鉗	Hyōgai
+3471	堡	Hyōgai
+3472	已	Jinmeiyō
+3473	儺	Hyōgai
+3474	麩	Hyōgai
+3475	鼎	Jinmeiyō
+3476	扁	Hyōgai
+3477	恢	Jinmeiyō
+3478	谺	Hyōgai
+3479	鋤	Hyōgai
+3480	輜	Hyōgai
+3481	跫	Hyōgai
+3482	箭	Hyōgai
+3483	毫	Hyōgai
+3484	瑜	Hyōgai
+3485	浣	Hyōgai
+3486	霰	Hyōgai
+3487	碩	Jinmeiyō
+3488	斤	Jōyō
+3489	諮	Jōyō
+3490	衒	Hyōgai
+3491	鬘	Hyōgai
+3492	籾	Jinmeiyō
+3493	橿	Hyōgai
+3494	筍	Hyōgai
+3495	幇	Hyōgai
+3496	寨	Hyōgai
+3497	袍	Hyōgai
+3498	殷	Hyōgai
+3499	囂	Hyōgai
+3500	譬	Hyōgai
+3501	虞	Jōyō
+3502	喇	Hyōgai
+3503	疱	Hyōgai
+3504	薮	Hyōgai
+3505	瑙	Hyōgai
+3506	瑪	Hyōgai
+3507	沓	Jinmeiyō
+3508	趙	Hyōgai
+3509	韜	Hyōgai
+3510	叭	Hyōgai
+3511	婢	Hyōgai
+3512	嫂	Hyōgai
+3513	擾	Hyōgai
+3514	蚓	Hyōgai
+3515	蚯	Hyōgai
+3516	麝	Hyōgai
+3517	款	Jōyō
+3518	奕	Hyōgai
+3519	鸞	Hyōgai
+3520	韮	Hyōgai
+3521	罐	Hyōgai
+3522	饐	Hyōgai
+3523	孟	Jinmeiyō
+3524	欝	Hyōgai
+3525	蝸	Hyōgai
+3526	畦	Hyōgai
+3527	鉦	Hyōgai
+3528	撞	Jinmeiyō
+3529	謄	Jōyō
+3530	濱	Hyōgai
+3531	矩	Jinmeiyō
+3532	欅	Hyōgai
+3533	顫	Hyōgai
+3534	鵲	Hyōgai
+3535	敲	Hyōgai
+3536	釦	Hyōgai
+3537	謔	Hyōgai
+3538	魘	Hyōgai
+3539	攀	Hyōgai
+3540	抄	Jōyō
+3541	颶	Hyōgai
+3542	蛋	Hyōgai
+3543	沐	Hyōgai
+3544	磊	Hyōgai
+3545	儕	Hyōgai
+3546	惡	Jinmeiyō
+3547	喀	Hyōgai
+3548	羆	Hyōgai
+3549	倆	Hyōgai
+3550	允	Jinmeiyō
+3551	蕁	Hyōgai
+3552	乎	Jinmeiyō
+3553	凋	Hyōgai
+3554	枳	Hyōgai
+3555	獺	Hyōgai
+3556	奄	Jinmeiyō
+3557	嫣	Hyōgai
+3558	拿	Hyōgai
+3559	鰯	Jinmeiyō
+3560	絽	Hyōgai
+3561	萱	Jinmeiyō
+3562	會	Hyōgai
+3563	莞	Jinmeiyō
+3564	酉	Jinmeiyō
+3565	蚤	Hyōgai
+3566	瞋	Hyōgai
+3567	窶	Hyōgai
+3568	緘	Hyōgai
+3569	腥	Hyōgai
+3570	蕨	Jinmeiyō
+3571	緬	Hyōgai
+3572	綯	Hyōgai
+3573	什	Hyōgai
+3574	寇	Hyōgai
+3575	鉋	Hyōgai
+3576	驀	Hyōgai
+3577	框	Hyōgai
+3578	穽	Hyōgai
+3579	縒	Hyōgai
+3580	擂	Hyōgai
+3581	諳	Hyōgai
+3582	杳	Hyōgai
+3583	蹙	Hyōgai
+3584	鮨	Hyōgai
+3585	胚	Hyōgai
+3586	驟	Hyōgai
+3587	冨	Jinmeiyō
+3588	廿	Jinmeiyō
+3589	鱒	Jinmeiyō
+3590	懦	Hyōgai
+3591	堺	Jinmeiyō
+3592	渠	Hyōgai
+3593	頒	Jōyō
+3594	閏	Jinmeiyō
+3595	潑	Hyōgai
+3596	寞	Hyōgai
+3597	虻	Hyōgai
+3598	踝	Hyōgai
+3599	恙	Hyōgai
+3600	莱	Hyōgai
+3601	楡	Hyōgai
+3602	胛	Hyōgai
+3603	籃	Hyōgai
+3604	拇	Hyōgai
+3605	諤	Hyōgai
+3606	篩	Hyōgai
+3607	聯	Hyōgai
+3608	刳	Hyōgai
+3609	骰	Hyōgai
+3610	軛	Hyōgai
+3611	褌	Hyōgai
+3612	鎬	Hyōgai
+3613	蘊	Hyōgai
+3614	犇	Hyōgai
+3615	氈	Hyōgai
+3616	縹	Hyōgai
+3617	恬	Hyōgai
+3618	廣	Jinmeiyō
+3619	禦	Hyōgai
+3620	撻	Hyōgai
+3621	獏	Hyōgai
+3622	蓙	Hyōgai
+3623	鄭	Jinmeiyō
+3624	砧	Jinmeiyō
+3625	慥	Hyōgai
+3626	逍	Hyōgai
+3627	俎	Hyōgai
+3628	趾	Hyōgai
+3629	苫	Hyōgai
+3630	淆	Hyōgai
+3631	艫	Hyōgai
+3632	踞	Hyōgai
+3633	鮒	Hyōgai
+3634	輻	Hyōgai
+3635	貂	Hyōgai
+3636	罌	Hyōgai
+3637	鑷	Hyōgai
+3638	晨	Jinmeiyō
+3639	笊	Hyōgai
+3640	蝎	Hyōgai
+3641	鴛	Hyōgai
+3642	鴦	Hyōgai
+3643	欣	Jinmeiyō
+3644	伜	Hyōgai
+3645	秣	Hyōgai
+3646	无	Hyōgai
+3647	懼	Hyōgai
+3648	狢	Hyōgai
+3649	畸	Hyōgai
+3650	篁	Hyōgai
+3651	臑	Hyōgai
+3652	坎	Hyōgai
+3653	凉	Jinmeiyō
+3654	鞴	Hyōgai
+3655	矍	Hyōgai
+3656	鑠	Hyōgai
+3657	茣	Hyōgai
+3658	疋	Jinmeiyō
+3659	黍	Hyōgai
+3660	歿	Hyōgai
+3661	芍	Hyōgai
+3662	嶮	Hyōgai
+3663	嗾	Hyōgai
+3664	怙	Hyōgai
+3665	夙	Hyōgai
+3666	鼈	Hyōgai
+3667	鶫	Hyōgai
+3668	鐸	Hyōgai
+3669	繻	Hyōgai
+3670	址	Hyōgai
+3671	錚	Hyōgai
+3672	龕	Hyōgai
+3673	蜷	Hyōgai
+3674	尸	Hyōgai
+3675	頗	Jinmeiyō
+3676	恚	Hyōgai
+3677	佗	Hyōgai
+3678	搗	Hyōgai
+3679	塙	Jinmeiyō
+3680	枡	Hyōgai
+3681	瓏	Hyōgai
+3682	崋	Hyōgai
+3683	鎗	Hyōgai
+3684	荏	Hyōgai
+3685	顏	Hyōgai
+3686	糺	Hyōgai
+3687	熨	Hyōgai
+3688	愈	Hyōgai
+3689	抒	Hyōgai
+3690	帙	Hyōgai
+3691	昵	Hyōgai
+3692	戎	Hyōgai
+3693	檣	Hyōgai
+3694	匁	Jinmeiyō
+3695	瓊	Hyōgai
+3696	舫	Hyōgai
+3697	舂	Hyōgai
+3698	桓	Hyōgai
+3699	袷	Hyōgai
+3700	盒	Hyōgai
+3701	紘	Jinmeiyō
+3702	掣	Hyōgai
+3703	圓	Jinmeiyō
+3704	蛞	Hyōgai
+3705	蝓	Hyōgai
+3706	疸	Hyōgai
+3707	邀	Hyōgai
+3708	綬	Hyōgai
+3709	珪	Hyōgai
+3710	鍍	Hyōgai
+3711	鬢	Hyōgai
+3712	陋	Hyōgai
+3713	塒	Hyōgai
+3714	扼	Hyōgai
+3715	聚	Hyōgai
+3716	樅	Hyōgai
+3717	瀝	Hyōgai
+3718	尹	Hyōgai
+3719	菰	Hyōgai
+3720	槿	Hyōgai
+3721	禰	Jinmeiyō
+3722	乍	Hyōgai
+3723	擱	Hyōgai
+3724	抛	Hyōgai
+3725	屛	Hyōgai
+3726	仆	Hyōgai
+3727	驒	Hyōgai
+3728	戈	Hyōgai
+3729	擡	Hyōgai
+3730	弼	Hyōgai
+3731	殭	Hyōgai
+3732	壽	Jinmeiyō
+3733	鰓	Hyōgai
+3734	鷗	Jinmeiyō
+3735	飜	Jinmeiyō
+3736	綸	Jinmeiyō
+3737	脣	Hyōgai
+3738	讒	Hyōgai
+3739	罫	Hyōgai
+3740	茲	Hyōgai
+3741	搏	Hyōgai
+3742	逓	Jōyō
+3743	俥	Hyōgai
+3744	潭	Hyōgai
+3745	繞	Hyōgai
+3746	烟	Hyōgai
+3747	呶	Hyōgai
+3748	碓	Jinmeiyō
+3749	嗇	Hyōgai
+3750	旱	Hyōgai
+3751	鏝	Hyōgai
+3752	麭	Hyōgai
+3753	忝	Hyōgai
+3754	弑	Hyōgai
+3755	紮	Hyōgai
+3756	漑	Hyōgai
+3757	竣	Jinmeiyō
+3758	羌	Hyōgai
+3759	蹌	Hyōgai
+3760	劍	Jinmeiyō
+3761	嫋	Hyōgai
+3762	貉	Hyōgai
+3763	鈿	Hyōgai
+3764	拱	Hyōgai
+3765	聲	Hyōgai
+3766	闍	Hyōgai
+3767	垓	Hyōgai
+3768	繃	Hyōgai
+3769	欽	Jinmeiyō
+3770	踉	Hyōgai
+3771	匡	Jinmeiyō
+3772	狄	Hyōgai
+3773	戊	Jinmeiyō
+3774	藷	Hyōgai
+3775	廏	Hyōgai
+3776	亢	Hyōgai
+3777	軻	Hyōgai
+3778	疽	Hyōgai
+3779	弋	Hyōgai
+3780	膾	Hyōgai
+3781	匈	Hyōgai
+3782	蒻	Hyōgai
+3783	蒟	Hyōgai
+3784	皹	Hyōgai
+3785	髣	Hyōgai
+3786	髴	Hyōgai
+3787	甜	Hyōgai
+3788	羈	Hyōgai
+3789	聟	Hyōgai
+3790	鮪	Hyōgai
+3791	劃	Hyōgai
+3792	絣	Hyōgai
+3793	撚	Hyōgai
+3794	耆	Hyōgai
+3795	赭	Hyōgai
+3796	埓	Hyōgai
+3797	鱧	Hyōgai
+3798	愍	Hyōgai
+3799	牟	Jinmeiyō
+3800	辷	Hyōgai
+3801	蕭	Hyōgai
+3802	柢	Hyōgai
+3803	舘	Hyōgai
+3804	莟	Hyōgai
+3805	鮑	Hyōgai
+3806	瘠	Hyōgai
+3807	皴	Hyōgai
+3808	羂	Hyōgai
+3809	繹	Hyōgai
+3810	釵	Hyōgai
+3811	崗	Hyōgai
+3812	薺	Hyōgai
+3813	覯	Hyōgai
+3814	瘧	Hyōgai
+3815	蒜	Hyōgai
+3816	鰌	Hyōgai
+3817	桝	Hyōgai
+3818	疏	Jinmeiyō
+3819	雖	Hyōgai
+3820	莵	Hyōgai
+3821	俤	Hyōgai
+3822	艤	Hyōgai
+3823	釧	Jinmeiyō
+3824	鞣	Hyōgai
+3825	渺	Hyōgai
+3826	鯵	Hyōgai
+3827	廬	Hyōgai
+3828	圀	Hyōgai
+3829	侃	Jinmeiyō
+3830	廂	Hyōgai
+3831	捥	Hyōgai
+3832	曠	Hyōgai
+3833	渥	Jinmeiyō
+3834	號	Hyōgai
+3835	婁	Hyōgai
+3836	馥	Hyōgai
+3837	佞	Hyōgai
+3838	寐	Hyōgai
+3839	諷	Hyōgai
+3840	喬	Jinmeiyō
+3841	夭	Hyōgai
+3842	鎚	Hyōgai
+3843	嶼	Hyōgai
+3844	鱸	Hyōgai
+3845	彬	Jinmeiyō
+3846	稔	Jinmeiyō
+3847	鴒	Hyōgai
+3848	鶺	Hyōgai
+3849	箴	Hyōgai
+3850	慙	Hyōgai
+3851	覡	Hyōgai
+3852	幔	Hyōgai
+3853	徂	Hyōgai
+3854	徠	Jinmeiyō
+3855	顆	Hyōgai
+3856	忿	Hyōgai
+3857	慊	Hyōgai
+3858	塑	Jōyō
+3859	與	Jinmeiyō
+3860	馗	Hyōgai
+3861	煖	Hyōgai
+3862	誨	Hyōgai
+3863	騏	Hyōgai
+3864	幀	Hyōgai
+3865	悋	Hyōgai
+3866	襴	Hyōgai
+3867	于	Hyōgai
+3868	伶	Jinmeiyō
+3869	蚣	Hyōgai
+3870	蜈	Hyōgai
+3871	翰	Hyōgai
+3872	驎	Hyōgai
+3873	鯰	Hyōgai
+3874	杷	Jinmeiyō
+3875	羚	Jinmeiyō
+3876	蹈	Hyōgai
+3877	艷	Hyōgai
+3878	裃	Hyōgai
+3879	楷	Jōyō
+3880	冰	Hyōgai
+3881	杢	Hyōgai
+3882	跛	Hyōgai
+3883	圖	Hyōgai
+3884	莨	Hyōgai
+3885	挾	Hyōgai
+3886	魃	Hyōgai
+3887	晃	Jinmeiyō
+3888	濶	Hyōgai
+3889	庖	Hyōgai
+3890	砒	Hyōgai
+3891	筅	Hyōgai
+3892	僑	Hyōgai
+3893	悖	Hyōgai
+3894	諱	Hyōgai
+3895	瀞	Hyōgai
+3896	溯	Hyōgai
+3897	俠	Jinmeiyō
+3898	楪	Hyōgai
+3899	笙	Jinmeiyō
+3900	稗	Hyōgai
+3901	筺	Hyōgai
+3902	宸	Hyōgai
+3903	諄	Jinmeiyō
+3904	頌	Jinmeiyō
+3905	艪	Hyōgai
+3906	薗	Jinmeiyō
+3907	旒	Hyōgai
+3908	侈	Hyōgai
+3909	潅	Hyōgai
+3910	泛	Hyōgai
+3911	糎	Hyōgai
+3912	跣	Hyōgai
+3913	溂	Hyōgai
+3914	篷	Hyōgai
+3915	襯	Hyōgai
+3916	鏤	Hyōgai
+3917	蒋	Hyōgai
+3918	屡	Hyōgai
+3919	个	Hyōgai
+3920	鴫	Hyōgai
+3921	笞	Hyōgai
+3922	杠	Hyōgai
+3923	禎	Jinmeiyō
+3924	葭	Hyōgai
+3925	黝	Hyōgai
+3926	髻	Hyōgai
+3927	浬	Jinmeiyō
+3928	斌	Hyōgai
+3929	睛	Hyōgai
+3930	谿	Hyōgai
+3931	孰	Hyōgai
+3932	應	Jinmeiyō
+3933	宍	Hyōgai
+3934	恤	Hyōgai
+3935	蒡	Hyōgai
+3936	蔡	Hyōgai
+3937	薨	Hyōgai
+3938	艀	Hyōgai
+3939	薀	Hyōgai
+3940	鑚	Hyōgai
+3941	嶌	Hyōgai
+3942	鰊	Hyōgai
+3943	栂	Hyōgai
+3944	癩	Hyōgai
+3945	媼	Hyōgai
+3946	莚	Hyōgai
+3947	佻	Hyōgai
+3948	糟	Hyōgai
+3949	跏	Hyōgai
+3950	弖	Hyōgai
+3951	蝟	Hyōgai
+3952	厖	Hyōgai
+3953	椚	Hyōgai
+3954	逵	Hyōgai
+3955	勺	Jinmeiyō
+3956	稠	Hyōgai
+3957	蓆	Hyōgai
+3958	腟	Hyōgai
+3959	椥	Hyōgai
+3960	諂	Hyōgai
+3961	慳	Hyōgai
+3962	羯	Hyōgai
+3963	譴	Hyōgai
+3964	穎	Hyōgai
+3965	焜	Hyōgai
+3966	燧	Hyōgai
+3967	苅	Hyōgai
+3968	醗	Hyōgai
+3969	潁	Hyōgai
+3970	銑	Jinmeiyō
+3971	旌	Hyōgai
+3972	繙	Hyōgai
+3973	懶	Hyōgai
+3974	甍	Hyōgai
+3975	粁	Hyōgai
+3976	霙	Hyōgai
+3977	饌	Hyōgai
+3978	娥	Hyōgai
+3979	嫦	Hyōgai
+3980	癲	Hyōgai
+3981	盂	Hyōgai
+3982	蹠	Hyōgai
+3983	哩	Jinmeiyō
+3984	樒	Hyōgai
+3985	禹	Hyōgai
+3986	枇	Jinmeiyō
+3987	梏	Hyōgai
+3988	篦	Hyōgai
+3989	烽	Hyōgai
+3990	邕	Hyōgai
+3991	瀚	Hyōgai
+3992	簑	Hyōgai
+3993	侑	Jinmeiyō
+3994	桎	Hyōgai
+3995	痾	Hyōgai
+3996	蟀	Hyōgai
+3997	臘	Hyōgai
+3998	鈷	Hyōgai
+3999	鞆	Hyōgai
+4000	狷	Hyōgai

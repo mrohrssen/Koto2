@@ -28,6 +28,8 @@ data/*
 !data/bootstrap-narrations/**
 !data/dialogue/
 !data/dialogue/**
+!data/kanji/
+!data/kanji/**
 data/npc-memory-test-*.json
 data/npc-dialogue-cache-test-*.json
 # Runtime-generated caches (rebuilt automatically per user)

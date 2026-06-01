@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kanjidic2>
+  <character>
+    <literal>人</literal>
+    <misc>
+      <grade>1</grade>
+    </misc>
+    <reading_meaning>
+      <rmgroup>
+        <reading r_type="pinyin">ren2</reading>
+        <reading r_type="ja_on">ジン</reading>
+        <reading r_type="ja_on">ニン</reading>
+        <reading r_type="ja_kun">ひと</reading>
+        <meaning>person</meaning>
+        <meaning>human being</meaning>
+        <meaning>people</meaning>
+      </rmgroup>
+    </reading_meaning>
+  </character>
+  <character>
+    <literal>言</literal>
+    <misc>
+      <grade>2</grade>
+    </misc>
+    <reading_meaning>
+      <rmgroup>
+        <reading r_type="ja_on">ゲン</reading>
+        <reading r_type="ja_on">ゴン</reading>
+        <reading r_type="ja_kun">い.う</reading>
+        <meaning>say</meaning>
+        <meaning>word</meaning>
+      </rmgroup>
+    </reading_meaning>
+  </character>
+</kanjidic2>

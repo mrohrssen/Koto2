@@ -92,7 +92,7 @@ Script card shape:
 }
 ```
 
-Kanji cards use `id: 'kanji:上'`, `prompt: '上'`, `answer: 'Above'`, `keyword: 'Above'`, and the WaniKani reading in `reading`.
+Kanji cards use `id: 'kanji:人'`, `prompt: '人'`, `answer: 'person'`, `keyword: 'person'`, and the Koto dictionary primary reading in `reading`.
 
 Existing legacy `kana.cards` data is migrated into the `script` deck on first Kanji Kombat access. The migration copies hiragana FSRS fields into matching `script` cards when present and does not delete the old `kana` data in the MVP. New hiragana reviews after migration use the `script` deck.
 
@@ -106,7 +106,7 @@ The mode uses only one active script deck at a time. Hiragana must graduate befo
 
 Script graduation means every card in that script deck has reached FSRS `Review` state. Initial new-card modal responses alone do not graduate a deck.
 
-Katakana is seeded as script cards from a new static katakana deck file. Kanji is seeded from the first-100 MVP snapshot in this spec.
+Katakana is seeded as script cards from a static katakana deck. Kanji is seeded from Koto's internal kanji dictionary in frequency order.
 
 ## FSRS Behavior
 
@@ -149,122 +149,22 @@ When the active script deck has no due cards and no remaining new cards availabl
 
 ## Kanji Curriculum
 
-Kanji cards represent one kanji character and one primary English keyword. Quiz choices for kanji use English keywords.
+Kanji cards represent one kanji character and one primary English meaning. Quiz choices for kanji use those English meanings.
 
-For this mode, the English keyword is a sourced recognition keyword, not a dictionary definition and not a vocabulary translation. This is deliberate: kanji cards test character-keyword recognition, while vocabulary definitions remain governed by the curated dictionary rules elsewhere in Koto.
+Kanji cards are sourced from Koto's internal kanji dictionary at `data/kanji/koto-kanji-dictionary.json`. The dictionary contains 4000 entries ordered by a dated top-4000 JPDB frequency snapshot, while card meanings/readings/examples come from Koto-maintained dictionary fields.
 
-For the MVP, the first 100 kanji cards are sourced from WaniKani's public Pleasant kanji list in page order:
+JPDB is only an ordering input and is not included in the dictionary `sources` metadata. The shipping dictionary source metadata names only the enrichment sources used for meanings, readings, and examples.
 
-Source: https://www.wanikani.com/kanji?difficulty=pleasant
+The game introduces new kanji as the next unlearned item in the ordered `KANJI_SCRIPT_CARDS` array. There is no separate adaptive selector for new kanji. Reviews are still FSRS-driven by due date.
 
-The implementation should snapshot this data into the repo rather than scraping the page at runtime.
-The MVP list follows WaniKani's ordering exactly, including `々` even though it is an iteration mark rather than a standalone kanji character.
-The snapshot file must include source attribution (`sourceName`, `sourceUrl`, and `snapshotDate`) and must not be merged into `data/dictionary.json`.
+The first four kanji cards in the current dictionary order are:
 
-| # | Kanji | Reading | Keyword |
+| # | Kanji | Reading | Primary Meaning |
 |---:|---|---|---|
-| 1 | 上 | じょう | Above |
-| 2 | 下 | か | Below |
-| 3 | 大 | たい | Big |
-| 4 | 工 | こう | Construction |
-| 5 | 八 | はち | Eight |
-| 6 | 入 | にゅう | Enter |
-| 7 | 山 | さん | Mountain |
-| 8 | 口 | こう | Mouth |
-| 9 | 九 | く | Nine |
-| 10 | 一 | いち | One |
-| 11 | 人 | にん | Person |
-| 12 | 力 | りょく | Power |
-| 13 | 川 | かわ | River |
-| 14 | 七 | しち | Seven |
-| 15 | 十 | じゅう | Ten |
-| 16 | 三 | さん | Three |
-| 17 | 二 | に | Two |
-| 18 | 女 | じょ | Woman |
-| 19 | 玉 | たま | Ball |
-| 20 | 本 | ほん | Book |
-| 21 | 子 | し | Child |
-| 22 | 丸 | まる | Circle |
-| 23 | 正 | せい | Correct |
-| 24 | 土 | ど | Dirt |
-| 25 | 犬 | いぬ | Dog |
-| 26 | 夕 | ゆう | Evening |
-| 27 | 出 | しゅつ | Exit |
-| 28 | 目 | め | Eye |
-| 29 | 火 | か | Fire |
-| 30 | 五 | ご | Five |
-| 31 | 四 | し | Four |
-| 32 | 手 | て | Hand |
-| 33 | 天 | てん | Heaven |
-| 34 | 王 | おう | King |
-| 35 | 左 | さ | Left |
-| 36 | 中 | ちゅう | Middle |
-| 37 | 月 | げつ | Moon |
-| 38 | 々 | のま | Repeater |
-| 39 | 田 | た | Rice Paddy |
-| 40 | 右 | ゆう | Right |
-| 41 | 六 | ろく | Six |
-| 42 | 小 | しょう | Small |
-| 43 | 立 | りつ | Stand |
-| 44 | 丁 | ちょう | Street |
-| 45 | 日 | にち | Sun |
-| 46 | 刀 | とう | Sword |
-| 47 | 才 | さい | Talent |
-| 48 | 千 | せん | Thousand |
-| 49 | 木 | もく | Tree |
-| 50 | 水 | すい | Water |
-| 51 | 白 | はく | White |
-| 52 | 文 | ぶん | Writing |
-| 53 | 円 | えん | Yen |
-| 54 | 矢 | や | Arrow |
-| 55 | 明 | あ | Bright |
-| 56 | 市 | し | City |
-| 57 | 牛 | ぎゅう | Cow |
-| 58 | 切 | せつ | Cut |
-| 59 | 方 | ほう | Direction |
-| 60 | 戸 | と | Door |
-| 61 | 太 | ふと | Fat |
-| 62 | 父 | ちち | Father |
-| 63 | 少 | しょう | Few |
-| 64 | 友 | ゆう | Friend |
-| 65 | 毛 | もう | Fur |
-| 66 | 半 | はん | Half |
-| 67 | 心 | しん | Heart |
-| 68 | 内 | ない | Inside |
-| 69 | 字 | じ | Letter |
-| 70 | 生 | せい | Life |
-| 71 | 台 | だい | Machine |
-| 72 | 母 | はは | Mother |
-| 73 | 午 | ご | Noon |
-| 74 | 北 | きた | North |
-| 75 | 今 | こん | Now |
-| 76 | 古 | こ | Old |
-| 77 | 外 | がい | Outside |
-| 78 | 分 | ぶん | Part |
-| 79 | 引 | ひ | Pull |
-| 80 | 止 | し | Stop |
-| 81 | 用 | よう | Task |
-| 82 | 万 | まん | Ten Thousand |
-| 83 | 広 | ひろ | Wide |
-| 84 | 冬 | ふゆ | Winter |
-| 85 | 竹 | たけ | Bamboo |
-| 86 | 車 | しゃ | Car |
-| 87 | 央 | おう | Center |
-| 88 | 写 | しゃ | Copy |
-| 89 | 仕 | し | Doing |
-| 90 | 耳 | みみ | Ear |
-| 91 | 早 | そう | Early |
-| 92 | 気 | き | Energy |
-| 93 | 平 | へい | Flat |
-| 94 | 花 | はな | Flower |
-| 95 | 足 | そく | Foot |
-| 96 | 打 | だ | Hit |
-| 97 | 穴 | あな | Hole |
-| 98 | 百 | ひゃく | Hundred |
-| 99 | 氷 | こおり | Ice |
-| 100 | 虫 | むし | Insect |
-
-The later algorithmic kanji ordering system is deferred out of the MVP.
+| 1 | 人 | ひと | person |
+| 2 | 言 | げん | say |
+| 3 | 見 | ケン | see |
+| 4 | 一 | いち | one |
 
 ## Quiz Rules
 
@@ -494,8 +394,8 @@ Visual/manual verification:
 - Script cards live in the separate `script` SRS deck with explicit `type` metadata.
 - Existing legacy `kana` hiragana progress is copied into the `script` deck on first Kanji Kombat access.
 - The active script deck advances only when every card in the current script deck reaches FSRS `Review`.
-- The MVP kanji deck uses the first 100 WaniKani Pleasant entries listed in this spec.
-- The WaniKani snapshot includes source attribution and is treated as character-keyword data, not dictionary definitions.
+- The kanji deck uses the 4000-entry Koto kanji dictionary in frequency order.
+- The Koto dictionary does not use WaniKani as a shipping source.
 - New cards appear every 3-5 reviews, with no more than 20 new script cards introduced per day.
 - If no due cards exist but daily new cards remain, Kanji Kombat introduces new cards until due work exists or the cap is exhausted.
 - New-card intro modal grades `Good` for `I knew it` and `Again` for `I didn't know it`.

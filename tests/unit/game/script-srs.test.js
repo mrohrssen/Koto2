@@ -20,6 +20,7 @@ import {
   gradeScriptCard,
   recordScriptIntro,
 } from '../../../src/game/script-srs.js';
+import { KANJI_SCRIPT_CARDS } from '../../../src/game/script-decks.js';
 
 describe('script-srs', () => {
   let tempDir;
@@ -96,5 +97,38 @@ describe('script-srs', () => {
     const graded = gradeScriptCard(userId, card.id, 'good');
     assert.equal(graded.id, card.id);
     assert.equal(graded.reps > 0, true);
+  });
+
+  it('seeds all 4000 Koto kanji cards in frequency order', () => {
+    const cards = ensureScriptDeckSeeded(userId);
+    const kanji = cards.filter(card => card.type === 'kanji');
+
+    assert.equal(kanji.length, 4000);
+    assert.deepEqual(kanji.map(card => card.id), KANJI_SCRIPT_CARDS.map(card => card.id));
+    assert.deepEqual(kanji.slice(0, 4).map(card => card.id), ['kanji:人', 'kanji:言', 'kanji:見', 'kanji:一']);
+    assert.deepEqual(kanji.slice(0, 4).map(card => card.frequencyRank), [1, 2, 3, 4]);
+    assert.equal(kanji[0].sortIndex, 1);
+    assert.equal(kanji[3999].sortIndex, 4000);
+  });
+
+  it('returns new kanji in frequency order after hiragana and katakana graduate', () => {
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana' || c.type === 'katakana')) {
+      card.state = State.Review;
+    }
+    saveSrsData(userId, data);
+
+    assert.equal(getActiveScriptType(userId), 'kanji');
+    const newKanji = getNewScriptCards(userId);
+    assert.equal(newKanji.length, 4000);
+    assert.deepEqual(newKanji.slice(0, 6).map(card => card.id), [
+      'kanji:人',
+      'kanji:言',
+      'kanji:見',
+      'kanji:一',
+      KANJI_SCRIPT_CARDS[4].id,
+      KANJI_SCRIPT_CARDS[5].id,
+    ]);
   });
 });

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
+import { State } from 'ts-fsrs';
 import { clearSrsCache, configureSrs, loadSrsData, saveSrsData } from '../../../src/game/internal-srs.js';
 import { ensureScriptDeckSeeded, getScriptDailyState, gradeScriptCard } from '../../../src/game/script-srs.js';
 import {
@@ -281,5 +282,53 @@ describe('kanji-kombat deck controller', () => {
     });
     assert.equal(practice.kind, 'quiz');
     assert.equal(practice.quiz.cardId, practiceIds[0]);
+  });
+
+  it('introduces the first unlearned kanji by frequency order once kana are graduated', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana' || c.type === 'katakana')) {
+      card.state = State.Review;
+    }
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    const first = chooseNextScriptWork(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(first.kind, 'intro');
+    assert.equal(first.card.id, 'kanji:人');
+    assert.equal(first.card.frequencyRank, 1);
+
+    const result = resolveIntroChoice(userId, state, first.card.id, 'unknown', {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, 1);
+    assert.notEqual(result.next.card?.id, 'kanji:人');
+  });
+
+  it('skips learned kanji and introduces the next frequency-ranked kanji', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana' || c.type === 'katakana')) {
+      card.state = State.Review;
+    }
+    const firstKanji = data.script.cards.find(card => card.id === 'kanji:人');
+    firstKanji.reps = 1;
+    firstKanji.state = State.Learning;
+    firstKanji.due = new Date('2099-01-01T00:00:00Z');
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    const work = chooseNextScriptWork(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(work.kind, 'intro');
+    assert.equal(work.card.id, 'kanji:言');
+    assert.equal(work.card.frequencyRank, 2);
   });
 });

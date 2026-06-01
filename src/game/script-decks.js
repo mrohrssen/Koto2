@@ -1,12 +1,5 @@
-import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
 import { HIRAGANA_DECK } from './hiragana-deck.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const kanjiSnapshot = JSON.parse(
-  readFileSync(join(__dirname, '../../data/script-kanji-wanikani-pleasant-100.json'), 'utf8')
-);
+import { getKotoKanjiEntries } from './koto-kanji-dictionary.js';
 
 export const SCRIPT_CARD_TYPES = ['hiragana', 'katakana', 'kanji'];
 
@@ -28,8 +21,8 @@ const KATAKANA_BASE = [
   ['パ', 'pa'], ['ピ', 'pi'], ['プ', 'pu'], ['ペ', 'pe'], ['ポ', 'po'],
 ];
 
-function scriptCard({ type, prompt, answer, reading = prompt, keyword = null, sortIndex, source }) {
-  return {
+function scriptCard({ type, prompt, answer, reading = prompt, keyword = null, sortIndex, source, frequencyRank = null }) {
+  const card = {
     id: `${type}:${prompt}`,
     type,
     prompt,
@@ -39,6 +32,8 @@ function scriptCard({ type, prompt, answer, reading = prompt, keyword = null, so
     sortIndex,
     source,
   };
+  if (frequencyRank !== null) card.frequencyRank = frequencyRank;
+  return card;
 }
 
 export const HIRAGANA_SCRIPT_CARDS = HIRAGANA_DECK.map((entry, index) => scriptCard({
@@ -59,14 +54,15 @@ export const KATAKANA_SCRIPT_CARDS = KATAKANA_BASE.map(([char, romaji], index) =
   source: 'builtin-katakana',
 }));
 
-export const KANJI_SCRIPT_CARDS = kanjiSnapshot.entries.map((entry, index) => scriptCard({
+export const KANJI_SCRIPT_CARDS = getKotoKanjiEntries().map((entry, index) => scriptCard({
   type: 'kanji',
   prompt: entry.kanji,
-  answer: entry.keyword,
-  reading: entry.reading,
-  keyword: entry.keyword,
+  answer: entry.primaryMeaning,
+  reading: entry.primaryReading,
+  keyword: entry.primaryMeaning,
   sortIndex: index + 1,
-  source: 'wanikani-pleasant-100',
+  source: 'koto-kanji-dictionary',
+  frequencyRank: entry.frequencyRank,
 }));
 
 export function getStaticScriptCards(type) {
