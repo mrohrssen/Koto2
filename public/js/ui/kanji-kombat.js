@@ -118,6 +118,7 @@ export function renderKanjiKombatIntro(card, { onChoice } = {}) {
       </div>
     </div>
   `;
+  playCorrectAnswerAudio(card.answer);
   bindSingleFlightButtons(
     [...root.querySelectorAll('.kanji-kombat-intro-action')],
     button => button.dataset.choice,

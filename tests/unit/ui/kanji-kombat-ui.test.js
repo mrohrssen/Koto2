@@ -281,6 +281,19 @@ describe('kanji-kombat ui', () => {
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
   });
 
+  it('plays the same answer TTS when a discovery intro appears', () => {
+    const calls = [];
+    initKanjiKombatUI({
+      playCorrectAnswerAudio: answer => calls.push(['tts', answer]),
+    });
+
+    renderKanjiKombatIntro({ id: 'kanji:上', prompt: '上', reading: 'じょう', answer: 'Above' }, { onChoice: () => {} });
+
+    assert.deepEqual(calls, [
+      ['tts', 'Above'],
+    ]);
+  });
+
   it('renders completion choice actions', () => {
     renderKanjiKombatCompletionChoice({ onChoice: () => {} });
     assert.match(actionArea.innerHTML, /Your reviews are done for the day!/);
