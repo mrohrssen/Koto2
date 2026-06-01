@@ -118,7 +118,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(state.completionChoicePending, false);
   });
 
-  it('intro choice grades the card and increments daily count without returning a quiz for same presentation', () => {
+  it('unknown intro choice grades the card and increments daily count without returning a quiz for same presentation', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
       card.due = new Date('2099-01-01T00:00:00Z');
@@ -126,11 +126,28 @@ describe('kanji-kombat deck controller', () => {
     saveSrsData(userId, data);
     const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
     const card = chooseNextScriptWork(userId, state, { now: new Date('2026-05-31T00:00:00Z') }).card;
-    const result = resolveIntroChoice(userId, state, card.id, 'known', { now: new Date('2026-05-31T00:00:00Z') });
+    const result = resolveIntroChoice(userId, state, card.id, 'unknown', { now: new Date('2026-05-31T00:00:00Z') });
     assert.equal(result.graded.id, card.id);
     assert.equal(result.next.kind === 'quiz' || result.next.kind === 'intro' || result.next.kind === 'complete', true);
     assert.notEqual(result.next.card?.id, card.id);
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, 1);
+  });
+
+  it('known intro choice grades the card without consuming a daily new-card slot', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    const card = chooseNextScriptWork(userId, state, { now: new Date('2026-05-31T00:00:00Z') }).card;
+    const result = resolveIntroChoice(userId, state, card.id, 'known', { now: new Date('2026-05-31T00:00:00Z') });
+
+    assert.equal(result.graded.id, card.id);
+    assert.equal(result.graded.reps, 1);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, 0);
+    assert.equal(state.report.newCardsIntroduced, 0);
   });
 
   it('resets intro spacing after a discovery so discoveries do not chain', () => {
@@ -175,7 +192,7 @@ describe('kanji-kombat deck controller', () => {
     for (let i = 0; i < NO_DUE_DISCOVERY_CHAIN_LIMIT; i++) {
       assert.equal(work.kind, 'intro');
       seen.push(work.card.id);
-      const result = resolveIntroChoice(userId, state, work.card.id, 'known', {
+      const result = resolveIntroChoice(userId, state, work.card.id, 'unknown', {
         random: () => 0,
         now: new Date('2026-05-31T00:00:00Z'),
       });

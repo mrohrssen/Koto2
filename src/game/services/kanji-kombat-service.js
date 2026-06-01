@@ -219,9 +219,11 @@ export function resolveIntroChoice(userId, state, cardId, choice, opts = {}) {
   const introSource = state.pendingIntro?.source || null;
   const grade = choice === 'known' ? 'good' : 'again';
   const graded = gradeScriptCard(userId, cardId, grade);
-  recordScriptIntro(userId, state.localDate);
+  if (choice === 'unknown') {
+    recordScriptIntro(userId, state.localDate);
+    state.report.newCardsIntroduced += 1;
+  }
   state.pendingIntro = null;
-  state.report.newCardsIntroduced += 1;
   state.reviewsSinceIntro = 0;
   state.nextIntroAfter = rollIntroInterval(opts.random || Math.random);
   if (introSource === 'noDueBatch') {
