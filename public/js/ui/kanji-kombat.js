@@ -1,4 +1,5 @@
 import { escapeHtml } from './html-utils.js';
+import { getSpeakerId, playDialogueLineAudio } from '../tts.js';
 
 let api = {
   submitAnswer: null,
@@ -6,6 +7,7 @@ let api = {
   updateGameState: null,
   updateUI: null,
   refreshAction: null,
+  playCorrectAnswerAudio: null,
 };
 
 export function initKanjiKombatUI(deps) {
@@ -16,12 +18,13 @@ function actionArea() {
   return document.getElementById('action-area');
 }
 
-function bindSingleFlightButtons(buttons, getValue, handler) {
+function bindSingleFlightButtons(buttons, getValue, handler, { beforeSubmit = null } = {}) {
   let inFlight = false;
   for (const button of buttons) {
     button.addEventListener('click', async () => {
       if (inFlight) return;
       inFlight = true;
+      beforeSubmit?.(button, buttons);
       buttons.forEach(btn => { btn.disabled = true; });
       try {
         await handler?.(getValue(button));
@@ -34,9 +37,37 @@ function bindSingleFlightButtons(buttons, getValue, handler) {
   }
 }
 
+function markKanjiKombatChoiceFeedback(selectedButton, buttons, correctAnswerId) {
+  if (!correctAnswerId) return;
+  const selectedIsCorrect = selectedButton.dataset.answerId === correctAnswerId;
+  selectedButton.classList.add(
+    selectedIsCorrect
+      ? 'kanji-kombat-choice--correct-selected'
+      : 'kanji-kombat-choice--wrong-selected'
+  );
+
+  if (selectedIsCorrect) return;
+  const correctButton = buttons.find(button => button.dataset.answerId === correctAnswerId);
+  correctButton?.classList.add('kanji-kombat-choice--correct-answer');
+}
+
+function playCorrectAnswerAudio(answer) {
+  if (!answer) return;
+  const playAudio = api.playCorrectAnswerAudio || ((text) => playDialogueLineAudio({
+    text,
+    speakerId: getSpeakerId(),
+  }));
+  Promise.resolve(playAudio(answer)).catch(error => {
+    console.warn('[KanjiKombat] Correct answer TTS failed:', error.message);
+  });
+}
+
 export function renderKanjiKombatQuiz(quiz, { onAnswer } = {}) {
   const root = actionArea();
   if (!root || !quiz) return;
+  const correctChoice = quiz.choices.find(choice => choice.correct);
+  const correctAnswerId = correctChoice?.id;
+  const correctAnswer = correctChoice?.answer || '';
   root.innerHTML = `
     <div class="kanji-kombat-panel">
       <div class="kanji-kombat-prompt">${escapeHtml(quiz.prompt)}</div>
@@ -56,7 +87,13 @@ export function renderKanjiKombatQuiz(quiz, { onAnswer } = {}) {
   bindSingleFlightButtons(
     [...root.querySelectorAll('.kanji-kombat-choice')],
     button => button.dataset.answerId,
-    onAnswer
+    onAnswer,
+    {
+      beforeSubmit: (button, buttons) => {
+        markKanjiKombatChoiceFeedback(button, buttons, correctAnswerId);
+        playCorrectAnswerAudio(correctAnswer);
+      }
+    }
   );
 }
 

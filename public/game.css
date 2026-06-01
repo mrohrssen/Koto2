@@ -72,6 +72,25 @@
   font: inherit;
 }
 
+.kanji-kombat-choice.move-cell.kanji-kombat-choice--correct-selected,
+.kanji-kombat-choice.move-cell.kanji-kombat-choice--correct-answer {
+  border-color: rgba(76, 224, 134, 0.98);
+  box-shadow:
+    0 0 0 3px rgba(76, 224, 134, 0.24),
+    0 0 22px rgba(76, 224, 134, 0.68),
+    0 6px 18px rgba(15, 80, 45, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.52);
+}
+
+.kanji-kombat-choice.move-cell.kanji-kombat-choice--wrong-selected {
+  border-color: rgba(255, 91, 105, 0.98);
+  box-shadow:
+    0 0 0 3px rgba(255, 91, 105, 0.22),
+    0 0 22px rgba(255, 91, 105, 0.66),
+    0 6px 18px rgba(105, 20, 32, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
 .kanji-kombat-choice .move-hero {
   justify-content: center;
   padding-right: 0;

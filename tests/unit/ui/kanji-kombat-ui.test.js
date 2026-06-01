@@ -7,12 +7,38 @@ import {
   renderKanjiKombatQuiz,
 } from '../../../public/js/ui/kanji-kombat.js';
 
+class FakeClassList {
+  constructor(button) {
+    this.button = button;
+  }
+
+  add(...tokens) {
+    const classNames = new Set(this.button.className.split(/\s+/).filter(Boolean));
+    tokens.forEach(token => classNames.add(token));
+    this.button.className = [...classNames].join(' ');
+  }
+
+  remove(...tokens) {
+    const removals = new Set(tokens);
+    this.button.className = this.button.className
+      .split(/\s+/)
+      .filter(token => token && !removals.has(token))
+      .join(' ');
+  }
+
+  contains(token) {
+    return this.button.className.split(/\s+/).includes(token);
+  }
+}
+
 class FakeButton {
   constructor(dataset = {}, textContent = '') {
     this.dataset = dataset;
     this.textContent = textContent;
     this.disabled = false;
     this.listeners = new Map();
+    this.className = '';
+    this.classList = new FakeClassList(this);
   }
 
   addEventListener(type, handler) {
@@ -33,22 +59,19 @@ class FakeActionArea {
   set innerHTML(value) {
     this._innerHTML = value;
     this.buttons = [
-      ...value.matchAll(/<button class="([^"]*)"[^>]*(?:data-answer-id|data-creature-id)="([^"]*)"[^>]*>([\s\S]*?)<\/button>/g)
+      ...value.matchAll(/<button class="([^"]*)"([^>]*)>([\s\S]*?)<\/button>/g)
     ].map(match => {
-      const dataset = match[0].includes('data-answer-id')
-        ? { answerId: match[2] }
-        : { creatureId: match[2] };
+      const dataset = {};
+      for (const [, attribute, attributeValue] of match[2].matchAll(/\s(data-[a-z-]+)="([^"]*)"/g)) {
+        const key = attribute
+          .slice('data-'.length)
+          .replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+        dataset[key] = attributeValue;
+      }
       const button = new FakeButton(dataset, match[3].replace(/<[^>]+>/g, '').trim());
       button.className = match[1];
       return button;
     });
-    this.buttons.push(...[
-      ...value.matchAll(/<button class="([^"]*)"[^>]*data-choice="([^"]*)"[^>]*>([\s\S]*?)<\/button>/g)
-    ].map(match => {
-      const button = new FakeButton({ choice: match[2] }, match[3].replace(/<[^>]+>/g, '').trim());
-      button.className = match[1];
-      return button;
-    }));
   }
 
   get innerHTML() {
@@ -172,6 +195,75 @@ describe('kanji-kombat ui', () => {
     await Promise.resolve();
 
     assert.deepEqual(calls, ['fire']);
+  });
+
+  it('plays narrator TTS for the correct answer when any quiz choice is selected', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      submitAnswer: async answerId => {
+        calls.push(['submitAnswer', answerId]);
+      },
+      playCorrectAnswerAudio: answer => calls.push(['tts', answer]),
+      updateGameState: () => calls.push(['unexpected-state']),
+      updateUI: () => calls.push(['unexpected-render']),
+    });
+
+    renderKanjiKombatAction({
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          currentQuiz: {
+            prompt: '火',
+            choices: [
+              { id: 'fire', answer: 'Fire', correct: true },
+              { id: 'water', answer: 'Water', correct: false },
+            ],
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+
+    await actionArea.querySelectorAll('.kanji-kombat-choice')[1].click();
+
+    assert.deepEqual(calls, [
+      ['tts', 'Fire'],
+      ['submitAnswer', 'water'],
+    ]);
+  });
+
+  it('marks the selected quiz choice green when it is correct', async () => {
+    renderKanjiKombatQuiz({
+      prompt: '火',
+      choices: [
+        { id: 'fire', answer: 'Fire', correct: true },
+        { id: 'water', answer: 'Water', correct: false },
+      ],
+    }, { onAnswer: async () => {} });
+
+    const [correctButton, wrongButton] = actionArea.querySelectorAll('.kanji-kombat-choice');
+    await correctButton.click();
+
+    assert.equal(correctButton.classList.contains('kanji-kombat-choice--correct-selected'), true);
+    assert.equal(correctButton.classList.contains('kanji-kombat-choice--wrong-selected'), false);
+    assert.equal(wrongButton.classList.contains('kanji-kombat-choice--correct-answer'), false);
+  });
+
+  it('marks a wrong quiz choice red and the correct answer green', async () => {
+    renderKanjiKombatQuiz({
+      prompt: '火',
+      choices: [
+        { id: 'fire', answer: 'Fire', correct: true },
+        { id: 'water', answer: 'Water', correct: false },
+      ],
+    }, { onAnswer: async () => {} });
+
+    const [correctButton, wrongButton] = actionArea.querySelectorAll('.kanji-kombat-choice');
+    await wrongButton.click();
+
+    assert.equal(wrongButton.classList.contains('kanji-kombat-choice--wrong-selected'), true);
+    assert.equal(wrongButton.classList.contains('kanji-kombat-choice--correct-selected'), false);
+    assert.equal(correctButton.classList.contains('kanji-kombat-choice--correct-answer'), true);
   });
 
   it('renders intro modal actions', () => {

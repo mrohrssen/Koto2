@@ -21,7 +21,13 @@ import {
   animateLevelUpForScene,
 } from '../pixi/formation.js';
 import { showFormation } from './combat-dom.js';
-import { setScrollState } from '../pixi/parallax.js';
+import {
+  setScrollState,
+  startParallax,
+  BATTLE_SKY_DRIFT_SPEED,
+  ROOM_TRAVEL_DURATION_MS,
+  ROOM_TRAVEL_SCROLL_SPEED,
+} from '../pixi/parallax.js';
 import { wait } from '../pixi/tween.js';
 import { playAttackSound } from './combat-audio.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
@@ -1116,6 +1122,55 @@ function syncFinalState(result) {
   // No-op: PixiJS sprites don't leave stale inline transforms
 }
 
+async function playKanjiKombatNextWaveTransition(result) {
+  const enemies = Array.isArray(result.nextWaveEnemies)
+    ? result.nextWaveEnemies
+    : getGameState()?.combat?.enemies || [];
+  if (!enemies.length) {
+    updateUI?.();
+    return;
+  }
+
+  const mgr = getSceneManager();
+  const battleScene = mgr.currentScene instanceof BattleScene && !mgr.currentScene.disposed && !mgr.currentScene._exiting
+    ? mgr.currentScene
+    : null;
+
+  if (battleScene) {
+    startParallax(ROOM_TRAVEL_SCROLL_SPEED);
+    setScrollState('scrolling');
+    battleScene.formation.walkingEnabled = true;
+    await wait(ROOM_TRAVEL_DURATION_MS);
+    if (!battleScene.disposed && !battleScene._exiting) {
+      battleScene.formation.walkingEnabled = false;
+    }
+    setScrollState('encounter');
+    startParallax(BATTLE_SKY_DRIFT_SPEED);
+  }
+
+  const state = getGameState();
+  const allies = state?.combat?.allies || state?.run?.creatureParty?.active || result.allies || [];
+  const isBoss = !!state?.combat?.isBoss;
+
+  await showFormation('enemy', enemies, { isBoss, force: true });
+  const enemyFormation = document.getElementById('enemy-formation');
+  if (enemyFormation) enemyFormation.style.opacity = '0';
+  const revealScene = getSceneManager().currentScene;
+  if (revealScene instanceof BattleScene && !revealScene.disposed && !revealScene._exiting) {
+    try {
+      await revealScene.syncCreatures({ allies, enemies, initial: true });
+    } catch (err) {
+      if (!(err instanceof SceneDisposedError)) {
+        console.error('[CombatLoop] failed to reveal Kanji Kombat next wave', err);
+      }
+    }
+  }
+
+  const freshEnemyFormation = document.getElementById('enemy-formation');
+  if (freshEnemyFormation) freshEnemyFormation.style.opacity = '1';
+  updateUI?.();
+}
+
 // ============ CREATURE COMBAT ORCHESTRATORS ============
 
 /**
@@ -1405,8 +1460,8 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
 
   syncFinalState(result);
   if (result.nextWave) {
+    await playKanjiKombatNextWaveTransition(result);
     animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
-    updateUI?.();
   }
 
   if (allPendingMoveLearn.length > 0) {
@@ -1506,6 +1561,10 @@ async function executeCreatureMovesTurn(choices, options = {}) {
         }
         logCombatTurnTiming(turnTiming, result, 'server_error', true);
         return;
+      }
+
+      if (actionType === 'kanjiKombat') {
+        void vfx.showKanjiKombatAnswerBanner(result.kanjiAnswerCorrect);
       }
 
       await playCreatureCombatResult(result, turnTiming, {

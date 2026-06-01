@@ -71,9 +71,15 @@ describe('script-srs', () => {
 
   it('returns due script cards for active type only', () => {
     ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    const reviewed = data.script.cards.find(c => c.id === 'hiragana:あ');
+    reviewed.reps = 1;
+    reviewed.due = new Date('2026-05-30T00:00:00Z');
+    saveSrsData(userId, data);
     const due = getDueScriptCards(userId);
     assert.ok(due.length > 0);
     assert.equal(due.every(c => c.type === 'hiragana'), true);
+    assert.equal(due.some(c => c.reps === 0), false);
   });
 
   it('tracks daily introduced count by local date', () => {

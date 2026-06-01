@@ -94,6 +94,7 @@ export function getActiveScriptType(userId) {
 
 export function getDueScriptCards(userId, type = getActiveScriptType(userId), now = new Date()) {
   return getScriptCards(userId, type).filter(card => {
+    if ((card.reps || 0) === 0) return false;
     const due = card.due instanceof Date ? card.due : new Date(card.due);
     return due <= now;
   });

@@ -34,7 +34,7 @@ describe('Kanji Kombat integration flow', () => {
     assert.equal(gm.run.mode, 'kanjiKombat');
     assert.equal(gm.combat.mode, 'kanjiKombat');
 
-    if (gm.run.kanjiKombat.pendingIntro?.card) {
+    for (let guard = 0; guard < 6 && gm.run.kanjiKombat.pendingIntro?.card; guard++) {
       gm.submitKanjiKombatIntro(gm.run.kanjiKombat.pendingIntro.card.id, 'known');
     }
     const quiz = gm.run.kanjiKombat.currentQuiz;
@@ -43,6 +43,7 @@ describe('Kanji Kombat integration flow', () => {
     const result = gm.submitKanjiKombatAnswer(correct.id);
 
     assert.equal(result.actionType, 'kanjiKombat');
+    assert.equal(result.kanjiAnswerCorrect, true);
     assert.equal(Array.isArray(result.actionSegments), true);
     assert.equal(Array.isArray(result.enemies), true);
     if (result.nextWave) {
@@ -57,6 +58,73 @@ describe('Kanji Kombat integration flow', () => {
         'continuing Kanji Kombat combat should queue the next script prompt'
       );
     }
+  });
+
+  it('records no-due discoveries in the user script deck and queues them for practice', async () => {
+    const { GameManager } = await import('../../../src/game/loop.js');
+    const userId = 'kk-integration-user';
+    ensureScriptDeckSeeded(userId);
+    const gm = new GameManager();
+    gm.userId = userId;
+    gm.player = { name: 'Tester', hp: 100, maxHp: 100, credits: 0 };
+    gm.meta = {
+      levels: { highestUnlocked: 1 },
+      creatureCollection: ['hi'],
+      creatureCounts: { hi: 1 },
+      bossesDefeated: [],
+      lifetimeStats: {},
+    };
+
+    gm.kanjiKombatService.startRunWithCreatureId('hi');
+    const introCard = gm.run.kanjiKombat.pendingIntro?.card;
+    assert.ok(introCard, 'fresh no-due run should introduce a script card');
+    const before = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === introCard.id);
+    assert.ok(before, 'introduced card exists in the persisted script deck');
+    assert.equal(before.reps || 0, 0);
+
+    gm.submitKanjiKombatIntro(introCard.id, 'known');
+
+    const after = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === introCard.id);
+    assert.equal(after.reps, 1);
+    assert.ok(after.last_review instanceof Date);
+    assert.equal(gm.run.kanjiKombat.noDuePracticeQueue.includes(introCard.id), true);
+  });
+
+  it('records correct quiz answers as good FSRS reviews', async () => {
+    const { GameManager } = await import('../../../src/game/loop.js');
+    const userId = 'kk-integration-user';
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    data[SCRIPT_DECK].cards = data[SCRIPT_DECK].cards.map((card, index) => ({
+      ...card,
+      reps: 1,
+      due: index === 0 ? new Date('2000-01-01') : new Date('2100-01-01'),
+    }));
+    saveSrsData(userId, data);
+
+    const gm = new GameManager();
+    gm.userId = userId;
+    gm.player = { name: 'Tester', hp: 100, maxHp: 100, credits: 0 };
+    gm.meta = {
+      levels: { highestUnlocked: 1 },
+      creatureCollection: ['hi'],
+      creatureCounts: { hi: 1 },
+      bossesDefeated: [],
+      lifetimeStats: {},
+    };
+
+    gm.kanjiKombatService.startRunWithCreatureId('hi');
+    const quiz = gm.run.kanjiKombat.currentQuiz;
+    assert.ok(quiz, 'precondition: due script card should produce a quiz');
+    const before = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === quiz.cardId);
+    const correct = quiz.choices.find(choice => choice.correct);
+
+    gm.submitKanjiKombatAnswer(correct.id);
+
+    const after = loadSrsData(userId)[SCRIPT_DECK].cards.find(card => card.id === quiz.cardId);
+    assert.equal(after.reps, before.reps + 1);
+    assert.equal(after.lapses || 0, before.lapses || 0);
+    assert.ok(after.last_review instanceof Date);
   });
 
   it('hydrates saved pending intro cards before exposing state to the UI', async () => {

@@ -8,6 +8,36 @@ import { ensureScriptDeckSeeded } from '../../../src/game/script-srs.js';
 import { createNewRun } from '../../../src/game/state.js';
 import { KanjiKombatService } from '../../../src/game/services/kanji-kombat-service.js';
 
+function withMathRandom(values, fn) {
+  const originalRandom = Math.random;
+  let index = 0;
+  Math.random = () => values[Math.min(index++, values.length - 1)];
+  try {
+    return fn();
+  } finally {
+    Math.random = originalRandom;
+  }
+}
+
+function makeRewardCreature(id, hp = 20, maxHp = 20) {
+  return {
+    id,
+    uid: `${id}-uid`,
+    name: id,
+    nameEn: id,
+    element: 'fire',
+    level: 1,
+    hp,
+    maxHp,
+    mp: 10,
+    maxMp: 10,
+    attack: 5,
+    defense: 5,
+    dex: 5,
+    moves: [],
+  };
+}
+
 function gmWithMode(userId = 'wave-user') {
   const gm = {
     userId,
@@ -41,6 +71,15 @@ function gmWithMode(userId = 'wave-user') {
     },
   };
   gm.combat = { active: true, allies: gm.run.creatureParty.active, enemies: [{ hp: 0, id: 'enemy' }] };
+  return gm;
+}
+
+function rewardGm({ collection = ['hi', 'mizu', 'ki'], active = [makeRewardCreature('hi')] } = {}) {
+  const gm = gmWithMode();
+  gm.meta.creatureCollection = collection;
+  gm.run.creatureParty.active = active;
+  gm.combat.allies = gm.run.creatureParty.active;
+  gm.kanjiKombatService = new KanjiKombatService(gm);
   return gm;
 }
 
@@ -84,5 +123,87 @@ describe('Kanji Kombat wave completion', () => {
     assert.equal(gm.run.active, false);
     assert.equal(gm.run.creatureParty.pendingCaptures.length, 1);
     assert.equal(result.kanjiKombatReport.wavesCleared, 0);
+  });
+
+  it('heals all living allies at 5 and 15 correct answer streaks', () => {
+    const gm = rewardGm({
+      active: [
+        makeRewardCreature('hi', 10, 20),
+        makeRewardCreature('mizu', 5, 40),
+      ],
+    });
+
+    gm.run.kanjiKombat.streak = 4;
+    gm.kanjiKombatService.recordCorrectAnswer();
+
+    assert.equal(gm.run.creatureParty.active[0].hp, 12);
+    assert.equal(gm.run.creatureParty.active[1].hp, 9);
+
+    gm.run.kanjiKombat.streak = 14;
+    gm.kanjiKombatService.recordCorrectAnswer();
+
+    assert.equal(gm.run.creatureParty.active[0].hp, 19);
+    assert.equal(gm.run.creatureParty.active[1].hp, 23);
+  });
+
+  it('applies a random stat-stage buff at a 10 correct answer streak and keeps it across waves', () => {
+    const gm = rewardGm({
+      active: [
+        makeRewardCreature('hi', 20, 20),
+        makeRewardCreature('mizu', 40, 40),
+      ],
+    });
+
+    withMathRandom([0.1, 0.4], () => {
+      gm.run.kanjiKombat.streak = 9;
+      gm.kanjiKombatService.recordCorrectAnswer();
+    });
+
+    const buffed = gm.run.creatureParty.active.flatMap(ally =>
+      Object.entries(ally.statStages || {})
+        .filter(([, value]) => value > 0)
+        .map(([stat, value]) => ({ id: ally.id, stat, value }))
+    );
+    assert.deepEqual(buffed, [{ id: 'hi', stat: 'def', value: 1 }]);
+
+    gm.kanjiKombatService.spawnNextWave();
+
+    assert.equal(gm.run.creatureParty.active[0].statStages.def, 1);
+    assert.strictEqual(gm.combat.allies, gm.run.creatureParty.active);
+  });
+
+  it('adds a random unlocked ally at a 20 streak and resets the reward cycle', () => {
+    const gm = rewardGm({
+      collection: ['hi', 'mizu', 'ki'],
+      active: [makeRewardCreature('hi', 20, 20)],
+    });
+
+    withMathRandom([0], () => {
+      gm.run.kanjiKombat.streak = 19;
+      gm.kanjiKombatService.recordCorrectAnswer();
+    });
+
+    assert.equal(gm.run.creatureParty.active.length, 2);
+    assert.equal(gm.run.creatureParty.active[1].id, 'mizu');
+    assert.equal(gm.combat.allies.length, 2);
+    assert.equal(gm.run.kanjiKombat.streak, 0);
+  });
+
+  it('full-heals all allies at a 20 streak when the party is already full', () => {
+    const gm = rewardGm({
+      collection: ['hi', 'mizu', 'ki'],
+      active: [
+        makeRewardCreature('hi', 1, 20),
+        makeRewardCreature('mizu', 2, 30),
+        makeRewardCreature('ki', 3, 40),
+      ],
+    });
+
+    gm.run.kanjiKombat.streak = 19;
+    gm.kanjiKombatService.recordCorrectAnswer();
+
+    assert.deepEqual(gm.run.creatureParty.active.map(ally => ally.hp), [20, 30, 40]);
+    assert.equal(gm.run.creatureParty.active.length, 3);
+    assert.equal(gm.run.kanjiKombat.streak, 0);
   });
 });

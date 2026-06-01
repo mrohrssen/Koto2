@@ -82,6 +82,16 @@ export function spritePos(side, index) {
 
 const effectDelay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+export function showKanjiKombatAnswerBanner(correct) {
+  if (correct === true) {
+    return showBanner('Correct!', 'super', { elementColor: 0x4CAF50 });
+  }
+  if (correct === false) {
+    return showBanner('Wrong!', 'weak');
+  }
+  return undefined;
+}
+
 /**
  * PixiJS replacement for the old DOM-based impactEnemyEffect.
  * Fires tiered hit-stop, particles, shake, flash, damage number, and recoil.
