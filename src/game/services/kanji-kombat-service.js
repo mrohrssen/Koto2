@@ -21,6 +21,8 @@ import {
   recordScriptIntro,
 } from '../script-srs.js';
 
+export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 5;
+
 export function getLocalDateKey(date = new Date()) {
   return date.toLocaleDateString('en-CA');
 }
@@ -36,6 +38,7 @@ export function createInitialKanjiKombatState({ localDate = getLocalDateKey(), r
     highestStreak: 0,
     reviewsSinceIntro: 0,
     nextIntroAfter: rollIntroInterval(random),
+    noDueDiscoveryChainCount: 0,
     localDate,
     currentQuiz: null,
     pendingIntro: null,
@@ -99,11 +102,19 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   state.report.scriptDeck = activeType;
 
   const daily = getScriptDailyState(userId, state.localDate);
+  if (daily.completed === true) {
+    state.currentQuiz = null;
+    state.pendingIntro = null;
+    state.report.completedDaily = true;
+    return { kind: 'complete' };
+  }
+
   const dueCards = excludeCards(getDueScriptCards(userId, activeType, now), excludedIds);
   const newCards = excludeCards(getNewScriptCards(userId, activeType), excludedIds);
   const canIntroduce = daily.introducedCount < DAILY_NEW_LIMIT && newCards.length > 0;
 
   if (dueCards.length > 0 && state.reviewsSinceIntro >= state.nextIntroAfter && canIntroduce) {
+    state.noDueDiscoveryChainCount = 0;
     const card = newCards[0];
     state.currentQuiz = null;
     state.pendingIntro = { cardId: card.id, card };
@@ -111,6 +122,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   }
 
   if (dueCards.length > 0) {
+    state.noDueDiscoveryChainCount = 0;
     const card = dueCards[0];
     const quiz = buildQuizForCard(card, getScriptCards(userId, activeType), random);
     state.currentQuiz = quiz;
@@ -118,7 +130,8 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     return { kind: 'quiz', card, quiz };
   }
 
-  if (canIntroduce) {
+  if (canIntroduce && (state.noDueDiscoveryChainCount || 0) < NO_DUE_DISCOVERY_CHAIN_LIMIT) {
+    state.noDueDiscoveryChainCount = (state.noDueDiscoveryChainCount || 0) + 1;
     const card = newCards[0];
     state.currentQuiz = null;
     state.pendingIntro = { cardId: card.id, card };

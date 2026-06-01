@@ -10,6 +10,7 @@ import {
   chooseNextScriptWork,
   createInitialKanjiKombatState,
   getLocalDateKey,
+  NO_DUE_DISCOVERY_CHAIN_LIMIT,
   resolveIntroChoice,
 } from '../../../src/game/services/kanji-kombat-service.js';
 
@@ -81,6 +82,18 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(state.report.completedDaily, true);
   });
 
+  it('honors completed daily state even if new cards remain', () => {
+    const data = loadSrsData(userId);
+    data.kanjiKombatDaily = { date: '2026-05-31', introducedCount: 5, completed: true };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31' });
+    const work = chooseNextScriptWork(userId, state, { now: new Date('2026-05-31T00:00:00Z') });
+
+    assert.equal(work.kind, 'complete');
+    assert.equal(state.report.completedDaily, true);
+  });
+
   it('intro choice grades the card and increments daily count without returning a quiz for same presentation', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
@@ -119,5 +132,39 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(state.reviewsSinceIntro, 0);
     assert.equal(state.nextIntroAfter, 3);
     assert.equal(result.next.kind, 'quiz');
+  });
+
+  it('chains up to five discoveries when no cards are due', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    const seen = [];
+    let work = chooseNextScriptWork(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    for (let i = 0; i < NO_DUE_DISCOVERY_CHAIN_LIMIT; i++) {
+      assert.equal(work.kind, 'intro');
+      seen.push(work.card.id);
+      const result = resolveIntroChoice(userId, state, work.card.id, 'known', {
+        random: () => 0,
+        now: new Date('2026-05-31T00:00:00Z'),
+      });
+      work = result.next;
+    }
+
+    assert.equal(work.kind, 'complete');
+    assert.equal(state.noDueDiscoveryChainCount, NO_DUE_DISCOVERY_CHAIN_LIMIT);
+    assert.equal(new Set(seen).size, NO_DUE_DISCOVERY_CHAIN_LIMIT);
+    assert.deepEqual(getScriptDailyState(userId, '2026-05-31'), {
+      date: '2026-05-31',
+      introducedCount: NO_DUE_DISCOVERY_CHAIN_LIMIT,
+      completed: true,
+    });
   });
 });
