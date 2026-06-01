@@ -95,4 +95,29 @@ describe('kanji-kombat deck controller', () => {
     assert.notEqual(result.next.card?.id, card.id);
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, 1);
   });
+
+  it('resets intro spacing after a discovery so discoveries do not chain', () => {
+    const data = loadSrsData(userId);
+    const dueCard = data.script.cards.find(c => c.id === 'hiragana:あ');
+    dueCard.due = new Date('2026-05-30T00:00:00Z');
+    dueCard.reps = 1;
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    state.reviewsSinceIntro = state.nextIntroAfter;
+    const intro = chooseNextScriptWork(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+    assert.equal(intro.kind, 'intro');
+
+    const result = resolveIntroChoice(userId, state, intro.card.id, 'known', {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(state.reviewsSinceIntro, 0);
+    assert.equal(state.nextIntroAfter, 3);
+    assert.equal(result.next.kind, 'quiz');
+  });
 });

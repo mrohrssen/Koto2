@@ -138,6 +138,8 @@ export function resolveIntroChoice(userId, state, cardId, choice, opts = {}) {
   recordScriptIntro(userId, state.localDate);
   state.pendingIntro = null;
   state.report.newCardsIntroduced += 1;
+  state.reviewsSinceIntro = 0;
+  state.nextIntroAfter = rollIntroInterval(opts.random || Math.random);
   const next = chooseNextScriptWork(userId, state, {
     ...opts,
     excludeCardIds: [...(opts.excludeCardIds || []), cardId],
