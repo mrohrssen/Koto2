@@ -2,7 +2,10 @@ import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
 import request from 'supertest';
-import { createAdminSecretRouter } from '../../src/routes/admin-secret.js';
+import {
+  createAdminSecretRouter,
+  isLocalAdminSecretRequest,
+} from '../../src/routes/admin-secret.js';
 
 function createApp() {
   const app = express();
@@ -41,5 +44,12 @@ describe('admin secret route', () => {
       .set('Host', 'localhost');
 
     assert.equal(response.status, 404);
+  });
+
+  it('does not trust a spoofed localhost host header from a remote address', () => {
+    assert.equal(isLocalAdminSecretRequest({
+      hostname: 'localhost',
+      socket: { remoteAddress: '203.0.113.5' },
+    }), false);
   });
 });

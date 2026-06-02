@@ -2,16 +2,20 @@ import { Router } from 'express';
 
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1']);
 
-export function isLocalAdminSecretRequest(req) {
-  const hostname = req.hostname || '';
-  const remoteAddress = req.socket?.remoteAddress || req.ip || '';
-  if (hostname) {
-    return LOCAL_HOSTNAMES.has(hostname);
-  }
+function normalizeHostname(hostname) {
+  return String(hostname || '').toLowerCase().replace(/^\[/, '').replace(/\]$/, '');
+}
 
+function isLoopbackRemoteAddress(remoteAddress) {
   return remoteAddress === '127.0.0.1'
     || remoteAddress === '::1'
     || remoteAddress === '::ffff:127.0.0.1';
+}
+
+export function isLocalAdminSecretRequest(req) {
+  const hostname = normalizeHostname(req.hostname);
+  const remoteAddress = req.socket?.remoteAddress || req.ip || '';
+  return LOCAL_HOSTNAMES.has(hostname) && isLoopbackRemoteAddress(remoteAddress);
 }
 
 export function createAdminSecretRouter() {
