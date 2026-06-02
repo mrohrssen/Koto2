@@ -437,6 +437,7 @@ document.getElementById('adminSecretSave').addEventListener('click', () => {
 });
 
 document.getElementById('adminSecretClear').addEventListener('click', () => {
+  loadGeneration++;
   saveAdminSecret('');
   wordsData = [];
   framesData = [];
@@ -620,6 +621,7 @@ function populateCategories() {
 
 // --- Loading ---
 async function load() {
+  const gen = ++loadGeneration;
   const btn = document.getElementById('loadBtn');
   btn.textContent = 'Loading...';
   btn.disabled = true;
@@ -630,6 +632,7 @@ async function load() {
       fetch('/api/admin/frames', { headers: headers() }).then(r => r.json())
     ]);
 
+    if (gen !== loadGeneration) return;
     wordsData = wordsRes.words || [];
     window._totalUsers = wordsRes.totalUsers;
     framesData = framesRes.frames || [];
@@ -643,14 +646,15 @@ async function load() {
 
     // Phase 2: JPDB comparisons in batches (concurrent).
     // Pass a generation tag so stale batches from previous load() calls bail out.
-    const gen = ++loadGeneration;
     fetchJpdbWordBatches(gen);
     fetchJpdbFrameBatches(gen);
   } catch (err) {
     alert('Error loading data: ' + err.message);
   } finally {
-    btn.textContent = 'Load';
-    btn.disabled = false;
+    if (gen === loadGeneration) {
+      btn.textContent = 'Load';
+      btn.disabled = false;
+    }
   }
 }
 

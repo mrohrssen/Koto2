@@ -27,9 +27,16 @@ const navIcons = {
   activity: 'S',
 };
 
+const BUG_REPORT_ENVIRONMENTS = [
+  { id: 'current', label: 'Current app', baseUrl: '' },
+  { id: 'dev', label: 'Dev', baseUrl: 'https://jrpg-dev.up.railway.app' },
+  { id: 'production', label: 'Production', baseUrl: 'https://jrpg-production.up.railway.app' },
+];
+
 const state = {
   activeView: 'overview',
   adminSecret: sessionStorage.getItem('koto-admin-secret') || '',
+  bugReportEnvironment: sessionStorage.getItem('koto-admin-bug-report-environment') || 'current',
   bugReports: [],
   selectedBugReport: null,
   users: [],
@@ -107,6 +114,33 @@ function getToolCountForView(viewId) {
   return getToolGroups()[viewId]?.length ?? 0;
 }
 
+function getBugReportEnvironment() {
+  return BUG_REPORT_ENVIRONMENTS.find((environment) => environment.id === state.bugReportEnvironment)
+    || BUG_REPORT_ENVIRONMENTS[0];
+}
+
+function bugReportApiPath(path) {
+  return `${getBugReportEnvironment().baseUrl}${path}`;
+}
+
+function summarizeUserAgent(userAgent) {
+  const value = String(userAgent || '').trim();
+  if (!value) return 'unknown user agent';
+
+  const device = /iphone/i.test(value) ? 'iPhone'
+    : /ipad/i.test(value) ? 'iPad'
+      : /android/i.test(value) ? 'Android'
+        : /macintosh|mac os x/i.test(value) ? 'macOS'
+          : /windows/i.test(value) ? 'Windows'
+            : 'Device';
+  const browser = /crios|chrome/i.test(value) ? 'Chrome'
+    : /firefox/i.test(value) ? 'Firefox'
+      : /safari/i.test(value) ? 'Safari'
+        : 'Browser';
+
+  return `${device} / ${browser}`;
+}
+
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
   if (!response.ok) {
@@ -172,7 +206,7 @@ async function loadBugReports() {
   state.loading.bugs = true;
   renderBugReports();
   try {
-    const payload = await fetchJson('/api/bug-reports');
+    const payload = await fetchJson(bugReportApiPath('/api/bug-reports'));
     if (state.requests.bugReports !== requestToken) return;
     const reports = normalizeBugReports(payload.reports || []);
     state.bugReports = reports;
@@ -245,6 +279,9 @@ async function deleteSelectedUser() {
     return;
   }
 
+  const confirmed = window.confirm(`Delete user ${state.selectedUser.username}? This cannot be undone.`);
+  if (!confirmed) return;
+
   await adminFetchJson('/api/admin/delete-user', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -263,11 +300,45 @@ async function loadBugReportDetail(reportId) {
   const fallback = state.bugReports.find((report) => report.id === reportId) || { id: reportId };
   state.selectedBugReport = fallback;
   renderBugReports();
-  const payload = await fetchJson(`/api/bug-reports/${encodeURIComponent(reportId)}`);
+  const payload = await fetchJson(bugReportApiPath(`/api/bug-reports/${encodeURIComponent(reportId)}`));
   if (state.requests.bugReportDetail === requestToken && state.selectedBugReport?.id === reportId) {
     state.selectedBugReport = normalizeBugReports([{ ...fallback, ...payload }])[0];
     renderBugReports();
   }
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  textarea.remove();
+}
+
+async function copySelectedBugReportGameState() {
+  if (!state.selectedBugReport) return;
+  await copyText(JSON.stringify(state.selectedBugReport.gameState || state.selectedBugReport, null, 2));
+}
+
+async function setBugReportEnvironment(environmentId) {
+  if (!BUG_REPORT_ENVIRONMENTS.some((environment) => environment.id === environmentId)) return;
+  state.bugReportEnvironment = environmentId;
+  sessionStorage.setItem('koto-admin-bug-report-environment', environmentId);
+  state.selectedBugReport = null;
+  state.bugReports = [];
+  renderBugReports();
+  renderOverviewData();
+  renderNav();
+  await loadBugReports();
 }
 
 async function deleteSelectedBugReport() {
@@ -277,7 +348,7 @@ async function deleteSelectedBugReport() {
   const confirmed = window.confirm(`Delete bug report ${state.selectedBugReport.id}?`);
   if (!confirmed) return;
 
-  await adminFetchJson(`/api/bug-reports/${encodeURIComponent(state.selectedBugReport.id)}`, {
+  await adminFetchJson(bugReportApiPath(`/api/bug-reports/${encodeURIComponent(state.selectedBugReport.id)}`), {
     method: 'DELETE',
   });
 
@@ -424,12 +495,17 @@ function renderBugReports() {
   const list = document.querySelector('[data-bug-report-list]');
   if (!list) return;
 
+  const environmentOptions = BUG_REPORT_ENVIRONMENTS.map((environment) => `
+    <option value="${escapeHtml(environment.id)}" ${environment.id === state.bugReportEnvironment ? 'selected' : ''}>
+      ${escapeHtml(environment.label)}
+    </option>
+  `).join('');
   const reports = normalizeBugReports(state.bugReports);
   const rows = reports.map((report) => `
     <button class="row-item${state.selectedBugReport?.id === report.id ? ' active' : ''}" type="button" data-bug-report-id="${escapeHtml(report.id)}">
       <span>
         <span class="row-title">${escapeHtml(report.note || 'Bug report without note')}</span>
-        <span class="row-meta">${escapeHtml(report.id)} · ${escapeHtml(report.deviceLabel)} · ${escapeHtml(report.phaseLabel)}</span>
+        <span class="row-meta">${escapeHtml(report.id)} · ${escapeHtml(report.deviceLabel)} · ${escapeHtml(summarizeUserAgent(report.userAgent))} · ${escapeHtml(report.phaseLabel)}</span>
       </span>
       <span class="row-meta">${escapeHtml(formatDate(report.submittedAt))}</span>
     </button>
@@ -439,9 +515,15 @@ function renderBugReports() {
     <div class="panel-header">
       <div>
         <div class="panel-title">Bug Reports Inbox</div>
-        <div class="panel-subtitle">Live submissions from the existing bug report API.</div>
+        <div class="panel-subtitle">Live submissions from ${escapeHtml(getBugReportEnvironment().label)}.</div>
       </div>
-      <button class="secondary-action" type="button" data-load-bugs>${state.loading.bugs ? 'Loading' : 'Refresh'}</button>
+      <div class="input-row">
+        <label>
+          <span class="sr-only">Bug report environment</span>
+          <select data-bug-report-environment>${environmentOptions}</select>
+        </label>
+        <button class="secondary-action" type="button" data-load-bugs>${state.loading.bugs ? 'Loading' : 'Refresh'}</button>
+      </div>
     </div>
     ${state.loading.bugs ? `
       <div class="empty-state">
@@ -484,6 +566,8 @@ function renderBugReportDetail() {
 
   const screenshotHref = `/api/bug-reports/${encodeURIComponent(report.id)}/screenshot`;
   const metadataHref = `/api/bug-reports/${encodeURIComponent(report.id)}`;
+  const screenshotUrl = bugReportApiPath(screenshotHref);
+  const metadataUrl = bugReportApiPath(metadataHref);
   panel.innerHTML = `
     <div class="panel-header">
       <div>
@@ -495,13 +579,15 @@ function renderBugReportDetail() {
     <div class="detail-stack">
       <div class="detail-grid">
         <div><span class="row-meta">Device</span><strong>${escapeHtml(report.deviceLabel || 'unknown')}</strong></div>
+        <div><span class="row-meta">User Agent</span><strong>${escapeHtml(summarizeUserAgent(report.userAgent))}</strong></div>
         <div><span class="row-meta">Phase</span><strong>${escapeHtml(report.phaseLabel || 'unknown')}</strong></div>
         <div><span class="row-meta">DPR</span><strong>${escapeHtml(report.devicePixelRatio ?? 'unknown')}</strong></div>
         <div><span class="row-meta">Viewport</span><strong>${escapeHtml(report.viewport ? `${report.viewport.width} x ${report.viewport.height}` : 'unknown')}</strong></div>
       </div>
       <div class="input-row">
-        <a class="inline-action" href="${escapeHtml(metadataHref)}">Metadata JSON</a>
-        <a class="inline-action" href="${escapeHtml(screenshotHref)}">Screenshot</a>
+        <a class="inline-action" href="${escapeHtml(metadataUrl)}">Metadata JSON</a>
+        <a class="inline-action" href="${escapeHtml(screenshotUrl)}">Screenshot</a>
+        <button class="inline-action" type="button" data-copy-game-state>Copy Game State</button>
       </div>
       ${renderJsonBlock(report.gameState || report)}
     </div>
@@ -875,6 +961,20 @@ function bindEvents() {
       return;
     }
 
+    const copyGameStateButton = event.target.closest('[data-copy-game-state]');
+    if (copyGameStateButton) {
+      try {
+        await copySelectedBugReportGameState();
+        copyGameStateButton.textContent = 'Copied';
+        setTimeout(() => {
+          copyGameStateButton.textContent = 'Copy Game State';
+        }, 1200);
+      } catch (error) {
+        renderError(error);
+      }
+      return;
+    }
+
     if (event.target.closest('[data-load-bugs]')) {
       try {
         await loadBugReports();
@@ -912,6 +1012,10 @@ function bindEvents() {
 
     if (event.target.closest('[data-clear-admin-secret]')) {
       clearAdminSecret();
+      clearError();
+      state.requests.users += 1;
+      state.requests.userKnowledge += 1;
+      state.loading.users = false;
       state.users = [];
       state.selectedUser = null;
       state.selectedUserKnowledge = null;
@@ -945,6 +1049,16 @@ function bindEvents() {
 
     if (event.target.matches('[data-global-search]')) {
       applyGlobalSearchFilter();
+    }
+  });
+
+  document.body.addEventListener('change', async (event) => {
+    if (event.target.matches('[data-bug-report-environment]')) {
+      try {
+        await setBugReportEnvironment(event.target.value);
+      } catch (error) {
+        renderError(error);
+      }
     }
   });
 
