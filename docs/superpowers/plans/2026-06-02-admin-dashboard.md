@@ -393,6 +393,8 @@ Create `public/admin/index.html` with this structure. Port the final approved vi
 
 Create `public/admin/admin.css`. Use the approved mockup as the exact visual reference; this code block defines the required production layout primitives and accessible states.
 
+Execution note: the approved mockup at `tmp/admin-dashboard-tabs-mockup.html` is a dark modern console. Preserve that visual direction when implementing this file. If a token value below conflicts with the approved mockup, use the approved mockup's dark palette and spacing.
+
 ```css
 :root {
   --surface: #f6f7f4;
