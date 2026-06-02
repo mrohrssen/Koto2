@@ -65,7 +65,7 @@ function playCorrectAnswerAudio(answer) {
 }
 
 function kanjiKombatAudioText(card) {
-  return card?.audioText || card?.reading || card?.prompt || '';
+  return card?.audioText || card?.reading || card?.prompt || card?.answer || '';
 }
 
 export function renderKanjiKombatQuiz(quiz, { onAnswer } = {}) {
