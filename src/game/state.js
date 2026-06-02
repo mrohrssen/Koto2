@@ -275,6 +275,7 @@ export function createCombatState(enemy) {
     actionCount: 0,
     cycleCount: 0,
     openingResolved: false,
+    optimistic: null,
     openingCursors: null,
     pendingOpeningActions: null,
     actionSegments: [],

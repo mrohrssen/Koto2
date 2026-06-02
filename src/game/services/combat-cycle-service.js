@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { createCombatState } from '../state.js';
 import { logger } from '../../logger.js';
 import {
@@ -68,6 +69,14 @@ import { selectBark } from '../dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from '../dialogue-loader.js';
 import { selectBestFrame } from '../token-format.js';
 import { applyDebugSuperAttack } from '../debug-super-attack.js';
+
+function createServerSeed() {
+  return randomBytes(16).toString('hex');
+}
+
+function createCombatId() {
+  return `cmb_${randomBytes(8).toString('hex')}`;
+}
 
 export function serializeBefriendPrompt(prompt) {
   if (!prompt) return null;
@@ -171,6 +180,12 @@ export class CombatCycleService {
     this.gm.combat.openingResolved = false;
     this.gm.combat.isCreatureCombat = true;
     this.gm.combat.isBoss = isBoss;
+    this.gm.combat.optimistic = {
+      combatId: createCombatId(),
+      stateVersion: 0,
+      nextTurnSeed: createServerSeed(),
+      acceptedActionIds: {},
+    };
     this.gm.combat.swapPhase = true; // Free swap available before first action
 
     // Reset stat stages for all combatants at battle start
@@ -230,6 +245,11 @@ export class CombatCycleService {
       npc: this.gm.combat.npcData,
       isBoss,
       isNpcBattle,
+      optimistic: {
+        combatId: this.gm.combat.optimistic.combatId,
+        stateVersion: this.gm.combat.optimistic.stateVersion,
+        nextTurnSeed: this.gm.combat.optimistic.nextTurnSeed,
+      },
       tutorialBossIntro
     };
   }

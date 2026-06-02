@@ -10,5 +10,6 @@ describe('combat action state', () => {
     assert.equal(combat.actionCount, 0);
     assert.equal(combat.cycleCount, 0);
     assert.equal(combat.openingResolved, false);
+    assert.equal(combat.optimistic, null);
   });
 });
