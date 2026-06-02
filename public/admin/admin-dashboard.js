@@ -934,6 +934,15 @@ function updateDeleteUserButton() {
   }
 }
 
+function restoreUserFilterFocus(selectionStart, selectionEnd) {
+  const input = document.querySelector('[data-user-filter]');
+  if (!input) return;
+  input.focus();
+  const start = Number.isInteger(selectionStart) ? selectionStart : input.value.length;
+  const end = Number.isInteger(selectionEnd) ? selectionEnd : start;
+  input.setSelectionRange(start, end);
+}
+
 function bindEvents() {
   document.body.addEventListener('click', async (event) => {
     const navTarget = event.target.closest('[data-nav-view]');
@@ -1036,8 +1045,10 @@ function bindEvents() {
 
   document.body.addEventListener('input', (event) => {
     if (event.target.matches('[data-user-filter]')) {
+      const { selectionStart, selectionEnd } = event.target;
       state.userQuery = event.target.value;
       renderUsers();
+      restoreUserFilterFocus(selectionStart, selectionEnd);
       applyGlobalSearchFilter();
       return;
     }

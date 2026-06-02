@@ -89,7 +89,8 @@ export default function createBugReportRoutes() {
       // Sanitize name for filesystem
       const safeName = name.replace(/[^a-zA-Z0-9-_]/g, '-').substring(0, 50);
       const timestamp = new Date().toISOString();
-      const reportDir = join(BUG_REPORTS_DIR, `${safeName}-${Date.now()}`);
+      const reportId = `${safeName}-${Date.now()}`;
+      const reportDir = join(BUG_REPORTS_DIR, reportId);
 
       mkdirSync(reportDir, { recursive: true });
 
@@ -114,7 +115,7 @@ export default function createBugReportRoutes() {
       };
       writeFileSync(join(reportDir, 'report.json'), JSON.stringify(report, null, 2));
 
-      res.json({ success: true, reportId: `${safeName}-${Date.now()}` });
+      res.json({ success: true, reportId });
 
       // Async cleanup - don't block response
       setImmediate(pruneOldReports);
