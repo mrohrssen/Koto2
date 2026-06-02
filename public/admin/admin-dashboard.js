@@ -42,7 +42,7 @@ function escapeHtml(value) {
 
 function safeHref(href) {
   const value = String(href || '').trim();
-  if (!value) return '#';
+  if (!value || value.startsWith('//')) return '#';
 
   try {
     const url = new URL(value, window.location.origin);
