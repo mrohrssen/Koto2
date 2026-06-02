@@ -214,6 +214,96 @@ export function addReview(userId, filePath = DEFAULT_FILE) {
   saveUsers(data, filePath);
 }
 
+function getKanjiKombatCutoff(period, now = Date.now()) {
+  const windowMs = period === 'weekly'
+    ? 7 * 24 * 60 * 60 * 1000
+    : 24 * 60 * 60 * 1000;
+  return now - windowMs;
+}
+
+function coerceTimestamp(value, fallback = Date.now()) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+/**
+ * Record the furthest Kanji Kombat wave reached for one finished run.
+ * @param {string} userId
+ * @param {{ wave?: number, wavesCleared?: number, completedAt?: number|string }} run
+ * @param {string} filePath
+ */
+export function recordKanjiKombatRun(userId, run = {}, filePath = DEFAULT_FILE) {
+  const data = loadUsers(filePath);
+  const user = data.users.find(u => u.id === userId);
+  if (!user) return null;
+
+  const completedAt = coerceTimestamp(run.completedAt);
+  const wavesCleared = Math.max(0, Math.floor(Number(run.wavesCleared) || 0));
+  const wave = Math.max(1, Math.floor(Number(run.wave) || wavesCleared + 1));
+
+  if (!Array.isArray(user.kanjiKombatRuns)) user.kanjiKombatRuns = [];
+  user.kanjiKombatRuns.push({ ts: completedAt, wave, wavesCleared });
+
+  const weeklyCutoff = getKanjiKombatCutoff('weekly');
+  user.kanjiKombatRuns = user.kanjiKombatRuns.filter(entry =>
+    Number(entry?.ts) >= weeklyCutoff
+  );
+
+  saveUsers(data, filePath);
+  return { wave, wavesCleared, ts: completedAt };
+}
+
+/**
+ * Get Kanji Kombat wave leaderboard data for a rolling period.
+ * @param {'24h'|'weekly'} period
+ * @param {string} currentUserId - The requesting user's ID
+ * @param {string} filePath
+ * @param {{ now?: number }} opts
+ * @returns {{ period: string, entries: Array, currentUser: object }}
+ */
+export function getKanjiKombatLeaderboard(period, currentUserId, filePath = DEFAULT_FILE, opts = {}) {
+  const normalizedPeriod = period === 'weekly' ? 'weekly' : '24h';
+  const data = loadUsers(filePath);
+  const now = typeof opts.now === 'number' ? opts.now : Date.now();
+  const cutoff = getKanjiKombatCutoff(normalizedPeriod, now);
+
+  const bestByUser = data.users
+    .map(user => {
+      const runs = (user.kanjiKombatRuns || [])
+        .filter(entry => Number(entry?.ts) >= cutoff && Number(entry?.wave) > 0)
+        .map(entry => ({
+          userId: user.id,
+          username: user.username,
+          wave: Math.max(1, Math.floor(Number(entry.wave) || 1)),
+          ts: Number(entry.ts)
+        }))
+        .sort((a, b) => b.wave - a.wave || a.ts - b.ts);
+      return runs[0] || null;
+    })
+    .filter(Boolean);
+
+  const ranked = bestByUser.sort((a, b) =>
+    b.wave - a.wave || a.ts - b.ts || a.username.localeCompare(b.username)
+  );
+
+  const currentUserEntry = ranked.find(entry => entry.userId === currentUserId);
+  const currentUser = currentUserEntry
+    ? { rank: ranked.indexOf(currentUserEntry) + 1, wave: currentUserEntry.wave }
+    : { rank: null, wave: 0 };
+
+  const entries = ranked.map((entry, index) => ({
+    rank: index + 1,
+    username: entry.username,
+    wave: entry.wave
+  }));
+
+  return { period: normalizedPeriod, entries, currentUser };
+}
+
 /**
  * Get leaderboard data for a given period
  * @param {'daily'|'weekly'} period

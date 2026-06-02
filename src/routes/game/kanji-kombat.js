@@ -1,7 +1,18 @@
 import { Router } from 'express';
+import { getKanjiKombatLeaderboard } from '../../auth/users.js';
 
 export default function createKanjiKombatRoutes() {
   const router = Router();
+
+  router.get('/leaderboard', (req, res) => {
+    try {
+      const period = req.query.period === 'weekly' ? 'weekly' : '24h';
+      const result = getKanjiKombatLeaderboard(period, req.user.id, req.app?.locals?.usersFile);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
 
   router.get('/availability', (req, res) => {
     try {

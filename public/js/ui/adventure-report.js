@@ -1,3 +1,14 @@
+import { getKanjiKombatLeaderboard } from '../api.js';
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
 function formatDuration(ms) {
   const totalSec = Math.floor((ms || 0) / 1000);
   const min = Math.floor(totalSec / 60);
@@ -20,6 +31,78 @@ function renderMasteredList(words) {
       <div class="ar-mastered-exp">${w.exposures || 0}x</div>
     </li>
   `).join('')}</ul>`;
+}
+
+function renderKanjiKombatLeaderboardContent(target, data) {
+  if (!target) return;
+
+  if (!data || !Array.isArray(data.entries)) {
+    target.innerHTML = '<div class="kk-leaderboard-empty kk-leaderboard-empty--error">Failed to load leaderboard</div>';
+    return;
+  }
+
+  if (data.entries.length === 0) {
+    target.innerHTML = '<div class="kk-leaderboard-empty">No Kanji Kombat runs yet</div>';
+    return;
+  }
+
+  const current = data.currentUser || {};
+  const status = current.rank
+    ? `Your rank: #${current.rank} &middot; Wave ${current.wave || 0}`
+    : 'No rank yet';
+
+  target.innerHTML = `
+    <div class="kk-leaderboard-status">${status}</div>
+    <div class="kk-leaderboard-table">
+      <div class="kk-leaderboard-row kk-leaderboard-row--header">
+        <div>Rank</div>
+        <div>Name</div>
+        <div>Wave</div>
+      </div>
+      ${data.entries.map(entry => {
+        const isCurrent = entry.rank === current.rank;
+        return `
+          <div class="kk-leaderboard-row${isCurrent ? ' kk-leaderboard-row--current' : ''}">
+            <div>#${entry.rank}</div>
+            <div>${escapeHtml(entry.username)}</div>
+            <div>${entry.wave || 0}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function renderKanjiKombatLeaderboard(container, period) {
+  const target = container.querySelector('#kk-leaderboard-list');
+  if (!target) return;
+
+  container.querySelectorAll('.kk-leaderboard-tab').forEach(tab => {
+    const active = tab.dataset.period === period;
+    tab.classList.toggle('active', active);
+    tab.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+
+  target.innerHTML = '<div class="kk-leaderboard-empty">Loading...</div>';
+
+  try {
+    const data = await getKanjiKombatLeaderboard(period);
+    renderKanjiKombatLeaderboardContent(target, data);
+  } catch (error) {
+    console.error('[KanjiKombatLeaderboard] Failed to load leaderboard', error);
+    renderKanjiKombatLeaderboardContent(target, null);
+  }
+}
+
+function attachKanjiKombatLeaderboard(container) {
+  let currentPeriod = '24h';
+  container.querySelectorAll('.kk-leaderboard-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      currentPeriod = tab.dataset.period === 'weekly' ? 'weekly' : '24h';
+      renderKanjiKombatLeaderboard(container, currentPeriod);
+    });
+  });
+  renderKanjiKombatLeaderboard(container, currentPeriod);
 }
 
 function renderKanjiKombatReport(container, summary, isVictory, onReturnToHub) {
@@ -76,11 +159,21 @@ function renderKanjiKombatReport(container, summary, isVictory, onReturnToHub) {
         </div>
       </div>
 
+      <div class="ar-section">
+        <div class="ar-section-label">LEADERBOARD</div>
+        <div class="kk-leaderboard-tabs" role="tablist" aria-label="Kanji Kombat leaderboard period">
+          <button class="kk-leaderboard-tab active" type="button" data-period="24h" role="tab" aria-selected="true">24h</button>
+          <button class="kk-leaderboard-tab" type="button" data-period="weekly" role="tab" aria-selected="false">Weekly</button>
+        </div>
+        <div class="kk-leaderboard-list" id="kk-leaderboard-list"></div>
+      </div>
+
       <button class="ar-btn" id="ar-hub-btn">Return to Hub</button>
     </div>
   `;
 
   container.querySelector('#ar-hub-btn')?.addEventListener('click', onReturnToHub);
+  attachKanjiKombatLeaderboard(container);
 }
 
 /**

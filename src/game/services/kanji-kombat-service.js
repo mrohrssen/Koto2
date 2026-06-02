@@ -36,6 +36,7 @@ export function rollIntroInterval(random = Math.random) {
 export function createInitialKanjiKombatState({ localDate = getLocalDateKey(), random = Math.random } = {}) {
   return {
     wave: 1,
+    waveReached: 1,
     streak: 0,
     highestStreak: 0,
     reviewsSinceIntro: 0,
@@ -472,6 +473,7 @@ export class KanjiKombatService {
   spawnNextWave() {
     const kk = this.gm.run.kanjiKombat;
     const wave = kk.wave || 1;
+    kk.waveReached = Math.max(kk.waveReached || 1, wave);
     const isMiniboss = wave % 10 === 0;
     const highestLevel = Math.max(1, ...this.gm.run.creatureParty.active.map(c => c.level || 1));
     const areas = this.getUnlockedAreas();
@@ -567,6 +569,7 @@ export class KanjiKombatService {
     const total = report.correctAnswers + report.wrongAnswers;
     return {
       ...report,
+      wave: Math.max(1, Math.floor(Number(kk.waveReached || kk.wave || report.wavesCleared + 1))),
       highestStreak: kk.highestStreak || 0,
       accuracy: total > 0 ? Math.round((report.correctAnswers / total) * 100) : 0,
       temporaryLevels: this.gm.run.creatureParty.active.map(c => ({

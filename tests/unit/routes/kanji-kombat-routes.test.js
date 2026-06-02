@@ -2,11 +2,16 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
 import request from 'supertest';
+import { mkdtempSync, rmSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { saveUsers } from '../../../src/auth/users.js';
 import createKanjiKombatRoutes from '../../../src/routes/game/kanji-kombat.js';
 
-function appWithManager(manager) {
+function appWithManager(manager, { usersFile = null } = {}) {
   const app = express();
   app.use(express.json());
+  if (usersFile) app.locals.usersFile = usersFile;
   app.use((req, _res, next) => {
     req.user = { id: 'route-user' };
     req.gameManager = manager;
@@ -74,5 +79,67 @@ describe('Kanji Kombat routes', () => {
     assert.equal(res.body.actionType, 'kanjiKombat');
     assert.equal(res.body.keepGoing, true);
     assert.equal(manager.saved, true);
+  });
+
+  it('returns Kanji Kombat leaderboard data for 24h and weekly periods', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'koto-kk-leaderboard-route-'));
+    const usersFile = join(dir, '.jrpg-users.json');
+    const now = Date.now();
+    try {
+      saveUsers({
+        users: [
+          {
+            id: 'route-user',
+            username: 'me',
+            passwordHash: 'hash',
+            kanjiKombatRuns: [{ ts: now - 60 * 60 * 1000, wave: 4, wavesCleared: 3 }]
+          },
+          {
+            id: 'u_other',
+            username: 'other',
+            passwordHash: 'hash',
+            kanjiKombatRuns: [{ ts: now - 2 * 60 * 60 * 1000, wave: 6, wavesCleared: 5 }]
+          }
+        ],
+        inviteCodes: []
+      }, usersFile);
+
+      const manager = { kanjiKombatService: { getAvailability: () => ({ available: true }) } };
+      const daily = await request(appWithManager(manager, { usersFile }))
+        .get('/kanji-kombat/leaderboard?period=24h');
+      assert.equal(daily.status, 200);
+      assert.equal(daily.body.period, '24h');
+      assert.deepEqual(daily.body.entries, [
+        { rank: 1, username: 'other', wave: 6 },
+        { rank: 2, username: 'me', wave: 4 }
+      ]);
+      assert.deepEqual(daily.body.currentUser, { rank: 2, wave: 4 });
+
+      const weekly = await request(appWithManager(manager, { usersFile }))
+        .get('/kanji-kombat/leaderboard?period=weekly');
+      assert.equal(weekly.status, 200);
+      assert.equal(weekly.body.period, 'weekly');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('defaults invalid Kanji Kombat leaderboard periods to 24h', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'koto-kk-leaderboard-period-'));
+    const usersFile = join(dir, '.jrpg-users.json');
+    try {
+      saveUsers({
+        users: [{ id: 'route-user', username: 'me', passwordHash: 'hash', kanjiKombatRuns: [] }],
+        inviteCodes: []
+      }, usersFile);
+
+      const manager = { kanjiKombatService: { getAvailability: () => ({ available: true }) } };
+      const res = await request(appWithManager(manager, { usersFile }))
+        .get('/kanji-kombat/leaderboard?period=month');
+      assert.equal(res.status, 200);
+      assert.equal(res.body.period, '24h');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

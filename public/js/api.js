@@ -783,6 +783,11 @@ async function submitKanjiKombatCompletionChoice(keepGoing) {
   });
 }
 
+async function getKanjiKombatLeaderboard(period = '24h') {
+  const safePeriod = period === 'weekly' ? 'weekly' : '24h';
+  return apiCall(`/kanji-kombat/leaderboard?period=${safePeriod}`, 'GET');
+}
+
 async function getCreatureCollection() {
   return apiCall('/creature-collection', 'GET');
 }
@@ -957,6 +962,7 @@ export {
   submitKanjiKombatIntro,
   submitKanjiKombatAnswer,
   submitKanjiKombatCompletionChoice,
+  getKanjiKombatLeaderboard,
   getCreatureCollection,
   rollPostCombatShop,
   selectShopItem,

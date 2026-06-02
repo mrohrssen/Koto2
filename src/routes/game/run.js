@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { recordKanjiKombatRun } from '../../auth/users.js';
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../../game/live-dict-path.js';
@@ -70,6 +71,16 @@ export function getCurrentAreaDialogueEntityIds(run = {}) {
 function loadQuizQuestions() {
   const data = JSON.parse(readFileSync(quizQuestionsPath, 'utf-8'));
   return data.questions;
+}
+
+function recordKanjiKombatLeaderboardResult(req, runSummary) {
+  if (runSummary?.mode !== 'kanjiKombat') return;
+  const report = runSummary.kanjiKombat || {};
+  recordKanjiKombatRun(req.user.id, {
+    wave: report.wave,
+    wavesCleared: report.wavesCleared,
+    completedAt: Date.now(),
+  }, req.app?.locals?.usersFile);
 }
 
 export default function createRunRoutes({
@@ -571,6 +582,7 @@ export default function createRunRoutes({
   router.post('/forfeit', (req, res) => {
     const isVictory = req.body?.isVictory === true;
     const result = req.gameManager.forfeitRun(isVictory);
+    recordKanjiKombatLeaderboardResult(req, result.runSummary);
     cancelPendingPrefetches();
     clearPrefetchCache();
     req.saveGame();
