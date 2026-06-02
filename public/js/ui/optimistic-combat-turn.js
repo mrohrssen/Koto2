@@ -3,16 +3,27 @@ import {
   createActionId,
   PVE_CORE_PREDICTION_MODE,
 } from '../../../src/shared/action-protocol.js';
-import { resolvePveTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
+import {
+  resolvePveCursorTurn,
+  resolvePveTurn,
+} from '../../../src/shared/combat/pve-turn-resolver.js';
 import { hasPveServerOnlyFeedback } from '../../../src/shared/combat/pve-prediction-contract.js';
 
 const OPTIMISTIC_PVE_ACTIONS = new Set(['attack', 'defend']);
+
+function canPredictActionCursor(state, actionType) {
+  const cursor = state?.combat?.actionCursor;
+  if (!cursor) return true;
+  return actionType === 'attack'
+    && cursor.side === 'ally'
+    && Number.isInteger(cursor.index);
+}
 
 export function canRunOptimisticPveTurn(state, actionType = 'attack') {
   const optimistic = state?.combat?.optimistic;
   return !!state?.combat?.active
     && OPTIMISTIC_PVE_ACTIONS.has(actionType)
-    && !state?.combat?.actionCursor
+    && canPredictActionCursor(state, actionType)
     && !state?.combat?.npcId
     && !state?.combat?.npcData
     && !!optimistic?.combatId
@@ -32,12 +43,22 @@ export function buildOptimisticCombatTurn({
   const combatId = state.combat.optimistic.combatId;
   const seed = state.combat.optimistic.nextTurnSeed;
   const stateVersion = state.combat.optimistic.stateVersion;
-  const resolved = resolvePveTurn({
-    snapshot: { combat: state.combat, run: state.run },
-    actionType,
-    moveChoices,
-    seed,
-  });
+  let resolved;
+  try {
+    resolved = state.combat.actionCursor
+      ? resolvePveCursorTurn(
+          { combat: state.combat, run: state.run, moveChoices },
+          { actionType, seed },
+        )
+      : resolvePveTurn({
+          snapshot: { combat: state.combat, run: state.run },
+          actionType,
+          moveChoices,
+          seed,
+        });
+  } catch {
+    return null;
+  }
   if (hasPveServerOnlyFeedback(resolved.transcript)) return null;
 
   const envelope = buildActionEnvelope({

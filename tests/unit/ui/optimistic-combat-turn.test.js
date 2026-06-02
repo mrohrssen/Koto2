@@ -73,20 +73,27 @@ describe('optimistic combat turn client', () => {
     assert.equal(result.localTranscript.enemies.length, 1);
   });
 
-  it('does not predict action-cursor turns with the full-round resolver', () => {
+  it('predicts ally action-cursor turns with cursor action segments', () => {
     const cursorState = state({
       combat: {
         actionCursor: { side: 'ally', index: 0, opening: false },
       },
     });
 
-    assert.equal(canRunOptimisticPveTurn(cursorState, 'attack'), false);
-    assert.equal(buildOptimisticCombatTurn({
+    assert.equal(canRunOptimisticPveTurn(cursorState, 'attack'), true);
+    const result = buildOptimisticCombatTurn({
       state: cursorState,
       actionType: 'attack',
       moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
       actionId: 'act_cursor',
-    }), null);
+    });
+
+    assert.equal(result.localTranscript.actionType, 'attack');
+    assert.equal(result.localTranscript.actionSegments[0].actor.side, 'ally');
+    assert.equal(result.localTranscript.actionSegments[0].actor.index, 0);
+    assert.equal(result.localTranscript.playerAttacks.length, 1);
+    assert.equal(result.localNextCombat.actionCursor.side, 'ally');
+    assert.equal(result.envelope.payload.predictionMode, 'shared-pve-turn-v1');
   });
 
   it('does not predict turns with server-only KO feedback or NPC assistance', () => {
@@ -103,6 +110,12 @@ describe('optimistic combat turn client', () => {
         enemies: [createCombatant({ id: 'mizu', hp: 1, maxHp: 30 })],
       },
     });
+    const cursorKoState = state({
+      combat: {
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        enemies: [createCombatant({ id: 'mizu', hp: 1, maxHp: 30 })],
+      },
+    });
     const npcState = state({ combat: { npcId: 'npc_test' } });
 
     assert.equal(buildOptimisticCombatTurn({
@@ -116,6 +129,12 @@ describe('optimistic combat turn client', () => {
       actionType: 'attack',
       moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
       actionId: 'act_terminal',
+    }), null);
+    assert.equal(buildOptimisticCombatTurn({
+      state: cursorKoState,
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      actionId: 'act_cursor_ko',
     }), null);
     assert.equal(canRunOptimisticPveTurn(npcState, 'attack'), false);
   });

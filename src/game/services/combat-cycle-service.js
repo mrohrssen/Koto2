@@ -36,7 +36,10 @@ import {
   processBefriendQuizAnswer,
   resolveBefriendFight
 } from './creature-combat-service.js';
-import { resolvePveTurn } from '../../shared/combat/pve-turn-resolver.js';
+import {
+  resolvePveCursorTurn,
+  resolvePveTurn,
+} from '../../shared/combat/pve-turn-resolver.js';
 import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
 import { hasPveServerOnlyFeedback } from '../../shared/combat/pve-prediction-contract.js';
 import { resetStatStages } from '../combat/effects.js';
@@ -391,7 +394,7 @@ export class CombatCycleService {
     let sharedPveCoreHash = null;
     let sharedPveCoreUnsupported = false;
     if (usesSharedPveCorePrediction) {
-      if (this.gm.combat?.actionCursor || this.gm.combat?.npcId || this.gm.combat?.npcData) {
+      if (this.gm.combat?.npcId || this.gm.combat?.npcData) {
         return buildCorrectedResponse({
           reason: 'unsupported_prediction_mode',
           authoritativeTranscript: null,
@@ -400,12 +403,28 @@ export class CombatCycleService {
           nextSeed: optimistic.nextTurnSeed,
         });
       }
-      const resolvedCore = resolvePveTurn({
-        snapshot: { combat: this.gm.combat, run: this.gm.run },
-        actionType,
-        moveChoices,
-        seed: envelope.seed,
-      });
+      let resolvedCore;
+      try {
+        resolvedCore = actionType === 'attack' && this.gm.combat?.actionCursor
+          ? resolvePveCursorTurn(
+              { combat: this.gm.combat, run: this.gm.run, moveChoices },
+              { actionType, seed: envelope.seed },
+            )
+          : resolvePveTurn({
+              snapshot: { combat: this.gm.combat, run: this.gm.run },
+              actionType,
+              moveChoices,
+              seed: envelope.seed,
+            });
+      } catch {
+        return buildCorrectedResponse({
+          reason: 'prediction_resolve_failed',
+          authoritativeTranscript: null,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+      }
       sharedPveCoreHash = hashTranscript(resolvedCore.transcript);
       sharedPveCoreUnsupported = hasPveServerOnlyFeedback(resolvedCore.transcript);
       if (sharedPveCoreUnsupported) {
