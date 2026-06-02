@@ -40,6 +40,13 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 
+function safeHref(href) {
+  const value = String(href || '');
+  if (value.startsWith('/')) return value;
+  if (value.startsWith('http://localhost:3100/')) return value;
+  return '#';
+}
+
 function getToolGroups() {
   return {
     'language-qa': TOOL_LINKS.languageQa ?? [],
@@ -85,7 +92,7 @@ function renderToolCards(tools) {
   return `
     <div class="tool-grid">
       ${tools.map((tool) => `
-        <a class="tool-card" href="${escapeHtml(tool.href)}">
+        <a class="tool-card" href="${escapeHtml(safeHref(tool.href))}">
           <span class="tool-meta">
             <span class="tool-title">${escapeHtml(tool.label)}</span>
             <span class="tool-description">${escapeHtml(tool.description)}</span>
@@ -197,10 +204,10 @@ function renderStaticViews() {
             </div>
           </div>
           <div class="mini-chart" aria-hidden="true">
-            <span style="height:34px"></span><span style="height:48px"></span><span style="height:30px"></span><span style="height:68px"></span>
-            <span style="height:54px"></span><span style="height:76px"></span><span style="height:62px"></span><span style="height:88px"></span>
-            <span style="height:50px"></span><span style="height:72px"></span><span style="height:44px"></span><span style="height:84px"></span>
-            <span style="height:61px"></span><span style="height:98px"></span><span style="height:73px"></span><span style="height:55px"></span>
+            <span class="chart-bar chart-bar-1"></span><span class="chart-bar chart-bar-2"></span><span class="chart-bar chart-bar-3"></span><span class="chart-bar chart-bar-4"></span>
+            <span class="chart-bar chart-bar-5"></span><span class="chart-bar chart-bar-6"></span><span class="chart-bar chart-bar-7"></span><span class="chart-bar chart-bar-8"></span>
+            <span class="chart-bar chart-bar-9"></span><span class="chart-bar chart-bar-10"></span><span class="chart-bar chart-bar-11"></span><span class="chart-bar chart-bar-12"></span>
+            <span class="chart-bar chart-bar-13"></span><span class="chart-bar chart-bar-14"></span><span class="chart-bar chart-bar-15"></span><span class="chart-bar chart-bar-16"></span>
           </div>
           <div class="callout">
             <div class="callout-box">
@@ -217,7 +224,7 @@ function renderStaticViews() {
     `,
     'bug-reports': `
       <div class="two-column">
-        <div class="panel">
+        <div class="panel" data-bug-report-list>
           <div class="panel-header">
             <div>
               <div class="panel-title">Bug Reports Inbox</div>
@@ -230,7 +237,7 @@ function renderStaticViews() {
             <span>This static shell does not call the bug report API. Task 3 will add report rows, screenshot actions, environment switching, and delete controls.</span>
           </div>
         </div>
-        <div class="panel">
+        <div class="panel" data-selected-report-panel>
           <div class="panel-header">
             <div>
               <div class="panel-title">Selected Report</div>
@@ -246,7 +253,7 @@ function renderStaticViews() {
     `,
     'users-data': `
       <div class="two-column">
-        <div class="panel">
+        <div class="panel" data-user-results>
           <div class="panel-header">
             <div>
               <div class="panel-title">Users & Data</div>
@@ -259,15 +266,15 @@ function renderStaticViews() {
             <span>This task keeps user search, save summaries, word knowledge, and destructive operations out of the static shell.</span>
           </div>
         </div>
-        <div class="panel">
+        <div class="panel" data-user-detail>
           <div class="panel-header">
             <div>
               <div class="panel-title">User Operations</div>
               <div class="panel-subtitle">Static controls only</div>
             </div>
           </div>
-          <div class="stacked-form">
-            <div class="input-row">
+          <div class="stacked-form" data-user-operations>
+            <div class="input-row" data-user-search-form>
               <input type="search" value="" placeholder="Search users after authorization" aria-label="Search users" disabled>
               <button class="secondary-action" type="button" disabled>Find</button>
             </div>
@@ -387,6 +394,14 @@ function setActiveView(viewId) {
   });
 }
 
+function applyGlobalSearchFilter() {
+  const query = elements.search?.value.trim().toLowerCase() ?? '';
+  document.querySelectorAll('.tool-card, .row-item').forEach((item) => {
+    const matches = !query || item.textContent.toLowerCase().includes(query);
+    item.hidden = !matches;
+  });
+}
+
 function bindEvents() {
   document.addEventListener('click', (event) => {
     const navTarget = event.target.closest('[data-nav-view]');
@@ -398,14 +413,11 @@ function bindEvents() {
   elements.refresh?.addEventListener('click', () => {
     renderStaticViews();
     setActiveView(state.activeView);
+    applyGlobalSearchFilter();
   });
 
   elements.search?.addEventListener('input', () => {
-    const query = elements.search.value.trim().toLowerCase();
-    document.querySelectorAll('.tool-card, .row-item').forEach((item) => {
-      const matches = !query || item.textContent.toLowerCase().includes(query);
-      item.hidden = !matches;
-    });
+    applyGlobalSearchFilter();
   });
 }
 

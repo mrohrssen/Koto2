@@ -552,11 +552,28 @@ button.row-item {
   padding: 14px;
 }
 
-.mini-chart span {
+.chart-bar {
   min-height: 16px;
   border-radius: 4px 4px 0 0;
   background: linear-gradient(180deg, var(--blue), rgba(110, 182, 255, .35));
 }
+
+.chart-bar-1 { height: 34px; }
+.chart-bar-2 { height: 48px; }
+.chart-bar-3 { height: 30px; }
+.chart-bar-4 { height: 68px; }
+.chart-bar-5 { height: 54px; }
+.chart-bar-6 { height: 76px; }
+.chart-bar-7 { height: 62px; }
+.chart-bar-8 { height: 88px; }
+.chart-bar-9 { height: 50px; }
+.chart-bar-10 { height: 72px; }
+.chart-bar-11 { height: 44px; }
+.chart-bar-12 { height: 84px; }
+.chart-bar-13 { height: 61px; }
+.chart-bar-14 { height: 98px; }
+.chart-bar-15 { height: 73px; }
+.chart-bar-16 { height: 55px; }
 
 .sr-only {
   position: absolute;
