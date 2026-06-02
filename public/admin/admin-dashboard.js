@@ -1039,6 +1039,7 @@ function bindEvents() {
       const secret = getTypedAdminSecret();
       if (!secret) return;
       saveAdminSecret(secret);
+      state.requests.userKnowledge += 1;
       renderUsers();
       try {
         await loadUsers();
