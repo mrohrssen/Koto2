@@ -1,5 +1,5 @@
 import { createSeededRng } from '../deterministic-rng.js';
-import { cloneForPveTurn } from './pve-turn-snapshot.js';
+import { createPveTurnSnapshot } from './pve-turn-snapshot.js';
 import {
   processDefendTurn,
   processEnemyTurn,
@@ -20,7 +20,19 @@ function createNextCombat(snapshot, allies, enemies) {
 }
 
 export function resolvePveTurn(snapshotInput, { actionType = 'attack', seed, rng } = {}) {
-  const snapshot = cloneForPveTurn(snapshotInput || {});
+  if (snapshotInput && typeof snapshotInput === 'object' && Object.prototype.hasOwnProperty.call(snapshotInput, 'snapshot')) {
+    const envelope = snapshotInput;
+    return resolvePveTurn(
+      createPveTurnInput(envelope),
+      {
+        actionType: envelope.actionType || actionType,
+        seed: envelope.seed ?? seed,
+        rng: envelope.rng ?? rng,
+      },
+    );
+  }
+
+  const snapshot = createPveTurnSnapshot(snapshotInput || {});
   const turnRng = getTurnRng({ rng, seed });
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
@@ -63,5 +75,13 @@ export function resolvePveTurn(snapshotInput, { actionType = 'attack', seed, rng
       actionType,
     },
     nextCombat: createNextCombat(snapshot, allies, enemies),
+  };
+}
+
+function createPveTurnInput({ snapshot, moveChoices } = {}) {
+  const base = snapshot || {};
+  return {
+    ...base,
+    moveChoices: moveChoices || base.moveChoices || [],
   };
 }

@@ -38,21 +38,31 @@ export function rollVariance(rng = Math.random) {
 }
 
 export function getBuffedAttack(baseAttack, itemBuffs, level = 1) {
-  if (!itemBuffs) return baseAttack;
-  const mult = itemBuffs.attackMult || 1.0;
-  const baseBonus = itemBuffs.baseAttackBonus || 0;
+  let n = Math.max(1, Math.floor(Number(baseAttack) || 0));
+  const baseBonus = itemBuffs?.baseAttackBonus || 0;
   const levelMult = 1 + ((level || 1) - 1) * 0.1;
-  return Math.floor((baseAttack + Math.floor(baseBonus * levelMult)) * mult);
+  if (baseBonus && level) {
+    n += Math.floor(baseBonus * levelMult);
+  }
+  const mult = itemBuffs?.attackMult ?? 1.0;
+  if (!(mult > 0) || mult === 1.0) return n;
+  const raw = n * mult;
+  if (mult <= 1) return Math.max(1, Math.floor(raw));
+  let out = Math.floor(raw);
+  if (out === n && raw > n + 1e-9) out = n + 1;
+  return Math.max(1, out);
 }
 
-export function getBuffedElementMultiplier(typeMultiplier, itemBuffs) {
-  if (!itemBuffs?.elementEdge) return typeMultiplier;
-  if (typeMultiplier > 1) return typeMultiplier + itemBuffs.elementEdge;
-  if (typeMultiplier < 1) return Math.max(0.1, typeMultiplier - itemBuffs.elementEdge);
-  return typeMultiplier;
+export function getBuffedElementMultiplier(baseMult, itemBuffs) {
+  if (baseMult > 1.0 && itemBuffs?.elementEdge) {
+    return +(baseMult + itemBuffs.elementEdge).toFixed(2);
+  }
+  return baseMult;
 }
 
 export function applyDamageReduction(damage, itemBuffs) {
-  const reduction = itemBuffs?.flatDamageReduction || 0;
-  return Math.max(0, damage - reduction);
+  if (itemBuffs?.flatDamageReduction) {
+    return Math.max(1, damage - itemBuffs.flatDamageReduction);
+  }
+  return damage;
 }

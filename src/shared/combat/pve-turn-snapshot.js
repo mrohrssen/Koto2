@@ -8,24 +8,17 @@ export function cloneForPveTurn(value) {
   return cloneCombatValue(value);
 }
 
-export function createPveTurnSnapshot({
-  allies = [],
-  enemies = [],
-  moveChoices = [],
-  itemBuffs = null,
-  runPartySkills = [],
-  combat = {},
-  creatureParty = null,
-  metaMults = null,
-} = {}) {
+export function createPveTurnSnapshot(input = {}) {
+  const combat = input.combat || {};
+  const run = input.run || {};
   return cloneForPveTurn({
-    allies,
-    enemies,
-    moveChoices,
-    itemBuffs,
-    runPartySkills,
+    allies: input.allies || combat.allies || run.creatureParty?.active || [],
+    enemies: input.enemies || combat.enemies || [],
+    moveChoices: input.moveChoices || [],
+    itemBuffs: input.itemBuffs ?? run.itemBuffs ?? null,
+    runPartySkills: input.runPartySkills || run.partySkills || [],
     combat,
-    creatureParty,
-    metaMults,
+    creatureParty: input.creatureParty || run.creatureParty || null,
+    metaMults: input.metaMults || run.crestMults || null,
   });
 }

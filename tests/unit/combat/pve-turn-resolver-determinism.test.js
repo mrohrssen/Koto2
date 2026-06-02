@@ -297,6 +297,34 @@ describe('shared PvE turn resolver', () => {
     );
   });
 
+  it('accepts the plan envelope shape with nested combat/run snapshot', () => {
+    const ally = creature({ id: 'hi', dex: 40, hp: 80, maxHp: 80 });
+    const enemy = creature({ id: 'mizu', element: 'water', dex: 10, hp: 90, maxHp: 90 });
+    const result = resolvePveTurn({
+      snapshot: {
+        combat: {
+          active: true,
+          allies: [ally],
+          enemies: [enemy],
+          actionCount: 0,
+        },
+        run: {
+          partySkills: [],
+          itemBuffs: null,
+          creatureParty: { active: [ally], reserves: [] },
+          crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+        },
+      },
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      seed: 'plan-envelope-seed',
+    });
+
+    assert.equal(result.transcript.actionType, 'attack');
+    assert.equal(result.transcript.playerAttacks.length, 1);
+    assert.ok(result.nextCombat.enemies[0].hp < 90);
+  });
+
   it('resolves defend deterministically with the supplied seed', () => {
     const slash = {
       id: 'slash',
