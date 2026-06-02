@@ -41,6 +41,8 @@ const state = {
     users: false,
   },
   requests: {
+    bugReports: 0,
+    users: 0,
     bugReportDetail: 0,
     userKnowledge: 0,
   },
@@ -165,10 +167,13 @@ async function adminFetchJson(url, options = {}) {
 
 async function loadBugReports() {
   clearError();
+  const requestToken = state.requests.bugReports + 1;
+  state.requests.bugReports = requestToken;
   state.loading.bugs = true;
   renderBugReports();
   try {
     const payload = await fetchJson('/api/bug-reports');
+    if (state.requests.bugReports !== requestToken) return;
     const reports = normalizeBugReports(payload.reports || []);
     state.bugReports = reports;
 
@@ -179,6 +184,7 @@ async function loadBugReports() {
         : null;
     }
   } finally {
+    if (state.requests.bugReports !== requestToken) return;
     state.loading.bugs = false;
     renderBugReports();
     renderOverviewData();
@@ -189,10 +195,13 @@ async function loadBugReports() {
 
 async function loadUsers() {
   clearError();
+  const requestToken = state.requests.users + 1;
+  state.requests.users = requestToken;
   state.loading.users = true;
   renderUsers();
   try {
     const payload = await adminFetchJson('/api/admin/list-users');
+    if (state.requests.users !== requestToken) return;
     const users = payload.users || [];
     state.users = users;
 
@@ -206,6 +215,7 @@ async function loadUsers() {
       }
     }
   } finally {
+    if (state.requests.users !== requestToken) return;
     state.loading.users = false;
     renderUsers();
     renderOverviewData();
@@ -525,7 +535,7 @@ function renderUsers() {
     <div class="stacked-form admin-secret-controls">
       <label>
         <span class="row-meta">Admin secret</span>
-        <input data-admin-secret-input type="password" autocomplete="off" placeholder="Paste ADMIN_SECRET" value="${state.adminSecret ? '••••••••' : ''}">
+        <input data-admin-secret-input type="password" autocomplete="off" placeholder="Paste ADMIN_SECRET" value="">
       </label>
       <div class="input-row">
         <button class="secondary-action" type="button" data-save-admin-secret>Save Secret</button>
@@ -889,7 +899,7 @@ function bindEvents() {
 
     if (event.target.closest('[data-save-admin-secret]')) {
       const secret = getTypedAdminSecret();
-      if (!secret || secret === '••••••••') return;
+      if (!secret) return;
       saveAdminSecret(secret);
       renderUsers();
       try {
