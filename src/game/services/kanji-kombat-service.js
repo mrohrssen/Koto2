@@ -217,7 +217,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
 
 export function resolveIntroChoice(userId, state, cardId, choice, opts = {}) {
   const introSource = state.pendingIntro?.source || null;
-  const grade = choice === 'known' ? 'good' : 'again';
+  const grade = choice === 'known' ? 'easy' : 'again';
   const graded = gradeScriptCard(userId, cardId, grade);
   if (choice === 'unknown') {
     recordScriptIntro(userId, state.localDate);

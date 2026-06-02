@@ -1,5 +1,5 @@
 // tests/unit/game/internal-srs.test.js
-import { describe, it, before, after, beforeEach } from 'node:test';
+import { describe, it, before, after, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
 import { createTestTmpDir } from '../../helpers/tmp.js';
 
@@ -107,6 +107,23 @@ describe('Internal SRS Service', () => {
       const reviewed = data.kana.cards.find(c => c.char === card.char);
       assert.ok(reviewed.reps >= 1);
     });
+
+    it('applies per-card fuzz to legacy kana cards reviewed in the same batch', () => {
+      mock.timers.enable({ apis: ['Date'], now: new Date('2026-06-02T00:00:00Z') });
+      try {
+        srs.initKanaDeck(TEST_USER);
+        const chars = srs.loadSrsData(TEST_USER).kana.cards.map((card) => card.char);
+
+        const dueDays = chars.map((char) => {
+          const reviewed = srs.reviewKanaCard(TEST_USER, char, 'easy');
+          return reviewed.due.toISOString().slice(0, 10);
+        });
+
+        assert.ok(new Set(dueDays).size > 1, 'same-batch legacy kana reviews should be spread across due dates');
+      } finally {
+        mock.timers.reset();
+      }
+    });
   });
 
   describe('row unlocking', () => {
@@ -205,6 +222,25 @@ describe('Internal SRS Service', () => {
       const cards = srs.getDeckCards(TEST_USER, 'test');
       assert.ok(cards[0].due instanceof Date);
       assert.ok(cards[0].last_review instanceof Date);
+    });
+
+    it('applies per-card fuzz to generic cards reviewed in the same batch', () => {
+      mock.timers.enable({ apis: ['Date'], now: new Date('2026-06-02T00:00:00Z') });
+      try {
+        const cardIds = Array.from({ length: 60 }, (_, i) => `card-${i}`);
+        for (const cardId of cardIds) {
+          srs.createCard(TEST_USER, 'test', cardId, {});
+        }
+
+        const dueDays = cardIds.map((cardId) => {
+          const reviewed = srs.gradeCard(TEST_USER, 'test', cardId, 'easy');
+          return reviewed.due.toISOString().slice(0, 10);
+        });
+
+        assert.ok(new Set(dueDays).size > 1, 'same-batch generic reviews should be spread across due dates');
+      } finally {
+        mock.timers.reset();
+      }
     });
   });
 });

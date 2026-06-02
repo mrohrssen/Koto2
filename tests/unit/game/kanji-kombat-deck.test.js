@@ -147,6 +147,7 @@ describe('kanji-kombat deck controller', () => {
 
     assert.equal(result.graded.id, card.id);
     assert.equal(result.graded.reps, 1);
+    assert.equal(result.graded.state, State.Review);
     assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, 0);
     assert.equal(state.report.newCardsIntroduced, 0);
   });
