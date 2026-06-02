@@ -1,4 +1,11 @@
-import { ADMIN_NAV, TOOL_LINKS } from '/js/admin-dashboard-data.js';
+import {
+  ADMIN_NAV,
+  TOOL_LINKS,
+  buildOverviewQueue,
+  canDeleteUser,
+  filterUsers,
+  normalizeBugReports,
+} from '/js/admin-dashboard-data.js';
 
 const viewTitles = {
   overview: 'Overview',
@@ -22,6 +29,17 @@ const navIcons = {
 
 const state = {
   activeView: 'overview',
+  adminSecret: sessionStorage.getItem('koto-admin-secret') || '',
+  bugReports: [],
+  selectedBugReport: null,
+  users: [],
+  selectedUser: null,
+  selectedUserKnowledge: null,
+  userQuery: '',
+  loading: {
+    bugs: false,
+    users: false,
+  },
 };
 
 const elements = {
@@ -59,6 +77,15 @@ function safeHref(href) {
   return '#';
 }
 
+function formatDate(value) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 'Unknown time';
+  }
+
+  return date.toLocaleString();
+}
+
 function getToolGroups() {
   return {
     'language-qa': TOOL_LINKS.languageQa ?? [],
@@ -69,7 +96,138 @@ function getToolGroups() {
 }
 
 function getToolCountForView(viewId) {
+  if (viewId === 'bug-reports') return state.bugReports.length;
+  if (viewId === 'users-data') return state.users.length;
   return getToolGroups()[viewId]?.length ?? 0;
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`${response.status} ${response.statusText}: ${message}`);
+  }
+  return response.json();
+}
+
+async function ensureAdminSecret() {
+  if (state.adminSecret) {
+    return state.adminSecret;
+  }
+
+  const payload = await fetchJson('/api/admin/secret');
+  state.adminSecret = payload.secret;
+  sessionStorage.setItem('koto-admin-secret', state.adminSecret);
+  return state.adminSecret;
+}
+
+async function adminFetchJson(url, options = {}) {
+  const secret = await ensureAdminSecret();
+  return fetchJson(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      'x-admin-secret': secret,
+    },
+  });
+}
+
+async function loadBugReports() {
+  state.loading.bugs = true;
+  renderBugReports();
+  try {
+    const payload = await fetchJson('/api/bug-reports');
+    state.bugReports = normalizeBugReports(payload.reports || []);
+  } finally {
+    state.loading.bugs = false;
+    renderBugReports();
+    renderOverviewData();
+    renderNav();
+    applyGlobalSearchFilter();
+  }
+}
+
+async function loadUsers() {
+  state.loading.users = true;
+  renderUsers();
+  try {
+    const payload = await adminFetchJson('/api/admin/list-users');
+    state.users = payload.users || [];
+  } finally {
+    state.loading.users = false;
+    renderUsers();
+    renderOverviewData();
+    renderNav();
+    applyGlobalSearchFilter();
+  }
+}
+
+async function loadUserKnowledge(user) {
+  state.selectedUser = user;
+  state.selectedUserKnowledge = null;
+  renderUserDetail();
+  const payload = await adminFetchJson(`/api/admin/word-knowledge/${encodeURIComponent(user.id)}`);
+  state.selectedUserKnowledge = payload;
+  renderUserDetail();
+}
+
+async function deleteSelectedUser() {
+  const confirmation = document.querySelector('[data-delete-user-confirm]')?.value;
+  if (!canDeleteUser(state.selectedUser, confirmation)) {
+    return;
+  }
+
+  await adminFetchJson('/api/admin/delete-user', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: state.selectedUser.username }),
+  });
+
+  state.selectedUser = null;
+  state.selectedUserKnowledge = null;
+  await loadUsers();
+}
+
+async function loadBugReportDetail(reportId) {
+  const fallback = state.bugReports.find((report) => report.id === reportId) || { id: reportId };
+  state.selectedBugReport = fallback;
+  renderBugReports();
+  const payload = await fetchJson(`/api/bug-reports/${encodeURIComponent(reportId)}`);
+  state.selectedBugReport = normalizeBugReports([{ ...fallback, ...payload }])[0];
+  renderBugReports();
+}
+
+async function deleteSelectedBugReport() {
+  if (!state.selectedBugReport?.id) return;
+
+  const confirmed = window.confirm(`Delete bug report ${state.selectedBugReport.id}?`);
+  if (!confirmed) return;
+
+  await fetch(`/api/bug-reports/${encodeURIComponent(state.selectedBugReport.id)}`, {
+    method: 'DELETE',
+  }).then(async (response) => {
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(`${response.status} ${response.statusText}: ${message}`);
+    }
+  });
+
+  state.selectedBugReport = null;
+  await loadBugReports();
+}
+
+async function refreshActiveView() {
+  try {
+    if (state.activeView === 'bug-reports' || state.activeView === 'overview') {
+      await loadBugReports();
+    }
+
+    if (state.activeView === 'users-data' || state.activeView === 'overview') {
+      await loadUsers();
+    }
+  } catch (error) {
+    renderError(error);
+  }
 }
 
 function renderNav() {
@@ -126,18 +284,18 @@ function getStatusClass(status) {
 
 function renderStats() {
   const stats = [
-    ['Open Reports', '0', 'Live bug report data arrives in Task 3.', 'pending'],
-    ['Language Tools', String(TOOL_LINKS.languageQa?.length ?? 0), 'Static frame and word exposure workflows.', 'ready'],
-    ['Content Tools', String((TOOL_LINKS.contentStudio?.length ?? 0) + (TOOL_LINKS.assetPipeline?.length ?? 0)), 'Forge, content browser, sprites, and previews.', 'ready'],
-    ['Simulators', String(TOOL_LINKS.simulators?.length ?? 0), 'Learning, comparison, and balance dashboards.', 'ready'],
+    ['Open Reports', '0', 'Live bug report submissions.', 'pending', 'data-stat-bugs'],
+    ['User Accounts', '0', 'Admin-visible user records.', 'auth', 'data-stat-users'],
+    ['Language Tools', String(TOOL_LINKS.languageQa?.length ?? 0), 'Static frame and word exposure workflows.', 'ready', ''],
+    ['Content Tools', String((TOOL_LINKS.contentStudio?.length ?? 0) + (TOOL_LINKS.assetPipeline?.length ?? 0)), 'Forge, content browser, sprites, and previews.', 'ready', ''],
   ];
 
   return `
     <div class="stats-grid">
-      ${stats.map(([label, value, note, status]) => `
+      ${stats.map(([label, value, note, status, hook]) => `
         <div class="stat-card">
           <div class="stat-label"><span>${escapeHtml(label)}</span><span>${escapeHtml(status)}</span></div>
-          <div class="stat-value">${escapeHtml(value)}</div>
+          <div class="stat-value" ${hook}>${escapeHtml(value)}</div>
           <div class="stat-note">${escapeHtml(note)}</div>
         </div>
       `).join('')}
@@ -145,49 +303,273 @@ function renderStats() {
   `;
 }
 
-function renderOverviewQueue() {
-  const queueItems = [
-    {
-      title: 'Authorize bug reports inbox',
-      meta: 'Task 3 will load report metadata, screenshots, viewport, DPR, user agent, and game state.',
-      status: 'Blocked',
-      tone: 'warn',
-      view: 'bug-reports',
-    },
-    {
-      title: 'Connect user data operations',
-      meta: 'Task 3 will expose guarded search, knowledge review, and destructive user operations.',
-      status: 'Auth',
-      tone: 'warn',
-      view: 'users-data',
-    },
-    {
-      title: 'Review language safety tools',
-      meta: 'Audit word exposure and generated dialogue frames from the production language QA pages.',
-      status: 'Core',
-      tone: 'good',
-      view: 'language-qa',
-    },
-    {
-      title: 'Open simulator dashboards',
-      meta: 'Use the actual Learning, Compare, and Balance simulator cards from the dashboard data module.',
-      status: 'Analysis',
-      tone: 'purple',
-      view: 'simulators',
-    },
-  ];
+function renderQueueItems(queueItems) {
+  if (!queueItems.length) {
+    return `
+      <div class="empty-state">
+        <strong>No queue items.</strong>
+        <span>Live bug and user data will populate this queue after refresh.</span>
+      </div>
+    `;
+  }
 
   return `
     <div class="list-stack">
-      ${queueItems.map((item) => `
-        <button class="row-item" type="button" data-nav-view="${escapeHtml(item.view)}">
-          <span>
-            <span class="row-title">${escapeHtml(item.title)}</span>
-            <span class="row-meta">${escapeHtml(item.meta)}</span>
-          </span>
-          <span class="pill ${escapeHtml(item.tone)}">${escapeHtml(item.status)}</span>
-        </button>
-      `).join('')}
+      ${queueItems.map((item) => {
+        const tone = item.priority === 'warning' ? 'warn' : 'good';
+        return `
+          <button class="row-item" type="button" data-nav-view="${escapeHtml(item.view)}">
+            <span>
+              <span class="row-title">${escapeHtml(item.title)}</span>
+              <span class="row-meta">${escapeHtml(item.meta)}</span>
+            </span>
+            <span class="pill ${tone}">${escapeHtml(item.kind)}</span>
+          </button>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderOverviewData() {
+  const bugStat = document.querySelector('[data-stat-bugs]');
+  const userStat = document.querySelector('[data-stat-users]');
+  const queue = document.querySelector('[data-overview-queue]');
+
+  if (bugStat) bugStat.textContent = String(state.bugReports.length);
+  if (userStat) userStat.textContent = String(state.users.length);
+  if (queue) {
+    queue.innerHTML = renderQueueItems(buildOverviewQueue({
+      bugReports: state.bugReports,
+      users: state.users,
+    }));
+  }
+}
+
+function renderJsonBlock(value) {
+  return `<pre class="json-block">${escapeHtml(JSON.stringify(value || {}, null, 2))}</pre>`;
+}
+
+function renderBugReports() {
+  const list = document.querySelector('[data-bug-report-list]');
+  if (!list) return;
+
+  const reports = normalizeBugReports(state.bugReports);
+  const rows = reports.map((report) => `
+    <button class="row-item${state.selectedBugReport?.id === report.id ? ' active' : ''}" type="button" data-bug-report-id="${escapeHtml(report.id)}">
+      <span>
+        <span class="row-title">${escapeHtml(report.note || 'Bug report without note')}</span>
+        <span class="row-meta">${escapeHtml(report.id)} · ${escapeHtml(report.deviceLabel)} · ${escapeHtml(report.phaseLabel)}</span>
+      </span>
+      <span class="row-meta">${escapeHtml(formatDate(report.submittedAt))}</span>
+    </button>
+  `).join('');
+
+  list.innerHTML = `
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Bug Reports Inbox</div>
+        <div class="panel-subtitle">Live submissions from the existing bug report API.</div>
+      </div>
+      <button class="secondary-action" type="button" data-load-bugs>${state.loading.bugs ? 'Loading' : 'Refresh'}</button>
+    </div>
+    ${state.loading.bugs ? `
+      <div class="empty-state">
+        <strong>Loading bug reports.</strong>
+        <span>Fetching the latest submitted reports.</span>
+      </div>
+    ` : ''}
+    ${!state.loading.bugs && reports.length ? `<div class="list-stack">${rows}</div>` : ''}
+    ${!state.loading.bugs && !reports.length ? `
+      <div class="empty-state">
+        <strong>No bug reports.</strong>
+        <span>Submitted reports will appear here with screenshot and game state links.</span>
+      </div>
+    ` : ''}
+  `;
+
+  renderBugReportDetail();
+}
+
+function renderBugReportDetail() {
+  const panel = document.querySelector('[data-selected-report-panel]');
+  if (!panel) return;
+
+  const report = state.selectedBugReport;
+  if (!report) {
+    panel.innerHTML = `
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Selected Report</div>
+          <div class="panel-subtitle">Metadata and screenshot actions</div>
+        </div>
+      </div>
+      <div class="empty-state">
+        <strong>No report selected.</strong>
+        <span>Select a bug report to inspect its captured metadata.</span>
+      </div>
+    `;
+    return;
+  }
+
+  const screenshotHref = `/api/bug-reports/${encodeURIComponent(report.id)}/screenshot`;
+  const metadataHref = `/api/bug-reports/${encodeURIComponent(report.id)}`;
+  panel.innerHTML = `
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">${escapeHtml(report.note || 'Bug report without note')}</div>
+        <div class="panel-subtitle">${escapeHtml(report.id)} · ${escapeHtml(formatDate(report.submittedAt || report.timestamp))}</div>
+      </div>
+      <button class="secondary-action danger" type="button" data-delete-bug-report>Delete</button>
+    </div>
+    <div class="detail-stack">
+      <div class="detail-grid">
+        <div><span class="row-meta">Device</span><strong>${escapeHtml(report.deviceLabel || 'unknown')}</strong></div>
+        <div><span class="row-meta">Phase</span><strong>${escapeHtml(report.phaseLabel || 'unknown')}</strong></div>
+        <div><span class="row-meta">DPR</span><strong>${escapeHtml(report.devicePixelRatio ?? 'unknown')}</strong></div>
+        <div><span class="row-meta">Viewport</span><strong>${escapeHtml(report.viewport ? `${report.viewport.width} x ${report.viewport.height}` : 'unknown')}</strong></div>
+      </div>
+      <div class="input-row">
+        <a class="inline-action" href="${escapeHtml(metadataHref)}">Metadata JSON</a>
+        <a class="inline-action" href="${escapeHtml(screenshotHref)}">Screenshot</a>
+      </div>
+      ${renderJsonBlock(report.gameState || report)}
+    </div>
+  `;
+}
+
+function renderUsers() {
+  const panel = document.querySelector('[data-user-results]');
+  if (!panel) return;
+
+  const users = filterUsers(state.users, state.userQuery);
+  const rows = users.map((user) => `
+    <button class="row-item${state.selectedUser?.id === user.id ? ' active' : ''}" type="button" data-user-id="${escapeHtml(user.id)}">
+      <span>
+        <span class="row-title">${escapeHtml(user.username || 'Unnamed user')}</span>
+        <span class="row-meta">${escapeHtml(user.id)}</span>
+      </span>
+      <span class="row-meta">${escapeHtml(user.createdAt ? formatDate(user.createdAt) : 'No createdAt')}</span>
+    </button>
+  `).join('');
+
+  panel.innerHTML = `
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Users & Data</div>
+        <div class="panel-subtitle">Live user records from the existing admin API.</div>
+      </div>
+      <span class="pill ${state.loading.users ? 'warn' : 'good'}">${state.loading.users ? 'loading' : `${state.users.length} users`}</span>
+    </div>
+    <div class="stacked-form">
+      <label>
+        <span class="sr-only">Search users</span>
+        <input data-user-filter type="search" value="${escapeHtml(state.userQuery)}" placeholder="Search username or id">
+      </label>
+    </div>
+    ${state.loading.users ? `
+      <div class="empty-state">
+        <strong>Loading users.</strong>
+        <span>Fetching account records with the admin secret.</span>
+      </div>
+    ` : ''}
+    ${!state.loading.users && users.length ? `<div class="list-stack">${rows}</div>` : ''}
+    ${!state.loading.users && !users.length ? `
+      <div class="empty-state">
+        <strong>No users found.</strong>
+        <span>Adjust the search or refresh the user list.</span>
+      </div>
+    ` : ''}
+  `;
+
+  renderUserDetail();
+}
+
+function renderUserDetail() {
+  const panel = document.querySelector('[data-user-detail]');
+  if (!panel) return;
+
+  const user = state.selectedUser;
+  if (!user) {
+    panel.innerHTML = `
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">User Operations</div>
+          <div class="panel-subtitle">Select a user to inspect word knowledge.</div>
+        </div>
+      </div>
+      <div class="empty-state">
+        <strong>No user selected.</strong>
+        <span>User word knowledge and destructive operations appear after selection.</span>
+      </div>
+    `;
+    return;
+  }
+
+  const words = state.selectedUserKnowledge?.words || [];
+  const knownCount = words.filter((word) => word.known).length;
+  const totalExposures = words.reduce((sum, word) => sum + Number(word.exposures || 0), 0);
+
+  panel.innerHTML = `
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">${escapeHtml(user.username || 'Unnamed user')}</div>
+        <div class="panel-subtitle">${escapeHtml(user.id)}</div>
+      </div>
+      <span class="pill ${state.selectedUserKnowledge ? 'good' : 'warn'}">${state.selectedUserKnowledge ? 'loaded' : 'loading'}</span>
+    </div>
+    <div class="detail-stack">
+      <div class="detail-grid">
+        <div><span class="row-meta">Known words</span><strong>${escapeHtml(knownCount)}</strong></div>
+        <div><span class="row-meta">Tracked words</span><strong>${escapeHtml(words.length)}</strong></div>
+        <div><span class="row-meta">Total exposures</span><strong>${escapeHtml(totalExposures)}</strong></div>
+        <div><span class="row-meta">Created</span><strong>${escapeHtml(user.createdAt ? formatDate(user.createdAt) : 'unknown')}</strong></div>
+      </div>
+      ${words.length ? `
+        <div class="list-stack compact-list">
+          ${words.slice(0, 20).map((word) => `
+            <div class="row-item">
+              <span>
+                <span class="row-title">${escapeHtml(word.word)} ${word.reading ? `(${escapeHtml(word.reading)})` : ''}</span>
+                <span class="row-meta">${escapeHtml(word.meaning || '')}</span>
+              </span>
+              <span class="pill ${word.known ? 'good' : 'warn'}">${escapeHtml(word.exposures ?? 0)} exp</span>
+            </div>
+          `).join('')}
+        </div>
+      ` : `
+        <div class="empty-state">
+          <strong>${state.selectedUserKnowledge ? 'No word knowledge.' : 'Loading word knowledge.'}</strong>
+          <span>${state.selectedUserKnowledge ? 'The admin API returned no words for this user.' : 'Fetching words, readings, meanings, exposures, and known state.'}</span>
+        </div>
+      `}
+      <div class="stacked-form danger-zone">
+        <label>
+          <span class="row-meta">Type the exact username to delete this user.</span>
+          <input data-delete-user-confirm type="text" autocomplete="off" placeholder="${escapeHtml(user.username || '')}">
+        </label>
+        <button class="secondary-action danger" type="button" data-delete-user disabled>Delete User</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderError(error) {
+  const view = document.querySelector(`[data-view="${state.activeView}"]`);
+  if (!view) return;
+
+  view.innerHTML = `
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Admin Request Failed</div>
+          <div class="panel-subtitle">Refresh or navigate away after resolving the error.</div>
+        </div>
+        <span class="pill hot">error</span>
+      </div>
+      <div class="empty-state">
+        <strong>${escapeHtml(error?.message || error)}</strong>
+      </div>
     </div>
   `;
 }
@@ -202,11 +584,11 @@ function renderStaticViews() {
           <div class="panel-header">
             <div>
               <div class="panel-title">Work Queue</div>
-              <div class="panel-subtitle">Static admin shell. Live report and user data are intentionally deferred.</div>
+              <div class="panel-subtitle">Live report and user signals routed to the right admin surface.</div>
             </div>
             <span class="pill warn">prioritized</span>
           </div>
-          ${renderOverviewQueue()}
+          <div data-overview-queue>${renderQueueItems(buildOverviewQueue({ bugReports: state.bugReports, users: state.users }))}</div>
         </div>
         <div class="panel">
           <div class="panel-header">
@@ -227,8 +609,8 @@ function renderStaticViews() {
               <div class="row-meta">Persistent workflow sidebar, sticky command bar, and no legacy top-tab section.</div>
             </div>
             <div class="callout-box">
-              <div class="callout-title">Current scope</div>
-              <div class="row-meta">This page is static. Live authorization, fetching, and mutations belong to Task 3.</div>
+              <div class="callout-title">Live data scope</div>
+              <div class="row-meta">Bug reports are unauthenticated; user operations use the existing admin secret endpoint.</div>
             </div>
           </div>
         </div>
@@ -236,64 +618,14 @@ function renderStaticViews() {
     `,
     'bug-reports': `
       <div class="two-column">
-        <div class="panel" data-bug-report-list>
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">Bug Reports Inbox</div>
-              <div class="panel-subtitle">Prepared for production and dev report feeds after authorization.</div>
-            </div>
-            <span class="pill warn">Task 3</span>
-          </div>
-          <div class="empty-state">
-            <strong>Bug report data will load after admin authorization.</strong>
-            <span>This static shell does not call the bug report API. Task 3 will add report rows, screenshot actions, environment switching, and delete controls.</span>
-          </div>
-        </div>
-        <div class="panel" data-selected-report-panel>
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">Selected Report</div>
-              <div class="panel-subtitle">Future detail panel</div>
-            </div>
-          </div>
-          <div class="empty-state">
-            <strong>No report selected.</strong>
-            <span>Authorized report details will show screenshot metadata, viewport, DPR, user agent, and captured game state.</span>
-          </div>
-        </div>
+        <div class="panel" data-bug-report-list></div>
+        <div class="panel" data-selected-report-panel></div>
       </div>
     `,
     'users-data': `
       <div class="two-column">
-        <div class="panel" data-user-results>
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">Users & Data</div>
-              <div class="panel-subtitle">Guarded user operations surface for Task 3.</div>
-            </div>
-            <span class="pill warn">auth gated</span>
-          </div>
-          <div class="empty-state">
-            <strong>User data will load after admin authorization.</strong>
-            <span>This task keeps user search, save summaries, word knowledge, and destructive operations out of the static shell.</span>
-          </div>
-        </div>
-        <div class="panel" data-user-detail>
-          <div class="panel-header">
-            <div>
-              <div class="panel-title">User Operations</div>
-              <div class="panel-subtitle">Static controls only</div>
-            </div>
-          </div>
-          <div class="stacked-form" data-user-operations>
-            <div class="input-row" data-user-search-form>
-              <input type="search" value="" placeholder="Search users after authorization" aria-label="Search users" disabled>
-              <button class="secondary-action" type="button" disabled>Find</button>
-            </div>
-            <button class="secondary-action" type="button" disabled>Load word knowledge</button>
-            <button class="secondary-action" type="button" disabled>View save summary</button>
-          </div>
-        </div>
+        <div class="panel" data-user-results></div>
+        <div class="panel" data-user-detail></div>
       </div>
     `,
     'language-qa': `
@@ -404,6 +736,8 @@ function setActiveView(viewId) {
   document.querySelectorAll('[data-nav-view]').forEach((button) => {
     button.classList.toggle('active', button.dataset.navView === viewId);
   });
+
+  applyGlobalSearchFilter();
 }
 
 function applyGlobalSearchFilter() {
@@ -414,26 +748,97 @@ function applyGlobalSearchFilter() {
   });
 }
 
+function updateDeleteUserButton() {
+  const confirmation = document.querySelector('[data-delete-user-confirm]')?.value;
+  const button = document.querySelector('[data-delete-user]');
+  if (button) {
+    button.disabled = !canDeleteUser(state.selectedUser, confirmation);
+  }
+}
+
 function bindEvents() {
-  document.addEventListener('click', (event) => {
+  document.body.addEventListener('click', async (event) => {
     const navTarget = event.target.closest('[data-nav-view]');
     if (navTarget) {
       setActiveView(navTarget.dataset.navView);
+      return;
+    }
+
+    const bugTarget = event.target.closest('[data-bug-report-id]');
+    if (bugTarget) {
+      try {
+        await loadBugReportDetail(bugTarget.dataset.bugReportId);
+      } catch (error) {
+        renderError(error);
+      }
+      return;
+    }
+
+    if (event.target.closest('[data-delete-bug-report]')) {
+      try {
+        await deleteSelectedBugReport();
+      } catch (error) {
+        renderError(error);
+      }
+      return;
+    }
+
+    if (event.target.closest('[data-load-bugs]')) {
+      try {
+        await loadBugReports();
+      } catch (error) {
+        renderError(error);
+      }
+      return;
+    }
+
+    const userTarget = event.target.closest('[data-user-id]');
+    if (userTarget) {
+      const user = state.users.find((item) => String(item.id) === userTarget.dataset.userId);
+      if (user) {
+        try {
+          await loadUserKnowledge(user);
+        } catch (error) {
+          renderError(error);
+        }
+      }
+      return;
+    }
+
+    if (event.target.closest('[data-delete-user]')) {
+      try {
+        await deleteSelectedUser();
+      } catch (error) {
+        renderError(error);
+      }
     }
   });
 
-  elements.refresh?.addEventListener('click', () => {
-    renderStaticViews();
-    setActiveView(state.activeView);
-    applyGlobalSearchFilter();
+  document.body.addEventListener('input', (event) => {
+    if (event.target.matches('[data-user-filter]')) {
+      state.userQuery = event.target.value;
+      renderUsers();
+      applyGlobalSearchFilter();
+      return;
+    }
+
+    if (event.target.matches('[data-delete-user-confirm]')) {
+      updateDeleteUserButton();
+      return;
+    }
+
+    if (event.target.matches('[data-global-search]')) {
+      applyGlobalSearchFilter();
+    }
   });
 
-  elements.search?.addEventListener('input', () => {
-    applyGlobalSearchFilter();
-  });
+  elements.refresh?.addEventListener('click', refreshActiveView);
 }
 
 renderNav();
 renderStaticViews();
+renderBugReports();
+renderUsers();
 bindEvents();
 setActiveView(state.activeView);
+refreshActiveView();

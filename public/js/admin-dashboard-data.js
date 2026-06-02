@@ -132,3 +132,28 @@ export function normalizeBugReports(reports) {
       };
     });
 }
+
+export function buildOverviewQueue({ bugReports = [], users = [] }) {
+  const queue = [];
+  const latestBug = normalizeBugReports(bugReports)[0];
+
+  if (latestBug) {
+    queue.push({
+      kind: 'bug',
+      title: latestBug.note || 'Bug report without note',
+      meta: latestBug.id,
+      view: 'bug-reports',
+      priority: 'warning',
+    });
+  }
+
+  queue.push({
+    kind: 'user',
+    title: `${users.length} user account${users.length === 1 ? '' : 's'} available`,
+    meta: 'Users & Data',
+    view: 'users-data',
+    priority: 'normal',
+  });
+
+  return queue;
+}

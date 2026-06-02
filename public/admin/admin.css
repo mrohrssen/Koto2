@@ -258,6 +258,17 @@ button {
   border-color: rgba(110, 182, 255, .42);
 }
 
+.secondary-action:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+}
+
+.secondary-action.danger,
+.inline-action.danger {
+  border-color: rgba(242, 118, 118, .38);
+  color: #ffb7b7;
+}
+
 .view {
   display: none;
   min-width: 0;
@@ -373,6 +384,11 @@ button.row-item {
 
 .row-item:hover {
   background: rgba(255, 255, 255, .026);
+}
+
+.row-item.active {
+  background: rgba(110, 182, 255, .08);
+  box-shadow: inset 2px 0 0 var(--blue);
 }
 
 .row-item:last-child {
@@ -508,6 +524,61 @@ button.row-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
+}
+
+.detail-stack {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.detail-grid > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--panel-raised);
+}
+
+.detail-grid strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.json-block {
+  max-height: 360px;
+  margin: 0;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: #10151d;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.compact-list {
+  overflow: auto;
+  max-height: 420px;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+}
+
+.danger-zone {
+  border: 1px solid rgba(242, 118, 118, .22);
+  border-radius: 8px;
+  background: rgba(242, 118, 118, .045);
 }
 
 .empty-state {

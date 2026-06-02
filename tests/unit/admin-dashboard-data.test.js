@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   ADMIN_NAV,
   TOOL_LINKS,
+  buildOverviewQueue,
   canDeleteUser,
   filterUsers,
   getAllDashboardHrefs,
@@ -82,5 +83,33 @@ describe('admin dashboard data helpers', () => {
     assert.equal(canDeleteUser({ username: 'devtester' }, 'DevTester'), false);
     assert.equal(canDeleteUser({ username: 'devtester' }, ' devtester '), false);
     assert.equal(canDeleteUser(null, 'devtester'), false);
+  });
+
+  it('builds the overview queue from recent bug and user data', () => {
+    const queue = buildOverviewQueue({
+      bugReports: [
+        { id: 'bug-1', note: 'Combat card stuck', timestamp: '2026-06-02T12:00:00.000Z' },
+      ],
+      users: [
+        { id: 'user-1', username: 'devtester' },
+      ],
+    });
+
+    assert.deepEqual(queue, [
+      {
+        kind: 'bug',
+        title: 'Combat card stuck',
+        meta: 'bug-1',
+        view: 'bug-reports',
+        priority: 'warning',
+      },
+      {
+        kind: 'user',
+        title: '1 user account available',
+        meta: 'Users & Data',
+        view: 'users-data',
+        priority: 'normal',
+      },
+    ]);
   });
 });
