@@ -32,6 +32,33 @@ function createCombatTimingApp() {
   return app;
 }
 
+function createOptimisticCombatApp(verifierResult) {
+  const app = express();
+  app.use(express.json());
+  app.use((req, _res, next) => {
+    const combat = { active: true, actionCount: 1, cycleCount: 2 };
+    req.gameManager = {
+      combat,
+      combatCycleService: {
+        creatureCombatCycle() {
+          throw new Error('legacy combat path should not be used for optimistic envelopes');
+        },
+        verifyAndCommitCreatureCombatCycle(envelope) {
+          assert.equal(envelope.actionId, 'act_route');
+          combat.actionCount = 2;
+          combat.cycleCount = 3;
+          return verifierResult;
+        },
+      },
+    };
+    req.saveGame = () => {};
+    req.getEnrichedGameState = () => ({ phase: 'combat', combat: { optimistic: { stateVersion: 2 } } });
+    next();
+  });
+  app.use(createCombatRoutes({}));
+  return app;
+}
+
 describe('combat route timing logs', () => {
   afterEach(() => {
     console.log = originalConsoleLog;
@@ -63,5 +90,34 @@ describe('combat route timing logs', () => {
     assert.equal(typeof timingLog[1].resolveMs, 'number');
     assert.equal(typeof timingLog[1].saveMs, 'number');
     assert.equal(typeof timingLog[1].totalMs, 'number');
+  });
+
+  it('routes optimistic envelopes through verifier and attaches authoritative state on correction', async () => {
+    const app = createOptimisticCombatApp({
+      status: 'corrected',
+      reason: 'transcript_mismatch',
+      authoritativeTranscript: { actionType: 'attack' },
+      authoritativeState: null,
+      stateVersion: 2,
+      nextSeed: 'next_seed',
+    });
+
+    const response = await request(app)
+      .post('/creature-combat-cycle')
+      .send({
+        actionId: 'act_route',
+        combatId: 'cmb_test',
+        stateVersion: 1,
+        seed: 'seed_1',
+        actionType: 'combat.attack',
+        payload: { moveChoices: [] },
+        predictedHash: 'bad',
+      })
+      .expect(200);
+
+    assert.equal(response.body.status, 'corrected');
+    assert.equal(response.body.reason, 'transcript_mismatch');
+    assert.deepEqual(response.body.authoritativeState, { phase: 'combat', combat: { optimistic: { stateVersion: 2 } } });
+    assert.deepEqual(response.body.state, { phase: 'combat', combat: { optimistic: { stateVersion: 2 } } });
   });
 });

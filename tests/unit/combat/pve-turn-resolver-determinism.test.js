@@ -426,6 +426,7 @@ describe('shared PvE turn resolver', () => {
 
     assert.equal(koResult.transcript.koSwaps.length, 1);
     assert.equal(koResult.transcript.koSwaps[0].replacement, 'Fire');
+    assert.equal(koResult.transcript.allAlliesDefeated, false);
     assert.equal(koResult.nextCombat.allies[0].id, 'ki');
   });
 
@@ -460,7 +461,42 @@ describe('shared PvE turn resolver', () => {
     });
 
     assert.equal(result.transcript.koSwaps.length, 1);
+    assert.equal(result.transcript.allAlliesDefeated, false);
     assert.equal(result.nextCombat.allies[0].id, 'ki');
+  });
+
+  it('clears active effects from KO allies during defend swap processing', () => {
+    const strike = {
+      id: 'strike',
+      name: '打つ',
+      nameEn: 'Strike',
+      reading: 'うつ',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 10,
+      mpCost: 0,
+    };
+    const weakAlly = creature({
+      id: 'hi',
+      hp: 1,
+      maxHp: 100,
+      defense: 1,
+      activeEffects: [{ type: 'sleep', remainingTurns: 2 }],
+    });
+    const result = resolvePveTurn({
+      allies: [weakAlly],
+      enemies: [creature({ id: 'kage', hp: 100, maxHp: 100, attack: 100, moves: [strike] })],
+      creatureParty: { active: [weakAlly], reserves: [] },
+      combat: {},
+    }, {
+      actionType: 'defend',
+      rng: constantRng(0.5),
+      clone: false,
+    });
+
+    assert.equal(result.transcript.koRemovals.length, 1);
+    assert.deepEqual(weakAlly.activeEffects, []);
   });
 });
 

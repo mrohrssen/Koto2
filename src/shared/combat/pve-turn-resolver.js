@@ -54,6 +54,7 @@ function processKOSwapsForTurn(allies, creatureParty) {
     const ally = allies[i];
     if (!ally || ally.hp > 0) continue;
     const deadName = ally.nameEn || ally.name;
+    ally.activeEffects = [];
     resetStatStages(ally);
     if (creatureParty.reserves.length > 0) {
       const replacement = creatureParty.reserves.shift();
@@ -191,7 +192,7 @@ export function resolvePveTurn(snapshotInput, {
         enemyAttacks: enemyResult.attacks || [],
         inlineCounters: [],
         counterAttacks,
-        allAlliesDefeated: enemyResult.allAlliesDefeated,
+        allAlliesDefeated: checkAllDefeated(allies),
         allEnemiesDefeated: checkAllDefeated(enemies),
         mpRegens: defendResult.mpRegens || [],
         enemyMpRegens: enemyResult.enemyMpRegens || [],

@@ -1,6 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createCombatState } from '../../../src/game/state.js';
+import { instantiateCreature } from '../../../src/game/creatures.js';
+import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 
 describe('combat action state', () => {
   it('initializes action cursor fields', () => {
@@ -12,4 +14,166 @@ describe('combat action state', () => {
     assert.equal(combat.openingResolved, false);
     assert.equal(combat.optimistic, null);
   });
+
+  it('accepts matching optimistic combat prediction and advances seed/version', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const moveChoices = [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }];
+    const predicted = service.previewCreatureCombatCycle({ actionType: 'attack', moveChoices, seed });
+
+    const result = service.verifyAndCommitCreatureCombatCycle({
+      actionId: 'act_test_1',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'combat.attack',
+      payload: { moveChoices },
+      predictedHash: predicted.predictedHash,
+    });
+
+    assert.equal(result.status, 'accepted');
+    assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);
+    assert.notEqual(gm.combat.optimistic.nextTurnSeed, seed);
+    assert.equal(result.stateVersion, stateVersion + 1);
+    assert.equal(result.nextSeed, gm.combat.optimistic.nextTurnSeed);
+  });
+
+  it('returns corrected state when optimistic combat hash mismatches', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+
+    const result = service.verifyAndCommitCreatureCombatCycle({
+      actionId: 'act_bad_hash',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'attack',
+      payload: { moveChoices: [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }] },
+      predictedHash: 'incorrect',
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'transcript_mismatch');
+    assert.ok(result.authoritativeTranscript);
+    assert.equal(result.authoritativeState, null);
+    assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);
+  });
+
+  it('rejects stale optimistic combat envelopes without committing a turn', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const hpBefore = gm.combat.enemies[0].hp;
+
+    const result = service.verifyAndCommitCreatureCombatCycle({
+      actionId: 'act_stale',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion: 99,
+      seed,
+      actionType: 'attack',
+      payload: { moveChoices: [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }] },
+      predictedHash: 'irrelevant',
+    });
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'state_version_mismatch');
+    assert.equal(gm.combat.optimistic.stateVersion, 0);
+    assert.equal(gm.combat.enemies[0].hp, hpBefore);
+  });
+
+  it('returns the same optimistic response for duplicate action ids', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const moveChoices = [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }];
+    const predicted = service.previewCreatureCombatCycle({ actionType: 'attack', moveChoices, seed });
+
+    const envelope = {
+      actionId: 'act_duplicate',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'attack',
+      payload: { moveChoices },
+      predictedHash: predicted.predictedHash,
+    };
+    const first = service.verifyAndCommitCreatureCombatCycle(envelope);
+    const hpAfterFirst = gm.combat.enemies[0].hp;
+    const second = service.verifyAndCommitCreatureCombatCycle(envelope);
+
+    assert.deepEqual(second, first);
+    assert.equal(gm.combat.enemies[0].hp, hpAfterFirst);
+    assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);
+  });
 });
+
+function createTestGameManagerWithCreatureCombat() {
+  const weakMove = {
+    id: 'poke',
+    name: '突く',
+    nameEn: 'Poke',
+    reading: 'つく',
+    element: 'neutral',
+    category: 'damage',
+    target: 'single_enemy',
+    power: 1,
+    mpCost: 0,
+    accuracy: 100,
+    statusEffect: null,
+    statusChance: 0,
+    statusDuration: 0,
+  };
+  const ally = instantiateCreature('hi');
+  ally.moves = [weakMove];
+  ally.hp = ally.maxHp = 100;
+  ally.mp = ally.maxMp = 100;
+  const enemy = instantiateCreature('mizu');
+  enemy.moves = [weakMove];
+  enemy.hp = enemy.maxHp = 100;
+  enemy.mp = enemy.maxMp = 100;
+  const combat = createCombatState(enemy);
+  combat.allies = [ally];
+  combat.enemies = [enemy];
+  combat.isCreatureCombat = true;
+  combat.isBoss = true;
+  combat.optimistic = {
+    combatId: 'cmb_test',
+    stateVersion: 0,
+    nextTurnSeed: 'seed_1',
+    acceptedActionIds: {},
+  };
+
+  return {
+    combat,
+    run: {
+      active: true,
+      player: { credits: 0 },
+      creatureParty: { active: [ally], reserves: [], maxTotal: 6, pendingCaptures: [] },
+      partySkills: [],
+      itemBuffs: {
+        attackMult: 1,
+        hpMult: 1,
+        elementEdge: 0,
+        flatDamageReduction: 0,
+        xpMultiplier: 1,
+        xpBalanceStacks: 0,
+        baseAttackBonus: 0,
+        baseHpBonus: 0,
+        baseMpBonus: 0,
+      },
+      crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+      rooms: [],
+      currentRoom: 0,
+      runSummary: {},
+    },
+    meta: null,
+    userId: null,
+    emitState() {},
+    narrate() {},
+  };
+}

@@ -1,6 +1,13 @@
 import { randomBytes } from 'node:crypto';
 import { createCombatState } from '../state.js';
 import { logger } from '../../logger.js';
+import { createSeededRng } from '../../shared/deterministic-rng.js';
+import {
+  buildAcceptedResponse,
+  buildCorrectedResponse,
+  hashTranscript,
+  verifyActionEnvelope,
+} from '../../shared/action-protocol.js';
 import {
   generateEnemyCreature,
   generateEnemyCreatures,
@@ -29,6 +36,7 @@ import {
   resolveBefriendFight
 } from './creature-combat-service.js';
 import { resolvePveTurn } from '../../shared/combat/pve-turn-resolver.js';
+import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
   checkAllDefeated,
@@ -75,6 +83,38 @@ function createServerSeed() {
 
 function createCombatId() {
   return `cmb_${randomBytes(8).toString('hex')}`;
+}
+
+function normalizeCombatActionType(actionType = 'attack') {
+  return actionType?.startsWith?.('combat.')
+    ? actionType.slice('combat.'.length)
+    : (actionType || 'attack');
+}
+
+function moveChoicesFromEnvelope(envelope = {}) {
+  return envelope.payload?.moveChoices || envelope.moveChoices || [];
+}
+
+function cloneGameManagerForCombatPreview(gm) {
+  const cloned = cloneForPveTurn({
+    combat: gm.combat,
+    run: gm.run,
+    meta: gm.meta,
+  });
+  if (cloned.combat && cloned.run?.creatureParty?.active) {
+    cloned.combat.allies = cloned.run.creatureParty.active;
+  }
+  return {
+    combat: cloned.combat,
+    run: cloned.run,
+    meta: cloned.meta,
+    userId: gm.userId,
+    emitState() {},
+    narrate() {},
+    _onRunDefeat() {},
+    _debugForceBefriend: gm._debugForceBefriend,
+    _debugSuperAttack: gm._debugSuperAttack,
+  };
 }
 
 export function serializeBefriendPrompt(prompt) {
@@ -293,6 +333,84 @@ export class CombatCycleService {
     const fusionReward = collectStartingMeadowHinonekoVictoryReward(this.gm.meta, this.gm.run, this.gm.combat);
     if (fusionReward) rewards.push(fusionReward);
     return rewards;
+  }
+
+  previewCreatureCombatCycle({ actionType = 'attack', moveChoices = [], seed } = {}) {
+    const resolvedActionType = normalizeCombatActionType(actionType);
+    const previewGm = cloneGameManagerForCombatPreview(this.gm);
+    const previewService = new CombatCycleService(previewGm);
+    const transcript = previewService.creatureCombatCycle(resolvedActionType, moveChoices, {
+      rng: createSeededRng(seed),
+      verifiedSeed: seed,
+    });
+
+    return {
+      transcript,
+      predictedHash: hashTranscript(transcript),
+    };
+  }
+
+  verifyAndCommitCreatureCombatCycle(envelope = {}) {
+    const optimistic = this.gm.combat?.optimistic;
+    if (!optimistic) {
+      return buildCorrectedResponse({
+        reason: 'missing_optimistic_state',
+        authoritativeTranscript: null,
+        authoritativeState: null,
+        stateVersion: null,
+        nextSeed: null,
+      });
+    }
+    if (!optimistic.acceptedActionIds) optimistic.acceptedActionIds = {};
+    if (envelope.actionId && optimistic.acceptedActionIds[envelope.actionId]) {
+      return optimistic.acceptedActionIds[envelope.actionId];
+    }
+
+    const actionType = normalizeCombatActionType(envelope.payload?.actionType || envelope.actionType || 'attack');
+    const moveChoices = moveChoicesFromEnvelope(envelope);
+    const verified = verifyActionEnvelope(envelope, {
+      combatId: optimistic.combatId,
+      stateVersion: optimistic.stateVersion,
+      seed: optimistic.nextTurnSeed,
+    });
+
+    if (!verified.ok) {
+      return buildCorrectedResponse({
+        reason: verified.reason,
+        authoritativeTranscript: null,
+        authoritativeState: null,
+        stateVersion: optimistic.stateVersion,
+        nextSeed: optimistic.nextTurnSeed,
+      });
+    }
+
+    const committed = this.creatureCombatCycle(actionType, moveChoices, {
+      rng: createSeededRng(envelope.seed),
+      verifiedSeed: envelope.seed,
+    });
+    optimistic.stateVersion += 1;
+    optimistic.nextTurnSeed = createServerSeed();
+
+    const committedHash = hashTranscript(committed);
+    const protocolPayload = committedHash === envelope.predictedHash
+      ? buildAcceptedResponse({
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        })
+      : buildCorrectedResponse({
+          reason: 'transcript_mismatch',
+          authoritativeTranscript: committed,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+
+    const response = {
+      ...committed,
+      ...protocolPayload,
+    };
+    optimistic.acceptedActionIds[envelope.actionId] = response;
+    return response;
   }
 
   _collectPoisonKoXpEvents(effectEvents, metaMults) {

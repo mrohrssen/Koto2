@@ -210,7 +210,15 @@ export default function createCombatRoutes({
 
     try {
       const resolveStartedAt = performance.now();
-      const result = gameManager.combatCycleService.creatureCombatCycle(resolvedActionType, moveChoices || []);
+      let result = req.body?.actionId
+        ? gameManager.combatCycleService.verifyAndCommitCreatureCombatCycle(req.body)
+        : gameManager.combatCycleService.creatureCombatCycle(resolvedActionType, moveChoices || []);
+      if (result?.status === 'corrected') {
+        result = {
+          ...result,
+          authoritativeState: req.getEnrichedGameState?.() || null,
+        };
+      }
       resolveMs = Math.round(performance.now() - resolveStartedAt);
 
       const saveStartedAt = performance.now();
