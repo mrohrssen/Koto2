@@ -6,6 +6,7 @@ import {
   buildAcceptedResponse,
   buildCorrectedResponse,
   hashTranscript,
+  PVE_CORE_PREDICTION_MODE,
   verifyActionEnvelope,
 } from '../../shared/action-protocol.js';
 import {
@@ -37,6 +38,7 @@ import {
 } from './creature-combat-service.js';
 import { resolvePveTurn } from '../../shared/combat/pve-turn-resolver.js';
 import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
+import { hasPveServerOnlyFeedback } from '../../shared/combat/pve-prediction-contract.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
   checkAllDefeated,
@@ -368,6 +370,7 @@ export class CombatCycleService {
 
     const actionType = normalizeCombatActionType(envelope.payload?.actionType || envelope.actionType || 'attack');
     const moveChoices = moveChoicesFromEnvelope(envelope);
+    const predictionMode = envelope.payload?.predictionMode || envelope.predictionMode || null;
     const verified = verifyActionEnvelope(envelope, {
       combatId: optimistic.combatId,
       stateVersion: optimistic.stateVersion,
@@ -384,21 +387,56 @@ export class CombatCycleService {
       });
     }
 
+    const usesSharedPveCorePrediction = predictionMode === PVE_CORE_PREDICTION_MODE;
+    let sharedPveCoreHash = null;
+    let sharedPveCoreUnsupported = false;
+    if (usesSharedPveCorePrediction) {
+      if (this.gm.combat?.actionCursor || this.gm.combat?.npcId || this.gm.combat?.npcData) {
+        return buildCorrectedResponse({
+          reason: 'unsupported_prediction_mode',
+          authoritativeTranscript: null,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+      }
+      const resolvedCore = resolvePveTurn({
+        snapshot: { combat: this.gm.combat, run: this.gm.run },
+        actionType,
+        moveChoices,
+        seed: envelope.seed,
+      });
+      sharedPveCoreHash = hashTranscript(resolvedCore.transcript);
+      sharedPveCoreUnsupported = hasPveServerOnlyFeedback(resolvedCore.transcript);
+      if (sharedPveCoreUnsupported) {
+        return buildCorrectedResponse({
+          reason: 'server_only_feedback_unsupported',
+          authoritativeTranscript: null,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+      }
+    }
+
     const committed = this.creatureCombatCycle(actionType, moveChoices, {
       rng: createSeededRng(envelope.seed),
       verifiedSeed: envelope.seed,
+      suppressBarks: usesSharedPveCorePrediction,
     });
     optimistic.stateVersion += 1;
     optimistic.nextTurnSeed = createServerSeed();
 
-    const committedHash = hashTranscript(committed);
-    const protocolPayload = committedHash === envelope.predictedHash
+    const committedHash = usesSharedPveCorePrediction && sharedPveCoreHash
+      ? sharedPveCoreHash
+      : hashTranscript(committed);
+    const protocolPayload = !sharedPveCoreUnsupported && committedHash === envelope.predictedHash
       ? buildAcceptedResponse({
           stateVersion: optimistic.stateVersion,
           nextSeed: optimistic.nextTurnSeed,
         })
       : buildCorrectedResponse({
-          reason: 'transcript_mismatch',
+          reason: sharedPveCoreUnsupported ? 'server_only_feedback_unsupported' : 'transcript_mismatch',
           authoritativeTranscript: committed,
           authoritativeState: null,
           stateVersion: optimistic.stateVersion,
@@ -1013,7 +1051,7 @@ export class CombatCycleService {
     // Pick combat barks server-side
     let barks = [];
     const barkPool = getBarkPool();
-    if (barkPool && Object.keys(barkPool).length > 0 && this.gm.userId) {
+    if (!options.suppressBarks && barkPool && Object.keys(barkPool).length > 0 && this.gm.userId) {
       const knownWords = new Set(getKnownWordsFromFsrs(this.gm.userId));
       if (!this.gm.combat.usedBarks) this.gm.combat.usedBarks = new Set();
 

@@ -2,6 +2,8 @@ function isUnsupportedJsonValue(value) {
   return value === undefined || typeof value === 'function' || typeof value === 'symbol';
 }
 
+export const PVE_CORE_PREDICTION_MODE = 'shared-pve-turn-v1';
+
 function stableStringify(value) {
   if (typeof value === 'bigint') {
     throw new TypeError('Cannot canonicalize BigInt value in action protocol transcript');

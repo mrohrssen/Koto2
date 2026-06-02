@@ -755,6 +755,14 @@ async function creatureCombatCycle(actionType, moveChoices = []) {
   });
 }
 
+async function verifyCreatureCombatCycle(envelope) {
+  return apiCall(COMBAT_CYCLE_ENDPOINT, 'POST', envelope, null, {
+    timeoutMs: COMBAT_CYCLE_TIMEOUT_MS,
+    returnErrorBody: true,
+    bypassLoadingGate: true,
+  });
+}
+
 async function getKanjiKombatAvailability() {
   return apiCall('/kanji-kombat/availability', 'GET');
 }
@@ -957,6 +965,7 @@ export {
   startEncounter,
   startCreatureEncounter,
   creatureCombatCycle,
+  verifyCreatureCombatCycle,
   getKanjiKombatAvailability,
   startKanjiKombat,
   submitKanjiKombatIntro,
