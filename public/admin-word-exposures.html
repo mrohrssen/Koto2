@@ -72,6 +72,35 @@
   }
   .controls .checkbox-wrap input { cursor: pointer; }
   .controls .checkbox-wrap label { cursor: pointer; }
+  .auth-panel {
+    background: #16213e;
+    border: 1px solid #333;
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 12px;
+  }
+  .auth-panel label {
+    color: #aaa;
+    font-size: 12px;
+  }
+  .auth-panel input {
+    background: #0f3460;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 10px;
+    width: 240px;
+  }
+  .auth-status {
+    color: #f0a500;
+    font-size: 12px;
+  }
   .stats {
     color: #7fdbca;
     font-size: 13px;
@@ -255,6 +284,16 @@
 
 <h1>Word Exposure Dashboard</h1>
 
+<div class="auth-panel">
+  <div>
+    <label for="adminSecretInput">Admin secret</label><br>
+    <input type="password" id="adminSecretInput" autocomplete="off" placeholder="Paste ADMIN_SECRET">
+  </div>
+  <button id="adminSecretSave" type="button">Save Secret</button>
+  <button id="adminSecretClear" type="button">Clear</button>
+  <span class="auth-status" id="adminSecretStatus">Admin secret required for admin data.</span>
+</div>
+
 <div class="controls">
   <button id="loadBtn" onclick="load()">Reload</button>
   <div class="checkbox-wrap">
@@ -346,14 +385,40 @@ function esc(str) {
 
 let adminSecret = '';
 
+function setAdminSecretStatus() {
+  document.getElementById('adminSecretStatus').textContent = adminSecret
+    ? 'Secret stored for this tab.'
+    : 'Admin secret required for admin data.';
+}
+
+function saveAdminSecret(secret) {
+  adminSecret = secret;
+  if (secret) {
+    sessionStorage.setItem('koto-admin-secret', secret);
+  } else {
+    sessionStorage.removeItem('koto-admin-secret');
+  }
+  document.getElementById('adminSecretInput').value = '';
+  setAdminSecretStatus();
+}
+
 async function fetchAdminSecret() {
+  adminSecret = sessionStorage.getItem('koto-admin-secret') || '';
+  if (adminSecret) {
+    setAdminSecretStatus();
+    return;
+  }
+
   try {
     const res = await fetch('/api/admin/secret');
     if (res.ok) {
       const data = await res.json();
-      adminSecret = data.secret;
+      if (data.secret) {
+        saveAdminSecret(data.secret);
+      }
     }
   } catch { /* server will reject admin calls anyway */ }
+  setAdminSecretStatus();
 }
 
 function getSecret() {
@@ -363,6 +428,24 @@ function getSecret() {
 function headers() {
   return { 'Content-Type': 'application/json', 'X-Admin-Secret': getSecret() };
 }
+
+document.getElementById('adminSecretSave').addEventListener('click', () => {
+  const secret = document.getElementById('adminSecretInput').value.trim();
+  if (!secret) return;
+  saveAdminSecret(secret);
+  load();
+});
+
+document.getElementById('adminSecretClear').addEventListener('click', () => {
+  saveAdminSecret('');
+  wordsData = [];
+  framesData = [];
+  jpdbWordResults = {};
+  jpdbFrameResults = {};
+  window._totalUsers = null;
+  updateStats();
+  renderAll();
+});
 
 // --- Tabs ---
 function switchTab(tab) {
@@ -642,7 +725,9 @@ async function fetchJpdbFrameBatches(gen) {
 }
 
 // --- Init ---
-fetchAdminSecret().then(() => load());
+fetchAdminSecret().then(() => {
+  if (adminSecret) load();
+});
 </script>
 
 <script>

@@ -902,7 +902,12 @@ function bindEvents() {
 
     if (event.target.closest('[data-clear-admin-secret]')) {
       clearAdminSecret();
+      state.users = [];
+      state.selectedUser = null;
+      state.selectedUserKnowledge = null;
       renderUsers();
+      renderOverviewData();
+      renderNav();
       return;
     }
 

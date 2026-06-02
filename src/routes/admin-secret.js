@@ -18,12 +18,16 @@ export function isLocalAdminSecretRequest(req) {
   return LOCAL_HOSTNAMES.has(hostname) && isLoopbackRemoteAddress(remoteAddress);
 }
 
+export function isLocalAdminSecretEnabled() {
+  return process.env.ENABLE_LOCAL_ADMIN_SECRET === '1';
+}
+
 export function createAdminSecretRouter() {
   const router = Router();
 
   router.get('/secret', (req, res) => {
     const secret = process.env.ADMIN_SECRET || '';
-    if (!secret || !isLocalAdminSecretRequest(req)) {
+    if (!secret || !isLocalAdminSecretEnabled() || !isLocalAdminSecretRequest(req)) {
       return res.status(404).json({ error: 'Not found' });
     }
 

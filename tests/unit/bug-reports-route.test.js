@@ -81,4 +81,30 @@ describe('bug reports route', () => {
     assert.deepEqual(response.body, { success: true });
     assert.equal(existsSync(reportDir), false);
   });
+
+  it('returns 400 for invalid report metadata ids', async () => {
+    const response = await request(await createApp())
+      .get('/api/bug-reports/..%2Foutside');
+
+    assert.equal(response.status, 400);
+    assert.deepEqual(response.body, { error: 'Invalid report id' });
+  });
+
+  it('returns 400 for invalid report screenshot ids', async () => {
+    const response = await request(await createApp())
+      .get('/api/bug-reports/..%2Foutside/screenshot');
+
+    assert.equal(response.status, 400);
+    assert.deepEqual(response.body, { error: 'Invalid report id' });
+  });
+
+  it('returns 400 for invalid report delete ids with a valid admin secret', async () => {
+    process.env.ADMIN_SECRET = 'delete-secret';
+    const response = await request(await createApp())
+      .delete('/api/bug-reports/..%2Foutside')
+      .set('x-admin-secret', 'delete-secret');
+
+    assert.equal(response.status, 400);
+    assert.deepEqual(response.body, { error: 'Invalid report id' });
+  });
 });

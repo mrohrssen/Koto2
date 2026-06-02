@@ -16,10 +16,12 @@ function createApp() {
 describe('admin secret route', () => {
   afterEach(() => {
     delete process.env.ADMIN_SECRET;
+    delete process.env.ENABLE_LOCAL_ADMIN_SECRET;
   });
 
   it('returns the secret for localhost requests', async () => {
     process.env.ADMIN_SECRET = 'local-secret';
+    process.env.ENABLE_LOCAL_ADMIN_SECRET = '1';
     const response = await request(createApp())
       .get('/api/admin/secret')
       .set('Host', 'localhost');
@@ -30,6 +32,7 @@ describe('admin secret route', () => {
 
   it('does not expose the secret for remote hostnames', async () => {
     process.env.ADMIN_SECRET = 'remote-secret';
+    process.env.ENABLE_LOCAL_ADMIN_SECRET = '1';
     const response = await request(createApp())
       .get('/api/admin/secret')
       .set('Host', 'jrpg-production.up.railway.app');
@@ -39,11 +42,22 @@ describe('admin secret route', () => {
   });
 
   it('returns 404 when ADMIN_SECRET is not configured', async () => {
+    process.env.ENABLE_LOCAL_ADMIN_SECRET = '1';
     const response = await request(createApp())
       .get('/api/admin/secret')
       .set('Host', 'localhost');
 
     assert.equal(response.status, 404);
+  });
+
+  it('returns 404 when local secret discovery is not enabled', async () => {
+    process.env.ADMIN_SECRET = 'local-secret';
+    const response = await request(createApp())
+      .get('/api/admin/secret')
+      .set('Host', 'localhost');
+
+    assert.equal(response.status, 404);
+    assert.deepEqual(response.body, { error: 'Not found' });
   });
 
   it('does not trust a spoofed localhost host header from a remote address', () => {
