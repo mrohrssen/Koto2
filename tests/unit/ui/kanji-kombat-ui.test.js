@@ -298,6 +298,37 @@ describe('kanji-kombat ui', () => {
     ]);
   });
 
+  it('does not use the English answer as a Kanji Kombat TTS fallback', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      playCorrectAnswerAudio: answer => calls.push(['tts', answer]),
+      submitAnswer: async answerId => calls.push(['submitAnswer', answerId]),
+    });
+
+    renderKanjiKombatAction({
+      combat: { actionCursor: { side: 'ally' } },
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          currentQuiz: {
+            prompt: '火',
+            choices: [
+              { id: 'fire', answer: 'Fire', correct: true },
+              { id: 'water', answer: 'Water', correct: false },
+            ],
+          },
+        },
+      },
+    });
+
+    await actionArea.querySelectorAll('.kanji-kombat-choice')[1].click();
+
+    assert.deepEqual(calls, [
+      ['tts', '火'],
+      ['submitAnswer', 'water'],
+    ]);
+  });
+
   it('renders completion choice actions', () => {
     renderKanjiKombatCompletionChoice({ onChoice: () => {} });
     assert.match(actionArea.innerHTML, /Your reviews are done for the day!/);
