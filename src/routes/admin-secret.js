@@ -12,10 +12,25 @@ function isLoopbackRemoteAddress(remoteAddress) {
     || remoteAddress === '::ffff:127.0.0.1';
 }
 
+export function isSafeLocalAdminSecretOrigin(origin) {
+  if (!origin) {
+    return true;
+  }
+
+  try {
+    const url = new URL(origin);
+    return LOCAL_HOSTNAMES.has(normalizeHostname(url.hostname));
+  } catch {
+    return false;
+  }
+}
+
 export function isLocalAdminSecretRequest(req) {
   const hostname = normalizeHostname(req.hostname);
   const remoteAddress = req.socket?.remoteAddress || req.ip || '';
-  return LOCAL_HOSTNAMES.has(hostname) && isLoopbackRemoteAddress(remoteAddress);
+  return LOCAL_HOSTNAMES.has(hostname)
+    && isLoopbackRemoteAddress(remoteAddress)
+    && isSafeLocalAdminSecretOrigin(req.get?.('origin'));
 }
 
 export function isLocalAdminSecretEnabled() {

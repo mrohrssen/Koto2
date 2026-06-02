@@ -5,6 +5,7 @@ import request from 'supertest';
 import {
   createAdminSecretRouter,
   isLocalAdminSecretRequest,
+  isSafeLocalAdminSecretOrigin,
 } from '../../src/routes/admin-secret.js';
 
 function createApp() {
@@ -39,6 +40,25 @@ describe('admin secret route', () => {
 
     assert.equal(response.status, 404);
     assert.deepEqual(response.body, { error: 'Not found' });
+  });
+
+  it('does not expose the secret to a foreign web origin', async () => {
+    process.env.ADMIN_SECRET = 'local-secret';
+    process.env.ENABLE_LOCAL_ADMIN_SECRET = '1';
+    const response = await request(createApp())
+      .get('/api/admin/secret')
+      .set('Host', 'localhost')
+      .set('Origin', 'https://evil.example');
+
+    assert.equal(response.status, 404);
+    assert.deepEqual(response.body, { error: 'Not found' });
+  });
+
+  it('allows same-machine web origins for local secret discovery', () => {
+    assert.equal(isSafeLocalAdminSecretOrigin(undefined), true);
+    assert.equal(isSafeLocalAdminSecretOrigin('http://localhost:3000'), true);
+    assert.equal(isSafeLocalAdminSecretOrigin('http://127.0.0.1:5173'), true);
+    assert.equal(isSafeLocalAdminSecretOrigin('https://evil.example'), false);
   });
 
   it('returns 404 when ADMIN_SECRET is not configured', async () => {
