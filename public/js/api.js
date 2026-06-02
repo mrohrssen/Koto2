@@ -434,8 +434,18 @@ async function selectArea(areaId) {
 
 // ============ ROOM EXPLORATION ENDPOINTS ============
 
+async function verifiedRunAction(endpoint, body = {}) {
+  return apiCall(endpoint, 'POST', body, null, {
+    returnErrorBody: true,
+    bypassLoadingGate: true,
+  });
+}
+
 /** Proceed to next room */
-async function proceed() {
+async function proceed(options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/proceed', { actionId: options.actionId });
+  }
   return apiCall('/proceed', 'POST', {}, null, { retryable: true });
 }
 
@@ -466,9 +476,13 @@ async function getShrineOffers() {
 }
 
 /** Choose one shrine reward */
-async function chooseShrineReward(rewardType, creatureKey = null) {
+async function chooseShrineReward(rewardType, creatureKey = null, options = {}) {
   const body = { rewardType };
   if (creatureKey !== null) body.creatureKey = creatureKey;
+  if (options?.actionId) {
+    body.actionId = options.actionId;
+    return verifiedRunAction('/shrine-choose', body);
+  }
   return apiCall('/shrine-choose', 'POST', body);
 }
 
@@ -538,12 +552,18 @@ async function getDealerState() {
 }
 
 /** Sell a creature to the dealer */
-async function dealerSell(creatureId) {
+async function dealerSell(creatureId, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/dealer-sell', { creatureId, actionId: options.actionId });
+  }
   return apiCall('/dealer-sell', 'POST', { creatureId });
 }
 
 /** Buy a creature from the dealer */
-async function dealerBuy(creatureId) {
+async function dealerBuy(creatureId, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/dealer-buy', { creatureId, actionId: options.actionId });
+  }
   return apiCall('/dealer-buy', 'POST', { creatureId });
 }
 
@@ -883,7 +903,10 @@ async function skillMasterOffers() {
 }
 
 /** Choose a skill offer in the Skill Master room */
-async function skillMasterChoose(skillId) {
+async function skillMasterChoose(skillId, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/skill-master-choose', { skillId, actionId: options.actionId });
+  }
   return apiCall('/skill-master-choose', 'POST', { skillId });
 }
 
@@ -895,9 +918,13 @@ async function getFriendlyNpcOffers() {
 }
 
 /** Choose one item from the friendly NPC's offers */
-async function chooseFriendlyNpcItem(itemId, targetCreatureIndex = null) {
+async function chooseFriendlyNpcItem(itemId, targetCreatureIndex = null, options = {}) {
   const body = { itemId };
   if (targetCreatureIndex !== null) body.targetCreatureIndex = targetCreatureIndex;
+  if (options?.actionId) {
+    body.actionId = options.actionId;
+    return verifiedRunAction('/friendly-npc-choose', body);
+  }
   return apiCall('/friendly-npc-choose', 'POST', body);
 }
 
@@ -944,6 +971,7 @@ export {
   createPlayer,
   // Run management endpoints
   startRun,
+  verifiedRunAction,
   confirmCreatures,
   forfeitRun,
   getAreaOptions,

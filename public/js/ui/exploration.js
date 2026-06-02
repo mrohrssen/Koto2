@@ -27,6 +27,13 @@ import {
 } from './tutorial-copy.js';
 import { showWordLevelUp } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
+import { derivePhase } from '../../../src/game/phase-machine.js';
+import {
+  createPendingRunAction,
+  confirmPendingRunAction,
+  correctPendingRunAction,
+  isMatchingRunActionResponse,
+} from './optimistic-run-action.js';
 
 /**
  * Resolve any active scene that owns an `npcs` layer. Every gameplay scene
@@ -67,6 +74,54 @@ let startEncounter = null;
 let startNewRun = null;
 let returnToHub = null;
 let showAdventureReport = null;
+let pendingRunActionId = null;
+
+function beginPendingRunAction({ actionType, applyLocal }) {
+  if (pendingRunActionId) return null;
+  const pending = createPendingRunAction({
+    state: getGameState(),
+    actionType,
+    applyLocal,
+  });
+  pendingRunActionId = pending.actionId;
+  updateGameState(pending.state);
+  return pending;
+}
+
+function clearPendingRunAction(pending) {
+  if (!pending || pendingRunActionId === pending.actionId) {
+    pendingRunActionId = null;
+  }
+}
+
+function reconcilePendingRunAction(pending, result) {
+  if (!isMatchingRunActionResponse(pending, result)) return false;
+  if (result?.status === 'corrected') {
+    updateGameState(correctPendingRunAction(pending, result));
+    updateUI();
+    clearPendingRunAction(pending);
+    return true;
+  }
+  if (result?.state) {
+    updateGameState(confirmPendingRunAction(pending, result));
+    updateUI();
+    clearPendingRunAction(pending);
+    return true;
+  }
+  return false;
+}
+
+function rollbackPendingRunAction(pending) {
+  if (!pending) return;
+  updateGameState(pending.originalState);
+  updateUI();
+  clearPendingRunAction(pending);
+}
+
+function clearActionArea() {
+  const el = document.getElementById('action-area');
+  if (el) el.innerHTML = '';
+}
 
 // Discovery / shrine guards now live on ExplorationScene (scene-owned state).
 // Moving them off the module scope means they reset naturally when we
@@ -623,6 +678,37 @@ export async function renderAreaSelection() {
 
 /** Exploring phase — show Proceed or Fight button */
 async function proceedToNextRoom() {
+  const state = getGameState();
+  const nextRoomIndex = (state.run?.currentRoom ?? -1) + 1;
+  const nextRoom = state.run?.rooms?.[nextRoomIndex];
+  if (nextRoom) {
+    const pending = beginPendingRunAction({
+      actionType: 'run.proceed',
+      applyLocal: draft => {
+        draft.run.currentRoom = nextRoomIndex;
+        draft.phase = derivePhase(draft);
+      },
+    });
+    if (!pending) return;
+
+    clearActionArea();
+    const verification = apiProceed({ actionId: pending.actionId })
+      .then(result => ({ result }))
+      .catch(error => ({ error }));
+
+    try {
+      await playRoomTransition(pending.state, { ingredientDrops: [] });
+      const { result, error } = await verification;
+      if (error) throw error;
+      if (!reconcilePendingRunAction(pending, result)) {
+        rollbackPendingRunAction(pending);
+      }
+    } catch {
+      rollbackPendingRunAction(pending);
+    }
+    return;
+  }
+
   const result = await apiProceed();
   if (result?.state) {
     updateGameState(result.state);
@@ -876,19 +962,31 @@ function renderShrineLevelTargets(rewardType) {
 async function chooseShrineReward(rewardType, creatureKey) {
   if (shrineState.choosing) return;
   shrineState.choosing = true;
+  let pending = null;
   try {
     playSFX('creature-equip');
-    const result = await apiChooseShrineReward?.(rewardType, creatureKey);
-    if (result?.state) {
-      updateGameState(result.state);
+    pending = beginPendingRunAction({
+      actionType: 'shrine.choose',
+      applyLocal: draft => {
+        draft.run.pendingShrineReward = { rewardType, creatureKey };
+      },
+    });
+    if (!pending) {
+      shrineState.choosing = false;
+      return;
+    }
+    const result = await apiChooseShrineReward?.(rewardType, creatureKey, { actionId: pending.actionId });
+    if (reconcilePendingRunAction(pending, result)) {
+      shrineState.choosing = false;
       actions.clear();
-      updateUI();
     } else {
+      rollbackPendingRunAction(pending);
       shrineState.choosing = false;
       sceneModule?.showNarration?.('Could not apply shrine blessing. Tap to try again.', { autoDismiss: 2200 });
       renderShrine();
     }
   } catch {
+    rollbackPendingRunAction(pending);
     shrineState.choosing = false;
     actions.clear();
     sceneModule?.showNarration?.('Failed to choose shrine blessing.', { autoDismiss: 1800 });
@@ -1527,18 +1625,24 @@ export async function renderSkillMaster() {
       })),
       onSelect: async (index) => {
         const skillId = offers[index].id;
+        const pending = beginPendingRunAction({
+          actionType: 'skillMaster.choose',
+          applyLocal: draft => {
+            draft.run.pendingSkillChoice = skillId;
+          },
+        });
+        if (!pending) return;
         let result;
         try {
-          result = await apiSkillMasterChoose?.(skillId);
+          result = await apiSkillMasterChoose?.(skillId, { actionId: pending.actionId });
         } catch (err) {
+          rollbackPendingRunAction(pending);
           sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
           renderSkillMaster();
           return;
         }
-        if (result?.state) {
-          updateGameState(result.state);
-          updateUI();
-        } else {
+        if (!reconcilePendingRunAction(pending, result)) {
+          rollbackPendingRunAction(pending);
           sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
           renderSkillMaster();
         }
@@ -1590,17 +1694,23 @@ function renderTutorialSkillMaster(offers) {
         });
 
         let result;
+        const pending = beginPendingRunAction({
+          actionType: 'skillMaster.choose',
+          applyLocal: draft => {
+            draft.run.pendingSkillChoice = s.id;
+          },
+        });
+        if (!pending) return;
         try {
-          result = await apiSkillMasterChoose?.(s.id);
+          result = await apiSkillMasterChoose?.(s.id, { actionId: pending.actionId });
         } catch {
+          rollbackPendingRunAction(pending);
           sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
           renderSkillMaster();
           return;
         }
-        if (result?.state) {
-          updateGameState(result.state);
-          updateUI();
-        } else {
+        if (!reconcilePendingRunAction(pending, result)) {
+          rollbackPendingRunAction(pending);
           sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
           renderSkillMaster();
         }
@@ -1824,22 +1934,32 @@ export async function renderFriendlyNpc() {
       const isPartyWide = item.effect?.healAllPercent || item.effect?.mpRestorePercent;
 
       const applyItem = async (creatureIndex) => {
+        const pending = beginPendingRunAction({
+          actionType: 'friendlyNpc.choose',
+          applyLocal: draft => {
+            draft.run.pendingFriendlyNpcItem = { itemId: item.id, targetCreatureIndex: creatureIndex };
+          },
+        });
+        if (!pending) {
+          friendlyNpcState.choosing = false;
+          return;
+        }
         let result;
         try {
-          result = await apiChooseFriendlyNpcItem?.(item.id, creatureIndex);
+          result = await apiChooseFriendlyNpcItem?.(item.id, creatureIndex, { actionId: pending.actionId });
         } catch (err) {
+          rollbackPendingRunAction(pending);
           friendlyNpcState.choosing = false;
           actions.clear();
           sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
           renderFriendlyNpc();
           return;
         }
-        if (result?.state) {
-          updateGameState(result.state);
+        if (reconcilePendingRunAction(pending, result)) {
           friendlyNpcState.choosing = false;
           actions.clear();
-          updateUI();
         } else {
+          rollbackPendingRunAction(pending);
           friendlyNpcState.choosing = false;
           sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
           renderFriendlyNpc();

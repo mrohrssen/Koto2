@@ -3,6 +3,12 @@ import * as narrationBox from './narration-box.js';
 import { t } from './i18n.js';
 import { credits as creditsPopup, animateCounter } from './event-popup.js';
 import { pop } from './dom-effects.js';
+import {
+  createPendingRunAction,
+  confirmPendingRunAction,
+  correctPendingRunAction,
+  isMatchingRunActionResponse,
+} from './optimistic-run-action.js';
 
 let getGameState = null;
 let updateGameState = null;
@@ -12,6 +18,57 @@ let apiDealerSell = null;
 let apiDealerBuy = null;
 let apiDealerLeave = null;
 let apiGetDealerState = null;
+let pendingDealerActionId = null;
+
+function beginPendingDealerAction({ actionType, applyLocal }) {
+  if (pendingDealerActionId) return null;
+  const pending = createPendingRunAction({
+    state: getGameState(),
+    actionType,
+    applyLocal,
+  });
+  pendingDealerActionId = pending.actionId;
+  updateGameState(pending.state);
+  return pending;
+}
+
+function clearPendingDealerAction(pending) {
+  if (!pending || pendingDealerActionId === pending.actionId) {
+    pendingDealerActionId = null;
+  }
+}
+
+function reconcilePendingDealerAction(pending, result) {
+  if (!isMatchingRunActionResponse(pending, result)) return false;
+  if (result?.status === 'corrected') {
+    updateGameState(correctPendingRunAction(pending, result));
+    updateUI();
+    clearPendingDealerAction(pending);
+    return true;
+  }
+  if (result?.state) {
+    updateGameState(confirmPendingRunAction(pending, result));
+    updateUI();
+    clearPendingDealerAction(pending);
+    return true;
+  }
+  return false;
+}
+
+function rollbackPendingDealerAction(pending) {
+  if (!pending) return;
+  updateGameState(pending.originalState);
+  updateUI();
+  clearPendingDealerAction(pending);
+}
+
+function setDealerControlsDisabled(disabled) {
+  document
+    .querySelectorAll('.dealer-buy-btn, .dealer-sell-btn, .dealer-leave-btn')
+    .forEach(control => {
+      control.disabled = disabled;
+    });
+}
 
 export function init(callbacks) {
   getGameState = callbacks.getGameState;
@@ -109,11 +166,24 @@ export async function renderDealerRoom(actionsModule) {
   // Wire buy buttons
   document.querySelectorAll('.dealer-buy-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
+      if (pendingDealerActionId) return;
       e.target.disabled = true;
+      let pending = null;
       try {
         const creatureId = e.target.dataset.creatureId;
-        const result = await apiDealerBuy(creatureId);
-        if (result?.state) { updateGameState(result.state); }
+        pending = beginPendingDealerAction({
+          actionType: 'dealer.buy',
+          applyLocal: draft => {
+            draft.run.pendingDealerPurchase = creatureId;
+          },
+        });
+        if (!pending) {
+          e.target.disabled = false;
+          return;
+        }
+        setDealerControlsDisabled(true);
+        const result = await apiDealerBuy(creatureId, { actionId: pending.actionId });
+        const reconciled = reconcilePendingDealerAction(pending, result);
         if (result?.success) {
           const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
           if (creditsEl && result.creditsSpent) {
@@ -125,11 +195,12 @@ export async function renderDealerRoom(actionsModule) {
           const card = buyBtn?.closest('.dealer-offer-card');
           if (card) pop(card, 1.1);
         }
-        updateUI();
+        if (!reconciled) rollbackPendingDealerAction(pending);
         renderDealerRoom(actionsModule);
       } catch (error) {
+        rollbackPendingDealerAction(pending);
         console.error('Dealer buy failed:', error);
-        e.target.disabled = false;
+        setDealerControlsDisabled(false);
       }
     });
   });
@@ -138,12 +209,25 @@ export async function renderDealerRoom(actionsModule) {
   document.querySelector('.dealer-inventory-list')?.addEventListener('click', async (e) => {
     const sellBtn = e.target.closest('.dealer-sell-btn');
     if (!sellBtn || sellBtn.disabled) return;
+    if (pendingDealerActionId) return;
 
     const creatureId = sellBtn.dataset.creatureId;
     sellBtn.disabled = true;
+    let pending = null;
     try {
-      const result = await apiDealerSell(creatureId);
-      if (result?.state) { updateGameState(result.state); }
+      pending = beginPendingDealerAction({
+        actionType: 'dealer.sell',
+        applyLocal: draft => {
+          draft.run.pendingDealerSale = creatureId;
+        },
+      });
+      if (!pending) {
+        sellBtn.disabled = false;
+        return;
+      }
+      setDealerControlsDisabled(true);
+      const result = await apiDealerSell(creatureId, { actionId: pending.actionId });
+      const reconciled = reconcilePendingDealerAction(pending, result);
       if (result?.success) {
         const creditsEl = document.querySelector('.dealer-credits') || document.querySelector('.credits-display');
         if (creditsEl && result.creditsGained) {
@@ -152,11 +236,12 @@ export async function renderDealerRoom(actionsModule) {
           animateCounter(creditsEl, prevCredits, result.creditsRemaining, 400, { flashColor: '#FFD700' });
         }
       }
-      updateUI();
+      if (!reconciled) rollbackPendingDealerAction(pending);
       renderDealerRoom(actionsModule);
     } catch (error) {
+      rollbackPendingDealerAction(pending);
       console.error('Dealer sell failed:', error);
-      sellBtn.disabled = false;
+      setDealerControlsDisabled(false);
     }
   });
 
