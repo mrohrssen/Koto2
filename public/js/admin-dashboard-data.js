@@ -116,6 +116,17 @@ export function canDeleteUser(user, confirmation) {
   return confirmation === user.username;
 }
 
+export function isCurrentRequestToken(requestToken, currentToken) {
+  return requestToken === currentToken;
+}
+
+export function getRestoredSelectionRange(selectionStart, selectionEnd, valueLength) {
+  const fallback = Math.max(0, Number(valueLength) || 0);
+  const start = Number.isInteger(selectionStart) ? selectionStart : fallback;
+  const end = Number.isInteger(selectionEnd) ? selectionEnd : start;
+  return { start, end };
+}
+
 export function normalizeBugReports(reports) {
   return [...reports]
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())

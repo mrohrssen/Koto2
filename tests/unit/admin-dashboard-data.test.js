@@ -7,6 +7,8 @@ import {
   canDeleteUser,
   filterUsers,
   getAllDashboardHrefs,
+  getRestoredSelectionRange,
+  isCurrentRequestToken,
   normalizeBugReports,
 } from '../../public/js/admin-dashboard-data.js';
 
@@ -83,6 +85,16 @@ describe('admin dashboard data helpers', () => {
     assert.equal(canDeleteUser({ username: 'devtester' }, 'DevTester'), false);
     assert.equal(canDeleteUser({ username: 'devtester' }, ' devtester '), false);
     assert.equal(canDeleteUser(null, 'devtester'), false);
+  });
+
+  it('identifies stale async request tokens', () => {
+    assert.equal(isCurrentRequestToken(3, 3), true);
+    assert.equal(isCurrentRequestToken(3, 4), false);
+  });
+
+  it('preserves search selection positions after rendering', () => {
+    assert.deepEqual(getRestoredSelectionRange(2, 4, 9), { start: 2, end: 4 });
+    assert.deepEqual(getRestoredSelectionRange(null, null, 9), { start: 9, end: 9 });
   });
 
   it('builds the overview queue from recent bug and user data', () => {

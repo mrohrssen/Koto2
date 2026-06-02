@@ -89,7 +89,8 @@ export default function createBugReportRoutes() {
       // Sanitize name for filesystem
       const safeName = name.replace(/[^a-zA-Z0-9-_]/g, '-').substring(0, 50);
       const timestamp = new Date().toISOString();
-      const reportId = `${safeName}-${Date.now()}`;
+      const randomSuffix = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+      const reportId = `${safeName}-${Date.now()}${randomSuffix}`;
       const reportDir = join(BUG_REPORTS_DIR, reportId);
 
       mkdirSync(reportDir, { recursive: true });

@@ -371,6 +371,7 @@ let framesData = [];
 let jpdbWordResults = {};
 let jpdbFrameResults = {};
 let loadGeneration = 0;
+let secretGeneration = 0;
 let sortCol = 'totalExposures';
 let sortDir = -1; // -1 = desc
 let activeTab = 'words';
@@ -391,7 +392,7 @@ function setAdminSecretStatus() {
     : 'Admin secret required for admin data.';
 }
 
-function saveAdminSecret(secret) {
+function storeAdminSecret(secret) {
   adminSecret = secret;
   if (secret) {
     sessionStorage.setItem('koto-admin-secret', secret);
@@ -402,6 +403,11 @@ function saveAdminSecret(secret) {
   setAdminSecretStatus();
 }
 
+function saveAdminSecret(secret) {
+  secretGeneration++;
+  storeAdminSecret(secret);
+}
+
 async function fetchAdminSecret() {
   adminSecret = sessionStorage.getItem('koto-admin-secret') || '';
   if (adminSecret) {
@@ -409,12 +415,13 @@ async function fetchAdminSecret() {
     return;
   }
 
+  const gen = secretGeneration;
   try {
     const res = await fetch('/api/admin/secret');
     if (res.ok) {
       const data = await res.json();
-      if (data.secret) {
-        saveAdminSecret(data.secret);
+      if (data.secret && gen === secretGeneration) {
+        storeAdminSecret(data.secret);
       }
     }
   } catch { /* server will reject admin calls anyway */ }
@@ -439,6 +446,9 @@ document.getElementById('adminSecretSave').addEventListener('click', () => {
 document.getElementById('adminSecretClear').addEventListener('click', () => {
   loadGeneration++;
   saveAdminSecret('');
+  const loadBtn = document.getElementById('loadBtn');
+  loadBtn.textContent = 'Reload';
+  loadBtn.disabled = false;
   wordsData = [];
   framesData = [];
   jpdbWordResults = {};

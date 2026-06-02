@@ -4,6 +4,8 @@ import {
   buildOverviewQueue,
   canDeleteUser,
   filterUsers,
+  getRestoredSelectionRange,
+  isCurrentRequestToken,
   normalizeBugReports,
 } from '/js/admin-dashboard-data.js';
 
@@ -52,6 +54,7 @@ const state = {
     users: 0,
     bugReportDetail: 0,
     userKnowledge: 0,
+    adminSecret: 0,
   },
 };
 
@@ -154,14 +157,23 @@ function getTypedAdminSecret() {
   return document.querySelector('[data-admin-secret-input]')?.value.trim() || '';
 }
 
-function saveAdminSecret(secret) {
+function storeAdminSecret(secret) {
   state.adminSecret = secret;
-  sessionStorage.setItem('koto-admin-secret', secret);
+  if (secret) {
+    sessionStorage.setItem('koto-admin-secret', secret);
+  } else {
+    sessionStorage.removeItem('koto-admin-secret');
+  }
+}
+
+function saveAdminSecret(secret) {
+  state.requests.adminSecret += 1;
+  storeAdminSecret(secret);
 }
 
 function clearAdminSecret() {
-  state.adminSecret = '';
-  sessionStorage.removeItem('koto-admin-secret');
+  state.requests.adminSecret += 1;
+  storeAdminSecret('');
 }
 
 async function ensureAdminSecret() {
@@ -175,14 +187,23 @@ async function ensureAdminSecret() {
     return state.adminSecret;
   }
 
+  const requestToken = state.requests.adminSecret;
+  let payload = null;
   try {
-    const payload = await fetchJson('/api/admin/secret');
-    if (payload.secret) {
-      saveAdminSecret(payload.secret);
-      return state.adminSecret;
-    }
+    payload = await fetchJson('/api/admin/secret');
   } catch {
     // Remote deployments intentionally hide this endpoint. Fall through to manual entry.
+  }
+
+  if (!isCurrentRequestToken(requestToken, state.requests.adminSecret)) {
+    throw new Error('Admin secret changed. Retry the admin action.');
+  }
+
+  if (payload) {
+    if (payload.secret) {
+      storeAdminSecret(payload.secret);
+      return state.adminSecret;
+    }
   }
 
   throw new Error('Admin secret required. Paste ADMIN_SECRET into Users & Data and retry.');
@@ -248,8 +269,11 @@ async function loadUsers() {
         state.selectedUserKnowledge = null;
       }
     }
+  } catch (error) {
+    if (!isCurrentRequestToken(requestToken, state.requests.users)) return;
+    throw error;
   } finally {
-    if (state.requests.users !== requestToken) return;
+    if (!isCurrentRequestToken(requestToken, state.requests.users)) return;
     state.loading.users = false;
     renderUsers();
     renderOverviewData();
@@ -265,8 +289,14 @@ async function loadUserKnowledge(user) {
   state.selectedUser = user;
   state.selectedUserKnowledge = null;
   renderUserDetail();
-  const payload = await adminFetchJson(`/api/admin/word-knowledge/${encodeURIComponent(user.id)}`);
-  if (state.requests.userKnowledge === requestToken && state.selectedUser?.id === user.id) {
+  let payload = null;
+  try {
+    payload = await adminFetchJson(`/api/admin/word-knowledge/${encodeURIComponent(user.id)}`);
+  } catch (error) {
+    if (!isCurrentRequestToken(requestToken, state.requests.userKnowledge) || state.selectedUser?.id !== user.id) return;
+    throw error;
+  }
+  if (isCurrentRequestToken(requestToken, state.requests.userKnowledge) && state.selectedUser?.id === user.id) {
     state.selectedUserKnowledge = payload;
     renderUserDetail();
   }
@@ -938,8 +968,7 @@ function restoreUserFilterFocus(selectionStart, selectionEnd) {
   const input = document.querySelector('[data-user-filter]');
   if (!input) return;
   input.focus();
-  const start = Number.isInteger(selectionStart) ? selectionStart : input.value.length;
-  const end = Number.isInteger(selectionEnd) ? selectionEnd : start;
+  const { start, end } = getRestoredSelectionRange(selectionStart, selectionEnd, input.value.length);
   input.setSelectionRange(start, end);
 }
 
