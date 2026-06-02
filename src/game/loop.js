@@ -273,6 +273,11 @@ export class GameManager {
         actionCount: this.combat.actionCount || 0,
         cycleCount: this.combat.cycleCount || 0,
         openingResolved: this.combat.openingResolved === true,
+        optimistic: this.combat.optimistic ? {
+          combatId: this.combat.optimistic.combatId,
+          stateVersion: this.combat.optimistic.stateVersion,
+          nextTurnSeed: this.combat.optimistic.nextTurnSeed
+        } : null,
         openingCursors: this.combat.openingCursors || null,
         pendingOpeningActions: this.combat.pendingOpeningActions || null,
         isCreatureCombat: this.combat.isCreatureCombat || false,

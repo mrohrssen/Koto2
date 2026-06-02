@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createCombatState } from '../../../src/game/state.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
+import { GameManager } from '../../../src/game/loop.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { buildActionEnvelope } from '../../../src/shared/action-protocol.js';
 import {
@@ -18,6 +19,37 @@ describe('combat action state', () => {
     assert.equal(combat.cycleCount, 0);
     assert.equal(combat.openingResolved, false);
     assert.equal(combat.optimistic, null);
+  });
+
+  it('exposes optimistic metadata in game state for browser combat prediction', () => {
+    const gm = new GameManager();
+    const ally = instantiateCreature('hi');
+    const enemy = instantiateCreature('mizu');
+    gm.run = {
+      active: true,
+      rooms: [{ type: 'combat' }],
+      currentRoom: 0,
+      creatureParty: { active: [ally], reserves: [], maxTotal: 6, pendingCaptures: [] },
+      partySkills: [],
+      itemBuffs: null,
+    };
+    gm.combat = createCombatState(enemy);
+    gm.combat.allies = [ally];
+    gm.combat.enemies = [enemy];
+    gm.combat.optimistic = {
+      combatId: 'cmb_visible',
+      stateVersion: 2,
+      nextTurnSeed: 'seed_visible',
+      acceptedActionIds: { act_done: { status: 'accepted' } },
+    };
+
+    const state = gm.getState();
+
+    assert.deepEqual(state.combat.optimistic, {
+      combatId: 'cmb_visible',
+      stateVersion: 2,
+      nextTurnSeed: 'seed_visible',
+    });
   });
 
   it('accepts matching optimistic combat prediction and advances seed/version', () => {
