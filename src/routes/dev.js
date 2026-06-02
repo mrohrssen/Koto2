@@ -483,24 +483,6 @@ export function createDevRouter(opts) {
     res.sendFile(join(process.cwd(), 'public', 'dev-hub.html'));
   });
 
-  // ── GET /mockups ─────────────────────────────────────────────
-  router.get('/mockups', requireAuth, (_req, res) => {
-    res.sendFile(join(process.cwd(), 'public', 'dev-mockups.html'));
-  });
-
-  // ── GET /api/mockups ─────────────────────────────────────────
-  router.get('/api/mockups', requireAuth, (_req, res) => {
-    const pubDir = join(process.cwd(), 'public');
-    const files = readdirSync(pubDir)
-      .filter(f => f.startsWith('mockup-') && f.endsWith('.html'))
-      .sort()
-      .map(f => ({
-        file: f,
-        name: f.replace('mockup-', '').replace('.html', '').replace(/-/g, ' ')
-      }));
-    res.json(files);
-  });
-
   // ── GET /sprites ────────────────────────────────────────────
   router.get('/sprites', requireAuth, (_req, res) => {
     res.sendFile(join(process.cwd(), 'public', 'dev-sprites.html'));
