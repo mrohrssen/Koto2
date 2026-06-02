@@ -33,6 +33,7 @@ describe('action protocol', () => {
     assert.equal(envelope.stateVersion, 4);
     assert.equal(envelope.actionType, 'combat.attack');
     assert.equal(envelope.seed, 'turn-seed');
+    assert.deepEqual(envelope.payload, { moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }] });
     assert.equal(envelope.predictedHash, hashTranscript({ damage: 14 }));
   });
 
@@ -47,6 +48,10 @@ describe('action protocol', () => {
       predictedHash: 'hash',
     };
 
+    assert.deepEqual(verifyActionEnvelope({ ...envelope, actionId: undefined }, { combatId: 'cmb_1', stateVersion: 2, seed: 'seed-1' }), {
+      ok: false,
+      reason: 'missing_action_id',
+    });
     assert.deepEqual(verifyActionEnvelope(envelope, { combatId: 'cmb_1', stateVersion: 2, seed: 'seed-1' }), { ok: true });
     assert.deepEqual(verifyActionEnvelope(envelope, { combatId: 'cmb_2', stateVersion: 2, seed: 'seed-1' }), {
       ok: false,
