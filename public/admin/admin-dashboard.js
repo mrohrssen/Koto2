@@ -40,6 +40,10 @@ const state = {
     bugs: false,
     users: false,
   },
+  requests: {
+    bugReportDetail: 0,
+    userKnowledge: 0,
+  },
 };
 
 const elements = {
@@ -110,15 +114,42 @@ async function fetchJson(url, options = {}) {
   return response.json();
 }
 
+function getTypedAdminSecret() {
+  return document.querySelector('[data-admin-secret-input]')?.value.trim() || '';
+}
+
+function saveAdminSecret(secret) {
+  state.adminSecret = secret;
+  sessionStorage.setItem('koto-admin-secret', secret);
+}
+
+function clearAdminSecret() {
+  state.adminSecret = '';
+  sessionStorage.removeItem('koto-admin-secret');
+}
+
 async function ensureAdminSecret() {
   if (state.adminSecret) {
     return state.adminSecret;
   }
 
-  const payload = await fetchJson('/api/admin/secret');
-  state.adminSecret = payload.secret;
-  sessionStorage.setItem('koto-admin-secret', state.adminSecret);
-  return state.adminSecret;
+  const typedSecret = getTypedAdminSecret();
+  if (typedSecret) {
+    saveAdminSecret(typedSecret);
+    return state.adminSecret;
+  }
+
+  try {
+    const payload = await fetchJson('/api/admin/secret');
+    if (payload.secret) {
+      saveAdminSecret(payload.secret);
+      return state.adminSecret;
+    }
+  } catch {
+    // Remote deployments intentionally hide this endpoint. Fall through to manual entry.
+  }
+
+  throw new Error('Admin secret required. Paste ADMIN_SECRET into Users & Data and retry.');
 }
 
 async function adminFetchJson(url, options = {}) {
@@ -133,11 +164,20 @@ async function adminFetchJson(url, options = {}) {
 }
 
 async function loadBugReports() {
+  clearError();
   state.loading.bugs = true;
   renderBugReports();
   try {
     const payload = await fetchJson('/api/bug-reports');
-    state.bugReports = normalizeBugReports(payload.reports || []);
+    const reports = normalizeBugReports(payload.reports || []);
+    state.bugReports = reports;
+
+    if (state.selectedBugReport?.id) {
+      const refreshed = reports.find((report) => report.id === state.selectedBugReport.id);
+      state.selectedBugReport = refreshed
+        ? { ...refreshed, ...state.selectedBugReport }
+        : null;
+    }
   } finally {
     state.loading.bugs = false;
     renderBugReports();
@@ -148,11 +188,23 @@ async function loadBugReports() {
 }
 
 async function loadUsers() {
+  clearError();
   state.loading.users = true;
   renderUsers();
   try {
     const payload = await adminFetchJson('/api/admin/list-users');
-    state.users = payload.users || [];
+    const users = payload.users || [];
+    state.users = users;
+
+    if (state.selectedUser?.id) {
+      const refreshed = users.find((user) => user.id === state.selectedUser.id);
+      if (refreshed) {
+        state.selectedUser = refreshed;
+      } else {
+        state.selectedUser = null;
+        state.selectedUserKnowledge = null;
+      }
+    }
   } finally {
     state.loading.users = false;
     renderUsers();
@@ -163,15 +215,21 @@ async function loadUsers() {
 }
 
 async function loadUserKnowledge(user) {
+  clearError();
+  const requestToken = state.requests.userKnowledge + 1;
+  state.requests.userKnowledge = requestToken;
   state.selectedUser = user;
   state.selectedUserKnowledge = null;
   renderUserDetail();
   const payload = await adminFetchJson(`/api/admin/word-knowledge/${encodeURIComponent(user.id)}`);
-  state.selectedUserKnowledge = payload;
-  renderUserDetail();
+  if (state.requests.userKnowledge === requestToken && state.selectedUser?.id === user.id) {
+    state.selectedUserKnowledge = payload;
+    renderUserDetail();
+  }
 }
 
 async function deleteSelectedUser() {
+  clearError();
   const confirmation = document.querySelector('[data-delete-user-confirm]')?.value;
   if (!canDeleteUser(state.selectedUser, confirmation)) {
     return;
@@ -189,27 +247,28 @@ async function deleteSelectedUser() {
 }
 
 async function loadBugReportDetail(reportId) {
+  clearError();
+  const requestToken = state.requests.bugReportDetail + 1;
+  state.requests.bugReportDetail = requestToken;
   const fallback = state.bugReports.find((report) => report.id === reportId) || { id: reportId };
   state.selectedBugReport = fallback;
   renderBugReports();
   const payload = await fetchJson(`/api/bug-reports/${encodeURIComponent(reportId)}`);
-  state.selectedBugReport = normalizeBugReports([{ ...fallback, ...payload }])[0];
-  renderBugReports();
+  if (state.requests.bugReportDetail === requestToken && state.selectedBugReport?.id === reportId) {
+    state.selectedBugReport = normalizeBugReports([{ ...fallback, ...payload }])[0];
+    renderBugReports();
+  }
 }
 
 async function deleteSelectedBugReport() {
+  clearError();
   if (!state.selectedBugReport?.id) return;
 
   const confirmed = window.confirm(`Delete bug report ${state.selectedBugReport.id}?`);
   if (!confirmed) return;
 
-  await fetch(`/api/bug-reports/${encodeURIComponent(state.selectedBugReport.id)}`, {
+  await adminFetchJson(`/api/bug-reports/${encodeURIComponent(state.selectedBugReport.id)}`, {
     method: 'DELETE',
-  }).then(async (response) => {
-    if (!response.ok) {
-      const message = await response.text();
-      throw new Error(`${response.status} ${response.statusText}: ${message}`);
-    }
   });
 
   state.selectedBugReport = null;
@@ -218,6 +277,7 @@ async function deleteSelectedBugReport() {
 
 async function refreshActiveView() {
   try {
+    clearError();
     if (state.activeView === 'bug-reports' || state.activeView === 'overview') {
       await loadBugReports();
     }
@@ -443,6 +503,7 @@ function renderUsers() {
   if (!panel) return;
 
   const users = filterUsers(state.users, state.userQuery);
+  const secretStatus = state.adminSecret ? 'Secret stored for this tab' : 'No secret stored for this tab';
   const rows = users.map((user) => `
     <button class="row-item${state.selectedUser?.id === user.id ? ' active' : ''}" type="button" data-user-id="${escapeHtml(user.id)}">
       <span>
@@ -460,6 +521,17 @@ function renderUsers() {
         <div class="panel-subtitle">Live user records from the existing admin API.</div>
       </div>
       <span class="pill ${state.loading.users ? 'warn' : 'good'}">${state.loading.users ? 'loading' : `${state.users.length} users`}</span>
+    </div>
+    <div class="stacked-form admin-secret-controls">
+      <label>
+        <span class="row-meta">Admin secret</span>
+        <input data-admin-secret-input type="password" autocomplete="off" placeholder="Paste ADMIN_SECRET" value="${state.adminSecret ? '••••••••' : ''}">
+      </label>
+      <div class="input-row">
+        <button class="secondary-action" type="button" data-save-admin-secret>Save Secret</button>
+        <button class="secondary-action" type="button" data-clear-admin-secret>Clear</button>
+      </div>
+      <span class="row-meta">${escapeHtml(secretStatus)}</span>
     </div>
     <div class="stacked-form">
       <label>
@@ -554,23 +626,33 @@ function renderUserDetail() {
   `;
 }
 
+function clearError() {
+  document.querySelectorAll('[data-admin-error]').forEach((node) => node.remove());
+}
+
 function renderError(error) {
   const view = document.querySelector(`[data-view="${state.activeView}"]`);
   if (!view) return;
 
-  view.innerHTML = `
-    <div class="panel">
+  let panel = view.querySelector('[data-admin-error]');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.className = 'panel admin-error';
+    panel.dataset.adminError = '';
+    view.prepend(panel);
+  }
+
+  panel.innerHTML = `
       <div class="panel-header">
         <div>
           <div class="panel-title">Admin Request Failed</div>
-          <div class="panel-subtitle">Refresh or navigate away after resolving the error.</div>
+          <div class="panel-subtitle">Fix the issue and retry the current action.</div>
         </div>
         <span class="pill hot">error</span>
       </div>
       <div class="empty-state">
         <strong>${escapeHtml(error?.message || error)}</strong>
       </div>
-    </div>
   `;
 }
 
@@ -802,6 +884,25 @@ function bindEvents() {
           renderError(error);
         }
       }
+      return;
+    }
+
+    if (event.target.closest('[data-save-admin-secret]')) {
+      const secret = getTypedAdminSecret();
+      if (!secret || secret === '••••••••') return;
+      saveAdminSecret(secret);
+      renderUsers();
+      try {
+        await loadUsers();
+      } catch (error) {
+        renderError(error);
+      }
+      return;
+    }
+
+    if (event.target.closest('[data-clear-admin-secret]')) {
+      clearAdminSecret();
+      renderUsers();
       return;
     }
 
