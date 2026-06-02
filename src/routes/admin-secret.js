@@ -19,7 +19,8 @@ export function isSafeLocalAdminSecretOrigin(origin) {
 
   try {
     const url = new URL(origin);
-    return LOCAL_HOSTNAMES.has(normalizeHostname(url.hostname));
+    return (url.protocol === 'http:' || url.protocol === 'https:')
+      && LOCAL_HOSTNAMES.has(normalizeHostname(url.hostname));
   } catch {
     return false;
   }

@@ -58,6 +58,7 @@ describe('admin secret route', () => {
     assert.equal(isSafeLocalAdminSecretOrigin(undefined), true);
     assert.equal(isSafeLocalAdminSecretOrigin('http://localhost:3000'), true);
     assert.equal(isSafeLocalAdminSecretOrigin('http://127.0.0.1:5173'), true);
+    assert.equal(isSafeLocalAdminSecretOrigin('chrome-extension://localhost'), false);
     assert.equal(isSafeLocalAdminSecretOrigin('https://evil.example'), false);
   });
 
