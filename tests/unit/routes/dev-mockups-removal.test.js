@@ -31,6 +31,10 @@ describe('removed dev mockups surface', () => {
       'public/dev-sprites.html',
       'public/dev-content.html',
       'public/forge.html',
+      'public/creatures-gallery.html',
+      'public/regen-review.html',
+      'public/assets/sprites/items/review.html',
+      'public/mockup-combat-area-header.html',
     ];
 
     for (const file of navFiles) {
