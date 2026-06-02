@@ -1,8 +1,40 @@
+function isUnsupportedJsonValue(value) {
+  return value === undefined || typeof value === 'function' || typeof value === 'symbol';
+}
+
 function stableStringify(value) {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+  if (typeof value === 'bigint') {
+    throw new TypeError('Cannot canonicalize BigInt value in action protocol transcript');
+  }
+  if (isUnsupportedJsonValue(value)) {
+    throw new TypeError('Cannot canonicalize unsupported top-level value in action protocol transcript');
+  }
+  return stableStringifyJsonValue(value);
+}
+
+function stableStringifyJsonValue(value) {
+  if (typeof value === 'bigint') {
+    throw new TypeError('Cannot canonicalize BigInt value in action protocol transcript');
+  }
+  if (value === null) return 'null';
+  if (typeof value === 'number') return Number.isFinite(value) ? JSON.stringify(value) : 'null';
+  if (typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) {
+    const items = [];
+    for (let i = 0; i < value.length; i++) {
+      const item = Object.hasOwn(value, i) ? value[i] : undefined;
+      items.push(isUnsupportedJsonValue(item) ? 'null' : stableStringifyJsonValue(item));
+    }
+    return `[${items.join(',')}]`;
+  }
   const keys = Object.keys(value).sort();
-  return `{${keys.map(key => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(',')}}`;
+  const entries = [];
+  for (const key of keys) {
+    const item = value[key];
+    if (isUnsupportedJsonValue(item)) continue;
+    entries.push(`${JSON.stringify(key)}:${stableStringifyJsonValue(item)}`);
+  }
+  return `{${entries.join(',')}}`;
 }
 
 function fnv1aHex(text) {
