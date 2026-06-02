@@ -394,7 +394,7 @@ export class CombatCycleService {
     let sharedPveCoreHash = null;
     let sharedPveCoreUnsupported = false;
     if (usesSharedPveCorePrediction) {
-      if (this.gm.combat?.npcId || this.gm.combat?.npcData) {
+      if ((this.gm.combat?.npcId || this.gm.combat?.npcData) && !this.gm.combat?.actionCursor) {
         return buildCorrectedResponse({
           reason: 'unsupported_prediction_mode',
           authoritativeTranscript: null,

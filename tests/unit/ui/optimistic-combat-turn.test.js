@@ -96,7 +96,28 @@ describe('optimistic combat turn client', () => {
     assert.equal(result.envelope.payload.predictionMode, 'shared-pve-turn-v1');
   });
 
-  it('does not predict turns with server-only KO feedback or NPC assistance', () => {
+  it('predicts NPC battle action-cursor turns because live NPC battles use the same cursor flow', () => {
+    const npcCursorState = state({
+      combat: {
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        npcId: 'kodomo',
+        npcData: { id: 'kodomo', nameEn: 'Child' },
+      },
+    });
+
+    assert.equal(canRunOptimisticPveTurn(npcCursorState, 'attack'), true);
+    const result = buildOptimisticCombatTurn({
+      state: npcCursorState,
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      actionId: 'act_npc_cursor',
+    });
+
+    assert.equal(result.localTranscript.actionSegments[0].actor.side, 'ally');
+    assert.equal(result.envelope.payload.predictionMode, 'shared-pve-turn-v1');
+  });
+
+  it('does not predict turns with server-only KO feedback', () => {
     const koState = state({
       combat: {
         enemies: [
@@ -116,7 +137,6 @@ describe('optimistic combat turn client', () => {
         enemies: [createCombatant({ id: 'mizu', hp: 1, maxHp: 30 })],
       },
     });
-    const npcState = state({ combat: { npcId: 'npc_test' } });
 
     assert.equal(buildOptimisticCombatTurn({
       state: koState,
@@ -136,6 +156,5 @@ describe('optimistic combat turn client', () => {
       moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
       actionId: 'act_cursor_ko',
     }), null);
-    assert.equal(canRunOptimisticPveTurn(npcState, 'attack'), false);
   });
 });

@@ -136,6 +136,37 @@ describe('combat action state', () => {
     assert.equal(gm.combat.actionCursor.side, 'ally');
   });
 
+  it('accepts browser shared-core optimistic predictions for NPC PvE action-cursor attacks', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    gm.combat.actionCursor = { side: 'ally', index: 0, opening: false };
+    gm.combat.npcId = 'kodomo';
+    gm.combat.npcData = { id: 'kodomo', nameEn: 'Child' };
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const moveChoices = [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }];
+    const predicted = resolvePveCursorTurn(
+      { combat: gm.combat, run: gm.run, moveChoices },
+      { actionType: 'attack', seed },
+    );
+    const envelope = buildActionEnvelope({
+      actionId: 'act_browser_npc_cursor',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'combat.attack',
+      payload: { actionType: 'attack', moveChoices, predictionMode: 'shared-pve-turn-v1' },
+      predictedTranscript: predicted.transcript,
+    });
+
+    const result = service.verifyAndCommitCreatureCombatCycle(envelope);
+
+    assert.equal(result.status, 'accepted');
+    assert.deepEqual(result.actionSegments, predicted.transcript.actionSegments);
+    assert.equal(result.stateVersion, stateVersion + 1);
+    assert.equal(result.nextSeed, gm.combat.optimistic.nextTurnSeed);
+  });
+
   it('rejects shared-core predictions with server-only KO feedback without committing', () => {
     const gm = createTestGameManagerWithCreatureCombat();
     gm.combat.enemies[0].hp = 1;

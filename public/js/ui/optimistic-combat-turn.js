@@ -19,13 +19,18 @@ function canPredictActionCursor(state, actionType) {
     && Number.isInteger(cursor.index);
 }
 
+function canPredictNpcState(state) {
+  const combat = state?.combat;
+  if (!combat?.npcId && !combat?.npcData) return true;
+  return !!combat.actionCursor;
+}
+
 export function canRunOptimisticPveTurn(state, actionType = 'attack') {
   const optimistic = state?.combat?.optimistic;
   return !!state?.combat?.active
     && OPTIMISTIC_PVE_ACTIONS.has(actionType)
     && canPredictActionCursor(state, actionType)
-    && !state?.combat?.npcId
-    && !state?.combat?.npcData
+    && canPredictNpcState(state)
     && !!optimistic?.combatId
     && !!optimistic?.nextTurnSeed
     && Number.isInteger(optimistic?.stateVersion)
