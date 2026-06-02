@@ -529,7 +529,7 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
  * @param {object[]} enemies - Enemy creatures
  * @returns {{ attacks: object[] }}
  */
-export function executeNpcSkill(npcData, skill, allies, enemies) {
+export function executeNpcSkill(npcData, skill, allies, enemies, rng = Math.random) {
   const pseudoCreature = {
     id: npcData.id,
     name: npcData.name,
@@ -558,10 +558,10 @@ export function executeNpcSkill(npcData, skill, allies, enemies) {
   if (skill.target === 'single_ally') {
     const aliveIndices = npcAllies.map((c, i) => c.hp > 0 ? i : -1).filter(i => i >= 0);
     if (aliveIndices.length > 0) {
-      targetIdx = aliveIndices[Math.floor(Math.random() * aliveIndices.length)];
+      targetIdx = aliveIndices[Math.floor(rng() * aliveIndices.length)];
     }
   }
-  const result = executeMove(pseudoCreature, -1, skill, targetIdx, npcAllies, npcEnemies, null, null, defeatedEnemyIndices);
+  const result = executeMove(pseudoCreature, -1, skill, targetIdx, npcAllies, npcEnemies, null, null, defeatedEnemyIndices, null, null, rng);
 
   return { attacks: result.attacks };
 }

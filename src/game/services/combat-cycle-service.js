@@ -382,7 +382,7 @@ export class CombatCycleService {
    * Execute one creature combat cycle
    * @param {string} actionType - 'attack' | 'defend' | 'befriend'
    */
-  creatureCombatCycle(actionType = 'attack', moveChoices = []) {
+  creatureCombatCycle(actionType = 'attack', moveChoices = [], options = {}) {
     if (!this.gm.combat?.active) {
       throw new Error('No active combat');
     }
@@ -391,21 +391,22 @@ export class CombatCycleService {
     this.gm.combat.swapPhase = false;
 
     if (actionType === 'attack' && this.gm.combat.actionCursor) {
-      return this._handleCreatureActionCursorTurn(moveChoices);
+      return this._handleCreatureActionCursorTurn(moveChoices, options);
     }
 
     // Tick active effects at start of round (poison damage, etc.)
     const effectEvents = tickAllEffects(this.gm.combat.allies, this.gm.combat.enemies);
 
     switch (actionType) {
-      case 'attack':  return this._handleCreatureAttackTurn(effectEvents, moveChoices);
+      case 'attack':  return this._handleCreatureAttackTurn(effectEvents, moveChoices, options);
       case 'defend':  return this._handleCreatureDefendTurn(effectEvents);
       case 'befriend': return this._handleCreatureBefriendTurn(effectEvents);
       default: throw new Error(`Unknown action: ${actionType}`);
     }
   }
 
-  _resolveCurrentPveCursor(moveChoice = null, playbackStart = 0) {
+  _resolveCurrentPveCursor(moveChoice = null, playbackStart = 0, options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     const cursor = this.gm.combat.actionCursor;
     if (!cursor) throw new Error('No active action cursor');
 
@@ -422,10 +423,10 @@ export class CombatCycleService {
       }
       choices = [moveChoice];
     } else {
-      const choice = pickEnemyMoveChoice(actor, this.gm.combat.allies, this.gm.combat.enemies);
+      const choice = pickEnemyMoveChoice(actor, this.gm.combat.allies, this.gm.combat.enemies, rng);
       if (choice) {
         const { move, mode } = choice;
-        const targeting = pickEnemyTarget(actor, move, mode, this.gm.combat.allies, this.gm.combat.enemies);
+        const targeting = pickEnemyTarget(actor, move, mode, this.gm.combat.allies, this.gm.combat.enemies, rng);
         if (targeting) {
           const targetIndex = targeting.targetSide === 'player'
             ? this.gm.combat.allies.indexOf(targeting.target)
@@ -446,7 +447,8 @@ export class CombatCycleService {
       metaMults: this.gm.run?.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
       runPartySkills: this.gm.run?.partySkills || null,
       combat: this.gm.combat,
-      playbackStart
+      playbackStart,
+      rng
     });
 
     this.gm.combat.actionCount = (this.gm.combat.actionCount || 0) + 1;
@@ -491,12 +493,13 @@ export class CombatCycleService {
     this.gm.combat.actionCursor = fallback ? { ...fallback, opening: false } : null;
   }
 
-  _handleCreatureActionCursorTurn(moveChoices = []) {
+  _handleCreatureActionCursorTurn(moveChoices = [], options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     const submittedChoice = moveChoices[0] || null;
     const actionSegments = [];
     let playbackStart = 0;
 
-    const firstResult = this._resolveCurrentPveCursor(submittedChoice, playbackStart);
+    const firstResult = this._resolveCurrentPveCursor(submittedChoice, playbackStart, { rng });
     actionSegments.push(...firstResult.actionSegments);
     playbackStart = firstResult.playbackNext || actionSegments.length;
 
@@ -506,7 +509,7 @@ export class CombatCycleService {
       !checkAllDefeated(this.gm.combat.enemies) &&
       !checkAllDefeated(this.gm.combat.allies)
     ) {
-      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart);
+      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, { rng });
       actionSegments.push(...enemyResult.actionSegments);
       playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
     }
@@ -671,7 +674,7 @@ export class CombatCycleService {
     };
   }
 
-  resolveKanjiKombatCursorAction({ correct, targetIndex = 0 } = {}) {
+  resolveKanjiKombatCursorAction({ correct, targetIndex = 0, rng = Math.random } = {}) {
     const cursor = this.gm.combat?.actionCursor;
     if (!this.gm.run || this.gm.run.mode !== 'kanjiKombat') {
       throw new Error('Not in Kanji Kombat');
@@ -700,6 +703,7 @@ export class CombatCycleService {
           itemBuffs: this.gm.run.itemBuffs,
           creatureParty: this.gm.run.creatureParty,
           metaMults: this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+          rng,
         })
       : resolveNoopActorAction({
           actorSide: 'ally',
@@ -723,7 +727,7 @@ export class CombatCycleService {
       !checkAllDefeated(this.gm.combat.enemies) &&
       !checkAllDefeated(this.gm.combat.allies)
     ) {
-      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart);
+      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, { rng });
       result.actionSegments.push(...enemyResult.actionSegments);
       playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
     }
@@ -825,7 +829,8 @@ export class CombatCycleService {
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleCreatureAttackTurn(effectEvents, moveChoices) {
+  _handleCreatureAttackTurn(effectEvents, moveChoices, options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     // New player move round — each creature may try はなす again
     this.gm.combat.befriendAttemptedSlots = {};
 
@@ -849,7 +854,7 @@ export class CombatCycleService {
       this.gm.run.itemBuffs,
       this.gm.run.creatureParty,
       metaMults,
-      { runPartySkills: this.gm.run.partySkills, combat: this.gm.combat }
+      { runPartySkills: this.gm.run.partySkills, combat: this.gm.combat, rng }
     );
     playerResult.xpEvents = [...poisonXpEvents, ...(playerResult.xpEvents || [])];
 
@@ -862,7 +867,8 @@ export class CombatCycleService {
         allies: this.gm.combat.allies,
         enemies: this.gm.combat.enemies,
         runPartySkills: this.gm.run.partySkills,
-        combat: this.gm.combat
+        combat: this.gm.combat,
+        rng
       });
     }
 
@@ -1021,7 +1027,7 @@ export class CombatCycleService {
     if (this.gm.combat.npcId && this.gm.combat.npcData) {
       const fullNpc = loadNpcs()[this.gm.combat.npcId];
       if (fullNpc) {
-        const skill = rollNpcSkill(fullNpc);
+        const skill = rollNpcSkill(fullNpc, rng);
         if (skill) {
           const npcCombat = {
             id: fullNpc.id,
@@ -1032,7 +1038,7 @@ export class CombatCycleService {
             reading: fullNpc.reading || '',
             meaning: fullNpc.meaning || fullNpc.nameEn || ''
           };
-          const skillResult = executeNpcSkill(npcCombat, skill, this.gm.combat.allies, this.gm.combat.enemies);
+          const skillResult = executeNpcSkill(npcCombat, skill, this.gm.combat.allies, this.gm.combat.enemies, rng);
           npcSkillAttacks = skillResult.attacks;
           npcSkillUsed = {
             skillId: skill.id,
