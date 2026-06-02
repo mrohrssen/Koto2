@@ -357,6 +357,111 @@ describe('shared PvE turn resolver', () => {
     assert.equal(resultA.transcript.enemyAttacks.length, 1);
     assert.equal(resultA.transcript.mpRegens[0]?.regen, 1);
   });
+
+  it('includes start effects, round-start skills, and enemy mp state in the transcript', () => {
+    const enemy = creature({
+      id: 'mizu',
+      element: 'water',
+      hp: 90,
+      maxHp: 90,
+      statStages: { atk: -1 },
+      activeEffects: [{ type: 'poison', damagePerTurn: 7, remainingTurns: 2, sourceId: 'hi' }],
+    });
+    const result = resolvePveTurn({
+      allies: [creature({ id: 'hi', dex: 40, hp: 80, maxHp: 80 })],
+      enemies: [enemy],
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      runPartySkills: ['erosion'],
+      combat: {},
+      itemBuffs: null,
+    }, {
+      actionType: 'attack',
+      seed: 'start-effects-seed',
+    });
+
+    assert.equal(result.transcript.effectEvents[0]?.type, 'poison');
+    assert.equal(result.transcript.roundStartEvents[0]?.type, 'erosion');
+    assert.equal(result.transcript.enemyMpRegens[0]?.side, 'enemy');
+    assert.equal(result.transcript.stateSummary.enemies[0].statStages.atk, -2);
+    assert.ok(result.nextCombat.enemies[0].hp < 90);
+  });
+
+  it('includes defend counters and KO swap/removal metadata', () => {
+    const strike = {
+      id: 'strike',
+      name: '打つ',
+      nameEn: 'Strike',
+      reading: 'うつ',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 10,
+      mpCost: 0,
+    };
+    const counterResult = resolvePveTurn({
+      allies: [creature({ id: 'hi', hp: 100, maxHp: 100, attack: 40 })],
+      enemies: [creature({ id: 'kage', hp: 100, maxHp: 100, attack: 10, moves: [strike] })],
+      runPartySkills: ['retaliationStrike'],
+      creatureParty: { active: [creature({ id: 'hi', hp: 100, maxHp: 100, attack: 40 })], reserves: [] },
+      combat: {},
+    }, {
+      actionType: 'defend',
+      rng: constantRng(0),
+    });
+
+    assert.equal(counterResult.transcript.counterAttacks.length, 1);
+    assert.equal(counterResult.transcript.counterAttacks[0].type, 'counter');
+
+    const weakAlly = creature({ id: 'hi', hp: 1, maxHp: 100, defense: 1 });
+    const reserve = creature({ id: 'ki', hp: 50, maxHp: 50 });
+    const koResult = resolvePveTurn({
+      allies: [weakAlly],
+      enemies: [creature({ id: 'kage', hp: 100, maxHp: 100, attack: 100, moves: [strike] })],
+      creatureParty: { active: [weakAlly], reserves: [reserve] },
+      combat: {},
+    }, {
+      actionType: 'defend',
+      rng: constantRng(0.5),
+    });
+
+    assert.equal(koResult.transcript.koSwaps.length, 1);
+    assert.equal(koResult.transcript.koSwaps[0].replacement, 'Fire');
+    assert.equal(koResult.nextCombat.allies[0].id, 'ki');
+  });
+
+  it('defaults KO swap processing for defend envelope inputs', () => {
+    const strike = {
+      id: 'strike',
+      name: '打つ',
+      nameEn: 'Strike',
+      reading: 'うつ',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 10,
+      mpCost: 0,
+    };
+    const weakAlly = creature({ id: 'hi', hp: 1, maxHp: 100, defense: 1 });
+    const reserve = creature({ id: 'ki', hp: 50, maxHp: 50 });
+    const result = resolvePveTurn({
+      snapshot: {
+        combat: {
+          allies: [weakAlly],
+          enemies: [creature({ id: 'kage', hp: 100, maxHp: 100, attack: 100, moves: [strike] })],
+        },
+        run: {
+          creatureParty: { active: [weakAlly], reserves: [reserve] },
+          partySkills: [],
+          itemBuffs: null,
+        },
+      },
+      actionType: 'defend',
+      seed: 'defend-envelope-ko',
+    });
+
+    assert.equal(result.transcript.koSwaps.length, 1);
+    assert.equal(result.nextCombat.allies[0].id, 'ki');
+  });
 });
 
 describe('PvE combat rng injection', () => {

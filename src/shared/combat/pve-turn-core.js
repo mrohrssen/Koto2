@@ -780,6 +780,7 @@ export function processInterleavedPvERound(
   }
 
   const mpRegens = [];
+  const enemyMpRegens = [];
   for (const creature of allies) {
     if (creature.hp <= 0) continue;
     const regen = Math.floor((creature.maxMp || 0) * 0.05);
@@ -790,6 +791,7 @@ export function processInterleavedPvERound(
     if (enemy.hp <= 0) continue;
     const regen = Math.floor((enemy.maxMp || 0) * 0.12);
     enemy.mp = Math.min(enemy.maxMp || 0, (enemy.mp || 0) + regen);
+    enemyMpRegens.push({ creatureId: enemy.id, mp: enemy.mp, maxMp: enemy.maxMp, regen, side: 'enemy' });
   }
 
   return {
@@ -800,7 +802,8 @@ export function processInterleavedPvERound(
     allEnemiesDefeated: enemies.every(e => !e || e.hp <= 0),
     partySkillsAppliedInline: applyInlinePartySkills,
     xpEvents,
-    mpRegens
+    mpRegens,
+    enemyMpRegens
   };
 }
 
@@ -832,11 +835,13 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
     }
   }
 
+  const enemyMpRegens = [];
   for (const enemy of enemies) {
     if (enemy.hp <= 0) continue;
     const regen = Math.floor((enemy.maxMp || 0) * 0.12);
     enemy.mp = Math.min(enemy.maxMp || 0, (enemy.mp || 0) + regen);
+    enemyMpRegens.push({ creatureId: enemy.id, mp: enemy.mp, maxMp: enemy.maxMp, regen, side: 'enemy' });
   }
 
-  return { attacks, allAlliesDefeated: allies.every(a => a.hp <= 0) };
+  return { attacks, allAlliesDefeated: allies.every(a => a.hp <= 0), enemyMpRegens };
 }

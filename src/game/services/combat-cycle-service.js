@@ -8,8 +8,6 @@ import {
   CREATURES_BY_ID
 } from '../creatures.js';
 import {
-  processInterleavedPvERound,
-  processDefendTurn,
   processEnemyTurn,
   processBefriend,
   awardBattleXp,
@@ -30,6 +28,7 @@ import {
   processBefriendQuizAnswer,
   resolveBefriendFight
 } from './creature-combat-service.js';
+import { resolvePveTurn } from '../../shared/combat/pve-turn-resolver.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
   checkAllDefeated,
@@ -847,15 +846,25 @@ export class CombatCycleService {
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('attack', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 
-    const playerResult = processInterleavedPvERound(
-      this.gm.combat.allies,
-      this.gm.combat.enemies,
+    const resolvedTurn = resolvePveTurn({
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies,
       moveChoices,
-      this.gm.run.itemBuffs,
-      this.gm.run.creatureParty,
+      itemBuffs: this.gm.run.itemBuffs,
+      creatureParty: this.gm.run.creatureParty,
       metaMults,
-      { runPartySkills: this.gm.run.partySkills, combat: this.gm.combat, rng }
-    );
+      runPartySkills: this.gm.run.partySkills,
+      combat: this.gm.combat,
+      effectEvents,
+      roundStartEvents,
+    }, {
+      actionType: 'attack',
+      rng,
+      clone: false,
+      awardKillXp,
+      processKoSwaps: false,
+    });
+    const playerResult = resolvedTurn.transcript;
     playerResult.xpEvents = [...poisonXpEvents, ...(playerResult.xpEvents || [])];
 
     // Interleaved combat applies party skills inside each player initiative slot
@@ -1204,25 +1213,25 @@ export class CombatCycleService {
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('defend', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 
-    processDefendTurn(this.gm.combat.allies);
-
-    // Enemy phase (defendActive = true reduces damage)
-    const enemyResult = processEnemyTurn(this.gm.combat.enemies, this.gm.combat.allies, true, this.gm.run.itemBuffs, rng);
-
-    // Party skills: counter attacks
-    const counterAttacks = applyAfterEnemyAttacks({
-      enemyAttacks: enemyResult.attacks,
+    const resolvedTurn = resolvePveTurn({
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
+      itemBuffs: this.gm.run.itemBuffs,
+      creatureParty: this.gm.run.creatureParty,
+      metaMults,
       runPartySkills: this.gm.run.partySkills,
       combat: this.gm.combat,
-      rng
-    }) || [];
-
-    // Handle KO'd allies — swap reserves in or permanently remove
-    const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(this.gm.combat.allies, this.gm.run.creatureParty);
-    const koSwaps = rawKoSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
-    const koRemovals = rawKoRemovals.map(r => ({ slot: r.index, name: r.name }));
+      effectEvents,
+      roundStartEvents,
+    }, {
+      actionType: 'defend',
+      rng,
+      clone: false,
+      processKoSwaps: true,
+    });
+    const turnResult = resolvedTurn.transcript;
+    const koSwaps = turnResult.koSwaps || [];
+    const koRemovals = turnResult.koRemovals || [];
     this.gm.combat.allies = this.gm.run.creatureParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
@@ -1232,11 +1241,11 @@ export class CombatCycleService {
       return {
         actionType: 'defend',
         playerAttacks: [],
-        enemyAttacks: enemyResult.attacks || [],
+        enemyAttacks: turnResult.enemyAttacks || [],
         xpEvents: [],
         effectEvents,
         roundStartEvents,
-        counterAttacks,
+        counterAttacks: turnResult.counterAttacks || [],
         koSwaps,
         koRemovals,
         combatEnded: true,
@@ -1253,11 +1262,11 @@ export class CombatCycleService {
     return {
       actionType: 'defend',
       playerAttacks: [],
-      enemyAttacks: enemyResult.attacks || [],
+      enemyAttacks: turnResult.enemyAttacks || [],
       xpEvents: [],
       effectEvents,
       roundStartEvents,
-      counterAttacks,
+      counterAttacks: turnResult.counterAttacks || [],
       befriend: null,
       koSwaps,
       koRemovals,
