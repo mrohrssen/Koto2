@@ -1,7 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import { createSeededRng } from '../../../src/shared/deterministic-rng.js';
+import { createPveTurnSnapshot } from '../../../src/shared/combat/pve-turn-snapshot.js';
+import { resolvePveTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { rollNpcSkill } from '../../../src/game/services/npc-service.js';
 import {
@@ -186,6 +189,148 @@ function makeCursorGameManager() {
   };
 }
 
+function makeDefendGameManager() {
+  const jab = {
+    id: 'jab',
+    name: '突く',
+    nameEn: 'Jab',
+    reading: 'つく',
+    element: 'neutral',
+    category: 'damage',
+    target: 'single_enemy',
+    power: 10,
+    mpCost: 0,
+  };
+  const smash = {
+    id: 'smash',
+    name: '壊す',
+    nameEn: 'Break',
+    reading: 'こわす',
+    element: 'earth',
+    category: 'damage',
+    target: 'single_enemy',
+    power: 30,
+    mpCost: 0,
+  };
+  const allies = [
+    creature({ id: 'hi', hp: 120, maxHp: 120, dex: 10 }),
+    creature({ id: 'ki', hp: 120, maxHp: 120, dex: 20 }),
+  ];
+  const enemies = [
+    creature({ id: 'kage', hp: 120, maxHp: 120, dex: 10, moves: [jab, smash] }),
+  ];
+
+  return {
+    combat: {
+      active: true,
+      allies,
+      enemies,
+      actionCount: 0,
+      turnCount: 0,
+      isBoss: true,
+    },
+    run: {
+      active: true,
+      player: { credits: 0 },
+      creatureParty: { active: allies, reserves: [], pendingCaptures: [] },
+      partySkills: [],
+      itemBuffs: null,
+      crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+    },
+    meta: {},
+    emitState() {},
+    narrate() {},
+  };
+}
+
+describe('shared PvE turn resolver', () => {
+  it('is browser-safe at import level', () => {
+    const resolverSource = readFileSync(
+      new URL('../../../src/shared/combat/pve-turn-resolver.js', import.meta.url),
+      'utf8',
+    );
+    const snapshotSource = readFileSync(
+      new URL('../../../src/shared/combat/pve-turn-snapshot.js', import.meta.url),
+      'utf8',
+    );
+    const coreSource = readFileSync(
+      new URL('../../../src/shared/combat/pve-turn-core.js', import.meta.url),
+      'utf8',
+    );
+
+    for (const source of [resolverSource, snapshotSource, coreSource]) {
+      assert.equal(source.includes('game/services/creature-combat-service.js'), false);
+      assert.equal(source.includes('game/services/item-service.js'), false);
+      assert.equal(source.includes('game/creatures.js'), false);
+      assert.equal(source.includes("from 'fs'"), false);
+      assert.equal(source.includes("from 'node:fs'"), false);
+      assert.equal(source.includes("from 'path'"), false);
+      assert.equal(source.includes("from 'node:path'"), false);
+    }
+  });
+
+  it('resolves attack deterministically from hand-built snapshots without data loaders', () => {
+    const makeSnapshot = () => createPveTurnSnapshot({
+      allies: [creature({ id: 'hi', dex: 40, hp: 80, maxHp: 80 })],
+      enemies: [creature({ id: 'mizu', element: 'water', dex: 10, hp: 90, maxHp: 90 })],
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      runPartySkills: [],
+      combat: { actionCount: 0 },
+      itemBuffs: null,
+    });
+
+    const resultA = resolvePveTurn(makeSnapshot(), {
+      actionType: 'attack',
+      seed: 'shared-attack-seed',
+    });
+    const resultB = resolvePveTurn(makeSnapshot(), {
+      actionType: 'attack',
+      seed: 'shared-attack-seed',
+    });
+
+    assert.deepEqual(resultA, resultB);
+    assert.equal(resultA.transcript.actionType, 'attack');
+    assert.equal(resultA.transcript.playerAttacks.length, 1);
+    assert.equal(
+      resultA.nextCombat.enemies[0].hp,
+      Math.max(0, 90 - resultA.transcript.playerAttacks[0].damage),
+    );
+  });
+
+  it('resolves defend deterministically with the supplied seed', () => {
+    const slash = {
+      id: 'slash',
+      name: '斬る',
+      nameEn: 'Slash',
+      reading: 'きる',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 20,
+      mpCost: 0,
+    };
+    const makeSnapshot = () => createPveTurnSnapshot({
+      allies: [creature({ id: 'hi', hp: 100, maxHp: 100 })],
+      enemies: [creature({ id: 'kage', hp: 100, maxHp: 100, dex: 10, moves: [slash] })],
+      itemBuffs: null,
+    });
+
+    const resultA = resolvePveTurn(makeSnapshot(), {
+      actionType: 'defend',
+      seed: 'shared-defend-seed',
+    });
+    const resultB = resolvePveTurn(makeSnapshot(), {
+      actionType: 'defend',
+      seed: 'shared-defend-seed',
+    });
+
+    assert.deepEqual(resultA, resultB);
+    assert.equal(resultA.transcript.actionType, 'defend');
+    assert.equal(resultA.transcript.enemyAttacks.length, 1);
+    assert.equal(resultA.transcript.mpRegens[0]?.regen, 1);
+  });
+});
+
 describe('PvE combat rng injection', () => {
   it('enemy move and target selection are deterministic with the same rng seed', () => {
     const enemyMoves = [
@@ -351,5 +496,20 @@ describe('PvE combat rng injection', () => {
     });
 
     assert.deepEqual(runCycle(0.99), runCycle(0));
+  });
+
+  it('combat-cycle defend turn uses explicit rng when provided', () => {
+    const runCycle = randomValue => withMockRandom(randomValue, () => {
+      const gm = makeDefendGameManager();
+      const service = new CombatCycleService(gm);
+      const result = service._handleCreatureDefendTurn([], { rng: sequenceRng([0.9, 0.75, 0.2, 0.9]) });
+      return {
+        enemyAttacks: result.enemyAttacks,
+        allyHp: gm.combat.allies.map(ally => ally.hp),
+        enemyMp: gm.combat.enemies.map(enemy => enemy.mp),
+      };
+    });
+
+    assert.deepEqual(runCycle(0), runCycle(0.99));
   });
 });

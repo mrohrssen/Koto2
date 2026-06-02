@@ -399,7 +399,7 @@ export class CombatCycleService {
 
     switch (actionType) {
       case 'attack':  return this._handleCreatureAttackTurn(effectEvents, moveChoices, options);
-      case 'defend':  return this._handleCreatureDefendTurn(effectEvents);
+      case 'defend':  return this._handleCreatureDefendTurn(effectEvents, options);
       case 'befriend': return this._handleCreatureBefriendTurn(effectEvents);
       default: throw new Error(`Unknown action: ${actionType}`);
     }
@@ -1188,7 +1188,8 @@ export class CombatCycleService {
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleCreatureDefendTurn(effectEvents) {
+  _handleCreatureDefendTurn(effectEvents, options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     this.gm.combat.befriendAttemptedSlots = {};
 
     // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
@@ -1206,7 +1207,7 @@ export class CombatCycleService {
     processDefendTurn(this.gm.combat.allies);
 
     // Enemy phase (defendActive = true reduces damage)
-    const enemyResult = processEnemyTurn(this.gm.combat.enemies, this.gm.combat.allies, true, this.gm.run.itemBuffs);
+    const enemyResult = processEnemyTurn(this.gm.combat.enemies, this.gm.combat.allies, true, this.gm.run.itemBuffs, rng);
 
     // Party skills: counter attacks
     const counterAttacks = applyAfterEnemyAttacks({
@@ -1214,7 +1215,8 @@ export class CombatCycleService {
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
       runPartySkills: this.gm.run.partySkills,
-      combat: this.gm.combat
+      combat: this.gm.combat,
+      rng
     }) || [];
 
     // Handle KO'd allies — swap reserves in or permanently remove

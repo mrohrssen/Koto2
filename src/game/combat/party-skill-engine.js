@@ -1,5 +1,5 @@
 import { applyStatChange, applyHeal, getStageMultiplier, breakSleep, initStatStages } from './effects.js';
-import { getElementMultiplier } from '../creatures.js';
+import { getElementMultiplier } from '../../shared/combat/creature-math.js';
 import { PARTY_SKILLS_CATALOG } from '../party-skills.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────
