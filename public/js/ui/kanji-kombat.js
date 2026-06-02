@@ -64,12 +64,16 @@ function playCorrectAnswerAudio(answer) {
   });
 }
 
+function kanjiKombatAudioText(card) {
+  return card?.audioText || card?.reading || card?.prompt || card?.answer || '';
+}
+
 export function renderKanjiKombatQuiz(quiz, { onAnswer } = {}) {
   const root = actionArea();
   if (!root || !quiz) return;
   const correctChoice = quiz.choices.find(choice => choice.correct);
   const correctAnswerId = correctChoice?.id;
-  const correctAnswer = correctChoice?.answer || '';
+  const correctAudioText = kanjiKombatAudioText(quiz);
   root.innerHTML = `
     <div class="kanji-kombat-panel">
       <div class="kanji-kombat-prompt">${escapeHtml(quiz.prompt)}</div>
@@ -93,7 +97,7 @@ export function renderKanjiKombatQuiz(quiz, { onAnswer } = {}) {
     {
       beforeSubmit: (button, buttons) => {
         markKanjiKombatChoiceFeedback(button, buttons, correctAnswerId);
-        playCorrectAnswerAudio(correctAnswer);
+        playCorrectAnswerAudio(correctAudioText);
       }
     }
   );
@@ -118,7 +122,7 @@ export function renderKanjiKombatIntro(card, { onChoice } = {}) {
       </div>
     </div>
   `;
-  playCorrectAnswerAudio(card.answer);
+  playCorrectAnswerAudio(kanjiKombatAudioText(card));
   bindSingleFlightButtons(
     [...root.querySelectorAll('.kanji-kombat-intro-action')],
     button => button.dataset.choice,
