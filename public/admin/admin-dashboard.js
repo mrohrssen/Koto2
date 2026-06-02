@@ -41,9 +41,21 @@ function escapeHtml(value) {
 }
 
 function safeHref(href) {
-  const value = String(href || '');
-  if (value.startsWith('/')) return value;
-  if (value.startsWith('http://localhost:3100/')) return value;
+  const value = String(href || '').trim();
+  if (!value) return '#';
+
+  try {
+    const url = new URL(value, window.location.origin);
+    if (url.origin === window.location.origin && value.startsWith('/') && !value.startsWith('//')) {
+      return `${url.pathname}${url.search}${url.hash}`;
+    }
+    if (url.origin === 'http://localhost:3100') {
+      return url.href;
+    }
+  } catch {
+    return '#';
+  }
+
   return '#';
 }
 
