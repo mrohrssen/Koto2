@@ -15,8 +15,8 @@ export function toActivePartySkillIdSet(runPartySkills) {
   return new Set(ids.filter(Boolean));
 }
 
-function rollProc(chance) {
-  return Math.random() < (Number(chance) || 0);
+function rollProc(chance, rng = Math.random) {
+  return rng() < (Number(chance) || 0);
 }
 
 function livingEnemies(enemies) {
@@ -27,9 +27,9 @@ function livingAllies(allies) {
   return allies.filter(a => a && a.hp > 0);
 }
 
-function randomFrom(arr) {
+function randomFrom(arr, rng = Math.random) {
   if (arr.length === 0) return null;
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[Math.floor(rng() * arr.length)];
 }
 
 // ── Hook 1: Round Start ─────────────────────────────────────────────
@@ -103,7 +103,7 @@ export function applyRoundStartSkills({ allies, enemies, runPartySkills, combat 
  * Modifies attack records in-place.
  * Handles: Chain loop, spread triggers from chains, Affliction Burst checks, Pandemic on kills.
  */
-export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters = true }) {
+export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters = true, rng = Math.random }) {
   const active = toActivePartySkillIdSet(runPartySkills);
   if (!active.size) return;
   if (!Array.isArray(attacks) || attacks.length === 0) return;
@@ -176,7 +176,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
         // Track which enemies are already dead before chains (for Pandemic)
         const deadBeforeChains = new Set(enemies.filter(e => e && e.hp <= 0));
 
-        const chainTarget = randomFrom(otherEnemies);
+        const chainTarget = randomFrom(otherEnemies, rng);
         const chainIdx = enemies.indexOf(chainTarget);
         const baseDmg = Math.max(0, Number(record.damage) || 0);
         let chainDmg = Math.floor(baseDmg * 0.30);
@@ -205,7 +205,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
         // the target. Applying atk-1 to a corpse leaves it with a stat pill
         // next to a KO'd sprite and (via Contagion) spreads a stage change
         // that was never "seen" by the player hitting a live target.
-        if (isSE && active.has('elementalCascade') && chainTarget.hp > 0 && rollProc(0.30)) {
+        if (isSE && active.has('elementalCascade') && chainTarget.hp > 0 && rollProc(0.30, rng)) {
           initStatStages(chainTarget);
           const delta = applyStatChange(chainTarget, 'atk', -1);
           if (delta !== 0) {
@@ -214,7 +214,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
               type: 'stageChange', targetIndex: chainIdx, targetSide: 'enemy', stat: 'atk', delta
             });
             // Contagion trigger
-            tryContagion(active, enemies, chainIdx, 'atk', -1, record, combat);
+            tryContagion(active, enemies, chainIdx, 'atk', -1, record, combat, rng);
           }
         }
 
@@ -225,10 +225,10 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
           let lastBounceSource = record.targetIndex;
           const arcStrikeProc = record.partySkillProcs.find(p => p.skillId === 'arcStrike' && p.type === 'chainHit');
           if (arcStrikeProc) lastBounceSource = arcStrikeProc.targetIndex;
-          while (bounceCount < 4 && rollProc(0.50)) {
+          while (bounceCount < 4 && rollProc(0.50, rng)) {
             const bounceTargets = livingEnemies(enemies);
             if (bounceTargets.length === 0) break;
-            const bounceTarget = randomFrom(bounceTargets);
+            const bounceTarget = randomFrom(bounceTargets, rng);
             const bounceIdx = enemies.indexOf(bounceTarget);
 
             let bounceDmg = Math.floor(baseDmg * 0.30);
@@ -259,7 +259,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
             // Elemental Cascade debuff on bounces — same guard as the chain
             // hit above: if the bounce killed the target, don't leave a stat
             // pill / Contagion spread hanging off the corpse.
-            if (bounceSE && active.has('elementalCascade') && bounceTarget.hp > 0 && rollProc(0.30)) {
+            if (bounceSE && active.has('elementalCascade') && bounceTarget.hp > 0 && rollProc(0.30, rng)) {
               initStatStages(bounceTarget);
               const delta = applyStatChange(bounceTarget, 'atk', -1);
               if (delta !== 0) {
@@ -267,7 +267,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
                   skillId: 'elementalCascade', skillName: 'Elemental Cascade',
                   type: 'stageChange', targetIndex: bounceIdx, targetSide: 'enemy', stat: 'atk', delta
                 });
-                tryContagion(active, enemies, bounceIdx, 'atk', -1, record, combat);
+                tryContagion(active, enemies, bounceIdx, 'atk', -1, record, combat, rng);
               }
             }
 
@@ -298,14 +298,14 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
     if (record.statChangesApplied && active.has('contagion')) {
       for (const [stat, change] of Object.entries(record.statChangesApplied)) {
         if (change < 0) {
-          tryContagion(active, enemies, record.targetIndex, stat, change, record, combat);
+          tryContagion(active, enemies, record.targetIndex, stat, change, record, combat, rng);
         }
       }
     }
 
     // ── Contagion on primary attack's status effects ──
     if (record.effectApplied && active.has('contagion')) {
-      tryContagionStatus(active, enemies, record.targetIndex, record.effectApplied, record, combat);
+      tryContagionStatus(active, enemies, record.targetIndex, record.effectApplied, record, combat, rng);
     }
   }
 
@@ -316,7 +316,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
       if (record.statChangesApplied) {
         for (const [stat, change] of Object.entries(record.statChangesApplied)) {
           if (change > 0) {
-            trySharedVigor(active, allies, record.targetIndex, stat, change, combat);
+            trySharedVigor(active, allies, record.targetIndex, stat, change, combat, rng);
           }
         }
       }
@@ -332,7 +332,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
       const delta = applyStatChange(ally, 'atk', 1);
       if (delta !== 0) {
         // Shared Vigor trigger
-        trySharedVigor(active, allies, i, 'atk', 1, combat);
+        trySharedVigor(active, allies, i, 'atk', 1, combat, rng);
       }
     }
     // Add surge proc to last attack record
@@ -359,7 +359,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
  * Evaluate a single enemy attack for a counter response.
  * Returns a counter record or null. Applies damage to the enemy immediately.
  */
-export function computeInlineCounter(record, allies, enemies, runPartySkills, combat) {
+export function computeInlineCounter(record, allies, enemies, runPartySkills, combat, rng = Math.random) {
   const active = toActivePartySkillIdSet(runPartySkills);
   if (!active.size || !active.has('retaliationStrike')) return null;
 
@@ -368,7 +368,7 @@ export function computeInlineCounter(record, allies, enemies, runPartySkills, co
   if (!defender || defender.hp <= 0) return null;
   if (typeof record.damage !== 'number' || record.damage <= 0) return null;
 
-  if (!rollProc(0.50)) return null;
+  if (!rollProc(0.50, rng)) return null;
 
   const enemyIdx = record.attackerIndex;
   const enemy = enemies?.[enemyIdx];
@@ -422,7 +422,7 @@ export function computeInlineCounter(record, allies, enemies, runPartySkills, co
         skillId: 'vengefulMark', skillName: 'Vengeful Mark',
         type: 'stageChange', targetIndex: enemyIdx, targetSide: 'enemy', stat: 'atk', delta
       });
-      tryContagionFromCounter(active, enemies, enemyIdx, 'atk', -1, counterRecord, combat);
+      tryContagionFromCounter(active, enemies, enemyIdx, 'atk', -1, counterRecord, combat, rng);
     }
   }
 
@@ -437,14 +437,14 @@ export function computeInlineCounter(record, allies, enemies, runPartySkills, co
  * Called after processEnemyTurn. Handles Counter loop skills.
  * @returns {object[]} Array of counter attack records for frontend display
  */
-export function applyAfterEnemyAttacks({ enemyAttacks, allies, enemies, runPartySkills, combat }) {
+export function applyAfterEnemyAttacks({ enemyAttacks, allies, enemies, runPartySkills, combat, rng = Math.random }) {
   const active = toActivePartySkillIdSet(runPartySkills);
   if (!active.size || !active.has('retaliationStrike')) return [];
   if (!Array.isArray(enemyAttacks) || enemyAttacks.length === 0) return [];
 
   const counterAttacks = [];
   for (const record of enemyAttacks) {
-    const counter = computeInlineCounter(record, allies, enemies, runPartySkills, combat);
+    const counter = computeInlineCounter(record, allies, enemies, runPartySkills, combat, rng);
     if (counter) counterAttacks.push(counter);
   }
 
@@ -458,17 +458,17 @@ export function applyAfterEnemyAttacks({ enemyAttacks, allies, enemies, runParty
 // ── Spread Mechanics ────────────────────────────────────────────────
 
 /** Try to spread a stat stage debuff via Contagion. */
-function tryContagion(active, enemies, sourceIdx, stat, delta, record, combat) {
+function tryContagion(active, enemies, sourceIdx, stat, delta, record, combat, rng = Math.random) {
   if (!active.has('contagion')) return;
   const maxChains = active.has('virulentChain') ? 3 : 1;
 
   let spreadCount = 0;
   let currentIdx = sourceIdx;
 
-  while (spreadCount < maxChains && rollProc(0.35)) {
+  while (spreadCount < maxChains && rollProc(0.35, rng)) {
     const others = livingEnemies(enemies).filter(e => e !== enemies[currentIdx]);
     if (others.length === 0) break;
-    const target = randomFrom(others);
+    const target = randomFrom(others, rng);
     const targetIdx = enemies.indexOf(target);
     initStatStages(target);
     const actualDelta = applyStatChange(target, stat, delta);
@@ -484,7 +484,7 @@ function tryContagion(active, enemies, sourceIdx, stat, delta, record, combat) {
 }
 
 /** Try to spread a status effect via Contagion. */
-function tryContagionStatus(active, enemies, sourceIdx, effectType, record, combat) {
+function tryContagionStatus(active, enemies, sourceIdx, effectType, record, combat, rng = Math.random) {
   if (!active.has('contagion')) return;
   // Only spread negative effects
   const debuffTypes = ['poison', 'sleep', 'stun', 'confuse'];
@@ -494,10 +494,10 @@ function tryContagionStatus(active, enemies, sourceIdx, effectType, record, comb
   let spreadCount = 0;
   let currentIdx = sourceIdx;
 
-  while (spreadCount < maxChains && rollProc(0.35)) {
+  while (spreadCount < maxChains && rollProc(0.35, rng)) {
     const others = livingEnemies(enemies).filter(e => e !== enemies[currentIdx]);
     if (others.length === 0) break;
-    const target = randomFrom(others);
+    const target = randomFrom(others, rng);
     const targetIdx = enemies.indexOf(target);
     // Apply a basic version of the effect
     if (!target.activeEffects) target.activeEffects = [];
@@ -515,16 +515,16 @@ function tryContagionStatus(active, enemies, sourceIdx, effectType, record, comb
 }
 
 /** Contagion from counter attacks (uses counterRecord.procs instead of record.partySkillProcs). */
-function tryContagionFromCounter(active, enemies, sourceIdx, stat, delta, counterRecord, combat) {
+function tryContagionFromCounter(active, enemies, sourceIdx, stat, delta, counterRecord, combat, rng = Math.random) {
   if (!active.has('contagion')) return;
   const maxChains = active.has('virulentChain') ? 3 : 1;
   let spreadCount = 0;
   let currentIdx = sourceIdx;
 
-  while (spreadCount < maxChains && rollProc(0.35)) {
+  while (spreadCount < maxChains && rollProc(0.35, rng)) {
     const others = livingEnemies(enemies).filter(e => e !== enemies[currentIdx]);
     if (others.length === 0) break;
-    const target = randomFrom(others);
+    const target = randomFrom(others, rng);
     const targetIdx = enemies.indexOf(target);
     initStatStages(target);
     const actualDelta = applyStatChange(target, stat, delta);
@@ -540,13 +540,13 @@ function tryContagionFromCounter(active, enemies, sourceIdx, stat, delta, counte
 }
 
 /** Try to spread a buff via Shared Vigor (50% chance to chain to random ally). */
-function trySharedVigor(active, allies, sourceIdx, stat, delta, combat) {
+function trySharedVigor(active, allies, sourceIdx, stat, delta, combat, rng = Math.random) {
   if (!active.has('sharedVigor')) return;
-  if (!rollProc(0.50)) return;
+  if (!rollProc(0.50, rng)) return;
 
   const others = livingAllies(allies).filter(a => a !== allies[sourceIdx]);
   if (others.length === 0) return;
-  const target = randomFrom(others);
+  const target = randomFrom(others, rng);
   initStatStages(target);
   applyStatChange(target, stat, delta);
   // Note: Shared Vigor spread does NOT re-trigger Shared Vigor (no infinite loops)
