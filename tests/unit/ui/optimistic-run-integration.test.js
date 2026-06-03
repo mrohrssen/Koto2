@@ -34,8 +34,8 @@ describe('optimistic run action integration', () => {
   it('starts optimistic proceed verification before the room transition', () => {
     const proceedSource = sourceBetween(
       explorationSource,
-      'async function proceedToNextRoom()',
-      'export function renderExploring()'
+      'export async function proceedWithRevealBuffer',
+      'async function proceedToNextRoom()'
     );
     const apiIndex = proceedSource.indexOf('apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })');
     const transitionIndex = proceedSource.indexOf('await playRoomTransition(pending.state');
@@ -46,6 +46,13 @@ describe('optimistic run action integration', () => {
     assert.match(proceedSource, /clearActionArea\(\)/);
     assert.match(proceedSource, /showIngredientDropPopups\(ingredientDrops\)/);
     assert.match(proceedSource, /const nextRoom = getNextRoom\(state\)/);
+  });
+
+  it('uses the reveal-buffer proceed helper for completed room flows', () => {
+    assert.match(explorationSource, /export async function proceedWithRevealBuffer/);
+    assert.match(explorationSource, /renderQuiz[\s\S]*proceedWithRevealBuffer\(\)/);
+    assert.match(explorationSource, /discovery\.completed[\s\S]*proceedWithRevealBuffer\(\)/);
+    assert.match(explorationSource, /room\?\.interacted[\s\S]*proceedWithRevealBuffer\(\)/);
   });
 
   it('keeps dealer local changes to pending markers until the server responds', () => {

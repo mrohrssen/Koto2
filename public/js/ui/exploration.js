@@ -693,7 +693,7 @@ export async function renderAreaSelection() {
 }
 
 /** Exploring phase — show Proceed or Fight button */
-async function proceedToNextRoom() {
+export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
   const state = getGameState();
   const fromRoom = state.run?.currentRoom;
   const actionSeq = state.run?.roomActionSeq;
@@ -705,7 +705,7 @@ async function proceedToNextRoom() {
         advanceStateToBufferedNextRoom(draft);
       },
     });
-    if (!pending) return;
+    if (!pending) return null;
 
     clearActionArea();
     const verification = apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })
@@ -718,16 +718,19 @@ async function proceedToNextRoom() {
       if (error) throw error;
       if (!reconcilePendingRunAction(pending, result)) {
         rollbackPendingRunAction(pending);
-        return;
+        return result || null;
       }
       const ingredientDrops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
       if (ingredientDrops.length > 0) {
         showIngredientDropPopups(ingredientDrops);
       }
+      if (refreshUi) updateUI();
+      return result || null;
     } catch {
       rollbackPendingRunAction(pending);
+      if (refreshUi) updateUI();
+      return null;
     }
-    return;
   }
 
   const result = await apiProceed();
@@ -736,8 +739,13 @@ async function proceedToNextRoom() {
     await playRoomTransition(result.state, {
       ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
     });
-    updateUI();
+    if (refreshUi) updateUI();
   }
+  return result || null;
+}
+
+async function proceedToNextRoom() {
+  return proceedWithRevealBuffer();
 }
 
 export function renderExploring() {
@@ -1047,14 +1055,7 @@ async function chooseShrineReward(rewardType, creatureKey) {
 export async function renderQuiz() {
   // Quiz rooms are not in the room pool for the bootstrap language MVP.
   // If somehow reached, auto-proceed.
-  const result = await apiProceed();
-  if (result?.state) {
-    updateGameState(result.state);
-    await playRoomTransition(result.state, {
-      ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
-    });
-    updateUI();
-  }
+  await proceedWithRevealBuffer();
 }
 
 /** Word Discovery phase - show flash cards for new words */
@@ -1111,14 +1112,7 @@ export async function renderWordDiscovery() {
   if (discovery.completed) {
     renderButtons([
       { label: '続ける', onClick: async () => {
-        const result = await apiProceed();
-        if (result?.state) {
-          updateGameState(result.state);
-          await playRoomTransition(result.state, {
-            ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
-          });
-          updateUI();
-        }
+        await proceedWithRevealBuffer();
       }, primary: true },
     ]);
     return;
@@ -1391,13 +1385,7 @@ export async function renderWhackAMole() {
   // Already completed — auto-proceed (matches renderQuiz pattern).
   if (room?.interacted) {
     try {
-      const result = await apiProceed();
-      if (result?.state) {
-        updateGameState(result.state);
-        await playRoomTransition(result.state, {
-          ingredientDrops: result.ingredientDrops || result.room?.ingredientDrops || [],
-        });
-      }
+      await proceedWithRevealBuffer();
     } catch (err) {
       // Fall through to updateUI — server state may already have advanced.
     }
@@ -2050,7 +2038,7 @@ function startWhackAMoleGame(pool) {
   activeWhackAMoleGame = new WhackAMoleGame(pool, {
     actions,
     apiCompleteWhackAMole,
-    apiProceed,
+    apiProceed: () => proceedWithRevealBuffer({ refreshUi: false }),
     updateGameState,
     updateUI,
     playSFX,
