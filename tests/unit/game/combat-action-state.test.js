@@ -88,6 +88,7 @@ describe('combat action state', () => {
       actionType: 'attack',
       moveChoices,
       seed,
+      processKoSwaps: true,
     });
     const envelope = buildActionEnvelope({
       actionId: 'act_browser_core',
@@ -185,6 +186,7 @@ describe('combat action state', () => {
       actionType: 'attack',
       moveChoices,
       seed,
+      processKoSwaps: true,
     });
     const envelope = buildActionEnvelope({
       actionId: 'act_browser_ko',
@@ -237,6 +239,43 @@ describe('combat action state', () => {
     assert.notEqual(gm.combat.enemies[0].hp, hpBefore);
   });
 
+  it('rejects befriend-eligible terminal shared-core attacks before committing', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    gm.combat.isBoss = false;
+    gm.combat.enemies[0].hp = 1;
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const enemyHpBefore = gm.combat.enemies[0].hp;
+    const nextTurnSeedBefore = gm.combat.optimistic.nextTurnSeed;
+    const moveChoices = [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }];
+    const predicted = resolvePveTurn({
+      snapshot: { combat: gm.combat, run: gm.run },
+      actionType: 'attack',
+      moveChoices,
+      seed,
+      processKoSwaps: true,
+    });
+    const envelope = buildActionEnvelope({
+      actionId: 'act_browser_befriend_terminal',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'combat.attack',
+      payload: { actionType: 'attack', moveChoices, predictionMode: 'shared-pve-turn-v1' },
+      predictedTranscript: predicted.transcript,
+    });
+
+    const result = service.verifyAndCommitCreatureCombatCycle(envelope);
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'server_only_feedback_unsupported');
+    assert.equal(gm.combat.optimistic.stateVersion, stateVersion);
+    assert.equal(gm.combat.optimistic.nextTurnSeed, nextTurnSeedBefore);
+    assert.equal(gm.combat.enemies[0].hp, enemyHpBefore);
+    assert.equal(gm.combat.befriendQuiz, undefined);
+  });
+
   it('rejects shared-core predictions with unsafe KO swap feedback without committing', () => {
     const gm = createTestGameManagerWithCreatureCombat();
     const reserve = instantiateCreature('kaze');
@@ -269,6 +308,7 @@ describe('combat action state', () => {
       actionType: 'defend',
       moveChoices: [],
       seed,
+      processKoSwaps: true,
     });
     assert.ok(predicted.transcript.koSwaps?.length > 0);
     const envelope = buildActionEnvelope({
@@ -289,6 +329,64 @@ describe('combat action state', () => {
     assert.equal(gm.combat.allies[0].hp, hpBefore);
   });
 
+  it('rejects attack-turn shared-core predictions with unsafe KO swap feedback before committing', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    const activeBefore = gm.run.creatureParty.active[0];
+    const reserve = instantiateCreature('kaze');
+    reserve.hp = reserve.maxHp = 100;
+    reserve.mp = reserve.maxMp = 100;
+    gm.run.creatureParty.reserves = [reserve];
+    gm.combat.allies[0].hp = 1;
+    gm.combat.enemies[0].attack = 200;
+    gm.combat.enemies[0].moves = [{
+      id: 'slam',
+      name: '打つ',
+      nameEn: 'Hit',
+      reading: 'うつ',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 200,
+      mpCost: 0,
+      accuracy: 100,
+      statusEffect: null,
+      statusChance: 0,
+      statusDuration: 0,
+    }];
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const nextTurnSeedBefore = gm.combat.optimistic.nextTurnSeed;
+    const moveChoices = [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }];
+    const predicted = resolvePveTurn({
+      snapshot: { combat: gm.combat, run: gm.run },
+      actionType: 'attack',
+      moveChoices,
+      seed,
+      processKoSwaps: true,
+    });
+    const envelope = buildActionEnvelope({
+      actionId: 'act_browser_attack_ko_swap',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'combat.attack',
+      payload: { actionType: 'attack', moveChoices, predictionMode: 'shared-pve-turn-v1' },
+      predictedTranscript: predicted.transcript,
+    });
+
+    const result = service.verifyAndCommitCreatureCombatCycle(envelope);
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'server_only_feedback_unsupported');
+    assert.equal(gm.combat.optimistic.stateVersion, stateVersion);
+    assert.equal(gm.combat.optimistic.nextTurnSeed, nextTurnSeedBefore);
+    assert.equal(gm.run.creatureParty.active[0], activeBefore);
+    assert.deepEqual(gm.run.creatureParty.reserves, [reserve]);
+    assert.equal(gm.combat.allies[0], activeBefore);
+    assert.equal(gm.combat.allies[0].hp, 1);
+  });
+
   it('rejects shared-core optimistic combat hash mismatches before committing', () => {
     const gm = createTestGameManagerWithCreatureCombat();
     const service = new CombatCycleService(gm);
@@ -303,6 +401,7 @@ describe('combat action state', () => {
       actionType: 'attack',
       moveChoices,
       seed,
+      processKoSwaps: true,
     });
     const envelope = buildActionEnvelope({
       actionId: 'act_browser_bad_hash',

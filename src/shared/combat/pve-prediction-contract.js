@@ -103,3 +103,20 @@ export function getUnsafePveVisualPredictionBlockers(transcript = {}) {
 export function hasUnsafePveVisualPredictionFeedback(transcript = {}) {
   return getUnsafePveVisualPredictionBlockers(transcript).length > 0;
 }
+
+export function isBefriendEligibleTerminalPvePrediction({ combat, transcript } = {}) {
+  if (!transcript) return false;
+  const terminalEnemyVictory =
+    transcript.allEnemiesDefeated === true
+    || (transcript.combatEnded === true && transcript.victory === true);
+  if (!terminalEnemyVictory) return false;
+
+  return combat?.isBoss !== true
+    && !combat?.npcId
+    && !combat?.npcData;
+}
+
+export function hasUnsafeSharedPveOptimisticPrediction({ combat, transcript } = {}) {
+  return hasUnsafePveVisualPredictionFeedback(transcript)
+    || isBefriendEligibleTerminalPvePrediction({ combat, transcript });
+}

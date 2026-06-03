@@ -43,7 +43,7 @@ import {
   resolvePveTurn,
 } from '../../shared/combat/pve-turn-resolver.js';
 import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
-import { hasUnsafePveVisualPredictionFeedback } from '../../shared/combat/pve-prediction-contract.js';
+import { hasUnsafeSharedPveOptimisticPrediction } from '../../shared/combat/pve-prediction-contract.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
   checkAllDefeated,
@@ -417,6 +417,7 @@ export class CombatCycleService {
               actionType,
               moveChoices,
               seed: envelope.seed,
+              processKoSwaps: true,
             });
       } catch {
         return buildCorrectedResponse({
@@ -428,7 +429,10 @@ export class CombatCycleService {
         });
       }
       sharedPveCoreHash = hashTranscript(resolvedCore.transcript);
-      sharedPveCoreUnsupported = hasUnsafePveVisualPredictionFeedback(resolvedCore.transcript);
+      sharedPveCoreUnsupported = hasUnsafeSharedPveOptimisticPrediction({
+        combat: this.gm.combat,
+        transcript: resolvedCore.transcript,
+      });
       if (sharedPveCoreUnsupported) {
         return buildCorrectedResponse({
           reason: 'server_only_feedback_unsupported',

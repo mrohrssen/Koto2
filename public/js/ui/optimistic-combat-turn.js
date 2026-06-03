@@ -10,7 +10,7 @@ import {
   resolvePveTurn,
 } from '../../../src/shared/combat/pve-turn-resolver.js';
 import {
-  hasUnsafePveVisualPredictionFeedback,
+  hasUnsafeSharedPveOptimisticPrediction,
   SANITIZABLE_PVE_BLOCKERS,
 } from '../../../src/shared/combat/pve-prediction-contract.js';
 
@@ -188,11 +188,15 @@ export function buildOptimisticCombatTurn({
           actionType,
           moveChoices,
           seed,
+          processKoSwaps: true,
         });
   } catch {
     return null;
   }
-  if (hasUnsafePveVisualPredictionFeedback(resolved.transcript)) return null;
+  if (hasUnsafeSharedPveOptimisticPrediction({
+    combat: state.combat,
+    transcript: resolved.transcript,
+  })) return null;
 
   const envelope = buildActionEnvelope({
     actionId,
