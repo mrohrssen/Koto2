@@ -128,6 +128,11 @@ import { updateCrystalBalance, showDailyCrystalBonusModal } from './js/ui/crysta
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
 import {
+  createPendingRunAction,
+  correctPendingRunAction,
+  confirmPendingRunAction,
+} from './js/ui/optimistic-run-action.js';
+import {
   initAnalytics,
   setAnalyticsUser,
   updateCurrentUserProperties,
@@ -1602,6 +1607,10 @@ function handleCardFlip() {
 }
 
 // ============ CREATURE COMBAT HANDLERS ============
+function canRetryPostCombatShop(state) {
+  return state?.phase === 'post_combat_shop' || state?.run?.postCombatShop?.active === true;
+}
+
 async function showPostCombatShopFlow() {
   try {
     const shopResult = await apiRollPostCombatShop();
@@ -1615,8 +1624,19 @@ async function showPostCombatShopFlow() {
           const active = gameState.run?.creatureParty?.active?.filter(Boolean) || [];
 
           const finalize = async (targetIdx) => {
-            const selectResult = await apiSelectShopItem(itemIdx, targetIdx);
-            if (selectResult?.state) updateGameState(selectResult.state);
+            const pending = createPendingRunAction({
+              state: gameState,
+              actionType: 'postCombatShop.select',
+              applyLocal: draft => {
+                if (draft.run) {
+                  draft.run.pendingPostCombatShopSelection = { itemIndex: itemIdx, targetIndex: targetIdx };
+                }
+              },
+            });
+            updateGameState(pending.state);
+            const verification = apiSelectShopItem(itemIdx, targetIdx, { actionId: pending.actionId })
+              .then(result => ({ result }), error => ({ error }));
+
             const selectedCard = document.querySelector('.shop-item-card.selected');
             if (selectedCard) {
               const itemName = selectedCard.querySelector('.shop-item-name')?.textContent || 'Item';
@@ -1625,6 +1645,29 @@ async function showPostCombatShopFlow() {
               await new Promise(r => setTimeout(r, 600));
             }
             postCombatShop.hide();
+            const { result, error } = await verification;
+            if (error || !result) {
+              updateGameState(pending.originalState);
+              scene.showToast('Item choice did not save. Please choose again.', 2500);
+              if (canRetryPostCombatShop(pending.originalState)) {
+                postCombatShop.show(shopResult.items);
+                return;
+              }
+              resolve();
+              return;
+            }
+            if (result.status === 'corrected') {
+              const correctedState = correctPendingRunAction(pending, result);
+              updateGameState(correctedState);
+              scene.showToast('Item choice did not save. Please choose again.', 2500);
+              if (canRetryPostCombatShop(correctedState)) {
+                postCombatShop.show(shopResult.items);
+                return;
+              }
+              resolve();
+              return;
+            }
+            updateGameState(confirmPendingRunAction(pending, result));
             resolve();
           };
 

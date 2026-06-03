@@ -843,7 +843,10 @@ async function rollPostCombatShop() {
   return apiCall('/creature-shop-roll', 'POST');
 }
 
-async function selectShopItem(itemIndex, targetIndex = 0) {
+async function selectShopItem(itemIndex, targetIndex = 0, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/creature-shop-select', { itemIndex, targetIndex, actionId: options.actionId });
+  }
   return apiCall('/creature-shop-select', 'POST', { itemIndex, targetIndex });
 }
 

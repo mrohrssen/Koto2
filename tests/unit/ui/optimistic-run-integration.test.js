@@ -60,7 +60,57 @@ describe('optimistic run action integration', () => {
     assert.match(apiSource, /returnErrorBody: true/);
     assert.match(apiSource, /bypassLoadingGate: true/);
     assert.match(apiSource, /verifiedRunAction\('\/npc-battle-skill-choose', \{ skillId, actionId: options\.actionId \}\)/);
+    assert.match(apiSource, /verifiedRunAction\('\/creature-shop-select', \{ itemIndex, targetIndex, actionId: options\.actionId \}\)/);
     assert.match(apiSource, /verifiedRunAction,\n\s+confirmCreatures/);
+  });
+
+  it('sends action ids for post-combat shop choices', () => {
+    const shopFlowSource = sourceBetween(
+      gameSource,
+      'async function showPostCombatShopFlow()',
+      '// ============ CREATURE EQUIP UI ============'
+    );
+
+    assert.match(shopFlowSource, /apiSelectShopItem\(itemIdx, targetIdx, \{ actionId: pending\.actionId \}\)/);
+    assert.match(shopFlowSource, /createPendingRunAction\(\{\s*state: gameState,\s*actionType: 'postCombatShop\.select'/);
+    assert.match(shopFlowSource, /draft\.run\.pendingPostCombatShopSelection = \{ itemIndex: itemIdx, targetIndex: targetIdx \}/);
+    assert.match(shopFlowSource, /postCombatShop\.hide\(\)[\s\S]*await verification/);
+  });
+
+  it('uses corrected post-combat shop responses as authoritative corrections', () => {
+    const shopFlowSource = sourceBetween(
+      gameSource,
+      'async function showPostCombatShopFlow()',
+      '// ============ CREATURE EQUIP UI ============'
+    );
+
+    assert.match(shopFlowSource, /result\.status === 'corrected'/);
+    assert.match(shopFlowSource, /const correctedState = correctPendingRunAction\(pending, result\);\s*updateGameState\(correctedState\)/);
+    assert.doesNotMatch(shopFlowSource, /result\.status !== 'corrected'[\s\S]{0,120}confirmPendingRunAction/);
+    assert.match(shopFlowSource, /updateGameState\(confirmPendingRunAction\(pending, result\)\)/);
+  });
+
+  it('guards post-combat shop retry UI against stale offers', () => {
+    const shopFlowSource = sourceBetween(
+      gameSource,
+      'function canRetryPostCombatShop(state)',
+      '// ============ CREATURE EQUIP UI ============'
+    );
+
+    assert.match(shopFlowSource, /function canRetryPostCombatShop\(state\)/);
+    assert.match(shopFlowSource, /state\?\.phase === 'post_combat_shop'/);
+    assert.match(shopFlowSource, /state\?\.run\?\.postCombatShop\?\.active === true/);
+    assert.match(shopFlowSource, /if \(canRetryPostCombatShop\(pending\.originalState\)\) \{\s*postCombatShop\.show\(shopResult\.items\);\s*return;\s*\}\s*resolve\(\);/);
+  });
+
+  it('stores corrected post-combat shop state before deciding retryability', () => {
+    const shopFlowSource = sourceBetween(
+      gameSource,
+      'async function showPostCombatShopFlow()',
+      '// ============ CREATURE EQUIP UI ============'
+    );
+
+    assert.match(shopFlowSource, /const correctedState = correctPendingRunAction\(pending, result\);\s*updateGameState\(correctedState\);\s*scene\.showToast\('Item choice did not save\. Please choose again\.', 2500\);\s*if \(canRetryPostCombatShop\(correctedState\)\) \{\s*postCombatShop\.show\(shopResult\.items\);\s*return;\s*\}\s*resolve\(\);/);
   });
 
   it('lets corrected NPC battle skill responses reach the optimistic reconciler', () => {

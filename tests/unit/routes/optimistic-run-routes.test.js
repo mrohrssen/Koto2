@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
+import createCombatRoutes from '../../../src/routes/game/combat.js';
 import createRunRoutes from '../../../src/routes/game/run.js';
 
 function getHandler(router, method, path) {
@@ -31,6 +32,22 @@ function createRunRouter() {
     queueMissingNpcDialoguesFn: () => {},
     checkSentenceViolations: () => ({ violations: [] }),
     getDialogueCardAudio: async () => null,
+  });
+}
+
+function createCombatRouter() {
+  return createCombatRoutes({
+    getUserVocabulary: () => ({ words: [] }),
+    getCreatureDialogueFromCache: () => null,
+    regenCreatureDialogueFn: () => {},
+    getNpcDialogueFromCache: () => null,
+    logNpcEncounterFn: () => {},
+    regenNpcDialogueFn: () => {},
+    setNpcMemoryFlagFn: () => {},
+    updateNpcMemoryBondFn: () => {},
+    checkSentenceViolations: () => ({ violations: [] }),
+    getDialogueCardAudio: async () => null,
+    isCreatureDialogueStaleFn: () => false,
   });
 }
 
@@ -543,5 +560,107 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.body.actionId, 'npc_battle_skill_invalid');
     assert.equal(res.body.reason, 'Invalid skill choice');
     assert.deepEqual(res.body.authoritativeState, { phase: 'npc_skill_selection', run: { currentRoom: 4, partySkills: [] } });
+  });
+
+  it('wraps post-combat shop selection with accepted optimistic status when actionId is present', async () => {
+    const handler = getHandler(createCombatRouter(), 'post', '/creature-shop-select');
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: 'post_combat_shop_1', itemIndex: 1, targetIndex: 2 },
+      gameManager: {
+        run: { optimisticActionLedger: { entries: {}, order: [] } },
+        combatCycleService: {
+          selectShopItem: (itemIndex, targetIndex) => ({ itemIndex, targetIndex, itemId: 'tonic' }),
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { pendingPostCombatShopSelection: null } }),
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.actionId, 'post_combat_shop_1');
+    assert.equal(res.body.itemIndex, 1);
+    assert.equal(res.body.targetIndex, 2);
+    assert.deepEqual(res.body.state, { phase: 'room', run: { pendingPostCombatShopSelection: null } });
+  });
+
+  it('duplicate post-combat shop actionId does not re-run selectShopItem', async () => {
+    const handler = getHandler(createCombatRouter(), 'post', '/creature-shop-select');
+    const run = { optimisticActionLedger: { entries: {}, order: [] } };
+    let selectCount = 0;
+    const req = {
+      body: { actionId: 'post_combat_shop_duplicate', itemIndex: 0, targetIndex: 1 },
+      gameManager: {
+        run,
+        combatCycleService: {
+          selectShopItem: (itemIndex, targetIndex) => {
+            selectCount += 1;
+            return { itemIndex, targetIndex, selected: selectCount };
+          },
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { selectedCount: selectCount } }),
+    };
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, 'post_combat_shop_duplicate');
+    assert.equal(selectCount, 1);
+    assert.equal(duplicateRes.body.selected, 1);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { selectedCount: 1 } });
+  });
+
+  it('legacy post-combat shop no-actionId response remains legacy shape', async () => {
+    const handler = getHandler(createCombatRouter(), 'post', '/creature-shop-select');
+    const res = makeRes();
+
+    await handler({
+      body: { itemIndex: 2 },
+      gameManager: {
+        run: { optimisticActionLedger: { entries: {}, order: [] } },
+        combatCycleService: {
+          selectShopItem: (itemIndex, targetIndex) => ({ itemIndex, targetIndex, ok: true }),
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room' }),
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, undefined);
+    assert.equal(res.body.actionId, undefined);
+    assert.deepEqual(res.body, { itemIndex: 2, targetIndex: 0, ok: true, state: { phase: 'room' } });
+  });
+
+  it('optimistic post-combat shop route errors return corrected 400 with authoritative state', async () => {
+    const handler = getHandler(createCombatRouter(), 'post', '/creature-shop-select');
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: 'post_combat_shop_bad', itemIndex: 9, targetIndex: 0 },
+      gameManager: {
+        run: { optimisticActionLedger: { entries: {}, order: [] } },
+        combatCycleService: {
+          selectShopItem: () => {
+            throw new Error('Invalid shop item');
+          },
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'post_combat_shop', run: { currentRoom: 3 } }),
+    }, res);
+
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, 'post_combat_shop_bad');
+    assert.equal(res.body.reason, 'Invalid shop item');
+    assert.deepEqual(res.body.authoritativeState, { phase: 'post_combat_shop', run: { currentRoom: 3 } });
   });
 });
