@@ -377,4 +377,27 @@ describe('optimistic combat turn client', () => {
     assert.equal(result.envelope.payload.predictionMode, 'shared-kanji-kombat-v1');
     assert.equal(typeof result.envelope.predictedHash, 'string');
   });
+
+  it('refuses optimistic Kanji Kombat answers when visible quiz choices omit correctness', () => {
+    const kkState = kanjiKombatState({
+      run: {
+        kanjiKombat: {
+          currentQuiz: {
+            cardId: 'hiragana:あ',
+            choices: [
+              { id: 'answer-correct', answer: 'a' },
+              { id: 'answer-wrong', answer: 'i' },
+            ],
+          },
+        },
+      },
+    });
+
+    assert.equal(canRunOptimisticKanjiKombatAnswer(kkState, 'answer-correct'), false);
+    assert.equal(buildOptimisticKanjiKombatAnswer({
+      state: kkState,
+      answerId: 'answer-correct',
+      actionId: 'act_unknown_kanji',
+    }), null);
+  });
 });

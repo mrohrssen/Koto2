@@ -51,6 +51,11 @@ function getKanjiKombatAnswerChoice(state, answerId) {
   return choices.find(choice => choice?.id === answerId) || null;
 }
 
+function getPredictableKanjiKombatAnswerChoice(state, answerId) {
+  const choice = getKanjiKombatAnswerChoice(state, answerId);
+  return typeof choice?.correct === 'boolean' ? choice : null;
+}
+
 function cloneVisualSafeTranscript(value) {
   if (Array.isArray(value)) return value.map(item => cloneVisualSafeTranscript(item));
   if (!value || typeof value !== 'object') return value;
@@ -105,7 +110,7 @@ export function canRunOptimisticKanjiKombatAnswer(state, answerId) {
     && state?.combat?.mode === 'kanjiKombat'
     && cursor?.side === 'ally'
     && Number.isInteger(cursor?.index)
-    && !!getKanjiKombatAnswerChoice(state, answerId)
+    && !!getPredictableKanjiKombatAnswerChoice(state, answerId)
     && !!optimistic?.combatId
     && !!optimistic?.nextTurnSeed
     && Number.isInteger(optimistic?.stateVersion);
@@ -118,8 +123,8 @@ export function buildOptimisticKanjiKombatAnswer({
 } = {}) {
   if (!canRunOptimisticKanjiKombatAnswer(state, answerId)) return null;
 
-  const choice = getKanjiKombatAnswerChoice(state, answerId);
-  const correct = choice?.correct === true;
+  const choice = getPredictableKanjiKombatAnswerChoice(state, answerId);
+  const correct = choice.correct;
   const combatId = state.combat.optimistic.combatId;
   const seed = state.combat.optimistic.nextTurnSeed;
   const stateVersion = state.combat.optimistic.stateVersion;
