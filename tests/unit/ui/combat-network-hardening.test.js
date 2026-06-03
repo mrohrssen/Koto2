@@ -306,6 +306,13 @@ describe('combat network hardening', () => {
     assert.match(combatVfxSource, /Wrong!/);
   });
 
+  it('keeps Kanji Kombat answer submissions wired to the optimistic playback path', () => {
+    assert.match(
+      combatLoopSource,
+      /submitKanjiKombatAnswer[\s\S]*?kanjiAnswerId: answerId/,
+    );
+  });
+
   it('throws a clear setup error when the injected API is missing', async () => {
     await assert.rejects(
       () => combatLoop.__combatNetworkTest.requestCreatureCombatCycle('defend', []),
