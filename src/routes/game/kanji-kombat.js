@@ -43,6 +43,20 @@ export default function createKanjiKombatRoutes() {
     }
   });
 
+  router.post('/onboarding', (req, res) => {
+    try {
+      const { knowsHiragana, knowsKatakana } = req.body || {};
+      if (typeof knowsHiragana !== 'boolean' || typeof knowsKatakana !== 'boolean') {
+        return res.status(400).json({ error: 'knowsHiragana and knowsKatakana booleans required' });
+      }
+      const result = req.gameManager.kanjiKombatService.submitOnboarding({ knowsHiragana, knowsKatakana });
+      req.saveGame();
+      res.json({ ...result, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   router.post('/intro', (req, res) => {
     try {
       const { cardId, choice } = req.body || {};

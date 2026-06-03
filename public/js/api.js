@@ -791,6 +791,10 @@ async function startKanjiKombat(creatureId) {
   return apiCall('/kanji-kombat/start', 'POST', { creatureId }, null, { bypassLoadingGate: true });
 }
 
+async function submitKanjiKombatOnboarding(knowsHiragana, knowsKatakana) {
+  return apiCall('/kanji-kombat/onboarding', 'POST', { knowsHiragana, knowsKatakana }, null, { bypassLoadingGate: true });
+}
+
 async function submitKanjiKombatIntro(cardId, choice) {
   return apiCall('/kanji-kombat/intro', 'POST', { cardId, choice }, null, { bypassLoadingGate: true });
 }
@@ -999,6 +1003,7 @@ export {
   verifyCreatureCombatCycle,
   getKanjiKombatAvailability,
   startKanjiKombat,
+  submitKanjiKombatOnboarding,
   submitKanjiKombatIntro,
   submitKanjiKombatAnswer,
   submitKanjiKombatCompletionChoice,

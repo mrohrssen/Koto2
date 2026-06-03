@@ -41,6 +41,40 @@ describe('Kanji Kombat routes', () => {
     assert.equal(manager.saved, true);
   });
 
+  it('submits onboarding answers and saves game state', async () => {
+    const manager = {
+      kanjiKombatService: {
+        submitOnboarding: answers => ({ onboarding: { completed: true, ...answers } }),
+      },
+    };
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/onboarding')
+      .send({ knowsHiragana: true, knowsKatakana: false });
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.onboarding, {
+      completed: true,
+      knowsHiragana: true,
+      knowsKatakana: false,
+    });
+    assert.equal(manager.saved, true);
+  });
+
+  it('rejects onboarding answers unless both values are booleans', async () => {
+    const manager = {
+      kanjiKombatService: {
+        submitOnboarding: () => {
+          throw new Error('submitOnboarding should not be called');
+        },
+      },
+    };
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/onboarding')
+      .send({ knowsHiragana: 'true', knowsKatakana: false });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.error, 'knowsHiragana and knowsKatakana booleans required');
+    assert.equal(manager.saved, undefined);
+  });
+
   it('submits an intro choice', async () => {
     const manager = {
       kanjiKombatService: {
