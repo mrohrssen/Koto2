@@ -35,7 +35,7 @@ export async function openSettings() {
   ]);
   const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
   const currentGameState = getGameState?.() || {};
-  const currentDisplayMode = currentGameState.meta?.japaneseDisplayMode === 'natural' ? 'natural' : 'hiragana';
+  let currentDisplayMode = currentGameState.meta?.japaneseDisplayMode === 'natural' ? 'natural' : 'hiragana';
   const kanjiModeEnabled = currentDisplayMode === 'natural';
   const ttsVolumeSetting = tts.getVolume();
   const showDebugSuperAttack = Object.hasOwn(serverSettings, 'debugSuperAttack');
@@ -412,6 +412,7 @@ export async function openSettings() {
         return;
       }
       updateGameState?.(displayResult.state);
+      currentDisplayMode = desiredDisplayMode;
       updateUI?.();
     }
 

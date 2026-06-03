@@ -137,7 +137,10 @@ describe('settings modal', () => {
 
     assert.match(content.innerHTML, /settings-kanji-mode/);
     assert.match(content.innerHTML, /Enable Kanji mode/);
-    assert.match(content.innerHTML, /settings-kanji-mode"[\s\S]*checked/);
+    assert.match(
+      content.innerHTML,
+      /<input type="checkbox" id="settings-kanji-mode"\s+checked>/
+    );
   });
 
   it('saves Enable Kanji mode through the per-player game endpoint', async () => {
