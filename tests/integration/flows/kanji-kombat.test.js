@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
+import { State } from 'ts-fsrs';
 import { configureSrs, clearSrsCache, loadSrsData, saveSrsData } from '../../../src/game/internal-srs.js';
 import { ensureScriptDeckSeeded, SCRIPT_DECK } from '../../../src/game/script-srs.js';
 
@@ -28,6 +29,7 @@ describe('Kanji Kombat integration flow', () => {
       creatureCounts: { hi: 1 },
       bossesDefeated: [],
       lifetimeStats: {},
+      kanjiKombatOnboarding: { completed: true, knowsHiragana: false, knowsKatakana: false },
     };
 
     gm.kanjiKombatService.startRunWithCreatureId('hi');
@@ -73,6 +75,7 @@ describe('Kanji Kombat integration flow', () => {
       creatureCounts: { hi: 1 },
       bossesDefeated: [],
       lifetimeStats: {},
+      kanjiKombatOnboarding: { completed: true, knowsHiragana: false, knowsKatakana: false },
     };
 
     gm.kanjiKombatService.startRunWithCreatureId('hi');
@@ -111,6 +114,7 @@ describe('Kanji Kombat integration flow', () => {
       creatureCounts: { hi: 1 },
       bossesDefeated: [],
       lifetimeStats: {},
+      kanjiKombatOnboarding: { completed: true, knowsHiragana: false, knowsKatakana: false },
     };
 
     gm.kanjiKombatService.startRunWithCreatureId('hi');
@@ -140,6 +144,7 @@ describe('Kanji Kombat integration flow', () => {
       creatureCounts: { hi: 1 },
       bossesDefeated: [],
       lifetimeStats: {},
+      kanjiKombatOnboarding: { completed: true, knowsHiragana: false, knowsKatakana: false },
     };
 
     gm.kanjiKombatService.startRunWithCreatureId('hi');
@@ -173,6 +178,7 @@ describe('Kanji Kombat integration flow', () => {
       creatureCounts: { hi: 1 },
       bossesDefeated: [],
       lifetimeStats: {},
+      kanjiKombatOnboarding: { completed: true, knowsHiragana: false, knowsKatakana: false },
     };
 
     gm.kanjiKombatService.startRunWithCreatureId('hi');
@@ -223,6 +229,7 @@ describe('Kanji Kombat integration flow', () => {
       creatureCounts: { hi: 1 },
       bossesDefeated: [],
       lifetimeStats: {},
+      kanjiKombatOnboarding: { completed: true, knowsHiragana: false, knowsKatakana: false },
     };
 
     gm.kanjiKombatService.startRunWithCreatureId('hi');
@@ -249,5 +256,42 @@ describe('Kanji Kombat integration flow', () => {
 
     assert.equal(after.reps, before.reps + 1);
     assert.ok(after.last_review instanceof Date);
+  });
+
+  it('onboarding false answers preserve existing script SRS progress', async () => {
+    const { GameManager } = await import('../../../src/game/loop.js');
+    const userId = 'kk-integration-user';
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    const card = data[SCRIPT_DECK].cards.find(candidate => candidate.id === 'hiragana:あ');
+    card.reps = 7;
+    card.state = State.Learning;
+    card.due = new Date('2026-05-30T00:00:00Z');
+    card.last_review = new Date('2026-05-29T00:00:00Z');
+    saveSrsData(userId, data);
+
+    const gm = new GameManager();
+    gm.userId = userId;
+    gm.player = { name: 'Tester', hp: 100, maxHp: 100, credits: 0 };
+    gm.meta = {
+      levels: { highestUnlocked: 1 },
+      creatureCollection: ['hi'],
+      creatureCounts: { hi: 1 },
+      bossesDefeated: [],
+      lifetimeStats: {},
+      kanjiKombatOnboarding: { completed: false, knowsHiragana: null, knowsKatakana: null },
+    };
+
+    gm.kanjiKombatService.startRunWithCreatureId('hi');
+    assert.equal(gm.run.kanjiKombat.onboardingPending, true);
+
+    gm.kanjiKombatService.submitOnboarding({ knowsHiragana: false, knowsKatakana: false });
+
+    const savedCard = loadSrsData(userId)[SCRIPT_DECK].cards.find(candidate => candidate.id === 'hiragana:あ');
+    assert.equal(savedCard.reps, 7);
+    assert.equal(savedCard.state, State.Learning);
+    assert.equal(savedCard.due.toISOString(), '2026-05-30T00:00:00.000Z');
+    assert.equal(savedCard.last_review.toISOString(), '2026-05-29T00:00:00.000Z');
+    assert.equal(gm.run.kanjiKombat.report.scriptDeck, 'hiragana');
   });
 });

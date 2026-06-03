@@ -38,6 +38,7 @@ function buildGm() {
       levels: { highestUnlocked: 1 },
       creatureCollection: ['hi', 'neko', 'inu'],
       creatureCounts: { hi: 1, neko: 1, inu: 1 },
+      kanjiKombatOnboarding: { completed: false, knowsHiragana: null, knowsKatakana: null },
     },
     emitState() {},
   };
@@ -57,8 +58,50 @@ describe('KanjiKombatService run lifecycle helpers', () => {
 
   afterEach(() => rmSync(tempDir, { recursive: true, force: true }));
 
+  it('starts an onboarding-pending run without queueing a prompt', () => {
+    const gm = buildGm();
+    const service = new KanjiKombatService(gm);
+
+    service.startRunWithCreature(fakeCreature('hi'));
+
+    assert.equal(gm.run.kanjiKombat.onboardingPending, true);
+    assert.equal(gm.run.kanjiKombat.currentQuiz, null);
+    assert.equal(gm.run.kanjiKombat.pendingIntro, null);
+    assert.equal(gm.combat.mode, 'kanjiKombat');
+  });
+
+  it('submits onboarding, saves reversible preferences, and queues first prompt', () => {
+    const gm = buildGm();
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+
+    const result = service.submitOnboarding({ knowsHiragana: true, knowsKatakana: true });
+
+    assert.deepEqual(gm.meta.kanjiKombatOnboarding, {
+      completed: true,
+      knowsHiragana: true,
+      knowsKatakana: true,
+    });
+    assert.equal(gm.run.kanjiKombat.onboardingPending, false);
+    assert.ok(gm.run.kanjiKombat.currentQuiz || gm.run.kanjiKombat.pendingIntro);
+    assert.equal(gm.run.kanjiKombat.report.scriptDeck, 'kanji');
+    assert.equal(result.onboarding.completed, true);
+    assert.equal(result.kanjiKombat, gm.run.kanjiKombat);
+  });
+
+  it('rejects onboarding submit outside a pending Kanji Kombat run', () => {
+    const gm = buildGm();
+    const service = new KanjiKombatService(gm);
+
+    assert.throws(
+      () => service.submitOnboarding({ knowsHiragana: true, knowsKatakana: true }),
+      /No pending Kanji Kombat onboarding/
+    );
+  });
+
   it('marks a run as Kanji Kombat and starts with one selected creature', () => {
     const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
     const service = new KanjiKombatService(gm);
     service.startRunWithCreature(fakeCreature('neko'));
     assert.equal(gm.run.mode, 'kanjiKombat');
@@ -70,6 +113,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
 
   it('applies streak thresholds and resets after 20', () => {
     const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
     const service = new KanjiKombatService(gm);
     service.startRunWithCreature(fakeCreature('hi', { hp: 10, maxHp: 20 }));
     for (let i = 0; i < 20; i++) service.recordCorrectAnswer();
@@ -79,6 +123,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
 
   it('records wave completion without room fields', () => {
     const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
     const service = new KanjiKombatService(gm);
     service.startRunWithCreature(fakeCreature('hi'));
     gm.run.currentAreaEncounters = 0;
@@ -93,6 +138,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
 
   it('starts with a run-scoped creature that has normal combat fields', () => {
     const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
     gm.meta.crests = [];
     gm.meta.equippedCrests = { fire: null, water: null, earth: null, wood: null, metal: null };
     const service = new KanjiKombatService(gm);

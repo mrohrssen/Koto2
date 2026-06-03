@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from 'crypto';
-import { createCombatState, createNewRun } from '../state.js';
+import { createCombatState, createNewRun, ensureKanjiKombatOnboardingState } from '../state.js';
 import { AREAS } from '../rooms.js';
 import { createPveOpeningCursor } from '../combat/action-cursor.js';
 import { applyStatChange } from '../combat/effects.js';
@@ -62,6 +62,7 @@ export function createInitialKanjiKombatState({ localDate = getLocalDateKey(), r
     noDuePracticeQueue: [],
     completionChoicePending: false,
     endlessMode: false,
+    onboardingPending: false,
     localDate,
     currentQuiz: null,
     pendingIntro: null,
@@ -142,7 +143,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   const now = opts.now || new Date();
   const random = opts.random || Math.random;
   const excludedIds = opts.excludeCardIds || [];
-  const activeType = getActiveScriptType(userId);
+  const activeType = opts.activeType || getActiveScriptType(userId, opts.onboarding);
   state.report.scriptDeck = activeType;
   if (!Array.isArray(state.noDuePracticeQueue)) state.noDuePracticeQueue = [];
   state.completionChoicePending = state.completionChoicePending === true;
@@ -287,6 +288,14 @@ export class KanjiKombatService {
     this.gm = gm;
   }
 
+  chooseNextWork(state, opts = {}) {
+    if (!this.gm.meta) this.gm.meta = {};
+    return chooseNextScriptWork(this.gm.userId, state, {
+      ...opts,
+      onboarding: ensureKanjiKombatOnboardingState(this.gm.meta),
+    });
+  }
+
   startRunWithCreature(creature) {
     this.gm.run = createNewRun(this.gm.player);
     const crestMults = getCrestMultipliers(this.gm.meta);
@@ -302,14 +311,20 @@ export class KanjiKombatService {
       applyCrestBonuses(ally, crestMults);
     }
     this.gm.run.kanjiKombat = createInitialKanjiKombatState();
-    const work = chooseNextScriptWork(this.gm.userId, this.gm.run.kanjiKombat);
-    if (work.kind === 'complete') {
-      throw new Error('Kanji Kombat is complete for the day');
+    if (!this.gm.meta) this.gm.meta = {};
+    const onboarding = ensureKanjiKombatOnboardingState(this.gm.meta);
+    const kk = this.gm.run.kanjiKombat;
+    kk.onboardingPending = onboarding.completed !== true;
+    if (!kk.onboardingPending) {
+      const work = this.chooseNextWork(kk);
+      if (work.kind === 'complete') {
+        throw new Error('Kanji Kombat is complete for the day');
+      }
+      kk.currentQuiz = work.quiz || null;
+      kk.pendingIntro = work.kind === 'intro'
+        ? { cardId: work.card.id, card: work.card, source: work.source }
+        : null;
     }
-    this.gm.run.kanjiKombat.currentQuiz = work.quiz || null;
-    this.gm.run.kanjiKombat.pendingIntro = work.kind === 'intro'
-      ? { cardId: work.card.id, card: work.card, source: work.source }
-      : null;
     this.spawnNextWave();
     this.gm.emitState();
     return this.gm.run.kanjiKombat;
@@ -324,10 +339,50 @@ export class KanjiKombatService {
     return this.startRunWithCreature(starter);
   }
 
+  submitOnboarding({ knowsHiragana, knowsKatakana } = {}) {
+    const kk = this.gm.run?.kanjiKombat;
+    if (this.gm.run?.mode !== 'kanjiKombat' || !kk?.onboardingPending) {
+      throw new Error('No pending Kanji Kombat onboarding');
+    }
+    if (typeof knowsHiragana !== 'boolean' || typeof knowsKatakana !== 'boolean') {
+      throw new Error('knowsHiragana and knowsKatakana booleans required');
+    }
+
+    if (!this.gm.meta) this.gm.meta = {};
+    const onboarding = ensureKanjiKombatOnboardingState(this.gm.meta);
+    onboarding.completed = true;
+    onboarding.knowsHiragana = knowsHiragana;
+    onboarding.knowsKatakana = knowsKatakana;
+    this.gm.meta.kanjiKombatOnboarding = onboarding;
+
+    kk.onboardingPending = false;
+    kk.currentQuiz = null;
+    kk.pendingIntro = null;
+    const work = this.chooseNextWork(kk);
+    if (work.kind === 'complete') {
+      throw new Error('Kanji Kombat is complete for the day');
+    }
+    kk.currentQuiz = work.quiz || null;
+    kk.pendingIntro = work.kind === 'intro'
+      ? { cardId: work.card.id, card: work.card, source: work.source }
+      : null;
+    this.gm.emitState();
+    return {
+      onboarding,
+      next: work.kind,
+      kanjiKombat: kk,
+      allies: this.gm.combat?.allies || [],
+      enemies: this.gm.combat?.enemies || [],
+      creatureParty: this.gm.run.creatureParty,
+    };
+  }
+
   submitIntroChoice(cardId, choice) {
     const state = this.gm.run?.kanjiKombat;
     if (!state) throw new Error('No active Kanji Kombat run');
-    return resolveIntroChoice(this.gm.userId, state, cardId, choice);
+    return resolveIntroChoice(this.gm.userId, state, cardId, choice, {
+      onboarding: ensureKanjiKombatOnboardingState(this.gm.meta),
+    });
   }
 
   hydratePendingIntroCard() {
@@ -512,8 +567,8 @@ export class KanjiKombatService {
 
   queueNextPrompt(opts = {}) {
     const state = this.gm.run?.kanjiKombat;
-    if (!state || state.currentQuiz || state.pendingIntro) return null;
-    const work = chooseNextScriptWork(this.gm.userId, state, opts);
+    if (!state || state.onboardingPending || state.currentQuiz || state.pendingIntro) return null;
+    const work = this.chooseNextWork(state, opts);
     state.currentQuiz = work.quiz || null;
     state.pendingIntro = work.kind === 'intro'
       ? { cardId: work.card.id, card: work.card, source: work.source }
@@ -559,8 +614,13 @@ export class KanjiKombatService {
       return { available: false, reason: 'no_creatures' };
     }
 
+    const onboarding = ensureKanjiKombatOnboardingState(this.gm.meta);
+    if (onboarding.completed !== true) {
+      return { available: true, next: 'onboarding', scriptDeck: null };
+    }
+
     const state = createInitialKanjiKombatState();
-    const work = chooseNextScriptWork(this.gm.userId, state);
+    const work = this.chooseNextWork(state);
     if (work.kind === 'complete' || work.kind === 'completePrompt') {
       return {
         available: false,
@@ -717,7 +777,7 @@ export class KanjiKombatService {
     const clearedEnemies = cloneCombatants(this.gm.combat?.enemies || []);
     const wasMiniboss = this.gm.run.kanjiKombat.currentWaveIsMiniboss === true;
     this.recordWaveClear({ miniboss: wasMiniboss });
-    const work = chooseNextScriptWork(this.gm.userId, this.gm.run.kanjiKombat);
+    const work = this.chooseNextWork(this.gm.run.kanjiKombat);
     if (work.kind === 'complete') {
       return this.finalizeDailyComplete({
         actionSegments,
