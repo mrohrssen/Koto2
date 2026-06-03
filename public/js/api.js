@@ -356,6 +356,10 @@ async function claimDailyCrystals() {
   return apiCall('/crystals/daily-login', 'POST', {});
 }
 
+async function setJapaneseDisplayMode(mode) {
+  return apiCall('/japanese-display-mode', 'POST', { mode });
+}
+
 // ============ PLAYER MANAGEMENT ENDPOINTS ============
 
 /**
@@ -980,6 +984,7 @@ export {
   isTransientGameStateFailure,
   getSettings,
   claimDailyCrystals,
+  setJapaneseDisplayMode,
   // Player management endpoints
   createPlayer,
   // Run management endpoints

@@ -160,6 +160,7 @@ import { startCreatureAnimationManifestLoad } from './js/pixi/creature-animation
 import {
   getGameState as apiGetGameState,
   claimDailyCrystals as apiClaimDailyCrystals,
+  setJapaneseDisplayMode as apiSetJapaneseDisplayMode,
   createPlayer as apiCreatePlayer,
   startRun as apiStartRun,
   confirmCreatures as apiConfirmCreatures,
@@ -947,6 +948,12 @@ async function playPrologue() {
       const chosen = prologueScene.choices[choiceIdx];
       result = chosen.id ?? chosen.text;
       lastChoiceId = result;
+      if (chosen.displayMode) {
+        const displayResult = await apiSetJapaneseDisplayMode(chosen.displayMode);
+        if (displayResult?.state) {
+          updateGameState(displayResult.state);
+        }
+      }
     } else {
       actions.showPrologueContinueHint();
       await narrationBox.show(html, showOpts);
