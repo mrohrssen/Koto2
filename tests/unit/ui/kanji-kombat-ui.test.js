@@ -143,8 +143,12 @@ describe('kanji-kombat ui', () => {
     welcome: 'Hey, welcome to Kanji Kombat. Here, you can practice your hiragana, katakana, and kanji all the way up to full fluency.',
     hiraganaQuestion: 'First things first. Do you already know all hiragana?',
     hiraganaKnown: "Great, we won't spend time teaching you hiragana.",
+    hiraganaUnknown: "Great, we'll teach you hiragana.",
     katakanaQuestion: 'Do you already know all katakana?',
     katakanaKnown: "Great, we won't spend time teaching you katakana.",
+    katakanaUnknown: "Great, we'll teach you katakana.",
+    finalHiragana: "Great, we'll start by teaching you hiragana and go from there.",
+    finalKatakana: "Great, we'll start by teaching you katakana and go from there.",
     finalKanji: "Okay, great, we'll start by teaching you kanji. Let's jump right into it.",
   };
 
@@ -202,6 +206,58 @@ describe('kanji-kombat ui', () => {
     for (let i = 0; i < times; i++) {
       await Promise.resolve();
     }
+  }
+
+  function pendingOnboardingState(overrides = {}) {
+    const {
+      phase = 'combat',
+      run: runOverrides = {},
+      kanjiKombat: kanjiKombatOverrides = {},
+      combat: combatOverrides = {},
+    } = overrides;
+    return {
+      phase,
+      run: {
+        mode: 'kanjiKombat',
+        ...runOverrides,
+        kanjiKombat: {
+          onboardingPending: true,
+          currentQuiz: {
+            prompt: '火',
+            choices: [{ id: 'fire', answer: 'Fire' }],
+          },
+          ...runOverrides.kanjiKombat,
+          ...kanjiKombatOverrides,
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 }, ...combatOverrides },
+    };
+  }
+
+  async function completeOnboardingWithChoices(choiceIndices) {
+    const calls = [];
+    initKanjiKombatUI({
+      showCidSprite: async () => calls.push(['showCidSprite']),
+      hideCidSprite: async () => calls.push(['hideCidSprite']),
+      showNarration: async (text, opts) => calls.push(['showNarration', text, opts]),
+      forceHideNarration: () => calls.push(['forceHideNarration']),
+      submitOnboarding: async (knowsHiragana, knowsKatakana) => {
+        calls.push(['submitOnboarding', knowsHiragana, knowsKatakana]);
+        return { state: { phase: 'combat' } };
+      },
+      updateGameState: state => calls.push(['updateGameState', state.phase]),
+      updateUI: () => calls.push(['updateUI']),
+      refreshAction: () => calls.push(['refreshAction']),
+      playCorrectAnswerAudio: () => calls.push(['unexpected-tts']),
+    });
+
+    assert.equal(startKanjiKombatOnboardingIfNeeded(pendingOnboardingState()), true);
+    await flushPromises(4);
+    await actionArea.buttons[choiceIndices[0]].click();
+    await flushPromises(4);
+    await actionArea.buttons[choiceIndices[1]].click();
+    await flushPromises(8);
+    return calls;
   }
 
   it('renders prompt and four quiz choices', () => {
@@ -577,6 +633,7 @@ describe('kanji-kombat ui', () => {
     });
 
     const started = startKanjiKombatOnboardingIfNeeded({
+      phase: 'combat',
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: {
@@ -628,6 +685,36 @@ describe('kanji-kombat ui', () => {
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-choice').length, 0);
   });
 
+  it('submits false false and starts with hiragana when hiragana is unknown', async () => {
+    const calls = await completeOnboardingWithChoices([1, 1]);
+
+    assert.deepEqual(
+      calls.find(call => call[0] === 'submitOnboarding'),
+      ['submitOnboarding', false, false]
+    );
+    const narrationLines = calls
+      .filter(call => call[0] === 'showNarration')
+      .map(call => call[1]);
+    assert.equal(narrationLines.includes(onboardingCopy.hiraganaUnknown), true);
+    assert.equal(narrationLines.includes(onboardingCopy.katakanaUnknown), true);
+    assert.equal(narrationLines.at(-1), onboardingCopy.finalHiragana);
+  });
+
+  it('submits true false and starts with katakana when only katakana is unknown', async () => {
+    const calls = await completeOnboardingWithChoices([0, 1]);
+
+    assert.deepEqual(
+      calls.find(call => call[0] === 'submitOnboarding'),
+      ['submitOnboarding', true, false]
+    );
+    const narrationLines = calls
+      .filter(call => call[0] === 'showNarration')
+      .map(call => call[1]);
+    assert.equal(narrationLines.includes(onboardingCopy.hiraganaKnown), true);
+    assert.equal(narrationLines.includes(onboardingCopy.katakanaUnknown), true);
+    assert.equal(narrationLines.at(-1), onboardingCopy.finalKatakana);
+  });
+
   it('does not start onboarding when the gate is absent', () => {
     const calls = [];
     initKanjiKombatUI({
@@ -640,6 +727,7 @@ describe('kanji-kombat ui', () => {
     });
 
     const started = startKanjiKombatOnboardingIfNeeded({
+      phase: 'combat',
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: { onboardingPending: false },
@@ -651,9 +739,29 @@ describe('kanji-kombat ui', () => {
     assert.deepEqual(calls, []);
   });
 
+  it('does not start onboarding outside combat phase', () => {
+    const calls = [];
+    initKanjiKombatUI({
+      showCidSprite: () => calls.push(['showCidSprite']),
+      hideCidSprite: () => calls.push(['hideCidSprite']),
+      showNarration: () => calls.push(['showNarration']),
+      submitOnboarding: () => calls.push(['submitOnboarding']),
+      refreshAction: () => calls.push(['refreshAction']),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    const started = startKanjiKombatOnboardingIfNeeded(pendingOnboardingState({
+      phase: 'exploration',
+    }));
+
+    assert.equal(started, false);
+    assert.deepEqual(calls, []);
+  });
+
   it('clears onboarding progress before updateUI retry after submit failure', async () => {
     const calls = [];
     const pendingState = {
+      phase: 'combat',
       run: {
         mode: 'kanjiKombat',
         kanjiKombat: { onboardingPending: true },

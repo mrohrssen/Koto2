@@ -1083,6 +1083,14 @@ async function showKanjiKombatCidSprite() {
   }
 }
 
+function restoreKanjiKombatEnemyFormation() {
+  if (gameState?.phase !== 'combat') return;
+  if (gameState?.run?.mode !== 'kanjiKombat') return;
+  const enemies = gameState?.combat?.enemies || [];
+  if (enemies.length === 0) return;
+  scene.showFormation?.('enemy', enemies, { force: true });
+}
+
 async function hideKanjiKombatCidSprite() {
   const activeScene = getSceneManager()?.currentScene;
   if (activeScene && !activeScene.disposed && !activeScene._exiting) {
@@ -1090,6 +1098,7 @@ async function hideKanjiKombatCidSprite() {
     await activeScene.resumeFromNpcInterjection?.();
   }
   scene.hideEnemy();
+  restoreKanjiKombatEnemyFormation();
 }
 
 async function startKanjiKombatSetup() {

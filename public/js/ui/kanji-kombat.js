@@ -55,7 +55,8 @@ function shouldRunOnboarding(gameState) {
   const run = gameState?.run;
   const kk = run?.kanjiKombat;
   const cursor = gameState?.combat?.actionCursor;
-  return run?.mode === 'kanjiKombat'
+  return gameState?.phase === 'combat'
+    && run?.mode === 'kanjiKombat'
     && kk?.onboardingPending === true
     && cursor?.side === 'ally';
 }
