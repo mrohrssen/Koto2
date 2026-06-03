@@ -167,7 +167,7 @@ describe('combat action state', () => {
     assert.equal(result.nextSeed, gm.combat.optimistic.nextTurnSeed);
   });
 
-  it('rejects shared-core predictions with server-only KO feedback without committing', () => {
+  it('accepts shared-core predictions with visual-safe KO feedback and commits', () => {
     const gm = createTestGameManagerWithCreatureCombat();
     gm.combat.enemies[0].hp = 1;
     const secondEnemy = instantiateCreature('mizu');
@@ -198,13 +198,13 @@ describe('combat action state', () => {
 
     const result = service.verifyAndCommitCreatureCombatCycle(envelope);
 
-    assert.equal(result.status, 'corrected');
-    assert.equal(result.reason, 'server_only_feedback_unsupported');
-    assert.equal(gm.combat.optimistic.stateVersion, stateVersion);
-    assert.equal(gm.combat.enemies[0].hp, hpBefore);
+    assert.equal(result.status, 'accepted');
+    assert.equal(result.playerAttacks[0].targetDefeated, true);
+    assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);
+    assert.notEqual(gm.combat.enemies[0].hp, hpBefore);
   });
 
-  it('rejects action-cursor predictions with server-only KO feedback without committing', () => {
+  it('accepts action-cursor predictions with visual-safe terminal KO feedback and commits', () => {
     const gm = createTestGameManagerWithCreatureCombat();
     gm.combat.actionCursor = { side: 'ally', index: 0, opening: false };
     gm.combat.enemies[0].hp = 1;
@@ -229,10 +229,64 @@ describe('combat action state', () => {
 
     const result = service.verifyAndCommitCreatureCombatCycle(envelope);
 
+    assert.equal(result.status, 'accepted');
+    assert.equal(result.combatEnded, true);
+    assert.equal(result.victory, true);
+    assert.equal(result.actionSegments[0].attacks[0].targetDefeated, true);
+    assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);
+    assert.notEqual(gm.combat.enemies[0].hp, hpBefore);
+  });
+
+  it('rejects shared-core predictions with unsafe KO swap feedback without committing', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    const reserve = instantiateCreature('kaze');
+    reserve.hp = reserve.maxHp = 100;
+    reserve.mp = reserve.maxMp = 100;
+    gm.run.creatureParty.reserves = [reserve];
+    gm.combat.allies[0].hp = 1;
+    gm.combat.enemies[0].attack = 200;
+    gm.combat.enemies[0].moves = [{
+      id: 'slam',
+      name: '打つ',
+      nameEn: 'Hit',
+      reading: 'うつ',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 200,
+      mpCost: 0,
+      accuracy: 100,
+      statusEffect: null,
+      statusChance: 0,
+      statusDuration: 0,
+    }];
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const hpBefore = gm.combat.allies[0].hp;
+    const predicted = resolvePveTurn({
+      snapshot: { combat: gm.combat, run: gm.run },
+      actionType: 'defend',
+      moveChoices: [],
+      seed,
+    });
+    assert.ok(predicted.transcript.koSwaps?.length > 0);
+    const envelope = buildActionEnvelope({
+      actionId: 'act_browser_ko_swap',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'combat.defend',
+      payload: { actionType: 'defend', moveChoices: [], predictionMode: 'shared-pve-turn-v1' },
+      predictedTranscript: predicted.transcript,
+    });
+
+    const result = service.verifyAndCommitCreatureCombatCycle(envelope);
+
     assert.equal(result.status, 'corrected');
     assert.equal(result.reason, 'server_only_feedback_unsupported');
     assert.equal(gm.combat.optimistic.stateVersion, stateVersion);
-    assert.equal(gm.combat.enemies[0].hp, hpBefore);
+    assert.equal(gm.combat.allies[0].hp, hpBefore);
   });
 
   it('returns corrected state when optimistic combat hash mismatches', () => {

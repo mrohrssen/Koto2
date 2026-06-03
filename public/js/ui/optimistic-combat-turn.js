@@ -9,34 +9,14 @@ import {
   resolvePveCursorTurn,
   resolvePveTurn,
 } from '../../../src/shared/combat/pve-turn-resolver.js';
-import { getPvePredictionBlockers } from '../../../src/shared/combat/pve-prediction-contract.js';
+import {
+  hasUnsafePveVisualPredictionFeedback,
+  SANITIZABLE_PVE_BLOCKERS,
+} from '../../../src/shared/combat/pve-prediction-contract.js';
 
 const OPTIMISTIC_PVE_ACTIONS = new Set(['attack', 'defend']);
-const PVE_VISUAL_PREDICTION_OPTIONS = {
-  allowVisualKoPrediction: true,
-  allowPendingCombatEndShell: true,
-};
-const SANITIZABLE_PVE_BLOCKERS = new Set([
-  'xpEvents',
-  'newCollectionAdditions',
-  'tutorialRewards',
-  'elementDropsCollected',
-  'reward',
-  'rewards',
-  'postCombatShop',
-  'pendingMoveLearn',
-  'moveLearnPrompts',
-]);
 const SERVER_OWNED_TRANSCRIPT_FIELDS = new Set([
-  'xpEvents',
-  'newCollectionAdditions',
-  'tutorialRewards',
-  'elementDropsCollected',
-  'reward',
-  'rewards',
-  'postCombatShop',
-  'pendingMoveLearn',
-  'moveLearnPrompts',
+  ...SANITIZABLE_PVE_BLOCKERS,
 ]);
 
 function canPredictActionCursor(state, actionType) {
@@ -69,10 +49,6 @@ function getKanjiKombatAnswerChoice(state, answerId) {
   const choices = state?.run?.kanjiKombat?.currentQuiz?.choices;
   if (!Array.isArray(choices)) return null;
   return choices.find(choice => choice?.id === answerId) || null;
-}
-
-function hasUnsafePvePredictionBlockers(blockers = []) {
-  return blockers.some(blocker => !SANITIZABLE_PVE_BLOCKERS.has(blocker));
 }
 
 function cloneVisualSafeTranscript(value) {
@@ -216,24 +192,17 @@ export function buildOptimisticCombatTurn({
   } catch {
     return null;
   }
-  const blockers = getPvePredictionBlockers(
-    resolved.transcript,
-    PVE_VISUAL_PREDICTION_OPTIONS,
-  );
-  if (hasUnsafePvePredictionBlockers(blockers)) return null;
+  if (hasUnsafePveVisualPredictionFeedback(resolved.transcript)) return null;
 
-  const envelope = {
-    ...buildActionEnvelope({
-      actionId,
-      combatId,
-      stateVersion,
-      actionType: `combat.${actionType}`,
-      seed,
-      payload: { actionType, moveChoices, predictionMode: PVE_CORE_PREDICTION_MODE },
-      predictedTranscript: resolved.transcript,
-    }),
+  const envelope = buildActionEnvelope({
+    actionId,
+    combatId,
+    stateVersion,
+    actionType: `combat.${actionType}`,
+    seed,
+    payload: { actionType, moveChoices, predictionMode: PVE_CORE_PREDICTION_MODE },
     predictedTranscript: resolved.transcript,
-  };
+  });
   const localTranscript = buildVisualSafePveLocalTranscript({
     predictedTranscript: resolved.transcript,
     nextCombat: resolved.nextCombat,

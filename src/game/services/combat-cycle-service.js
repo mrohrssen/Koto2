@@ -43,7 +43,7 @@ import {
   resolvePveTurn,
 } from '../../shared/combat/pve-turn-resolver.js';
 import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
-import { hasPveServerOnlyFeedback } from '../../shared/combat/pve-prediction-contract.js';
+import { hasUnsafePveVisualPredictionFeedback } from '../../shared/combat/pve-prediction-contract.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
   checkAllDefeated,
@@ -428,7 +428,7 @@ export class CombatCycleService {
         });
       }
       sharedPveCoreHash = hashTranscript(resolvedCore.transcript);
-      sharedPveCoreUnsupported = hasPveServerOnlyFeedback(resolvedCore.transcript);
+      sharedPveCoreUnsupported = hasUnsafePveVisualPredictionFeedback(resolvedCore.transcript);
       if (sharedPveCoreUnsupported) {
         return buildCorrectedResponse({
           reason: 'server_only_feedback_unsupported',

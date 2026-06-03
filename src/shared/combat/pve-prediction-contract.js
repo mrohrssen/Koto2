@@ -24,6 +24,23 @@ function hasDefeatedStateSummary(stateSummary = {}) {
     || (stateSummary.allies || []).some(defeated);
 }
 
+export const PVE_VISUAL_PREDICTION_OPTIONS = Object.freeze({
+  allowVisualKoPrediction: true,
+  allowPendingCombatEndShell: true,
+});
+
+export const SANITIZABLE_PVE_BLOCKERS = new Set([
+  'xpEvents',
+  'newCollectionAdditions',
+  'tutorialRewards',
+  'elementDropsCollected',
+  'reward',
+  'rewards',
+  'postCombatShop',
+  'pendingMoveLearn',
+  'moveLearnPrompts',
+]);
+
 export function getPvePredictionBlockers(transcript = {}, options = {}) {
   const {
     allowVisualKoPrediction = false,
@@ -74,4 +91,15 @@ export function getPvePredictionBlockers(transcript = {}, options = {}) {
 
 export function hasPveServerOnlyFeedback(transcript = {}, options = {}) {
   return getPvePredictionBlockers(transcript, options).length > 0;
+}
+
+export function getUnsafePveVisualPredictionBlockers(transcript = {}) {
+  return getPvePredictionBlockers(
+    transcript,
+    PVE_VISUAL_PREDICTION_OPTIONS,
+  ).filter(blocker => !SANITIZABLE_PVE_BLOCKERS.has(blocker));
+}
+
+export function hasUnsafePveVisualPredictionFeedback(transcript = {}) {
+  return getUnsafePveVisualPredictionBlockers(transcript).length > 0;
 }

@@ -108,6 +108,7 @@ describe('optimistic combat turn client', () => {
     assert.equal(result.envelope.payload.moveChoices[0].moveId, 'honoo');
     assert.equal(result.envelope.payload.predictionMode, 'shared-pve-turn-v1');
     assert.equal(typeof result.envelope.predictedHash, 'string');
+    assert.equal('predictedTranscript' in result.envelope, false);
     assert.equal(result.localTranscript.allies.length, 1);
     assert.equal(result.localTranscript.enemies.length, 1);
   });
@@ -192,7 +193,7 @@ describe('optimistic combat turn client', () => {
     assert.equal(cursorResult.localTranscript.actionSegments[0].attacks[0].targetDefeated, true);
   });
 
-  it('builds terminal final-hit prediction as a pending local shell while keeping full envelope transcript', () => {
+  it('builds terminal final-hit prediction as a pending local shell while posting only the transcript hash', () => {
     const terminalState = state({
       combat: {
         enemies: [createCombatant({ id: 'mizu', hp: 1, maxHp: 30 })],
@@ -207,7 +208,8 @@ describe('optimistic combat turn client', () => {
     });
 
     assert.ok(result);
-    assert.equal(result.envelope.predictedTranscript.allEnemiesDefeated, true);
+    assert.equal(typeof result.envelope.predictedHash, 'string');
+    assert.equal('predictedTranscript' in result.envelope, false);
     assert.equal(result.localTranscript.pendingCombatEnd.victory, true);
     assert.equal(result.localTranscript.pendingCombatEnd.defeat, false);
     assert.equal(result.localTranscript.combatEnded, false);
