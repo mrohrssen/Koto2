@@ -438,6 +438,15 @@ export class CombatCycleService {
           nextSeed: optimistic.nextTurnSeed,
         });
       }
+      if (sharedPveCoreHash !== envelope.predictedHash) {
+        return buildCorrectedResponse({
+          reason: 'transcript_mismatch',
+          authoritativeTranscript: resolvedCore.transcript,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+      }
     }
 
     const committed = this.creatureCombatCycle(actionType, moveChoices, {

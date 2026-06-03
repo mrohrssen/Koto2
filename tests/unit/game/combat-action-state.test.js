@@ -289,6 +289,46 @@ describe('combat action state', () => {
     assert.equal(gm.combat.allies[0].hp, hpBefore);
   });
 
+  it('rejects shared-core optimistic combat hash mismatches before committing', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const nextTurnSeed = gm.combat.optimistic.nextTurnSeed;
+    const enemyHpBefore = gm.combat.enemies[0].hp;
+    const combatEnemyHpBefore = gm.combat.enemy.hp;
+    const moveChoices = [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }];
+    const predicted = resolvePveTurn({
+      snapshot: { combat: gm.combat, run: gm.run },
+      actionType: 'attack',
+      moveChoices,
+      seed,
+    });
+    const envelope = buildActionEnvelope({
+      actionId: 'act_browser_bad_hash',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'combat.attack',
+      payload: { actionType: 'attack', moveChoices, predictionMode: 'shared-pve-turn-v1' },
+      predictedTranscript: predicted.transcript,
+    });
+    envelope.predictedHash = 'intentionally-incorrect';
+
+    const result = service.verifyAndCommitCreatureCombatCycle(envelope);
+
+    assert.equal(result.status, 'corrected');
+    assert.equal(result.reason, 'transcript_mismatch');
+    assert.equal(result.stateVersion, stateVersion);
+    assert.equal(result.nextSeed, nextTurnSeed);
+    assert.equal(gm.combat.optimistic.stateVersion, stateVersion);
+    assert.equal(gm.combat.optimistic.nextTurnSeed, nextTurnSeed);
+    assert.equal(gm.combat.enemies[0].hp, enemyHpBefore);
+    assert.equal(gm.combat.enemy.hp, combatEnemyHpBefore);
+    assert.equal(result.authoritativeState, null);
+    assert.deepEqual(result.authoritativeTranscript, predicted.transcript);
+  });
+
   it('returns corrected state when optimistic combat hash mismatches', () => {
     const gm = createTestGameManagerWithCreatureCombat();
     const service = new CombatCycleService(gm);
