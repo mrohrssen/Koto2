@@ -210,7 +210,7 @@ Hub and meta actions:
 ### Keep Predictive Combat
 
 - Existing PvE attack.
-PvE defend prediction supports cursor-era creature encounters by predicting the full defend turn through the shared deterministic resolver. Unsafe KO swap/removal cases still correct through the existing safe-prediction blockers.
+- PvE defend prediction supports cursor-era creature encounters by predicting the full defend turn through the shared deterministic resolver. Unsafe KO swap/removal cases still correct through the existing safe-prediction blockers.
 - Existing Kanji Kombat quiz answer.
 
 ### Use Confirmed Save
