@@ -216,4 +216,19 @@ describe('grammar-matcher', () => {
     const matches = findGrammarMatches(tokenized('猫は走る。'), { catalog, matchers: [matcher, matcher] });
     assert.deepEqual(matches.map(match => match.grammarId), ['test-duplicate-row']);
   });
+
+  it('preserves grammar matches inside live quoted speech', () => {
+    assert.ok(ids('昨日、友達は「本を読む」と言いました。').includes('n5-wo-object'));
+    assert.ok(ids('友達は「読んでいる」と言いました。').includes('n5-te-iru-progressive'));
+    assert.ok(ids('昨日、友達は「行くって」と言いました。').includes('n5-tte-quotation'));
+    assert.ok(ids('店員は「学生です」と説明した。').includes('n5-desu-copula'));
+    assert.ok(ids('祖母は「行くね」と笑った。').includes('n5-ne-confirmation'));
+  });
+
+  it('suppresses grammar matches inside copied or mentioned quoted text', () => {
+    assert.ok(!ids('ノートに「本を読む」とだけ書きました。').includes('n5-wo-object'));
+    assert.ok(!ids('例文として「本を読む」を読んだ。').includes('n5-wo-object'));
+    assert.ok(!ids('ノートに「「犬」は名詞です」とだけ書きました。').includes('n5-wa-topic'));
+    assert.ok(!ids('ノートに「行きます」とだけ書きました。').includes('n5-masu-polite'));
+  });
 });
