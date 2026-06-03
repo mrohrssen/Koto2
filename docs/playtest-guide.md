@@ -198,7 +198,8 @@ await page.evaluate(async () => {
 - PixiJS battle scene: ally creature sprite on left, enemy creature sprite on right
 - DOM HP/MP bars overlaid on sprites (ally: HP + MP bars, enemy: HP bar)
 - Cid NPC in background center
-- **Move selection cards** in action area below scene: move name in Japanese + English, element, damage, MP cost
+- For normal creature combat: **Move selection cards** in action area below scene: move name in Japanese + English, element, damage, MP cost
+- For Kanji Kombat after onboarding: `.kanji-kombat-intro`, `.kanji-kombat-panel`, or `.kanji-kombat-completion` in `#action-area`
 - Room counter in header (e.g., "1/30")
 
 **Battlefield layout visual check:**
@@ -230,6 +231,54 @@ window.__inspector.fullScan()
 - Move cards empty or missing
 - SAC animation stuck (tween crash — see known issue)
 - Inspector reports DOM_GHOST (stale sprite/HP bar from previous phase)
+
+---
+
+### Phase 3d: Kanji Kombat First-Time Onboarding (phase: `combat`, mode: `kanjiKombat`)
+
+**Trigger:** An account with `meta.kanjiKombatOnboarding.completed === false` clicks **Kanji Kombat**, selects an owned creature, and starts the run.
+
+**Expected screen:**
+- Battlefield is already mounted: player creature, enemy formation, HP bars, and combat background are visible.
+- Cid slides in using the normal scene/NPC layer, then speaks through `.narration-box.visible`.
+- `#action-area` is empty during narration pages, then shows existing `.ui-btn-list .ui-btn` response buttons.
+- No `.kanji-kombat-intro`, `.kanji-kombat-panel`, move cards, or combat action buttons appear until onboarding is submitted.
+
+**Interactions:**
+1. Dismiss Cid's welcome narration by clicking outside the narration box.
+2. Answer "Do you already know all hiragana?" with "Yes, I know all of them" or "No, please teach me".
+3. Answer "Do you already know all katakana?" with the same two response buttons.
+4. Dismiss the final Cid line. Expected final lines:
+   - yes / yes: "Okay, great, we'll start by teaching you kanji. Let's jump right into it."
+   - yes / no: "Great, we'll start by teaching you katakana and go from there."
+   - no / no: "Great, we'll start by teaching you hiragana and go from there."
+5. Verify `POST /api/game/kanji-kombat/onboarding` fires once with `knowsHiragana` and `knowsKatakana` booleans.
+
+**State checks:**
+```javascript
+window.__gameState.run.mode
+// "kanjiKombat"
+window.__gameState.run.kanjiKombat.onboardingPending
+// false after submission
+window.__gameState.meta.kanjiKombatOnboarding
+// { completed: true, knowsHiragana: boolean, knowsKatakana: boolean }
+```
+
+**After onboarding:**
+- Cid slides out and the enemy formation remains visible.
+- Action area resumes normal Kanji Kombat work:
+  - yes / yes should start with kanji if kanji work is available.
+  - yes / no should start with katakana.
+  - no / no should start with hiragana.
+- If the account has no work available or the daily deck is already complete, onboarding should still stay saved and the existing `.kanji-kombat-completion` prompt should appear.
+- Saying "No, please teach me" must not reset existing `script.cards` FSRS progress for hiragana or katakana.
+
+**What could go wrong:**
+- Cid appears on the picker instead of the battlefield.
+- A quiz, intro card, or completion choice appears before the two onboarding answers are submitted.
+- Cid does not slide out, or the enemy DOM/Pixi formation disappears after onboarding.
+- Refreshing or retrying after a failed submit traps the account in onboarding despite saved answers.
+- False kana answers overwrite existing card reps, due dates, or review state.
 
 ---
 
