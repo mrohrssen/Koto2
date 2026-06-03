@@ -4,7 +4,8 @@ import {
   advanceTutorial,
   TUTORIAL_STEPS,
   awardTutorialFusionCore,
-  markTutorialFusionComplete
+  markTutorialFusionComplete,
+  markTutorialPostFusionNarrationShown
 } from '../../game/services/tutorial-service.js';
 
 export default function createTutorialRoutes() {
@@ -42,6 +43,13 @@ export default function createTutorialRoutes() {
   router.post('/tutorial-fusion-complete', (req, res) => {
     const meta = req.gameManager.getMeta();
     const result = markTutorialFusionComplete(meta);
+    req.saveGame();
+    res.json({ ...result, state: req.getEnrichedGameState() });
+  });
+
+  router.post('/tutorial-post-fusion-seen', (req, res) => {
+    const meta = req.gameManager.getMeta();
+    const result = markTutorialPostFusionNarrationShown(meta);
     req.saveGame();
     res.json({ ...result, state: req.getEnrichedGameState() });
   });

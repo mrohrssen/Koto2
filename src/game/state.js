@@ -92,7 +92,8 @@ export function createMetaProgression() {
     tutorialFireDropsGifted: false,
     tutorialFusionDataUnlocked: [],
     tutorialFusionCoreAwarded: false,
-    tutorialFusionComplete: false
+    tutorialFusionComplete: false,
+    tutorialPostFusionNarrationShown: false
   };
 }
 
@@ -331,4 +332,3 @@ export async function loadGame(fs) {
     throw error;
   }
 }
-

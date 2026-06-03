@@ -195,6 +195,7 @@ let apiProgressSpeedReviewRoom = null;
 let apiCompleteSpeedReviewRoom = null;
 let apiClaimTutorialFusionCore = null;
 let apiCompleteTutorialFusion = null;
+let apiMarkTutorialPostFusionSeen = null;
 
 let apiGetCreatureCollection = null;
 let showCollectionSelect = null;
@@ -271,6 +272,7 @@ export function init(callbacks) {
   apiCompleteSpeedReviewRoom = callbacks.apiCompleteSpeedReviewRoom;
   apiClaimTutorialFusionCore = callbacks.apiClaimTutorialFusionCore;
   apiCompleteTutorialFusion = callbacks.apiCompleteTutorialFusion;
+  apiMarkTutorialPostFusionSeen = callbacks.apiMarkTutorialPostFusionSeen;
   apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
   triggerCreatureSelect = callbacks.triggerCreatureSelect;
@@ -331,6 +333,7 @@ function needsPostFusionMessage(state) {
   const collection = state?.meta?.creatureCollection || [];
   return state?.meta?.tutorialFusionComplete
     && collection.includes('hinoneko')
+    && !state?.meta?.tutorialPostFusionNarrationShown
     && !postFusionNarrationShown;
 }
 
@@ -640,6 +643,8 @@ export async function renderHub() {
   if (needsPostFusionMessage(gameState)) {
     postFusionNarrationShown = true;
     await showTutorialNarration(getPostFusionNarration(), { showSprite: true });
+    const result = await apiMarkTutorialPostFusionSeen?.();
+    if (result?.state) updateGameState(result.state);
   }
 }
 
