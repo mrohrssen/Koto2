@@ -30,10 +30,10 @@ Optimistic run commits:
 - Shrine reward choice.
 - Skill Master skill choice, including tutorial and initial skill pick.
 - Friendly NPC item choice, including target selection.
-- Dealer buy.
-- Dealer sell.
 
 These use an action ID and local draft state, then reconcile with server `accepted` or `corrected` responses.
+
+Creature dealer buy/sell actions also have optimistic wiring today, but the creature dealer is not currently used in the game. They are out of scope for this rollout and do not need additional planning or migration work.
 
 Older local optimism:
 
