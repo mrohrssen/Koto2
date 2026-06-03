@@ -257,6 +257,31 @@ describe('combat network hardening', () => {
     assert.match(combatLoopSource, /playCreatureDefendResult\(localTranscript, turnTiming,/);
   });
 
+  it('does not hard-code optimistic creature return-to-selection padding', () => {
+    assert.doesNotMatch(
+      combatLoopSource,
+      /async function runOptimisticCreatureCombatTurn[\s\S]*?nextSelectionDelayMs = 600/,
+    );
+    assert.doesNotMatch(
+      combatLoopSource,
+      /runOptimisticCreatureCombatTurn\([\s\S]*?nextSelectionDelayMs:\s*600/,
+    );
+  });
+
+  it('does not keep dead-air delay before move selection after creature defend playback', () => {
+    assert.doesNotMatch(
+      combatLoopSource,
+      /enemyAttackPending = false;\s*\/\/ Start next turn's move selection\s*await delay\(600\);\s*logCombatTurnTiming/,
+    );
+  });
+
+  it('does not keep static defend-staging waits before enemy attack playback', () => {
+    assert.doesNotMatch(
+      combatLoopSource,
+      /combat-defend-indicator[\s\S]{0,240}await delay\(600\);/,
+    );
+  });
+
   it('skips attack result cards for Kanji Kombat answer playback', () => {
     assert.match(combatLoopSource, /skipAttackCards: actionType === 'kanjiKombat'/);
     assert.match(combatLoopSource, /if \(!skipAttackCards\) \{/);

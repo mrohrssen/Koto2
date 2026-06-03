@@ -307,6 +307,13 @@ function logCombatTurnTiming(timing, result, outcome, failed = false) {
   timing.logged = true;
 }
 
+async function waitBeforeMoveSelection(delayMs = 0) {
+  const ms = Number.isFinite(delayMs) ? Math.max(0, delayMs) : 0;
+  if (ms > 0) {
+    await delay(ms);
+  }
+}
+
 async function runCreatureCombatRequest(actionType, moveChoices = []) {
   if (creatureCombatRequestInFlight) return null;
   creatureCombatRequestInFlight = true;
@@ -464,7 +471,7 @@ async function runOptimisticCreatureCombatTurn({
   recoveryActionType = actionType,
   playback,
   pendingFlag = 'player',
-  nextSelectionDelayMs = 600,
+  nextSelectionDelayMs = 0,
 } = {}) {
   const optimistic = buildOptimisticCreatureCombatRequest(actionType, moveChoices);
   if (!optimistic) return false;
@@ -488,7 +495,7 @@ async function runOptimisticCreatureCombatTurn({
     playerAttackPending = false;
   }
   if (combatActive && isRecoveredCombatActive(getGameState()) && !getEnemyDialogueActive()) {
-    await delay(nextSelectionDelayMs);
+    await waitBeforeMoveSelection(nextSelectionDelayMs);
     startMoveSelection();
   }
   return true;
@@ -498,7 +505,7 @@ async function runOptimisticKanjiKombatAnswer({
   answerId,
   turnTiming,
   recoveryActionType = 'attack',
-  nextSelectionDelayMs = 150,
+  nextSelectionDelayMs = 0,
 } = {}) {
   const optimistic = buildOptimisticKanjiKombatRequest(answerId);
   if (!optimistic) return false;
@@ -535,7 +542,7 @@ async function runOptimisticKanjiKombatAnswer({
     return true;
   }
   if (combatActive && isRecoveredCombatActive(getGameState()) && !getEnemyDialogueActive()) {
-    await delay(nextSelectionDelayMs);
+    await waitBeforeMoveSelection(nextSelectionDelayMs);
     startMoveSelection();
   }
   return true;
@@ -1469,7 +1476,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
   const {
     choices = [],
     logMoveIntent = true,
-    nextSelectionDelayMs = 600,
+    nextSelectionDelayMs = 0,
     skipAttackCards = false,
     deferNextSelection = false,
   } = options;
@@ -1660,7 +1667,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
 
   playerAttackPending = false;
 
-  await delay(nextSelectionDelayMs);
+  await waitBeforeMoveSelection(nextSelectionDelayMs);
   logCombatTurnTiming(turnTiming, result, 'next_selection');
   startMoveSelection();
 }
@@ -1698,7 +1705,6 @@ async function executeCreatureMovesTurn(choices, options = {}) {
             answerId: options.kanjiAnswerId,
             turnTiming,
             recoveryActionType,
-            nextSelectionDelayMs: 150,
           })
         : !options.request && await runOptimisticCreatureCombatTurn({
             actionType,
@@ -1709,7 +1715,6 @@ async function executeCreatureMovesTurn(choices, options = {}) {
             playback: localTranscript => playCreatureCombatResult(localTranscript, turnTiming, {
               choices,
               logMoveIntent: false,
-              nextSelectionDelayMs: 600,
               deferNextSelection: true,
             }),
           });
@@ -1756,7 +1761,6 @@ async function executeCreatureMovesTurn(choices, options = {}) {
       await playCreatureCombatResult(result, turnTiming, {
         choices,
         logMoveIntent: false,
-        nextSelectionDelayMs: actionType === 'kanjiKombat' ? 150 : 600,
         skipAttackCards: actionType === 'kanjiKombat',
       });
 
@@ -1807,7 +1811,6 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
   if (result.creatureParty?.active) {
     vfx.updateCreatureHpBars(result.creatureParty.active, null);
   }
-  await delay(600);
 
   // Enemy attacks phase (50% damage already applied server-side)
   const allyHpMap = vfx.buildAllyHpMap(result);
@@ -1855,7 +1858,6 @@ async function playCreatureDefendResult(result, turnTiming, options = {}) {
   enemyAttackPending = false;
 
   // Start next turn's move selection
-  await delay(600);
   logCombatTurnTiming(turnTiming, result, 'next_selection');
   startMoveSelection();
 }
@@ -2091,7 +2093,6 @@ async function executeDefendThenPause() {
       if (actionArea) {
         actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defendingCreature')}</div>`;
       }
-      await delay(600);
 
       // Show enemy's attack result (damage already halved by backend)
       if (result.enemyAttack) {
