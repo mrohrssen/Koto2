@@ -5,6 +5,7 @@ const sceneManagerState = { currentScene: null };
 let renderedButtons = [];
 const roomTransitionCalls = [];
 let dialogueCalls = [];
+let whackAMoleDeps = null;
 
 function makeWhackAMoleState(room) {
   return {
@@ -26,7 +27,16 @@ await mock.module('../../../public/js/scenes/exploration-scene.js', {
 });
 await mock.module('../../../public/js/ui/speed-review.js', { namedExports: {} });
 await mock.module('../../../public/js/ui/whack-a-mole.js', {
-  namedExports: { WhackAMoleGame: class {} },
+  namedExports: {
+    WhackAMoleGame: class {
+      constructor(pool, deps) {
+        this.pool = pool;
+        whackAMoleDeps = deps;
+      }
+
+      start() {}
+    },
+  },
 });
 await mock.module('../../../public/js/audio.js', { namedExports: { playSFX: () => {} } });
 await mock.module('../../../public/js/native/index.js', { namedExports: { hapticLight: () => {} } });
@@ -100,6 +110,7 @@ describe('renderWhackAMole decline flow', () => {
     roomTransitionCalls.length = 0;
     sceneManagerState.currentScene = null;
     dialogueCalls = [];
+    whackAMoleDeps = null;
   });
 
   it('treats completed Kanji Kombat run-ended state as a victory report', () => {
@@ -277,5 +288,91 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(roomTransitionCalls[0].state, advancedState);
     assert.deepEqual(roomTransitionCalls[0].opts, { ingredientDrops });
     assert.equal(updateUiCalls, 1);
+  });
+
+  it('uses composed proceed without replaying room travel after Whack-a-Mole completion', async () => {
+    const nextRoom = { id: 'after-wam', type: 'empty' };
+    const serverState = {
+      phase: 'room',
+      room: nextRoom,
+      run: {
+        currentRoom: 1,
+        roomActionSeq: 8,
+        rooms: [{ type: 'whackAMole' }, nextRoom],
+        revealedRooms: [
+          { index: 0, room: { id: 'wam-start', type: 'whackAMole' } },
+          { index: 1, room: nextRoom },
+        ],
+      },
+    };
+    let currentState = {
+      phase: 'whackAMole',
+      room: { id: 'wam-start', type: 'whackAMole', interacted: false },
+      run: {
+        currentRoom: 0,
+        roomActionSeq: 7,
+        rooms: [{ type: 'whackAMole' }, nextRoom],
+        revealedRooms: [
+          { index: 0, room: { id: 'wam-start', type: 'whackAMole', interacted: false } },
+          { index: 1, room: nextRoom },
+        ],
+      },
+    };
+    let updateUiCalls = 0;
+    const proceedCalls = [];
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => { updateUiCalls += 1; },
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+      },
+      scene: { showNarration: async () => {} },
+      apiGetWhackAMoleDialogue: async () => ({
+        dialogue: null,
+        yesTokens: null,
+        noTokens: null,
+      }),
+      apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
+      apiProceed: async options => {
+        proceedCalls.push(options);
+        return {
+          actionId: options.actionId,
+          actionSeq: options.actionSeq,
+          fromRoom: options.fromRoom,
+          state: serverState,
+        };
+      },
+    });
+
+    await renderWhackAMole();
+    await renderedButtons[0].onClick();
+
+    assert.ok(whackAMoleDeps);
+    const originalDocument = globalThis.document;
+    globalThis.document = { getElementById: () => null };
+    let advanced;
+    try {
+      advanced = await whackAMoleDeps.apiProceed();
+      if (advanced?.state) {
+        roomTransitionCalls.push({ state: advanced.state, opts: { replayed: true } });
+      }
+    } finally {
+      if (originalDocument === undefined) {
+        delete globalThis.document;
+      } else {
+        globalThis.document = originalDocument;
+      }
+    }
+    whackAMoleDeps.updateUI();
+
+    assert.equal(proceedCalls.length, 1);
+    assert.equal(roomTransitionCalls.length, 1);
+    assert.equal(roomTransitionCalls[0].state.run.currentRoom, 1);
+    assert.equal(currentState.run.currentRoom, 1);
+    assert.equal(updateUiCalls, 1);
+    assert.equal(advanced, null);
   });
 });

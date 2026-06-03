@@ -98,17 +98,17 @@ function clearPendingRunAction(pending) {
   }
 }
 
-function reconcilePendingRunAction(pending, result) {
+function reconcilePendingRunAction(pending, result, { refreshUi = true } = {}) {
   if (!isMatchingRunActionResponse(pending, result)) return false;
   if (result?.status === 'corrected') {
     updateGameState(correctPendingRunAction(pending, result));
-    updateUI();
+    if (refreshUi) updateUI();
     clearPendingRunAction(pending);
     return true;
   }
   if (result?.state) {
     updateGameState(confirmPendingRunAction(pending, result));
-    updateUI();
+    if (refreshUi) updateUI();
     clearPendingRunAction(pending);
     return true;
   }
@@ -123,10 +123,10 @@ function applyPendingRunCorrection(pending, result) {
   return true;
 }
 
-function rollbackPendingRunAction(pending) {
+function rollbackPendingRunAction(pending, { refreshUi = true } = {}) {
   if (!pending) return;
   updateGameState(pending.originalState);
-  updateUI();
+  if (refreshUi) updateUI();
   clearPendingRunAction(pending);
 }
 
@@ -716,19 +716,17 @@ export async function proceedWithRevealBuffer({ refreshUi = true } = {}) {
       await playRoomTransition(pending.state, { ingredientDrops: [] });
       const { result, error } = await verification;
       if (error) throw error;
-      if (!reconcilePendingRunAction(pending, result)) {
-        rollbackPendingRunAction(pending);
+      if (!reconcilePendingRunAction(pending, result, { refreshUi })) {
+        rollbackPendingRunAction(pending, { refreshUi });
         return result || null;
       }
       const ingredientDrops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
       if (ingredientDrops.length > 0) {
         showIngredientDropPopups(ingredientDrops);
       }
-      if (refreshUi) updateUI();
       return result || null;
     } catch {
-      rollbackPendingRunAction(pending);
-      if (refreshUi) updateUI();
+      rollbackPendingRunAction(pending, { refreshUi });
       return null;
     }
   }
@@ -2038,7 +2036,10 @@ function startWhackAMoleGame(pool) {
   activeWhackAMoleGame = new WhackAMoleGame(pool, {
     actions,
     apiCompleteWhackAMole,
-    apiProceed: () => proceedWithRevealBuffer({ refreshUi: false }),
+    apiProceed: async () => {
+      await proceedWithRevealBuffer({ refreshUi: false });
+      return null;
+    },
     updateGameState,
     updateUI,
     playSFX,
