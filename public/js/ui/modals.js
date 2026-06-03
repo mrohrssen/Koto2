@@ -1,7 +1,7 @@
 import * as audio from '../audio.js';
 import * as tts from '../tts.js';
 import { setLang } from './i18n.js';
-import { getAuthHeaders, apiUrl } from '../api.js';
+import { getAuthHeaders, apiUrl, setJapaneseDisplayMode } from '../api.js';
 import { loadServerSettings, saveServerSettings } from '../settings.js';
 
 let takeover = null;
@@ -34,6 +34,9 @@ export async function openSettings() {
     loadServerSettings()
   ]);
   const dailyWordLimitSetting = serverSettings.dailyWordLimit ?? 10;
+  const currentGameState = getGameState?.() || {};
+  const currentDisplayMode = currentGameState.meta?.japaneseDisplayMode === 'natural' ? 'natural' : 'hiragana';
+  const kanjiModeEnabled = currentDisplayMode === 'natural';
   const ttsVolumeSetting = tts.getVolume();
   const showDebugSuperAttack = Object.hasOwn(serverSettings, 'debugSuperAttack');
   const showDebugForceBefriend = Object.hasOwn(serverSettings, 'debugForceBefriend');
@@ -56,6 +59,14 @@ export async function openSettings() {
         <input type="number" id="settings-daily-limit" class="settings-input"
           min="0" max="50" value="${dailyWordLimitSetting}">
         <small style="color:#888;font-size:0.85em">0 = skip discovery rooms, max 50</small>
+      </label>
+      <label class="settings-label" style="margin-top:12px">
+        <input type="checkbox" id="settings-kanji-mode"
+          ${kanjiModeEnabled ? 'checked' : ''}>
+        Enable Kanji mode
+        <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">
+          Shows natural Japanese when available. Turn this off for Hiragana mode.
+        </small>
       </label>
       <label class="settings-label" style="margin-top:12px">
         <input type="checkbox" id="settings-ai-conversations"
@@ -141,6 +152,11 @@ export async function openSettings() {
         style="margin-top:20px;width:100%">Save</button>
     </div>
   `;
+
+  const kanjiModeInput = document.getElementById('settings-kanji-mode');
+  if (kanjiModeInput) {
+    kanjiModeInput.checked = kanjiModeEnabled;
+  }
 
   // Auto-unmute when any volume slider is adjusted
   function autoUnmute() {
@@ -368,6 +384,7 @@ export async function openSettings() {
     const ttsVol = parseInt(document.getElementById('settings-tts-volume')?.value || '100') / 100;
     const audioMuted = document.getElementById('settings-audio-muted')?.checked;
     const aiConversationsEnabled = document.getElementById('settings-ai-conversations')?.checked;
+    const desiredDisplayMode = document.getElementById('settings-kanji-mode')?.checked ? 'natural' : 'hiragana';
 
     // Apply local-only settings immediately (never blocked by server calls)
     if (settingsModule.setAiNarrationEnabled) {
@@ -387,6 +404,16 @@ export async function openSettings() {
     audio.setVolume('sfx', sfxVol);
     tts.setVolume(ttsVol);
     if (audioMuted) { audio.mute(); } else { audio.unmute(); }
+
+    if (desiredDisplayMode !== currentDisplayMode) {
+      const displayResult = await setJapaneseDisplayMode(desiredDisplayMode);
+      if (!displayResult?.ok || !displayResult?.state) {
+        sceneModule.showToast('Failed to save Japanese display mode', 2000);
+        return;
+      }
+      updateGameState?.(displayResult.state);
+      updateUI?.();
+    }
 
     // Save learning settings to server.
     const keysToSave = {};
