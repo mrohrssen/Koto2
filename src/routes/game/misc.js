@@ -12,6 +12,7 @@ import { enrichTokens } from '../../game/enrich-tokens.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const JAPANESE_DISPLAY_MODES = new Set(['hiragana', 'natural']);
 
 export default function createMiscRoutes({
   getDebugMode,
@@ -389,6 +390,27 @@ export default function createMiscRoutes({
       ok: true,
       kanaMode: meta.kanaMode,
       japaneseDisplayMode: meta.japaneseDisplayMode,
+    });
+  });
+
+  // Set Japanese display mode for the current player.
+  router.post('/japanese-display-mode', (req, res) => {
+    const { mode } = req.body || {};
+    if (!JAPANESE_DISPLAY_MODES.has(mode)) {
+      return res.status(400).json({ error: 'Invalid Japanese display mode' });
+    }
+
+    const gameManager = req.gameManager;
+    const meta = gameManager.getMeta();
+    meta.japaneseDisplayMode = mode;
+    meta.kanaMode = mode === 'hiragana';
+
+    req.saveGame();
+    res.json({
+      ok: true,
+      japaneseDisplayMode: meta.japaneseDisplayMode,
+      kanaMode: meta.kanaMode,
+      state: req.getEnrichedGameState(),
     });
   });
 

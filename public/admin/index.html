@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Koto Admin</title>
+    <link rel="stylesheet" href="/admin/admin.css">
+  </head>
+  <body>
+    <div class="admin-app" data-admin-app>
+      <aside class="sidebar" aria-label="Admin sections">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">光</div>
+          <div>
+            <div class="brand-title">Koto Admin</div>
+            <div class="brand-subtitle">Operations console</div>
+          </div>
+        </div>
+        <nav class="sidebar-nav" data-sidebar-nav></nav>
+      </aside>
+
+      <main class="main-shell">
+        <header class="topbar">
+          <div>
+            <div class="eyebrow">Admin Dashboard</div>
+            <h1 data-view-title>Overview</h1>
+          </div>
+          <div class="command-row">
+            <div class="session-status" data-admin-session></div>
+            <label class="command-search">
+              <span class="sr-only">Search admin dashboard</span>
+              <input data-global-search type="search" placeholder="Search users, reports, tools">
+            </label>
+            <button class="secondary-action" type="button" data-refresh-view>Refresh</button>
+          </div>
+        </header>
+
+        <section class="view active" data-view="overview" aria-label="Overview"></section>
+        <section class="view" data-view="bug-reports" aria-label="Bug Reports"></section>
+        <section class="view" data-view="users-data" aria-label="Users and Data"></section>
+        <section class="view" data-view="language-qa" aria-label="Language QA"></section>
+        <section class="view" data-view="content-studio" aria-label="Content Studio"></section>
+        <section class="view" data-view="asset-pipeline" aria-label="Asset Pipeline"></section>
+        <section class="view" data-view="simulators" aria-label="Simulators"></section>
+      </main>
+    </div>
+
+    <script type="module" src="/admin/admin-dashboard.js"></script>
+  </body>
+</html>

@@ -1,13 +1,33 @@
 import { Router } from 'express';
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } from 'fs';
-import { join } from 'path';
+import { join, resolve, sep } from 'path';
 import { dataPath } from '../data-dir.js';
 import { findUserByUsername } from '../auth/users.js';
 import { optionalAuth } from '../auth/middleware.js';
 import { getErrors } from '../server-error-buffer.js';
+import { adminAuth } from './admin-auth.js';
 
 const BUG_REPORTS_DIR = dataPath('bug-reports');
 const MAX_REPORTS = 50;
+const BUG_REPORT_ID_PATTERN = /^[a-zA-Z0-9_-]+-\d+$/;
+
+export function isSafeBugReportId(id) {
+  return typeof id === 'string' && BUG_REPORT_ID_PATTERN.test(id);
+}
+
+export function resolveBugReportDir(rootDir, reportId) {
+  if (!isSafeBugReportId(reportId)) {
+    throw new Error('Invalid report id');
+  }
+
+  const root = resolve(rootDir);
+  const reportDir = resolve(root, reportId);
+  if (reportDir !== root && !reportDir.startsWith(`${root}${sep}`)) {
+    throw new Error('Invalid report id');
+  }
+
+  return reportDir;
+}
 
 // Ensure directory exists
 if (!existsSync(BUG_REPORTS_DIR)) {
@@ -59,7 +79,9 @@ export default function createBugReportRoutes() {
       // Sanitize name for filesystem
       const safeName = name.replace(/[^a-zA-Z0-9-_]/g, '-').substring(0, 50);
       const timestamp = new Date().toISOString();
-      const reportDir = join(BUG_REPORTS_DIR, `${safeName}-${Date.now()}`);
+      const randomSuffix = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+      const reportId = `${safeName}-${Date.now()}${randomSuffix}`;
+      const reportDir = join(BUG_REPORTS_DIR, reportId);
 
       mkdirSync(reportDir, { recursive: true });
 
@@ -84,7 +106,7 @@ export default function createBugReportRoutes() {
       };
       writeFileSync(join(reportDir, 'report.json'), JSON.stringify(report, null, 2));
 
-      res.json({ success: true, reportId: `${safeName}-${Date.now()}` });
+      res.json({ success: true, reportId });
 
       // Async cleanup - don't block response
       setImmediate(pruneOldReports);
@@ -123,7 +145,7 @@ export default function createBugReportRoutes() {
   // GET /api/bug-reports/:id - Get specific report metadata
   router.get('/bug-reports/:id', (req, res) => {
     try {
-      const reportDir = join(BUG_REPORTS_DIR, req.params.id);
+      const reportDir = resolveBugReportDir(BUG_REPORTS_DIR, req.params.id);
       const reportPath = join(reportDir, 'report.json');
 
       if (!existsSync(reportPath)) {
@@ -133,6 +155,9 @@ export default function createBugReportRoutes() {
       const report = JSON.parse(readFileSync(reportPath, 'utf-8'));
       res.json({ id: req.params.id, ...report });
     } catch (error) {
+      if (error.message === 'Invalid report id') {
+        return res.status(400).json({ error: 'Invalid report id' });
+      }
       console.error('Get bug report error:', error);
       res.status(500).json({ error: 'Failed to get bug report' });
     }
@@ -141,7 +166,8 @@ export default function createBugReportRoutes() {
   // GET /api/bug-reports/:id/screenshot - Get screenshot image
   router.get('/bug-reports/:id/screenshot', (req, res) => {
     try {
-      const screenshotPath = join(BUG_REPORTS_DIR, req.params.id, 'screenshot.png');
+      const reportDir = resolveBugReportDir(BUG_REPORTS_DIR, req.params.id);
+      const screenshotPath = join(reportDir, 'screenshot.png');
 
       if (!existsSync(screenshotPath)) {
         return res.status(404).json({ error: 'Screenshot not found' });
@@ -149,15 +175,18 @@ export default function createBugReportRoutes() {
 
       res.sendFile(screenshotPath);
     } catch (error) {
+      if (error.message === 'Invalid report id') {
+        return res.status(400).json({ error: 'Invalid report id' });
+      }
       console.error('Get screenshot error:', error);
       res.status(500).json({ error: 'Failed to get screenshot' });
     }
   });
 
   // DELETE /api/bug-reports/:id - Delete a report
-  router.delete('/bug-reports/:id', (req, res) => {
+  router.delete('/bug-reports/:id', adminAuth, (req, res) => {
     try {
-      const reportDir = join(BUG_REPORTS_DIR, req.params.id);
+      const reportDir = resolveBugReportDir(BUG_REPORTS_DIR, req.params.id);
 
       if (!existsSync(reportDir)) {
         return res.status(404).json({ error: 'Report not found' });
@@ -166,6 +195,9 @@ export default function createBugReportRoutes() {
       rmSync(reportDir, { recursive: true });
       res.json({ success: true });
     } catch (error) {
+      if (error.message === 'Invalid report id') {
+        return res.status(400).json({ error: 'Invalid report id' });
+      }
       console.error('Delete bug report error:', error);
       res.status(500).json({ error: 'Failed to delete bug report' });
     }
