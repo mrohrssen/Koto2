@@ -777,9 +777,7 @@ async function autoProceed() {
           advanceStateToBufferedNextRoom(draft);
         },
       });
-      updateGameState(pending.state);
       actions.clear();
-      updateStatusBar();
 
       const verification = apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })
         .then(result => ({ result }))
