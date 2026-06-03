@@ -1,7 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { resolveSavedPvpTeamSelection } from '../../../src/pvp/socket-handler.js';
+import {
+  getPvpTeamSelectionSlotIndex,
+  resolveSavedPvpTeamSelection,
+} from '../../../src/pvp/socket-handler.js';
 
 function savedTeam(id) {
   return {
@@ -32,5 +35,14 @@ describe('resolveSavedPvpTeamSelection', () => {
     assert.equal(resolveSavedPvpTeamSelection(gm, -1), null);
     assert.equal(resolveSavedPvpTeamSelection(gm, '0'), null);
     assert.equal(resolveSavedPvpTeamSelection(null, 0), null);
+  });
+});
+
+describe('getPvpTeamSelectionSlotIndex', () => {
+  it('safely extracts slotIndex from null or malformed payloads', () => {
+    assert.equal(getPvpTeamSelectionSlotIndex({ slotIndex: 0 }), 0);
+    assert.equal(getPvpTeamSelectionSlotIndex(null), undefined);
+    assert.equal(getPvpTeamSelectionSlotIndex(undefined), undefined);
+    assert.equal(getPvpTeamSelectionSlotIndex(1), undefined);
   });
 });

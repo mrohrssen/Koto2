@@ -24,6 +24,11 @@ export function resolveSavedPvpTeamSelection(gm, slotIndex) {
   return team ? clonePvpTeam(team) : null;
 }
 
+export function getPvpTeamSelectionSlotIndex(payload = {}) {
+  const { slotIndex } = payload || {};
+  return slotIndex;
+}
+
 export function calculateRankedBotFallbackDelay(random = Math.random) {
   return BOT_FALLBACK_MIN_MS + Math.floor(random() * (BOT_FALLBACK_MAX_MS - BOT_FALLBACK_MIN_MS + 1));
 }
@@ -432,7 +437,8 @@ export function setupPvpSockets(io, {
     // ------------------------------------------------------------------ //
     // pvp:select-team
     // ------------------------------------------------------------------ //
-    socket.on('pvp:select-team', ({ slotIndex } = {}) => {
+    socket.on('pvp:select-team', (payload = {}) => {
+      const slotIndex = getPvpTeamSelectionSlotIndex(payload);
       const found = mm.findMatchBySocket(socket.id);
       if (!found) return;
 
