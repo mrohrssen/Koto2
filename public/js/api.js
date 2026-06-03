@@ -795,8 +795,11 @@ async function submitKanjiKombatIntro(cardId, choice) {
   return apiCall('/kanji-kombat/intro', 'POST', { cardId, choice }, null, { bypassLoadingGate: true });
 }
 
-async function submitKanjiKombatAnswer(answerId) {
-  return apiCall('/kanji-kombat/answer', 'POST', { answerId }, null, {
+async function submitKanjiKombatAnswer(answerOrEnvelope) {
+  const body = answerOrEnvelope && typeof answerOrEnvelope === 'object'
+    ? answerOrEnvelope
+    : { answerId: answerOrEnvelope };
+  return apiCall('/kanji-kombat/answer', 'POST', body, null, {
     bypassLoadingGate: true,
     timeoutMs: COMBAT_CYCLE_TIMEOUT_MS,
     returnErrorBody: true,

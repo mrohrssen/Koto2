@@ -48,7 +48,10 @@ import {
   shouldSkipAttackRecord
 } from './combat-ui-utils.js';
 import { mergeAuthoritativeCombatState } from './combat-state-sync.js';
-import { buildOptimisticCombatTurn } from './optimistic-combat-turn.js';
+import {
+  buildOptimisticCombatTurn,
+  buildOptimisticKanjiKombatAnswer,
+} from './optimistic-combat-turn.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -449,6 +452,11 @@ function buildOptimisticCreatureCombatRequest(actionType, moveChoices = []) {
   return buildOptimisticCombatTurn({ state: getGameState(), actionType, moveChoices });
 }
 
+function buildOptimisticKanjiKombatRequest(answerId) {
+  if (typeof apiSubmitKanjiKombatAnswer !== 'function') return null;
+  return buildOptimisticKanjiKombatAnswer({ state: getGameState(), answerId });
+}
+
 async function runOptimisticCreatureCombatTurn({
   actionType,
   moveChoices = [],
@@ -486,10 +494,58 @@ async function runOptimisticCreatureCombatTurn({
   return true;
 }
 
+async function runOptimisticKanjiKombatAnswer({
+  answerId,
+  turnTiming,
+  recoveryActionType = 'attack',
+  nextSelectionDelayMs = 150,
+} = {}) {
+  const optimistic = buildOptimisticKanjiKombatRequest(answerId);
+  if (!optimistic) return false;
+
+  const requestStartedAt = performance.now();
+  const verificationPromise = apiSubmitKanjiKombatAnswer(optimistic.envelope)
+    .then(result => ({ result }), error => ({ error }));
+  markCombatAnimationStart(turnTiming, requestStartedAt);
+  void vfx.showKanjiKombatAnswerBanner(optimistic.localTranscript.kanjiAnswerCorrect);
+  await playCreatureCombatResult(optimistic.localTranscript, turnTiming, {
+    choices: [],
+    logMoveIntent: false,
+    nextSelectionDelayMs,
+    skipAttackCards: true,
+    deferNextSelection: true,
+  });
+
+  const verification = await verificationPromise;
+  if (verification.error) throw verification.error;
+  const result = verification.result;
+  const recovery = await handleOptimisticCombatVerification(result, recoveryActionType);
+  if (recovery && recovery.recovered === false) {
+    throw new Error('Combat sync failed');
+  }
+
+  playerAttackPending = false;
+  combatActive = isRecoveredCombatActive(getGameState());
+  if (result?.nextWave) {
+    await playKanjiKombatNextWaveTransition(result);
+    animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
+  }
+  if (result?.combatEnded || !combatActive) {
+    stopCombatLoop(result || { combatEnded: true, victory: false });
+    return true;
+  }
+  if (combatActive && isRecoveredCombatActive(getGameState()) && !getEnemyDialogueActive()) {
+    await delay(nextSelectionDelayMs);
+    startMoveSelection();
+  }
+  return true;
+}
+
 export const __combatNetworkTest = {
   setCreatureCombatApi(fn) {
     apiCreatureCombatCycle = fn;
     apiVerifyCreatureCombatCycle = null;
+    apiSubmitKanjiKombatAnswer = null;
     creatureCombatRequestInFlight = false;
     activeCombatSyncToken = null;
     apiGetGameState = null;
@@ -498,6 +554,9 @@ export const __combatNetworkTest = {
   },
   setVerifyCreatureCombatApi(fn) {
     apiVerifyCreatureCombatCycle = fn;
+  },
+  setKanjiKombatAnswerApi(fn) {
+    apiSubmitKanjiKombatAnswer = fn;
   },
   setStateAccessors({ get, update, fetchServerState } = {}) {
     getGameState = typeof get === 'function' ? get : getGameState;
@@ -514,6 +573,7 @@ export const __combatNetworkTest = {
   requestCreatureCombatCycle,
   verifyCreatureCombatCycle,
   buildOptimisticCreatureCombatRequest,
+  buildOptimisticKanjiKombatRequest,
   runCreatureCombatRequest,
   recoverFromCombatErrorState,
   recoverFromNullCombatPost,
@@ -798,6 +858,7 @@ export async function submitKanjiKombatAnswer(answerId) {
   }
   await executeCreatureMovesTurn([], {
     actionType: 'kanjiKombat',
+    kanjiAnswerId: answerId,
     request: () => apiSubmitKanjiKombatAnswer(answerId),
     describeIntent: () => `Kanji Kombat answer: ${answerId}`,
   });
@@ -1632,19 +1693,26 @@ async function executeCreatureMovesTurn(choices, options = {}) {
         _log.act(actionType === 'attack' ? `Attack: ${moveDesc}` : moveDesc);
       }
 
-      const optimisticHandled = !options.request && await runOptimisticCreatureCombatTurn({
-        actionType,
-        moveChoices: choices,
-        turnTiming,
-        recoveryActionType,
-        pendingFlag: 'player',
-        playback: localTranscript => playCreatureCombatResult(localTranscript, turnTiming, {
-          choices,
-          logMoveIntent: false,
-          nextSelectionDelayMs: 600,
-          deferNextSelection: true,
-        }),
-      });
+      const optimisticHandled = actionType === 'kanjiKombat' && options.kanjiAnswerId
+        ? await runOptimisticKanjiKombatAnswer({
+            answerId: options.kanjiAnswerId,
+            turnTiming,
+            recoveryActionType,
+            nextSelectionDelayMs: 150,
+          })
+        : !options.request && await runOptimisticCreatureCombatTurn({
+            actionType,
+            moveChoices: choices,
+            turnTiming,
+            recoveryActionType,
+            pendingFlag: 'player',
+            playback: localTranscript => playCreatureCombatResult(localTranscript, turnTiming, {
+              choices,
+              logMoveIntent: false,
+              nextSelectionDelayMs: 600,
+              deferNextSelection: true,
+            }),
+          });
       if (optimisticHandled) {
         return;
       }

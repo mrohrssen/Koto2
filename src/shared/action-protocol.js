@@ -3,6 +3,7 @@ function isUnsupportedJsonValue(value) {
 }
 
 export const PVE_CORE_PREDICTION_MODE = 'shared-pve-turn-v1';
+export const KANJI_KOMBAT_PREDICTION_MODE = 'shared-kanji-kombat-v1';
 
 function stableStringify(value) {
   if (typeof value === 'bigint') {

@@ -21,9 +21,7 @@ import {
   awardBattleXp,
   awardKillXp,
   tickAllEffects,
-  resolveNoopActorAction,
   resolveSingleActorAction,
-  resolveSyntheticActorAction,
   pickEnemyMoveChoice,
   pickEnemyTarget,
   executeNpcSkill,
@@ -36,6 +34,10 @@ import {
   processBefriendQuizAnswer,
   resolveBefriendFight
 } from './creature-combat-service.js';
+import {
+  resolveNoopActorAction,
+  resolveSyntheticActorAction,
+} from '../../shared/combat/pve-turn-core.js';
 import {
   resolvePveCursorTurn,
   resolvePveTurn,

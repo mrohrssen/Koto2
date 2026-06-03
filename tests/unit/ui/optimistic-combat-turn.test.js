@@ -2,7 +2,9 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  buildOptimisticKanjiKombatAnswer,
   buildOptimisticCombatTurn,
+  canRunOptimisticKanjiKombatAnswer,
   canRunOptimisticPveTurn,
 } from '../../../public/js/ui/optimistic-combat-turn.js';
 
@@ -50,6 +52,42 @@ function state(overrides = {}) {
       ...overrides.run,
     },
   };
+}
+
+function kanjiKombatState(overrides = {}) {
+  const ally = createCombatant({ id: 'hi', nameEn: 'Fire', element: 'fire' });
+  const enemy = createCombatant({
+    id: 'mizu',
+    name: '水',
+    nameEn: 'Water',
+    reading: 'みず',
+    element: 'water',
+    hp: 100,
+    maxHp: 100,
+  });
+  return state({
+    combat: {
+      mode: 'kanjiKombat',
+      allies: [ally],
+      enemies: [enemy],
+      actionCursor: { side: 'ally', index: 0, opening: false },
+      ...overrides.combat,
+    },
+    run: {
+      mode: 'kanjiKombat',
+      creatureParty: { active: [ally], reserves: [] },
+      kanjiKombat: {
+        currentQuiz: {
+          cardId: 'hiragana:あ',
+          choices: [
+            { id: 'answer-correct', answer: 'a', correct: true },
+            { id: 'answer-wrong', answer: 'i', correct: false },
+          ],
+        },
+      },
+      ...overrides.run,
+    },
+  });
 }
 
 describe('optimistic combat turn client', () => {
@@ -156,5 +194,29 @@ describe('optimistic combat turn client', () => {
       moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
       actionId: 'act_cursor_ko',
     }), null);
+  });
+
+  it('builds optimistic Kanji Kombat answer envelopes from the visible quiz', () => {
+    const kkState = kanjiKombatState();
+
+    assert.equal(canRunOptimisticKanjiKombatAnswer(kkState, 'answer-correct'), true);
+    const result = buildOptimisticKanjiKombatAnswer({
+      state: kkState,
+      answerId: 'answer-correct',
+      actionId: 'act_kanji',
+    });
+
+    assert.equal(result.localTranscript.actionType, 'kanjiKombat');
+    assert.equal(result.localTranscript.kanjiAnswerCorrect, true);
+    assert.equal(result.localTranscript.actionSegments[0].actor.side, 'ally');
+    assert.equal(result.envelope.actionId, 'act_kanji');
+    assert.equal(result.envelope.actionType, 'kanjiKombat.answer');
+    assert.equal(result.envelope.combatId, 'cmb_test');
+    assert.equal(result.envelope.stateVersion, 0);
+    assert.equal(result.envelope.seed, 'turn-seed');
+    assert.equal(result.envelope.payload.answerId, 'answer-correct');
+    assert.equal(result.envelope.payload.correct, true);
+    assert.equal(result.envelope.payload.predictionMode, 'shared-kanji-kombat-v1');
+    assert.equal(typeof result.envelope.predictedHash, 'string');
   });
 });
