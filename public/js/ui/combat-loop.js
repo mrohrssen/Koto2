@@ -472,10 +472,14 @@ async function runOptimisticCreatureCombatTurn({
   playback,
   pendingFlag = 'player',
   nextSelectionDelayMs = 0,
+  startMoveSelection: restartMoveSelection = startMoveSelection,
+  stopCombatLoop: finishCombatLoop = stopCombatLoop,
+  getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
 } = {}) {
   const optimistic = buildOptimisticCreatureCombatRequest(actionType, moveChoices);
   if (!optimistic) return false;
 
+  const hasPendingCombatEnd = !!optimistic.localTranscript?.pendingCombatEnd;
   const requestStartedAt = performance.now();
   const verificationPromise = verifyCreatureCombatCycle(optimistic.envelope)
     .then(result => ({ result }), error => ({ error }));
@@ -484,7 +488,8 @@ async function runOptimisticCreatureCombatTurn({
 
   const verification = await verificationPromise;
   if (verification.error) throw verification.error;
-  const recovery = await handleOptimisticCombatVerification(verification.result, recoveryActionType);
+  const result = verification.result;
+  const recovery = await handleOptimisticCombatVerification(result, recoveryActionType);
   if (recovery && recovery.recovered === false) {
     throw new Error('Combat sync failed');
   }
@@ -494,9 +499,22 @@ async function runOptimisticCreatureCombatTurn({
   } else {
     playerAttackPending = false;
   }
-  if (combatActive && isRecoveredCombatActive(getGameState()) && !getEnemyDialogueActive()) {
+  combatActive = isRecoveredCombatActive(getGameState());
+
+  if (result?.status === 'accepted' && result?.combatEnded === true) {
+    const terminalOutcome = hasPendingCombatEnd
+      ? (result.victory ? 'pending_optimistic_victory' : 'pending_optimistic_defeat')
+      : (result.victory ? 'victory' : 'defeat');
+    logCombatTurnTiming(turnTiming, result, terminalOutcome);
+    await finishCombatLoop(result);
+    return true;
+  }
+
+  logCombatTurnTiming(turnTiming, result, recovery?.outcome || 'optimistic_verified');
+  const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
+  if (combatActive && isRecoveredCombatActive(getGameState()) && !enemyDialogueActive) {
     await waitBeforeMoveSelection(nextSelectionDelayMs);
-    startMoveSelection();
+    restartMoveSelection();
   }
   return true;
 }
@@ -585,6 +603,13 @@ export const __combatNetworkTest = {
   recoverFromCombatErrorState,
   recoverFromNullCombatPost,
   handleOptimisticCombatVerification,
+  runOptimisticCreatureCombatTurn,
+  setCombatActive(value) {
+    combatActive = value === true;
+  },
+  isCombatActive() {
+    return combatActive;
+  },
 };
 
 /** Wrap an async combat animation sequence with the animation-active guard. */
