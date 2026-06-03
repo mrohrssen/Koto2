@@ -982,14 +982,14 @@ async function chooseShrineReward(rewardType, creatureKey) {
     } else {
       rollbackPendingRunAction(pending);
       shrineState.choosing = false;
-      sceneModule?.showNarration?.('Could not apply shrine blessing. Tap to try again.', { autoDismiss: 2200 });
+      sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 2200 });
       renderShrine();
     }
   } catch {
     rollbackPendingRunAction(pending);
     shrineState.choosing = false;
     actions.clear();
-    sceneModule?.showNarration?.('Failed to choose shrine blessing.', { autoDismiss: 1800 });
+    sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 1800 });
     renderShrine();
   }
 }
@@ -1637,13 +1637,13 @@ export async function renderSkillMaster() {
           result = await apiSkillMasterChoose?.(skillId, { actionId: pending.actionId });
         } catch (err) {
           rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 1800 });
           renderSkillMaster();
           return;
         }
         if (!reconcilePendingRunAction(pending, result)) {
           rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderSkillMaster();
         }
       },
@@ -1705,13 +1705,13 @@ function renderTutorialSkillMaster(offers) {
           result = await apiSkillMasterChoose?.(s.id, { actionId: pending.actionId });
         } catch {
           rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 1800 });
           renderSkillMaster();
           return;
         }
         if (!reconcilePendingRunAction(pending, result)) {
           rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderSkillMaster();
         }
       });
@@ -1951,7 +1951,7 @@ export async function renderFriendlyNpc() {
           rollbackPendingRunAction(pending);
           friendlyNpcState.choosing = false;
           actions.clear();
-          sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
+          sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 1800 });
           renderFriendlyNpc();
           return;
         }
@@ -1961,7 +1961,7 @@ export async function renderFriendlyNpc() {
         } else {
           rollbackPendingRunAction(pending);
           friendlyNpcState.choosing = false;
-          sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
+          sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderFriendlyNpc();
         }
       };

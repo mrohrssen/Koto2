@@ -11,6 +11,7 @@ import { validateTeamSelection } from '../../game/services/creature-collection-s
 import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.js';
 import { getAreaById } from '../../game/rooms.js';
 import { applyItem } from '../../game/services/item-service.js';
+import { getActionLedgerEntry } from '../../game/services/action-ledger-service.js';
 import { buildGlobalAiConfig } from './route-helpers.js';
 import { buildAiDialogueConfig, canUseAiDialogue } from '../../ai-dialogue/config.js';
 import {
@@ -29,6 +30,11 @@ import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-kn
 import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 import { SPRITE_VERSION } from '../../shared/asset-versions.js';
+import {
+  createOptimisticActionRunner,
+  sendOptimisticActionError,
+  withOptimisticActionStatus,
+} from './optimistic-action-response.js';
 
 function versionedSpriteUrl(path) {
   return `/assets/sprites/${path}.webp?v=${SPRITE_VERSION}`;
@@ -93,6 +99,7 @@ export default function createRunRoutes({
   getDialogueCardAudio
 }) {
   const router = Router();
+  const runOptimisticAction = createOptimisticActionRunner({ owner: req => req.gameManager?.run });
   const SPEED_REVIEW_TRANSITION_ERROR_CODES = new Set([
     'SPEED_REVIEW_TRANSITION_CONFLICT',
     'ROOM_STATE_CONFLICT',
@@ -111,28 +118,11 @@ export default function createRunRoutes({
   ];
 
   function withOptimisticRunStatus(req, payload = {}) {
-    if (!req.body?.actionId) return payload;
-    return {
-      ...payload,
-      status: 'accepted',
-      actionId: req.body.actionId,
-      state: req.getEnrichedGameState(),
-    };
+    return withOptimisticActionStatus(req, payload);
   }
 
   function sendOptimisticRunCorrection(req, res, error, statusCode = 409) {
-    let authoritativeState = null;
-    try {
-      authoritativeState = req.getEnrichedGameState();
-    } catch {
-      authoritativeState = null;
-    }
-    return res.status(statusCode).json({
-      status: 'corrected',
-      actionId: req.body?.actionId,
-      reason: error?.message || 'run_action_rejected',
-      authoritativeState,
-    });
+    return sendOptimisticActionError(req, res, error, statusCode);
   }
 
   function sendRunActionError(req, res, message, statusCode = 400) {
@@ -341,19 +331,18 @@ export default function createRunRoutes({
 
   router.post('/proceed', async (req, res) => {
     const gameManager = req.gameManager;
-    try {
-      const { forceRoomType } = req.body || {};
-      const room = gameManager.proceedToNextRoom(forceRoomType || null);
+    return runOptimisticAction(req, res, {
+      actionType: 'run.proceed',
+      errorStatusCode: 409,
+      perform: () => {
+        const { forceRoomType } = req.body || {};
+        const room = gameManager.proceedToNextRoom(forceRoomType || null);
 
-      const narration = null; // DM narration disabled — frontend discards this
+        const narration = null; // DM narration disabled — frontend discards this
 
-      req.saveGame();
-      const payload = { room, ingredientDrops: room?.ingredientDrops || [], state: req.getEnrichedGameState(), narration };
-      res.json(withOptimisticRunStatus(req, payload));
-    } catch (error) {
-      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
-      res.status(400).json({ error: error.message });
-    }
+        return { room, ingredientDrops: room?.ingredientDrops || [], state: req.getEnrichedGameState(), narration };
+      },
+    });
   });
 
   // Skill Master: get offers (idempotent per room)
@@ -375,16 +364,17 @@ export default function createRunRoutes({
 
   // Skill Master: choose one offer
   router.post('/skill-master-choose', async (req, res) => {
-    try {
-      const { skillId } = req.body || {};
-      if (!skillId) return sendRunActionError(req, res, 'skillId required');
-      const result = req.gameManager.explorationService.chooseSkillMasterOffer(skillId);
-      req.saveGame();
-      res.json(withOptimisticRunStatus(req, { ...result, state: req.getEnrichedGameState() }));
-    } catch (error) {
-      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
-      res.status(400).json({ error: error.message });
-    }
+    const { skillId } = req.body || {};
+    if (!skillId) return sendRunActionError(req, res, 'skillId required');
+
+    return runOptimisticAction(req, res, {
+      actionType: 'skillMaster.choose',
+      errorStatusCode: 409,
+      perform: () => {
+        const result = req.gameManager.explorationService.chooseSkillMasterOffer(skillId);
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   // NPC Battle: get skill offers for post-battle reward (idempotent per room)
@@ -523,18 +513,19 @@ export default function createRunRoutes({
   });
 
   router.post('/shrine-choose', async (req, res) => {
-    try {
-      const { rewardType, creatureKey, creatureId } = req.body || {};
-      if (!rewardType) {
-        return sendRunActionError(req, res, 'rewardType required');
-      }
-      const result = req.gameManager.useShrineReward(rewardType, creatureKey || creatureId || null);
-      req.saveGame();
-      res.json(withOptimisticRunStatus(req, { ...result, state: req.getEnrichedGameState() }));
-    } catch (error) {
-      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
-      res.status(400).json({ error: error.message });
+    const { rewardType, creatureKey, creatureId } = req.body || {};
+    if (!rewardType) {
+      return sendRunActionError(req, res, 'rewardType required');
     }
+
+    return runOptimisticAction(req, res, {
+      actionType: 'shrine.choose',
+      errorStatusCode: 409,
+      perform: () => {
+        const result = req.gameManager.useShrineReward(rewardType, creatureKey || creatureId || null);
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   router.post('/shrine-upgrade', (req, res) => {
@@ -940,51 +931,63 @@ export default function createRunRoutes({
 
   // Friendly NPC: choose one offered item
   router.post('/friendly-npc-choose', async (req, res) => {
-    try {
-      const { itemId, targetCreatureIndex } = req.body;
-      if (!itemId) {
-        return sendRunActionError(req, res, 'itemId required');
-      }
-      const gm = req.gameManager;
-      const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'friendlyNpc') {
-        return sendRunActionError(req, res, 'Not in a friendly NPC room');
-      }
-      if (!room.friendlyNpc.offered) {
-        return sendRunActionError(req, res, 'No offers generated yet');
-      }
-      if (room.friendlyNpc.completed) {
-        return sendRunActionError(req, res, 'Friendly NPC already completed');
-      }
-      const item = room.friendlyNpc.offered.find(i => i.id === itemId);
-      if (!item) {
-        return sendRunActionError(req, res, 'Invalid item choice');
-      }
-      if (item.category !== 'equipment') {
-        return sendRunActionError(req, res, 'Friendly NPC shops only offer equipment');
-      }
-      // Apply item effect to run state
-      const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;
-      applyItem(item, gm.run.creatureParty, gm.run.itemBuffs, targetIdx);
-      // Track for adventure report
-      if (gm.run?.runSummary) {
-        gm.run.runSummary.itemsCollected++;
-      }
-      if (gm.meta && item?.id) {
-        if (!gm.meta.itemsDiscovered) gm.meta.itemsDiscovered = [];
-        if (!gm.meta.itemsDiscovered.includes(item.id)) {
-          gm.meta.itemsDiscovered.push(item.id);
-        }
-      }
-      room.friendlyNpc.chosenId = itemId;
-      room.friendlyNpc.completed = true;
-      room.interacted = true;
-      req.saveGame();
-      res.json(withOptimisticRunStatus(req, { chosen: item, state: req.getEnrichedGameState() }));
-    } catch (err) {
-      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, err);
-      res.status(400).json({ error: err.message });
+    const gm = req.gameManager;
+    const actionId = req.body?.actionId;
+    if (actionId && gm?.run && getActionLedgerEntry(gm.run, actionId)?.response) {
+      return runOptimisticAction(req, res, {
+        actionType: 'friendlyNpc.choose',
+        errorStatusCode: 409,
+        perform: () => {
+          throw new Error('Action replay unavailable');
+        },
+      });
     }
+
+    const { itemId, targetCreatureIndex } = req.body || {};
+    if (!itemId) {
+      return sendRunActionError(req, res, 'itemId required');
+    }
+    const room = gm.getCurrentRoom();
+    if (!room || room.type !== 'friendlyNpc') {
+      return sendRunActionError(req, res, 'Not in a friendly NPC room');
+    }
+    if (!room.friendlyNpc.offered) {
+      return sendRunActionError(req, res, 'No offers generated yet');
+    }
+    if (room.friendlyNpc.completed) {
+      return sendRunActionError(req, res, 'Friendly NPC already completed');
+    }
+    const item = room.friendlyNpc.offered.find(i => i.id === itemId);
+    if (!item) {
+      return sendRunActionError(req, res, 'Invalid item choice');
+    }
+    if (item.category !== 'equipment') {
+      return sendRunActionError(req, res, 'Friendly NPC shops only offer equipment');
+    }
+
+    return runOptimisticAction(req, res, {
+      actionType: 'friendlyNpc.choose',
+      errorStatusCode: 409,
+      perform: () => {
+        // Apply item effect to run state
+        const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;
+        applyItem(item, gm.run.creatureParty, gm.run.itemBuffs, targetIdx);
+        // Track for adventure report
+        if (gm.run?.runSummary) {
+          gm.run.runSummary.itemsCollected++;
+        }
+        if (gm.meta && item?.id) {
+          if (!gm.meta.itemsDiscovered) gm.meta.itemsDiscovered = [];
+          if (!gm.meta.itemsDiscovered.includes(item.id)) {
+            gm.meta.itemsDiscovered.push(item.id);
+          }
+        }
+        room.friendlyNpc.chosenId = itemId;
+        room.friendlyNpc.completed = true;
+        room.interacted = true;
+        return { chosen: item, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   return router;

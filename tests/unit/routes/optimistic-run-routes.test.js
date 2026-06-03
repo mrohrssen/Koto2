@@ -2,7 +2,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import createRunRoutes from '../../../src/routes/game/run.js';
-import createEconomyRoutes from '../../../src/routes/game/economy.js';
 
 function getHandler(router, method, path) {
   for (const layer of router.stack) {
@@ -99,6 +98,37 @@ describe('optimistic deterministic run routes', () => {
     assert.deepEqual(res.body.state, { phase: 'shrine', run: { currentRoom: 1 } });
   });
 
+  it('/proceed does not re-run duplicate actionId and run.currentRoom remains 1', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/proceed');
+    const run = {
+      currentRoom: 0,
+      rooms: [{ type: 'room' }, { type: 'shrine' }, { type: 'skillMaster' }],
+      optimisticActionLedger: { entries: {}, order: [] },
+    };
+    const req = {
+      body: { actionId: 'run_proceed_duplicate' },
+      gameManager: {
+        run,
+        proceedToNextRoom: () => {
+          run.currentRoom += 1;
+          return { room: run.rooms[run.currentRoom], ingredientDrops: [] };
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: run.rooms[run.currentRoom].type, run: { currentRoom: run.currentRoom } }),
+    };
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, 'run_proceed_duplicate');
+    assert.equal(run.currentRoom, 1);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'shrine', run: { currentRoom: 1 } });
+  });
+
   it('tags optimistic proceed responses even when server generated the next room', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/proceed');
     const res = makeRes();
@@ -187,6 +217,36 @@ describe('optimistic deterministic run routes', () => {
     assert.deepEqual(res.body.authoritativeState, { phase: 'skillMaster', run: { currentRoom: 1 } });
   });
 
+  it('/skill-master-choose does not re-run duplicate actionId', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/skill-master-choose');
+    const run = { partySkills: [], optimisticActionLedger: { entries: {}, order: [] } };
+    let choiceCount = 0;
+    const req = {
+      body: { actionId: 'skill_master_duplicate', skillId: 'momentum' },
+      gameManager: {
+        run,
+        explorationService: {
+          chooseSkillMasterOffer: skillId => {
+            choiceCount += 1;
+            run.partySkills.push({ id: skillId });
+            return { chosen: skillId };
+          },
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { partySkills: [...run.partySkills] } }),
+    };
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(choiceCount, 1);
+    assert.deepEqual(run.partySkills, [{ id: 'momentum' }]);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { partySkills: [{ id: 'momentum' }] } });
+  });
+
   it('wraps shrine choices with accepted optimistic status when actionId is present', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/shrine-choose');
     const res = makeRes();
@@ -205,6 +265,31 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.body.actionId, 'shrine_action_1');
     assert.equal(res.body.rewardType, 'heal_all');
     assert.deepEqual(res.body.state, { phase: 'room' });
+  });
+
+  it('/shrine-choose does not re-run duplicate actionId', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/shrine-choose');
+    const run = { shrineUses: 0, optimisticActionLedger: { entries: {}, order: [] } };
+    const req = {
+      body: { actionId: 'shrine_duplicate', rewardType: 'heal_all' },
+      gameManager: {
+        run,
+        useShrineReward: rewardType => {
+          run.shrineUses += 1;
+          return { rewardType, type: 'shrine_reward' };
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { shrineUses: run.shrineUses } }),
+    };
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(run.shrineUses, 1);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { shrineUses: 1 } });
   });
 
   it('wraps friendly NPC choices with accepted optimistic status when actionId is present', async () => {
@@ -242,85 +327,102 @@ describe('optimistic deterministic run routes', () => {
     assert.deepEqual(res.body.state, { phase: 'room' });
   });
 
-  it('wraps dealer buy choices with accepted optimistic status when actionId is present', async () => {
-    const handler = getHandler(createEconomyRoutes(), 'post', '/dealer-buy');
+  it('returns 400 corrected response for optimistic friendly NPC validation failures', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/friendly-npc-choose');
+    const item = { id: 'sword', category: 'equipment', type: 'boost', effect: { field: 'baseAttackBonus', value: 1 } };
+    const room = {
+      type: 'friendlyNpc',
+      friendlyNpc: { offered: [item], completed: false },
+      interacted: false,
+    };
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'dealer_action_1', creatureId: 'hi' },
+      body: { actionId: 'friendly_invalid_item', itemId: 'shield', targetCreatureIndex: 0 },
       gameManager: {
-        dealerBuy: creatureId => ({ bought: creatureId }),
+        run: { optimisticActionLedger: { entries: {}, order: [] } },
+        meta: {},
+        getCurrentRoom: () => room,
       },
       saveGame: () => {},
-      getEnrichedGameState: () => ({ phase: 'dealer', run: { player: { credits: 7 } } }),
+      getEnrichedGameState: () => ({ phase: 'friendlyNpc', run: { currentRoom: 3 } }),
     }, res);
 
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.status, 'accepted');
-    assert.equal(res.body.actionId, 'dealer_action_1');
-    assert.equal(res.body.bought, 'hi');
-    assert.deepEqual(res.body.state, { phase: 'dealer', run: { player: { credits: 7 } } });
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, 'friendly_invalid_item');
+    assert.equal(res.body.reason, 'Invalid item choice');
+    assert.deepEqual(res.body.authoritativeState, { phase: 'friendlyNpc', run: { currentRoom: 3 } });
   });
 
-  it('wraps dealer sell choices with accepted optimistic status when actionId is present', async () => {
-    const handler = getHandler(createEconomyRoutes(), 'post', '/dealer-sell');
+  it('returns 409 corrected response for optimistic friendly NPC mutation-time failures', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/friendly-npc-choose');
+    const item = { id: 'sword', category: 'equipment', type: 'boost', effect: { field: 'baseAttackBonus', value: 1 } };
+    const room = {
+      type: 'friendlyNpc',
+      friendlyNpc: { offered: [item], completed: false },
+      interacted: false,
+    };
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'dealer_sell_1', creatureId: 'mizu' },
+      body: { actionId: 'friendly_mutation_failure', itemId: 'sword', targetCreatureIndex: 0 },
       gameManager: {
-        dealerSell: creatureId => ({ sold: creatureId }),
-      },
-      saveGame: () => {},
-      getEnrichedGameState: () => ({ phase: 'dealer', run: { player: { credits: 12 } } }),
-    }, res);
-
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.status, 'accepted');
-    assert.equal(res.body.actionId, 'dealer_sell_1');
-    assert.equal(res.body.sold, 'mizu');
-    assert.deepEqual(res.body.state, { phase: 'dealer', run: { player: { credits: 12 } } });
-  });
-
-  it('returns corrected state for optimistic dealer route errors', async () => {
-    const handler = getHandler(createEconomyRoutes(), 'post', '/dealer-buy');
-    const res = makeRes();
-
-    await handler({
-      body: { actionId: 'dealer_bad_1', creatureId: 'hinoneko' },
-      gameManager: {
-        dealerBuy: () => {
-          throw new Error('Not enough credits');
+        run: {
+          creatureParty: {},
+          itemBuffs: {},
+          runSummary: { itemsCollected: 0 },
+          optimisticActionLedger: { entries: {}, order: [] },
         },
+        meta: {},
+        getCurrentRoom: () => room,
       },
       saveGame: () => {},
-      getEnrichedGameState: () => ({ phase: 'dealer', run: { player: { credits: 1 } } }),
+      getEnrichedGameState: () => ({ phase: 'friendlyNpc', run: { currentRoom: 3 } }),
     }, res);
 
     assert.equal(res.statusCode, 409);
     assert.equal(res.body.status, 'corrected');
-    assert.equal(res.body.actionId, 'dealer_bad_1');
-    assert.equal(res.body.reason, 'Not enough credits');
-    assert.deepEqual(res.body.authoritativeState, { phase: 'dealer', run: { player: { credits: 1 } } });
+    assert.equal(res.body.actionId, 'friendly_mutation_failure');
+    assert.ok(res.body.reason);
+    assert.deepEqual(res.body.authoritativeState, { phase: 'friendlyNpc', run: { currentRoom: 3 } });
   });
 
-  it('keeps legacy dealer responses unchanged when actionId is absent', async () => {
-    const handler = getHandler(createEconomyRoutes(), 'post', '/dealer-sell');
-    const res = makeRes();
-
-    await handler({
-      body: { creatureId: 'mizu' },
+  it('/friendly-npc-choose does not re-run duplicate actionId and runSummary.itemsCollected remains 1', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/friendly-npc-choose');
+    const item = { id: 'sword', category: 'equipment', type: 'boost', effect: { field: 'baseAttackBonus', value: 1 } };
+    const room = {
+      type: 'friendlyNpc',
+      friendlyNpc: { offered: [item], completed: false },
+      interacted: false,
+    };
+    const run = {
+      creatureParty: {
+        active: [{ id: 'hi', hp: 10, maxHp: 10, mp: 5, maxMp: 5, level: 1 }],
+        reserves: [],
+      },
+      itemBuffs: {},
+      runSummary: { itemsCollected: 0 },
+      optimisticActionLedger: { entries: {}, order: [] },
+    };
+    const req = {
+      body: { actionId: 'friendly_duplicate', itemId: 'sword', targetCreatureIndex: 0 },
       gameManager: {
-        dealerSell: creatureId => ({ sold: creatureId }),
+        run,
+        meta: { itemsDiscovered: [] },
+        getCurrentRoom: () => room,
       },
       saveGame: () => {},
-      getEnrichedGameState: () => ({ phase: 'dealer' }),
-    }, res);
+      getEnrichedGameState: () => ({ phase: 'room', run: { runSummary: { ...run.runSummary } } }),
+    };
 
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.status, undefined);
-    assert.equal(res.body.actionId, undefined);
-    assert.equal(res.body.sold, 'mizu');
-    assert.deepEqual(res.body.state, { phase: 'dealer' });
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(run.runSummary.itemsCollected, 1);
+    assert.deepEqual(req.gameManager.meta.itemsDiscovered, ['sword']);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { runSummary: { itemsCollected: 1 } } });
   });
 });

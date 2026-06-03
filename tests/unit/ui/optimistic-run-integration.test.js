@@ -59,4 +59,38 @@ describe('optimistic run action integration', () => {
     assert.match(apiSource, /bypassLoadingGate: true/);
     assert.match(apiSource, /verifiedRunAction,\n\s+confirmCreatures/);
   });
+
+  it('uses non-blaming retry copy for deterministic choice failures', () => {
+    const shrineSource = sourceBetween(
+      explorationSource,
+      'async function chooseShrineReward(rewardType, creatureKey)',
+      '/** Quiz phase'
+    );
+    assert.match(shrineSource, /Reward choice did not save\. Please choose again\./);
+    assert.doesNotMatch(shrineSource, /Could not apply shrine blessing|Failed to choose shrine blessing/);
+
+    const skillMasterSource = sourceBetween(
+      explorationSource,
+      'export async function renderSkillMaster()',
+      '/** Tutorial step 0'
+    );
+    assert.match(skillMasterSource, /Skill choice did not save\. Please choose again\./);
+    assert.doesNotMatch(skillMasterSource, /Could not apply skill choice|Failed to choose skill/);
+
+    const tutorialSkillMasterSource = sourceBetween(
+      explorationSource,
+      'function renderTutorialSkillMaster(offers)',
+      '// ============ FRIENDLY NPC ROOM ============'
+    );
+    assert.match(tutorialSkillMasterSource, /Skill choice did not save\. Please choose again\./);
+    assert.doesNotMatch(tutorialSkillMasterSource, /Could not apply skill choice|Failed to choose skill/);
+
+    const friendlyNpcSource = sourceBetween(
+      explorationSource,
+      'export async function renderFriendlyNpc()',
+      '// ============ NPC BATTLE SKILL REWARD ============'
+    );
+    assert.match(friendlyNpcSource, /Item choice did not save\. Please choose again\./);
+    assert.doesNotMatch(friendlyNpcSource, /Could not apply item|Failed to choose item/);
+  });
 });
