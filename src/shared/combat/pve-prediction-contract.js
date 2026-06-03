@@ -18,31 +18,46 @@ function hasDefeatedStateSummary(stateSummary = {}) {
     || (stateSummary.allies || []).some(defeated);
 }
 
-export function hasPveServerOnlyFeedback(transcript = {}) {
-  if (!transcript) return false;
-  if (
-    transcript.combatEnded
-    || transcript.befriendQuizTriggered
-    || transcript.nextWave
-    || transcript.allEnemiesDefeated
-    || transcript.allAlliesDefeated
-  ) return true;
-  if ((transcript.xpEvents || []).length > 0) return true;
-  if ((transcript.koSwaps || []).length > 0 || (transcript.koRemovals || []).length > 0) return true;
-  if (hasDefeatEvent(transcript.effectEvents) || hasDefeatEvent(transcript.roundStartEvents)) return true;
-  if (hasDefeatedStateSummary(transcript.stateSummary)) return true;
+export function getPvePredictionBlockers(transcript = {}, options = {}) {
+  const {
+    allowVisualKoPrediction = false,
+    allowPendingCombatEndShell = false,
+  } = options;
+  const blockers = [];
 
-  const directRecords = [
-    ...(transcript.attacks || []),
-    ...(transcript.playerAttacks || []),
-    ...(transcript.enemyAttacks || []),
-    ...(transcript.counterAttacks || []),
-    ...(transcript.inlineCounters || []),
-  ];
-  if (hasDefeatRecord(directRecords)) return true;
+  if (!transcript) return blockers;
+  if (transcript.combatEnded || transcript.allEnemiesDefeated || transcript.allAlliesDefeated) {
+    if (!allowPendingCombatEndShell) blockers.push('combatEnd');
+  }
+  if (transcript.befriendQuizTriggered) blockers.push('befriendQuizTriggered');
+  if (transcript.nextWave) blockers.push('nextWave');
+  if ((transcript.xpEvents || []).length > 0) blockers.push('xpEvents');
+  if ((transcript.koSwaps || []).length > 0) blockers.push('koSwaps');
+  if ((transcript.koRemovals || []).length > 0) blockers.push('koRemovals');
+  if (hasDefeatEvent(transcript.effectEvents)) blockers.push('effectDefeatEvents');
+  if (hasDefeatEvent(transcript.roundStartEvents)) blockers.push('roundStartDefeatEvents');
 
-  return (transcript.actionSegments || []).some(segment => hasDefeatRecord([
-    ...(segment.attacks || []),
-    ...(segment.counterAttacks || []),
-  ]) || hasDefeatEvent(segment.effectEvents));
+  const hasVisualDefeat =
+    hasDefeatedStateSummary(transcript.stateSummary)
+    || hasDefeatRecord([
+      ...(transcript.attacks || []),
+      ...(transcript.playerAttacks || []),
+      ...(transcript.enemyAttacks || []),
+      ...(transcript.counterAttacks || []),
+      ...(transcript.inlineCounters || []),
+    ])
+    || (transcript.actionSegments || []).some(segment => hasDefeatRecord([
+      ...(segment.attacks || []),
+      ...(segment.counterAttacks || []),
+    ]) || hasDefeatEvent(segment.effectEvents));
+
+  if (hasVisualDefeat && !allowVisualKoPrediction) {
+    blockers.push('defeatVisuals');
+  }
+
+  return [...new Set(blockers)];
+}
+
+export function hasPveServerOnlyFeedback(transcript = {}, options = {}) {
+  return getPvePredictionBlockers(transcript, options).length > 0;
 }

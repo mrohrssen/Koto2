@@ -1,7 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { hasPveServerOnlyFeedback } from '../../../src/shared/combat/pve-prediction-contract.js';
+import {
+  getPvePredictionBlockers,
+  hasPveServerOnlyFeedback,
+} from '../../../src/shared/combat/pve-prediction-contract.js';
 
 describe('PvE prediction contract', () => {
   it('treats party-skill terminal summaries as server-only feedback', () => {
@@ -33,5 +36,69 @@ describe('PvE prediction contract', () => {
     };
 
     assert.equal(hasPveServerOnlyFeedback(transcript), true);
+  });
+});
+
+describe('PvE prediction blocker classification', () => {
+  it('allows KO visual markers when safe visual KO prediction is enabled', () => {
+    const transcript = {
+      playerAttacks: [{ damage: 50, targetDefeated: true, targetIndex: 0 }],
+      stateSummary: { enemies: [{ hp: 0, maxHp: 50 }], allies: [{ hp: 20, maxHp: 20 }] },
+    };
+
+    assert.deepEqual(getPvePredictionBlockers(transcript, { allowVisualKoPrediction: true }), []);
+    assert.equal(hasPveServerOnlyFeedback(transcript, { allowVisualKoPrediction: true }), false);
+  });
+
+  it('still blocks KO visual markers by default for backwards compatibility', () => {
+    const transcript = {
+      playerAttacks: [{ damage: 50, targetDefeated: true, targetIndex: 0 }],
+    };
+
+    assert.deepEqual(getPvePredictionBlockers(transcript), ['defeatVisuals']);
+    assert.equal(hasPveServerOnlyFeedback(transcript), true);
+  });
+
+  it('allows a combat-end shell only when explicitly requested', () => {
+    const transcript = { combatEnded: true, victory: true };
+
+    assert.deepEqual(getPvePredictionBlockers(transcript), ['combatEnd']);
+    assert.deepEqual(
+      getPvePredictionBlockers(transcript, { allowPendingCombatEndShell: true }),
+      [],
+    );
+  });
+
+  it('keeps persistent progression feedback server-confirmed', () => {
+    const transcript = {
+      combatEnded: true,
+      victory: true,
+      xpEvents: [{ enemyIndex: 0, xp: 10 }],
+    };
+
+    assert.deepEqual(
+      getPvePredictionBlockers(transcript, {
+        allowVisualKoPrediction: true,
+        allowPendingCombatEndShell: true,
+      }),
+      ['xpEvents'],
+    );
+  });
+
+  it('keeps befriend quiz and next wave server-confirmed', () => {
+    assert.deepEqual(
+      getPvePredictionBlockers({ befriendQuizTriggered: true }, {
+        allowVisualKoPrediction: true,
+        allowPendingCombatEndShell: true,
+      }),
+      ['befriendQuizTriggered'],
+    );
+    assert.deepEqual(
+      getPvePredictionBlockers({ nextWave: true }, {
+        allowVisualKoPrediction: true,
+        allowPendingCombatEndShell: true,
+      }),
+      ['nextWave'],
+    );
   });
 });
