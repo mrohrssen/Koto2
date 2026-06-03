@@ -119,7 +119,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     );
   });
 
-  it('keeps onboarding pending when submit finds the daily deck already complete', () => {
+  it('saves onboarding and shows completion choice when the daily deck is already complete', () => {
     const gm = buildGm();
     saveSrsData(gm.userId, {
       kana: { cards: [] },
@@ -128,22 +128,21 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     const service = new KanjiKombatService(gm);
     service.startRunWithCreature(fakeCreature('hi'));
 
-    assert.throws(
-      () => service.submitOnboarding({ knowsHiragana: true, knowsKatakana: true }),
-      /Kanji Kombat is complete for the day/
-    );
+    const result = service.submitOnboarding({ knowsHiragana: true, knowsKatakana: true });
 
     assert.deepEqual(gm.meta.kanjiKombatOnboarding, {
-      completed: false,
-      knowsHiragana: null,
-      knowsKatakana: null,
+      completed: true,
+      knowsHiragana: true,
+      knowsKatakana: true,
     });
-    assert.equal(gm.run.kanjiKombat.onboardingPending, true);
+    assert.equal(gm.run.kanjiKombat.onboardingPending, false);
     assert.equal(gm.run.kanjiKombat.currentQuiz, null);
     assert.equal(gm.run.kanjiKombat.pendingIntro, null);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+    assert.equal(result.next, 'completePrompt');
   });
 
-  it('does not complete onboarding or daily progress when the submit probe finds no work', () => {
+  it('saves onboarding and shows completion choice when no script work is available', () => {
     const gm = buildGm();
     ensureScriptDeckSeeded(gm.userId);
     const data = loadSrsData(gm.userId);
@@ -156,27 +155,23 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     const service = new KanjiKombatService(gm);
     service.startRunWithCreature(fakeCreature('hi'));
 
-    let error = null;
-    try {
-      service.submitOnboarding({ knowsHiragana: true, knowsKatakana: true });
-    } catch (caught) {
-      error = caught;
-    }
+    const result = service.submitOnboarding({ knowsHiragana: true, knowsKatakana: true });
 
     assert.equal(
       getScriptDailyState(gm.userId, getLocalDateKey()).completed,
-      false,
-      'pre-commit probe must not persist daily completion'
+      true,
+      'normal no-work completion should persist daily completion after onboarding is saved'
     );
-    assert.match(error?.message || '', /Kanji Kombat is complete for the day/);
     assert.deepEqual(gm.meta.kanjiKombatOnboarding, {
-      completed: false,
-      knowsHiragana: null,
-      knowsKatakana: null,
+      completed: true,
+      knowsHiragana: true,
+      knowsKatakana: true,
     });
-    assert.equal(gm.run.kanjiKombat.onboardingPending, true);
+    assert.equal(gm.run.kanjiKombat.onboardingPending, false);
     assert.equal(gm.run.kanjiKombat.currentQuiz, null);
     assert.equal(gm.run.kanjiKombat.pendingIntro, null);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+    assert.equal(result.next, 'completePrompt');
   });
 
   it('rejects intro choices while onboarding is pending without touching intro card progress', () => {

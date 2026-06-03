@@ -231,12 +231,6 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     }
   }
 
-  if (opts.suppressCompletionPrompt) {
-    state.currentQuiz = null;
-    state.pendingIntro = null;
-    state.report.completedDaily = true;
-    return { kind: 'complete' };
-  }
   return promptForDailyCompletion(userId, state);
 }
 
@@ -365,31 +359,25 @@ export class KanjiKombatService {
       throw new Error('knowsHiragana and knowsKatakana booleans required');
     }
 
-    const nextOnboarding = { completed: true, knowsHiragana, knowsKatakana };
-    const nextState = {
-      ...kk,
-      onboardingPending: false,
-      currentQuiz: null,
-      pendingIntro: null,
-      noDuePracticeQueue: [...(kk.noDuePracticeQueue || [])],
-      report: { ...kk.report },
-    };
-    const work = chooseNextScriptWork(this.gm.userId, nextState, {
-      onboarding: nextOnboarding,
-      suppressCompletionPrompt: true,
-    });
-    if (work.kind === 'complete') {
-      throw new Error('Kanji Kombat is complete for the day');
-    }
-
     if (!this.gm.meta) this.gm.meta = {};
     const onboarding = ensureKanjiKombatOnboardingState(this.gm.meta);
-    onboarding.completed = nextOnboarding.completed;
-    onboarding.knowsHiragana = nextOnboarding.knowsHiragana;
-    onboarding.knowsKatakana = nextOnboarding.knowsKatakana;
+    onboarding.completed = true;
+    onboarding.knowsHiragana = knowsHiragana;
+    onboarding.knowsKatakana = knowsKatakana;
     this.gm.meta.kanjiKombatOnboarding = onboarding;
 
-    Object.assign(kk, nextState);
+    kk.onboardingPending = false;
+    kk.currentQuiz = null;
+    kk.pendingIntro = null;
+    const work = this.chooseNextWork(kk);
+    let next = work.kind;
+    if (work.kind === 'complete') {
+      kk.currentQuiz = null;
+      kk.pendingIntro = null;
+      kk.completionChoicePending = true;
+      kk.report.completedDaily = true;
+      next = 'completePrompt';
+    }
     kk.currentQuiz = work.quiz || null;
     kk.pendingIntro = work.kind === 'intro'
       ? { cardId: work.card.id, card: work.card, source: work.source }
@@ -397,7 +385,7 @@ export class KanjiKombatService {
     this.gm.emitState();
     return {
       onboarding,
-      next: work.kind,
+      next,
       kanjiKombat: kk,
       allies: this.gm.combat?.allies || [],
       enemies: this.gm.combat?.enemies || [],
