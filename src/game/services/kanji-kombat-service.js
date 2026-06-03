@@ -348,20 +348,28 @@ export class KanjiKombatService {
       throw new Error('knowsHiragana and knowsKatakana booleans required');
     }
 
-    if (!this.gm.meta) this.gm.meta = {};
-    const onboarding = ensureKanjiKombatOnboardingState(this.gm.meta);
-    onboarding.completed = true;
-    onboarding.knowsHiragana = knowsHiragana;
-    onboarding.knowsKatakana = knowsKatakana;
-    this.gm.meta.kanjiKombatOnboarding = onboarding;
-
-    kk.onboardingPending = false;
-    kk.currentQuiz = null;
-    kk.pendingIntro = null;
-    const work = this.chooseNextWork(kk);
+    const nextOnboarding = { completed: true, knowsHiragana, knowsKatakana };
+    const nextState = {
+      ...kk,
+      onboardingPending: false,
+      currentQuiz: null,
+      pendingIntro: null,
+      noDuePracticeQueue: [...(kk.noDuePracticeQueue || [])],
+      report: { ...kk.report },
+    };
+    const work = chooseNextScriptWork(this.gm.userId, nextState, { onboarding: nextOnboarding });
     if (work.kind === 'complete') {
       throw new Error('Kanji Kombat is complete for the day');
     }
+
+    if (!this.gm.meta) this.gm.meta = {};
+    const onboarding = ensureKanjiKombatOnboardingState(this.gm.meta);
+    onboarding.completed = nextOnboarding.completed;
+    onboarding.knowsHiragana = nextOnboarding.knowsHiragana;
+    onboarding.knowsKatakana = nextOnboarding.knowsKatakana;
+    this.gm.meta.kanjiKombatOnboarding = onboarding;
+
+    Object.assign(kk, nextState);
     kk.currentQuiz = work.quiz || null;
     kk.pendingIntro = work.kind === 'intro'
       ? { cardId: work.card.id, card: work.card, source: work.source }

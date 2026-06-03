@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { clearSrsCache, configureSrs } from '../../../src/game/internal-srs.js';
-import { KanjiKombatService } from '../../../src/game/services/kanji-kombat-service.js';
+import { clearSrsCache, configureSrs, saveSrsData } from '../../../src/game/internal-srs.js';
+import { getLocalDateKey, KanjiKombatService } from '../../../src/game/services/kanji-kombat-service.js';
 import { createNewRun } from '../../../src/game/state.js';
 
 function fakeCreature(id, overrides = {}) {
@@ -97,6 +97,30 @@ describe('KanjiKombatService run lifecycle helpers', () => {
       () => service.submitOnboarding({ knowsHiragana: true, knowsKatakana: true }),
       /No pending Kanji Kombat onboarding/
     );
+  });
+
+  it('keeps onboarding pending when submit finds the daily deck already complete', () => {
+    const gm = buildGm();
+    saveSrsData(gm.userId, {
+      kana: { cards: [] },
+      kanjiKombatDaily: { date: getLocalDateKey(), introducedCount: 0, completed: true },
+    });
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+
+    assert.throws(
+      () => service.submitOnboarding({ knowsHiragana: true, knowsKatakana: true }),
+      /Kanji Kombat is complete for the day/
+    );
+
+    assert.deepEqual(gm.meta.kanjiKombatOnboarding, {
+      completed: false,
+      knowsHiragana: null,
+      knowsKatakana: null,
+    });
+    assert.equal(gm.run.kanjiKombat.onboardingPending, true);
+    assert.equal(gm.run.kanjiKombat.currentQuiz, null);
+    assert.equal(gm.run.kanjiKombat.pendingIntro, null);
   });
 
   it('marks a run as Kanji Kombat and starts with one selected creature', () => {
