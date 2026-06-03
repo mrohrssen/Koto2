@@ -3,7 +3,13 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { clearSrsCache, configureSrs, saveSrsData } from '../../../src/game/internal-srs.js';
+import { State } from 'ts-fsrs';
+import { clearSrsCache, configureSrs, loadSrsData, saveSrsData } from '../../../src/game/internal-srs.js';
+import {
+  ensureScriptDeckSeeded,
+  getScriptDailyState,
+  SCRIPT_DECK,
+} from '../../../src/game/script-srs.js';
 import { getLocalDateKey, KanjiKombatService } from '../../../src/game/services/kanji-kombat-service.js';
 import { createNewRun } from '../../../src/game/state.js';
 
@@ -113,6 +119,42 @@ describe('KanjiKombatService run lifecycle helpers', () => {
       /Kanji Kombat is complete for the day/
     );
 
+    assert.deepEqual(gm.meta.kanjiKombatOnboarding, {
+      completed: false,
+      knowsHiragana: null,
+      knowsKatakana: null,
+    });
+    assert.equal(gm.run.kanjiKombat.onboardingPending, true);
+    assert.equal(gm.run.kanjiKombat.currentQuiz, null);
+    assert.equal(gm.run.kanjiKombat.pendingIntro, null);
+  });
+
+  it('does not complete onboarding or daily progress when the submit probe finds no work', () => {
+    const gm = buildGm();
+    ensureScriptDeckSeeded(gm.userId);
+    const data = loadSrsData(gm.userId);
+    for (const card of data[SCRIPT_DECK].cards.filter(candidate => candidate.type === 'kanji')) {
+      card.reps = 1;
+      card.state = State.Learning;
+      card.due = new Date('2100-01-01T00:00:00Z');
+    }
+    saveSrsData(gm.userId, data);
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+
+    let error = null;
+    try {
+      service.submitOnboarding({ knowsHiragana: true, knowsKatakana: true });
+    } catch (caught) {
+      error = caught;
+    }
+
+    assert.equal(
+      getScriptDailyState(gm.userId, getLocalDateKey()).completed,
+      false,
+      'pre-commit probe must not persist daily completion'
+    );
+    assert.match(error?.message || '', /Kanji Kombat is complete for the day/);
     assert.deepEqual(gm.meta.kanjiKombatOnboarding, {
       completed: false,
       knowsHiragana: null,

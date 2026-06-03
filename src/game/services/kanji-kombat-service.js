@@ -231,6 +231,12 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     }
   }
 
+  if (opts.suppressCompletionPrompt) {
+    state.currentQuiz = null;
+    state.pendingIntro = null;
+    state.report.completedDaily = true;
+    return { kind: 'complete' };
+  }
   return promptForDailyCompletion(userId, state);
 }
 
@@ -357,7 +363,10 @@ export class KanjiKombatService {
       noDuePracticeQueue: [...(kk.noDuePracticeQueue || [])],
       report: { ...kk.report },
     };
-    const work = chooseNextScriptWork(this.gm.userId, nextState, { onboarding: nextOnboarding });
+    const work = chooseNextScriptWork(this.gm.userId, nextState, {
+      onboarding: nextOnboarding,
+      suppressCompletionPrompt: true,
+    });
     if (work.kind === 'complete') {
       throw new Error('Kanji Kombat is complete for the day');
     }
