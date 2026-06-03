@@ -37,13 +37,9 @@ describe('prologue.json content', () => {
     assert.ok(idx06 >= 0, 'prologue-06-intro must exist');
     assert.ok(idx10 > idx06, 'prologue-10-disruption must follow 06');
     for (let i = 0; i < expectedIds.length; i++) {
-      const idx = ids.indexOf(expectedIds[i]);
-      assert.ok(idx > idx06, `${expectedIds[i]} must appear after prologue-06-intro`);
+      const idx = idx06 + 1 + i;
+      assert.equal(ids[idx], expectedIds[i], `${expectedIds[i]} must appear immediately after prologue-06-intro in order`);
       assert.ok(idx < idx10, `${expectedIds[i]} must appear before prologue-10-disruption`);
-      if (i > 0) {
-        const prev = ids.indexOf(expectedIds[i - 1]);
-        assert.ok(idx === prev + 1, `${expectedIds[i]} must immediately follow ${expectedIds[i - 1]}`);
-      }
     }
   });
 
