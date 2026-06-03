@@ -1408,19 +1408,16 @@ export async function renderWhackAMole() {
   if (!whackAMoleState.fetched) {
     try {
       const resp = await apiGetWhackAMoleDialogue();
-      // apiCall returns null when a concurrent request to the same endpoint is
-      // already in flight (dedup). Bail out so the winning caller — which has
-      // real tokens — renders the narration + Japanese はい/いいえ buttons
-      // instead of us stomping English fallbacks onto the DOM.
-      if (!resp) return;
-      whackAMoleState.fetched = true;
-      whackAMoleState.dialogue = resp.dialogue || null;
-      whackAMoleState.yesLabel = resp.yesTokens?.tokens?.length
-        ? renderJpSentence(resp.yesTokens.tokens, getKnownWords(), null, resp.yesTokens.overrides || {}, false)
-        : 'Yes';
-      whackAMoleState.noLabel = resp.noTokens?.tokens?.length
-        ? renderJpSentence(resp.noTokens.tokens, getKnownWords(), null, resp.noTokens.overrides || {}, false)
-        : 'No';
+      if (resp) {
+        whackAMoleState.fetched = true;
+        whackAMoleState.dialogue = resp.dialogue || null;
+        whackAMoleState.yesLabel = resp.yesTokens?.tokens?.length
+          ? renderJpSentence(resp.yesTokens.tokens, getKnownWords(), null, resp.yesTokens.overrides || {}, false)
+          : 'Yes';
+        whackAMoleState.noLabel = resp.noTokens?.tokens?.length
+          ? renderJpSentence(resp.noTokens.tokens, getKnownWords(), null, resp.noTokens.overrides || {}, false)
+          : 'No';
+      }
     } catch (err) {
       // Leave fetched=false so a later rerender can retry.
     }

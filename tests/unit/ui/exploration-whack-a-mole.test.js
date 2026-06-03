@@ -203,6 +203,31 @@ describe('renderWhackAMole decline flow', () => {
     assert.equal(renderedButtons.length, 2);
   });
 
+  it('keeps fallback controls when Game Master dialogue is unavailable', async () => {
+    init({
+      getGameState: () => makeWhackAMoleState({
+        id: 'wam-dialogue-unavailable',
+        type: 'whackAMole',
+        interacted: false,
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+      },
+      scene: { showNarration: () => {} },
+      apiGetWhackAMoleDialogue: async () => null,
+    });
+
+    await renderWhackAMole();
+
+    assert.equal(dialogueCalls.length, 0);
+    assert.equal(renderedButtons.length, 2);
+    assert.equal(renderedButtons[0].label, 'Yes');
+    assert.equal(renderedButtons[1].label, 'No');
+  });
+
   it('passes normal proceed ingredient drops into the room transition', async () => {
     renderedButtons = [];
     roomTransitionCalls.length = 0;
