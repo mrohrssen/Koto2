@@ -687,6 +687,7 @@ describe('combat network hardening', () => {
       phase: 'combat',
       combat: {
         active: true,
+        isBoss: true,
         allies: [ally],
         enemies: [enemy],
         actionCursor: { side: 'ally', index: 0, opening: false },
