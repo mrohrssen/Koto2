@@ -168,6 +168,36 @@ describe('combat action state', () => {
     assert.equal(result.nextSeed, gm.combat.optimistic.nextTurnSeed);
   });
 
+  it('accepts browser shared-core optimistic defend predictions when action cursor is active', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    gm.combat.actionCursor = { side: 'ally', index: 0, opening: false };
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const predicted = resolvePveTurn({
+      snapshot: { combat: gm.combat, run: gm.run },
+      actionType: 'defend',
+      moveChoices: [],
+      seed,
+      processKoSwaps: true,
+    });
+    const envelope = buildActionEnvelope({
+      actionId: 'act_cursor_defend',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'combat.defend',
+      payload: { actionType: 'defend', moveChoices: [], predictionMode: 'shared-pve-turn-v1' },
+      predictedTranscript: predicted.transcript,
+    });
+
+    const result = service.verifyAndCommitCreatureCombatCycle(envelope);
+
+    assert.equal(result.status, 'accepted');
+    assert.equal(result.actionType, 'defend');
+    assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);
+  });
+
   it('accepts shared-core predictions with visual-safe KO feedback and commits', () => {
     const gm = createTestGameManagerWithCreatureCombat();
     gm.combat.enemies[0].hp = 1;

@@ -157,6 +157,81 @@ describe('optimistic combat turn client', () => {
     assert.equal(result.envelope.payload.predictionMode, 'shared-pve-turn-v1');
   });
 
+  it('predicts defend while an ally action cursor is active by using the full defend resolver', () => {
+    const move = {
+      id: 'tap',
+      name: '打つ',
+      nameEn: 'Hit',
+      reading: 'うつ',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 5,
+      mpCost: 0,
+      accuracy: 100,
+    };
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      reading: 'ひ',
+      element: 'fire',
+      hp: 20,
+      maxHp: 20,
+      mp: 5,
+      maxMp: 10,
+      level: 2,
+      attack: 10,
+      defense: 10,
+      dex: 10,
+      moves: [move],
+    };
+    const enemy = {
+      id: 'mizu',
+      name: '水',
+      nameEn: 'Water',
+      reading: 'みず',
+      element: 'water',
+      hp: 20,
+      maxHp: 20,
+      mp: 5,
+      maxMp: 10,
+      level: 1,
+      attack: 5,
+      defense: 5,
+      dex: 5,
+      moves: [move],
+    };
+    const cursorState = state({
+      combat: {
+        active: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_defend_cursor', stateVersion: 3, nextTurnSeed: 'seed_defend_cursor' },
+      },
+      run: {
+        creatureParty: { active: [ally], reserves: [] },
+        partySkills: [],
+        itemBuffs: null,
+      },
+    });
+
+    assert.equal(canRunOptimisticPveTurn(cursorState, 'defend'), true);
+    const result = buildOptimisticCombatTurn({
+      state: cursorState,
+      actionType: 'defend',
+      moveChoices: [],
+      actionId: 'act_defend_cursor',
+    });
+
+    assert.ok(result);
+    assert.equal(result.envelope.payload.actionType, 'defend');
+    assert.equal(result.localTranscript.actionType, 'defend');
+    assert.equal(result.localTranscript.playerAttacks.length, 0);
+    assert.ok(result.localTranscript.enemyAttacks.length > 0);
+  });
+
   it('predicts final-hit KO visuals for deterministic PvE attacks', () => {
     const koState = state({
       combat: {

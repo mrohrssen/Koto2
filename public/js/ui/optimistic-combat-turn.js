@@ -22,6 +22,9 @@ const SERVER_OWNED_TRANSCRIPT_FIELDS = new Set([
 function canPredictActionCursor(state, actionType) {
   const cursor = state?.combat?.actionCursor;
   if (!cursor) return true;
+  if (actionType === 'defend') {
+    return cursor.side === 'ally' && Number.isInteger(cursor.index);
+  }
   return actionType === 'attack'
     && cursor.side === 'ally'
     && Number.isInteger(cursor.index);
@@ -183,7 +186,7 @@ export function buildOptimisticCombatTurn({
   const stateVersion = state.combat.optimistic.stateVersion;
   let resolved;
   try {
-    resolved = state.combat.actionCursor
+    resolved = state.combat.actionCursor && actionType === 'attack'
       ? resolvePveCursorTurn(
           { combat: state.combat, run: state.run, moveChoices },
           { actionType, seed },
