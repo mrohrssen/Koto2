@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 const explorationSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/exploration.js'), 'utf8');
 const economySource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/economy.js'), 'utf8');
 const apiSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/api.js'), 'utf8');
+const gameSource = readFileSync(resolve(import.meta.dirname, '../../../public/game.js'), 'utf8');
 
 function sourceBetween(source, start, end) {
   const startIndex = source.indexOf(start);
@@ -20,6 +21,7 @@ describe('optimistic run action integration', () => {
     assert.match(explorationSource, /apiSkillMasterChoose\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
     assert.match(explorationSource, /apiChooseShrineReward\?\.\(rewardType, creatureKey, \{ actionId: pending\.actionId \}\)/);
     assert.match(explorationSource, /apiChooseFriendlyNpcItem\?\.\(item\.id, creatureIndex, \{ actionId: pending\.actionId \}\)/);
+    assert.match(explorationSource, /onSkillChosen\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
     assert.match(explorationSource, /apiProceed\(\{ actionId: pending\.actionId \}\)/);
   });
 
@@ -57,7 +59,29 @@ describe('optimistic run action integration', () => {
     assert.match(apiSource, /async function verifiedRunAction\(endpoint, body = \{\}\)/);
     assert.match(apiSource, /returnErrorBody: true/);
     assert.match(apiSource, /bypassLoadingGate: true/);
+    assert.match(apiSource, /verifiedRunAction\('\/npc-battle-skill-choose', \{ skillId, actionId: options\.actionId \}\)/);
     assert.match(apiSource, /verifiedRunAction,\n\s+confirmCreatures/);
+  });
+
+  it('lets corrected NPC battle skill responses reach the optimistic reconciler', () => {
+    const npcSkillCallbackSource = sourceBetween(
+      gameSource,
+      "case 'npc_skill_selection':",
+      "case 'combat':"
+    );
+
+    assert.match(npcSkillCallbackSource, /result\?\.status === 'corrected'/);
+    assert.match(npcSkillCallbackSource, /updateGameState\(result\.authoritativeState\)/);
+    assert.match(npcSkillCallbackSource, /return result/);
+  });
+
+  it('passes corrected NPC battle skill responses into shared reconcile', () => {
+    const npcBattleStart = explorationSource.indexOf('export async function renderNpcBattleSkillSelection');
+    assert.notEqual(npcBattleStart, -1, 'Missing NPC battle skill selection renderer');
+    const npcBattleSkillSource = explorationSource.slice(npcBattleStart);
+
+    assert.match(npcBattleSkillSource, /if \(reconcilePendingRunAction\(pending, result\)\)/);
+    assert.doesNotMatch(npcBattleSkillSource, /result\?\.status !== 'corrected'\s*&&\s*reconcilePendingRunAction/);
   });
 
   it('uses non-blaming retry copy for deterministic choice failures', () => {
@@ -92,5 +116,11 @@ describe('optimistic run action integration', () => {
     );
     assert.match(friendlyNpcSource, /Item choice did not save\. Please choose again\./);
     assert.doesNotMatch(friendlyNpcSource, /Could not apply item|Failed to choose item/);
+
+    const npcBattleStart = explorationSource.indexOf('export async function renderNpcBattleSkillSelection');
+    assert.notEqual(npcBattleStart, -1, 'Missing NPC battle skill selection renderer');
+    const npcBattleSkillSource = explorationSource.slice(npcBattleStart);
+    assert.match(npcBattleSkillSource, /Skill choice did not save\. Please choose again\./);
+    assert.doesNotMatch(npcBattleSkillSource, /Choosing skill|Failed to choose skill/);
   });
 });

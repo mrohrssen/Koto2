@@ -425,4 +425,123 @@ describe('optimistic deterministic run routes', () => {
     assert.deepEqual(req.gameManager.meta.itemsDiscovered, ['sword']);
     assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { runSummary: { itemsCollected: 1 } } });
   });
+
+  it('wraps NPC battle skill choices with accepted optimistic status when actionId is present', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
+    const room = {
+      type: 'npcBattle',
+      npcBattle: { skillSelectionPending: true, offered: ['momentum'] },
+      interacted: false,
+    };
+    const run = { partySkills: [] };
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: 'npc_battle_skill_1', skillId: 'momentum' },
+      gameManager: {
+        run,
+        getCurrentRoom: () => room,
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { partySkills: [...run.partySkills] } }),
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.actionId, 'npc_battle_skill_1');
+    assert.equal(res.body.chosenId, 'momentum');
+    assert.deepEqual(res.body.partySkills, [{ id: 'momentum' }]);
+    assert.deepEqual(res.body.state, { phase: 'room', run: { partySkills: [{ id: 'momentum' }] } });
+  });
+
+  it('/npc-battle-skill-choose does not re-run duplicate actionId and run.partySkills length stays 1', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
+    const room = {
+      type: 'npcBattle',
+      npcBattle: { skillSelectionPending: true, offered: ['momentum'] },
+      interacted: false,
+    };
+    const run = {
+      partySkills: [],
+      optimisticActionLedger: { entries: {}, order: [] },
+    };
+    const req = {
+      body: { actionId: 'npc_battle_skill_duplicate', skillId: 'momentum' },
+      gameManager: {
+        run,
+        getCurrentRoom: () => room,
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { partySkills: [...run.partySkills] } }),
+    };
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, 'npc_battle_skill_duplicate');
+    assert.equal(run.partySkills.length, 1);
+    assert.equal(room.npcBattle.chosenSkillId, 'momentum');
+    assert.equal(room.npcBattle.skillSelectionPending, false);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { partySkills: [{ id: 'momentum' }] } });
+  });
+
+  it('keeps legacy NPC battle skill choice responses unchanged when actionId is absent', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
+    const room = {
+      type: 'npcBattle',
+      npcBattle: { skillSelectionPending: true, offered: ['momentum'] },
+      interacted: false,
+    };
+    const run = { partySkills: [] };
+    const res = makeRes();
+
+    await handler({
+      body: { skillId: 'momentum' },
+      gameManager: {
+        run,
+        getCurrentRoom: () => room,
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room' }),
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, undefined);
+    assert.equal(res.body.actionId, undefined);
+    assert.equal(res.body.chosenId, 'momentum');
+    assert.deepEqual(res.body.state, { phase: 'room' });
+  });
+
+  it('returns corrected 400 with authoritative state for invalid optimistic NPC battle skill choices', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
+    const room = {
+      type: 'npcBattle',
+      npcBattle: { skillSelectionPending: true, offered: ['momentum'] },
+      interacted: false,
+    };
+    const run = {
+      partySkills: [],
+      optimisticActionLedger: { entries: {}, order: [] },
+    };
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: 'npc_battle_skill_invalid', skillId: 'invalid-skill' },
+      gameManager: {
+        run,
+        getCurrentRoom: () => room,
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'npc_skill_selection', run: { currentRoom: 4, partySkills: [] } }),
+    }, res);
+
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, 'npc_battle_skill_invalid');
+    assert.equal(res.body.reason, 'Invalid skill choice');
+    assert.deepEqual(res.body.authoritativeState, { phase: 'npc_skill_selection', run: { currentRoom: 4, partySkills: [] } });
+  });
 });

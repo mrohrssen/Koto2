@@ -417,56 +417,56 @@ export default function createRunRoutes({
 
   // NPC Battle: choose one skill offer
   router.post('/npc-battle-skill-choose', async (req, res) => {
-    try {
-      const { skillId } = req.body || {};
-      if (!skillId) return res.status(400).json({ error: 'skillId required' });
+    return runOptimisticAction(req, res, {
+      actionType: 'npcBattleSkill.choose',
+      errorStatusCode: 400,
+      perform: () => {
+        const { skillId } = req.body || {};
+        if (!skillId) throw new Error('skillId required');
 
-      const gm = req.gameManager;
-      const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'npcBattle') {
-        return res.status(400).json({ error: 'Not in an NPC battle room' });
-      }
-      if (!room.npcBattle?.skillSelectionPending) {
-        return res.status(400).json({ error: 'NPC battle skill selection not pending' });
-      }
-      if (room.npcBattle.chosenSkillId) {
-        return res.status(400).json({ error: 'Skill already chosen for this room' });
-      }
+        const gm = req.gameManager;
+        const room = gm.getCurrentRoom();
+        if (!room || room.type !== 'npcBattle') {
+          throw new Error('Not in an NPC battle room');
+        }
+        if (!room.npcBattle?.skillSelectionPending) {
+          throw new Error('NPC battle skill selection not pending');
+        }
+        if (room.npcBattle.chosenSkillId) {
+          throw new Error('Skill already chosen for this room');
+        }
 
-      // Generate offers if they were never set (race: client used fallback data)
-      if (!Array.isArray(room.npcBattle.offered)) {
-        console.warn('[npc-battle-skill-choose] offered not set — generating on demand',
-          { skillId, npcBattle: JSON.stringify(room.npcBattle) });
-        const ownedSkillIds = (gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
-        room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
-        req.saveGame();
-      }
+        // Generate offers if they were never set (race: client used fallback data)
+        if (!Array.isArray(room.npcBattle.offered)) {
+          console.warn('[npc-battle-skill-choose] offered not set — generating on demand',
+            { skillId, npcBattle: JSON.stringify(room.npcBattle) });
+          const ownedSkillIds = (gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
+          room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
+        }
 
-      const offeredIds = room.npcBattle.offered;
-      if (!offeredIds.includes(skillId)) {
-        console.warn('[npc-battle-skill-choose] skillId not in offered',
-          { skillId, offeredIds, typeof_skillId: typeof skillId });
-        return res.status(400).json({ error: 'Invalid skill choice' });
-      }
+        const offeredIds = room.npcBattle.offered;
+        if (!offeredIds.includes(skillId)) {
+          console.warn('[npc-battle-skill-choose] skillId not in offered',
+            { skillId, offeredIds, typeof_skillId: typeof skillId });
+          throw new Error('Invalid skill choice');
+        }
 
-      if (!gm.run) throw new Error('No active run');
-      if (!Array.isArray(gm.run.partySkills)) gm.run.partySkills = [];
+        if (!gm.run) throw new Error('No active run');
+        if (!Array.isArray(gm.run.partySkills)) gm.run.partySkills = [];
 
-      // No duplicates
-      const alreadyOwned = gm.run.partySkills.some(s => s?.id === skillId);
-      if (!alreadyOwned) {
-        gm.run.partySkills.push({ id: skillId });
-      }
+        // No duplicates
+        const alreadyOwned = gm.run.partySkills.some(s => s?.id === skillId);
+        if (!alreadyOwned) {
+          gm.run.partySkills.push({ id: skillId });
+        }
 
-      room.npcBattle.chosenSkillId = skillId;
-      room.npcBattle.skillSelectionPending = false;
-      room.interacted = true;
+        room.npcBattle.chosenSkillId = skillId;
+        room.npcBattle.skillSelectionPending = false;
+        room.interacted = true;
 
-      req.saveGame();
-      res.json({ chosenId: skillId, partySkills: gm.run.partySkills, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+        return { chosenId: skillId, partySkills: gm.run.partySkills, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   // Start room encounter (marks room, then starts combat)

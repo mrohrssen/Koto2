@@ -939,7 +939,10 @@ async function npcBattleSkillOffers() {
 }
 
 /** Choose a skill from the NPC battle reward */
-async function npcBattleSkillChoose(skillId) {
+async function npcBattleSkillChoose(skillId, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/npc-battle-skill-choose', { skillId, actionId: options.actionId });
+  }
   return apiCall('/npc-battle-skill-choose', 'POST', { skillId });
 }
 

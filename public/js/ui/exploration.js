@@ -2153,13 +2153,47 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       subtitle: s.desc || '',
     })),
     onSelect: async (index) => {
+      if (npcBattleSkillState.choosing) return;
+      npcBattleSkillState.choosing = true;
       const skillId = offers[index].id;
-      try {
-        await onSkillChosen?.(skillId);
-      } catch (err) {
-        sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
-        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
+      const pending = beginPendingRunAction({
+        actionType: 'npcBattleSkill.choose',
+        applyLocal: draft => {
+          if (!draft.run) return;
+          const activeRoom = draft.room || getActiveRoomFromRun(draft.run);
+          if (activeRoom?.npcBattle) {
+            activeRoom.npcBattle.chosenSkillId = skillId;
+            activeRoom.npcBattle.skillSelectionPending = false;
+            activeRoom.interacted = true;
+          }
+          draft.phase = 'room';
+        },
+      });
+      if (!pending) {
+        npcBattleSkillState.choosing = false;
+        return;
       }
+
+      let result;
+      try {
+        result = await onSkillChosen?.(skillId, { actionId: pending.actionId });
+      } catch (err) {
+        rollbackPendingRunAction(pending);
+        npcBattleSkillState.choosing = false;
+        sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
+        return;
+      }
+
+      if (reconcilePendingRunAction(pending, result)) {
+        npcBattleSkillState.choosing = false;
+        return;
+      }
+
+      rollbackPendingRunAction(pending);
+      npcBattleSkillState.choosing = false;
+      sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+      renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
     },
   });
 }

@@ -665,8 +665,14 @@ function updateGameContent() {
       break;
     case 'npc_skill_selection':
       explorationUI.renderNpcBattleSkillSelection({
-        onSkillChosen: async (skillId) => {
-          const result = await apiNpcBattleSkillChoose(skillId);
+        onSkillChosen: async (skillId, options = {}) => {
+          const result = await apiNpcBattleSkillChoose(skillId, options);
+          if (result?.status === 'corrected') {
+            if (result.authoritativeState) {
+              updateGameState(result.authoritativeState);
+            }
+            return result;
+          }
           if (!result?.state) {
             throw new Error(result?.error || 'No game state from server');
           }
@@ -684,6 +690,7 @@ function updateGameContent() {
             await getSceneManager()?.transition(ExplorationScene, { roomId, allies });
           }
           updateUI();
+          return result;
         },
         fetchOffers: apiNpcBattleSkillOffers
       });
