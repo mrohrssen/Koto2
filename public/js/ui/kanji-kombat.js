@@ -60,17 +60,17 @@ function shouldRunOnboarding(gameState) {
     && cursor?.side === 'ally';
 }
 
-async function showOnboardingNarration(text) {
-  await api.showNarration(text, { speaker: 'Cid', persistent: true });
+async function showOnboardingNarration(text, opts = {}) {
+  await api.showNarration?.(text, { speaker: 'Cid', ...opts });
 }
 
 async function askOnboardingBoolean(question) {
-  await api.showNarration(question, { speaker: 'Cid', persistent: true });
+  await showOnboardingNarration(question, { persistent: true });
   const choice = await renderButtonsAsync([
     { label: 'Yes, I know all of them' },
     { label: 'No, please teach me' },
   ]);
-  api.forceHideNarration();
+  api.forceHideNarration?.();
   return choice === 0;
 }
 
@@ -81,6 +81,7 @@ function finalOnboardingLine(knowsHiragana, knowsKatakana) {
 }
 
 async function runKanjiKombatOnboarding() {
+  let clearInFinally = true;
   try {
     clearActionArea();
     await api.showCidSprite?.();
@@ -100,14 +101,19 @@ async function runKanjiKombatOnboarding() {
     api.refreshAction?.();
   } catch (error) {
     console.error('[KanjiKombat] Onboarding failed:', error);
-    await api.hideCidSprite?.();
-    await api.showNarration?.('Kanji Kombat onboarding hit a snag. Please try again.', {
-      speaker: 'Cid',
-      autoDismiss: 2000,
-    });
+    try {
+      await api.hideCidSprite?.();
+      await api.showNarration?.('Kanji Kombat onboarding hit a snag. Please try again.', {
+        speaker: 'Cid',
+        autoDismiss: 2000,
+      });
+    } finally {
+      onboardingInProgress = false;
+      clearInFinally = false;
+    }
     api.updateUI?.();
   } finally {
-    onboardingInProgress = false;
+    if (clearInFinally) onboardingInProgress = false;
   }
 }
 

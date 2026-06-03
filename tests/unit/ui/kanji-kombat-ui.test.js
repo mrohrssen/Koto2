@@ -139,6 +139,15 @@ class FakeActionArea {
 describe('kanji-kombat ui', () => {
   let actionArea;
 
+  const onboardingCopy = {
+    welcome: 'Hey, welcome to Kanji Kombat. Here, you can practice your hiragana, katakana, and kanji all the way up to full fluency.',
+    hiraganaQuestion: 'First things first. Do you already know all hiragana?',
+    hiraganaKnown: "Great, we won't spend time teaching you hiragana.",
+    katakanaQuestion: 'Do you already know all katakana?',
+    katakanaKnown: "Great, we won't spend time teaching you katakana.",
+    finalKanji: "Okay, great, we'll start by teaching you kanji. Let's jump right into it.",
+  };
+
   beforeEach(() => {
     actionArea = new FakeActionArea();
     global.document = {
@@ -595,6 +604,25 @@ describe('kanji-kombat ui', () => {
       calls.find(call => call[0] === 'submitOnboarding'),
       ['submitOnboarding', true, true]
     );
+    assert.deepEqual(
+      calls.find(call => call[0] === 'updateGameState'),
+      ['updateGameState', 'combat']
+    );
+    const narrationCalls = calls.filter(call => call[0] === 'showNarration');
+    assert.deepEqual(narrationCalls.map(call => call[1]), [
+      onboardingCopy.welcome,
+      onboardingCopy.hiraganaQuestion,
+      onboardingCopy.hiraganaKnown,
+      onboardingCopy.katakanaQuestion,
+      onboardingCopy.katakanaKnown,
+      onboardingCopy.finalKanji,
+    ]);
+    assert.notEqual(narrationCalls[0][2]?.persistent, true);
+    assert.equal(narrationCalls[1][2]?.persistent, true);
+    assert.notEqual(narrationCalls[2][2]?.persistent, true);
+    assert.equal(narrationCalls[3][2]?.persistent, true);
+    assert.notEqual(narrationCalls[4][2]?.persistent, true);
+    assert.notEqual(narrationCalls[5][2]?.persistent, true);
     assert.equal(calls.some(call => call[0] === 'hideCidSprite'), true);
     assert.equal(calls.some(call => call[0] === 'refreshAction'), true);
     assert.equal(actionArea.querySelectorAll('.kanji-kombat-choice').length, 0);
@@ -621,5 +649,55 @@ describe('kanji-kombat ui', () => {
 
     assert.equal(started, false);
     assert.deepEqual(calls, []);
+  });
+
+  it('clears onboarding progress before updateUI retry after submit failure', async () => {
+    const calls = [];
+    const pendingState = {
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: { onboardingPending: true },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
+    const originalConsoleError = console.error;
+    console.error = () => {};
+
+    try {
+      initKanjiKombatUI({
+        showCidSprite: async () => calls.push(['showCidSprite']),
+        hideCidSprite: async () => calls.push(['hideCidSprite']),
+        showNarration: async (text, opts) => calls.push(['showNarration', text, opts]),
+        forceHideNarration: () => calls.push(['forceHideNarration']),
+        submitOnboarding: async () => {
+          calls.push(['submitOnboarding']);
+          throw new Error('boom');
+        },
+        updateGameState: () => calls.push(['unexpected-state']),
+        updateUI: () => {
+          calls.push(['updateUI']);
+          calls.push(['restartResult', startKanjiKombatOnboardingIfNeeded(pendingState)]);
+        },
+        refreshAction: () => calls.push(['unexpected-refresh']),
+        playCorrectAnswerAudio: () => {},
+      });
+
+      assert.equal(startKanjiKombatOnboardingIfNeeded(pendingState), true);
+      await flushPromises(4);
+      await actionArea.buttons[0].click();
+      await flushPromises(4);
+      await actionArea.buttons[0].click();
+      await flushPromises(12);
+
+      assert.equal(calls.filter(call => call[0] === 'submitOnboarding').length, 1);
+      assert.equal(calls.filter(call => call[0] === 'updateUI').length, 1);
+      assert.deepEqual(
+        calls.find(call => call[0] === 'restartResult'),
+        ['restartResult', true]
+      );
+      assert.equal(calls.filter(call => call[0] === 'showCidSprite').length, 2);
+    } finally {
+      console.error = originalConsoleError;
+    }
   });
 });
