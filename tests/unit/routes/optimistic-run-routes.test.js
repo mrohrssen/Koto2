@@ -102,9 +102,9 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: actionId('proceed1') },
+      body: { actionId: actionId('proceed1'), fromRoom: 0, actionSeq: 0 },
       gameManager: {
-        run: { currentRoom: 0, rooms: [{ type: 'room' }, { type: 'shrine' }] },
+        run: { currentRoom: 0, roomActionSeq: 0, rooms: [{ type: 'room' }, { type: 'shrine' }] },
         proceedToNextRoom: () => ({ room: { type: 'shrine' }, ingredientDrops: [] }),
       },
       saveGame: () => {},
@@ -121,15 +121,17 @@ describe('optimistic deterministic run routes', () => {
     const handler = getHandler(createRunRouter(), 'post', '/proceed');
     const run = {
       currentRoom: 0,
+      roomActionSeq: 0,
       rooms: [{ type: 'room' }, { type: 'shrine' }, { type: 'skillMaster' }],
     };
     const req = {
-      body: { actionId: actionId('proceeddupe') },
+      body: { actionId: actionId('proceeddupe'), fromRoom: 0, actionSeq: 0 },
       gameManager: {
         run,
         meta: { actionLedger: { entries: {}, order: [] } },
         proceedToNextRoom: () => {
           run.currentRoom += 1;
+          run.roomActionSeq += 1;
           return { room: run.rooms[run.currentRoom], ingredientDrops: [] };
         },
       },
@@ -153,9 +155,9 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: actionId('proceedgen') },
+      body: { actionId: actionId('proceedgen'), fromRoom: 0, actionSeq: 4 },
       gameManager: {
-        run: { currentRoom: 0, rooms: [{ type: 'room' }] },
+        run: { currentRoom: 0, roomActionSeq: 4, rooms: [{ type: 'room' }] },
         proceedToNextRoom: () => ({ room: { type: 'encounter' }, ingredientDrops: [{ id: 'hi' }] }),
       },
       saveGame: () => {},
@@ -167,6 +169,62 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.body.actionId, actionId('proceedgen'));
     assert.deepEqual(res.body.ingredientDrops, [{ id: 'hi' }]);
     assert.deepEqual(res.body.state, { phase: 'room_encounter', run: { currentRoom: 1 } });
+  });
+
+  it('/proceed corrects stale optimistic room index without advancing', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/proceed');
+    const res = makeRes();
+    const run = { currentRoom: 1, roomActionSeq: 3, rooms: [{ type: 'room' }, { type: 'room' }] };
+    let proceeded = false;
+
+    await handler({
+      body: { actionId: actionId('staleindex'), fromRoom: 0, actionSeq: 3 },
+      gameManager: {
+        run,
+        proceedToNextRoom: () => {
+          proceeded = true;
+          run.currentRoom += 1;
+          return { room: { type: 'encounter' }, ingredientDrops: [] };
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { currentRoom: run.currentRoom, roomActionSeq: run.roomActionSeq } }),
+    }, res);
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, actionId('staleindex'));
+    assert.equal(res.body.reason, 'Room index mismatch');
+    assert.equal(proceeded, false);
+    assert.equal(run.currentRoom, 1);
+  });
+
+  it('/proceed corrects stale optimistic action sequence without advancing', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/proceed');
+    const res = makeRes();
+    const run = { currentRoom: 0, roomActionSeq: 6, rooms: [{ type: 'room' }, { type: 'room' }] };
+    let proceeded = false;
+
+    await handler({
+      body: { actionId: actionId('staleseq'), fromRoom: 0, actionSeq: 5 },
+      gameManager: {
+        run,
+        proceedToNextRoom: () => {
+          proceeded = true;
+          run.currentRoom += 1;
+          return { room: { type: 'encounter' }, ingredientDrops: [] };
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { currentRoom: run.currentRoom, roomActionSeq: run.roomActionSeq } }),
+    }, res);
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, actionId('staleseq'));
+    assert.equal(res.body.reason, 'Room action sequence mismatch');
+    assert.equal(proceeded, false);
+    assert.equal(run.currentRoom, 0);
   });
 
   it('keeps proceed legacy shape unchanged when actionId is absent', async () => {

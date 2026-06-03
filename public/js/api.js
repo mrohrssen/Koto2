@@ -448,7 +448,11 @@ async function verifiedRunAction(endpoint, body = {}) {
 /** Proceed to next room */
 async function proceed(options = {}) {
   if (options?.actionId) {
-    return verifiedRunAction('/proceed', { actionId: options.actionId });
+    return verifiedRunAction('/proceed', {
+      actionId: options.actionId,
+      fromRoom: options.fromRoom,
+      actionSeq: options.actionSeq,
+    });
   }
   return apiCall('/proceed', 'POST', {}, null, { retryable: true });
 }

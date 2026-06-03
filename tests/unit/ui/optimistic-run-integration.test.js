@@ -22,12 +22,12 @@ describe('optimistic run action integration', () => {
     assert.match(explorationSource, /apiChooseShrineReward\?\.\(rewardType, creatureKey, \{ actionId: pending\.actionId \}\)/);
     assert.match(explorationSource, /apiChooseFriendlyNpcItem\?\.\(item\.id, creatureIndex, \{ actionId: pending\.actionId \}\)/);
     assert.match(explorationSource, /onSkillChosen\?\.\(skillId, \{ actionId: pending\.actionId \}\)/);
-    assert.match(explorationSource, /apiProceed\(\{ actionId: pending\.actionId \}\)/);
+    assert.match(explorationSource, /apiProceed\(\{ actionId: pending\.actionId, fromRoom, actionSeq \}\)/);
   });
 
   it('derives the optimistic proceed phase from the shared phase machine', () => {
-    assert.match(explorationSource, /import \{ derivePhase \} from ['"]\.\.\/\.\.\/\.\.\/src\/game\/phase-machine\.js['"]/);
-    assert.match(explorationSource, /draft\.phase = derivePhase\(draft\)/);
+    assert.match(explorationSource, /import \{[\s\S]*advanceStateToBufferedNextRoom[\s\S]*getNextRoom[\s\S]*\} from ['"]\.\/room-reveal-buffer\.js['"]/);
+    assert.match(explorationSource, /advanceStateToBufferedNextRoom\(draft\)/);
     assert.doesNotMatch(explorationSource, /draft\.phase = nextRoom\.phase \|\| 'room'/);
   });
 
@@ -37,14 +37,15 @@ describe('optimistic run action integration', () => {
       'async function proceedToNextRoom()',
       'export function renderExploring()'
     );
-    const apiIndex = proceedSource.indexOf('apiProceed({ actionId: pending.actionId })');
+    const apiIndex = proceedSource.indexOf('apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })');
     const transitionIndex = proceedSource.indexOf('await playRoomTransition(pending.state');
 
-    assert.ok(apiIndex >= 0, 'optimistic proceed should call apiProceed with the pending action id');
+    assert.ok(apiIndex >= 0, 'optimistic proceed should call apiProceed with the pending action id and sequence envelope');
     assert.ok(transitionIndex >= 0, 'optimistic proceed should still run the room transition');
     assert.ok(apiIndex < transitionIndex, 'server verification should start before awaiting the transition');
     assert.match(proceedSource, /clearActionArea\(\)/);
     assert.match(proceedSource, /showIngredientDropPopups\(ingredientDrops\)/);
+    assert.match(proceedSource, /const nextRoom = getNextRoom\(state\)/);
   });
 
   it('keeps dealer local changes to pending markers until the server responds', () => {
@@ -60,6 +61,8 @@ describe('optimistic run action integration', () => {
     assert.match(apiSource, /async function verifiedRunAction\(endpoint, body = \{\}\)/);
     assert.match(apiSource, /returnErrorBody: true/);
     assert.match(apiSource, /bypassLoadingGate: true/);
+    assert.match(apiSource, /fromRoom: options\.fromRoom/);
+    assert.match(apiSource, /actionSeq: options\.actionSeq/);
     assert.match(apiSource, /verifiedRunAction\('\/npc-battle-skill-choose', \{ skillId, actionId: options\.actionId \}\)/);
     assert.match(apiSource, /verifiedRunAction\('\/creature-shop-select', \{ itemIndex, targetIndex, actionId: options\.actionId \}\)/);
     assert.match(apiSource, /verifiedRunAction,\n\s+confirmCreatures/);
