@@ -146,7 +146,9 @@ If the network fails:
 3. If state is unavailable, client leaves the player on a stable screen and relies on the existing connection banner/retry affordance.
 4. If the player must repeat a choice, show explicit retry copy.
 
-Duplicate `actionId`s should be idempotent where practical, especially for spending, reward, and inventory actions.
+Duplicate `actionId`s must be idempotent for any action that spends, awards, reveals, advances room state, or mutates persistent/meta state. This includes crystals, chests, fusion, rewards, inventory, room advancement, and any future persistent progression actions.
+
+The first implementation should add a persisted action ledger for these high-impact actions. Existing in-memory or response-wrapping optimism is not enough for actions where a reload, retry, or duplicate request could otherwise double-spend, double-award, or reveal a different outcome.
 
 ## Coverage
 
@@ -274,6 +276,14 @@ Confirmed-save copy is different because the UI intentionally waits for server c
 
 Every state-changing endpoint remains server-authoritative.
 
+Current implementation constraints make the reveal buffer a real architecture change, not a small UX patch:
+
+- `GameManager.getState()` currently exposes `run.rooms` directly to the client.
+- Area entry currently generates the area's room list before play begins.
+- Support and random rooms are finalized during area entry/proceed.
+
+The reveal-buffer work must therefore narrow what room data is exposed, preserve server-side room finalization, and prevent future room/reward inspection.
+
 For optimistic commits and reveal-buffer commits, the submitted client payload is only a requested action. The server must validate:
 
 - The user owns any referenced creature, item, crest, or team member.
@@ -320,10 +330,11 @@ Server responsibilities:
 
 - Add shared route helpers for accepted and corrected optimistic responses.
 - Add run-spine helpers for reveal-buffer responses and action-sequence validation.
+- Persist action ledger entries for actions that spend, award, reveal, advance rooms, or mutate persistent/meta state.
 - Keep validation in existing services where possible.
 - Return authoritative state after every optimistic response.
 - Return a refreshed reveal buffer after accepted room-spine commits.
-- Make duplicate action IDs idempotent where practical.
+- Make duplicate action IDs idempotent for every high-impact action class.
 
 The implementation should not introduce a giant centralized action registry in the first pass. Koto's UI is already split by gameplay module, so each module should define its own small local draft behavior while sharing the same helper and response contract.
 
@@ -331,15 +342,21 @@ The implementation should not introduce a giant centralized action registry in t
 
 Implement in focused batches:
 
-1. Strengthen the shared optimistic action helper and standard failure copy.
-2. Add server-prepared reveal-buffer support for the run spine.
-3. Migrate run setup and room transitions onto the reveal buffer.
-4. Migrate reward, item, and campfire choices.
-5. Migrate learning and minigame commits.
-6. Migrate hub and meta actions.
-7. Add confirmed-save PvP team UX.
+1. Harden the shared optimistic action contract, standard failure copy, and persisted idempotency ledger.
+2. Migrate already-known deterministic choices: Skill Master, shrine, friendly NPC item, NPC battle skill reward, and post-combat shop item selection.
+3. Add confirmed-save PvP team UX.
+4. Migrate medium-risk room-adjacent choices: campfire, Word Discovery completion/progress, Speed Review room completion, and Whack-a-Mole completion/skip.
+5. Build server-prepared reveal-buffer travel as its own focused project.
+6. Migrate high-impact hub/meta actions last: daily crystals, chest open, crest equip/unequip, fusion start, and tutorial fusion actions.
 
 Each batch should keep legacy no-`actionId` behavior working so routes remain backwards-compatible during rollout.
+
+Risk order:
+
+- Low risk: PvP confirmed-save UX, failure-copy cleanup, local-only controls, and already-known deterministic choice flows.
+- Medium risk: Campfire, Word Discovery, Speed Review room completion, Whack-a-Mole, and NPC battle skill rewards.
+- Medium-high risk: Hub/meta actions such as daily crystals, chests, crests, and fusion.
+- High risk: Reveal-buffer room spine, especially area-complete routing, room sequence validation, random/support room finalization, and not exposing future content.
 
 ## Testing
 
@@ -356,10 +373,11 @@ Route tests:
 - Reveal-buffer proceed accepts correct action sequence and room index.
 - Reveal-buffer proceed corrects stale, duplicate, skipped, or out-of-order room commits.
 - Reveal-buffer responses expose only the intended current/next room window.
+- Duplicate `actionId`s are idempotent for spending, award, reveal, room-advance, and persistent/meta mutation actions.
 - Each optimistic route keeps legacy response shape without `actionId`.
 - Each optimistic route returns accepted response with `actionId`.
 - Each optimistic route returns corrected response with authoritative state on validation failure.
-- Spending and reward routes do not double-apply duplicate action IDs where idempotency is implemented.
+- Spending, reward, reveal, room-advance, and persistent/meta mutation routes do not double-apply duplicate action IDs.
 
 UI tests:
 
