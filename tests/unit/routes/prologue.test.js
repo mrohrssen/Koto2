@@ -18,10 +18,14 @@ describe('prologue.json content', () => {
     assert.ok(!ids.includes('prologue-09-partners'), 'prologue-09-partners should be removed');
   });
 
-  it('includes the five new translator-demo pages in order between 06 and 10', () => {
+  it('includes display-mode onboarding before the translator demo', () => {
     const prologue = JSON.parse(readFileSync(PROLOGUE_PATH, 'utf-8'));
     const ids = prologue.map(s => s.id);
-    const demoIds = [
+    const expectedIds = [
+      'prologue-display-mode-question',
+      'prologue-display-mode-kanji',
+      'prologue-display-mode-hiragana',
+      'prologue-display-mode-done',
       'prologue-translator-try',
       'prologue-translator-how',
       'prologue-translator-demo',
@@ -32,15 +36,38 @@ describe('prologue.json content', () => {
     const idx10 = ids.indexOf('prologue-10-disruption');
     assert.ok(idx06 >= 0, 'prologue-06-intro must exist');
     assert.ok(idx10 > idx06, 'prologue-10-disruption must follow 06');
-    for (let i = 0; i < demoIds.length; i++) {
-      const idx = ids.indexOf(demoIds[i]);
-      assert.ok(idx > idx06, `${demoIds[i]} must appear after prologue-06-intro`);
-      assert.ok(idx < idx10, `${demoIds[i]} must appear before prologue-10-disruption`);
+    for (let i = 0; i < expectedIds.length; i++) {
+      const idx = ids.indexOf(expectedIds[i]);
+      assert.ok(idx > idx06, `${expectedIds[i]} must appear after prologue-06-intro`);
+      assert.ok(idx < idx10, `${expectedIds[i]} must appear before prologue-10-disruption`);
       if (i > 0) {
-        const prev = ids.indexOf(demoIds[i - 1]);
-        assert.ok(idx === prev + 1, `${demoIds[i]} must immediately follow ${demoIds[i - 1]}`);
+        const prev = ids.indexOf(expectedIds[i - 1]);
+        assert.ok(idx === prev + 1, `${expectedIds[i]} must immediately follow ${expectedIds[i - 1]}`);
       }
     }
+  });
+
+  it('wires the display-mode choices to hiragana and natural modes', () => {
+    const prologue = JSON.parse(readFileSync(PROLOGUE_PATH, 'utf-8'));
+    const question = prologue.find(s => s.id === 'prologue-display-mode-question');
+    assert.ok(question, 'display mode question should exist');
+    assert.equal(question.speaker, 'Cid');
+    assert.match(question.narration, /Do you know the Japanese alphabet Hiragana/);
+    assert.deepEqual(question.choices, [
+      { text: 'Yes, set Kanji mode', id: 'kanji-mode', displayMode: 'natural' },
+      { text: 'No, set Hiragana mode until I learn it', id: 'hiragana-mode', displayMode: 'hiragana' },
+    ]);
+
+    const kanji = prologue.find(s => s.id === 'prologue-display-mode-kanji');
+    assert.equal(kanji.conditional, 'kanji-mode');
+    assert.equal(kanji.narration, "Great, I'll set the Translator to Kanji mode.");
+
+    const hiragana = prologue.find(s => s.id === 'prologue-display-mode-hiragana');
+    assert.equal(hiragana.conditional, 'hiragana-mode');
+    assert.equal(hiragana.narration, "Great, I'll set the Translator to Hiragana mode.");
+
+    const done = prologue.find(s => s.id === 'prologue-display-mode-done');
+    assert.equal(done.narration, "You're all set! You can always adjust these settings yourself if you need to.");
   });
 
   it('the jpDemo entry references tutorial-translator-demo by frameGroup', () => {
@@ -59,6 +86,16 @@ describe('prologue.json content', () => {
     assert.ok(instruction, 'prologue-translator-click should exist');
     assert.match(instruction.narration, /tap any Japanese word/);
     assert.doesNotMatch(instruction.narration, /\bclick\b/i);
+  });
+});
+
+describe('prologue client display-mode wiring', () => {
+  it('calls the Japanese display mode API for choices with displayMode', () => {
+    const gameJs = readFileSync(join(process.cwd(), 'public/game.js'), 'utf-8');
+    assert.match(gameJs, /setJapaneseDisplayMode as apiSetJapaneseDisplayMode/);
+    assert.match(gameJs, /chosen\.displayMode/);
+    assert.match(gameJs, /apiSetJapaneseDisplayMode\(chosen\.displayMode\)/);
+    assert.match(gameJs, /displayResult\?\.state/);
   });
 });
 
