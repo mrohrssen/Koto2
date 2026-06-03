@@ -44,6 +44,7 @@ describe('optimistic run action integration', () => {
     assert.ok(transitionIndex >= 0, 'optimistic proceed should still run the room transition');
     assert.ok(apiIndex < transitionIndex, 'server verification should start before awaiting the transition');
     assert.match(proceedSource, /clearActionArea\(\)/);
+    assert.match(proceedSource, /showIngredientDropPopups\(ingredientDrops\)/);
   });
 
   it('keeps dealer local changes to pending markers until the server responds', () => {
@@ -125,13 +126,40 @@ describe('optimistic run action integration', () => {
     assert.match(npcSkillCallbackSource, /return result/);
   });
 
-  it('passes corrected NPC battle skill responses into shared reconcile', () => {
+  it('handles corrected NPC battle skill responses as save failures before accepted reconcile', () => {
     const npcBattleStart = explorationSource.indexOf('export async function renderNpcBattleSkillSelection');
     assert.notEqual(npcBattleStart, -1, 'Missing NPC battle skill selection renderer');
     const npcBattleSkillSource = explorationSource.slice(npcBattleStart);
 
+    const correctionIndex = npcBattleSkillSource.indexOf('applyPendingRunCorrection(pending, result)');
+    const reconcileIndex = npcBattleSkillSource.indexOf('reconcilePendingRunAction(pending, result)');
+    assert.ok(correctionIndex >= 0, 'corrected NPC battle skill responses should be handled explicitly');
+    assert.ok(reconcileIndex > correctionIndex, 'accepted reconcile should happen after corrected-response handling');
+    assert.match(npcBattleSkillSource, /Skill choice did not save\. Please choose again\./);
     assert.match(npcBattleSkillSource, /if \(reconcilePendingRunAction\(pending, result\)\)/);
-    assert.doesNotMatch(npcBattleSkillSource, /result\?\.status !== 'corrected'\s*&&\s*reconcilePendingRunAction/);
+  });
+
+  it('handles corrected deterministic choice responses with retry copy', () => {
+    const shrineSource = sourceBetween(
+      explorationSource,
+      'async function chooseShrineReward(rewardType, creatureKey)',
+      '/** Quiz phase'
+    );
+    assert.match(shrineSource, /if \(applyPendingRunCorrection\(pending, result\)\)[\s\S]*Reward choice did not save\. Please choose again\.[\s\S]*renderShrine\(\)/);
+
+    const skillMasterSource = sourceBetween(
+      explorationSource,
+      'export async function renderSkillMaster()',
+      '/** Tutorial step 0'
+    );
+    assert.match(skillMasterSource, /if \(applyPendingRunCorrection\(pending, result\)\)[\s\S]*Skill choice did not save\. Please choose again\.[\s\S]*renderSkillMaster\(\)/);
+
+    const friendlyNpcSource = sourceBetween(
+      explorationSource,
+      'export async function renderFriendlyNpc()',
+      '// ============ NPC BATTLE SKILL REWARD ============'
+    );
+    assert.match(friendlyNpcSource, /if \(applyPendingRunCorrection\(pending, result\)\)[\s\S]*Item choice did not save\. Please choose again\.[\s\S]*renderFriendlyNpc\(\)/);
   });
 
   it('keeps PvP team save feedback confirmed by the server', () => {

@@ -8,7 +8,7 @@ import { getNpcLines, getNpcDefeatFrames } from '../../game/dialogue-loader.js';
 import { selectNpcLine } from '../../game/dialogue-filter.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
-import { createOptimisticActionRunner } from './optimistic-action-response.js';
+import { createOptimisticActionRunner, getOptimisticActionLedgerOwner } from './optimistic-action-response.js';
 import {
   getDebugForceBefriendForUser,
   getDebugSuperAttackForUser
@@ -64,7 +64,7 @@ export default function createCombatRoutes({
   isCreatureDialogueStaleFn
 }) {
   const router = Router();
-  const runOptimisticAction = createOptimisticActionRunner({ owner: req => req.gameManager?.run });
+  const runOptimisticAction = createOptimisticActionRunner({ owner: getOptimisticActionLedgerOwner });
 
   async function attachCombatLineAudio(line, req, speakerKey, speakerId) {
     if (!line) return line;

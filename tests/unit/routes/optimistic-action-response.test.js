@@ -8,6 +8,8 @@ import {
   withOptimisticActionStatus,
 } from '../../../src/routes/game/optimistic-action-response.js';
 
+const actionId = suffix => `act_test_${suffix}`;
+
 function makeRes() {
   return {
     statusCode: 200,
@@ -36,7 +38,7 @@ describe('optimistic action route response helpers', () => {
 
   it('wraps accepted payloads when actionId is present', () => {
     const req = {
-      body: { actionId: 'action-1' },
+      body: { actionId: actionId('one') },
       getEnrichedGameState: () => ({ phase: 'combat' }),
     };
 
@@ -45,7 +47,7 @@ describe('optimistic action route response helpers', () => {
     assert.deepEqual(response, {
       damage: 7,
       status: 'accepted',
-      actionId: 'action-1',
+      actionId: actionId('one'),
       actionType: 'combat.attack',
       state: { phase: 'combat' },
     });
@@ -53,7 +55,7 @@ describe('optimistic action route response helpers', () => {
 
   it('sends corrected errors with authoritative state', () => {
     const req = {
-      body: { actionId: 'action-bad' },
+      body: { actionId: actionId('bad') },
       getEnrichedGameState: () => ({ phase: 'run', hp: 3 }),
     };
     const res = makeRes();
@@ -63,7 +65,7 @@ describe('optimistic action route response helpers', () => {
     assert.equal(res.statusCode, 422);
     assert.deepEqual(res.body, {
       status: 'corrected',
-      actionId: 'action-bad',
+      actionId: actionId('bad'),
       reason: 'not your turn',
       authoritativeState: { phase: 'run', hp: 3 },
     });
@@ -99,6 +101,28 @@ describe('optimistic action route response helpers', () => {
     assert.deepEqual(res.body, { error: 'legacy failed' });
   });
 
+  it('treats malformed action ids as legacy requests and does not record them', async () => {
+    const owner = {};
+    const runOptimisticAction = createOptimisticActionRunner({ owner });
+    const res = makeRes();
+
+    await runOptimisticAction({
+      body: { actionId: '__proto__' },
+      getEnrichedGameState: () => ({ phase: 'after' }),
+      saveGame: async () => {},
+    }, res, {
+      actionType: 'combat.attack',
+      perform: async () => ({ damage: 2 }),
+    });
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(res.body, {
+      damage: 2,
+    });
+    assert.equal(owner.actionLedger, undefined);
+    assert.equal(getActionLedgerEntry(owner, '__proto__'), null);
+  });
+
   it('runs a new optimistic action, records its response, and saveGame sees the ledger entry already present', async () => {
     const owner = {};
     const runOptimisticAction = createOptimisticActionRunner({ owner });
@@ -107,11 +131,11 @@ describe('optimistic action route response helpers', () => {
     let saveCalls = 0;
     let savedEntry = null;
     const req = {
-      body: { actionId: 'action-new' },
+      body: { actionId: actionId('new') },
       getEnrichedGameState: () => ({ phase: 'after-mutation' }),
       saveGame: async () => {
         saveCalls += 1;
-        savedEntry = getActionLedgerEntry(owner, 'action-new');
+        savedEntry = getActionLedgerEntry(owner, actionId('new'));
       },
     };
 
@@ -130,7 +154,7 @@ describe('optimistic action route response helpers', () => {
     assert.deepEqual(res.body, {
       damage: 5,
       status: 'accepted',
-      actionId: 'action-new',
+      actionId: actionId('new'),
       actionType: 'combat.attack',
       state: { phase: 'after-mutation' },
     });
@@ -142,7 +166,7 @@ describe('optimistic action route response helpers', () => {
     const owner = {};
     const runOptimisticAction = createOptimisticActionRunner({ owner });
     const initialReq = {
-      body: { actionId: 'action-repeat' },
+      body: { actionId: actionId('repeat') },
       getEnrichedGameState: () => ({ phase: 'stored' }),
       saveGame: async () => {},
     };
@@ -156,7 +180,7 @@ describe('optimistic action route response helpers', () => {
     let performCalls = 0;
     let saveCalls = 0;
     await runOptimisticAction({
-      body: { actionId: 'action-repeat' },
+      body: { actionId: actionId('repeat') },
       getEnrichedGameState: () => null,
       saveGame: async () => { saveCalls += 1; },
     }, res, {
@@ -173,7 +197,7 @@ describe('optimistic action route response helpers', () => {
     assert.deepEqual(res.body, {
       damage: 9,
       status: 'accepted',
-      actionId: 'action-repeat',
+      actionId: actionId('repeat'),
       actionType: 'combat.attack',
       state: { phase: 'stored' },
     });
@@ -184,7 +208,7 @@ describe('optimistic action route response helpers', () => {
     const runOptimisticAction = createOptimisticActionRunner({ owner });
 
     await runOptimisticAction({
-      body: { actionId: 'action-mismatch' },
+      body: { actionId: actionId('mismatch') },
       getEnrichedGameState: () => ({ phase: 'stored' }),
       saveGame: async () => {},
     }, makeRes(), {
@@ -196,7 +220,7 @@ describe('optimistic action route response helpers', () => {
     let performCalls = 0;
     let saveCalls = 0;
     await runOptimisticAction({
-      body: { actionId: 'action-mismatch' },
+      body: { actionId: actionId('mismatch') },
       getEnrichedGameState: () => ({ phase: 'current' }),
       saveGame: async () => { saveCalls += 1; },
     }, res, {
@@ -212,7 +236,7 @@ describe('optimistic action route response helpers', () => {
     assert.equal(saveCalls, 0);
     assert.deepEqual(res.body, {
       status: 'corrected',
-      actionId: 'action-mismatch',
+      actionId: actionId('mismatch'),
       reason: 'Action ID already used for another action',
       authoritativeState: { phase: 'current' },
     });
@@ -223,7 +247,7 @@ describe('optimistic action route response helpers', () => {
     const runOptimisticAction = createOptimisticActionRunner({ owner: () => owner });
 
     await runOptimisticAction({
-      body: { actionId: 'action-refresh' },
+      body: { actionId: actionId('refresh') },
       getEnrichedGameState: () => ({ phase: 'stored' }),
       saveGame: async () => {},
     }, makeRes(), {
@@ -233,7 +257,7 @@ describe('optimistic action route response helpers', () => {
 
     const res = makeRes();
     await runOptimisticAction({
-      body: { actionId: 'action-refresh' },
+      body: { actionId: actionId('refresh') },
       getEnrichedGameState: () => ({ phase: 'current' }),
       saveGame: async () => {
         throw new Error('duplicate should not save');
@@ -248,7 +272,7 @@ describe('optimistic action route response helpers', () => {
     assert.deepEqual(res.body, {
       roomId: 'old-room',
       status: 'accepted',
-      actionId: 'action-refresh',
+      actionId: actionId('refresh'),
       actionType: 'run.proceed',
       state: { phase: 'current' },
     });
@@ -261,7 +285,7 @@ describe('optimistic action route response helpers', () => {
     const failedRes = makeRes();
 
     await runOptimisticAction({
-      body: { actionId: 'action-save-fails' },
+      body: { actionId: actionId('savefails') },
       getEnrichedGameState: () => ({ phase: 'after-failed-save' }),
       saveGame: async () => {
         throw new Error('save failed');
@@ -277,15 +301,15 @@ describe('optimistic action route response helpers', () => {
     assert.equal(failedRes.statusCode, 409);
     assert.deepEqual(failedRes.body, {
       status: 'corrected',
-      actionId: 'action-save-fails',
+      actionId: actionId('savefails'),
       reason: 'save failed',
       authoritativeState: { phase: 'after-failed-save' },
     });
-    assert.equal(getActionLedgerEntry(owner, 'action-save-fails'), null);
+    assert.equal(getActionLedgerEntry(owner, actionId('savefails')), null);
 
     const retryRes = makeRes();
     await runOptimisticAction({
-      body: { actionId: 'action-save-fails' },
+      body: { actionId: actionId('savefails') },
       getEnrichedGameState: () => ({ phase: 'after-retry-save' }),
       saveGame: async () => {},
     }, retryRes, {
@@ -300,15 +324,65 @@ describe('optimistic action route response helpers', () => {
     assert.deepEqual(retryRes.body, {
       damage: 8,
       status: 'accepted',
-      actionId: 'action-save-fails',
+      actionId: actionId('savefails'),
       actionType: 'combat.attack',
       state: { phase: 'after-retry-save' },
     });
   });
 
+  it('restores game manager state when saveGame fails after a mutation', async () => {
+    const runOptimisticAction = createOptimisticActionRunner({ owner: req => req.gameManager.meta });
+    const res = makeRes();
+    const req = {
+      body: { actionId: actionId('rollback') },
+      gameManager: {
+        run: { currentRoom: 1, partySkills: [] },
+        meta: { itemsDiscovered: [] },
+        combat: { actionCount: 0 },
+      },
+      getEnrichedGameState() {
+        return {
+          run: { currentRoom: this.gameManager.run.currentRoom, partySkills: [...this.gameManager.run.partySkills] },
+          meta: { itemsDiscovered: [...this.gameManager.meta.itemsDiscovered] },
+          combat: { actionCount: this.gameManager.combat.actionCount },
+        };
+      },
+      saveGame: async () => {
+        throw new Error('disk unavailable');
+      },
+    };
+
+    await runOptimisticAction(req, res, {
+      actionType: 'test.mutate',
+      perform: async () => {
+        req.gameManager.run.currentRoom = 2;
+        req.gameManager.run.partySkills.push({ id: 'momentum' });
+        req.gameManager.meta.itemsDiscovered.push('sword');
+        req.gameManager.combat.actionCount = 1;
+        return { ok: true };
+      },
+    });
+
+    assert.equal(res.statusCode, 409);
+    assert.deepEqual(req.gameManager.run, { currentRoom: 1, partySkills: [] });
+    assert.deepEqual(req.gameManager.meta.itemsDiscovered, []);
+    assert.deepEqual(req.gameManager.combat, { actionCount: 0 });
+    assert.equal(getActionLedgerEntry(req.gameManager.meta, actionId('rollback')), null);
+    assert.deepEqual(res.body, {
+      status: 'corrected',
+      actionId: actionId('rollback'),
+      reason: 'disk unavailable',
+      authoritativeState: {
+        run: { currentRoom: 1, partySkills: [] },
+        meta: { itemsDiscovered: [] },
+        combat: { actionCount: 0 },
+      },
+    });
+  });
+
   it('if getEnrichedGameState throws, accepted/corrected state fields are null and duplicate fallback can use stored state', async () => {
     const req = {
-      body: { actionId: 'action-throws' },
+      body: { actionId: actionId('throws') },
       getEnrichedGameState: () => {
         throw new Error('state unavailable');
       },
@@ -317,7 +391,7 @@ describe('optimistic action route response helpers', () => {
     assert.deepEqual(withOptimisticActionStatus(req, { ok: true }), {
       ok: true,
       status: 'accepted',
-      actionId: 'action-throws',
+      actionId: actionId('throws'),
       state: null,
     });
 
@@ -325,7 +399,7 @@ describe('optimistic action route response helpers', () => {
     sendOptimisticActionError(req, errorRes, new Error('failed'));
     assert.deepEqual(errorRes.body, {
       status: 'corrected',
-      actionId: 'action-throws',
+      actionId: actionId('throws'),
       reason: 'failed',
       authoritativeState: null,
     });
@@ -333,7 +407,7 @@ describe('optimistic action route response helpers', () => {
     const owner = {};
     const runOptimisticAction = createOptimisticActionRunner({ owner });
     await runOptimisticAction({
-      body: { actionId: 'action-throws' },
+      body: { actionId: actionId('throws') },
       getEnrichedGameState: () => ({ phase: 'stored-before-throw' }),
       saveGame: async () => {},
     }, makeRes(), {
@@ -343,7 +417,7 @@ describe('optimistic action route response helpers', () => {
 
     const duplicateRes = makeRes();
     await runOptimisticAction({
-      body: { actionId: 'action-throws' },
+      body: { actionId: actionId('throws') },
       getEnrichedGameState: () => {
         throw new Error('state unavailable');
       },
@@ -357,7 +431,7 @@ describe('optimistic action route response helpers', () => {
     assert.deepEqual(duplicateRes.body, {
       ok: true,
       status: 'accepted',
-      actionId: 'action-throws',
+      actionId: actionId('throws'),
       actionType: 'test.action',
       state: { phase: 'stored-before-throw' },
     });

@@ -32,6 +32,7 @@ import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, 
 import { SPRITE_VERSION } from '../../shared/asset-versions.js';
 import {
   createOptimisticActionRunner,
+  getOptimisticActionLedgerOwner,
   sendOptimisticActionError,
   withOptimisticActionStatus,
 } from './optimistic-action-response.js';
@@ -99,7 +100,7 @@ export default function createRunRoutes({
   getDialogueCardAudio
 }) {
   const router = Router();
-  const runOptimisticAction = createOptimisticActionRunner({ owner: req => req.gameManager?.run });
+  const runOptimisticAction = createOptimisticActionRunner({ owner: getOptimisticActionLedgerOwner });
   const SPEED_REVIEW_TRANSITION_ERROR_CODES = new Set([
     'SPEED_REVIEW_TRANSITION_CONFLICT',
     'ROOM_STATE_CONFLICT',
@@ -933,7 +934,7 @@ export default function createRunRoutes({
   router.post('/friendly-npc-choose', async (req, res) => {
     const gm = req.gameManager;
     const actionId = req.body?.actionId;
-    if (actionId && gm?.run && getActionLedgerEntry(gm.run, actionId)?.response) {
+    if (actionId && getActionLedgerEntry(getOptimisticActionLedgerOwner(req), actionId)?.response) {
       return runOptimisticAction(req, res, {
         actionType: 'friendlyNpc.choose',
         errorStatusCode: 409,

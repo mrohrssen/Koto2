@@ -55,6 +55,12 @@ export function createActionId(prefix = 'act') {
   return `${prefix}_${now}_${random}`;
 }
 
+export function isActionId(value) {
+  return typeof value === 'string'
+    && value.length <= 96
+    && /^[a-z][a-z0-9-]{0,31}_[a-z0-9]{1,16}_[a-z0-9]{1,16}$/i.test(value);
+}
+
 export function hashTranscript(transcript) {
   return fnv1aHex(stableStringify(transcript));
 }

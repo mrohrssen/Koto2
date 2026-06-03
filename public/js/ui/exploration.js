@@ -25,7 +25,7 @@ import {
   getFusionCoreNarration,
   getPostFusionNarration
 } from './tutorial-copy.js';
-import { showWordLevelUp } from './word-level-up.js';
+import { showIngredientDropPopups, showWordLevelUp } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { derivePhase } from '../../../src/game/phase-machine.js';
 import {
@@ -109,6 +109,14 @@ function reconcilePendingRunAction(pending, result) {
     return true;
   }
   return false;
+}
+
+function applyPendingRunCorrection(pending, result) {
+  if (!isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
+  updateGameState(correctPendingRunAction(pending, result));
+  updateUI();
+  clearPendingRunAction(pending);
+  return true;
 }
 
 function rollbackPendingRunAction(pending) {
@@ -702,6 +710,11 @@ async function proceedToNextRoom() {
       if (error) throw error;
       if (!reconcilePendingRunAction(pending, result)) {
         rollbackPendingRunAction(pending);
+        return;
+      }
+      const ingredientDrops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
+      if (ingredientDrops.length > 0) {
+        showIngredientDropPopups(ingredientDrops);
       }
     } catch {
       rollbackPendingRunAction(pending);
@@ -998,6 +1011,12 @@ async function chooseShrineReward(rewardType, creatureKey) {
       return;
     }
     const result = await apiChooseShrineReward?.(rewardType, creatureKey, { actionId: pending.actionId });
+    if (applyPendingRunCorrection(pending, result)) {
+      shrineState.choosing = false;
+      sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 2200 });
+      renderShrine();
+      return;
+    }
     if (reconcilePendingRunAction(pending, result)) {
       shrineState.choosing = false;
       actions.clear();
@@ -1663,6 +1682,11 @@ export async function renderSkillMaster() {
           renderSkillMaster();
           return;
         }
+        if (applyPendingRunCorrection(pending, result)) {
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+          renderSkillMaster();
+          return;
+        }
         if (!reconcilePendingRunAction(pending, result)) {
           rollbackPendingRunAction(pending);
           sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
@@ -1728,6 +1752,11 @@ function renderTutorialSkillMaster(offers) {
         } catch {
           rollbackPendingRunAction(pending);
           sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 1800 });
+          renderSkillMaster();
+          return;
+        }
+        if (applyPendingRunCorrection(pending, result)) {
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderSkillMaster();
           return;
         }
@@ -1977,6 +2006,12 @@ export async function renderFriendlyNpc() {
           renderFriendlyNpc();
           return;
         }
+        if (applyPendingRunCorrection(pending, result)) {
+          friendlyNpcState.choosing = false;
+          sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 2200 });
+          renderFriendlyNpc();
+          return;
+        }
         if (reconcilePendingRunAction(pending, result)) {
           friendlyNpcState.choosing = false;
           actions.clear();
@@ -2207,6 +2242,12 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
         return;
       }
 
+      if (applyPendingRunCorrection(pending, result)) {
+        npcBattleSkillState.choosing = false;
+        sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
+        return;
+      }
       if (reconcilePendingRunAction(pending, result)) {
         npcBattleSkillState.choosing = false;
         return;

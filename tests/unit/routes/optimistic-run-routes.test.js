@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import createCombatRoutes from '../../../src/routes/game/combat.js';
 import createRunRoutes from '../../../src/routes/game/run.js';
 
+const actionId = suffix => `run_test_${suffix}`;
+
 function getHandler(router, method, path) {
   for (const layer of router.stack) {
     if (layer.route && layer.route.path === path) {
@@ -57,7 +59,7 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'run_action_1', skillId: 'momentum' },
+      body: { actionId: actionId('skill1'), skillId: 'momentum' },
       gameManager: {
         explorationService: {
           chooseSkillMasterOffer: skillId => ({ chosen: skillId }),
@@ -69,7 +71,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'accepted');
-    assert.equal(res.body.actionId, 'run_action_1');
+    assert.equal(res.body.actionId, actionId('skill1'));
     assert.equal(res.body.chosen, 'momentum');
     assert.deepEqual(res.body.state, { phase: 'room', run: { partySkills: [{ id: 'momentum' }] } });
   });
@@ -100,7 +102,7 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'run_proceed_1' },
+      body: { actionId: actionId('proceed1') },
       gameManager: {
         run: { currentRoom: 0, rooms: [{ type: 'room' }, { type: 'shrine' }] },
         proceedToNextRoom: () => ({ room: { type: 'shrine' }, ingredientDrops: [] }),
@@ -111,7 +113,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'accepted');
-    assert.equal(res.body.actionId, 'run_proceed_1');
+    assert.equal(res.body.actionId, actionId('proceed1'));
     assert.deepEqual(res.body.state, { phase: 'shrine', run: { currentRoom: 1 } });
   });
 
@@ -120,12 +122,12 @@ describe('optimistic deterministic run routes', () => {
     const run = {
       currentRoom: 0,
       rooms: [{ type: 'room' }, { type: 'shrine' }, { type: 'skillMaster' }],
-      optimisticActionLedger: { entries: {}, order: [] },
     };
     const req = {
-      body: { actionId: 'run_proceed_duplicate' },
+      body: { actionId: actionId('proceeddupe') },
       gameManager: {
         run,
+        meta: { actionLedger: { entries: {}, order: [] } },
         proceedToNextRoom: () => {
           run.currentRoom += 1;
           return { room: run.rooms[run.currentRoom], ingredientDrops: [] };
@@ -141,7 +143,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(duplicateRes.statusCode, 200);
     assert.equal(duplicateRes.body.status, 'accepted');
-    assert.equal(duplicateRes.body.actionId, 'run_proceed_duplicate');
+    assert.equal(duplicateRes.body.actionId, actionId('proceeddupe'));
     assert.equal(run.currentRoom, 1);
     assert.deepEqual(duplicateRes.body.state, { phase: 'shrine', run: { currentRoom: 1 } });
   });
@@ -151,7 +153,7 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'run_proceed_generated' },
+      body: { actionId: actionId('proceedgen') },
       gameManager: {
         run: { currentRoom: 0, rooms: [{ type: 'room' }] },
         proceedToNextRoom: () => ({ room: { type: 'encounter' }, ingredientDrops: [{ id: 'hi' }] }),
@@ -162,7 +164,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'accepted');
-    assert.equal(res.body.actionId, 'run_proceed_generated');
+    assert.equal(res.body.actionId, actionId('proceedgen'));
     assert.deepEqual(res.body.ingredientDrops, [{ id: 'hi' }]);
     assert.deepEqual(res.body.state, { phase: 'room_encounter', run: { currentRoom: 1 } });
   });
@@ -193,7 +195,7 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'run_action_bad', rewardType: 'level_up' },
+      body: { actionId: actionId('bad'), rewardType: 'level_up' },
       gameManager: {
         useShrineReward: () => {
           throw new Error('Shrine already completed');
@@ -205,7 +207,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 409);
     assert.equal(res.body.status, 'corrected');
-    assert.equal(res.body.actionId, 'run_action_bad');
+    assert.equal(res.body.actionId, actionId('bad'));
     assert.equal(res.body.reason, 'Shrine already completed');
     assert.deepEqual(res.body.authoritativeState, { phase: 'shrine', run: { currentRoom: 2 } });
   });
@@ -215,7 +217,7 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'run_action_missing_skill' },
+      body: { actionId: actionId('missingskill') },
       gameManager: {
         explorationService: {
           chooseSkillMasterOffer: () => {
@@ -229,19 +231,20 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 400);
     assert.equal(res.body.status, 'corrected');
-    assert.equal(res.body.actionId, 'run_action_missing_skill');
+    assert.equal(res.body.actionId, actionId('missingskill'));
     assert.equal(res.body.reason, 'skillId required');
     assert.deepEqual(res.body.authoritativeState, { phase: 'skillMaster', run: { currentRoom: 1 } });
   });
 
   it('/skill-master-choose does not re-run duplicate actionId', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/skill-master-choose');
-    const run = { partySkills: [], optimisticActionLedger: { entries: {}, order: [] } };
+    const run = { partySkills: [] };
     let choiceCount = 0;
     const req = {
-      body: { actionId: 'skill_master_duplicate', skillId: 'momentum' },
+      body: { actionId: actionId('skilldupe'), skillId: 'momentum' },
       gameManager: {
         run,
+        meta: { actionLedger: { entries: {}, order: [] } },
         explorationService: {
           chooseSkillMasterOffer: skillId => {
             choiceCount += 1;
@@ -269,7 +272,7 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'shrine_action_1', rewardType: 'heal_all' },
+      body: { actionId: actionId('shrine1'), rewardType: 'heal_all' },
       gameManager: {
         useShrineReward: rewardType => ({ rewardType, type: 'shrine_reward' }),
       },
@@ -279,18 +282,19 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'accepted');
-    assert.equal(res.body.actionId, 'shrine_action_1');
+    assert.equal(res.body.actionId, actionId('shrine1'));
     assert.equal(res.body.rewardType, 'heal_all');
     assert.deepEqual(res.body.state, { phase: 'room' });
   });
 
   it('/shrine-choose does not re-run duplicate actionId', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/shrine-choose');
-    const run = { shrineUses: 0, optimisticActionLedger: { entries: {}, order: [] } };
+    const run = { shrineUses: 0 };
     const req = {
-      body: { actionId: 'shrine_duplicate', rewardType: 'heal_all' },
+      body: { actionId: actionId('shrinedupe'), rewardType: 'heal_all' },
       gameManager: {
         run,
+        meta: { actionLedger: { entries: {}, order: [] } },
         useShrineReward: rewardType => {
           run.shrineUses += 1;
           return { rewardType, type: 'shrine_reward' };
@@ -320,7 +324,7 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'friendly_action_1', itemId: 'sword', targetCreatureIndex: 0 },
+      body: { actionId: actionId('friendly1'), itemId: 'sword', targetCreatureIndex: 0 },
       gameManager: {
         run: {
           creatureParty: {
@@ -339,7 +343,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'accepted');
-    assert.equal(res.body.actionId, 'friendly_action_1');
+    assert.equal(res.body.actionId, actionId('friendly1'));
     assert.deepEqual(res.body.chosen, item);
     assert.deepEqual(res.body.state, { phase: 'room' });
   });
@@ -355,9 +359,9 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'friendly_invalid_item', itemId: 'shield', targetCreatureIndex: 0 },
+      body: { actionId: actionId('friendlyinvalid'), itemId: 'shield', targetCreatureIndex: 0 },
       gameManager: {
-        run: { optimisticActionLedger: { entries: {}, order: [] } },
+        run: {},
         meta: {},
         getCurrentRoom: () => room,
       },
@@ -367,7 +371,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 400);
     assert.equal(res.body.status, 'corrected');
-    assert.equal(res.body.actionId, 'friendly_invalid_item');
+    assert.equal(res.body.actionId, actionId('friendlyinvalid'));
     assert.equal(res.body.reason, 'Invalid item choice');
     assert.deepEqual(res.body.authoritativeState, { phase: 'friendlyNpc', run: { currentRoom: 3 } });
   });
@@ -383,13 +387,12 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'friendly_mutation_failure', itemId: 'sword', targetCreatureIndex: 0 },
+      body: { actionId: actionId('friendlyfail'), itemId: 'sword', targetCreatureIndex: 0 },
       gameManager: {
         run: {
           creatureParty: {},
           itemBuffs: {},
           runSummary: { itemsCollected: 0 },
-          optimisticActionLedger: { entries: {}, order: [] },
         },
         meta: {},
         getCurrentRoom: () => room,
@@ -400,7 +403,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 409);
     assert.equal(res.body.status, 'corrected');
-    assert.equal(res.body.actionId, 'friendly_mutation_failure');
+    assert.equal(res.body.actionId, actionId('friendlyfail'));
     assert.ok(res.body.reason);
     assert.deepEqual(res.body.authoritativeState, { phase: 'friendlyNpc', run: { currentRoom: 3 } });
   });
@@ -420,13 +423,12 @@ describe('optimistic deterministic run routes', () => {
       },
       itemBuffs: {},
       runSummary: { itemsCollected: 0 },
-      optimisticActionLedger: { entries: {}, order: [] },
     };
     const req = {
-      body: { actionId: 'friendly_duplicate', itemId: 'sword', targetCreatureIndex: 0 },
+      body: { actionId: actionId('friendlydupe'), itemId: 'sword', targetCreatureIndex: 0 },
       gameManager: {
         run,
-        meta: { itemsDiscovered: [] },
+        meta: { itemsDiscovered: [], actionLedger: { entries: {}, order: [] } },
         getCurrentRoom: () => room,
       },
       saveGame: () => {},
@@ -454,7 +456,7 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'npc_battle_skill_1', skillId: 'momentum' },
+      body: { actionId: actionId('npcskill1'), skillId: 'momentum' },
       gameManager: {
         run,
         getCurrentRoom: () => room,
@@ -465,7 +467,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'accepted');
-    assert.equal(res.body.actionId, 'npc_battle_skill_1');
+    assert.equal(res.body.actionId, actionId('npcskill1'));
     assert.equal(res.body.chosenId, 'momentum');
     assert.deepEqual(res.body.partySkills, [{ id: 'momentum' }]);
     assert.deepEqual(res.body.state, { phase: 'room', run: { partySkills: [{ id: 'momentum' }] } });
@@ -480,12 +482,12 @@ describe('optimistic deterministic run routes', () => {
     };
     const run = {
       partySkills: [],
-      optimisticActionLedger: { entries: {}, order: [] },
     };
     const req = {
-      body: { actionId: 'npc_battle_skill_duplicate', skillId: 'momentum' },
+      body: { actionId: actionId('npcskilldupe'), skillId: 'momentum' },
       gameManager: {
         run,
+        meta: { actionLedger: { entries: {}, order: [] } },
         getCurrentRoom: () => room,
       },
       saveGame: () => {},
@@ -498,7 +500,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(duplicateRes.statusCode, 200);
     assert.equal(duplicateRes.body.status, 'accepted');
-    assert.equal(duplicateRes.body.actionId, 'npc_battle_skill_duplicate');
+    assert.equal(duplicateRes.body.actionId, actionId('npcskilldupe'));
     assert.equal(run.partySkills.length, 1);
     assert.equal(room.npcBattle.chosenSkillId, 'momentum');
     assert.equal(room.npcBattle.skillSelectionPending, false);
@@ -541,14 +543,14 @@ describe('optimistic deterministic run routes', () => {
     };
     const run = {
       partySkills: [],
-      optimisticActionLedger: { entries: {}, order: [] },
     };
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'npc_battle_skill_invalid', skillId: 'invalid-skill' },
+      body: { actionId: actionId('npcskillbad'), skillId: 'invalid-skill' },
       gameManager: {
         run,
+        meta: { actionLedger: { entries: {}, order: [] } },
         getCurrentRoom: () => room,
       },
       saveGame: () => {},
@@ -557,7 +559,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 400);
     assert.equal(res.body.status, 'corrected');
-    assert.equal(res.body.actionId, 'npc_battle_skill_invalid');
+    assert.equal(res.body.actionId, actionId('npcskillbad'));
     assert.equal(res.body.reason, 'Invalid skill choice');
     assert.deepEqual(res.body.authoritativeState, { phase: 'npc_skill_selection', run: { currentRoom: 4, partySkills: [] } });
   });
@@ -567,9 +569,10 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'post_combat_shop_1', itemIndex: 1, targetIndex: 2 },
+      body: { actionId: actionId('shop1'), itemIndex: 1, targetIndex: 2 },
       gameManager: {
-        run: { optimisticActionLedger: { entries: {}, order: [] } },
+        run: {},
+        meta: { actionLedger: { entries: {}, order: [] } },
         combatCycleService: {
           selectShopItem: (itemIndex, targetIndex) => ({ itemIndex, targetIndex, itemId: 'tonic' }),
         },
@@ -580,7 +583,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'accepted');
-    assert.equal(res.body.actionId, 'post_combat_shop_1');
+    assert.equal(res.body.actionId, actionId('shop1'));
     assert.equal(res.body.itemIndex, 1);
     assert.equal(res.body.targetIndex, 2);
     assert.deepEqual(res.body.state, { phase: 'room', run: { pendingPostCombatShopSelection: null } });
@@ -588,12 +591,13 @@ describe('optimistic deterministic run routes', () => {
 
   it('duplicate post-combat shop actionId does not re-run selectShopItem', async () => {
     const handler = getHandler(createCombatRouter(), 'post', '/creature-shop-select');
-    const run = { optimisticActionLedger: { entries: {}, order: [] } };
+    const run = {};
     let selectCount = 0;
     const req = {
-      body: { actionId: 'post_combat_shop_duplicate', itemIndex: 0, targetIndex: 1 },
+      body: { actionId: actionId('shopdupe'), itemIndex: 0, targetIndex: 1 },
       gameManager: {
         run,
+        meta: { actionLedger: { entries: {}, order: [] } },
         combatCycleService: {
           selectShopItem: (itemIndex, targetIndex) => {
             selectCount += 1;
@@ -611,7 +615,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(duplicateRes.statusCode, 200);
     assert.equal(duplicateRes.body.status, 'accepted');
-    assert.equal(duplicateRes.body.actionId, 'post_combat_shop_duplicate');
+    assert.equal(duplicateRes.body.actionId, actionId('shopdupe'));
     assert.equal(selectCount, 1);
     assert.equal(duplicateRes.body.selected, 1);
     assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { selectedCount: 1 } });
@@ -624,7 +628,7 @@ describe('optimistic deterministic run routes', () => {
     await handler({
       body: { itemIndex: 2 },
       gameManager: {
-        run: { optimisticActionLedger: { entries: {}, order: [] } },
+        run: {},
         combatCycleService: {
           selectShopItem: (itemIndex, targetIndex) => ({ itemIndex, targetIndex, ok: true }),
         },
@@ -644,9 +648,10 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: 'post_combat_shop_bad', itemIndex: 9, targetIndex: 0 },
+      body: { actionId: actionId('shopbad'), itemIndex: 9, targetIndex: 0 },
       gameManager: {
-        run: { optimisticActionLedger: { entries: {}, order: [] } },
+        run: {},
+        meta: { actionLedger: { entries: {}, order: [] } },
         combatCycleService: {
           selectShopItem: () => {
             throw new Error('Invalid shop item');
@@ -659,7 +664,7 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(res.statusCode, 400);
     assert.equal(res.body.status, 'corrected');
-    assert.equal(res.body.actionId, 'post_combat_shop_bad');
+    assert.equal(res.body.actionId, actionId('shopbad'));
     assert.equal(res.body.reason, 'Invalid shop item');
     assert.deepEqual(res.body.authoritativeState, { phase: 'post_combat_shop', run: { currentRoom: 3 } });
   });

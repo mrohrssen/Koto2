@@ -1,3 +1,5 @@
+import { isActionId } from '../../shared/action-protocol.js';
+
 const ACTION_LEDGER_LIMIT = 100;
 
 function cloneValue(value) {
@@ -7,8 +9,8 @@ function cloneValue(value) {
     : JSON.parse(JSON.stringify(value));
 }
 
-function isValidActionId(actionId) {
-  return typeof actionId === 'string' && actionId.length > 0;
+function createEntriesMap() {
+  return Object.create(null);
 }
 
 function isObject(value) {
@@ -23,7 +25,7 @@ function pruneLedger(ledger) {
 }
 
 function syncEntriesToOrder(ledger) {
-  const normalizedEntries = {};
+  const normalizedEntries = createEntriesMap();
   for (const actionId of ledger.order) {
     normalizedEntries[actionId] = ledger.entries[actionId];
   }
@@ -35,13 +37,18 @@ export function normalizeActionLedger(owner) {
     throw new Error('Action ledger owner is required');
   }
 
-  if (!isObject(owner.optimisticActionLedger)) {
-    owner.optimisticActionLedger = { entries: {}, order: [] };
+  if (!isObject(owner.actionLedger) && isObject(owner.optimisticActionLedger)) {
+    owner.actionLedger = owner.optimisticActionLedger;
+    delete owner.optimisticActionLedger;
   }
 
-  const ledger = owner.optimisticActionLedger;
+  if (!isObject(owner.actionLedger)) {
+    owner.actionLedger = { entries: createEntriesMap(), order: [] };
+  }
+
+  const ledger = owner.actionLedger;
   if (!isObject(ledger.entries)) {
-    ledger.entries = {};
+    ledger.entries = createEntriesMap();
   }
 
   const rawOrder = Array.isArray(ledger.order)
@@ -49,7 +56,7 @@ export function normalizeActionLedger(owner) {
     : Object.keys(ledger.entries);
   const seen = new Set();
   ledger.order = rawOrder.filter(actionId => {
-    if (!isValidActionId(actionId) || !Object.hasOwn(ledger.entries, actionId) || seen.has(actionId)) {
+    if (!isActionId(actionId) || !Object.hasOwn(ledger.entries, actionId) || seen.has(actionId)) {
       return false;
     }
     seen.add(actionId);
@@ -62,7 +69,7 @@ export function normalizeActionLedger(owner) {
 }
 
 export function getActionLedgerEntry(owner, actionId) {
-  if (!isValidActionId(actionId)) {
+  if (!isActionId(actionId)) {
     return null;
   }
 
@@ -72,7 +79,7 @@ export function getActionLedgerEntry(owner, actionId) {
 }
 
 export function rememberActionLedgerResult(owner, { actionId, actionType, response } = {}) {
-  if (!owner || typeof owner !== 'object' || !isValidActionId(actionId)) {
+  if (!owner || typeof owner !== 'object' || !isActionId(actionId)) {
     return response;
   }
 
