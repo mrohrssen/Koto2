@@ -1,5 +1,14 @@
+import { randomBytes } from 'node:crypto';
 import { createCombatState } from '../state.js';
 import { logger } from '../../logger.js';
+import { createSeededRng } from '../../shared/deterministic-rng.js';
+import {
+  buildAcceptedResponse,
+  buildCorrectedResponse,
+  hashTranscript,
+  PVE_CORE_PREDICTION_MODE,
+  verifyActionEnvelope,
+} from '../../shared/action-protocol.js';
 import {
   generateEnemyCreature,
   generateEnemyCreatures,
@@ -7,16 +16,12 @@ import {
   CREATURES_BY_ID
 } from '../creatures.js';
 import {
-  processInterleavedPvERound,
-  processDefendTurn,
   processEnemyTurn,
   processBefriend,
   awardBattleXp,
   awardKillXp,
   tickAllEffects,
-  resolveNoopActorAction,
   resolveSingleActorAction,
-  resolveSyntheticActorAction,
   pickEnemyMoveChoice,
   pickEnemyTarget,
   executeNpcSkill,
@@ -29,6 +34,16 @@ import {
   processBefriendQuizAnswer,
   resolveBefriendFight
 } from './creature-combat-service.js';
+import {
+  resolveNoopActorAction,
+  resolveSyntheticActorAction,
+} from '../../shared/combat/pve-turn-core.js';
+import {
+  resolvePveCursorTurn,
+  resolvePveTurn,
+} from '../../shared/combat/pve-turn-resolver.js';
+import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
+import { hasPveServerOnlyFeedback } from '../../shared/combat/pve-prediction-contract.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
   checkAllDefeated,
@@ -68,6 +83,46 @@ import { selectBark } from '../dialogue-filter.js';
 import { getBarkPool, getBefriendFrames } from '../dialogue-loader.js';
 import { selectBestFrame } from '../token-format.js';
 import { applyDebugSuperAttack } from '../debug-super-attack.js';
+
+function createServerSeed() {
+  return randomBytes(16).toString('hex');
+}
+
+function createCombatId() {
+  return `cmb_${randomBytes(8).toString('hex')}`;
+}
+
+function normalizeCombatActionType(actionType = 'attack') {
+  return actionType?.startsWith?.('combat.')
+    ? actionType.slice('combat.'.length)
+    : (actionType || 'attack');
+}
+
+function moveChoicesFromEnvelope(envelope = {}) {
+  return envelope.payload?.moveChoices || envelope.moveChoices || [];
+}
+
+function cloneGameManagerForCombatPreview(gm) {
+  const cloned = cloneForPveTurn({
+    combat: gm.combat,
+    run: gm.run,
+    meta: gm.meta,
+  });
+  if (cloned.combat && cloned.run?.creatureParty?.active) {
+    cloned.combat.allies = cloned.run.creatureParty.active;
+  }
+  return {
+    combat: cloned.combat,
+    run: cloned.run,
+    meta: cloned.meta,
+    userId: gm.userId,
+    emitState() {},
+    narrate() {},
+    _onRunDefeat() {},
+    _debugForceBefriend: gm._debugForceBefriend,
+    _debugSuperAttack: gm._debugSuperAttack,
+  };
+}
 
 export function serializeBefriendPrompt(prompt) {
   if (!prompt) return null;
@@ -171,6 +226,12 @@ export class CombatCycleService {
     this.gm.combat.openingResolved = false;
     this.gm.combat.isCreatureCombat = true;
     this.gm.combat.isBoss = isBoss;
+    this.gm.combat.optimistic = {
+      combatId: createCombatId(),
+      stateVersion: 0,
+      nextTurnSeed: createServerSeed(),
+      acceptedActionIds: {},
+    };
     this.gm.combat.swapPhase = true; // Free swap available before first action
 
     // Reset stat stages for all combatants at battle start
@@ -230,6 +291,11 @@ export class CombatCycleService {
       npc: this.gm.combat.npcData,
       isBoss,
       isNpcBattle,
+      optimistic: {
+        combatId: this.gm.combat.optimistic.combatId,
+        stateVersion: this.gm.combat.optimistic.stateVersion,
+        nextTurnSeed: this.gm.combat.optimistic.nextTurnSeed,
+      },
       tutorialBossIntro
     };
   }
@@ -274,6 +340,136 @@ export class CombatCycleService {
     const fusionReward = collectStartingMeadowHinonekoVictoryReward(this.gm.meta, this.gm.run, this.gm.combat);
     if (fusionReward) rewards.push(fusionReward);
     return rewards;
+  }
+
+  previewCreatureCombatCycle({ actionType = 'attack', moveChoices = [], seed } = {}) {
+    const resolvedActionType = normalizeCombatActionType(actionType);
+    const previewGm = cloneGameManagerForCombatPreview(this.gm);
+    const previewService = new CombatCycleService(previewGm);
+    const transcript = previewService.creatureCombatCycle(resolvedActionType, moveChoices, {
+      rng: createSeededRng(seed),
+      verifiedSeed: seed,
+    });
+
+    return {
+      transcript,
+      predictedHash: hashTranscript(transcript),
+    };
+  }
+
+  verifyAndCommitCreatureCombatCycle(envelope = {}) {
+    const optimistic = this.gm.combat?.optimistic;
+    if (!optimistic) {
+      return buildCorrectedResponse({
+        reason: 'missing_optimistic_state',
+        authoritativeTranscript: null,
+        authoritativeState: null,
+        stateVersion: null,
+        nextSeed: null,
+      });
+    }
+    if (!optimistic.acceptedActionIds) optimistic.acceptedActionIds = {};
+    if (envelope.actionId && optimistic.acceptedActionIds[envelope.actionId]) {
+      return optimistic.acceptedActionIds[envelope.actionId];
+    }
+
+    const actionType = normalizeCombatActionType(envelope.payload?.actionType || envelope.actionType || 'attack');
+    const moveChoices = moveChoicesFromEnvelope(envelope);
+    const predictionMode = envelope.payload?.predictionMode || envelope.predictionMode || null;
+    const verified = verifyActionEnvelope(envelope, {
+      combatId: optimistic.combatId,
+      stateVersion: optimistic.stateVersion,
+      seed: optimistic.nextTurnSeed,
+    });
+
+    if (!verified.ok) {
+      return buildCorrectedResponse({
+        reason: verified.reason,
+        authoritativeTranscript: null,
+        authoritativeState: null,
+        stateVersion: optimistic.stateVersion,
+        nextSeed: optimistic.nextTurnSeed,
+      });
+    }
+
+    const usesSharedPveCorePrediction = predictionMode === PVE_CORE_PREDICTION_MODE;
+    let sharedPveCoreHash = null;
+    let sharedPveCoreUnsupported = false;
+    if (usesSharedPveCorePrediction) {
+      if ((this.gm.combat?.npcId || this.gm.combat?.npcData) && !this.gm.combat?.actionCursor) {
+        return buildCorrectedResponse({
+          reason: 'unsupported_prediction_mode',
+          authoritativeTranscript: null,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+      }
+      let resolvedCore;
+      try {
+        resolvedCore = actionType === 'attack' && this.gm.combat?.actionCursor
+          ? resolvePveCursorTurn(
+              { combat: this.gm.combat, run: this.gm.run, moveChoices },
+              { actionType, seed: envelope.seed },
+            )
+          : resolvePveTurn({
+              snapshot: { combat: this.gm.combat, run: this.gm.run },
+              actionType,
+              moveChoices,
+              seed: envelope.seed,
+            });
+      } catch {
+        return buildCorrectedResponse({
+          reason: 'prediction_resolve_failed',
+          authoritativeTranscript: null,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+      }
+      sharedPveCoreHash = hashTranscript(resolvedCore.transcript);
+      sharedPveCoreUnsupported = hasPveServerOnlyFeedback(resolvedCore.transcript);
+      if (sharedPveCoreUnsupported) {
+        return buildCorrectedResponse({
+          reason: 'server_only_feedback_unsupported',
+          authoritativeTranscript: null,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+      }
+    }
+
+    const committed = this.creatureCombatCycle(actionType, moveChoices, {
+      rng: createSeededRng(envelope.seed),
+      verifiedSeed: envelope.seed,
+      suppressBarks: usesSharedPveCorePrediction,
+    });
+    optimistic.stateVersion += 1;
+    optimistic.nextTurnSeed = createServerSeed();
+
+    const committedHash = usesSharedPveCorePrediction && sharedPveCoreHash
+      ? sharedPveCoreHash
+      : hashTranscript(committed);
+    const protocolPayload = !sharedPveCoreUnsupported && committedHash === envelope.predictedHash
+      ? buildAcceptedResponse({
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        })
+      : buildCorrectedResponse({
+          reason: sharedPveCoreUnsupported ? 'server_only_feedback_unsupported' : 'transcript_mismatch',
+          authoritativeTranscript: committed,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+
+    const response = {
+      ...committed,
+      ...protocolPayload,
+    };
+    optimistic.acceptedActionIds[envelope.actionId] = response;
+    return response;
   }
 
   _collectPoisonKoXpEvents(effectEvents, metaMults) {
@@ -362,7 +558,7 @@ export class CombatCycleService {
    * Execute one creature combat cycle
    * @param {string} actionType - 'attack' | 'defend' | 'befriend'
    */
-  creatureCombatCycle(actionType = 'attack', moveChoices = []) {
+  creatureCombatCycle(actionType = 'attack', moveChoices = [], options = {}) {
     if (!this.gm.combat?.active) {
       throw new Error('No active combat');
     }
@@ -371,21 +567,22 @@ export class CombatCycleService {
     this.gm.combat.swapPhase = false;
 
     if (actionType === 'attack' && this.gm.combat.actionCursor) {
-      return this._handleCreatureActionCursorTurn(moveChoices);
+      return this._handleCreatureActionCursorTurn(moveChoices, options);
     }
 
     // Tick active effects at start of round (poison damage, etc.)
     const effectEvents = tickAllEffects(this.gm.combat.allies, this.gm.combat.enemies);
 
     switch (actionType) {
-      case 'attack':  return this._handleCreatureAttackTurn(effectEvents, moveChoices);
-      case 'defend':  return this._handleCreatureDefendTurn(effectEvents);
+      case 'attack':  return this._handleCreatureAttackTurn(effectEvents, moveChoices, options);
+      case 'defend':  return this._handleCreatureDefendTurn(effectEvents, options);
       case 'befriend': return this._handleCreatureBefriendTurn(effectEvents);
       default: throw new Error(`Unknown action: ${actionType}`);
     }
   }
 
-  _resolveCurrentPveCursor(moveChoice = null, playbackStart = 0) {
+  _resolveCurrentPveCursor(moveChoice = null, playbackStart = 0, options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     const cursor = this.gm.combat.actionCursor;
     if (!cursor) throw new Error('No active action cursor');
 
@@ -402,10 +599,10 @@ export class CombatCycleService {
       }
       choices = [moveChoice];
     } else {
-      const choice = pickEnemyMoveChoice(actor, this.gm.combat.allies, this.gm.combat.enemies);
+      const choice = pickEnemyMoveChoice(actor, this.gm.combat.allies, this.gm.combat.enemies, rng);
       if (choice) {
         const { move, mode } = choice;
-        const targeting = pickEnemyTarget(actor, move, mode, this.gm.combat.allies, this.gm.combat.enemies);
+        const targeting = pickEnemyTarget(actor, move, mode, this.gm.combat.allies, this.gm.combat.enemies, rng);
         if (targeting) {
           const targetIndex = targeting.targetSide === 'player'
             ? this.gm.combat.allies.indexOf(targeting.target)
@@ -426,7 +623,8 @@ export class CombatCycleService {
       metaMults: this.gm.run?.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
       runPartySkills: this.gm.run?.partySkills || null,
       combat: this.gm.combat,
-      playbackStart
+      playbackStart,
+      rng
     });
 
     this.gm.combat.actionCount = (this.gm.combat.actionCount || 0) + 1;
@@ -471,12 +669,13 @@ export class CombatCycleService {
     this.gm.combat.actionCursor = fallback ? { ...fallback, opening: false } : null;
   }
 
-  _handleCreatureActionCursorTurn(moveChoices = []) {
+  _handleCreatureActionCursorTurn(moveChoices = [], options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     const submittedChoice = moveChoices[0] || null;
     const actionSegments = [];
     let playbackStart = 0;
 
-    const firstResult = this._resolveCurrentPveCursor(submittedChoice, playbackStart);
+    const firstResult = this._resolveCurrentPveCursor(submittedChoice, playbackStart, { rng });
     actionSegments.push(...firstResult.actionSegments);
     playbackStart = firstResult.playbackNext || actionSegments.length;
 
@@ -486,7 +685,7 @@ export class CombatCycleService {
       !checkAllDefeated(this.gm.combat.enemies) &&
       !checkAllDefeated(this.gm.combat.allies)
     ) {
-      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart);
+      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, { rng });
       actionSegments.push(...enemyResult.actionSegments);
       playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
     }
@@ -651,7 +850,7 @@ export class CombatCycleService {
     };
   }
 
-  resolveKanjiKombatCursorAction({ correct, targetIndex = 0 } = {}) {
+  resolveKanjiKombatCursorAction({ correct, targetIndex = 0, rng = Math.random } = {}) {
     const cursor = this.gm.combat?.actionCursor;
     if (!this.gm.run || this.gm.run.mode !== 'kanjiKombat') {
       throw new Error('Not in Kanji Kombat');
@@ -680,6 +879,7 @@ export class CombatCycleService {
           itemBuffs: this.gm.run.itemBuffs,
           creatureParty: this.gm.run.creatureParty,
           metaMults: this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+          rng,
         })
       : resolveNoopActorAction({
           actorSide: 'ally',
@@ -703,7 +903,7 @@ export class CombatCycleService {
       !checkAllDefeated(this.gm.combat.enemies) &&
       !checkAllDefeated(this.gm.combat.allies)
     ) {
-      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart);
+      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, { rng });
       result.actionSegments.push(...enemyResult.actionSegments);
       playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
     }
@@ -805,7 +1005,8 @@ export class CombatCycleService {
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleCreatureAttackTurn(effectEvents, moveChoices) {
+  _handleCreatureAttackTurn(effectEvents, moveChoices, options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     // New player move round — each creature may try はなす again
     this.gm.combat.befriendAttemptedSlots = {};
 
@@ -822,15 +1023,25 @@ export class CombatCycleService {
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('attack', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 
-    const playerResult = processInterleavedPvERound(
-      this.gm.combat.allies,
-      this.gm.combat.enemies,
+    const resolvedTurn = resolvePveTurn({
+      allies: this.gm.combat.allies,
+      enemies: this.gm.combat.enemies,
       moveChoices,
-      this.gm.run.itemBuffs,
-      this.gm.run.creatureParty,
+      itemBuffs: this.gm.run.itemBuffs,
+      creatureParty: this.gm.run.creatureParty,
       metaMults,
-      { runPartySkills: this.gm.run.partySkills, combat: this.gm.combat }
-    );
+      runPartySkills: this.gm.run.partySkills,
+      combat: this.gm.combat,
+      effectEvents,
+      roundStartEvents,
+    }, {
+      actionType: 'attack',
+      rng,
+      clone: false,
+      awardKillXp,
+      processKoSwaps: false,
+    });
+    const playerResult = resolvedTurn.transcript;
     playerResult.xpEvents = [...poisonXpEvents, ...(playerResult.xpEvents || [])];
 
     // Interleaved combat applies party skills inside each player initiative slot
@@ -842,7 +1053,8 @@ export class CombatCycleService {
         allies: this.gm.combat.allies,
         enemies: this.gm.combat.enemies,
         runPartySkills: this.gm.run.partySkills,
-        combat: this.gm.combat
+        combat: this.gm.combat,
+        rng
       });
     }
 
@@ -860,7 +1072,7 @@ export class CombatCycleService {
     // Pick combat barks server-side
     let barks = [];
     const barkPool = getBarkPool();
-    if (barkPool && Object.keys(barkPool).length > 0 && this.gm.userId) {
+    if (!options.suppressBarks && barkPool && Object.keys(barkPool).length > 0 && this.gm.userId) {
       const knownWords = new Set(getKnownWordsFromFsrs(this.gm.userId));
       if (!this.gm.combat.usedBarks) this.gm.combat.usedBarks = new Set();
 
@@ -1001,7 +1213,7 @@ export class CombatCycleService {
     if (this.gm.combat.npcId && this.gm.combat.npcData) {
       const fullNpc = loadNpcs()[this.gm.combat.npcId];
       if (fullNpc) {
-        const skill = rollNpcSkill(fullNpc);
+        const skill = rollNpcSkill(fullNpc, rng);
         if (skill) {
           const npcCombat = {
             id: fullNpc.id,
@@ -1012,7 +1224,7 @@ export class CombatCycleService {
             reading: fullNpc.reading || '',
             meaning: fullNpc.meaning || fullNpc.nameEn || ''
           };
-          const skillResult = executeNpcSkill(npcCombat, skill, this.gm.combat.allies, this.gm.combat.enemies);
+          const skillResult = executeNpcSkill(npcCombat, skill, this.gm.combat.allies, this.gm.combat.enemies, rng);
           npcSkillAttacks = skillResult.attacks;
           npcSkillUsed = {
             skillId: skill.id,
@@ -1162,7 +1374,8 @@ export class CombatCycleService {
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleCreatureDefendTurn(effectEvents) {
+  _handleCreatureDefendTurn(effectEvents, options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     this.gm.combat.befriendAttemptedSlots = {};
 
     // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
@@ -1177,24 +1390,25 @@ export class CombatCycleService {
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('defend', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 
-    processDefendTurn(this.gm.combat.allies);
-
-    // Enemy phase (defendActive = true reduces damage)
-    const enemyResult = processEnemyTurn(this.gm.combat.enemies, this.gm.combat.allies, true, this.gm.run.itemBuffs);
-
-    // Party skills: counter attacks
-    const counterAttacks = applyAfterEnemyAttacks({
-      enemyAttacks: enemyResult.attacks,
+    const resolvedTurn = resolvePveTurn({
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
+      itemBuffs: this.gm.run.itemBuffs,
+      creatureParty: this.gm.run.creatureParty,
+      metaMults,
       runPartySkills: this.gm.run.partySkills,
-      combat: this.gm.combat
-    }) || [];
-
-    // Handle KO'd allies — swap reserves in or permanently remove
-    const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(this.gm.combat.allies, this.gm.run.creatureParty);
-    const koSwaps = rawKoSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
-    const koRemovals = rawKoRemovals.map(r => ({ slot: r.index, name: r.name }));
+      combat: this.gm.combat,
+      effectEvents,
+      roundStartEvents,
+    }, {
+      actionType: 'defend',
+      rng,
+      clone: false,
+      processKoSwaps: true,
+    });
+    const turnResult = resolvedTurn.transcript;
+    const koSwaps = turnResult.koSwaps || [];
+    const koRemovals = turnResult.koRemovals || [];
     this.gm.combat.allies = this.gm.run.creatureParty.active;
 
     // Check defeat — only if ALL allies (including swapped-in reserves) are KO'd
@@ -1204,11 +1418,11 @@ export class CombatCycleService {
       return {
         actionType: 'defend',
         playerAttacks: [],
-        enemyAttacks: enemyResult.attacks || [],
+        enemyAttacks: turnResult.enemyAttacks || [],
         xpEvents: [],
         effectEvents,
         roundStartEvents,
-        counterAttacks,
+        counterAttacks: turnResult.counterAttacks || [],
         koSwaps,
         koRemovals,
         combatEnded: true,
@@ -1225,11 +1439,11 @@ export class CombatCycleService {
     return {
       actionType: 'defend',
       playerAttacks: [],
-      enemyAttacks: enemyResult.attacks || [],
+      enemyAttacks: turnResult.enemyAttacks || [],
       xpEvents: [],
       effectEvents,
       roundStartEvents,
-      counterAttacks,
+      counterAttacks: turnResult.counterAttacks || [],
       befriend: null,
       koSwaps,
       koRemovals,

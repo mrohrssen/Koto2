@@ -125,6 +125,17 @@ describe('Kanji Kombat wave completion', () => {
     assert.equal(result.kanjiKombatReport.wavesCleared, 0);
   });
 
+  it('reports the last spawned wave instead of the next queued wave', () => {
+    const gm = gmWithMode();
+    gm.run.kanjiKombat.wave = 6;
+    gm.run.kanjiKombat.waveReached = 5;
+    gm.kanjiKombatService = new KanjiKombatService(gm);
+
+    const report = gm.kanjiKombatService.buildReport();
+
+    assert.equal(report.wave, 5);
+  });
+
   it('heals all living allies at 5 and 15 correct answer streaks', () => {
     const gm = rewardGm({
       active: [

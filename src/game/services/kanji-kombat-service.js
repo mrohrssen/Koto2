@@ -1,8 +1,17 @@
-import { randomUUID } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 import { createCombatState, createNewRun } from '../state.js';
 import { AREAS } from '../rooms.js';
 import { createPveOpeningCursor } from '../combat/action-cursor.js';
 import { applyStatChange } from '../combat/effects.js';
+import { createSeededRng } from '../../shared/deterministic-rng.js';
+import {
+  buildAcceptedResponse,
+  buildCorrectedResponse,
+  hashTranscript,
+  KANJI_KOMBAT_PREDICTION_MODE,
+  verifyActionEnvelope,
+} from '../../shared/action-protocol.js';
+import { resolveKanjiKombatAnswerTurn } from '../../shared/combat/pve-turn-resolver.js';
 import {
   generateEnemyCreature,
   generateEnemyCreatures,
@@ -25,6 +34,14 @@ import {
 export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 5;
 const STREAK_BUFF_STATS = ['atk', 'def', 'dex'];
 
+function createServerSeed() {
+  return randomBytes(16).toString('hex');
+}
+
+function createCombatId() {
+  return `cmb_${randomBytes(8).toString('hex')}`;
+}
+
 export function getLocalDateKey(date = new Date()) {
   return date.toLocaleDateString('en-CA');
 }
@@ -36,6 +53,7 @@ export function rollIntroInterval(random = Math.random) {
 export function createInitialKanjiKombatState({ localDate = getLocalDateKey(), random = Math.random } = {}) {
   return {
     wave: 1,
+    waveReached: 1,
     streak: 0,
     highestStreak: 0,
     reviewsSinceIntro: 0,
@@ -217,7 +235,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
 
 export function resolveIntroChoice(userId, state, cardId, choice, opts = {}) {
   const introSource = state.pendingIntro?.source || null;
-  const grade = choice === 'known' ? 'good' : 'again';
+  const grade = choice === 'known' ? 'easy' : 'again';
   const graded = gradeScriptCard(userId, cardId, grade);
   if (choice === 'unknown') {
     recordScriptIntro(userId, state.localDate);
@@ -324,7 +342,7 @@ export class KanjiKombatService {
     return kk.pendingIntro;
   }
 
-  submitAnswer(answerId) {
+  submitAnswer(answerId, opts = {}) {
     const kk = this.gm.run?.kanjiKombat;
     const quiz = kk?.currentQuiz;
     if (!quiz) throw new Error('No active Kanji Kombat quiz');
@@ -339,9 +357,112 @@ export class KanjiKombatService {
     const result = this.gm.combatCycleService.resolveKanjiKombatCursorAction({
       correct: choice.correct,
       targetIndex: 0,
+      rng: opts.rng,
     });
     result.kanjiAnswerCorrect = choice.correct;
     return result;
+  }
+
+  verifyAndCommitOptimisticAnswer(envelope = {}) {
+    const optimistic = this.gm.combat?.optimistic;
+    if (!optimistic) {
+      return buildCorrectedResponse({
+        reason: 'missing_optimistic_state',
+        authoritativeTranscript: null,
+        authoritativeState: null,
+        stateVersion: null,
+        nextSeed: null,
+      });
+    }
+    if (!optimistic.acceptedActionIds) optimistic.acceptedActionIds = {};
+    if (envelope.actionId && optimistic.acceptedActionIds[envelope.actionId]) {
+      return optimistic.acceptedActionIds[envelope.actionId];
+    }
+
+    const verified = verifyActionEnvelope(envelope, {
+      combatId: optimistic.combatId,
+      stateVersion: optimistic.stateVersion,
+      seed: optimistic.nextTurnSeed,
+    });
+    if (!verified.ok) {
+      return buildCorrectedResponse({
+        reason: verified.reason,
+        authoritativeTranscript: null,
+        authoritativeState: null,
+        stateVersion: optimistic.stateVersion,
+        nextSeed: optimistic.nextTurnSeed,
+      });
+    }
+
+    const predictionMode = envelope.payload?.predictionMode || envelope.predictionMode || null;
+    if (predictionMode !== KANJI_KOMBAT_PREDICTION_MODE) {
+      return buildCorrectedResponse({
+        reason: 'unsupported_prediction_mode',
+        authoritativeTranscript: null,
+        authoritativeState: null,
+        stateVersion: optimistic.stateVersion,
+        nextSeed: optimistic.nextTurnSeed,
+      });
+    }
+
+    const answerId = envelope.payload?.answerId || envelope.answerId;
+    const kk = this.gm.run?.kanjiKombat;
+    const quiz = kk?.currentQuiz;
+    const choice = quiz?.choices?.find(option => option.id === answerId);
+    if (!choice) {
+      return buildCorrectedResponse({
+        reason: quiz ? 'invalid_kanji_answer' : 'missing_kanji_quiz',
+        authoritativeTranscript: null,
+        authoritativeState: null,
+        stateVersion: optimistic.stateVersion,
+        nextSeed: optimistic.nextTurnSeed,
+      });
+    }
+
+    let resolvedCore;
+    try {
+      resolvedCore = resolveKanjiKombatAnswerTurn(
+        { combat: this.gm.combat, run: this.gm.run, answerCorrect: choice.correct === true },
+        { seed: envelope.seed },
+      );
+    } catch {
+      return buildCorrectedResponse({
+        reason: 'prediction_resolve_failed',
+        authoritativeTranscript: null,
+        authoritativeState: null,
+        stateVersion: optimistic.stateVersion,
+        nextSeed: optimistic.nextTurnSeed,
+      });
+    }
+
+    const sharedCoreHash = hashTranscript(resolvedCore.transcript);
+    const committed = this.submitAnswer(answerId, { rng: createSeededRng(envelope.seed) });
+    const responseOptimistic = this.gm.combat?.optimistic || optimistic;
+    if (responseOptimistic === optimistic) {
+      optimistic.stateVersion += 1;
+      optimistic.nextTurnSeed = createServerSeed();
+    }
+    if (!responseOptimistic.acceptedActionIds) responseOptimistic.acceptedActionIds = {};
+
+    const protocolPayload = sharedCoreHash === envelope.predictedHash
+      ? buildAcceptedResponse({
+          stateVersion: responseOptimistic.stateVersion,
+          nextSeed: responseOptimistic.nextTurnSeed,
+        })
+      : buildCorrectedResponse({
+          reason: 'transcript_mismatch',
+          authoritativeTranscript: committed,
+          authoritativeState: null,
+          stateVersion: responseOptimistic.stateVersion,
+          nextSeed: responseOptimistic.nextTurnSeed,
+        });
+
+    const response = {
+      ...committed,
+      ...protocolPayload,
+    };
+    responseOptimistic.acceptedActionIds[envelope.actionId] = response;
+    return response;
   }
 
   resolveCompletionChoice(keepGoing) {
@@ -472,6 +593,7 @@ export class KanjiKombatService {
   spawnNextWave() {
     const kk = this.gm.run.kanjiKombat;
     const wave = kk.wave || 1;
+    kk.waveReached = Math.max(kk.waveReached || 1, wave);
     const isMiniboss = wave % 10 === 0;
     const highestLevel = Math.max(1, ...this.gm.run.creatureParty.active.map(c => c.level || 1));
     const areas = this.getUnlockedAreas();
@@ -506,6 +628,12 @@ export class KanjiKombatService {
     this.gm.combat.actionCursor = createPveOpeningCursor({ allies: this.gm.combat.allies, enemies });
     this.gm.combat.actionCount = 0;
     this.gm.combat.cycleCount = 0;
+    this.gm.combat.optimistic = {
+      combatId: createCombatId(),
+      stateVersion: 0,
+      nextTurnSeed: createServerSeed(),
+      acceptedActionIds: {},
+    };
     return enemies;
   }
 
@@ -567,6 +695,7 @@ export class KanjiKombatService {
     const total = report.correctAnswers + report.wrongAnswers;
     return {
       ...report,
+      wave: Math.max(1, Math.floor(Number(kk.waveReached || kk.wave || report.wavesCleared + 1))),
       highestStreak: kk.highestStreak || 0,
       accuracy: total > 0 ? Math.round((report.correctAnswers / total) * 100) : 0,
       temporaryLevels: this.gm.run.creatureParty.active.map(c => ({

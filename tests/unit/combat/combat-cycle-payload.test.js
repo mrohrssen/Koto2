@@ -14,6 +14,29 @@ const {
   serializeBefriendPrompt,
 } = await import('../../../src/game/services/combat-cycle-service.js');
 
+function createEncounterGameManager() {
+  const ally = instantiateCreature('hi');
+  ally.level = 5;
+  ally.hp = ally.maxHp;
+
+  return {
+    combat: null,
+    run: {
+      active: true,
+      rooms: [{ type: 'combat' }],
+      currentRoom: 0,
+      currentArea: { id: 'test-area', creatures: ['mizu'], stage: 1 },
+      currentAreaEncounters: 1,
+      totalEncounters: 4,
+      creatureParty: { active: [ally], reserves: [], maxTotal: 6, pendingCaptures: [] },
+      partySkills: [],
+    },
+    meta: {},
+    emitState() {},
+    narrate() {},
+  };
+}
+
 describe('CombatCycleService attack response payloads', () => {
   it('serializes befriend prompt overrides into quiz payloads', () => {
     const prompt = {
@@ -120,5 +143,19 @@ describe('CombatCycleService attack response payloads', () => {
     assert.equal(result.enemyAttacks[0].attackerIndex, 1);
     assert.ok(['hi', 'tetsu'].includes(result.enemyAttacks[0].targetId));
     assert.ok(allies.some(a => a.hp < a.maxHp), 'ally HP changed because the returned enemy attack happened');
+  });
+
+  it('start creature encounter exposes optimistic combat metadata', () => {
+    const gm = createEncounterGameManager();
+    const service = new CombatCycleService(gm);
+
+    const result = service.startCreatureEncounter();
+
+    assert.equal(typeof gm.combat.optimistic.combatId, 'string');
+    assert.equal(gm.combat.optimistic.stateVersion, 0);
+    assert.equal(typeof gm.combat.optimistic.nextTurnSeed, 'string');
+    assert.equal(result.optimistic.combatId, gm.combat.optimistic.combatId);
+    assert.equal(result.optimistic.stateVersion, 0);
+    assert.equal(result.optimistic.nextTurnSeed, gm.combat.optimistic.nextTurnSeed);
   });
 });

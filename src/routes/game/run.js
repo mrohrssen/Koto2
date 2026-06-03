@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { recordKanjiKombatRun } from '../../auth/users.js';
 import { getNewWordsForDiscovery } from '../../game/vocab-manager.js';
 import { loadWordDictionary } from '../../game/word-dictionary.js';
 import { resolveLiveDictPath } from '../../game/live-dict-path.js';
@@ -72,6 +73,16 @@ function loadQuizQuestions() {
   return data.questions;
 }
 
+function recordKanjiKombatLeaderboardResult(req, runSummary) {
+  if (runSummary?.mode !== 'kanjiKombat') return;
+  const report = runSummary.kanjiKombat || {};
+  recordKanjiKombatRun(req.user.id, {
+    wave: report.wave,
+    wavesCleared: report.wavesCleared,
+    completedAt: Date.now(),
+  }, req.app?.locals?.usersFile);
+}
+
 export default function createRunRoutes({
   cancelPendingPrefetches,
   clearPrefetchCache,
@@ -98,6 +109,38 @@ export default function createRunRoutes({
     'Commit does not match server snapshot order',
     'already completed'
   ];
+
+  function withOptimisticRunStatus(req, payload = {}) {
+    if (!req.body?.actionId) return payload;
+    return {
+      ...payload,
+      status: 'accepted',
+      actionId: req.body.actionId,
+      state: req.getEnrichedGameState(),
+    };
+  }
+
+  function sendOptimisticRunCorrection(req, res, error, statusCode = 409) {
+    let authoritativeState = null;
+    try {
+      authoritativeState = req.getEnrichedGameState();
+    } catch {
+      authoritativeState = null;
+    }
+    return res.status(statusCode).json({
+      status: 'corrected',
+      actionId: req.body?.actionId,
+      reason: error?.message || 'run_action_rejected',
+      authoritativeState,
+    });
+  }
+
+  function sendRunActionError(req, res, message, statusCode = 400) {
+    if (req.body?.actionId) {
+      return sendOptimisticRunCorrection(req, res, new Error(message), statusCode);
+    }
+    return res.status(statusCode).json({ error: message });
+  }
 
   function isSpeedReviewRoomTransitionError(error) {
     const code = typeof error?.code === 'string' ? error.code : '';
@@ -305,8 +348,10 @@ export default function createRunRoutes({
       const narration = null; // DM narration disabled — frontend discards this
 
       req.saveGame();
-      res.json({ room, ingredientDrops: room?.ingredientDrops || [], state: req.getEnrichedGameState(), narration });
+      const payload = { room, ingredientDrops: room?.ingredientDrops || [], state: req.getEnrichedGameState(), narration };
+      res.json(withOptimisticRunStatus(req, payload));
     } catch (error) {
+      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
       res.status(400).json({ error: error.message });
     }
   });
@@ -332,11 +377,12 @@ export default function createRunRoutes({
   router.post('/skill-master-choose', async (req, res) => {
     try {
       const { skillId } = req.body || {};
-      if (!skillId) return res.status(400).json({ error: 'skillId required' });
+      if (!skillId) return sendRunActionError(req, res, 'skillId required');
       const result = req.gameManager.explorationService.chooseSkillMasterOffer(skillId);
       req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
+      res.json(withOptimisticRunStatus(req, { ...result, state: req.getEnrichedGameState() }));
     } catch (error) {
+      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
       res.status(400).json({ error: error.message });
     }
   });
@@ -480,12 +526,13 @@ export default function createRunRoutes({
     try {
       const { rewardType, creatureKey, creatureId } = req.body || {};
       if (!rewardType) {
-        return res.status(400).json({ error: 'rewardType required' });
+        return sendRunActionError(req, res, 'rewardType required');
       }
       const result = req.gameManager.useShrineReward(rewardType, creatureKey || creatureId || null);
       req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
+      res.json(withOptimisticRunStatus(req, { ...result, state: req.getEnrichedGameState() }));
     } catch (error) {
+      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
       res.status(400).json({ error: error.message });
     }
   });
@@ -571,6 +618,7 @@ export default function createRunRoutes({
   router.post('/forfeit', (req, res) => {
     const isVictory = req.body?.isVictory === true;
     const result = req.gameManager.forfeitRun(isVictory);
+    recordKanjiKombatLeaderboardResult(req, result.runSummary);
     cancelPendingPrefetches();
     clearPrefetchCache();
     req.saveGame();
@@ -895,25 +943,25 @@ export default function createRunRoutes({
     try {
       const { itemId, targetCreatureIndex } = req.body;
       if (!itemId) {
-        return res.status(400).json({ error: 'itemId required' });
+        return sendRunActionError(req, res, 'itemId required');
       }
       const gm = req.gameManager;
       const room = gm.getCurrentRoom();
       if (!room || room.type !== 'friendlyNpc') {
-        return res.status(400).json({ error: 'Not in a friendly NPC room' });
+        return sendRunActionError(req, res, 'Not in a friendly NPC room');
       }
       if (!room.friendlyNpc.offered) {
-        return res.status(400).json({ error: 'No offers generated yet' });
+        return sendRunActionError(req, res, 'No offers generated yet');
       }
       if (room.friendlyNpc.completed) {
-        return res.status(400).json({ error: 'Friendly NPC already completed' });
+        return sendRunActionError(req, res, 'Friendly NPC already completed');
       }
       const item = room.friendlyNpc.offered.find(i => i.id === itemId);
       if (!item) {
-        return res.status(400).json({ error: 'Invalid item choice' });
+        return sendRunActionError(req, res, 'Invalid item choice');
       }
       if (item.category !== 'equipment') {
-        return res.status(400).json({ error: 'Friendly NPC shops only offer equipment' });
+        return sendRunActionError(req, res, 'Friendly NPC shops only offer equipment');
       }
       // Apply item effect to run state
       const targetIdx = Number.isInteger(targetCreatureIndex) ? targetCreatureIndex : null;
@@ -932,8 +980,9 @@ export default function createRunRoutes({
       room.friendlyNpc.completed = true;
       room.interacted = true;
       req.saveGame();
-      res.json({ chosen: item, state: req.getEnrichedGameState() });
+      res.json(withOptimisticRunStatus(req, { chosen: item, state: req.getEnrichedGameState() }));
     } catch (err) {
+      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, err);
       res.status(400).json({ error: err.message });
     }
   });

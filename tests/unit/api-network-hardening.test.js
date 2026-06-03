@@ -131,6 +131,28 @@ describe('api network hardening', () => {
     assert.equal(globalThis.fetch.mock.callCount(), 1);
   });
 
+  it('does not dedupe optimistic combat verification envelopes', async () => {
+    const api = await import('../../public/js/api.js');
+    const bodies = [];
+    const pending = [];
+    globalThis.fetch = mock.fn(async (_url, options) => {
+      bodies.push(JSON.parse(options.body));
+      return new Promise(resolve => pending.push(resolve));
+    });
+
+    const first = api.verifyCreatureCombatCycle({ actionId: 'act_1' });
+    const second = api.verifyCreatureCombatCycle({ actionId: 'act_2' });
+
+    assert.equal(globalThis.fetch.mock.callCount(), 2);
+    assert.deepEqual(bodies, [{ actionId: 'act_1' }, { actionId: 'act_2' }]);
+
+    pending[0](jsonResponse({ status: 'accepted', stateVersion: 1, nextSeed: 'next_1' }));
+    pending[1](jsonResponse({ status: 'accepted', stateVersion: 1, nextSeed: 'next_2' }));
+
+    assert.equal((await first).nextSeed, 'next_1');
+    assert.equal((await second).nextSeed, 'next_2');
+  });
+
   it('returns authoritative state from creature combat 400 responses without retrying', async () => {
     const api = await import('../../public/js/api.js');
     const state = {

@@ -5,7 +5,8 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import {
   loadUsers, saveUsers, createUser, findUserByUsername,
-  findUserById, createInviteCode, useInviteCode, updateUserKeys, migrateAiConsentForExistingUsers
+  findUserById, createInviteCode, useInviteCode, updateUserKeys, migrateAiConsentForExistingUsers,
+  recordKanjiKombatRun, getKanjiKombatLeaderboard
 } from '../../../src/auth/users.js';
 import { decryptKeys, encryptKeys } from '../../../src/auth/crypto.js';
 
@@ -156,5 +157,63 @@ describe('auth/users', () => {
     const explicitFalsePayload = decryptKeys(explicitFalse.encryptedApiKeys, encryptionKey);
     assert.equal(explicitFalsePayload.aiDataSharingConsent, false);
     assert.equal(explicitFalsePayload.aiConversationsEnabled, true);
+  });
+
+  it('records a Kanji Kombat run wave from waves cleared fallback', () => {
+    const now = Date.now();
+    saveUsers({
+      users: [{ id: 'u_kk', username: 'kombat', passwordHash: 'hash', createdAt: new Date(now).toISOString() }],
+      inviteCodes: []
+    }, TEST_FILE);
+
+    const recorded = recordKanjiKombatRun('u_kk', {
+      wavesCleared: 3,
+      completedAt: now
+    }, TEST_FILE);
+
+    assert.equal(recorded.wave, 4);
+    const user = loadUsers(TEST_FILE).users[0];
+    assert.deepEqual(user.kanjiKombatRuns, [{ ts: now, wave: 4, wavesCleared: 3 }]);
+  });
+
+  it('ranks each user by best Kanji Kombat wave in rolling periods', () => {
+    const now = Date.now();
+    saveUsers({
+      users: [
+        {
+          id: 'u_alpha',
+          username: 'alpha',
+          passwordHash: 'hash',
+          kanjiKombatRuns: [
+            { ts: now - 2 * 60 * 60 * 1000, wave: 5, wavesCleared: 4 },
+            { ts: now - 1 * 60 * 60 * 1000, wave: 2, wavesCleared: 1 }
+          ]
+        },
+        {
+          id: 'u_beta',
+          username: 'beta',
+          passwordHash: 'hash',
+          kanjiKombatRuns: [{ ts: now - 1 * 60 * 60 * 1000, wave: 5, wavesCleared: 4 }]
+        },
+        {
+          id: 'u_gamma',
+          username: 'gamma',
+          passwordHash: 'hash',
+          kanjiKombatRuns: [{ ts: now - 25 * 60 * 60 * 1000, wave: 8, wavesCleared: 7 }]
+        }
+      ],
+      inviteCodes: []
+    }, TEST_FILE);
+
+    const daily = getKanjiKombatLeaderboard('24h', 'u_beta', TEST_FILE, { now });
+    assert.deepEqual(daily.entries, [
+      { rank: 1, username: 'alpha', wave: 5 },
+      { rank: 2, username: 'beta', wave: 5 }
+    ]);
+    assert.deepEqual(daily.currentUser, { rank: 2, wave: 5 });
+
+    const weekly = getKanjiKombatLeaderboard('weekly', 'u_gamma', TEST_FILE, { now });
+    assert.deepEqual(weekly.entries.map(entry => entry.username), ['gamma', 'alpha', 'beta']);
+    assert.deepEqual(weekly.currentUser, { rank: 1, wave: 8 });
   });
 });

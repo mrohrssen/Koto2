@@ -66,9 +66,9 @@ function creatureVocabFields(creature = {}, prefix) {
   };
 }
 
-export function applyPartySkillsAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters = true }) {
+export function applyPartySkillsAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters = true, rng = Math.random }) {
   // All party skills are now handled by the v2 engine
-  _applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters });
+  _applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkills, combat, resetTurnCounters, rng });
 }
 
 /**
@@ -169,9 +169,9 @@ function resolveTargets(targetType, allies, enemies, targetIndex, caster) {
  * Try to apply a move's status effect based on statusChance.
  * Returns the effect name if applied, null otherwise.
  */
-function tryApplyStatus(move, target, caster, allies) {
+function tryApplyStatus(move, target, caster, allies, rng = Math.random) {
   if (!move.statusEffect || !move.statusChance) return null;
-  if (Math.random() * 100 >= move.statusChance) return null;
+  if (rng() * 100 >= move.statusChance) return null;
 
   const sourceId = caster.id;
   const duration = move.statusDuration || 2;
@@ -206,10 +206,10 @@ function tryApplyStatus(move, target, caster, allies) {
  * Apply stat stage changes from a move's statChanges field.
  * @returns {object|null} Applied changes map or null if none applied
  */
-function tryApplyStatChanges(move, target) {
+function tryApplyStatChanges(move, target, rng = Math.random) {
   if (!move.statChanges) return null;
   if (move.statusChance && move.statusChance < 100) {
-    if (Math.random() * 100 >= move.statusChance) return null;
+    if (rng() * 100 >= move.statusChance) return null;
   }
   return applyStatChanges(target, move.statChanges);
 }
@@ -223,18 +223,18 @@ function canMoveBeDodged(move, target, enemies) {
   return move.category === 'damage' || move.category === 'drain' || move.category === 'debuff';
 }
 
-function resolveDodge(attacker, target, move, enemies) {
+function resolveDodge(attacker, target, move, enemies, rng = Math.random) {
   if (!canMoveBeDodged(move, target, enemies)) {
     return { dodged: false, hitChance: 1, dodgeChance: 0 };
   }
-  return rollDodge(attacker, target);
+  return rollDodge(attacker, target, rng);
 }
 
-function applyCriticalDamage(attacker, move, damage) {
+function applyCriticalDamage(attacker, move, damage, rng = Math.random) {
   if (move.category !== 'damage' && move.category !== 'drain') {
     return { damage, critical: false, critChance: null };
   }
-  const crit = rollCritical(attacker);
+  const crit = rollCritical(attacker, rng);
   return {
     damage: crit.critical ? Math.floor(damage * 1.5) : damage,
     critical: crit.critical,
@@ -245,7 +245,7 @@ function applyCriticalDamage(attacker, move, damage) {
 /**
  * Execute a single move for one creature. Returns array of attack records and xpEvents.
  */
-function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null) {
+function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null, rng = Math.random) {
   const attacks = [];
   const xpEvents = [];
   const stab = move.element !== 'neutral' && move.element === creature.element;
@@ -256,7 +256,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
-        const dodge = resolveDodge(creature, target, move, enemies);
+        const dodge = resolveDodge(creature, target, move, enemies, rng);
         if (dodge.dodged) {
           attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
             dodged: true,
@@ -267,9 +267,9 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
           }));
           continue;
         }
-        const variance = rollVariance();
+        const variance = rollVariance(rng);
         let damage = rollMoveDamage(creature, target, move, itemBuffs, variance);
-        const crit = applyCriticalDamage(creature, move, damage);
+        const crit = applyCriticalDamage(creature, move, damage, rng);
         damage = crit.damage;
 
         if (defenderItemBuffs) {
@@ -280,8 +280,8 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         if (damage > 0) breakSleep(target);
 
         const targetDefeated = target.hp <= 0;
-        const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies) : null;
-        const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target);
+        const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies, rng) : null;
+        const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target, rng);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           damage, critical: crit.critical, critChance: crit.critChance, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
@@ -304,7 +304,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
-        const dodge = resolveDodge(creature, target, move, enemies);
+        const dodge = resolveDodge(creature, target, move, enemies, rng);
         if (dodge.dodged) {
           attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
             dodged: true,
@@ -315,9 +315,9 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
           }));
           continue;
         }
-        const variance = rollVariance();
+        const variance = rollVariance(rng);
         let damage = rollMoveDamage(creature, target, move, itemBuffs, variance);
-        const crit = applyCriticalDamage(creature, move, damage);
+        const crit = applyCriticalDamage(creature, move, damage, rng);
         damage = crit.damage;
 
         if (defenderItemBuffs) {
@@ -331,8 +331,8 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const healAmount = applyHeal(creature, Math.floor(damage * 0.5));
 
         const targetDefeated = target.hp <= 0;
-        const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies) : null;
-        const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target);
+        const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies, rng) : null;
+        const statChangesApplied = targetDefeated ? null : tryApplyStatChanges(move, target, rng);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           damage, healAmount, critical: crit.critical, critChance: crit.critChance, stab, elementMultiplier: getElementMultiplier(move.element, target.element), targetDefeated, effectApplied, statChangesApplied
@@ -355,10 +355,10 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
-        const variance = rollVariance();
+        const variance = rollVariance(rng);
         const healAmount = applyHeal(target, Math.floor((creature.attack / 10) * move.power * variance));
-        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies) : null;
-        const statChangesApplied = tryApplyStatChanges(move, target);
+        const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies, rng) : null;
+        const statChangesApplied = tryApplyStatChanges(move, target, rng);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           healAmount, effectApplied, statChangesApplied
@@ -372,8 +372,8 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
-        const effectApplied = tryApplyStatus(move, target, creature, allies);
-        const statChangesApplied = tryApplyStatChanges(move, target);
+        const effectApplied = tryApplyStatus(move, target, creature, allies, rng);
+        const statChangesApplied = tryApplyStatChanges(move, target, rng);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           effectApplied, statChangesApplied
@@ -387,8 +387,8 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
       for (let i = 0; i < targets.length; i++) {
         const target = targets[i];
         const tIdx = indices[i];
-        const effectApplied = tryApplyStatus(move, target, creature, allies);
-        const statChangesApplied = tryApplyStatChanges(move, target);
+        const effectApplied = tryApplyStatus(move, target, creature, allies, rng);
+        const statChangesApplied = tryApplyStatChanges(move, target, rng);
 
         attacks.push(buildAttackRecord(creature, creatureIndex, move, target, tIdx, {
           effectApplied, statChangesApplied
@@ -452,7 +452,7 @@ function buildRestAttack(creature, creatureIndex, mpGained) {
  * @param {object|null} creatureParty - Full creature party (for XP awards)
  * @returns {object} { attacks, allEnemiesDefeated, xpEvents, mpRegens }
  */
-export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, creatureParty = null, metaMults = null) {
+export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, creatureParty = null, metaMults = null, rng = Math.random) {
   const attacks = [];
   const xpEvents = [];
   const defeatedEnemyIndices = new Set();
@@ -488,7 +488,7 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
     creature.mp = (creature.mp || 0) - move.mpCost;
 
     // Execute the move
-    const result = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults);
+    const result = executeMove(creature, choice.creatureIndex, move, choice.targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults, null, rng);
     // Annotate attacks with post-deduction MP so frontend can update bars immediately
     for (const atk of result.attacks) {
       atk.attackerMp = creature.mp;
@@ -529,7 +529,7 @@ export function processMoveTurn(allies, enemies, moveChoices, itemBuffs = null, 
  * @param {object[]} enemies - Enemy creatures
  * @returns {{ attacks: object[] }}
  */
-export function executeNpcSkill(npcData, skill, allies, enemies) {
+export function executeNpcSkill(npcData, skill, allies, enemies, rng = Math.random) {
   const pseudoCreature = {
     id: npcData.id,
     name: npcData.name,
@@ -558,10 +558,10 @@ export function executeNpcSkill(npcData, skill, allies, enemies) {
   if (skill.target === 'single_ally') {
     const aliveIndices = npcAllies.map((c, i) => c.hp > 0 ? i : -1).filter(i => i >= 0);
     if (aliveIndices.length > 0) {
-      targetIdx = aliveIndices[Math.floor(Math.random() * aliveIndices.length)];
+      targetIdx = aliveIndices[Math.floor(rng() * aliveIndices.length)];
     }
   }
-  const result = executeMove(pseudoCreature, -1, skill, targetIdx, npcAllies, npcEnemies, null, null, defeatedEnemyIndices);
+  const result = executeMove(pseudoCreature, -1, skill, targetIdx, npcAllies, npcEnemies, null, null, defeatedEnemyIndices, null, null, rng);
 
   return { attacks: result.attacks };
 }
@@ -585,9 +585,9 @@ function getStrongestDamageMove(enemy) {
   return damageMoves.reduce((best, m) => ((m.power || 0) > (best.power || 0) ? m : best));
 }
 
-function getRandomMove(enemy) {
+function getRandomMove(enemy, rng = Math.random) {
   if (!enemy.moves?.length) return null;
-  return enemy.moves[Math.floor(Math.random() * enemy.moves.length)];
+  return enemy.moves[Math.floor(rng() * enemy.moves.length)];
 }
 
 /**
@@ -597,32 +597,32 @@ function getRandomMove(enemy) {
  * - 2/3 smart: strongest damage move against super-effective target
  * - 1/3 random: random move; buff/heal→allies, damage/debuff→random enemy
  */
-export function pickEnemyMoveChoice(enemy, allies, enemies) {
+export function pickEnemyMoveChoice(enemy, allies, enemies, rng = Math.random) {
   if (!enemy.moves?.length) return null;
   const aliveAllies = allies.filter(c => c.hp > 0);
   if (aliveAllies.length === 0) return null;
 
   const taunter = getTauntTarget(aliveAllies);
   if (taunter) {
-    return { move: getStrongestDamageMove(enemy) || getRandomMove(enemy), mode: 'taunted' };
+    return { move: getStrongestDamageMove(enemy) || getRandomMove(enemy, rng), mode: 'taunted' };
   }
 
   if (isConfused(enemy)) {
-    return { move: getRandomMove(enemy), mode: 'confused' };
+    return { move: getRandomMove(enemy, rng), mode: 'confused' };
   }
 
-  if (Math.random() < 2 / 3) {
+  if (rng() < 2 / 3) {
     const strongest = getStrongestDamageMove(enemy);
     if (strongest) return { move: strongest, mode: 'smart' };
   }
 
-  return { move: getRandomMove(enemy), mode: 'random' };
+  return { move: getRandomMove(enemy, rng), mode: 'random' };
 }
 
 /**
  * Enemy AI step 2: pick a target for the chosen move/mode (per strike, for haste re-targeting).
  */
-export function pickEnemyTarget(enemy, move, mode, allies, enemies) {
+export function pickEnemyTarget(enemy, move, mode, allies, enemies, rng = Math.random) {
   const aliveAllies = allies.filter(c => c.hp > 0);
 
   switch (mode) {
@@ -633,21 +633,21 @@ export function pickEnemyTarget(enemy, move, mode, allies, enemies) {
     case 'confused': {
       const allAlive = [...allies, ...enemies].filter(c => c.hp > 0 && c !== enemy);
       if (allAlive.length === 0) return null;
-      const target = allAlive[Math.floor(Math.random() * allAlive.length)];
+      const target = allAlive[Math.floor(rng() * allAlive.length)];
       return { target, targetSide: allies.includes(target) ? 'player' : 'enemy' };
     }
     case 'smart': {
       const superEffective = aliveAllies.filter(c => getElementMultiplier(enemy.element, c.element) > 1.0);
       const pool = superEffective.length > 0 ? superEffective : aliveAllies;
-      return { target: pool[Math.floor(Math.random() * pool.length)], targetSide: 'player' };
+      return { target: pool[Math.floor(rng() * pool.length)], targetSide: 'player' };
     }
     case 'random': {
       if (['buff', 'heal'].includes(move.category)) {
         if (move.target === 'self') return { target: enemy, targetSide: 'enemy' };
         const aliveTeam = enemies.filter(c => c.hp > 0);
-        return { target: aliveTeam[Math.floor(Math.random() * aliveTeam.length)] || enemy, targetSide: 'enemy' };
+        return { target: aliveTeam[Math.floor(rng() * aliveTeam.length)] || enemy, targetSide: 'enemy' };
       }
-      return { target: aliveAllies[Math.floor(Math.random() * aliveAllies.length)], targetSide: 'player' };
+      return { target: aliveAllies[Math.floor(rng() * aliveAllies.length)], targetSide: 'player' };
     }
     default:
       return null;
@@ -659,7 +659,7 @@ export function pickEnemyTarget(enemy, move, mode, allies, enemies) {
  * Target is pre-selected by pickEnemyTarget.
  * @returns {object|null} Attack record or null if skipped
  */
-export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targetSide, allies, enemies, defendActive = false, itemBuffs = null) {
+export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targetSide, allies, enemies, defendActive = false, itemBuffs = null, rng = Math.random) {
   if (!enemy || enemy.hp <= 0) return null;
   if (!target || target.hp <= 0) return null;
 
@@ -698,7 +698,7 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
   switch (move.category) {
     case 'damage':
     case 'drain': {
-      const dodge = resolveDodge(enemy, target, move, targetSide === 'player' ? allies : []);
+      const dodge = resolveDodge(enemy, target, move, targetSide === 'player' ? allies : [], rng);
       if (dodge.dodged) {
         rec.dodged = true;
         rec.hitChance = dodge.hitChance;
@@ -707,7 +707,7 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
         break;
       }
 
-      const variance = rollVariance();
+      const variance = rollVariance(rng);
       const stab = move.element !== 'neutral' && move.element === enemy.element;
       const stabMult = stab ? 1.5 : 1.0;
       const elemMult = getElementMultiplier(move.element, target.element);
@@ -721,7 +721,7 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
         typeMultiplier: typeMult,
         variance
       });
-      const crit = applyCriticalDamage(enemy, move, damage);
+      const crit = applyCriticalDamage(enemy, move, damage, rng);
       damage = crit.damage;
       rec.critical = crit.critical;
       rec.critChance = crit.critChance;
@@ -741,29 +741,29 @@ export function buildEnemyActionRecord(enemy, attackerIndex, move, target, targe
       }
 
       if (!rec.targetDefeated) {
-        if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
-        rec.statChangesApplied = tryApplyStatChanges(move, target);
+        if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies, rng);
+        rec.statChangesApplied = tryApplyStatChanges(move, target, rng);
       }
       break;
     }
 
     case 'heal': {
-      const variance = rollVariance();
+      const variance = rollVariance(rng);
       rec.healAmount = applyHeal(target, Math.floor((enemy.attack / 10) * move.power * variance));
-      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
-      rec.statChangesApplied = tryApplyStatChanges(move, target);
+      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies, rng);
+      rec.statChangesApplied = tryApplyStatChanges(move, target, rng);
       break;
     }
 
     case 'buff': {
-      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
-      rec.statChangesApplied = tryApplyStatChanges(move, target);
+      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies, rng);
+      rec.statChangesApplied = tryApplyStatChanges(move, target, rng);
       break;
     }
 
     case 'debuff': {
-      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies);
-      rec.statChangesApplied = tryApplyStatChanges(move, target);
+      if (move.statusEffect) rec.effectApplied = tryApplyStatus(move, target, enemy, enemies, rng);
+      rec.statChangesApplied = tryApplyStatChanges(move, target, rng);
       break;
     }
 
@@ -785,7 +785,8 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
     metaMults = null,
     defeatedIndices = null,
     defenderItemBuffs = null,
-    onAttack = null
+    onAttack = null,
+    rng = Math.random
   } = options;
 
   const attacks = [];
@@ -834,7 +835,8 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
         creatureParty,
         defeated,
         metaMults,
-        defenderItemBuffs
+        defenderItemBuffs,
+        rng
       );
       for (const atk of result.attacks) {
         atk.attackerMp = creature.mp;
@@ -865,6 +867,16 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
  *
  * @returns Same shape as processMoveTurn for player phase plus enemy attacks.
  */
+function looksLikePvERoundOptions(value) {
+  if (!value || typeof value !== 'object') return false;
+  return typeof value.rng === 'function'
+    || Object.prototype.hasOwnProperty.call(value, 'runPartySkills')
+    || Object.prototype.hasOwnProperty.call(value, 'combat')
+    || Object.prototype.hasOwnProperty.call(value, 'creatureParty')
+    || Object.prototype.hasOwnProperty.call(value, 'metaMults')
+    || Object.prototype.hasOwnProperty.call(value, 'itemBuffs');
+}
+
 export function processInterleavedPvERound(
   allies,
   enemies,
@@ -874,6 +886,19 @@ export function processInterleavedPvERound(
   metaMults = null,
   options = {}
 ) {
+  if (
+    looksLikePvERoundOptions(itemBuffs)
+    && creatureParty == null
+    && metaMults == null
+    && (!options || Object.keys(options).length === 0)
+  ) {
+    options = itemBuffs;
+    itemBuffs = options.itemBuffs ?? null;
+    creatureParty = options.creatureParty ?? null;
+    metaMults = options.metaMults ?? null;
+  }
+  options = options || {};
+  const rng = typeof options.rng === 'function' ? options.rng : Math.random;
   const playerAttacks = [];
   const enemyAttacks = [];
   const inlineCounters = [];
@@ -904,10 +929,10 @@ export function processInterleavedPvERound(
   for (let ei = 0; ei < enemies.length; ei++) {
     const enemy = enemies[ei];
     if (!enemy || enemy.hp <= 0 || isIncapacitated(enemy)) continue;
-    const choice = pickEnemyMoveChoice(enemy, allies, enemies);
+    const choice = pickEnemyMoveChoice(enemy, allies, enemies, rng);
     if (!choice) continue;
     const { move, mode } = choice;
-    const targeting = pickEnemyTarget(enemy, move, mode, allies, enemies);
+    const targeting = pickEnemyTarget(enemy, move, mode, allies, enemies, rng);
     if (!targeting) continue;
     const targetIndex = targeting.targetSide === 'player'
       ? allies.indexOf(targeting.target)
@@ -936,7 +961,7 @@ export function processInterleavedPvERound(
     if (dexDiff !== 0) return dexDiff;
     const levelDiff = (b.level || 1) - (a.level || 1);
     if (levelDiff !== 0) return levelDiff;
-    return Math.random() - 0.5;
+    return rng() - 0.5;
   });
 
   for (const slot of initiative) {
@@ -953,13 +978,14 @@ export function processInterleavedPvERound(
         metaMults: isAlly ? metaMults : null,
         defeatedIndices: defeatedEnemyIndices,
         defenderItemBuffs: isAlly ? null : itemBuffs,
+        rng,
         onAttack(atk) {
           tagPlayback(atk, isAlly ? 'player' : 'enemy');
           (isAlly ? playerAttacks : enemyAttacks).push(atk);
 
           // Inline counter from defending side (only when enemy attacks ally)
           if (!isAlly && options.runPartySkills && options.combat) {
-            const counter = computeInlineCounter(atk, allies, enemies, options.runPartySkills, options.combat);
+            const counter = computeInlineCounter(atk, allies, enemies, options.runPartySkills, options.combat, rng);
             if (counter) {
               tagPlayback(counter, 'player');
               playerAttacks.push(counter);
@@ -979,7 +1005,8 @@ export function processInterleavedPvERound(
         enemies,
         runPartySkills: options.runPartySkills,
         combat: options.combat,
-        resetTurnCounters: false
+        resetTurnCounters: false,
+        rng
       });
     }
     if (isAlly) xpEvents.push(...result.xpEvents);
@@ -1029,7 +1056,8 @@ export function resolveSingleActorAction({
   metaMults = null,
   runPartySkills = null,
   combat = null,
-  playbackStart = 0
+  playbackStart = 0,
+  rng = Math.random
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
   const actorList = isAlly ? allies : enemies;
@@ -1064,13 +1092,14 @@ export function resolveSingleActorAction({
     metaMults: isAlly ? metaMults : null,
     defenderItemBuffs: isAlly ? null : itemBuffs,
     defeatedIndices: new Set(),
+    rng,
     onAttack(atk) {
       atk.playbackIndex = playbackIndex++;
       atk.combatSide = isAlly ? 'player' : 'enemy';
       segment.attacks.push(atk);
 
       if (!isAlly && runPartySkills && combat) {
-        const counter = computeInlineCounter(atk, allies, enemies, runPartySkills, combat);
+        const counter = computeInlineCounter(atk, allies, enemies, runPartySkills, combat, rng);
         if (counter) {
           counter.playbackIndex = playbackIndex++;
           counter.combatSide = 'player';
@@ -1092,7 +1121,8 @@ export function resolveSingleActorAction({
       enemies,
       runPartySkills,
       combat,
-      resetTurnCounters: false
+      resetTurnCounters: false,
+      rng
     });
   }
 
@@ -1123,6 +1153,7 @@ export function resolveSyntheticActorAction({
   creatureParty = null,
   metaMults = null,
   playbackStart = 0,
+  rng = Math.random,
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
   const actorList = isAlly ? allies : enemies;
@@ -1162,7 +1193,8 @@ export function resolveSyntheticActorAction({
     isAlly ? creatureParty : null,
     new Set(),
     isAlly ? metaMults : null,
-    isAlly ? null : itemBuffs
+    isAlly ? null : itemBuffs,
+    rng
   );
 
   for (const atk of result.attacks) {
@@ -1220,7 +1252,7 @@ export function resolveNoopActorAction({ actorSide, actorIndex, allies, enemies,
   };
 }
 
-export function processEnemyTurn(enemies, allies, defendActive = false, itemBuffs = null) {
+export function processEnemyTurn(enemies, allies, defendActive = false, itemBuffs = null, rng = Math.random) {
   const attacks = [];
   for (let attackerIndex = 0; attackerIndex < enemies.length; attackerIndex++) {
     const enemy = enemies[attackerIndex];
@@ -1230,7 +1262,7 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
     const aliveAllies = allies.filter(a => a.hp > 0);
     if (aliveAllies.length === 0) break;
 
-    const choice = pickEnemyMoveChoice(enemy, allies, enemies);
+    const choice = pickEnemyMoveChoice(enemy, allies, enemies, rng);
     if (!choice) continue;
     const { move, mode } = choice;
 
@@ -1242,10 +1274,10 @@ export function processEnemyTurn(enemies, allies, defendActive = false, itemBuff
       const currentAliveAllies = allies.filter(a => a.hp > 0);
       if (currentAliveAllies.length === 0) break;
 
-      const targeting = pickEnemyTarget(enemy, move, mode, allies, enemies);
+      const targeting = pickEnemyTarget(enemy, move, mode, allies, enemies, rng);
       if (!targeting) break;
 
-      const rec = buildEnemyActionRecord(enemy, attackerIndex, move, targeting.target, targeting.targetSide, allies, enemies, defendActive, itemBuffs);
+      const rec = buildEnemyActionRecord(enemy, attackerIndex, move, targeting.target, targeting.targetSide, allies, enemies, defendActive, itemBuffs, rng);
       if (rec) attacks.push(rec);
     }
   }

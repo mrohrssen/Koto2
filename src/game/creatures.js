@@ -349,8 +349,8 @@ export function calculateCreatureDamage({
   return Math.max(1, Math.floor(base * tm * v));
 }
 
-export function rollVariance() {
-  return 0.8 + Math.random() * 0.4;
+export function rollVariance(rng = Math.random) {
+  return 0.8 + rng() * 0.4;
 }
 
 export function selectTarget(attacker, targets) {
@@ -584,4 +584,3 @@ export function refreshCreatureListUids(list) {
   for (const c of list) refreshCreatureUid(c);
   return list;
 }
-

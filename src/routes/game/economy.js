@@ -1,5 +1,30 @@
 import { Router } from 'express';
 
+function withOptimisticRunStatus(req, payload = {}) {
+  if (!req.body?.actionId) return payload;
+  return {
+    ...payload,
+    status: 'accepted',
+    actionId: req.body.actionId,
+    state: req.getEnrichedGameState(),
+  };
+}
+
+function sendOptimisticRunCorrection(req, res, error, statusCode = 409) {
+  let authoritativeState = null;
+  try {
+    authoritativeState = req.getEnrichedGameState();
+  } catch {
+    authoritativeState = null;
+  }
+  return res.status(statusCode).json({
+    status: 'corrected',
+    actionId: req.body?.actionId,
+    reason: error?.message || 'run_action_rejected',
+    authoritativeState,
+  });
+}
+
 export default function createEconomyRoutes() {
   const router = Router();
 
@@ -33,8 +58,9 @@ export default function createEconomyRoutes() {
     try {
       const result = gameManager.dealerSell(creatureId);
       req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
+      res.json(withOptimisticRunStatus(req, { ...result, state: req.getEnrichedGameState() }));
     } catch (error) {
+      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
       res.status(400).json({ error: error.message });
     }
   });
@@ -46,8 +72,9 @@ export default function createEconomyRoutes() {
     try {
       const result = gameManager.dealerBuy(creatureId);
       req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
+      res.json(withOptimisticRunStatus(req, { ...result, state: req.getEnrichedGameState() }));
     } catch (error) {
+      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
       res.status(400).json({ error: error.message });
     }
   });

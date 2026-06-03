@@ -9,6 +9,7 @@ describe('Kanji Kombat report summary', () => {
       kanjiKombat: {
         finalReport: {
           wavesCleared: 4,
+          wave: 5,
           highestStreak: 8,
           correctAnswers: 12,
           wrongAnswers: 3,
@@ -24,6 +25,7 @@ describe('Kanji Kombat report summary', () => {
     const summary = buildRunSummary(run, {});
     assert.equal(summary.mode, 'kanjiKombat');
     assert.equal(summary.kanjiKombat.wavesCleared, 4);
+    assert.equal(summary.kanjiKombat.wave, 5);
     assert.equal(summary.kanjiKombat.accuracy, 80);
   });
 

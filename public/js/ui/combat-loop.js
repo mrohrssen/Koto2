@@ -48,6 +48,10 @@ import {
   shouldSkipAttackRecord
 } from './combat-ui-utils.js';
 import { mergeAuthoritativeCombatState } from './combat-state-sync.js';
+import {
+  buildOptimisticCombatTurn,
+  buildOptimisticKanjiKombatAnswer,
+} from './optimistic-combat-turn.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -179,6 +183,7 @@ let getDialogueDismissPromise = null;
 let showFlashCards = null;
 let setCombatAnimationActive = null;
 let apiCreatureCombatCycle = null;
+let apiVerifyCreatureCombatCycle = null;
 let apiSubmitKanjiKombatAnswer = null;
 let apiGetGameState = null;
 let showPostCombatShop = null;
@@ -203,6 +208,13 @@ async function requestCreatureCombatCycle(actionType, moveChoices = []) {
     throw new Error('Creature combat API is not configured');
   }
   return apiCreatureCombatCycle(actionType, moveChoices);
+}
+
+async function verifyCreatureCombatCycle(envelope) {
+  if (typeof apiVerifyCreatureCombatCycle !== 'function') {
+    throw new Error('Creature combat verification API is not configured');
+  }
+  return apiVerifyCreatureCombatCycle(envelope);
 }
 
 function getCombatSyncLabel() {
@@ -399,14 +411,152 @@ async function recoverFromNullCombatPost(actionType, options = {}) {
   return finishRecoveredCombatState(merged, actionType, 'null_post_state_recovered', options);
 }
 
+async function handleOptimisticCombatVerification(verification, recoveryActionType = 'attack') {
+  if (!verification) {
+    return recoverFromNullCombatPost(recoveryActionType);
+  }
+
+  if (verification.status === 'accepted') {
+    const state = getGameState();
+    if (!state?.combat) return { recovered: true, outcome: 'optimistic_accepted', combatActive };
+    const merged = mergeAuthoritativeCombatState(state, verification);
+    updateGameState({
+      ...merged,
+      combat: {
+        ...merged.combat,
+        optimistic: {
+          ...(merged.combat.optimistic || {}),
+          stateVersion: verification.stateVersion,
+          nextTurnSeed: verification.nextSeed,
+        },
+      },
+    });
+    return { recovered: true, outcome: 'optimistic_accepted', combatActive };
+  }
+
+  if (verification.status === 'corrected') {
+    const authoritativeState = verification.authoritativeState || verification.state;
+    if (authoritativeState) {
+      updateGameState(authoritativeState);
+      updateUI?.();
+      return { recovered: true, outcome: verification.reason || 'optimistic_corrected', combatActive };
+    }
+    return recoverFromNullCombatPost(recoveryActionType);
+  }
+
+  return { recovered: false, outcome: 'unexpected_optimistic_status', combatActive };
+}
+
+function buildOptimisticCreatureCombatRequest(actionType, moveChoices = []) {
+  if (typeof apiVerifyCreatureCombatCycle !== 'function') return null;
+  return buildOptimisticCombatTurn({ state: getGameState(), actionType, moveChoices });
+}
+
+function buildOptimisticKanjiKombatRequest(answerId) {
+  if (typeof apiSubmitKanjiKombatAnswer !== 'function') return null;
+  return buildOptimisticKanjiKombatAnswer({ state: getGameState(), answerId });
+}
+
+async function runOptimisticCreatureCombatTurn({
+  actionType,
+  moveChoices = [],
+  turnTiming,
+  recoveryActionType = actionType,
+  playback,
+  pendingFlag = 'player',
+  nextSelectionDelayMs = 600,
+} = {}) {
+  const optimistic = buildOptimisticCreatureCombatRequest(actionType, moveChoices);
+  if (!optimistic) return false;
+
+  const requestStartedAt = performance.now();
+  const verificationPromise = verifyCreatureCombatCycle(optimistic.envelope)
+    .then(result => ({ result }), error => ({ error }));
+  markCombatAnimationStart(turnTiming, requestStartedAt);
+  await playback(optimistic.localTranscript);
+
+  const verification = await verificationPromise;
+  if (verification.error) throw verification.error;
+  const recovery = await handleOptimisticCombatVerification(verification.result, recoveryActionType);
+  if (recovery && recovery.recovered === false) {
+    throw new Error('Combat sync failed');
+  }
+
+  if (pendingFlag === 'enemy') {
+    enemyAttackPending = false;
+  } else {
+    playerAttackPending = false;
+  }
+  if (combatActive && isRecoveredCombatActive(getGameState()) && !getEnemyDialogueActive()) {
+    await delay(nextSelectionDelayMs);
+    startMoveSelection();
+  }
+  return true;
+}
+
+async function runOptimisticKanjiKombatAnswer({
+  answerId,
+  turnTiming,
+  recoveryActionType = 'attack',
+  nextSelectionDelayMs = 150,
+} = {}) {
+  const optimistic = buildOptimisticKanjiKombatRequest(answerId);
+  if (!optimistic) return false;
+
+  const requestStartedAt = performance.now();
+  const verificationPromise = apiSubmitKanjiKombatAnswer(optimistic.envelope)
+    .then(result => ({ result }), error => ({ error }));
+  markCombatAnimationStart(turnTiming, requestStartedAt);
+  void vfx.showKanjiKombatAnswerBanner(optimistic.localTranscript.kanjiAnswerCorrect);
+  await playCreatureCombatResult(optimistic.localTranscript, turnTiming, {
+    choices: [],
+    logMoveIntent: false,
+    nextSelectionDelayMs,
+    skipAttackCards: true,
+    deferNextSelection: true,
+  });
+
+  const verification = await verificationPromise;
+  if (verification.error) throw verification.error;
+  const result = verification.result;
+  const recovery = await handleOptimisticCombatVerification(result, recoveryActionType);
+  if (recovery && recovery.recovered === false) {
+    throw new Error('Combat sync failed');
+  }
+
+  playerAttackPending = false;
+  combatActive = isRecoveredCombatActive(getGameState());
+  if (result?.nextWave) {
+    await playKanjiKombatNextWaveTransition(result);
+    animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
+  }
+  if (result?.combatEnded || !combatActive) {
+    stopCombatLoop(result || { combatEnded: true, victory: false });
+    return true;
+  }
+  if (combatActive && isRecoveredCombatActive(getGameState()) && !getEnemyDialogueActive()) {
+    await delay(nextSelectionDelayMs);
+    startMoveSelection();
+  }
+  return true;
+}
+
 export const __combatNetworkTest = {
   setCreatureCombatApi(fn) {
     apiCreatureCombatCycle = fn;
+    apiVerifyCreatureCombatCycle = null;
+    apiSubmitKanjiKombatAnswer = null;
     creatureCombatRequestInFlight = false;
     activeCombatSyncToken = null;
     apiGetGameState = null;
     playerAttackPending = false;
     enemyAttackPending = false;
+  },
+  setVerifyCreatureCombatApi(fn) {
+    apiVerifyCreatureCombatCycle = fn;
+  },
+  setKanjiKombatAnswerApi(fn) {
+    apiSubmitKanjiKombatAnswer = fn;
   },
   setStateAccessors({ get, update, fetchServerState } = {}) {
     getGameState = typeof get === 'function' ? get : getGameState;
@@ -421,9 +571,13 @@ export const __combatNetworkTest = {
     combatSyncIndicatorDelayMs = ms;
   },
   requestCreatureCombatCycle,
+  verifyCreatureCombatCycle,
+  buildOptimisticCreatureCombatRequest,
+  buildOptimisticKanjiKombatRequest,
   runCreatureCombatRequest,
   recoverFromCombatErrorState,
   recoverFromNullCombatPost,
+  handleOptimisticCombatVerification,
 };
 
 /** Wrap an async combat animation sequence with the animation-active guard. */
@@ -477,6 +631,7 @@ export function init(callbacks) {
   delay = callbacks.delay;
   setCombatAnimationActive = callbacks.setCombatAnimationActive;
   apiCreatureCombatCycle = callbacks.apiCreatureCombatCycle;
+  apiVerifyCreatureCombatCycle = callbacks.apiVerifyCreatureCombatCycle;
   apiSubmitKanjiKombatAnswer = callbacks.apiSubmitKanjiKombatAnswer;
   apiGetGameState = callbacks.apiGetGameState;
   showPostCombatShop = callbacks.showPostCombatShop;
@@ -703,6 +858,7 @@ export async function submitKanjiKombatAnswer(answerId) {
   }
   await executeCreatureMovesTurn([], {
     actionType: 'kanjiKombat',
+    kanjiAnswerId: answerId,
     request: () => apiSubmitKanjiKombatAnswer(answerId),
     describeIntent: () => `Kanji Kombat answer: ${answerId}`,
   });
@@ -1315,6 +1471,7 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
     logMoveIntent = true,
     nextSelectionDelayMs = 600,
     skipAttackCards = false,
+    deferNextSelection = false,
   } = options;
   const _log = getLog();
 
@@ -1496,6 +1653,11 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
     return;
   }
 
+  if (deferNextSelection) {
+    logCombatTurnTiming(turnTiming, result, 'awaiting_verification');
+    return;
+  }
+
   playerAttackPending = false;
 
   await delay(nextSelectionDelayMs);
@@ -1529,6 +1691,30 @@ async function executeCreatureMovesTurn(choices, options = {}) {
           return `${creature?.nameEn || '?'}→${moveName}→${target}`;
         }).join(', ');
         _log.act(actionType === 'attack' ? `Attack: ${moveDesc}` : moveDesc);
+      }
+
+      const optimisticHandled = actionType === 'kanjiKombat' && options.kanjiAnswerId
+        ? await runOptimisticKanjiKombatAnswer({
+            answerId: options.kanjiAnswerId,
+            turnTiming,
+            recoveryActionType,
+            nextSelectionDelayMs: 150,
+          })
+        : !options.request && await runOptimisticCreatureCombatTurn({
+            actionType,
+            moveChoices: choices,
+            turnTiming,
+            recoveryActionType,
+            pendingFlag: 'player',
+            playback: localTranscript => playCreatureCombatResult(localTranscript, turnTiming, {
+              choices,
+              logMoveIntent: false,
+              nextSelectionDelayMs: 600,
+              deferNextSelection: true,
+            }),
+          });
+      if (optimisticHandled) {
+        return;
       }
 
       const requestStartedAt = performance.now();
@@ -1587,6 +1773,93 @@ async function executeCreatureMovesTurn(choices, options = {}) {
   });
 }
 
+async function playCreatureDefendResult(result, turnTiming, options = {}) {
+  const { deferNextSelection = false } = options;
+
+  // --- Game Rule Validation: check server result for logic invariants ---
+  if (window.__inspector?.checkGameRules) {
+    const ruleCheck = window.__inspector.checkGameRules(result);
+    if (!ruleCheck.ok) {
+      const log = getLog();
+      for (const m of ruleCheck.mismatches) {
+        if (log) log.expect(`RULE VIOLATION: ${m.detail}`);
+        console.warn(`[RULE] ${m.type}: ${m.detail}`);
+      }
+    }
+  }
+
+  // Store server-provided barks for speech bubbles
+  _currentRoundBarks = result.barks || [];
+
+  // Show poison/effect ticks
+  await vfx.showEffectEvents(result);
+
+  // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
+  await vfx.showRoundStartEvents(result);
+
+  // Show defend indicator
+  const actionArea = document.getElementById('action-area');
+  if (actionArea) {
+    actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defending')}</div>`;
+  }
+
+  // Update charge bars immediately for defend (BUG A fix)
+  if (result.creatureParty?.active) {
+    vfx.updateCreatureHpBars(result.creatureParty.active, null);
+  }
+  await delay(600);
+
+  // Enemy attacks phase (50% damage already applied server-side)
+  const allyHpMap = vfx.buildAllyHpMap(result);
+  await vfx.showEnemyAttacksAnimated(result, allyHpMap, true);
+
+  // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
+  const enemyHpMap = {};
+  (result.enemies || []).forEach((e, i) => {
+    if (e) enemyHpMap[i] = { hp: e.hp, maxHp: e.maxHp, index: i };
+  });
+  await vfx.showCounterAttacks(result, enemyHpMap);
+
+  // KO swap animations
+  await vfx.showKoSwapAnimations(result);
+
+  // Sync authoritative state from server
+  syncFinalState(result);
+
+  // --- Intent Log: check UI consistency after defend animations ---
+  if (window.__inspector) {
+    const scanResult = window.__inspector.checkCreatures();
+    const log = getLog();
+    if (log) {
+      if (scanResult.ok) {
+        log.check({ ok: true });
+      } else {
+        const first = scanResult.mismatches[0];
+        log.check({ ok: false, tag: first.type, detail: first.detail });
+      }
+    }
+  }
+
+  // Check combat end
+  if (result.combatEnded) {
+    logCombatTurnTiming(turnTiming, result, result.victory ? 'victory' : 'defeat');
+    stopCombatLoop(result);
+    return;
+  }
+
+  if (deferNextSelection) {
+    logCombatTurnTiming(turnTiming, result, 'awaiting_verification');
+    return;
+  }
+
+  enemyAttackPending = false;
+
+  // Start next turn's move selection
+  await delay(600);
+  logCombatTurnTiming(turnTiming, result, 'next_selection');
+  startMoveSelection();
+}
+
 /**
  * Execute creature defend — calls /creature-combat-cycle with 'defend'
  * Defend: all creatures regen MP, enemies attack with 50% damage
@@ -1604,6 +1877,20 @@ async function executeCreatureDefendThenPause() {
       if (log) {
         log.act('Defend: all creatures defend this turn');
         log.expect('Enemy attacks only. No ally attacks this turn.');
+      }
+
+      const optimisticHandled = await runOptimisticCreatureCombatTurn({
+        actionType: 'defend',
+        moveChoices: [],
+        turnTiming,
+        recoveryActionType: 'defend',
+        pendingFlag: 'enemy',
+        playback: localTranscript => playCreatureDefendResult(localTranscript, turnTiming, {
+          deferNextSelection: true,
+        }),
+      });
+      if (optimisticHandled) {
+        return;
       }
 
       const requestStartedAt = performance.now();
@@ -1636,83 +1923,7 @@ async function executeCreatureDefendThenPause() {
         return;
       }
 
-      // --- Game Rule Validation: check server result for logic invariants ---
-      if (window.__inspector?.checkGameRules) {
-        const ruleCheck = window.__inspector.checkGameRules(result);
-        if (!ruleCheck.ok) {
-          const log = getLog();
-          for (const m of ruleCheck.mismatches) {
-            if (log) log.expect(`RULE VIOLATION: ${m.detail}`);
-            console.warn(`[RULE] ${m.type}: ${m.detail}`);
-          }
-        }
-      }
-
-      // Store server-provided barks for speech bubbles
-      _currentRoundBarks = result.barks || [];
-
-      // Show poison/effect ticks
-      await vfx.showEffectEvents(result);
-
-      // Show round-start skill events (Erosion, Momentum, Overflow Vitality)
-      await vfx.showRoundStartEvents(result);
-
-      // Show defend indicator
-      const actionArea = document.getElementById('action-area');
-      if (actionArea) {
-        actionArea.innerHTML = `<div class="combat-defend-indicator">${t('defending')}</div>`;
-      }
-
-      // Update charge bars immediately for defend (BUG A fix)
-      if (result.creatureParty?.active) {
-        vfx.updateCreatureHpBars(result.creatureParty.active, null);
-      }
-      await delay(600);
-
-      // Enemy attacks phase (50% damage already applied server-side)
-      const allyHpMap = vfx.buildAllyHpMap(result);
-      await vfx.showEnemyAttacksAnimated(result, allyHpMap, true);
-
-      // Counter attack animations (Retaliation Strike, Vengeful Mark, etc.)
-      const enemyHpMap = {};
-      (result.enemies || []).forEach((e, i) => {
-        if (e) enemyHpMap[i] = { hp: e.hp, maxHp: e.maxHp, index: i };
-      });
-      await vfx.showCounterAttacks(result, enemyHpMap);
-
-      // KO swap animations
-      await vfx.showKoSwapAnimations(result);
-
-      // Sync authoritative state from server
-      syncFinalState(result);
-
-      // --- Intent Log: check UI consistency after defend animations ---
-      if (window.__inspector) {
-        const scanResult = window.__inspector.checkCreatures();
-        const log = getLog();
-        if (log) {
-          if (scanResult.ok) {
-            log.check({ ok: true });
-          } else {
-            const first = scanResult.mismatches[0];
-            log.check({ ok: false, tag: first.type, detail: first.detail });
-          }
-        }
-      }
-
-      // Check combat end
-      if (result.combatEnded) {
-        logCombatTurnTiming(turnTiming, result, result.victory ? 'victory' : 'defeat');
-        stopCombatLoop(result);
-        return;
-      }
-
-      enemyAttackPending = false;
-
-      // Start next turn's move selection
-      await delay(600);
-      logCombatTurnTiming(turnTiming, result, 'next_selection');
-      startMoveSelection();
+      await playCreatureDefendResult(result, turnTiming);
 
     } catch (error) {
       console.error('Creature defend error:', error);

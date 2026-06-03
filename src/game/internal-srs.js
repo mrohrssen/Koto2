@@ -1,9 +1,30 @@
 import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync } from 'fs';
-import { createEmptyCard, fsrs, Rating, State } from 'ts-fsrs';
+import {
+  createEmptyCard,
+  fsrs,
+  generatorParameters,
+  GenSeedStrategyWithCardId,
+  Rating,
+  State,
+  StrategyMode,
+} from 'ts-fsrs';
 import { HIRAGANA_DECK, getRowCards } from './hiragana-deck.js';
 
+const SRS_SEED_FIELDS = ['id', 'char', 'word', 'prompt'];
+
+function getSrsSeed(card) {
+  for (const field of SRS_SEED_FIELDS) {
+    const value = card[field];
+    if (value !== undefined && value !== null && value !== '') {
+      return `${field}:${value}`;
+    }
+  }
+  return 'fallback';
+}
+
 // Module-level FSRS scheduler singleton
-const scheduler = fsrs();
+const scheduler = fsrs(generatorParameters({ enable_fuzz: true }))
+  .useStrategy(StrategyMode.SEED, GenSeedStrategyWithCardId('srsSeed'));
 
 // Configurable data directory (default: data/)
 let dataDir = 'data/';
@@ -15,6 +36,7 @@ const cache = new Map();
 const GRADE_MAP = {
   again: Rating.Again,
   good: Rating.Good,
+  easy: Rating.Easy,
 };
 
 /**
@@ -238,7 +260,7 @@ export function getNextKanaCard(userId) {
  * Review a kana card with a grade.
  * @param {string} userId
  * @param {string} char - The hiragana character
- * @param {string} grade - 'again' or 'good'
+ * @param {string} grade - 'again', 'good', or 'easy'
  * @returns {Object} The updated card
  */
 export function reviewKanaCard(userId, char, grade) {
@@ -251,31 +273,12 @@ export function reviewKanaCard(userId, char, grade) {
 
   const card = data.kana.cards[cardIndex];
 
-  // Build a clean FSRS card object for the scheduler
-  const fsrsCard = {
-    due: card.due instanceof Date ? card.due : new Date(card.due || Date.now()),
-    stability: card.stability || 0,
-    difficulty: card.difficulty || 0,
-    elapsed_days: card.elapsed_days || 0,
-    scheduled_days: card.scheduled_days || 0,
-    reps: card.reps || 0,
-    lapses: card.lapses || 0,
-    learning_steps: card.learning_steps || 0,
-    state: card.state || 0,
-  };
-
-  // Restore last_review if it exists
-  if (card.last_review) {
-    fsrsCard.last_review = card.last_review instanceof Date
-      ? card.last_review
-      : new Date(card.last_review);
-  }
-
+  const fsrsCard = buildFsrsCard(card);
   const now = new Date();
   const rating = GRADE_MAP[grade];
 
   if (rating === undefined) {
-    throw new Error(`Invalid grade: ${grade}. Must be 'again' or 'good'.`);
+    throw new Error(`Invalid grade: ${grade}. Must be 'again', 'good', or 'easy'.`);
   }
 
   const result = scheduler.repeat(fsrsCard, now);
@@ -356,7 +359,15 @@ const FSRS_FIELDS = new Set([
 ]);
 
 function buildFsrsCard(card) {
+  const seedFields = {};
+  for (const field of SRS_SEED_FIELDS) {
+    if (card[field] !== undefined && card[field] !== null) {
+      seedFields[field] = card[field];
+    }
+  }
   const fsrsCard = {
+    srsSeed: getSrsSeed(card),
+    ...seedFields,
     due: card.due instanceof Date ? card.due : new Date(card.due || Date.now()),
     stability: card.stability || 0,
     difficulty: card.difficulty || 0,
@@ -413,7 +424,7 @@ export function gradeCard(userId, deckName, cardId, grade) {
   const now = new Date();
   const rating = GRADE_MAP[grade];
   if (rating === undefined) {
-    throw new Error(`Invalid grade: ${grade}. Must be 'again' or 'good'.`);
+    throw new Error(`Invalid grade: ${grade}. Must be 'again', 'good', or 'easy'.`);
   }
   const result = scheduler.repeat(fsrsCard, now);
   const updatedFsrs = result[rating].card;

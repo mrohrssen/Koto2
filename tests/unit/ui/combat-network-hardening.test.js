@@ -103,9 +103,158 @@ describe('combat network hardening', () => {
     }]);
   });
 
+  it('builds optimistic defend envelopes through the combat-loop state seam', () => {
+    const move = {
+      id: 'poke',
+      name: '突く',
+      nameEn: 'Poke',
+      reading: 'つく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 1,
+      mpCost: 0,
+      accuracy: 100,
+    };
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      reading: 'ひ',
+      element: 'fire',
+      level: 3,
+      attack: 10,
+      defense: 5,
+      hp: 100,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      moves: [move],
+    };
+    const enemy = {
+      ...ally,
+      id: 'mizu',
+      name: '水',
+      nameEn: 'Water',
+      reading: 'みず',
+      element: 'water',
+    };
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(async () => ({ status: 'accepted' }));
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => ({
+        phase: 'combat',
+        combat: {
+          active: true,
+          allies: [ally],
+          enemies: [enemy],
+          optimistic: { combatId: 'cmb_defend', stateVersion: 3, nextTurnSeed: 'seed_defend' },
+        },
+        run: {
+          partySkills: [],
+          creatureParty: { active: [ally], reserves: [] },
+        },
+      }),
+    });
+
+    const result = combatLoop.__combatNetworkTest.buildOptimisticCreatureCombatRequest('defend', []);
+
+    assert.equal(result.envelope.combatId, 'cmb_defend');
+    assert.equal(result.envelope.stateVersion, 3);
+    assert.equal(result.envelope.seed, 'seed_defend');
+    assert.equal(result.envelope.payload.actionType, 'defend');
+    assert.equal(result.localTranscript.actionType, 'defend');
+  });
+
+  it('builds optimistic Kanji Kombat answer envelopes through the combat-loop state seam', () => {
+    const move = {
+      id: 'poke',
+      name: '突く',
+      nameEn: 'Poke',
+      reading: 'つく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 1,
+      mpCost: 0,
+      accuracy: 100,
+    };
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      reading: 'ひ',
+      element: 'fire',
+      level: 3,
+      attack: 10,
+      defense: 5,
+      hp: 100,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      moves: [move],
+    };
+    const enemy = {
+      ...ally,
+      id: 'mizu',
+      name: '水',
+      nameEn: 'Water',
+      reading: 'みず',
+      element: 'water',
+    };
+    combatLoop.__combatNetworkTest.setKanjiKombatAnswerApi(async () => ({ status: 'accepted' }));
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => ({
+        phase: 'combat',
+        combat: {
+          active: true,
+          mode: 'kanjiKombat',
+          allies: [ally],
+          enemies: [enemy],
+          actionCursor: { side: 'ally', index: 0, opening: false },
+          optimistic: { combatId: 'cmb_kanji', stateVersion: 4, nextTurnSeed: 'seed_kanji' },
+        },
+        run: {
+          mode: 'kanjiKombat',
+          partySkills: [],
+          creatureParty: { active: [ally], reserves: [] },
+          kanjiKombat: {
+            currentQuiz: {
+              cardId: 'hiragana:あ',
+              choices: [
+                { id: 'answer-correct', answer: 'a', correct: true },
+                { id: 'answer-wrong', answer: 'i', correct: false },
+              ],
+            },
+          },
+        },
+      }),
+    });
+
+    const result = combatLoop.__combatNetworkTest.buildOptimisticKanjiKombatRequest('answer-correct');
+
+    assert.equal(result.envelope.actionType, 'kanjiKombat.answer');
+    assert.equal(result.envelope.combatId, 'cmb_kanji');
+    assert.equal(result.envelope.stateVersion, 4);
+    assert.equal(result.envelope.seed, 'seed_kanji');
+    assert.equal(result.envelope.payload.answerId, 'answer-correct');
+    assert.equal(result.envelope.payload.predictionMode, 'shared-kanji-kombat-v1');
+    assert.equal(result.localTranscript.actionType, 'kanjiKombat');
+    assert.equal(result.localTranscript.kanjiAnswerCorrect, true);
+  });
+
   it('defines the shared creature combat playback helper used by attack submissions', () => {
     assert.match(combatLoopSource, /async function playCreatureCombatResult\(/);
     assert.match(combatLoopSource, /await playCreatureCombatResult\(result, turnTiming,/);
+  });
+
+  it('defers optimistic next selection until verification reconciles the turn', () => {
+    assert.match(combatLoopSource, /deferNextSelection = false/);
+    assert.match(combatLoopSource, /if \(deferNextSelection\) \{/);
+    assert.match(combatLoopSource, /deferNextSelection: true/);
+    assert.match(combatLoopSource, /await handleOptimisticCombatVerification/);
+    assert.match(combatLoopSource, /startMoveSelection\(\);/);
+    assert.match(combatLoopSource, /actionType: 'defend'/);
+    assert.match(combatLoopSource, /playCreatureDefendResult\(localTranscript, turnTiming,/);
   });
 
   it('skips attack result cards for Kanji Kombat answer playback', () => {
@@ -422,5 +571,43 @@ describe('combat network hardening', () => {
     assert.equal(recovery.recovered, true);
     assert.equal(combatCallCount, 1);
     assert.equal(stateFetchCount, 1);
+  });
+
+  it('accepted optimistic verification reconciles committed combat result and next seed', async () => {
+    const updates = [];
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        allies: [{ id: 'hi', hp: 20 }],
+        enemies: [{ id: 'mizu', hp: 20 }],
+        optimistic: { combatId: 'cmb_test', stateVersion: 0, nextTurnSeed: 'seed_old' },
+        turnCount: 0,
+      },
+      run: {
+        creatureParty: { active: [{ id: 'hi', hp: 20 }], reserves: [] },
+      },
+    };
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+
+    const result = await combatLoop.__combatNetworkTest.handleOptimisticCombatVerification({
+      status: 'accepted',
+      stateVersion: 1,
+      nextSeed: 'seed_new',
+      allies: [{ id: 'hi', hp: 18 }],
+      enemies: [{ id: 'mizu', hp: 11 }],
+      creatureParty: { active: [{ id: 'hi', hp: 18 }], reserves: [] },
+      turnCount: 1,
+    });
+
+    assert.equal(result.recovered, true);
+    assert.equal(updates.at(-1).combat.optimistic.stateVersion, 1);
+    assert.equal(updates.at(-1).combat.optimistic.nextTurnSeed, 'seed_new');
+    assert.equal(updates.at(-1).combat.enemies[0].hp, 11);
+    assert.equal(updates.at(-1).run.creatureParty.active[0].hp, 18);
+    assert.equal(updates.at(-1).combat.turnCount, 1);
   });
 });

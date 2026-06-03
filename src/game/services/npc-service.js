@@ -46,11 +46,11 @@ export function getNpcSkillsForNpc(npc) {
  * @param {object} npc - Full NPC object (must have .skills array of skill IDs)
  * @returns {object|null} A skill object or null
  */
-export function rollNpcSkill(npc) {
+export function rollNpcSkill(npc, rng = Math.random) {
   const skills = getNpcSkillsForNpc(npc);
   if (skills.length === 0) return null;
-  if (Math.random() >= NPC_SKILL_CHANCE) return null;
-  return skills[Math.floor(Math.random() * skills.length)];
+  if (rng() >= NPC_SKILL_CHANCE) return null;
+  return skills[Math.floor(rng() * skills.length)];
 }
 
 /**

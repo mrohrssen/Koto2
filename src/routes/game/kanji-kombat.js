@@ -1,7 +1,24 @@
 import { Router } from 'express';
+import { getKanjiKombatLeaderboard } from '../../auth/users.js';
+import { KANJI_KOMBAT_PREDICTION_MODE } from '../../shared/action-protocol.js';
+
+function isOptimisticKanjiAnswerEnvelope(body = {}) {
+  return body?.actionType === 'kanjiKombat.answer'
+    || body?.payload?.predictionMode === KANJI_KOMBAT_PREDICTION_MODE;
+}
 
 export default function createKanjiKombatRoutes() {
   const router = Router();
+
+  router.get('/leaderboard', (req, res) => {
+    try {
+      const period = req.query.period === 'weekly' ? 'weekly' : '24h';
+      const result = getKanjiKombatLeaderboard(period, req.user.id, req.app?.locals?.usersFile);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
 
   router.get('/availability', (req, res) => {
     try {
@@ -44,9 +61,12 @@ export default function createKanjiKombatRoutes() {
 
   router.post('/answer', (req, res) => {
     try {
-      const { answerId } = req.body || {};
+      const body = req.body || {};
+      const answerId = body.payload?.answerId || body.answerId;
       if (!answerId) return res.status(400).json({ error: 'answerId required' });
-      const result = req.gameManager.submitKanjiKombatAnswer(answerId);
+      const result = isOptimisticKanjiAnswerEnvelope(body)
+        ? req.gameManager.kanjiKombatService.verifyAndCommitOptimisticAnswer(body)
+        : req.gameManager.submitKanjiKombatAnswer(answerId);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
