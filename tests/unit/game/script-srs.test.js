@@ -131,4 +131,46 @@ describe('script-srs', () => {
       KANJI_SCRIPT_CARDS[5].id,
     ]);
   });
+
+  it('uses katakana when hiragana is known without editing hiragana card progress', () => {
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    const card = data.script.cards.find(c => c.id === 'hiragana:あ');
+    card.reps = 2;
+    card.state = State.Learning;
+    card.due = new Date('2026-05-30T00:00:00Z');
+    card.last_review = new Date('2026-05-29T00:00:00Z');
+    saveSrsData(userId, data);
+
+    assert.equal(getActiveScriptType(userId, { knowsHiragana: true, knowsKatakana: false }), 'katakana');
+
+    const savedCard = loadSrsData(userId).script.cards.find(c => c.id === 'hiragana:あ');
+    assert.equal(savedCard.reps, 2);
+    assert.equal(savedCard.state, State.Learning);
+    assert.equal(savedCard.due.toISOString(), '2026-05-30T00:00:00.000Z');
+    assert.equal(savedCard.last_review.toISOString(), '2026-05-29T00:00:00.000Z');
+  });
+
+  it('uses kanji when both kana scripts are known', () => {
+    ensureScriptDeckSeeded(userId);
+
+    assert.equal(getActiveScriptType(userId, { knowsHiragana: true, knowsKatakana: true }), 'kanji');
+  });
+
+  it('uses hiragana when kana scripts are not known without restarting progress', () => {
+    ensureScriptDeckSeeded(userId);
+    const data = loadSrsData(userId);
+    const card = data.script.cards.find(c => c.id === 'hiragana:あ');
+    card.reps = 4;
+    card.state = State.Learning;
+    card.due = new Date('2026-05-30T00:00:00Z');
+    saveSrsData(userId, data);
+
+    assert.equal(getActiveScriptType(userId, { knowsHiragana: false, knowsKatakana: false }), 'hiragana');
+
+    const savedCard = loadSrsData(userId).script.cards.find(c => c.id === 'hiragana:あ');
+    assert.equal(savedCard.reps, 4);
+    assert.equal(savedCard.state, State.Learning);
+    assert.equal(savedCard.due.toISOString(), '2026-05-30T00:00:00.000Z');
+  });
 });

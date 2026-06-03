@@ -2,6 +2,7 @@ import {
   createNewPlayer,
   createNewRun,
   createMetaProgression,
+  ensureKanjiKombatOnboardingState,
   ACHIEVEMENTS,
   BASE_STARTING_CREDITS
 } from './state.js';
@@ -60,6 +61,7 @@ export class GameManager {
       this.meta.creatureCollection = ['hikaribon', 'hanatchi', 'tsukimochi'];
     }
     ensureCreatureCounts(this.meta);
+    ensureKanjiKombatOnboardingState(this.meta);
     return this.meta;
   }
 
@@ -305,6 +307,7 @@ export class GameManager {
         equippedCrests: this.meta.equippedCrests || { fire: null, water: null, earth: null, wood: null, metal: null },
         kanaMode: this.meta.kanaMode || false,
         japaneseDisplayMode: this.meta.japaneseDisplayMode || 'hiragana',
+        kanjiKombatOnboarding: ensureKanjiKombatOnboardingState(this.meta),
         pvpTeams: this.meta.pvpTeams || [null, null, null],
         tutorialStep: this.meta.tutorialStep ?? 6,
         tutorialFusionDataUnlocked: Array.isArray(this.meta.tutorialFusionDataUnlocked) ? this.meta.tutorialFusionDataUnlocked : [],

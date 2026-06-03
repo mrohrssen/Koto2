@@ -85,8 +85,10 @@ export function isScriptTypeGraduated(userId, type) {
   return cards.length > 0 && cards.every(card => card.state === State.Review);
 }
 
-export function getActiveScriptType(userId) {
+export function getActiveScriptType(userId, onboarding = {}) {
   for (const type of SCRIPT_CARD_TYPES) {
+    if (type === 'hiragana' && onboarding?.knowsHiragana === true) continue;
+    if (type === 'katakana' && onboarding?.knowsKatakana === true) continue;
     if (!isScriptTypeGraduated(userId, type)) return type;
   }
   return 'kanji';

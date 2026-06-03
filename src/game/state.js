@@ -2,6 +2,27 @@ import { createDefaultRankedState } from '../pvp/ranked-rating.js';
 
 // ============ META-PROGRESSION STATE ============
 
+function normalizeNullableBoolean(value) {
+  return typeof value === 'boolean' ? value : null;
+}
+
+export function createKanjiKombatOnboardingState(overrides = {}) {
+  const source = overrides && typeof overrides === 'object' ? overrides : {};
+  return {
+    completed: typeof source.completed === 'boolean' ? source.completed : false,
+    knowsHiragana: normalizeNullableBoolean(source.knowsHiragana),
+    knowsKatakana: normalizeNullableBoolean(source.knowsKatakana),
+  };
+}
+
+export function ensureKanjiKombatOnboardingState(meta) {
+  const onboarding = createKanjiKombatOnboardingState(meta?.kanjiKombatOnboarding);
+  if (meta && typeof meta === 'object') {
+    meta.kanjiKombatOnboarding = onboarding;
+  }
+  return onboarding;
+}
+
 /**
  * Create a fresh meta-progression save
  * This persists across all runs and deaths
@@ -59,6 +80,7 @@ export function createMetaProgression() {
     // Preferred Japanese display mode. Existing players default to hiragana;
     // natural mode is opt-in after display metadata is validated.
     japaneseDisplayMode: 'hiragana',
+    kanjiKombatOnboarding: createKanjiKombatOnboardingState(),
 
     pvpTeams: [null, null, null],  // 3 saved PvP team slots
     pvpRanked: createDefaultRankedState(),
@@ -331,4 +353,3 @@ export async function loadGame(fs) {
     throw error;
   }
 }
-

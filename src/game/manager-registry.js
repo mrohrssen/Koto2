@@ -6,6 +6,7 @@ import { CREATURES_BY_ID, backfillCreatureListUids, syncCreatureListMoves, syncP
 import { DEFAULT_COLLECTION, ensureCreatureCounts } from './services/creature-collection-service.js';
 import { ensureTutorialFusionState } from './services/tutorial-service.js';
 import { ensureCrystalMeta } from './services/crystal-wallet-service.js';
+import { ensureKanjiKombatOnboardingState } from './state.js';
 import { normalizeRankedState } from '../pvp/ranked-rating.js';
 
 const SAVE_VERSION = 2;
@@ -104,6 +105,11 @@ export function getManager(userId) {
             tutorialFusionComplete: data.meta.tutorialFusionComplete
           });
           if (beforeTutorialFusion !== afterTutorialFusion) {
+            needsSave = true;
+          }
+          const beforeKanjiKombatOnboarding = JSON.stringify(data.meta.kanjiKombatOnboarding);
+          ensureKanjiKombatOnboardingState(data.meta);
+          if (JSON.stringify(data.meta.kanjiKombatOnboarding) !== beforeKanjiKombatOnboarding) {
             needsSave = true;
           }
           // Migrate: remove stale creature IDs and ensure defaults
