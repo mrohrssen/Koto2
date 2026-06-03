@@ -85,6 +85,62 @@ describe('PvE prediction blocker classification', () => {
     );
   });
 
+  it('keeps collection, tutorial, and element-drop rewards server-confirmed', () => {
+    const transcript = {
+      combatEnded: true,
+      victory: true,
+      newCollectionAdditions: [{ id: 'creature-a' }],
+      tutorialRewards: [{ type: 'fusionCore', amount: 1 }],
+      elementDropsCollected: [{ element: 'fire', amount: 1 }],
+    };
+
+    assert.deepEqual(
+      getPvePredictionBlockers(transcript, {
+        allowVisualKoPrediction: true,
+        allowPendingCombatEndShell: true,
+      }),
+      ['newCollectionAdditions', 'tutorialRewards', 'elementDropsCollected'],
+    );
+  });
+
+  it('keeps reward, shop, and move-learn payloads server-confirmed', () => {
+    const transcript = {
+      combatEnded: true,
+      victory: true,
+      reward: { itemId: 'potion' },
+      rewards: [{ itemId: 'potion' }],
+      postCombatShop: { active: true },
+      pendingMoveLearn: [{ creatureId: 'hi', moveId: 'flare' }],
+      moveLearnPrompts: [{ creatureId: 'hi', moveId: 'flare' }],
+    };
+
+    assert.deepEqual(
+      getPvePredictionBlockers(transcript, {
+        allowVisualKoPrediction: true,
+        allowPendingCombatEndShell: true,
+      }),
+      ['reward', 'rewards', 'postCombatShop', 'pendingMoveLearn', 'moveLearnPrompts'],
+    );
+  });
+
+  it('allows terminal side flags as a pending shell only when no server-owned rewards are present', () => {
+    assert.deepEqual(
+      getPvePredictionBlockers({ allEnemiesDefeated: true }, { allowPendingCombatEndShell: true }),
+      [],
+    );
+    assert.deepEqual(
+      getPvePredictionBlockers({ allAlliesDefeated: true }, { allowPendingCombatEndShell: true }),
+      [],
+    );
+    assert.deepEqual(
+      getPvePredictionBlockers(
+        { allEnemiesDefeated: true, elementDropsCollected: [{ element: 'water', amount: 1 }] },
+        { allowPendingCombatEndShell: true },
+      ),
+      ['elementDropsCollected'],
+    );
+  });
+
   it('keeps befriend quiz and next wave server-confirmed', () => {
     assert.deepEqual(
       getPvePredictionBlockers({ befriendQuizTriggered: true }, {
