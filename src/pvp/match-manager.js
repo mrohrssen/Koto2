@@ -8,6 +8,10 @@ import { backfillCreatureListUids } from '../game/creatures.js';
 // Characters excluding easily confused ones (no I, O, 0, 1)
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
+function cloneTeamData(teamData) {
+  return teamData == null ? null : JSON.parse(JSON.stringify(teamData));
+}
+
 export class MatchManager {
   /**
    * @param {object} [options]
@@ -196,7 +200,7 @@ export class MatchManager {
     const player = this._findPlayer(match, userId);
     if (!player) return false;
 
-    player.team = teamData;
+    player.team = cloneTeamData(teamData);
     return true;
   }
 

@@ -137,6 +137,23 @@ describe('MatchManager', () => {
       assert.ok(match.player2.team);
     });
 
+    it('stores selected team data as a clone', () => {
+      const mgr = new MatchManager();
+      const code = mgr.createMatch('user1', 'sock1');
+      const team = {
+        creatureParty: {
+          active: [{ id: 'hikaribon', hp: 10 }],
+          reserves: [],
+        },
+        partySkills: ['momentum'],
+      };
+
+      assert.equal(mgr.selectTeam(code, 'user1', team), true);
+      team.creatureParty.active[0].id = 'fake-client-mutation';
+
+      assert.equal(mgr.getMatch(code).player1.team.creatureParty.active[0].id, 'hikaribon');
+    });
+
     it('both ready transitions to battle phase', () => {
       const team = makeTeam();
       mgr.selectTeam(code, 'user1', team);

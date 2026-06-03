@@ -103,9 +103,9 @@ export function dequeueRanked() {
   socket?.emit('pvp:ranked-dequeue');
 }
 
-/** Send selected team data to server. */
-export function selectTeam(slotIndex, teamData) {
-  socket?.emit('pvp:select-team', { slotIndex, teamData });
+/** Send selected saved team slot to server. */
+export function selectTeam(slotIndex) {
+  socket?.emit('pvp:select-team', { slotIndex });
 }
 
 /** Signal this player is ready to battle. */

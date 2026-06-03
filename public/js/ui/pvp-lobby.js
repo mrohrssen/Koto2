@@ -451,9 +451,8 @@ export async function renderPvpTeamSelect() {
       card.classList.add('selected');
       selectedSlot = parseInt(card.dataset.slot);
 
-      // Send team to server
-      const team = teams[selectedSlot];
-      pvpSocket.selectTeam(selectedSlot, team);
+      // Send saved team slot to server
+      pvpSocket.selectTeam(selectedSlot);
 
       // Enable ready button
       const readyBtn = document.getElementById('pvp-ready-btn');

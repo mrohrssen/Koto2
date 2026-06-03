@@ -14,6 +14,16 @@ const ROUND_TIMEOUT_MS = 60000;
 const BOT_FALLBACK_MIN_MS = 10000;
 const BOT_FALLBACK_MAX_MS = 15000;
 
+function clonePvpTeam(team) {
+  return team == null ? null : JSON.parse(JSON.stringify(team));
+}
+
+export function resolveSavedPvpTeamSelection(gm, slotIndex) {
+  if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex > 2) return null;
+  const team = gm?.meta?.pvpTeams?.[slotIndex] || null;
+  return team ? clonePvpTeam(team) : null;
+}
+
 export function calculateRankedBotFallbackDelay(random = Math.random) {
   return BOT_FALLBACK_MIN_MS + Math.floor(random() * (BOT_FALLBACK_MAX_MS - BOT_FALLBACK_MIN_MS + 1));
 }
@@ -422,10 +432,21 @@ export function setupPvpSockets(io, {
     // ------------------------------------------------------------------ //
     // pvp:select-team
     // ------------------------------------------------------------------ //
-    socket.on('pvp:select-team', ({ slotIndex, teamData } = {}) => {
+    socket.on('pvp:select-team', ({ slotIndex } = {}) => {
       const found = mm.findMatchBySocket(socket.id);
       if (!found) return;
-      mm.selectTeam(found.code, socket.userId, teamData);
+
+      const gm = getManager(socket.userId);
+      const team = resolveSavedPvpTeamSelection(gm, slotIndex);
+      if (!team) {
+        socket.emit('pvp:error', { message: 'Choose a saved PvP team first' });
+        return;
+      }
+
+      const selected = mm.selectTeam(found.code, socket.userId, team);
+      if (!selected) {
+        socket.emit('pvp:error', { message: 'Could not select that team' });
+      }
     });
 
     // ------------------------------------------------------------------ //
