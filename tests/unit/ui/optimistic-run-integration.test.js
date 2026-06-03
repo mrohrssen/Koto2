@@ -134,6 +134,25 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(npcBattleSkillSource, /result\?\.status !== 'corrected'\s*&&\s*reconcilePendingRunAction/);
   });
 
+  it('keeps PvP team save feedback confirmed by the server', () => {
+    const pvpTeamSaveSource = sourceBetween(
+      explorationSource,
+      'async function showPvpTeamSaveSlots()',
+      '/** Run ended'
+    );
+    const saveIndex = pvpTeamSaveSource.indexOf('await savePvpTeam(i)');
+    const savedIndex = pvpTeamSaveSource.indexOf('Team saved!');
+
+    assert.match(pvpTeamSaveSource, /Saving team\.\.\./);
+    assert.match(pvpTeamSaveSource, /Team saved!/);
+    assert.match(pvpTeamSaveSource, /Team was not saved\. Your draft is still here\./);
+    assert.match(pvpTeamSaveSource, /saveResult === null \|\| saveResult\?\.ok === false/);
+    assert.match(pvpTeamSaveSource, /renderButtons\(\[\s*\{ label: 'Try Again'[\s\S]*\], \{ append: true \}\)/);
+    assert.ok(saveIndex >= 0, 'PvP team save should await savePvpTeam');
+    assert.ok(savedIndex > saveIndex, 'success copy should appear only after awaiting savePvpTeam');
+    assert.doesNotMatch(pvpTeamSaveSource, /beginPendingRunAction|createPendingRunAction|confirmPendingRunAction/);
+  });
+
   it('uses non-blaming retry copy for deterministic choice failures', () => {
     const shrineSource = sourceBetween(
       explorationSource,

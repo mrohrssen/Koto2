@@ -776,6 +776,13 @@ export function renderRunComplete() {
 async function showPvpTeamSaveSlots() {
   const result = await getPvpTeams();
   const teams = result?.pvpTeams || [null, null, null];
+  const setSaveStatus = (message, color = 'var(--text-primary)') => {
+    actions.setContent(`
+      <p style="text-align:center;color:${color};margin:0.5rem 0">
+        ${message}
+      </p>
+    `);
+  };
 
   const slots = teams.map((team, i) => {
     const label = team
@@ -788,8 +795,23 @@ async function showPvpTeamSaveSlots() {
       label: `Team ${i + 1}${levelInfo}: ${label}`,
       onClick: async () => {
         if (team && !confirm(`Overwrite Team ${i + 1}?`)) return;
-        await savePvpTeam(i);
-        renderRunComplete();
+        setSaveStatus('Saving team...');
+        try {
+          const saveResult = await savePvpTeam(i);
+          if (saveResult === null || saveResult?.ok === false) {
+            throw new Error('PvP team save was not confirmed');
+          }
+          setSaveStatus('Team saved!', 'var(--accent-primary)');
+          await new Promise(resolve => setTimeout(resolve, 700));
+          renderRunComplete();
+        } catch (error) {
+          console.warn('[PvP] Team save failed', error);
+          setSaveStatus('Team was not saved. Your draft is still here.', 'var(--danger, #e05252)');
+          renderButtons([
+            { label: 'Try Again', onClick: () => showPvpTeamSaveSlots(), primary: true },
+            { label: 'Cancel', onClick: () => renderRunComplete() },
+          ], { append: true });
+        }
       }
     };
   });
