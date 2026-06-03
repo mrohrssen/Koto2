@@ -32,6 +32,8 @@ Optimistic run commits:
 - Skill Master skill choice, including tutorial and initial skill pick.
 - Friendly NPC item choice, including target selection.
 
+Post-combat shop selection is wired through the optimistic route, API, UI, and tests. The random post-victory shop remains disabled for the current MVP, but reload recovery and selection now use the same persisted `run.postCombatShop.items` source when an active shop is present.
+
 These use an action ID and local draft state, then reconcile with server `accepted` or `corrected` responses.
 
 Creature dealer buy/sell actions also have optimistic wiring today, but the creature dealer is not currently used in the game. They are out of scope for this rollout and do not need additional planning or migration work.

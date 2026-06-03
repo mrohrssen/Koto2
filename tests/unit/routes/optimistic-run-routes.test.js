@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import createCombatRoutes from '../../../src/routes/game/combat.js';
 import createRunRoutes from '../../../src/routes/game/run.js';
+import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 
 const actionId = suffix => `run_test_${suffix}`;
 
@@ -677,6 +678,36 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(selectCount, 1);
     assert.equal(duplicateRes.body.selected, 1);
     assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { selectedCount: 1 } });
+  });
+
+  it('selects post-combat shop items from persisted active shop state', async () => {
+    const item = { id: 'small-heal', type: 'heal', effect: { healPercent: 0.5 }, rarity: 'common' };
+    const run = {
+      postCombatShop: { active: true, items: [item] },
+      creatureParty: { active: [{ id: 'hi', hp: 5, maxHp: 10, level: 1 }], reserves: [] },
+      runSummary: { itemsCollected: 0 },
+      currentAreaEncounters: 0,
+    };
+    const gm = {
+      run,
+      meta: { actionLedger: { entries: {}, order: [] }, itemsDiscovered: [] },
+      emitState() {},
+    };
+    gm.combatCycleService = new CombatCycleService(gm);
+    const handler = getHandler(createCombatRouter(), 'post', '/creature-shop-select');
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: actionId('shopactive'), itemIndex: 0, targetIndex: 0 },
+      gameManager: gm,
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { postCombatShop: run.postCombatShop } }),
+    }, res);
+
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.selected.id, 'small-heal');
+    assert.equal(run.creatureParty.active[0].hp, 10);
+    assert.equal(run.postCombatShop, null);
   });
 
   it('legacy post-combat shop no-actionId response remains legacy shape', async () => {

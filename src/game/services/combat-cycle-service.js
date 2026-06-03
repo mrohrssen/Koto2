@@ -148,6 +148,18 @@ export function serializeBefriendPrompt(prompt) {
   return payload;
 }
 
+function getActivePostCombatShopItems(run) {
+  if (!run) return null;
+  if (run.postCombatShop?.active === true && Array.isArray(run.postCombatShop.items)) {
+    return run.postCombatShop.items;
+  }
+  if (Array.isArray(run._pendingShopItems) && run._pendingShopItems.length > 0) {
+    run.postCombatShop = { active: true, items: run._pendingShopItems };
+    return run.postCombatShop.items;
+  }
+  return null;
+}
+
 export class CombatCycleService {
   constructor(gm) {
     this.gm = gm;
@@ -1623,12 +1635,8 @@ export class CombatCycleService {
    * can recover the shop on page reload.
    */
   rollPostCombatShop() {
-    // If shop items are already active (e.g. page reload), return them
-    if (this.gm.run?.postCombatShop?.active) {
-      return { items: this.gm.run.postCombatShop.items };
-    }
-    // MVP: shop disabled — return null
-    return null;
+    const items = getActivePostCombatShopItems(this.gm.run);
+    return items?.length ? { items } : null;
   }
 
   /**
@@ -1638,7 +1646,7 @@ export class CombatCycleService {
    */
   selectShopItem(itemIndex, targetIndex = 0) {
     if (!this.gm.run) throw new Error('No run');
-    const items = this.gm.run._pendingShopItems;
+    const items = getActivePostCombatShopItems(this.gm.run);
     if (!items || !items[itemIndex]) throw new Error('Invalid shop item');
 
     const selectedItem = items[itemIndex];
