@@ -838,8 +838,9 @@ function promptNextCreature() {
   clearTargetSelect();
   setActiveLabel(creature);
   showActiveGlowForScene(getSceneManager().currentScene, currentCreatureIndex);
-  if (state.run?.mode === 'kanjiKombat' && kanjiKombatUI.renderKanjiKombatAction(state)) {
-    return;
+  if (state.run?.mode === 'kanjiKombat') {
+    if (kanjiKombatUI.startKanjiKombatOnboardingIfNeeded(state)) return;
+    if (kanjiKombatUI.renderKanjiKombatAction(state)) return;
   }
   showMoves(creature, currentCreatureIndex, {
     ...befriend.getMoveSelectBefriendOpts(currentCreatureIndex),

@@ -198,6 +198,7 @@ import {
   verifyCreatureCombatCycle as apiVerifyCreatureCombatCycle,
   getKanjiKombatAvailability as apiGetKanjiKombatAvailability,
   startKanjiKombat as apiStartKanjiKombat,
+  submitKanjiKombatOnboarding as apiSubmitKanjiKombatOnboarding,
   submitKanjiKombatIntro as apiSubmitKanjiKombatIntro,
   submitKanjiKombatAnswer as apiSubmitKanjiKombatAnswer,
   submitKanjiKombatCompletionChoice as apiSubmitKanjiKombatCompletionChoice,
@@ -1070,6 +1071,25 @@ async function triggerCreatureSelect() {
     }, 'party_confirmed');
     updateUI();
   }
+}
+
+async function showKanjiKombatCidSprite() {
+  const activeScene = getSceneManager()?.currentScene;
+  const cidSprite = npcSpriteUrl('cid');
+  scene.showNpcInDisplay('Cid', cidSprite, { skipPixi: true });
+  if (activeScene && !activeScene.disposed && !activeScene._exiting && activeScene.layers?.npcs) {
+    await activeScene.pauseForNpcInterjection?.({ fadeEnemies: true });
+    await activeScene.showNpcSprite(cidSprite, { slideIn: true });
+  }
+}
+
+async function hideKanjiKombatCidSprite() {
+  const activeScene = getSceneManager()?.currentScene;
+  if (activeScene && !activeScene.disposed && !activeScene._exiting) {
+    if (activeScene.npcSprite) await activeScene.hideNpcSprite({ slideOut: true });
+    await activeScene.resumeFromNpcInterjection?.();
+  }
+  scene.hideEnemy();
 }
 
 async function startKanjiKombatSetup() {
@@ -2031,10 +2051,15 @@ async function initGame() {
     submitIntro: apiSubmitKanjiKombatIntro,
     submitAnswer: answerId => combatLoopUI.submitKanjiKombatAnswer(answerId),
     submitCompletionChoice: apiSubmitKanjiKombatCompletionChoice,
+    submitOnboarding: apiSubmitKanjiKombatOnboarding,
     finishCombatResult: result => combatLoopUI.stopCombatLoop(result),
     updateGameState,
     updateUI,
     refreshAction: () => combatLoopUI.startMoveSelection(),
+    showCidSprite: showKanjiKombatCidSprite,
+    hideCidSprite: hideKanjiKombatCidSprite,
+    showNarration: (text, opts) => narrationBox.show(text, opts),
+    forceHideNarration: () => narrationBox.forceHide(),
   });
 
   explorationUI.init({

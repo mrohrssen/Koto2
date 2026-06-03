@@ -6,6 +6,7 @@ import {
   renderKanjiKombatCompletionChoice,
   renderKanjiKombatIntro,
   renderKanjiKombatQuiz,
+  startKanjiKombatOnboardingIfNeeded,
 } from '../../../public/js/ui/kanji-kombat.js';
 
 class FakeClassList {
@@ -35,11 +36,27 @@ class FakeClassList {
 class FakeButton {
   constructor(dataset = {}, textContent = '') {
     this.dataset = dataset;
-    this.textContent = textContent;
+    this._text = textContent;
     this.disabled = false;
     this.listeners = new Map();
     this.className = '';
     this.classList = new FakeClassList(this);
+  }
+
+  set textContent(value) {
+    this._text = String(value ?? '');
+  }
+
+  get textContent() {
+    return this._text;
+  }
+
+  set innerHTML(value) {
+    this._text = String(value ?? '').replace(/<[^>]+>/g, '');
+  }
+
+  get innerHTML() {
+    return this._text;
   }
 
   addEventListener(type, handler) {
@@ -55,10 +72,12 @@ class FakeActionArea {
   constructor() {
     this._innerHTML = '';
     this.buttons = [];
+    this.children = [];
   }
 
   set innerHTML(value) {
     this._innerHTML = value;
+    this.children = [];
     this.buttons = [
       ...value.matchAll(/<button class="([^"]*)"([^>]*)>([\s\S]*?)<\/button>/g)
     ].map(match => {
@@ -77,6 +96,18 @@ class FakeActionArea {
 
   get innerHTML() {
     return this._innerHTML;
+  }
+
+  appendChild(node) {
+    this.children = this.children || [];
+    this.children.push(node);
+    if (node?.buttons) this.buttons.push(...node.buttons);
+  }
+
+  replaceChildren() {
+    this.children = [];
+    this.buttons = [];
+    this._innerHTML = '';
   }
 
   querySelector(selector) {
@@ -112,13 +143,36 @@ describe('kanji-kombat ui', () => {
     actionArea = new FakeActionArea();
     global.document = {
       getElementById: id => id === 'action-area' ? actionArea : null,
-      createElement: () => {
-        const element = { _text: '' };
+      createElement: tagName => {
+        if (tagName === 'button') return new FakeButton();
+        const element = {
+          tagName,
+          className: '',
+          children: [],
+          buttons: [],
+          _text: '',
+          listeners: new Map(),
+          appendChild(node) {
+            this.children.push(node);
+            if (node instanceof FakeButton) {
+              this.buttons.push(node);
+              return;
+            }
+            if (node?.buttons) this.buttons.push(...node.buttons);
+          },
+          setAttribute(name, value) {
+            this[name] = value;
+          },
+          addEventListener(type, handler) {
+            this.listeners.set(type, handler);
+          },
+        };
         Object.defineProperty(element, 'textContent', {
           set(value) { element._text = String(value ?? ''); },
           get() { return element._text; },
         });
         Object.defineProperty(element, 'innerHTML', {
+          set(value) { element._text = String(value ?? ''); },
           get() {
             return element._text
               .replaceAll('&', '&amp;')
@@ -134,6 +188,12 @@ describe('kanji-kombat ui', () => {
       playCorrectAnswerAudio: () => {},
     });
   });
+
+  async function flushPromises(times = 1) {
+    for (let i = 0; i < times; i++) {
+      await Promise.resolve();
+    }
+  }
 
   it('renders prompt and four quiz choices', () => {
     const quiz = {
@@ -488,5 +548,78 @@ describe('kanji-kombat ui', () => {
 
     assert.deepEqual(submitted, ['fire']);
     assert.equal(updateUICalls, 0);
+  });
+
+  it('starts onboarding when pending and blocks quiz rendering', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      showCidSprite: async () => calls.push(['showCidSprite']),
+      hideCidSprite: async () => calls.push(['hideCidSprite']),
+      showNarration: async (text, opts) => calls.push(['showNarration', text, opts]),
+      forceHideNarration: () => calls.push(['forceHideNarration']),
+      submitOnboarding: async (knowsHiragana, knowsKatakana) => {
+        calls.push(['submitOnboarding', knowsHiragana, knowsKatakana]);
+        return { state: { phase: 'combat' } };
+      },
+      updateGameState: state => calls.push(['updateGameState', state.phase]),
+      updateUI: () => calls.push(['updateUI']),
+      refreshAction: () => calls.push(['refreshAction']),
+      playCorrectAnswerAudio: () => calls.push(['unexpected-tts']),
+    });
+
+    const started = startKanjiKombatOnboardingIfNeeded({
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          onboardingPending: true,
+          currentQuiz: {
+            prompt: '火',
+            choices: [{ id: 'fire', answer: 'Fire' }],
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+
+    assert.equal(started, true);
+    await flushPromises(4);
+    assert.equal(calls[0][0], 'showCidSprite');
+    assert.equal(actionArea.buttons[0].textContent, 'Yes, I know all of them');
+    await actionArea.buttons[0].click();
+    await flushPromises(4);
+    assert.equal(actionArea.buttons[0].textContent, 'Yes, I know all of them');
+    await actionArea.buttons[0].click();
+    await flushPromises(8);
+
+    assert.deepEqual(
+      calls.find(call => call[0] === 'submitOnboarding'),
+      ['submitOnboarding', true, true]
+    );
+    assert.equal(calls.some(call => call[0] === 'hideCidSprite'), true);
+    assert.equal(calls.some(call => call[0] === 'refreshAction'), true);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-choice').length, 0);
+  });
+
+  it('does not start onboarding when the gate is absent', () => {
+    const calls = [];
+    initKanjiKombatUI({
+      showCidSprite: () => calls.push(['showCidSprite']),
+      hideCidSprite: () => calls.push(['hideCidSprite']),
+      showNarration: () => calls.push(['showNarration']),
+      submitOnboarding: () => calls.push(['submitOnboarding']),
+      refreshAction: () => calls.push(['refreshAction']),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    const started = startKanjiKombatOnboardingIfNeeded({
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: { onboardingPending: false },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+
+    assert.equal(started, false);
+    assert.deepEqual(calls, []);
   });
 });

@@ -1,16 +1,37 @@
 import { escapeHtml } from './html-utils.js';
+import { renderButtonsAsync } from './ui-components.js';
 import { getSpeakerId, playDialogueLineAudio } from '../tts.js';
 
 let api = {
   submitAnswer: null,
   submitIntro: null,
   submitCompletionChoice: null,
+  submitOnboarding: null,
   updateGameState: null,
   updateUI: null,
   refreshAction: null,
   finishCombatResult: null,
   playCorrectAnswerAudio: null,
+  showCidSprite: null,
+  hideCidSprite: null,
+  showNarration: null,
+  forceHideNarration: null,
 };
+
+const ONBOARDING_COPY = {
+  welcome: 'Hey, welcome to Kanji Kombat. Here, you can practice your hiragana, katakana, and kanji all the way up to full fluency.',
+  hiraganaQuestion: 'First things first. Do you already know all hiragana?',
+  hiraganaKnown: "Great, we won't spend time teaching you hiragana.",
+  hiraganaUnknown: "Great, we'll teach you hiragana.",
+  katakanaQuestion: 'Do you already know all katakana?',
+  katakanaKnown: "Great, we won't spend time teaching you katakana.",
+  katakanaUnknown: "Great, we'll teach you katakana.",
+  finalHiragana: "Great, we'll start by teaching you hiragana and go from there.",
+  finalKatakana: "Great, we'll start by teaching you katakana and go from there.",
+  finalKanji: "Okay, great, we'll start by teaching you kanji. Let's jump right into it.",
+};
+
+let onboardingInProgress = false;
 
 export function initKanjiKombatUI(deps) {
   api = { ...api, ...deps };
@@ -18,6 +39,84 @@ export function initKanjiKombatUI(deps) {
 
 function actionArea() {
   return document.getElementById('action-area');
+}
+
+function clearActionArea() {
+  const root = actionArea();
+  if (!root) return;
+  if (typeof root.replaceChildren === 'function') {
+    root.replaceChildren();
+    return;
+  }
+  root.innerHTML = '';
+}
+
+function shouldRunOnboarding(gameState) {
+  const run = gameState?.run;
+  const kk = run?.kanjiKombat;
+  const cursor = gameState?.combat?.actionCursor;
+  return run?.mode === 'kanjiKombat'
+    && kk?.onboardingPending === true
+    && cursor?.side === 'ally';
+}
+
+async function showOnboardingNarration(text) {
+  await api.showNarration(text, { speaker: 'Cid', persistent: true });
+}
+
+async function askOnboardingBoolean(question) {
+  await api.showNarration(question, { speaker: 'Cid', persistent: true });
+  const choice = await renderButtonsAsync([
+    { label: 'Yes, I know all of them' },
+    { label: 'No, please teach me' },
+  ]);
+  api.forceHideNarration();
+  return choice === 0;
+}
+
+function finalOnboardingLine(knowsHiragana, knowsKatakana) {
+  if (!knowsHiragana) return ONBOARDING_COPY.finalHiragana;
+  if (!knowsKatakana) return ONBOARDING_COPY.finalKatakana;
+  return ONBOARDING_COPY.finalKanji;
+}
+
+async function runKanjiKombatOnboarding() {
+  try {
+    clearActionArea();
+    await api.showCidSprite?.();
+    await showOnboardingNarration(ONBOARDING_COPY.welcome);
+    const knowsHiragana = await askOnboardingBoolean(ONBOARDING_COPY.hiraganaQuestion);
+    await showOnboardingNarration(
+      knowsHiragana ? ONBOARDING_COPY.hiraganaKnown : ONBOARDING_COPY.hiraganaUnknown
+    );
+    const knowsKatakana = await askOnboardingBoolean(ONBOARDING_COPY.katakanaQuestion);
+    await showOnboardingNarration(
+      knowsKatakana ? ONBOARDING_COPY.katakanaKnown : ONBOARDING_COPY.katakanaUnknown
+    );
+    await showOnboardingNarration(finalOnboardingLine(knowsHiragana, knowsKatakana));
+    const result = await api.submitOnboarding(knowsHiragana, knowsKatakana);
+    if (result?.state) api.updateGameState(result.state);
+    await api.hideCidSprite?.();
+    api.refreshAction?.();
+  } catch (error) {
+    console.error('[KanjiKombat] Onboarding failed:', error);
+    await api.hideCidSprite?.();
+    await api.showNarration?.('Kanji Kombat onboarding hit a snag. Please try again.', {
+      speaker: 'Cid',
+      autoDismiss: 2000,
+    });
+    api.updateUI?.();
+  } finally {
+    onboardingInProgress = false;
+  }
+}
+
+export function startKanjiKombatOnboardingIfNeeded(gameState) {
+  if (!shouldRunOnboarding(gameState)) return false;
+  if (onboardingInProgress) return true;
+  onboardingInProgress = true;
+  runKanjiKombatOnboarding();
+  return true;
 }
 
 function bindSingleFlightButtons(buttons, getValue, handler, { beforeSubmit = null } = {}) {
@@ -155,6 +254,7 @@ export function renderKanjiKombatCompletionChoice({ onChoice } = {}) {
 export function renderKanjiKombatAction(gameState) {
   const kk = gameState.run?.kanjiKombat;
   const cursor = gameState.combat?.actionCursor;
+  if (kk?.onboardingPending) return true;
   if (!kk || cursor?.side !== 'ally') return false;
 
   if (kk.completionChoicePending) {
