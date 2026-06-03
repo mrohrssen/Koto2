@@ -9,9 +9,35 @@ import {
   resolvePveCursorTurn,
   resolvePveTurn,
 } from '../../../src/shared/combat/pve-turn-resolver.js';
-import { hasPveServerOnlyFeedback } from '../../../src/shared/combat/pve-prediction-contract.js';
+import { getPvePredictionBlockers } from '../../../src/shared/combat/pve-prediction-contract.js';
 
 const OPTIMISTIC_PVE_ACTIONS = new Set(['attack', 'defend']);
+const PVE_VISUAL_PREDICTION_OPTIONS = {
+  allowVisualKoPrediction: true,
+  allowPendingCombatEndShell: true,
+};
+const SANITIZABLE_PVE_BLOCKERS = new Set([
+  'xpEvents',
+  'newCollectionAdditions',
+  'tutorialRewards',
+  'elementDropsCollected',
+  'reward',
+  'rewards',
+  'postCombatShop',
+  'pendingMoveLearn',
+  'moveLearnPrompts',
+]);
+const SERVER_OWNED_TRANSCRIPT_FIELDS = new Set([
+  'xpEvents',
+  'newCollectionAdditions',
+  'tutorialRewards',
+  'elementDropsCollected',
+  'reward',
+  'rewards',
+  'postCombatShop',
+  'pendingMoveLearn',
+  'moveLearnPrompts',
+]);
 
 function canPredictActionCursor(state, actionType) {
   const cursor = state?.combat?.actionCursor;
@@ -43,6 +69,56 @@ function getKanjiKombatAnswerChoice(state, answerId) {
   const choices = state?.run?.kanjiKombat?.currentQuiz?.choices;
   if (!Array.isArray(choices)) return null;
   return choices.find(choice => choice?.id === answerId) || null;
+}
+
+function hasUnsafePvePredictionBlockers(blockers = []) {
+  return blockers.some(blocker => !SANITIZABLE_PVE_BLOCKERS.has(blocker));
+}
+
+function cloneVisualSafeTranscript(value) {
+  if (Array.isArray(value)) return value.map(item => cloneVisualSafeTranscript(item));
+  if (!value || typeof value !== 'object') return value;
+
+  const clone = {};
+  for (const [key, child] of Object.entries(value)) {
+    if (SERVER_OWNED_TRANSCRIPT_FIELDS.has(key)) continue;
+    clone[key] = cloneVisualSafeTranscript(child);
+  }
+  return clone;
+}
+
+function addPendingCombatEndShell(localTranscript, predictedTranscript) {
+  const terminal =
+    predictedTranscript?.combatEnded === true
+    || predictedTranscript?.allEnemiesDefeated === true
+    || predictedTranscript?.allAlliesDefeated === true;
+  if (!terminal) return localTranscript;
+
+  return {
+    ...localTranscript,
+    pendingCombatEnd: {
+      victory: predictedTranscript?.victory === true || predictedTranscript?.allEnemiesDefeated === true,
+      defeat: predictedTranscript?.victory === false || predictedTranscript?.allAlliesDefeated === true,
+    },
+    combatEnded: false,
+    allEnemiesDefeated: false,
+    allAlliesDefeated: false,
+  };
+}
+
+export function buildVisualSafePveLocalTranscript({ predictedTranscript, nextCombat, run }) {
+  const visualTranscript = cloneVisualSafeTranscript(predictedTranscript);
+  return addPendingCombatEndShell({
+    ...visualTranscript,
+    allies: nextCombat?.allies || [],
+    enemies: nextCombat?.enemies || [],
+    creatureParty: run?.creatureParty
+      ? {
+          ...run.creatureParty,
+          active: nextCombat?.allies || run.creatureParty.active || [],
+        }
+      : null,
+  }, predictedTranscript);
 }
 
 export function canRunOptimisticKanjiKombatAnswer(state, answerId) {
@@ -140,28 +216,29 @@ export function buildOptimisticCombatTurn({
   } catch {
     return null;
   }
-  if (hasPveServerOnlyFeedback(resolved.transcript)) return null;
+  const blockers = getPvePredictionBlockers(
+    resolved.transcript,
+    PVE_VISUAL_PREDICTION_OPTIONS,
+  );
+  if (hasUnsafePvePredictionBlockers(blockers)) return null;
 
-  const envelope = buildActionEnvelope({
-    actionId,
-    combatId,
-    stateVersion,
-    actionType: `combat.${actionType}`,
-    seed,
-    payload: { actionType, moveChoices, predictionMode: PVE_CORE_PREDICTION_MODE },
+  const envelope = {
+    ...buildActionEnvelope({
+      actionId,
+      combatId,
+      stateVersion,
+      actionType: `combat.${actionType}`,
+      seed,
+      payload: { actionType, moveChoices, predictionMode: PVE_CORE_PREDICTION_MODE },
+      predictedTranscript: resolved.transcript,
+    }),
     predictedTranscript: resolved.transcript,
-  });
-  const localTranscript = {
-    ...resolved.transcript,
-    allies: resolved.nextCombat?.allies || [],
-    enemies: resolved.nextCombat?.enemies || [],
-    creatureParty: state.run?.creatureParty
-      ? {
-          ...state.run.creatureParty,
-          active: resolved.nextCombat?.allies || state.run.creatureParty.active || [],
-        }
-      : null,
   };
+  const localTranscript = buildVisualSafePveLocalTranscript({
+    predictedTranscript: resolved.transcript,
+    nextCombat: resolved.nextCombat,
+    run: state.run,
+  });
 
   return {
     localTranscript,
