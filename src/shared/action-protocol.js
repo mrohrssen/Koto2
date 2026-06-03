@@ -3,6 +3,7 @@ function isUnsupportedJsonValue(value) {
 }
 
 export const PVE_CORE_PREDICTION_MODE = 'shared-pve-turn-v1';
+export const KANJI_KOMBAT_PREDICTION_MODE = 'shared-kanji-kombat-v1';
 
 function stableStringify(value) {
   if (typeof value === 'bigint') {
@@ -52,6 +53,12 @@ export function createActionId(prefix = 'act') {
   const random = Math.random().toString(36).slice(2, 10);
   const now = Date.now().toString(36);
   return `${prefix}_${now}_${random}`;
+}
+
+export function isActionId(value) {
+  return typeof value === 'string'
+    && value.length <= 96
+    && /^[a-z][a-z0-9-]{0,31}_[a-z0-9]{1,16}_[a-z0-9]{1,16}$/i.test(value);
 }
 
 export function hashTranscript(transcript) {

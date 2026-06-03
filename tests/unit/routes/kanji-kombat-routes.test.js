@@ -66,6 +66,37 @@ describe('Kanji Kombat routes', () => {
     assert.equal(res.body.actionType, 'kanjiKombat');
   });
 
+  it('submits an optimistic quiz answer envelope to the verifier', async () => {
+    const manager = {
+      kanjiKombatService: {
+        verifyAndCommitOptimisticAnswer: envelope => ({
+          status: 'accepted',
+          actionType: 'kanjiKombat',
+          answerId: envelope.payload.answerId,
+        }),
+      },
+    };
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/answer')
+      .send({
+        actionId: 'act_kanji_route',
+        actionType: 'kanjiKombat.answer',
+        combatId: 'cmb_route',
+        stateVersion: 0,
+        seed: 'route_seed',
+        predictedHash: 'abc123',
+        payload: {
+          answerId: 'answer-1',
+          correct: true,
+          predictionMode: 'shared-kanji-kombat-v1',
+        },
+      });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.answerId, 'answer-1');
+    assert.equal(manager.saved, true);
+  });
+
   it('submits a completion choice', async () => {
     const manager = {
       kanjiKombatService: {

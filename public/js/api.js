@@ -795,8 +795,11 @@ async function submitKanjiKombatIntro(cardId, choice) {
   return apiCall('/kanji-kombat/intro', 'POST', { cardId, choice }, null, { bypassLoadingGate: true });
 }
 
-async function submitKanjiKombatAnswer(answerId) {
-  return apiCall('/kanji-kombat/answer', 'POST', { answerId }, null, {
+async function submitKanjiKombatAnswer(answerOrEnvelope) {
+  const body = answerOrEnvelope && typeof answerOrEnvelope === 'object'
+    ? answerOrEnvelope
+    : { answerId: answerOrEnvelope };
+  return apiCall('/kanji-kombat/answer', 'POST', body, null, {
     bypassLoadingGate: true,
     timeoutMs: COMBAT_CYCLE_TIMEOUT_MS,
     returnErrorBody: true,
@@ -836,11 +839,18 @@ async function completeTutorialFusion() {
   return apiCall('/tutorial-fusion-complete', 'POST');
 }
 
+async function markTutorialPostFusionSeen() {
+  return apiCall('/tutorial-post-fusion-seen', 'POST');
+}
+
 async function rollPostCombatShop() {
   return apiCall('/creature-shop-roll', 'POST');
 }
 
-async function selectShopItem(itemIndex, targetIndex = 0) {
+async function selectShopItem(itemIndex, targetIndex = 0, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/creature-shop-select', { itemIndex, targetIndex, actionId: options.actionId });
+  }
   return apiCall('/creature-shop-select', 'POST', { itemIndex, targetIndex });
 }
 
@@ -936,7 +946,10 @@ async function npcBattleSkillOffers() {
 }
 
 /** Choose a skill from the NPC battle reward */
-async function npcBattleSkillChoose(skillId) {
+async function npcBattleSkillChoose(skillId, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/npc-battle-skill-choose', { skillId, actionId: options.actionId });
+  }
   return apiCall('/npc-battle-skill-choose', 'POST', { skillId });
 }
 
@@ -1040,6 +1053,7 @@ export {
   startFusion,
   claimTutorialFusionCore,
   completeTutorialFusion,
+  markTutorialPostFusionSeen,
   // Skill master endpoints
   skillMasterOffers,
   skillMasterChoose,

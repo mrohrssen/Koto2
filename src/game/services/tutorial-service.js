@@ -21,6 +21,9 @@ export function ensureTutorialFusionState(meta) {
   if (typeof meta.tutorialFusionComplete !== 'boolean') {
     meta.tutorialFusionComplete = false;
   }
+  if (typeof meta.tutorialPostFusionNarrationShown !== 'boolean') {
+    meta.tutorialPostFusionNarrationShown = !!meta.tutorialFusionComplete;
+  }
   return meta;
 }
 
@@ -73,6 +76,17 @@ export function markTutorialFusionComplete(meta) {
   meta.tutorialFusionComplete = true;
   meta.tutorialStep = TUTORIAL_STEPS.COMPLETE;
   return { completed: true, tutorialStep: meta.tutorialStep };
+}
+
+export function markTutorialPostFusionNarrationShown(meta) {
+  ensureTutorialFusionState(meta);
+  if (!meta) return { marked: false };
+  if (!meta.tutorialFusionComplete || !meta.creatureCollection?.includes(TUTORIAL_FUSION_CREATURE_ID)) {
+    return { marked: false };
+  }
+  if (meta.tutorialPostFusionNarrationShown) return { marked: false };
+  meta.tutorialPostFusionNarrationShown = true;
+  return { marked: true };
 }
 
 export function shouldForceStartingMeadowCatEncounter(meta, run) {
@@ -169,4 +183,5 @@ export function resetTutorial(meta) {
   meta.tutorialFusionDataUnlocked = [];
   meta.tutorialFusionCoreAwarded = false;
   meta.tutorialFusionComplete = false;
+  meta.tutorialPostFusionNarrationShown = false;
 }

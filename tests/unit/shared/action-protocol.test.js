@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   createActionId,
+  isActionId,
   hashTranscript,
   buildActionEnvelope,
   verifyActionEnvelope,
@@ -13,6 +14,16 @@ import {
 describe('action protocol', () => {
   it('creates action ids with a custom prefix', () => {
     assert.match(createActionId('turn'), /^turn_[a-z0-9]+_[a-z0-9]+$/);
+  });
+
+  it('validates generated action id shape and length', () => {
+    assert.equal(isActionId(createActionId('run')), true);
+    assert.equal(isActionId('run_ltest_abc123'), true);
+    assert.equal(isActionId('act_1'), false);
+    assert.equal(isActionId('__proto__'), false);
+    assert.equal(isActionId(`run_${'x'.repeat(120)}_a`), false);
+    assert.equal(isActionId('run_missingpart'), false);
+    assert.equal(isActionId(null), false);
   });
 
   it('hashes transcripts independently of object key insertion order', () => {

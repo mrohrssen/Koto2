@@ -9,7 +9,16 @@ import {
   processDefendTurn,
   processEnemyTurn,
   processInterleavedPvERound,
+  pickEnemyMoveChoice,
+  pickEnemyTarget,
+  resolveNoopActorAction,
+  resolveSingleActorAction,
+  resolveSyntheticActorAction,
 } from './pve-turn-core.js';
+import {
+  cursorMatchesChoice,
+  getNextActionCursor,
+} from '../../game/combat/action-cursor.js';
 
 function getTurnRng({ rng, seed } = {}) {
   if (typeof rng === 'function') return rng;
@@ -40,6 +49,62 @@ function tickAllEffectsForTurn(allies, enemies) {
 
 function checkAllDefeated(creatures = []) {
   return creatures.length === 0 || creatures.every(creature => !creature || creature.hp <= 0 || creature.befriended);
+}
+
+function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackStart, rng }) {
+  const allies = snapshot.allies || [];
+  const enemies = snapshot.enemies || [];
+  const actor = cursor.side === 'ally'
+    ? allies[cursor.index]
+    : enemies[cursor.index];
+  if (!actor) throw new Error('Action cursor actor not found');
+
+  let choices = [];
+  if (cursor.side === 'ally') {
+    if (!cursorMatchesChoice(cursor, moveChoice)) {
+      throw new Error('Submitted move does not match current action cursor');
+    }
+    choices = [moveChoice];
+  } else {
+    const choice = pickEnemyMoveChoice(actor, allies, enemies, rng);
+    if (choice) {
+      const { move, mode } = choice;
+      const targeting = pickEnemyTarget(actor, move, mode, allies, enemies, rng);
+      if (targeting) {
+        const targetIndex = targeting.targetSide === 'player'
+          ? allies.indexOf(targeting.target)
+          : enemies.indexOf(targeting.target);
+        choices = [{ creatureIndex: cursor.index, moveId: move.id, targetIndex }];
+      }
+    }
+  }
+
+  const result = resolveSingleActorAction({
+    actorSide: cursor.side,
+    actorIndex: cursor.index,
+    allies,
+    enemies,
+    choices,
+    itemBuffs: snapshot.itemBuffs || null,
+    creatureParty: snapshot.creatureParty || null,
+    metaMults: snapshot.metaMults || null,
+    runPartySkills: snapshot.runPartySkills || null,
+    combat: snapshot.combat || null,
+    playbackStart,
+    rng,
+  });
+
+  const combat = snapshot.combat || {};
+  combat.actionCount = (combat.actionCount || 0) + 1;
+  combat.turnCount = combat.actionCount;
+  combat.openingResolved = combat.openingResolved || cursor.opening === true;
+  combat.actionCursor = getNextActionCursor({
+    allies,
+    enemies,
+    previousCursor: cursor,
+  });
+
+  return result;
 }
 
 function processKOSwapsForTurn(allies, creatureParty) {
@@ -104,6 +169,225 @@ function buildStateSummary({ allies, enemies, creatureParty }) {
       level: creature.level,
       xp: creature.xp,
     }) : null),
+  };
+}
+
+export function resolvePveCursorTurn(snapshotInput, {
+  actionType = 'attack',
+  seed,
+  rng,
+  clone = true,
+} = {}) {
+  if (actionType !== 'attack') {
+    throw new Error(`Unsupported cursor action: ${actionType}`);
+  }
+
+  const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
+  const turnRng = getTurnRng({ rng, seed });
+  const allies = snapshot.allies || [];
+  const enemies = snapshot.enemies || [];
+  const combat = snapshot.combat || {};
+  const cursor = combat.actionCursor;
+  if (!cursor) throw new Error('No active action cursor');
+
+  const submittedChoice = snapshot.moveChoices?.[0] || null;
+  const actionSegments = [];
+  let playbackStart = 0;
+
+  const firstResult = resolveCurrentPveCursorAction({
+    snapshot,
+    cursor,
+    moveChoice: submittedChoice,
+    playbackStart,
+    rng: turnRng,
+  });
+  actionSegments.push(...firstResult.actionSegments);
+  playbackStart = firstResult.playbackNext || actionSegments.length;
+
+  while (
+    combat.active &&
+    combat.actionCursor?.side === 'enemy' &&
+    !checkAllDefeated(enemies) &&
+    !checkAllDefeated(allies)
+  ) {
+    const enemyResult = resolveCurrentPveCursorAction({
+      snapshot,
+      cursor: combat.actionCursor,
+      moveChoice: null,
+      playbackStart,
+      rng: turnRng,
+    });
+    actionSegments.push(...enemyResult.actionSegments);
+    playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
+  }
+
+  const playerAttacks = actionSegments.flatMap(segment =>
+    segment.actor.side === 'ally' ? segment.attacks : segment.counterAttacks || []
+  );
+  const enemyAttacks = actionSegments.flatMap(segment =>
+    segment.actor.side === 'enemy' ? segment.attacks : []
+  );
+  const effectEvents = actionSegments.flatMap(segment => segment.effectEvents || []);
+  const mpRegens = actionSegments.flatMap(segment => segment.mpRegens || []);
+  const xpEvents = actionSegments.flatMap(segment => segment.xpEvents || []);
+  const counterAttacks = actionSegments.flatMap(segment => segment.counterAttacks || []);
+  const koResult = processKOSwapsForTurn(allies, snapshot.creatureParty);
+  if (snapshot.combat && snapshot.creatureParty?.active) {
+    snapshot.combat.allies = snapshot.creatureParty.active;
+  }
+
+  return {
+    transcript: {
+      actionType,
+      actionSegments,
+      playerAttacks,
+      enemyAttacks,
+      counterAttacks,
+      xpEvents,
+      mpRegens,
+      effectEvents,
+      roundStartEvents: [],
+      koSwaps: koResult.koSwaps,
+      koRemovals: koResult.koRemovals,
+      allAlliesDefeated: checkAllDefeated(allies),
+      allEnemiesDefeated: checkAllDefeated(enemies),
+      combatEnded: false,
+      turnCount: combat.turnCount,
+      allies: snapshot.combat?.allies || allies,
+      enemies,
+      creatureParty: snapshot.creatureParty,
+      stateSummary: buildStateSummary({
+        allies: snapshot.combat?.allies || allies,
+        enemies,
+        creatureParty: snapshot.creatureParty,
+      }),
+    },
+    nextCombat: createNextCombat(snapshot, snapshot.combat?.allies || allies, enemies),
+  };
+}
+
+export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
+  const {
+    answerCorrect = snapshotInput?.answerCorrect,
+    targetIndex = snapshotInput?.targetIndex ?? 0,
+    seed,
+    rng,
+    clone = true,
+  } = options;
+  const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
+  const turnRng = getTurnRng({ rng, seed });
+  const allies = snapshot.allies || [];
+  const enemies = snapshot.enemies || [];
+  const combat = snapshot.combat || {};
+  const cursor = combat.actionCursor;
+  if (!cursor) throw new Error('No active action cursor');
+  if (cursor.side !== 'ally') throw new Error('Kanji Kombat answers require an ally action cursor');
+
+  const actor = allies[cursor.index];
+  const actionSegments = [];
+  let playbackStart = 0;
+  const firstResult = answerCorrect
+    ? resolveSyntheticActorAction({
+        actorSide: 'ally',
+        actorIndex: cursor.index,
+        allies,
+        enemies,
+        syntheticMove: {
+          id: 'kanji-kombat-strike',
+          name: 'Kanji Kombat Strike',
+          nameEn: 'Kanji Kombat Strike',
+          element: actor?.element || 'neutral',
+          category: 'damage',
+          target: 'single_enemy',
+          power: 15,
+          mpCost: 0,
+        },
+        targetIndex,
+        itemBuffs: snapshot.itemBuffs || null,
+        creatureParty: snapshot.creatureParty || null,
+        metaMults: snapshot.metaMults || null,
+        playbackStart,
+        rng: turnRng,
+      })
+    : resolveNoopActorAction({
+        actorSide: 'ally',
+        actorIndex: cursor.index,
+        allies,
+        enemies,
+        playbackStart,
+      });
+
+  actionSegments.push(...firstResult.actionSegments);
+  playbackStart = firstResult.playbackNext || actionSegments.length;
+  combat.actionCount = (combat.actionCount || 0) + 1;
+  combat.turnCount = combat.actionCount;
+  combat.openingResolved = combat.openingResolved || cursor.opening === true;
+  combat.actionCursor = getNextActionCursor({
+    allies,
+    enemies,
+    previousCursor: cursor,
+  });
+
+  while (
+    combat.active &&
+    combat.actionCursor?.side === 'enemy' &&
+    !checkAllDefeated(enemies) &&
+    !checkAllDefeated(allies)
+  ) {
+    const enemyResult = resolveCurrentPveCursorAction({
+      snapshot,
+      cursor: combat.actionCursor,
+      moveChoice: null,
+      playbackStart,
+      rng: turnRng,
+    });
+    actionSegments.push(...enemyResult.actionSegments);
+    playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
+  }
+
+  const playerAttacks = actionSegments.flatMap(segment =>
+    segment.actor.side === 'ally' ? segment.attacks : segment.counterAttacks || []
+  );
+  const enemyAttacks = actionSegments.flatMap(segment =>
+    segment.actor.side === 'enemy' ? segment.attacks : []
+  );
+  const effectEvents = actionSegments.flatMap(segment => segment.effectEvents || []);
+  const mpRegens = actionSegments.flatMap(segment => segment.mpRegens || []);
+  const xpEvents = actionSegments.flatMap(segment => segment.xpEvents || []);
+  const counterAttacks = actionSegments.flatMap(segment => segment.counterAttacks || []);
+  const koResult = processKOSwapsForTurn(allies, snapshot.creatureParty);
+  if (snapshot.combat && snapshot.creatureParty?.active) {
+    snapshot.combat.allies = snapshot.creatureParty.active;
+  }
+
+  return {
+    transcript: {
+      actionType: 'kanjiKombat',
+      kanjiAnswerCorrect: answerCorrect === true,
+      actionSegments,
+      playerAttacks,
+      enemyAttacks,
+      counterAttacks,
+      xpEvents,
+      mpRegens,
+      effectEvents,
+      roundStartEvents: [],
+      koSwaps: koResult.koSwaps,
+      koRemovals: koResult.koRemovals,
+      allAlliesDefeated: checkAllDefeated(allies),
+      allEnemiesDefeated: checkAllDefeated(enemies),
+      combatEnded: false,
+      turnCount: combat.turnCount,
+      allies: snapshot.combat?.allies || allies,
+      enemies,
+      creatureParty: snapshot.creatureParty,
+      stateSummary: buildStateSummary({
+        allies: snapshot.combat?.allies || allies,
+        enemies,
+        creatureParty: snapshot.creatureParty,
+      }),
+    },
+    nextCombat: createNextCombat(snapshot, snapshot.combat?.allies || allies, enemies),
   };
 }
 

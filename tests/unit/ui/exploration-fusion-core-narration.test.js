@@ -97,7 +97,7 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
     getFormationNarration: () => '',
     getPostHinonekoReviewNarration: () => [],
     getFusionCoreNarration: () => ['fusion core line'],
-    getPostFusionNarration: () => [],
+    getPostFusionNarration: () => ['post fusion line'],
   },
 });
 
@@ -420,5 +420,59 @@ describe('renderHub fusion core review narration', () => {
     assert.equal(reviewButton.classList.contains('tutorial-dimmed'), true);
     assert.equal(fusionButton.classList.contains('tutorial-highlight'), true);
     assert.equal(fusionButton.classList.contains('tutorial-dimmed'), false);
+  });
+
+  it('marks post-fusion Cid narration as seen and does not replay it once persisted', async () => {
+    let gameState = {
+      phase: 'hub',
+      meta: {
+        pvpTeams: [],
+        tutorialStep: 6,
+        tutorialFusionDataUnlocked: ['hinoneko'],
+        tutorialFusionCoreAwarded: true,
+        tutorialFusionComplete: true,
+        tutorialPostFusionNarrationShown: false,
+        creatureCollection: ['hinoneko'],
+      },
+    };
+    let narrationCalls = 0;
+    let markSeenCalls = 0;
+
+    init({
+      getGameState: () => gameState,
+      updateGameState: (nextState) => { gameState = nextState; },
+      updateUI: () => {},
+      actions: { setContent: () => {}, clear: () => {} },
+      scene: {
+        showNarration: async () => {
+          narrationCalls += 1;
+        },
+      },
+      startNewRun: () => {},
+      apiGetVocabDueCount: async () => ({ count: 0 }),
+      apiMarkTutorialPostFusionSeen: async () => {
+        markSeenCalls += 1;
+        return {
+          state: {
+            ...gameState,
+            meta: {
+              ...gameState.meta,
+              tutorialPostFusionNarrationShown: true,
+            },
+          },
+        };
+      },
+    });
+
+    await renderHub();
+
+    assert.equal(narrationCalls, 1, 'post-fusion Cid narration should show the first time');
+    assert.equal(markSeenCalls, 1, 'post-fusion Cid narration should be persisted after it is shown');
+    assert.equal(gameState.meta.tutorialPostFusionNarrationShown, true);
+
+    await renderHub();
+
+    assert.equal(narrationCalls, 1, 'post-fusion Cid narration should not replay once persisted');
+    assert.equal(markSeenCalls, 1, 'post-fusion Cid narration should not be marked twice');
   });
 });
