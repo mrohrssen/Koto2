@@ -48,7 +48,7 @@ describe('prologue.json content', () => {
     const question = prologue.find(s => s.id === 'prologue-display-mode-question');
     assert.ok(question, 'display mode question should exist');
     assert.equal(question.speaker, 'Cid');
-    assert.match(question.narration, /Do you know the Japanese alphabet Hiragana/);
+    assert.equal(question.narration, 'Do you know the Japanese alphabet Hiragana?');
     assert.deepEqual(question.choices, [
       { text: 'Yes, set Kanji mode', id: 'kanji-mode', displayMode: 'natural' },
       { text: 'No, set Hiragana mode until I learn it', id: 'hiragana-mode', displayMode: 'hiragana' },
