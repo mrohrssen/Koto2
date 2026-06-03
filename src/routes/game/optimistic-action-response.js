@@ -23,7 +23,7 @@ function forgetActionLedgerEntry(owner, actionId) {
   }
 }
 
-export function withOptimisticActionStatus(req, payload = {}) {
+export function withOptimisticActionStatus(req, payload = {}, actionType = null) {
   const actionId = req.body?.actionId;
   if (!actionId) return payload;
 
@@ -31,6 +31,7 @@ export function withOptimisticActionStatus(req, payload = {}) {
     ...payload,
     status: 'accepted',
     actionId,
+    ...(actionType ? { actionType } : {}),
     state: enrichedState(req),
   };
 }
@@ -86,7 +87,7 @@ export function createOptimisticActionRunner({ owner }) {
 
     try {
       const payload = await perform();
-      const response = withOptimisticActionStatus(req, payload);
+      const response = withOptimisticActionStatus(req, payload, ledgerActionType);
 
       if (actionId && ledgerOwner) {
         rememberActionLedgerResult(ledgerOwner, {

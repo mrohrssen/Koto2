@@ -40,12 +40,13 @@ describe('optimistic action route response helpers', () => {
       getEnrichedGameState: () => ({ phase: 'combat' }),
     };
 
-    const response = withOptimisticActionStatus(req, { damage: 7 });
+    const response = withOptimisticActionStatus(req, { damage: 7 }, 'combat.attack');
 
     assert.deepEqual(response, {
       damage: 7,
       status: 'accepted',
       actionId: 'action-1',
+      actionType: 'combat.attack',
       state: { phase: 'combat' },
     });
   });
@@ -130,6 +131,7 @@ describe('optimistic action route response helpers', () => {
       damage: 5,
       status: 'accepted',
       actionId: 'action-new',
+      actionType: 'combat.attack',
       state: { phase: 'after-mutation' },
     });
     assert.deepEqual(savedEntry.response, res.body);
@@ -172,6 +174,7 @@ describe('optimistic action route response helpers', () => {
       damage: 9,
       status: 'accepted',
       actionId: 'action-repeat',
+      actionType: 'combat.attack',
       state: { phase: 'stored' },
     });
   });
@@ -246,6 +249,7 @@ describe('optimistic action route response helpers', () => {
       roomId: 'old-room',
       status: 'accepted',
       actionId: 'action-refresh',
+      actionType: 'run.proceed',
       state: { phase: 'current' },
     });
   });
@@ -297,6 +301,7 @@ describe('optimistic action route response helpers', () => {
       damage: 8,
       status: 'accepted',
       actionId: 'action-save-fails',
+      actionType: 'combat.attack',
       state: { phase: 'after-retry-save' },
     });
   });
@@ -353,6 +358,7 @@ describe('optimistic action route response helpers', () => {
       ok: true,
       status: 'accepted',
       actionId: 'action-throws',
+      actionType: 'test.action',
       state: { phase: 'stored-before-throw' },
     });
   });
