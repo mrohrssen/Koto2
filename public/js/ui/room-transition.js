@@ -7,6 +7,7 @@ import { showIngredientDropPopups } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { ExplorationScene } from '../scenes/exploration-scene.js';
 import { npcSpriteUrl, spriteUrl } from '../assets/asset-urls.js';
+import { getCurrentRoom } from './room-reveal-buffer.js';
 import {
   setScrollState,
   startParallax,
@@ -38,7 +39,7 @@ function getTravelIngredientDropDelays(drops, durationMs) {
  * clear on re-entry or on walking into a new NPC room).
  */
 export async function playRoomTransition(gameState, { waitFn = wait, ingredientDrops = [] } = {}) {
-  const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
+  const room = getCurrentRoom(gameState);
   if (!room) return;
 
   // Clear stale enemy formation from previous room before showing the new one

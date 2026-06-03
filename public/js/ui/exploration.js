@@ -27,13 +27,17 @@ import {
 } from './tutorial-copy.js';
 import { showIngredientDropPopups, showWordLevelUp } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
-import { derivePhase } from '../../../src/game/phase-machine.js';
 import {
   createPendingRunAction,
   confirmPendingRunAction,
   correctPendingRunAction,
   isMatchingRunActionResponse,
 } from './optimistic-run-action.js';
+import {
+  advanceStateToBufferedNextRoom,
+  getCurrentRoom as getCurrentBufferedRoom,
+  getNextRoom,
+} from './room-reveal-buffer.js';
 
 /**
  * Resolve any active scene that owns an `npcs` layer. Every gameplay scene
@@ -396,8 +400,7 @@ let skillMasterState = {
 };
 
 function getActiveRoomFromRun(run) {
-  const idx = run?.currentRoom || 0;
-  const room = run?.rooms?.[idx];
+  const room = getCurrentBufferedRoom({ run });
   return Array.isArray(room) ? room[0] : room;
 }
 
@@ -692,20 +695,20 @@ export async function renderAreaSelection() {
 /** Exploring phase — show Proceed or Fight button */
 async function proceedToNextRoom() {
   const state = getGameState();
-  const nextRoomIndex = (state.run?.currentRoom ?? -1) + 1;
-  const nextRoom = state.run?.rooms?.[nextRoomIndex];
+  const fromRoom = state.run?.currentRoom;
+  const actionSeq = state.run?.roomActionSeq;
+  const nextRoom = getNextRoom(state);
   if (nextRoom) {
     const pending = beginPendingRunAction({
       actionType: 'run.proceed',
       applyLocal: draft => {
-        draft.run.currentRoom = nextRoomIndex;
-        draft.phase = derivePhase(draft);
+        advanceStateToBufferedNextRoom(draft);
       },
     });
     if (!pending) return;
 
     clearActionArea();
-    const verification = apiProceed({ actionId: pending.actionId })
+    const verification = apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })
       .then(result => ({ result }))
       .catch(error => ({ error }));
 
@@ -1237,8 +1240,7 @@ function getActiveSpeedReviewRoom(gameState) {
     return gameState.room;
   }
 
-  const roomIndex = gameState.run?.currentRoom;
-  const fromRun = Number.isInteger(roomIndex) ? gameState.run?.rooms?.[roomIndex] : null;
+  const fromRun = getCurrentBufferedRoom(gameState);
   if (fromRun?.type === 'speedReviewRoom') {
     return fromRun;
   }
@@ -1354,7 +1356,7 @@ let activeWhackAMoleRoomId = null;
 
 function getCurrentWhackAMoleRoomId() {
   const state = getGameState();
-  const room = state?.run?.rooms?.[state?.run?.currentRoom];
+  const room = getCurrentBufferedRoom(state);
   return room?.id || room?.type || 'whackAMole';
 }
 
@@ -1369,7 +1371,7 @@ function cancelActiveWhackAMoleGame() {
 /** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
 export async function renderWhackAMole() {
   const gameState = getGameState();
-  const room = gameState.run.rooms[gameState.run.currentRoom];
+  const room = getCurrentBufferedRoom(gameState);
   const roomId = room?.id || room?.type || 'whackAMole';
 
   if (whackAMoleState.roomId !== roomId) {

@@ -25,6 +25,11 @@ describe('exploration flow', () => {
     assert.equal(res.status, 200);
     assert.ok(res.body.run, 'run should exist');
     assert.ok(res.body.run.currentArea, 'run.currentArea should exist');
+    assert.equal(Object.hasOwn(res.body.run, 'rooms'), false, 'client state must not expose full run.rooms');
+    assert.ok(Array.isArray(res.body.run.revealedRooms), 'client state should include the reveal buffer');
+    assert.ok(res.body.run.revealedRooms.length <= 2, 'reveal buffer should include current room plus at most one future room');
+    assert.equal(res.body.run.revealedRooms[0].index, res.body.run.currentRoom);
+    assert.equal(typeof res.body.run.roomActionSeq, 'number');
   });
 
   it('proceeds into a queued encounter room', async () => {
@@ -39,6 +44,9 @@ describe('exploration flow', () => {
     const room = proceedRes.body.state.room;
     assert.ok(room, 'state should include the current room');
     assert.equal(room.type, 'encounter');
+    assert.equal(Object.hasOwn(proceedRes.body.state.run, 'rooms'), false, 'proceed state must not expose full run.rooms');
+    assert.ok(proceedRes.body.state.run.revealedRooms.length <= 2);
+    assert.equal(proceedRes.body.state.run.revealedRooms[0].index, proceedRes.body.state.run.currentRoom);
   });
 
   it('proceeds into a queued friendly NPC room without leaking combat state', async () => {

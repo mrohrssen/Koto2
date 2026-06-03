@@ -6,6 +6,18 @@ let renderedButtons = [];
 const roomTransitionCalls = [];
 let dialogueCalls = [];
 
+function makeWhackAMoleState(room) {
+  return {
+    phase: 'whackAMole',
+    room,
+    run: {
+      currentRoom: 0,
+      totalRooms: 1,
+      revealedRooms: [{ index: 0, room }],
+    },
+  };
+}
+
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
 });
@@ -120,12 +132,10 @@ describe('renderWhackAMole decline flow', () => {
     const skipPromise = new Promise(resolve => { resolveSkip = resolve; });
 
     init({
-      getGameState: () => ({
-        phase: 'whackAMole',
-        run: {
-          currentRoom: 0,
-          rooms: [{ id: 'wam-1', type: 'whackAMole', interacted: false }],
-        },
+      getGameState: () => makeWhackAMoleState({
+        id: 'wam-1',
+        type: 'whackAMole',
+        interacted: false,
       }),
       updateGameState: () => {},
       updateUI: () => {},
@@ -161,12 +171,10 @@ describe('renderWhackAMole decline flow', () => {
     let showNarrationCalls = 0;
 
     init({
-      getGameState: () => ({
-        phase: 'whackAMole',
-        run: {
-          currentRoom: 0,
-          rooms: [{ id: 'wam-dialogue', type: 'whackAMole', interacted: false }],
-        },
+      getGameState: () => makeWhackAMoleState({
+        id: 'wam-dialogue',
+        type: 'whackAMole',
+        interacted: false,
       }),
       updateGameState: () => {},
       updateUI: () => {},

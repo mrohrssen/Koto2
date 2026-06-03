@@ -9,6 +9,7 @@ import {
 
 import { getRoomActions, getAreaSelectionOptions, ROOM_TYPES, AREAS } from './rooms.js';
 import { derivePhase } from './phase-machine.js';
+import { buildClientRoomReveal } from './room-reveal-buffer.js';
 import { ExplorationService, CombatCycleService, KanjiKombatService } from './services/index.js';
 import { logger } from '../logger.js';
 import {
@@ -192,7 +193,7 @@ export class GameManager {
    * Get current game state
    */
   getState() {
-    const currentRoom = this.run?.rooms?.[this.run?.currentRoom] || null;
+    let currentRoom = this.run?.rooms?.[this.run?.currentRoom] || null;
     const hasPendingSpeedReviewKeys = this.run?.rooms?.some(
       room => room?.type === ROOM_TYPES.speedReviewRoom && (room.speedReviewRoom?.pendingReviewKeys?.length || 0) > 0
     );
@@ -227,7 +228,13 @@ export class GameManager {
       this.kanjiKombatService.hydratePendingIntroCard();
     }
 
+    if (this.run?.rooms?.length) {
+      this.explorationService.prepareRoomRevealBuffer?.();
+      currentRoom = this.run?.rooms?.[this.run?.currentRoom] || null;
+    }
+
     const player = this.run?.player || this.player;
+    const roomReveal = this.run ? buildClientRoomReveal(this.run) : null;
 
     return {
       player: player,
@@ -250,7 +257,9 @@ export class GameManager {
         totalEncounters: this.run.totalEncounters || 0,
         active: this.run.active,
         stats: this.run.stats,
-        rooms: this.run.rooms,
+        roomActionSeq: roomReveal.roomActionSeq,
+        revealBufferSize: roomReveal.revealBufferSize,
+        revealedRooms: roomReveal.revealedRooms,
         runStats: this.run.runStats,
         creatureParty: this.run.creatureParty,
         partySkills: this.run.partySkills || [],

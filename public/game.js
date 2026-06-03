@@ -121,7 +121,7 @@ import { init as initExposureBuffer } from './js/ui/exposure-buffer.js';
 import { renderButtonsAsync } from './js/ui/ui-components.js';
 import { setLang, t, isJapanified } from './js/ui/i18n.js';
 import { setKnownWords, addKnownWord, removeKnownWord, renderEnFirst, renderJpSentence, getKnownWords } from './js/ui/bootstrap-client.js';
-import { getBattleRewardAnchor, showWordLevelUp } from './js/ui/word-level-up.js';
+import { getBattleRewardAnchor, showIngredientDropPopups, showWordLevelUp } from './js/ui/word-level-up.js';
 import { resetClientSessionState } from './js/ui/session-reset.js';
 import { playNpcBattleIntro, playRoomTransition, playTutorialBossInterjection } from './js/ui/room-transition.js';
 import { updateCrystalBalance, showDailyCrystalBonusModal } from './js/ui/crystals.js';
@@ -131,7 +131,13 @@ import {
   createPendingRunAction,
   correctPendingRunAction,
   confirmPendingRunAction,
+  isMatchingRunActionResponse,
 } from './js/ui/optimistic-run-action.js';
+import {
+  advanceStateToBufferedNextRoom,
+  getCurrentRoom,
+  getNextRoom,
+} from './js/ui/room-reveal-buffer.js';
 import {
   initAnalytics,
   setAnalyticsUser,
@@ -470,8 +476,7 @@ function updateUI() {
 function updateStatusBar() {
   const run = gameState.run;
   if (run) {
-    const currentRoomIdx = run.currentRoom || 0;
-    const currentRoom = run.rooms?.[currentRoomIdx];
+    const currentRoom = getCurrentRoom(gameState);
     const activeRoom = Array.isArray(currentRoom) ? currentRoom[0] : currentRoom;
     const subAreaNameEn = activeRoom?.subArea?.nameEn;
     dom.floorIndicator.textContent = subAreaNameEn || `Area ${(run.areasCompleted || 0) + 1}`;
@@ -487,8 +492,8 @@ function updateStatusBar() {
     const r = gameState.run;
     if (r?.active && r.mode === 'kanjiKombat') {
       rpb.textContent = String(r.kanjiKombat?.wave || 1);
-    } else if (r?.active && Array.isArray(r.rooms) && r.rooms.length > 0) {
-      const total = r.totalRooms || r.rooms.length;
+    } else if (r?.active && Number.isInteger(r.totalRooms) && r.totalRooms > 0) {
+      const total = r.totalRooms;
       const idx = Number.isInteger(r.currentRoom) ? r.currentRoom : 0;
       const current = Math.min(idx + 1, total);
       rpb.textContent = `${current}/${total}`;
@@ -566,7 +571,7 @@ function updateScene() {
     // On page reload the pixi sprite is lost, so recreate it.
     const activeScene = getSceneManager()?.currentScene;
     if (!activeScene?.npcSprite) {
-      const room = gameState.run?.rooms?.[gameState.run?.currentRoom];
+      const room = getCurrentRoom(gameState);
       const npc = room?.npcBattle?.npc || room?.npc;
       if (npc) {
         scene.showNpcTrainer(npc.nameEn || npc.name, npc.id, npc);
@@ -759,7 +764,49 @@ let autoProceedInFlight = false;
 async function autoProceed() {
   if (autoProceedInFlight) return;
   autoProceedInFlight = true;
+  let pending = null;
   try {
+    const fromRoom = gameState.run?.currentRoom;
+    const actionSeq = gameState.run?.roomActionSeq;
+    const nextRoom = getNextRoom(gameState);
+    if (nextRoom) {
+      pending = createPendingRunAction({
+        state: gameState,
+        actionType: 'run.proceed',
+        applyLocal: draft => {
+          advanceStateToBufferedNextRoom(draft);
+        },
+      });
+      updateGameState(pending.state);
+      actions.clear();
+      updateStatusBar();
+
+      const verification = apiProceed({ actionId: pending.actionId, fromRoom, actionSeq })
+        .then(result => ({ result }))
+        .catch(error => ({ error }));
+
+      await playRoomTransition(pending.state, { ingredientDrops: [] });
+      const { result, error } = await verification;
+      if (error) throw error;
+      if (!isMatchingRunActionResponse(pending, result)) {
+        throw new Error('Auto-proceed response did not match pending action');
+      }
+
+      if (result?.status === 'corrected') {
+        updateGameState(correctPendingRunAction(pending, result));
+        updateUI();
+        return;
+      }
+
+      updateGameState(confirmPendingRunAction(pending, result));
+      const ingredientDrops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
+      if (ingredientDrops.length > 0) {
+        showIngredientDropPopups(ingredientDrops);
+      }
+      updateUI();
+      return;
+    }
+
     const result = await apiProceed();
     if (result?.state) {
       updateGameState(result.state);
@@ -768,6 +815,12 @@ async function autoProceed() {
       });
       updateUI();
     }
+  } catch (error) {
+    if (pending) {
+      updateGameState(pending.originalState);
+      updateUI();
+    }
+    console.warn('[autoProceed] Failed to proceed:', error);
   } finally {
     autoProceedInFlight = false;
   }

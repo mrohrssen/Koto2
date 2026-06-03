@@ -17,6 +17,24 @@ function createDomButton(textContent) {
   };
 }
 
+function makeRunRoomState({
+  phase,
+  currentRoom = 0,
+  room,
+  meta = { pvpTeams: [], tutorialStep: 6 },
+}) {
+  return {
+    phase,
+    meta,
+    room,
+    run: {
+      currentRoom,
+      totalRooms: currentRoom + 1,
+      revealedRooms: [{ index: currentRoom, room }],
+    },
+  };
+}
+
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => sceneManagerState },
 });
@@ -245,21 +263,14 @@ describe('renderHub fusion core review narration', () => {
   });
 
   it('enables romaji annotations when launching a speed review room outside kana mode', async () => {
-    let gameState = {
+    let gameState = makeRunRoomState({
       phase: 'speedReviewRoom',
-      meta: {
-        pvpTeams: [],
-        tutorialStep: 6,
+      room: {
+        id: 'speed-room-1',
+        type: 'speedReviewRoom',
+        speedReviewRoom: { completed: false },
       },
-      run: {
-        currentRoom: 0,
-        rooms: [{
-          id: 'speed-room-1',
-          type: 'speedReviewRoom',
-          speedReviewRoom: { completed: false },
-        }],
-      },
-    };
+    });
 
     init({
       getGameState: () => gameState,

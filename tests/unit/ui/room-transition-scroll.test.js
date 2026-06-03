@@ -127,19 +127,31 @@ await mock.module('../../../public/js/ui/word-level-up.js', {
 
 const { playRoomTransition } = await import('../../../public/js/ui/room-transition.js');
 
+function makeTransitionState({
+  currentRoom = 0,
+  rooms = [{ type: 'empty' }],
+  allies = [{ uid: 'ally', id: 'hi' }],
+} = {}) {
+  return {
+    room: rooms[currentRoom] ?? rooms[0] ?? null,
+    run: {
+      currentRoom,
+      creatureParty: { active: allies },
+      totalRooms: rooms.length,
+      revealedRooms: rooms.map((room, index) => ({ index, room })),
+    },
+  };
+}
+
 describe('playRoomTransition parallax state', () => {
   it('sets scrolling while entering the next room so the battleground moves', async () => {
     scrollStates.length = 0;
     combatEvents.emitted.length = 0;
     fakeManager.currentScene = null;
 
-    await playRoomTransition({
-      run: {
-        currentRoom: 0,
-        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
-        rooms: [{ type: 'encounter' }],
-      },
-    }, {
+    await playRoomTransition(makeTransitionState({
+      rooms: [{ type: 'encounter' }],
+    }), {
       waitFn: async () => {},
     });
 
@@ -155,13 +167,11 @@ describe('playRoomTransition parallax state', () => {
     fakeManager.currentScene = existingScene;
     const allies = [{ uid: 'ally', id: 'hi' }];
 
-    await playRoomTransition({
-      run: {
-        currentRoom: 1,
-        creatureParty: { active: allies },
-        rooms: [{ type: 'empty' }, { type: 'friendlyNpc' }],
-      },
-    }, {
+    await playRoomTransition(makeTransitionState({
+      currentRoom: 1,
+      rooms: [{ type: 'empty' }, { type: 'friendlyNpc' }],
+      allies,
+    }), {
       waitFn: async () => {},
     });
 
@@ -189,13 +199,11 @@ describe('playRoomTransition parallax state', () => {
     };
     const allies = [{ uid: 'ally', id: 'hi' }];
 
-    await playRoomTransition({
-      run: {
-        currentRoom: 1,
-        creatureParty: { active: allies },
-        rooms: [{ type: 'empty' }, { type: 'encounter' }],
-      },
-    }, {
+    await playRoomTransition(makeTransitionState({
+      currentRoom: 1,
+      rooms: [{ type: 'empty' }, { type: 'encounter' }],
+      allies,
+    }), {
       waitFn: async () => {},
     });
 
@@ -218,13 +226,9 @@ describe('playRoomTransition parallax state', () => {
     fakeManager.transitioning = false;
     const waits = [];
 
-    await playRoomTransition({
-      run: {
-        currentRoom: 0,
-        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
-        rooms: [{ type: 'empty' }],
-      },
-    }, {
+    await playRoomTransition(makeTransitionState({
+      rooms: [{ type: 'empty' }],
+    }), {
       waitFn: async (ms) => waits.push(ms),
     });
 
@@ -240,16 +244,12 @@ describe('playRoomTransition parallax state', () => {
     roomTransitionEvents.length = 0;
     fakeManager.currentScene = null;
 
-    await playRoomTransition({
-      run: {
-        currentRoom: 0,
-        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
-        rooms: [{
-          type: 'friendlyNpc',
-          npc: { id: 'nagi', name: 'ナギ', nameEn: 'Nagi' },
-        }],
-      },
-    }, {
+    await playRoomTransition(makeTransitionState({
+      rooms: [{
+        type: 'friendlyNpc',
+        npc: { id: 'nagi', name: 'ナギ', nameEn: 'Nagi' },
+      }],
+    }), {
       waitFn: async (ms) => roomTransitionEvents.push(`wait:${ms}`),
     });
 
@@ -270,13 +270,9 @@ describe('playRoomTransition parallax state', () => {
     roomTransitionEvents.length = 0;
     fakeManager.currentScene = null;
 
-    await playRoomTransition({
-      run: {
-        currentRoom: 0,
-        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
-        rooms: [{ type: 'campfire' }],
-      },
-    }, {
+    await playRoomTransition(makeTransitionState({
+      rooms: [{ type: 'campfire' }],
+    }), {
       waitFn: async (ms) => roomTransitionEvents.push(`wait:${ms}`),
     });
 
@@ -299,13 +295,9 @@ describe('playRoomTransition parallax state', () => {
       { ingredient: { nameEn: 'Miso' }, quantity: 1 },
     ];
 
-    await playRoomTransition({
-      run: {
-        currentRoom: 0,
-        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
-        rooms: [{ type: 'empty' }],
-      },
-    }, {
+    await playRoomTransition(makeTransitionState({
+      rooms: [{ type: 'empty' }],
+    }), {
       ingredientDrops,
       waitFn: async (ms) => roomTransitionEvents.push(`wait:${ms}`),
     });
@@ -324,13 +316,9 @@ describe('playRoomTransition parallax state', () => {
     ingredientPopupCalls.length = 0;
     fakeManager.currentScene = null;
 
-    await playRoomTransition({
-      run: {
-        currentRoom: 0,
-        creatureParty: { active: [{ uid: 'ally', id: 'hi' }] },
-        rooms: [{ type: 'empty' }],
-      },
-    }, {
+    await playRoomTransition(makeTransitionState({
+      rooms: [{ type: 'empty' }],
+    }), {
       ingredientDrops: [],
       waitFn: async () => {},
     });

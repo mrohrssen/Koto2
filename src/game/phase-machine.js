@@ -182,7 +182,10 @@ export function derivePhase(state) {
     return PHASES.AREA_COMPLETE;
   }
 
-  const currentRoom = run.rooms?.[run.currentRoom];
+  const currentRoom = run.rooms?.[run.currentRoom]
+    || getRoomFromRevealBuffer(run, run.currentRoom)
+    || state.room
+    || null;
   if (currentRoom) {
     if (currentRoom.type === 'shrine'
       && !currentRoom.interacted
@@ -203,4 +206,5 @@ export function derivePhase(state) {
 
   return PHASES.EXPLORING;
 }
+import { getRoomFromRevealBuffer } from './room-reveal-buffer.js';
 

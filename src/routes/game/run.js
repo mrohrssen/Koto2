@@ -12,6 +12,8 @@ import { rollFriendlyNpcOffers } from '../../game/services/exploration-service.j
 import { getAreaById } from '../../game/rooms.js';
 import { applyItem } from '../../game/services/item-service.js';
 import { getActionLedgerEntry } from '../../game/services/action-ledger-service.js';
+import { ensureRoomActionSeq } from '../../game/room-reveal-buffer.js';
+import { isActionId } from '../../shared/action-protocol.js';
 import { buildGlobalAiConfig } from './route-helpers.js';
 import { buildAiDialogueConfig, canUseAiDialogue } from '../../ai-dialogue/config.js';
 import {
@@ -131,6 +133,20 @@ export default function createRunRoutes({
       return sendOptimisticRunCorrection(req, res, new Error(message), statusCode);
     }
     return res.status(statusCode).json({ error: message });
+  }
+
+  function validateOptimisticProceedEnvelope(req) {
+    const { actionId, fromRoom, actionSeq } = req.body || {};
+    if (!isActionId(actionId)) return;
+
+    const run = req.gameManager?.run;
+    const currentSeq = ensureRoomActionSeq(run);
+    if (!Number.isInteger(fromRoom) || fromRoom !== run?.currentRoom) {
+      throw new Error('Room index mismatch');
+    }
+    if (!Number.isInteger(actionSeq) || actionSeq !== currentSeq) {
+      throw new Error('Room action sequence mismatch');
+    }
   }
 
   function isSpeedReviewRoomTransitionError(error) {
@@ -336,6 +352,7 @@ export default function createRunRoutes({
       actionType: 'run.proceed',
       errorStatusCode: 409,
       perform: () => {
+        validateOptimisticProceedEnvelope(req);
         const { forceRoomType } = req.body || {};
         const room = gameManager.proceedToNextRoom(forceRoomType || null);
 

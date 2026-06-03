@@ -1,4 +1,5 @@
 import { generateEncounterCount } from '../state.js';
+import { ensureRoomActionSeq, getRoomRevealAhead } from '../room-reveal-buffer.js';
 
 import {
   generateAreaRooms,
@@ -202,6 +203,37 @@ export class ExplorationService {
     }
   }
 
+  prepareRoomForReveal(roomIndex) {
+    const run = this.gm.run;
+    if (!run?.rooms?.length || !Number.isInteger(roomIndex)) return null;
+    const room = run.rooms[roomIndex];
+    if (!room) return null;
+
+    resolveSupportRoom(room, run);
+    finalizeRandomRoom(room, run);
+    const prepared = run.rooms[roomIndex];
+    this._assignFriendlyNpcIfNeeded(prepared);
+    return prepared;
+  }
+
+  prepareRoomRevealBuffer() {
+    const run = this.gm.run;
+    if (!run?.rooms?.length) return [];
+
+    ensureRoomActionSeq(run);
+    const currentRoom = Number.isInteger(run.currentRoom) ? run.currentRoom : 0;
+    const revealAhead = getRoomRevealAhead(run);
+    const endIndex = Math.min(run.rooms.length - 1, currentRoom + revealAhead);
+    const prepared = [];
+
+    for (let index = currentRoom; index <= endIndex; index += 1) {
+      const room = this.prepareRoomForReveal(index);
+      if (room) prepared.push(room);
+    }
+
+    return prepared;
+  }
+
   _rollRoomIngredientDrops() {
     if (!this.gm.run.cooking) this.gm.run.cooking = { ingredients: {}, cookedThisRun: [] };
     if (!this.gm.run.cooking.ingredients) this.gm.run.cooking.ingredients = {};
@@ -311,6 +343,9 @@ export class ExplorationService {
       this._clearCombatBuffsForRoomEntry();
     }
 
+    ensureRoomActionSeq(this.gm.run);
+    this.prepareRoomRevealBuffer();
+
     const areaName = this.gm.run.currentArea?.nameEn || areaId;
     this.gm.narrate(`${areaName}に到着した。探索を開始する...`);
 
@@ -362,6 +397,7 @@ export class ExplorationService {
 
     // Move to next room
     this.gm.run.currentRoom++;
+    this.gm.run.roomActionSeq = ensureRoomActionSeq(this.gm.run) + 1;
 
     // Check if we've run out of rooms (area complete)
     if (this.gm.run.currentRoom >= this.gm.run.rooms.length) {
@@ -462,6 +498,7 @@ export class ExplorationService {
 
     // Assign area NPC to friendlyNpc rooms for transition display
     this._assignFriendlyNpcIfNeeded(room);
+    this.prepareRoomRevealBuffer();
 
     // Get narration for new room
     const narration = getRoomEntryNarration(room);
