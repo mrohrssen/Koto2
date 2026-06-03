@@ -25,7 +25,7 @@ import {
   getFusionCoreNarration,
   getPostFusionNarration
 } from './tutorial-copy.js';
-import { showWordLevelUp } from './word-level-up.js';
+import { showIngredientDropPopups, showWordLevelUp } from './word-level-up.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { derivePhase } from '../../../src/game/phase-machine.js';
 import {
@@ -111,6 +111,14 @@ function reconcilePendingRunAction(pending, result) {
   return false;
 }
 
+function applyPendingRunCorrection(pending, result) {
+  if (!isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
+  updateGameState(correctPendingRunAction(pending, result));
+  updateUI();
+  clearPendingRunAction(pending);
+  return true;
+}
+
 function rollbackPendingRunAction(pending) {
   if (!pending) return;
   updateGameState(pending.originalState);
@@ -187,6 +195,7 @@ let apiProgressSpeedReviewRoom = null;
 let apiCompleteSpeedReviewRoom = null;
 let apiClaimTutorialFusionCore = null;
 let apiCompleteTutorialFusion = null;
+let apiMarkTutorialPostFusionSeen = null;
 
 let apiGetCreatureCollection = null;
 let showCollectionSelect = null;
@@ -263,6 +272,7 @@ export function init(callbacks) {
   apiCompleteSpeedReviewRoom = callbacks.apiCompleteSpeedReviewRoom;
   apiClaimTutorialFusionCore = callbacks.apiClaimTutorialFusionCore;
   apiCompleteTutorialFusion = callbacks.apiCompleteTutorialFusion;
+  apiMarkTutorialPostFusionSeen = callbacks.apiMarkTutorialPostFusionSeen;
   apiGetCreatureCollection = callbacks.apiGetCreatureCollection;
   showCollectionSelect = callbacks.showCollectionSelect;
   triggerCreatureSelect = callbacks.triggerCreatureSelect;
@@ -323,6 +333,7 @@ function needsPostFusionMessage(state) {
   const collection = state?.meta?.creatureCollection || [];
   return state?.meta?.tutorialFusionComplete
     && collection.includes('hinoneko')
+    && !state?.meta?.tutorialPostFusionNarrationShown
     && !postFusionNarrationShown;
 }
 
@@ -632,6 +643,8 @@ export async function renderHub() {
   if (needsPostFusionMessage(gameState)) {
     postFusionNarrationShown = true;
     await showTutorialNarration(getPostFusionNarration(), { showSprite: true });
+    const result = await apiMarkTutorialPostFusionSeen?.();
+    if (result?.state) updateGameState(result.state);
   }
 }
 
@@ -702,6 +715,11 @@ async function proceedToNextRoom() {
       if (error) throw error;
       if (!reconcilePendingRunAction(pending, result)) {
         rollbackPendingRunAction(pending);
+        return;
+      }
+      const ingredientDrops = result?.ingredientDrops || result?.room?.ingredientDrops || [];
+      if (ingredientDrops.length > 0) {
+        showIngredientDropPopups(ingredientDrops);
       }
     } catch {
       rollbackPendingRunAction(pending);
@@ -776,6 +794,13 @@ export function renderRunComplete() {
 async function showPvpTeamSaveSlots() {
   const result = await getPvpTeams();
   const teams = result?.pvpTeams || [null, null, null];
+  const setSaveStatus = (message, color = 'var(--text-primary)') => {
+    actions.setContent(`
+      <p style="text-align:center;color:${color};margin:0.5rem 0">
+        ${message}
+      </p>
+    `);
+  };
 
   const slots = teams.map((team, i) => {
     const label = team
@@ -788,8 +813,23 @@ async function showPvpTeamSaveSlots() {
       label: `Team ${i + 1}${levelInfo}: ${label}`,
       onClick: async () => {
         if (team && !confirm(`Overwrite Team ${i + 1}?`)) return;
-        await savePvpTeam(i);
-        renderRunComplete();
+        setSaveStatus('Saving team...');
+        try {
+          const saveResult = await savePvpTeam(i);
+          if (saveResult === null || saveResult?.ok === false) {
+            throw new Error('PvP team save was not confirmed');
+          }
+          setSaveStatus('Team saved!', 'var(--accent-primary)');
+          await new Promise(resolve => setTimeout(resolve, 700));
+          renderRunComplete();
+        } catch (error) {
+          console.warn('[PvP] Team save failed', error);
+          setSaveStatus('Team was not saved. Your draft is still here.', 'var(--danger, #e05252)');
+          renderButtons([
+            { label: 'Try Again', onClick: () => showPvpTeamSaveSlots(), primary: true },
+            { label: 'Cancel', onClick: () => renderRunComplete() },
+          ], { append: true });
+        }
       }
     };
   });
@@ -976,20 +1016,26 @@ async function chooseShrineReward(rewardType, creatureKey) {
       return;
     }
     const result = await apiChooseShrineReward?.(rewardType, creatureKey, { actionId: pending.actionId });
+    if (applyPendingRunCorrection(pending, result)) {
+      shrineState.choosing = false;
+      sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 2200 });
+      renderShrine();
+      return;
+    }
     if (reconcilePendingRunAction(pending, result)) {
       shrineState.choosing = false;
       actions.clear();
     } else {
       rollbackPendingRunAction(pending);
       shrineState.choosing = false;
-      sceneModule?.showNarration?.('Could not apply shrine blessing. Tap to try again.', { autoDismiss: 2200 });
+      sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 2200 });
       renderShrine();
     }
   } catch {
     rollbackPendingRunAction(pending);
     shrineState.choosing = false;
     actions.clear();
-    sceneModule?.showNarration?.('Failed to choose shrine blessing.', { autoDismiss: 1800 });
+    sceneModule?.showNarration?.('Reward choice did not save. Please choose again.', { autoDismiss: 1800 });
     renderShrine();
   }
 }
@@ -1637,13 +1683,18 @@ export async function renderSkillMaster() {
           result = await apiSkillMasterChoose?.(skillId, { actionId: pending.actionId });
         } catch (err) {
           rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 1800 });
+          renderSkillMaster();
+          return;
+        }
+        if (applyPendingRunCorrection(pending, result)) {
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderSkillMaster();
           return;
         }
         if (!reconcilePendingRunAction(pending, result)) {
           rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderSkillMaster();
         }
       },
@@ -1705,13 +1756,18 @@ function renderTutorialSkillMaster(offers) {
           result = await apiSkillMasterChoose?.(s.id, { actionId: pending.actionId });
         } catch {
           rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 1800 });
+          renderSkillMaster();
+          return;
+        }
+        if (applyPendingRunCorrection(pending, result)) {
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderSkillMaster();
           return;
         }
         if (!reconcilePendingRunAction(pending, result)) {
           rollbackPendingRunAction(pending);
-          sceneModule?.showNarration?.('Could not apply skill choice. Try again.', { autoDismiss: 2200 });
+          sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderSkillMaster();
         }
       });
@@ -1951,7 +2007,13 @@ export async function renderFriendlyNpc() {
           rollbackPendingRunAction(pending);
           friendlyNpcState.choosing = false;
           actions.clear();
-          sceneModule?.showNarration?.('Failed to choose item.', { autoDismiss: 1800 });
+          sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 1800 });
+          renderFriendlyNpc();
+          return;
+        }
+        if (applyPendingRunCorrection(pending, result)) {
+          friendlyNpcState.choosing = false;
+          sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderFriendlyNpc();
           return;
         }
@@ -1961,7 +2023,7 @@ export async function renderFriendlyNpc() {
         } else {
           rollbackPendingRunAction(pending);
           friendlyNpcState.choosing = false;
-          sceneModule?.showNarration?.('Could not apply item. Tap to try again.', { autoDismiss: 2200 });
+          sceneModule?.showNarration?.('Item choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderFriendlyNpc();
         }
       };
@@ -2153,13 +2215,53 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
       subtitle: s.desc || '',
     })),
     onSelect: async (index) => {
+      if (npcBattleSkillState.choosing) return;
+      npcBattleSkillState.choosing = true;
       const skillId = offers[index].id;
-      try {
-        await onSkillChosen?.(skillId);
-      } catch (err) {
-        sceneModule?.showNarration?.('Failed to choose skill.', { autoDismiss: 1800 });
-        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
+      const pending = beginPendingRunAction({
+        actionType: 'npcBattleSkill.choose',
+        applyLocal: draft => {
+          if (!draft.run) return;
+          const activeRoom = draft.room || getActiveRoomFromRun(draft.run);
+          if (activeRoom?.npcBattle) {
+            activeRoom.npcBattle.chosenSkillId = skillId;
+            activeRoom.npcBattle.skillSelectionPending = false;
+            activeRoom.interacted = true;
+          }
+          draft.phase = 'room';
+        },
+      });
+      if (!pending) {
+        npcBattleSkillState.choosing = false;
+        return;
       }
+
+      let result;
+      try {
+        result = await onSkillChosen?.(skillId, { actionId: pending.actionId });
+      } catch (err) {
+        rollbackPendingRunAction(pending);
+        npcBattleSkillState.choosing = false;
+        sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
+        return;
+      }
+
+      if (applyPendingRunCorrection(pending, result)) {
+        npcBattleSkillState.choosing = false;
+        sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+        renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
+        return;
+      }
+      if (reconcilePendingRunAction(pending, result)) {
+        npcBattleSkillState.choosing = false;
+        return;
+      }
+
+      rollbackPendingRunAction(pending);
+      npcBattleSkillState.choosing = false;
+      sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
+      renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers });
     },
   });
 }

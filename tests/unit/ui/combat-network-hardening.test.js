@@ -257,6 +257,31 @@ describe('combat network hardening', () => {
     assert.match(combatLoopSource, /playCreatureDefendResult\(localTranscript, turnTiming,/);
   });
 
+  it('does not hard-code optimistic creature return-to-selection padding', () => {
+    assert.doesNotMatch(
+      combatLoopSource,
+      /async function runOptimisticCreatureCombatTurn[\s\S]*?nextSelectionDelayMs = 600/,
+    );
+    assert.doesNotMatch(
+      combatLoopSource,
+      /runOptimisticCreatureCombatTurn\([\s\S]*?nextSelectionDelayMs:\s*600/,
+    );
+  });
+
+  it('does not keep dead-air delay before move selection after creature defend playback', () => {
+    assert.doesNotMatch(
+      combatLoopSource,
+      /enemyAttackPending = false;\s*\/\/ Start next turn's move selection\s*await delay\(600\);\s*logCombatTurnTiming/,
+    );
+  });
+
+  it('does not keep static defend-staging waits before enemy attack playback', () => {
+    assert.doesNotMatch(
+      combatLoopSource,
+      /combat-defend-indicator[\s\S]{0,240}await delay\(600\);/,
+    );
+  });
+
   it('skips attack result cards for Kanji Kombat answer playback', () => {
     assert.match(combatLoopSource, /skipAttackCards: actionType === 'kanjiKombat'/);
     assert.match(combatLoopSource, /if \(!skipAttackCards\) \{/);
@@ -609,5 +634,217 @@ describe('combat network hardening', () => {
     assert.equal(updates.at(-1).combat.enemies[0].hp, 11);
     assert.equal(updates.at(-1).run.creatureParty.active[0].hp, 18);
     assert.equal(updates.at(-1).combat.turnCount, 1);
+  });
+
+  it('stops pending optimistic combat end after accepted terminal verification without restarting selection', async () => {
+    const updates = [];
+    const calls = [];
+    const move = {
+      id: 'one-hit',
+      name: '一撃',
+      nameEn: 'One Hit',
+      reading: 'いちげき',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 100,
+      mpCost: 0,
+      accuracy: 100,
+    };
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      reading: 'ひ',
+      element: 'fire',
+      level: 3,
+      attack: 100,
+      defense: 5,
+      dex: 10,
+      hp: 100,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      moves: [move],
+    };
+    const enemy = {
+      id: 'mizu',
+      name: '水',
+      nameEn: 'Water',
+      reading: 'みず',
+      element: 'water',
+      level: 1,
+      attack: 1,
+      defense: 1,
+      dex: 0,
+      hp: 1,
+      maxHp: 1,
+      mp: 0,
+      maxMp: 0,
+      moves: [],
+    };
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        isBoss: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_terminal', stateVersion: 7, nextTurnSeed: 'seed_terminal' },
+        turnCount: 0,
+      },
+      run: {
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+      },
+    };
+
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(async () => ({
+      status: 'accepted',
+      stateVersion: 8,
+      nextSeed: 'seed_after',
+      combatEnded: true,
+      victory: true,
+      allies: [{ ...ally, hp: 100 }],
+      enemies: [{ ...enemy, hp: 0 }],
+      creatureParty: { active: [{ ...ally, hp: 100 }], reserves: [] },
+      turnCount: 1,
+    }));
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'one-hit', targetIndex: 0 }],
+      turnTiming: {},
+      playback: async localTranscript => {
+        calls.push({ type: 'playback', localTranscript });
+      },
+      startMoveSelection: () => {
+        calls.push({ type: 'startMoveSelection' });
+      },
+      stopCombatLoop: result => {
+        calls.push({ type: 'stopCombatLoop', result });
+        combatLoop.__combatNetworkTest.setCombatActive(false);
+      },
+    });
+
+    assert.equal(handled, true);
+    assert.equal(calls[0].type, 'playback');
+    assert.deepEqual(calls[0].localTranscript.pendingCombatEnd, { victory: true, defeat: false });
+    assert.equal(calls[0].localTranscript.combatEnded, false);
+    assert.equal(calls.some(call => call.type === 'startMoveSelection'), false);
+    const stopCall = calls.find(call => call.type === 'stopCombatLoop');
+    assert.ok(stopCall);
+    assert.equal(stopCall.result.combatEnded, true);
+    assert.equal(stopCall.result.victory, true);
+    assert.equal(combatLoop.__combatNetworkTest.isCombatActive(), false);
+  });
+
+  it('resumes move selection after accepted non-terminal optimistic verification', async () => {
+    const updates = [];
+    const calls = [];
+    const move = {
+      id: 'chip',
+      name: '打つ',
+      nameEn: 'Hit',
+      reading: 'うつ',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 1,
+      mpCost: 0,
+      accuracy: 100,
+    };
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      reading: 'ひ',
+      element: 'fire',
+      level: 3,
+      attack: 10,
+      defense: 5,
+      dex: 10,
+      hp: 100,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      moves: [move],
+    };
+    const enemy = {
+      id: 'mizu',
+      name: '水',
+      nameEn: 'Water',
+      reading: 'みず',
+      element: 'water',
+      level: 1,
+      attack: 1,
+      defense: 1,
+      dex: 0,
+      hp: 100,
+      maxHp: 100,
+      mp: 0,
+      maxMp: 0,
+      moves: [],
+    };
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_active', stateVersion: 2, nextTurnSeed: 'seed_active' },
+        turnCount: 0,
+      },
+      run: {
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+      },
+    };
+
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+    combatLoop.__combatNetworkTest.setVerifyCreatureCombatApi(async () => ({
+      status: 'accepted',
+      stateVersion: 3,
+      nextSeed: 'seed_next',
+      combatEnded: false,
+      allies: [{ ...ally, hp: 100 }],
+      enemies: [{ ...enemy, hp: 96 }],
+      creatureParty: { active: [{ ...ally, hp: 100 }], reserves: [] },
+      turnCount: 1,
+    }));
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticCreatureCombatTurn({
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'chip', targetIndex: 0 }],
+      turnTiming: {},
+      playback: async localTranscript => {
+        calls.push({ type: 'playback', localTranscript });
+      },
+      getEnemyDialogueActive: () => false,
+      startMoveSelection: () => {
+        calls.push({ type: 'startMoveSelection' });
+      },
+      stopCombatLoop: result => {
+        calls.push({ type: 'stopCombatLoop', result });
+      },
+    });
+
+    assert.equal(handled, true);
+    assert.equal(calls[0].type, 'playback');
+    assert.equal(calls[0].localTranscript.pendingCombatEnd, undefined);
+    assert.equal(calls.filter(call => call.type === 'startMoveSelection').length, 1);
+    assert.equal(calls.some(call => call.type === 'stopCombatLoop'), false);
+    assert.equal(combatLoop.__combatNetworkTest.isCombatActive(), true);
   });
 });

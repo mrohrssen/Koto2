@@ -43,7 +43,7 @@ import {
   resolvePveTurn,
 } from '../../shared/combat/pve-turn-resolver.js';
 import { cloneForPveTurn } from '../../shared/combat/pve-turn-snapshot.js';
-import { hasPveServerOnlyFeedback } from '../../shared/combat/pve-prediction-contract.js';
+import { hasUnsafeSharedPveOptimisticPrediction } from '../../shared/combat/pve-prediction-contract.js';
 import { resetStatStages } from '../combat/effects.js';
 import {
   checkAllDefeated,
@@ -430,6 +430,7 @@ export class CombatCycleService {
               actionType,
               moveChoices,
               seed: envelope.seed,
+              processKoSwaps: true,
             });
       } catch {
         return buildCorrectedResponse({
@@ -441,11 +442,23 @@ export class CombatCycleService {
         });
       }
       sharedPveCoreHash = hashTranscript(resolvedCore.transcript);
-      sharedPveCoreUnsupported = hasPveServerOnlyFeedback(resolvedCore.transcript);
+      sharedPveCoreUnsupported = hasUnsafeSharedPveOptimisticPrediction({
+        combat: this.gm.combat,
+        transcript: resolvedCore.transcript,
+      });
       if (sharedPveCoreUnsupported) {
         return buildCorrectedResponse({
           reason: 'server_only_feedback_unsupported',
           authoritativeTranscript: null,
+          authoritativeState: null,
+          stateVersion: optimistic.stateVersion,
+          nextSeed: optimistic.nextTurnSeed,
+        });
+      }
+      if (sharedPveCoreHash !== envelope.predictedHash) {
+        return buildCorrectedResponse({
+          reason: 'transcript_mismatch',
+          authoritativeTranscript: resolvedCore.transcript,
           authoritativeState: null,
           stateVersion: optimistic.stateVersion,
           nextSeed: optimistic.nextTurnSeed,

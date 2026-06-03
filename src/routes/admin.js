@@ -9,6 +9,7 @@ import { loadUsers, saveUsers } from '../auth/users.js';
 import { lookupDictPrimary } from '../../public/js/shared/exposure-extractor.js';
 import { createBalanceSimulationManager } from '../game/balance-simulator.js';
 import { getManager, saveManager } from '../game/manager-registry.js';
+import { adminAuth } from './admin-auth.js';
 
 const defaultBalanceManager = createBalanceSimulationManager();
 
@@ -67,21 +68,8 @@ export function shiftCrystalLoginDate(meta, days) {
   return { crystalLoginShifted: true, lastCrystalLoginDate: shifted };
 }
 
-/**
- * Admin secret middleware.
- * Returns 404 if ADMIN_SECRET is not configured (hides endpoint existence).
- * Returns 403 if X-Admin-Secret header does not match.
- */
-export function adminAuth(req, res, next) {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) {
-    return res.status(404).json({ error: 'Not found' });
-  }
-  if (req.headers['x-admin-secret'] !== secret) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  next();
-}
+export { adminAuth };
+
 
 /**
  * Create admin routes for the learning simulator.

@@ -33,6 +33,32 @@
     "narration": "Every creature, human, and item here is Japanese. The Translator will simplify things for you."
   },
   {
+    "id": "prologue-display-mode-question",
+    "speaker": "Cid",
+    "narration": "Do you know the Japanese alphabet Hiragana?",
+    "choices": [
+      { "text": "Yes, set Kanji mode", "id": "kanji-mode", "displayMode": "natural" },
+      { "text": "No, set Hiragana mode until I learn it", "id": "hiragana-mode", "displayMode": "hiragana" }
+    ]
+  },
+  {
+    "id": "prologue-display-mode-kanji",
+    "speaker": "Cid",
+    "conditional": "kanji-mode",
+    "narration": "Great, I'll set the Translator to Kanji mode."
+  },
+  {
+    "id": "prologue-display-mode-hiragana",
+    "speaker": "Cid",
+    "conditional": "hiragana-mode",
+    "narration": "Great, I'll set the Translator to Hiragana mode."
+  },
+  {
+    "id": "prologue-display-mode-done",
+    "speaker": "Cid",
+    "narration": "You're all set! You can always adjust these settings yourself if you need to."
+  },
+  {
     "id": "prologue-translator-try",
     "speaker": "Cid",
     "narration": "Let's give it a try!"

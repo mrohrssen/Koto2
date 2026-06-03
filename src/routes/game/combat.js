@@ -8,6 +8,7 @@ import { getNpcLines, getNpcDefeatFrames } from '../../game/dialogue-loader.js';
 import { selectNpcLine } from '../../game/dialogue-filter.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
+import { createOptimisticActionRunner, getOptimisticActionLedgerOwner } from './optimistic-action-response.js';
 import {
   getDebugForceBefriendForUser,
   getDebugSuperAttackForUser
@@ -63,6 +64,7 @@ export default function createCombatRoutes({
   isCreatureDialogueStaleFn
 }) {
   const router = Router();
+  const runOptimisticAction = createOptimisticActionRunner({ owner: getOptimisticActionLedgerOwner });
 
   async function attachCombatLineAudio(line, req, speakerKey, speakerId) {
     if (!line) return line;
@@ -316,16 +318,17 @@ export default function createCombatRoutes({
     }
   });
 
-  router.post('/creature-shop-select', (req, res) => {
+  router.post('/creature-shop-select', async (req, res) => {
     const gameManager = req.gameManager;
     const { itemIndex, targetIndex } = req.body;
-    try {
-      const result = gameManager.combatCycleService.selectShopItem(itemIndex, targetIndex ?? 0);
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+    return runOptimisticAction(req, res, {
+      actionType: 'postCombatShop.select',
+      errorStatusCode: 400,
+      perform: () => {
+        const result = gameManager.combatCycleService.selectShopItem(itemIndex, targetIndex ?? 0);
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   // Creature swap (in combat)

@@ -96,13 +96,15 @@ export function getManager(userId) {
           const beforeTutorialFusion = JSON.stringify({
             tutorialFusionDataUnlocked: data.meta.tutorialFusionDataUnlocked,
             tutorialFusionCoreAwarded: data.meta.tutorialFusionCoreAwarded,
-            tutorialFusionComplete: data.meta.tutorialFusionComplete
+            tutorialFusionComplete: data.meta.tutorialFusionComplete,
+            tutorialPostFusionNarrationShown: data.meta.tutorialPostFusionNarrationShown
           });
           ensureTutorialFusionState(data.meta);
           const afterTutorialFusion = JSON.stringify({
             tutorialFusionDataUnlocked: data.meta.tutorialFusionDataUnlocked,
             tutorialFusionCoreAwarded: data.meta.tutorialFusionCoreAwarded,
-            tutorialFusionComplete: data.meta.tutorialFusionComplete
+            tutorialFusionComplete: data.meta.tutorialFusionComplete,
+            tutorialPostFusionNarrationShown: data.meta.tutorialPostFusionNarrationShown
           });
           if (beforeTutorialFusion !== afterTutorialFusion) {
             needsSave = true;

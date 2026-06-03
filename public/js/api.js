@@ -356,6 +356,10 @@ async function claimDailyCrystals() {
   return apiCall('/crystals/daily-login', 'POST', {});
 }
 
+async function setJapaneseDisplayMode(mode) {
+  return apiCall('/japanese-display-mode', 'POST', { mode });
+}
+
 // ============ PLAYER MANAGEMENT ENDPOINTS ============
 
 /**
@@ -843,11 +847,18 @@ async function completeTutorialFusion() {
   return apiCall('/tutorial-fusion-complete', 'POST');
 }
 
+async function markTutorialPostFusionSeen() {
+  return apiCall('/tutorial-post-fusion-seen', 'POST');
+}
+
 async function rollPostCombatShop() {
   return apiCall('/creature-shop-roll', 'POST');
 }
 
-async function selectShopItem(itemIndex, targetIndex = 0) {
+async function selectShopItem(itemIndex, targetIndex = 0, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/creature-shop-select', { itemIndex, targetIndex, actionId: options.actionId });
+  }
   return apiCall('/creature-shop-select', 'POST', { itemIndex, targetIndex });
 }
 
@@ -943,7 +954,10 @@ async function npcBattleSkillOffers() {
 }
 
 /** Choose a skill from the NPC battle reward */
-async function npcBattleSkillChoose(skillId) {
+async function npcBattleSkillChoose(skillId, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/npc-battle-skill-choose', { skillId, actionId: options.actionId });
+  }
   return apiCall('/npc-battle-skill-choose', 'POST', { skillId });
 }
 
@@ -974,6 +988,7 @@ export {
   isTransientGameStateFailure,
   getSettings,
   claimDailyCrystals,
+  setJapaneseDisplayMode,
   // Player management endpoints
   createPlayer,
   // Run management endpoints
@@ -1048,6 +1063,7 @@ export {
   startFusion,
   claimTutorialFusionCore,
   completeTutorialFusion,
+  markTutorialPostFusionSeen,
   // Skill master endpoints
   skillMasterOffers,
   skillMasterChoose,

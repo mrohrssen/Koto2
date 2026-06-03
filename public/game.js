@@ -128,6 +128,11 @@ import { updateCrystalBalance, showDailyCrystalBonusModal } from './js/ui/crysta
 import { initNative, onAppLifecycle } from './js/native/index.js';
 import { showOffline, showOnline } from './js/ui/connection-banner.js';
 import {
+  createPendingRunAction,
+  correctPendingRunAction,
+  confirmPendingRunAction,
+} from './js/ui/optimistic-run-action.js';
+import {
   initAnalytics,
   setAnalyticsUser,
   updateCurrentUserProperties,
@@ -155,6 +160,7 @@ import { startCreatureAnimationManifestLoad } from './js/pixi/creature-animation
 import {
   getGameState as apiGetGameState,
   claimDailyCrystals as apiClaimDailyCrystals,
+  setJapaneseDisplayMode as apiSetJapaneseDisplayMode,
   createPlayer as apiCreatePlayer,
   startRun as apiStartRun,
   confirmCreatures as apiConfirmCreatures,
@@ -207,6 +213,7 @@ import {
   startFusion as apiStartFusion,
   claimTutorialFusionCore as apiClaimTutorialFusionCore,
   completeTutorialFusion as apiCompleteTutorialFusion,
+  markTutorialPostFusionSeen as apiMarkTutorialPostFusionSeen,
   rollPostCombatShop as apiRollPostCombatShop,
   selectShopItem as apiSelectShopItem,
   swapCreature as apiSwapCreature,
@@ -666,8 +673,14 @@ function updateGameContent() {
       break;
     case 'npc_skill_selection':
       explorationUI.renderNpcBattleSkillSelection({
-        onSkillChosen: async (skillId) => {
-          const result = await apiNpcBattleSkillChoose(skillId);
+        onSkillChosen: async (skillId, options = {}) => {
+          const result = await apiNpcBattleSkillChoose(skillId, options);
+          if (result?.status === 'corrected') {
+            if (result.authoritativeState) {
+              updateGameState(result.authoritativeState);
+            }
+            return result;
+          }
           if (!result?.state) {
             throw new Error(result?.error || 'No game state from server');
           }
@@ -685,6 +698,7 @@ function updateGameContent() {
             await getSceneManager()?.transition(ExplorationScene, { roomId, allies });
           }
           updateUI();
+          return result;
         },
         fetchOffers: apiNpcBattleSkillOffers
       });
@@ -935,6 +949,12 @@ async function playPrologue() {
       const chosen = prologueScene.choices[choiceIdx];
       result = chosen.id ?? chosen.text;
       lastChoiceId = result;
+      if (chosen.displayMode) {
+        const displayResult = await apiSetJapaneseDisplayMode(chosen.displayMode);
+        if (displayResult?.state) {
+          updateGameState(displayResult.state);
+        }
+      }
     } else {
       actions.showPrologueContinueHint();
       await narrationBox.show(html, showOpts);
@@ -1624,6 +1644,10 @@ function handleCardFlip() {
 }
 
 // ============ CREATURE COMBAT HANDLERS ============
+function canRetryPostCombatShop(state) {
+  return state?.phase === 'post_combat_shop' || state?.run?.postCombatShop?.active === true;
+}
+
 async function showPostCombatShopFlow() {
   try {
     const shopResult = await apiRollPostCombatShop();
@@ -1637,8 +1661,19 @@ async function showPostCombatShopFlow() {
           const active = gameState.run?.creatureParty?.active?.filter(Boolean) || [];
 
           const finalize = async (targetIdx) => {
-            const selectResult = await apiSelectShopItem(itemIdx, targetIdx);
-            if (selectResult?.state) updateGameState(selectResult.state);
+            const pending = createPendingRunAction({
+              state: gameState,
+              actionType: 'postCombatShop.select',
+              applyLocal: draft => {
+                if (draft.run) {
+                  draft.run.pendingPostCombatShopSelection = { itemIndex: itemIdx, targetIndex: targetIdx };
+                }
+              },
+            });
+            updateGameState(pending.state);
+            const verification = apiSelectShopItem(itemIdx, targetIdx, { actionId: pending.actionId })
+              .then(result => ({ result }), error => ({ error }));
+
             const selectedCard = document.querySelector('.shop-item-card.selected');
             if (selectedCard) {
               const itemName = selectedCard.querySelector('.shop-item-name')?.textContent || 'Item';
@@ -1647,6 +1682,29 @@ async function showPostCombatShopFlow() {
               await new Promise(r => setTimeout(r, 600));
             }
             postCombatShop.hide();
+            const { result, error } = await verification;
+            if (error || !result) {
+              updateGameState(pending.originalState);
+              scene.showToast('Item choice did not save. Please choose again.', 2500);
+              if (canRetryPostCombatShop(pending.originalState)) {
+                postCombatShop.show(shopResult.items);
+                return;
+              }
+              resolve();
+              return;
+            }
+            if (result.status === 'corrected') {
+              const correctedState = correctPendingRunAction(pending, result);
+              updateGameState(correctedState);
+              scene.showToast('Item choice did not save. Please choose again.', 2500);
+              if (canRetryPostCombatShop(correctedState)) {
+                postCombatShop.show(shopResult.items);
+                return;
+              }
+              resolve();
+              return;
+            }
+            updateGameState(confirmPendingRunAction(pending, result));
             resolve();
           };
 
@@ -2122,6 +2180,7 @@ async function initGame() {
     apiCompleteSpeedReviewRoom,
     apiClaimTutorialFusionCore,
     apiCompleteTutorialFusion,
+    apiMarkTutorialPostFusionSeen,
     apiGetCreatureCollection,
     showCollectionSelect,
     apiGetWhackAMolePool,

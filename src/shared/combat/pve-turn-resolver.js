@@ -505,6 +505,15 @@ export function resolvePveTurn(snapshotInput, {
       awardKillXp,
     },
   );
+  const koResult = shouldProcessKoSwaps
+    ? processKOSwapsForTurn(allies, snapshot.creatureParty)
+    : { koSwaps: [], koRemovals: [] };
+  const koTranscript = shouldProcessKoSwaps
+    ? { koSwaps: koResult.koSwaps, koRemovals: koResult.koRemovals }
+    : {};
+  if (snapshot.combat && snapshot.creatureParty?.active) {
+    snapshot.combat.allies = snapshot.creatureParty.active;
+  }
 
   return {
     transcript: {
@@ -514,11 +523,12 @@ export function resolvePveTurn(snapshotInput, {
       effectEvents,
       roundStartEvents,
       enemyMpRegens: result.enemyMpRegens || [],
+      ...koTranscript,
       allAlliesDefeated: checkAllDefeated(allies),
       allEnemiesDefeated: result.allEnemiesDefeated || checkAllDefeated(enemies),
       stateSummary: buildStateSummary({ allies, enemies, creatureParty: snapshot.creatureParty }),
     },
-    nextCombat: createNextCombat(snapshot, allies, enemies),
+    nextCombat: createNextCombat(snapshot, snapshot.combat?.allies || allies, enemies),
   };
 }
 

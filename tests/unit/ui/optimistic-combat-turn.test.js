@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  buildVisualSafePveLocalTranscript,
   buildOptimisticKanjiKombatAnswer,
   buildOptimisticCombatTurn,
   canRunOptimisticKanjiKombatAnswer,
@@ -107,6 +108,7 @@ describe('optimistic combat turn client', () => {
     assert.equal(result.envelope.payload.moveChoices[0].moveId, 'honoo');
     assert.equal(result.envelope.payload.predictionMode, 'shared-pve-turn-v1');
     assert.equal(typeof result.envelope.predictedHash, 'string');
+    assert.equal('predictedTranscript' in result.envelope, false);
     assert.equal(result.localTranscript.allies.length, 1);
     assert.equal(result.localTranscript.enemies.length, 1);
   });
@@ -155,7 +157,7 @@ describe('optimistic combat turn client', () => {
     assert.equal(result.envelope.payload.predictionMode, 'shared-pve-turn-v1');
   });
 
-  it('does not predict turns with server-only KO feedback', () => {
+  it('predicts final-hit KO visuals for deterministic PvE attacks', () => {
     const koState = state({
       combat: {
         enemies: [
@@ -164,35 +166,191 @@ describe('optimistic combat turn client', () => {
         ],
       },
     });
-    const terminalState = state({
-      combat: {
-        enemies: [createCombatant({ id: 'mizu', hp: 1, maxHp: 30 })],
-      },
-    });
     const cursorKoState = state({
       combat: {
+        isBoss: true,
         actionCursor: { side: 'ally', index: 0, opening: false },
         enemies: [createCombatant({ id: 'mizu', hp: 1, maxHp: 30 })],
       },
     });
 
-    assert.equal(buildOptimisticCombatTurn({
+    const multiEnemyResult = buildOptimisticCombatTurn({
       state: koState,
       actionType: 'attack',
       moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
       actionId: 'act_ko',
-    }), null);
-    assert.equal(buildOptimisticCombatTurn({
-      state: terminalState,
-      actionType: 'attack',
-      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
-      actionId: 'act_terminal',
-    }), null);
-    assert.equal(buildOptimisticCombatTurn({
+    });
+    const cursorResult = buildOptimisticCombatTurn({
       state: cursorKoState,
       actionType: 'attack',
       moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
       actionId: 'act_cursor_ko',
+    });
+
+    assert.ok(multiEnemyResult);
+    assert.equal(multiEnemyResult.localTranscript.playerAttacks[0].targetDefeated, true);
+    assert.equal(multiEnemyResult.localTranscript.allEnemiesDefeated, false);
+    assert.ok(cursorResult);
+    assert.equal(cursorResult.localTranscript.actionSegments[0].attacks[0].targetDefeated, true);
+  });
+
+  it('builds terminal final-hit prediction as a pending local shell while posting only the transcript hash', () => {
+    const terminalState = state({
+      combat: {
+        isBoss: true,
+        enemies: [createCombatant({ id: 'mizu', hp: 1, maxHp: 30 })],
+      },
+    });
+
+    const result = buildOptimisticCombatTurn({
+      state: terminalState,
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      actionId: 'act_terminal',
+    });
+
+    assert.ok(result);
+    assert.equal(typeof result.envelope.predictedHash, 'string');
+    assert.equal('predictedTranscript' in result.envelope, false);
+    assert.equal(result.localTranscript.pendingCombatEnd.victory, true);
+    assert.equal(result.localTranscript.pendingCombatEnd.defeat, false);
+    assert.equal(result.localTranscript.combatEnded, false);
+    assert.equal(result.localTranscript.allEnemiesDefeated, false);
+    assert.equal(result.localTranscript.allAlliesDefeated, false);
+    assert.equal('xpEvents' in result.localTranscript, false);
+    assert.equal('reward' in result.localTranscript, false);
+    assert.equal('rewards' in result.localTranscript, false);
+    assert.equal('postCombatShop' in result.localTranscript, false);
+    assert.equal('pendingMoveLearn' in result.localTranscript, false);
+    assert.equal('moveLearnPrompts' in result.localTranscript, false);
+    assert.equal('newCollectionAdditions' in result.localTranscript, false);
+    assert.equal('tutorialRewards' in result.localTranscript, false);
+    assert.equal('elementDropsCollected' in result.localTranscript, false);
+    assert.equal(result.localTranscript.playerAttacks[0].targetDefeated, true);
+  });
+
+  it('refuses befriend-eligible terminal final-hit prediction', () => {
+    const terminalState = state({
+      combat: {
+        isBoss: false,
+        enemies: [createCombatant({ id: 'mizu', hp: 1, maxHp: 30 })],
+      },
+      run: {
+        creatureParty: { active: [createCombatant()], reserves: [] },
+      },
+    });
+
+    assert.equal(buildOptimisticCombatTurn({
+      state: terminalState,
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      actionId: 'act_befriend_terminal',
+    }), null);
+  });
+
+  it('strips server-owned feedback fields from visual-safe local transcripts', () => {
+    const ally = createCombatant({ hp: 8 });
+    const enemy = createCombatant({ id: 'mizu', hp: 0, maxHp: 30 });
+    const predictedTranscript = {
+      actionType: 'attack',
+      playerAttacks: [{ targetDefeated: true }],
+      actionSegments: [{
+        attacks: [{ targetDefeated: true }],
+        xpEvents: [{ enemyId: 'mizu' }],
+      }],
+      combatEnded: true,
+      victory: true,
+      allEnemiesDefeated: true,
+      allAlliesDefeated: false,
+      xpEvents: [{ enemyId: 'mizu' }],
+      newCollectionAdditions: [{ id: 'mizu' }],
+      tutorialRewards: [{ id: 'first-win' }],
+      elementDropsCollected: ['water'],
+      reward: { credits: 10 },
+      rewards: [{ credits: 10 }],
+      postCombatShop: { active: true },
+      pendingMoveLearn: { creatureId: 'hi' },
+      moveLearnPrompts: [{ creatureId: 'hi' }],
+    };
+
+    const localTranscript = buildVisualSafePveLocalTranscript({
+      predictedTranscript,
+      nextCombat: { allies: [ally], enemies: [enemy] },
+      run: { creatureParty: { active: [ally], reserves: [] } },
+    });
+
+    assert.equal(localTranscript.pendingCombatEnd.victory, true);
+    assert.equal(localTranscript.pendingCombatEnd.defeat, false);
+    assert.equal(localTranscript.combatEnded, false);
+    assert.equal(localTranscript.allEnemiesDefeated, false);
+    assert.equal(localTranscript.allAlliesDefeated, false);
+    assert.equal('xpEvents' in localTranscript, false);
+    assert.equal('xpEvents' in localTranscript.actionSegments[0], false);
+    assert.equal('newCollectionAdditions' in localTranscript, false);
+    assert.equal('tutorialRewards' in localTranscript, false);
+    assert.equal('elementDropsCollected' in localTranscript, false);
+    assert.equal('reward' in localTranscript, false);
+    assert.equal('rewards' in localTranscript, false);
+    assert.equal('postCombatShop' in localTranscript, false);
+    assert.equal('pendingMoveLearn' in localTranscript, false);
+    assert.equal('moveLearnPrompts' in localTranscript, false);
+    assert.deepEqual(predictedTranscript.xpEvents, [{ enemyId: 'mizu' }]);
+  });
+
+  it('refuses optimistic prediction for unsafe PvE blockers', () => {
+    const activeAlly = createCombatant({ id: 'hi', hp: 1, maxHp: 100 });
+    const reserveAlly = createCombatant({ id: 'kaze', hp: 100, maxHp: 100 });
+    const koSwapState = state({
+      combat: {
+        allies: [activeAlly],
+        enemies: [createCombatant({ id: 'mizu', attack: 200 })],
+      },
+      run: {
+        creatureParty: { active: [activeAlly], reserves: [reserveAlly] },
+      },
+    });
+
+    assert.equal(buildOptimisticCombatTurn({
+      state: koSwapState,
+      actionType: 'defend',
+      moveChoices: [],
+      actionId: 'act_ko_swap',
+    }), null);
+  });
+
+  it('refuses attack prediction when shared resolver exposes KO swaps', () => {
+    const activeAlly = createCombatant({ id: 'hi', hp: 1, maxHp: 100 });
+    const reserveAlly = createCombatant({ id: 'kaze', hp: 100, maxHp: 100 });
+    const koSwapState = state({
+      combat: {
+        allies: [activeAlly],
+        enemies: [createCombatant({
+          id: 'mizu',
+          attack: 200,
+          moves: [{
+            id: 'slam',
+            name: '打つ',
+            nameEn: 'Hit',
+            reading: 'うつ',
+            element: 'neutral',
+            category: 'damage',
+            target: 'single_enemy',
+            power: 200,
+            mpCost: 0,
+            accuracy: 100,
+          }],
+        })],
+      },
+      run: {
+        creatureParty: { active: [activeAlly], reserves: [reserveAlly] },
+      },
+    });
+
+    assert.equal(buildOptimisticCombatTurn({
+      state: koSwapState,
+      actionType: 'attack',
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      actionId: 'act_attack_ko_swap',
     }), null);
   });
 
