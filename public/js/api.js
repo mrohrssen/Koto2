@@ -839,6 +839,10 @@ async function completeTutorialFusion() {
   return apiCall('/tutorial-fusion-complete', 'POST');
 }
 
+async function markTutorialPostFusionSeen() {
+  return apiCall('/tutorial-post-fusion-seen', 'POST');
+}
+
 async function rollPostCombatShop() {
   return apiCall('/creature-shop-roll', 'POST');
 }
@@ -1043,6 +1047,7 @@ export {
   startFusion,
   claimTutorialFusionCore,
   completeTutorialFusion,
+  markTutorialPostFusionSeen,
   // Skill master endpoints
   skillMasterOffers,
   skillMasterChoose,

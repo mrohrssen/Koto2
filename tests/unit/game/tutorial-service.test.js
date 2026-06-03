@@ -15,6 +15,7 @@ import {
   canUseFusionLab,
   awardTutorialFusionCore,
   markTutorialFusionComplete,
+  markTutorialPostFusionNarrationShown,
   shouldForceStartingMeadowCatEncounter,
   shouldShowStartingMeadowHinonekoIntro,
   collectStartingMeadowHinonekoVictoryReward
@@ -113,6 +114,7 @@ describe('tutorial-service', () => {
       assert.deepEqual(meta.tutorialFusionDataUnlocked, []);
       assert.equal(meta.tutorialFusionCoreAwarded, false);
       assert.equal(meta.tutorialFusionComplete, false);
+      assert.equal(meta.tutorialPostFusionNarrationShown, false);
     });
 
     it('ensureTutorialFusionState migrates missing fields', () => {
@@ -121,6 +123,13 @@ describe('tutorial-service', () => {
       assert.deepEqual(meta.tutorialFusionDataUnlocked, []);
       assert.equal(meta.tutorialFusionCoreAwarded, false);
       assert.equal(meta.tutorialFusionComplete, false);
+      assert.equal(meta.tutorialPostFusionNarrationShown, false);
+    });
+
+    it('ensureTutorialFusionState treats old completed fusion saves as post-fusion narration seen', () => {
+      const meta = { tutorialFusionComplete: true };
+      ensureTutorialFusionState(meta);
+      assert.equal(meta.tutorialPostFusionNarrationShown, true);
     });
 
     it('unlockTutorialFusionData records Hinoneko once', () => {
@@ -167,6 +176,30 @@ describe('tutorial-service', () => {
       markTutorialFusionComplete(meta);
       assert.equal(meta.tutorialFusionComplete, true);
       assert.equal(meta.tutorialStep, 6);
+      assert.equal(meta.tutorialPostFusionNarrationShown, false);
+    });
+
+    it('markTutorialPostFusionNarrationShown records the post-fusion message once after Hinoneko is owned', () => {
+      const meta = createMetaProgression();
+      meta.tutorialFusionComplete = true;
+      meta.creatureCollection.push('hinoneko');
+
+      const first = markTutorialPostFusionNarrationShown(meta);
+      const second = markTutorialPostFusionNarrationShown(meta);
+
+      assert.equal(first.marked, true);
+      assert.equal(second.marked, false);
+      assert.equal(meta.tutorialPostFusionNarrationShown, true);
+    });
+
+    it('markTutorialPostFusionNarrationShown does not mark before Hinoneko fusion is complete', () => {
+      const meta = createMetaProgression();
+      meta.creatureCollection.push('hinoneko');
+
+      const result = markTutorialPostFusionNarrationShown(meta);
+
+      assert.equal(result.marked, false);
+      assert.equal(meta.tutorialPostFusionNarrationShown, false);
     });
   });
 
@@ -314,4 +347,3 @@ describe('tutorial room generation', () => {
     assert.equal(allMatch, false, 'Without tutorialMode, rooms should be randomized');
   });
 });
-

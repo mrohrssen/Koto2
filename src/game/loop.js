@@ -309,7 +309,8 @@ export class GameManager {
         tutorialStep: this.meta.tutorialStep ?? 6,
         tutorialFusionDataUnlocked: Array.isArray(this.meta.tutorialFusionDataUnlocked) ? this.meta.tutorialFusionDataUnlocked : [],
         tutorialFusionCoreAwarded: !!this.meta.tutorialFusionCoreAwarded,
-        tutorialFusionComplete: !!this.meta.tutorialFusionComplete
+        tutorialFusionComplete: !!this.meta.tutorialFusionComplete,
+        tutorialPostFusionNarrationShown: !!this.meta.tutorialPostFusionNarrationShown
       } : null,
       phase: this.getPhase()
     };
