@@ -54,6 +54,7 @@ import { createDevRouter } from './src/routes/dev.js';
 import { createForgeRouter } from './src/routes/forge.js';
 import { createSpriteForgeRouter } from './src/routes/sprite-forge.js';
 import createAdminRoutes from './src/routes/admin.js';
+import createAdminAuthRoutes from './src/routes/admin-auth.js';
 import { createAdminSecretRouter } from './src/routes/admin-secret.js';
 import createWordExposureRoutes from './src/routes/admin-word-exposures.js';
 import createFrameAuditRoutes from './src/routes/admin-frame-audit.js';
@@ -490,6 +491,7 @@ app.use('/api/sprite-forge', createSpriteForgeRouter({
 }));
 
 // ============ Admin (simulator) ============
+app.use('/api/admin', createAdminAuthRoutes());
 app.use('/api/admin', createAdminSecretRouter());
 app.use('/api/admin', createAdminRoutes({ dataDir: dataPath('') }));
 app.use('/api/admin', createWordExposureRoutes({

@@ -37,7 +37,11 @@ const BUG_REPORT_ENVIRONMENTS = [
 
 const state = {
   activeView: 'overview',
-  adminSecret: sessionStorage.getItem('koto-admin-secret') || '',
+  adminSession: {
+    checked: false,
+    authenticated: false,
+    username: '',
+  },
   bugReportEnvironment: sessionStorage.getItem('koto-admin-bug-report-environment') || 'current',
   bugReports: [],
   selectedBugReport: null,
@@ -54,15 +58,16 @@ const state = {
     users: 0,
     bugReportDetail: 0,
     userKnowledge: 0,
-    adminSecret: 0,
   },
 };
 
 const elements = {
+  app: document.querySelector('[data-admin-app]'),
   nav: document.querySelector('[data-sidebar-nav]'),
   viewTitle: document.querySelector('[data-view-title]'),
   refresh: document.querySelector('[data-refresh-view]'),
   search: document.querySelector('[data-global-search]'),
+  session: document.querySelector('[data-admin-session]'),
 };
 
 function escapeHtml(value) {
@@ -145,7 +150,12 @@ function summarizeUserAgent(userAgent) {
 }
 
 async function fetchJson(url, options = {}) {
-  const response = await fetch(url, options);
+  const finalOptions = { ...options };
+  if (isSameOriginUrl(url)) {
+    finalOptions.credentials = finalOptions.credentials || 'include';
+  }
+
+  const response = await fetch(url, finalOptions);
   if (!response.ok) {
     const message = await response.text();
     throw new Error(`${response.status} ${response.statusText}: ${message}`);
@@ -153,71 +163,52 @@ async function fetchJson(url, options = {}) {
   return response.json();
 }
 
-function getTypedAdminSecret() {
-  return document.querySelector('[data-admin-secret-input]')?.value.trim() || '';
-}
-
-function storeAdminSecret(secret) {
-  state.adminSecret = secret;
-  if (secret) {
-    sessionStorage.setItem('koto-admin-secret', secret);
-  } else {
-    sessionStorage.removeItem('koto-admin-secret');
-  }
-}
-
-function saveAdminSecret(secret) {
-  state.requests.adminSecret += 1;
-  storeAdminSecret(secret);
-}
-
-function clearAdminSecret() {
-  state.requests.adminSecret += 1;
-  storeAdminSecret('');
-}
-
-async function ensureAdminSecret() {
-  if (state.adminSecret) {
-    return state.adminSecret;
-  }
-
-  const typedSecret = getTypedAdminSecret();
-  if (typedSecret) {
-    saveAdminSecret(typedSecret);
-    return state.adminSecret;
-  }
-
-  const requestToken = state.requests.adminSecret;
-  let payload = null;
+function isSameOriginUrl(url) {
   try {
-    payload = await fetchJson('/api/admin/secret');
+    return new URL(url, window.location.origin).origin === window.location.origin;
   } catch {
-    // Remote deployments intentionally hide this endpoint. Fall through to manual entry.
+    return false;
   }
-
-  if (!isCurrentRequestToken(requestToken, state.requests.adminSecret)) {
-    throw new Error('Admin secret changed. Retry the admin action.');
-  }
-
-  if (payload) {
-    if (payload.secret) {
-      storeAdminSecret(payload.secret);
-      return state.adminSecret;
-    }
-  }
-
-  throw new Error('Admin secret required. Paste ADMIN_SECRET into Users & Data and retry.');
 }
 
 async function adminFetchJson(url, options = {}) {
-  const secret = await ensureAdminSecret();
-  return fetchJson(url, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      'x-admin-secret': secret,
-    },
+  return fetchJson(url, { ...options, credentials: 'include' });
+}
+
+async function loadAdminSession() {
+  const payload = await fetchJson('/api/admin/session');
+  state.adminSession = {
+    checked: true,
+    authenticated: payload.authenticated === true,
+    username: payload.username || '',
+  };
+}
+
+async function loginAdmin({ username, password }) {
+  const payload = await fetchJson('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
   });
+  state.adminSession = {
+    checked: true,
+    authenticated: payload.authenticated === true,
+    username: payload.username || username,
+  };
+}
+
+async function logoutAdmin() {
+  await fetchJson('/api/admin/logout', { method: 'POST' });
+  state.adminSession = {
+    checked: true,
+    authenticated: false,
+    username: '',
+  };
+  state.bugReports = [];
+  state.selectedBugReport = null;
+  state.users = [];
+  state.selectedUser = null;
+  state.selectedUserKnowledge = null;
 }
 
 async function loadBugReports() {
@@ -374,6 +365,9 @@ async function setBugReportEnvironment(environmentId) {
 async function deleteSelectedBugReport() {
   clearError();
   if (!state.selectedBugReport?.id) return;
+  if (getBugReportEnvironment().id !== 'current') {
+    throw new Error('Open this environment and use Current app to delete bug reports from that deployment.');
+  }
 
   const confirmed = window.confirm(`Delete bug report ${state.selectedBugReport.id}?`);
   if (!confirmed) return;
@@ -387,6 +381,8 @@ async function deleteSelectedBugReport() {
 }
 
 async function refreshActiveView() {
+  if (!state.adminSession.authenticated) return;
+
   try {
     clearError();
     if (state.activeView === 'bug-reports' || state.activeView === 'overview') {
@@ -418,6 +414,72 @@ function renderNav() {
       }).join('')}
     </div>
   `).join('');
+}
+
+function renderSessionControls() {
+  if (!elements.session) return;
+  if (!state.adminSession.authenticated) {
+    elements.session.innerHTML = '';
+    return;
+  }
+
+  elements.session.innerHTML = `
+    <span class="session-user">Signed in as <strong>${escapeHtml(state.adminSession.username)}</strong></span>
+    <button class="secondary-action" type="button" data-admin-logout>Log Out</button>
+  `;
+}
+
+function setCommandControlsEnabled(enabled) {
+  if (elements.search) {
+    elements.search.disabled = !enabled;
+    if (!enabled) elements.search.value = '';
+  }
+  if (elements.refresh) {
+    elements.refresh.disabled = !enabled;
+  }
+}
+
+function renderLoginView(error = '') {
+  elements.app?.classList.add('admin-login-mode');
+  elements.nav.innerHTML = '';
+  elements.viewTitle.textContent = 'Admin Login';
+  setCommandControlsEnabled(false);
+  renderSessionControls();
+
+  document.querySelectorAll('[data-view]').forEach((view) => {
+    view.classList.toggle('active', view.dataset.view === 'overview');
+    if (view.dataset.view !== 'overview') {
+      view.innerHTML = '';
+    }
+  });
+
+  const overview = document.querySelector('[data-view="overview"]');
+  if (!overview) return;
+  overview.innerHTML = `
+    <div class="login-layout">
+      <form class="panel admin-login-panel" data-admin-login-form>
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Admin Login</div>
+            <div class="panel-subtitle">Use the configured admin credentials for this environment.</div>
+          </div>
+          <span class="pill warn">required</span>
+        </div>
+        <div class="stacked-form">
+          ${error ? `<div class="login-error">${escapeHtml(error)}</div>` : ''}
+          <label>
+            <span class="row-meta">Username</span>
+            <input data-admin-login-username type="text" autocomplete="username" autofocus>
+          </label>
+          <label>
+            <span class="row-meta">Password</span>
+            <input data-admin-login-password type="password" autocomplete="current-password">
+          </label>
+          <button class="primary-action" type="submit">Log In</button>
+        </div>
+      </form>
+    </div>
+  `;
 }
 
 function renderToolCards(tools) {
@@ -598,13 +660,16 @@ function renderBugReportDetail() {
   const metadataHref = `/api/bug-reports/${encodeURIComponent(report.id)}`;
   const screenshotUrl = bugReportApiPath(screenshotHref);
   const metadataUrl = bugReportApiPath(metadataHref);
+  const canDeleteCurrentReport = getBugReportEnvironment().id === 'current';
   panel.innerHTML = `
     <div class="panel-header">
       <div>
         <div class="panel-title">${escapeHtml(report.note || 'Bug report without note')}</div>
         <div class="panel-subtitle">${escapeHtml(report.id)} · ${escapeHtml(formatDate(report.submittedAt || report.timestamp))}</div>
       </div>
-      <button class="secondary-action danger" type="button" data-delete-bug-report>Delete</button>
+      ${canDeleteCurrentReport
+        ? '<button class="secondary-action danger" type="button" data-delete-bug-report>Delete</button>'
+        : '<span class="pill warn">remote read-only</span>'}
     </div>
     <div class="detail-stack">
       <div class="detail-grid">
@@ -629,7 +694,6 @@ function renderUsers() {
   if (!panel) return;
 
   const users = filterUsers(state.users, state.userQuery);
-  const secretStatus = state.adminSecret ? 'Secret stored for this tab' : 'No secret stored for this tab';
   const rows = users.map((user) => `
     <button class="row-item${state.selectedUser?.id === user.id ? ' active' : ''}" type="button" data-user-id="${escapeHtml(user.id)}">
       <span>
@@ -644,20 +708,9 @@ function renderUsers() {
     <div class="panel-header">
       <div>
         <div class="panel-title">Users & Data</div>
-        <div class="panel-subtitle">Live user records from the existing admin API.</div>
+        <div class="panel-subtitle">Live user records for the signed-in admin session.</div>
       </div>
       <span class="pill ${state.loading.users ? 'warn' : 'good'}">${state.loading.users ? 'loading' : `${state.users.length} users`}</span>
-    </div>
-    <div class="stacked-form admin-secret-controls">
-      <label>
-        <span class="row-meta">Admin secret</span>
-        <input data-admin-secret-input type="password" autocomplete="off" placeholder="Paste ADMIN_SECRET" value="">
-      </label>
-      <div class="input-row">
-        <button class="secondary-action" type="button" data-save-admin-secret>Save Secret</button>
-        <button class="secondary-action" type="button" data-clear-admin-secret>Clear</button>
-      </div>
-      <span class="row-meta">${escapeHtml(secretStatus)}</span>
     </div>
     <div class="stacked-form">
       <label>
@@ -668,7 +721,7 @@ function renderUsers() {
     ${state.loading.users ? `
       <div class="empty-state">
         <strong>Loading users.</strong>
-        <span>Fetching account records with the admin secret.</span>
+        <span>Fetching account records for the current admin session.</span>
       </div>
     ` : ''}
     ${!state.loading.users && users.length ? `<div class="list-stack">${rows}</div>` : ''}
@@ -818,7 +871,7 @@ function renderStaticViews() {
             </div>
             <div class="callout-box">
               <div class="callout-title">Live data scope</div>
-              <div class="row-meta">Bug reports are unauthenticated; user operations use the existing admin secret endpoint.</div>
+              <div class="row-meta">Dashboard operations run behind the signed-in admin session for this environment.</div>
             </div>
           </div>
         </div>
@@ -974,6 +1027,20 @@ function restoreUserFilterFocus(selectionStart, selectionEnd) {
 
 function bindEvents() {
   document.body.addEventListener('click', async (event) => {
+    if (event.target.closest('[data-admin-logout]')) {
+      try {
+        await logoutAdmin();
+        renderLoginView();
+      } catch (error) {
+        renderError(error);
+      }
+      return;
+    }
+
+    if (!state.adminSession.authenticated) {
+      return;
+    }
+
     const navTarget = event.target.closest('[data-nav-view]');
     if (navTarget) {
       setActiveView(navTarget.dataset.navView);
@@ -1035,35 +1102,6 @@ function bindEvents() {
       return;
     }
 
-    if (event.target.closest('[data-save-admin-secret]')) {
-      const secret = getTypedAdminSecret();
-      if (!secret) return;
-      saveAdminSecret(secret);
-      state.requests.userKnowledge += 1;
-      renderUsers();
-      try {
-        await loadUsers();
-      } catch (error) {
-        renderError(error);
-      }
-      return;
-    }
-
-    if (event.target.closest('[data-clear-admin-secret]')) {
-      clearAdminSecret();
-      clearError();
-      state.requests.users += 1;
-      state.requests.userKnowledge += 1;
-      state.loading.users = false;
-      state.users = [];
-      state.selectedUser = null;
-      state.selectedUserKnowledge = null;
-      renderUsers();
-      renderOverviewData();
-      renderNav();
-      return;
-    }
-
     if (event.target.closest('[data-delete-user]')) {
       try {
         await deleteSelectedUser();
@@ -1074,6 +1112,10 @@ function bindEvents() {
   });
 
   document.body.addEventListener('input', (event) => {
+    if (!state.adminSession.authenticated) {
+      return;
+    }
+
     if (event.target.matches('[data-user-filter]')) {
       const { selectionStart, selectionEnd } = event.target;
       state.userQuery = event.target.value;
@@ -1094,6 +1136,10 @@ function bindEvents() {
   });
 
   document.body.addEventListener('change', async (event) => {
+    if (!state.adminSession.authenticated) {
+      return;
+    }
+
     if (event.target.matches('[data-bug-report-environment]')) {
       try {
         await setBugReportEnvironment(event.target.value);
@@ -1103,13 +1149,51 @@ function bindEvents() {
     }
   });
 
+  document.body.addEventListener('submit', async (event) => {
+    if (!event.target.matches('[data-admin-login-form]')) return;
+    event.preventDefault();
+
+    const username = document.querySelector('[data-admin-login-username]')?.value.trim() || '';
+    const password = document.querySelector('[data-admin-login-password]')?.value || '';
+
+    try {
+      await loginAdmin({ username, password });
+      renderDashboard();
+      await refreshActiveView();
+    } catch (error) {
+      renderLoginView(error?.message || 'Login failed');
+    }
+  });
+
   elements.refresh?.addEventListener('click', refreshActiveView);
 }
 
-renderNav();
-renderStaticViews();
-renderBugReports();
-renderUsers();
-bindEvents();
-setActiveView(state.activeView);
-refreshActiveView();
+function renderDashboard() {
+  elements.app?.classList.remove('admin-login-mode');
+  setCommandControlsEnabled(true);
+  renderSessionControls();
+  renderNav();
+  renderStaticViews();
+  renderBugReports();
+  renderUsers();
+  setActiveView(state.activeView);
+}
+
+async function initialize() {
+  bindEvents();
+  try {
+    await loadAdminSession();
+  } catch {
+    state.adminSession = { checked: true, authenticated: false, username: '' };
+  }
+
+  if (!state.adminSession.authenticated) {
+    renderLoginView();
+    return;
+  }
+
+  renderDashboard();
+  await refreshActiveView();
+}
+
+initialize();

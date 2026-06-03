@@ -48,6 +48,19 @@ button {
   min-height: 100vh;
 }
 
+.admin-app.admin-login-mode {
+  grid-template-columns: 1fr;
+}
+
+.admin-login-mode .sidebar {
+  display: none;
+}
+
+.admin-login-mode .command-search,
+.admin-login-mode [data-refresh-view] {
+  display: none;
+}
+
 .sidebar {
   position: sticky;
   top: 0;
@@ -214,6 +227,22 @@ button {
   gap: 10px;
 }
 
+.session-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.session-user {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.session-user strong {
+  color: var(--text);
+}
+
 .command-search {
   display: block;
   min-width: min(320px, 36vw);
@@ -236,7 +265,8 @@ button {
 }
 
 .secondary-action,
-.inline-action {
+.inline-action,
+.primary-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -254,8 +284,17 @@ button {
 }
 
 .secondary-action:hover,
-.inline-action:hover {
+.inline-action:hover,
+.primary-action:hover {
   border-color: rgba(110, 182, 255, .42);
+}
+
+.primary-action {
+  width: 100%;
+  border-color: rgba(110, 182, 255, .5);
+  background: var(--blue);
+  color: #07111b;
+  font-weight: 850;
 }
 
 .secondary-action:disabled {
@@ -581,13 +620,29 @@ button.row-item {
   background: rgba(242, 118, 118, .045);
 }
 
-.admin-secret-controls {
-  border-bottom: 1px solid var(--border-soft);
-}
-
 .admin-error {
   margin-bottom: 18px;
   border-color: rgba(242, 118, 118, .36);
+}
+
+.login-layout {
+  display: grid;
+  min-height: calc(100vh - 112px);
+  place-items: center;
+}
+
+.admin-login-panel {
+  width: min(420px, 100%);
+}
+
+.login-error {
+  padding: 10px 11px;
+  border: 1px solid rgba(242, 118, 118, .34);
+  border-radius: 8px;
+  background: rgba(242, 118, 118, .08);
+  color: #ffb7b7;
+  font-size: 12.5px;
+  line-height: 1.4;
 }
 
 .empty-state {

@@ -5,6 +5,7 @@ import { dataPath } from '../data-dir.js';
 import { findUserByUsername } from '../auth/users.js';
 import { optionalAuth } from '../auth/middleware.js';
 import { getErrors } from '../server-error-buffer.js';
+import { adminAuth } from './admin-auth.js';
 
 const BUG_REPORTS_DIR = dataPath('bug-reports');
 const MAX_REPORTS = 50;
@@ -26,17 +27,6 @@ export function resolveBugReportDir(rootDir, reportId) {
   }
 
   return reportDir;
-}
-
-function requireAdminSecret(req, res, next) {
-  const secret = process.env.ADMIN_SECRET || '';
-  if (!secret) {
-    return res.status(404).json({ error: 'Not found' });
-  }
-  if (req.headers['x-admin-secret'] !== secret) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  return next();
 }
 
 // Ensure directory exists
@@ -194,7 +184,7 @@ export default function createBugReportRoutes() {
   });
 
   // DELETE /api/bug-reports/:id - Delete a report
-  router.delete('/bug-reports/:id', requireAdminSecret, (req, res) => {
+  router.delete('/bug-reports/:id', adminAuth, (req, res) => {
     try {
       const reportDir = resolveBugReportDir(BUG_REPORTS_DIR, req.params.id);
 
