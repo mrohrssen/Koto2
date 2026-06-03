@@ -11,7 +11,21 @@ import {
   SCRIPT_DECK,
 } from '../../../src/game/script-srs.js';
 import { getLocalDateKey, KanjiKombatService } from '../../../src/game/services/kanji-kombat-service.js';
+import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { createNewRun } from '../../../src/game/state.js';
+
+const WEAK_MOVE = {
+  id: 'poke',
+  name: '突く',
+  nameEn: 'Poke',
+  reading: 'つく',
+  element: 'neutral',
+  category: 'damage',
+  target: 'single_enemy',
+  power: 1,
+  mpCost: 0,
+  accuracy: 100,
+};
 
 function fakeCreature(id, overrides = {}) {
   return {
@@ -163,6 +177,111 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.onboardingPending, true);
     assert.equal(gm.run.kanjiKombat.currentQuiz, null);
     assert.equal(gm.run.kanjiKombat.pendingIntro, null);
+  });
+
+  it('rejects intro choices while onboarding is pending without touching intro card progress', () => {
+    const gm = buildGm();
+    const cards = ensureScriptDeckSeeded(gm.userId);
+    const card = cards.find(candidate => candidate.id === 'hiragana:あ');
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    gm.run.kanjiKombat.pendingIntro = { cardId: card.id, card, source: 'test' };
+
+    assert.throws(
+      () => service.submitIntroChoice(card.id, 'known'),
+      /Kanji Kombat onboarding/
+    );
+
+    assert.equal(gm.run.kanjiKombat.pendingIntro.cardId, card.id);
+    const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(candidate => candidate.id === card.id);
+    assert.equal(savedCard.reps || 0, 0);
+  });
+
+  it('rejects stale intro card ids without grading arbitrary cards', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    ensureScriptDeckSeeded(gm.userId);
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    const pendingCardId = gm.run.kanjiKombat.pendingIntro.cardId;
+    const wrongCardId = loadSrsData(gm.userId)[SCRIPT_DECK].cards
+      .find(card => card.id !== pendingCardId && card.type === 'hiragana').id;
+
+    assert.throws(
+      () => service.submitIntroChoice(wrongCardId, 'known'),
+      /Kanji Kombat intro/
+    );
+
+    assert.equal(gm.run.kanjiKombat.pendingIntro.cardId, pendingCardId);
+    const wrongCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === wrongCardId);
+    assert.equal(wrongCard.reps || 0, 0);
+  });
+
+  it('rejects direct and optimistic answers while onboarding is pending', () => {
+    const gm = buildGm();
+    ensureScriptDeckSeeded(gm.userId);
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    gm.combatCycleService = {
+      resolveKanjiKombatCursorAction: () => ({ actionType: 'kanjiKombat' }),
+    };
+    gm.run.kanjiKombat.currentQuiz = {
+      cardId: 'hiragana:あ',
+      choices: [
+        { id: 'choice-correct', answer: 'a', correct: true },
+        { id: 'choice-wrong', answer: 'i', correct: false },
+      ],
+    };
+    gm.combat.optimistic = {
+      combatId: 'cmb_kanji_pending',
+      stateVersion: 0,
+      nextTurnSeed: 'seed_pending',
+      acceptedActionIds: {},
+    };
+
+    assert.throws(
+      () => service.submitAnswer('choice-correct'),
+      /Kanji Kombat onboarding/
+    );
+    assert.throws(
+      () => service.verifyAndCommitOptimisticAnswer({ actionId: 'act_pending' }),
+      /Kanji Kombat onboarding/
+    );
+
+    const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === 'hiragana:あ');
+    assert.equal(savedCard.reps || 0, 0);
+  });
+
+  it('rejects completion choices while onboarding is pending', () => {
+    const gm = buildGm();
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    gm.run.kanjiKombat.completionChoicePending = true;
+
+    assert.throws(
+      () => service.resolveCompletionChoice(false),
+      /Kanji Kombat onboarding/
+    );
+
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+  });
+
+  it('rejects normal combat-cycle actions while onboarding is pending without advancing combat', () => {
+    const gm = buildGm();
+    const kanjiService = new KanjiKombatService(gm);
+    kanjiService.startRunWithCreature(fakeCreature('hi', { moves: [WEAK_MOVE] }));
+    const combatService = new CombatCycleService(gm);
+    const moveChoices = [{ creatureIndex: 0, moveId: WEAK_MOVE.id, targetIndex: 0 }];
+    const actionCount = gm.combat.actionCount;
+    const actionCursor = JSON.parse(JSON.stringify(gm.combat.actionCursor));
+
+    assert.throws(
+      () => combatService.creatureCombatCycle('attack', moveChoices),
+      /Kanji Kombat onboarding/
+    );
+
+    assert.equal(gm.combat.actionCount, actionCount);
+    assert.deepEqual(gm.combat.actionCursor, actionCursor);
   });
 
   it('marks a run as Kanji Kombat and starts with one selected creature', () => {

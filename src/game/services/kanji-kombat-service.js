@@ -294,6 +294,17 @@ export class KanjiKombatService {
     this.gm = gm;
   }
 
+  isOnboardingPending() {
+    return this.gm.run?.mode === 'kanjiKombat'
+      && this.gm.run?.kanjiKombat?.onboardingPending === true;
+  }
+
+  assertOnboardingComplete() {
+    if (this.isOnboardingPending()) {
+      throw new Error('Complete Kanji Kombat onboarding before continuing');
+    }
+  }
+
   chooseNextWork(state, opts = {}) {
     if (!this.gm.meta) this.gm.meta = {};
     return chooseNextScriptWork(this.gm.userId, state, {
@@ -397,6 +408,9 @@ export class KanjiKombatService {
   submitIntroChoice(cardId, choice) {
     const state = this.gm.run?.kanjiKombat;
     if (!state) throw new Error('No active Kanji Kombat run');
+    this.assertOnboardingComplete();
+    if (!state.pendingIntro?.cardId) throw new Error('No pending Kanji Kombat intro');
+    if (state.pendingIntro.cardId !== cardId) throw new Error('Kanji Kombat intro card mismatch');
     return resolveIntroChoice(this.gm.userId, state, cardId, choice, {
       onboarding: ensureKanjiKombatOnboardingState(this.gm.meta),
     });
@@ -416,6 +430,7 @@ export class KanjiKombatService {
 
   submitAnswer(answerId, opts = {}) {
     const kk = this.gm.run?.kanjiKombat;
+    this.assertOnboardingComplete();
     const quiz = kk?.currentQuiz;
     if (!quiz) throw new Error('No active Kanji Kombat quiz');
     const choice = quiz.choices.find(option => option.id === answerId);
@@ -436,6 +451,7 @@ export class KanjiKombatService {
   }
 
   verifyAndCommitOptimisticAnswer(envelope = {}) {
+    this.assertOnboardingComplete();
     const optimistic = this.gm.combat?.optimistic;
     if (!optimistic) {
       return buildCorrectedResponse({
@@ -539,6 +555,7 @@ export class KanjiKombatService {
 
   resolveCompletionChoice(keepGoing) {
     const kk = this.gm.run?.kanjiKombat;
+    this.assertOnboardingComplete();
     if (!kk?.completionChoicePending) {
       throw new Error('No Kanji Kombat completion choice is pending');
     }

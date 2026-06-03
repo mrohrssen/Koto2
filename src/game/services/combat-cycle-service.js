@@ -124,6 +124,17 @@ function cloneGameManagerForCombatPreview(gm) {
   };
 }
 
+function isKanjiKombatOnboardingPending(gm) {
+  return gm.run?.mode === 'kanjiKombat'
+    && gm.run?.kanjiKombat?.onboardingPending === true;
+}
+
+function assertKanjiKombatOnboardingComplete(gm) {
+  if (isKanjiKombatOnboardingPending(gm)) {
+    throw new Error('Complete Kanji Kombat onboarding before continuing');
+  }
+}
+
 export function serializeBefriendPrompt(prompt) {
   if (!prompt) return null;
   const payload = {
@@ -343,6 +354,7 @@ export class CombatCycleService {
   }
 
   previewCreatureCombatCycle({ actionType = 'attack', moveChoices = [], seed } = {}) {
+    assertKanjiKombatOnboardingComplete(this.gm);
     const resolvedActionType = normalizeCombatActionType(actionType);
     const previewGm = cloneGameManagerForCombatPreview(this.gm);
     const previewService = new CombatCycleService(previewGm);
@@ -358,6 +370,7 @@ export class CombatCycleService {
   }
 
   verifyAndCommitCreatureCombatCycle(envelope = {}) {
+    assertKanjiKombatOnboardingComplete(this.gm);
     const optimistic = this.gm.combat?.optimistic;
     if (!optimistic) {
       return buildCorrectedResponse({
@@ -562,6 +575,7 @@ export class CombatCycleService {
     if (!this.gm.combat?.active) {
       throw new Error('No active combat');
     }
+    assertKanjiKombatOnboardingComplete(this.gm);
 
     // Once an action is committed, free swap window closes
     this.gm.combat.swapPhase = false;
