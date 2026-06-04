@@ -1,5 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, readdir, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import {
   REVIEW_COLUMNS,
   applyReviewedKeywords,
@@ -9,7 +12,7 @@ import {
   rowsToCsv,
   validateReviewedRows,
 } from '../../../scripts/lib/kanji-keyword-review.mjs';
-import { buildSliceManifests } from '../../../scripts/build-kanji-keyword-review-csv.mjs';
+import { buildSliceManifests, formatSliceFileName, runCli } from '../../../scripts/build-kanji-keyword-review-csv.mjs';
 
 describe('kanji keyword review helpers', () => {
   it('escapes plain, comma, quoted, and newline fields', () => {
@@ -213,6 +216,50 @@ describe('kanji keyword review helpers', () => {
   it('rejects invalid slice sizes', () => {
     assert.throws(() => buildSliceManifests([{ rank: 1, kanji: '人' }], 0), /Invalid value for --slice-size/i);
     assert.throws(() => buildSliceManifests([{ rank: 1, kanji: '人' }], '2.5'), /Invalid value for --slice-size/i);
+  });
+
+  it('clears stale slice files and scales slice filename padding', async () => {
+    assert.equal(formatSliceFileName(1, 1, 2, 9), 'slice-01-r1-2.csv');
+    assert.equal(formatSliceFileName(1, 1, 2, 123), 'slice-001-r1-2.csv');
+    assert.equal(formatSliceFileName(123, 3901, 4000, 123), 'slice-123-r3901-4000.csv');
+
+    const dir = await mkdtemp(join(tmpdir(), 'kanji-keyword-review-'));
+
+    try {
+      const slicesDir = join(dir, 'slices');
+      await mkdir(slicesDir, { recursive: true });
+      await writeFile(join(slicesDir, 'keep.txt'), 'keep\n');
+      await writeFile(join(slicesDir, 'slice-99-r999-1000.csv'), 'stale\n');
+
+      await runCli(['--dir', dir, '--slice-size', '300']);
+      await runCli(['--dir', dir, '--slice-size', '500']);
+
+      const directoryEntries = (await readdir(slicesDir)).sort();
+      const sliceFiles = directoryEntries.filter(name => name.startsWith('slice-'));
+      assert.deepEqual(sliceFiles, [
+        'slice-01-r1-500.csv',
+        'slice-02-r501-1000.csv',
+        'slice-03-r1001-1500.csv',
+        'slice-04-r1501-2000.csv',
+        'slice-05-r2001-2500.csv',
+        'slice-06-r2501-3000.csv',
+        'slice-07-r3001-3500.csv',
+        'slice-08-r3501-4000.csv',
+      ]);
+      assert.deepEqual(directoryEntries, [
+        'keep.txt',
+        'slice-01-r1-500.csv',
+        'slice-02-r501-1000.csv',
+        'slice-03-r1001-1500.csv',
+        'slice-04-r1501-2000.csv',
+        'slice-05-r2001-2500.csv',
+        'slice-06-r2501-3000.csv',
+        'slice-07-r3001-3500.csv',
+        'slice-08-r3501-4000.csv',
+      ]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 
   it('applies reviewed keywords only where the proposal changes', () => {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getKotoKanjiEntries } from '../src/game/koto-kanji-dictionary.js';
@@ -9,6 +9,7 @@ import { buildReviewRows, rowsToCsv } from './lib/kanji-keyword-review.mjs';
 
 export const DEFAULT_DIR = 'output/kanji-keyword-review';
 export const DEFAULT_SLICE_SIZE = 100;
+const GENERATED_SLICE_FILE_PATTERN = /^slice-\d+-r\d+-\d+\.csv$/u;
 
 function toText(value) {
   return value == null ? '' : String(value);
@@ -57,6 +58,20 @@ async function writeTextAtomic(filePath, text) {
   const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
   await writeFile(tempPath, text, 'utf8');
   await rename(tempPath, filePath);
+}
+
+async function clearGeneratedSliceFiles(slicesDir) {
+  if (!existsSync(slicesDir)) return;
+
+  const entries = await readdir(slicesDir, { withFileTypes: true });
+  await Promise.all(entries
+    .filter(entry => entry.isFile() && GENERATED_SLICE_FILE_PATTERN.test(entry.name))
+    .map(entry => unlink(join(slicesDir, entry.name))));
+}
+
+export function formatSliceFileName(index, startRank, endRank, totalSlices) {
+  const width = Math.max(2, String(totalSlices).length);
+  return `slice-${String(index).padStart(width, '0')}-r${startRank}-${endRank}.csv`;
 }
 
 export function buildSliceManifests(rows, size) {
@@ -129,8 +144,9 @@ export async function runCli(argv = process.argv.slice(2)) {
 
   const slices = buildSliceManifests(rows, args.sliceSize);
   await mkdir(slicesDir, { recursive: true });
+  await clearGeneratedSliceFiles(slicesDir);
   for (const slice of slices) {
-    const fileName = `slice-${String(slice.index).padStart(2, '0')}-r${slice.startRank}-${slice.endRank}.csv`;
+    const fileName = formatSliceFileName(slice.index, slice.startRank, slice.endRank, slices.length);
     await writeTextAtomic(join(slicesDir, fileName), rowsToCsv(slice.rows));
   }
 
