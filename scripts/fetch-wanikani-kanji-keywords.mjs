@@ -10,6 +10,9 @@ export const DEFAULT_CACHE_PATH = 'output/kanji-keyword-review/wanikani-kanji-ca
 export const DEFAULT_OUT_PATH = 'output/kanji-keyword-review/wanikani-kanji-keywords.json';
 export const DEFAULT_BASE_URL = 'https://api.wanikani.com/v2/subjects?types=kanji&hidden=false';
 export const WANIKANI_REVISION = '20170710';
+export const DEFAULT_MAX_429_RETRIES = 5;
+export const DEFAULT_MIN_RETRY_DELAY_MS = 1_000;
+export const DEFAULT_MAX_RETRY_DELAY_MS = 60_000;
 const DEFAULT_RETRY_AFTER_MS = 10_000;
 const SUCCESS_PAGE_DELAY_MS = 150;
 
@@ -19,6 +22,26 @@ function sleep(ms) {
 
 function toText(value) {
   return value == null ? '' : String(value);
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function clamp(value, minimum, maximum) {
+  return Math.min(Math.max(value, minimum), maximum);
+}
+
+function scrubSecrets(text, token) {
+  const source = toText(text);
+  const secret = toText(token);
+  if (!secret) return source;
+
+  const tokenPattern = new RegExp(escapeRegExp(secret), 'g');
+  const bearerPattern = new RegExp(`Bearer\\s+${escapeRegExp(secret)}`, 'gi');
+  return source
+    .replace(bearerPattern, 'Bearer [REDACTED]')
+    .replace(tokenPattern, '[REDACTED]');
 }
 
 function parseRetryAfter(headerValue) {
@@ -33,33 +56,67 @@ function parseRetryAfter(headerValue) {
   return Math.max(0, retryDate - Date.now());
 }
 
-async function readResponseError(response) {
+function createAllowedOrigins(baseUrl) {
+  const origin = new URL(baseUrl).origin;
+  return new Set([origin]);
+}
+
+function resolveAllowedUrl(url, { baseUrl, allowedOrigins }) {
+  const resolved = new URL(url, baseUrl);
+  if (!allowedOrigins.has(resolved.origin)) {
+    throw new Error(`Refusing to follow WaniKani URL on unexpected origin: ${resolved.origin}`);
+  }
+  return resolved.toString();
+}
+
+async function readResponseError(response, token) {
   try {
     const text = await response.text();
-    return text ? `: ${text.slice(0, 300)}` : '';
+    const sanitized = scrubSecrets(text, token).slice(0, 300);
+    return sanitized ? `: ${sanitized}` : '';
   } catch {
     return '';
   }
 }
 
-async function fetchJsonWithRetry(url, token) {
+async function fetchJsonWithRetry(url, token, options = {}) {
+  const {
+    baseUrl = url,
+    allowedOrigins = createAllowedOrigins(baseUrl),
+    sleepFn = sleep,
+    max429Retries = DEFAULT_MAX_429_RETRIES,
+    minRetryDelayMs = DEFAULT_MIN_RETRY_DELAY_MS,
+    maxRetryDelayMs = DEFAULT_MAX_RETRY_DELAY_MS,
+  } = options;
+
   const headers = {
     Authorization: `Bearer ${token}`,
     'Wanikani-Revision': WANIKANI_REVISION,
   };
 
+  const allowedUrl = resolveAllowedUrl(url, { baseUrl, allowedOrigins });
+  let retryCount = 0;
+
   for (;;) {
-    const response = await fetch(url, { headers });
+    const response = await fetch(allowedUrl, { headers });
 
     if (response.status === 429) {
-      const retryAfter = parseRetryAfter(response.headers.get('retry-after')) ?? DEFAULT_RETRY_AFTER_MS;
-      await sleep(retryAfter);
+      if (retryCount >= Math.max(0, Number(max429Retries) || 0)) {
+        throw new Error(`WaniKani API request rate limit exhausted after ${retryCount} retries for ${scrubSecrets(allowedUrl, token)}`);
+      }
+      retryCount++;
+      const retryAfter = clamp(
+        parseRetryAfter(response.headers.get('retry-after')) ?? DEFAULT_RETRY_AFTER_MS,
+        minRetryDelayMs,
+        maxRetryDelayMs,
+      );
+      await sleepFn(retryAfter);
       continue;
     }
 
     if (!response.ok) {
-      const details = await readResponseError(response);
-      throw new Error(`WaniKani API request failed (${response.status} ${response.statusText}) for ${url}${details}`);
+      const details = await readResponseError(response, token);
+      throw new Error(`WaniKani API request failed (${response.status} ${response.statusText}) for ${scrubSecrets(allowedUrl, token)}${details}`);
     }
 
     return response.json();
@@ -127,20 +184,36 @@ export function normalizeWaniKaniSubjects(subjects, entries) {
   return normalized;
 }
 
-export async function fetchAllWaniKaniPages({ token, baseUrl = DEFAULT_BASE_URL } = {}) {
+export async function fetchAllWaniKaniPages({
+  token,
+  baseUrl = DEFAULT_BASE_URL,
+  sleepFn = sleep,
+  max429Retries = DEFAULT_MAX_429_RETRIES,
+  minRetryDelayMs = DEFAULT_MIN_RETRY_DELAY_MS,
+  maxRetryDelayMs = DEFAULT_MAX_RETRY_DELAY_MS,
+} = {}) {
   if (!token) {
     throw new Error('WANIKANI_API_TOKEN is required to fetch WaniKani subjects');
   }
 
+  const allowedOrigins = createAllowedOrigins(baseUrl);
   const pages = [];
   let nextUrl = baseUrl;
 
   while (nextUrl) {
-    const page = await fetchJsonWithRetry(nextUrl, token);
+    const page = await fetchJsonWithRetry(nextUrl, token, {
+      baseUrl: nextUrl,
+      allowedOrigins,
+      sleepFn,
+      max429Retries,
+      minRetryDelayMs,
+      maxRetryDelayMs,
+    });
     pages.push(page);
-    nextUrl = page?.pages?.next_url || null;
+    const rawNextUrl = page?.pages?.next_url || null;
+    nextUrl = rawNextUrl ? resolveAllowedUrl(rawNextUrl, { baseUrl: nextUrl, allowedOrigins }) : null;
     if (nextUrl) {
-      await sleep(SUCCESS_PAGE_DELAY_MS);
+      await sleepFn(SUCCESS_PAGE_DELAY_MS);
     }
   }
 

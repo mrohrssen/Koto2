@@ -1,9 +1,16 @@
-import { describe, it } from 'node:test';
+import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   extractWaniKaniKanjiSubjects,
+  fetchAllWaniKaniPages,
   normalizeWaniKaniSubjects,
 } from '../../../scripts/fetch-wanikani-kanji-keywords.mjs';
+
+const originalFetch = globalThis.fetch;
+
+afterEach(() => {
+  globalThis.fetch = originalFetch;
+});
 
 describe('wani kani kanji keyword fetchers', () => {
   it('extracts WaniKani primary kanji meanings', () => {
@@ -106,5 +113,103 @@ describe('wani kani kanji keyword fetchers', () => {
       meaning: '',
       status: 'missing_from_wanikani',
     });
+  });
+
+  it('rejects cross-origin pagination without leaking the token', async () => {
+    const calls = [];
+    globalThis.fetch = async url => {
+      calls.push(String(url));
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => ({
+          data: [],
+          pages: {
+            next_url: 'https://evil.example/v2/subjects?page=2',
+          },
+        }),
+      };
+    };
+
+    await assert.rejects(
+      () => fetchAllWaniKaniPages({
+        token: 'secret-token',
+        sleepFn: async () => {},
+        baseUrl: 'https://api.wanikani.com/v2/subjects?types=kanji&hidden=false',
+      }),
+      error => {
+        assert.match(String(error.message), /unexpected origin/i);
+        assert.doesNotMatch(String(error.message), /secret-token/);
+        assert.doesNotMatch(String(error.message), /Bearer secret-token/i);
+        return true;
+      }
+    );
+
+    assert.deepEqual(calls, ['https://api.wanikani.com/v2/subjects?types=kanji&hidden=false']);
+  });
+
+  it('scrubs tokens from response error details', async () => {
+    globalThis.fetch = async () => ({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+      text: async () => 'oops secret-token Bearer secret-token and more',
+      headers: {
+        get: () => null,
+      },
+    });
+
+    await assert.rejects(
+      () => fetchAllWaniKaniPages({
+        token: 'secret-token',
+        sleepFn: async () => {},
+        baseUrl: 'https://api.wanikani.com/v2/subjects?types=kanji&hidden=false',
+      }),
+      error => {
+        assert.doesNotMatch(String(error.message), /secret-token/);
+        assert.doesNotMatch(String(error.message), /Bearer secret-token/i);
+        assert.match(String(error.message), /WaniKani API request failed/);
+        return true;
+      }
+    );
+  });
+
+  it('eventually stops retrying after repeated 429 responses and clamps retry delay', async () => {
+    let calls = 0;
+    const delays = [];
+    globalThis.fetch = async () => {
+      calls++;
+      return {
+        ok: false,
+        status: 429,
+        statusText: 'Too Many Requests',
+        text: async () => '',
+        headers: {
+          get: name => (String(name).toLowerCase() === 'retry-after' ? '0' : null),
+        },
+      };
+    };
+
+    await assert.rejects(
+      () => fetchAllWaniKaniPages({
+        token: 'secret-token',
+        sleepFn: async delay => {
+          delays.push(delay);
+        },
+        max429Retries: 2,
+        minRetryDelayMs: 50,
+        maxRetryDelayMs: 100,
+        baseUrl: 'https://api.wanikani.com/v2/subjects?types=kanji&hidden=false',
+      }),
+      error => {
+        assert.match(String(error.message), /rate limit/i);
+        assert.doesNotMatch(String(error.message), /secret-token/);
+        return true;
+      }
+    );
+
+    assert.equal(calls, 3);
+    assert.deepEqual(delays, [50, 50]);
   });
 });
