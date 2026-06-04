@@ -12,6 +12,7 @@ import {
   rowsToCsv,
   validateReviewedRows,
 } from '../../../scripts/lib/kanji-keyword-review.mjs';
+import { summarizeImportChanges } from '../../../scripts/import-kanji-keyword-review.mjs';
 import { buildSliceManifests, formatSliceFileName, runCli } from '../../../scripts/build-kanji-keyword-review-csv.mjs';
 
 describe('kanji keyword review helpers', () => {
@@ -315,6 +316,14 @@ describe('kanji keyword review helpers', () => {
     assert.equal(result.dictionary.entries[1].primaryMeaning, 'word');
     assert.equal(result.dictionary.entries[1].notes, 'keep');
     assert.equal(result.dictionary.entries[0].primaryMeaning, 'person');
+  });
+
+  it('summarizes import changes without leaking full dictionary data', () => {
+    assert.equal(
+      summarizeImportChanges([{ kanji: '言', from: 'say', to: 'word' }]),
+      '1 kanji keyword change: 言: say -> word'
+    );
+    assert.equal(summarizeImportChanges([]), '0 kanji keyword changes');
   });
 
   it('preserves the existing curation version when undefined is supplied', () => {
