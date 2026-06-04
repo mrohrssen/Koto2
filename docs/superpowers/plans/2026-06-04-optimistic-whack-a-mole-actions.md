@@ -671,7 +671,7 @@ npm test
 
 Expected: PASS for each command.
 
-- [ ] **Step 2: Run browser verification**
+- [x] **Step 2: Run browser verification**
 
 Manual browser verification is required by the roadmap because Whack-a-Mole UI behavior is visible.
 
@@ -690,7 +690,9 @@ Required observations:
 - Completion clears the minigame only after the save path starts, then proceeds through the standard XP line and reveal-buffer room advance.
 - Browser console has no new errors or warnings from Whack-a-Mole.
 
-- [ ] **Step 3: Update roadmap completion fields**
+Result: Browser prompt and decline path were partially verified in the in-app Browser; completion-path browser verification was skipped at user request on 2026-06-04.
+
+- [x] **Step 3: Update roadmap completion fields**
 
 In `docs/superpowers/plans/2026-06-03-tiered-optimistic-actions-stability-roadmap.md`, set Task 2.4:
 
@@ -698,9 +700,9 @@ In `docs/superpowers/plans/2026-06-03-tiered-optimistic-actions-stability-roadma
 Status: complete
 Owner: Codex
 Started: 2026-06-04 20:41 JST
-Completed: 2026-06-04 HH:MM JST
-Commit: final commit SHA
-Evidence: focused route/UI gate PASS; syntax checks PASS; `npm test` PASS; browser verification PASS for Whack-a-Mole prompt, decline, completion, and console health.
+Completed: 2026-06-04 21:56 JST
+Commit: `463d131c`
+Evidence: focused route/UI gate PASS; syntax checks PASS; `npm test` PASS; final subagent code quality review PASS; browser prompt and decline path partially verified; completion-path browser verification skipped at user request.
 Branch: `feature/optimistic-whack-a-mole-actions`
 Worktree: `.worktrees/optimistic-whack-a-mole-actions`
 ```
@@ -708,14 +710,14 @@ Worktree: `.worktrees/optimistic-whack-a-mole-actions`
 Add a Progress Log row:
 
 ```markdown
-| 2026-06-04 | Codex | Task 2.4 | Completed Whack-a-Mole complete/skip optimistic commit with route idempotency, client correction handling, focused unit gate, syntax check, `npm test`, and browser verification. |
+| 2026-06-04 | Codex | Task 2.4 | Completed Whack-a-Mole complete/skip optimistic commit with route idempotency, client correction handling, focused unit gate, syntax check, and `npm test`. Browser prompt and decline path were partially verified; completion-path browser verification was skipped at user request. |
 ```
 
-- [ ] **Step 4: Mark this plan complete**
+- [x] **Step 4: Mark this plan complete**
 
 Change all checkboxes in this file to `[x]` after verification evidence exists.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run:
 
@@ -726,3 +728,5 @@ Run:
 ```
 
 Expected: one commit on `feature/optimistic-whack-a-mole-actions`.
+
+Result: Implementation was committed in `463d131c`; roadmap/plan progress is committed separately before merge to `dev`.
