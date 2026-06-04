@@ -95,6 +95,21 @@ describe('legacy build-koto-kanji-dictionary', () => {
     }
   });
 
+  it('refuses an absolute curated dictionary path from outside the repo cwd', () => {
+    const originalCwd = process.cwd();
+    const curatedDictionaryPath = resolve('data/kanji/koto-kanji-dictionary.json');
+
+    try {
+      process.chdir('/private/tmp');
+      assert.throws(
+        () => assertSafeLegacyOutput(curatedDictionaryPath),
+        /Refusing to write legacy generated output over curated Koto kanji dictionary/
+      );
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
   it('allows writing legacy output under output', () => {
     assert.doesNotThrow(() => assertSafeLegacyOutput('output/kanji-keyword-review/legacy.json'));
   });

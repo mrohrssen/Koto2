@@ -1,13 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { XMLParser } from 'fast-xml-parser';
 
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(SCRIPT_DIR, '../..');
 const DEFAULT_RANK_PATH = 'data/kanji/sources/jpdb-kanji-frequency-2026-06-01.tsv';
 const DEFAULT_KANJIDIC_PATH = 'data/kanji/sources/kanjidic2.xml';
 const DEFAULT_OVERRIDES_PATH = 'data/kanji/sources/manual-overrides-legacy-2026-06-04.json';
 const DEFAULT_JMDICT_PATH = 'data/latest-jm-dict.json';
 const DEFAULT_OUT_PATH = 'output/kanji-keyword-review/koto-kanji-dictionary-legacy-build.json';
 const CURATED_DICTIONARY_PATH = 'data/kanji/koto-kanji-dictionary.json';
+const CURATED_DICTIONARY_ABSOLUTE_PATH = resolve(REPO_ROOT, CURATED_DICTIONARY_PATH);
 
 const DICTIONARY_SOURCES = Object.freeze([
   {
@@ -231,7 +235,7 @@ function readJsonIfExists(path, fallback) {
 }
 
 export function assertSafeLegacyOutput(path) {
-  if (resolve(path) === resolve(CURATED_DICTIONARY_PATH)) {
+  if (resolve(path) === CURATED_DICTIONARY_ABSOLUTE_PATH) {
     throw new Error('Refusing to write legacy generated output over curated Koto kanji dictionary');
   }
   return true;
