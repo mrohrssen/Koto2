@@ -55,6 +55,12 @@ function stripTagsToText(html) {
     .trim();
 }
 
+function hasMeaningfulText(text) {
+  return decodeHtmlEntities(text)
+    .replace(/\s+/gu, ' ')
+    .trim() !== '';
+}
+
 function parseTagName(tagContent) {
   const stripped = toText(tagContent)
     .replace(/^\/+/, '')
@@ -122,7 +128,7 @@ function extractKeywordBlockText(html, fromIndex) {
     }
 
     const tagName = parseTagName(tagContent);
-    if (tagName === 'h6' && depth === 0) {
+    if (tagName === 'h6' && (depth === 0 || hasMeaningfulText(output))) {
       break;
     }
 

@@ -341,6 +341,31 @@ describe('jpdb kanji keyword fetchers', () => {
     assert.equal(extractJpdbKeywordFromHtml(html), 'front side');
   });
 
+  it('extracts only the immediate JPDB keyword value before later metadata', () => {
+    const html = `
+      <html>
+        <body>
+          <div class="kanji-card">
+            <h6>Keyword</h6>
+            person
+            <div class="kanji-metadata">
+              <h6>Frequency</h6>
+              Top 100
+              <h6>Type</h6>
+              Joyo
+            </div>
+            <div class="readings">
+              <h6>Readings</h6>
+              ひと / ジン
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    assert.equal(extractJpdbKeywordFromHtml(html), 'person');
+  });
+
   it('handles JPDB fetch statuses offline', async () => {
     const cases = [
       {
