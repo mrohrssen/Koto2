@@ -1,7 +1,8 @@
-import { describe, it, mock } from 'node:test';
+import { beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 const popupDebuffMessages = [];
+const bannerCalls = [];
 const elementBlastCalls = [];
 const lungeCalls = [];
 const koAnimations = [];
@@ -36,7 +37,11 @@ await mock.module('../../../public/js/pixi/text.js', {
   }
 });
 await mock.module('../../../public/js/pixi/banners.js', {
-  namedExports: { showBanner: () => {} }
+  namedExports: {
+    showBanner: (message, style, opts) => {
+      bannerCalls.push({ message, style, opts });
+    }
+  }
 });
 await mock.module('../../../public/js/pixi/status-vfx.js', {
   namedExports: { playStatusAppliedForScene: () => {}, clearStatusVfxForScene: () => {} }
@@ -103,8 +108,46 @@ const {
   showAttackPartySkillProcs,
   showEffectEvents,
   showOneEnemyAttackAnimated,
+  showKanjiKombatAnswerBanner,
   showKoSwapAnimations,
 } = await import('../../../public/js/ui/combat-vfx.js');
+
+beforeEach(() => {
+  bannerCalls.length = 0;
+});
+
+describe('kanji kombat answer banners', () => {
+  it('formats milestone reward banners with clear streak and reward copy', () => {
+    const cases = [
+      [{ type: 'teamHeal', streak: 3, healPercent: 0.20 }, '3 In A Row!\nTeam Healed +20%'],
+      [{ type: 'statUp', streak: 6, allyName: 'hi', stat: 'def' }, '6 In A Row!\nhi Defense Up!'],
+      [{ type: 'teamHeal', streak: 9, healPercent: 0.50 }, '9 In A Row!\nTeam Healed +50%'],
+      [{ type: 'allyJoined', streak: 12, allyName: 'mizu' }, '12 In A Row!\nmizu Joined!'],
+      [{ type: 'fullHeal', streak: 12 }, '12 In A Row!\nTeam Fully Healed!'],
+      [{ type: 'partyLevelUp', streak: 15 }, '15 In A Row!\nParty Leveled Up!'],
+    ];
+
+    for (const [reward, message] of cases) {
+      bannerCalls.length = 0;
+      showKanjiKombatAnswerBanner(true, reward);
+      assert.deepEqual(bannerCalls[0], {
+        message,
+        style: 'streak',
+        opts: { elementColor: 0x4CAF50 },
+      });
+    }
+  });
+
+  it('keeps the simple correct banner when no milestone reward fired', () => {
+    showKanjiKombatAnswerBanner(true, null);
+
+    assert.deepEqual(bannerCalls[0], {
+      message: 'Correct!',
+      style: 'super',
+      opts: { elementColor: 0x4CAF50 },
+    });
+  });
+});
 
 describe('combat-vfx data builders', () => {
   describe('buildAllyHpMap', () => {

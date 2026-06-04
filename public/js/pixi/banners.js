@@ -9,6 +9,7 @@ const BANNER_STYLES = {
   super: { fontSize: 32, fill: '#FFB300', shake: 'heavy', holdTime: 800 },
   weak: { fontSize: 22, fill: '#9E9E9E', shake: null, holdTime: 600 },
   levelUp: { fontSize: 28, fill: '#FFD700', shake: null, holdTime: 1000 },
+  streak: { fontSize: 28, fill: '#7CFF8D', shake: 'heavy', holdTime: 1000 },
 };
 
 // ============ BANNER DISPLAY ============
@@ -16,7 +17,7 @@ const BANNER_STYLES = {
 /**
  * Show a center-screen banner that slams in from above.
  * @param {string} message - Banner text
- * @param {'super'|'weak'|'levelUp'} style - Banner style preset
+ * @param {'super'|'weak'|'levelUp'|'streak'} style - Banner style preset
  * @param {{ elementColor?: number }} opts
  *   elementColor: hex color for screenFlash (used with 'super' style)
  */
@@ -33,6 +34,7 @@ export async function showBanner(message, style = 'super', { elementColor = 0xFF
       fontSize: config.fontSize,
       fill: config.fill,
       fontWeight: 'bold',
+      align: 'center',
       stroke: { color: '#000000', width: 4 },
       dropShadow: {
         alpha: 0.6,

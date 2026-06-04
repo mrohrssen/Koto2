@@ -14,6 +14,8 @@ import { resolveKanjiKombatAnswerTurn } from '../../../src/shared/combat/pve-tur
 describe('Kanji Kombat optimistic answers', () => {
   it('accepts a matching optimistic answer after recomputing the authoritative grade', () => {
     const gm = createTestKanjiKombatGameManager();
+    gm.run.kanjiKombat.streak = 2;
+    gm.run.creatureParty.active[0].hp = 80;
     const service = new KanjiKombatService(gm);
     const seed = gm.combat.optimistic.nextTurnSeed;
     const stateVersion = gm.combat.optimistic.stateVersion;
@@ -40,6 +42,7 @@ describe('Kanji Kombat optimistic answers', () => {
 
     assert.equal(result.status, 'accepted');
     assert.equal(result.kanjiAnswerCorrect, true);
+    assert.deepEqual(result.kanjiStreakReward, { type: 'teamHeal', streak: 3, healPercent: 0.20 });
     assert.deepEqual(result.actionSegments, predicted.transcript.actionSegments);
     assert.equal(gm.run.kanjiKombat.report.correctAnswers, 1);
     assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);

@@ -55,6 +55,14 @@ import {
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
+const KANJI_KOMBAT_STREAK_REWARD_MILESTONES = new Set([3, 6, 9, 12, 15]);
+
+function willKanjiKombatAnswerTriggerStreakReward(state, correct) {
+  if (correct !== true) return false;
+  const streak = Number(state?.run?.kanjiKombat?.streak || 0);
+  return KANJI_KOMBAT_STREAK_REWARD_MILESTONES.has(streak + 1);
+}
+
 // ============ INTENT LOG HELPER ============
 function getLog() { return window.__intentLog; }
 
@@ -532,7 +540,13 @@ async function runOptimisticKanjiKombatAnswer({
   const verificationPromise = apiSubmitKanjiKombatAnswer(optimistic.envelope)
     .then(result => ({ result }), error => ({ error }));
   markCombatAnimationStart(turnTiming, requestStartedAt);
-  void vfx.showKanjiKombatAnswerBanner(optimistic.localTranscript.kanjiAnswerCorrect);
+  const waitForStreakRewardBanner = willKanjiKombatAnswerTriggerStreakReward(
+    getGameState(),
+    optimistic.localTranscript.kanjiAnswerCorrect
+  );
+  if (!waitForStreakRewardBanner) {
+    void vfx.showKanjiKombatAnswerBanner(optimistic.localTranscript.kanjiAnswerCorrect);
+  }
   await playCreatureCombatResult(optimistic.localTranscript, turnTiming, {
     choices: [],
     logMoveIntent: false,
@@ -547,6 +561,9 @@ async function runOptimisticKanjiKombatAnswer({
   const recovery = await handleOptimisticCombatVerification(result, recoveryActionType);
   if (recovery && recovery.recovered === false) {
     throw new Error('Combat sync failed');
+  }
+  if (result?.kanjiStreakReward || waitForStreakRewardBanner) {
+    void vfx.showKanjiKombatAnswerBanner(result?.kanjiAnswerCorrect, result?.kanjiStreakReward || null);
   }
 
   playerAttackPending = false;
@@ -1781,7 +1798,7 @@ async function executeCreatureMovesTurn(choices, options = {}) {
       }
 
       if (actionType === 'kanjiKombat') {
-        void vfx.showKanjiKombatAnswerBanner(result.kanjiAnswerCorrect);
+        void vfx.showKanjiKombatAnswerBanner(result.kanjiAnswerCorrect, result.kanjiStreakReward || null);
       }
 
       await playCreatureCombatResult(result, turnTiming, {

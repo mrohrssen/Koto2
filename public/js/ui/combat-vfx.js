@@ -82,8 +82,51 @@ export function spritePos(side, index) {
 
 const effectDelay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-export function showKanjiKombatAnswerBanner(correct) {
+function formatPercent(value) {
+  return Math.round(Number(value || 0) * 100);
+}
+
+const STREAK_REWARD_STAT_NAMES = {
+  atk: 'Attack',
+  def: 'Defense',
+  dex: 'Dexterity',
+};
+
+function formatStatLabel(stat) {
+  return STREAK_REWARD_STAT_NAMES[stat] || String(stat || 'Stat');
+}
+
+function formatKanjiKombatStreakReward(reward) {
+  if (!reward || !Number.isFinite(Number(reward.streak))) return null;
+  const prefix = `${reward.streak} In A Row!`;
+
+  if (reward.type === 'teamHeal') {
+    return `${prefix}\nTeam Healed +${formatPercent(reward.healPercent)}%`;
+  }
+  if (reward.type === 'statUp') {
+    const allyName = reward.allyName || 'Ally';
+    return `${prefix}\n${allyName} ${formatStatLabel(reward.stat)} Up!`;
+  }
+  if (reward.type === 'allyJoined') {
+    const allyName = reward.allyName || 'An ally';
+    return `${prefix}\n${allyName} Joined!`;
+  }
+  if (reward.type === 'fullHeal') {
+    return `${prefix}\nTeam Fully Healed!`;
+  }
+  if (reward.type === 'partyLevelUp') {
+    return `${prefix}\nParty Leveled Up!`;
+  }
+
+  return null;
+}
+
+export function showKanjiKombatAnswerBanner(correct, streakReward = null) {
   if (correct === true) {
+    const rewardMessage = formatKanjiKombatStreakReward(streakReward);
+    if (rewardMessage) {
+      return showBanner(rewardMessage, 'streak', { elementColor: 0x4CAF50 });
+    }
     return showBanner('Correct!', 'super', { elementColor: 0x4CAF50 });
   }
   if (correct === false) {
