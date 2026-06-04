@@ -13,7 +13,8 @@
 ## Current Status - 2026-06-04
 
 Phase 1 implementation has landed on `origin/dev` through `2483eb824ae4e097dc112bf9324f1357f15a4a25`.
-Phase 2 implementation is complete through Task 2.5 in `feature/optimistic-kanji-kombat-choices` and ready to merge/push to `origin/dev`.
+Phase 2 implementation is complete through Task 2.5.
+Phase 3 high-impact hub/meta optimistic actions are skipped for now by product decision: crystals, chest rewards, crest equip/unequip, and fusion remain server-authoritative.
 
 Completed Phase 1 commits:
 
@@ -94,6 +95,7 @@ Evidence: `npm run test:unit -- ...` PASS; `npm test` PASS; screenshot/playtest 
 | 2026-06-04 | Codex | Task 2.4 | Completed Whack-a-Mole complete/skip optimistic commit with route idempotency, client correction handling, focused unit gate, syntax check, and `npm test`. Browser prompt and decline path were partially verified; completion-path browser verification was skipped at user request. |
 | 2026-06-04 | Codex | Task 2.5 | Started Kanji Kombat intro/completion optimistic commit implementation in `.worktrees/optimistic-kanji-kombat-choices`; detailed plan saved to `docs/superpowers/plans/2026-06-04-optimistic-kanji-kombat-choices.md`. |
 | 2026-06-04 | Codex | Task 2.5 | Completed Kanji Kombat intro/completion optimistic commit with route idempotency, client correction handling, stale response regression coverage, focused Kanji Kombat gates, syntax check, and `npm test`. |
+| 2026-06-04 | Codex | Phase 3 | Skipped high-impact hub/meta optimistic actions by product decision. Daily crystals, chest rewards, crest equip/unequip, and fusion stay server-authoritative for now. |
 
 ## Overall Status
 
@@ -101,8 +103,8 @@ Evidence: `npm run test:unit -- ...` PASS; `npm test` PASS; screenshot/playtest 
 |---|---|---|
 | Phase 1: Shipped Stability Blockers | complete | Automated Phase 1 gate passed; user playtest visually verified the UI. |
 | Phase 2: Medium-Risk Room And Minigame Actions | complete | Tasks 2.1 through 2.5 complete with automated verification. |
-| Phase 3: High-Impact Hub And Meta Actions | blocked | User explicitly requests the next roadmap task after Phase 2 completion. |
-| Phase 4: Release Gate And Monitoring | blocked | Phases 1 through 3 complete. |
+| Phase 3: High-Impact Hub And Meta Actions | de-scoped | Product decision: leave crystals, chest rewards, crest equip/unequip, and fusion server-authoritative for now. |
+| Phase 4: Release Gate And Monitoring | blocked | Run only when release-gate work is explicitly requested. |
 
 Status values: `pending`, `in_progress`, `blocked`, `complete`, `de-scoped`.
 
@@ -737,12 +739,12 @@ General contract for Phase 3:
 
 ### Task 3.1: Daily Crystal Claim Idempotency Decision
 
-Status: blocked
-Owner: -
-Started: -
-Completed: -
-Commit: -
-Evidence: Blocked until Phase 2 complete.
+Status: de-scoped
+Owner: Codex
+Started: 2026-06-04
+Completed: 2026-06-04
+Commit: No implementation commit; roadmap-only de-scope.
+Evidence: User product decision on 2026-06-04: leave daily crystal claim server-authoritative for now.
 Branch: `feature/daily-crystal-idempotency`
 Worktree: `koto-wt-daily-crystal-idempotency`
 
@@ -766,12 +768,12 @@ npm test
 
 ### Task 3.2: Chest Open With Immediate Animation And Delayed Crest Reveal
 
-Status: blocked
-Owner: -
-Started: -
-Completed: -
-Commit: -
-Evidence: Blocked until Phase 2 complete.
+Status: de-scoped
+Owner: Codex
+Started: 2026-06-04
+Completed: 2026-06-04
+Commit: No implementation commit; roadmap-only de-scope.
+Evidence: User product decision on 2026-06-04: leave chest rewards server-confirmed/server-authoritative for now.
 Branch: `feature/optimistic-chest-open`
 Worktree: `koto-wt-optimistic-chest-open`
 
@@ -799,12 +801,12 @@ Manual browser verification is required.
 
 ### Task 3.3: Crest Equip And Unequip Optimistic Commit
 
-Status: blocked
-Owner: -
-Started: -
-Completed: -
-Commit: -
-Evidence: Blocked until Phase 2 complete.
+Status: de-scoped
+Owner: Codex
+Started: 2026-06-04
+Completed: 2026-06-04
+Commit: No implementation commit; roadmap-only de-scope.
+Evidence: User product decision on 2026-06-04: leave crest equip and unequip server-confirmed/server-authoritative for now.
 Branch: `feature/optimistic-crest-equip`
 Worktree: `koto-wt-optimistic-crest-equip`
 
@@ -829,12 +831,12 @@ npm test
 
 ### Task 3.4: Fusion Start And Tutorial Fusion Optimistic Commit
 
-Status: blocked
-Owner: -
-Started: -
-Completed: -
-Commit: -
-Evidence: Blocked until Phase 2 complete.
+Status: de-scoped
+Owner: Codex
+Started: 2026-06-04
+Completed: 2026-06-04
+Commit: No implementation commit; roadmap-only de-scope.
+Evidence: User product decision on 2026-06-04: leave normal fusion and tutorial fusion server-confirmed/server-authoritative for now.
 Branch: `feature/optimistic-fusion-actions`
 Worktree: `koto-wt-optimistic-fusion-actions`
 
