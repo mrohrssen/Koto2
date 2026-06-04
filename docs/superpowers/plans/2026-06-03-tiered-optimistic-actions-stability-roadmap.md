@@ -563,7 +563,7 @@ Status: complete
 Owner: Codex
 Started: 2026-06-04 17:52 JST
 Completed: 2026-06-04 18:07 JST
-Commit: `e00f9cf5b0f44be4a91351d96822715680bc45a9`
+Commit: `5a5580b1e848bfad2c3cea74481cbfaf75d34fb9`
 Evidence: `node --experimental-test-module-mocks --test tests/unit/known-words-review.test.js tests/unit/routes/optimistic-run-routes.test.js` PASS; `node --test tests/unit/ui/optimistic-run-integration.test.js tests/unit/ui/word-discovery-room.test.js` PASS; `npm run test:unit -- tests/unit/routes/optimistic-run-routes.test.js tests/unit/ui/optimistic-run-integration.test.js tests/unit/ui/word-discovery-room.test.js tests/unit/known-words-review.test.js` PASS; `node --check public/js/ui/exploration.js && node --check public/js/api.js && node --check public/game.js && node --check src/routes/game/run.js && node --check src/routes/game/known-words.js` PASS; `npm test` PASS. No browser session was launched because this task changed route/API/action commit behavior and source-covered UI retry copy, not CSS, animation, or rendering.
 Branch: `feature/optimistic-word-discovery-actions`
 Worktree: `.worktrees/optimistic-word-discovery-actions`
