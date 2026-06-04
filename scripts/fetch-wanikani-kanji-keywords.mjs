@@ -271,10 +271,15 @@ export function parseWaniKaniPublicKanjiIndexHtml(html, {
 
 export function normalizeWaniKaniSubjects(subjects, entries) {
   const normalized = new Map();
+  const allowedKanji = new Set(
+    (Array.isArray(entries) ? entries : [])
+      .map(entry => toText(entry?.kanji))
+      .filter(Boolean)
+  );
 
   for (const subject of Array.isArray(subjects) ? subjects : []) {
     const kanji = toText(subject?.kanji);
-    if (!kanji) continue;
+    if (!kanji || !allowedKanji.has(kanji)) continue;
 
     const existing = normalized.get(kanji);
     if (!existing) {

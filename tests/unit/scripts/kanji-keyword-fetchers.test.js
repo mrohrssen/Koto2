@@ -127,6 +127,22 @@ describe('wani kani kanji keyword fetchers', () => {
     });
   });
 
+  it('normalizes only the requested Koto kanji from broader WaniKani evidence', () => {
+    const subjects = [
+      { kanji: '一', meaning: 'One', status: 'matched' },
+      { kanji: '外', meaning: 'Outside', status: 'matched' },
+    ];
+    const entries = [
+      { kanji: '一' },
+      { kanji: '二' },
+    ];
+
+    const normalized = normalizeWaniKaniSubjects(subjects, entries);
+
+    assert.deepEqual([...normalized.keys()], ['一', '二']);
+    assert.equal(normalized.has('外'), false);
+  });
+
   it('parses WaniKani public kanji index subjects from level-grid links', () => {
     const html = `
       <html>
@@ -669,6 +685,22 @@ describe('jpdb kanji keyword fetchers', () => {
       keyword: '',
       status: 'missing',
     });
+  });
+
+  it('normalizes only the requested Koto kanji from broader JPDB evidence', () => {
+    const results = [
+      { kanji: '一', keyword: 'one', status: 'matched', sourceUrl: 'https://jpdb.io/kanji/%E4%B8%80' },
+      { kanji: '外', keyword: 'outside', status: 'matched', sourceUrl: 'https://jpdb.io/kanji/%E5%A4%96' },
+    ];
+    const entries = [
+      { kanji: '一' },
+      { kanji: '二' },
+    ];
+
+    const normalized = normalizeJpdbResults(results, entries);
+
+    assert.deepEqual([...normalized.keys()], ['一', '二']);
+    assert.equal(normalized.has('外'), false);
   });
 
   it('refetches transient cached JPDB results on a later non-refresh run', async () => {

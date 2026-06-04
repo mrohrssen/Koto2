@@ -176,10 +176,15 @@ export function extractJpdbKeywordFromHtml(html) {
 
 export function normalizeJpdbResults(results, entries) {
   const normalized = new Map();
+  const allowedKanji = new Set(
+    (Array.isArray(entries) ? entries : [])
+      .map(entry => toText(entry?.kanji))
+      .filter(Boolean)
+  );
 
   for (const result of Array.isArray(results) ? results : []) {
     const kanji = toText(result?.kanji);
-    if (!kanji) continue;
+    if (!kanji || !allowedKanji.has(kanji)) continue;
 
     const existing = normalized.get(kanji);
     if (!existing) {
