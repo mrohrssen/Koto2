@@ -173,6 +173,332 @@ describe('renderWhackAMole decline flow', () => {
     await decline;
   });
 
+  it('decline sends an optimistic action id and advances from the accepted state', async () => {
+    const whackRoom = {
+      id: 'wam-skip-accepted',
+      type: 'whackAMole',
+      interacted: false,
+      whackAMole: { completed: false },
+    };
+    const nextRoom = { id: 'after-wam-skip', type: 'empty' };
+    const acceptedState = {
+      phase: 'room',
+      room: nextRoom,
+      run: {
+        currentRoom: 1,
+        rooms: [whackRoom, nextRoom],
+        revealedRooms: [
+          { index: 0, room: whackRoom },
+          { index: 1, room: nextRoom },
+        ],
+      },
+    };
+    let currentState = {
+      phase: 'whackAMole',
+      room: whackRoom,
+      run: {
+        currentRoom: 0,
+        rooms: [whackRoom, nextRoom],
+        revealedRooms: [
+          { index: 0, room: whackRoom },
+          { index: 1, room: nextRoom },
+        ],
+      },
+    };
+    let skipOptions = null;
+    let updateUiCalls = 0;
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => { updateUiCalls += 1; },
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+      },
+      scene: { showNarration: async () => {} },
+      apiGetWhackAMoleDialogue: async () => ({
+        dialogue: null,
+        yesTokens: null,
+        noTokens: null,
+      }),
+      apiSkipWhackAMole: async options => {
+        skipOptions = options;
+        return {
+          status: 'accepted',
+          actionId: options.actionId,
+          actionType: 'whackAMole.skip',
+          state: acceptedState,
+        };
+      },
+    });
+
+    await renderWhackAMole();
+    await renderedButtons[1].onClick();
+
+    assert.ok(skipOptions?.actionId);
+    assert.match(skipOptions.actionId, /^run_/);
+    assert.deepEqual(currentState, acceptedState);
+    assert.equal(updateUiCalls, 1);
+  });
+
+  it('decline correction restores authoritative Whack-a-Mole state and shows retry copy', async () => {
+    const whackRoom = {
+      id: 'wam-skip-corrected',
+      type: 'whackAMole',
+      interacted: false,
+      whackAMole: { completed: false },
+    };
+    const nextRoom = { id: 'after-wam-corrected', type: 'empty' };
+    const authoritativeState = {
+      phase: 'whackAMole',
+      room: whackRoom,
+      run: {
+        currentRoom: 0,
+        rooms: [whackRoom, nextRoom],
+        revealedRooms: [
+          { index: 0, room: whackRoom },
+          { index: 1, room: nextRoom },
+        ],
+      },
+    };
+    let currentState = {
+      phase: 'whackAMole',
+      room: whackRoom,
+      run: {
+        currentRoom: 0,
+        rooms: [whackRoom, nextRoom],
+        revealedRooms: [
+          { index: 0, room: whackRoom },
+          { index: 1, room: nextRoom },
+        ],
+      },
+    };
+    let skipOptions = null;
+    let updateUiCalls = 0;
+    const narrationCalls = [];
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => { updateUiCalls += 1; },
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+      },
+      scene: {
+        showNarration: (text, opts) => {
+          narrationCalls.push({ text, opts });
+        },
+      },
+      apiGetWhackAMoleDialogue: async () => ({
+        dialogue: null,
+        yesTokens: null,
+        noTokens: null,
+      }),
+      apiSkipWhackAMole: async options => {
+        skipOptions = options;
+        return {
+          status: 'corrected',
+          actionId: options.actionId,
+          actionType: 'whackAMole.skip',
+          reason: 'No whack-a-mole room here',
+          authoritativeState,
+        };
+      },
+    });
+
+    await renderWhackAMole();
+    await renderedButtons[1].onClick();
+
+    assert.ok(skipOptions?.actionId);
+    assert.match(skipOptions.actionId, /^run_/);
+    assert.deepEqual(currentState, authoritativeState);
+    assert.deepEqual(narrationCalls, [
+      {
+        text: 'Game Master choice did not save. Please try again.',
+        opts: { autoDismiss: 1800 },
+      },
+    ]);
+    assert.equal(updateUiCalls, 1);
+  });
+
+  it('completion shows retry copy when another run action is already pending', async () => {
+    const whackRoom = {
+      id: 'wam-complete-pending',
+      type: 'whackAMole',
+      interacted: false,
+      whackAMole: { completed: false },
+    };
+    let currentState = makeWhackAMoleState(whackRoom);
+    let resolveComplete;
+    let firstActionId = null;
+    const narrationCalls = [];
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+      },
+      scene: {
+        showNarration: (text, opts) => {
+          narrationCalls.push({ text, opts });
+        },
+      },
+      apiGetWhackAMoleDialogue: async () => ({
+        dialogue: null,
+        yesTokens: null,
+        noTokens: null,
+      }),
+      apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
+      apiCompleteWhackAMole: async (_score, options) => {
+        firstActionId = options.actionId;
+        return new Promise(resolve => { resolveComplete = resolve; });
+      },
+    });
+
+    await renderWhackAMole();
+    await renderedButtons[0].onClick();
+
+    assert.ok(whackAMoleDeps);
+    const firstCompletion = whackAMoleDeps.apiCompleteWhackAMole(3);
+    const secondCompletion = await whackAMoleDeps.apiCompleteWhackAMole(4);
+
+    assert.equal(secondCompletion, null);
+    assert.deepEqual(narrationCalls, [
+      {
+        text: 'Game Master choice did not save. Please try again.',
+        opts: { autoDismiss: 1800 },
+      },
+    ]);
+
+    resolveComplete({
+      status: 'accepted',
+      actionId: firstActionId,
+      actionType: 'whackAMole.complete',
+      state: { phase: 'room', room: whackRoom, run: { currentRoom: 0 } },
+    });
+    await firstCompletion;
+  });
+
+  it('completion rolls back and shows retry copy when accepted response action id does not match', async () => {
+    const whackRoom = {
+      id: 'wam-complete-mismatch',
+      type: 'whackAMole',
+      interacted: false,
+      whackAMole: { completed: false },
+    };
+    let currentState = makeWhackAMoleState(whackRoom);
+    const narrationCalls = [];
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+      },
+      scene: {
+        showNarration: (text, opts) => {
+          narrationCalls.push({ text, opts });
+        },
+      },
+      apiGetWhackAMoleDialogue: async () => ({
+        dialogue: null,
+        yesTokens: null,
+        noTokens: null,
+      }),
+      apiGetWhackAMolePool: async () => ({ pool: Array.from({ length: 9 }, (_, id) => ({ id })) }),
+      apiCompleteWhackAMole: async () => ({
+        status: 'accepted',
+        actionId: 'run_wrong_action',
+        actionType: 'whackAMole.complete',
+        state: { phase: 'room', room: whackRoom, run: { currentRoom: 0 } },
+      }),
+    });
+
+    await renderWhackAMole();
+    await renderedButtons[0].onClick();
+
+    assert.ok(whackAMoleDeps);
+    const result = await whackAMoleDeps.apiCompleteWhackAMole(3);
+
+    assert.equal(result, null);
+    assert.equal(currentState.phase, 'whackAMole');
+    assert.equal(currentState.room.interacted, false);
+    assert.deepEqual(narrationCalls, [
+      {
+        text: 'Game Master choice did not save. Please try again.',
+        opts: { autoDismiss: 1800 },
+      },
+    ]);
+  });
+
+  it('decline rolls back and shows retry copy when accepted response action id does not match', async () => {
+    const whackRoom = {
+      id: 'wam-skip-mismatch',
+      type: 'whackAMole',
+      interacted: false,
+      whackAMole: { completed: false },
+    };
+    const nextRoom = { id: 'after-wam-mismatch', type: 'empty' };
+    let currentState = {
+      phase: 'whackAMole',
+      room: whackRoom,
+      run: {
+        currentRoom: 0,
+        rooms: [whackRoom, nextRoom],
+        revealedRooms: [
+          { index: 0, room: whackRoom },
+          { index: 1, room: nextRoom },
+        ],
+      },
+    };
+    const narrationCalls = [];
+
+    init({
+      getGameState: () => currentState,
+      updateGameState: state => { currentState = state; },
+      updateUI: () => {},
+      actions: {
+        setContent: () => {},
+        clear: () => {},
+      },
+      scene: {
+        showNarration: (text, opts) => {
+          narrationCalls.push({ text, opts });
+        },
+      },
+      apiGetWhackAMoleDialogue: async () => ({
+        dialogue: null,
+        yesTokens: null,
+        noTokens: null,
+      }),
+      apiSkipWhackAMole: async () => ({
+        status: 'accepted',
+        actionId: 'run_wrong_skip',
+        actionType: 'whackAMole.skip',
+        state: { phase: 'room', room: nextRoom, run: { currentRoom: 1 } },
+      }),
+    });
+
+    await renderWhackAMole();
+    await renderedButtons[1].onClick();
+
+    assert.equal(currentState.phase, 'whackAMole');
+    assert.equal(currentState.room.interacted, false);
+    assert.deepEqual(narrationCalls, [
+      {
+        text: 'Game Master choice did not save. Please try again.',
+        opts: { autoDismiss: 1800 },
+      },
+    ]);
+  });
+
   it('shows the Game Master greeting with the standard dialogue card', async () => {
     const prompt = {
       tokens: [{ base: '始める', text: 'はじめる' }],

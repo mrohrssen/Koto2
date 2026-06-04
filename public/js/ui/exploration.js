@@ -132,9 +132,14 @@ function rollbackPendingRunAction(pending, { refreshUi = true } = {}) {
 
 const WORD_DISCOVERY_SAVE_FAILURE_COPY = 'Word discovery did not save. Please try again.';
 const SPEED_REVIEW_SAVE_FAILURE_COPY = 'Speed review did not save. Please try again.';
+const WHACK_A_MOLE_SAVE_FAILURE_COPY = 'Game Master choice did not save. Please try again.';
 
 function showWordDiscoverySaveFailure() {
   sceneModule?.showNarration?.(WORD_DISCOVERY_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
+}
+
+function showWhackAMoleSaveFailure() {
+  sceneModule?.showNarration?.(WHACK_A_MOLE_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
 }
 
 function applyWordDiscoveryCorrection(pending, result) {
@@ -1475,6 +1480,97 @@ function cancelActiveWhackAMoleGame() {
   activeWhackAMoleRoomId = null;
 }
 
+function applyWhackAMoleRoomCompletionDraft(draft, { score = null } = {}) {
+  const draftRoom = draft.room || getCurrentBufferedRoom(draft);
+  if (draftRoom?.whackAMole && score !== null) {
+    draftRoom.whackAMole.score = Math.max(0, Math.floor(score || 0));
+    draftRoom.whackAMole.completed = true;
+  }
+  if (draftRoom) draftRoom.interacted = true;
+  draft.phase = 'room';
+}
+
+async function completeWhackAMoleOptimistically(score) {
+  const pending = beginPendingRunAction({
+    actionType: 'whackAMole.complete',
+    applyLocal: draft => {
+      applyWhackAMoleRoomCompletionDraft(draft, { score });
+    },
+  });
+  if (!pending) {
+    showWhackAMoleSaveFailure();
+    return null;
+  }
+
+  let result = null;
+  try {
+    result = await apiCompleteWhackAMole(score, { actionId: pending.actionId });
+  } catch (error) {
+    console.warn('[WhackAMole] Failed to complete room:', error);
+  }
+
+  if (result?.status === 'corrected') {
+    if (isMatchingRunActionResponse(pending, result)) {
+      updateGameState(correctPendingRunAction(pending, result));
+      updateUI();
+      clearPendingRunAction(pending);
+    } else {
+      rollbackPendingRunAction(pending);
+    }
+    showWhackAMoleSaveFailure();
+    return null;
+  }
+
+  if (result?.state && reconcilePendingRunAction(pending, result, { refreshUi: false })) {
+    return result;
+  }
+
+  rollbackPendingRunAction(pending);
+  showWhackAMoleSaveFailure();
+  return null;
+}
+
+async function skipWhackAMoleOptimistically() {
+  const pending = beginPendingRunAction({
+    actionType: 'whackAMole.skip',
+    applyLocal: draft => {
+      applyWhackAMoleRoomCompletionDraft(draft);
+      advanceStateToBufferedNextRoom(draft);
+    },
+  });
+  if (!pending) {
+    showWhackAMoleSaveFailure();
+    return null;
+  }
+
+  let result = null;
+  try {
+    result = await apiSkipWhackAMole({ actionId: pending.actionId });
+  } catch (error) {
+    console.warn('[WhackAMole] Failed to skip room:', error);
+  }
+
+  if (result?.status === 'corrected') {
+    if (isMatchingRunActionResponse(pending, result)) {
+      updateGameState(correctPendingRunAction(pending, result));
+      updateUI();
+      clearPendingRunAction(pending);
+    } else {
+      rollbackPendingRunAction(pending);
+    }
+    showWhackAMoleSaveFailure();
+    return null;
+  }
+
+  if (result?.state && reconcilePendingRunAction(pending, result, { refreshUi: false })) {
+    return result;
+  }
+
+  rollbackPendingRunAction(pending);
+  showWhackAMoleSaveFailure();
+  return null;
+}
+
 /** Whack-a-Mole mini game — match Japanese words to creature/item sprites */
 export async function renderWhackAMole() {
   const gameState = getGameState();
@@ -1568,15 +1664,10 @@ export async function renderWhackAMole() {
         if (scene && !scene.disposed && scene.npcSprite) {
           await scene.hideNpcSprite({ slideOut: true });
         }
-        try {
-          const result = await apiSkipWhackAMole();
-          if (result?.state) {
-            updateGameState(result.state);
-          }
-        } catch (err) {
-          // Fallback: just update UI
+        const result = await skipWhackAMoleOptimistically();
+        if (result) {
+          updateUI();
         }
-        updateUI();
       }
     }
   ]);
@@ -2150,7 +2241,7 @@ function startWhackAMoleGame(pool) {
   activeWhackAMoleRoomId = whackAMoleState.roomId;
   activeWhackAMoleGame = new WhackAMoleGame(pool, {
     actions,
-    apiCompleteWhackAMole,
+    apiCompleteWhackAMole: completeWhackAMoleOptimistically,
     apiProceed: async () => {
       await proceedWithRevealBuffer({ refreshUi: false });
       return null;

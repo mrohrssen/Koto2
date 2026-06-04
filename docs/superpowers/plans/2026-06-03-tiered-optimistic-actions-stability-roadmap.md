@@ -89,6 +89,8 @@ Evidence: `npm run test:unit -- ...` PASS; `npm test` PASS; screenshot/playtest 
 | 2026-06-04 | Codex | Task 2.2 | Completed Word Discovery review/progress and completion optimistic commit with route idempotency, client correction handling, focused unit gate, syntax check, and `npm test`. |
 | 2026-06-04 | Codex | Task 2.3 | Started Speed Review room completion optimistic commit implementation in `.worktrees/optimistic-speed-review-room`; detailed plan saved to `docs/superpowers/plans/2026-06-04-optimistic-speed-review-room.md`. |
 | 2026-06-04 | Codex | Task 2.3 | Completed Speed Review room completion optimistic commit with route idempotency, empty-snapshot action-id coverage, client correction handling, focused unit gate, syntax check, and `npm test`. |
+| 2026-06-04 | Codex | Task 2.4 | Started Whack-a-Mole complete/skip optimistic commit implementation in `.worktrees/optimistic-whack-a-mole-actions`; detailed plan saved to `docs/superpowers/plans/2026-06-04-optimistic-whack-a-mole-actions.md`. |
+| 2026-06-04 | Codex | Task 2.4 | Completed Whack-a-Mole complete/skip optimistic commit with route idempotency, client correction handling, focused unit gate, syntax check, and `npm test`. Browser prompt and decline path were partially verified; completion-path browser verification was skipped at user request. |
 
 ## Overall Status
 
@@ -636,14 +638,14 @@ npm test
 
 ### Task 2.4: Whack-A-Mole Complete And Skip Optimistic Commit
 
-Status: pending
-Owner: -
-Started: -
-Completed: -
-Commit: -
-Evidence: Phase 1 automated gate complete; task not started.
+Status: complete
+Owner: Codex
+Started: 2026-06-04 20:41 JST
+Completed: 2026-06-04 21:56 JST
+Commit: `463d131c`
+Evidence: `npm run test:unit -- tests/unit/ui/whack-a-mole-client.test.js tests/unit/ui/exploration-whack-a-mole.test.js tests/unit/routes/optimistic-run-routes.test.js` PASS; `node --check public/js/ui/whack-a-mole.js && node --check public/js/ui/exploration.js && node --check public/js/api.js && node --check src/routes/game/run.js` PASS; `npm test` PASS. Final subagent code quality review found no issues. Browser prompt and decline path were partially verified with the in-app Browser; completion-path browser verification was skipped at user request on 2026-06-04.
 Branch: `feature/optimistic-whack-a-mole-actions`
-Worktree: `koto-wt-optimistic-whack-a-mole-actions`
+Worktree: `.worktrees/optimistic-whack-a-mole-actions`
 
 **Files:**
 

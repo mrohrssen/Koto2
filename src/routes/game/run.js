@@ -837,23 +837,25 @@ export default function createRunRoutes({
 
   // Whack-a-Mole: complete game and award credits
   router.post('/whack-a-mole-complete', async (req, res) => {
-    try {
-      const { score } = req.body;
-      const result = req.gameManager.completeWhackAMole(score);
-      req.saveGame();
+    return runOptimisticAction(req, res, {
+      actionType: 'whackAMole.complete',
+      errorStatusCode: 409,
+      legacyErrorStatusCode: 400,
+      perform: async () => {
+        const { score } = req.body;
+        const result = req.gameManager.completeWhackAMole(score);
 
-      // Pick best i+1 finish dialogue for GM narration. Words auto-expose on client render.
-      const knownWords = getKnownWordsFromFsrs(req.user.id);
-      const knownSet = new Set(knownWords);
-      const finishFrames = getGameMasterFinishFrames();
-      const candidates = finishFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
-      const finishDialogue = selectBestFrame(candidates, knownSet, { dict: getWordDict() }) || { tokens: [], words: [] };
-      const finishDialogueWithAudio = await attachAudio(finishDialogue, req, 'game-master');
+        // Pick best i+1 finish dialogue for GM narration. Words auto-expose on client render.
+        const knownWords = getKnownWordsFromFsrs(req.user.id);
+        const knownSet = new Set(knownWords);
+        const finishFrames = getGameMasterFinishFrames();
+        const candidates = finishFrames.map(frame => assembleFrame(frame, {}, { dict: getWordDict() }));
+        const finishDialogue = selectBestFrame(candidates, knownSet, { dict: getWordDict() }) || { tokens: [], words: [] };
+        const finishDialogueWithAudio = await attachAudio(finishDialogue, req, 'game-master');
 
-      res.json({ ...result, finishDialogue: finishDialogueWithAudio, state: req.getEnrichedGameState() });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
+        return { ...result, finishDialogue: finishDialogueWithAudio, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   // Whack-a-Mole: get GM dialogue (i+1 selected greeting)
@@ -876,13 +878,15 @@ export default function createRunRoutes({
 
   // Whack-a-Mole: skip (player declined)
   router.post('/whack-a-mole-skip', (req, res) => {
-    try {
-      const result = req.gameManager.skipWhackAMole();
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
+    return runOptimisticAction(req, res, {
+      actionType: 'whackAMole.skip',
+      errorStatusCode: 409,
+      legacyErrorStatusCode: 400,
+      perform: () => {
+        const result = req.gameManager.skipWhackAMole();
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   // Friendly NPC: get item offers (idempotent per room)

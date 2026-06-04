@@ -597,7 +597,10 @@ async function getWhackAMolePool() {
 }
 
 /** Submit whack-a-mole completion with score */
-async function completeWhackAMole(score) {
+async function completeWhackAMole(score, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/whack-a-mole-complete', { score, actionId: options.actionId });
+  }
   return apiCall('/whack-a-mole-complete', 'POST', { score });
 }
 
@@ -607,7 +610,10 @@ async function getWhackAMoleDialogue() {
 }
 
 /** Skip whack-a-mole room (player declined) */
-async function skipWhackAMole() {
+async function skipWhackAMole(options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/whack-a-mole-skip', { actionId: options.actionId });
+  }
   return apiCall('/whack-a-mole-skip', 'POST');
 }
 
