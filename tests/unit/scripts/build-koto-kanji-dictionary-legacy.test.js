@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import {
   assertSafeLegacyOutput,
   buildKotoKanjiDictionary,
@@ -81,10 +82,17 @@ describe('legacy build-koto-kanji-dictionary', () => {
   });
 
   it('refuses to overwrite the curated kanji dictionary', () => {
-    assert.throws(
-      () => assertSafeLegacyOutput('data/kanji/koto-kanji-dictionary.json'),
-      /Refusing to write legacy generated output over curated Koto kanji dictionary/
-    );
+    for (const outputPath of [
+      'data/kanji/koto-kanji-dictionary.json',
+      './data/kanji/koto-kanji-dictionary.json',
+      'data/kanji/../kanji/koto-kanji-dictionary.json',
+      resolve('data/kanji/koto-kanji-dictionary.json'),
+    ]) {
+      assert.throws(
+        () => assertSafeLegacyOutput(outputPath),
+        /Refusing to write legacy generated output over curated Koto kanji dictionary/
+      );
+    }
   });
 
   it('allows writing legacy output under output', () => {

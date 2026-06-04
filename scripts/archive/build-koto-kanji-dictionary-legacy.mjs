@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { dirname } from 'path';
+import { dirname, resolve } from 'path';
 import { XMLParser } from 'fast-xml-parser';
 
 const DEFAULT_RANK_PATH = 'data/kanji/sources/jpdb-kanji-frequency-2026-06-01.tsv';
@@ -231,7 +231,7 @@ function readJsonIfExists(path, fallback) {
 }
 
 export function assertSafeLegacyOutput(path) {
-  if (path === CURATED_DICTIONARY_PATH) {
+  if (resolve(path) === resolve(CURATED_DICTIONARY_PATH)) {
     throw new Error('Refusing to write legacy generated output over curated Koto kanji dictionary');
   }
   return true;
