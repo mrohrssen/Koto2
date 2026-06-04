@@ -2,15 +2,13 @@
 
 ## Purpose
 
-Koto needs its own proprietary kanji dictionary for Kanji Kombat. The current `data/kanji/koto-kanji-dictionary.json` is Koto-shaped, but most `primaryMeaning` values were seeded mechanically from KANJIDIC2 through `scripts/build-koto-kanji-dictionary.mjs`. Many are unnatural as player-facing kanji keywords.
-
-This project promotes `data/kanji/koto-kanji-dictionary.json` into the hand-curated source of truth and retires the generator as an authoring path. JPDB, WaniKani, KANJIDIC2, and JMdict become reference evidence only. The final Koto keyword for each kanji must be dictionary-accurate, natural, and fit for language learning.
+Koto needs its own proprietary kanji dictionary for Kanji Kombat. `data/kanji/koto-kanji-dictionary.json` is the hand-curated source of truth, and the older generator path is now only an archived historical reference. JPDB, WaniKani, KANJIDIC2, and JMdict are reference evidence only. The final Koto keyword for each kanji must be dictionary-accurate, natural, and fit for language learning.
 
 ## Decisions
 
 1. `data/kanji/koto-kanji-dictionary.json` is the authoritative Koto kanji dictionary after this migration.
-2. `scripts/build-koto-kanji-dictionary.mjs` must no longer overwrite curated dictionary choices.
-3. `data/kanji/manual-overrides.json` is moved to `data/kanji/sources/manual-overrides-legacy-2026-06-04.json` as a historical reference and is no longer read by runtime or build tooling.
+2. `scripts/archive/build-koto-kanji-dictionary-legacy.mjs` is historical only and must not overwrite curated dictionary choices.
+3. `data/kanji/sources/manual-overrides-legacy-2026-06-04.json` is historical reference only and is no longer read by runtime or build tooling.
 4. Review output is a CSV for human editing, not a final automatic mutation.
 5. The user-reviewed CSV is imported back into `data/kanji/koto-kanji-dictionary.json` only after validation.
 6. Reference keywords from JPDB and WaniKani must not be copied blindly. They are candidates for human and agent judgment.
@@ -179,7 +177,7 @@ The implementation should make it impossible to accidentally overwrite the curat
 
 Required treatment:
 
-1. Move `scripts/build-koto-kanji-dictionary.mjs` to an archival script name, or change it to write only to an explicit output path under `output/`.
+1. Keep `scripts/archive/build-koto-kanji-dictionary-legacy.mjs` archived; it must not write to `data/kanji/koto-kanji-dictionary.json`.
 2. Remove default behavior that writes to `data/kanji/koto-kanji-dictionary.json`.
 3. Update tests so `koto-kanji-dictionary.json` is validated as curated data, not generated output.
 4. Update docs/data-sources.md to say the dictionary is Koto-owned, while JPDB and WaniKani are temporary curation evidence and not stored in dictionary JSON.
