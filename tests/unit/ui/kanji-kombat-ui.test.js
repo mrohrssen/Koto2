@@ -631,6 +631,38 @@ describe('kanji-kombat ui', () => {
     ]);
   });
 
+  it('rolls back thrown intro choice errors and shows retry copy', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      submitIntro: async () => {
+        throw new Error('network');
+      },
+      updateGameState: state => calls.push(['updateGameState', state.phase, !!state.run?.kanjiKombat?.pendingIntro]),
+      updateUI: () => calls.push(['updateUI']),
+      refreshAction: () => calls.push(['unexpected-refresh']),
+      showNarration: async text => calls.push(['showNarration', text]),
+    });
+
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
+
+    assert.deepEqual(calls, [
+      ['updateGameState', 'combat', false],
+      ['updateGameState', 'combat', true],
+      ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
+      ['updateUI'],
+    ]);
+  });
+
   it('submits completion choices with an action id and waits for server finish handling', async () => {
     const calls = [];
     initKanjiKombatUI({
