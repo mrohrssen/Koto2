@@ -291,14 +291,51 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.combat.mode, 'kanjiKombat');
   });
 
-  it('applies streak thresholds and resets after 20', () => {
+  it('applies streak rewards at 3/6/9/12 and levels the party before resetting at 15', () => {
     const gm = buildGm();
     gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
     const service = new KanjiKombatService(gm);
-    service.startRunWithCreature(fakeCreature('hi', { hp: 10, maxHp: 20 }));
-    for (let i = 0; i < 20; i++) service.recordCorrectAnswer();
+    service.startRunWithCreature(fakeCreature('hi', { hp: 10, maxHp: 20, level: 3, xp: 0 }));
+
+    const active = gm.run.creatureParty.active;
+    active.push(
+      fakeCreature('neko', { hp: 8, maxHp: 20, level: 4, xp: 0 }),
+      fakeCreature('inu', { hp: 5, maxHp: 20, level: 5, xp: 0 }),
+    );
+    gm.run.creatureParty.reserves.push(
+      fakeCreature('reserve-hi', { id: 'hi', hp: 6, maxHp: 20, level: 2, xp: 0 }),
+    );
+
+    for (let i = 0; i < 3; i++) service.recordCorrectAnswer();
+    assert.deepEqual(active.map(creature => creature.hp), [12, 10, 7]);
+    assert.equal(gm.run.kanjiKombat.streak, 3);
+
+    for (let i = 0; i < 3; i++) service.recordCorrectAnswer();
+    const buffStages = active.reduce((total, creature) => (
+      total + (creature.statStages?.atk || 0)
+        + (creature.statStages?.def || 0)
+        + (creature.statStages?.dex || 0)
+    ), 0);
+    assert.equal(buffStages, 1);
+    assert.equal(gm.run.kanjiKombat.streak, 6);
+
+    for (let i = 0; i < 3; i++) service.recordCorrectAnswer();
+    assert.deepEqual(active.map(creature => creature.hp), [19, 17, 14]);
+    assert.equal(gm.run.kanjiKombat.streak, 9);
+
+    for (let i = 0; i < 3; i++) service.recordCorrectAnswer();
+    assert.deepEqual(active.map(creature => creature.hp), [20, 20, 20]);
+    assert.equal(gm.run.kanjiKombat.streak, 12);
+
+    const allParty = [...active, ...gm.run.creatureParty.reserves];
+    const levelsBeforeFifteen = allParty.map(creature => creature.level);
+    for (let i = 0; i < 3; i++) service.recordCorrectAnswer();
+
     assert.equal(gm.run.kanjiKombat.streak, 0);
-    assert.equal(gm.run.creatureParty.active.length > 1 || gm.run.creatureParty.active[0].hp === 20, true);
+    assert.deepEqual(
+      allParty.map(creature => creature.level),
+      levelsBeforeFifteen.map(level => level + 1),
+    );
   });
 
   it('records wave completion without room fields', () => {

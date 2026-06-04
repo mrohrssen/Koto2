@@ -16,7 +16,9 @@ import {
   generateEnemyCreature,
   generateEnemyCreatures,
   getEnemyLevel,
-  instantiateCreatureForCombat
+  instantiateCreatureForCombat,
+  addXpToCreature,
+  xpToNextLevel
 } from '../creatures.js';
 import { getCrestMultipliers, applyCrestBonuses } from './crest-service.js';
 import {
@@ -281,6 +283,19 @@ function applyRandomStreakBuff(allies, random = Math.random) {
   const stat = STREAK_BUFF_STATS[Math.floor(random() * STREAK_BUFF_STATS.length)];
   const delta = applyStatChange(ally, stat, 1);
   return { ally, stat, delta };
+}
+
+function levelUpAllPartyCreatures(creatureParty, metaMults = null, itemBuffs = null) {
+  const creatures = [
+    ...(creatureParty?.active || []),
+    ...(creatureParty?.reserves || []),
+  ].filter(Boolean);
+
+  for (const creature of creatures) {
+    creature.level = Math.max(1, creature.level || 1);
+    if (!Number.isFinite(creature.xp)) creature.xp = 0;
+    addXpToCreature(creature, xpToNextLevel(creature.level), metaMults, itemBuffs);
+  }
 }
 
 export class KanjiKombatService {
@@ -727,11 +742,16 @@ export class KanjiKombatService {
     kk.report.cardsReviewed += 1;
     kk.reviewsSinceIntro += 1;
 
-    if (kk.streak === 5) healAll(this.gm.run.creatureParty.active, 0.10);
-    if (kk.streak === 10) applyRandomStreakBuff(this.gm.run.creatureParty.active);
-    if (kk.streak === 15) healAll(this.gm.run.creatureParty.active, 0.35);
-    if (kk.streak === 20) {
-      this.addRandomUnlockedAllyOrFullHeal();
+    if (kk.streak === 3) healAll(this.gm.run.creatureParty.active, 0.10);
+    if (kk.streak === 6) applyRandomStreakBuff(this.gm.run.creatureParty.active);
+    if (kk.streak === 9) healAll(this.gm.run.creatureParty.active, 0.35);
+    if (kk.streak === 12) this.addRandomUnlockedAllyOrFullHeal();
+    if (kk.streak === 15) {
+      levelUpAllPartyCreatures(
+        this.gm.run.creatureParty,
+        this.gm.run.crestMults,
+        this.gm.run.itemBuffs
+      );
       kk.streak = 0;
       kk.reviewsSinceIntro = 0;
       kk.nextIntroAfter = rollIntroInterval();
