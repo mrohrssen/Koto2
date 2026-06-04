@@ -6,11 +6,13 @@ import { join } from 'node:path';
 import {
   extractWaniKaniKanjiSubjects,
   fetchAllWaniKaniPages,
-  runCli,
+  runCli as runWaniKaniCli,
   normalizeWaniKaniSubjects,
 } from '../../../scripts/fetch-wanikani-kanji-keywords.mjs';
 import {
   extractJpdbKeywordFromHtml,
+  fetchJpdbKeyword,
+  runCli as runJpdbCli,
   normalizeJpdbResults,
 } from '../../../scripts/fetch-jpdb-kanji-keywords.mjs';
 import { getKotoKanjiEntries } from '../../../src/game/koto-kanji-dictionary.js';
@@ -301,7 +303,7 @@ describe('wani kani kanji keyword fetchers', () => {
 
     try {
       delete process.env.WANIKANI_API_TOKEN;
-      await runCli(['--cache', cachePath, '--out', outPath]);
+      await runWaniKaniCli(['--cache', cachePath, '--out', outPath]);
 
       const output = JSON.parse(await readFile(outPath, 'utf8'));
       assert.equal(output[entry.kanji].meaning, 'One');
@@ -333,6 +335,81 @@ describe('jpdb kanji keyword fetchers', () => {
     assert.equal(extractJpdbKeywordFromHtml(html), '');
   });
 
+  it('does not stop at nested h6 tags inside the keyword block', () => {
+    const html = '<html><body><h6>Keyword</h6><div><div class="note"><h6>Nested</h6></div><span>front side</span></div><h6>Info</h6></body></html>';
+
+    assert.equal(extractJpdbKeywordFromHtml(html), 'front side');
+  });
+
+  it('handles JPDB fetch statuses offline', async () => {
+    const cases = [
+      {
+        kanji: '表',
+        response: {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => '<html><body><h6>Keyword</h6><div>front side</div><h6>Info</h6></body></html>',
+        },
+        expected: { keyword: 'front side', status: 'matched' },
+      },
+      {
+        kanji: '裏',
+        response: {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => '<html><body><h6>Info</h6></body></html>',
+        },
+        expected: { keyword: '', status: 'parse_failed' },
+      },
+      {
+        kanji: '中',
+        response: {
+          ok: false,
+          status: 429,
+          statusText: 'Too Many Requests',
+          text: async () => '',
+        },
+        expected: { keyword: '', status: 'rate_limited' },
+      },
+      {
+        kanji: '下',
+        response: {
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
+          text: async () => '',
+        },
+        expected: { keyword: '', status: 'missing' },
+      },
+      {
+        kanji: '外',
+        response: {
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error',
+          text: async () => '',
+        },
+        expected: { keyword: '', status: 'fetch_failed', error: '500' },
+      },
+    ];
+
+    for (const testCase of cases) {
+      const actual = await fetchJpdbKeyword(testCase.kanji, async () => testCase.response);
+
+      assert.equal(actual.kanji, testCase.kanji);
+      assert.equal(actual.keyword, testCase.expected.keyword);
+      assert.equal(actual.status, testCase.expected.status);
+      assert.equal(actual.sourceUrl, `https://jpdb.io/kanji/${encodeURIComponent(testCase.kanji)}`);
+      if ('error' in testCase.expected) {
+        assert.equal(actual.error, testCase.expected.error);
+      } else {
+        assert.equal(Object.prototype.hasOwnProperty.call(actual, 'error'), false);
+      }
+    }
+  });
+
   it('normalizes JPDB results against Koto entries and marks missing kanji', () => {
     const results = [
       { kanji: '一', keyword: 'one', status: 'matched', sourceUrl: 'https://jpdb.io/kanji/%E4%B8%80' },
@@ -356,5 +433,79 @@ describe('jpdb kanji keyword fetchers', () => {
       keyword: '',
       status: 'missing',
     });
+  });
+
+  it('refetches transient cached JPDB results on a later non-refresh run', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'jpdb-cache-retry-'));
+    const cachePath = join(tempDir, 'cache.json');
+    const entry = getKotoKanjiEntries()[0];
+    const staleResult = {
+      kanji: entry.kanji,
+      keyword: 'stale',
+      status: 'rate_limited',
+      sourceUrl: `https://jpdb.io/kanji/${encodeURIComponent(entry.kanji)}`,
+    };
+    const response = {
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: async () => '<html><body><h6>Keyword</h6><span>front side</span><h6>Info</h6></body></html>',
+    };
+    const fetchCalls = [];
+    const sleepCalls = [];
+
+    await writeFile(cachePath, `${JSON.stringify({ [entry.kanji]: staleResult }, null, 2)}\n`);
+
+    try {
+      await runJpdbCli(['--cache', cachePath, '--limit', '1'], {
+        fetchFn: async url => {
+          fetchCalls.push(String(url));
+          return response;
+        },
+        sleepFn: async delay => {
+          sleepCalls.push(delay);
+        },
+      });
+
+      const output = JSON.parse(await readFile(cachePath, 'utf8'));
+      assert.deepEqual(fetchCalls, [`https://jpdb.io/kanji/${encodeURIComponent(entry.kanji)}`]);
+      assert.deepEqual(sleepCalls, [1_000]);
+      assert.equal(output[entry.kanji].keyword, 'front side');
+      assert.equal(output[entry.kanji].status, 'matched');
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('uses the 60s backoff after a rate-limited JPDB fetch', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'jpdb-rate-limit-'));
+    const cachePath = join(tempDir, 'cache.json');
+    const entry = getKotoKanjiEntries()[0];
+    const fetchCalls = [];
+    const sleepCalls = [];
+
+    try {
+      await runJpdbCli(['--cache', cachePath, '--limit', '1'], {
+        fetchFn: async url => {
+          fetchCalls.push(String(url));
+          return {
+            ok: false,
+            status: 429,
+            statusText: 'Too Many Requests',
+            text: async () => '',
+          };
+        },
+        sleepFn: async delay => {
+          sleepCalls.push(delay);
+        },
+      });
+
+      const output = JSON.parse(await readFile(cachePath, 'utf8'));
+      assert.deepEqual(fetchCalls, [`https://jpdb.io/kanji/${encodeURIComponent(entry.kanji)}`]);
+      assert.deepEqual(sleepCalls, [60_000]);
+      assert.equal(output[entry.kanji].status, 'rate_limited');
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
   });
 });

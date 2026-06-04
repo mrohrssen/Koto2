@@ -9,6 +9,23 @@ import { getKotoKanjiEntries } from '../src/game/koto-kanji-dictionary.js';
 export const DEFAULT_CACHE_PATH = 'output/kanji-keyword-review/jpdb-kanji-keywords.json';
 export const DEFAULT_DELAY_MS = 1_000;
 const RATE_LIMIT_DELAY_MS = 60_000;
+const REUSABLE_CACHE_STATUSES = new Set(['matched', 'missing']);
+const VOID_TAGS = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);
 
 function toText(value) {
   return value == null ? '' : String(value);
@@ -38,15 +55,93 @@ function stripTagsToText(html) {
     .trim();
 }
 
-function findNextBoundaryIndex(html, fromIndex) {
-  const lower = html.toLowerCase();
-  const candidates = [
-    lower.indexOf('<h6', fromIndex),
-    lower.indexOf('</body', fromIndex),
-    lower.indexOf('</html', fromIndex),
-  ].filter(index => index >= 0);
+function parseTagName(tagContent) {
+  const stripped = toText(tagContent)
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '')
+    .trim();
+  if (!stripped) return '';
 
-  return candidates.length > 0 ? Math.min(...candidates) : html.length;
+  const match = stripped.match(/^[^\s/>]+/u);
+  return match ? match[0].toLowerCase() : '';
+}
+
+function isSelfClosingTag(tagContent, tagName) {
+  if (!tagName) return true;
+  if (VOID_TAGS.has(tagName)) return true;
+  return /\/\s*$/u.test(toText(tagContent));
+}
+
+function extractKeywordBlockText(html, fromIndex) {
+  let depth = 0;
+  let headingDepth = 0;
+  let output = '';
+  let index = fromIndex;
+
+  while (index < html.length) {
+    const openIndex = html.indexOf('<', index);
+    if (openIndex < 0) {
+      if (headingDepth === 0) {
+        output += html.slice(index);
+      }
+      break;
+    }
+    const closeIndex = html.indexOf('>', openIndex + 1);
+    if (closeIndex < 0) {
+      if (headingDepth === 0) {
+        output += html.slice(index);
+      }
+      break;
+    }
+
+    if (headingDepth === 0) {
+      output += html.slice(index, openIndex);
+    }
+
+    const tagContent = html.slice(openIndex + 1, closeIndex).trim();
+    const lowerTagContent = tagContent.toLowerCase();
+
+    if (lowerTagContent.startsWith('!--')) {
+      if (headingDepth === 0) output += ' ';
+      index = closeIndex + 1;
+      continue;
+    }
+
+    if (lowerTagContent.startsWith('/')) {
+      const tagName = parseTagName(tagContent);
+      if ((tagName === 'body' || tagName === 'html') && depth === 0) {
+        break;
+      }
+      if (tagName === 'h6' && headingDepth > 0) {
+        headingDepth--;
+      }
+      if (depth > 0) depth--;
+      if (headingDepth === 0) output += ' ';
+      index = closeIndex + 1;
+      continue;
+    }
+
+    const tagName = parseTagName(tagContent);
+    if (tagName === 'h6' && depth === 0) {
+      break;
+    }
+
+    if (tagName === 'h6' && depth > 0) {
+      headingDepth++;
+    }
+
+    if (!isSelfClosingTag(tagContent, tagName)) {
+      depth++;
+    }
+
+    if (headingDepth === 0) output += ' ';
+
+    index = closeIndex + 1;
+  }
+
+  return decodeHtmlEntities(output)
+    .replace(/\s+/gu, ' ')
+    .trim();
 }
 
 async function readJson(filePath) {
@@ -67,8 +162,7 @@ export function extractJpdbKeywordFromHtml(html) {
   for (const match of cleaned.matchAll(pattern)) {
     if (stripTagsToText(match[1]).toLowerCase() !== 'keyword') continue;
     const startIndex = (match.index ?? 0) + match[0].length;
-    const endIndex = findNextBoundaryIndex(cleaned, startIndex);
-    return stripTagsToText(cleaned.slice(startIndex, endIndex));
+    return extractKeywordBlockText(cleaned, startIndex);
   }
 
   return '';
@@ -137,6 +231,10 @@ export async function fetchJpdbKeyword(kanji, fetchFn = fetch) {
   }
 }
 
+function isReusableCachedResult(result) {
+  return REUSABLE_CACHE_STATUSES.has(toText(result?.status));
+}
+
 export function parseArgs(argv) {
   const args = {
     refresh: false,
@@ -188,7 +286,7 @@ async function readJsonIfExists(filePath) {
   return readJson(filePath);
 }
 
-export async function runCli(argv = process.argv.slice(2), fetchFn = fetch) {
+export async function runCli(argv = process.argv.slice(2), { fetchFn = fetch, sleepFn = sleep } = {}) {
   const args = parseArgs(argv);
   const entries = getKotoKanjiEntries().slice(0, args.limit ?? undefined);
   const cached = args.refresh ? null : await readJsonIfExists(args.cache);
@@ -202,12 +300,13 @@ export async function runCli(argv = process.argv.slice(2), fetchFn = fetch) {
 
   for (const entry of entries) {
     const kanji = toText(entry?.kanji);
-    if (!kanji || results.has(kanji)) continue;
+    const cachedResult = results.get(kanji);
+    if (!kanji || (cachedResult && isReusableCachedResult(cachedResult))) continue;
 
     const result = await fetchJpdbKeyword(kanji, fetchFn);
     results.set(kanji, result);
     await writeJsonAtomic(args.cache, Object.fromEntries(results));
-    await sleep(result.status === 'rate_limited' ? RATE_LIMIT_DELAY_MS : args.delayMs);
+    await sleepFn(result.status === 'rate_limited' ? RATE_LIMIT_DELAY_MS : args.delayMs);
   }
 
   const normalized = normalizeJpdbResults([...results.values()], getKotoKanjiEntries());
