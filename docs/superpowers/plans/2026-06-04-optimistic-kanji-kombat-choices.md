@@ -33,8 +33,8 @@ Required behavior from roadmap:
 
 Status: complete
 Completed: 2026-06-04 22:41 JST
-Implementation commits: `536b0bf2`, `ef574178`
-Review: server route spec and code-quality reviews found no remaining issues; UI/API spec review passed; UI/API code-quality re-review found no Critical or Important issues, and the one Minor stale completion-response test gap was patched.
+Implementation commits: `536b0bf2`, `ef574178`, `d74fc560`
+Review: server route spec and code-quality reviews found no remaining issues; UI/API spec review passed; UI/API code-quality re-review found no Critical or Important issues, and the Minor stale completion-response and thrown intro-response test gaps were patched.
 Verification: `node --experimental-test-module-mocks --test tests/unit/routes/kanji-kombat-routes.test.js` PASS; `node --test tests/unit/ui/kanji-kombat-ui.test.js tests/unit/ui/optimistic-run-integration.test.js` PASS; `node --experimental-test-module-mocks --test tests/unit/game/kanji-kombat-run.test.js tests/unit/game/kanji-kombat-optimistic.test.js` PASS; `npm run test:unit -- tests/unit/routes/kanji-kombat-routes.test.js tests/unit/ui/kanji-kombat-ui.test.js tests/unit/ui/optimistic-run-integration.test.js tests/unit/game/kanji-kombat-run.test.js tests/unit/game/kanji-kombat-optimistic.test.js` PASS; `node --check src/routes/game/kanji-kombat.js && node --check public/js/api.js && node --check public/js/ui/kanji-kombat.js` PASS; `npm test` PASS.
 Manual browser note: no browser session was launched because this task changed route/API/action commit behavior and source-covered retry copy, not CSS, animation, or rendering.
 
@@ -672,7 +672,7 @@ Status: complete
 Owner: Codex
 Started: 2026-06-04 22:12 JST
 Completed: 2026-06-04 22:41 JST
-Commit: `536b0bf2`, `ef574178`
+Commit: `536b0bf2`, `ef574178`, `d74fc560`
 Evidence: RED route/UI tests failed before implementation; GREEN route/UI tests passed after implementation; `npm run test:unit -- tests/unit/routes/kanji-kombat-routes.test.js tests/unit/ui/kanji-kombat-ui.test.js tests/unit/ui/optimistic-run-integration.test.js tests/unit/game/kanji-kombat-run.test.js tests/unit/game/kanji-kombat-optimistic.test.js` PASS; `node --check src/routes/game/kanji-kombat.js && node --check public/js/api.js && node --check public/js/ui/kanji-kombat.js` PASS; `npm test` PASS. No browser session was launched because this task changed route/API/action commit behavior and source-covered retry copy, not CSS, animation, or rendering.
 ```
 
@@ -684,6 +684,7 @@ Implementation source commits were created by the Task 1 and Task 2 workers:
 
 - `536b0bf2` - route idempotency
 - `ef574178` - API/UI optimistic choice flow
+- `d74fc560` - thrown intro rollback regression coverage
 
 Final roadmap evidence was committed after verification with:
 
