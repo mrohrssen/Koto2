@@ -1,10 +1,15 @@
 import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   extractWaniKaniKanjiSubjects,
   fetchAllWaniKaniPages,
+  runCli,
   normalizeWaniKaniSubjects,
 } from '../../../scripts/fetch-wanikani-kanji-keywords.mjs';
+import { getKotoKanjiEntries } from '../../../src/game/koto-kanji-dictionary.js';
 
 const originalFetch = globalThis.fetch;
 
@@ -211,5 +216,102 @@ describe('wani kani kanji keyword fetchers', () => {
 
     assert.equal(calls, 3);
     assert.deepEqual(delays, [50, 50]);
+  });
+
+  it('paginates same-origin pages successfully', async () => {
+    const calls = [];
+    globalThis.fetch = async url => {
+      const nextUrl = String(url);
+      calls.push(nextUrl);
+
+      if (calls.length === 1) {
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          json: async () => ({
+            data: [{ id: 440 }],
+            pages: {
+              next_url: 'https://api.wanikani.com/v2/subjects?page=2',
+            },
+          }),
+        };
+      }
+
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => ({
+          data: [{ id: 441 }],
+          pages: {
+            next_url: null,
+          },
+        }),
+      };
+    };
+
+    const pages = await fetchAllWaniKaniPages({
+      token: 'secret-token',
+      sleepFn: async () => {},
+      baseUrl: 'https://api.wanikani.com/v2/subjects?types=kanji&hidden=false',
+    });
+
+    assert.equal(pages.length, 2);
+    assert.deepEqual(calls, [
+      'https://api.wanikani.com/v2/subjects?types=kanji&hidden=false',
+      'https://api.wanikani.com/v2/subjects?page=2',
+    ]);
+    assert.deepEqual(pages[0].data, [{ id: 440 }]);
+    assert.deepEqual(pages[1].data, [{ id: 441 }]);
+  });
+
+  it('runs the cache-only CLI branch without WANIKANI_API_TOKEN', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'wanikani-cache-only-'));
+    const cachePath = join(tempDir, 'cache.json');
+    const outPath = join(tempDir, 'out.json');
+    const previousToken = process.env.WANIKANI_API_TOKEN;
+    const entry = getKotoKanjiEntries()[0];
+    const page = {
+      data: [
+        {
+          id: 440,
+          object: 'kanji',
+          data_updated_at: '2026-06-01T00:00:00.000Z',
+          data: {
+            characters: entry.kanji,
+            level: 1,
+            document_url: `https://www.wanikani.com/kanji/${encodeURIComponent(entry.kanji)}`,
+            meanings: [
+              { meaning: 'One', primary: true, accepted_answer: true },
+            ],
+          },
+        },
+      ],
+      pages: {
+        next_url: null,
+      },
+    };
+
+    await writeFile(cachePath, `${JSON.stringify([page], null, 2)}\n`);
+
+    try {
+      delete process.env.WANIKANI_API_TOKEN;
+      await runCli(['--cache', cachePath, '--out', outPath]);
+
+      const output = JSON.parse(await readFile(outPath, 'utf8'));
+      assert.equal(output[entry.kanji].meaning, 'One');
+      assert.equal(output[entry.kanji].status, 'matched');
+      assert.equal(output[entry.kanji].subjectId, 440);
+      assert.equal(output[entry.kanji].documentUrl, `https://www.wanikani.com/kanji/${encodeURIComponent(entry.kanji)}`);
+      assert.equal(output[entry.kanji].level, 1);
+    } finally {
+      if (previousToken === undefined) {
+        delete process.env.WANIKANI_API_TOKEN;
+      } else {
+        process.env.WANIKANI_API_TOKEN = previousToken;
+      }
+      await rm(tempDir, { recursive: true, force: true });
+    }
   });
 });
