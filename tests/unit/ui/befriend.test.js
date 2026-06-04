@@ -98,6 +98,13 @@ const {
   renderBefriendQuiz,
 } = await import('../../../public/js/ui/befriend.js');
 
+beforeEach(() => {
+  renderChoicesResults.length = 0;
+  renderChoicesCalls.length = 0;
+  dialogueCardCalls.length = 0;
+  sceneManagerState.currentScene = null;
+});
+
 describe('befriend eligibility', () => {
   describe('isBefriendSlotBlocked', () => {
     it('returns true when slot is recorded in befriendAttemptedSlots', () => {
@@ -505,6 +512,95 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
 
     assert.equal(conversationStarted, true);
     assert.equal(renderChoicesCalls[0].heading, 'Choose an action');
+  });
+
+  it('falls back to the name quiz when AI befriend conversation is unavailable', async () => {
+    renderChoicesResults.push(1, 0); // choose Talk, then first name answer
+    const fetchCalls = [];
+    const state = {
+      meta: { tutorialStep: 0 },
+      combat: {
+        active: true,
+        enemies: [{ id: 'tetsu', name: '鉄', nameEn: 'Iron', reading: 'てつ', hp: 5, maxHp: 10, befriended: false }],
+        allies: []
+      },
+      run: { creatureParty: { active: [] } }
+    };
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, options) => {
+      fetchCalls.push({ url, body: JSON.parse(options.body) });
+      return {
+        json: async () => ({
+          correct: true,
+          befriended: true,
+          capturedId: 'tetsu',
+          capturedIndex: 0,
+          combatEnded: true,
+          victory: true,
+          enemies: [{ ...state.combat.enemies[0], hp: 0, befriended: true }],
+          state: {
+            ...state,
+            combat: {
+              ...state.combat,
+              enemies: [{ ...state.combat.enemies[0], hp: 0, befriended: true }]
+            }
+          }
+        })
+      };
+    };
+
+    const ctx = {
+      isCombatActive: () => true,
+      withAnimationActive: async (fn) => fn(),
+      getGameState: () => state,
+      apiGetBefriendConversation: async () => ({
+        error: 'AI conversations are unavailable. Enable AI Conversations in Settings, or try again later if server AI is not configured.',
+        mode: 'name_quiz',
+        fallback: true
+      }),
+      narration: { showNarration: async () => {}, forceHideNarration: () => {} },
+      delay: async () => {},
+      updateGameState: () => {},
+      updateUI: () => {},
+      startMoveSelection: () => {},
+      stopCombatLoop: () => {},
+      spritePos: () => ({ x: 0, y: 0 }),
+      buildAllyHpMap: () => new Map(),
+      syncFinalState: () => {}
+    };
+    init(ctx);
+
+    try {
+      await renderBefriendQuiz({
+        targetIndex: 0,
+        creatureId: 'tetsu',
+        creatureName: '鉄',
+        creatureReading: 'てつ',
+        options: [
+          { id: 'tetsu', name: 'Iron' },
+          { id: 'wrong-1', name: 'Water' },
+          { id: 'wrong-2', name: 'Fire' }
+        ],
+        waitPrompt: {
+          tokens: [{ surface: '待って', base: '待つ', reading: 'まって', meaning: 'wait' }]
+        },
+        namePrompt: {
+          tokens: [{ surface: '名前', base: '名前', reading: 'なまえ', meaning: 'name' }]
+        },
+        successPrompt: {
+          tokens: [{ surface: '友達', base: '友達', reading: 'ともだち', meaning: 'friend' }]
+        }
+      }, { enemies: state.combat.enemies });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    assert.equal(renderChoicesCalls[1].heading, 'Choose the creature name');
+    assert.deepEqual(renderChoicesCalls[1].cards.map(card => card.title), ['Iron', 'Water', 'Fire']);
+    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls[0].url, '/api/game/befriend-quiz-answer');
+    assert.deepEqual(fetchCalls[0].body, { action: 'talk', answerId: 'tetsu' });
   });
 
   it('renders AI befriend answer options from tokenized data', async () => {

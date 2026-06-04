@@ -313,6 +313,164 @@ function showAnswerFeedback(selectedIndex, correctIndex, correct) {
   });
 }
 
+function isNameQuizFallbackResult(result) {
+  return result?.mode === 'name_quiz' || result?.fallbackReason === 'ai_dialogue_unavailable';
+}
+
+function isAiDialogueUnavailableResult(result) {
+  if (isNameQuizFallbackResult(result)) return true;
+  return /AI conversations are unavailable/i.test(String(result?.error || ''));
+}
+
+function buildFallbackNameQuizData(baseQuizData, convoResult) {
+  const fallbackQuiz = convoResult?.befriendQuiz || {};
+  return {
+    ...(baseQuizData || {}),
+    ...fallbackQuiz,
+    targetIndex: fallbackQuiz.targetIndex ?? baseQuizData?.targetIndex ?? convoResult?.targetEnemyIndex ?? 0,
+    creatureId: fallbackQuiz.creatureId || baseQuizData?.creatureId || convoResult?.targetEnemy?.id,
+    creatureName: fallbackQuiz.creatureName || baseQuizData?.creatureName || convoResult?.targetEnemy?.name,
+    creatureNameEn: fallbackQuiz.creatureNameEn || baseQuizData?.creatureNameEn || convoResult?.targetEnemy?.nameEn,
+    creatureReading: fallbackQuiz.creatureReading || baseQuizData?.creatureReading || convoResult?.targetEnemy?.reading,
+    options: fallbackQuiz.options?.length ? fallbackQuiz.options : (baseQuizData?.options || []),
+  };
+}
+
+async function submitBefriendNameQuizAnswer(answerId) {
+  const resp = await fetch(`${API_BASE}/api/game/befriend-quiz-answer`, {
+    method: 'POST',
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'talk', answerId })
+  });
+  const body = await resp.json().catch(() => null);
+  if (resp.ok === false) {
+    return { error: body?.error || 'request failed' };
+  }
+  return body;
+}
+
+async function runBefriendNameQuizFallback({
+  quizData,
+  creatureSpeaker,
+  actingCreatureSlot,
+}) {
+  const options = quizData?.options || [];
+  if (!options.length) {
+    if (ctx.narration?.showNarration) {
+      ctx.narration.showNarration(tPlain('befriendFailedGeneric'), { persistent: false });
+    }
+    resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
+    return;
+  }
+
+  await showCreatureDialogue({
+    speaker: creatureSpeaker,
+    prompt: quizData.namePrompt,
+    fallbackText: 'Name?',
+  });
+
+  const selectedIndex = await renderChoicesAsync({
+    heading: 'Choose the creature name',
+    clearAfterSelect: false,
+    cards: options.map(option => ({ title: option.name || option.nameEn || option.id })),
+  });
+  const selectedOption = options[selectedIndex];
+  if (!selectedOption) {
+    resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
+    return;
+  }
+
+  const answerResult = await submitBefriendNameQuizAnswer(selectedOption.id);
+  if (!answerResult || answerResult.error) {
+    if (ctx.narration?.showNarration) {
+      ctx.narration.showNarration(answerResult?.error || tPlain('befriendFailedGeneric'), { persistent: false });
+    }
+    resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
+    return;
+  }
+
+  const correctIndex = options.findIndex(option => option.id === quizData.creatureId || option.id === answerResult.capturedId);
+  showAnswerFeedback(selectedIndex, correctIndex, answerResult.correct);
+  await ctx.delay(800);
+  if (ctx.narration.forceHideNarration) ctx.narration.forceHideNarration();
+
+  if (!answerResult.correct) {
+    await showCreatureDialogue({
+      speaker: creatureSpeaker,
+      prompt: quizData.wrongPrompt,
+      fallbackText: '???',
+    });
+
+    await showBefriendEnemyAttacksAnimated(
+      answerResult.enemyAttacks || answerResult.counterAttack,
+      answerResult.allies || ctx.getGameState()?.combat?.allies || []
+    );
+
+    if (answerResult.state) {
+      ctx.updateGameState(answerResult.state);
+    } else if (answerResult.allies || answerResult.enemies) {
+      const gs = ctx.getGameState();
+      if (gs.combat) {
+        ctx.updateGameState({
+          ...gs,
+          combat: {
+            ...gs.combat,
+            ...(answerResult.allies && { allies: answerResult.allies }),
+            ...(answerResult.enemies && { enemies: answerResult.enemies })
+          }
+        });
+      }
+    }
+    ctx.updateUI();
+
+    if (answerResult.combatEnded) {
+      ctx.stopCombatLoop({ combatEnded: true, victory: false });
+      return;
+    }
+
+    resumeMoveSelectionAfterBefriendSpend(actingCreatureSlot);
+    return;
+  }
+
+  playSFX('creature-skill');
+  await showCreatureDialogue({
+    speaker: creatureSpeaker,
+    prompt: quizData.successPrompt,
+    fallbackText: 'Friends!',
+  });
+
+  const capturedIndex = answerResult.capturedIndex ?? quizData.targetIndex;
+  const capturedId = answerResult.capturedId ?? quizData.creatureId;
+  const slot = (typeof capturedIndex === 'number'
+    ? document.querySelector(`#enemy-formation .formation-slot[data-index="${capturedIndex}"]`)
+    : null) || (capturedId
+    ? document.querySelector(`#enemy-formation .formation-slot[data-creature-id="${capturedId}"]`)
+    : null);
+  if (slot) slot.classList.add('befriended');
+
+  if (answerResult.state) {
+    ctx.updateGameState(answerResult.state);
+  } else {
+    const gs = ctx.getGameState();
+    if (gs.combat && answerResult.enemies) {
+      ctx.updateGameState({
+        ...gs,
+        combat: { ...gs.combat, enemies: answerResult.enemies },
+        ...(answerResult.creatureParty && {
+          run: { ...gs.run, creatureParty: answerResult.creatureParty }
+        })
+      });
+    }
+  }
+
+  if (answerResult.combatEnded) {
+    ctx.stopCombatLoop({ combatEnded: true, victory: answerResult.victory || false });
+    return;
+  }
+
+  ctx.startMoveSelection();
+}
+
 // ---- Entry points ----
 
 /** Handle the player tapping the はなす (Talk) button during move selection. */
@@ -539,7 +697,12 @@ export async function renderBefriendQuiz(quizData, result) {
     return;
   }
 
-  await executeBefriendAction(null);
+  await executeBefriendAction(null, {
+    nameQuizFallback: {
+      quizData,
+      creatureSpeaker,
+    }
+  });
   return;
 }
 
@@ -547,7 +710,7 @@ export async function renderBefriendQuiz(quizData, result) {
  * Execute befriend action: 3-round conversation to capture low-HP enemy creature.
  * @param {number|null} actingCreatureSlot - Party index that spent their turn on はなす; null = flash-card path.
  */
-export async function executeBefriendAction(actingCreatureSlot = null) {
+export async function executeBefriendAction(actingCreatureSlot = null, options = {}) {
   if (!ctx.isCombatActive()) return;
 
   return ctx.withAnimationActive(async () => {
@@ -568,7 +731,27 @@ export async function executeBefriendAction(actingCreatureSlot = null) {
 
       // Fetch conversation from server
       const convoResult = await ctx.apiGetBefriendConversation(enemyIndex);
+      if (isNameQuizFallbackResult(convoResult)) {
+        const fallback = options.nameQuizFallback || {};
+        const quizData = buildFallbackNameQuizData(fallback.quizData, convoResult);
+        await runBefriendNameQuizFallback({
+          quizData,
+          creatureSpeaker: fallback.creatureSpeaker || buildCreatureSpeaker(quizData, 'Creature'),
+          actingCreatureSlot,
+        });
+        return;
+      }
+
       if (!convoResult || convoResult.error) {
+        if (options.nameQuizFallback && isAiDialogueUnavailableResult(convoResult)) {
+          await runBefriendNameQuizFallback({
+            quizData: options.nameQuizFallback.quizData,
+            creatureSpeaker: options.nameQuizFallback.creatureSpeaker,
+            actingCreatureSlot,
+          });
+          return;
+        }
+
         const errMsg = convoResult?.error || 'request failed';
         console.error('Befriend conversation error:', errMsg);
         if (ctx.narration?.showNarration) {
