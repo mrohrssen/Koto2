@@ -1,11 +1,13 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { dirname } from 'path';
 import { XMLParser } from 'fast-xml-parser';
 
 const DEFAULT_RANK_PATH = 'data/kanji/sources/jpdb-kanji-frequency-2026-06-01.tsv';
 const DEFAULT_KANJIDIC_PATH = 'data/kanji/sources/kanjidic2.xml';
-const DEFAULT_OVERRIDES_PATH = 'data/kanji/manual-overrides.json';
+const DEFAULT_OVERRIDES_PATH = 'data/kanji/sources/manual-overrides-legacy-2026-06-04.json';
 const DEFAULT_JMDICT_PATH = 'data/latest-jm-dict.json';
-const DEFAULT_OUT_PATH = 'data/kanji/koto-kanji-dictionary.json';
+const DEFAULT_OUT_PATH = 'output/kanji-keyword-review/koto-kanji-dictionary-legacy-build.json';
+const CURATED_DICTIONARY_PATH = 'data/kanji/koto-kanji-dictionary.json';
 
 const DICTIONARY_SOURCES = Object.freeze([
   {
@@ -228,8 +230,16 @@ function readJsonIfExists(path, fallback) {
   return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : fallback;
 }
 
+export function assertSafeLegacyOutput(path) {
+  if (path === CURATED_DICTIONARY_PATH) {
+    throw new Error('Refusing to write legacy generated output over curated Koto kanji dictionary');
+  }
+  return true;
+}
+
 function runCli() {
   const args = parseArgs(process.argv.slice(2));
+  assertSafeLegacyOutput(args.out);
   if (!existsSync(args.kanjidic)) {
     console.error(`Missing KANJIDIC2 source file: ${args.kanjidic}`);
     console.error('Download it from https://www.edrdg.org/kanjidic/kanjidic2.xml.gz, decompress it, and rerun this script.');
@@ -248,6 +258,7 @@ function runCli() {
     throw new Error(`Expected 4000 Koto kanji entries, got ${dictionary.entries.length}`);
   }
 
+  mkdirSync(dirname(args.out), { recursive: true });
   writeFileSync(args.out, `${JSON.stringify(dictionary, null, 2)}\n`);
   console.log(`Wrote ${dictionary.entries.length} Koto kanji entries to ${args.out}`);
 }
