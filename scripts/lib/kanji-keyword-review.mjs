@@ -174,6 +174,14 @@ export function parseCsv(text) {
     pushRow();
   }
 
+  while (rows.length > 0 && rows[rows.length - 1].length === 1 && rows[rows.length - 1][0] === '') {
+    rows.pop();
+  }
+
+  if (rows.length === 0) {
+    throw new Error('CSV text is empty');
+  }
+
   const [header, ...dataRows] = rows;
   if (!validateReviewColumns(header)) {
     throw new Error(`CSV header must match REVIEW_COLUMNS: ${REVIEW_COLUMNS.join(',')}`);

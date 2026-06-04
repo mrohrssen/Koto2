@@ -97,6 +97,27 @@ describe('kanji keyword review helpers', () => {
     );
   });
 
+  it('ignores trailing blank lines after a valid CSV', () => {
+    const rows = [
+      {
+        rank: '1',
+        kanji: '人',
+        kind: 'Kyōiku (1st grade)',
+        currentPrimaryKeyword: 'person',
+        jpdbPrimaryKeyword: 'person',
+        wanikaniPrimaryDefinition: 'Person',
+        proposedFinalKeyword: 'NO CHANGE',
+        proposalSource: 'no_change',
+        proposalNotes: '',
+        jpdbStatus: 'matched',
+        wanikaniStatus: 'matched',
+      },
+    ];
+
+    assert.deepEqual(parseCsv(`${rowsToCsv(rows)}\n\n`), rows);
+    assert.deepEqual(parseCsv(`${rowsToCsv(rows).replace(/\n/g, '\r\n')}\r\n\r\n`), rows);
+  });
+
   it('builds one review row per dictionary entry with lookup defaults', () => {
     const entries = [
       { frequencyRank: 1, kanji: '人', kind: 'Kyōiku (1st grade)', primaryMeaning: 'person' },
