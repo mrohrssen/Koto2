@@ -111,6 +111,31 @@ describe('script-srs', () => {
     assert.equal(kanji[3999].sortIndex, 4000);
   });
 
+  it('refreshes kanji answer and keyword while preserving reviewed SRS progress', () => {
+    ensureScriptDeckSeeded(userId);
+    const staticCard = KANJI_SCRIPT_CARDS[0];
+    const data = loadSrsData(userId);
+    const savedCard = data.script.cards.find(card => card.id === staticCard.id);
+
+    savedCard.answer = 'old keyword';
+    savedCard.keyword = 'old keyword';
+    savedCard.reps = 7;
+    savedCard.lapses = 1;
+    savedCard.state = State.Review;
+    savedCard.due = new Date('2099-01-01T00:00:00.000Z');
+    saveSrsData(userId, data);
+
+    ensureScriptDeckSeeded(userId);
+
+    const refreshed = loadSrsData(userId).script.cards.find(card => card.id === staticCard.id);
+    assert.equal(refreshed.answer, staticCard.answer);
+    assert.equal(refreshed.keyword, staticCard.keyword);
+    assert.equal(refreshed.reps, 7);
+    assert.equal(refreshed.lapses, 1);
+    assert.equal(refreshed.state, State.Review);
+    assert.equal(refreshed.due.toISOString(), '2099-01-01T00:00:00.000Z');
+  });
+
   it('returns new kanji in frequency order after hiragana and katakana graduate', () => {
     ensureScriptDeckSeeded(userId);
     const data = loadSrsData(userId);
