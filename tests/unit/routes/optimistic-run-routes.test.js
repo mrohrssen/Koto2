@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import createCombatRoutes from '../../../src/routes/game/combat.js';
+import createCookingRoutes from '../../../src/routes/game/cooking.js';
 import createRunRoutes from '../../../src/routes/game/run.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 
@@ -52,6 +53,49 @@ function createCombatRouter() {
     getDialogueCardAudio: async () => null,
     isCreatureDialogueStaleFn: () => false,
   });
+}
+
+function createCookingRouter() {
+  return createCookingRoutes();
+}
+
+function makeCampfireReq({
+  body = {},
+  room = null,
+  ingredients = {},
+  party = null,
+  state = { phase: 'campfire', run: { currentRoom: 0 } },
+  meta = { actionLedger: { entries: {}, order: [] }, cookingRecipesDiscovered: [] },
+} = {}) {
+  const currentRoom = room || {
+    type: 'campfire',
+    campfire: { cookedDish: null, consumed: null, fed: false, completed: false },
+  };
+  const run = {
+    cooking: { ingredients: { ...ingredients }, cookedThisRun: [] },
+    creatureParty: party || {
+      active: [{ id: 'hi', hp: 10, maxHp: 20, mp: 2, maxMp: 10, level: 3 }],
+      reserves: [],
+    },
+  };
+  let saveCount = 0;
+  const gm = {
+    run,
+    meta,
+    getCurrentRoom: () => currentRoom,
+    initMeta() {
+      this.meta ||= { actionLedger: { entries: {}, order: [] }, cookingRecipesDiscovered: [] };
+    },
+  };
+
+  return {
+    body,
+    user: { id: 'test-user' },
+    gameManager: gm,
+    saveGame: () => { saveCount += 1; },
+    getEnrichedGameState: () => state,
+    get saveCount() { return saveCount; },
+  };
 }
 
 describe('optimistic deterministic run routes', () => {
@@ -756,5 +800,144 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.body.actionId, actionId('shopbad'));
     assert.equal(res.body.reason, 'Invalid shop item');
     assert.deepEqual(res.body.authoritativeState, { phase: 'post_combat_shop', run: { currentRoom: 3 } });
+  });
+
+  it('wraps campfire cook with accepted optimistic status when actionId is present', async () => {
+    const handler = getHandler(createCookingRouter(), 'post', '/campfire/cook');
+    const req = makeCampfireReq({
+      body: {
+        actionId: actionId('campcook'),
+        ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+      },
+      ingredients: { mizu: 1, miso: 1 },
+      state: { phase: 'campfire', run: { currentRoom: 2, pendingCampfireAction: null } },
+    });
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.actionId, actionId('campcook'));
+    assert.equal(res.body.actionType, 'campfire.cook');
+    assert.equal(res.body.room.cookedDish.id, 'miso-soup');
+    assert.deepEqual(res.body.state, { phase: 'campfire', run: { currentRoom: 2, pendingCampfireAction: null } });
+  });
+
+  it('keeps legacy campfire cook responses unchanged when actionId is absent', async () => {
+    const handler = getHandler(createCookingRouter(), 'post', '/campfire/cook');
+    const req = makeCampfireReq({
+      body: { ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }] },
+      ingredients: { mizu: 1, miso: 1 },
+    });
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, undefined);
+    assert.equal(res.body.actionId, undefined);
+    assert.equal(res.body.actionType, undefined);
+    assert.equal(res.body.room.cookedDish.id, 'miso-soup');
+  });
+
+  it('duplicate campfire cook actionId does not consume ingredients twice', async () => {
+    const handler = getHandler(createCookingRouter(), 'post', '/campfire/cook');
+    const req = makeCampfireReq({
+      body: {
+        actionId: actionId('campcookdupe'),
+        ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+      },
+      ingredients: { mizu: 1, miso: 1 },
+      state: { phase: 'campfire', run: { currentRoom: 1 } },
+    });
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, actionId('campcookdupe'));
+    assert.equal(duplicateRes.body.room.cookedDish.id, 'miso-soup');
+    assert.deepEqual(req.gameManager.run.cooking.ingredients, {});
+    assert.equal(req.saveCount, 1);
+  });
+
+  it('duplicate campfire feed actionId does not apply a cooked dish twice', async () => {
+    const handler = getHandler(createCookingRouter(), 'post', '/campfire/feed');
+    const req = makeCampfireReq({
+      body: { actionId: actionId('campfeeddupe'), targetCreatureIndex: 0 },
+      room: {
+        type: 'campfire',
+        campfire: {
+          cookedDish: {
+            id: 'miso-soup',
+            word: '味噌汁',
+            nameEn: 'Miso soup',
+            effects: [{ type: 'mpRestore', value: 0.2, target: 'fedCreature' }],
+            effectDescription: 'Restores 20% MP.',
+            ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+          },
+          consumed: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+          resultKind: 'recipe',
+          fed: false,
+          completed: false,
+        },
+      },
+      state: { phase: 'room', run: { currentRoom: 1 } },
+    });
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, actionId('campfeeddupe'));
+    assert.equal(req.gameManager.run.cooking.cookedThisRun.length, 1);
+    assert.deepEqual(req.gameManager.meta.cookingRecipesDiscovered, ['miso-soup']);
+    assert.equal(req.saveCount, 1);
+  });
+
+  it('duplicate campfire skip actionId does not save the completion twice', async () => {
+    const handler = getHandler(createCookingRouter(), 'post', '/campfire/skip');
+    const req = makeCampfireReq({
+      body: { actionId: actionId('campskipdupe') },
+      state: { phase: 'room', run: { currentRoom: 1 } },
+    });
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, actionId('campskipdupe'));
+    assert.equal(duplicateRes.body.actionType, 'campfire.skip');
+    assert.equal(duplicateRes.body.skipped, true);
+    assert.equal(req.gameManager.getCurrentRoom().campfire.completed, true);
+    assert.equal(req.saveCount, 1);
+  });
+
+  it('optimistic campfire route errors return corrected authoritative state', async () => {
+    const handler = getHandler(createCookingRouter(), 'post', '/campfire/cook');
+    const req = makeCampfireReq({
+      body: {
+        actionId: actionId('campbad'),
+        ingredients: [{ id: 'mizu', quantity: 1 }, { id: 'miso', quantity: 1 }],
+      },
+      ingredients: { mizu: 1 },
+      state: { phase: 'campfire', run: { currentRoom: 4 } },
+    });
+    const res = makeRes();
+
+    await handler(req, res);
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, actionId('campbad'));
+    assert.equal(res.body.reason, 'Not enough ingredients');
+    assert.deepEqual(res.body.authoritativeState, { phase: 'campfire', run: { currentRoom: 4 } });
   });
 });

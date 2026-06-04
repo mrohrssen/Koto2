@@ -13,6 +13,10 @@ import {
 import { entityToToken, getEligibleFrameTokens } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { getGameMasterYesFrame, getGameMasterNoFrame } from '../../game/dialogue-loader.js';
+import {
+  createOptimisticActionRunner,
+  getOptimisticActionLedgerOwner,
+} from './optimistic-action-response.js';
 
 const QUANTITY_LABELS = {
   1: { surface: '一つ', reading: 'ひとつ' },
@@ -24,27 +28,41 @@ const QUANTITY_LABELS = {
 
 export default function createCookingRoutes() {
   const router = express.Router();
+  const runCampfireAction = createOptimisticActionRunner({
+    owner: req => {
+      const gm = req.gameManager;
+      if (gm && !gm.meta && typeof gm.initMeta === 'function') {
+        try {
+          gm.initMeta();
+        } catch {
+          // Let the route mutation path report the real validation error.
+        }
+      }
+      return getOptimisticActionLedgerOwner(req);
+    },
+  });
 
   router.get('/campfire', (req, res) => {
     try {
       const gm = req.gameManager;
       ensureCookingState(gm);
       const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'campfire') return res.status(400).json({ error: 'Not in a campfire room' });
+      if (!room || room.type !== 'campfire') throw new Error('Not in a campfire room');
       res.json(buildCampfireState(req));
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
   });
 
-  router.post('/campfire/cook', (req, res) => {
-    try {
+  router.post('/campfire/cook', (req, res) => runCampfireAction(req, res, {
+    actionType: 'campfire.cook',
+    perform: () => {
       const gm = req.gameManager;
       ensureCookingState(gm);
       const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'campfire') return res.status(400).json({ error: 'Not in a campfire room' });
+      if (!room || room.type !== 'campfire') throw new Error('Not in a campfire room');
       if (!room.campfire) room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
-      if (room.campfire.cookedDish) return res.json(buildCampfireState(req));
+      if (room.campfire.cookedDish) return buildCampfireState(req);
 
       const selection = req.body?.ingredients || [];
       if (!hasIngredients(gm.run.cooking.ingredients, selection)) throw new Error('Not enough ingredients');
@@ -53,22 +71,20 @@ export default function createCookingRoutes() {
       room.campfire.cookedDish = result.dish;
       room.campfire.consumed = result.consumed;
       room.campfire.resultKind = result.kind;
-      req.saveGame();
 
-      res.json(buildCampfireState(req));
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  });
+      return buildCampfireState(req);
+    },
+  }));
 
-  router.post('/campfire/feed', (req, res) => {
-    try {
+  router.post('/campfire/feed', (req, res) => runCampfireAction(req, res, {
+    actionType: 'campfire.feed',
+    perform: () => {
       const gm = req.gameManager;
       ensureCookingState(gm);
       const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'campfire') return res.status(400).json({ error: 'Not in a campfire room' });
+      if (!room || room.type !== 'campfire') throw new Error('Not in a campfire room');
       if (!room.campfire?.cookedDish) throw new Error('No cooked dish to feed');
-      if (room.campfire.fed) return res.json({ state: req.getEnrichedGameState(), dish: room.campfire.cookedDish });
+      if (room.campfire.fed) return { state: req.getEnrichedGameState(), dish: room.campfire.cookedDish };
 
       const targetIndex = Number(req.body?.targetCreatureIndex);
       if (!Number.isInteger(targetIndex)) throw new Error('Target creature required');
@@ -85,32 +101,27 @@ export default function createCookingRoutes() {
       room.campfire.fed = true;
       room.campfire.completed = true;
       room.interacted = true;
-      req.saveGame();
 
-      res.json({ state: req.getEnrichedGameState(), dish: room.campfire.cookedDish, applyResult });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  });
+      return { state: req.getEnrichedGameState(), dish: room.campfire.cookedDish, applyResult };
+    },
+  }));
 
-  router.post('/campfire/skip', (req, res) => {
-    try {
+  router.post('/campfire/skip', (req, res) => runCampfireAction(req, res, {
+    actionType: 'campfire.skip',
+    perform: () => {
       const gm = req.gameManager;
       ensureCookingState(gm);
       const room = gm.getCurrentRoom();
-      if (!room || room.type !== 'campfire') return res.status(400).json({ error: 'Not in a campfire room' });
+      if (!room || room.type !== 'campfire') throw new Error('Not in a campfire room');
       if (!room.campfire) room.campfire = { cookedDish: null, consumed: null, fed: false, completed: false };
 
       room.campfire.completed = true;
       room.campfire.skipped = true;
       room.interacted = true;
-      req.saveGame();
 
-      res.json({ state: req.getEnrichedGameState(), skipped: true });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  });
+      return { state: req.getEnrichedGameState(), skipped: true };
+    },
+  }));
 
   return router;
 }

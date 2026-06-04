@@ -466,15 +466,24 @@ async function getCampfire() {
   return apiCall('/campfire', 'GET');
 }
 
-async function cookAtCampfire(ingredients) {
+async function cookAtCampfire(ingredients, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/campfire/cook', { ingredients, actionId: options.actionId });
+  }
   return apiCall('/campfire/cook', 'POST', { ingredients });
 }
 
-async function feedCampfireDish(targetCreatureIndex) {
+async function feedCampfireDish(targetCreatureIndex, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/campfire/feed', { targetCreatureIndex, actionId: options.actionId });
+  }
   return apiCall('/campfire/feed', 'POST', { targetCreatureIndex });
 }
 
-async function skipCampfire() {
+async function skipCampfire(options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/campfire/skip', { actionId: options.actionId });
+  }
   return apiCall('/campfire/skip', 'POST');
 }
 

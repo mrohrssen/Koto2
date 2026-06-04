@@ -190,6 +190,10 @@ function openCooking() {
   actionArea.querySelector('.ui-btn')?.click();
 }
 
+function assertRunActionId(value) {
+  assert.match(String(value || ''), /^run_[a-z0-9]+_[a-z0-9]+$/i);
+}
+
 describe('campfire UI', () => {
   beforeEach(() => {
     exposureBuffer.teardown();
@@ -292,6 +296,29 @@ describe('campfire UI', () => {
 
     resolveSkip({ state: { phase: 'room' }, skipped: true });
     await skipPromise;
+  });
+
+  it('restores the campfire prompt and shows retry copy for corrected skip responses', async () => {
+    const originalState = { phase: 'campfire', run: { currentRoom: 0, pendingCampfireAction: null } };
+    let gameState = originalState;
+    const messages = [];
+    campfire.renderForTest(sampleState(), {
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      apiSkipCampfire: async options => ({
+        status: 'corrected',
+        actionId: options?.actionId,
+        authoritativeState: originalState,
+        reason: 'Room changed',
+      }),
+      showCampfireFailure: message => messages.push(message),
+    });
+
+    await actionArea.querySelectorAll('.ui-btn')[1].click();
+
+    assert.deepEqual(messages, ['Campfire choice did not save. Please try again.']);
+    assert.deepEqual(gameState, originalState);
+    assert.match(renderedHtml(actionArea), /Would you like to cook\?/);
   });
 
   it('renders ingredient and recipe tabs', () => {
@@ -592,6 +619,67 @@ describe('campfire UI', () => {
     ]);
   });
 
+  it('sends an action id for cooking and ignores duplicate cook taps while pending', async () => {
+    let resolveCook;
+    const cookPromise = new Promise(resolve => { resolveCook = resolve; });
+    let cookCalls = 0;
+    const cookOptions = [];
+    let gameState = {
+      phase: 'campfire',
+      run: {
+        currentRoom: 0,
+        pendingCampfireAction: null,
+        creatureParty: {
+          active: [{ id: 'hi', name: '火', nameEn: 'Hi', hp: 10, maxHp: 20, mp: 3, maxMp: 10, level: 3 }],
+        },
+      },
+    };
+    campfire.renderForTest(sampleState(), {
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      apiCookAtCampfire: async (_ingredients, options) => {
+        cookCalls += 1;
+        cookOptions.push(options);
+        return cookPromise;
+      },
+    });
+    openCooking();
+
+    const cards = actionArea.querySelectorAll('.campfire-ingredient-card');
+    cards[0].click();
+    cards[1].click();
+    const button = actionArea.querySelector('.campfire-cook-btn');
+    const firstClick = button.click();
+    const secondClick = button.click();
+    const observedCookCalls = cookCalls;
+    const observedCookActionId = cookOptions[0]?.actionId;
+    const observedPendingMarker = gameState.run.pendingCampfireAction;
+
+    resolveCook({
+      ...sampleState({
+        room: {
+          cookedDish: {
+            id: 'miso-soup',
+            word: '味噌汁',
+            reading: 'みそしる',
+            nameEn: 'Miso soup',
+            meaning: 'miso soup',
+            effectDescription: 'Restores 20% MP.',
+          },
+        },
+      }),
+      status: 'accepted',
+      actionId: observedCookActionId,
+      state: { phase: 'campfire', run: { currentRoom: 0, pendingCampfireAction: null } },
+    });
+    await Promise.allSettled([firstClick, secondClick]);
+
+    assert.equal(observedCookCalls, 1);
+    assertRunActionId(observedCookActionId);
+    assert.deepEqual(observedPendingMarker, { type: 'cook' });
+    assert.equal(gameState.run.pendingCampfireAction, null);
+  });
+
   it('records one exposure for the cooked dish returned by cooking', async () => {
     const posted = [];
     campfire.renderForTest(sampleState(), {
@@ -722,7 +810,18 @@ describe('campfire UI', () => {
 
   it('calls feed callback with selected target index and clears the campfire scene', async () => {
     let fedIndex = null;
+    let feedOptions = null;
     sceneArea.innerHTML = '<canvas class="pixi-canvas"></canvas>';
+    let gameState = {
+      phase: 'campfire',
+      run: {
+        currentRoom: 0,
+        pendingCampfireAction: null,
+        creatureParty: {
+          active: [{ id: 'hi', name: '火', nameEn: 'Hi', hp: 10, maxHp: 20, mp: 3, maxMp: 10, level: 3 }],
+        },
+      },
+    };
     campfire.renderForTest(sampleState({
       room: {
         cookedDish: {
@@ -735,24 +834,20 @@ describe('campfire UI', () => {
         }
       }
     }), {
-      getGameState: () => ({
-        run: {
-          creatureParty: {
-            active: [{ id: 'hi', name: '火', hp: 10, maxHp: 20, mp: 3, maxMp: 10 }]
-          }
-        }
-      }),
-      apiFeedCampfireDish: async index => {
+      getGameState: () => gameState,
+      apiFeedCampfireDish: async (index, options) => {
         fedIndex = index;
-        return { state: { phase: 'room' } };
+        feedOptions = options;
+        return { status: 'accepted', actionId: options?.actionId, state: { phase: 'room' } };
       },
-      updateGameState: () => {},
+      updateGameState: nextState => { gameState = nextState; },
       updateUI: () => {},
     });
 
     await actionArea.querySelector('.ui-choice').click();
 
     assert.equal(fedIndex, 0);
+    assertRunActionId(feedOptions?.actionId);
     assert.equal(sceneArea.querySelector('.campfire-scene'), null);
     assert.ok(sceneArea.querySelector('.pixi-canvas'));
   });

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const explorationSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/exploration.js'), 'utf8');
+const campfireSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/campfire.js'), 'utf8');
 const economySource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/economy.js'), 'utf8');
 const apiSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/api.js'), 'utf8');
 const gameSource = readFileSync(resolve(import.meta.dirname, '../../../public/game.js'), 'utf8');
@@ -70,9 +71,28 @@ describe('optimistic run action integration', () => {
     assert.match(apiSource, /bypassLoadingGate: true/);
     assert.match(apiSource, /fromRoom: options\.fromRoom/);
     assert.match(apiSource, /actionSeq: options\.actionSeq/);
+    assert.match(apiSource, /verifiedRunAction\('\/campfire\/cook', \{ ingredients, actionId: options\.actionId \}\)/);
+    assert.match(apiSource, /verifiedRunAction\('\/campfire\/feed', \{ targetCreatureIndex, actionId: options\.actionId \}\)/);
+    assert.match(apiSource, /verifiedRunAction\('\/campfire\/skip', \{ actionId: options\.actionId \}\)/);
     assert.match(apiSource, /verifiedRunAction\('\/npc-battle-skill-choose', \{ skillId, actionId: options\.actionId \}\)/);
     assert.match(apiSource, /verifiedRunAction\('\/creature-shop-select', \{ itemIndex, targetIndex, actionId: options\.actionId \}\)/);
     assert.match(apiSource, /verifiedRunAction,\n\s+confirmCreatures/);
+  });
+
+  it('sends action ids for campfire cook, feed, and skip choices', () => {
+    assert.match(campfireSource, /apiCookAtCampfire\(ingredients, \{ actionId: pending\.actionId \}\)/);
+    assert.match(campfireSource, /apiFeedCampfireDish\(targetIndex, \{ actionId: pending\.actionId \}\)/);
+    assert.match(campfireSource, /apiSkipCampfire\(\{ actionId: pending\.actionId \}\)/);
+    assert.match(campfireSource, /actionType: 'campfire\.cook'/);
+    assert.match(campfireSource, /actionType: 'campfire\.feed'/);
+    assert.match(campfireSource, /actionType: 'campfire\.skip'/);
+  });
+
+  it('uses corrected campfire responses as authoritative retryable failures', () => {
+    assert.match(campfireSource, /result\?\.status !== 'corrected'/);
+    assert.match(campfireSource, /correctPendingRunAction\(pending, result\)/);
+    assert.match(campfireSource, /Campfire choice did not save\. Please try again\./);
+    assert.doesNotMatch(campfireSource, /Failed to (cook|feed|skip)|Could not (cook|feed|skip)/);
   });
 
   it('sends action ids for post-combat shop choices', () => {

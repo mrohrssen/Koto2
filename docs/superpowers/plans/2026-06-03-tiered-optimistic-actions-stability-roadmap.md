@@ -83,13 +83,15 @@ Evidence: `npm run test:unit -- ...` PASS; `npm test` PASS; screenshot/playtest 
 |---|---|---|---|
 | 2026-06-03 | Codex | Plan | Created stability roadmap from the tiered optimistic-action review. No source code changed. |
 | 2026-06-04 | Codex | Phase 1 | Phase 1 stability blockers landed on `origin/dev` through `2483eb82`. Focused optimistic-action gate, touched-area gate, and `npm test` passed before push. User played the game and confirmed visual verification. |
+| 2026-06-04 | Codex | Task 2.1 | Started campfire cook/feed/skip optimistic commit implementation in `koto-wt-optimistic-campfire-actions`. |
+| 2026-06-04 | Codex | Task 2.1 | Completed campfire cook/feed/skip optimistic commit with route idempotency, client correction handling, focused gate, `npm test`, and browser harness visual verification. |
 
 ## Overall Status
 
 | Phase | Status | Gate To Advance |
 |---|---|---|
 | Phase 1: Shipped Stability Blockers | complete | Automated Phase 1 gate passed; user playtest visually verified the UI. |
-| Phase 2: Medium-Risk Room And Minigame Actions | pending | Tasks 2.1 through 2.5 complete. |
+| Phase 2: Medium-Risk Room And Minigame Actions | in_progress | Tasks 2.1 through 2.5 complete. |
 | Phase 3: High-Impact Hub And Meta Actions | blocked | Phase 2 complete and no open optimistic-action regressions. |
 | Phase 4: Release Gate And Monitoring | blocked | Phases 1 through 3 complete. |
 
@@ -514,12 +516,12 @@ General contract for every Phase 2 action:
 
 ### Task 2.1: Campfire Cook, Feed, And Skip Optimistic Commit
 
-Status: pending
-Owner: -
-Started: -
-Completed: -
-Commit: -
-Evidence: Phase 1 automated gate complete; task not started.
+Status: complete
+Owner: Codex
+Started: 2026-06-04 16:21 JST
+Completed: 2026-06-04 17:20 JST
+Commit: branch HEAD after commit; final SHA reported in the implementation thread.
+Evidence: `npm run test:unit -- tests/unit/routes/optimistic-run-routes.test.js tests/unit/ui/optimistic-run-integration.test.js tests/unit/ui/campfire.test.js` PASS; `node --check public/js/ui/campfire.js && node --check public/js/api.js && node --check src/routes/game/cooking.js` PASS; `npm test` PASS; browser visual harness PASS for entry prompt, optimistic cook target picker, optimistic feed completion, corrected skip retry copy, and console error/warn health.
 Branch: `feature/optimistic-campfire-actions`
 Worktree: `koto-wt-optimistic-campfire-actions`
 
