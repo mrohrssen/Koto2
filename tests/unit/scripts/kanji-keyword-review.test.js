@@ -118,6 +118,42 @@ describe('kanji keyword review helpers', () => {
     assert.deepEqual(parseCsv(`${rowsToCsv(rows).replace(/\n/g, '\r\n')}\r\n\r\n`), rows);
   });
 
+  it('parses quoted commas, quotes, embedded CRLF, and trailing blank lines in one fixture', () => {
+    const csv = [
+      REVIEW_COLUMNS.join(','),
+      '1,人,Kyōiku (1st grade),"person, ""human""","person","Person","NO CHANGE",review,"line 1\r\nline 2",matched,matched',
+      '',
+      ''
+    ].join('\r\n');
+
+    assert.deepEqual(parseCsv(csv), [
+      {
+        rank: '1',
+        kanji: '人',
+        kind: 'Kyōiku (1st grade)',
+        currentPrimaryKeyword: 'person, "human"',
+        jpdbPrimaryKeyword: 'person',
+        wanikaniPrimaryDefinition: 'Person',
+        proposedFinalKeyword: 'NO CHANGE',
+        proposalSource: 'review',
+        proposalNotes: 'line 1\r\nline 2',
+        jpdbStatus: 'matched',
+        wanikaniStatus: 'matched',
+      },
+    ]);
+  });
+
+  it('rejects a blank line in the middle of the CSV', () => {
+    const csv = [
+      REVIEW_COLUMNS.join(','),
+      '1,人,Kyōiku (1st grade),person,person,Person,NO CHANGE,no_change,,matched,matched',
+      '',
+      '2,言,Kyōiku (2nd grade),say,word,Word,NO CHANGE,no_change,,matched,matched',
+    ].join('\n');
+
+    assert.throws(() => parseCsv(csv), /missing columns/i);
+  });
+
   it('builds one review row per dictionary entry with lookup defaults', () => {
     const entries = [
       { frequencyRank: 1, kanji: '人', kind: 'Kyōiku (1st grade)', primaryMeaning: 'person' },
