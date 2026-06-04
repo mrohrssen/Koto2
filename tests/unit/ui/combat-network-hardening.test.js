@@ -300,7 +300,7 @@ describe('combat network hardening', () => {
   });
 
   it('shows a centered correctness banner for Kanji Kombat answers', () => {
-    assert.match(combatLoopSource, /showKanjiKombatAnswerBanner\(result\.kanjiAnswerCorrect\)/);
+    assert.match(combatLoopSource, /showKanjiKombatAnswerBanner\(result\.kanjiAnswerCorrect, result\.kanjiStreakReward \|\| null\)/);
     assert.match(combatVfxSource, /showKanjiKombatAnswerBanner/);
     assert.match(combatVfxSource, /Correct!/);
     assert.match(combatVfxSource, /Wrong!/);

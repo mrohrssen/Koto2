@@ -307,7 +307,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     );
 
     for (let i = 0; i < 3; i++) service.recordCorrectAnswer();
-    assert.deepEqual(active.map(creature => creature.hp), [12, 10, 7]);
+    assert.deepEqual(active.map(creature => creature.hp), [14, 12, 9]);
     assert.equal(gm.run.kanjiKombat.streak, 3);
 
     for (let i = 0; i < 3; i++) service.recordCorrectAnswer();
@@ -320,7 +320,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.streak, 6);
 
     for (let i = 0; i < 3; i++) service.recordCorrectAnswer();
-    assert.deepEqual(active.map(creature => creature.hp), [19, 17, 14]);
+    assert.deepEqual(active.map(creature => creature.hp), [20, 20, 19]);
     assert.equal(gm.run.kanjiKombat.streak, 9);
 
     for (let i = 0; i < 3; i++) service.recordCorrectAnswer();

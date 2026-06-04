@@ -35,6 +35,10 @@ import {
 
 export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 3;
 const STREAK_BUFF_STATS = ['atk', 'def', 'dex'];
+const STREAK_HEAL_REWARDS = {
+  3: 0.20,
+  9: 0.50,
+};
 
 function createServerSeed() {
   return randomBytes(16).toString('hex');
@@ -275,6 +279,10 @@ function healAll(allies, percent) {
   }
 }
 
+function creatureDisplayName(creature) {
+  return creature?.nameEn || creature?.name || creature?.id || 'Ally';
+}
+
 function applyRandomStreakBuff(allies, random = Math.random) {
   const livingAllies = (allies || []).filter(ally => ally && ally.hp > 0);
   if (livingAllies.length === 0) return null;
@@ -282,7 +290,19 @@ function applyRandomStreakBuff(allies, random = Math.random) {
   const ally = livingAllies[Math.floor(random() * livingAllies.length)];
   const stat = STREAK_BUFF_STATS[Math.floor(random() * STREAK_BUFF_STATS.length)];
   const delta = applyStatChange(ally, stat, 1);
-  return { ally, stat, delta };
+  return {
+    ally,
+    stat,
+    delta,
+    reward: {
+      type: 'statUp',
+      streak: 6,
+      allyId: ally.id || null,
+      allyName: creatureDisplayName(ally),
+      stat,
+      delta,
+    },
+  };
 }
 
 function levelUpAllPartyCreatures(creatureParty, metaMults = null, itemBuffs = null) {
@@ -440,8 +460,8 @@ export class KanjiKombatService {
     if (!choice) throw new Error('Invalid Kanji Kombat answer');
 
     gradeScriptCard(this.gm.userId, quiz.cardId, choice.correct ? 'good' : 'again');
-    if (choice.correct) this.recordCorrectAnswer();
-    else this.recordWrongAnswer();
+    const streakReward = choice.correct ? this.recordCorrectAnswer() : null;
+    if (!choice.correct) this.recordWrongAnswer();
 
     kk.currentQuiz = null;
     const result = this.gm.combatCycleService.resolveKanjiKombatCursorAction({
@@ -450,6 +470,7 @@ export class KanjiKombatService {
       rng: opts.rng,
     });
     result.kanjiAnswerCorrect = choice.correct;
+    if (streakReward) result.kanjiStreakReward = streakReward;
     return result;
   }
 
@@ -742,20 +763,40 @@ export class KanjiKombatService {
     kk.report.cardsReviewed += 1;
     kk.reviewsSinceIntro += 1;
 
-    if (kk.streak === 3) healAll(this.gm.run.creatureParty.active, 0.10);
-    if (kk.streak === 6) applyRandomStreakBuff(this.gm.run.creatureParty.active);
-    if (kk.streak === 9) healAll(this.gm.run.creatureParty.active, 0.35);
-    if (kk.streak === 12) this.addRandomUnlockedAllyOrFullHeal();
+    let streakReward = null;
+
+    if (STREAK_HEAL_REWARDS[kk.streak]) {
+      const healPercent = STREAK_HEAL_REWARDS[kk.streak];
+      healAll(this.gm.run.creatureParty.active, healPercent);
+      streakReward = { type: 'teamHeal', streak: kk.streak, healPercent };
+    }
+    if (kk.streak === 6) {
+      streakReward = applyRandomStreakBuff(this.gm.run.creatureParty.active)?.reward || null;
+    }
+    if (kk.streak === 12) {
+      const ally = this.addRandomUnlockedAllyOrFullHeal();
+      streakReward = ally
+        ? {
+            type: 'allyJoined',
+            streak: 12,
+            allyId: ally.id || null,
+            allyName: creatureDisplayName(ally),
+          }
+        : { type: 'fullHeal', streak: 12 };
+    }
     if (kk.streak === 15) {
       levelUpAllPartyCreatures(
         this.gm.run.creatureParty,
         this.gm.run.crestMults,
         this.gm.run.itemBuffs
       );
+      streakReward = { type: 'partyLevelUp', streak: 15 };
       kk.streak = 0;
       kk.reviewsSinceIntro = 0;
       kk.nextIntroAfter = rollIntroInterval();
     }
+
+    return streakReward;
   }
 
   recordWrongAnswer() {
