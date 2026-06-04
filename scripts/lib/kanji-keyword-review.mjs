@@ -47,6 +47,13 @@ function validateReviewColumns(columns) {
   return columns.every((column, index) => column === REVIEW_COLUMNS[index]);
 }
 
+function lookupByKanji(source, kanji) {
+  if (!source) return {};
+  if (source instanceof Map) return source.get(kanji) || {};
+  if (typeof source === 'object') return source[kanji] || {};
+  return {};
+}
+
 export function csvEscape(value) {
   const text = toText(value);
   if (text === '') return '';
@@ -126,8 +133,8 @@ export function parseCsv(text) {
 
 export function buildReviewRows({ entries = [], jpdbByKanji = {}, wanikaniByKanji = {} } = {}) {
   return entries.map(entry => {
-    const jpdb = jpdbByKanji[entry.kanji] || {};
-    const wanikani = wanikaniByKanji[entry.kanji] || {};
+    const jpdb = lookupByKanji(jpdbByKanji, entry.kanji);
+    const wanikani = lookupByKanji(wanikaniByKanji, entry.kanji);
 
     return {
       rank: toText(entry.frequencyRank ?? ''),

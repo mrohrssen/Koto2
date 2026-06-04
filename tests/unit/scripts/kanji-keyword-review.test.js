@@ -68,12 +68,12 @@ describe('kanji keyword review helpers', () => {
       { frequencyRank: 1, kanji: '人', kind: 'Kyōiku (1st grade)', primaryMeaning: 'person' },
       { frequencyRank: 2, kanji: '言', kind: 'Kyōiku (2nd grade)', primaryMeaning: 'say' },
     ];
-    const jpdbByKanji = {
-      人: { keyword: 'person', status: 'matched' },
-    };
-    const wanikaniByKanji = {
-      言: { meaning: 'word', status: 'needs_review' },
-    };
+    const jpdbByKanji = new Map([
+      ['人', { keyword: 'person', status: 'matched' }],
+    ]);
+    const wanikaniByKanji = new Map([
+      ['言', { meaning: 'Person', status: 'matched' }],
+    ]);
 
     assert.deepEqual(buildReviewRows({ entries, jpdbByKanji, wanikaniByKanji }), [
       {
@@ -95,12 +95,12 @@ describe('kanji keyword review helpers', () => {
         kind: 'Kyōiku (2nd grade)',
         currentPrimaryKeyword: 'say',
         jpdbPrimaryKeyword: '',
-        wanikaniPrimaryDefinition: 'word',
+        wanikaniPrimaryDefinition: 'Person',
         proposedFinalKeyword: 'NO CHANGE',
         proposalSource: 'no_change',
         proposalNotes: '',
         jpdbStatus: 'not_checked',
-        wanikaniStatus: 'needs_review',
+        wanikaniStatus: 'matched',
       },
     ]);
   });
