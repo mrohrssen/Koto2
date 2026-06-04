@@ -9,6 +9,10 @@ import {
   runCli,
   normalizeWaniKaniSubjects,
 } from '../../../scripts/fetch-wanikani-kanji-keywords.mjs';
+import {
+  extractJpdbKeywordFromHtml,
+  normalizeJpdbResults,
+} from '../../../scripts/fetch-jpdb-kanji-keywords.mjs';
 import { getKotoKanjiEntries } from '../../../src/game/koto-kanji-dictionary.js';
 
 const originalFetch = globalThis.fetch;
@@ -313,5 +317,44 @@ describe('wani kani kanji keyword fetchers', () => {
       }
       await rm(tempDir, { recursive: true, force: true });
     }
+  });
+});
+
+describe('jpdb kanji keyword fetchers', () => {
+  it('extracts the JPDB keyword block from the h6 section', () => {
+    const html = '<html><body><h6>Keyword</h6><div>front side</div><h6>Info</h6></body></html>';
+
+    assert.equal(extractJpdbKeywordFromHtml(html), 'front side');
+  });
+
+  it('returns an empty keyword when the keyword block is absent', () => {
+    const html = '<html><body><h6>Info</h6><div>front side</div></body></html>';
+
+    assert.equal(extractJpdbKeywordFromHtml(html), '');
+  });
+
+  it('normalizes JPDB results against Koto entries and marks missing kanji', () => {
+    const results = [
+      { kanji: '一', keyword: 'one', status: 'matched', sourceUrl: 'https://jpdb.io/kanji/%E4%B8%80' },
+    ];
+    const entries = [
+      { kanji: '一' },
+      { kanji: '二' },
+    ];
+
+    const normalized = normalizeJpdbResults(results, entries);
+
+    assert.equal(normalized instanceof Map, true);
+    assert.deepEqual(normalized.get('一'), {
+      kanji: '一',
+      keyword: 'one',
+      status: 'matched',
+      sourceUrl: 'https://jpdb.io/kanji/%E4%B8%80',
+    });
+    assert.deepEqual(normalized.get('二'), {
+      kanji: '二',
+      keyword: '',
+      status: 'missing',
+    });
   });
 });
