@@ -10,6 +10,33 @@
 
 ---
 
+## Current Status - 2026-06-04
+
+**Pushed to `origin/dev`:** `93c7771223d50e0d4c32a7f143340266ec9ea9ad`
+
+**Completed and reviewed:**
+
+- Task 1: PvP matchmaking now selects teams from confirmed server-saved `gm.meta.pvpTeams`, ignores browser-sent team snapshots, deep-clones selected teams, and handles malformed/null selection payloads.
+- Task 2: Post-combat shop reload recovery and selection now use the same persisted active `run.postCombatShop.items` source when present; the random post-victory shop remains disabled for the MVP.
+- Task 3: Cursor-era PvE defend prediction now uses the full shared deterministic PvE resolver while cursor attacks continue using the cursor resolver.
+- Task 4: Remaining completed-room proceed edges use the reveal-buffer proceed envelope; Whack-a-Mole completion was fixed to avoid duplicate room-transition playback.
+- Plan document was committed and pushed after the implementation commits.
+
+**Verification passed before push:**
+
+- Focused optimistic-action gate:
+  `npm run test:unit -- tests/unit/game/action-ledger-service.test.js tests/unit/routes/optimistic-action-response.test.js tests/unit/routes/optimistic-run-routes.test.js tests/unit/ui/optimistic-run-action.test.js tests/unit/ui/optimistic-run-integration.test.js tests/unit/ui/auto-proceed-room-transition.test.js tests/unit/ui/optimistic-combat-turn.test.js tests/unit/ui/combat-network-hardening.test.js tests/unit/pvp/socket-handler-team-selection.test.js tests/unit/game/post-combat-shop-service.test.js`
+- Touched-area gate:
+  `npm run test:unit -- tests/unit/routes/pvp.test.js tests/unit/pvp/match-manager.test.js tests/unit/ui/pvp-team-save-feedback.test.js tests/unit/ui/exploration-skill-master.test.js tests/unit/ui/exploration-shrine.test.js tests/unit/ui/exploration-friendly-npc.test.js tests/unit/ui/exploration-whack-a-mole.test.js tests/unit/ui/post-combat-shop.test.js tests/unit/game/combat-action-state.test.js`
+- Full merge gate:
+  `npm test`
+
+**Still pending:**
+
+- Manual browser visual verification for one normal reveal-buffer `Proceed` and one completed-room proceed edge. This was intentionally not run because the repo instructions require user approval before launching Playwright/browser.
+- Final status-doc cleanup in `docs/superpowers/specs/2026-06-03-tiered-optimistic-game-actions-design.md` and a Phase 1 progress log. The planned roadmap file, `docs/superpowers/plans/2026-06-03-tiered-optimistic-actions-stability-roadmap.md`, did not exist in the feature worktree when checked.
+- `master` was not advanced; only remote `dev` was pushed.
+
 ## Phase Boundary
 
 Phase 1 is complete only when:
