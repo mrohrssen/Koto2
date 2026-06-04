@@ -502,6 +502,53 @@ describe('jpdb kanji keyword fetchers', () => {
     }
   });
 
+  it('does not let limited JPDB smoke runs cache unattempted kanji as reusable missing', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'jpdb-limit-cache-'));
+    const cachePath = join(tempDir, 'cache.json');
+    const entries = getKotoKanjiEntries();
+    const firstEntry = entries[0];
+    const secondEntry = entries[1];
+    const fetchCalls = [];
+
+    try {
+      await runJpdbCli(['--cache', cachePath, '--limit', '1'], {
+        fetchFn: async url => {
+          fetchCalls.push(String(url));
+          return {
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            text: async () => '<html><body><h6>Keyword</h6><span>first</span><h6>Info</h6></body></html>',
+          };
+        },
+        sleepFn: async () => {},
+      });
+
+      await runJpdbCli(['--cache', cachePath], {
+        fetchFn: async url => {
+          fetchCalls.push(String(url));
+          return {
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            text: async () => '<html><body><h6>Keyword</h6><span>later</span><h6>Info</h6></body></html>',
+          };
+        },
+        sleepFn: async () => {},
+      });
+
+      const output = JSON.parse(await readFile(cachePath, 'utf8'));
+      assert.deepEqual(fetchCalls.slice(0, 2), [
+        `https://jpdb.io/kanji/${encodeURIComponent(firstEntry.kanji)}`,
+        `https://jpdb.io/kanji/${encodeURIComponent(secondEntry.kanji)}`,
+      ]);
+      assert.equal(output[firstEntry.kanji].status, 'matched');
+      assert.equal(output[secondEntry.kanji].status, 'matched');
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
   it('uses the 60s backoff after a rate-limited JPDB fetch', async () => {
     const tempDir = await mkdtemp(join(tmpdir(), 'jpdb-rate-limit-'));
     const cachePath = join(tempDir, 'cache.json');

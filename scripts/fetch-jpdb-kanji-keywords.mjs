@@ -294,7 +294,8 @@ async function readJsonIfExists(filePath) {
 
 export async function runCli(argv = process.argv.slice(2), { fetchFn = fetch, sleepFn = sleep } = {}) {
   const args = parseArgs(argv);
-  const entries = getKotoKanjiEntries().slice(0, args.limit ?? undefined);
+  const allEntries = getKotoKanjiEntries();
+  const entries = allEntries.slice(0, args.limit ?? undefined);
   const cached = args.refresh ? null : await readJsonIfExists(args.cache);
   const results = new Map();
 
@@ -315,7 +316,8 @@ export async function runCli(argv = process.argv.slice(2), { fetchFn = fetch, sl
     await sleepFn(result.status === 'rate_limited' ? RATE_LIMIT_DELAY_MS : args.delayMs);
   }
 
-  const normalized = normalizeJpdbResults([...results.values()], getKotoKanjiEntries());
+  const normalizedEntries = args.limit == null ? allEntries : entries;
+  const normalized = normalizeJpdbResults([...results.values()], normalizedEntries);
   await writeJsonAtomic(args.cache, Object.fromEntries(normalized));
   console.log(`Wrote JPDB keyword cache to ${args.cache}`);
 }
