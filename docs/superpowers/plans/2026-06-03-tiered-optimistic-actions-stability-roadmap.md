@@ -520,7 +520,7 @@ Status: complete
 Owner: Codex
 Started: 2026-06-04 16:21 JST
 Completed: 2026-06-04 17:20 JST
-Commit: branch HEAD after commit; final SHA reported in the implementation thread.
+Commit: `0f645f2f`
 Evidence: `npm run test:unit -- tests/unit/routes/optimistic-run-routes.test.js tests/unit/ui/optimistic-run-integration.test.js tests/unit/ui/campfire.test.js` PASS; `node --check public/js/ui/campfire.js && node --check public/js/api.js && node --check src/routes/game/cooking.js` PASS; `npm test` PASS; browser visual harness PASS for entry prompt, optimistic cook target picker, optimistic feed completion, corrected skip retry copy, and console error/warn health.
 Branch: `feature/optimistic-campfire-actions`
 Worktree: `koto-wt-optimistic-campfire-actions`
