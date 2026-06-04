@@ -877,7 +877,7 @@ Status: complete
 Owner: Codex
 Started: 2026-06-04 23:03 JST
 Completed: 2026-06-04 23:15 JST
-Commit: -
+Commit: `ed335cd4`
 Evidence: `npm test` PASS on 2026-06-04 23:09 JST; focused optimistic-action gate PASS on 2026-06-04 23:14 JST; browser/manual playtest was not run because repo instructions require explicit approval before browser launch and approval was not available during execution.
 Branch: `fix/optimistic-actions-release-gate`
 Worktree: `.worktrees/optimistic-actions-release-gate`

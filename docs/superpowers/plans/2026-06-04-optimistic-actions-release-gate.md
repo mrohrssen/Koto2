@@ -251,7 +251,7 @@ Run:
 
 Expected: status shows the new release-gate plan file until it is staged, diff shows final roadmap evidence, and playtest-guide changes appear only if new browser instructions were discovered. After staging, use `/usr/bin/git diff --cached -- docs/superpowers/plans/2026-06-04-optimistic-actions-release-gate.md` to inspect the new plan content.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run:
 
@@ -262,6 +262,8 @@ Run:
 ```
 
 If `docs/playtest-guide.md` was not changed, omit it from `git add`.
+
+Committed release-gate evidence in `ed335cd4`.
 
 ## Review Checklist
 
