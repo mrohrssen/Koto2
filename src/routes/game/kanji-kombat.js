@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { getKanjiKombatLeaderboard } from '../../auth/users.js';
 import { KANJI_KOMBAT_PREDICTION_MODE } from '../../shared/action-protocol.js';
+import {
+  createOptimisticActionRunner,
+  getOptimisticActionLedgerOwner,
+} from './optimistic-action-response.js';
 
 function isOptimisticKanjiAnswerEnvelope(body = {}) {
   return body?.actionType === 'kanjiKombat.answer'
@@ -9,6 +13,7 @@ function isOptimisticKanjiAnswerEnvelope(body = {}) {
 
 export default function createKanjiKombatRoutes() {
   const router = Router();
+  const runOptimisticAction = createOptimisticActionRunner({ owner: getOptimisticActionLedgerOwner });
 
   router.get('/leaderboard', (req, res) => {
     try {
@@ -58,19 +63,21 @@ export default function createKanjiKombatRoutes() {
   });
 
   router.post('/intro', (req, res) => {
-    try {
-      const { cardId, choice } = req.body || {};
-      if (!cardId || !['known', 'unknown'].includes(choice)) {
-        return res.status(400).json({ error: 'cardId and choice (known|unknown) required' });
-      }
-      const result = req.gameManager.submitKanjiKombatIntro
-        ? req.gameManager.submitKanjiKombatIntro(cardId, choice)
-        : req.gameManager.kanjiKombatService.submitIntroChoice(cardId, choice);
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+    const { cardId, choice } = req.body || {};
+    return runOptimisticAction(req, res, {
+      actionType: 'kanjiKombat.intro',
+      errorStatusCode: 409,
+      legacyErrorStatusCode: 400,
+      perform: () => {
+        if (!cardId || !['known', 'unknown'].includes(choice)) {
+          throw new Error('cardId and choice (known|unknown) required');
+        }
+        const result = req.gameManager.submitKanjiKombatIntro
+          ? req.gameManager.submitKanjiKombatIntro(cardId, choice)
+          : req.gameManager.kanjiKombatService.submitIntroChoice(cardId, choice);
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   router.post('/answer', (req, res) => {
@@ -89,17 +96,19 @@ export default function createKanjiKombatRoutes() {
   });
 
   router.post('/completion-choice', (req, res) => {
-    try {
-      const { keepGoing } = req.body || {};
-      if (typeof keepGoing !== 'boolean') {
-        return res.status(400).json({ error: 'keepGoing boolean required' });
-      }
-      const result = req.gameManager.kanjiKombatService.resolveCompletionChoice(keepGoing);
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+    const { keepGoing } = req.body || {};
+    return runOptimisticAction(req, res, {
+      actionType: 'kanjiKombat.completionChoice',
+      errorStatusCode: 409,
+      legacyErrorStatusCode: 400,
+      perform: () => {
+        if (typeof keepGoing !== 'boolean') {
+          throw new Error('keepGoing boolean required');
+        }
+        const result = req.gameManager.kanjiKombatService.resolveCompletionChoice(keepGoing);
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   return router;
