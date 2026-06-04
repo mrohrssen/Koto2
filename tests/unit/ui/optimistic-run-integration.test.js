@@ -112,6 +112,24 @@ describe('optimistic run action integration', () => {
     assert.match(explorationSource, /Word discovery did not save\. Please try again\./);
   });
 
+  it('sends action ids for speed review room completion after commit settling', () => {
+    assert.match(apiSource, /completeSpeedReviewRoom\(roomId, options = \{\}\)/);
+    assert.match(apiSource, /verifiedRunAction\('\/speed-review-room\/complete', \{ roomId, actionId: options\.actionId \}\)/);
+    assert.match(explorationSource, /const SPEED_REVIEW_SAVE_FAILURE_COPY = 'Speed review did not save\. Please try again\.'/);
+
+    const speedReviewRoomSource = sourceBetween(
+      explorationSource,
+      'async function completeSpeedReviewRoomOptimistically',
+      '// ============ WHACK-A-MOLE MINI GAME ============'
+    );
+
+    assert.match(speedReviewRoomSource, /actionType: 'speedReview\.complete'/);
+    assert.match(speedReviewRoomSource, /apiCompleteSpeedReviewRoom\(room\.id, \{ actionId: pending\.actionId \}\)/);
+    assert.match(speedReviewRoomSource, /correctPendingRunAction\(pending, completeResult\)/);
+    assert.match(speedReviewRoomSource, /if \(snapshotWords\.length === 0\) \{\s*await completeSpeedReviewRoomOptimistically\(room\);/);
+    assert.match(speedReviewRoomSource, /throw new Error\(SPEED_REVIEW_SAVE_FAILURE_COPY\)/);
+  });
+
   it('sends action ids for post-combat shop choices', () => {
     const shopFlowSource = sourceBetween(
       gameSource,

@@ -1012,4 +1012,115 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.body.reason, 'No word discovery room here');
     assert.deepEqual(res.body.authoritativeState, { phase: 'wordDiscovery', run: { currentRoom: 4 } });
   });
+
+  it('wraps speed-review room completion with accepted optimistic status when actionId is present', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/speed-review-room/complete');
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: actionId('speedcomplete'), roomId: 'speed-room-1' },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        completeSpeedReviewRoom: ({ roomId }) => ({ roomId, completed: true }),
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({
+        phase: 'room',
+        run: {
+          currentRoom: 2,
+          revealedRooms: [{ id: 'speed-room-1', speedReviewRoom: { completed: true } }],
+        },
+      }),
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.actionId, actionId('speedcomplete'));
+    assert.equal(res.body.actionType, 'speedReview.complete');
+    assert.equal(res.body.roomId, 'speed-room-1');
+    assert.equal(res.body.completed, true);
+    assert.deepEqual(res.body.state, {
+      phase: 'room',
+      run: {
+        currentRoom: 2,
+        revealedRooms: [{ id: 'speed-room-1', speedReviewRoom: { completed: true } }],
+      },
+    });
+  });
+
+  it('duplicate speed-review completion actionId does not complete the room twice', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/speed-review-room/complete');
+    let completeCount = 0;
+    const req = {
+      body: { actionId: actionId('speeddupe'), roomId: 'speed-room-2' },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        completeSpeedReviewRoom: ({ roomId }) => {
+          completeCount += 1;
+          return { roomId, completed: true, completeCount };
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { completeCount } }),
+    };
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, actionId('speeddupe'));
+    assert.equal(duplicateRes.body.actionType, 'speedReview.complete');
+    assert.equal(completeCount, 1);
+    assert.equal(duplicateRes.body.completeCount, 1);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { completeCount: 1 } });
+  });
+
+  it('keeps legacy speed-review completion responses unchanged when actionId is absent', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/speed-review-room/complete');
+    const res = makeRes();
+
+    await handler({
+      body: { roomId: 'speed-room-3' },
+      gameManager: {
+        completeSpeedReviewRoom: ({ roomId }) => ({ roomId, completed: true }),
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room' }),
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, undefined);
+    assert.equal(res.body.actionId, undefined);
+    assert.equal(res.body.actionType, undefined);
+    assert.deepEqual(res.body, {
+      roomId: 'speed-room-3',
+      completed: true,
+      state: { phase: 'room' },
+    });
+  });
+
+  it('optimistic speed-review completion errors return corrected authoritative state', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/speed-review-room/complete');
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: actionId('speedcompletebad'), roomId: 'speed-room-4' },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        completeSpeedReviewRoom: () => {
+          throw new Error('Speed review room is not ready to complete');
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'speedReviewRoom', run: { currentRoom: 4 } }),
+    }, res);
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, actionId('speedcompletebad'));
+    assert.equal(res.body.reason, 'Speed review room is not ready to complete');
+    assert.deepEqual(res.body.authoritativeState, { phase: 'speedReviewRoom', run: { currentRoom: 4 } });
+  });
 });

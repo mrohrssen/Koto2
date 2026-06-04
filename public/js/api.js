@@ -779,7 +779,10 @@ async function progressSpeedReviewRoom(roomId, word, commitIndex) {
 }
 
 /** Mark speed review room as complete/reconciled */
-async function completeSpeedReviewRoom(roomId) {
+async function completeSpeedReviewRoom(roomId, options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/speed-review-room/complete', { roomId, actionId: options.actionId });
+  }
   return apiCall('/speed-review-room/complete', 'POST', { roomId });
 }
 

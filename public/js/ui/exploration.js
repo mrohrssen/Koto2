@@ -131,6 +131,7 @@ function rollbackPendingRunAction(pending, { refreshUi = true } = {}) {
 }
 
 const WORD_DISCOVERY_SAVE_FAILURE_COPY = 'Word discovery did not save. Please try again.';
+const SPEED_REVIEW_SAVE_FAILURE_COPY = 'Speed review did not save. Please try again.';
 
 function showWordDiscoverySaveFailure() {
   sceneModule?.showNarration?.(WORD_DISCOVERY_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
@@ -1309,6 +1310,61 @@ function getActiveSpeedReviewRoom(gameState) {
   return null;
 }
 
+function showSpeedReviewSaveFailure() {
+  sceneModule?.showNarration?.(SPEED_REVIEW_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
+}
+
+async function completeSpeedReviewRoomOptimistically(room, { throwOnFailure = false } = {}) {
+  const pending = beginPendingRunAction({
+    actionType: 'speedReview.complete',
+    applyLocal: draft => {
+      const draftRoom = draft.room || getCurrentBufferedRoom(draft);
+      if (draftRoom?.speedReviewRoom) {
+        draftRoom.speedReviewRoom.completed = true;
+        draftRoom.speedReviewRoom.reviewedCards = Math.max(
+          draftRoom.speedReviewRoom.reviewedCards || 0,
+          draftRoom.speedReviewRoom.targetCards || 0
+        );
+      }
+      if (draftRoom) draftRoom.interacted = true;
+      draft.phase = 'room';
+    },
+  });
+  if (!pending) {
+    if (throwOnFailure) throw new Error(SPEED_REVIEW_SAVE_FAILURE_COPY);
+    showSpeedReviewSaveFailure();
+    return null;
+  }
+
+  let completeResult = null;
+  try {
+    completeResult = await apiCompleteSpeedReviewRoom(room.id, { actionId: pending.actionId });
+  } catch (error) {
+    console.warn('[SpeedReviewRoom] Completion failed:', error);
+  }
+
+  if (completeResult?.status === 'corrected') {
+    updateGameState(correctPendingRunAction(pending, completeResult));
+    updateUI();
+    clearPendingRunAction(pending);
+    if (throwOnFailure) throw new Error(SPEED_REVIEW_SAVE_FAILURE_COPY);
+    showSpeedReviewSaveFailure();
+    return null;
+  }
+
+  if (completeResult?.state) {
+    reconcilePendingRunAction(pending, completeResult, { refreshUi: false });
+    speedReviewRoomLaunchState.roomId = null;
+    updateUI();
+    return completeResult;
+  }
+
+  rollbackPendingRunAction(pending);
+  if (throwOnFailure) throw new Error(SPEED_REVIEW_SAVE_FAILURE_COPY);
+  showSpeedReviewSaveFailure();
+  return null;
+}
+
 export async function renderSpeedReviewRoom() {
   const gameState = getGameState();
   const room = getActiveSpeedReviewRoom(gameState);
@@ -1345,12 +1401,7 @@ export async function renderSpeedReviewRoom() {
 
     const snapshotWords = startResult.snapshotWords;
     if (snapshotWords.length === 0) {
-      const completeResult = await apiCompleteSpeedReviewRoom(room.id);
-      if (completeResult?.state) {
-        updateGameState(completeResult.state);
-      }
-      speedReviewRoomLaunchState.roomId = null;
-      updateUI();
+      await completeSpeedReviewRoomOptimistically(room);
       return;
     }
 
@@ -1389,12 +1440,7 @@ export async function renderSpeedReviewRoom() {
         }
       },
       onComplete: async () => {
-        const completeResult = await apiCompleteSpeedReviewRoom(room.id);
-        if (completeResult?.state) {
-          updateGameState(completeResult.state);
-        }
-        speedReviewRoomLaunchState.roomId = null;
-        updateUI();
+        await completeSpeedReviewRoomOptimistically(room, { throwOnFailure: true });
       }
     });
   } finally {

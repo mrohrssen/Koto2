@@ -736,18 +736,23 @@ export default function createRunRoutes({
   router.post('/speed-review-room/complete', (req, res) => {
     const { roomId } = req.body || {};
     if (!roomId) {
-      return res.status(400).json({ error: 'roomId is required' });
+      const error = new Error('roomId is required');
+      if (req.body?.actionId) {
+        return sendOptimisticActionError(req, res, error, 400);
+      }
+      return res.status(400).json({ error: error.message });
     }
 
-    try {
-      const gameManager = req.gameManager;
-      const result = gameManager.completeSpeedReviewRoom({ roomId });
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      const status = isSpeedReviewRoomTransitionError(error) ? 409 : 500;
-      res.status(status).json({ error: error.message });
-    }
+    return runOptimisticAction(req, res, {
+      actionType: 'speedReview.complete',
+      errorStatusCode: 409,
+      legacyErrorStatusCode: 500,
+      perform: () => {
+        const result = req.gameManager.completeSpeedReviewRoom({ roomId });
+        if (req.body?.actionId) return result;
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   // Whack-a-Mole: get random pool of creatures + items + skills for matching game
