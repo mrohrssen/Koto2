@@ -9,6 +9,7 @@ import { getKotoKanjiEntries } from '../src/game/koto-kanji-dictionary.js';
 export const DEFAULT_CACHE_PATH = 'output/kanji-keyword-review/wanikani-kanji-cache.json';
 export const DEFAULT_OUT_PATH = 'output/kanji-keyword-review/wanikani-kanji-keywords.json';
 export const DEFAULT_BASE_URL = 'https://api.wanikani.com/v2/subjects?types=kanji&hidden=false';
+export const DEFAULT_PUBLIC_INDEX_URL = 'https://www.wanikani.com/kanji';
 export const WANIKANI_REVISION = '20170710';
 export const DEFAULT_MAX_429_RETRIES = 5;
 export const DEFAULT_MIN_RETRY_DELAY_MS = 1_000;
@@ -42,6 +43,87 @@ function scrubSecrets(text, token) {
   return source
     .replace(bearerPattern, 'Bearer [REDACTED]')
     .replace(tokenPattern, '[REDACTED]');
+}
+
+function decodeHtmlEntities(text) {
+  const namedEntities = new Map([
+    ['amp', '&'],
+    ['apos', "'"],
+    ['gt', '>'],
+    ['lt', '<'],
+    ['nbsp', ' '],
+    ['quot', '"'],
+  ]);
+
+  return toText(text).replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]+);/gi, (match, entity) => {
+    const normalized = entity.toLowerCase();
+    if (normalized.startsWith('#x')) {
+      const codePoint = Number.parseInt(normalized.slice(2), 16);
+      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+    }
+    if (normalized.startsWith('#')) {
+      const codePoint = Number.parseInt(normalized.slice(1), 10);
+      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+    }
+    return namedEntities.get(normalized) ?? match;
+  });
+}
+
+function stripTags(html) {
+  return toText(html).replace(/<[^>]*>/g, '');
+}
+
+function normalizeHtmlText(html) {
+  return decodeHtmlEntities(stripTags(html)).replace(/\s+/g, ' ').trim();
+}
+
+function extractHtmlAttribute(tag, name) {
+  const pattern = new RegExp(`(?:^|\\s)${escapeRegExp(name)}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i');
+  const match = toText(tag).match(pattern);
+  return match ? decodeHtmlEntities(match[1] ?? match[2] ?? match[3] ?? '') : '';
+}
+
+function hasHtmlClass(tag, className) {
+  const classes = extractHtmlAttribute(tag, 'class')
+    .split(/\s+/)
+    .filter(Boolean);
+  return classes.includes(className);
+}
+
+function extractMeaningFromPublicKanjiAnchor(anchorHtml) {
+  const spanPattern = /<span\b([^>]*)>([\s\S]*?)<\/span>/gi;
+  let match;
+  while ((match = spanPattern.exec(toText(anchorHtml))) !== null) {
+    if (hasHtmlClass(match[1], 'subject-character__meaning')) {
+      return normalizeHtmlText(match[2]);
+    }
+  }
+  return '';
+}
+
+function resolvePublicKanjiDocument(href, publicIndexUrl) {
+  let url;
+  try {
+    url = new URL(href, publicIndexUrl);
+  } catch {
+    return null;
+  }
+
+  const match = url.pathname.match(/^\/kanji\/([^/?#]+)/);
+  if (!match) return null;
+
+  let kanji;
+  try {
+    kanji = decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
+  if (!kanji) return null;
+
+  return {
+    kanji,
+    documentUrl: url.toString(),
+  };
 }
 
 function parseRetryAfter(headerValue) {
@@ -153,6 +235,34 @@ export function extractWaniKaniKanjiSubjects(page) {
   return extracted;
 }
 
+export function parseWaniKaniPublicKanjiIndexHtml(html, {
+  publicIndexUrl = DEFAULT_PUBLIC_INDEX_URL,
+} = {}) {
+  const subjects = [];
+  const anchorPattern = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+  let match;
+
+  while ((match = anchorPattern.exec(toText(html))) !== null) {
+    const href = extractHtmlAttribute(match[1], 'href');
+    if (!href) continue;
+
+    const document = resolvePublicKanjiDocument(href, publicIndexUrl);
+    if (!document) continue;
+
+    const meaning = extractMeaningFromPublicKanjiAnchor(match[2]);
+    if (!meaning) continue;
+
+    subjects.push({
+      kanji: document.kanji,
+      meaning,
+      status: 'matched',
+      documentUrl: document.documentUrl,
+    });
+  }
+
+  return subjects;
+}
+
 export function normalizeWaniKaniSubjects(subjects, entries) {
   const normalized = new Map();
 
@@ -220,11 +330,23 @@ export async function fetchAllWaniKaniPages({
   return pages;
 }
 
+export async function fetchWaniKaniPublicKanjiIndex({
+  publicIndexUrl = DEFAULT_PUBLIC_INDEX_URL,
+  fetchFn = fetch,
+} = {}) {
+  const response = await fetchFn(publicIndexUrl);
+  if (!response.ok) {
+    throw new Error(`WaniKani public kanji index request failed (${response.status} ${response.statusText}) for ${publicIndexUrl}`);
+  }
+  return parseWaniKaniPublicKanjiIndexHtml(await response.text(), { publicIndexUrl });
+}
+
 export function parseArgs(argv) {
   const args = {
     refresh: false,
     cache: DEFAULT_CACHE_PATH,
     out: DEFAULT_OUT_PATH,
+    publicIndexUrl: DEFAULT_PUBLIC_INDEX_URL,
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -233,12 +355,13 @@ export function parseArgs(argv) {
       args.refresh = true;
       continue;
     }
-    if (arg === '--cache' || arg === '--out') {
+    if (arg === '--cache' || arg === '--out' || arg === '--public-index-url') {
       const value = argv[++i];
       if (!value) {
         throw new Error(`Missing value for ${arg}`);
       }
-      args[arg.slice(2)] = value;
+      const key = arg === '--public-index-url' ? 'publicIndexUrl' : arg.slice(2);
+      args[key] = value;
       continue;
     }
 
@@ -262,31 +385,40 @@ async function readJsonFile(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
 }
 
-export async function runCli(argv = process.argv.slice(2)) {
+export async function runCli(argv = process.argv.slice(2), {
+  fetchFn = fetch,
+} = {}) {
   const args = parseArgs(argv);
   const cacheExists = existsSync(args.cache);
+  const kotoEntries = getKotoKanjiEntries();
 
-  let pages;
+  let subjects;
   if (cacheExists && !args.refresh) {
-    pages = await readJsonFile(args.cache);
+    const pages = await readJsonFile(args.cache);
+    if (!Array.isArray(pages)) {
+      throw new Error(`Invalid WaniKani cache at ${args.cache}: expected an array of pages`);
+    }
+    subjects = pages.flatMap(page => extractWaniKaniKanjiSubjects(page));
   } else {
     const token = process.env.WANIKANI_API_TOKEN;
-    if (!token) {
+    if (token) {
+      const pages = await fetchAllWaniKaniPages({ token });
+      await writeJsonAtomic(args.cache, pages);
+      subjects = pages.flatMap(page => extractWaniKaniKanjiSubjects(page));
+    } else if (args.refresh) {
       throw new Error('WANIKANI_API_TOKEN is required when refreshing or when the cache is missing');
+    } else {
+      subjects = await fetchWaniKaniPublicKanjiIndex({
+        publicIndexUrl: args.publicIndexUrl,
+        fetchFn,
+      });
     }
-    pages = await fetchAllWaniKaniPages({ token });
-    await writeJsonAtomic(args.cache, pages);
   }
 
-  if (!Array.isArray(pages)) {
-    throw new Error(`Invalid WaniKani cache at ${args.cache}: expected an array of pages`);
-  }
-
-  const subjects = pages.flatMap(page => extractWaniKaniKanjiSubjects(page));
-  const normalized = normalizeWaniKaniSubjects(subjects, getKotoKanjiEntries());
+  const normalized = normalizeWaniKaniSubjects(subjects, kotoEntries);
   await writeJsonAtomic(args.out, Object.fromEntries(normalized));
 
-  console.log(`Wrote WaniKani keyword cache for ${getKotoKanjiEntries().length} Koto kanji to ${args.out}`);
+  console.log(`Wrote WaniKani keyword cache for ${kotoEntries.length} Koto kanji to ${args.out}`);
 }
 
 const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);

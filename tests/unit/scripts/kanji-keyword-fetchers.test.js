@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import {
   extractWaniKaniKanjiSubjects,
   fetchAllWaniKaniPages,
+  parseWaniKaniPublicKanjiIndexHtml,
   runCli as runWaniKaniCli,
   normalizeWaniKaniSubjects,
 } from '../../../scripts/fetch-wanikani-kanji-keywords.mjs';
@@ -124,6 +125,95 @@ describe('wani kani kanji keyword fetchers', () => {
       meaning: '',
       status: 'missing_from_wanikani',
     });
+  });
+
+  it('parses WaniKani public kanji index subjects from level-grid links', () => {
+    const html = `
+      <html>
+        <body>
+          <section class="level-grid">
+            <a data-subject-id="440" class="subject-character" href="/kanji/%E4%B8%80">
+              <span class="subject-character__meaning">One &amp; Single</span>
+              <span class="subject-character__characters">一</span>
+            </a>
+            <a
+              href="/kanji/%E4%BA%8C"
+              class="subject-character subject-character--kanji"
+            >
+              <span
+                data-extra="ignored"
+                class="subject-character__meaning is-visible"
+              >
+                Two &#x2F; Second
+              </span>
+              <span>二</span>
+            </a>
+          </section>
+        </body>
+      </html>
+    `;
+
+    assert.deepEqual(parseWaniKaniPublicKanjiIndexHtml(html), [
+      {
+        kanji: '一',
+        meaning: 'One & Single',
+        status: 'matched',
+        documentUrl: 'https://www.wanikani.com/kanji/%E4%B8%80',
+      },
+      {
+        kanji: '二',
+        meaning: 'Two / Second',
+        status: 'matched',
+        documentUrl: 'https://www.wanikani.com/kanji/%E4%BA%8C',
+      },
+    ]);
+  });
+
+  it('uses the WaniKani public index fallback when API cache and token are unavailable', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'wanikani-public-index-'));
+    const cachePath = join(tempDir, 'missing-cache.json');
+    const outPath = join(tempDir, 'out.json');
+    const previousToken = process.env.WANIKANI_API_TOKEN;
+    const entry = getKotoKanjiEntries()[0];
+    const fetchCalls = [];
+
+    globalThis.fetch = async url => {
+      fetchCalls.push(String(url));
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        text: async () => `
+          <html>
+            <body>
+              <a href="/kanji/${encodeURIComponent(entry.kanji)}" class="subject-character">
+                <span class="subject-character__meaning">Public &quot;Meaning&quot;</span>
+                <span>${entry.kanji}</span>
+              </a>
+            </body>
+          </html>
+        `,
+      };
+    };
+
+    try {
+      delete process.env.WANIKANI_API_TOKEN;
+      await runWaniKaniCli(['--cache', cachePath, '--out', outPath]);
+
+      const output = JSON.parse(await readFile(outPath, 'utf8'));
+      assert.deepEqual(fetchCalls, ['https://www.wanikani.com/kanji']);
+      assert.equal(output[entry.kanji].meaning, 'Public "Meaning"');
+      assert.equal(output[entry.kanji].status, 'matched');
+      assert.equal(output[entry.kanji].documentUrl, `https://www.wanikani.com/kanji/${encodeURIComponent(entry.kanji)}`);
+      assert.equal(Object.prototype.hasOwnProperty.call(output[entry.kanji], 'subjectId'), false);
+    } finally {
+      if (previousToken === undefined) {
+        delete process.env.WANIKANI_API_TOKEN;
+      } else {
+        process.env.WANIKANI_API_TOKEN = previousToken;
+      }
+      await rm(tempDir, { recursive: true, force: true });
+    }
   });
 
   it('rejects cross-origin pagination without leaking the token', async () => {
