@@ -130,6 +130,59 @@ function rollbackPendingRunAction(pending, { refreshUi = true } = {}) {
   clearPendingRunAction(pending);
 }
 
+const WORD_DISCOVERY_SAVE_FAILURE_COPY = 'Word discovery did not save. Please try again.';
+
+function showWordDiscoverySaveFailure() {
+  sceneModule?.showNarration?.(WORD_DISCOVERY_SAVE_FAILURE_COPY, { autoDismiss: 1800 });
+}
+
+function applyWordDiscoveryCorrection(pending, result) {
+  if (!isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
+  updateGameState(correctPendingRunAction(pending, result));
+  updateUI();
+  clearPendingRunAction(pending);
+  showWordDiscoverySaveFailure();
+  return true;
+}
+
+async function completeWordDiscoveryOptimistically({ learnedWords = [] } = {}) {
+  const pending = beginPendingRunAction({
+    actionType: 'wordDiscovery.complete',
+    applyLocal: draft => {
+      const draftRoom = draft.room || getCurrentBufferedRoom(draft);
+      if (draftRoom?.wordDiscovery) draftRoom.wordDiscovery.completed = true;
+      if (draftRoom) draftRoom.interacted = true;
+      draft.phase = 'room';
+    },
+  });
+  if (!pending) return null;
+
+  let result = null;
+  try {
+    result = await apiCompleteDiscovery({ actionId: pending.actionId });
+  } catch (error) {
+    console.warn('[Discovery] Failed to complete room:', error);
+  }
+
+  if (result?.status === 'corrected') {
+    applyWordDiscoveryCorrection(pending, result);
+    return null;
+  }
+
+  if (result?.state) {
+    reconcilePendingRunAction(pending, result, { refreshUi: false });
+    if (learnedWords.length > 0) {
+      apiPostCombatRefresh?.(learnedWords).catch(() => {});
+    }
+    updateUI();
+    return result;
+  }
+
+  rollbackPendingRunAction(pending);
+  showWordDiscoverySaveFailure();
+  return null;
+}
+
 function clearActionArea() {
   const el = document.getElementById('action-area');
   if (el) el.innerHTML = '';
@@ -1126,22 +1179,14 @@ export async function renderWordDiscovery() {
 
     // If at limit, skip room silently
     if (status.atLimit) {
-      const completeResult = await apiCompleteDiscovery();
-      if (completeResult?.state) {
-        updateGameState(completeResult.state);
-      }
-      updateUI(); // phase becomes 'room' → auto-proceed advances
+      await completeWordDiscoveryOptimistically();
       return;
     }
   }
 
   // If we hit the limit mid-room, stop
   if (discoveryState.atLimit) {
-    const completeResult = await apiCompleteDiscovery();
-    if (completeResult?.state) {
-      updateGameState(completeResult.state);
-    }
-    updateUI(); // phase becomes 'room' → auto-proceed advances
+    await completeWordDiscoveryOptimistically();
     return;
   }
 
@@ -1153,11 +1198,7 @@ export async function renderWordDiscovery() {
 
     if (!result.available || result.words.length === 0) {
       // No new words available - mark complete on server first
-      const completeResult = await apiCompleteDiscovery();
-      if (completeResult?.state) {
-        updateGameState(completeResult.state);
-      }
-      updateUI(); // phase becomes 'room' → auto-proceed advances
+      await completeWordDiscoveryOptimistically();
       return;
     }
 
@@ -1170,16 +1211,8 @@ export async function renderWordDiscovery() {
 
   if (currentIndex >= words.length) {
     // All words learned - mark complete on server first
-    const completeResult = await apiCompleteDiscovery();
-    if (completeResult?.state) {
-      updateGameState(completeResult.state);
-    }
-
-    // Fire and forget: refresh cache for learned words
     const learnedWords = words.map(w => w.word);
-    apiPostCombatRefresh?.(learnedWords).catch(() => {});
-
-    updateUI(); // phase becomes 'room' → auto-proceed advances
+    await completeWordDiscoveryOptimistically({ learnedWords });
     return;
   }
 
@@ -1193,18 +1226,54 @@ export async function renderWordDiscovery() {
   // Store original and override temporarily
   const handleDiscoverySwipe = async (direction) => {
     console.log(`[Discovery] Swiped ${direction} on "${currentWord.word}"`);
+    const pending = beginPendingRunAction({
+      actionType: 'wordDiscovery.review',
+      applyLocal: draft => {
+        const draftRoom = draft.room || getCurrentBufferedRoom(draft);
+        const draftDiscovery = draftRoom?.wordDiscovery;
+        if (draftDiscovery) {
+          draftDiscovery.wordsLearned = Math.min(
+            (draftDiscovery.wordsLearned || 0) + 1,
+            discoveryState.words.length
+          );
+        }
+      },
+    });
+    if (!pending) return;
+
+    let result = null;
     try {
       // Grade as 'again' (first exposure — learning)
-      const reviewResult = await apiSwipeWord(currentWord.word, 'again', true);
+      result = await apiSwipeWord(currentWord.word, 'again', true, { actionId: pending.actionId });
       console.log(`[Discovery] Review sent: word="${currentWord.word}", grade=again`);
 
-      // Check if we hit the limit
-      if (reviewResult.atLimit) {
-        discoveryState.atLimit = true;
-        discoveryState.todayCount = reviewResult.todayCount;
+      if (result?.status === 'corrected') {
+        applyWordDiscoveryCorrection(pending, result);
+        return;
       }
+
+      if (!result) {
+        rollbackPendingRunAction(pending);
+        showWordDiscoverySaveFailure();
+        return;
+      }
+
+      if (result.state) {
+        updateGameState(confirmPendingRunAction(pending, result));
+      }
+
+      // Check if we hit the limit
+      if (result.atLimit) {
+        discoveryState.atLimit = true;
+        discoveryState.todayCount = result.todayCount;
+      }
+
+      clearPendingRunAction(pending);
     } catch (e) {
       console.warn('[Discovery] Failed to submit review:', e);
+      rollbackPendingRunAction(pending);
+      showWordDiscoverySaveFailure();
+      return;
     }
 
     discoveryState.wordsLearned++;

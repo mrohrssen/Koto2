@@ -682,15 +682,12 @@ export default function createRunRoutes({
 
   // Mark word discovery room as complete
   router.post('/complete-discovery', (req, res) => {
-    try {
-      const gameManager = req.gameManager;
-      const result = gameManager.completeWordDiscovery();
-      req.saveGame();
-      res.json({ ...result, state: req.getEnrichedGameState() });
-    } catch (error) {
-      console.error('[Discovery] Error completing discovery:', error.message);
-      res.status(400).json({ error: error.message });
-    }
+    return runOptimisticAction(req, res, {
+      actionType: 'wordDiscovery.complete',
+      errorStatusCode: 409,
+      legacyErrorStatusCode: 400,
+      perform: () => req.gameManager.completeWordDiscovery(),
+    });
   });
 
   router.post('/speed-review-room/start', async (req, res) => {

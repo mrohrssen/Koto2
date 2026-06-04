@@ -8,6 +8,7 @@ import express from 'express';
 import request from 'supertest';
 import { State } from 'ts-fsrs';
 import { createKnownWordsRoutes } from '../../src/routes/game/known-words.js';
+import { clearDiscoveryTracking } from '../../src/word-tracking.js';
 
 describe('known-words review — auto-create card', () => {
   let tempDir;
@@ -158,5 +159,57 @@ describe('known-words review — Fusion Core drops', () => {
     assert.equal(res.status, 200);
     assert.equal(res.body.fusionCoreDrop, undefined);
     assert.equal(meta.fusionCores, 0);
+  });
+});
+
+describe('known-words review — optimistic discovery progress', () => {
+  let tempDir;
+  let userCounter = 0;
+  let userId;
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'srs-optimistic-discovery-'));
+    configureSrs({ dataDir: tempDir });
+    userId = `test-user-review-optimistic-discovery-${userCounter++}`;
+    clearDiscoveryTracking(userId);
+  });
+
+  it('wraps discovery reviews with accepted optimistic status and action type', async () => {
+    const { app, meta } = buildKnownWordsApp({
+      userId,
+      meta: { actionLedger: { entries: {}, order: [] } },
+    });
+
+    const res = await request(app)
+      .post('/known-words/review')
+      .send({ actionId: 'run_word_accept', word: '発見', grade: 'again', isDiscovery: true });
+
+    assert.equal(res.status, 200);
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.actionId, 'run_word_accept');
+    assert.equal(res.body.actionType, 'wordDiscovery.review');
+    assert.equal(res.body.ok, true);
+    assert.equal(res.body.todayCount, 1);
+    assert.equal(meta.actionLedger.order.includes('run_word_accept'), true);
+  });
+
+  it('does not increment discovery count twice for duplicate optimistic reviews', async () => {
+    const { app, getSaveCalls } = buildKnownWordsApp({
+      userId,
+      meta: { actionLedger: { entries: {}, order: [] } },
+    });
+
+    await request(app)
+      .post('/known-words/review')
+      .send({ actionId: 'run_word_dupe', word: '発見', grade: 'again', isDiscovery: true });
+    const duplicate = await request(app)
+      .post('/known-words/review')
+      .send({ actionId: 'run_word_dupe', word: '発見', grade: 'again', isDiscovery: true });
+
+    assert.equal(duplicate.status, 200);
+    assert.equal(duplicate.body.status, 'accepted');
+    assert.equal(duplicate.body.actionId, 'run_word_dupe');
+    assert.equal(duplicate.body.todayCount, 1);
+    assert.equal(getSaveCalls(), 1);
   });
 });

@@ -735,10 +735,11 @@ export async function getVocabDueCount() {
  * @param {string} grade - 'good' or 'again'
  * @returns {Promise<Object>} { ok, mastered, card }
  */
-export async function reviewVocabWord(word, grade, isDiscovery = false) {
+export async function reviewVocabWord(word, grade, isDiscovery = false, options = {}) {
   try {
     const body = { word, grade };
     if (isDiscovery) body.isDiscovery = true;
+    if (options?.actionId) body.actionId = options.actionId;
     const response = await fetch(apiUrl('/api/game/known-words/review'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
@@ -754,7 +755,10 @@ export async function reviewVocabWord(word, grade, isDiscovery = false) {
 /** Mark word discovery room as complete
  * @returns {Promise<Object>} Result with updated state
  */
-async function completeDiscovery() {
+async function completeDiscovery(options = {}) {
+  if (options?.actionId) {
+    return verifiedRunAction('/complete-discovery', { actionId: options.actionId });
+  }
   return apiCall('/complete-discovery', 'POST');
 }
 

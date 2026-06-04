@@ -12,6 +12,10 @@ import {
   isReviewFusionCoreEligible,
   rollReviewFusionCoreDrop
 } from '../../game/services/review-fusion-core-service.js';
+import {
+  createOptimisticActionRunner,
+  getOptimisticActionLedgerOwner,
+} from './optimistic-action-response.js';
 
 let _wordDict = null;
 function getWordDict() {
@@ -30,6 +34,9 @@ export function invalidateKnownWordsDict() {
 
 export function createKnownWordsRoutes({ reviewFusionCoreRandom = Math.random } = {}) {
   const router = Router();
+  const runKnownWordReviewAction = createOptimisticActionRunner({
+    owner: getOptimisticActionLedgerOwner,
+  });
 
   function attachFusionCoreDrop(req, response, eligible) {
     const meta = req.gameManager?.getMeta?.();
@@ -77,15 +84,15 @@ export function createKnownWordsRoutes({ reviewFusionCoreRandom = Math.random } 
     const settings = req.getSettings?.() || {};
     const dailyLimit = settings.dailyWordLimit ?? 10;
 
-    // If discovery mode, check limit before processing
-    if (isDiscovery) {
-      const status = getDiscoveryStatus(userId, dailyLimit);
-      if (status.atLimit) {
-        return res.json({ ok: false, atLimit: true, todayCount: status.todayCount });
+    const performReview = () => {
+      // If discovery mode, check limit before processing
+      if (isDiscovery) {
+        const status = getDiscoveryStatus(userId, dailyLimit);
+        if (status.atLimit) {
+          return { ok: false, atLimit: true, todayCount: status.todayCount };
+        }
       }
-    }
 
-    try {
       // Capture pre-review state before auto-create so first-time "again"
       // reviews cannot farm Fusion Core drops.
       const existingCards = getDeckCards(req.user.id, 'vocab');
@@ -115,7 +122,7 @@ export function createKnownWordsRoutes({ reviewFusionCoreRandom = Math.random } 
           todayCount: counts.todayCount,
           atLimit: counts.atLimit
         };
-        return res.json(attachFusionCoreDrop(req, response, fusionCoreEligible));
+        return attachFusionCoreDrop(req, response, fusionCoreEligible);
       }
 
       const response = {
@@ -123,7 +130,19 @@ export function createKnownWordsRoutes({ reviewFusionCoreRandom = Math.random } 
         mastered: grade === 'good',
         card: { state: updatedCard.state, due: updatedCard.due, lapses: updatedCard.lapses }
       };
-      res.json(attachFusionCoreDrop(req, response, fusionCoreEligible));
+      return attachFusionCoreDrop(req, response, fusionCoreEligible);
+    };
+
+    if (isDiscovery && req.body?.actionId) {
+      return runKnownWordReviewAction(req, res, {
+        actionType: 'wordDiscovery.review',
+        errorStatusCode: 409,
+        perform: performReview,
+      });
+    }
+
+    try {
+      res.json(performReview());
     } catch (e) {
       console.warn('[known-words/review] Error:', e.message);
       res.status(500).json({ error: e.message });

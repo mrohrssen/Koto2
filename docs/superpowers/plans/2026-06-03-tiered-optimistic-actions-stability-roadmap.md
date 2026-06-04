@@ -85,6 +85,8 @@ Evidence: `npm run test:unit -- ...` PASS; `npm test` PASS; screenshot/playtest 
 | 2026-06-04 | Codex | Phase 1 | Phase 1 stability blockers landed on `origin/dev` through `2483eb82`. Focused optimistic-action gate, touched-area gate, and `npm test` passed before push. User played the game and confirmed visual verification. |
 | 2026-06-04 | Codex | Task 2.1 | Started campfire cook/feed/skip optimistic commit implementation in `koto-wt-optimistic-campfire-actions`. |
 | 2026-06-04 | Codex | Task 2.1 | Completed campfire cook/feed/skip optimistic commit with route idempotency, client correction handling, focused gate, `npm test`, and browser harness visual verification. |
+| 2026-06-04 | Codex | Task 2.2 | Started Word Discovery progress/completion optimistic commit implementation in `.worktrees/optimistic-word-discovery-actions`; detailed plan saved to `docs/superpowers/plans/2026-06-04-optimistic-word-discovery-actions.md`. |
+| 2026-06-04 | Codex | Task 2.2 | Completed Word Discovery review/progress and completion optimistic commit with route idempotency, client correction handling, focused unit gate, syntax check, and `npm test`. |
 
 ## Overall Status
 
@@ -557,14 +559,14 @@ Manual browser verification is required because campfire UI changes are visible.
 
 ### Task 2.2: Word Discovery Progress And Completion Optimistic Commit
 
-Status: pending
-Owner: -
-Started: -
-Completed: -
-Commit: -
-Evidence: Phase 1 automated gate complete; task not started.
+Status: complete
+Owner: Codex
+Started: 2026-06-04 17:52 JST
+Completed: 2026-06-04 18:07 JST
+Commit: `e00f9cf5b0f44be4a91351d96822715680bc45a9`
+Evidence: `node --experimental-test-module-mocks --test tests/unit/known-words-review.test.js tests/unit/routes/optimistic-run-routes.test.js` PASS; `node --test tests/unit/ui/optimistic-run-integration.test.js tests/unit/ui/word-discovery-room.test.js` PASS; `npm run test:unit -- tests/unit/routes/optimistic-run-routes.test.js tests/unit/ui/optimistic-run-integration.test.js tests/unit/ui/word-discovery-room.test.js tests/unit/known-words-review.test.js` PASS; `node --check public/js/ui/exploration.js && node --check public/js/api.js && node --check public/game.js && node --check src/routes/game/run.js && node --check src/routes/game/known-words.js` PASS; `npm test` PASS. No browser session was launched because this task changed route/API/action commit behavior and source-covered UI retry copy, not CSS, animation, or rendering.
 Branch: `feature/optimistic-word-discovery-actions`
-Worktree: `koto-wt-optimistic-word-discovery-actions`
+Worktree: `.worktrees/optimistic-word-discovery-actions`
 
 **Files:**
 

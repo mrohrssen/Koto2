@@ -940,4 +940,76 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.body.reason, 'Not enough ingredients');
     assert.deepEqual(res.body.authoritativeState, { phase: 'campfire', run: { currentRoom: 4 } });
   });
+
+  it('wraps complete-discovery with accepted optimistic status when actionId is present', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/complete-discovery');
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: actionId('discomplete') },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        completeWordDiscovery: () => ({ type: 'word_discovery_complete', xpGrants: [] }),
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', room: { type: 'wordDiscovery', interacted: true } }),
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.actionId, actionId('discomplete'));
+    assert.equal(res.body.actionType, 'wordDiscovery.complete');
+    assert.deepEqual(res.body.state, { phase: 'room', room: { type: 'wordDiscovery', interacted: true } });
+  });
+
+  it('duplicate complete-discovery actionId does not complete the room twice', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/complete-discovery');
+    let completeCalls = 0;
+    let saveCalls = 0;
+    const req = {
+      body: { actionId: actionId('disdupe') },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        completeWordDiscovery: () => {
+          completeCalls += 1;
+          return { type: 'word_discovery_complete', xpGrants: [{ creatureId: 'hi', xp: 2 }] };
+        },
+      },
+      saveGame: () => { saveCalls += 1; },
+      getEnrichedGameState: () => ({ phase: 'room', run: { currentRoom: 2 } }),
+    };
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, actionId('disdupe'));
+    assert.equal(completeCalls, 1);
+    assert.equal(saveCalls, 1);
+  });
+
+  it('optimistic complete-discovery errors return corrected authoritative state', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/complete-discovery');
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: actionId('disbad') },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        completeWordDiscovery: () => {
+          throw new Error('No word discovery room here');
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'wordDiscovery', run: { currentRoom: 4 } }),
+    }, res);
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, actionId('disbad'));
+    assert.equal(res.body.reason, 'No word discovery room here');
+    assert.deepEqual(res.body.authoritativeState, { phase: 'wordDiscovery', run: { currentRoom: 4 } });
+  });
 });
