@@ -1123,4 +1123,188 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.body.reason, 'Speed review room is not ready to complete');
     assert.deepEqual(res.body.authoritativeState, { phase: 'speedReviewRoom', run: { currentRoom: 4 } });
   });
+
+  it('wraps whack-a-mole completion with accepted optimistic status when actionId is present', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-complete');
+    const res = makeRes();
+
+    await handler({
+      user: { id: 'wam-user' },
+      body: { actionId: actionId('wamcomplete'), score: 4 },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        completeWhackAMole: score => ({ type: 'whack_a_mole_complete', score, creditsAwarded: score }),
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { currentRoom: 2 } }),
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.actionId, actionId('wamcomplete'));
+    assert.equal(res.body.actionType, 'whackAMole.complete');
+    assert.equal(res.body.score, 4);
+    assert.deepEqual(res.body.state, { phase: 'room', run: { currentRoom: 2 } });
+  });
+
+  it('duplicate whack-a-mole completion actionId does not award twice', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-complete');
+    let completeCount = 0;
+    const req = {
+      user: { id: 'wam-user' },
+      body: { actionId: actionId('wamcompletedupe'), score: 3 },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        completeWhackAMole: score => {
+          completeCount += 1;
+          return { type: 'whack_a_mole_complete', score, creditsAwarded: score, completeCount };
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { completeCount } }),
+    };
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionType, 'whackAMole.complete');
+    assert.equal(completeCount, 1);
+    assert.equal(duplicateRes.body.completeCount, 1);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { completeCount: 1 } });
+  });
+
+  it('keeps legacy whack-a-mole completion response unchanged when actionId is absent', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-complete');
+    const res = makeRes();
+
+    await handler({
+      user: { id: 'wam-user' },
+      body: { score: 2 },
+      gameManager: {
+        completeWhackAMole: score => ({ type: 'whack_a_mole_complete', score, creditsAwarded: score }),
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room' }),
+    }, res);
+
+    assert.equal(res.body.status, undefined);
+    assert.equal(res.body.actionId, undefined);
+    assert.equal(res.body.actionType, undefined);
+    assert.equal(res.body.type, 'whack_a_mole_complete');
+    assert.equal(res.body.score, 2);
+    assert.deepEqual(res.body.state, { phase: 'room' });
+  });
+
+  it('optimistic whack-a-mole completion errors return corrected authoritative state', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-complete');
+    const res = makeRes();
+
+    await handler({
+      user: { id: 'wam-user' },
+      body: { actionId: actionId('wamcompletebad'), score: 5 },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        completeWhackAMole: () => { throw new Error('No whack-a-mole room here'); },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'whackAMole', run: { currentRoom: 4 } }),
+    }, res);
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, actionId('wamcompletebad'));
+    assert.equal(res.body.reason, 'No whack-a-mole room here');
+    assert.deepEqual(res.body.authoritativeState, { phase: 'whackAMole', run: { currentRoom: 4 } });
+  });
+
+  it('wraps whack-a-mole skip with accepted optimistic status when actionId is present', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-skip');
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: actionId('wamskip') },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        skipWhackAMole: () => ({ type: 'whack_a_mole_skipped', room: { type: 'empty' } }),
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { currentRoom: 1 } }),
+    }, res);
+
+    assert.equal(res.body.status, 'accepted');
+    assert.equal(res.body.actionId, actionId('wamskip'));
+    assert.equal(res.body.actionType, 'whackAMole.skip');
+    assert.equal(res.body.type, 'whack_a_mole_skipped');
+    assert.deepEqual(res.body.state, { phase: 'room', run: { currentRoom: 1 } });
+  });
+
+  it('duplicate whack-a-mole skip actionId does not skip twice', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-skip');
+    let skipCount = 0;
+    const req = {
+      body: { actionId: actionId('wamskipdupe') },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        skipWhackAMole: () => {
+          skipCount += 1;
+          return { type: 'whack_a_mole_skipped', skipCount };
+        },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { skipCount } }),
+    };
+
+    await handler(req, makeRes());
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionType, 'whackAMole.skip');
+    assert.equal(skipCount, 1);
+    assert.equal(duplicateRes.body.skipCount, 1);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { skipCount: 1 } });
+  });
+
+  it('keeps legacy whack-a-mole skip response unchanged when actionId is absent', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-skip');
+    const res = makeRes();
+
+    await handler({
+      body: {},
+      gameManager: {
+        skipWhackAMole: () => ({ type: 'whack_a_mole_skipped', room: { type: 'empty' } }),
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room' }),
+    }, res);
+
+    assert.equal(res.body.status, undefined);
+    assert.equal(res.body.actionId, undefined);
+    assert.equal(res.body.actionType, undefined);
+    assert.equal(res.body.type, 'whack_a_mole_skipped');
+    assert.deepEqual(res.body.state, { phase: 'room' });
+  });
+
+  it('optimistic whack-a-mole skip errors return corrected authoritative state', async () => {
+    const handler = getHandler(createRunRouter(), 'post', '/whack-a-mole-skip');
+    const res = makeRes();
+
+    await handler({
+      body: { actionId: actionId('wamskipbad') },
+      gameManager: {
+        meta: { actionLedger: { entries: {}, order: [] } },
+        skipWhackAMole: () => { throw new Error('No whack-a-mole room here'); },
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'whackAMole', run: { currentRoom: 4 } }),
+    }, res);
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, actionId('wamskipbad'));
+    assert.equal(res.body.reason, 'No whack-a-mole room here');
+    assert.deepEqual(res.body.authoritativeState, { phase: 'whackAMole', run: { currentRoom: 4 } });
+  });
 });

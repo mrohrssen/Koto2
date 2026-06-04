@@ -376,16 +376,22 @@ export class WhackAMoleGame {
     let xpGrants = [];
     let levelUps = [];
     let finishDialogue = null;
+    let result = null;
     try {
-      const result = await this.apiCompleteWhackAMole(this.score);
-      if (this.cancelled || !this.isActive()) return;
-      if (result?.state) this.updateGameState(result.state);
-      xpGrants = result?.xpGrants || [];
-      levelUps = result?.levelUps || [];
-      finishDialogue = result?.finishDialogue || null;
+      result = await this.apiCompleteWhackAMole(this.score);
     } catch (err) {
-      // Network failure - still tear down the overlay and attempt to proceed below.
+      result = null;
     }
+    if (this.cancelled) return;
+    if (result == null) {
+      this.actions.setContent('');
+      this.updateUI();
+      return;
+    }
+    if (result?.state) this.updateGameState(result.state);
+    xpGrants = result?.xpGrants || [];
+    levelUps = result?.levelUps || [];
+    finishDialogue = result?.finishDialogue || null;
 
     // Tear down fullscreen .wam-container so the ExplorationScene is visible.
     this.actions.setContent('');

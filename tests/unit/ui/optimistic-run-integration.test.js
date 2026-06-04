@@ -130,6 +130,30 @@ describe('optimistic run action integration', () => {
     assert.match(speedReviewRoomSource, /throw new Error\(SPEED_REVIEW_SAVE_FAILURE_COPY\)/);
   });
 
+  it('routes Whack-a-Mole completion and skip through verified run actions', () => {
+    assert.match(apiSource, /async function completeWhackAMole\(score, options = \{\}\)/);
+    assert.match(apiSource, /verifiedRunAction\('\/whack-a-mole-complete', \{ score, actionId: options\.actionId \}\)/);
+    assert.match(apiSource, /async function skipWhackAMole\(options = \{\}\)/);
+    assert.match(apiSource, /verifiedRunAction\('\/whack-a-mole-skip', \{ actionId: options\.actionId \}\)/);
+  });
+
+  it('sends action ids and correction copy for Whack-a-Mole choices', () => {
+    assert.match(explorationSource, /const WHACK_A_MOLE_SAVE_FAILURE_COPY = 'Game Master choice did not save\. Please try again\.'/);
+    assert.match(explorationSource, /actionType: 'whackAMole\.complete'/);
+    assert.match(explorationSource, /actionType: 'whackAMole\.skip'/);
+    assert.match(explorationSource, /apiCompleteWhackAMole\(score, \{ actionId: pending\.actionId \}\)/);
+    assert.match(explorationSource, /apiSkipWhackAMole\(\{ actionId: pending\.actionId \}\)/);
+    assert.match(explorationSource, /correctPendingRunAction\(pending, result\)/);
+    assert.match(
+      explorationSource,
+      /async function completeWhackAMoleOptimistically\(score\) \{[\s\S]*?if \(!pending\) \{\s*showWhackAMoleSaveFailure\(\);\s*return null;\s*\}/
+    );
+    assert.match(
+      explorationSource,
+      /async function skipWhackAMoleOptimistically\(\) \{[\s\S]*?if \(!pending\) \{\s*showWhackAMoleSaveFailure\(\);\s*return null;\s*\}/
+    );
+  });
+
   it('sends action ids for post-combat shop choices', () => {
     const shopFlowSource = sourceBetween(
       gameSource,
