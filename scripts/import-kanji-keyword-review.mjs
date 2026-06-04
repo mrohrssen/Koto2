@@ -12,6 +12,10 @@ function toText(value) {
   return value == null ? '' : String(value);
 }
 
+function toSingleLineText(value) {
+  return toText(value).replace(/[\u0000-\u001F\u007F]/gu, ' ');
+}
+
 export function formatLocalDate(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -89,7 +93,7 @@ export function summarizeImportChanges(changed) {
   if (count === 0) return '0 kanji keyword changes';
 
   const preview = changes.slice(0, 10).map(change =>
-    `${toText(change?.kanji)}: ${toText(change?.from)} -> ${toText(change?.to)}`
+    `${toSingleLineText(change?.kanji)}: ${toSingleLineText(change?.from)} -> ${toSingleLineText(change?.to)}`
   );
   const suffix = count > preview.length ? `; ${count - preview.length} more` : '';
 

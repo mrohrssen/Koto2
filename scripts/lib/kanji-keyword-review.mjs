@@ -14,6 +14,7 @@ export const REVIEW_COLUMNS = Object.freeze([
 
 const NO_CHANGE = 'NO CHANGE';
 const JAPANESE_TEXT_PATTERN = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/u;
+const CONTROL_CHAR_PATTERN = /[\u0000-\u001F\u007F]/u;
 const PLACEHOLDERS = new Set(['?', 'unknown', 'same']);
 
 function toText(value) {
@@ -35,6 +36,10 @@ function hasMeaningfulValue(value) {
 
 function hasJapaneseText(value) {
   return JAPANESE_TEXT_PATTERN.test(toText(value));
+}
+
+function hasControlCharacters(value) {
+  return CONTROL_CHAR_PATTERN.test(toText(value));
 }
 
 function splitSlashSegments(value) {
@@ -245,8 +250,13 @@ export function validateReviewedRows(entries, rows) {
       throw new Error(`Rank mismatch for ${kanji}: expected ${entry.frequencyRank}, received ${row?.rank}`);
     }
 
-    const proposed = normalizeMarker(row?.proposedFinalKeyword);
+    const proposedRaw = toText(row?.proposedFinalKeyword);
+    const proposed = normalizeMarker(proposedRaw);
     if (!proposed || isNoChangeValue(proposed)) return;
+
+    if (hasControlCharacters(proposedRaw)) {
+      throw new Error(`Control characters are not allowed in proposed English keywords for ${kanji}: ${proposedRaw}`);
+    }
 
     if (hasJapaneseText(proposed)) {
       throw new Error(`Japanese text is not allowed in proposed English keywords for ${kanji}: ${proposed}`);

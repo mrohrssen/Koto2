@@ -410,6 +410,70 @@ describe('kanji keyword review helpers', () => {
           currentPrimaryKeyword: 'person',
           jpdbPrimaryKeyword: 'person',
           wanikaniPrimaryDefinition: 'Person',
+          proposedFinalKeyword: 'human\nbeing',
+          proposalSource: 'review',
+          proposalNotes: '',
+          jpdbStatus: 'matched',
+          wanikaniStatus: 'matched',
+        },
+        {
+          rank: '2',
+          kanji: '言',
+          kind: 'Kyōiku (2nd grade)',
+          currentPrimaryKeyword: 'say',
+          jpdbPrimaryKeyword: 'word',
+          wanikaniPrimaryDefinition: 'Word',
+          proposedFinalKeyword: 'NO CHANGE',
+          proposalSource: 'no_change',
+          proposalNotes: '',
+          jpdbStatus: 'matched',
+          wanikaniStatus: 'matched',
+        },
+      ]),
+      /control characters/i
+    );
+
+    assert.throws(
+      () => validateReviewedRows(entries, [
+        {
+          rank: '1',
+          kanji: '人',
+          kind: 'Kyōiku (1st grade)',
+          currentPrimaryKeyword: 'person',
+          jpdbPrimaryKeyword: 'person',
+          wanikaniPrimaryDefinition: 'Person',
+          proposedFinalKeyword: 'human\tbeing',
+          proposalSource: 'review',
+          proposalNotes: '',
+          jpdbStatus: 'matched',
+          wanikaniStatus: 'matched',
+        },
+        {
+          rank: '2',
+          kanji: '言',
+          kind: 'Kyōiku (2nd grade)',
+          currentPrimaryKeyword: 'say',
+          jpdbPrimaryKeyword: 'word',
+          wanikaniPrimaryDefinition: 'Word',
+          proposedFinalKeyword: 'NO CHANGE',
+          proposalSource: 'no_change',
+          proposalNotes: '',
+          jpdbStatus: 'matched',
+          wanikaniStatus: 'matched',
+        },
+      ]),
+      /control characters/i
+    );
+
+    assert.throws(
+      () => validateReviewedRows(entries, [
+        {
+          rank: '1',
+          kanji: '人',
+          kind: 'Kyōiku (1st grade)',
+          currentPrimaryKeyword: 'person',
+          jpdbPrimaryKeyword: 'person',
+          wanikaniPrimaryDefinition: 'Person',
           proposedFinalKeyword: 'unknown',
           proposalSource: 'review',
           proposalNotes: '',
