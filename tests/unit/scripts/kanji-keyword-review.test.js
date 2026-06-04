@@ -9,6 +9,7 @@ import {
   rowsToCsv,
   validateReviewedRows,
 } from '../../../scripts/lib/kanji-keyword-review.mjs';
+import { buildSliceManifests } from '../../../scripts/build-kanji-keyword-review-csv.mjs';
 
 describe('kanji keyword review helpers', () => {
   it('escapes plain, comma, quoted, and newline fields', () => {
@@ -193,6 +194,19 @@ describe('kanji keyword review helpers', () => {
         jpdbStatus: 'not_checked',
         wanikaniStatus: 'matched',
       },
+    ]);
+  });
+
+  it('builds stable curation slice manifests', () => {
+    const rows = Array.from({ length: 5 }, (_, index) => ({
+      rank: index + 1,
+      kanji: String(index + 1),
+    }));
+    const slices = buildSliceManifests(rows, 2);
+    assert.deepEqual(slices.map(slice => [slice.index, slice.startRank, slice.endRank, slice.rows.length]), [
+      [1, 1, 2, 2],
+      [2, 3, 4, 2],
+      [3, 5, 5, 1],
     ]);
   });
 
