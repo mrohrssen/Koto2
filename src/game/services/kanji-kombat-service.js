@@ -33,7 +33,7 @@ import {
   recordScriptIntro,
 } from '../script-srs.js';
 
-export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 5;
+export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 3;
 const STREAK_BUFF_STATS = ['atk', 'def', 'dex'];
 
 function createServerSeed() {

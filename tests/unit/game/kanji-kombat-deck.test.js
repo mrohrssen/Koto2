@@ -177,7 +177,7 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(result.next.kind, 'quiz');
   });
 
-  it('chains up to five discoveries when no cards are due, then tests that batch', () => {
+  it('chains up to three discoveries when no cards are due, then tests that batch', () => {
     const data = loadSrsData(userId);
     for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
       card.due = new Date('2099-01-01T00:00:00Z');
@@ -191,7 +191,8 @@ describe('kanji-kombat deck controller', () => {
       now: new Date('2026-05-31T00:00:00Z'),
     });
 
-    for (let i = 0; i < NO_DUE_DISCOVERY_CHAIN_LIMIT; i++) {
+    assert.equal(NO_DUE_DISCOVERY_CHAIN_LIMIT, 3);
+    for (let i = 0; i < 3; i++) {
       assert.equal(work.kind, 'intro');
       seen.push(work.card.id);
       const result = resolveIntroChoice(userId, state, work.card.id, 'unknown', {
@@ -203,9 +204,9 @@ describe('kanji-kombat deck controller', () => {
 
     assert.equal(work.kind, 'quiz');
     assert.equal(seen.includes(work.quiz.cardId), true);
-    assert.equal(state.noDueDiscoveryChainCount, NO_DUE_DISCOVERY_CHAIN_LIMIT);
-    assert.equal(new Set(seen).size, NO_DUE_DISCOVERY_CHAIN_LIMIT);
-    assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, NO_DUE_DISCOVERY_CHAIN_LIMIT);
+    assert.equal(state.noDueDiscoveryChainCount, 3);
+    assert.equal(new Set(seen).size, 3);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, 3);
     assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
   });
 
