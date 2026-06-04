@@ -12,11 +12,18 @@ function toText(value) {
   return value == null ? '' : String(value);
 }
 
+export function formatLocalDate(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function parseArgs(argv) {
   const args = {
     dictionary: resolve(REPO_ROOT, DEFAULT_DICTIONARY_PATH),
     write: false,
-    curationVersion: new Date().toISOString().slice(0, 10),
+    curationVersion: formatLocalDate(),
   };
 
   for (let i = 0; i < argv.length; i++) {

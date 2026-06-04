@@ -12,7 +12,7 @@ import {
   rowsToCsv,
   validateReviewedRows,
 } from '../../../scripts/lib/kanji-keyword-review.mjs';
-import { summarizeImportChanges } from '../../../scripts/import-kanji-keyword-review.mjs';
+import { formatLocalDate, summarizeImportChanges } from '../../../scripts/import-kanji-keyword-review.mjs';
 import { buildSliceManifests, formatSliceFileName, runCli } from '../../../scripts/build-kanji-keyword-review-csv.mjs';
 
 describe('kanji keyword review helpers', () => {
@@ -324,6 +324,10 @@ describe('kanji keyword review helpers', () => {
       '1 kanji keyword change: 言: say -> word'
     );
     assert.equal(summarizeImportChanges([]), '0 kanji keyword changes');
+  });
+
+  it('formats local dates for curation defaults', () => {
+    assert.equal(formatLocalDate(new Date(2026, 5, 4)), '2026-06-04');
   });
 
   it('preserves the existing curation version when undefined is supplied', () => {
