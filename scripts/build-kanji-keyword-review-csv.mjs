@@ -15,8 +15,8 @@ function toText(value) {
 }
 
 function normalizePositiveInteger(value, label) {
-  const size = Math.floor(Number(value));
-  if (!Number.isFinite(size) || size <= 0) {
+  const size = Number(value);
+  if (!Number.isInteger(size) || size <= 0) {
     throw new Error(`Invalid value for ${label}: ${value}`);
   }
   return size;

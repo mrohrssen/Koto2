@@ -210,6 +210,11 @@ describe('kanji keyword review helpers', () => {
     ]);
   });
 
+  it('rejects invalid slice sizes', () => {
+    assert.throws(() => buildSliceManifests([{ rank: 1, kanji: '人' }], 0), /Invalid value for --slice-size/i);
+    assert.throws(() => buildSliceManifests([{ rank: 1, kanji: '人' }], '2.5'), /Invalid value for --slice-size/i);
+  });
+
   it('applies reviewed keywords only where the proposal changes', () => {
     const dictionary = {
       schemaVersion: 2,
