@@ -13,6 +13,7 @@
 ## Current Status - 2026-06-04
 
 Phase 1 implementation has landed on `origin/dev` through `2483eb824ae4e097dc112bf9324f1357f15a4a25`.
+Phase 2 implementation is complete through Task 2.5 in `feature/optimistic-kanji-kombat-choices` and ready to merge/push to `origin/dev`.
 
 Completed Phase 1 commits:
 
@@ -91,14 +92,16 @@ Evidence: `npm run test:unit -- ...` PASS; `npm test` PASS; screenshot/playtest 
 | 2026-06-04 | Codex | Task 2.3 | Completed Speed Review room completion optimistic commit with route idempotency, empty-snapshot action-id coverage, client correction handling, focused unit gate, syntax check, and `npm test`. |
 | 2026-06-04 | Codex | Task 2.4 | Started Whack-a-Mole complete/skip optimistic commit implementation in `.worktrees/optimistic-whack-a-mole-actions`; detailed plan saved to `docs/superpowers/plans/2026-06-04-optimistic-whack-a-mole-actions.md`. |
 | 2026-06-04 | Codex | Task 2.4 | Completed Whack-a-Mole complete/skip optimistic commit with route idempotency, client correction handling, focused unit gate, syntax check, and `npm test`. Browser prompt and decline path were partially verified; completion-path browser verification was skipped at user request. |
+| 2026-06-04 | Codex | Task 2.5 | Started Kanji Kombat intro/completion optimistic commit implementation in `.worktrees/optimistic-kanji-kombat-choices`; detailed plan saved to `docs/superpowers/plans/2026-06-04-optimistic-kanji-kombat-choices.md`. |
+| 2026-06-04 | Codex | Task 2.5 | Completed Kanji Kombat intro/completion optimistic commit with route idempotency, client correction handling, stale response regression coverage, focused Kanji Kombat gates, syntax check, and `npm test`. |
 
 ## Overall Status
 
 | Phase | Status | Gate To Advance |
 |---|---|---|
 | Phase 1: Shipped Stability Blockers | complete | Automated Phase 1 gate passed; user playtest visually verified the UI. |
-| Phase 2: Medium-Risk Room And Minigame Actions | in_progress | Tasks 2.1 through 2.5 complete. |
-| Phase 3: High-Impact Hub And Meta Actions | blocked | Phase 2 complete and no open optimistic-action regressions. |
+| Phase 2: Medium-Risk Room And Minigame Actions | complete | Tasks 2.1 through 2.5 complete with automated verification. |
+| Phase 3: High-Impact Hub And Meta Actions | blocked | User explicitly requests the next roadmap task after Phase 2 completion. |
 | Phase 4: Release Gate And Monitoring | blocked | Phases 1 through 3 complete. |
 
 Status values: `pending`, `in_progress`, `blocked`, `complete`, `de-scoped`.
@@ -679,24 +682,23 @@ Manual browser verification is required because the minigame UI changes are visi
 
 ### Task 2.5: Kanji Kombat Intro And Completion Choices Optimistic Commit
 
-Status: pending
-Owner: -
-Started: -
-Completed: -
-Commit: -
-Evidence: Phase 1 automated gate complete; task not started.
+Status: complete
+Owner: Codex
+Started: 2026-06-04 22:12 JST
+Completed: 2026-06-04 22:41 JST
+Commit: `536b0bf2`, `ef574178`
+Evidence: Baseline `npm test` PASS before implementation. RED route/UI tests failed before implementation; GREEN route/UI tests passed after implementation. `node --experimental-test-module-mocks --test tests/unit/routes/kanji-kombat-routes.test.js` PASS; `node --test tests/unit/ui/kanji-kombat-ui.test.js tests/unit/ui/optimistic-run-integration.test.js` PASS; `node --experimental-test-module-mocks --test tests/unit/game/kanji-kombat-run.test.js tests/unit/game/kanji-kombat-optimistic.test.js` PASS; `npm run test:unit -- tests/unit/routes/kanji-kombat-routes.test.js tests/unit/ui/kanji-kombat-ui.test.js tests/unit/ui/optimistic-run-integration.test.js tests/unit/game/kanji-kombat-run.test.js tests/unit/game/kanji-kombat-optimistic.test.js` PASS; `node --check src/routes/game/kanji-kombat.js && node --check public/js/api.js && node --check public/js/ui/kanji-kombat.js` PASS; `npm test` PASS. Final subagent code quality review found no Critical or Important issues; the one Minor stale completion-response coverage gap was patched and passed. No browser session was launched because this task changed route/API/action commit behavior and source-covered retry copy, not CSS, animation, or rendering.
 Branch: `feature/optimistic-kanji-kombat-choices`
-Worktree: `koto-wt-optimistic-kanji-kombat-choices`
+Worktree: `.worktrees/optimistic-kanji-kombat-choices`
 
 **Files:**
 
-- Modify: `src/routes/game/run.js` or `src/routes/game/combat.js`, depending on current Kanji Kombat endpoints
-- Modify: `src/game/services/kanji-kombat-service.js` only if service idempotency is needed
+- Modify: `src/routes/game/kanji-kombat.js`
 - Modify: `public/js/api.js`
 - Modify: `public/js/ui/kanji-kombat.js`
 - Test: `tests/unit/ui/kanji-kombat-ui.test.js`
-- Test: `tests/unit/routes/optimistic-run-routes.test.js`
-- Test: create or modify Kanji Kombat route tests if existing route tests are elsewhere
+- Test: `tests/unit/routes/kanji-kombat-routes.test.js`
+- Test: `tests/unit/ui/optimistic-run-integration.test.js`
 
 Required actions:
 
@@ -714,8 +716,10 @@ Approved failure copy:
 Required verification:
 
 ```bash
-npm run test:unit -- tests/unit/ui/kanji-kombat-ui.test.js tests/unit/routes/optimistic-run-routes.test.js
-node --check public/js/ui/kanji-kombat.js && node --check public/js/api.js && node --check src/game/services/kanji-kombat-service.js
+node --experimental-test-module-mocks --test tests/unit/routes/kanji-kombat-routes.test.js
+node --test tests/unit/ui/kanji-kombat-ui.test.js tests/unit/ui/optimistic-run-integration.test.js
+node --experimental-test-module-mocks --test tests/unit/game/kanji-kombat-run.test.js tests/unit/game/kanji-kombat-optimistic.test.js
+node --check src/routes/game/kanji-kombat.js && node --check public/js/api.js && node --check public/js/ui/kanji-kombat.js
 npm test
 ```
 
