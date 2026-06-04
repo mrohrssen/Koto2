@@ -1,6 +1,11 @@
 import { escapeHtml } from './html-utils.js';
 import { renderButtonsAsync } from './ui-components.js';
 import { getSpeakerId, playDialogueLineAudio } from '../tts.js';
+import {
+  createPendingRunAction,
+  correctPendingRunAction,
+  isMatchingRunActionResponse,
+} from './optimistic-run-action.js';
 
 let api = {
   submitAnswer: null,
@@ -32,6 +37,21 @@ const ONBOARDING_COPY = {
 };
 
 let onboardingInProgress = false;
+const KANJI_KOMBAT_SAVE_FAILURE_COPY = 'Kanji Kombat choice did not save. Please try again.';
+
+function createKanjiKombatPendingAction(gameState, actionType, applyLocal) {
+  const actionTypeByName = {
+    'kanjiKombat.intro': { actionType: 'kanjiKombat.intro' },
+    'kanjiKombat.completionChoice': { actionType: 'kanjiKombat.completionChoice' },
+  };
+  const resolvedAction = actionTypeByName[actionType];
+  if (!resolvedAction) return null;
+  return createPendingRunAction({
+    state: gameState,
+    ...resolvedAction,
+    applyLocal,
+  });
+}
 
 export function initKanjiKombatUI(deps) {
   api = { ...api, ...deps };
@@ -73,6 +93,18 @@ async function askOnboardingBoolean(question) {
   ]);
   api.forceHideNarration?.();
   return choice === 0;
+}
+
+async function showKanjiKombatSaveFailure() {
+  await api.showNarration?.(KANJI_KOMBAT_SAVE_FAILURE_COPY, { speaker: 'Cid', autoDismiss: 1800 });
+}
+
+function applyKanjiKombatCorrection(pending, result) {
+  api.updateGameState?.(correctPendingRunAction(pending, result));
+}
+
+function shouldRollbackKanjiKombatPending(pending, result) {
+  return !result || result.status === 'corrected' || !isMatchingRunActionResponse(pending, result);
 }
 
 function finalOnboardingLine(knowsHiragana, knowsKatakana) {
@@ -267,7 +299,35 @@ export function renderKanjiKombatAction(gameState) {
   if (kk.completionChoicePending) {
     renderKanjiKombatCompletionChoice({
       onChoice: async keepGoing => {
-        const result = await api.submitCompletionChoice(keepGoing);
+        const pending = createKanjiKombatPendingAction(
+          gameState,
+          'kanjiKombat.completionChoice',
+          draft => {
+            draft.run ||= {};
+            draft.run.kanjiKombat ||= {};
+            draft.run.kanjiKombat.completionChoicePending = false;
+            if (keepGoing) draft.run.kanjiKombat.endlessMode = true;
+          }
+        );
+        if (!pending) return;
+        api.updateGameState?.(pending.state);
+        clearActionArea();
+
+        let result = null;
+        try {
+          result = await api.submitCompletionChoice(keepGoing, { actionId: pending.actionId });
+        } catch (error) {
+          console.error('[KanjiKombat] Completion choice failed:', error?.message || error);
+          result = null;
+        }
+
+        if (shouldRollbackKanjiKombatPending(pending, result)) {
+          applyKanjiKombatCorrection(pending, result);
+          await showKanjiKombatSaveFailure();
+          api.updateUI?.();
+          return;
+        }
+
         if (result?.state) api.updateGameState(result.state);
         if (result?.combatEnded) {
           api.finishCombatResult?.(result);
@@ -286,7 +346,30 @@ export function renderKanjiKombatAction(gameState) {
   if (kk.pendingIntro?.card) {
     renderKanjiKombatIntro(kk.pendingIntro.card, {
       onChoice: async choice => {
-        const result = await api.submitIntro(kk.pendingIntro.card.id, choice);
+        const pending = createKanjiKombatPendingAction(gameState, 'kanjiKombat.intro', draft => {
+          draft.run ||= {};
+          draft.run.kanjiKombat ||= {};
+          draft.run.kanjiKombat.pendingIntro = null;
+        });
+        if (!pending) return;
+        api.updateGameState?.(pending.state);
+        clearActionArea();
+
+        let result = null;
+        try {
+          result = await api.submitIntro(kk.pendingIntro.card.id, choice, { actionId: pending.actionId });
+        } catch (error) {
+          console.error('[KanjiKombat] Intro choice failed:', error?.message || error);
+          result = null;
+        }
+
+        if (shouldRollbackKanjiKombatPending(pending, result)) {
+          applyKanjiKombatCorrection(pending, result);
+          await showKanjiKombatSaveFailure();
+          api.updateUI?.();
+          return;
+        }
+
         if (result?.state) api.updateGameState(result.state);
         if (result?.state && typeof api.refreshAction === 'function') {
           api.refreshAction();

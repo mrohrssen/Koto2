@@ -130,6 +130,23 @@ describe('optimistic run action integration', () => {
     assert.match(speedReviewRoomSource, /throw new Error\(SPEED_REVIEW_SAVE_FAILURE_COPY\)/);
   });
 
+  it('sends action ids for Kanji Kombat intro and completion choices without changing answer prediction', () => {
+    const kanjiKombatSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/kanji-kombat.js'), 'utf8');
+
+    assert.match(apiSource, /submitKanjiKombatIntro\(cardId, choice, options = \{\}\)/);
+    assert.match(apiSource, /actionId: options\.actionId/);
+    assert.match(apiSource, /submitKanjiKombatCompletionChoice\(keepGoing, options = \{\}\)/);
+    assert.match(kanjiKombatSource, /KANJI_KOMBAT_SAVE_FAILURE_COPY = 'Kanji Kombat choice did not save\. Please try again\.'/);
+    assert.match(kanjiKombatSource, /actionType: 'kanjiKombat\.intro'/);
+    assert.match(kanjiKombatSource, /actionType: 'kanjiKombat\.completionChoice'/);
+    assert.match(kanjiKombatSource, /api\.submitIntro\(kk\.pendingIntro\.card\.id, choice, \{ actionId: pending\.actionId \}\)/);
+    assert.match(kanjiKombatSource, /api\.submitCompletionChoice\(keepGoing, \{ actionId: pending\.actionId \}\)/);
+    assert.match(kanjiKombatSource, /correctPendingRunAction\(pending, result\)/);
+    assert.match(kanjiKombatSource, /isMatchingRunActionResponse/);
+    assert.match(kanjiKombatSource, /shouldRollbackKanjiKombatPending\(pending, result\)/);
+    assert.doesNotMatch(kanjiKombatSource, /correctAnswerId[\s\S]{0,400}submitIntro/);
+  });
+
   it('routes Whack-a-Mole completion and skip through verified run actions', () => {
     assert.match(apiSource, /async function completeWhackAMole\(score, options = \{\}\)/);
     assert.match(apiSource, /verifiedRunAction\('\/whack-a-mole-complete', \{ score, actionId: options\.actionId \}\)/);

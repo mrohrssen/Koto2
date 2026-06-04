@@ -825,8 +825,13 @@ async function submitKanjiKombatOnboarding(knowsHiragana, knowsKatakana) {
   return apiCall('/kanji-kombat/onboarding', 'POST', { knowsHiragana, knowsKatakana }, null, { bypassLoadingGate: true });
 }
 
-async function submitKanjiKombatIntro(cardId, choice) {
-  return apiCall('/kanji-kombat/intro', 'POST', { cardId, choice }, null, { bypassLoadingGate: true });
+async function submitKanjiKombatIntro(cardId, choice, options = {}) {
+  const body = { cardId, choice };
+  if (options?.actionId) body.actionId = options.actionId;
+  return apiCall('/kanji-kombat/intro', 'POST', body, null, {
+    bypassLoadingGate: true,
+    returnErrorBody: true,
+  });
 }
 
 async function submitKanjiKombatAnswer(answerOrEnvelope) {
@@ -840,8 +845,10 @@ async function submitKanjiKombatAnswer(answerOrEnvelope) {
   });
 }
 
-async function submitKanjiKombatCompletionChoice(keepGoing) {
-  return apiCall('/kanji-kombat/completion-choice', 'POST', { keepGoing }, null, {
+async function submitKanjiKombatCompletionChoice(keepGoing, options = {}) {
+  const body = { keepGoing };
+  if (options?.actionId) body.actionId = options.actionId;
+  return apiCall('/kanji-kombat/completion-choice', 'POST', body, null, {
     bypassLoadingGate: true,
     timeoutMs: COMBAT_CYCLE_TIMEOUT_MS,
     returnErrorBody: true,
