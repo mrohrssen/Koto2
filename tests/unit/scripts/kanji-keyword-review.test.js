@@ -1,0 +1,245 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  REVIEW_COLUMNS,
+  applyReviewedKeywords,
+  buildReviewRows,
+  csvEscape,
+  parseCsv,
+  rowsToCsv,
+  validateReviewedRows,
+} from '../../../scripts/lib/kanji-keyword-review.mjs';
+
+describe('kanji keyword review helpers', () => {
+  it('escapes plain, comma, quoted, and newline fields', () => {
+    assert.equal(csvEscape('plain'), 'plain');
+    assert.equal(csvEscape('comma,value'), '"comma,value"');
+    assert.equal(csvEscape('say "word"'), '"say ""word"""');
+    assert.equal(csvEscape('line\nbreak'), '"line\nbreak"');
+  });
+
+  it('round-trips review rows through CSV in REVIEW_COLUMNS order', () => {
+    const rows = [
+      {
+        rank: '1',
+        kanji: '人',
+        kind: 'Kyōiku (1st grade)',
+        currentPrimaryKeyword: 'person, "human"',
+        jpdbPrimaryKeyword: 'person',
+        wanikaniPrimaryDefinition: 'Person',
+        proposedFinalKeyword: 'NO CHANGE',
+        proposalSource: 'no_change',
+        proposalNotes: 'keep\nexisting',
+        jpdbStatus: 'matched',
+        wanikaniStatus: 'matched',
+      },
+      {
+        rank: '2',
+        kanji: '言',
+        kind: 'Kyōiku (2nd grade)',
+        currentPrimaryKeyword: 'say',
+        jpdbPrimaryKeyword: 'word',
+        wanikaniPrimaryDefinition: 'Word',
+        proposedFinalKeyword: 'word',
+        proposalSource: 'review',
+        proposalNotes: '',
+        jpdbStatus: 'matched',
+        wanikaniStatus: 'needs_review',
+      },
+    ];
+
+    const csv = rowsToCsv(rows);
+    assert.equal(csv.endsWith('\n'), true);
+    assert.equal(csv.split('\n')[0], REVIEW_COLUMNS.join(','));
+
+    const parsed = parseCsv(csv);
+    assert.deepEqual(parsed, rows);
+  });
+
+  it('rejects CSV with a mismatched header', () => {
+    assert.throws(
+      () => parseCsv('rank,kanji,kind\n1,人,Kyōiku (1st grade)\n'),
+      /REVIEW_COLUMNS/
+    );
+  });
+
+  it('builds one review row per dictionary entry with lookup defaults', () => {
+    const entries = [
+      { frequencyRank: 1, kanji: '人', kind: 'Kyōiku (1st grade)', primaryMeaning: 'person' },
+      { frequencyRank: 2, kanji: '言', kind: 'Kyōiku (2nd grade)', primaryMeaning: 'say' },
+    ];
+    const jpdbByKanji = {
+      人: { keyword: 'person', status: 'matched' },
+    };
+    const wanikaniByKanji = {
+      言: { meaning: 'word', status: 'needs_review' },
+    };
+
+    assert.deepEqual(buildReviewRows({ entries, jpdbByKanji, wanikaniByKanji }), [
+      {
+        rank: '1',
+        kanji: '人',
+        kind: 'Kyōiku (1st grade)',
+        currentPrimaryKeyword: 'person',
+        jpdbPrimaryKeyword: 'person',
+        wanikaniPrimaryDefinition: '',
+        proposedFinalKeyword: 'NO CHANGE',
+        proposalSource: 'no_change',
+        proposalNotes: '',
+        jpdbStatus: 'matched',
+        wanikaniStatus: 'not_checked',
+      },
+      {
+        rank: '2',
+        kanji: '言',
+        kind: 'Kyōiku (2nd grade)',
+        currentPrimaryKeyword: 'say',
+        jpdbPrimaryKeyword: '',
+        wanikaniPrimaryDefinition: 'word',
+        proposedFinalKeyword: 'NO CHANGE',
+        proposalSource: 'no_change',
+        proposalNotes: '',
+        jpdbStatus: 'not_checked',
+        wanikaniStatus: 'needs_review',
+      },
+    ]);
+  });
+
+  it('applies reviewed keywords only where the proposal changes', () => {
+    const dictionary = {
+      schemaVersion: 2,
+      curationVersion: '2026-06-01',
+      maintainer: 'Koto',
+      entries: [
+        { kanji: '人', frequencyRank: 1, kind: 'Kyōiku (1st grade)', primaryMeaning: 'person', notes: null },
+        { kanji: '言', frequencyRank: 2, kind: 'Kyōiku (2nd grade)', primaryMeaning: 'say', notes: 'keep' },
+      ],
+    };
+    const rows = [
+      {
+        rank: '1',
+        kanji: '人',
+        kind: 'Kyōiku (1st grade)',
+        currentPrimaryKeyword: 'person',
+        jpdbPrimaryKeyword: 'person',
+        wanikaniPrimaryDefinition: 'Person',
+        proposedFinalKeyword: 'NO CHANGE',
+        proposalSource: 'no_change',
+        proposalNotes: '',
+        jpdbStatus: 'matched',
+        wanikaniStatus: 'matched',
+      },
+      {
+        rank: '2',
+        kanji: '言',
+        kind: 'Kyōiku (2nd grade)',
+        currentPrimaryKeyword: 'say',
+        jpdbPrimaryKeyword: 'word',
+        wanikaniPrimaryDefinition: 'Word',
+        proposedFinalKeyword: 'word',
+        proposalSource: 'review',
+        proposalNotes: '',
+        jpdbStatus: 'matched',
+        wanikaniStatus: 'needs_review',
+      },
+    ];
+
+    const originalPersonEntry = dictionary.entries[0];
+    const originalSayEntry = dictionary.entries[1];
+    const result = applyReviewedKeywords(dictionary, rows, { curationVersion: '2026-06-04' });
+
+    assert.equal(result.changed.length, 1);
+    assert.deepEqual(result.changed, [{ kanji: '言', from: 'say', to: 'word' }]);
+    assert.equal(result.dictionary.curationVersion, '2026-06-04');
+    assert.equal(result.dictionary.schemaVersion, 2);
+    assert.equal(result.dictionary.maintainer, 'Koto');
+    assert.equal(result.dictionary.entries[0], originalPersonEntry);
+    assert.notEqual(result.dictionary.entries[1], originalSayEntry);
+    assert.equal(result.dictionary.entries[1].primaryMeaning, 'word');
+    assert.equal(result.dictionary.entries[1].notes, 'keep');
+    assert.equal(result.dictionary.entries[0].primaryMeaning, 'person');
+  });
+
+  it('rejects malformed reviewed rows', () => {
+    const entries = [
+      { frequencyRank: 1, kanji: '人', kind: 'Kyōiku (1st grade)', primaryMeaning: 'person' },
+      { frequencyRank: 2, kanji: '言', kind: 'Kyōiku (2nd grade)', primaryMeaning: 'say' },
+    ];
+
+    assert.throws(
+      () => validateReviewedRows(entries, [
+        {
+          rank: '2',
+          kanji: '人',
+          kind: 'Kyōiku (1st grade)',
+          currentPrimaryKeyword: 'person',
+          jpdbPrimaryKeyword: 'person',
+          wanikaniPrimaryDefinition: 'Person',
+          proposedFinalKeyword: 'word',
+          proposalSource: 'review',
+          proposalNotes: '',
+          jpdbStatus: 'matched',
+          wanikaniStatus: 'matched',
+        },
+      ]),
+      /Rank mismatch for 人/
+    );
+
+    assert.throws(
+      () => validateReviewedRows(entries, [
+        {
+          rank: '1',
+          kanji: '人',
+          kind: 'Kyōiku (1st grade)',
+          currentPrimaryKeyword: 'person',
+          jpdbPrimaryKeyword: 'person',
+          wanikaniPrimaryDefinition: 'Person',
+          proposedFinalKeyword: 'ひと',
+          proposalSource: 'review',
+          proposalNotes: '',
+          jpdbStatus: 'matched',
+          wanikaniStatus: 'matched',
+        },
+      ]),
+      /Japanese text/
+    );
+
+    assert.throws(
+      () => validateReviewedRows(entries, [
+        {
+          rank: '1',
+          kanji: '人',
+          kind: 'Kyōiku (1st grade)',
+          currentPrimaryKeyword: 'person',
+          jpdbPrimaryKeyword: 'person',
+          wanikaniPrimaryDefinition: 'Person',
+          proposedFinalKeyword: 'unknown',
+          proposalSource: 'review',
+          proposalNotes: '',
+          jpdbStatus: 'matched',
+          wanikaniStatus: 'matched',
+        },
+      ]),
+      /placeholder/
+    );
+
+    assert.throws(
+      () => validateReviewedRows(entries, [
+        {
+          rank: '1',
+          kanji: '人',
+          kind: 'Kyōiku (1st grade)',
+          currentPrimaryKeyword: 'person',
+          jpdbPrimaryKeyword: 'person',
+          wanikaniPrimaryDefinition: 'Person',
+          proposedFinalKeyword: 'word /',
+          proposalSource: 'review',
+          proposalNotes: '',
+          jpdbStatus: 'matched',
+          wanikaniStatus: 'matched',
+        },
+      ]),
+      /empty slash-separated segments/
+    );
+  });
+});
