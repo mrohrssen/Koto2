@@ -54,16 +54,21 @@ function decodeHtmlEntities(text) {
     ['nbsp', ' '],
     ['quot', '"'],
   ]);
+  const decodeCodePoint = codePoint => (
+    Number.isInteger(codePoint) && codePoint >= 0 && codePoint <= 0x10ffff
+      ? String.fromCodePoint(codePoint)
+      : null
+  );
 
   return toText(text).replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]+);/gi, (match, entity) => {
     const normalized = entity.toLowerCase();
     if (normalized.startsWith('#x')) {
       const codePoint = Number.parseInt(normalized.slice(2), 16);
-      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+      return decodeCodePoint(codePoint) ?? match;
     }
     if (normalized.startsWith('#')) {
       const codePoint = Number.parseInt(normalized.slice(1), 10);
-      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+      return decodeCodePoint(codePoint) ?? match;
     }
     return namedEntities.get(normalized) ?? match;
   });
@@ -169,6 +174,7 @@ async function fetchJsonWithRetry(url, token, options = {}) {
     max429Retries = DEFAULT_MAX_429_RETRIES,
     minRetryDelayMs = DEFAULT_MIN_RETRY_DELAY_MS,
     maxRetryDelayMs = DEFAULT_MAX_RETRY_DELAY_MS,
+    fetchFn = fetch,
   } = options;
 
   const headers = {
@@ -180,7 +186,7 @@ async function fetchJsonWithRetry(url, token, options = {}) {
   let retryCount = 0;
 
   for (;;) {
-    const response = await fetch(allowedUrl, { headers });
+    const response = await fetchFn(allowedUrl, { headers });
 
     if (response.status === 429) {
       if (retryCount >= Math.max(0, Number(max429Retries) || 0)) {
@@ -301,6 +307,7 @@ export async function fetchAllWaniKaniPages({
   max429Retries = DEFAULT_MAX_429_RETRIES,
   minRetryDelayMs = DEFAULT_MIN_RETRY_DELAY_MS,
   maxRetryDelayMs = DEFAULT_MAX_RETRY_DELAY_MS,
+  fetchFn = fetch,
 } = {}) {
   if (!token) {
     throw new Error('WANIKANI_API_TOKEN is required to fetch WaniKani subjects');
@@ -318,6 +325,7 @@ export async function fetchAllWaniKaniPages({
       max429Retries,
       minRetryDelayMs,
       maxRetryDelayMs,
+      fetchFn,
     });
     pages.push(page);
     const rawNextUrl = page?.pages?.next_url || null;
@@ -402,7 +410,7 @@ export async function runCli(argv = process.argv.slice(2), {
   } else {
     const token = process.env.WANIKANI_API_TOKEN;
     if (token) {
-      const pages = await fetchAllWaniKaniPages({ token });
+      const pages = await fetchAllWaniKaniPages({ token, fetchFn });
       await writeJsonAtomic(args.cache, pages);
       subjects = pages.flatMap(page => extractWaniKaniKanjiSubjects(page));
     } else if (args.refresh) {

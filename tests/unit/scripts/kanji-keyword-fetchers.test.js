@@ -169,6 +169,27 @@ describe('wani kani kanji keyword fetchers', () => {
     ]);
   });
 
+  it('keeps invalid WaniKani public index numeric entities unchanged', () => {
+    const html = `
+      <html>
+        <body>
+          <a href="/kanji/%E4%B8%80" class="subject-character">
+            <span class="subject-character__meaning">One &#9999999999; Still One</span>
+          </a>
+        </body>
+      </html>
+    `;
+
+    assert.deepEqual(parseWaniKaniPublicKanjiIndexHtml(html), [
+      {
+        kanji: '一',
+        meaning: 'One &#9999999999; Still One',
+        status: 'matched',
+        documentUrl: 'https://www.wanikani.com/kanji/%E4%B8%80',
+      },
+    ]);
+  });
+
   it('uses the WaniKani public index fallback when API cache and token are unavailable', async () => {
     const tempDir = await mkdtemp(join(tmpdir(), 'wanikani-public-index-'));
     const cachePath = join(tempDir, 'missing-cache.json');
@@ -177,28 +198,28 @@ describe('wani kani kanji keyword fetchers', () => {
     const entry = getKotoKanjiEntries()[0];
     const fetchCalls = [];
 
-    globalThis.fetch = async url => {
-      fetchCalls.push(String(url));
-      return {
-        ok: true,
-        status: 200,
-        statusText: 'OK',
-        text: async () => `
-          <html>
-            <body>
-              <a href="/kanji/${encodeURIComponent(entry.kanji)}" class="subject-character">
-                <span class="subject-character__meaning">Public &quot;Meaning&quot;</span>
-                <span>${entry.kanji}</span>
-              </a>
-            </body>
-          </html>
-        `,
-      };
-    };
-
     try {
       delete process.env.WANIKANI_API_TOKEN;
-      await runWaniKaniCli(['--cache', cachePath, '--out', outPath]);
+      await runWaniKaniCli(['--cache', cachePath, '--out', outPath], {
+        fetchFn: async url => {
+          fetchCalls.push(String(url));
+          return {
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            text: async () => `
+              <html>
+                <body>
+                  <a href="/kanji/${encodeURIComponent(entry.kanji)}" class="subject-character">
+                    <span class="subject-character__meaning">Public &quot;Meaning&quot;</span>
+                    <span>${entry.kanji}</span>
+                  </a>
+                </body>
+              </html>
+            `,
+          };
+        },
+      });
 
       const output = JSON.parse(await readFile(outPath, 'utf8'));
       assert.deepEqual(fetchCalls, ['https://www.wanikani.com/kanji']);
@@ -206,6 +227,106 @@ describe('wani kani kanji keyword fetchers', () => {
       assert.equal(output[entry.kanji].status, 'matched');
       assert.equal(output[entry.kanji].documentUrl, `https://www.wanikani.com/kanji/${encodeURIComponent(entry.kanji)}`);
       assert.equal(Object.prototype.hasOwnProperty.call(output[entry.kanji], 'subjectId'), false);
+    } finally {
+      if (previousToken === undefined) {
+        delete process.env.WANIKANI_API_TOKEN;
+      } else {
+        process.env.WANIKANI_API_TOKEN = previousToken;
+      }
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects CLI refresh without WANIKANI_API_TOKEN', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'wanikani-refresh-no-token-'));
+    const cachePath = join(tempDir, 'cache.json');
+    const outPath = join(tempDir, 'out.json');
+    const previousToken = process.env.WANIKANI_API_TOKEN;
+
+    try {
+      delete process.env.WANIKANI_API_TOKEN;
+      await assert.rejects(
+        () => runWaniKaniCli(['--refresh', '--cache', cachePath, '--out', outPath], {
+          fetchFn: async () => {
+            throw new Error('fetch should not be called without a token');
+          },
+        }),
+        /WANIKANI_API_TOKEN is required when refreshing or when the cache is missing/,
+      );
+    } finally {
+      if (previousToken === undefined) {
+        delete process.env.WANIKANI_API_TOKEN;
+      } else {
+        process.env.WANIKANI_API_TOKEN = previousToken;
+      }
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('uses the authenticated API path and writes the API cache on token-present CLI refresh', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'wanikani-refresh-token-'));
+    const cachePath = join(tempDir, 'cache.json');
+    const outPath = join(tempDir, 'out.json');
+    const previousToken = process.env.WANIKANI_API_TOKEN;
+    const entry = getKotoKanjiEntries()[0];
+    const calls = [];
+    const page = {
+      data: [
+        {
+          id: 440,
+          object: 'kanji',
+          data_updated_at: '2026-06-01T00:00:00.000Z',
+          data: {
+            characters: entry.kanji,
+            level: 1,
+            document_url: `https://www.wanikani.com/kanji/${encodeURIComponent(entry.kanji)}`,
+            meanings: [
+              { meaning: 'Api Meaning', primary: true, accepted_answer: true },
+            ],
+          },
+        },
+      ],
+      pages: {
+        next_url: null,
+      },
+    };
+
+    try {
+      process.env.WANIKANI_API_TOKEN = 'test-token';
+      globalThis.fetch = async () => {
+        throw new Error('global fetch should not be used by injected refresh');
+      };
+
+      await runWaniKaniCli(['--refresh', '--cache', cachePath, '--out', outPath], {
+        fetchFn: async (url, options) => {
+          calls.push({
+            url: String(url),
+            authorization: options?.headers?.Authorization,
+            revision: options?.headers?.['Wanikani-Revision'],
+          });
+          return {
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: async () => page,
+          };
+        },
+      });
+
+      const cache = JSON.parse(await readFile(cachePath, 'utf8'));
+      const output = JSON.parse(await readFile(outPath, 'utf8'));
+
+      assert.deepEqual(calls, [
+        {
+          url: 'https://api.wanikani.com/v2/subjects?types=kanji&hidden=false',
+          authorization: 'Bearer test-token',
+          revision: '20170710',
+        },
+      ]);
+      assert.deepEqual(cache, [page]);
+      assert.equal(output[entry.kanji].meaning, 'Api Meaning');
+      assert.equal(output[entry.kanji].status, 'matched');
+      assert.equal(output[entry.kanji].subjectId, 440);
     } finally {
       if (previousToken === undefined) {
         delete process.env.WANIKANI_API_TOKEN;
