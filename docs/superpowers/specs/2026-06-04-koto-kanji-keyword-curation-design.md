@@ -58,17 +58,11 @@ Recommended top-level metadata:
   "curationVersion": "2026-06-04",
   "maintainer": "Koto",
   "status": "hand-curated",
-  "referenceSources": [
-    { "id": "kanjidic2", "role": "initial meaning and reading seed" },
-    { "id": "jmdict", "role": "example vocabulary evidence" },
-    { "id": "jpdb", "role": "frequency ordering and keyword reference" },
-    { "id": "wanikani", "role": "keyword reference" }
-  ],
   "entries": []
 }
 ```
 
-Runtime code should continue to expose `getKotoKanjiEntries()`, `getKotoKanjiEntry(kanji)`, and source/reference metadata through `src/game/koto-kanji-dictionary.js`.
+Runtime code should continue to expose `getKotoKanjiEntries()`, `getKotoKanjiEntry(kanji)`, and compact curation metadata through `src/game/koto-kanji-dictionary.js`. JPDB and WaniKani must stay out of the dictionary JSON metadata; they belong only in temporary review CSVs and caches.
 
 ## Review CSV
 
@@ -188,7 +182,7 @@ Required treatment:
 1. Move `scripts/build-koto-kanji-dictionary.mjs` to an archival script name, or change it to write only to an explicit output path under `output/`.
 2. Remove default behavior that writes to `data/kanji/koto-kanji-dictionary.json`.
 3. Update tests so `koto-kanji-dictionary.json` is validated as curated data, not generated output.
-4. Update docs/data-sources.md to say the dictionary is Koto-owned and reference sources are audit evidence.
+4. Update docs/data-sources.md to say the dictionary is Koto-owned, while JPDB and WaniKani are temporary curation evidence and not stored in dictionary JSON.
 5. Keep `data/kanji/sources/jpdb-kanji-frequency-2026-06-01.tsv`, KANJIDIC2, and JMdict files only as historical/reference inputs unless future tooling explicitly needs them.
 
 ## Subagent Workflow
