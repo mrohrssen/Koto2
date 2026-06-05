@@ -7,7 +7,13 @@ await mock.module('animejs', {
   namedExports: { animate: () => {} },
 });
 await mock.module('../../../public/js/ui/romaji.js', {
-  namedExports: { toRomaji: s => s },
+  namedExports: {
+    katakanaToHiragana: s => s,
+    pronunciationReading: s => s,
+    pronunciationReadingInfo: s => ({ reading: s, reasons: [] }),
+    toPronunciationRomaji: s => s,
+    toRomaji: s => s,
+  },
 });
 await mock.module('../../../public/js/ui/bootstrap-client.js', {
   namedExports: { renderJpSentence: () => '', getKnownWords: () => new Set() },

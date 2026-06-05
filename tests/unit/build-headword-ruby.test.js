@@ -14,6 +14,19 @@ describe('buildHeadwordRuby', () => {
     assert.equal(html, '<ruby>たべる<rt>taberu</rt></ruby>');
   });
 
+  it('beginner mode can use optional metadata for spoken pronunciation guides', () => {
+    const html = buildHeadwordRuby('こんにちは', 'こんにちは', false, {
+      pos: 'Interjection',
+      normalizedForm: '今日は',
+    });
+    assert.equal(html, '<ruby>こんにちは<rt>konnichiwa</rt></ruby>');
+  });
+
+  it('beginner mode applies kana-only greeting pronunciation rules without metadata', () => {
+    const html = buildHeadwordRuby('こんにちは', 'こんにちは', false);
+    assert.equal(html, '<ruby>こんにちは<rt>konnichiwa</rt></ruby>');
+  });
+
   it('kanji mode, kanji base differs from reading: ruby with hiragana on top, kanji below', () => {
     const html = buildHeadwordRuby('食べる', 'たべる', true);
     assert.equal(html, '<ruby>食べる<rt>たべる</rt></ruby>');

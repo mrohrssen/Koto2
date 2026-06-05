@@ -1,4 +1,8 @@
-import { toRomaji } from './romaji.js';
+import {
+  katakanaToHiragana,
+  pronunciationReading,
+  toPronunciationRomaji,
+} from './romaji.js';
 
 export const JAPANESE_DISPLAY_MODES = Object.freeze({
   HIRAGANA: 'hiragana',
@@ -16,14 +20,6 @@ export function normalizeJapaneseDisplayMode(options = {}) {
   return JAPANESE_DISPLAY_MODES.HIRAGANA;
 }
 
-function katakanaToHiragana(text = '') {
-  return Array.from(String(text)).map(ch => {
-    const code = ch.charCodeAt(0);
-    if (code >= 0x30A1 && code <= 0x30F6) return String.fromCharCode(code - 0x60);
-    return ch;
-  }).join('');
-}
-
 function tokenReading(token = {}) {
   return token.reading || token.hiraganaSurface || token.surface || token.base || token.baseForm || '';
 }
@@ -39,13 +35,14 @@ function naturalMainText(token = {}, reading = '') {
 export function resolveJapaneseDisplay(token = {}, options = {}) {
   const mode = normalizeJapaneseDisplayMode(options);
   const reading = tokenReading(token);
+  const spokenReading = pronunciationReading(reading, token);
 
   if (mode === JAPANESE_DISPLAY_MODES.NATURAL) {
     const mainText = naturalMainText(token, reading);
     return {
       mode,
       mainText,
-      guideText: reading,
+      guideText: spokenReading,
       guideKind: 'hiragana',
       lookupHeadword: token.preferredSurface || token.base || token.baseForm || mainText,
       reading,
@@ -56,7 +53,7 @@ export function resolveJapaneseDisplay(token = {}, options = {}) {
   return {
     mode: JAPANESE_DISPLAY_MODES.HIRAGANA,
     mainText,
-    guideText: toRomaji(katakanaToHiragana(reading)),
+    guideText: toPronunciationRomaji(katakanaToHiragana(reading), token),
     guideKind: 'romaji',
     lookupHeadword: token.preferredReading || mainText,
     reading,

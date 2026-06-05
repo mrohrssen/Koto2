@@ -34,7 +34,7 @@ describe('renderJpSentence', () => {
     assert.ok(html.includes('jp-known'));
     assert.ok(html.includes('<ruby>'));
     assert.ok(html.includes('こんにちは'));
-    assert.ok(html.includes('<rt>konnichiha</rt>'));
+    assert.ok(html.includes('<rt>konnichiwa</rt>'));
     assert.ok(!html.includes('jp-unknown'));
     assert.ok(!html.includes('data-kanji-mode'));
   });
@@ -208,6 +208,22 @@ describe('renderJpSentence — data attributes for word lookup', () => {
     assert.ok(html.includes('data-reading="こんにちは"'), 'missing data-reading');
     assert.ok(html.includes('data-pos="Interjection"'), 'missing data-pos');
     assert.ok(html.includes('data-meaning="hello"'), 'missing data-meaning');
+  });
+
+  it('shows spoken romaji guides while preserving raw reading attributes', () => {
+    const tokens = [{
+      surface: 'こんにちは',
+      base: 'こんにちは',
+      reading: 'こんにちは',
+      normalizedForm: '今日は',
+      meaning: 'hello',
+      pos: 'Interjection',
+    }];
+    const html = renderJpSentence(tokens, new Set(['こんにちは']), wordDict, {}, false);
+
+    assert.match(html, /<rt>konnichiwa<\/rt>/);
+    assert.ok(html.includes('data-reading="こんにちは"'), 'raw reading should stay intact for lookup/data');
+    assert.doesNotMatch(html, /konnichiha/);
   });
 
   it('adds data attributes to unknown words', () => {

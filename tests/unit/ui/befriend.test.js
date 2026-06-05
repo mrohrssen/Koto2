@@ -52,7 +52,13 @@ await mock.module('../../../public/js/ui/sprite-utils.js', {
   }
 });
 await mock.module('../../../public/js/ui/romaji.js', {
-  namedExports: { toRomaji: (s) => s === 'てつ' ? 'tetsu' : s }
+  namedExports: {
+    katakanaToHiragana: s => s,
+    pronunciationReading: s => s,
+    pronunciationReadingInfo: s => ({ reading: s, reasons: [] }),
+    toPronunciationRomaji: s => s === 'てつ' ? 'tetsu' : s,
+    toRomaji: (s) => s === 'てつ' ? 'tetsu' : s,
+  }
 });
 await mock.module('../../../public/js/ui/ui-components.js', {
   namedExports: {

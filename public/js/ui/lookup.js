@@ -391,7 +391,12 @@ function populatePopup(result, fallbackText) {
   dom.lookupPopupWord.innerHTML = buildHeadwordRuby(
     result.spelling || fallbackText,
     result.reading || '',
-    false
+    false,
+    {
+      pos: result.partOfSpeech?.[0] || '',
+      pos0: result.partOfSpeech?.[0] || '',
+      normalizedForm: result.normalizedForm || '',
+    }
   );
   dom.lookupPopupPos.textContent = result.partOfSpeech?.join(', ') || '';
 
