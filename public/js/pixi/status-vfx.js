@@ -512,3 +512,27 @@ export function clearStatusVfxForScene(ctx, side, uid, effectType) {
   delete map[effectType];
   if (Object.keys(map).length === 0) ctx.vfxByUid.delete(uid);
 }
+
+/**
+ * Remove every ongoing VFX entry for one scene-tracked creature.
+ * Use when the creature itself is leaving the battle surface, e.g. KO/removal.
+ *
+ * @param {{ scene: import('../scenes/scene.js').Scene, vfxByUid: Map<string, Record<string, OngoingEntry>> }} ctx
+ * @param {'player'|'enemy'} side - retained for parity; currently unused
+ * @param {string} uid
+ */
+// eslint-disable-next-line no-unused-vars
+export function clearAllStatusVfxForScene(ctx, side, uid) {
+  if (!uid) throw new Error('clearAllStatusVfxForScene: uid is required');
+  if (ctx.scene.disposed) return;
+
+  const map = ctx.vfxByUid.get(uid);
+  if (!map) return;
+
+  const sprite = ctx.scene.getSprite(uid);
+  for (const [effectType, entry] of Object.entries(map)) {
+    if (!entry) continue;
+    _teardownEntry(sprite, effectType, entry);
+  }
+  ctx.vfxByUid.delete(uid);
+}

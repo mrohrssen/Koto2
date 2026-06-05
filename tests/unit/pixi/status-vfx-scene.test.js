@@ -92,6 +92,7 @@ const {
   createStatusVfxContext,
   playStatusAppliedForScene,
   clearStatusVfxForScene,
+  clearAllStatusVfxForScene,
 } = await import('../../../public/js/pixi/status-vfx.js');
 
 
@@ -182,6 +183,28 @@ describe('clearStatusVfxForScene uid contract', () => {
     const ctx = createStatusVfxContext(scene);
     // Should not throw for a missing entry — invariant is uid presence, not tracked state.
     clearStatusVfxForScene(ctx, 'player', 'never-registered', 'sleep');
+  });
+});
+
+describe('clearAllStatusVfxForScene behavioral', () => {
+  it('tears down every ongoing status entry for a uid', async () => {
+    assert.equal(typeof clearAllStatusVfxForScene, 'function');
+
+    const sprite = makeSprite();
+    const scene = makeScene({ sprite });
+    const ctx = createStatusVfxContext(scene);
+
+    await playStatusAppliedForScene(ctx, 'enemy', 'enemy-1', 'taunt');
+    await playStatusAppliedForScene(ctx, 'enemy', 'enemy-1', 'shield');
+    await playStatusAppliedForScene(ctx, 'enemy', 'enemy-2', 'taunt');
+
+    assert.ok(ctx.vfxByUid.get('enemy-1')?.taunt);
+    assert.ok(ctx.vfxByUid.get('enemy-1')?.shield);
+
+    clearAllStatusVfxForScene(ctx, 'enemy', 'enemy-1');
+
+    assert.equal(ctx.vfxByUid.has('enemy-1'), false);
+    assert.ok(ctx.vfxByUid.get('enemy-2')?.taunt, 'other creatures keep their VFX');
   });
 });
 
