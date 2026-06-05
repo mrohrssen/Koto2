@@ -299,6 +299,7 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
     xpRng,
     clone = true,
     awardKillXp = null,
+    deferKillXp = false,
   } = options;
   const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
   const turnRng = getTurnRng({ rng, seed });
@@ -338,6 +339,7 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
         playbackStart,
         rng: turnRng,
         xpRng: turnXpRng,
+        deferKillXp,
       })
     : resolveNoopActorAction({
         actorSide: 'ally',

@@ -67,6 +67,8 @@ describe('Kanji Kombat optimistic answers', () => {
 
     assert.equal(result.status, 'accepted');
     assert.equal(typeof result.stateVersion, 'number');
+    assert.equal(result.xpEvents.length, 1);
+    assert.equal(result.actionSegments[0].xpEvents.length, 0);
     assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
   });
 });

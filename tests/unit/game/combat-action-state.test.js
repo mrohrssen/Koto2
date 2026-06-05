@@ -159,6 +159,8 @@ describe('combat action state', () => {
 
     assert.equal(result.status, 'accepted');
     assert.equal(result.stateVersion, stateVersion + 1);
+    assert.equal(result.xpEvents.length, 1);
+    assert.equal(result.actionSegments[0].xpEvents.length, 0);
     assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
   });
 
@@ -194,8 +196,8 @@ describe('combat action state', () => {
     }
     for (const [index, enemy] of [firstEnemy, secondEnemy].entries()) {
       enemy.moves = [strike];
-      enemy.hp = index === 0 ? 1 : 100;
-      enemy.maxHp = 100;
+      enemy.hp = index === 0 ? 1 : 500;
+      enemy.maxHp = index === 0 ? 100 : 500;
       enemy.mp = enemy.maxMp = 100;
       enemy.level = 5;
       enemy.dex = 1;
@@ -221,7 +223,8 @@ describe('combat action state', () => {
     const result = service.verifyAndCommitCreatureCombatCycle(predicted.envelope);
 
     assert.equal(result.status, 'accepted');
-    assert.ok(result.xpEvents.length > 0);
+    assert.equal(result.xpEvents.length, 1);
+    assert.equal((result.actionSegments || []).reduce((sum, segment) => sum + segment.xpEvents.length, 0), 0);
     assert.deepEqual(
       result.playerAttacks.map(attack => attack.damage),
       predicted.localTranscript.playerAttacks.map(attack => attack.damage),

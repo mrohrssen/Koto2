@@ -245,7 +245,7 @@ function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEn
   return { enemyId: target.id, enemyIndex: enemyIdx, enemyName: target.nameEn, ...xpEvent };
 }
 
-function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null, rng = Math.random, awardKillXp = null, runPartySkills = [], xpRng = rng) {
+function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null, rng = Math.random, awardKillXp = null, runPartySkills = [], xpRng = rng, deferKillXp = false) {
   const attacks = [];
   const xpEvents = [];
   const stab = move.element !== 'neutral' && move.element === creature.element;
@@ -304,7 +304,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
           statChangesApplied
         }));
 
-        if (targetDefeated) {
+        if (targetDefeated && !deferKillXp) {
           const enemyIdx = enemies.indexOf(target);
           const xpEvent = maybeAwardKillXp({
             creatureParty,
@@ -1066,6 +1066,7 @@ export function resolveSyntheticActorAction({
   playbackStart = 0,
   rng = Math.random,
   xpRng = rng,
+  deferKillXp = false,
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
   const actorList = isAlly ? allies : enemies;
@@ -1110,6 +1111,7 @@ export function resolveSyntheticActorAction({
     awardKillXp,
     isAlly ? (runPartySkills || []) : [],
     xpRng,
+    deferKillXp,
   );
 
   for (const atk of result.attacks) {

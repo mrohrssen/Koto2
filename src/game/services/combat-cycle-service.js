@@ -776,7 +776,11 @@ export class CombatCycleService {
     const actionSegments = [];
     let playbackStart = 0;
 
-    const firstResult = this._resolveCurrentPveCursor(submittedChoice, playbackStart, { rng, xpRng });
+    const firstResult = this._resolveCurrentPveCursor(submittedChoice, playbackStart, {
+      rng,
+      xpRng,
+      deferXpAwards: options.deferXpAwards === true,
+    });
     actionSegments.push(...firstResult.actionSegments);
     playbackStart = firstResult.playbackNext || actionSegments.length;
 
@@ -786,7 +790,11 @@ export class CombatCycleService {
       !checkAllDefeated(this.gm.combat.enemies) &&
       !checkAllDefeated(this.gm.combat.allies)
     ) {
-      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, { rng, xpRng });
+      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, {
+        rng,
+        xpRng,
+        deferXpAwards: options.deferXpAwards === true,
+      });
       actionSegments.push(...enemyResult.actionSegments);
       playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
     }
