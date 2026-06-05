@@ -21,9 +21,11 @@ import { hydrateCards } from '../bootstrap/word-knowledge.js';
 import {
   applyPartySkillChoice,
   canonicalPartySkillTreeId,
+  getPostCombatRecoveryMultiplier,
   normalizePartySkills,
   rollSkillMasterOffers,
-  getPartySkillOfferDisplay
+  getPartySkillOfferDisplay,
+  syncPartySkillHpBonuses
 } from '../party-skills.js';
 import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
@@ -159,6 +161,8 @@ export class ExplorationService {
   _healAllLivingCreaturesForRoomEntry() {
     const party = this.gm.run?.creatureParty;
     if (!party) return;
+    syncPartySkillHpBonuses(party, this.gm.run?.partySkills || []);
+    const recoveryMultiplier = getPostCombatRecoveryMultiplier(this.gm.run?.partySkills || []);
 
     const active = Array.isArray(party.active) ? party.active : [];
     const reserves = Array.isArray(party.reserves) ? party.reserves : [];
@@ -168,7 +172,7 @@ export class ExplorationService {
       if (!creature || typeof creature.hp !== 'number' || creature.hp <= 0) continue; // never revive here
       if (typeof creature.maxHp !== 'number') continue;
 
-      const healAmount = Math.floor(creature.maxHp * ROOM_HEAL_PERCENT);
+      const healAmount = Math.floor(creature.maxHp * ROOM_HEAL_PERCENT * recoveryMultiplier);
       if (healAmount <= 0) continue;
       applyHeal(creature, healAmount);
     }
@@ -883,6 +887,7 @@ export class ExplorationService {
       }
       if (!this.gm.run) throw new Error('No active run');
       this.gm.run.partySkills = applyPartySkillChoice(this.gm.run.partySkills || [], canonicalSkillId);
+      syncPartySkillHpBonuses(this.gm.run.creatureParty, this.gm.run.partySkills);
       pick.chosenId = canonicalSkillId;
       // Tutorial step 0 → 1: advance after first skill pick
       if (shouldOverrideSkillOffers(this.gm.meta)) {
@@ -924,6 +929,7 @@ export class ExplorationService {
 
     if (!this.gm.run) throw new Error('No active run');
     this.gm.run.partySkills = applyPartySkillChoice(this.gm.run.partySkills || [], canonicalSkillId);
+    syncPartySkillHpBonuses(this.gm.run.creatureParty, this.gm.run.partySkills);
 
     room.skillMaster.chosenId = canonicalSkillId;
     room.skillMaster.completed = true;

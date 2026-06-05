@@ -84,6 +84,17 @@ describe('Skill Master service', () => {
     assert.strictEqual(room.interacted, true);
   });
 
+  it('room-entry recovery doubles with HP Master level 2', () => {
+    const creature = { id: 'hi', hp: 50, maxHp: 100, partySkillBaseMaxHp: 80, partySkillHpMultiplier: 1.25 };
+    const { svc } = makeGmWithSkillMasterRoom({
+      partySkills: [{ id: 'hpMaster', level: 2 }]
+    });
+    svc.gm.run.creatureParty = { active: [creature], reserves: [] };
+
+    svc._healAllLivingCreaturesForRoomEntry();
+    assert.equal(creature.hp, 60);
+  });
+
   it('getSkillMasterOffers derives stored legacy offer levels from owned trees', () => {
     const { gm, room, svc } = makeGmWithSkillMasterRoom({
       partySkills: [{ id: 'buffMaster', level: 1 }]

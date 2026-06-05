@@ -122,6 +122,13 @@ function treeIdForEntry(entry) {
   return OLD_PARTY_SKILL_ID_TO_TREE[rawId] || null;
 }
 
+function allPartyCreatures(party) {
+  return [
+    ...(party?.active || []),
+    ...(party?.reserves || [])
+  ].filter(Boolean);
+}
+
 export function canonicalPartySkillTreeId(entry) {
   return treeIdForEntry(entry);
 }
@@ -206,6 +213,36 @@ export function applyPartySkillChoice(runPartySkills, id) {
 export function getHpMasterMaxHpMultiplier(runPartySkills) {
   const level = getPartySkillLevel(runPartySkills, 'hpMaster');
   return 1 + (level >= 1 ? 0.25 : 0) + (level >= 5 ? 1 : 0);
+}
+
+export function syncPartySkillHpBonuses(party, runPartySkills) {
+  const nextMult = getHpMasterMaxHpMultiplier(runPartySkills);
+  for (const creature of allPartyCreatures(party)) {
+    if (!creature || typeof creature.maxHp !== 'number') continue;
+
+    const prevMult = Number(creature.partySkillHpMultiplier) || 1;
+    const savedBase = Number(creature.partySkillBaseMaxHp) || 0;
+    const expectedCurrent = savedBase > 0 ? Math.floor(savedBase * prevMult) : 0;
+    const currentMaxHp = Math.max(1, Math.floor(creature.maxHp));
+    const baseMaxHp = expectedCurrent === currentMaxHp ? savedBase : currentMaxHp;
+    const hpRatio = currentMaxHp > 0 ? Math.max(0, Math.min(1, (Number(creature.hp) || 0) / currentMaxHp)) : 1;
+    const nextMaxHp = Math.max(1, Math.floor(baseMaxHp * nextMult));
+
+    creature.maxHp = nextMaxHp;
+    if ((Number(creature.hp) || 0) <= 0) {
+      creature.hp = 0;
+    } else {
+      creature.hp = Math.max(1, Math.min(nextMaxHp, Math.round(nextMaxHp * hpRatio)));
+    }
+
+    if (nextMult === 1) {
+      delete creature.partySkillBaseMaxHp;
+      delete creature.partySkillHpMultiplier;
+    } else {
+      creature.partySkillBaseMaxHp = baseMaxHp;
+      creature.partySkillHpMultiplier = nextMult;
+    }
+  }
 }
 
 export function getPostCombatRecoveryMultiplier(runPartySkills) {

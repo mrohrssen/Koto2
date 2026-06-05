@@ -140,3 +140,38 @@ describe('party skill trees', () => {
     assert.equal(getXpMultiplier([{ id: 'expMaster', level: 4 }]), 2);
   });
 });
+
+describe('HP Master stat sync', () => {
+  it('syncPartySkillHpBonuses applies max HP bonuses idempotently', async () => {
+    const { syncPartySkillHpBonuses } = await import('../../../src/game/party-skills.js');
+    const party = {
+      active: [{ id: 'a', hp: 50, maxHp: 100 }],
+      reserves: [{ id: 'r', hp: 20, maxHp: 80 }]
+    };
+
+    syncPartySkillHpBonuses(party, [{ id: 'hpMaster', level: 1 }]);
+    syncPartySkillHpBonuses(party, [{ id: 'hpMaster', level: 1 }]);
+
+    assert.equal(party.active[0].maxHp, 125);
+    assert.equal(party.active[0].hp, 63);
+    assert.equal(party.reserves[0].maxHp, 100);
+    assert.equal(party.reserves[0].hp, 25);
+
+    syncPartySkillHpBonuses(party, [{ id: 'hpMaster', level: 5 }]);
+    assert.equal(party.active[0].maxHp, 225);
+    assert.equal(party.reserves[0].maxHp, 180);
+  });
+
+  it('syncPartySkillHpBonuses respects later base maxHp changes', async () => {
+    const { syncPartySkillHpBonuses } = await import('../../../src/game/party-skills.js');
+    const party = { active: [{ id: 'a', hp: 50, maxHp: 100 }], reserves: [] };
+
+    syncPartySkillHpBonuses(party, [{ id: 'hpMaster', level: 1 }]);
+    party.active[0].maxHp = 140;
+    party.active[0].hp = 70;
+
+    syncPartySkillHpBonuses(party, [{ id: 'hpMaster', level: 1 }]);
+    assert.equal(party.active[0].maxHp, 175);
+    assert.equal(party.active[0].hp, 88);
+  });
+});
