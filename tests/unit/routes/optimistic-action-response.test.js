@@ -356,7 +356,7 @@ describe('optimistic action route response helpers', () => {
       actionType: 'test.mutate',
       perform: async () => {
         req.gameManager.run.currentRoom = 2;
-        req.gameManager.run.partySkills.push({ id: 'momentum' });
+        req.gameManager.run.partySkills.push({ id: 'buffMaster', level: 1 });
         req.gameManager.meta.itemsDiscovered.push('sword');
         req.gameManager.combat.actionCount = 1;
         return { ok: true };

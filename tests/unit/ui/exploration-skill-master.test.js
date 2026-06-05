@@ -177,7 +177,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       },
       apiSkillMasterOffers: async () => ({
         offered: [
-          { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+          { id: 'arcStrike', level: 1, name: 'Arc Strike', title: 'Arc Strike - Lvl. 1', desc: 'Your attacks arc to another enemy for 30% damage.' },
           { id: 'guard', name: 'Guard', desc: 'Defend' },
           { id: 'haste', name: 'Haste', desc: 'Speed up' },
         ],
@@ -277,7 +277,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       },
       apiSkillMasterOffers: async () => ({
         offered: [
-          { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+          { id: 'arcStrike', level: 1, name: 'Arc Strike', title: 'Arc Strike - Lvl. 1', desc: 'Your attacks arc to another enemy for 30% damage.' },
           { id: 'guard', name: 'Guard', desc: 'Defend' },
           { id: 'haste', name: 'Haste', desc: 'Speed up' },
         ],
@@ -423,7 +423,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       apiSkillMasterOffers: async () => ({
         skillSelectPrompt: prompt,
         offered: [
-          { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+          { id: 'arcStrike', level: 1, name: 'Arc Strike', title: 'Arc Strike - Lvl. 1', desc: 'Your attacks arc to another enemy for 30% damage.' },
           { id: 'guard', name: 'Guard', desc: 'Defend' },
           { id: 'haste', name: 'Haste', desc: 'Speed up' },
         ],

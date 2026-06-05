@@ -145,7 +145,7 @@ describe('MatchManager', () => {
           active: [{ id: 'hikaribon', hp: 10 }],
           reserves: [],
         },
-        partySkills: ['momentum'],
+        partySkills: [{ id: 'buffMaster', level: 1 }],
       };
 
       assert.equal(mgr.selectTeam(code, 'user1', team), true);

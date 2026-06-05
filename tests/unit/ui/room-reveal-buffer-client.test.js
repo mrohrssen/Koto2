@@ -21,7 +21,7 @@ function sampleState() {
       currentRoom: 0,
       roomActionSeq: 4,
       totalRooms: 3,
-      initialSkillPick: { chosenId: 'momentum' },
+      initialSkillPick: { chosenId: 'buffMaster' },
       creatureParty: { active: [{ id: 'hi' }] },
       revealedRooms: [
         { index: 0, room: { id: 'room-0', type: ROOM_TYPES.encounter, interacted: true } },

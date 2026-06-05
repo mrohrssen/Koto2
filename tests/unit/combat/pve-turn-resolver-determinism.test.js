@@ -180,7 +180,7 @@ function makeCursorGameManager() {
       active: true,
       player: { credits: 0 },
       creatureParty: { active: allies, reserves: [], pendingCaptures: [] },
-      partySkills: ['arcStrike'],
+      partySkills: [{ id: 'arcStrike', level: 1 }],
       itemBuffs: null,
       crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
     },
@@ -507,7 +507,7 @@ describe('shared PvE turn resolver', () => {
     const counterResult = resolvePveTurn({
       allies: [creature({ id: 'hi', hp: 100, maxHp: 100, attack: 40 })],
       enemies: [creature({ id: 'kage', hp: 100, maxHp: 100, attack: 10, moves: [strike] })],
-      runPartySkills: ['retaliationStrike'],
+      runPartySkills: [{ id: 'counterMaster', level: 1 }],
       creatureParty: { active: [creature({ id: 'hi', hp: 100, maxHp: 100, attack: 40 })], reserves: [] },
       combat: {},
     }, {

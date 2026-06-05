@@ -131,7 +131,7 @@ describe('resolveRound', () => {
 
   it('handles party skills when provided', () => {
     const combatA = { chainHitsThisTurn: 0 };
-    const partySkillsA = ['arcStrike'];
+    const partySkillsA = [{ id: 'arcStrike', level: 1 }];
 
     // Add a second enemy so arc strike has a chain target
     sideB.push(makeCreature({ id: 'b2', level: 5, hp: 100, maxHp: 100, mp: 20, maxMp: 20 }));
@@ -162,7 +162,7 @@ describe('resolveRound', () => {
     movesB = [{ creatureIndex: 1, moveId: 'slash', targetIndex: 0 }];
 
     const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsA: ['arcStrike'],
+      partySkillsA: [{ id: 'arcStrike', level: 1 }],
       combatA: { chainHitsThisTurn: 0 }
     });
 

@@ -270,12 +270,12 @@ describe('Creature Combat - Single Actor Action', () => {
         allies,
         enemies,
         choices: [{ creatureIndex: 0, moveId: 'enemy-hit', targetIndex: 0 }],
-        runPartySkills: ['retaliationStrike'],
+        runPartySkills: [{ id: 'counterMaster', level: 1 }],
         combat: {}
       });
 
       assert.equal(result.actionSegments.length, 1);
-      assert.ok(result.actionSegments[0].counterAttacks.length > 0, 'retaliationStrike should counter');
+      assert.ok(result.actionSegments[0].counterAttacks.length > 0, 'Counter Master should counter');
       assert.equal(allies[0].activeEffects[0].remainingTurns, 2, 'countering ally poison should not tick');
     } finally {
       Math.random = origRandom;
@@ -1123,7 +1123,7 @@ describe('Dead creature cannot attack', () => {
       null,
       null,
       null,
-      { runPartySkills: ['arcStrike'], combat: {} }
+      { runPartySkills: [{ id: 'arcStrike', level: 1 }], combat: {} }
     );
 
     const chainProc = result.playerAttacks[0]?.partySkillProcs?.find(p => p.skillId === 'arcStrike');

@@ -10,7 +10,7 @@ function makeReadyGameManager() {
   gm.createPlayer('RevealRunner');
   gm.startRun(null, null, ['hi']);
   gm.selectArea('hajimari-no-hiroba');
-  gm.run.initialSkillPick.chosenId = 'momentum';
+  gm.run.initialSkillPick.chosenId = 'buffMaster';
   return gm;
 }
 

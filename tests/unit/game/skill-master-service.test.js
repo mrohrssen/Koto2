@@ -115,7 +115,7 @@ describe('Skill Master service', () => {
     assert.deepEqual(gm.run.partySkills, [{ id: 'buffMaster', level: 2 }]);
   });
 
-  it('tutorial Skill Master legacy offers display as canonical tree offers', () => {
+  it('tutorial Skill Master offers display as canonical tree offers', () => {
     const { svc } = makeGmWithInitialSkillPick({ meta: { tutorialStep: 0 } });
     const { offered } = svc.getSkillMasterOffers();
     assert.deepEqual(offered.map(offer => offer.id), ['counterMaster', 'arcStrike', 'buffMaster']);

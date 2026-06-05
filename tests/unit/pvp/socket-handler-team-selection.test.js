@@ -12,7 +12,7 @@ function savedTeam(id) {
       active: [{ id, hp: 10, maxHp: 10, level: 3 }],
       reserves: [],
     },
-    partySkills: ['momentum'],
+    partySkills: [{ id: 'buffMaster', level: 1 }],
     itemBuffs: {},
   };
 }

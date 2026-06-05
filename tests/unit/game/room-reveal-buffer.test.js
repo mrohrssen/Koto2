@@ -15,7 +15,7 @@ function makeRunWithRooms() {
   const run = createNewRun(player);
   run.currentArea = { id: 'hajimari-no-hiroba', nameEn: 'Starting Meadow' };
   run.areaSelectionRequired = false;
-  run.initialSkillPick.chosenId = 'momentum';
+  run.initialSkillPick.chosenId = 'buffMaster';
   run.creatureParty.active = [{ id: 'hi', hp: 10, maxHp: 10, level: 1, moves: [] }];
   run.currentRoom = 1;
   run.roomActionSeq = 7;
@@ -86,7 +86,7 @@ describe('server-prepared room reveal buffer', () => {
         areaSelectionRequired: false,
         currentArea: { id: 'hajimari-no-hiroba' },
         currentRoom: 2,
-        initialSkillPick: { chosenId: 'momentum' },
+        initialSkillPick: { chosenId: 'buffMaster' },
         creatureParty: { active: [{ id: 'hi' }] },
         revealedRooms: [
           { index: 2, room: { type: ROOM_TYPES.friendlyNpc, interacted: false } },

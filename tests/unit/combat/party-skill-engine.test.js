@@ -226,7 +226,7 @@ test('Arc Strike chains to another enemy for 30% of original damage', () => {
 
   withStubbedRandom(0.99, () => {
     applyAfterPlayerAttacks({
-      attacks, allies, enemies, runPartySkills: ['arcStrike'], combat
+      attacks, allies, enemies, runPartySkills: [{ id: 'arcStrike', level: 1 }], combat
     });
   });
 
@@ -248,7 +248,7 @@ test('Arc Strike does not chain when only one enemy is alive', () => {
 
   withStubbedRandom(0.99, () => {
     applyAfterPlayerAttacks({
-      attacks, allies, enemies, runPartySkills: ['arcStrike'], combat
+      attacks, allies, enemies, runPartySkills: [{ id: 'arcStrike', level: 1 }], combat
     });
   });
 
@@ -267,7 +267,7 @@ test('Arc Strike chain uses attacker element', () => {
 
   withStubbedRandom(0.99, () => {
     applyAfterPlayerAttacks({
-      attacks, allies, enemies, runPartySkills: ['arcStrike'], combat
+      attacks, allies, enemies, runPartySkills: [{ id: 'arcStrike', level: 1 }], combat
     });
   });
 
@@ -290,7 +290,7 @@ test('Arc Strike chainHit proc includes sourceIndex of original target', () => {
       attacks: [record],
       allies,
       enemies,
-      runPartySkills: ['arcStrike'],
+      runPartySkills: [{ id: 'arcStrike', level: 1 }],
       combat
     });
   });
@@ -451,7 +451,7 @@ test('arc strike chain kill sets enemy HP to 0 (verifiable for attack pruning)',
 
   withStubbedRandom(0.99, () => {
     applyAfterPlayerAttacks({
-      attacks, allies, enemies, runPartySkills: ['arcStrike'], combat
+      attacks, allies, enemies, runPartySkills: [{ id: 'arcStrike', level: 1 }], combat
     });
   });
 

@@ -831,7 +831,11 @@ export class ExplorationService {
     if (isInitialPick) {
       // Tutorial step 0: offer 3 hardcoded skills (counter first)
       if (shouldOverrideSkillOffers(this.gm.meta)) {
-        const offered = ['retaliationStrike', 'arcStrike', 'sharedVigor']
+        const offered = [
+          { id: 'counterMaster', level: 1 },
+          { id: 'arcStrike', level: 1 },
+          { id: 'buffMaster', level: 1 }
+        ]
           .map(offer => getPartySkillOfferDisplay(offer, this.gm.run?.partySkills || []))
           .filter(Boolean);
         pick.offered = offered.map(({ id, level }) => ({ id, level }));
