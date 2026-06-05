@@ -562,6 +562,10 @@ async function runOptimisticKanjiKombatAnswer({
   if (recovery && recovery.recovered === false) {
     throw new Error('Combat sync failed');
   }
+  const pendingMoveLearn = showXpEvents(result?.xpEvents);
+  if (pendingMoveLearn?.length) {
+    await processPendingMoveLearn(pendingMoveLearn);
+  }
   if (result?.kanjiStreakReward || waitForStreakRewardBanner) {
     void vfx.showKanjiKombatAnswerBanner(result?.kanjiAnswerCorrect, result?.kanjiStreakReward || null);
   }

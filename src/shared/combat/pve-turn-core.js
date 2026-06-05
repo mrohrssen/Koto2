@@ -988,6 +988,7 @@ export function resolveSyntheticActorAction({
   metaMults = null,
   playbackStart = 0,
   rng = Math.random,
+  awardKillXp = null,
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
   const actorList = isAlly ? allies : enemies;
@@ -1029,6 +1030,7 @@ export function resolveSyntheticActorAction({
     isAlly ? metaMults : null,
     isAlly ? null : itemBuffs,
     rng,
+    awardKillXp,
   );
 
   for (const atk of result.attacks) {

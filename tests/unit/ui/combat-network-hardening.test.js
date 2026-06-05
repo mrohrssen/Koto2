@@ -306,6 +306,13 @@ describe('combat network hardening', () => {
     assert.match(combatVfxSource, /Wrong!/);
   });
 
+  it('surfaces authoritative Kanji Kombat XP events after optimistic verification', () => {
+    assert.match(
+      combatLoopSource,
+      /runOptimisticKanjiKombatAnswer[\s\S]*?const pendingMoveLearn = showXpEvents\(result\?\.xpEvents\);[\s\S]*?processPendingMoveLearn\(pendingMoveLearn\)/,
+    );
+  });
+
   it('keeps Kanji Kombat answer submissions wired to the optimistic playback path', () => {
     assert.match(
       combatLoopSource,
