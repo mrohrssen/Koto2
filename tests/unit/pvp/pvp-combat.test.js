@@ -457,12 +457,17 @@ describe('PvP action cursor resolution', () => {
       combatB: {}
     }));
 
-    const sabotage = result.attacks.find(a => a.type === 'debuffMasterSelfSabotage');
+    const sabotage = result.effectEvents.find(a => a.type === 'debuffMasterSelfSabotage');
     const counter = result.attacks.find(a => a.type === 'counter');
     assert.ok(sabotage, 'cursor action should include opposing self-sabotage');
     assert.ok(counter, 'cursor action should include opposing counter');
     assert.equal(sabotage.side, 'sideA');
     assert.equal(sabotage.targetIndex, 1);
+    assert.equal(
+      result.actionSegments[0].counterAttacks.every(a => a.type === 'counter'),
+      true,
+      'effect playback events must not be stored with counter attacks'
+    );
     assert.equal(sideA[1].statStages.atk, -1);
     assert.equal(sideA[0].hp, 0);
     assert.ok(sabotage.playbackIndex < counter.playbackIndex);
@@ -501,9 +506,11 @@ describe('PvP action cursor resolution', () => {
       partySkillsB: [{ id: 'debuffMaster', level: 5 }]
     }));
 
-    const sabotageEvents = result.attacks.filter(a => a.type === 'debuffMasterSelfSabotage');
+    const sabotageEvents = result.effectEvents.filter(a => a.type === 'debuffMasterSelfSabotage');
     assert.equal(result.actionSegments[0].attacks.length, 2);
     assert.equal(sabotageEvents.length, 1);
+    assert.equal(result.actionSegments[0].effectEvents.length, 1);
+    assert.equal(result.actionSegments[0].counterAttacks.length, 0);
     assert.equal(sideA[1].statStages.atk, -1);
   });
 
@@ -541,15 +548,21 @@ describe('PvP action cursor resolution', () => {
       combatB: {}
     }));
 
-    const sabotage = result.attacks.find(a => a.type === 'debuffMasterSelfSabotage');
+    const sabotage = result.effectEvents.find(a => a.type === 'debuffMasterSelfSabotage');
     const counter = result.attacks.find(a => a.type === 'counter');
     assert.equal(result.actionSegments[0].attacks.length, 1);
     assert.ok(sabotage, 'self-sabotage should be emitted after the first target record');
     assert.ok(counter, 'counter should be emitted after self-sabotage');
+    assert.equal(result.actionSegments[0].effectEvents.length, 1);
+    assert.equal(
+      result.actionSegments[0].counterAttacks.every(a => a.type === 'counter'),
+      true,
+      'counterAttacks should only contain attack-like counter records'
+    );
     assert.equal(sideA[0].hp, 0);
     assert.deepEqual(
       result.attacks.map(a => a.type || a.category),
-      ['damage', 'debuffMasterSelfSabotage', 'counter']
+      ['damage', 'counter']
     );
     assert.ok(sabotage.playbackIndex < counter.playbackIndex);
   });

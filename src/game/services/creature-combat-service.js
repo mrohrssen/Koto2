@@ -1124,8 +1124,12 @@ export function resolveSingleActorAction({
           if (typeof response.playbackIndex !== 'number') {
             response.playbackIndex = playbackIndex++;
           }
-          segment.counterAttacks.push(response);
-          if (response.type === 'counter') inlineCounters.push(response);
+          if (response.type === 'counter') {
+            segment.counterAttacks.push(response);
+            inlineCounters.push(response);
+          } else {
+            segment.effectEvents.push(response);
+          }
         }
       }
 
