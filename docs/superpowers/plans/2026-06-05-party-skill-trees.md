@@ -12,29 +12,52 @@
 
 ## Current Execution Handoff
 
-Updated: 2026-06-05.
+Updated: 2026-06-05 after an interrupted Codex session.
 
 Worktree: `/Users/michiarohrssen/Documents/Claude/koto-dev/.worktrees/party-skill-trees`
 
-Completed and reviewed:
+Branch: `feature/party-skill-trees`
+
+No subagents are intentionally left running. The previous Task 7 worker was shut down before this handoff was written.
+
+Completed before this handoff:
 - Task 1: Party Skill Tree Catalog And Helpers
 - Task 2: Save And PvP Team Migration
 - Task 3: Skill Master And NPC Reward Acquisition
 - Task 4: HP Master Max HP Sync And Recovery
-
-Implemented but not yet reviewed:
 - Task 5: Arc Strike Tree Combat
   - Commit: `ffaa47c5 feat: replace arc strike tree combat`
-  - Worker verification passed:
-    - `node --test tests/unit/combat/party-skill-engine.test.js`
+  - Spec review passed.
+  - Code quality review found issues. The non-Arc activation breakage was addressed by Task 6 and Task 7 commits below. Remaining review notes that still need a fresh audit:
+    - `tests/unit/combat/party-skill-engine.test.js`: the "Arc Strike Lvl 3 uses additive 50% bounce damage scaling" test still passes `{ id: 'arcStrike', level: 4 }`.
+    - `src/game/combat/party-skill-engine.js`: Arc Strike can still emit zero-damage chain-hit procs.
+    - `src/game/combat/party-skill-engine.js`: `toActivePartySkillIdSet()` still hardcodes tree IDs instead of importing `PARTY_SKILL_TREE_IDS`.
+- Task 6: Counter Master Combat
+  - Commits:
+    - `a3b1f394 feat: add counter master combat`
+    - `6623b23c test: strengthen counter master level 1 coverage`
+    - `9b860ec5 test: harden counter master thresholds`
+  - Spec review passed after `6623b23c`.
+  - Code quality review requested stronger boundary tests; `9b860ec5` implements them.
+  - Focused verification after `9b860ec5` passed:
+    - `node --test tests/unit/game/party-skill-engine-counter.test.js`
+- Task 7: Buff Master And Debuff Master Combat Hooks
+  - Commit: `7cb8cd07 feat: add buff and debuff master combat`
+  - This was committed from the interrupted session so the worktree has a clean checkpoint.
+  - It has NOT had spec compliance review or code quality review yet.
+  - Focused verification before this handoff passed:
+    - `node --test tests/unit/combat/party-skill-engine.test.js tests/unit/pvp/pvp-combat.test.js`
     - `node --check src/game/combat/party-skill-engine.js`
-    - `node --check tests/unit/combat/party-skill-engine.test.js`
+    - `node --check src/game/services/combat-cycle-service.js`
+    - `node --check src/game/services/creature-combat-service.js`
+    - `node --check src/pvp/pvp-combat.js`
 
 Next agent should start here:
-1. Run Task 5 spec compliance review for `ffaa47c5`.
-2. Run Task 5 code quality review for `ffaa47c5`.
-3. If Task 5 review finds issues, fix them before Task 6.
-4. If Task 5 review passes, continue at Task 6: Counter Master Combat.
+1. Review Task 7 spec compliance for range `9b860ec5..7cb8cd07`.
+2. Review Task 7 code quality for range `9b860ec5..7cb8cd07`.
+3. Revisit the remaining Task 5 code-quality notes above and either fix them or explicitly decide they are acceptable before continuing.
+4. If reviews pass and any fixes are committed, continue at Task 8: HP Master Healing And Exp Master XP.
+5. Do not assume the interrupted session's implementation is trustworthy without reading the diff.
 
 Do not stage unrelated dirty generated files currently present in the worktree:
 - `creature-memory-test-user-separate.json`
