@@ -561,7 +561,7 @@ describe('renderBefriendQuiz tutorial step 1 pause/resume wiring', () => {
       withAnimationActive: async (fn) => fn(),
       getGameState: () => state,
       apiGetBefriendConversation: async () => ({
-        error: 'AI conversations are unavailable. Enable AI Conversations in Settings, or try again later if server AI is not configured.',
+        error: 'Personalized Dialogue is unavailable. Enable Personalized Dialogue in Settings, or try again later if server AI is not configured.',
         mode: 'name_quiz',
         fallback: true
       }),

@@ -38,6 +38,7 @@ export async function openSettings() {
   let currentDisplayMode = currentGameState.meta?.japaneseDisplayMode === 'natural' ? 'natural' : 'hiragana';
   const kanjiModeEnabled = currentDisplayMode === 'natural';
   const ttsVolumeSetting = tts.getVolume();
+  const showPersonalizedDialogue = Object.hasOwn(keyInfo, 'aiConversationsEnabled');
   const showDebugSuperAttack = Object.hasOwn(serverSettings, 'debugSuperAttack');
   const showDebugForceBefriend = Object.hasOwn(serverSettings, 'debugForceBefriend');
 
@@ -68,16 +69,18 @@ export async function openSettings() {
           Shows natural Japanese when available. Turn this off for Hiragana mode.
         </small>
       </label>
+      ${showPersonalizedDialogue ? `
       <label class="settings-label" style="margin-top:12px">
         <input type="checkbox" id="settings-ai-conversations"
-          ${keyInfo.aiConversationsEnabled !== false ? 'checked' : ''}
+          ${keyInfo.aiConversationsEnabled === true ? 'checked' : ''}
           ${keyInfo.aiDataSharingConsent === true ? '' : 'disabled'}>
-        AI Conversations
+        Personalized Dialogue
         <small style="color:#888;font-size:0.85em;display:block;margin-top:2px">
-          Uses server-configured AI to generate character dialogue from your known vocabulary.
+          Use known vocabulary to generate personalized dialogue with NPCs.
           ${keyInfo.aiDataSharingConsent === true ? '' : 'AI data-sharing consent is required.'}
         </small>
       </label>
+      ` : ''}
       <hr style="margin:16px 0;border:none;border-top:1px solid #e0e0e0">
 
       ${showDebugSuperAttack ? `
@@ -383,7 +386,6 @@ export async function openSettings() {
     const sfxVol = parseInt(document.getElementById('settings-sfx-volume')?.value || '80') / 100;
     const ttsVol = parseInt(document.getElementById('settings-tts-volume')?.value || '100') / 100;
     const audioMuted = document.getElementById('settings-audio-muted')?.checked;
-    const aiConversationsEnabled = document.getElementById('settings-ai-conversations')?.checked;
     const desiredDisplayMode = document.getElementById('settings-kanji-mode')?.checked ? 'natural' : 'hiragana';
 
     // Apply local-only settings immediately (never blocked by server calls)
@@ -419,7 +421,9 @@ export async function openSettings() {
     // Save learning settings to server.
     const keysToSave = {};
     if (jlptLevel) keysToSave.jlptLevel = jlptLevel;
-    keysToSave.aiConversationsEnabled = aiConversationsEnabled === true;
+    if (showPersonalizedDialogue) {
+      keysToSave.aiConversationsEnabled = document.getElementById('settings-ai-conversations')?.checked === true;
+    }
 
     if (Object.keys(keysToSave).length > 0) {
       const saved = await settingsModule.saveApiKeysToServer(keysToSave);

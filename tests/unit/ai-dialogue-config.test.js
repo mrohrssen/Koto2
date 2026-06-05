@@ -42,8 +42,8 @@ describe('AI dialogue config', () => {
     }).geminiModel, 'gemini-1.5-flash');
   });
 
-  it('defaults AI conversations enabled unless explicitly false', () => {
-    assert.equal(isAiConversationsEnabled({}), true);
+  it('defaults AI conversations disabled unless explicitly enabled', () => {
+    assert.equal(isAiConversationsEnabled({}), false);
     assert.equal(isAiConversationsEnabled({ aiConversationsEnabled: true }), true);
     assert.equal(isAiConversationsEnabled({ aiConversationsEnabled: false }), false);
   });
@@ -55,7 +55,11 @@ describe('AI dialogue config', () => {
       AI_DIALOGUE_MODEL: 'gpt-5-mini'
     });
 
-    assert.equal(canUseAiDialogue({ aiDataSharingConsent: true }, config), true);
+    assert.equal(canUseAiDialogue({
+      aiDataSharingConsent: true,
+      aiConversationsEnabled: true
+    }, config), true);
+    assert.equal(canUseAiDialogue({ aiDataSharingConsent: true }, config), false);
     assert.equal(canUseAiDialogue({ aiDataSharingConsent: false }, config), false);
     assert.equal(canUseAiDialogue({
       aiDataSharingConsent: true,

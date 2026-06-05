@@ -94,7 +94,7 @@ describe('auth/users', () => {
     assert.equal(keys.aiDataSharingConsent, true);
   });
 
-  it('migrates users without aiConversationsEnabled to enabled by default', async () => {
+  it('migrates users without aiConversationsEnabled to disabled by default', async () => {
     const encryptionKey = 'e'.repeat(64);
     const user = await createUser('legacydialogue', 'pass123', TEST_FILE);
     updateUserKeys(user.id, { aiDataSharingConsent: true }, encryptionKey, TEST_FILE);
@@ -106,7 +106,31 @@ describe('auth/users', () => {
     const migrated = findUserById(user.id, TEST_FILE);
     const keys = decryptKeys(migrated.encryptedApiKeys, encryptionKey);
     assert.equal(keys.aiDataSharingConsent, true);
-    assert.equal(keys.aiConversationsEnabled, true);
+    assert.equal(keys.aiConversationsEnabled, false);
+  });
+
+  it('disables explicit aiConversationsEnabled true for non-debug users during migration', () => {
+    const encryptionKey = 'a'.repeat(64);
+    saveUsers({
+      users: [{
+        id: 'u_dialogue_true',
+        username: 'dialoguetrue',
+        passwordHash: 'hash',
+        encryptedApiKeys: encryptKeys({
+          aiDataSharingConsent: true,
+          aiConversationsEnabled: true
+        }, encryptionKey),
+        createdAt: '2026-01-04T00:00:00.000Z'
+      }],
+      inviteCodes: []
+    }, TEST_FILE);
+
+    migrateAiConsentForExistingUsers({ filePath: TEST_FILE, encryptionKey });
+
+    const data = loadUsers(TEST_FILE);
+    const user = data.users.find(u => u.id === 'u_dialogue_true');
+    const keys = decryptKeys(user.encryptedApiKeys, encryptionKey);
+    assert.equal(keys.aiConversationsEnabled, false);
   });
 
   it('does not overwrite explicit aiConversationsEnabled false', () => {
@@ -156,7 +180,7 @@ describe('auth/users', () => {
     const explicitFalse = data.users.find(u => u.id === 'u_false');
     const explicitFalsePayload = decryptKeys(explicitFalse.encryptedApiKeys, encryptionKey);
     assert.equal(explicitFalsePayload.aiDataSharingConsent, false);
-    assert.equal(explicitFalsePayload.aiConversationsEnabled, true);
+    assert.equal(explicitFalsePayload.aiConversationsEnabled, false);
   });
 
   it('records a Kanji Kombat run wave from waves cleared fallback', () => {

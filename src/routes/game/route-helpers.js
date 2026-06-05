@@ -69,7 +69,7 @@ export function buildVocabConfig(req, getUserVocabulary, checkSentenceViolations
 /**
  * Named helper for AI befriend dialogue. Uses the shared AI Dialogue server
  * environment config and requires both data-sharing consent and the user-facing
- * AI Conversations toggle.
+ * Personalized Dialogue toggle.
  */
 export function buildBefriendDialogueVocabConfig(req, getUserVocabulary, checkSentenceViolations) {
   const userKeys = req.userKeys || {};

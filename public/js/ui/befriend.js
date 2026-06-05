@@ -319,7 +319,7 @@ function isNameQuizFallbackResult(result) {
 
 function isAiDialogueUnavailableResult(result) {
   if (isNameQuizFallbackResult(result)) return true;
-  return /AI conversations are unavailable/i.test(String(result?.error || ''));
+  return /(AI conversations|Personalized Dialogue) is unavailable/i.test(String(result?.error || ''));
 }
 
 function buildFallbackNameQuizData(baseQuizData, convoResult) {

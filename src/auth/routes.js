@@ -6,7 +6,8 @@ import { signToken, requireAuth } from './middleware.js';
 import { verifyPassword, decryptKeys, encryptKeys } from './crypto.js';
 import {
   createUser, findUserByUsername, findUserById,
-  useInviteCode, createInviteCode, loadUsers, saveUsers, updateUserKeys
+  useInviteCode, createInviteCode, loadUsers, saveUsers, updateUserKeys,
+  isPersonalizedDialogueDebugUser
 } from './users.js';
 import { dataPath, getDataDir } from '../data-dir.js';
 import { parseWordList } from '../game/bootstrap/word-list-parser.js';
@@ -129,7 +130,7 @@ export default function createAuthRoutes(options = {}) {
       }
       updateUserKeys(user.id, {
         aiDataSharingConsent: true,
-        aiConversationsEnabled: true
+        aiConversationsEnabled: false
       }, encryptionKey, usersFile);
 
       // Seed FSRS vocab deck from uploaded word list
@@ -186,10 +187,11 @@ export default function createAuthRoutes(options = {}) {
       return res.status(401).json({ error: 'User not found' });
     }
 
+    const showPersonalizedDialogueSetting = isPersonalizedDialogueDebugUser(user);
     let apiKeysInfo = {
       jlptLevel: 'N4',
       aiDataSharingConsent: false,
-      aiConversationsEnabled: false
+      ...(showPersonalizedDialogueSetting ? { aiConversationsEnabled: false } : {})
     };
     if (user.encryptedApiKeys) {
       try {
@@ -197,7 +199,9 @@ export default function createAuthRoutes(options = {}) {
         apiKeysInfo = {
           jlptLevel: keys.jlptLevel || 'N4',
           aiDataSharingConsent: keys.aiDataSharingConsent === true,
-          aiConversationsEnabled: keys.aiConversationsEnabled !== false
+          ...(showPersonalizedDialogueSetting
+            ? { aiConversationsEnabled: keys.aiConversationsEnabled === true }
+            : {})
         };
       } catch {
         // Keep defaults on decryption failure
@@ -210,21 +214,27 @@ export default function createAuthRoutes(options = {}) {
   // PUT /api/auth/api-keys
   function updateKeys(req, res) {
     const { jlptLevel, aiDataSharingConsent, aiConversationsEnabled } = req.body;
-    const keys = {};
-    if (jlptLevel !== undefined) keys.jlptLevel = jlptLevel;
-    if (aiDataSharingConsent !== undefined) keys.aiDataSharingConsent = aiDataSharingConsent === true;
-    if (aiConversationsEnabled !== undefined) keys.aiConversationsEnabled = aiConversationsEnabled === true;
 
     // Merge with existing keys (partial update)
     const user = findUserById(req.user.id, usersFile);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+    const showPersonalizedDialogueSetting = isPersonalizedDialogueDebugUser(user);
+    const keys = {};
+    if (jlptLevel !== undefined) keys.jlptLevel = jlptLevel;
+    if (aiDataSharingConsent !== undefined) keys.aiDataSharingConsent = aiDataSharingConsent === true;
+    if (aiConversationsEnabled !== undefined && showPersonalizedDialogueSetting) {
+      keys.aiConversationsEnabled = aiConversationsEnabled === true;
+    }
     let existingKeys = {};
     if (user?.encryptedApiKeys) {
       try { existingKeys = decryptKeys(user.encryptedApiKeys, encryptionKey); } catch {}
     }
     const merged = { ...existingKeys, ...keys };
+    if (!showPersonalizedDialogueSetting) {
+      merged.aiConversationsEnabled = false;
+    }
     delete merged.aiApiKey;
     delete merged.aiProvider;
     delete merged.openaiModel;

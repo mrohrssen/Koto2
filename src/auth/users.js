@@ -4,6 +4,11 @@ import { hashPassword, encryptKeys, decryptKeys } from './crypto.js';
 import { dataPath } from '../data-dir.js';
 
 const DEFAULT_FILE = dataPath('.jrpg-users.json');
+const PERSONALIZED_DIALOGUE_DEBUG_USERNAME = 'michia';
+
+export function isPersonalizedDialogueDebugUser(user) {
+  return (user?.username || '').toLowerCase() === PERSONALIZED_DIALOGUE_DEBUG_USERNAME;
+}
 
 /**
  * Load users data from file
@@ -171,8 +176,11 @@ export function migrateAiConsentForExistingUsers({
       changed = true;
     }
 
-    if (typeof keys.aiConversationsEnabled !== 'boolean') {
-      keys.aiConversationsEnabled = true;
+    const aiConversationsEnabled = isPersonalizedDialogueDebugUser(user)
+      ? keys.aiConversationsEnabled === true
+      : false;
+    if (keys.aiConversationsEnabled !== aiConversationsEnabled) {
+      keys.aiConversationsEnabled = aiConversationsEnabled;
       changed = true;
     }
 
@@ -361,11 +369,15 @@ export function getLeaderboard(period, currentUserId, filePath = DEFAULT_FILE) {
  */
 export function getUserKeys(userId) {
   const user = findUserById(userId);
-  if (!user?.encryptedApiKeys) return { userId };
+  if (!user?.encryptedApiKeys) return { userId, aiConversationsEnabled: false };
   try {
     const keys = decryptKeys(user.encryptedApiKeys, process.env.ENCRYPTION_KEY || 'a'.repeat(64));
-    return { ...keys, userId };
+    return {
+      ...keys,
+      aiConversationsEnabled: isPersonalizedDialogueDebugUser(user) && keys.aiConversationsEnabled === true,
+      userId
+    };
   } catch {
-    return { userId };
+    return { userId, aiConversationsEnabled: false };
   }
 }

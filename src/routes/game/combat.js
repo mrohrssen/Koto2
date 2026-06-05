@@ -538,7 +538,7 @@ export default function createCombatRoutes({
         }
 
         return res.status(403).json({
-          error: 'AI conversations are unavailable. Enable AI Conversations in Settings, or try again later if server AI is not configured.'
+          error: 'Personalized Dialogue is unavailable. Enable Personalized Dialogue in Settings, or try again later if server AI is not configured.'
         });
       }
 
@@ -573,7 +573,7 @@ export default function createCombatRoutes({
 
           console.warn('[BefriendConversation] AI dialogue unavailable: missing consent, toggle, vocab, or AI_DIALOGUE_* config');
           return res.status(503).json({
-            error: 'AI conversations are unavailable. Try again later.'
+            error: 'Personalized Dialogue is unavailable. Try again later.'
           });
         }
         console.log(`[CreatureDialogue] ${stale ? 'Stale' : 'No'} cached dialogue for ${target.id}, generating on-demand`);
@@ -588,7 +588,7 @@ export default function createCombatRoutes({
       if (!rounds) {
         console.error(`[BefriendConversation] Generation produced no cache for ${target.id} (AI error, vocab repair, or missing creature data)`);
         return res.status(503).json({
-          error: 'AI conversations are unavailable. Try again later.'
+          error: 'Personalized Dialogue is unavailable. Try again later.'
         });
       }
 

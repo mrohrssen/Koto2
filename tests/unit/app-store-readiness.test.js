@@ -43,13 +43,14 @@ describe('App Store readiness static checks', () => {
     assert.equal(settingsUi.includes('Enable AI Narration'), false);
   });
 
-  it('exposes AI Conversations as a user setting while keeping consent in registration', () => {
+  it('gates Personalized Dialogue as a debug-only user setting while keeping consent in registration', () => {
     const html = read('public/index.html');
     const settingsUi = read('public/js/ui/modals.js');
 
     assert.equal(html.includes('third-party AI providers'), true);
     assert.equal(settingsUi.includes('settings-ai-conversations'), true);
-    assert.equal(settingsUi.includes('AI Conversations'), true);
+    assert.equal(settingsUi.includes('Personalized Dialogue'), true);
+    assert.equal(settingsUi.includes("Object.hasOwn(keyInfo, 'aiConversationsEnabled')"), true);
     assert.equal(settingsUi.includes('settings-ai-consent'), false);
   });
 

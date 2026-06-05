@@ -143,6 +143,114 @@ describe('settings modal', () => {
     );
   });
 
+  it('hides Personalized Dialogue when the server does not expose the setting', async () => {
+    const content = { innerHTML: '' };
+    installSettingsDocument();
+
+    init({
+      takeover: {
+        open: () => {},
+        getContent: () => content,
+        close: () => {},
+      },
+      scene: { showToast: () => {} },
+      settings: {
+        loadApiKeysFromServer: async () => ({ jlptLevel: 'N5', aiDataSharingConsent: true }),
+        saveApiKeysToServer: async () => true,
+        setAiNarrationEnabled: () => {},
+        setTtsEnabled: () => {},
+        setJapanifyUIEnabled: () => {},
+      },
+      getGameState: () => ({ meta: { japaneseDisplayMode: 'hiragana' } }),
+      updateGameState: () => {},
+      updateUI: () => {},
+    });
+
+    await openSettings();
+
+    assert.doesNotMatch(content.innerHTML, /settings-ai-conversations/);
+    assert.doesNotMatch(content.innerHTML, /Personalized Dialogue/);
+  });
+
+  it('renders Personalized Dialogue copy when the server exposes the setting', async () => {
+    const content = { innerHTML: '' };
+    installSettingsDocument();
+
+    init({
+      takeover: {
+        open: () => {},
+        getContent: () => content,
+        close: () => {},
+      },
+      scene: { showToast: () => {} },
+      settings: {
+        loadApiKeysFromServer: async () => ({
+          jlptLevel: 'N5',
+          aiDataSharingConsent: true,
+          aiConversationsEnabled: false,
+        }),
+        saveApiKeysToServer: async () => true,
+        setAiNarrationEnabled: () => {},
+        setTtsEnabled: () => {},
+        setJapanifyUIEnabled: () => {},
+      },
+      getGameState: () => ({ meta: { japaneseDisplayMode: 'hiragana' } }),
+      updateGameState: () => {},
+      updateUI: () => {},
+    });
+
+    await openSettings();
+
+    assert.match(content.innerHTML, /settings-ai-conversations/);
+    assert.match(content.innerHTML, /Personalized Dialogue/);
+    assert.match(
+      content.innerHTML,
+      /Use known vocabulary to generate personalized dialogue with NPCs/
+    );
+    assert.match(
+      content.innerHTML,
+      /<input type="checkbox" id="settings-ai-conversations"\s+/
+    );
+    assert.doesNotMatch(
+      content.innerHTML,
+      /<input type="checkbox" id="settings-ai-conversations"[\s\S]*?checked/
+    );
+  });
+
+  it('does not save hidden Personalized Dialogue settings', async () => {
+    const content = { innerHTML: '' };
+    const elements = installSettingsDocument();
+    let savedKeys = null;
+
+    init({
+      takeover: {
+        open: () => {},
+        getContent: () => content,
+        close: () => {},
+      },
+      scene: { showToast: () => {} },
+      settings: {
+        loadApiKeysFromServer: async () => ({ jlptLevel: 'N5', aiDataSharingConsent: true }),
+        saveApiKeysToServer: async (keys) => {
+          savedKeys = keys;
+          return true;
+        },
+        setAiNarrationEnabled: () => {},
+        setTtsEnabled: () => {},
+        setJapanifyUIEnabled: () => {},
+      },
+      getGameState: () => ({ meta: { japaneseDisplayMode: 'hiragana' } }),
+      updateGameState: () => {},
+      updateUI: () => {},
+    });
+
+    await openSettings();
+    document.getElementById('settings-jlpt').value = 'N5';
+    await elements.get('settings-save-btn').click();
+
+    assert.deepEqual(savedKeys, { jlptLevel: 'N5' });
+  });
+
   it('saves Enable Kanji mode through the per-player game endpoint', async () => {
     const content = { innerHTML: '' };
     const elements = installSettingsDocument();

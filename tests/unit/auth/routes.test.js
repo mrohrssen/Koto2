@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { createApp } from '../../../src/app.js';
 import { resetDataDirForTest } from '../../../src/data-dir.js';
 import { loadUsers } from '../../../src/auth/users.js';
+import { decryptKeys } from '../../../src/auth/crypto.js';
 
 describe('auth routes', { concurrency: false }, () => {
   let dataDir;
@@ -49,6 +50,59 @@ describe('auth routes', { concurrency: false }, () => {
       .set('Authorization', `Bearer ${res.body.token}`)
       .expect(200);
     assert.equal(me.body.apiKeys.aiDataSharingConsent, true);
+    assert.equal(Object.hasOwn(me.body.apiKeys, 'aiConversationsEnabled'), false);
+
+    const users = loadUsers(usersFile).users;
+    const keys = decryptKeys(users[0].encryptedApiKeys, 'a'.repeat(64));
+    assert.equal(keys.aiConversationsEnabled, false);
+  });
+
+  it('only exposes and saves Personalized Dialogue for Michia', async () => {
+    const app = createApp({ dataDir, usersFile });
+
+    const regular = await request(app)
+      .post('/api/auth/register')
+      .field('username', 'regular')
+      .field('password', 'pass123')
+      .field('aiDataSharingConsent', 'true')
+      .expect(200);
+
+    await request(app)
+      .put('/api/auth/api-keys')
+      .set('Authorization', `Bearer ${regular.body.token}`)
+      .send({ aiConversationsEnabled: true })
+      .expect(200);
+
+    const regularMe = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${regular.body.token}`)
+      .expect(200);
+    assert.equal(Object.hasOwn(regularMe.body.apiKeys, 'aiConversationsEnabled'), false);
+
+    const michia = await request(app)
+      .post('/api/auth/register')
+      .field('username', 'Michia')
+      .field('password', 'pass123')
+      .field('aiDataSharingConsent', 'true')
+      .expect(200);
+
+    const michiaDefault = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${michia.body.token}`)
+      .expect(200);
+    assert.equal(michiaDefault.body.apiKeys.aiConversationsEnabled, false);
+
+    await request(app)
+      .put('/api/auth/api-keys')
+      .set('Authorization', `Bearer ${michia.body.token}`)
+      .send({ aiConversationsEnabled: true })
+      .expect(200);
+
+    const michiaEnabled = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${michia.body.token}`)
+      .expect(200);
+    assert.equal(michiaEnabled.body.apiKeys.aiConversationsEnabled, true);
   });
 
   it('returns a pseudonymous analytics id on register, login, and me', async () => {
@@ -234,8 +288,7 @@ describe('auth routes', { concurrency: false }, () => {
       .expect(200);
     assert.deepEqual(me.body.apiKeys, {
       jlptLevel: 'N3',
-      aiDataSharingConsent: true,
-      aiConversationsEnabled: false
+      aiDataSharingConsent: true
     });
   });
 });

@@ -69,8 +69,7 @@ describe('reset user data flow', () => {
     assert.equal(meRes.body.username, 'reset-flow-user');
     assert.deepEqual(meRes.body.apiKeys, {
       jlptLevel: 'N3',
-      aiDataSharingConsent: true,
-      aiConversationsEnabled: true
+      aiDataSharingConsent: true
     });
   });
 });

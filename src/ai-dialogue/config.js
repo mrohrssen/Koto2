@@ -29,7 +29,7 @@ export function buildAiDialogueConfig(env = process.env) {
 }
 
 export function isAiConversationsEnabled(keys = {}) {
-  return keys.aiConversationsEnabled !== false;
+  return keys.aiConversationsEnabled === true;
 }
 
 export function canUseAiDialogue(keys = {}, config = buildAiDialogueConfig()) {
