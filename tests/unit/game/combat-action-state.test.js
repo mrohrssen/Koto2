@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createCombatState } from '../../../src/game/state.js';
-import { instantiateCreature } from '../../../src/game/creatures.js';
+import { instantiateCreature, xpToNextLevel } from '../../../src/game/creatures.js';
 import { GameManager } from '../../../src/game/loop.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { buildActionEnvelope } from '../../../src/shared/action-protocol.js';
@@ -160,6 +160,72 @@ describe('combat action state', () => {
     assert.equal(result.status, 'accepted');
     assert.equal(result.stateVersion, stateVersion + 1);
     assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
+  });
+
+  it('does not let server-owned Exp Master L5 XP rolls perturb accepted optimistic attack playback', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    const strike = {
+      id: 'strike',
+      name: '突く',
+      nameEn: 'Strike',
+      reading: 'つく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 30,
+      mpCost: 0,
+      accuracy: 100,
+      statusEffect: null,
+      statusChance: 0,
+      statusDuration: 0,
+    };
+    const firstAlly = gm.combat.allies[0];
+    const secondAlly = instantiateCreature('kaze');
+    const firstEnemy = gm.combat.enemies[0];
+    const secondEnemy = instantiateCreature('ki');
+    for (const [index, ally] of [firstAlly, secondAlly].entries()) {
+      ally.moves = [strike];
+      ally.hp = ally.maxHp = 100;
+      ally.mp = ally.maxMp = 100;
+      ally.level = 5;
+      ally.xp = xpToNextLevel(ally.level) - 1;
+      ally.dex = 50 - index;
+      ally.attack = 50;
+    }
+    for (const [index, enemy] of [firstEnemy, secondEnemy].entries()) {
+      enemy.moves = [strike];
+      enemy.hp = index === 0 ? 1 : 100;
+      enemy.maxHp = 100;
+      enemy.mp = enemy.maxMp = 100;
+      enemy.level = 5;
+      enemy.dex = 1;
+      enemy.defense = 5;
+    }
+    gm.combat.enemies = [firstEnemy, secondEnemy];
+    gm.combat.allies = [firstAlly, secondAlly];
+    gm.run.creatureParty.active = gm.combat.allies;
+    gm.run.partySkills = [{ id: 'expMaster', level: 5 }];
+    gm.combat.optimistic.nextTurnSeed = 'rng-shift';
+    const moveChoices = [
+      { creatureIndex: 0, moveId: 'strike', targetIndex: 0 },
+      { creatureIndex: 1, moveId: 'strike', targetIndex: 1 },
+    ];
+    const predicted = buildOptimisticCombatTurn({
+      state: { combat: gm.combat, run: gm.run },
+      actionType: 'attack',
+      moveChoices,
+      actionId: 'act_browser_exp_rng_shift',
+    });
+    const service = new CombatCycleService(gm);
+
+    const result = service.verifyAndCommitCreatureCombatCycle(predicted.envelope);
+
+    assert.equal(result.status, 'accepted');
+    assert.ok(result.xpEvents.length > 0);
+    assert.deepEqual(
+      result.playerAttacks.map(attack => attack.damage),
+      predicted.localTranscript.playerAttacks.map(attack => attack.damage),
+    );
   });
 
   it('accepts browser shared-core optimistic predictions for NPC PvE action-cursor attacks', () => {

@@ -245,7 +245,7 @@ function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEn
   return { enemyId: target.id, enemyIndex: enemyIdx, enemyName: target.nameEn, ...xpEvent };
 }
 
-function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null, rng = Math.random, awardKillXp = null, runPartySkills = []) {
+function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null, rng = Math.random, awardKillXp = null, runPartySkills = [], xpRng = rng) {
   const attacks = [];
   const xpEvents = [];
   const stab = move.element !== 'neutral' && move.element === creature.element;
@@ -316,6 +316,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
             metaMults,
             awardKillXp,
             runPartySkills,
+            rng: xpRng,
           });
           if (xpEvent) xpEvents.push(xpEvent);
         }
@@ -595,6 +596,7 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
     defenderItemBuffs = null,
     onAttack = null,
     rng = Math.random,
+    xpRng = rng,
     awardKillXp = null,
     runPartySkills = [],
   } = options;
@@ -646,6 +648,7 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
       rng,
       awardKillXp,
       runPartySkills,
+      xpRng,
     );
     for (const atk of result.attacks) {
       atk.attackerMp = creature.mp;
@@ -695,6 +698,7 @@ export function processInterleavedPvERound(
   }
   options = options || {};
   const rng = typeof options.rng === 'function' ? options.rng : Math.random;
+  const xpRng = typeof options.xpRng === 'function' ? options.xpRng : rng;
   const playerAttacks = [];
   const enemyAttacks = [];
   const inlineCounters = [];
@@ -773,6 +777,7 @@ export function processInterleavedPvERound(
         defeatedIndices: defeatedEnemyIndices,
         defenderItemBuffs: isAlly ? null : itemBuffs,
         rng,
+        xpRng,
         awardKillXp: options.awardKillXp || null,
         runPartySkills: isAlly ? (options.runPartySkills || []) : [],
         onAttack(atk) {
@@ -941,6 +946,7 @@ export function resolveSingleActorAction({
   combat = null,
   playbackStart = 0,
   rng = Math.random,
+  xpRng = rng,
   awardKillXp = null
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
@@ -978,6 +984,7 @@ export function resolveSingleActorAction({
     defenderItemBuffs: isAlly ? null : itemBuffs,
     defeatedIndices: new Set(),
     rng,
+    xpRng,
     awardKillXp,
     runPartySkills: isAlly ? (runPartySkills || []) : [],
     onAttack(atk) {
@@ -1058,6 +1065,7 @@ export function resolveSyntheticActorAction({
   awardKillXp = null,
   playbackStart = 0,
   rng = Math.random,
+  xpRng = rng,
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
   const actorList = isAlly ? allies : enemies;
@@ -1101,6 +1109,7 @@ export function resolveSyntheticActorAction({
     rng,
     awardKillXp,
     isAlly ? (runPartySkills || []) : [],
+    xpRng,
   );
 
   for (const atk of result.attacks) {

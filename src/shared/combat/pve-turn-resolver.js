@@ -66,7 +66,7 @@ function collectEnemySelfSabotageEvents({ enemyAttacks, enemies, runPartySkills,
   return events;
 }
 
-function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackStart, rng, awardKillXp = null }) {
+function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackStart, rng, xpRng = rng, awardKillXp = null }) {
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
   const actor = cursor.side === 'ally'
@@ -107,6 +107,7 @@ function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackS
     combat: snapshot.combat || null,
     playbackStart,
     rng,
+    xpRng,
     awardKillXp,
   });
 
@@ -192,6 +193,7 @@ export function resolvePveCursorTurn(snapshotInput, {
   actionType = 'attack',
   seed,
   rng,
+  xpRng,
   clone = true,
   awardKillXp = null,
 } = {}) {
@@ -201,6 +203,7 @@ export function resolvePveCursorTurn(snapshotInput, {
 
   const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
   const turnRng = getTurnRng({ rng, seed });
+  const turnXpRng = typeof xpRng === 'function' ? xpRng : turnRng;
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
   const combat = snapshot.combat || {};
@@ -217,6 +220,7 @@ export function resolvePveCursorTurn(snapshotInput, {
     moveChoice: submittedChoice,
     playbackStart,
     rng: turnRng,
+    xpRng: turnXpRng,
     awardKillXp,
   });
   actionSegments.push(...firstResult.actionSegments);
@@ -234,6 +238,7 @@ export function resolvePveCursorTurn(snapshotInput, {
       moveChoice: null,
       playbackStart,
       rng: turnRng,
+      xpRng: turnXpRng,
       awardKillXp,
     });
     actionSegments.push(...enemyResult.actionSegments);
@@ -291,11 +296,13 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
     targetIndex = snapshotInput?.targetIndex ?? 0,
     seed,
     rng,
+    xpRng,
     clone = true,
     awardKillXp = null,
   } = options;
   const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
   const turnRng = getTurnRng({ rng, seed });
+  const turnXpRng = typeof xpRng === 'function' ? xpRng : turnRng;
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
   const combat = snapshot.combat || {};
@@ -330,6 +337,7 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
         awardKillXp,
         playbackStart,
         rng: turnRng,
+        xpRng: turnXpRng,
       })
     : resolveNoopActorAction({
         actorSide: 'ally',
@@ -362,6 +370,7 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
       moveChoice: null,
       playbackStart,
       rng: turnRng,
+      xpRng: turnXpRng,
     });
     actionSegments.push(...enemyResult.actionSegments);
     playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
@@ -417,6 +426,7 @@ export function resolvePveTurn(snapshotInput, {
   actionType = 'attack',
   seed,
   rng,
+  xpRng,
   clone = true,
   awardKillXp = null,
   processKoSwaps = null,
@@ -430,6 +440,7 @@ export function resolvePveTurn(snapshotInput, {
         actionType: resolvedActionType,
         seed: envelope.seed ?? seed,
         rng: envelope.rng ?? rng,
+        xpRng: envelope.xpRng ?? xpRng,
         clone: envelope.clone ?? clone,
         awardKillXp: envelope.awardKillXp ?? awardKillXp,
         processKoSwaps: envelope.processKoSwaps ?? processKoSwaps,
@@ -439,6 +450,7 @@ export function resolvePveTurn(snapshotInput, {
 
   const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
   const turnRng = getTurnRng({ rng, seed });
+  const turnXpRng = typeof xpRng === 'function' ? xpRng : turnRng;
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
   const shouldProcessKoSwaps = processKoSwaps ?? actionType === 'defend';
@@ -532,6 +544,7 @@ export function resolvePveTurn(snapshotInput, {
       runPartySkills,
       combat,
       rng: turnRng,
+      xpRng: turnXpRng,
       awardKillXp,
     },
   );

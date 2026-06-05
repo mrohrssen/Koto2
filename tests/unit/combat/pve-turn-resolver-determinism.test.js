@@ -385,6 +385,51 @@ describe('shared PvE turn resolver', () => {
     assert.equal(result.transcript.xpEvents[0].xpGrants[0].xp, 500);
   });
 
+  it('uses the injected rng for Exp Master L5 in shared active-cursor predictions', () => {
+    const ally = creature({
+      id: 'hi',
+      hp: 80,
+      maxHp: 80,
+      attack: 100,
+      level: 5,
+      xp: 90,
+    });
+    const enemy = creature({ id: 'mizu', level: 1, element: 'water', hp: 1, maxHp: 90 });
+    const originalRandom = Math.random;
+    Math.random = () => {
+      throw new Error('shared active-cursor XP must use the injected rng');
+    };
+
+    try {
+      const result = resolvePveCursorTurn({
+        combat: {
+          active: true,
+          allies: [ally],
+          enemies: [enemy],
+          actionCursor: { side: 'ally', index: 0, opening: false },
+          actionCount: 0,
+          turnCount: 0,
+        },
+        run: {
+          partySkills: [{ id: 'expMaster', level: 5 }],
+          itemBuffs: null,
+          creatureParty: { active: [ally], reserves: [] },
+          crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+        },
+        moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      }, {
+        actionType: 'attack',
+        rng: constantRng(0.01),
+        clone: false,
+        awardKillXp,
+      });
+
+      assert.ok(result.transcript.xpEvents[0].levelUps.some(levelUp => levelUp.partySkillBonus === 'expMaster'));
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+
   it('resolves defend deterministically with the supplied seed', () => {
     const slash = {
       id: 'slash',

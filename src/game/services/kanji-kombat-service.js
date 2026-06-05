@@ -468,6 +468,8 @@ export class KanjiKombatService {
       correct: choice.correct,
       targetIndex: 0,
       rng: opts.rng,
+      xpRng: opts.xpRng,
+      deferXpAwards: opts.deferXpAwards === true,
     });
     result.kanjiAnswerCorrect = choice.correct;
     if (streakReward) result.kanjiStreakReward = streakReward;
@@ -548,7 +550,11 @@ export class KanjiKombatService {
     }
 
     const sharedCoreHash = hashTranscript(resolvedCore.transcript);
-    const committed = this.submitAnswer(answerId, { rng: createSeededRng(envelope.seed) });
+    const committed = this.submitAnswer(answerId, {
+      rng: createSeededRng(envelope.seed),
+      xpRng: createSeededRng(`${envelope.seed}:xp`),
+      deferXpAwards: true,
+    });
     const responseOptimistic = this.gm.combat?.optimistic || optimistic;
     if (responseOptimistic === optimistic) {
       optimistic.stateVersion += 1;
