@@ -18,7 +18,12 @@ import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPric
 import { logger } from '../../logger.js';
 import { getDueCards } from '../internal-srs.js';
 import { hydrateCards } from '../bootstrap/word-knowledge.js';
-import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
+import {
+  applyPartySkillChoice,
+  normalizePartySkills,
+  rollSkillMasterOffers,
+  getPartySkillDisplay
+} from '../party-skills.js';
 import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
 import { applyCrestBonuses } from './crest-service.js';
@@ -827,10 +832,14 @@ export class ExplorationService {
         return { offered };
       }
       if (!Array.isArray(pick.offered)) {
-        const ownedSkillIds = (this.gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
-        pick.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
+        this.gm.run.partySkills = normalizePartySkills(this.gm.run?.partySkills || []);
+        pick.offered = rollSkillMasterOffers({ ownedSkillIds: this.gm.run.partySkills, count: 3 });
       }
-      const offered = (pick.offered || []).map(id => getPartySkillDisplay(id)).filter(Boolean);
+      const offered = (pick.offered || [])
+        .map(offer => typeof offer === 'string'
+          ? getPartySkillDisplay(offer, 1)
+          : getPartySkillDisplay(offer.id, offer.level))
+        .filter(Boolean);
       this.gm.emitState();
       return { offered };
     }
@@ -846,13 +855,14 @@ export class ExplorationService {
 
     // Idempotent within room: once offered IDs exist, keep them
     if (!Array.isArray(room.skillMaster.offered)) {
-      const ownedSkillIds = (this.gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
-      const offeredIds = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
-      room.skillMaster.offered = offeredIds;
+      this.gm.run.partySkills = normalizePartySkills(this.gm.run?.partySkills || []);
+      room.skillMaster.offered = rollSkillMasterOffers({ ownedSkillIds: this.gm.run.partySkills, count: 3 });
     }
 
     const offered = (room.skillMaster.offered || [])
-      .map(id => getPartySkillDisplay(id))
+      .map(offer => typeof offer === 'string'
+        ? getPartySkillDisplay(offer, 1)
+        : getPartySkillDisplay(offer.id, offer.level))
       .filter(Boolean);
 
     this.gm.emitState();
@@ -865,13 +875,12 @@ export class ExplorationService {
     const isInitialPick = pick && !pick.chosenId;
 
     if (isInitialPick) {
-      const offeredIds = Array.isArray(pick.offered) ? pick.offered : [];
+      const offeredIds = Array.isArray(pick.offered) ? pick.offered.map(o => typeof o === 'string' ? o : o.id) : [];
       if (!offeredIds.includes(skillId)) {
         throw new Error('Invalid Skill Master offer');
       }
       if (!this.gm.run) throw new Error('No active run');
-      if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
-      this.gm.run.partySkills.push({ id: skillId });
+      this.gm.run.partySkills = applyPartySkillChoice(this.gm.run.partySkills || [], skillId);
       pick.chosenId = skillId;
       // Tutorial step 0 → 1: advance after first skill pick
       if (shouldOverrideSkillOffers(this.gm.meta)) {
@@ -902,19 +911,15 @@ export class ExplorationService {
       throw new Error('Skill Master already completed');
     }
 
-    const offeredIds = Array.isArray(room.skillMaster.offered) ? room.skillMaster.offered : [];
+    const offeredIds = Array.isArray(room.skillMaster.offered)
+      ? room.skillMaster.offered.map(o => typeof o === 'string' ? o : o.id)
+      : [];
     if (!offeredIds.includes(skillId)) {
       throw new Error('Invalid Skill Master offer');
     }
 
     if (!this.gm.run) throw new Error('No active run');
-    if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
-
-    // No duplicates: choosing an already-owned skill is a no-op
-    const alreadyOwned = this.gm.run.partySkills.some(s => s?.id === skillId);
-    if (!alreadyOwned) {
-      this.gm.run.partySkills.push({ id: skillId });
-    }
+    this.gm.run.partySkills = applyPartySkillChoice(this.gm.run.partySkills || [], skillId);
 
     room.skillMaster.chosenId = skillId;
     room.skillMaster.completed = true;

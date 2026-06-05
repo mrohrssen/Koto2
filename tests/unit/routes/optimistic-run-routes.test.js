@@ -104,21 +104,21 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { actionId: actionId('skill1'), skillId: 'momentum' },
+      body: { actionId: actionId('skill1'), skillId: 'buffMaster' },
       gameManager: {
         explorationService: {
           chooseSkillMasterOffer: skillId => ({ chosen: skillId }),
         },
       },
       saveGame: () => {},
-      getEnrichedGameState: () => ({ phase: 'room', run: { partySkills: [{ id: 'momentum' }] } }),
+      getEnrichedGameState: () => ({ phase: 'room', run: { partySkills: [{ id: 'buffMaster', level: 1 }] } }),
     }, res);
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'accepted');
     assert.equal(res.body.actionId, actionId('skill1'));
-    assert.equal(res.body.chosen, 'momentum');
-    assert.deepEqual(res.body.state, { phase: 'room', run: { partySkills: [{ id: 'momentum' }] } });
+    assert.equal(res.body.chosen, 'buffMaster');
+    assert.deepEqual(res.body.state, { phase: 'room', run: { partySkills: [{ id: 'buffMaster', level: 1 }] } });
   });
 
   it('keeps legacy skill-master responses unchanged when actionId is absent', async () => {
@@ -126,7 +126,7 @@ describe('optimistic deterministic run routes', () => {
     const res = makeRes();
 
     await handler({
-      body: { skillId: 'momentum' },
+      body: { skillId: 'buffMaster' },
       gameManager: {
         explorationService: {
           chooseSkillMasterOffer: skillId => ({ chosen: skillId }),
@@ -344,14 +344,14 @@ describe('optimistic deterministic run routes', () => {
     const run = { partySkills: [] };
     let choiceCount = 0;
     const req = {
-      body: { actionId: actionId('skilldupe'), skillId: 'momentum' },
+      body: { actionId: actionId('skilldupe'), skillId: 'buffMaster' },
       gameManager: {
         run,
         meta: { actionLedger: { entries: {}, order: [] } },
         explorationService: {
           chooseSkillMasterOffer: skillId => {
             choiceCount += 1;
-            run.partySkills.push({ id: skillId });
+            run.partySkills.push({ id: skillId, level: 1 });
             return { chosen: skillId };
           },
         },
@@ -366,8 +366,8 @@ describe('optimistic deterministic run routes', () => {
 
     assert.equal(duplicateRes.statusCode, 200);
     assert.equal(choiceCount, 1);
-    assert.deepEqual(run.partySkills, [{ id: 'momentum' }]);
-    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { partySkills: [{ id: 'momentum' }] } });
+    assert.deepEqual(run.partySkills, [{ id: 'buffMaster', level: 1 }]);
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { partySkills: [{ id: 'buffMaster', level: 1 }] } });
   });
 
   it('wraps shrine choices with accepted optimistic status when actionId is present', async () => {
@@ -552,14 +552,14 @@ describe('optimistic deterministic run routes', () => {
     const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
     const room = {
       type: 'npcBattle',
-      npcBattle: { skillSelectionPending: true, offered: ['momentum'] },
+      npcBattle: { skillSelectionPending: true, offered: [{ id: 'buffMaster', level: 1 }] },
       interacted: false,
     };
     const run = { partySkills: [] };
     const res = makeRes();
 
     await handler({
-      body: { actionId: actionId('npcskill1'), skillId: 'momentum' },
+      body: { actionId: actionId('npcskill1'), skillId: 'buffMaster' },
       gameManager: {
         run,
         getCurrentRoom: () => room,
@@ -571,23 +571,23 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, 'accepted');
     assert.equal(res.body.actionId, actionId('npcskill1'));
-    assert.equal(res.body.chosenId, 'momentum');
-    assert.deepEqual(res.body.partySkills, [{ id: 'momentum' }]);
-    assert.deepEqual(res.body.state, { phase: 'room', run: { partySkills: [{ id: 'momentum' }] } });
+    assert.equal(res.body.chosenId, 'buffMaster');
+    assert.deepEqual(res.body.partySkills, [{ id: 'buffMaster', level: 1 }]);
+    assert.deepEqual(res.body.state, { phase: 'room', run: { partySkills: [{ id: 'buffMaster', level: 1 }] } });
   });
 
   it('/npc-battle-skill-choose does not re-run duplicate actionId and run.partySkills length stays 1', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
     const room = {
       type: 'npcBattle',
-      npcBattle: { skillSelectionPending: true, offered: ['momentum'] },
+      npcBattle: { skillSelectionPending: true, offered: [{ id: 'buffMaster', level: 1 }] },
       interacted: false,
     };
     const run = {
       partySkills: [],
     };
     const req = {
-      body: { actionId: actionId('npcskilldupe'), skillId: 'momentum' },
+      body: { actionId: actionId('npcskilldupe'), skillId: 'buffMaster' },
       gameManager: {
         run,
         meta: { actionLedger: { entries: {}, order: [] } },
@@ -605,23 +605,23 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(duplicateRes.body.status, 'accepted');
     assert.equal(duplicateRes.body.actionId, actionId('npcskilldupe'));
     assert.equal(run.partySkills.length, 1);
-    assert.equal(room.npcBattle.chosenSkillId, 'momentum');
+    assert.equal(room.npcBattle.chosenSkillId, 'buffMaster');
     assert.equal(room.npcBattle.skillSelectionPending, false);
-    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { partySkills: [{ id: 'momentum' }] } });
+    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { partySkills: [{ id: 'buffMaster', level: 1 }] } });
   });
 
   it('keeps legacy NPC battle skill choice responses unchanged when actionId is absent', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
     const room = {
       type: 'npcBattle',
-      npcBattle: { skillSelectionPending: true, offered: ['momentum'] },
+      npcBattle: { skillSelectionPending: true, offered: [{ id: 'buffMaster', level: 1 }] },
       interacted: false,
     };
     const run = { partySkills: [] };
     const res = makeRes();
 
     await handler({
-      body: { skillId: 'momentum' },
+      body: { skillId: 'buffMaster' },
       gameManager: {
         run,
         getCurrentRoom: () => room,
@@ -633,7 +633,7 @@ describe('optimistic deterministic run routes', () => {
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, undefined);
     assert.equal(res.body.actionId, undefined);
-    assert.equal(res.body.chosenId, 'momentum');
+    assert.equal(res.body.chosenId, 'buffMaster');
     assert.deepEqual(res.body.state, { phase: 'room' });
   });
 
@@ -641,7 +641,7 @@ describe('optimistic deterministic run routes', () => {
     const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
     const room = {
       type: 'npcBattle',
-      npcBattle: { skillSelectionPending: true, offered: ['momentum'] },
+      npcBattle: { skillSelectionPending: true, offered: [{ id: 'buffMaster', level: 1 }] },
       interacted: false,
     };
     const run = {

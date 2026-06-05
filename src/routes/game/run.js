@@ -29,7 +29,12 @@ import {
   selectBestFrame,
 } from '../../game/token-format.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
-import { rollSkillMasterOffers, getPartySkillDisplay } from '../../game/party-skills.js';
+import {
+  applyPartySkillChoice,
+  normalizePartySkills,
+  rollSkillMasterOffers,
+  getPartySkillDisplay
+} from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 import { SPRITE_VERSION } from '../../shared/asset-versions.js';
 import {
@@ -409,14 +414,15 @@ export default function createRunRoutes({
 
       // Generate offers if not already generated (idempotent)
       if (!Array.isArray(room.npcBattle.offered)) {
-        const ownedSkillIds = (gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
-        const offeredIds = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
-        room.npcBattle.offered = offeredIds;
+        gm.run.partySkills = normalizePartySkills(gm.run?.partySkills || []);
+        room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 });
         req.saveGame();
       }
 
       const offered = (room.npcBattle.offered || [])
-        .map(id => getPartySkillDisplay(id))
+        .map(offer => typeof offer === 'string'
+          ? getPartySkillDisplay(offer, 1)
+          : getPartySkillDisplay(offer.id, offer.level))
         .filter(Boolean);
 
       const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
@@ -458,11 +464,11 @@ export default function createRunRoutes({
         if (!Array.isArray(room.npcBattle.offered)) {
           console.warn('[npc-battle-skill-choose] offered not set — generating on demand',
             { skillId, npcBattle: JSON.stringify(room.npcBattle) });
-          const ownedSkillIds = (gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
-          room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
+          gm.run.partySkills = normalizePartySkills(gm.run?.partySkills || []);
+          room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 });
         }
 
-        const offeredIds = room.npcBattle.offered;
+        const offeredIds = room.npcBattle.offered.map(offer => typeof offer === 'string' ? offer : offer.id);
         if (!offeredIds.includes(skillId)) {
           console.warn('[npc-battle-skill-choose] skillId not in offered',
             { skillId, offeredIds, typeof_skillId: typeof skillId });
@@ -470,13 +476,7 @@ export default function createRunRoutes({
         }
 
         if (!gm.run) throw new Error('No active run');
-        if (!Array.isArray(gm.run.partySkills)) gm.run.partySkills = [];
-
-        // No duplicates
-        const alreadyOwned = gm.run.partySkills.some(s => s?.id === skillId);
-        if (!alreadyOwned) {
-          gm.run.partySkills.push({ id: skillId });
-        }
+        gm.run.partySkills = applyPartySkillChoice(gm.run.partySkills || [], skillId);
 
         room.npcBattle.chosenSkillId = skillId;
         room.npcBattle.skillSelectionPending = false;

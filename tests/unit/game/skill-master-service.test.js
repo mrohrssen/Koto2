@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { ExplorationService } from '../../../src/game/services/exploration-service.js';
 import { createRoom } from '../../../src/game/rooms.js';
-import { PARTY_SKILLS_CATALOG } from '../../../src/game/party-skills.js';
+import { PARTY_SKILL_TREE_IDS } from '../../../src/game/party-skills.js';
 
 function makeGmWithSkillMasterRoom({ partySkills = [] } = {}) {
   const room = createRoom('skillMaster', 'okunomori', 1, 1);
@@ -34,35 +34,38 @@ describe('Skill Master service', () => {
     }
   });
 
-  it('getSkillMasterOffers excludes already-owned ids', () => {
-    const allIds = Object.keys(PARTY_SKILLS_CATALOG);
-    const ownedId = allIds[0];
-    const { svc } = makeGmWithSkillMasterRoom({ partySkills: [{ id: ownedId }] });
-    const { offered } = svc.getSkillMasterOffers();
-    const offeredIds = offered.map(o => o.id);
-    assert.ok(!offeredIds.includes(ownedId));
+  it('getSkillMasterOffers returns next-level tree offers and excludes maxed trees', () => {
+    const originalRandom = Math.random;
+    Math.random = () => 0.99;
+    try {
+      const { svc } = makeGmWithSkillMasterRoom({
+        partySkills: [{ id: 'arcStrike', level: 2 }, { id: 'hpMaster', level: 5 }]
+      });
+      const { offered } = svc.getSkillMasterOffers();
+      assert.equal(offered.some(o => o.id === 'hpMaster'), false);
+      assert.equal(offered.find(o => o.id === 'arcStrike')?.level, 3);
+      assert.ok(offered.every(o => PARTY_SKILL_TREE_IDS.includes(o.id)));
+      assert.ok(offered.every(o => / - Lvl\. \d$/.test(o.title)));
+    } finally {
+      Math.random = originalRandom;
+    }
   });
 
-  it('chooseSkillMasterOffer validates offer membership and dedupes owned', () => {
-    const { gm, room, svc } = makeGmWithSkillMasterRoom();
-    const { offered } = svc.getSkillMasterOffers();
-    assert.ok(offered.length > 0);
+  it('chooseSkillMasterOffer increments existing tree levels', () => {
+    const { gm, room, svc } = makeGmWithSkillMasterRoom({
+      partySkills: [{ id: 'arcStrike', level: 1 }]
+    });
+    room.skillMaster = {
+      offered: [{ id: 'arcStrike', level: 2 }, { id: 'counterMaster', level: 1 }],
+      chosenId: null,
+      completed: false
+    };
 
-    assert.throws(() => svc.chooseSkillMasterOffer('not-a-real-skill'), /Invalid Skill Master offer/);
-
-    const pickId = offered[0].id;
-    const firstChoose = svc.chooseSkillMasterOffer(pickId);
-    assert.strictEqual(firstChoose.chosenId, pickId);
-    assert.ok(Array.isArray(firstChoose.partySkills));
-    assert.strictEqual(firstChoose.partySkills.filter(s => s.id === pickId).length, 1);
-    assert.strictEqual(room.skillMaster.chosenId, pickId);
+    const firstChoose = svc.chooseSkillMasterOffer('arcStrike');
+    assert.strictEqual(firstChoose.chosenId, 'arcStrike');
+    assert.deepEqual(gm.run.partySkills, [{ id: 'arcStrike', level: 2 }]);
+    assert.strictEqual(room.skillMaster.chosenId, 'arcStrike');
     assert.strictEqual(room.skillMaster.completed, true);
     assert.strictEqual(room.interacted, true);
-
-    // Choosing again should not add duplicates (even if room already completed)
-    const secondChoose = svc.chooseSkillMasterOffer(pickId);
-    assert.strictEqual(secondChoose.partySkills.filter(s => s.id === pickId).length, 1);
-    assert.strictEqual(gm.run.partySkills.filter(s => s.id === pickId).length, 1);
   });
 });
-
