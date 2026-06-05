@@ -11,6 +11,20 @@ function enemy(overrides = {}) {
   return { id: 'e', nameEn: 'Enemy', hp: 100, maxHp: 100, element: 'wood', statStages: { atk: 0, def: 0, dex: 0 }, ...overrides };
 }
 
+function counterDamage({ level, defenderHp, defenderMaxHp = 100, enemyHp = 200, rng = () => 0.01 }) {
+  const result = computeInlineCounter(
+    { targetIndex: 0, attackerIndex: 0, damage: 10 },
+    [ally({ hp: defenderHp, maxHp: defenderMaxHp })],
+    [enemy({ hp: enemyHp })],
+    [{ id: 'counterMaster', level }],
+    {},
+    rng
+  );
+
+  assert.ok(result);
+  return result.damage;
+}
+
 test('Counter Master Lvl 1 fails at the 50% threshold', () => {
   const result = computeInlineCounter(
     { targetIndex: 0, attackerIndex: 0, damage: 10 },
@@ -51,16 +65,26 @@ test('Counter Master Lvl 1 deals shared 7-power damage on successful roll', () =
   assert.equal(counter.targetIndex, 0);
 });
 
-test('Counter Master Lvl 2 fails only above 75% roll', () => {
-  const result = computeInlineCounter(
+test('Counter Master Lvl 2 succeeds below 75% and fails at the threshold', () => {
+  const success = computeInlineCounter(
     { targetIndex: 0, attackerIndex: 0, damage: 10 },
     [ally()],
     [enemy()],
     [{ id: 'counterMaster', level: 2 }],
     {},
-    () => 0.80
+    () => 0.74
   );
-  assert.equal(result, null);
+  assert.ok(success);
+
+  const threshold = computeInlineCounter(
+    { targetIndex: 0, attackerIndex: 0, damage: 10 },
+    [ally()],
+    [enemy()],
+    [{ id: 'counterMaster', level: 2 }],
+    {},
+    () => 0.75
+  );
+  assert.equal(threshold, null);
 });
 
 test('Counter Master Lvl 3 always counters when hit', () => {
@@ -75,26 +99,29 @@ test('Counter Master Lvl 3 always counters when hit', () => {
   assert.ok(result);
 });
 
-test('Counter Master Lvl 4 and Lvl 5 damage multipliers stack', () => {
-  const baseEnemies = [enemy({ hp: 200 })];
-  const base = computeInlineCounter(
-    { targetIndex: 0, attackerIndex: 0, damage: 10 },
-    [ally({ hp: 80 })],
-    baseEnemies,
-    [{ id: 'counterMaster', level: 3 }],
-    {},
-    () => 0.01
-  );
+test('Counter Master Lvl 4 below 50% HP doubles base damage', () => {
+  const base = counterDamage({ level: 3, defenderHp: 80 });
+  const boosted = counterDamage({ level: 4, defenderHp: 40 });
+  assert.equal(boosted, base * 2);
+});
 
-  const boostedEnemies = [enemy({ hp: 200 })];
-  const boosted = computeInlineCounter(
-    { targetIndex: 0, attackerIndex: 0, damage: 10 },
-    [ally({ hp: 40 })],
-    boostedEnemies,
-    [{ id: 'counterMaster', level: 5 }],
-    {},
-    () => 0.01
-  );
+test('Counter Master Lvl 4 at or above 50% HP does not boost damage', () => {
+  const base = counterDamage({ level: 3, defenderHp: 80 });
+  const atThreshold = counterDamage({ level: 4, defenderHp: 50 });
+  const aboveThreshold = counterDamage({ level: 4, defenderHp: 80 });
 
-  assert.equal(boosted.damage, base.damage * 4);
+  assert.equal(atThreshold, base);
+  assert.equal(aboveThreshold, base);
+});
+
+test('Counter Master Lvl 5 above 50% HP doubles base damage', () => {
+  const base = counterDamage({ level: 3, defenderHp: 80 });
+  const boosted = counterDamage({ level: 5, defenderHp: 80 });
+  assert.equal(boosted, base * 2);
+});
+
+test('Counter Master Lvl 5 below 50% HP stacks Lvl 4 and Lvl 5 boosts', () => {
+  const base = counterDamage({ level: 3, defenderHp: 80 });
+  const boosted = counterDamage({ level: 5, defenderHp: 40 });
+  assert.equal(boosted, base * 4);
 });
