@@ -59,7 +59,11 @@ function createRouterWithCachedBefriendDialogue(rounds, deps = {}) {
   });
 }
 
-function makeReq({ target, userKeys = { aiDataSharingConsent: true, aiConversationsEnabled: true } }) {
+function makeReq({
+  target,
+  userKeys = { aiDataSharingConsent: true, aiConversationsEnabled: true },
+  befriendQuiz = null
+}) {
   return {
     body: { enemyIndex: 0 },
     user: { id: 'user-1' },
@@ -68,7 +72,8 @@ function makeReq({ target, userKeys = { aiDataSharingConsent: true, aiConversati
       combat: {
         active: true,
         isCreatureCombat: true,
-        enemies: [target]
+        enemies: [target],
+        ...(befriendQuiz ? { befriendQuiz } : {})
       }
     },
     saveGame: () => {}
@@ -109,7 +114,7 @@ describe('befriend conversation route', () => {
     assert.equal(Object.hasOwn(res.body.rounds[0], 'correctIndex'), false);
   });
 
-  it('rejects when AI conversations are disabled', async () => {
+  it('falls back to the active name quiz when AI conversations are disabled', async () => {
     const router = createRouterWithCachedBefriendDialogue(null);
     const handler = getHandler(router, 'post', '/befriend-conversation');
     const target = {
@@ -125,10 +130,29 @@ describe('befriend conversation route', () => {
 
     await handler(makeReq({
       target,
-      userKeys: { aiDataSharingConsent: true, aiConversationsEnabled: false }
+      userKeys: { aiDataSharingConsent: true, aiConversationsEnabled: false },
+      befriendQuiz: {
+        targetIndex: 0,
+        creatureId: 'tetsu',
+        creatureName: '鉄',
+        options: [
+          { id: 'tetsu', name: 'Iron', correct: true },
+          { id: 'wrong-1', name: 'Water', correct: false },
+          { id: 'wrong-2', name: 'Fire', correct: false }
+        ]
+      }
     }), res);
 
-    assert.equal(res.statusCode, 403);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.mode, 'name_quiz');
+    assert.equal(res.body.fallback, true);
+    assert.equal(res.body.targetEnemy.id, 'tetsu');
+    assert.equal(res.body.befriendQuiz.creatureName, '鉄');
+    assert.deepEqual(res.body.befriendQuiz.options, [
+      { id: 'tetsu', name: 'Iron' },
+      { id: 'wrong-1', name: 'Water' },
+      { id: 'wrong-2', name: 'Fire' }
+    ]);
   });
 
   it('rejects when AI data sharing consent is missing', async () => {

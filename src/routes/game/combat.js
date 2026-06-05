@@ -141,6 +141,27 @@ export default function createCombatRoutes({
     };
   }
 
+  function buildBefriendNameQuizFallback(combat, target, targetIdx) {
+    const quiz = combat?.befriendQuiz;
+    if (!quiz || quiz.targetIndex !== targetIdx) return null;
+
+    return {
+      mode: 'name_quiz',
+      fallback: true,
+      fallbackReason: 'ai_dialogue_unavailable',
+      targetEnemy: befriendTargetPayload(target),
+      targetEnemyIndex: targetIdx,
+      befriendQuiz: {
+        targetIndex: quiz.targetIndex,
+        creatureId: quiz.creatureId,
+        creatureName: quiz.creatureName,
+        creatureNameEn: target.nameEn,
+        creatureReading: target.reading,
+        options: (quiz.options || []).map(o => ({ id: o.id, name: o.name }))
+      }
+    };
+  }
+
   // ============ CREATURE COMBAT ============
 
   // Start creature encounter
@@ -511,6 +532,11 @@ export default function createCombatRoutes({
     try {
       const aiConfig = buildAiDialogueConfig();
       if (!canUseAiDialogue(req.userKeys || {}, aiConfig)) {
+        const fallback = buildBefriendNameQuizFallback(combat, target, targetIdx);
+        if (fallback) {
+          return res.json(fallback);
+        }
+
         return res.status(403).json({
           error: 'AI conversations are unavailable. Enable AI Conversations in Settings, or try again later if server AI is not configured.'
         });
