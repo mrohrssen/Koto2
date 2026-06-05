@@ -33,12 +33,10 @@ export function init(callbacks) {
       if (currentTab === 'register') {
         submitBtn.textContent = 'Register';
         document.getElementById('auth-password').autocomplete = 'new-password';
-        document.getElementById('wordListField').style.display = '';
         aiConsent.classList.remove('hidden');
       } else {
         submitBtn.textContent = 'Login';
         document.getElementById('auth-password').autocomplete = 'current-password';
-        document.getElementById('wordListField').style.display = 'none';
         aiConsent.classList.add('hidden');
       }
       hideError();
@@ -134,10 +132,6 @@ async function handleSubmit(callbacks) {
     formData.append('username', username);
     formData.append('password', password);
     formData.append('aiDataSharingConsent', String(aiDataSharingConsent));
-    const fileInput = document.getElementById('word-list-upload');
-    if (fileInput.files.length > 0) {
-      formData.append('wordList', fileInput.files[0]);
-    }
     fetchOptions = { method: 'POST', body: formData };
   } else {
     fetchOptions = {

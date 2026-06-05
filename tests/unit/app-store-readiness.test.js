@@ -19,6 +19,16 @@ describe('App Store readiness static checks', () => {
     assert.equal(authJs.includes('Invite code required'), false);
   });
 
+  it('does not expose known-words upload during registration', () => {
+    const html = read('public/index.html');
+    const authJs = read('public/js/ui/auth.js');
+
+    assert.equal(html.includes('word-list-upload'), false);
+    assert.equal(html.includes('wordListField'), false);
+    assert.equal(html.includes('Known Words'), false);
+    assert.equal(authJs.includes('word-list-upload'), false);
+  });
+
   it('does not expose broad playtest controls in settings', () => {
     const settingsUi = read('public/js/ui/modals.js');
 
