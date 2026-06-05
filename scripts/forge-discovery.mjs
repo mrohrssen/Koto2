@@ -356,6 +356,7 @@ export function getThemeStatus() {
   const themeIds = listThemes();
   return themeIds.map(themeId => {
     const theme = loadTheme(themeId);
+    if (!theme || !Array.isArray(theme.words)) return null;
     const assigned = theme.words.filter(w => w.assigned !== null && w.assigned !== undefined);
     const roles = {};
     for (const w of theme.words) {
@@ -373,7 +374,7 @@ export function getThemeStatus() {
       unassignedCount: theme.words.length - assigned.length,
       roleBreakdown: roles,
     };
-  });
+  }).filter(Boolean);
 }
 
 // ── CLI mode ────────────────────────────────────────────────────────

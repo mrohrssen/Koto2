@@ -123,6 +123,45 @@ function applyPendingRunCorrection(pending, result) {
   return true;
 }
 
+function isInitialSkillPickChoiceResult(pending, result) {
+  if (!isMatchingRunActionResponse(pending, result) || !result?.state) return false;
+  const previousState = pending?.originalState;
+  const previousRoom = previousState?.room || getActiveRoomFromRun(previousState?.run);
+  const previousPick = previousState?.run?.initialSkillPick;
+  const wasInitialPick = (previousPick && !previousPick.chosenId)
+    || (previousState?.phase === 'skillMaster' && (!previousRoom || previousRoom.type !== 'skillMaster'));
+  return wasInitialPick && result.state.phase !== 'skillMaster';
+}
+
+async function resetSceneForInitialRoomEntry(state) {
+  const mgr = getSceneManager();
+  if (mgr?.transitioning && typeof mgr.waitForIdle === 'function') {
+    await mgr.waitForIdle();
+  }
+  const scene = mgr?.currentScene;
+  const allies = state?.run?.creatureParty?.active ?? [];
+  const roomId = state?.run?.currentRoom ?? null;
+  if (scene && !scene.disposed && !scene._exiting && typeof scene.resetForRoom === 'function') {
+    await scene.resetForRoom({ roomId, allies });
+  } else if (scene && !scene.disposed && !scene._exiting && scene.npcSprite && typeof scene.hideNpcSprite === 'function') {
+    await scene.hideNpcSprite({ slideOut: true });
+  }
+  hideEnemy();
+}
+
+async function reconcileInitialSkillPickRoomEntry(pending, result) {
+  if (!isInitialSkillPickChoiceResult(pending, result)) return false;
+  updateGameState(confirmPendingRunAction(pending, result));
+  clearPendingRunAction(pending);
+  try {
+    await resetSceneForInitialRoomEntry(getGameState());
+  } catch (err) {
+    console.warn('[SkillMaster] Failed to reset scene for initial room entry:', err);
+  }
+  updateUI();
+  return true;
+}
+
 function rollbackPendingRunAction(pending, { refreshUi = true } = {}) {
   if (!pending) return;
   updateGameState(pending.originalState);
@@ -1883,6 +1922,9 @@ export async function renderSkillMaster() {
           renderSkillMaster();
           return;
         }
+        if (await reconcileInitialSkillPickRoomEntry(pending, result)) {
+          return;
+        }
         if (!reconcilePendingRunAction(pending, result)) {
           rollbackPendingRunAction(pending);
           sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
@@ -1954,6 +1996,9 @@ function renderTutorialSkillMaster(offers) {
         if (applyPendingRunCorrection(pending, result)) {
           sceneModule?.showNarration?.('Skill choice did not save. Please choose again.', { autoDismiss: 2200 });
           renderSkillMaster();
+          return;
+        }
+        if (await reconcileInitialSkillPickRoomEntry(pending, result)) {
           return;
         }
         if (!reconcilePendingRunAction(pending, result)) {

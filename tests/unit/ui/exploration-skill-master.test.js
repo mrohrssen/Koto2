@@ -349,6 +349,83 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     assert.equal(renderedChoices?.heading, 'Choose a skill');
   });
 
+  it('resets Cid from the scene before rendering the first room after initial skill pick', async () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    const events = [];
+    let state = {
+      phase: 'skillMaster',
+      meta: { tutorialStep: 1 },
+      run: {
+        currentRoom: 0,
+        stats: { startTime: 777 },
+        initialSkillPick: { chosenId: null },
+        creatureParty: { active: [{ uid: 'ally-1', id: 'nekorin' }] },
+      },
+      room: { id: 'first-friendly', type: 'friendlyNpc' },
+    };
+    globalThis.document = {
+      getElementById: id => (id === 'action-area' ? actionArea : null),
+      createElement: () => createElementStub(),
+    };
+    sceneManagerState.currentScene = {
+      disposed: false,
+      _exiting: false,
+      layers: { npcs: {} },
+      async showNpcSprite() {},
+      async hideNpcSprite() {},
+      async resetForRoom(opts) {
+        events.push(['resetForRoom', opts]);
+      },
+    };
+
+    init({
+      getGameState: () => state,
+      updateGameState: nextState => { state = nextState; },
+      updateUI: () => { events.push(['updateUI']); },
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: { showNarration: () => {} },
+      apiSkillMasterOffers: async () => ({
+        offered: [
+          { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+          { id: 'guard', name: 'Guard', desc: 'Defend' },
+          { id: 'haste', name: 'Haste', desc: 'Speed up' },
+        ],
+      }),
+      apiSkillMasterChoose: async (skillId, options = {}) => ({
+        actionId: options.actionId,
+        chosenId: skillId,
+        state: {
+          ...state,
+          phase: 'friendlyNpc',
+          run: {
+            ...state.run,
+            pendingSkillChoice: undefined,
+            initialSkillPick: { chosenId: skillId },
+          },
+        },
+      }),
+    });
+
+    try {
+      await renderSkillMaster();
+      assert.equal(renderedChoices?.heading, 'Choose a skill');
+
+      await renderedChoices.onSelect(0);
+    } finally {
+      globalThis.document = originalDocument;
+      sceneManagerState.currentScene = null;
+    }
+
+    assert.deepEqual(events, [
+      ['resetForRoom', {
+        roomId: 0,
+        allies: [{ uid: 'ally-1', id: 'nekorin' }],
+      }],
+      ['updateUI'],
+    ]);
+  });
+
   it('shows the NPC battle skill select prompt with the standard dialogue card', async () => {
     const originalDocument = globalThis.document;
     const actionArea = createElementStub();
