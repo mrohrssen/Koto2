@@ -1229,6 +1229,7 @@ export function resolveSyntheticActorAction({
   itemBuffs = null,
   creatureParty = null,
   metaMults = null,
+  runPartySkills = [],
   playbackStart = 0,
   rng = Math.random,
 }) {
@@ -1271,7 +1272,8 @@ export function resolveSyntheticActorAction({
     new Set(),
     isAlly ? metaMults : null,
     isAlly ? null : itemBuffs,
-    rng
+    rng,
+    isAlly ? (runPartySkills || []) : []
   );
 
   for (const atk of result.attacks) {
@@ -1744,11 +1746,15 @@ export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBal
   // Award XP to creatures and collect results
   const xpGrants = [];
   const levelUps = [];
+  const leveledCreatures = new WeakSet();
 
   for (const entry of entries) {
     const prevLevel = entry.creature.level;
     const creatureLevelUps = addXpToCreature(entry.creature, entry.xp, metaMults, itemBuffs);
     xpGrants.push({ creatureId: entry.creature.id, creatureName: entry.creature.nameEn, xp: entry.xp });
+    if (creatureLevelUps.length > 0) {
+      leveledCreatures.add(entry.creature);
+    }
     for (const lu of creatureLevelUps) {
       levelUps.push({
         creatureId: entry.creature.id,
@@ -1767,7 +1773,7 @@ export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBal
 
   if (getPartySkillLevel(runPartySkills, 'expMaster') >= 5) {
     for (const entry of entries) {
-      if (levelUps.some(lu => lu.creatureId === entry.creature.id) && Math.random() < 0.10) {
+      if (leveledCreatures.has(entry.creature) && Math.random() < 0.10) {
         const extra = addXpToCreature(entry.creature, xpToNextLevel(entry.creature.level), metaMults, itemBuffs);
         for (const lu of extra) {
           levelUps.push({

@@ -934,6 +934,7 @@ export class CombatCycleService {
           itemBuffs: this.gm.run.itemBuffs,
           creatureParty: this.gm.run.creatureParty,
           metaMults: this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+          runPartySkills: this.gm.run.partySkills,
           rng,
         })
       : resolveNoopActorAction({

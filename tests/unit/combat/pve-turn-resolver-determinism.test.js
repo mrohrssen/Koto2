@@ -4,11 +4,12 @@ import { readFileSync } from 'node:fs';
 
 import { createSeededRng } from '../../../src/shared/deterministic-rng.js';
 import { createPveTurnSnapshot } from '../../../src/shared/combat/pve-turn-snapshot.js';
-import { resolvePveTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
+import { resolveKanjiKombatAnswerTurn, resolvePveTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { rollNpcSkill } from '../../../src/game/services/npc-service.js';
 import {
   executeNpcSkill,
+  awardKillXp,
   pickEnemyMoveChoice,
   pickEnemyTarget,
   processInterleavedPvERound,
@@ -323,6 +324,36 @@ describe('shared PvE turn resolver', () => {
     assert.equal(result.transcript.actionType, 'attack');
     assert.equal(result.transcript.playerAttacks.length, 1);
     assert.ok(result.nextCombat.enemies[0].hp < 90);
+  });
+
+  it('applies Exp Master XP to shared Kanji Kombat synthetic kills', () => {
+    const ally = creature({ id: 'hi', attack: 100, hp: 80, maxHp: 80 });
+    const enemy = creature({ id: 'mizu', level: 5, element: 'water', hp: 1, maxHp: 90 });
+    const result = resolveKanjiKombatAnswerTurn({
+      combat: {
+        active: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 0,
+        turnCount: 0,
+      },
+      run: {
+        partySkills: [{ id: 'expMaster', level: 4 }],
+        itemBuffs: null,
+        creatureParty: { active: [ally], reserves: [] },
+        crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+      },
+      meta: {},
+    }, {
+      answerCorrect: true,
+      targetIndex: 0,
+      rng: constantRng(0.50),
+      clone: false,
+      awardKillXp,
+    });
+
+    assert.equal(result.transcript.xpEvents[0].xpGrants[0].xp, 500);
   });
 
   it('resolves defend deterministically with the supplied seed', () => {

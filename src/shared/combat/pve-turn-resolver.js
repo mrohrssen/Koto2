@@ -288,6 +288,7 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
     seed,
     rng,
     clone = true,
+    awardKillXp = null,
   } = options;
   const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
   const turnRng = getTurnRng({ rng, seed });
@@ -321,6 +322,8 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
         itemBuffs: snapshot.itemBuffs || null,
         creatureParty: snapshot.creatureParty || null,
         metaMults: snapshot.metaMults || null,
+        runPartySkills: snapshot.runPartySkills || [],
+        awardKillXp,
         playbackStart,
         rng: turnRng,
       })

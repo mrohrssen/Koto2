@@ -11,6 +11,7 @@ import {
   tickAllEffects,
   resolveActorMiniRound,
   resolveSingleActorAction,
+  resolveSyntheticActorAction,
   rollTalkAcceptance,
   executeNpcSkill,
   handleBefriendAnswer,
@@ -18,6 +19,16 @@ import {
 } from '../../../src/game/services/creature-combat-service.js';
 import { instantiateCreature } from '../../../src/game/creatures.js';
 import { computeRestMpGain } from '../../../src/game/rest-move.js';
+
+function withMockRandom(value, fn) {
+  const original = Math.random;
+  Math.random = typeof value === 'function' ? value : () => value;
+  try {
+    return fn();
+  } finally {
+    Math.random = original;
+  }
+}
 
 describe('Creature Combat - Move Turn', () => {
   it('each allied creature uses a move against the enemy', () => {
@@ -1405,5 +1416,62 @@ describe('Party Skill Trees - HP and EXP Master', () => {
     const result = awardKillXp(party, 5, 1, 0, null, null, [{ id: 'expMaster', level: 4 }]);
 
     assert.equal(result.xpGrants[0].xp, 500);
+  });
+
+  it('Exp Master applies to synthetic Kanji Kombat kill XP', () => {
+    const ally = instantiateCreature('hi');
+    const enemy = instantiateCreature('ki');
+    enemy.hp = 1;
+    const party = { active: [ally], reserves: [] };
+
+    const result = resolveSyntheticActorAction({
+      actorSide: 'ally',
+      actorIndex: 0,
+      allies: [ally],
+      enemies: [enemy],
+      targetIndex: 0,
+      syntheticMove: {
+        id: 'kanji-kombat-strike',
+        name: 'Kanji Kombat Strike',
+        nameEn: 'Kanji Kombat Strike',
+        category: 'damage',
+        target: 'single_enemy',
+        element: ally.element,
+        power: 100,
+        mpCost: 0,
+      },
+      creatureParty: party,
+      runPartySkills: [{ id: 'expMaster', level: 4 }],
+      rng: () => 0.50
+    });
+
+    assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
+  });
+
+  it('Exp Master Lvl 5 bonus level only rolls for the creature instance that leveled', () => {
+    const leveledKi = instantiateCreature('ki');
+    leveledKi.uid = 'ki-near-level';
+    leveledKi.xp = 90;
+    const freshKi = instantiateCreature('ki');
+    freshKi.uid = 'ki-fresh';
+    freshKi.xp = 0;
+    const party = { active: [leveledKi, freshKi], reserves: [] };
+
+    const result = withMockRandom(0.01, () => awardKillXp(
+      party,
+      1,
+      1,
+      0,
+      null,
+      null,
+      [{ id: 'expMaster', level: 5 }]
+    ));
+
+    assert.equal(leveledKi.level, 7, 'near-threshold copy levels once, then receives the L5 bonus level');
+    assert.equal(freshKi.level, 5, 'fresh duplicate species copy should not receive an L5 bonus roll');
+    assert.equal(
+      result.levelUps.filter(levelUp => levelUp.partySkillBonus === 'expMaster').length,
+      1
+    );
   });
 });

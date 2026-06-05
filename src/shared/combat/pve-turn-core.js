@@ -1051,6 +1051,8 @@ export function resolveSyntheticActorAction({
   itemBuffs = null,
   creatureParty = null,
   metaMults = null,
+  runPartySkills = [],
+  awardKillXp = null,
   playbackStart = 0,
   rng = Math.random,
 }) {
@@ -1094,6 +1096,8 @@ export function resolveSyntheticActorAction({
     isAlly ? metaMults : null,
     isAlly ? null : itemBuffs,
     rng,
+    awardKillXp,
+    isAlly ? (runPartySkills || []) : [],
   );
 
   for (const atk of result.attacks) {
