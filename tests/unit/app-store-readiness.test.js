@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = process.cwd();
+const AI_CONSENT_COPY = 'I understand some Koto features may use AI to personalize the experience, and that gameplay text, vocabulary context, and dialogue requests may be shared with third-party AI providers.';
 
 function read(path) {
   return readFileSync(join(root, path), 'utf-8');
@@ -57,7 +58,7 @@ describe('App Store readiness static checks', () => {
     const html = read('public/index.html');
     const settingsUi = read('public/js/ui/modals.js');
 
-    assert.equal(html.includes('third-party AI providers'), true);
+    assert.equal(html.includes(AI_CONSENT_COPY), true);
     assert.equal(settingsUi.includes('settings-ai-conversations'), true);
     assert.equal(settingsUi.includes('Personalized Dialogue'), true);
     assert.equal(settingsUi.includes("Object.hasOwn(keyInfo, 'aiConversationsEnabled')"), true);
@@ -130,7 +131,7 @@ describe('App Store readiness static checks', () => {
     const authJs = read('public/js/ui/auth.js');
     const settingsUi = read('public/js/ui/modals.js');
 
-    assert.equal(html.includes('third-party AI providers'), true);
+    assert.equal(html.includes(AI_CONSENT_COPY), true);
     assert.equal(authJs.includes('auth-ai-consent'), true);
     assert.equal(settingsUi.includes('settings-ai-consent'), false);
   });
