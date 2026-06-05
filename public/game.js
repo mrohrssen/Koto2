@@ -1187,17 +1187,26 @@ async function startKanjiKombatSetup() {
   const starterIds = await showCollectionSelect(catalog, ownedCollection || collection, {
     title: 'Choose One Creature',
     confirmLabel: 'Start Kanji Kombat',
+    confirmBusyLabel: 'Starting Kanji Kombat...',
     maxSelections: 1,
     usePointBudget: false,
   });
   const creatureId = starterIds?.[0];
-  removeCollectionOverlay();
-  if (!creatureId) return;
+  if (!creatureId) {
+    removeCollectionOverlay();
+    return;
+  }
 
-  const result = await apiStartKanjiKombat(creatureId);
-  if (result?.state) updateGameState(result.state);
-  combatLoopUI.startCombatLoop();
-  updateUI();
+  try {
+    const result = await apiStartKanjiKombat(creatureId);
+    if (result?.state) {
+      updateGameState(result.state);
+      await combatLoopUI.startCombatLoop();
+    }
+  } finally {
+    removeCollectionOverlay();
+    updateUI();
+  }
 }
 
 function showCollectionSelect(catalog, collection, options = {}) {
@@ -1207,11 +1216,13 @@ function showCollectionSelect(catalog, collection, options = {}) {
   const usePointBudget = options.usePointBudget !== false;
   const title = options.title || t('selectTeam');
   const confirmLabel = options.confirmLabel || null;
+  const confirmBusyLabel = options.confirmBusyLabel || null;
 
   return new Promise((resolve) => {
     const selected = new Set();
     let usedPoints = 0;
     let inspectedId = null;
+    let confirming = false;
 
     // Element emoji map
     const ELEMENT_EMOJI = { water: '\u{1F4A7}', fire: '\u{1F525}', earth: '\u{1F30D}', metal: '\u2699\uFE0F', wood: '\u{1F33F}' };
@@ -1362,6 +1373,7 @@ function showCollectionSelect(catalog, collection, options = {}) {
         // Bind click handlers once
         overlay.querySelectorAll('.collection-cell').forEach(cell => {
           cell.addEventListener('click', () => {
+            if (confirming) return;
             const id = cell.dataset.id;
             const creature = sorted.find(r => r.id === id);
             if (!creature) return;
@@ -1391,12 +1403,17 @@ function showCollectionSelect(catalog, collection, options = {}) {
         });
 
         document.getElementById('collection-confirm-btn')?.addEventListener('click', () => {
+          if (confirming) return;
           if (selected.size > 0) {
+            confirming = true;
+            overlay.classList.add('collection-select--pending');
+            render();
             resolve([...selected]);
           }
         });
 
         document.getElementById('collection-menu-btn')?.addEventListener('click', () => {
+          if (confirming) return;
           modalsUI.toggleMenu();
         });
 
@@ -1447,8 +1464,16 @@ function showCollectionSelect(catalog, collection, options = {}) {
       // Update confirm button
       const confirmBtn = document.getElementById('collection-confirm-btn');
       if (confirmBtn) {
-        confirmBtn.disabled = selected.size === 0;
-        confirmBtn.innerHTML = confirmLabel || t('startRun', selected.size, selected.size !== 1 ? 's' : '');
+        confirmBtn.disabled = confirming || selected.size === 0;
+        confirmBtn.toggleAttribute('aria-busy', confirming);
+        confirmBtn.innerHTML = confirming
+          ? (confirmBusyLabel || confirmLabel || t('startRun', selected.size, selected.size !== 1 ? 's' : ''))
+          : (confirmLabel || t('startRun', selected.size, selected.size !== 1 ? 's' : ''));
+      }
+
+      const menuBtn = document.getElementById('collection-menu-btn');
+      if (menuBtn) {
+        menuBtn.disabled = confirming;
       }
     }
 
