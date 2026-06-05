@@ -14,7 +14,9 @@ import {
   applyConfuse,
   applyTaunt,
   applyCleanse,
+  applyStatChange,
   applyStatChanges,
+  initStatStages,
   isIncapacitated,
   isConfused,
   getAttackMultiplier,
@@ -33,6 +35,7 @@ import {
   computeInlineCounter,
   toActivePartySkillIdSet,
 } from '../../game/combat/party-skill-engine.js';
+import { getHealingMultiplier, getPartySkillLevel } from '../../game/party-skills.js';
 import { REST_MOVE, computeRestMpGain } from '../../game/rest-move.js';
 
 function creatureVocabFields(creature = {}, prefix) {
@@ -213,7 +216,19 @@ function applyCriticalDamage(attacker, move, damage, rng = Math.random) {
   };
 }
 
-function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEnemyIndices, itemBuffs, metaMults, awardKillXp }) {
+function applyHpMasterHeal({ target, amount, runPartySkills, rng = Math.random }) {
+  const boosted = Math.floor(amount * getHealingMultiplier(runPartySkills));
+  const healed = applyHeal(target, boosted);
+  if (healed > 0 && getPartySkillLevel(runPartySkills, 'hpMaster') >= 4) {
+    const stats = ['atk', 'def', 'dex'];
+    const stat = stats[Math.floor(rng() * stats.length)];
+    initStatStages(target);
+    applyStatChange(target, stat, 1);
+  }
+  return healed;
+}
+
+function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEnemyIndices, itemBuffs, metaMults, awardKillXp, runPartySkills }) {
   if (!creatureParty || typeof awardKillXp !== 'function') return null;
   if (enemyIdx < 0 || defeatedEnemyIndices.has(enemyIdx)) return null;
   defeatedEnemyIndices.add(enemyIdx);
@@ -224,11 +239,12 @@ function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEn
     itemBuffs?.xpBalanceStacks,
     metaMults,
     itemBuffs,
+    runPartySkills,
   );
   return { enemyId: target.id, enemyIndex: enemyIdx, enemyName: target.nameEn, ...xpEvent };
 }
 
-function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null, rng = Math.random, awardKillXp = null) {
+function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null, rng = Math.random, awardKillXp = null, runPartySkills = []) {
   const attacks = [];
   const xpEvents = [];
   const stab = move.element !== 'neutral' && move.element === creature.element;
@@ -264,7 +280,12 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         if (damage > 0) breakSleep(target);
 
         const healAmount = move.category === 'drain'
-          ? applyHeal(creature, Math.floor(damage * 0.5))
+          ? applyHpMasterHeal({
+            target: creature,
+            amount: Math.floor(damage * 0.5),
+            runPartySkills,
+            rng
+          })
           : 0;
         const targetDefeated = target.hp <= 0;
         const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies, rng) : null;
@@ -293,6 +314,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
             itemBuffs,
             metaMults,
             awardKillXp,
+            runPartySkills,
           });
           if (xpEvent) xpEvents.push(xpEvent);
         }
@@ -306,7 +328,12 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const target = targets[i];
         const tIdx = indices[i];
         const variance = rollVariance(rng);
-        const healAmount = applyHeal(target, Math.floor((creature.attack / 10) * move.power * variance));
+        const healAmount = applyHpMasterHeal({
+          target,
+          amount: Math.floor((creature.attack / 10) * move.power * variance),
+          runPartySkills,
+          rng
+        });
         const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies, rng) : null;
         const statChangesApplied = tryApplyStatChanges(move, target, rng);
 
@@ -568,6 +595,7 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
     onAttack = null,
     rng = Math.random,
     awardKillXp = null,
+    runPartySkills = [],
   } = options;
 
   const attacks = [];
@@ -616,6 +644,7 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
       defenderItemBuffs,
       rng,
       awardKillXp,
+      runPartySkills,
     );
     for (const atk of result.attacks) {
       atk.attackerMp = creature.mp;
@@ -744,6 +773,7 @@ export function processInterleavedPvERound(
         defenderItemBuffs: isAlly ? null : itemBuffs,
         rng,
         awardKillXp: options.awardKillXp || null,
+        runPartySkills: isAlly ? (options.runPartySkills || []) : [],
         onAttack(atk) {
           tagPlayback(atk, isAlly ? 'player' : 'enemy');
           (isAlly ? playerAttacks : enemyAttacks).push(atk);
@@ -946,6 +976,7 @@ export function resolveSingleActorAction({
     defenderItemBuffs: isAlly ? null : itemBuffs,
     defeatedIndices: new Set(),
     rng,
+    runPartySkills: isAlly ? (runPartySkills || []) : [],
     onAttack(atk) {
       atk.playbackIndex = playbackIndex++;
       atk.combatSide = isAlly ? 'player' : 'enemy';

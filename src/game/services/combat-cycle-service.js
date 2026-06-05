@@ -545,7 +545,8 @@ export class CombatCycleService {
         this.gm.run.itemBuffs?.xpMultiplier,
         this.gm.run.itemBuffs?.xpBalanceStacks,
         metaMults,
-        this.gm.run.itemBuffs
+        this.gm.run.itemBuffs,
+        this.gm.run.partySkills
       );
       xpEvents.push({ enemyId: enemy.id, enemyIndex: event.targetIndex, enemyName: enemy.nameEn, ...xpEvent });
     }

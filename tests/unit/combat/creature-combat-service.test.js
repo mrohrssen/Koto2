@@ -1353,3 +1353,57 @@ describe('Creature Combat - Rest action in processMoveTurn', () => {
     assert.ok(typeof atk.attackerWord === 'string' && atk.attackerWord.length > 0);
   });
 });
+
+describe('Party Skill Trees - HP and EXP Master', () => {
+  it('HP Master Lvl 3 makes heal moves restore 50% more HP via resolveSingleActorAction', () => {
+    const ally = instantiateCreature('mizu');
+    ally.moves.push({ id: 'test-heal', name: '治す', nameEn: 'Test Heal', element: 'neutral', category: 'heal', target: 'self', power: 20, mpCost: 0 });
+    ally.maxHp = 200;
+    ally.hp = 1;
+
+    const result = resolveSingleActorAction({
+      actorSide: 'ally',
+      actorIndex: 0,
+      allies: [ally],
+      enemies: [instantiateCreature('ki')],
+      choices: [{ creatureIndex: 0, moveId: 'test-heal', targetIndex: 0 }],
+      creatureParty: { active: [ally], reserves: [] },
+      runPartySkills: [{ id: 'hpMaster', level: 3 }],
+      combat: {},
+      rng: () => 0.50
+    });
+
+    const attack = result.actionSegments[0].attacks[0];
+    assert.ok(attack.healAmount > 0);
+    assert.equal(attack.healAmount, Math.floor(((ally.attack / 10) * 20 * 1.0) * 1.5));
+  });
+
+  it('HP Master Lvl 4 gives healed target a random buff', () => {
+    const ally = instantiateCreature('mizu');
+    ally.moves.push({ id: 'test-heal', name: '治す', nameEn: 'Test Heal', element: 'neutral', category: 'heal', target: 'self', power: 20, mpCost: 0 });
+    ally.hp = 1;
+    ally.statStages = { atk: 0, def: 0, dex: 0 };
+
+    resolveSingleActorAction({
+      actorSide: 'ally',
+      actorIndex: 0,
+      allies: [ally],
+      enemies: [instantiateCreature('ki')],
+      choices: [{ creatureIndex: 0, moveId: 'test-heal', targetIndex: 0 }],
+      creatureParty: { active: [ally], reserves: [] },
+      runPartySkills: [{ id: 'hpMaster', level: 4 }],
+      combat: {},
+      rng: () => 0.01
+    });
+
+    assert.equal(ally.statStages.atk, 1);
+  });
+
+  it('Exp Master Lvl 4 doubles kill XP through awardKillXp(..., runPartySkills)', () => {
+    const party = { active: [instantiateCreature('ki')], reserves: [] };
+
+    const result = awardKillXp(party, 5, 1, 0, null, null, [{ id: 'expMaster', level: 4 }]);
+
+    assert.equal(result.xpGrants[0].xp, 500);
+  });
+});
