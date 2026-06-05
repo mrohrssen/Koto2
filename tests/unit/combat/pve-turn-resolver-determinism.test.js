@@ -793,6 +793,31 @@ describe('PvE combat rng injection', () => {
     assert.deepEqual(run(0.99), run(0.01));
   });
 
+  it('combat-cycle Kanji Kombat synthetic kills award Exp Master XP', () => {
+    const gm = makeCursorGameManager();
+    gm.run.mode = 'kanjiKombat';
+    gm.run.partySkills = [{ id: 'expMaster', level: 4 }];
+    gm.combat.allies = [gm.combat.allies[0]];
+    gm.run.creatureParty.active = gm.combat.allies;
+    gm.combat.enemies = [creature({ id: 'mizu', level: 5, hp: 1, maxHp: 90, moves: [] })];
+    gm.combat.actionCursor = { side: 'ally', index: 0, opening: false };
+    gm.kanjiKombatService = {
+      completeWaveAndMaybeStartNext: result => ({ actionType: 'kanjiKombat', ...result }),
+      finalizeDefeat: result => ({ actionType: 'kanjiKombat', ...result }),
+      queueNextPrompt: () => null,
+      finalizeDailyComplete: result => ({ actionType: 'kanjiKombat', ...result }),
+    };
+    const service = new CombatCycleService(gm);
+
+    const result = service.resolveKanjiKombatCursorAction({
+      correct: true,
+      targetIndex: 0,
+      rng: constantRng(0.50),
+    });
+
+    assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
+  });
+
   it('NPC skill rolling and single-ally target selection use explicit rng when provided', () => {
     const npc = { id: 'test-npc', skills: ['asobu', 'hataraku'] };
     const skill = withMockRandom(0.99, () => rollNpcSkill(npc, sequenceRng([0.1, 0.75])));
