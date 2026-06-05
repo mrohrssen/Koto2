@@ -56,16 +56,22 @@ function validateEntry(entry, index) {
 }
 
 function validateDictionary(data) {
-  if (data.schemaVersion !== 1) {
-    throw new Error('Invalid Koto kanji dictionary: schemaVersion must be 1');
+  if (data.schemaVersion !== 2) {
+    throw new Error('Invalid Koto kanji dictionary: schemaVersion must be 2');
   }
-  assertArray(data.sources, 'sources');
+  assertString(data.curationVersion, 'curationVersion');
+  if (data.maintainer !== 'Koto') {
+    throw new Error('Invalid Koto kanji dictionary: maintainer must be Koto');
+  }
+  if (data.status !== 'hand-curated') {
+    throw new Error('Invalid Koto kanji dictionary: status must be hand-curated');
+  }
+  for (const forbidden of ['generatedAt', 'sources', 'referenceSources']) {
+    if (Object.prototype.hasOwnProperty.call(data, forbidden)) {
+      throw new Error(`Invalid Koto kanji dictionary: ${forbidden} must not be stored`);
+    }
+  }
   assertArray(data.entries, 'entries');
-
-  const sourceIds = data.sources.map(source => source.id);
-  if (sourceIds.includes('jpdb-kanji-frequency') || sourceIds.some(id => id.toLowerCase().includes('wanikani'))) {
-    throw new Error('Invalid Koto kanji dictionary: sources must not include JPDB or WaniKani');
-  }
 
   const seenKanji = new Set();
   const seenRanks = new Set();
@@ -81,15 +87,20 @@ function validateDictionary(data) {
 validateDictionary(dictionary);
 
 const entries = Object.freeze([...dictionary.entries].sort((a, b) => a.frequencyRank - b.frequencyRank));
-const sources = Object.freeze([...dictionary.sources]);
+const metadata = Object.freeze({
+  schemaVersion: dictionary.schemaVersion,
+  curationVersion: dictionary.curationVersion,
+  maintainer: dictionary.maintainer,
+  status: dictionary.status,
+});
 const entriesByKanji = new Map(entries.map(entry => [entry.kanji, entry]));
 
 export function getKotoKanjiEntries() {
   return entries;
 }
 
-export function getKotoKanjiSources() {
-  return sources;
+export function getKotoKanjiMetadata() {
+  return metadata;
 }
 
 export function getKotoKanjiEntry(kanji) {

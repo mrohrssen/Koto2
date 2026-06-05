@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   getKotoKanjiEntries,
   getKotoKanjiEntry,
-  getKotoKanjiSources,
+  getKotoKanjiMetadata,
 } from '../../../src/game/koto-kanji-dictionary.js';
 
 function assertNoField(entry, field) {
@@ -18,11 +18,17 @@ describe('koto kanji dictionary', () => {
     assert.deepEqual(entries.slice(0, 4).map(entry => entry.frequencyRank), [1, 2, 3, 4]);
   });
 
-  it('keeps dictionary source metadata separate from JPDB ordering metadata', () => {
-    const sourceIds = getKotoKanjiSources().map(source => source.id);
-    assert.equal(sourceIds.includes('jpdb-kanji-frequency'), false);
-    assert.equal(sourceIds.some(id => id.toLowerCase().includes('wanikani')), false);
-    assert.deepEqual(sourceIds, ['kanjidic2', 'jmdict']);
+  it('exposes curated dictionary metadata without reference source provenance', () => {
+    const metadata = getKotoKanjiMetadata();
+    assert.equal(metadata.schemaVersion, 2);
+    assert.equal(metadata.maintainer, 'Koto');
+    assert.equal(metadata.status, 'hand-curated');
+    assert.equal(typeof metadata.curationVersion, 'string');
+    assert.equal(Object.prototype.hasOwnProperty.call(metadata, 'sources'), false);
+    assert.equal(Object.prototype.hasOwnProperty.call(metadata, 'referenceSources'), false);
+    const serialized = JSON.stringify(metadata).toLowerCase();
+    assert.equal(serialized.includes('jpdb'), false);
+    assert.equal(serialized.includes('wanikani'), false);
   });
 
   it('validates the compact entry schema used by Kanji Kombat', () => {

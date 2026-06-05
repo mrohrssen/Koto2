@@ -151,9 +151,9 @@ When the active script deck has no due cards and no remaining new cards availabl
 
 Kanji cards represent one kanji character and one primary English meaning. Quiz choices for kanji use those English meanings.
 
-Kanji cards are sourced from Koto's internal kanji dictionary at `data/kanji/koto-kanji-dictionary.json`. The dictionary contains 4000 entries ordered by a dated top-4000 JPDB frequency snapshot, while card meanings/readings/examples come from Koto-maintained dictionary fields.
+Kanji cards are sourced from Koto's curated kanji dictionary at `data/kanji/koto-kanji-dictionary.json`. The dictionary contains 4000 entries in the established Koto frequency order. Primary meanings are Koto-owned curated keywords.
 
-JPDB is only an ordering input and is not included in the dictionary `sources` metadata. The shipping dictionary source metadata names only the enrichment sources used for meanings, readings, and examples.
+JPDB, KANJIDIC2, and JMdict remain historical/reference inputs for curation. The schema v2 dictionary intentionally does not ship `sources` metadata fields.
 
 The game introduces new kanji as the next unlearned item in the ordered `KANJI_SCRIPT_CARDS` array. There is no separate adaptive selector for new kanji. Reviews are still FSRS-driven by due date.
 

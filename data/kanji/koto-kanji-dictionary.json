@@ -1,20 +1,8 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-06-01T11:27:20.843Z",
-  "sources": [
-    {
-      "id": "kanjidic2",
-      "name": "KANJIDIC2",
-      "url": "https://www.edrdg.org/kanjidic/kanjidic2.xml.gz",
-      "license": "EDRDG / CC BY-SA 4.0"
-    },
-    {
-      "id": "jmdict",
-      "name": "JMdict / Koto dictionary-derived examples",
-      "url": "https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project",
-      "license": "EDRDG / CC BY-SA 4.0"
-    }
-  ],
+  "schemaVersion": 2,
+  "curationVersion": "2026-06-05",
+  "maintainer": "Koto",
+  "status": "hand-curated",
   "entries": [
     {
       "kanji": "人",
@@ -1168,7 +1156,7 @@
       "kanji": "様",
       "frequencyRank": 31,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "Esq.",
+      "primaryMeaning": "honorific",
       "secondaryMeanings": [
         "way",
         "manner",
@@ -1289,7 +1277,7 @@
       "kanji": "魔",
       "frequencyRank": 34,
       "kind": "Jōyō",
-      "primaryMeaning": "witch",
+      "primaryMeaning": "demon",
       "secondaryMeanings": [
         "demon",
         "evil spirit"
@@ -1325,7 +1313,7 @@
       "kanji": "話",
       "frequencyRank": 35,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "tale",
+      "primaryMeaning": "talk",
       "secondaryMeanings": [
         "talk"
       ],
@@ -1746,7 +1734,7 @@
       "kanji": "無",
       "frequencyRank": 46,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "nothingness",
+      "primaryMeaning": "nothing",
       "secondaryMeanings": [
         "none",
         "ain't",
@@ -2204,7 +2192,7 @@
       "kanji": "立",
       "frequencyRank": 58,
       "kind": "Kyōiku (1st grade)",
-      "primaryMeaning": "stand up",
+      "primaryMeaning": "stand",
       "secondaryMeanings": [
         "rise",
         "set up",
@@ -2394,7 +2382,7 @@
       "kanji": "身",
       "frequencyRank": 63,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "somebody",
+      "primaryMeaning": "body",
       "secondaryMeanings": [
         "person",
         "one's station in life"
@@ -2472,7 +2460,7 @@
       "kanji": "向",
       "frequencyRank": 65,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "yonder",
+      "primaryMeaning": "direction",
       "secondaryMeanings": [
         "facing",
         "beyond",
@@ -2700,7 +2688,7 @@
       "kanji": "的",
       "frequencyRank": 71,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "bull's eye",
+      "primaryMeaning": "target",
       "secondaryMeanings": [
         "mark",
         "target",
@@ -2739,7 +2727,7 @@
       "kanji": "通",
       "frequencyRank": 72,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "traffic",
+      "primaryMeaning": "pass through",
       "secondaryMeanings": [
         "pass through",
         "avenue",
@@ -2780,7 +2768,7 @@
       "kanji": "最",
       "frequencyRank": 73,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "utmost",
+      "primaryMeaning": "most",
       "secondaryMeanings": [
         "most",
         "extreme"
@@ -2890,7 +2878,7 @@
       "kanji": "不",
       "frequencyRank": 76,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "negative",
+      "primaryMeaning": "not",
       "secondaryMeanings": [
         "non-",
         "bad",
@@ -3002,7 +2990,7 @@
       "kanji": "考",
       "frequencyRank": 79,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "consider",
+      "primaryMeaning": "think",
       "secondaryMeanings": [
         "think over"
       ],
@@ -3037,7 +3025,7 @@
       "kanji": "変",
       "frequencyRank": 80,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "unusual",
+      "primaryMeaning": "change",
       "secondaryMeanings": [
         "change",
         "strange"
@@ -3190,7 +3178,7 @@
       "kanji": "違",
       "frequencyRank": 84,
       "kind": "Jōyō",
-      "primaryMeaning": "difference",
+      "primaryMeaning": "different",
       "secondaryMeanings": [
         "differ"
       ],
@@ -3226,7 +3214,7 @@
       "kanji": "回",
       "frequencyRank": 85,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "-times",
+      "primaryMeaning": "times",
       "secondaryMeanings": [
         "round",
         "game",
@@ -3503,7 +3491,7 @@
       "kanji": "面",
       "frequencyRank": 92,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "mask",
+      "primaryMeaning": "surface",
       "secondaryMeanings": [
         "face",
         "features",
@@ -3739,7 +3727,7 @@
       "kanji": "付",
       "frequencyRank": 98,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "adhere",
+      "primaryMeaning": "attach",
       "secondaryMeanings": [
         "attach",
         "refer to",
@@ -3776,7 +3764,7 @@
       "kanji": "小",
       "frequencyRank": 99,
       "kind": "Kyōiku (1st grade)",
-      "primaryMeaning": "little",
+      "primaryMeaning": "small",
       "secondaryMeanings": [
         "small"
       ],
@@ -3888,7 +3876,7 @@
       "kanji": "確",
       "frequencyRank": 102,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "assurance",
+      "primaryMeaning": "certain",
       "secondaryMeanings": [
         "firm",
         "tight",
@@ -3930,7 +3918,7 @@
       "kanji": "性",
       "frequencyRank": 103,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "sex",
+      "primaryMeaning": "nature",
       "secondaryMeanings": [
         "gender",
         "nature"
@@ -4040,7 +4028,7 @@
       "kanji": "対",
       "frequencyRank": 106,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "vis-a-vis",
+      "primaryMeaning": "opposite",
       "secondaryMeanings": [
         "opposite",
         "even",
@@ -4159,7 +4147,7 @@
       "kanji": "世",
       "frequencyRank": 109,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "generation",
+      "primaryMeaning": "world",
       "secondaryMeanings": [
         "world",
         "society",
@@ -4198,7 +4186,7 @@
       "kanji": "相",
       "frequencyRank": 110,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "inter-",
+      "primaryMeaning": "mutual",
       "secondaryMeanings": [
         "mutual",
         "together",
@@ -4242,7 +4230,7 @@
       "kanji": "真",
       "frequencyRank": 111,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "reality",
+      "primaryMeaning": "truth",
       "secondaryMeanings": [
         "Buddhist sect"
       ],
@@ -4354,7 +4342,7 @@
       "kanji": "神",
       "frequencyRank": 114,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "gods",
+      "primaryMeaning": "god",
       "secondaryMeanings": [
         "mind",
         "soul"
@@ -4430,7 +4418,7 @@
       "kanji": "着",
       "frequencyRank": 116,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "don",
+      "primaryMeaning": "wear",
       "secondaryMeanings": [
         "arrive",
         "wear",
@@ -4657,7 +4645,7 @@
       "kanji": "足",
       "frequencyRank": 122,
       "kind": "Kyōiku (1st grade)",
-      "primaryMeaning": "leg",
+      "primaryMeaning": "foot",
       "secondaryMeanings": [
         "foot",
         "be sufficient",
@@ -4926,7 +4914,7 @@
       "kanji": "用",
       "frequencyRank": 129,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "utilize",
+      "primaryMeaning": "use",
       "secondaryMeanings": [
         "business",
         "service",
@@ -5002,7 +4990,7 @@
       "kanji": "好",
       "frequencyRank": 131,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "fond",
+      "primaryMeaning": "like",
       "secondaryMeanings": [
         "pleasing",
         "like something"
@@ -5083,7 +5071,7 @@
       "kanji": "仕",
       "frequencyRank": 133,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "attend",
+      "primaryMeaning": "serve",
       "secondaryMeanings": [
         "doing",
         "official",
@@ -5233,7 +5221,7 @@
       "kanji": "直",
       "frequencyRank": 137,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "straightaway",
+      "primaryMeaning": "straight",
       "secondaryMeanings": [
         "honesty",
         "frankness",
@@ -5396,7 +5384,7 @@
       "kanji": "解",
       "frequencyRank": 141,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "unravel",
+      "primaryMeaning": "solve",
       "secondaryMeanings": [
         "notes",
         "key",
@@ -5678,7 +5666,7 @@
       "kanji": "士",
       "frequencyRank": 148,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "gentleman",
+      "primaryMeaning": "professional",
       "secondaryMeanings": [
         "scholar",
         "samurai",
@@ -6145,7 +6133,7 @@
       "kanji": "視",
       "frequencyRank": 160,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "inspection",
+      "primaryMeaning": "look at",
       "secondaryMeanings": [
         "regard as",
         "see",
@@ -6222,7 +6210,7 @@
       "kanji": "信",
       "frequencyRank": 162,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "faith",
+      "primaryMeaning": "belief",
       "secondaryMeanings": [
         "truth",
         "fidelity",
@@ -6259,7 +6247,7 @@
       "kanji": "張",
       "frequencyRank": 163,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "counter for bows & stringed instruments",
+      "primaryMeaning": "lengthen",
       "secondaryMeanings": [
         "stretch",
         "spread",
@@ -6409,7 +6397,7 @@
       "kanji": "突",
       "frequencyRank": 167,
       "kind": "Jōyō",
-      "primaryMeaning": "stab",
+      "primaryMeaning": "thrust",
       "secondaryMeanings": [
         "protruding",
         "thrust",
@@ -6570,7 +6558,7 @@
       "kanji": "道",
       "frequencyRank": 171,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "road-way",
+      "primaryMeaning": "road",
       "secondaryMeanings": [
         "street",
         "district",
@@ -6736,7 +6724,7 @@
       "kanji": "必",
       "frequencyRank": 175,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "invariably",
+      "primaryMeaning": "certainly",
       "secondaryMeanings": [
         "certain",
         "inevitable"
@@ -6772,7 +6760,7 @@
       "kanji": "戻",
       "frequencyRank": 176,
       "kind": "Jōyō",
-      "primaryMeaning": "re-",
+      "primaryMeaning": "return",
       "secondaryMeanings": [
         "return",
         "revert",
@@ -6886,7 +6874,7 @@
       "kanji": "残",
       "frequencyRank": 179,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "remainder",
+      "primaryMeaning": "remain",
       "secondaryMeanings": [
         "leftover",
         "balance"
@@ -7260,7 +7248,7 @@
       "kanji": "機",
       "frequencyRank": 189,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "loom",
+      "primaryMeaning": "machine",
       "secondaryMeanings": [
         "mechanism",
         "machine",
@@ -7350,7 +7338,7 @@
       "kanji": "始",
       "frequencyRank": 191,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "commence",
+      "primaryMeaning": "begin",
       "secondaryMeanings": [
         "begin"
       ],
@@ -7385,7 +7373,7 @@
       "kanji": "主",
       "frequencyRank": 192,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "lord",
+      "primaryMeaning": "master",
       "secondaryMeanings": [
         "chief",
         "master",
@@ -7578,7 +7566,7 @@
       "kanji": "勝",
       "frequencyRank": 197,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "victory",
+      "primaryMeaning": "win",
       "secondaryMeanings": [
         "win",
         "prevail",
@@ -7651,7 +7639,7 @@
       "kanji": "光",
       "frequencyRank": 199,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "ray",
+      "primaryMeaning": "light",
       "secondaryMeanings": [
         "light"
       ],
@@ -7687,7 +7675,7 @@
       "kanji": "楽",
       "frequencyRank": 200,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "music",
+      "primaryMeaning": "comfort",
       "secondaryMeanings": [
         "comfort",
         "ease"
@@ -7727,7 +7715,7 @@
       "kanji": "命",
       "frequencyRank": 201,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "fate",
+      "primaryMeaning": "life",
       "secondaryMeanings": [
         "command",
         "decree",
@@ -7843,7 +7831,7 @@
       "kanji": "帰",
       "frequencyRank": 204,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "homecoming",
+      "primaryMeaning": "return home",
       "secondaryMeanings": [
         "arrive at",
         "lead to",
@@ -7882,7 +7870,7 @@
       "kanji": "起",
       "frequencyRank": 205,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "rouse",
+      "primaryMeaning": "wake up",
       "secondaryMeanings": [
         "wake up",
         "get up"
@@ -8112,7 +8100,7 @@
       "kanji": "想",
       "frequencyRank": 211,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "idea",
+      "primaryMeaning": "thought",
       "secondaryMeanings": [
         "thought",
         "conception",
@@ -8151,7 +8139,7 @@
       "kanji": "応",
       "frequencyRank": 212,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "apply",
+      "primaryMeaning": "respond",
       "secondaryMeanings": [
         "answer",
         "yes",
@@ -8193,7 +8181,7 @@
       "kanji": "状",
       "frequencyRank": 213,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "status quo",
+      "primaryMeaning": "condition",
       "secondaryMeanings": [
         "conditions",
         "circumstances",
@@ -8301,7 +8289,7 @@
       "kanji": "剣",
       "frequencyRank": 216,
       "kind": "Jōyō",
-      "primaryMeaning": "sabre",
+      "primaryMeaning": "sword",
       "secondaryMeanings": [
         "sword",
         "blade",
@@ -8339,7 +8327,7 @@
       "kanji": "離",
       "frequencyRank": 217,
       "kind": "Jōyō",
-      "primaryMeaning": "detach",
+      "primaryMeaning": "separate",
       "secondaryMeanings": [
         "separation",
         "disjoin",
@@ -8422,7 +8410,7 @@
       "kanji": "過",
       "frequencyRank": 219,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "overdo",
+      "primaryMeaning": "surpass",
       "secondaryMeanings": [
         "exceed",
         "go beyond",
@@ -8462,7 +8450,7 @@
       "kanji": "我",
       "frequencyRank": 220,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "ego",
+      "primaryMeaning": "self",
       "secondaryMeanings": [
         "I",
         "selfish",
@@ -8577,7 +8565,7 @@
       "kanji": "置",
       "frequencyRank": 223,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "placement",
+      "primaryMeaning": "put down",
       "secondaryMeanings": [
         "put",
         "set",
@@ -8618,7 +8606,7 @@
       "kanji": "放",
       "frequencyRank": 224,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "set free",
+      "primaryMeaning": "release",
       "secondaryMeanings": [
         "release",
         "fire",
@@ -8660,7 +8648,7 @@
       "kanji": "調",
       "frequencyRank": 225,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "tune",
+      "primaryMeaning": "investigate",
       "secondaryMeanings": [
         "tone",
         "meter",
@@ -8744,7 +8732,7 @@
       "kanji": "背",
       "frequencyRank": 227,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "stature",
+      "primaryMeaning": "back",
       "secondaryMeanings": [
         "height",
         "back",
@@ -8869,7 +8857,7 @@
       "kanji": "緒",
       "frequencyRank": 230,
       "kind": "Jōyō",
-      "primaryMeaning": "thong",
+      "primaryMeaning": "strap",
       "secondaryMeanings": [
         "beginning",
         "inception",
@@ -9229,7 +9217,7 @@
       "kanji": "成",
       "frequencyRank": 239,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "turn into",
+      "primaryMeaning": "become",
       "secondaryMeanings": [
         "become",
         "get",
@@ -9339,7 +9327,7 @@
       "kanji": "倒",
       "frequencyRank": 242,
       "kind": "Jōyō",
-      "primaryMeaning": "overthrow",
+      "primaryMeaning": "collapse",
       "secondaryMeanings": [
         "fall",
         "collapse",
@@ -9380,7 +9368,7 @@
       "kanji": "術",
       "frequencyRank": 243,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "art",
+      "primaryMeaning": "technique",
       "secondaryMeanings": [
         "technique",
         "skill",
@@ -9461,7 +9449,7 @@
       "kanji": "瞬",
       "frequencyRank": 245,
       "kind": "Jōyō",
-      "primaryMeaning": "wink",
+      "primaryMeaning": "blink",
       "secondaryMeanings": [
         "blink",
         "twinkle"
@@ -9534,7 +9522,7 @@
       "kanji": "員",
       "frequencyRank": 247,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "employee",
+      "primaryMeaning": "member",
       "secondaryMeanings": [
         "member",
         "number",
@@ -9609,7 +9597,7 @@
       "kanji": "抜",
       "frequencyRank": 249,
       "kind": "Jōyō",
-      "primaryMeaning": "slip out",
+      "primaryMeaning": "pull out",
       "secondaryMeanings": [
         "extract",
         "pull out",
@@ -9950,7 +9938,7 @@
       "kanji": "答",
       "frequencyRank": 258,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "solution",
+      "primaryMeaning": "answer",
       "secondaryMeanings": [
         "answer"
       ],
@@ -10109,7 +10097,7 @@
       "kanji": "由",
       "frequencyRank": 262,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "wherefore",
+      "primaryMeaning": "reason",
       "secondaryMeanings": [
         "a reason"
       ],
@@ -10219,7 +10207,7 @@
       "kanji": "頼",
       "frequencyRank": 265,
       "kind": "Jōyō",
-      "primaryMeaning": "trust",
+      "primaryMeaning": "rely on",
       "secondaryMeanings": [
         "request"
       ],
@@ -10403,7 +10391,7 @@
       "kanji": "断",
       "frequencyRank": 270,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "severance",
+      "primaryMeaning": "cut off",
       "secondaryMeanings": [
         "decline",
         "refuse",
@@ -10482,7 +10470,7 @@
       "kanji": "校",
       "frequencyRank": 272,
       "kind": "Kyōiku (1st grade)",
-      "primaryMeaning": "exam",
+      "primaryMeaning": "school",
       "secondaryMeanings": [
         "school",
         "printing",
@@ -10635,7 +10623,7 @@
       "kanji": "優",
       "frequencyRank": 276,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "tenderness",
+      "primaryMeaning": "gentle",
       "secondaryMeanings": [
         "excel",
         "surpass",
@@ -10826,7 +10814,7 @@
       "kanji": "願",
       "frequencyRank": 281,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "petition",
+      "primaryMeaning": "wish",
       "secondaryMeanings": [
         "request",
         "vow",
@@ -10898,7 +10886,7 @@
       "kanji": "守",
       "frequencyRank": 283,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "guard",
+      "primaryMeaning": "protect",
       "secondaryMeanings": [
         "protect",
         "defend",
@@ -10976,7 +10964,7 @@
       "kanji": "抱",
       "frequencyRank": 285,
       "kind": "Jōyō",
-      "primaryMeaning": "embrace",
+      "primaryMeaning": "hug",
       "secondaryMeanings": [
         "hug",
         "hold in arms"
@@ -11137,7 +11125,7 @@
       "kanji": "精",
       "frequencyRank": 289,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "refined",
+      "primaryMeaning": "spirit",
       "secondaryMeanings": [
         "ghost",
         "fairy",
@@ -11374,7 +11362,7 @@
       "kanji": "説",
       "frequencyRank": 295,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "opinion",
+      "primaryMeaning": "theory",
       "secondaryMeanings": [
         "theory",
         "explanation",
@@ -11447,7 +11435,7 @@
       "kanji": "胸",
       "frequencyRank": 297,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "bosom",
+      "primaryMeaning": "chest",
       "secondaryMeanings": [
         "breast",
         "chest",
@@ -11486,7 +11474,7 @@
       "kanji": "負",
       "frequencyRank": 298,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "defeat",
+      "primaryMeaning": "lose",
       "secondaryMeanings": [
         "negative",
         "-",
@@ -11677,7 +11665,7 @@
       "kanji": "座",
       "frequencyRank": 303,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "squat",
+      "primaryMeaning": "sit",
       "secondaryMeanings": [
         "seat",
         "cushion",
@@ -11716,7 +11704,7 @@
       "kanji": "段",
       "frequencyRank": 304,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "grade",
+      "primaryMeaning": "step",
       "secondaryMeanings": [
         "steps",
         "stairs"
@@ -11753,7 +11741,7 @@
       "kanji": "識",
       "frequencyRank": 305,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "discriminating",
+      "primaryMeaning": "recognize",
       "secondaryMeanings": [
         "know",
         "write"
@@ -11903,7 +11891,7 @@
       "kanji": "点",
       "frequencyRank": 309,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "spot",
+      "primaryMeaning": "point",
       "secondaryMeanings": [
         "point",
         "mark",
@@ -12101,7 +12089,7 @@
       "kanji": "寄",
       "frequencyRank": 314,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "draw near",
+      "primaryMeaning": "approach",
       "secondaryMeanings": [
         "stop in",
         "bring near",
@@ -12141,7 +12129,7 @@
       "kanji": "攻",
       "frequencyRank": 315,
       "kind": "Jōyō",
-      "primaryMeaning": "aggression",
+      "primaryMeaning": "attack",
       "secondaryMeanings": [
         "attack",
         "criticize",
@@ -12255,7 +12243,7 @@
       "kanji": "差",
       "frequencyRank": 318,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "distinction",
+      "primaryMeaning": "difference",
       "secondaryMeanings": [
         "difference",
         "variation",
@@ -12294,7 +12282,7 @@
       "kanji": "触",
       "frequencyRank": 319,
       "kind": "Jōyō",
-      "primaryMeaning": "contact",
+      "primaryMeaning": "touch",
       "secondaryMeanings": [
         "touch",
         "feel",
@@ -12455,7 +12443,7 @@
       "kanji": "普",
       "frequencyRank": 323,
       "kind": "Jōyō",
-      "primaryMeaning": "universal",
+      "primaryMeaning": "normal",
       "secondaryMeanings": [
         "wide(ly)",
         "generally",
@@ -12563,7 +12551,7 @@
       "kanji": "告",
       "frequencyRank": 326,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "revelation",
+      "primaryMeaning": "inform",
       "secondaryMeanings": [
         "tell",
         "inform",
@@ -12600,7 +12588,7 @@
       "kanji": "殿",
       "frequencyRank": 327,
       "kind": "Jōyō",
-      "primaryMeaning": "Mr.",
+      "primaryMeaning": "palace",
       "secondaryMeanings": [
         "hall",
         "mansion",
@@ -12872,7 +12860,7 @@
       "kanji": "険",
       "frequencyRank": 334,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "precipitous",
+      "primaryMeaning": "steep",
       "secondaryMeanings": [
         "inaccessible place",
         "impregnable position",
@@ -12910,7 +12898,7 @@
       "kanji": "件",
       "frequencyRank": 335,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "affair",
+      "primaryMeaning": "case",
       "secondaryMeanings": [
         "case",
         "matter",
@@ -13062,7 +13050,7 @@
       "kanji": "髪",
       "frequencyRank": 339,
       "kind": "Jōyō",
-      "primaryMeaning": "hair of the head",
+      "primaryMeaning": "hair",
       "secondaryMeanings": [],
       "primaryReading": "かみ",
       "secondaryReadings": [
@@ -13095,7 +13083,7 @@
       "kanji": "望",
       "frequencyRank": 340,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "ambition",
+      "primaryMeaning": "hope",
       "secondaryMeanings": [
         "full moon",
         "hope",
@@ -13136,7 +13124,7 @@
       "kanji": "記",
       "frequencyRank": 341,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "scribe",
+      "primaryMeaning": "record",
       "secondaryMeanings": [
         "account",
         "narrative"
@@ -13209,7 +13197,7 @@
       "kanji": "供",
       "frequencyRank": 343,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "submit",
+      "primaryMeaning": "offer",
       "secondaryMeanings": [
         "offer",
         "present",
@@ -13251,7 +13239,7 @@
       "kanji": "平",
       "frequencyRank": 344,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "even",
+      "primaryMeaning": "flat",
       "secondaryMeanings": [
         "flat",
         "peace"
@@ -13290,7 +13278,7 @@
       "kanji": "隊",
       "frequencyRank": 345,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "regiment",
+      "primaryMeaning": "squad",
       "secondaryMeanings": [
         "party",
         "company",
@@ -13546,7 +13534,7 @@
       "kanji": "勢",
       "frequencyRank": 352,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "forces",
+      "primaryMeaning": "vigor",
       "secondaryMeanings": [
         "energy",
         "military strength"
@@ -13656,7 +13644,7 @@
       "kanji": "器",
       "frequencyRank": 355,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "utensil",
+      "primaryMeaning": "instrument",
       "secondaryMeanings": [
         "vessel",
         "receptacle",
@@ -13736,7 +13724,7 @@
       "kanji": "組",
       "frequencyRank": 357,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "association",
+      "primaryMeaning": "group",
       "secondaryMeanings": [
         "braid",
         "plait",
@@ -13818,7 +13806,7 @@
       "kanji": "選",
       "frequencyRank": 359,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "elect",
+      "primaryMeaning": "select",
       "secondaryMeanings": [
         "select",
         "choose",
@@ -13858,7 +13846,7 @@
       "kanji": "完",
       "frequencyRank": 360,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "perfect",
+      "primaryMeaning": "complete",
       "secondaryMeanings": [
         "completion",
         "end"
@@ -13997,7 +13985,7 @@
       "kanji": "異",
       "frequencyRank": 364,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "uncommon",
+      "primaryMeaning": "different",
       "secondaryMeanings": [
         "different",
         "queerness",
@@ -14038,7 +14026,7 @@
       "kanji": "装",
       "frequencyRank": 365,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "attire",
+      "primaryMeaning": "outfit",
       "secondaryMeanings": [
         "dress",
         "pretend",
@@ -14112,7 +14100,7 @@
       "kanji": "野",
       "frequencyRank": 367,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "plains",
+      "primaryMeaning": "field",
       "secondaryMeanings": [
         "field",
         "rustic",
@@ -14150,7 +14138,7 @@
       "kanji": "隠",
       "frequencyRank": 368,
       "kind": "Jōyō",
-      "primaryMeaning": "conceal",
+      "primaryMeaning": "hide",
       "secondaryMeanings": [
         "hide",
         "cover"
@@ -14226,7 +14214,7 @@
       "kanji": "驚",
       "frequencyRank": 370,
       "kind": "Jōyō",
-      "primaryMeaning": "wonder",
+      "primaryMeaning": "surprise",
       "secondaryMeanings": [
         "be surprised",
         "frightened",
@@ -14297,7 +14285,7 @@
       "kanji": "第",
       "frequencyRank": 372,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "No.",
+      "primaryMeaning": "ordinal number",
       "secondaryMeanings": [
         "residence"
       ],
@@ -14333,7 +14321,7 @@
       "kanji": "騎",
       "frequencyRank": 373,
       "kind": "Jōyō",
-      "primaryMeaning": "equestrian",
+      "primaryMeaning": "horseman",
       "secondaryMeanings": [
         "riding on horses",
         "counter for equestrians"
@@ -14680,7 +14668,7 @@
       "kanji": "欲",
       "frequencyRank": 382,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "longing",
+      "primaryMeaning": "desire",
       "secondaryMeanings": [
         "covetousness",
         "greed",
@@ -14721,7 +14709,7 @@
       "kanji": "仲",
       "frequencyRank": 383,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "go-between",
+      "primaryMeaning": "relationship",
       "secondaryMeanings": [
         "relationship"
       ],
@@ -14799,7 +14787,7 @@
       "kanji": "礼",
       "frequencyRank": 385,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "salute",
+      "primaryMeaning": "thanks",
       "secondaryMeanings": [
         "bow",
         "ceremony",
@@ -14876,7 +14864,7 @@
       "kanji": "破",
       "frequencyRank": 387,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "rend",
+      "primaryMeaning": "tear",
       "secondaryMeanings": [
         "rip",
         "tear",
@@ -14917,7 +14905,7 @@
       "kanji": "有",
       "frequencyRank": 388,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "possess",
+      "primaryMeaning": "have",
       "secondaryMeanings": [
         "have",
         "exist",
@@ -15035,7 +15023,7 @@
       "kanji": "探",
       "frequencyRank": 391,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "grope",
+      "primaryMeaning": "search",
       "secondaryMeanings": [
         "search",
         "look for"
@@ -15148,7 +15136,7 @@
       "kanji": "交",
       "frequencyRank": 394,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "mingle",
+      "primaryMeaning": "mix",
       "secondaryMeanings": [
         "mixing",
         "association",
@@ -15262,7 +15250,7 @@
       "kanji": "画",
       "frequencyRank": 397,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "brush-stroke",
+      "primaryMeaning": "drawing",
       "secondaryMeanings": [
         "picture"
       ],
@@ -15340,7 +15328,7 @@
       "kanji": "訳",
       "frequencyRank": 399,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "translate",
+      "primaryMeaning": "translation",
       "secondaryMeanings": [
         "reason",
         "circumstance",
@@ -15449,7 +15437,7 @@
       "kanji": "怖",
       "frequencyRank": 402,
       "kind": "Jōyō",
-      "primaryMeaning": "dreadful",
+      "primaryMeaning": "scary",
       "secondaryMeanings": [
         "be frightened",
         "fearful"
@@ -15525,7 +15513,7 @@
       "kanji": "計",
       "frequencyRank": 404,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "plot",
+      "primaryMeaning": "measure",
       "secondaryMeanings": [
         "plan",
         "scheme",
@@ -15639,7 +15627,7 @@
       "kanji": "送",
       "frequencyRank": 407,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "escort",
+      "primaryMeaning": "send",
       "secondaryMeanings": [
         "send"
       ],
@@ -15674,7 +15662,7 @@
       "kanji": "似",
       "frequencyRank": 408,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "becoming",
+      "primaryMeaning": "resemble",
       "secondaryMeanings": [
         "resemble",
         "counterfeit",
@@ -15751,7 +15739,7 @@
       "kanji": "質",
       "frequencyRank": 410,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "substance",
+      "primaryMeaning": "quality",
       "secondaryMeanings": [
         "quality",
         "matter",
@@ -15830,7 +15818,7 @@
       "kanji": "役",
       "frequencyRank": 412,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "duty",
+      "primaryMeaning": "role",
       "secondaryMeanings": [
         "war",
         "campaign",
@@ -15949,7 +15937,7 @@
       "kanji": "街",
       "frequencyRank": 415,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "boulevard",
+      "primaryMeaning": "town district",
       "secondaryMeanings": [
         "street",
         "town"
@@ -15987,7 +15975,7 @@
       "kanji": "奥",
       "frequencyRank": 416,
       "kind": "Jōyō",
-      "primaryMeaning": "heart",
+      "primaryMeaning": "deep inside",
       "secondaryMeanings": [
         "interior"
       ],
@@ -16181,7 +16169,7 @@
       "kanji": "去",
       "frequencyRank": 421,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "gone",
+      "primaryMeaning": "past",
       "secondaryMeanings": [
         "past",
         "quit",
@@ -16292,7 +16280,7 @@
       "kanji": "細",
       "frequencyRank": 424,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "dainty",
+      "primaryMeaning": "thin",
       "secondaryMeanings": [
         "get thin",
         "taper",
@@ -16713,7 +16701,7 @@
       "kanji": "階",
       "frequencyRank": 435,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "storey",
+      "primaryMeaning": "floor",
       "secondaryMeanings": [
         "stair",
         "counter for storeys of a building"
@@ -16750,7 +16738,7 @@
       "kanji": "軽",
       "frequencyRank": 436,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "lightly",
+      "primaryMeaning": "lightweight",
       "secondaryMeanings": [
         "trifling",
         "unimportant"
@@ -17270,7 +17258,7 @@
       "kanji": "制",
       "frequencyRank": 450,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "system",
+      "primaryMeaning": "control",
       "secondaryMeanings": [
         "law",
         "rule"
@@ -17537,7 +17525,7 @@
       "kanji": "霊",
       "frequencyRank": 457,
       "kind": "Jōyō",
-      "primaryMeaning": "spirits",
+      "primaryMeaning": "ghost",
       "secondaryMeanings": [
         "soul"
       ],
@@ -17609,7 +17597,7 @@
       "kanji": "武",
       "frequencyRank": 459,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "warrior",
+      "primaryMeaning": "military",
       "secondaryMeanings": [
         "military",
         "chivalry",
@@ -17687,7 +17675,7 @@
       "kanji": "困",
       "frequencyRank": 461,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "quandary",
+      "primaryMeaning": "distressed",
       "secondaryMeanings": [
         "become distressed",
         "annoyed"
@@ -17723,7 +17711,7 @@
       "kanji": "原",
       "frequencyRank": 462,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "meadow",
+      "primaryMeaning": "original",
       "secondaryMeanings": [
         "original",
         "primitive",
@@ -17797,7 +17785,7 @@
       "kanji": "腹",
       "frequencyRank": 464,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "abdomen",
+      "primaryMeaning": "belly",
       "secondaryMeanings": [
         "belly",
         "stomach"
@@ -18170,7 +18158,7 @@
       "kanji": "帝",
       "frequencyRank": 474,
       "kind": "Jōyō",
-      "primaryMeaning": "sovereign",
+      "primaryMeaning": "emperor",
       "secondaryMeanings": [
         "the emperor",
         "god",
@@ -18269,7 +18257,7 @@
       "kanji": "辺",
       "frequencyRank": 477,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "environs",
+      "primaryMeaning": "area",
       "secondaryMeanings": [
         "boundary",
         "border",
@@ -18381,7 +18369,7 @@
       "kanji": "腰",
       "frequencyRank": 480,
       "kind": "Jōyō",
-      "primaryMeaning": "loins",
+      "primaryMeaning": "waist",
       "secondaryMeanings": [
         "hips",
         "waist",
@@ -18499,7 +18487,7 @@
       "kanji": "暗",
       "frequencyRank": 483,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "darkness",
+      "primaryMeaning": "dark",
       "secondaryMeanings": [
         "disappear",
         "shade",
@@ -18539,7 +18527,7 @@
       "kanji": "悲",
       "frequencyRank": 484,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "grieve",
+      "primaryMeaning": "sad",
       "secondaryMeanings": [
         "sad",
         "deplore",
@@ -18613,7 +18601,7 @@
       "kanji": "宮",
       "frequencyRank": 486,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "Shinto shrine",
+      "primaryMeaning": "shinto shrine",
       "secondaryMeanings": [
         "constellations",
         "palace",
@@ -18653,7 +18641,7 @@
       "kanji": "迷",
       "frequencyRank": 487,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "astray",
+      "primaryMeaning": "be lost",
       "secondaryMeanings": [
         "be perplexed",
         "in doubt",
@@ -18692,7 +18680,7 @@
       "kanji": "申",
       "frequencyRank": 488,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "have the honor to",
+      "primaryMeaning": "say humbly",
       "secondaryMeanings": [
         "sign of the monkey",
         "3-5PM",
@@ -19039,7 +19027,7 @@
       "kanji": "支",
       "frequencyRank": 497,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "branch",
+      "primaryMeaning": "support",
       "secondaryMeanings": [
         "support",
         "sustain",
@@ -19114,7 +19102,7 @@
       "kanji": "壊",
       "frequencyRank": 499,
       "kind": "Jōyō",
-      "primaryMeaning": "demolition",
+      "primaryMeaning": "break",
       "secondaryMeanings": [
         "break",
         "destroy"
@@ -19290,7 +19278,7 @@
       "kanji": "未",
       "frequencyRank": 504,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "un-",
+      "primaryMeaning": "not yet",
       "secondaryMeanings": [
         "not yet",
         "hitherto",
@@ -19441,7 +19429,7 @@
       "kanji": "乱",
       "frequencyRank": 508,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "riot",
+      "primaryMeaning": "chaos",
       "secondaryMeanings": [
         "war",
         "disorder",
@@ -19596,7 +19584,7 @@
       "kanji": "駄",
       "frequencyRank": 512,
       "kind": "Jōyō",
-      "primaryMeaning": "burdensome",
+      "primaryMeaning": "low quality",
       "secondaryMeanings": [
         "pack horse",
         "horse load",
@@ -19635,7 +19623,7 @@
       "kanji": "惑",
       "frequencyRank": 513,
       "kind": "Jōyō",
-      "primaryMeaning": "beguile",
+      "primaryMeaning": "lead astray",
       "secondaryMeanings": [
         "delusion",
         "perplexity"
@@ -19671,7 +19659,7 @@
       "kanji": "割",
       "frequencyRank": 514,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "proportion",
+      "primaryMeaning": "divide",
       "secondaryMeanings": [
         "comparatively",
         "divide",
@@ -19867,7 +19855,7 @@
       "kanji": "揺",
       "frequencyRank": 519,
       "kind": "Jōyō",
-      "primaryMeaning": "swing",
+      "primaryMeaning": "shake",
       "secondaryMeanings": [
         "shake",
         "sway",
@@ -19984,7 +19972,7 @@
       "kanji": "伸",
       "frequencyRank": 522,
       "kind": "Jōyō",
-      "primaryMeaning": "expand",
+      "primaryMeaning": "stretch",
       "secondaryMeanings": [
         "stretch",
         "extend",
@@ -20128,7 +20116,7 @@
       "kanji": "種",
       "frequencyRank": 526,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "species",
+      "primaryMeaning": "seed",
       "secondaryMeanings": [
         "kind",
         "class",
@@ -20913,7 +20901,7 @@
       "kanji": "逆",
       "frequencyRank": 546,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "inverted",
+      "primaryMeaning": "reverse",
       "secondaryMeanings": [
         "reverse",
         "opposite",
@@ -21208,7 +21196,7 @@
       "kanji": "駆",
       "frequencyRank": 554,
       "kind": "Jōyō",
-      "primaryMeaning": "drive",
+      "primaryMeaning": "dash",
       "secondaryMeanings": [
         "run",
         "gallop",
@@ -21247,7 +21235,7 @@
       "kanji": "参",
       "frequencyRank": 555,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "nonplussed",
+      "primaryMeaning": "admit defeat",
       "secondaryMeanings": [
         "three (in documents)",
         "going",
@@ -21410,7 +21398,7 @@
       "kanji": "収",
       "frequencyRank": 559,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "income",
+      "primaryMeaning": "obtain",
       "secondaryMeanings": [
         "obtain",
         "reap",
@@ -21518,7 +21506,7 @@
       "kanji": "妙",
       "frequencyRank": 562,
       "kind": "Jōyō",
-      "primaryMeaning": "exquisite",
+      "primaryMeaning": "strange",
       "secondaryMeanings": [
         "strange",
         "queer",
@@ -21634,7 +21622,7 @@
       "kanji": "観",
       "frequencyRank": 565,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "outlook",
+      "primaryMeaning": "observe",
       "secondaryMeanings": [
         "look",
         "appearance",
@@ -21712,7 +21700,7 @@
       "kanji": "嬢",
       "frequencyRank": 567,
       "kind": "Jōyō",
-      "primaryMeaning": "lass",
+      "primaryMeaning": "young lady",
       "secondaryMeanings": [
         "girl",
         "Miss",
@@ -21807,7 +21795,7 @@
       "kanji": "院",
       "frequencyRank": 570,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "Inst.",
+      "primaryMeaning": "institution",
       "secondaryMeanings": [
         "institution",
         "temple",
@@ -22188,7 +22176,7 @@
       "kanji": "領",
       "frequencyRank": 580,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "jurisdiction",
+      "primaryMeaning": "territory",
       "secondaryMeanings": [
         "dominion",
         "territory",
@@ -22423,7 +22411,7 @@
       "kanji": "効",
       "frequencyRank": 586,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "merit",
+      "primaryMeaning": "be effective",
       "secondaryMeanings": [
         "efficacy",
         "efficiency",
@@ -22588,7 +22576,7 @@
       "kanji": "防",
       "frequencyRank": 590,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "ward off",
+      "primaryMeaning": "prevent",
       "secondaryMeanings": [
         "defend",
         "protect",
@@ -22625,7 +22613,7 @@
       "kanji": "踏",
       "frequencyRank": 591,
       "kind": "Jōyō",
-      "primaryMeaning": "step",
+      "primaryMeaning": "step on",
       "secondaryMeanings": [
         "trample",
         "carry through",
@@ -22734,7 +22722,7 @@
       "kanji": "類",
       "frequencyRank": 594,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "sort",
+      "primaryMeaning": "kind",
       "secondaryMeanings": [
         "kind",
         "variety",
@@ -22812,7 +22800,7 @@
       "kanji": "疲",
       "frequencyRank": 596,
       "kind": "Jōyō",
-      "primaryMeaning": "exhausted",
+      "primaryMeaning": "tired",
       "secondaryMeanings": [
         "tire",
         "weary"
@@ -22848,7 +22836,7 @@
       "kanji": "憶",
       "frequencyRank": 597,
       "kind": "Jōyō",
-      "primaryMeaning": "recollection",
+      "primaryMeaning": "memory",
       "secondaryMeanings": [
         "think",
         "remember"
@@ -22876,7 +22864,7 @@
       "kanji": "罪",
       "frequencyRank": 598,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "guilt",
+      "primaryMeaning": "sin",
       "secondaryMeanings": [
         "sin",
         "crime",
@@ -23133,7 +23121,7 @@
       "kanji": "刺",
       "frequencyRank": 605,
       "kind": "Jōyō",
-      "primaryMeaning": "thorn",
+      "primaryMeaning": "stab",
       "secondaryMeanings": [
         "pierce",
         "stab",
@@ -23908,7 +23896,7 @@
       "kanji": "簡",
       "frequencyRank": 626,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "simplicity",
+      "primaryMeaning": "simple",
       "secondaryMeanings": [
         "brevity"
       ],
@@ -23983,7 +23971,7 @@
       "kanji": "避",
       "frequencyRank": 628,
       "kind": "Jōyō",
-      "primaryMeaning": "evade",
+      "primaryMeaning": "avoid",
       "secondaryMeanings": [
         "avoid",
         "avert",
@@ -24023,7 +24011,7 @@
       "kanji": "育",
       "frequencyRank": 629,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "bring up",
+      "primaryMeaning": "nurture",
       "secondaryMeanings": [
         "grow up",
         "raise",
@@ -24061,7 +24049,7 @@
       "kanji": "将",
       "frequencyRank": 630,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "leader",
+      "primaryMeaning": "commander",
       "secondaryMeanings": [
         "commander",
         "general",
@@ -24147,7 +24135,7 @@
       "kanji": "更",
       "frequencyRank": 632,
       "kind": "Jōyō",
-      "primaryMeaning": "grow late",
+      "primaryMeaning": "again",
       "secondaryMeanings": [
         "night watch",
         "sit up late",
@@ -24261,7 +24249,7 @@
       "kanji": "喜",
       "frequencyRank": 635,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "rejoice",
+      "primaryMeaning": "joy",
       "secondaryMeanings": [
         "take pleasure in"
       ],
@@ -24649,7 +24637,7 @@
       "kanji": "導",
       "frequencyRank": 645,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "guidance",
+      "primaryMeaning": "guide",
       "secondaryMeanings": [
         "leading",
         "conduct",
@@ -24807,7 +24795,7 @@
       "kanji": "救",
       "frequencyRank": 649,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "salvation",
+      "primaryMeaning": "rescue",
       "secondaryMeanings": [
         "save",
         "help",
@@ -24925,7 +24913,7 @@
       "kanji": "低",
       "frequencyRank": 652,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "lower",
+      "primaryMeaning": "low",
       "secondaryMeanings": [
         "short",
         "humble"
@@ -25068,7 +25056,7 @@
       "kanji": "等",
       "frequencyRank": 656,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "etc.",
+      "primaryMeaning": "equal",
       "secondaryMeanings": [
         "and so forth",
         "class (first)",
@@ -25468,7 +25456,7 @@
       "kanji": "納",
       "frequencyRank": 667,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "settlement",
+      "primaryMeaning": "supply",
       "secondaryMeanings": [
         "obtain",
         "reap",
@@ -25511,7 +25499,7 @@
       "kanji": "介",
       "frequencyRank": 668,
       "kind": "Jōyō",
-      "primaryMeaning": "jammed in",
+      "primaryMeaning": "mediate",
       "secondaryMeanings": [
         "shellfish",
         "mediate",
@@ -25546,7 +25534,7 @@
       "kanji": "従",
       "frequencyRank": 669,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "accompany",
+      "primaryMeaning": "obey",
       "secondaryMeanings": [
         "obey",
         "submit to",
@@ -25627,7 +25615,7 @@
       "kanji": "超",
       "frequencyRank": 671,
       "kind": "Jōyō",
-      "primaryMeaning": "transcend",
+      "primaryMeaning": "exceed",
       "secondaryMeanings": [
         "super-",
         "ultra-"
@@ -25664,7 +25652,7 @@
       "kanji": "鬼",
       "frequencyRank": 672,
       "kind": "Jōyō",
-      "primaryMeaning": "ghost",
+      "primaryMeaning": "oni",
       "secondaryMeanings": [
         "devil"
       ],
@@ -25699,7 +25687,7 @@
       "kanji": "歳",
       "frequencyRank": 673,
       "kind": "Jōyō",
-      "primaryMeaning": "year-end",
+      "primaryMeaning": "years old",
       "secondaryMeanings": [
         "age",
         "occasion",
@@ -25740,7 +25728,7 @@
       "kanji": "脱",
       "frequencyRank": 674,
       "kind": "Jōyō",
-      "primaryMeaning": "undress",
+      "primaryMeaning": "detach",
       "secondaryMeanings": [
         "removing",
         "escape from",
@@ -26068,7 +26056,7 @@
       "kanji": "設",
       "frequencyRank": 683,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "establishment",
+      "primaryMeaning": "set up",
       "secondaryMeanings": [
         "provision",
         "prepare"
@@ -26104,7 +26092,7 @@
       "kanji": "替",
       "frequencyRank": 684,
       "kind": "Jōyō",
-      "primaryMeaning": "exchange",
+      "primaryMeaning": "replace",
       "secondaryMeanings": [
         "spare",
         "substitute",
@@ -26181,7 +26169,7 @@
       "kanji": "昔",
       "frequencyRank": 686,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "once upon a time",
+      "primaryMeaning": "long ago",
       "secondaryMeanings": [
         "antiquity",
         "old times"
@@ -26218,7 +26206,7 @@
       "kanji": "距",
       "frequencyRank": 687,
       "kind": "Jōyō",
-      "primaryMeaning": "long-distance",
+      "primaryMeaning": "distance",
       "secondaryMeanings": [
         "spur",
         "fetlock"
@@ -26372,7 +26360,7 @@
       "kanji": "快",
       "frequencyRank": 691,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "cheerful",
+      "primaryMeaning": "pleasant",
       "secondaryMeanings": [
         "pleasant",
         "agreeable",
@@ -26409,7 +26397,7 @@
       "kanji": "闇",
       "frequencyRank": 692,
       "kind": "Jōyō",
-      "primaryMeaning": "get dark",
+      "primaryMeaning": "darkness",
       "secondaryMeanings": [
         "gloom",
         "disorder"
@@ -26447,7 +26435,7 @@
       "kanji": "減",
       "frequencyRank": 693,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "dwindle",
+      "primaryMeaning": "reduction",
       "secondaryMeanings": [
         "decrease",
         "reduce",
@@ -26522,7 +26510,7 @@
       "kanji": "香",
       "frequencyRank": 695,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "incense",
+      "primaryMeaning": "nice smell",
       "secondaryMeanings": [
         "smell",
         "perfume"
@@ -26706,7 +26694,7 @@
       "kanji": "爆",
       "frequencyRank": 700,
       "kind": "Jōyō",
-      "primaryMeaning": "bomb",
+      "primaryMeaning": "explosion",
       "secondaryMeanings": [
         "burst open",
         "pop",
@@ -26855,7 +26843,7 @@
       "kanji": "産",
       "frequencyRank": 704,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "products",
+      "primaryMeaning": "give birth",
       "secondaryMeanings": [
         "bear",
         "give birth",
@@ -27331,7 +27319,7 @@
       "kanji": "慌",
       "frequencyRank": 717,
       "kind": "Jōyō",
-      "primaryMeaning": "disconcerted",
+      "primaryMeaning": "flustered",
       "secondaryMeanings": [
         "be confused",
         "lose one's head"
@@ -27367,7 +27355,7 @@
       "kanji": "騒",
       "frequencyRank": 718,
       "kind": "Jōyō",
-      "primaryMeaning": "boisterous",
+      "primaryMeaning": "make noise",
       "secondaryMeanings": [
         "make noise",
         "clamor",
@@ -27440,7 +27428,7 @@
       "kanji": "川",
       "frequencyRank": 720,
       "kind": "Kyōiku (1st grade)",
-      "primaryMeaning": "stream",
+      "primaryMeaning": "river",
       "secondaryMeanings": [
         "river",
         "river or three-stroke river radical (no. 47)"
@@ -27592,7 +27580,7 @@
       "kanji": "布",
       "frequencyRank": 724,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "linen",
+      "primaryMeaning": "cloth",
       "secondaryMeanings": [
         "cloth",
         "spread",
@@ -27632,7 +27620,7 @@
       "kanji": "誘",
       "frequencyRank": 725,
       "kind": "Jōyō",
-      "primaryMeaning": "entice",
+      "primaryMeaning": "invite",
       "secondaryMeanings": [
         "lead",
         "tempt",
@@ -27715,7 +27703,7 @@
       "kanji": "呪",
       "frequencyRank": 727,
       "kind": "Jōyō",
-      "primaryMeaning": "spell",
+      "primaryMeaning": "curse",
       "secondaryMeanings": [
         "curse",
         "charm",
@@ -27978,7 +27966,7 @@
       "kanji": "輝",
       "frequencyRank": 734,
       "kind": "Jōyō",
-      "primaryMeaning": "radiance",
+      "primaryMeaning": "shine",
       "secondaryMeanings": [
         "shine",
         "sparkle",
@@ -28164,7 +28152,7 @@
       "kanji": "炎",
       "frequencyRank": 739,
       "kind": "Jōyō",
-      "primaryMeaning": "inflammation",
+      "primaryMeaning": "flame",
       "secondaryMeanings": [
         "flame",
         "blaze"
@@ -28383,7 +28371,7 @@
       "kanji": "祭",
       "frequencyRank": 745,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "ritual",
+      "primaryMeaning": "festival",
       "secondaryMeanings": [
         "offer prayers",
         "celebrate",
@@ -28724,7 +28712,7 @@
       "kanji": "凄",
       "frequencyRank": 754,
       "kind": "Jōyō",
-      "primaryMeaning": "uncanny",
+      "primaryMeaning": "amazing",
       "secondaryMeanings": [
         "weird",
         "threatening",
@@ -28802,7 +28790,7 @@
       "kanji": "波",
       "frequencyRank": 756,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "waves",
+      "primaryMeaning": "wave",
       "secondaryMeanings": [
         "billows",
         "Poland"
@@ -28872,7 +28860,7 @@
       "kanji": "独",
       "frequencyRank": 758,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "single",
+      "primaryMeaning": "alone",
       "secondaryMeanings": [
         "alone",
         "spontaneously",
@@ -28947,7 +28935,7 @@
       "kanji": "基",
       "frequencyRank": 760,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "fundamentals",
+      "primaryMeaning": "fundamental",
       "secondaryMeanings": [
         "radical (chem)",
         "counter for machines",
@@ -29260,7 +29248,7 @@
       "kanji": "老",
       "frequencyRank": 768,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "old man",
+      "primaryMeaning": "elderly",
       "secondaryMeanings": [
         "old age",
         "grow old"
@@ -29334,7 +29322,7 @@
       "kanji": "床",
       "frequencyRank": 770,
       "kind": "Jōyō",
-      "primaryMeaning": "bed",
+      "primaryMeaning": "floor",
       "secondaryMeanings": [
         "counter for beds",
         "floor",
@@ -29636,7 +29624,7 @@
       "kanji": "庭",
       "frequencyRank": 778,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "courtyard",
+      "primaryMeaning": "garden",
       "secondaryMeanings": [
         "garden",
         "yard"
@@ -29864,7 +29852,7 @@
       "kanji": "慢",
       "frequencyRank": 784,
       "kind": "Jōyō",
-      "primaryMeaning": "ridicule",
+      "primaryMeaning": "arrogant",
       "secondaryMeanings": [
         "laziness"
       ],
@@ -29897,7 +29885,7 @@
       "kanji": "描",
       "frequencyRank": 785,
       "kind": "Jōyō",
-      "primaryMeaning": "sketch",
+      "primaryMeaning": "draw",
       "secondaryMeanings": [
         "compose",
         "write",
@@ -29936,7 +29924,7 @@
       "kanji": "号",
       "frequencyRank": 786,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "nickname",
+      "primaryMeaning": "number",
       "secondaryMeanings": [
         "number",
         "item",
@@ -30425,7 +30413,7 @@
       "kanji": "操",
       "frequencyRank": 799,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "maneuver",
+      "primaryMeaning": "manipulate",
       "secondaryMeanings": [
         "manipulate",
         "operate",
@@ -30548,7 +30536,7 @@
       "kanji": "純",
       "frequencyRank": 802,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "genuine",
+      "primaryMeaning": "pure",
       "secondaryMeanings": [
         "purity",
         "innocence",
@@ -30585,7 +30573,7 @@
       "kanji": "呆",
       "frequencyRank": 803,
       "kind": "Hyōgai",
-      "primaryMeaning": "be amazed",
+      "primaryMeaning": "dumbfounded",
       "secondaryMeanings": [
         "disgusted",
         "shocked"
@@ -30719,7 +30707,7 @@
       "kanji": "頂",
       "frequencyRank": 807,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "place on the head",
+      "primaryMeaning": "top",
       "secondaryMeanings": [
         "receive",
         "top of head",
@@ -30938,7 +30926,7 @@
       "kanji": "骨",
       "frequencyRank": 813,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "skeleton",
+      "primaryMeaning": "bone",
       "secondaryMeanings": [
         "bone",
         "remains",
@@ -31487,7 +31475,7 @@
       "kanji": "協",
       "frequencyRank": 828,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "co-",
+      "primaryMeaning": "cooperative",
       "secondaryMeanings": [
         "cooperation"
       ],
@@ -31520,7 +31508,7 @@
       "kanji": "積",
       "frequencyRank": 829,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "volume",
+      "primaryMeaning": "accumulate",
       "secondaryMeanings": [
         "product (x*y)",
         "acreage",
@@ -31995,7 +31983,7 @@
       "kanji": "春",
       "frequencyRank": 841,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "springtime",
+      "primaryMeaning": "spring",
       "secondaryMeanings": [
         "spring (season)"
       ],
@@ -32291,7 +32279,7 @@
       "kanji": "医",
       "frequencyRank": 849,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "doctor",
+      "primaryMeaning": "medicine",
       "secondaryMeanings": [
         "medicine"
       ],
@@ -32360,7 +32348,7 @@
       "kanji": "玉",
       "frequencyRank": 851,
       "kind": "Kyōiku (1st grade)",
-      "primaryMeaning": "jewel",
+      "primaryMeaning": "ball",
       "secondaryMeanings": [
         "ball"
       ],
@@ -32395,7 +32383,7 @@
       "kanji": "層",
       "frequencyRank": 852,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "stratum",
+      "primaryMeaning": "layer",
       "secondaryMeanings": [
         "social class",
         "layer",
@@ -32511,7 +32499,7 @@
       "kanji": "登",
       "frequencyRank": 855,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "ascend",
+      "primaryMeaning": "climb",
       "secondaryMeanings": [
         "climb up"
       ],
@@ -32590,7 +32578,7 @@
       "kanji": "綺",
       "frequencyRank": 857,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "figured cloth",
+      "primaryMeaning": "ornate",
       "secondaryMeanings": [
         "beautiful"
       ],
@@ -32613,7 +32601,7 @@
       "kanji": "伏",
       "frequencyRank": 858,
       "kind": "Jōyō",
-      "primaryMeaning": "prostrated",
+      "primaryMeaning": "lie face down",
       "secondaryMeanings": [
         "bend down",
         "bow",
@@ -32799,7 +32787,7 @@
       "kanji": "至",
       "frequencyRank": 863,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "climax",
+      "primaryMeaning": "apex",
       "secondaryMeanings": [
         "arrive",
         "proceed",
@@ -32951,7 +32939,7 @@
       "kanji": "耐",
       "frequencyRank": 867,
       "kind": "Jōyō",
-      "primaryMeaning": "-proof",
+      "primaryMeaning": "withstand",
       "secondaryMeanings": [
         "enduring"
       ],
@@ -32986,7 +32974,7 @@
       "kanji": "屈",
       "frequencyRank": 868,
       "kind": "Jōyō",
-      "primaryMeaning": "yield",
+      "primaryMeaning": "bend",
       "secondaryMeanings": [
         "bend",
         "flinch",
@@ -33178,7 +33166,7 @@
       "kanji": "里",
       "frequencyRank": 873,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "ri",
+      "primaryMeaning": "home village",
       "secondaryMeanings": [
         "village",
         "parent's home",
@@ -33330,7 +33318,7 @@
       "kanji": "斬",
       "frequencyRank": 877,
       "kind": "Jōyō",
-      "primaryMeaning": "beheading",
+      "primaryMeaning": "behead",
       "secondaryMeanings": [
         "kill",
         "murder"
@@ -33363,7 +33351,7 @@
       "kanji": "柄",
       "frequencyRank": 878,
       "kind": "Jōyō",
-      "primaryMeaning": "design",
+      "primaryMeaning": "pattern",
       "secondaryMeanings": [
         "pattern",
         "build",
@@ -33486,7 +33474,7 @@
       "kanji": "矢",
       "frequencyRank": 881,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "dart",
+      "primaryMeaning": "arrow",
       "secondaryMeanings": [
         "arrow"
       ],
@@ -33521,7 +33509,7 @@
       "kanji": "肌",
       "frequencyRank": 882,
       "kind": "Jōyō",
-      "primaryMeaning": "texture",
+      "primaryMeaning": "skin",
       "secondaryMeanings": [
         "skin",
         "body",
@@ -33593,7 +33581,7 @@
       "kanji": "援",
       "frequencyRank": 884,
       "kind": "Jōyō",
-      "primaryMeaning": "abet",
+      "primaryMeaning": "assist",
       "secondaryMeanings": [
         "help",
         "save"
@@ -33627,7 +33615,7 @@
       "kanji": "訪",
       "frequencyRank": 885,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "call on",
+      "primaryMeaning": "formal visit",
       "secondaryMeanings": [
         "visit",
         "look up",
@@ -33704,7 +33692,7 @@
       "kanji": "依",
       "frequencyRank": 887,
       "kind": "Jōyō",
-      "primaryMeaning": "reliant",
+      "primaryMeaning": "depend on",
       "secondaryMeanings": [
         "depend on",
         "consequently",
@@ -34101,7 +34089,7 @@
       "kanji": "樹",
       "frequencyRank": 898,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "timber",
+      "primaryMeaning": "tree",
       "secondaryMeanings": [
         "trees",
         "wood",
@@ -34544,7 +34532,7 @@
       "kanji": "狂",
       "frequencyRank": 910,
       "kind": "Jōyō",
-      "primaryMeaning": "lunatic",
+      "primaryMeaning": "insane",
       "secondaryMeanings": [
         "insane",
         "crazy",
@@ -34655,7 +34643,7 @@
       "kanji": "柔",
       "frequencyRank": 913,
       "kind": "Jōyō",
-      "primaryMeaning": "tender",
+      "primaryMeaning": "soft",
       "secondaryMeanings": [
         "weakness",
         "gentleness",
@@ -34804,7 +34792,7 @@
       "kanji": "諦",
       "frequencyRank": 917,
       "kind": "Jōyō",
-      "primaryMeaning": "truth",
+      "primaryMeaning": "give up",
       "secondaryMeanings": [
         "clarity",
         "abandon",
@@ -35504,7 +35492,7 @@
       "kanji": "妖",
       "frequencyRank": 937,
       "kind": "Jōyō",
-      "primaryMeaning": "attractive",
+      "primaryMeaning": "supernatural allure",
       "secondaryMeanings": [
         "bewitching",
         "calamity"
@@ -35536,7 +35524,7 @@
       "kanji": "覗",
       "frequencyRank": 938,
       "kind": "Hyōgai",
-      "primaryMeaning": "peep",
+      "primaryMeaning": "peek",
       "secondaryMeanings": [
         "peek",
         "come in sight"
@@ -35639,7 +35627,7 @@
       "kanji": "訊",
       "frequencyRank": 941,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "request",
+      "primaryMeaning": "query",
       "secondaryMeanings": [
         "question",
         "investigate"
@@ -35667,7 +35655,7 @@
       "kanji": "討",
       "frequencyRank": 942,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "chastise",
+      "primaryMeaning": "attack",
       "secondaryMeanings": [
         "attack",
         "defeat",
@@ -35705,7 +35693,7 @@
       "kanji": "掴",
       "frequencyRank": 943,
       "kind": "Hyōgai",
-      "primaryMeaning": "catch",
+      "primaryMeaning": "grab",
       "secondaryMeanings": [
         "seize",
         "grasp",
@@ -35769,7 +35757,7 @@
       "kanji": "隙",
       "frequencyRank": 945,
       "kind": "Jōyō",
-      "primaryMeaning": "crevice",
+      "primaryMeaning": "gap",
       "secondaryMeanings": [
         "fissure",
         "discord",
@@ -35805,7 +35793,7 @@
       "kanji": "慮",
       "frequencyRank": 946,
       "kind": "Jōyō",
-      "primaryMeaning": "prudence",
+      "primaryMeaning": "consider carefully",
       "secondaryMeanings": [
         "thought",
         "concern",
@@ -35845,7 +35833,7 @@
       "kanji": "鋭",
       "frequencyRank": 947,
       "kind": "Jōyō",
-      "primaryMeaning": "pointed",
+      "primaryMeaning": "sharp",
       "secondaryMeanings": [
         "sharpness",
         "edge",
@@ -35992,7 +35980,7 @@
       "kanji": "覆",
       "frequencyRank": 951,
       "kind": "Jōyō",
-      "primaryMeaning": "capsize",
+      "primaryMeaning": "overturn",
       "secondaryMeanings": [
         "cover",
         "shade",
@@ -36031,7 +36019,7 @@
       "kanji": "策",
       "frequencyRank": 952,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "scheme",
+      "primaryMeaning": "plan",
       "secondaryMeanings": [
         "plan",
         "policy",
@@ -36107,7 +36095,7 @@
       "kanji": "順",
       "frequencyRank": 954,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "obey",
+      "primaryMeaning": "sequence",
       "secondaryMeanings": [
         "order",
         "turn",
@@ -36223,7 +36211,7 @@
       "kanji": "課",
       "frequencyRank": 957,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "chapter",
+      "primaryMeaning": "section",
       "secondaryMeanings": [
         "lesson",
         "section",
@@ -36457,7 +36445,7 @@
       "kanji": "匂",
       "frequencyRank": 963,
       "kind": "Jōyō",
-      "primaryMeaning": "fragrant",
+      "primaryMeaning": "scent",
       "secondaryMeanings": [
         "stink",
         "glow",
@@ -36730,7 +36718,7 @@
       "kanji": "仰",
       "frequencyRank": 971,
       "kind": "Jōyō",
-      "primaryMeaning": "face-up",
+      "primaryMeaning": "look up to",
       "secondaryMeanings": [
         "look up",
         "depend",
@@ -36886,7 +36874,7 @@
       "kanji": "皮",
       "frequencyRank": 975,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "pelt",
+      "primaryMeaning": "skin",
       "secondaryMeanings": [
         "skin",
         "hide",
@@ -37109,7 +37097,7 @@
       "kanji": "換",
       "frequencyRank": 981,
       "kind": "Jōyō",
-      "primaryMeaning": "interchange",
+      "primaryMeaning": "exchange",
       "secondaryMeanings": [
         "period",
         "change",
@@ -37148,7 +37136,7 @@
       "kanji": "氷",
       "frequencyRank": 982,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "icicle",
+      "primaryMeaning": "ice",
       "secondaryMeanings": [
         "ice",
         "hail",
@@ -37322,7 +37310,7 @@
       "kanji": "域",
       "frequencyRank": 987,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "range",
+      "primaryMeaning": "region",
       "secondaryMeanings": [
         "region",
         "limits",
@@ -37461,7 +37449,7 @@
       "kanji": "繋",
       "frequencyRank": 991,
       "kind": "Hyōgai",
-      "primaryMeaning": "tie",
+      "primaryMeaning": "link together",
       "secondaryMeanings": [
         "fasten",
         "chain",
@@ -37537,7 +37525,7 @@
       "kanji": "製",
       "frequencyRank": 993,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "made in...",
+      "primaryMeaning": "manufactured",
       "secondaryMeanings": [
         "manufacture"
       ],
@@ -37683,7 +37671,7 @@
       "kanji": "臭",
       "frequencyRank": 997,
       "kind": "Jōyō",
-      "primaryMeaning": "stinking",
+      "primaryMeaning": "smelly",
       "secondaryMeanings": [
         "ill-smelling",
         "suspicious looking",
@@ -37873,7 +37861,7 @@
       "kanji": "列",
       "frequencyRank": 1002,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "file",
+      "primaryMeaning": "row",
       "secondaryMeanings": [
         "row",
         "rank",
@@ -38168,7 +38156,7 @@
       "kanji": "呂",
       "frequencyRank": 1010,
       "kind": "Jōyō",
-      "primaryMeaning": "spine",
+      "primaryMeaning": "bathtub",
       "secondaryMeanings": [
         "backbone"
       ],
@@ -38464,7 +38452,7 @@
       "kanji": "致",
       "frequencyRank": 1018,
       "kind": "Jōyō",
-      "primaryMeaning": "doth",
+      "primaryMeaning": "politely do",
       "secondaryMeanings": [
         "do",
         "send",
@@ -38505,7 +38493,7 @@
       "kanji": "桜",
       "frequencyRank": 1019,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "cherry",
+      "primaryMeaning": "cherry tree",
       "secondaryMeanings": [],
       "primaryReading": "さくら",
       "secondaryReadings": [
@@ -38610,7 +38598,7 @@
       "kanji": "拶",
       "frequencyRank": 1022,
       "kind": "Jōyō",
-      "primaryMeaning": "be imminent",
+      "primaryMeaning": "squeeze",
       "secondaryMeanings": [
         "draw close"
       ],
@@ -38657,7 +38645,7 @@
       "kanji": "推",
       "frequencyRank": 1024,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "conjecture",
+      "primaryMeaning": "infer",
       "secondaryMeanings": [
         "infer",
         "guess",
@@ -38696,7 +38684,7 @@
       "kanji": "秒",
       "frequencyRank": 1025,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "second (1/60 minute)",
+      "primaryMeaning": "second",
       "secondaryMeanings": [],
       "primaryReading": "びょう",
       "secondaryReadings": [
@@ -38925,7 +38913,7 @@
       "kanji": "召",
       "frequencyRank": 1032,
       "kind": "Jōyō",
-      "primaryMeaning": "seduce",
+      "primaryMeaning": "summon",
       "secondaryMeanings": [
         "call",
         "send for",
@@ -38968,7 +38956,7 @@
       "kanji": "及",
       "frequencyRank": 1033,
       "kind": "Jōyō",
-      "primaryMeaning": "reach out",
+      "primaryMeaning": "reach",
       "secondaryMeanings": [
         "exert",
         "exercise",
@@ -39195,7 +39183,7 @@
       "kanji": "舎",
       "frequencyRank": 1039,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "cottage",
+      "primaryMeaning": "building",
       "secondaryMeanings": [
         "inn",
         "hut",
@@ -39566,7 +39554,7 @@
       "kanji": "営",
       "frequencyRank": 1049,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "camp",
+      "primaryMeaning": "manage",
       "secondaryMeanings": [
         "perform",
         "build",
@@ -39637,7 +39625,7 @@
       "kanji": "殴",
       "frequencyRank": 1051,
       "kind": "Jōyō",
-      "primaryMeaning": "assault",
+      "primaryMeaning": "punch",
       "secondaryMeanings": [
         "hit",
         "beat",
@@ -39674,7 +39662,7 @@
       "kanji": "幻",
       "frequencyRank": 1052,
       "kind": "Jōyō",
-      "primaryMeaning": "phantasm",
+      "primaryMeaning": "illusion",
       "secondaryMeanings": [
         "vision",
         "dream",
@@ -39712,7 +39700,7 @@
       "kanji": "歴",
       "frequencyRank": 1053,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "curriculum",
+      "primaryMeaning": "chronicle",
       "secondaryMeanings": [
         "continuation",
         "passage of time"
@@ -39772,7 +39760,7 @@
       "kanji": "刑",
       "frequencyRank": 1055,
       "kind": "Jōyō",
-      "primaryMeaning": "punish",
+      "primaryMeaning": "punishment",
       "secondaryMeanings": [
         "penalty",
         "sentence",
@@ -39918,7 +39906,7 @@
       "kanji": "侵",
       "frequencyRank": 1059,
       "kind": "Jōyō",
-      "primaryMeaning": "encroach",
+      "primaryMeaning": "invade",
       "secondaryMeanings": [
         "invade",
         "raid",
@@ -39992,7 +39980,7 @@
       "kanji": "節",
       "frequencyRank": 1061,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "node",
+      "primaryMeaning": "joint",
       "secondaryMeanings": [
         "season",
         "period",
@@ -40222,7 +40210,7 @@
       "kanji": "賊",
       "frequencyRank": 1067,
       "kind": "Jōyō",
-      "primaryMeaning": "burglar",
+      "primaryMeaning": "bandit",
       "secondaryMeanings": [
         "rebel",
         "traitor",
@@ -40383,7 +40371,7 @@
       "kanji": "宇",
       "frequencyRank": 1072,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "eaves",
+      "primaryMeaning": "space",
       "secondaryMeanings": [
         "roof",
         "house",
@@ -40418,7 +40406,7 @@
       "kanji": "努",
       "frequencyRank": 1073,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "toil",
+      "primaryMeaning": "make effort",
       "secondaryMeanings": [
         "diligent",
         "as much as possible"
@@ -40454,7 +40442,7 @@
       "kanji": "撮",
       "frequencyRank": 1074,
       "kind": "Jōyō",
-      "primaryMeaning": "snapshot",
+      "primaryMeaning": "photograph",
       "secondaryMeanings": [
         "take pictures"
       ],
@@ -40565,7 +40553,7 @@
       "kanji": "施",
       "frequencyRank": 1077,
       "kind": "Jōyō",
-      "primaryMeaning": "give",
+      "primaryMeaning": "carry out",
       "secondaryMeanings": [
         "bestow",
         "perform",
@@ -40814,7 +40802,7 @@
       "kanji": "晩",
       "frequencyRank": 1084,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "nightfall",
+      "primaryMeaning": "evening",
       "secondaryMeanings": [
         "night"
       ],
@@ -41124,7 +41112,7 @@
       "kanji": "偽",
       "frequencyRank": 1092,
       "kind": "Jōyō",
-      "primaryMeaning": "falsehood",
+      "primaryMeaning": "fake",
       "secondaryMeanings": [
         "lie",
         "deceive",
@@ -41200,7 +41188,7 @@
       "kanji": "懸",
       "frequencyRank": 1094,
       "kind": "Jōyō",
-      "primaryMeaning": "state of suspension",
+      "primaryMeaning": "hang",
       "secondaryMeanings": [
         "hang",
         "depend",
@@ -41616,7 +41604,7 @@
       "kanji": "匹",
       "frequencyRank": 1105,
       "kind": "Jōyō",
-      "primaryMeaning": "equal",
+      "primaryMeaning": "small animal counter",
       "secondaryMeanings": [
         "head",
         "counter for small animals",
@@ -41695,7 +41683,7 @@
       "kanji": "福",
       "frequencyRank": 1107,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "blessing",
+      "primaryMeaning": "good fortune",
       "secondaryMeanings": [
         "fortune",
         "luck",
@@ -41771,7 +41759,7 @@
       "kanji": "候",
       "frequencyRank": 1109,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "climate",
+      "primaryMeaning": "season",
       "secondaryMeanings": [
         "season",
         "weather",
@@ -41809,7 +41797,7 @@
       "kanji": "脚",
       "frequencyRank": 1110,
       "kind": "Jōyō",
-      "primaryMeaning": "skids",
+      "primaryMeaning": "leg",
       "secondaryMeanings": [
         "leg",
         "undercarriage",
@@ -41921,7 +41909,7 @@
       "kanji": "敬",
       "frequencyRank": 1113,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "awe",
+      "primaryMeaning": "respect",
       "secondaryMeanings": [
         "respect",
         "honor",
@@ -42000,7 +41988,7 @@
       "kanji": "誇",
       "frequencyRank": 1115,
       "kind": "Jōyō",
-      "primaryMeaning": "boast",
+      "primaryMeaning": "be proud of",
       "secondaryMeanings": [
         "be proud",
         "pride",
@@ -42073,7 +42061,7 @@
       "kanji": "芸",
       "frequencyRank": 1117,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "technique",
+      "primaryMeaning": "art",
       "secondaryMeanings": [
         "art",
         "craft",
@@ -42117,7 +42105,7 @@
       "kanji": "歪",
       "frequencyRank": 1118,
       "kind": "Hyōgai",
-      "primaryMeaning": "warp",
+      "primaryMeaning": "distort",
       "secondaryMeanings": [
         "bend",
         "strained",
@@ -42260,7 +42248,7 @@
       "kanji": "療",
       "frequencyRank": 1122,
       "kind": "Jōyō",
-      "primaryMeaning": "heal",
+      "primaryMeaning": "therapy",
       "secondaryMeanings": [
         "cure"
       ],
@@ -42293,7 +42281,7 @@
       "kanji": "給",
       "frequencyRank": 1123,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "salary",
+      "primaryMeaning": "supply",
       "secondaryMeanings": [
         "wage",
         "gift",
@@ -42477,7 +42465,7 @@
       "kanji": "児",
       "frequencyRank": 1128,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "newborn babe",
+      "primaryMeaning": "kid",
       "secondaryMeanings": [
         "child",
         "young of animals"
@@ -42591,7 +42579,7 @@
       "kanji": "怯",
       "frequencyRank": 1131,
       "kind": "Hyōgai",
-      "primaryMeaning": "cowardice",
+      "primaryMeaning": "recoil in fear",
       "secondaryMeanings": [
         "wince",
         "flinch",
@@ -43301,7 +43289,7 @@
       "kanji": "載",
       "frequencyRank": 1150,
       "kind": "Jōyō",
-      "primaryMeaning": "ride",
+      "primaryMeaning": "appear in print",
       "secondaryMeanings": [
         "board",
         "get on",
@@ -43342,7 +43330,7 @@
       "kanji": "噛",
       "frequencyRank": 1151,
       "kind": "Hyōgai",
-      "primaryMeaning": "chew",
+      "primaryMeaning": "bite",
       "secondaryMeanings": [
         "bite",
         "gnaw"
@@ -43373,7 +43361,7 @@
       "kanji": "菓",
       "frequencyRank": 1152,
       "kind": "Jōyō",
-      "primaryMeaning": "candy",
+      "primaryMeaning": "sweets",
       "secondaryMeanings": [
         "cakes",
         "fruit"
@@ -43934,7 +43922,7 @@
       "kanji": "範",
       "frequencyRank": 1168,
       "kind": "Jōyō",
-      "primaryMeaning": "pattern",
+      "primaryMeaning": "exemplar",
       "secondaryMeanings": [
         "example",
         "model"
@@ -44078,7 +44066,7 @@
       "kanji": "稼",
       "frequencyRank": 1172,
       "kind": "Jōyō",
-      "primaryMeaning": "earnings",
+      "primaryMeaning": "earn income",
       "secondaryMeanings": [
         "work",
         "earn money"
@@ -44230,7 +44218,7 @@
       "kanji": "倉",
       "frequencyRank": 1176,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "godown",
+      "primaryMeaning": "warehouse",
       "secondaryMeanings": [
         "warehouse",
         "storehouse",
@@ -44342,7 +44330,7 @@
       "kanji": "章",
       "frequencyRank": 1179,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "badge",
+      "primaryMeaning": "chapter",
       "secondaryMeanings": [
         "chapter",
         "composition",
@@ -44417,7 +44405,7 @@
       "kanji": "狭",
       "frequencyRank": 1181,
       "kind": "Jōyō",
-      "primaryMeaning": "cramped",
+      "primaryMeaning": "narrow",
       "secondaryMeanings": [
         "narrow",
         "contract",
@@ -44496,7 +44484,7 @@
       "kanji": "添",
       "frequencyRank": 1183,
       "kind": "Jōyō",
-      "primaryMeaning": "annexed",
+      "primaryMeaning": "addition",
       "secondaryMeanings": [
         "accompany",
         "marry",
@@ -44648,7 +44636,7 @@
       "kanji": "趣",
       "frequencyRank": 1187,
       "kind": "Jōyō",
-      "primaryMeaning": "purport",
+      "primaryMeaning": "preference",
       "secondaryMeanings": [
         "gist",
         "elegance",
@@ -44689,7 +44677,7 @@
       "kanji": "偉",
       "frequencyRank": 1188,
       "kind": "Jōyō",
-      "primaryMeaning": "admirable",
+      "primaryMeaning": "great",
       "secondaryMeanings": [
         "greatness",
         "remarkable",
@@ -44842,7 +44830,7 @@
       "kanji": "縛",
       "frequencyRank": 1192,
       "kind": "Jōyō",
-      "primaryMeaning": "truss",
+      "primaryMeaning": "tie up",
       "secondaryMeanings": [
         "arrest",
         "bind",
@@ -44949,7 +44937,7 @@
       "kanji": "烈",
       "frequencyRank": 1195,
       "kind": "Jōyō",
-      "primaryMeaning": "ardent",
+      "primaryMeaning": "violent",
       "secondaryMeanings": [
         "violent",
         "vehement",
@@ -44988,7 +44976,7 @@
       "kanji": "昇",
       "frequencyRank": 1196,
       "kind": "Jōyō",
-      "primaryMeaning": "rise up",
+      "primaryMeaning": "ascend",
       "secondaryMeanings": [],
       "primaryReading": "ショウ",
       "secondaryReadings": [
@@ -45021,7 +45009,7 @@
       "kanji": "擦",
       "frequencyRank": 1197,
       "kind": "Jōyō",
-      "primaryMeaning": "grate",
+      "primaryMeaning": "rub",
       "secondaryMeanings": [
         "rub",
         "scratch",
@@ -45061,7 +45049,7 @@
       "kanji": "塔",
       "frequencyRank": 1198,
       "kind": "Jōyō",
-      "primaryMeaning": "pagoda",
+      "primaryMeaning": "tower",
       "secondaryMeanings": [
         "tower",
         "steeple"
@@ -45097,7 +45085,7 @@
       "kanji": "塞",
       "frequencyRank": 1199,
       "kind": "Jōyō",
-      "primaryMeaning": "close",
+      "primaryMeaning": "block",
       "secondaryMeanings": [
         "shut",
         "cover",
@@ -45138,7 +45126,7 @@
       "kanji": "魅",
       "frequencyRank": 1200,
       "kind": "Jōyō",
-      "primaryMeaning": "fascination",
+      "primaryMeaning": "charm",
       "secondaryMeanings": [
         "charm",
         "bewitch"
@@ -45515,7 +45503,7 @@
       "kanji": "嫁",
       "frequencyRank": 1211,
       "kind": "Jōyō",
-      "primaryMeaning": "marry into",
+      "primaryMeaning": "bride",
       "secondaryMeanings": [
         "bride"
       ],
@@ -45694,7 +45682,7 @@
       "kanji": "哀",
       "frequencyRank": 1216,
       "kind": "Jōyō",
-      "primaryMeaning": "pathetic",
+      "primaryMeaning": "pitiful",
       "secondaryMeanings": [
         "grief",
         "sorrow",
@@ -45940,7 +45928,7 @@
       "kanji": "乾",
       "frequencyRank": 1223,
       "kind": "Jōyō",
-      "primaryMeaning": "drought",
+      "primaryMeaning": "dry",
       "secondaryMeanings": [
         "dry",
         "desiccate",
@@ -46159,7 +46147,7 @@
       "kanji": "拒",
       "frequencyRank": 1229,
       "kind": "Jōyō",
-      "primaryMeaning": "repel",
+      "primaryMeaning": "refuse",
       "secondaryMeanings": [
         "refuse",
         "reject",
@@ -46310,7 +46298,7 @@
       "kanji": "鎧",
       "frequencyRank": 1233,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "put on armor",
+      "primaryMeaning": "suit of armor",
       "secondaryMeanings": [
         "arm oneself"
       ],
@@ -46335,7 +46323,7 @@
       "kanji": "侍",
       "frequencyRank": 1234,
       "kind": "Jōyō",
-      "primaryMeaning": "waiter",
+      "primaryMeaning": "samurai",
       "secondaryMeanings": [
         "samurai",
         "wait upon",
@@ -46600,7 +46588,7 @@
       "kanji": "府",
       "frequencyRank": 1241,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "borough",
+      "primaryMeaning": "government office",
       "secondaryMeanings": [
         "urban prefecture",
         "govt office",
@@ -46636,7 +46624,7 @@
       "kanji": "粉",
       "frequencyRank": 1242,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "flour",
+      "primaryMeaning": "powder",
       "secondaryMeanings": [
         "powder",
         "dust"
@@ -46990,7 +46978,7 @@
       "kanji": "踊",
       "frequencyRank": 1253,
       "kind": "Jōyō",
-      "primaryMeaning": "jump",
+      "primaryMeaning": "dance",
       "secondaryMeanings": [
         "dance",
         "leap",
@@ -47067,7 +47055,7 @@
       "kanji": "恨",
       "frequencyRank": 1255,
       "kind": "Jōyō",
-      "primaryMeaning": "regret",
+      "primaryMeaning": "resent",
       "secondaryMeanings": [
         "bear a grudge",
         "resentment",
@@ -47275,7 +47263,7 @@
       "kanji": "貨",
       "frequencyRank": 1261,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "freight",
+      "primaryMeaning": "currency",
       "secondaryMeanings": [
         "goods",
         "property"
@@ -47458,7 +47446,7 @@
       "kanji": "創",
       "frequencyRank": 1266,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "genesis",
+      "primaryMeaning": "originate",
       "secondaryMeanings": [
         "wound",
         "injury",
@@ -47569,7 +47557,7 @@
       "kanji": "築",
       "frequencyRank": 1269,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "fabricate",
+      "primaryMeaning": "construct",
       "secondaryMeanings": [
         "build",
         "construct"
@@ -47605,7 +47593,7 @@
       "kanji": "博",
       "frequencyRank": 1270,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "Dr.",
+      "primaryMeaning": "expert",
       "secondaryMeanings": [
         "command",
         "esteem",
@@ -47754,7 +47742,7 @@
       "kanji": "控",
       "frequencyRank": 1274,
       "kind": "Jōyō",
-      "primaryMeaning": "withdraw",
+      "primaryMeaning": "refrain",
       "secondaryMeanings": [
         "draw in",
         "hold back",
@@ -47866,7 +47854,7 @@
       "kanji": "裁",
       "frequencyRank": 1277,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "tailor",
+      "primaryMeaning": "judge",
       "secondaryMeanings": [
         "judge",
         "decision",
@@ -48307,7 +48295,7 @@
       "kanji": "摘",
       "frequencyRank": 1289,
       "kind": "Jōyō",
-      "primaryMeaning": "pinch",
+      "primaryMeaning": "pluck",
       "secondaryMeanings": [
         "pick",
         "pluck",
@@ -48446,7 +48434,7 @@
       "kanji": "雅",
       "frequencyRank": 1293,
       "kind": "Jōyō",
-      "primaryMeaning": "gracious",
+      "primaryMeaning": "refined",
       "secondaryMeanings": [
         "elegant",
         "graceful",
@@ -48693,7 +48681,7 @@
       "kanji": "獲",
       "frequencyRank": 1300,
       "kind": "Jōyō",
-      "primaryMeaning": "seize",
+      "primaryMeaning": "capture",
       "secondaryMeanings": [
         "get",
         "find",
@@ -48734,7 +48722,7 @@
       "kanji": "嘆",
       "frequencyRank": 1301,
       "kind": "Jōyō",
-      "primaryMeaning": "sigh",
+      "primaryMeaning": "lament",
       "secondaryMeanings": [
         "lament",
         "moan",
@@ -48772,7 +48760,7 @@
       "kanji": "遇",
       "frequencyRank": 1302,
       "kind": "Jōyō",
-      "primaryMeaning": "meet",
+      "primaryMeaning": "encounter",
       "secondaryMeanings": [
         "encounter",
         "interview",
@@ -48851,7 +48839,7 @@
       "kanji": "慎",
       "frequencyRank": 1304,
       "kind": "Jōyō",
-      "primaryMeaning": "humility",
+      "primaryMeaning": "careful",
       "secondaryMeanings": [
         "be careful",
         "discreet",
@@ -48966,7 +48954,7 @@
       "kanji": "殊",
       "frequencyRank": 1307,
       "kind": "Jōyō",
-      "primaryMeaning": "particularly",
+      "primaryMeaning": "especially",
       "secondaryMeanings": [
         "especially",
         "exceptionally"
@@ -49265,7 +49253,7 @@
       "kanji": "恩",
       "frequencyRank": 1315,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "grace",
+      "primaryMeaning": "debt of gratitude",
       "secondaryMeanings": [
         "kindness",
         "goodness",
@@ -49305,7 +49293,7 @@
       "kanji": "璧",
       "frequencyRank": 1316,
       "kind": "Jōyō",
-      "primaryMeaning": "sphere",
+      "primaryMeaning": "gem",
       "secondaryMeanings": [
         "ball"
       ],
@@ -49473,7 +49461,7 @@
       "kanji": "誕",
       "frequencyRank": 1321,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "nativity",
+      "primaryMeaning": "birth",
       "secondaryMeanings": [
         "be born",
         "declension",
@@ -49610,7 +49598,7 @@
       "kanji": "徴",
       "frequencyRank": 1325,
       "kind": "Jōyō",
-      "primaryMeaning": "indications",
+      "primaryMeaning": "sign",
       "secondaryMeanings": [
         "sign",
         "omen",
@@ -49652,7 +49640,7 @@
       "kanji": "晶",
       "frequencyRank": 1326,
       "kind": "Jōyō",
-      "primaryMeaning": "sparkle",
+      "primaryMeaning": "crystal",
       "secondaryMeanings": [
         "clear",
         "crystal"
@@ -49886,7 +49874,7 @@
       "kanji": "湧",
       "frequencyRank": 1333,
       "kind": "Jōyō",
-      "primaryMeaning": "boil",
+      "primaryMeaning": "spring forth",
       "secondaryMeanings": [
         "ferment",
         "seethe",
@@ -50126,7 +50114,7 @@
       "kanji": "乙",
       "frequencyRank": 1340,
       "kind": "Jōyō",
-      "primaryMeaning": "the latter",
+      "primaryMeaning": "latter",
       "secondaryMeanings": [
         "duplicate",
         "strange",
@@ -50208,7 +50196,7 @@
       "kanji": "癖",
       "frequencyRank": 1342,
       "kind": "Jōyō",
-      "primaryMeaning": "mannerism",
+      "primaryMeaning": "habit",
       "secondaryMeanings": [
         "habit",
         "vice",
@@ -50344,7 +50332,7 @@
       "kanji": "伐",
       "frequencyRank": 1346,
       "kind": "Jōyō",
-      "primaryMeaning": "fell",
+      "primaryMeaning": "cut down",
       "secondaryMeanings": [
         "strike",
         "attack",
@@ -50453,7 +50441,7 @@
       "kanji": "叶",
       "frequencyRank": 1349,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "grant",
+      "primaryMeaning": "become true",
       "secondaryMeanings": [
         "answer"
       ],
@@ -50544,7 +50532,7 @@
       "kanji": "惜",
       "frequencyRank": 1352,
       "kind": "Jōyō",
-      "primaryMeaning": "pity",
+      "primaryMeaning": "reluctant to part with",
       "secondaryMeanings": [
         "be sparing of",
         "frugal",
@@ -50621,7 +50609,7 @@
       "kanji": "塊",
       "frequencyRank": 1354,
       "kind": "Jōyō",
-      "primaryMeaning": "clod",
+      "primaryMeaning": "lump",
       "secondaryMeanings": [
         "lump",
         "chunk",
@@ -50661,7 +50649,7 @@
       "kanji": "紛",
       "frequencyRank": 1355,
       "kind": "Jōyō",
-      "primaryMeaning": "distract",
+      "primaryMeaning": "confusion",
       "secondaryMeanings": [
         "be mistaken for",
         "go astray",
@@ -50698,7 +50686,7 @@
       "kanji": "訴",
       "frequencyRank": 1356,
       "kind": "Jōyō",
-      "primaryMeaning": "accusation",
+      "primaryMeaning": "sue",
       "secondaryMeanings": [
         "sue",
         "complain of pain",
@@ -50758,7 +50746,7 @@
       "kanji": "枝",
       "frequencyRank": 1358,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "bough",
+      "primaryMeaning": "branch",
       "secondaryMeanings": [
         "branch",
         "twig",
@@ -50875,7 +50863,7 @@
       "kanji": "釣",
       "frequencyRank": 1361,
       "kind": "Jōyō",
-      "primaryMeaning": "angling",
+      "primaryMeaning": "fishing",
       "secondaryMeanings": [
         "fish",
         "catch",
@@ -50949,7 +50937,7 @@
       "kanji": "譲",
       "frequencyRank": 1363,
       "kind": "Jōyō",
-      "primaryMeaning": "defer",
+      "primaryMeaning": "concede",
       "secondaryMeanings": [
         "turnover",
         "transfer",
@@ -50986,7 +50974,7 @@
       "kanji": "噓",
       "frequencyRank": 1364,
       "kind": "Hyōgai",
-      "primaryMeaning": "exhale",
+      "primaryMeaning": "lie",
       "secondaryMeanings": [
         "blow out",
         "deep sigh",
@@ -51150,7 +51138,7 @@
       "kanji": "勿",
       "frequencyRank": 1369,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "not",
+      "primaryMeaning": "must not",
       "secondaryMeanings": [
         "must not",
         "do not",
@@ -51220,7 +51208,7 @@
       "kanji": "悠",
       "frequencyRank": 1371,
       "kind": "Jōyō",
-      "primaryMeaning": "permanence",
+      "primaryMeaning": "distant",
       "secondaryMeanings": [
         "distant",
         "long time",
@@ -51392,7 +51380,7 @@
       "kanji": "促",
       "frequencyRank": 1376,
       "kind": "Jōyō",
-      "primaryMeaning": "stimulate",
+      "primaryMeaning": "urge",
       "secondaryMeanings": [
         "urge",
         "press",
@@ -51506,7 +51494,7 @@
       "kanji": "凶",
       "frequencyRank": 1379,
       "kind": "Jōyō",
-      "primaryMeaning": "villain",
+      "primaryMeaning": "bad luck",
       "secondaryMeanings": [
         "evil",
         "bad luck",
@@ -51574,7 +51562,7 @@
       "kanji": "剥",
       "frequencyRank": 1381,
       "kind": "Hyōgai",
-      "primaryMeaning": "come off",
+      "primaryMeaning": "peel off",
       "secondaryMeanings": [
         "peel",
         "fade",
@@ -51760,7 +51748,7 @@
       "kanji": "削",
       "frequencyRank": 1386,
       "kind": "Jōyō",
-      "primaryMeaning": "plane",
+      "primaryMeaning": "scrape off",
       "secondaryMeanings": [
         "sharpen",
         "whittle",
@@ -51800,7 +51788,7 @@
       "kanji": "遮",
       "frequencyRank": 1387,
       "kind": "Jōyō",
-      "primaryMeaning": "intercept",
+      "primaryMeaning": "interrupt",
       "secondaryMeanings": [
         "interrupt",
         "obstruct"
@@ -51836,7 +51824,7 @@
       "kanji": "遂",
       "frequencyRank": 1388,
       "kind": "Jōyō",
-      "primaryMeaning": "consummate",
+      "primaryMeaning": "accomplish",
       "secondaryMeanings": [
         "accomplish",
         "attain",
@@ -51874,7 +51862,7 @@
       "kanji": "績",
       "frequencyRank": 1389,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "exploits",
+      "primaryMeaning": "achievements",
       "secondaryMeanings": [
         "achievements",
         "unreeling cocoons"
@@ -51908,7 +51896,7 @@
       "kanji": "還",
       "frequencyRank": 1390,
       "kind": "Jōyō",
-      "primaryMeaning": "send back",
+      "primaryMeaning": "return",
       "secondaryMeanings": [
         "return"
       ],
@@ -52226,7 +52214,7 @@
       "kanji": "漫",
       "frequencyRank": 1399,
       "kind": "Jōyō",
-      "primaryMeaning": "cartoon",
+      "primaryMeaning": "aimless",
       "secondaryMeanings": [
         "involuntarily",
         "unrestrained",
@@ -52303,7 +52291,7 @@
       "kanji": "劣",
       "frequencyRank": 1401,
       "kind": "Jōyō",
-      "primaryMeaning": "inferiority",
+      "primaryMeaning": "inferior",
       "secondaryMeanings": [
         "be inferior to",
         "be worse"
@@ -52442,7 +52430,7 @@
       "kanji": "幽",
       "frequencyRank": 1405,
       "kind": "Jōyō",
-      "primaryMeaning": "seclude",
+      "primaryMeaning": "faint",
       "secondaryMeanings": [
         "confine to a room",
         "deep",
@@ -52548,7 +52536,7 @@
       "kanji": "就",
       "frequencyRank": 1408,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "concerning",
+      "primaryMeaning": "set about",
       "secondaryMeanings": [
         "settle",
         "take position",
@@ -52604,7 +52592,7 @@
       "kanji": "洞",
       "frequencyRank": 1410,
       "kind": "Jōyō",
-      "primaryMeaning": "den",
+      "primaryMeaning": "cave",
       "secondaryMeanings": [
         "cave",
         "excavation"
@@ -52740,7 +52728,7 @@
       "kanji": "嘩",
       "frequencyRank": 1414,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "noisy",
+      "primaryMeaning": "quarrel",
       "secondaryMeanings": [],
       "primaryReading": "カ",
       "secondaryReadings": [
@@ -52768,7 +52756,7 @@
       "kanji": "浜",
       "frequencyRank": 1415,
       "kind": "Jōyō",
-      "primaryMeaning": "seacoast",
+      "primaryMeaning": "beach",
       "secondaryMeanings": [
         "beach",
         "seashore"
@@ -53059,7 +53047,7 @@
       "kanji": "蒼",
       "frequencyRank": 1423,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "blue",
+      "primaryMeaning": "pale blue",
       "secondaryMeanings": [
         "pale"
       ],
@@ -53250,7 +53238,7 @@
       "kanji": "熟",
       "frequencyRank": 1429,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "mellow",
+      "primaryMeaning": "mature",
       "secondaryMeanings": [
         "ripen",
         "mature",
@@ -53345,7 +53333,7 @@
       "kanji": "陥",
       "frequencyRank": 1432,
       "kind": "Jōyō",
-      "primaryMeaning": "collapse",
+      "primaryMeaning": "cave in",
       "secondaryMeanings": [
         "fall into",
         "cave in",
@@ -53421,7 +53409,7 @@
       "kanji": "暖",
       "frequencyRank": 1434,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "warmth",
+      "primaryMeaning": "warm",
       "secondaryMeanings": [],
       "primaryReading": "ダン",
       "secondaryReadings": [
@@ -53455,7 +53443,7 @@
       "kanji": "拘",
       "frequencyRank": 1435,
       "kind": "Jōyō",
-      "primaryMeaning": "arrest",
+      "primaryMeaning": "constrain",
       "secondaryMeanings": [
         "seize",
         "concerned",
@@ -53493,7 +53481,7 @@
       "kanji": "暑",
       "frequencyRank": 1436,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "sultry",
+      "primaryMeaning": "hot",
       "secondaryMeanings": [
         "hot",
         "summer heat"
@@ -53529,7 +53517,7 @@
       "kanji": "競",
       "frequencyRank": 1437,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "emulate",
+      "primaryMeaning": "compete",
       "secondaryMeanings": [
         "compete with",
         "bid",
@@ -53724,7 +53712,7 @@
       "kanji": "幅",
       "frequencyRank": 1443,
       "kind": "Jōyō",
-      "primaryMeaning": "hanging scroll",
+      "primaryMeaning": "width",
       "secondaryMeanings": [
         "width"
       ],
@@ -53899,7 +53887,7 @@
       "kanji": "斉",
       "frequencyRank": 1448,
       "kind": "Jōyō",
-      "primaryMeaning": "adjusted",
+      "primaryMeaning": "simultaneously",
       "secondaryMeanings": [
         "alike",
         "equal",
@@ -54151,7 +54139,7 @@
       "kanji": "飼",
       "frequencyRank": 1455,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "domesticate",
+      "primaryMeaning": "keep a pet",
       "secondaryMeanings": [
         "raise",
         "keep",
@@ -54188,7 +54176,7 @@
       "kanji": "伴",
       "frequencyRank": 1456,
       "kind": "Jōyō",
-      "primaryMeaning": "consort",
+      "primaryMeaning": "accompany",
       "secondaryMeanings": [
         "accompany",
         "bring with",
@@ -54226,7 +54214,7 @@
       "kanji": "維",
       "frequencyRank": 1457,
       "kind": "Jōyō",
-      "primaryMeaning": "fiber",
+      "primaryMeaning": "maintain",
       "secondaryMeanings": [
         "tie",
         "rope"
@@ -54336,7 +54324,7 @@
       "kanji": "催",
       "frequencyRank": 1460,
       "kind": "Jōyō",
-      "primaryMeaning": "sponsor",
+      "primaryMeaning": "host",
       "secondaryMeanings": [
         "hold (a meeting)",
         "give (a dinner)"
@@ -54414,7 +54402,7 @@
       "kanji": "澄",
       "frequencyRank": 1462,
       "kind": "Jōyō",
-      "primaryMeaning": "lucidity",
+      "primaryMeaning": "clear",
       "secondaryMeanings": [
         "be clear",
         "clear",
@@ -54454,7 +54442,7 @@
       "kanji": "蓋",
       "frequencyRank": 1463,
       "kind": "Jōyō",
-      "primaryMeaning": "cover",
+      "primaryMeaning": "lid",
       "secondaryMeanings": [
         "lid",
         "flap"
@@ -54558,7 +54546,7 @@
       "kanji": "粒",
       "frequencyRank": 1466,
       "kind": "Jōyō",
-      "primaryMeaning": "grains",
+      "primaryMeaning": "grain",
       "secondaryMeanings": [
         "drop",
         "counter for tiny particles"
@@ -54624,7 +54612,7 @@
       "kanji": "眩",
       "frequencyRank": 1468,
       "kind": "Hyōgai",
-      "primaryMeaning": "faint",
+      "primaryMeaning": "dazzling",
       "secondaryMeanings": [
         "dizzy"
       ],
@@ -54662,7 +54650,7 @@
       "kanji": "憧",
       "frequencyRank": 1469,
       "kind": "Jōyō",
-      "primaryMeaning": "yearn after",
+      "primaryMeaning": "yearn for",
       "secondaryMeanings": [
         "long for",
         "aspire to",
@@ -54739,7 +54727,7 @@
       "kanji": "臨",
       "frequencyRank": 1471,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "look to",
+      "primaryMeaning": "face something",
       "secondaryMeanings": [
         "face",
         "meet",
@@ -54828,7 +54816,7 @@
       "kanji": "岸",
       "frequencyRank": 1474,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "beach",
+      "primaryMeaning": "coast",
       "secondaryMeanings": [],
       "primaryReading": "きし",
       "secondaryReadings": [
@@ -55151,7 +55139,7 @@
       "kanji": "貌",
       "frequencyRank": 1483,
       "kind": "Jōyō",
-      "primaryMeaning": "form",
+      "primaryMeaning": "facial features",
       "secondaryMeanings": [
         "appearance",
         "countenance"
@@ -55226,7 +55214,7 @@
       "kanji": "磨",
       "frequencyRank": 1485,
       "kind": "Jōyō",
-      "primaryMeaning": "grind",
+      "primaryMeaning": "polish",
       "secondaryMeanings": [
         "polish",
         "scour",
@@ -55265,7 +55253,7 @@
       "kanji": "診",
       "frequencyRank": 1486,
       "kind": "Jōyō",
-      "primaryMeaning": "checkup",
+      "primaryMeaning": "diagnose",
       "secondaryMeanings": [
         "seeing",
         "diagnose",
@@ -55394,7 +55382,7 @@
       "kanji": "愕",
       "frequencyRank": 1490,
       "kind": "Hyōgai",
-      "primaryMeaning": "surprised",
+      "primaryMeaning": "shocked",
       "secondaryMeanings": [
         "frightened"
       ],
@@ -55417,7 +55405,7 @@
       "kanji": "免",
       "frequencyRank": 1491,
       "kind": "Jōyō",
-      "primaryMeaning": "excuse",
+      "primaryMeaning": "exempt",
       "secondaryMeanings": [
         "dismissal"
       ],
@@ -55471,7 +55459,7 @@
       "kanji": "雇",
       "frequencyRank": 1493,
       "kind": "Jōyō",
-      "primaryMeaning": "employ",
+      "primaryMeaning": "hire",
       "secondaryMeanings": [
         "hire"
       ],
@@ -55531,7 +55519,7 @@
       "kanji": "俯",
       "frequencyRank": 1495,
       "kind": "Hyōgai",
-      "primaryMeaning": "bend down",
+      "primaryMeaning": "look down",
       "secondaryMeanings": [
         "lie prostrate"
       ],
@@ -55667,7 +55655,7 @@
       "kanji": "卓",
       "frequencyRank": 1499,
       "kind": "Jōyō",
-      "primaryMeaning": "eminent",
+      "primaryMeaning": "table",
       "secondaryMeanings": [
         "table",
         "desk",
@@ -55841,7 +55829,7 @@
       "kanji": "誌",
       "frequencyRank": 1504,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "document",
+      "primaryMeaning": "magazine",
       "secondaryMeanings": [
         "records"
       ],
@@ -56063,7 +56051,7 @@
       "kanji": "敏",
       "frequencyRank": 1510,
       "kind": "Jōyō",
-      "primaryMeaning": "cleverness",
+      "primaryMeaning": "quick-witted",
       "secondaryMeanings": [
         "agile",
         "alert"
@@ -56264,7 +56252,7 @@
       "kanji": "康",
       "frequencyRank": 1516,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "ease",
+      "primaryMeaning": "peaceful",
       "secondaryMeanings": [
         "peace"
       ],
@@ -56337,7 +56325,7 @@
       "kanji": "窺",
       "frequencyRank": 1518,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "lie in wait",
+      "primaryMeaning": "peer through",
       "secondaryMeanings": [
         "spy on",
         "reconnoiter"
@@ -56355,7 +56343,7 @@
       "kanji": "骸",
       "frequencyRank": 1519,
       "kind": "Jōyō",
-      "primaryMeaning": "bone",
+      "primaryMeaning": "remains",
       "secondaryMeanings": [
         "body",
         "corpse"
@@ -56421,7 +56409,7 @@
       "kanji": "畑",
       "frequencyRank": 1521,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "farm",
+      "primaryMeaning": "farm field",
       "secondaryMeanings": [
         "field",
         "garden",
@@ -56623,7 +56611,7 @@
       "kanji": "覧",
       "frequencyRank": 1528,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "perusal",
+      "primaryMeaning": "view",
       "secondaryMeanings": [
         "see"
       ],
@@ -56751,7 +56739,7 @@
       "kanji": "錯",
       "frequencyRank": 1532,
       "kind": "Jōyō",
-      "primaryMeaning": "confused",
+      "primaryMeaning": "mix up",
       "secondaryMeanings": [
         "mix",
         "be in disorder"
@@ -56787,7 +56775,7 @@
       "kanji": "虐",
       "frequencyRank": 1533,
       "kind": "Jōyō",
-      "primaryMeaning": "tyrannize",
+      "primaryMeaning": "oppress",
       "secondaryMeanings": [
         "oppress"
       ],
@@ -57052,7 +57040,7 @@
       "kanji": "帽",
       "frequencyRank": 1541,
       "kind": "Jōyō",
-      "primaryMeaning": "cap",
+      "primaryMeaning": "hat",
       "secondaryMeanings": [
         "headgear"
       ],
@@ -57077,7 +57065,7 @@
       "kanji": "穂",
       "frequencyRank": 1542,
       "kind": "Jōyō",
-      "primaryMeaning": "ear",
+      "primaryMeaning": "head of a plant",
       "secondaryMeanings": [
         "ear (grain)",
         "head",
@@ -57108,7 +57096,7 @@
       "kanji": "巫",
       "frequencyRank": 1543,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "sorcerer",
+      "primaryMeaning": "sorceress",
       "secondaryMeanings": [
         "medium",
         "shrine maiden"
@@ -57321,7 +57309,7 @@
       "kanji": "慰",
       "frequencyRank": 1549,
       "kind": "Jōyō",
-      "primaryMeaning": "consolation",
+      "primaryMeaning": "console",
       "secondaryMeanings": [
         "amusement",
         "seduce",
@@ -57449,7 +57437,7 @@
       "kanji": "芝",
       "frequencyRank": 1553,
       "kind": "Jōyō",
-      "primaryMeaning": "turf",
+      "primaryMeaning": "lawn",
       "secondaryMeanings": [
         "lawn"
       ],
@@ -57562,7 +57550,7 @@
       "kanji": "縄",
       "frequencyRank": 1556,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "straw rope",
+      "primaryMeaning": "rope",
       "secondaryMeanings": [
         "cord"
       ],
@@ -57598,7 +57586,7 @@
       "kanji": "撤",
       "frequencyRank": 1557,
       "kind": "Jōyō",
-      "primaryMeaning": "remove",
+      "primaryMeaning": "withdraw",
       "secondaryMeanings": [
         "withdraw",
         "disarm",
@@ -57769,7 +57757,7 @@
       "kanji": "痕",
       "frequencyRank": 1562,
       "kind": "Jōyō",
-      "primaryMeaning": "mark",
+      "primaryMeaning": "scar",
       "secondaryMeanings": [
         "foot print"
       ],
@@ -57798,7 +57786,7 @@
       "kanji": "勧",
       "frequencyRank": 1563,
       "kind": "Jōyō",
-      "primaryMeaning": "persuade",
+      "primaryMeaning": "recommend",
       "secondaryMeanings": [
         "recommend",
         "advise",
@@ -57837,7 +57825,7 @@
       "kanji": "徳",
       "frequencyRank": 1564,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "benevolence",
+      "primaryMeaning": "virtue",
       "secondaryMeanings": [
         "virtue",
         "goodness",
@@ -57947,7 +57935,7 @@
       "kanji": "滲",
       "frequencyRank": 1567,
       "kind": "Hyōgai",
-      "primaryMeaning": "imbued with",
+      "primaryMeaning": "seep",
       "secondaryMeanings": [],
       "primaryReading": "シン",
       "secondaryReadings": [
@@ -57969,7 +57957,7 @@
       "kanji": "償",
       "frequencyRank": 1568,
       "kind": "Jōyō",
-      "primaryMeaning": "reparation",
+      "primaryMeaning": "compensate",
       "secondaryMeanings": [
         "make up for",
         "recompense",
@@ -58025,7 +58013,7 @@
       "kanji": "麦",
       "frequencyRank": 1570,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "barley",
+      "primaryMeaning": "wheat",
       "secondaryMeanings": [
         "wheat"
       ],
@@ -58060,7 +58048,7 @@
       "kanji": "奉",
       "frequencyRank": 1571,
       "kind": "Jōyō",
-      "primaryMeaning": "observance",
+      "primaryMeaning": "dedicate",
       "secondaryMeanings": [
         "offer",
         "present",
@@ -58440,7 +58428,7 @@
       "kanji": "痺",
       "frequencyRank": 1583,
       "kind": "Hyōgai",
-      "primaryMeaning": "palsy",
+      "primaryMeaning": "paralysis",
       "secondaryMeanings": [
         "become numb",
         "paralysed"
@@ -58470,7 +58458,7 @@
       "kanji": "網",
       "frequencyRank": 1584,
       "kind": "Jōyō",
-      "primaryMeaning": "netting",
+      "primaryMeaning": "net",
       "secondaryMeanings": [
         "network"
       ],
@@ -58505,7 +58493,7 @@
       "kanji": "梨",
       "frequencyRank": 1585,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "pear tree",
+      "primaryMeaning": "pear",
       "secondaryMeanings": [],
       "primaryReading": "なし",
       "secondaryReadings": [
@@ -58771,7 +58759,7 @@
       "kanji": "濁",
       "frequencyRank": 1593,
       "kind": "Jōyō",
-      "primaryMeaning": "voiced",
+      "primaryMeaning": "muddy",
       "secondaryMeanings": [
         "uncleanness",
         "wrong",
@@ -58834,7 +58822,7 @@
       "kanji": "羨",
       "frequencyRank": 1595,
       "kind": "Jōyō",
-      "primaryMeaning": "envious",
+      "primaryMeaning": "envy",
       "secondaryMeanings": [
         "be jealous",
         "covet"
@@ -58897,7 +58885,7 @@
       "kanji": "版",
       "frequencyRank": 1597,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "printing block",
+      "primaryMeaning": "edition",
       "secondaryMeanings": [
         "printing plate",
         "edition",
@@ -58935,7 +58923,7 @@
       "kanji": "堅",
       "frequencyRank": 1598,
       "kind": "Jōyō",
-      "primaryMeaning": "strict",
+      "primaryMeaning": "firm",
       "secondaryMeanings": [
         "hard",
         "solid",
@@ -58974,7 +58962,7 @@
       "kanji": "憂",
       "frequencyRank": 1599,
       "kind": "Jōyō",
-      "primaryMeaning": "melancholy",
+      "primaryMeaning": "anxiety",
       "secondaryMeanings": [
         "grieve",
         "lament",
@@ -59014,7 +59002,7 @@
       "kanji": "凛",
       "frequencyRank": 1600,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "cold",
+      "primaryMeaning": "stately",
       "secondaryMeanings": [
         "strict",
         "severe"
@@ -59099,7 +59087,7 @@
       "kanji": "漢",
       "frequencyRank": 1603,
       "kind": "Kyōiku (3rd grade)",
-      "primaryMeaning": "Sino-",
+      "primaryMeaning": "chinese",
       "secondaryMeanings": [
         "China"
       ],
@@ -59132,7 +59120,7 @@
       "kanji": "贈",
       "frequencyRank": 1604,
       "kind": "Jōyō",
-      "primaryMeaning": "presents",
+      "primaryMeaning": "gift",
       "secondaryMeanings": [
         "send",
         "give to",
@@ -59306,7 +59294,7 @@
       "kanji": "詠",
       "frequencyRank": 1609,
       "kind": "Jōyō",
-      "primaryMeaning": "recitation",
+      "primaryMeaning": "compose a poem",
       "secondaryMeanings": [
         "poem",
         "song",
@@ -59338,7 +59326,7 @@
       "kanji": "伺",
       "frequencyRank": 1610,
       "kind": "Jōyō",
-      "primaryMeaning": "pay respects",
+      "primaryMeaning": "inquire",
       "secondaryMeanings": [
         "visit",
         "ask",
@@ -59444,7 +59432,7 @@
       "kanji": "署",
       "frequencyRank": 1613,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "signature",
+      "primaryMeaning": "field office",
       "secondaryMeanings": [
         "govt office",
         "police station"
@@ -59575,7 +59563,7 @@
       "kanji": "鞄",
       "frequencyRank": 1617,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "suitcase",
+      "primaryMeaning": "briefcase",
       "secondaryMeanings": [
         "bag",
         "briefcase"
@@ -59619,7 +59607,7 @@
       "kanji": "憑",
       "frequencyRank": 1619,
       "kind": "Hyōgai",
-      "primaryMeaning": "depend",
+      "primaryMeaning": "possessed",
       "secondaryMeanings": [
         "rely",
         "evidence",
@@ -59679,7 +59667,7 @@
       "kanji": "辱",
       "frequencyRank": 1621,
       "kind": "Jōyō",
-      "primaryMeaning": "embarrass",
+      "primaryMeaning": "disgrace",
       "secondaryMeanings": [
         "humiliate",
         "shame"
@@ -59715,7 +59703,7 @@
       "kanji": "較",
       "frequencyRank": 1622,
       "kind": "Jōyō",
-      "primaryMeaning": "contrast",
+      "primaryMeaning": "compare",
       "secondaryMeanings": [
         "compare"
       ],
@@ -59745,7 +59733,7 @@
       "kanji": "岡",
       "frequencyRank": 1623,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "mount",
+      "primaryMeaning": "rising ground",
       "secondaryMeanings": [
         "hill",
         "knoll"
@@ -59805,7 +59793,7 @@
       "kanji": "鉱",
       "frequencyRank": 1625,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "mineral",
+      "primaryMeaning": "ore",
       "secondaryMeanings": [
         "ore"
       ],
@@ -60046,7 +60034,7 @@
       "kanji": "廷",
       "frequencyRank": 1632,
       "kind": "Jōyō",
-      "primaryMeaning": "courts",
+      "primaryMeaning": "court",
       "secondaryMeanings": [
         "imperial court",
         "government office"
@@ -60113,7 +60101,7 @@
       "kanji": "豚",
       "frequencyRank": 1634,
       "kind": "Jōyō",
-      "primaryMeaning": "pork",
+      "primaryMeaning": "pig",
       "secondaryMeanings": [
         "pig"
       ],
@@ -60148,7 +60136,7 @@
       "kanji": "泡",
       "frequencyRank": 1635,
       "kind": "Jōyō",
-      "primaryMeaning": "bubbles",
+      "primaryMeaning": "bubble",
       "secondaryMeanings": [
         "foam",
         "suds",
@@ -60266,7 +60254,7 @@
       "kanji": "葬",
       "frequencyRank": 1639,
       "kind": "Jōyō",
-      "primaryMeaning": "interment",
+      "primaryMeaning": "funeral",
       "secondaryMeanings": [
         "bury",
         "shelve"
@@ -60302,7 +60290,7 @@
       "kanji": "析",
       "frequencyRank": 1640,
       "kind": "Jōyō",
-      "primaryMeaning": "chop",
+      "primaryMeaning": "break apart",
       "secondaryMeanings": [
         "divide",
         "tear",
@@ -60446,7 +60434,7 @@
       "kanji": "璃",
       "frequencyRank": 1645,
       "kind": "Jōyō",
-      "primaryMeaning": "glassy",
+      "primaryMeaning": "crystal",
       "secondaryMeanings": [
         "lapis lazuli"
       ],
@@ -60467,7 +60455,7 @@
       "kanji": "履",
       "frequencyRank": 1646,
       "kind": "Jōyō",
-      "primaryMeaning": "perform",
+      "primaryMeaning": "put on legwear",
       "secondaryMeanings": [
         "complete",
         "footgear",
@@ -60571,7 +60559,7 @@
       "kanji": "軌",
       "frequencyRank": 1649,
       "kind": "Jōyō",
-      "primaryMeaning": "rut",
+      "primaryMeaning": "track",
       "secondaryMeanings": [
         "wheel",
         "track",
@@ -60641,7 +60629,7 @@
       "kanji": "昧",
       "frequencyRank": 1651,
       "kind": "Jōyō",
-      "primaryMeaning": "dark",
+      "primaryMeaning": "vague",
       "secondaryMeanings": [
         "foolish"
       ],
@@ -61024,7 +61012,7 @@
       "kanji": "捻",
       "frequencyRank": 1663,
       "kind": "Jōyō",
-      "primaryMeaning": "twirl",
+      "primaryMeaning": "twist",
       "secondaryMeanings": [
         "twist",
         "play with"
@@ -61057,7 +61045,7 @@
       "kanji": "購",
       "frequencyRank": 1664,
       "kind": "Jōyō",
-      "primaryMeaning": "subscription",
+      "primaryMeaning": "subscribe",
       "secondaryMeanings": [
         "buy"
       ],
@@ -61158,7 +61146,7 @@
       "kanji": "巧",
       "frequencyRank": 1667,
       "kind": "Jōyō",
-      "primaryMeaning": "adroit",
+      "primaryMeaning": "skillful",
       "secondaryMeanings": [
         "skilled",
         "ingenuity"
@@ -61209,7 +61197,7 @@
       "kanji": "鎮",
       "frequencyRank": 1669,
       "kind": "Jōyō",
-      "primaryMeaning": "tranquilize",
+      "primaryMeaning": "calm down",
       "secondaryMeanings": [
         "ancient peace-preservation centers"
       ],
@@ -61245,7 +61233,7 @@
       "kanji": "剤",
       "frequencyRank": 1670,
       "kind": "Jōyō",
-      "primaryMeaning": "dose",
+      "primaryMeaning": "chemical substance",
       "secondaryMeanings": [
         "medicine",
         "drug"
@@ -61377,7 +61365,7 @@
       "kanji": "裾",
       "frequencyRank": 1674,
       "kind": "Jōyō",
-      "primaryMeaning": "cuff",
+      "primaryMeaning": "hem",
       "secondaryMeanings": [
         "hem",
         "foot of mountain"
@@ -61473,7 +61461,7 @@
       "kanji": "庇",
       "frequencyRank": 1677,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "protect",
+      "primaryMeaning": "overhang",
       "secondaryMeanings": [
         "shield",
         "defend",
@@ -61589,7 +61577,7 @@
       "kanji": "憤",
       "frequencyRank": 1682,
       "kind": "Jōyō",
-      "primaryMeaning": "aroused",
+      "primaryMeaning": "grudge",
       "secondaryMeanings": [
         "resent",
         "be indignant",
@@ -61620,7 +61608,7 @@
       "kanji": "稽",
       "frequencyRank": 1683,
       "kind": "Jōyō",
-      "primaryMeaning": "think",
+      "primaryMeaning": "training",
       "secondaryMeanings": [
         "consider"
       ],
@@ -61789,7 +61777,7 @@
       "kanji": "尚",
       "frequencyRank": 1688,
       "kind": "Jōyō",
-      "primaryMeaning": "esteem",
+      "primaryMeaning": "even more",
       "secondaryMeanings": [
         "furthermore",
         "still",
@@ -61960,7 +61948,7 @@
       "kanji": "餌",
       "frequencyRank": 1694,
       "kind": "Jōyō",
-      "primaryMeaning": "food",
+      "primaryMeaning": "animal food",
       "secondaryMeanings": [
         "bait",
         "prey",
@@ -61989,7 +61977,7 @@
       "kanji": "詮",
       "frequencyRank": 1695,
       "kind": "Jōyō",
-      "primaryMeaning": "discussion",
+      "primaryMeaning": "be worthwhile",
       "secondaryMeanings": [
         "methods called for",
         "selection",
@@ -62186,7 +62174,7 @@
       "kanji": "冊",
       "frequencyRank": 1701,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "tome",
+      "primaryMeaning": "volume",
       "secondaryMeanings": [
         "counter for books",
         "volume"
@@ -62224,7 +62212,7 @@
       "kanji": "曖",
       "frequencyRank": 1702,
       "kind": "Jōyō",
-      "primaryMeaning": "dark",
+      "primaryMeaning": "unclear",
       "secondaryMeanings": [
         "not clear"
       ],
@@ -62382,7 +62370,7 @@
       "kanji": "胴",
       "frequencyRank": 1707,
       "kind": "Jōyō",
-      "primaryMeaning": "trunk",
+      "primaryMeaning": "torso",
       "secondaryMeanings": [
         "torso",
         "hull (ship)",
@@ -62508,7 +62496,7 @@
       "kanji": "駐",
       "frequencyRank": 1711,
       "kind": "Jōyō",
-      "primaryMeaning": "stop-over",
+      "primaryMeaning": "park",
       "secondaryMeanings": [
         "reside in",
         "resident"
@@ -62580,7 +62568,7 @@
       "kanji": "囚",
       "frequencyRank": 1713,
       "kind": "Jōyō",
-      "primaryMeaning": "captured",
+      "primaryMeaning": "prisoner",
       "secondaryMeanings": [
         "criminal",
         "arrest",
@@ -62667,7 +62655,7 @@
       "kanji": "紡",
       "frequencyRank": 1716,
       "kind": "Jōyō",
-      "primaryMeaning": "spinning",
+      "primaryMeaning": "spin",
       "secondaryMeanings": [],
       "primaryReading": "ボウ",
       "secondaryReadings": [
@@ -62750,7 +62738,7 @@
       "kanji": "沸",
       "frequencyRank": 1719,
       "kind": "Jōyō",
-      "primaryMeaning": "seethe",
+      "primaryMeaning": "boil",
       "secondaryMeanings": [
         "boil",
         "ferment",
@@ -63056,7 +63044,7 @@
       "kanji": "胞",
       "frequencyRank": 1729,
       "kind": "Jōyō",
-      "primaryMeaning": "placenta",
+      "primaryMeaning": "cell",
       "secondaryMeanings": [
         "sac",
         "sheath"
@@ -63248,7 +63236,7 @@
       "kanji": "疎",
       "frequencyRank": 1735,
       "kind": "Jōyō",
-      "primaryMeaning": "alienate",
+      "primaryMeaning": "sparse",
       "secondaryMeanings": [
         "rough",
         "neglect",
@@ -63467,7 +63455,7 @@
       "kanji": "瑞",
       "frequencyRank": 1741,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "congratulations",
+      "primaryMeaning": "good omen",
       "secondaryMeanings": [],
       "primaryReading": "ズイ",
       "secondaryReadings": [
@@ -63502,7 +63490,7 @@
       "kanji": "均",
       "frequencyRank": 1742,
       "kind": "Kyōiku (5th grade)",
-      "primaryMeaning": "level",
+      "primaryMeaning": "equalize",
       "secondaryMeanings": [
         "average"
       ],
@@ -63553,7 +63541,7 @@
       "kanji": "架",
       "frequencyRank": 1744,
       "kind": "Jōyō",
-      "primaryMeaning": "erect",
+      "primaryMeaning": "framework",
       "secondaryMeanings": [
         "frame",
         "mount",
@@ -63629,7 +63617,7 @@
       "kanji": "罵",
       "frequencyRank": 1746,
       "kind": "Jōyō",
-      "primaryMeaning": "abuse",
+      "primaryMeaning": "insult",
       "secondaryMeanings": [
         "insult"
       ],
@@ -63675,7 +63663,7 @@
       "kanji": "峰",
       "frequencyRank": 1748,
       "kind": "Jōyō",
-      "primaryMeaning": "summit",
+      "primaryMeaning": "peak",
       "secondaryMeanings": [
         "peak"
       ],
@@ -64063,7 +64051,7 @@
       "kanji": "乏",
       "frequencyRank": 1761,
       "kind": "Jōyō",
-      "primaryMeaning": "destitution",
+      "primaryMeaning": "scarcity",
       "secondaryMeanings": [
         "scarce",
         "limited"
@@ -64291,7 +64279,7 @@
       "kanji": "籍",
       "frequencyRank": 1768,
       "kind": "Jōyō",
-      "primaryMeaning": "enroll",
+      "primaryMeaning": "registry",
       "secondaryMeanings": [
         "domiciliary register",
         "membership"
@@ -64374,7 +64362,7 @@
       "kanji": "須",
       "frequencyRank": 1771,
       "kind": "Jōyō",
-      "primaryMeaning": "ought",
+      "primaryMeaning": "necessary",
       "secondaryMeanings": [
         "by all means",
         "necessarily"
@@ -64551,7 +64539,7 @@
       "kanji": "喪",
       "frequencyRank": 1776,
       "kind": "Jōyō",
-      "primaryMeaning": "miss",
+      "primaryMeaning": "loss",
       "secondaryMeanings": [
         "mourning"
       ],
@@ -64620,7 +64608,7 @@
       "kanji": "繫",
       "frequencyRank": 1778,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "attach",
+      "primaryMeaning": "link",
       "secondaryMeanings": [
         "connect",
         "unite",
@@ -64640,7 +64628,7 @@
       "kanji": "賑",
       "frequencyRank": 1779,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "flourish",
+      "primaryMeaning": "bustling",
       "secondaryMeanings": [
         "be bustling",
         "prosperity"
@@ -64739,7 +64727,7 @@
       "kanji": "軒",
       "frequencyRank": 1782,
       "kind": "Jōyō",
-      "primaryMeaning": "flats",
+      "primaryMeaning": "house counter",
       "secondaryMeanings": [
         "counter for houses",
         "eaves"
@@ -65016,7 +65004,7 @@
       "kanji": "妨",
       "frequencyRank": 1790,
       "kind": "Jōyō",
-      "primaryMeaning": "disturb",
+      "primaryMeaning": "obstruct",
       "secondaryMeanings": [
         "prevent",
         "hamper",
@@ -65150,7 +65138,7 @@
       "kanji": "蔑",
       "frequencyRank": 1795,
       "kind": "Jōyō",
-      "primaryMeaning": "ignore",
+      "primaryMeaning": "scorn",
       "secondaryMeanings": [
         "despise",
         "neglect",
@@ -66056,7 +66044,7 @@
       "kanji": "薙",
       "frequencyRank": 1823,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "mow down (the enemy)",
+      "primaryMeaning": "mow down",
       "secondaryMeanings": [],
       "primaryReading": "テイ",
       "secondaryReadings": [
@@ -66073,7 +66061,7 @@
       "kanji": "霞",
       "frequencyRank": 1824,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "be hazy",
+      "primaryMeaning": "haze",
       "secondaryMeanings": [
         "grow dim",
         "blurred"
@@ -66284,7 +66272,7 @@
       "kanji": "煽",
       "frequencyRank": 1831,
       "kind": "Hyōgai",
-      "primaryMeaning": "fan",
+      "primaryMeaning": "fan flames",
       "secondaryMeanings": [
         "flap",
         "instigate",
@@ -66383,7 +66371,7 @@
       "kanji": "欺",
       "frequencyRank": 1834,
       "kind": "Jōyō",
-      "primaryMeaning": "deceit",
+      "primaryMeaning": "deceive",
       "secondaryMeanings": [
         "cheat",
         "delude"
@@ -66568,7 +66556,7 @@
       "kanji": "芳",
       "frequencyRank": 1840,
       "kind": "Jōyō",
-      "primaryMeaning": "perfume",
+      "primaryMeaning": "fragrant",
       "secondaryMeanings": [
         "balmy",
         "favorable",
@@ -66708,7 +66696,7 @@
       "kanji": "恭",
       "frequencyRank": 1844,
       "kind": "Jōyō",
-      "primaryMeaning": "respect",
+      "primaryMeaning": "respectful",
       "secondaryMeanings": [
         "reverent"
       ],
@@ -66765,7 +66753,7 @@
       "kanji": "逮",
       "frequencyRank": 1846,
       "kind": "Jōyō",
-      "primaryMeaning": "apprehend",
+      "primaryMeaning": "arrest",
       "secondaryMeanings": [
         "chase"
       ],
@@ -66786,7 +66774,7 @@
       "kanji": "垣",
       "frequencyRank": 1847,
       "kind": "Jōyō",
-      "primaryMeaning": "hedge",
+      "primaryMeaning": "fence",
       "secondaryMeanings": [
         "fence",
         "wall"
@@ -66918,7 +66906,7 @@
       "kanji": "瞼",
       "frequencyRank": 1852,
       "kind": "Hyōgai",
-      "primaryMeaning": "eyelids",
+      "primaryMeaning": "eyelid",
       "secondaryMeanings": [],
       "primaryReading": "まぶた",
       "secondaryReadings": [
@@ -67134,7 +67122,7 @@
       "kanji": "朗",
       "frequencyRank": 1860,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "melodious",
+      "primaryMeaning": "bright and clear",
       "secondaryMeanings": [
         "clear",
         "bright",
@@ -67173,7 +67161,7 @@
       "kanji": "迂",
       "frequencyRank": 1861,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "roundabout way",
+      "primaryMeaning": "detour",
       "secondaryMeanings": [],
       "primaryReading": "ウ",
       "secondaryReadings": [],
@@ -67365,7 +67353,7 @@
       "kanji": "暁",
       "frequencyRank": 1867,
       "kind": "Jōyō",
-      "primaryMeaning": "daybreak",
+      "primaryMeaning": "dawn",
       "secondaryMeanings": [
         "dawn",
         "in the event"
@@ -67428,7 +67416,7 @@
       "kanji": "萌",
       "frequencyRank": 1869,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "show symptoms of",
+      "primaryMeaning": "sprout",
       "secondaryMeanings": [
         "sprout",
         "bud",
@@ -67634,7 +67622,7 @@
       "kanji": "佇",
       "frequencyRank": 1876,
       "kind": "Hyōgai",
-      "primaryMeaning": "stop",
+      "primaryMeaning": "linger",
       "secondaryMeanings": [
         "linger",
         "appearance",
@@ -67785,7 +67773,7 @@
       "kanji": "猟",
       "frequencyRank": 1881,
       "kind": "Jōyō",
-      "primaryMeaning": "game-hunting",
+      "primaryMeaning": "hunt wildlife",
       "secondaryMeanings": [
         "shooting",
         "game",
@@ -68154,7 +68142,7 @@
       "kanji": "薫",
       "frequencyRank": 1894,
       "kind": "Jōyō",
-      "primaryMeaning": "send forth fragrance",
+      "primaryMeaning": "fragrance",
       "secondaryMeanings": [
         "fragrant",
         "be scented",
@@ -68463,7 +68451,7 @@
       "kanji": "慕",
       "frequencyRank": 1906,
       "kind": "Jōyō",
-      "primaryMeaning": "pining",
+      "primaryMeaning": "adore",
       "secondaryMeanings": [
         "yearn for",
         "love dearly",
@@ -68736,7 +68724,7 @@
       "kanji": "懇",
       "frequencyRank": 1915,
       "kind": "Jōyō",
-      "primaryMeaning": "sociable",
+      "primaryMeaning": "sincere",
       "secondaryMeanings": [
         "kind",
         "courteous",
@@ -68808,7 +68796,7 @@
       "kanji": "蛍",
       "frequencyRank": 1917,
       "kind": "Jōyō",
-      "primaryMeaning": "lightning-bug",
+      "primaryMeaning": "firefly",
       "secondaryMeanings": [
         "firefly"
       ],
@@ -68947,7 +68935,7 @@
       "kanji": "瞑",
       "frequencyRank": 1922,
       "kind": "Hyōgai",
-      "primaryMeaning": "sleep",
+      "primaryMeaning": "close one's eyes",
       "secondaryMeanings": [
         "dark",
         "close eyes"
@@ -69151,7 +69139,7 @@
       "kanji": "紳",
       "frequencyRank": 1928,
       "kind": "Jōyō",
-      "primaryMeaning": "sire",
+      "primaryMeaning": "gentleman",
       "secondaryMeanings": [
         "good belt",
         "gentleman"
@@ -69300,7 +69288,7 @@
       "kanji": "隻",
       "frequencyRank": 1933,
       "kind": "Jōyō",
-      "primaryMeaning": "vessels",
+      "primaryMeaning": "vessel",
       "secondaryMeanings": [
         "counter for ships",
         "fish",
@@ -69789,7 +69777,7 @@
       "kanji": "摂",
       "frequencyRank": 1949,
       "kind": "Jōyō",
-      "primaryMeaning": "vicarious",
+      "primaryMeaning": "absorb",
       "secondaryMeanings": [
         "surrogate",
         "act in addition to",
@@ -69830,7 +69818,7 @@
       "kanji": "眷",
       "frequencyRank": 1950,
       "kind": "Hyōgai",
-      "primaryMeaning": "look around",
+      "primaryMeaning": "regard affectionately",
       "secondaryMeanings": [
         "regard affectionately"
       ],
@@ -69883,7 +69871,7 @@
       "kanji": "戚",
       "frequencyRank": 1952,
       "kind": "Jōyō",
-      "primaryMeaning": "grieve",
+      "primaryMeaning": "family relative",
       "secondaryMeanings": [
         "relatives"
       ],
@@ -69909,7 +69897,7 @@
       "kanji": "冶",
       "frequencyRank": 1953,
       "kind": "Jōyō",
-      "primaryMeaning": "melting",
+      "primaryMeaning": "metallurgy",
       "secondaryMeanings": [
         "smelting"
       ],
@@ -70118,7 +70106,7 @@
       "kanji": "淹",
       "frequencyRank": 1961,
       "kind": "Hyōgai",
-      "primaryMeaning": "dip",
+      "primaryMeaning": "brew",
       "secondaryMeanings": [
         "soak",
         "immerse",
@@ -70176,7 +70164,7 @@
       "kanji": "穿",
       "frequencyRank": 1963,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "put on (to the feet)",
+      "primaryMeaning": "drill",
       "secondaryMeanings": [
         "dig",
         "pierce",
@@ -70242,7 +70230,7 @@
       "kanji": "抽",
       "frequencyRank": 1966,
       "kind": "Jōyō",
-      "primaryMeaning": "pluck",
+      "primaryMeaning": "take out",
       "secondaryMeanings": [
         "pull",
         "extract",
@@ -70300,7 +70288,7 @@
       "kanji": "妥",
       "frequencyRank": 1968,
       "kind": "Jōyō",
-      "primaryMeaning": "gentle",
+      "primaryMeaning": "suitable",
       "secondaryMeanings": [
         "peace",
         "satisfactory",
@@ -70513,7 +70501,7 @@
       "kanji": "玲",
       "frequencyRank": 1976,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "sound of jewels",
+      "primaryMeaning": "tinkling",
       "secondaryMeanings": [],
       "primaryReading": "レイ",
       "secondaryReadings": [],
@@ -70539,7 +70527,7 @@
       "kanji": "謙",
       "frequencyRank": 1978,
       "kind": "Jōyō",
-      "primaryMeaning": "self-effacing",
+      "primaryMeaning": "humble",
       "secondaryMeanings": [
         "humble oneself",
         "condescend",
@@ -70673,7 +70661,7 @@
       "kanji": "噌",
       "frequencyRank": 1982,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "boisterous",
+      "primaryMeaning": "miso",
       "secondaryMeanings": [],
       "primaryReading": "ソウ",
       "secondaryReadings": [
@@ -70741,7 +70729,7 @@
       "kanji": "腫",
       "frequencyRank": 1984,
       "kind": "Jōyō",
-      "primaryMeaning": "tumor",
+      "primaryMeaning": "swell",
       "secondaryMeanings": [
         "swelling"
       ],
@@ -70807,7 +70795,7 @@
       "kanji": "兆",
       "frequencyRank": 1986,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "portent",
+      "primaryMeaning": "omen",
       "secondaryMeanings": [
         "10**12",
         "trillion",
@@ -70952,7 +70940,7 @@
       "kanji": "煩",
       "frequencyRank": 1991,
       "kind": "Jōyō",
-      "primaryMeaning": "anxiety",
+      "primaryMeaning": "troublesome",
       "secondaryMeanings": [
         "trouble",
         "worry",
@@ -71370,7 +71358,7 @@
       "kanji": "鳳",
       "frequencyRank": 2007,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "male mythical bird",
+      "primaryMeaning": "phoenix",
       "secondaryMeanings": [],
       "primaryReading": "ホウ",
       "secondaryReadings": [
@@ -71411,7 +71399,7 @@
       "kanji": "娠",
       "frequencyRank": 2009,
       "kind": "Jōyō",
-      "primaryMeaning": "with child",
+      "primaryMeaning": "be pregnant",
       "secondaryMeanings": [
         "pregnancy"
       ],
@@ -71453,7 +71441,7 @@
       "kanji": "宵",
       "frequencyRank": 2011,
       "kind": "Jōyō",
-      "primaryMeaning": "wee hours",
+      "primaryMeaning": "early night",
       "secondaryMeanings": [
         "evening",
         "early night"
@@ -71837,7 +71825,7 @@
       "kanji": "嵌",
       "frequencyRank": 2025,
       "kind": "Hyōgai",
-      "primaryMeaning": "go into",
+      "primaryMeaning": "fit into",
       "secondaryMeanings": [
         "plunge",
         "inlay"
@@ -72067,7 +72055,7 @@
       "kanji": "串",
       "frequencyRank": 2033,
       "kind": "Jōyō",
-      "primaryMeaning": "spit",
+      "primaryMeaning": "skewer",
       "secondaryMeanings": [
         "skewer"
       ],
@@ -72168,7 +72156,7 @@
       "kanji": "崇",
       "frequencyRank": 2037,
       "kind": "Jōyō",
-      "primaryMeaning": "adore",
+      "primaryMeaning": "revere",
       "secondaryMeanings": [
         "respect",
         "revere",
@@ -72224,7 +72212,7 @@
       "kanji": "綻",
       "frequencyRank": 2039,
       "kind": "Jōyō",
-      "primaryMeaning": "be rent",
+      "primaryMeaning": "come apart",
       "secondaryMeanings": [
         "ripped",
         "unravel",
@@ -72293,7 +72281,7 @@
       "kanji": "汐",
       "frequencyRank": 2041,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "eventide",
+      "primaryMeaning": "evening tide",
       "secondaryMeanings": [
         "tide",
         "salt water",
@@ -72313,7 +72301,7 @@
       "kanji": "懲",
       "frequencyRank": 2042,
       "kind": "Jōyō",
-      "primaryMeaning": "penal",
+      "primaryMeaning": "punish",
       "secondaryMeanings": [
         "chastise",
         "punish",
@@ -72430,7 +72418,7 @@
       "kanji": "碧",
       "frequencyRank": 2046,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "blue",
+      "primaryMeaning": "blue-green",
       "secondaryMeanings": [
         "green"
       ],
@@ -73109,7 +73097,7 @@
       "kanji": "痩",
       "frequencyRank": 2069,
       "kind": "Jōyō",
-      "primaryMeaning": "get thin",
+      "primaryMeaning": "lose weight",
       "secondaryMeanings": [],
       "primaryReading": "ソウ",
       "secondaryReadings": [
@@ -73173,7 +73161,7 @@
       "kanji": "吟",
       "frequencyRank": 2071,
       "kind": "Jōyō",
-      "primaryMeaning": "versify",
+      "primaryMeaning": "recite",
       "secondaryMeanings": [
         "singing",
         "recital"
@@ -73263,7 +73251,7 @@
       "kanji": "芋",
       "frequencyRank": 2074,
       "kind": "Jōyō",
-      "primaryMeaning": "taro",
+      "primaryMeaning": "potato",
       "secondaryMeanings": [
         "yam",
         "tuber"
@@ -73367,7 +73355,7 @@
       "kanji": "隆",
       "frequencyRank": 2077,
       "kind": "Jōyō",
-      "primaryMeaning": "hump",
+      "primaryMeaning": "abundance",
       "secondaryMeanings": [
         "high",
         "noble",
@@ -73458,7 +73446,7 @@
       "kanji": "狽",
       "frequencyRank": 2080,
       "kind": "Hyōgai",
-      "primaryMeaning": "wolf",
+      "primaryMeaning": "panic",
       "secondaryMeanings": [
         "be flurried"
       ],
@@ -73532,7 +73520,7 @@
       "kanji": "慄",
       "frequencyRank": 2083,
       "kind": "Jōyō",
-      "primaryMeaning": "fear",
+      "primaryMeaning": "shudder",
       "secondaryMeanings": [],
       "primaryReading": "リツ",
       "secondaryReadings": [
@@ -73754,7 +73742,7 @@
       "kanji": "篠",
       "frequencyRank": 2090,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "bamboo grass",
+      "primaryMeaning": "dwarf bamboo",
       "secondaryMeanings": [],
       "primaryReading": "ゾウ",
       "secondaryReadings": [
@@ -73852,7 +73840,7 @@
       "kanji": "殖",
       "frequencyRank": 2094,
       "kind": "Jōyō",
-      "primaryMeaning": "augment",
+      "primaryMeaning": "multiply",
       "secondaryMeanings": [
         "increase",
         "multiply",
@@ -73949,7 +73937,7 @@
       "kanji": "俊",
       "frequencyRank": 2097,
       "kind": "Jōyō",
-      "primaryMeaning": "sagacious",
+      "primaryMeaning": "talented",
       "secondaryMeanings": [
         "genius",
         "excellence"
@@ -74085,7 +74073,7 @@
       "kanji": "飴",
       "frequencyRank": 2102,
       "kind": "Hyōgai",
-      "primaryMeaning": "rice jelly",
+      "primaryMeaning": "candy",
       "secondaryMeanings": [
         "candy"
       ],
@@ -74302,7 +74290,7 @@
       "kanji": "毯",
       "frequencyRank": 2110,
       "kind": "Hyōgai",
-      "primaryMeaning": "wool rug",
+      "primaryMeaning": "carpet",
       "secondaryMeanings": [],
       "primaryReading": "タン",
       "secondaryReadings": [],
@@ -74563,7 +74551,7 @@
       "kanji": "套",
       "frequencyRank": 2120,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "accumulate",
+      "primaryMeaning": "trite",
       "secondaryMeanings": [
         "big and long",
         "hackneyed"
@@ -74931,7 +74919,7 @@
       "kanji": "搬",
       "frequencyRank": 2135,
       "kind": "Jōyō",
-      "primaryMeaning": "conveyor",
+      "primaryMeaning": "haul",
       "secondaryMeanings": [
         "carry",
         "transport"
@@ -74990,7 +74978,7 @@
       "kanji": "袈",
       "frequencyRank": 2137,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "a coarse camlet",
+      "primaryMeaning": "stole",
       "secondaryMeanings": [],
       "primaryReading": "ケ",
       "secondaryReadings": [
@@ -75126,7 +75114,7 @@
       "kanji": "又",
       "frequencyRank": 2143,
       "kind": "Jōyō",
-      "primaryMeaning": "or again",
+      "primaryMeaning": "once again",
       "secondaryMeanings": [
         "furthermore",
         "on the other hand"
@@ -75511,7 +75499,7 @@
       "kanji": "阪",
       "frequencyRank": 2157,
       "kind": "Kyōiku (4th grade)",
-      "primaryMeaning": "heights",
+      "primaryMeaning": "hillside",
       "secondaryMeanings": [
         "slope"
       ],
@@ -75857,7 +75845,7 @@
       "kanji": "巴",
       "frequencyRank": 2168,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "comma-design",
+      "primaryMeaning": "swirly pattern",
       "secondaryMeanings": [],
       "primaryReading": "ともえ",
       "secondaryReadings": [
@@ -76026,7 +76014,7 @@
       "kanji": "螺",
       "frequencyRank": 2174,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "small, edible, helical fresh-water mollusk",
+      "primaryMeaning": "spiral",
       "secondaryMeanings": [],
       "primaryReading": "ラ",
       "secondaryReadings": [
@@ -76324,7 +76312,7 @@
       "kanji": "葱",
       "frequencyRank": 2184,
       "kind": "Hyōgai",
-      "primaryMeaning": "stone leek",
+      "primaryMeaning": "onion",
       "secondaryMeanings": [
         "Welsh onion"
       ],
@@ -76699,7 +76687,7 @@
       "kanji": "燭",
       "frequencyRank": 2198,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "light",
+      "primaryMeaning": "candlelight",
       "secondaryMeanings": [
         "candlepower"
       ],
@@ -76750,7 +76738,7 @@
       "kanji": "颯",
       "frequencyRank": 2200,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "sudden",
+      "primaryMeaning": "rustling",
       "secondaryMeanings": [
         "quick",
         "sound of the wind"
@@ -76845,7 +76833,7 @@
       "kanji": "朔",
       "frequencyRank": 2203,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "conjunction (astronomy)",
+      "primaryMeaning": "first day of the month",
       "secondaryMeanings": [
         "first day of month",
         "north"
@@ -77053,7 +77041,7 @@
       "kanji": "嚇",
       "frequencyRank": 2211,
       "kind": "Jōyō",
-      "primaryMeaning": "menacing",
+      "primaryMeaning": "intimidate",
       "secondaryMeanings": [
         "dignity",
         "majesty",
@@ -77108,7 +77096,7 @@
       "kanji": "伽",
       "frequencyRank": 2213,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "nursing",
+      "primaryMeaning": "look after",
       "secondaryMeanings": [
         "attending",
         "entertainer"
@@ -77128,7 +77116,7 @@
       "kanji": "嬌",
       "frequencyRank": 2214,
       "kind": "Hyōgai",
-      "primaryMeaning": "attractive",
+      "primaryMeaning": "charming",
       "secondaryMeanings": [],
       "primaryReading": "キョウ",
       "secondaryReadings": [
@@ -77171,7 +77159,7 @@
       "kanji": "繍",
       "frequencyRank": 2216,
       "kind": "Hyōgai",
-      "primaryMeaning": "sew",
+      "primaryMeaning": "embroidery",
       "secondaryMeanings": [
         "figured cloth"
       ],
@@ -77287,7 +77275,7 @@
       "kanji": "劫",
       "frequencyRank": 2220,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "threat",
+      "primaryMeaning": "kalpa",
       "secondaryMeanings": [
         "long ages"
       ],
@@ -77502,7 +77490,7 @@
       "kanji": "膳",
       "frequencyRank": 2228,
       "kind": "Jōyō",
-      "primaryMeaning": "small low table",
+      "primaryMeaning": "dining tray",
       "secondaryMeanings": [
         "tray"
       ],
@@ -77551,7 +77539,7 @@
       "kanji": "奨",
       "frequencyRank": 2230,
       "kind": "Jōyō",
-      "primaryMeaning": "exhort",
+      "primaryMeaning": "encourage",
       "secondaryMeanings": [
         "urge",
         "encourage"
@@ -77712,7 +77700,7 @@
       "kanji": "賓",
       "frequencyRank": 2237,
       "kind": "Jōyō",
-      "primaryMeaning": "V.I.P.",
+      "primaryMeaning": "visitor",
       "secondaryMeanings": [
         "guest"
       ],
@@ -77829,7 +77817,7 @@
       "kanji": "薩",
       "frequencyRank": 2241,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "salvation",
+      "primaryMeaning": "bodhisattva",
       "secondaryMeanings": [
         "Buddha"
       ],
@@ -77966,7 +77954,7 @@
       "kanji": "踪",
       "frequencyRank": 2246,
       "kind": "Jōyō",
-      "primaryMeaning": "remains",
+      "primaryMeaning": "trail",
       "secondaryMeanings": [
         "clue",
         "footprint"
@@ -78082,7 +78070,7 @@
       "kanji": "菫",
       "frequencyRank": 2251,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "the violet",
+      "primaryMeaning": "violet",
       "secondaryMeanings": [],
       "primaryReading": "キン",
       "secondaryReadings": [
@@ -78247,7 +78235,7 @@
       "kanji": "巳",
       "frequencyRank": 2258,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "sign of the snake or serpent",
+      "primaryMeaning": "sign of the snake",
       "secondaryMeanings": [
         "9-11AM",
         "sixth sign of Chinese zodiac"
@@ -78271,7 +78259,7 @@
       "kanji": "薪",
       "frequencyRank": 2259,
       "kind": "Jōyō",
-      "primaryMeaning": "fuel",
+      "primaryMeaning": "firewood",
       "secondaryMeanings": [
         "firewood",
         "kindling"
@@ -78458,7 +78446,7 @@
       "kanji": "跨",
       "frequencyRank": 2265,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "be",
+      "primaryMeaning": "straddle",
       "secondaryMeanings": [
         "sit or stand astride",
         "extend over",
@@ -78551,7 +78539,7 @@
       "kanji": "諜",
       "frequencyRank": 2268,
       "kind": "Hyōgai",
-      "primaryMeaning": "spy out",
+      "primaryMeaning": "spy",
       "secondaryMeanings": [
         "reconnoiter"
       ],
@@ -78686,7 +78674,7 @@
       "kanji": "桂",
       "frequencyRank": 2274,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "Japanese Judas-tree",
+      "primaryMeaning": "katsura tree",
       "secondaryMeanings": [
         "cinnamon tree"
       ],
@@ -78995,7 +78983,7 @@
       "kanji": "篭",
       "frequencyRank": 2286,
       "kind": "Hyōgai",
-      "primaryMeaning": "seclude oneself",
+      "primaryMeaning": "basket",
       "secondaryMeanings": [
         "cage",
         "coop",
@@ -79016,7 +79004,7 @@
       "kanji": "啜",
       "frequencyRank": 2287,
       "kind": "Hyōgai",
-      "primaryMeaning": "suck",
+      "primaryMeaning": "sip",
       "secondaryMeanings": [
         "sip"
       ],
@@ -79345,7 +79333,7 @@
       "kanji": "秤",
       "frequencyRank": 2301,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "balances",
+      "primaryMeaning": "balancing scales",
       "secondaryMeanings": [
         "scales",
         "steelyard"
@@ -79687,7 +79675,7 @@
       "kanji": "拉",
       "frequencyRank": 2314,
       "kind": "Jōyō",
-      "primaryMeaning": "Latin",
+      "primaryMeaning": "squash flat",
       "secondaryMeanings": [
         "kidnap",
         "crush"
@@ -79860,7 +79848,7 @@
       "kanji": "埒",
       "frequencyRank": 2320,
       "kind": "Hyōgai",
-      "primaryMeaning": "picket",
+      "primaryMeaning": "limits",
       "secondaryMeanings": [
         "limits",
         "be settled"
@@ -79906,7 +79894,7 @@
       "kanji": "煉",
       "frequencyRank": 2322,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "refine metals",
+      "primaryMeaning": "refine",
       "secondaryMeanings": [
         "kneading over fire"
       ],
@@ -80177,7 +80165,7 @@
       "kanji": "瀕",
       "frequencyRank": 2333,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "shore",
+      "primaryMeaning": "on the verge",
       "secondaryMeanings": [
         "brink",
         "verge"
@@ -80215,7 +80203,7 @@
       "kanji": "逝",
       "frequencyRank": 2335,
       "kind": "Jōyō",
-      "primaryMeaning": "departed",
+      "primaryMeaning": "pass away",
       "secondaryMeanings": [
         "die"
       ],
@@ -80439,7 +80427,7 @@
       "kanji": "醤",
       "frequencyRank": 2344,
       "kind": "Hyōgai",
-      "primaryMeaning": "a kind of miso",
+      "primaryMeaning": "soy sauce",
       "secondaryMeanings": [],
       "primaryReading": "ショウ",
       "secondaryReadings": [
@@ -80603,7 +80591,7 @@
       "kanji": "岳",
       "frequencyRank": 2352,
       "kind": "Jōyō",
-      "primaryMeaning": "point",
+      "primaryMeaning": "mountain peak",
       "secondaryMeanings": [
         "peak",
         "mountain"
@@ -80834,7 +80822,7 @@
       "kanji": "郁",
       "frequencyRank": 2361,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "cultural progress",
+      "primaryMeaning": "cultured",
       "secondaryMeanings": [
         "perfume"
       ],
@@ -81116,7 +81104,7 @@
       "kanji": "洲",
       "frequencyRank": 2373,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "continent",
+      "primaryMeaning": "sandbank",
       "secondaryMeanings": [
         "sandbar",
         "island",
@@ -81184,7 +81172,7 @@
       "kanji": "釜",
       "frequencyRank": 2376,
       "kind": "Jōyō",
-      "primaryMeaning": "kettle",
+      "primaryMeaning": "cauldron",
       "secondaryMeanings": [
         "cauldron",
         "iron pot"
@@ -81274,7 +81262,7 @@
       "kanji": "炒",
       "frequencyRank": 2380,
       "kind": "Hyōgai",
-      "primaryMeaning": "broil",
+      "primaryMeaning": "to fry",
       "secondaryMeanings": [
         "parch",
         "roast",
@@ -81485,7 +81473,7 @@
       "kanji": "酌",
       "frequencyRank": 2388,
       "kind": "Jōyō",
-      "primaryMeaning": "bar-tending",
+      "primaryMeaning": "bartending",
       "secondaryMeanings": [
         "serving sake",
         "the host",
@@ -81702,7 +81690,7 @@
       "kanji": "襖",
       "frequencyRank": 2396,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "opaque sliding door",
+      "primaryMeaning": "sliding door",
       "secondaryMeanings": [],
       "primaryReading": "ふすま",
       "secondaryReadings": [
@@ -81866,7 +81854,7 @@
       "kanji": "汽",
       "frequencyRank": 2403,
       "kind": "Kyōiku (2nd grade)",
-      "primaryMeaning": "vapor",
+      "primaryMeaning": "steam",
       "secondaryMeanings": [
         "steam"
       ],
@@ -82163,7 +82151,7 @@
       "kanji": "隈",
       "frequencyRank": 2415,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "corner",
+      "primaryMeaning": "nook",
       "secondaryMeanings": [
         "nook",
         "recess"
@@ -82212,7 +82200,7 @@
       "kanji": "嘉",
       "frequencyRank": 2417,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "applaud",
+      "primaryMeaning": "praiseworthy",
       "secondaryMeanings": [
         "praise",
         "esteem",
@@ -82308,7 +82296,7 @@
       "kanji": "碑",
       "frequencyRank": 2421,
       "kind": "Jōyō",
-      "primaryMeaning": "tombstone",
+      "primaryMeaning": "monument",
       "secondaryMeanings": [
         "monument"
       ],
@@ -82418,7 +82406,7 @@
       "kanji": "堤",
       "frequencyRank": 2425,
       "kind": "Jōyō",
-      "primaryMeaning": "dike",
+      "primaryMeaning": "embankment",
       "secondaryMeanings": [
         "bank",
         "embankment"
@@ -82511,7 +82499,7 @@
       "kanji": "耽",
       "frequencyRank": 2429,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "addicted",
+      "primaryMeaning": "engrossed",
       "secondaryMeanings": [
         "absorbed in"
       ],
@@ -82556,7 +82544,7 @@
       "kanji": "駿",
       "frequencyRank": 2431,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "a good horse",
+      "primaryMeaning": "excellent horse",
       "secondaryMeanings": [
         "speed",
         "a fast person"
@@ -82655,7 +82643,7 @@
       "kanji": "旬",
       "frequencyRank": 2435,
       "kind": "Jōyō",
-      "primaryMeaning": "decameron",
+      "primaryMeaning": "ten days",
       "secondaryMeanings": [
         "ten-day period",
         "season (for specific products)"
@@ -82753,7 +82741,7 @@
       "kanji": "栽",
       "frequencyRank": 2439,
       "kind": "Jōyō",
-      "primaryMeaning": "plantation",
+      "primaryMeaning": "cultivate",
       "secondaryMeanings": [
         "planting"
       ],
@@ -82798,7 +82786,7 @@
       "kanji": "煎",
       "frequencyRank": 2441,
       "kind": "Jōyō",
-      "primaryMeaning": "broil",
+      "primaryMeaning": "dry roast",
       "secondaryMeanings": [
         "parch",
         "roast",
@@ -83180,7 +83168,7 @@
       "kanji": "禄",
       "frequencyRank": 2457,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "fief",
+      "primaryMeaning": "salary",
       "secondaryMeanings": [
         "allowance",
         "pension",
@@ -83259,7 +83247,7 @@
       "kanji": "挺",
       "frequencyRank": 2461,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "bravely volunteer",
+      "primaryMeaning": "counter for tools",
       "secondaryMeanings": [
         "counter for guns, inksticks, palanquins, rickshaws"
       ],
@@ -83525,7 +83513,7 @@
       "kanji": "葡",
       "frequencyRank": 2475,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "wild grape",
+      "primaryMeaning": "grape",
       "secondaryMeanings": [
         "Portugal"
       ],
@@ -83694,7 +83682,7 @@
       "kanji": "梁",
       "frequencyRank": 2483,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "weir",
+      "primaryMeaning": "roof beam",
       "secondaryMeanings": [
         "fish trap",
         "beam",
@@ -83752,7 +83740,7 @@
       "kanji": "疇",
       "frequencyRank": 2486,
       "kind": "Hyōgai",
-      "primaryMeaning": "before",
+      "primaryMeaning": "same kind",
       "secondaryMeanings": [
         "companion",
         "same kind"
@@ -83796,7 +83784,7 @@
       "kanji": "妓",
       "frequencyRank": 2488,
       "kind": "Hyōgai",
-      "primaryMeaning": "stretch",
+      "primaryMeaning": "courtesan",
       "secondaryMeanings": [
         "singing girl",
         "geisha",
@@ -83929,7 +83917,7 @@
       "kanji": "柴",
       "frequencyRank": 2493,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "brush",
+      "primaryMeaning": "brushwood",
       "secondaryMeanings": [
         "firewood"
       ],
@@ -84433,7 +84421,7 @@
       "kanji": "塁",
       "frequencyRank": 2517,
       "kind": "Jōyō",
-      "primaryMeaning": "bases",
+      "primaryMeaning": "base",
       "secondaryMeanings": [
         "fort",
         "rampart",
@@ -84495,7 +84483,7 @@
       "kanji": "穀",
       "frequencyRank": 2519,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "cereals",
+      "primaryMeaning": "grains",
       "secondaryMeanings": [
         "grain"
       ],
@@ -84706,7 +84694,7 @@
       "kanji": "俵",
       "frequencyRank": 2527,
       "kind": "Kyōiku (6th grade)",
-      "primaryMeaning": "bag",
+      "primaryMeaning": "straw bag",
       "secondaryMeanings": [
         "bale",
         "sack",
@@ -84775,7 +84763,7 @@
       "kanji": "吏",
       "frequencyRank": 2530,
       "kind": "Jōyō",
-      "primaryMeaning": "officer",
+      "primaryMeaning": "government official",
       "secondaryMeanings": [
         "an official"
       ],
@@ -84859,7 +84847,7 @@
       "kanji": "彰",
       "frequencyRank": 2533,
       "kind": "Jōyō",
-      "primaryMeaning": "patent",
+      "primaryMeaning": "show publicly",
       "secondaryMeanings": [
         "clear"
       ],
@@ -84916,7 +84904,7 @@
       "kanji": "芻",
       "frequencyRank": 2535,
       "kind": "Hyōgai",
-      "primaryMeaning": "grass cutting",
+      "primaryMeaning": "hay",
       "secondaryMeanings": [
         "hay"
       ],
@@ -84934,7 +84922,7 @@
       "kanji": "窒",
       "frequencyRank": 2536,
       "kind": "Jōyō",
-      "primaryMeaning": "plug up",
+      "primaryMeaning": "suffocate",
       "secondaryMeanings": [
         "obstruct"
       ],
@@ -85108,7 +85096,7 @@
       "kanji": "緻",
       "frequencyRank": 2543,
       "kind": "Jōyō",
-      "primaryMeaning": "fine (i.e. not coarse)",
+      "primaryMeaning": "fine",
       "secondaryMeanings": [],
       "primaryReading": "チ",
       "secondaryReadings": [
@@ -85247,7 +85235,7 @@
       "kanji": "駈",
       "frequencyRank": 2549,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "run",
+      "primaryMeaning": "gallop",
       "secondaryMeanings": [
         "gallop",
         "advance"
@@ -85395,7 +85383,7 @@
       "kanji": "禿",
       "frequencyRank": 2557,
       "kind": "Hyōgai",
-      "primaryMeaning": "become bald",
+      "primaryMeaning": "bald",
       "secondaryMeanings": [
         "bare",
         "wear out",
@@ -85466,7 +85454,7 @@
       "kanji": "魁",
       "frequencyRank": 2559,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "charging ahead of others",
+      "primaryMeaning": "pioneer",
       "secondaryMeanings": [],
       "primaryReading": "カイ",
       "secondaryReadings": [
@@ -85818,7 +85806,7 @@
       "kanji": "債",
       "frequencyRank": 2575,
       "kind": "Jōyō",
-      "primaryMeaning": "bond",
+      "primaryMeaning": "financial bond",
       "secondaryMeanings": [
         "loan",
         "debt"
@@ -85930,7 +85918,7 @@
       "kanji": "箋",
       "frequencyRank": 2579,
       "kind": "Jōyō",
-      "primaryMeaning": "paper",
+      "primaryMeaning": "slip of paper",
       "secondaryMeanings": [
         "label",
         "letter",
@@ -85961,7 +85949,7 @@
       "kanji": "峠",
       "frequencyRank": 2580,
       "kind": "Jōyō",
-      "primaryMeaning": "mountain peak",
+      "primaryMeaning": "mountain pass",
       "secondaryMeanings": [
         "mountain pass",
         "climax",
@@ -85985,7 +85973,7 @@
       "kanji": "癇",
       "frequencyRank": 2581,
       "kind": "Hyōgai",
-      "primaryMeaning": "bitter",
+      "primaryMeaning": "hot temper",
       "secondaryMeanings": [
         "hot temper",
         "irritable",
@@ -86171,7 +86159,7 @@
       "kanji": "蒲",
       "frequencyRank": 2590,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "bullrush",
+      "primaryMeaning": "cattail",
       "secondaryMeanings": [
         "flag",
         "cattail"
@@ -86223,7 +86211,7 @@
       "kanji": "洪",
       "frequencyRank": 2592,
       "kind": "Jōyō",
-      "primaryMeaning": "deluge",
+      "primaryMeaning": "flood",
       "secondaryMeanings": [
         "flood",
         "vast"
@@ -86327,7 +86315,7 @@
       "kanji": "叛",
       "frequencyRank": 2597,
       "kind": "Hyōgai",
-      "primaryMeaning": "disobey",
+      "primaryMeaning": "rebellion",
       "secondaryMeanings": [
         "defy",
         "go back on",
@@ -86359,7 +86347,7 @@
       "kanji": "粟",
       "frequencyRank": 2599,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "millet",
+      "primaryMeaning": "foxtail millet",
       "secondaryMeanings": [],
       "primaryReading": "ゾク",
       "secondaryReadings": [
@@ -86615,7 +86603,7 @@
       "kanji": "靭",
       "frequencyRank": 2610,
       "kind": "Hyōgai",
-      "primaryMeaning": "soft",
+      "primaryMeaning": "pliable",
       "secondaryMeanings": [
         "pliable",
         "quiver"
@@ -86683,7 +86671,7 @@
       "kanji": "斃",
       "frequencyRank": 2613,
       "kind": "Hyōgai",
-      "primaryMeaning": "kill",
+      "primaryMeaning": "die violent death",
       "secondaryMeanings": [
         "die violent death"
       ],
@@ -87132,7 +87120,7 @@
       "kanji": "鹸",
       "frequencyRank": 2634,
       "kind": "Hyōgai",
-      "primaryMeaning": "saltiness",
+      "primaryMeaning": "lye",
       "secondaryMeanings": [],
       "primaryReading": "ケン",
       "secondaryReadings": [
@@ -87395,7 +87383,7 @@
       "kanji": "榛",
       "frequencyRank": 2645,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "hazelnut",
+      "primaryMeaning": "hazel",
       "secondaryMeanings": [
         "filbert"
       ],
@@ -87488,7 +87476,7 @@
       "kanji": "錐",
       "frequencyRank": 2651,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "auger",
+      "primaryMeaning": "awl",
       "secondaryMeanings": [
         "drill",
         "awl",
@@ -87599,7 +87587,7 @@
       "kanji": "鋒",
       "frequencyRank": 2657,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "dagger",
+      "primaryMeaning": "sword point",
       "secondaryMeanings": [
         "sword's point",
         "festival car",
@@ -87880,7 +87868,7 @@
       "kanji": "汎",
       "frequencyRank": 2670,
       "kind": "Jōyō",
-      "primaryMeaning": "pan-",
+      "primaryMeaning": "far reaching",
       "secondaryMeanings": [],
       "primaryReading": "はん",
       "secondaryReadings": [
@@ -87913,7 +87901,7 @@
       "kanji": "伎",
       "frequencyRank": 2671,
       "kind": "Jōyō",
-      "primaryMeaning": "deed",
+      "primaryMeaning": "performing artist",
       "secondaryMeanings": [
         "skill"
       ],
@@ -88092,7 +88080,7 @@
       "kanji": "轍",
       "frequencyRank": 2680,
       "kind": "Hyōgai",
-      "primaryMeaning": "rut",
+      "primaryMeaning": "wheel track",
       "secondaryMeanings": [
         "wheel track"
       ],
@@ -88109,7 +88097,7 @@
       "kanji": "磯",
       "frequencyRank": 2681,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "seashore",
+      "primaryMeaning": "rocky beach",
       "secondaryMeanings": [
         "beach"
       ],
@@ -88132,7 +88120,7 @@
       "kanji": "琉",
       "frequencyRank": 2682,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "precious stone",
+      "primaryMeaning": "lapis lazuli",
       "secondaryMeanings": [
         "gem",
         "lapis lazuli"
@@ -88367,7 +88355,7 @@
       "kanji": "曝",
       "frequencyRank": 2694,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "bleach",
+      "primaryMeaning": "exposure",
       "secondaryMeanings": [
         "refine",
         "expose",
@@ -88473,7 +88461,7 @@
       "kanji": "錫",
       "frequencyRank": 2699,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "copper",
+      "primaryMeaning": "tin",
       "secondaryMeanings": [
         "tin"
       ],
@@ -88498,7 +88486,7 @@
       "kanji": "樋",
       "frequencyRank": 2700,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "water pipe",
+      "primaryMeaning": "downspout",
       "secondaryMeanings": [
         "gutter",
         "downspout",
@@ -88552,7 +88540,7 @@
       "kanji": "盃",
       "frequencyRank": 2703,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "glass",
+      "primaryMeaning": "cup",
       "secondaryMeanings": [
         "cup"
       ],
@@ -88756,7 +88744,7 @@
       "kanji": "弐",
       "frequencyRank": 2713,
       "kind": "Jōyō",
-      "primaryMeaning": "II",
+      "primaryMeaning": "two (formal)",
       "secondaryMeanings": [
         "two",
         "second"
@@ -88816,7 +88804,7 @@
       "kanji": "簾",
       "frequencyRank": 2716,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "bamboo screen",
+      "primaryMeaning": "bamboo blinds",
       "secondaryMeanings": [
         "rattan blind"
       ],
@@ -88966,7 +88954,7 @@
       "kanji": "瘍",
       "frequencyRank": 2724,
       "kind": "Jōyō",
-      "primaryMeaning": "swelling",
+      "primaryMeaning": "carbuncle",
       "secondaryMeanings": [
         "boil",
         "tumor"
@@ -89351,7 +89339,7 @@
       "kanji": "脊",
       "frequencyRank": 2742,
       "kind": "Jōyō",
-      "primaryMeaning": "stature",
+      "primaryMeaning": "backbone",
       "secondaryMeanings": [
         "height",
         "spine"
@@ -89623,7 +89611,7 @@
       "kanji": "窄",
       "frequencyRank": 2756,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "narrow",
+      "primaryMeaning": "tight",
       "secondaryMeanings": [
         "fold",
         "furl",
@@ -89646,7 +89634,7 @@
       "kanji": "沁",
       "frequencyRank": 2757,
       "kind": "Hyōgai",
-      "primaryMeaning": "penetrate",
+      "primaryMeaning": "soak in",
       "secondaryMeanings": [
         "soak in"
       ],
@@ -89716,7 +89704,7 @@
       "kanji": "瑚",
       "frequencyRank": 2760,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "ancestral offering receptacle",
+      "primaryMeaning": "coral reef",
       "secondaryMeanings": [
         "coral"
       ],
@@ -89947,7 +89935,7 @@
       "kanji": "脛",
       "frequencyRank": 2772,
       "kind": "Hyōgai",
-      "primaryMeaning": "leg",
+      "primaryMeaning": "shin",
       "secondaryMeanings": [
         "shin"
       ],
@@ -89988,7 +89976,7 @@
       "kanji": "賤",
       "frequencyRank": 2774,
       "kind": "Hyōgai",
-      "primaryMeaning": "despise",
+      "primaryMeaning": "lowly",
       "secondaryMeanings": [
         "low-life",
         "poverty"
@@ -90078,7 +90066,7 @@
       "kanji": "鮎",
       "frequencyRank": 2778,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "freshwater trout",
+      "primaryMeaning": "sweetfish",
       "secondaryMeanings": [
         "smelt"
       ],
@@ -90121,7 +90109,7 @@
       "kanji": "扮",
       "frequencyRank": 2780,
       "kind": "Hyōgai",
-      "primaryMeaning": "impersonate",
+      "primaryMeaning": "disguise",
       "secondaryMeanings": [
         "dress up",
         "disguise",
@@ -90212,7 +90200,7 @@
       "kanji": "臥",
       "frequencyRank": 2784,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "bend down",
+      "primaryMeaning": "lie down",
       "secondaryMeanings": [
         "bow",
         "lie prostrate"
@@ -90287,7 +90275,7 @@
       "kanji": "凱",
       "frequencyRank": 2788,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "victory song",
+      "primaryMeaning": "triumph",
       "secondaryMeanings": [],
       "primaryReading": "ガイ",
       "secondaryReadings": [
@@ -90352,7 +90340,7 @@
       "kanji": "嚢",
       "frequencyRank": 2792,
       "kind": "Hyōgai",
-      "primaryMeaning": "pouch",
+      "primaryMeaning": "sac",
       "secondaryMeanings": [
         "purse",
         "bag"
@@ -90411,7 +90399,7 @@
       "kanji": "庄",
       "frequencyRank": 2795,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "level",
+      "primaryMeaning": "manor",
       "secondaryMeanings": [
         "in the country",
         "manor",
@@ -90466,7 +90454,7 @@
       "kanji": "醐",
       "frequencyRank": 2798,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "boiled butter",
+      "primaryMeaning": "ghee",
       "secondaryMeanings": [],
       "primaryReading": "ゴ",
       "secondaryReadings": [
@@ -90794,7 +90782,7 @@
       "kanji": "鱈",
       "frequencyRank": 2813,
       "kind": "Hyōgai",
-      "primaryMeaning": "codfish",
+      "primaryMeaning": "cod",
       "secondaryMeanings": [
         "(kokuji)"
       ],
@@ -90876,7 +90864,7 @@
       "kanji": "粕",
       "frequencyRank": 2817,
       "kind": "Hyōgai",
-      "primaryMeaning": "scrap",
+      "primaryMeaning": "scraps",
       "secondaryMeanings": [
         "waste"
       ],
@@ -91049,7 +91037,7 @@
       "kanji": "巷",
       "frequencyRank": 2826,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "fork in road",
+      "primaryMeaning": "alley",
       "secondaryMeanings": [
         "scene",
         "arena",
@@ -91210,7 +91198,7 @@
       "kanji": "絢",
       "frequencyRank": 2833,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "brilliant fabric design",
+      "primaryMeaning": "gorgeous",
       "secondaryMeanings": [],
       "primaryReading": "ケン",
       "secondaryReadings": [],
@@ -91240,7 +91228,7 @@
       "kanji": "芥",
       "frequencyRank": 2835,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "mustard",
+      "primaryMeaning": "trash",
       "secondaryMeanings": [
         "rape",
         "dust",
@@ -91363,7 +91351,7 @@
       "kanji": "榎",
       "frequencyRank": 2840,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "lotus tree",
+      "primaryMeaning": "hackberry",
       "secondaryMeanings": [
         "nettle tree",
         "hackberry"
@@ -91635,7 +91623,7 @@
       "kanji": "琵",
       "frequencyRank": 2855,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "glissando on strings",
+      "primaryMeaning": "biwa",
       "secondaryMeanings": [
         "lute"
       ],
@@ -91692,7 +91680,7 @@
       "kanji": "彙",
       "frequencyRank": 2857,
       "kind": "Jōyō",
-      "primaryMeaning": "same kind",
+      "primaryMeaning": "glossary",
       "secondaryMeanings": [
         "collect",
         "classify",
@@ -91810,7 +91798,7 @@
       "kanji": "槻",
       "frequencyRank": 2862,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "Zelkova tree",
+      "primaryMeaning": "zelkova",
       "secondaryMeanings": [],
       "primaryReading": "キ",
       "secondaryReadings": [
@@ -92086,7 +92074,7 @@
       "kanji": "酎",
       "frequencyRank": 2877,
       "kind": "Jōyō",
-      "primaryMeaning": "sake",
+      "primaryMeaning": "liquor",
       "secondaryMeanings": [],
       "primaryReading": "チュウ",
       "secondaryReadings": [
@@ -92155,7 +92143,7 @@
       "kanji": "紬",
       "frequencyRank": 2880,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "pongee (a knotted silk cloth)",
+      "primaryMeaning": "pongee",
       "secondaryMeanings": [],
       "primaryReading": "チュウ",
       "secondaryReadings": [
@@ -92188,7 +92176,7 @@
       "kanji": "牌",
       "frequencyRank": 2882,
       "kind": "Hyōgai",
-      "primaryMeaning": "label",
+      "primaryMeaning": "tile",
       "secondaryMeanings": [
         "signboard",
         "medal",
@@ -92238,7 +92226,7 @@
       "kanji": "筑",
       "frequencyRank": 2884,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "an ancient musical instrument",
+      "primaryMeaning": "ancient harp",
       "secondaryMeanings": [],
       "primaryReading": "チク",
       "secondaryReadings": [],
@@ -92346,7 +92334,7 @@
       "kanji": "烙",
       "frequencyRank": 2890,
       "kind": "Hyōgai",
-      "primaryMeaning": "burn",
+      "primaryMeaning": "branding",
       "secondaryMeanings": [],
       "primaryReading": "ラク",
       "secondaryReadings": [
@@ -92480,7 +92468,7 @@
       "kanji": "梶",
       "frequencyRank": 2897,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "sculling oar",
+      "primaryMeaning": "oar",
       "secondaryMeanings": [],
       "primaryReading": "ビ",
       "secondaryReadings": [
@@ -92495,7 +92483,7 @@
       "kanji": "鍬",
       "frequencyRank": 2898,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "hoe with long blade at acute angle",
+      "primaryMeaning": "hoe",
       "secondaryMeanings": [],
       "primaryReading": "ショウ",
       "secondaryReadings": [
@@ -92571,7 +92559,7 @@
       "kanji": "奧",
       "frequencyRank": 2902,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "heart",
+      "primaryMeaning": "deep inside",
       "secondaryMeanings": [
         "interior"
       ],
@@ -92727,7 +92715,7 @@
       "kanji": "鴻",
       "frequencyRank": 2909,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "large bird",
+      "primaryMeaning": "large goose",
       "secondaryMeanings": [
         "wild goose",
         "large",
@@ -92967,7 +92955,7 @@
       "kanji": "夥",
       "frequencyRank": 2921,
       "kind": "Hyōgai",
-      "primaryMeaning": "immense",
+      "primaryMeaning": "plentiful",
       "secondaryMeanings": [
         "tremendous"
       ],
@@ -93247,7 +93235,7 @@
       "kanji": "叢",
       "frequencyRank": 2933,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "plexus",
+      "primaryMeaning": "conglomerate",
       "secondaryMeanings": [
         "clump of bushes",
         "thicket"
@@ -93281,7 +93269,7 @@
       "kanji": "誹",
       "frequencyRank": 2935,
       "kind": "Hyōgai",
-      "primaryMeaning": "ridicule",
+      "primaryMeaning": "slander",
       "secondaryMeanings": [
         "slander"
       ],
@@ -93305,7 +93293,7 @@
       "kanji": "秦",
       "frequencyRank": 2936,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "Manchu dynasty",
+      "primaryMeaning": "Qin dynasty",
       "secondaryMeanings": [
         "name given to naturalized foreigners"
       ],
@@ -93609,7 +93597,7 @@
       "kanji": "姜",
       "frequencyRank": 2951,
       "kind": "Hyōgai",
-      "primaryMeaning": "Chinese surname",
+      "primaryMeaning": "ginger",
       "secondaryMeanings": [
         "ginger"
       ],
@@ -93816,7 +93804,7 @@
       "kanji": "鋸",
       "frequencyRank": 2962,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "saw (cuts wood)",
+      "primaryMeaning": "hand saw",
       "secondaryMeanings": [],
       "primaryReading": "のこぎり",
       "secondaryReadings": [
@@ -94058,7 +94046,7 @@
       "kanji": "荻",
       "frequencyRank": 2975,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "reed",
+      "primaryMeaning": "silvergrass",
       "secondaryMeanings": [
         "rush"
       ],
@@ -94081,7 +94069,7 @@
       "kanji": "邁",
       "frequencyRank": 2976,
       "kind": "Hyōgai",
-      "primaryMeaning": "go",
+      "primaryMeaning": "push through",
       "secondaryMeanings": [
         "excel"
       ],
@@ -94170,7 +94158,7 @@
       "kanji": "舶",
       "frequencyRank": 2981,
       "kind": "Jōyō",
-      "primaryMeaning": "liner",
+      "primaryMeaning": "oceangoing ship",
       "secondaryMeanings": [
         "ship"
       ],
@@ -94197,7 +94185,7 @@
       "kanji": "啼",
       "frequencyRank": 2982,
       "kind": "Hyōgai",
-      "primaryMeaning": "bark",
+      "primaryMeaning": "animal cry",
       "secondaryMeanings": [
         "chirp",
         "cry"
@@ -94235,7 +94223,7 @@
       "kanji": "蓬",
       "frequencyRank": 2984,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "sagebrush",
+      "primaryMeaning": "wormwood",
       "secondaryMeanings": [
         "wormwood",
         "mugwort"
@@ -94267,7 +94255,7 @@
       "kanji": "疹",
       "frequencyRank": 2986,
       "kind": "Hyōgai",
-      "primaryMeaning": "measles",
+      "primaryMeaning": "skin rash",
       "secondaryMeanings": [
         "sickness"
       ],
@@ -94315,7 +94303,7 @@
       "kanji": "劉",
       "frequencyRank": 2988,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "weapon of war",
+      "primaryMeaning": "slaughter",
       "secondaryMeanings": [
         "logging axe",
         "kill en masse",
@@ -94510,7 +94498,7 @@
       "kanji": "韋",
       "frequencyRank": 2999,
       "kind": "Hyōgai",
-      "primaryMeaning": "tanned leather radical (no. 178)",
+      "primaryMeaning": "tanned leather",
       "secondaryMeanings": [],
       "primaryReading": "イ",
       "secondaryReadings": [
@@ -94561,7 +94549,7 @@
       "kanji": "祇",
       "frequencyRank": 3002,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "national or local god",
+      "primaryMeaning": "earthly god",
       "secondaryMeanings": [
         "peaceful",
         "great"
@@ -95076,7 +95064,7 @@
       "kanji": "鬨",
       "frequencyRank": 3029,
       "kind": "Hyōgai",
-      "primaryMeaning": "fight",
+      "primaryMeaning": "war cry",
       "secondaryMeanings": [
         "war cry"
       ],
@@ -95093,7 +95081,7 @@
       "kanji": "帛",
       "frequencyRank": 3030,
       "kind": "Hyōgai",
-      "primaryMeaning": "cloth",
+      "primaryMeaning": "silk",
       "secondaryMeanings": [],
       "primaryReading": "ハク",
       "secondaryReadings": [
@@ -95107,7 +95095,7 @@
       "kanji": "鄙",
       "frequencyRank": 3031,
       "kind": "Hyōgai",
-      "primaryMeaning": "lowly",
+      "primaryMeaning": "countryside",
       "secondaryMeanings": [
         "the country",
         "the countryside",
@@ -95157,7 +95145,7 @@
       "kanji": "乖",
       "frequencyRank": 3034,
       "kind": "Hyōgai",
-      "primaryMeaning": "oppose",
+      "primaryMeaning": "diverge",
       "secondaryMeanings": [
         "disobey"
       ],
@@ -95196,7 +95184,7 @@
       "kanji": "綜",
       "frequencyRank": 3036,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "rule",
+      "primaryMeaning": "synthesis",
       "secondaryMeanings": [
         "synthesize"
       ],
@@ -95908,7 +95896,7 @@
       "kanji": "墾",
       "frequencyRank": 3075,
       "kind": "Jōyō",
-      "primaryMeaning": "ground-breaking",
+      "primaryMeaning": "groundbreaking",
       "secondaryMeanings": [
         "open up farmland"
       ],
@@ -96136,7 +96124,7 @@
       "kanji": "沃",
       "frequencyRank": 3088,
       "kind": "Jōyō",
-      "primaryMeaning": "fertility",
+      "primaryMeaning": "irrigate",
       "secondaryMeanings": [],
       "primaryReading": "ヨウ",
       "secondaryReadings": [
@@ -96204,7 +96192,7 @@
       "kanji": "哺",
       "frequencyRank": 3092,
       "kind": "Jōyō",
-      "primaryMeaning": "nurse",
+      "primaryMeaning": "suckle",
       "secondaryMeanings": [
         "suckle"
       ],
@@ -96237,7 +96225,7 @@
       "kanji": "亥",
       "frequencyRank": 3094,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "sign of the hog",
+      "primaryMeaning": "sign of the boar",
       "secondaryMeanings": [
         "9-11PM",
         "twelfth sign of the Chinese zodiac"
@@ -96387,7 +96375,7 @@
       "kanji": "醬",
       "frequencyRank": 3101,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "any jam-like or paste-like food",
+      "primaryMeaning": "soy sauce",
       "secondaryMeanings": [],
       "primaryReading": "ショウ",
       "secondaryReadings": [
@@ -96401,7 +96389,7 @@
       "kanji": "趨",
       "frequencyRank": 3102,
       "kind": "Hyōgai",
-      "primaryMeaning": "run",
+      "primaryMeaning": "run towards",
       "secondaryMeanings": [
         "go",
         "quick",
@@ -96481,7 +96469,7 @@
       "kanji": "侠",
       "frequencyRank": 3106,
       "kind": "Hyōgai",
-      "primaryMeaning": "tomboy",
+      "primaryMeaning": "chivalry",
       "secondaryMeanings": [
         "chivalry"
       ],
@@ -96574,7 +96562,7 @@
       "kanji": "璽",
       "frequencyRank": 3111,
       "kind": "Jōyō",
-      "primaryMeaning": "emperor's seal",
+      "primaryMeaning": "imperial seal",
       "secondaryMeanings": [],
       "primaryReading": "ジ",
       "secondaryReadings": [],
@@ -96632,7 +96620,7 @@
       "kanji": "舳",
       "frequencyRank": 3115,
       "kind": "Hyōgai",
-      "primaryMeaning": "bow",
+      "primaryMeaning": "prow",
       "secondaryMeanings": [
         "prow"
       ],
@@ -96982,7 +96970,7 @@
       "kanji": "畿",
       "frequencyRank": 3134,
       "kind": "Jōyō",
-      "primaryMeaning": "capital",
+      "primaryMeaning": "capital region",
       "secondaryMeanings": [
         "suburbs of capital"
       ],
@@ -97189,7 +97177,7 @@
       "kanji": "徽",
       "frequencyRank": 3144,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "good",
+      "primaryMeaning": "insignia",
       "secondaryMeanings": [
         "beautiful",
         "badge"
@@ -97553,7 +97541,7 @@
       "kanji": "洟",
       "frequencyRank": 3162,
       "kind": "Hyōgai",
-      "primaryMeaning": "tear",
+      "primaryMeaning": "nasal discharge",
       "secondaryMeanings": [
         "nasal discharge"
       ],
@@ -97790,7 +97778,7 @@
       "kanji": "椋",
       "frequencyRank": 3177,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "type of deciduous tree",
+      "primaryMeaning": "oriental elm",
       "secondaryMeanings": [
         "grey starling"
       ],
@@ -98466,7 +98454,7 @@
       "kanji": "亨",
       "frequencyRank": 3215,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "pass through",
+      "primaryMeaning": "go smoothly",
       "secondaryMeanings": [
         "go smoothly"
       ],
@@ -98541,7 +98529,7 @@
       "kanji": "赫",
       "frequencyRank": 3219,
       "kind": "Hyōgai",
-      "primaryMeaning": "suddenly",
+      "primaryMeaning": "incandescent",
       "secondaryMeanings": [
         "brighten",
         "illuminate",
@@ -98798,7 +98786,7 @@
       "kanji": "渕",
       "frequencyRank": 3234,
       "kind": "Hyōgai",
-      "primaryMeaning": "edge",
+      "primaryMeaning": "abyss",
       "secondaryMeanings": [],
       "primaryReading": "エン",
       "secondaryReadings": [
@@ -98852,7 +98840,7 @@
       "kanji": "鵬",
       "frequencyRank": 3237,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "phoenix",
+      "primaryMeaning": "large mythical bird",
       "secondaryMeanings": [],
       "primaryReading": "ホウ",
       "secondaryReadings": [
@@ -99367,7 +99355,7 @@
       "kanji": "畠",
       "frequencyRank": 3267,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "field",
+      "primaryMeaning": "dry field",
       "secondaryMeanings": [
         "farm",
         "garden",
@@ -99531,7 +99519,7 @@
       "kanji": "麹",
       "frequencyRank": 3277,
       "kind": "Hyōgai",
-      "primaryMeaning": "malt",
+      "primaryMeaning": "malted rice",
       "secondaryMeanings": [
         "yeast"
       ],
@@ -99653,7 +99641,7 @@
       "kanji": "按",
       "frequencyRank": 3284,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "hold",
+      "primaryMeaning": "press down on",
       "secondaryMeanings": [
         "consider",
         "investigate"
@@ -99913,7 +99901,7 @@
       "kanji": "俣",
       "frequencyRank": 3300,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "crotch",
+      "primaryMeaning": "fork in a road",
       "secondaryMeanings": [
         "thigh",
         "groin",
@@ -100373,7 +100361,7 @@
       "kanji": "屏",
       "frequencyRank": 3325,
       "kind": "Hyōgai",
-      "primaryMeaning": "wall",
+      "primaryMeaning": "folding screen",
       "secondaryMeanings": [
         "fence"
       ],
@@ -100423,7 +100411,7 @@
       "kanji": "鵡",
       "frequencyRank": 3327,
       "kind": "Hyōgai",
-      "primaryMeaning": "cockatoo",
+      "primaryMeaning": "parrot",
       "secondaryMeanings": [],
       "primaryReading": "ブ",
       "secondaryReadings": [
@@ -101330,7 +101318,7 @@
       "kanji": "衿",
       "frequencyRank": 3377,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "neck",
+      "primaryMeaning": "lapel",
       "secondaryMeanings": [
         "collar",
         "lapel"
@@ -101373,7 +101361,7 @@
       "kanji": "漉",
       "frequencyRank": 3379,
       "kind": "Hyōgai",
-      "primaryMeaning": "manufacture paper",
+      "primaryMeaning": "filter",
       "secondaryMeanings": [
         "spread out thin",
         "strain",
@@ -101426,7 +101414,7 @@
       "kanji": "痔",
       "frequencyRank": 3382,
       "kind": "Hyōgai",
-      "primaryMeaning": "piles",
+      "primaryMeaning": "hemorrhoids",
       "secondaryMeanings": [
         "hemorrhoids"
       ],
@@ -101673,7 +101661,7 @@
       "kanji": "嬰",
       "frequencyRank": 3397,
       "kind": "Hyōgai",
-      "primaryMeaning": "sharp (music)",
+      "primaryMeaning": "suckling infant",
       "secondaryMeanings": [
         "baby"
       ],
@@ -101706,7 +101694,7 @@
       "kanji": "隧",
       "frequencyRank": 3399,
       "kind": "Hyōgai",
-      "primaryMeaning": "fall",
+      "primaryMeaning": "underground passage",
       "secondaryMeanings": [
         "go around"
       ],
@@ -101825,7 +101813,7 @@
       "kanji": "蟄",
       "frequencyRank": 3406,
       "kind": "Hyōgai",
-      "primaryMeaning": "hibernation of insects",
+      "primaryMeaning": "hibernation",
       "secondaryMeanings": [],
       "primaryReading": "チツ",
       "secondaryReadings": [
@@ -101841,7 +101829,7 @@
       "kanji": "笈",
       "frequencyRank": 3407,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "backpack bookcase",
+      "primaryMeaning": "backpack",
       "secondaryMeanings": [],
       "primaryReading": "キュウ",
       "secondaryReadings": [],
@@ -102023,7 +102011,7 @@
       "kanji": "肱",
       "frequencyRank": 3418,
       "kind": "Hyōgai",
-      "primaryMeaning": "ability",
+      "primaryMeaning": "armrest",
       "secondaryMeanings": [
         "talent",
         "elbow",
@@ -102190,7 +102178,7 @@
       "kanji": "疚",
       "frequencyRank": 3428,
       "kind": "Hyōgai",
-      "primaryMeaning": "ashamed",
+      "primaryMeaning": "guilty conscience",
       "secondaryMeanings": [
         "painful",
         "guilty conscience"
@@ -102403,7 +102391,7 @@
       "kanji": "箕",
       "frequencyRank": 3440,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "winnowing",
+      "primaryMeaning": "winnowing fan",
       "secondaryMeanings": [],
       "primaryReading": "キ",
       "secondaryReadings": [
@@ -102432,7 +102420,7 @@
       "kanji": "槙",
       "frequencyRank": 3442,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "twig",
+      "primaryMeaning": "chinese black pine",
       "secondaryMeanings": [
         "ornamental evergreen"
       ],
@@ -102546,7 +102534,7 @@
       "kanji": "賎",
       "frequencyRank": 3449,
       "kind": "Hyōgai",
-      "primaryMeaning": "despise",
+      "primaryMeaning": "despicable",
       "secondaryMeanings": [
         "low-life",
         "poverty"
@@ -102566,7 +102554,7 @@
       "kanji": "瑶",
       "frequencyRank": 3450,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "beautiful as a jewel",
+      "primaryMeaning": "precious stone",
       "secondaryMeanings": [],
       "primaryReading": "ヨウ",
       "secondaryReadings": [
@@ -102613,7 +102601,7 @@
       "kanji": "痰",
       "frequencyRank": 3453,
       "kind": "Hyōgai",
-      "primaryMeaning": "sputum",
+      "primaryMeaning": "phlegm",
       "secondaryMeanings": [
         "phlegm"
       ],
@@ -102831,7 +102819,7 @@
       "kanji": "圃",
       "frequencyRank": 3466,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "garden",
+      "primaryMeaning": "vegetable patch",
       "secondaryMeanings": [
         "field"
       ],
@@ -102975,7 +102963,7 @@
       "kanji": "鼎",
       "frequencyRank": 3475,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "three legged kettle",
+      "primaryMeaning": "tripod",
       "secondaryMeanings": [],
       "primaryReading": "テイ",
       "secondaryReadings": [
@@ -102989,7 +102977,7 @@
       "kanji": "扁",
       "frequencyRank": 3476,
       "kind": "Hyōgai",
-      "primaryMeaning": "level",
+      "primaryMeaning": "flat",
       "secondaryMeanings": [
         "small"
       ],
@@ -103038,7 +103026,7 @@
       "kanji": "鋤",
       "frequencyRank": 3479,
       "kind": "Hyōgai",
-      "primaryMeaning": "spade up",
+      "primaryMeaning": "plow",
       "secondaryMeanings": [
         "plow"
       ],
@@ -103397,7 +103385,7 @@
       "kanji": "譬",
       "frequencyRank": 3500,
       "kind": "Hyōgai",
-      "primaryMeaning": "illustrate",
+      "primaryMeaning": "parable",
       "secondaryMeanings": [],
       "primaryReading": "ヒ",
       "secondaryReadings": [
@@ -103755,7 +103743,7 @@
       "kanji": "罐",
       "frequencyRank": 3521,
       "kind": "Hyōgai",
-      "primaryMeaning": "steam boiler (left side only)",
+      "primaryMeaning": "tin can",
       "secondaryMeanings": [],
       "primaryReading": "カン",
       "secondaryReadings": [
@@ -103896,7 +103884,7 @@
       "kanji": "謄",
       "frequencyRank": 3529,
       "kind": "Jōyō",
-      "primaryMeaning": "mimeograph",
+      "primaryMeaning": "copy",
       "secondaryMeanings": [
         "copy"
       ],
@@ -103940,7 +103928,7 @@
       "kanji": "矩",
       "frequencyRank": 3531,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "ruler",
+      "primaryMeaning": "carpenter's square",
       "secondaryMeanings": [
         "carpenter's square"
       ],
@@ -104873,7 +104861,7 @@
       "kanji": "驟",
       "frequencyRank": 3586,
       "kind": "Hyōgai",
-      "primaryMeaning": "run",
+      "primaryMeaning": "suddenly",
       "secondaryMeanings": [
         "suddenly"
       ],
@@ -104890,7 +104878,7 @@
       "kanji": "冨",
       "frequencyRank": 3587,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "enrich",
+      "primaryMeaning": "wealth",
       "secondaryMeanings": [
         "wealthy",
         "abundant"
@@ -104924,7 +104912,7 @@
       "kanji": "鱒",
       "frequencyRank": 3589,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "salmon trout",
+      "primaryMeaning": "trout",
       "secondaryMeanings": [],
       "primaryReading": "ソン",
       "secondaryReadings": [
@@ -104958,7 +104946,7 @@
       "kanji": "堺",
       "frequencyRank": 3591,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "world",
+      "primaryMeaning": "border",
       "secondaryMeanings": [],
       "primaryReading": "カイ",
       "secondaryReadings": [
@@ -105654,7 +105642,7 @@
       "kanji": "鮒",
       "frequencyRank": 3633,
       "kind": "Hyōgai",
-      "primaryMeaning": "carp",
+      "primaryMeaning": "crucian carp",
       "secondaryMeanings": [],
       "primaryReading": "ホ",
       "secondaryReadings": [
@@ -105977,7 +105965,7 @@
       "kanji": "凉",
       "frequencyRank": 3653,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "nice and cool",
+      "primaryMeaning": "cool",
       "secondaryMeanings": [],
       "primaryReading": "リョウ",
       "secondaryReadings": [
@@ -106061,7 +106049,7 @@
       "kanji": "疋",
       "frequencyRank": 3658,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "head",
+      "primaryMeaning": "small animal counter",
       "secondaryMeanings": [
         "counter for animals"
       ],
@@ -106332,7 +106320,7 @@
       "kanji": "頗",
       "frequencyRank": 3675,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "prejudiced",
+      "primaryMeaning": "exceedingly",
       "secondaryMeanings": [
         "exceedingly"
       ],
@@ -106747,7 +106735,7 @@
       "kanji": "袷",
       "frequencyRank": 3699,
       "kind": "Hyōgai",
-      "primaryMeaning": "lined (kimono)",
+      "primaryMeaning": "lined kimono",
       "secondaryMeanings": [],
       "primaryReading": "コウ",
       "secondaryReadings": [
@@ -107114,7 +107102,7 @@
       "kanji": "乍",
       "frequencyRank": 3722,
       "kind": "Hyōgai",
-      "primaryMeaning": "though",
+      "primaryMeaning": "while",
       "secondaryMeanings": [
         "notwithstanding",
         "while",
@@ -107228,7 +107216,7 @@
       "kanji": "戈",
       "frequencyRank": 3728,
       "kind": "Hyōgai",
-      "primaryMeaning": "halberd",
+      "primaryMeaning": "dagger-axe",
       "secondaryMeanings": [
         "arms",
         "festival car",
@@ -107710,7 +107698,7 @@
       "kanji": "竣",
       "frequencyRank": 3757,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "end",
+      "primaryMeaning": "complete",
       "secondaryMeanings": [
         "finish"
       ],
@@ -107744,7 +107732,7 @@
       "kanji": "蹌",
       "frequencyRank": 3759,
       "kind": "Hyōgai",
-      "primaryMeaning": "move",
+      "primaryMeaning": "stagger",
       "secondaryMeanings": [
         "stagger"
       ],
@@ -107853,7 +107841,7 @@
       "kanji": "聲",
       "frequencyRank": 3765,
       "kind": "Hyōgai",
-      "primaryMeaning": "sound",
+      "primaryMeaning": "voice",
       "secondaryMeanings": [
         "voice",
         "noise",
@@ -108086,7 +108074,7 @@
       "kanji": "弋",
       "frequencyRank": 3779,
       "kind": "Hyōgai",
-      "primaryMeaning": "piling",
+      "primaryMeaning": "shoot with a bow",
       "secondaryMeanings": [
         "ceremony radical (no. 56)"
       ],
@@ -109009,7 +108997,7 @@
       "kanji": "號",
       "frequencyRank": 3834,
       "kind": "Hyōgai",
-      "primaryMeaning": "mark",
+      "primaryMeaning": "number",
       "secondaryMeanings": [
         "sign",
         "symbol",
@@ -109352,7 +109340,7 @@
       "kanji": "顆",
       "frequencyRank": 3855,
       "kind": "Hyōgai",
-      "primaryMeaning": "grain (e.g. rice)",
+      "primaryMeaning": "granule",
       "secondaryMeanings": [],
       "primaryReading": "カ",
       "secondaryReadings": [
@@ -109420,7 +109408,7 @@
       "kanji": "與",
       "frequencyRank": 3859,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "participate in",
+      "primaryMeaning": "bestow upon",
       "secondaryMeanings": [
         "give",
         "award",
@@ -109543,7 +109531,7 @@
       "kanji": "于",
       "frequencyRank": 3867,
       "kind": "Hyōgai",
-      "primaryMeaning": "going",
+      "primaryMeaning": "out of",
       "secondaryMeanings": [
         "from"
       ],
@@ -109657,7 +109645,7 @@
       "kanji": "杷",
       "frequencyRank": 3874,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "kind of rake",
+      "primaryMeaning": "farmer's rake",
       "secondaryMeanings": [
         "loquat"
       ],
@@ -109744,7 +109732,7 @@
       "kanji": "楷",
       "frequencyRank": 3879,
       "kind": "Jōyō",
-      "primaryMeaning": "square character style",
+      "primaryMeaning": "block letters",
       "secondaryMeanings": [
         "correctness"
       ],
@@ -109816,7 +109804,7 @@
       "kanji": "圖",
       "frequencyRank": 3883,
       "kind": "Hyōgai",
-      "primaryMeaning": "drawing",
+      "primaryMeaning": "diagram",
       "secondaryMeanings": [
         "plan"
       ],
@@ -110006,7 +109994,7 @@
       "kanji": "瀞",
       "frequencyRank": 3895,
       "kind": "Hyōgai",
-      "primaryMeaning": "pure water",
+      "primaryMeaning": "river pool",
       "secondaryMeanings": [
         "clear water",
         "pool in a river"
@@ -110074,7 +110062,7 @@
       "kanji": "笙",
       "frequencyRank": 3899,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "a reed instrument",
+      "primaryMeaning": "Chinese panpipe",
       "secondaryMeanings": [],
       "primaryReading": "ショウ",
       "secondaryReadings": [
@@ -110089,7 +110077,7 @@
       "kanji": "稗",
       "frequencyRank": 3900,
       "kind": "Hyōgai",
-      "primaryMeaning": "humble",
+      "primaryMeaning": "crabgrass",
       "secondaryMeanings": [
         "deccan grass"
       ],
@@ -110122,7 +110110,7 @@
       "kanji": "宸",
       "frequencyRank": 3902,
       "kind": "Hyōgai",
-      "primaryMeaning": "eaves",
+      "primaryMeaning": "imperial palace",
       "secondaryMeanings": [
         "palace",
         "imperial courtesy"
@@ -110139,7 +110127,7 @@
       "kanji": "諄",
       "frequencyRank": 3903,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "tedious",
+      "primaryMeaning": "wordy",
       "secondaryMeanings": [],
       "primaryReading": "シュン",
       "secondaryReadings": [
@@ -110181,7 +110169,7 @@
       "kanji": "艪",
       "frequencyRank": 3905,
       "kind": "Hyōgai",
-      "primaryMeaning": "oar",
+      "primaryMeaning": "Japanese scull",
       "secondaryMeanings": [
         "tower"
       ],
@@ -110552,7 +110540,7 @@
       "kanji": "浬",
       "frequencyRank": 3927,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "knot",
+      "primaryMeaning": "nautical mile",
       "secondaryMeanings": [
         "nautical mile"
       ],
@@ -110635,7 +110623,7 @@
       "kanji": "應",
       "frequencyRank": 3932,
       "kind": "Jinmeiyō",
-      "primaryMeaning": "answer",
+      "primaryMeaning": "respond",
       "secondaryMeanings": [
         "yes",
         "OK",
@@ -110719,7 +110707,7 @@
       "kanji": "薨",
       "frequencyRank": 3937,
       "kind": "Hyōgai",
-      "primaryMeaning": "die",
+      "primaryMeaning": "death of a nobleman",
       "secondaryMeanings": [],
       "primaryReading": "コウ",
       "secondaryReadings": [
@@ -110840,7 +110828,7 @@
       "kanji": "媼",
       "frequencyRank": 3945,
       "kind": "Hyōgai",
-      "primaryMeaning": "mother",
+      "primaryMeaning": "very old woman",
       "secondaryMeanings": [
         "grandma",
         "old woman"
@@ -111456,7 +111444,7 @@
       "kanji": "樒",
       "frequencyRank": 3984,
       "kind": "Hyōgai",
-      "primaryMeaning": "tree whose branches are placed on Buddhist graves",
+      "primaryMeaning": "star-anise",
       "secondaryMeanings": [],
       "primaryReading": "ミツ",
       "secondaryReadings": [
@@ -111561,7 +111549,7 @@
       "kanji": "瀚",
       "frequencyRank": 3991,
       "kind": "Hyōgai",
-      "primaryMeaning": "wide & large",
+      "primaryMeaning": "wide and large",
       "secondaryMeanings": [],
       "primaryReading": "カン",
       "secondaryReadings": [

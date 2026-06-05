@@ -1,13 +1,15 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import {
+  assertSafeLegacyOutput,
   buildKotoKanjiDictionary,
   parseKanjidic2,
   parseRankSnapshot,
-} from '../../../scripts/build-koto-kanji-dictionary.mjs';
+} from '../../../scripts/archive/build-koto-kanji-dictionary-legacy.mjs';
 
-describe('build-koto-kanji-dictionary', () => {
+describe('legacy build-koto-kanji-dictionary', () => {
   it('parses the compact rank snapshot format', () => {
     const rows = parseRankSnapshot('rank\tkanji\tkind\n1\t人\tKyōiku (1st grade)\n2\t言\tKyōiku (2nd grade)\n');
     assert.deepEqual(rows, [
@@ -77,5 +79,38 @@ describe('build-koto-kanji-dictionary', () => {
     assert.equal(dictionary.entries[0].primaryMeaning, 'tall / high');
     assert.equal(dictionary.entries[0].primaryReading, 'たか');
     assert.equal(dictionary.entries[0].notes, 'Variant of 高.');
+  });
+
+  it('refuses to overwrite the curated kanji dictionary', () => {
+    for (const outputPath of [
+      'data/kanji/koto-kanji-dictionary.json',
+      './data/kanji/koto-kanji-dictionary.json',
+      'data/kanji/../kanji/koto-kanji-dictionary.json',
+      resolve('data/kanji/koto-kanji-dictionary.json'),
+    ]) {
+      assert.throws(
+        () => assertSafeLegacyOutput(outputPath),
+        /Refusing to write legacy generated output over curated Koto kanji dictionary/
+      );
+    }
+  });
+
+  it('refuses an absolute curated dictionary path from outside the repo cwd', () => {
+    const originalCwd = process.cwd();
+    const curatedDictionaryPath = resolve('data/kanji/koto-kanji-dictionary.json');
+
+    try {
+      process.chdir('/private/tmp');
+      assert.throws(
+        () => assertSafeLegacyOutput(curatedDictionaryPath),
+        /Refusing to write legacy generated output over curated Koto kanji dictionary/
+      );
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
+  it('allows writing legacy output under output', () => {
+    assert.doesNotThrow(() => assertSafeLegacyOutput('output/kanji-keyword-review/legacy.json'));
   });
 });
