@@ -1,18 +1,15 @@
 import { applyStatChange, applyHeal, getStageMultiplier, breakSleep, initStatStages } from './effects.js';
 import { getElementMultiplier } from '../../shared/combat/creature-math.js';
-import { PARTY_SKILLS_CATALOG } from '../party-skills.js';
+import { getPartySkillLevel } from '../party-skills.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
 export function toActivePartySkillIdSet(runPartySkills) {
-  if (!runPartySkills) return new Set();
   const ids = [];
-  for (const entry of runPartySkills) {
-    if (!entry) continue;
-    if (typeof entry === 'string') ids.push(entry);
-    else if (typeof entry === 'object' && typeof entry.id === 'string') ids.push(entry.id);
+  for (const id of ['arcStrike', 'hpMaster', 'counterMaster', 'buffMaster', 'expMaster', 'debuffMaster']) {
+    if (getPartySkillLevel(runPartySkills, id) > 0) ids.push(id);
   }
-  return new Set(ids.filter(Boolean));
+  return new Set(ids);
 }
 
 function rollProc(chance, rng = Math.random) {
@@ -109,6 +106,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
   if (!Array.isArray(attacks) || attacks.length === 0) return;
   if (!combat) return;
   if (typeof combat.chainHitsThisTurn !== 'number') combat.chainHitsThisTurn = 0;
+  const arcLevel = getPartySkillLevel(runPartySkills, 'arcStrike');
 
   // Reset per-turn counters for legacy whole-round callers. Interleaved
   // initiative callers reset once at round start and pass resetTurnCounters=false.
@@ -170,120 +168,8 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
     }
 
     // ── Arc Strike: chain to another enemy ──
-    if (active.has('arcStrike')) {
-      const otherEnemies = livingEnemies(enemies).filter(e => e !== enemies[record.targetIndex]);
-      if (otherEnemies.length > 0) {
-        // Track which enemies are already dead before chains (for Pandemic)
-        const deadBeforeChains = new Set(enemies.filter(e => e && e.hp <= 0));
-
-        const chainTarget = randomFrom(otherEnemies, rng);
-        const chainIdx = enemies.indexOf(chainTarget);
-        const baseDmg = Math.max(0, Number(record.damage) || 0);
-        let chainDmg = Math.floor(baseDmg * 0.30);
-
-        // Elemental Cascade: SE chains deal 2x + chance for atk -1
-        const chainElemMult = getElementMultiplier(attacker?.element || 'neutral', chainTarget.element);
-        const isSE = chainElemMult > 1;
-        if (isSE && active.has('elementalCascade')) {
-          chainDmg = Math.floor(chainDmg * 2);
-        }
-
-        // Apply chain damage (can KO)
-        const actualChainDmg = Math.min(chainDmg, chainTarget.hp);
-        chainTarget.hp -= actualChainDmg;
-        combat.chainHitsThisTurn += 1;
-
-        const chainProc = {
-          skillId: 'arcStrike', skillName: 'Arc Strike',
-          type: 'chainHit', targetIndex: chainIdx, damage: actualChainDmg,
-          element: attacker?.element || 'neutral', isSE,
-          sourceIndex: record.targetIndex
-        };
-        record.partySkillProcs.push(chainProc);
-
-        // Elemental Cascade debuff — skip when the chain hit already killed
-        // the target. Applying atk-1 to a corpse leaves it with a stat pill
-        // next to a KO'd sprite and (via Contagion) spreads a stage change
-        // that was never "seen" by the player hitting a live target.
-        if (isSE && active.has('elementalCascade') && chainTarget.hp > 0 && rollProc(0.30, rng)) {
-          initStatStages(chainTarget);
-          const delta = applyStatChange(chainTarget, 'atk', -1);
-          if (delta !== 0) {
-            record.partySkillProcs.push({
-              skillId: 'elementalCascade', skillName: 'Elemental Cascade',
-              type: 'stageChange', targetIndex: chainIdx, targetSide: 'enemy', stat: 'atk', delta
-            });
-            // Contagion trigger
-            tryContagion(active, enemies, chainIdx, 'atk', -1, record, combat, rng);
-          }
-        }
-
-        // Forked Arc: 50% chance to bounce again (up to 4 total)
-        if (active.has('forkedArc')) {
-          let prevDmg = actualChainDmg;
-          let bounceCount = 1; // already did 1 bounce
-          let lastBounceSource = record.targetIndex;
-          const arcStrikeProc = record.partySkillProcs.find(p => p.skillId === 'arcStrike' && p.type === 'chainHit');
-          if (arcStrikeProc) lastBounceSource = arcStrikeProc.targetIndex;
-          while (bounceCount < 4 && rollProc(0.50, rng)) {
-            const bounceTargets = livingEnemies(enemies);
-            if (bounceTargets.length === 0) break;
-            const bounceTarget = randomFrom(bounceTargets, rng);
-            const bounceIdx = enemies.indexOf(bounceTarget);
-
-            let bounceDmg = Math.floor(baseDmg * 0.30);
-            // Resonant Arc: +15% per bounce
-            if (active.has('resonantArc')) {
-              bounceDmg = Math.floor(baseDmg * (0.30 + 0.15 * bounceCount));
-            }
-            // Elemental Cascade on bounces
-            const bounceElemMult = getElementMultiplier(attacker?.element || 'neutral', bounceTarget.element);
-            const bounceSE = bounceElemMult > 1;
-            if (bounceSE && active.has('elementalCascade')) {
-              bounceDmg = Math.floor(bounceDmg * 2);
-            }
-
-            const actualBounceDmg = Math.min(bounceDmg, bounceTarget.hp);
-            bounceTarget.hp -= actualBounceDmg;
-            combat.chainHitsThisTurn += 1;
-            bounceCount++;
-
-            record.partySkillProcs.push({
-              skillId: 'forkedArc', skillName: 'Forked Arc',
-              type: 'chainHit', targetIndex: bounceIdx, damage: actualBounceDmg,
-              element: attacker?.element || 'neutral', isSE: bounceSE, bounceNum: bounceCount,
-              sourceIndex: lastBounceSource
-            });
-            lastBounceSource = bounceIdx;
-
-            // Elemental Cascade debuff on bounces — same guard as the chain
-            // hit above: if the bounce killed the target, don't leave a stat
-            // pill / Contagion spread hanging off the corpse.
-            if (bounceSE && active.has('elementalCascade') && bounceTarget.hp > 0 && rollProc(0.30, rng)) {
-              initStatStages(bounceTarget);
-              const delta = applyStatChange(bounceTarget, 'atk', -1);
-              if (delta !== 0) {
-                record.partySkillProcs.push({
-                  skillId: 'elementalCascade', skillName: 'Elemental Cascade',
-                  type: 'stageChange', targetIndex: bounceIdx, targetSide: 'enemy', stat: 'atk', delta
-                });
-                tryContagion(active, enemies, bounceIdx, 'atk', -1, record, combat, rng);
-              }
-            }
-
-            prevDmg = actualBounceDmg;
-          }
-        }
-
-        // Check all chain kills → Pandemic (Arc Strike + Forked Arc bounces)
-        if (active.has('pandemic')) {
-          for (const enemy of enemies) {
-            if (enemy && enemy.hp <= 0 && !deadBeforeChains.has(enemy)) {
-              triggerPandemic(enemy, enemies, record, combat);
-            }
-          }
-        }
-      }
+    if (arcLevel >= 1) {
+      applyArcStrikeTree({ record, attacker, enemies, combat, rng, arcLevel });
     }
 
     // ── Check Pandemic on primary target kill ──
@@ -453,6 +339,53 @@ export function applyAfterEnemyAttacks({ enemyAttacks, allies, enemies, runParty
   }
 
   return counterAttacks;
+}
+
+function chainDamageForBounce(baseDmg, bounceIndex, arcLevel) {
+  const basePct = 30;
+  const pct = arcLevel >= 3 ? basePct + 15 * bounceIndex : basePct;
+  return Math.floor((baseDmg * pct) / 100);
+}
+
+function shouldContinueArcBounce({ bounceIndex, arcLevel, rng }) {
+  if (bounceIndex === 0) return true;
+  if (arcLevel >= 4 && bounceIndex === 1) return true;
+  if (arcLevel >= 2 && bounceIndex === 1) return rollProc(0.50, rng);
+  if (arcLevel >= 5 && bounceIndex >= 2) return rollProc(0.25, rng);
+  return false;
+}
+
+function applyArcStrikeTree({ record, attacker, enemies, combat, rng, arcLevel }) {
+  const baseDmg = Math.max(0, Number(record.damage) || 0);
+  if (baseDmg <= 0) return;
+
+  let bounceIndex = 0;
+  let sourceIndex = record.targetIndex;
+  while (shouldContinueArcBounce({ bounceIndex, arcLevel, rng })) {
+    const targets = livingEnemies(enemies).filter(enemy => enemies.indexOf(enemy) !== sourceIndex);
+    if (targets.length === 0) break;
+
+    const target = randomFrom(targets, rng);
+    const targetIndex = enemies.indexOf(target);
+    const damage = Math.min(chainDamageForBounce(baseDmg, bounceIndex, arcLevel), target.hp);
+    target.hp -= damage;
+    combat.chainHitsThisTurn += 1;
+
+    record.partySkillProcs.push({
+      skillId: 'arcStrike',
+      skillName: 'Arc Strike',
+      type: 'chainHit',
+      targetIndex,
+      damage,
+      element: attacker?.element || 'neutral',
+      isSE: getElementMultiplier(attacker?.element || 'neutral', target.element) > 1,
+      bounceNum: bounceIndex + 1,
+      sourceIndex
+    });
+
+    sourceIndex = targetIndex;
+    bounceIndex += 1;
+  }
 }
 
 // ── Spread Mechanics ────────────────────────────────────────────────
