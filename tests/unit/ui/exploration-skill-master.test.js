@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 const sceneManagerState = { currentScene: null };
 let renderedChoices = null;
+let renderedButtons = [];
 let dialogueCalls = [];
 
 function createElementStub() {
@@ -17,11 +18,24 @@ function createElementStub() {
       remove() {},
     },
     setAttribute() {},
+    remove() {},
     addEventListener() {},
     appendChild(child) {
       this.children.push(child);
     },
+    querySelector: () => ({ addEventListener() {} }),
     querySelectorAll: () => [],
+    set textContent(value) {
+      this.innerHTML = String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    },
+    get textContent() {
+      return this.innerHTML;
+    },
   };
 }
 
@@ -61,7 +75,24 @@ await mock.module('../../../public/js/ui/room-transition.js', {
   namedExports: { playRoomTransition: async () => {} },
 });
 await mock.module('../../../public/js/ui/ui-components.js', {
-  namedExports: { renderButtons: () => {}, renderChoices: options => { renderedChoices = options; } },
+  namedExports: {
+    renderButtons: buttons => { renderedButtons = buttons; },
+    renderChoices: options => {
+      renderedChoices = options;
+      const el = options.container || globalThis.document?.getElementById?.('action-area');
+      if (el) {
+        el.innerHTML = `
+          ${options.heading ? `<div class="ui-choice-heading">${options.heading}</div>` : ''}
+          ${(options.cards || []).map(card => `
+            <div class="ui-choice">
+              <div class="ui-choice__title">${card.title}</div>
+              ${card.subtitle ? `<div class="ui-choice__subtitle">${card.subtitle}</div>` : ''}
+            </div>
+          `).join('')}
+        `;
+      }
+    },
+  },
 });
 await mock.module('../../../public/js/ui/npc-dialogue-card.js', {
   namedExports: { showNpcDialogueCard: async options => { dialogueCalls.push(options); } },
@@ -88,13 +119,20 @@ await mock.module('../../../public/js/ui/tutorial-copy.js', {
   },
 });
 
-const { init, renderSkillMaster, renderNpcBattleSkillSelection, showTutorialNarration } = await import('../../../public/js/ui/exploration.js');
+const {
+  init,
+  renderExploring,
+  renderSkillMaster,
+  renderNpcBattleSkillSelection,
+  showTutorialNarration,
+} = await import('../../../public/js/ui/exploration.js');
 
 describe('renderSkillMaster tutorial Cid narration', () => {
   beforeEach(() => {
     sceneManagerState.currentScene = null;
     sceneManagerState.transitioning = false;
     renderedChoices = null;
+    renderedButtons = [];
     dialogueCalls = [];
   });
 
@@ -280,7 +318,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
       scene: { showNarration: () => {} },
       apiSkillMasterOffers: async () => ({
         offered: [
-          { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+          { id: 'arcStrike', level: 1, name: 'Arc Strike', title: 'Arc Strike - Lvl. 1', desc: 'Your attacks arc to another enemy for 30% damage.' },
           { id: 'guard', name: 'Guard', desc: 'Defend' },
           { id: 'haste', name: 'Haste', desc: 'Speed up' },
         ],
@@ -294,6 +332,64 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     }
 
     assert.equal(renderedChoices?.heading, 'Choose a skill');
+    assert.match(actionArea.innerHTML, /Arc Strike - Lvl\. 1/);
+    assert.match(actionArea.innerHTML, /30% damage/);
+  });
+
+  it('renders leveled and escaped party skill inventory entries', () => {
+    const originalDocument = globalThis.document;
+    const actionArea = createElementStub();
+    let appendedOverlay = null;
+    globalThis.document = {
+      getElementById: id => {
+        if (id === 'action-area') return actionArea;
+        if (id === 'inventory-overlay') return appendedOverlay;
+        if (id === 'inventory-close-btn') return { addEventListener() {} };
+        return null;
+      },
+      createElement: () => createElementStub(),
+      body: {
+        appendChild(el) {
+          appendedOverlay = el;
+        },
+      },
+    };
+
+    init({
+      getGameState: () => ({
+        phase: 'room',
+        creatureParty: { active: [] },
+        run: {
+          itemBuffs: {},
+          partySkills: [
+            { id: 'hpMaster', level: 1 },
+            {
+              id: 'customSkill',
+              level: 2,
+              name: 'Custom <Skill>',
+              desc: 'Unsafe <desc>',
+            },
+          ],
+        },
+      }),
+      updateGameState: () => {},
+      updateUI: () => {},
+      actions: { setContent: html => { actionArea.innerHTML = html; } },
+      scene: { showNarration: () => {} },
+      startEncounter: () => {},
+    });
+
+    try {
+      renderExploring();
+      renderedButtons.find(button => button.label.includes('インベントリ')).onClick();
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    assert.match(appendedOverlay.innerHTML, /HP Master - Lvl\. 1/);
+    assert.match(appendedOverlay.innerHTML, /max HP increases by 25%/);
+    assert.match(appendedOverlay.innerHTML, /Custom &lt;Skill&gt; Lvl\. 2/);
+    assert.match(appendedOverlay.innerHTML, /Unsafe &lt;desc&gt;/);
   });
 
   it('shows the non-tutorial skill select prompt with the standard dialogue card', async () => {
@@ -390,7 +486,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
         fetchOffers: async () => ({
           skillSelectPrompt: prompt,
           offered: [
-            { id: 'arcStrike', name: 'Arc Strike', desc: 'Chain hit' },
+            { id: 'arcStrike', level: 1, name: 'Arc Strike', title: 'Arc Strike - Lvl. 1', desc: 'Your attacks arc to another enemy for 30% damage.' },
             { id: 'guard', name: 'Guard', desc: 'Defend' },
             { id: 'haste', name: 'Haste', desc: 'Speed up' },
           ],
@@ -409,5 +505,7 @@ describe('renderSkillMaster tutorial Cid narration', () => {
     assert.equal(dialogueCalls[0].overrides, prompt.overrides);
     assert.equal(dialogueCalls[0].useKanji, false);
     assert.equal(renderedChoices?.heading, 'Choose a skill');
+    assert.match(actionArea.innerHTML, /Arc Strike - Lvl\. 1/);
+    assert.match(actionArea.innerHTML, /30% damage/);
   });
 });
