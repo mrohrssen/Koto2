@@ -141,6 +141,29 @@ test('Buff Master Lvl 5 can buff an ally after a non-damage action', () => {
   assert.ok(attacks[0].partySkillProcs.some(proc => proc.skillId === 'buffMaster'));
 });
 
+test('Buff Master Lvl 5 rolls once for all-target action records from one actor', () => {
+  const attacks = [
+    makeDmgRecord({ attackerIndex: 0, targetIndex: 0, damage: 20 }),
+    makeDmgRecord({ attackerIndex: 0, targetIndex: 1, damage: 20 })
+  ];
+  const allies = [makeAlly(), makeAlly()];
+  const enemies = [makeEnemy({ id: 'e0' }), makeEnemy({ id: 'e1' })];
+
+  applyAfterPlayerAttacks({
+    attacks,
+    allies,
+    enemies,
+    runPartySkills: [{ id: 'buffMaster', level: 5 }],
+    combat: makeCombat(),
+    rng: () => 0.01
+  });
+
+  const buffProcs = attacks.flatMap(attack => attack.partySkillProcs || [])
+    .filter(proc => proc.skillId === 'buffMaster');
+  assert.equal(buffProcs.length, 1);
+  assert.equal(allies.reduce((sum, ally) => sum + (ally.statStages.atk || 0), 0), 1);
+});
+
 // ── countDebuffTypes ──
 
 test('countDebuffTypes counts negative stages and negative status effects', () => {

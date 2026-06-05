@@ -103,6 +103,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
     combat.chainSurgeTriggeredThisTurn = false;
   }
 
+  const buffMasterActionActors = new Set();
   for (const record of attacks) {
     if (!record || typeof record !== 'object') continue;
     if (typeof record.attackerIndex !== 'number' || record.attackerIndex < 0) continue;
@@ -186,22 +187,25 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
     }
 
     // ── Buff Master Lvl 5: chance to buff a random living ally after action ──
-    if (buffLevel >= 5 && rollProc(0.25, rng)) {
-      const targets = livingAllies(allies);
-      const target = randomFrom(targets, rng);
-      const targetIndex = allies.indexOf(target);
-      if (target) {
-        const { stat, delta } = applyRandomBuff(target, rng);
-        if (delta !== 0) {
-          record.partySkillProcs.push({
-            skillId: 'buffMaster',
-            skillName: 'Buff Master',
-            type: 'stageChange',
-            targetSide: 'ally',
-            targetIndex,
-            stat,
-            delta
-          });
+    if (buffLevel >= 5 && !buffMasterActionActors.has(record.attackerIndex)) {
+      buffMasterActionActors.add(record.attackerIndex);
+      if (rollProc(0.25, rng)) {
+        const targets = livingAllies(allies);
+        const target = randomFrom(targets, rng);
+        const targetIndex = allies.indexOf(target);
+        if (target) {
+          const { stat, delta } = applyRandomBuff(target, rng);
+          if (delta !== 0) {
+            record.partySkillProcs.push({
+              skillId: 'buffMaster',
+              skillName: 'Buff Master',
+              type: 'stageChange',
+              targetSide: 'ally',
+              targetIndex,
+              stat,
+              delta
+            });
+          }
         }
       }
     }

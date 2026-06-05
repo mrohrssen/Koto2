@@ -968,6 +968,7 @@ export function processInterleavedPvERound(
 
   for (const slot of initiative) {
     const isAlly = slot.kind === 'ally';
+    let selfSabotageApplied = false;
 
     const result = executeSlotMoveTurn(
       isAlly ? allies : enemies,
@@ -987,13 +988,16 @@ export function processInterleavedPvERound(
 
           // Inline counter from defending side (only when enemy attacks ally)
           if (!isAlly && options.runPartySkills && options.combat) {
-            const sabotage = applyEnemySelfSabotage({
-              actingIndex: atk.attackerIndex,
-              enemies,
-              runPartySkills: options.runPartySkills,
-              rng
-            });
-            if (sabotage) effectEvents.push(sabotage);
+            if (!selfSabotageApplied) {
+              selfSabotageApplied = true;
+              const sabotage = applyEnemySelfSabotage({
+                actingIndex: atk.attackerIndex,
+                enemies,
+                runPartySkills: options.runPartySkills,
+                rng
+              });
+              if (sabotage) effectEvents.push(sabotage);
+            }
 
             const counter = computeInlineCounter(atk, allies, enemies, options.runPartySkills, options.combat, rng);
             if (counter) {
@@ -1097,6 +1101,7 @@ export function resolveSingleActorAction({
     combat.chainSurgeTriggeredThisTurn = false;
   }
 
+  let selfSabotageApplied = false;
   const slotResult = executeSlotMoveTurn(actorList, defenderList, actorIndex, choices, {
     itemBuffs: isAlly ? itemBuffs : null,
     creatureParty: isAlly ? creatureParty : null,
@@ -1110,13 +1115,16 @@ export function resolveSingleActorAction({
       segment.attacks.push(atk);
 
       if (!isAlly && runPartySkills && combat) {
-        const sabotage = applyEnemySelfSabotage({
-          actingIndex: atk.attackerIndex,
-          enemies: actorList,
-          runPartySkills,
-          rng
-        });
-        if (sabotage) segment.effectEvents.push(sabotage);
+        if (!selfSabotageApplied) {
+          selfSabotageApplied = true;
+          const sabotage = applyEnemySelfSabotage({
+            actingIndex: atk.attackerIndex,
+            enemies: actorList,
+            runPartySkills,
+            rng
+          });
+          if (sabotage) segment.effectEvents.push(sabotage);
+        }
 
         const counter = computeInlineCounter(atk, allies, enemies, runPartySkills, combat, rng);
         if (counter) {

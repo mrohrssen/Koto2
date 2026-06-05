@@ -280,6 +280,32 @@ describe('Creature Combat - Single Actor Action', () => {
       Math.random = origRandom;
     }
   });
+
+  it('applies enemy self-sabotage once for all-target single actor actions', () => {
+    const allies = [instantiateCreature('mizu'), instantiateCreature('ki')];
+    const enemies = [instantiateCreature('hi'), instantiateCreature('ishi')];
+    enemies[0].moves = [{
+      id: 'enemy-sweep', name: '払う', nameEn: 'Sweep', reading: 'はらう',
+      element: 'neutral', category: 'damage', target: 'all_enemies',
+      power: 10, mpCost: 0
+    }];
+
+    const result = resolveSingleActorAction({
+      actorSide: 'enemy',
+      actorIndex: 0,
+      allies,
+      enemies,
+      choices: [{ creatureIndex: 0, moveId: 'enemy-sweep', targetIndex: 0 }],
+      runPartySkills: [{ id: 'debuffMaster', level: 5 }],
+      combat: {},
+      rng: () => 0.01
+    });
+
+    const segment = result.actionSegments[0];
+    assert.equal(segment.attacks.length, 2);
+    assert.equal(segment.effectEvents.filter(event => event.type === 'debuffMasterSelfSabotage').length, 1);
+    assert.equal(enemies[1].statStages.atk, -1);
+  });
 });
 
 describe('Creature Combat - Befriend (disabled in Koto2)', () => {

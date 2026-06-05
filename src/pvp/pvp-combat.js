@@ -127,16 +127,20 @@ function appendDefenderResponsesToSegments({
   playbackStart
 }) {
   let playbackNext = playbackStart;
+  const selfSabotageActors = new Set();
   for (const segment of actionSegments || []) {
     const responses = [];
     for (const atk of segment.attacks || []) {
-      const sabotage = applyEnemySelfSabotage({
-        actingIndex: atk.attackerIndex,
-        enemies: attackerSide,
-        runPartySkills: defenderPartySkills
-      });
-      if (sabotage) {
-        responses.push({ ...sabotage, side: attackerSideLabel, playbackIndex: playbackNext++ });
+      if (!selfSabotageActors.has(atk.attackerIndex)) {
+        selfSabotageActors.add(atk.attackerIndex);
+        const sabotage = applyEnemySelfSabotage({
+          actingIndex: atk.attackerIndex,
+          enemies: attackerSide,
+          runPartySkills: defenderPartySkills
+        });
+        if (sabotage) {
+          responses.push({ ...sabotage, side: attackerSideLabel, playbackIndex: playbackNext++ });
+        }
       }
 
       if (defenderPartySkills && defenderCombat) {
@@ -361,6 +365,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     const defenderPartySkills = isA ? partySkillsB : partySkillsA;
     const defenderCombat = isA ? combatB : combatA;
     const defenderCounters = isA ? inlineCountersB : inlineCountersA;
+    let selfSabotageApplied = false;
 
     const slotResult = executeSlotMoveTurn(attackerSide, defenderSide, slot.index, choices, {
       itemBuffs: isA ? itemBuffsA : itemBuffsB,
@@ -371,7 +376,8 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
         orderedAttacks.push(atk);
         attackerResult.attacks.push(atk);
 
-        if (defenderPartySkills) {
+        if (defenderPartySkills && !selfSabotageApplied) {
+          selfSabotageApplied = true;
           const sabotage = applyEnemySelfSabotage({
             actingIndex: atk.attackerIndex,
             enemies: attackerSide,

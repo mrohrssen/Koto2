@@ -467,4 +467,43 @@ describe('PvP action cursor resolution', () => {
     assert.equal(sideA[0].hp, 0);
     assert.ok(sabotage.playbackIndex < counter.playbackIndex);
   });
+
+  it('rolls opposing self-sabotage once for all-target cursor actions', () => {
+    const sweep = {
+      id: 'sweep',
+      name: '掃く',
+      nameEn: 'Sweep',
+      reading: 'はく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'all_enemies',
+      power: 20,
+      mpCost: 0,
+      accuracy: 100,
+      statusEffect: null,
+      statusChance: 0,
+      statusDuration: 0
+    };
+    const sideA = [
+      makeCreature({ id: 'a', hp: 100, maxHp: 100, moves: [sweep] }),
+      makeCreature({ id: 'a-ally', hp: 100, maxHp: 100 })
+    ];
+    const sideB = [
+      makeCreature({ id: 'b0', hp: 500, maxHp: 500 }),
+      makeCreature({ id: 'b1', hp: 500, maxHp: 500 })
+    ];
+
+    const result = withMockRandom(0.01, () => resolvePvpCursorAction({
+      sideA,
+      sideB,
+      cursor: { side: 'sideA', index: 0, opening: false },
+      action: { creatureIndex: 0, moveId: 'sweep', targetIndex: 0 },
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }]
+    }));
+
+    const sabotageEvents = result.attacks.filter(a => a.type === 'debuffMasterSelfSabotage');
+    assert.equal(result.actionSegments[0].attacks.length, 2);
+    assert.equal(sabotageEvents.length, 1);
+    assert.equal(sideA[1].statStages.atk, -1);
+  });
 });
