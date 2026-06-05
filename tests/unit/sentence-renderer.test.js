@@ -94,6 +94,21 @@ describe('renderJpSentence', () => {
     assert.equal((html.match(/<ruby>/g) || []).length, 4);
   });
 
+  it('merges te-form small-tsu continuations before rendering romaji', () => {
+    const tokens = [
+      { surface: '待っ', base: '待つ', reading: 'まっ', meaning: 'wait', pos: 'Verb' },
+      { surface: 'て' },
+      { surface: '！' },
+    ];
+
+    const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
+
+    assert.match(html, /<ruby>まって<rt>matte<\/rt><\/ruby>！/);
+    assert.match(html, /data-reading="まって"/);
+    assert.doesNotMatch(html, /<rt>ma&#39;<\/rt>/);
+    assert.doesNotMatch(html, /<span class="jp-punct">て！<\/span>/);
+  });
+
   it('clips parenthetical qualifier from unknown-word gloss', () => {
     const tokens = [{ surface: 'お茶', baseForm: 'お茶', pos: '名詞', reading: 'おちゃ' }];
     const html = renderJpSentence(tokens, new Set(), wordDict, {}, false);
