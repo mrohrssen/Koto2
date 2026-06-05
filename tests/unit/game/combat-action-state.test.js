@@ -9,6 +9,7 @@ import {
   resolvePveCursorTurn,
   resolvePveTurn,
 } from '../../../src/shared/combat/pve-turn-resolver.js';
+import { buildOptimisticCombatTurn } from '../../../public/js/ui/optimistic-combat-turn.js';
 
 describe('combat action state', () => {
   it('initializes action cursor fields', () => {
@@ -137,6 +138,30 @@ describe('combat action state', () => {
     assert.equal(gm.combat.actionCursor.side, 'ally');
   });
 
+  it('accepts browser action-cursor predictions when committed Exp Master XP is server-owned', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    gm.run.partySkills = [{ id: 'expMaster', level: 4 }];
+    gm.combat.actionCursor = { side: 'ally', index: 0, opening: false };
+    gm.combat.isBoss = true;
+    gm.combat.enemies[0].level = 5;
+    gm.combat.enemies[0].hp = 1;
+    const service = new CombatCycleService(gm);
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const moveChoices = [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }];
+    const predicted = buildOptimisticCombatTurn({
+      state: { combat: gm.combat, run: gm.run },
+      actionType: 'attack',
+      moveChoices,
+      actionId: 'act_browser_cursor_exp',
+    });
+
+    const result = service.verifyAndCommitCreatureCombatCycle(predicted.envelope);
+
+    assert.equal(result.status, 'accepted');
+    assert.equal(result.stateVersion, stateVersion + 1);
+    assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
+  });
+
   it('accepts browser shared-core optimistic predictions for NPC PvE action-cursor attacks', () => {
     const gm = createTestGameManagerWithCreatureCombat();
     gm.combat.actionCursor = { side: 'ally', index: 0, opening: false };
@@ -196,6 +221,17 @@ describe('combat action state', () => {
     assert.equal(result.status, 'accepted');
     assert.equal(result.actionType, 'defend');
     assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);
+  });
+
+  it('resolves befriend turns with the injected action rng', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    gm.combat.isBoss = false;
+    const service = new CombatCycleService(gm);
+
+    const result = service.creatureCombatCycle('befriend', [], { rng: () => 0.99 });
+
+    assert.equal(result.actionType, 'befriend');
+    assert.equal(result.combatEnded, false);
   });
 
   it('accepts shared-core predictions with visual-safe KO feedback and commits', () => {

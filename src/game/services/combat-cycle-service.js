@@ -450,7 +450,7 @@ export class CombatCycleService {
         resolvedCore = actionType === 'attack' && this.gm.combat?.actionCursor
           ? resolvePveCursorTurn(
               { combat: this.gm.combat, run: this.gm.run, moveChoices },
-              { actionType, seed: envelope.seed, awardKillXp },
+              { actionType, seed: envelope.seed },
             )
           : resolvePveTurn({
               snapshot: { combat: this.gm.combat, run: this.gm.run },
@@ -632,7 +632,7 @@ export class CombatCycleService {
     switch (actionType) {
       case 'attack':  return this._handleCreatureAttackTurn(effectEvents, moveChoices, options);
       case 'defend':  return this._handleCreatureDefendTurn(effectEvents, options);
-      case 'befriend': return this._handleCreatureBefriendTurn(effectEvents);
+      case 'befriend': return this._handleCreatureBefriendTurn(effectEvents, options);
       default: throw new Error(`Unknown action: ${actionType}`);
     }
   }
@@ -1522,7 +1522,8 @@ export class CombatCycleService {
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleCreatureBefriendTurn(effectEvents) {
+  _handleCreatureBefriendTurn(effectEvents, options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     // Boss can only be befriended on rematch (after first defeat)
     if (this.gm.combat.isBoss) {
       const bossId = this.gm.combat.enemies?.[0]?.id;
@@ -1546,7 +1547,8 @@ export class CombatCycleService {
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
       runPartySkills: this.gm.run.partySkills,
-      combat: this.gm.combat
+      combat: this.gm.combat,
+      rng
     });
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
     const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults, rng);

@@ -21,7 +21,6 @@ import {
   xpToNextLevel
 } from '../creatures.js';
 import { getCrestMultipliers, applyCrestBonuses } from './crest-service.js';
-import { awardKillXp } from './creature-combat-service.js';
 import {
   DAILY_NEW_LIMIT,
   getActiveScriptType,
@@ -536,7 +535,7 @@ export class KanjiKombatService {
     try {
       resolvedCore = resolveKanjiKombatAnswerTurn(
         { combat: this.gm.combat, run: this.gm.run, answerCorrect: choice.correct === true },
-        { seed: envelope.seed, awardKillXp },
+        { seed: envelope.seed },
       );
     } catch {
       return buildCorrectedResponse({
