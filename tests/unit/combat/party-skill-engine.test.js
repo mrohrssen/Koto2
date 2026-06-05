@@ -73,6 +73,51 @@ test('applyAfterEnemyAttacks returns empty array when no retaliation skill', () 
   assert.deepEqual(result, []);
 });
 
+test('Buff Master Lvl 4 gives every living ally one random buff at round start', () => {
+  const allies = [makeAlly(), makeAlly()];
+  const events = applyRoundStartSkills({
+    allies,
+    enemies: [makeEnemy()],
+    runPartySkills: [{ id: 'buffMaster', level: 4 }],
+    combat: makeCombat(),
+    rng: () => 0.01
+  });
+
+  assert.equal(events.filter(e => e.type === 'buffMaster').length, 2);
+  assert.equal(allies[0].statStages.atk, 1);
+  assert.equal(allies[1].statStages.atk, 1);
+});
+
+test('Debuff Master Lvl 4 applies random debuffs to enemies hit by attacks', () => {
+  const attacks = [makeDmgRecord({ damage: 50, targetIndex: 0 })];
+  const enemies = [makeEnemy({ hp: 100 })];
+  applyAfterPlayerAttacks({
+    attacks,
+    allies: [makeAlly()],
+    enemies,
+    runPartySkills: [{ id: 'debuffMaster', level: 4 }],
+    combat: makeCombat(),
+    rng: () => 0.01
+  });
+
+  assert.equal(enemies[0].statStages.atk, -1);
+  assert.ok(attacks[0].partySkillProcs.some(p => p.skillId === 'debuffMaster' && p.type === 'stageChange'));
+});
+
+test('Debuff Master Lvl 5 can make an acting enemy debuff its own ally', async () => {
+  const { applyEnemySelfSabotage } = await import('../../../src/game/combat/party-skill-engine.js');
+  const enemies = [makeEnemy({ id: 'e0' }), makeEnemy({ id: 'e1' })];
+  const event = applyEnemySelfSabotage({
+    actingIndex: 0,
+    enemies,
+    runPartySkills: [{ id: 'debuffMaster', level: 5 }],
+    rng: () => 0.01
+  });
+
+  assert.equal(event.type, 'debuffMasterSelfSabotage');
+  assert.equal(enemies[event.targetIndex].statStages.atk, -1);
+});
+
 // ── countDebuffTypes ──
 
 test('countDebuffTypes counts negative stages and negative status effects', () => {

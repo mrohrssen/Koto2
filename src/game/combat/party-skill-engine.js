@@ -1,4 +1,4 @@
-import { applyStatChange, applyHeal, getStageMultiplier, breakSleep, initStatStages } from './effects.js';
+import { applyStatChange, initStatStages } from './effects.js';
 import { calculateCreatureDamage, getElementMultiplier } from '../../shared/combat/creature-math.js';
 import { getPartySkillLevel } from '../party-skills.js';
 
@@ -14,6 +14,26 @@ export function toActivePartySkillIdSet(runPartySkills) {
 
 function rollProc(chance, rng = Math.random) {
   return rng() < (Number(chance) || 0);
+}
+
+const RANDOM_STATS = Object.freeze(['atk', 'def', 'dex']);
+
+function randomStat(rng = Math.random) {
+  return RANDOM_STATS[Math.floor(rng() * RANDOM_STATS.length)];
+}
+
+function applyRandomBuff(target, rng = Math.random) {
+  const stat = randomStat(rng);
+  initStatStages(target);
+  const delta = applyStatChange(target, stat, 1);
+  return { stat, delta };
+}
+
+function applyRandomDebuff(target, rng = Math.random) {
+  const stat = randomStat(rng);
+  initStatStages(target);
+  const delta = applyStatChange(target, stat, -1);
+  return { stat, delta };
 }
 
 function livingEnemies(enemies) {
@@ -33,59 +53,24 @@ function randomFrom(arr, rng = Math.random) {
 
 /**
  * Called at start of each combat round, before any actions.
- * Handles: Erosion, Momentum, Overflow Vitality
+ * Handles: Buff Master
  * @returns {object[]} Array of event objects for frontend display
  */
-export function applyRoundStartSkills({ allies, enemies, runPartySkills, combat }) {
+export function applyRoundStartSkills({ allies, enemies, runPartySkills, combat, rng = Math.random }) {
   const active = toActivePartySkillIdSet(runPartySkills);
   if (!active.size) return [];
   const events = [];
 
-  // Erosion: deepen all negative stat stages on enemies by -1
-  if (active.has('erosion')) {
-    for (let i = 0; i < enemies.length; i++) {
-      const enemy = enemies[i];
-      if (!enemy || enemy.hp <= 0 || !enemy.statStages) continue;
-      for (const [stat, val] of Object.entries(enemy.statStages)) {
-        if (val < 0) {
-          const delta = applyStatChange(enemy, stat, -1);
-          if (delta !== 0) {
-            events.push({ type: 'erosion', targetSide: 'enemy', targetIndex: i, stat, delta, newVal: enemy.statStages[stat] });
-          }
-        }
-      }
-    }
-  }
-
-  // Momentum: grow all positive stat stages on allies by +1
-  if (active.has('momentum')) {
-    for (let i = 0; i < allies.length; i++) {
-      const ally = allies[i];
-      if (!ally || ally.hp <= 0 || !ally.statStages) continue;
-      for (const [stat, val] of Object.entries(ally.statStages)) {
-        if (val > 0) {
-          const delta = applyStatChange(ally, stat, 1);
-          if (delta !== 0) {
-            events.push({ type: 'momentum', targetSide: 'ally', targetIndex: i, stat, delta, newVal: ally.statStages[stat] });
-          }
-        }
-      }
-    }
-  }
-
-  // Overflow Vitality: 3+ buff types → 8% HP regen
-  if (active.has('overflowVitality')) {
+  const buffLevel = getPartySkillLevel(runPartySkills, 'buffMaster');
+  const buffChance = buffLevel >= 4 ? 1 : buffLevel >= 3 ? 0.75 : buffLevel >= 2 ? 0.50 : buffLevel >= 1 ? 0.25 : 0;
+  if (buffChance > 0) {
     for (let i = 0; i < allies.length; i++) {
       const ally = allies[i];
       if (!ally || ally.hp <= 0) continue;
-      if (countBuffTypes(ally) >= 3) {
-        const amount = Math.floor(ally.maxHp * 0.08);
-        if (amount > 0) {
-          const healed = applyHeal(ally, amount);
-          if (healed > 0) {
-            events.push({ type: 'overflowVitality', targetSide: 'ally', targetIndex: i, healAmount: healed });
-          }
-        }
+      if (!rollProc(buffChance, rng)) continue;
+      const { stat, delta } = applyRandomBuff(ally, rng);
+      if (delta !== 0) {
+        events.push({ type: 'buffMaster', targetSide: 'ally', targetIndex: i, stat, delta });
       }
     }
   }
@@ -107,6 +92,9 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
   if (!combat) return;
   if (typeof combat.chainHitsThisTurn !== 'number') combat.chainHitsThisTurn = 0;
   const arcLevel = getPartySkillLevel(runPartySkills, 'arcStrike');
+  const buffLevel = getPartySkillLevel(runPartySkills, 'buffMaster');
+  const debuffLevel = getPartySkillLevel(runPartySkills, 'debuffMaster');
+  const debuffChance = debuffLevel >= 4 ? 0.80 : debuffLevel >= 3 ? 0.60 : debuffLevel >= 2 ? 0.40 : debuffLevel >= 1 ? 0.20 : 0;
 
   // Reset per-turn counters for legacy whole-round callers. Interleaved
   // initiative callers reset once at round start and pass resetTurnCounters=false.
@@ -170,6 +158,48 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
     // ── Arc Strike: chain to another enemy ──
     if (arcLevel >= 1) {
       applyArcStrikeTree({ record, attacker, enemies, combat, rng, arcLevel });
+    }
+
+    // ── Debuff Master: random stat debuff on enemies hit by attacks ──
+    if (debuffChance > 0) {
+      for (const proc of [{ targetIndex: record.targetIndex, primary: true }, ...(record.partySkillProcs || []).filter(p => p.type === 'chainHit')]) {
+        const target = enemies?.[proc.targetIndex];
+        if (!target || target.hp <= 0) continue;
+        if (!rollProc(debuffChance, rng)) continue;
+        const { stat, delta } = applyRandomDebuff(target, rng);
+        if (delta !== 0) {
+          record.partySkillProcs.push({
+            skillId: 'debuffMaster',
+            skillName: 'Debuff Master',
+            type: 'stageChange',
+            targetSide: 'enemy',
+            targetIndex: proc.targetIndex,
+            stat,
+            delta
+          });
+        }
+      }
+    }
+
+    // ── Buff Master Lvl 5: chance to buff a random living ally after action ──
+    if (buffLevel >= 5 && rollProc(0.25, rng)) {
+      const targets = livingAllies(allies);
+      const target = randomFrom(targets, rng);
+      const targetIndex = allies.indexOf(target);
+      if (target) {
+        const { stat, delta } = applyRandomBuff(target, rng);
+        if (delta !== 0) {
+          record.partySkillProcs.push({
+            skillId: 'buffMaster',
+            skillName: 'Buff Master',
+            type: 'stageChange',
+            targetSide: 'ally',
+            targetIndex,
+            stat,
+            delta
+          });
+        }
+      }
     }
 
     // ── Check Pandemic on primary target kill ──
@@ -320,6 +350,27 @@ export function applyAfterEnemyAttacks({ enemyAttacks, allies, enemies, runParty
   }
 
   return counterAttacks;
+}
+
+export function applyEnemySelfSabotage({ actingIndex, enemies, runPartySkills, rng = Math.random }) {
+  if (getPartySkillLevel(runPartySkills, 'debuffMaster') < 5) return null;
+  if (!rollProc(0.50, rng)) return null;
+  const acting = enemies?.[actingIndex];
+  if (!acting || acting.hp <= 0) return null;
+  const candidates = livingEnemies(enemies).filter(enemy => enemy !== acting);
+  if (candidates.length === 0) return null;
+  const target = randomFrom(candidates, rng);
+  const targetIndex = enemies.indexOf(target);
+  const { stat, delta } = applyRandomDebuff(target, rng);
+  if (delta === 0) return null;
+  return {
+    type: 'debuffMasterSelfSabotage',
+    targetSide: 'enemy',
+    actingIndex,
+    targetIndex,
+    stat,
+    delta
+  };
 }
 
 function chainDamageForBounce(baseDmg, bounceIndex, arcLevel) {

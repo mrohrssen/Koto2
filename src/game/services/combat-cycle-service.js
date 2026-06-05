@@ -29,6 +29,7 @@ import {
   applyPartySkillsAfterPlayerAttacks,
   applyAfterEnemyAttacks,
   applyRoundStartSkills,
+  applyEnemySelfSabotage,
   shouldTriggerBefriendQuiz,
   generateBefriendQuiz,
   processBefriendQuizAnswer,
@@ -86,6 +87,20 @@ import { applyDebugSuperAttack } from '../debug-super-attack.js';
 
 function createServerSeed() {
   return randomBytes(16).toString('hex');
+}
+
+function collectEnemySelfSabotageEvents({ enemyAttacks, enemies, runPartySkills, rng = Math.random }) {
+  const events = [];
+  for (const atk of enemyAttacks || []) {
+    const sabotage = applyEnemySelfSabotage({
+      actingIndex: atk.attackerIndex,
+      enemies,
+      runPartySkills,
+      rng
+    });
+    if (sabotage) events.push(sabotage);
+  }
+  return events;
 }
 
 function createCombatId() {
@@ -1049,7 +1064,7 @@ export class CombatCycleService {
     // New player move round — each creature may try はなす again
     this.gm.combat.befriendAttemptedSlots = {};
 
-    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+    // Party skills: round-start
     const roundStartEvents = applyRoundStartSkills({
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
@@ -1082,6 +1097,12 @@ export class CombatCycleService {
     });
     const playerResult = resolvedTurn.transcript;
     playerResult.xpEvents = [...poisonXpEvents, ...(playerResult.xpEvents || [])];
+    effectEvents.push(...collectEnemySelfSabotageEvents({
+      enemyAttacks: playerResult.enemyAttacks || [],
+      enemies: this.gm.combat.enemies,
+      runPartySkills: this.gm.run.partySkills,
+      rng
+    }));
 
     // Interleaved combat applies party skills inside each player initiative slot
     // so chain kills can prevent later enemy turns. Keep this fallback for any
@@ -1417,7 +1438,7 @@ export class CombatCycleService {
     const rng = typeof options.rng === 'function' ? options.rng : Math.random;
     this.gm.combat.befriendAttemptedSlots = {};
 
-    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+    // Party skills: round-start
     const roundStartEvents = applyRoundStartSkills({
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
@@ -1446,6 +1467,12 @@ export class CombatCycleService {
       processKoSwaps: true,
     });
     const turnResult = resolvedTurn.transcript;
+    effectEvents.push(...collectEnemySelfSabotageEvents({
+      enemyAttacks: turnResult.enemyAttacks || [],
+      enemies: this.gm.combat.enemies,
+      runPartySkills: this.gm.run.partySkills,
+      rng
+    }));
     const koSwaps = turnResult.koSwaps || [];
     const koRemovals = turnResult.koRemovals || [];
     this.gm.combat.allies = this.gm.run.creatureParty.active;
@@ -1521,7 +1548,7 @@ export class CombatCycleService {
       }
     }
 
-    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+    // Party skills: round-start
     const roundStartEvents = applyRoundStartSkills({
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
@@ -1567,6 +1594,11 @@ export class CombatCycleService {
 
     // Enemy phase
     const enemyResult = processEnemyTurn(this.gm.combat.enemies, this.gm.combat.allies, false, this.gm.run.itemBuffs);
+    effectEvents.push(...collectEnemySelfSabotageEvents({
+      enemyAttacks: enemyResult.attacks || [],
+      enemies: this.gm.combat.enemies,
+      runPartySkills: this.gm.run.partySkills
+    }));
 
     // Party skills: counter attacks
     const counterAttacks = applyAfterEnemyAttacks({
@@ -1705,6 +1737,11 @@ export class CombatCycleService {
         false,
         this.gm.run.itemBuffs
       );
+      const effectEvents = collectEnemySelfSabotageEvents({
+        enemyAttacks: enemyResult.attacks || [],
+        enemies: this.gm.combat.enemies,
+        runPartySkills: this.gm.run.partySkills
+      });
 
       // Handle KO'd allies after enemy attack
       processKOSwaps(this.gm.combat.allies, this.gm.run.creatureParty);
@@ -1723,6 +1760,7 @@ export class CombatCycleService {
         swapped: true,
         freeSwap: false,
         enemyAttacks: enemyResult.attacks,
+        effectEvents,
         combatEnded: allAlliesKO,
         victory: false,
         creatureParty: party,
@@ -2011,6 +2049,11 @@ export class CombatCycleService {
     const combat = this.gm.combat;
     const run = this.gm.run;
     const enemyResult = processEnemyTurn(combat.enemies, combat.allies, false, run?.itemBuffs);
+    const effectEvents = collectEnemySelfSabotageEvents({
+      enemyAttacks: enemyResult.attacks || [],
+      enemies: combat.enemies,
+      runPartySkills: run?.partySkills
+    });
     const { koSwaps: rawSwaps, koRemovals: rawRemovals } = processKOSwaps(combat.allies, run.creatureParty);
     const koSwaps = rawSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
     const koRemovals = rawRemovals.map(r => ({ slot: r.index, name: r.name }));
@@ -2024,6 +2067,7 @@ export class CombatCycleService {
 
     return {
       enemyAttacks: enemyResult.attacks || [],
+      effectEvents,
       koSwaps,
       koRemovals,
       combatEnded,

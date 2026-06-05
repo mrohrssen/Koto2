@@ -26,12 +26,13 @@ import {
   applyAfterPlayerAttacks as _applyAfterPlayerAttacks,
   applyAfterEnemyAttacks,
   applyRoundStartSkills,
+  applyEnemySelfSabotage,
   computeInlineCounter,
   checkAfflictionBurstCounter,
   toActivePartySkillIdSet
 } from '../combat/party-skill-engine.js';
 import { REST_MOVE, computeRestMpGain } from '../rest-move.js';
-export { applyAfterEnemyAttacks, applyRoundStartSkills, computeInlineCounter, checkAfflictionBurstCounter } from '../combat/party-skill-engine.js';
+export { applyAfterEnemyAttacks, applyRoundStartSkills, applyEnemySelfSabotage, computeInlineCounter, checkAfflictionBurstCounter } from '../combat/party-skill-engine.js';
 export const CREDITS_PER_KILL = 15;
 
 /** Player/NPC move damage: applies ATK buffs, STAB, element mult, item element edge, level, and defender DEF. */
@@ -902,6 +903,7 @@ export function processInterleavedPvERound(
   const playerAttacks = [];
   const enemyAttacks = [];
   const inlineCounters = [];
+  const effectEvents = [];
   const xpEvents = [];
   const defeatedEnemyIndices = new Set();
   const pb = { n: 0 };
@@ -985,6 +987,14 @@ export function processInterleavedPvERound(
 
           // Inline counter from defending side (only when enemy attacks ally)
           if (!isAlly && options.runPartySkills && options.combat) {
+            const sabotage = applyEnemySelfSabotage({
+              actingIndex: atk.attackerIndex,
+              enemies,
+              runPartySkills: options.runPartySkills,
+              rng
+            });
+            if (sabotage) effectEvents.push(sabotage);
+
             const counter = computeInlineCounter(atk, allies, enemies, options.runPartySkills, options.combat, rng);
             if (counter) {
               tagPlayback(counter, 'player');
@@ -1041,6 +1051,7 @@ export function processInterleavedPvERound(
     allEnemiesDefeated: enemies.every(e => !e || e.hp <= 0),
     partySkillsAppliedInline: applyInlinePartySkills,
     xpEvents,
+    effectEvents,
     mpRegens
   };
 }
@@ -1099,6 +1110,14 @@ export function resolveSingleActorAction({
       segment.attacks.push(atk);
 
       if (!isAlly && runPartySkills && combat) {
+        const sabotage = applyEnemySelfSabotage({
+          actingIndex: atk.attackerIndex,
+          enemies: actorList,
+          runPartySkills,
+          rng
+        });
+        if (sabotage) segment.effectEvents.push(sabotage);
+
         const counter = computeInlineCounter(atk, allies, enemies, runPartySkills, combat, rng);
         if (counter) {
           counter.playbackIndex = playbackIndex++;

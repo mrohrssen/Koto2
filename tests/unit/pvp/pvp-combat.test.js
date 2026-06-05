@@ -240,49 +240,73 @@ describe('resolveRound', () => {
     assert.ok(Array.isArray(result.counterAttacks), 'counterAttacks should be an array (empty for backward compat)');
   });
 
-  it('applies Erosion round-start skill for side A', () => {
+  it('applies Buff Master round-start skill for side A', () => {
     const combatA = {};
-    sideB[0].statStages = { atk: -2, def: 0 };
 
+    const origRandom = Math.random;
+    Math.random = () => 0.01;
     const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsA: ['erosion'],
+      partySkillsA: [{ id: 'buffMaster', level: 4 }],
       combatA
     });
+    Math.random = origRandom;
 
-    assert.ok(sideB[0].statStages.atk < -2, 'Erosion should deepen negative atk stage on enemy');
-    const erosionEvents = result.roundStartEvents.filter(e => e.type === 'erosion');
-    assert.ok(erosionEvents.length > 0, 'should produce erosion events');
+    assert.equal(sideA[0].statStages.atk, 1, 'Buff Master should buff side A ally atk');
+    const buffEvents = result.roundStartEvents.filter(e => e.type === 'buffMaster');
+    assert.ok(buffEvents.length > 0, 'should produce Buff Master events');
   });
 
-  it('applies Momentum round-start skill for side B', () => {
+  it('applies Debuff Master hit debuff for side B', () => {
     const combatB = {};
-    sideB[0].statStages = { atk: 1, def: 0 };
 
+    const origRandom = Math.random;
+    Math.random = () => 0.01;
     const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsB: ['momentum'],
+      partySkillsB: [{ id: 'debuffMaster', level: 4 }],
       combatB
     });
+    Math.random = origRandom;
 
-    assert.ok(sideB[0].statStages.atk > 1, 'Momentum should grow positive atk stage on ally');
-    const momentumEvents = result.roundStartEvents.filter(e => e.type === 'momentum');
-    assert.ok(momentumEvents.length > 0, 'should produce momentum events');
+    assert.equal(sideA[0].statStages.atk, -1, 'Debuff Master should debuff side A target atk');
+    const debuffProcs = result.attacks.flatMap(a => a.partySkillProcs || []).filter(p => p.skillId === 'debuffMaster');
+    assert.ok(debuffProcs.length > 0, 'should produce Debuff Master procs');
+  });
+
+  it('applies Debuff Master self-sabotage from opposing party skills', () => {
+    sideA.push(makeCreature({ id: 'a2', level: 5, hp: 100, maxHp: 100, mp: 20, maxMp: 20 }));
+
+    const origRandom = Math.random;
+    Math.random = () => 0.01;
+    const result = resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }]
+    });
+    Math.random = origRandom;
+
+    const sabotage = result.attacks.find(a => a.type === 'debuffMasterSelfSabotage');
+    assert.ok(sabotage, 'should produce a self-sabotage playback event');
+    assert.equal(sabotage.side, 'sideA', 'side A actor should sabotage side A');
+    assert.equal(sabotage.targetIndex, 1, 'acting creature should debuff another ally');
+    assert.equal(sideA[1].statStages.atk, -1, 'self-sabotage should debuff side A ally atk');
+    assert.ok(typeof sabotage.playbackIndex === 'number', 'self-sabotage should preserve playback ordering');
   });
 
   it('applies round-start skills for both sides simultaneously', () => {
     const combatA = {};
     const combatB = {};
-    sideB[0].statStages = { atk: -1, def: 0 };
-    sideA[0].statStages = { atk: -1, def: 0 };
 
+    const origRandom = Math.random;
+    Math.random = () => 0.01;
     const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsA: ['erosion'],
-      partySkillsB: ['erosion'],
+      partySkillsA: [{ id: 'buffMaster', level: 4 }],
+      partySkillsB: [{ id: 'buffMaster', level: 4 }],
       combatA,
       combatB
     });
+    Math.random = origRandom;
 
-    assert.ok(sideB[0].statStages.atk < -1, 'Side A erosion should deepen side B debuffs');
-    assert.ok(sideA[0].statStages.atk < -1, 'Side B erosion should deepen side A debuffs');
+    assert.equal(sideA[0].statStages.atk, 1, 'Side A Buff Master should buff side A');
+    assert.equal(sideB[0].statStages.atk, 1, 'Side B Buff Master should buff side B');
+    assert.equal(result.roundStartEvents.filter(e => e.type === 'buffMaster').length, 2);
   });
 
   it('applies Counter Master counter attacks in PvP', () => {
@@ -314,15 +338,17 @@ describe('resolveRound', () => {
 
   it('tags roundStartEvents with correct pvpSide', () => {
     const combatA = {};
-    sideB[0].statStages = { atk: -2, def: 0 };
 
+    const origRandom = Math.random;
+    Math.random = () => 0.01;
     const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsA: ['erosion'],
+      partySkillsA: [{ id: 'buffMaster', level: 4 }],
       combatA
     });
+    Math.random = origRandom;
 
-    const erosionEvents = result.roundStartEvents.filter(e => e.type === 'erosion');
-    for (const ev of erosionEvents) {
+    const buffEvents = result.roundStartEvents.filter(e => e.type === 'buffMaster');
+    for (const ev of buffEvents) {
       assert.ok(ev.pvpSide === 'sideA' || ev.pvpSide === 'sideB', 'pvpSide should be set');
     }
   });

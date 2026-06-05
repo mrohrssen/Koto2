@@ -6,6 +6,7 @@ import {
   executeSlotMoveTurn,
   resolveSingleActorAction,
   computeInlineCounter,
+  applyEnemySelfSabotage,
   checkAfflictionBurstCounter
 } from '../game/services/creature-combat-service.js';
 import { processKOSwaps, checkAllDefeated } from '../game/combat/resolution.js';
@@ -243,7 +244,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     pvpSide: e.targetSide === 'ally' ? 'sideA' : 'sideB'
   }));
 
-  // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+  // Party skills: round-start
   const roundStartEventsA = (partySkillsA && combatA)
     ? applyRoundStartSkills({ allies: sideA, enemies: sideB, runPartySkills: partySkillsA, combat: combatA })
     : [];
@@ -333,6 +334,15 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
         return attackerSide[slot.index]?.hp > 0;
       }
     });
+    const sabotage = applyEnemySelfSabotage({
+      actingIndex: slot.index,
+      enemies: attackerSide,
+      runPartySkills: isA ? partySkillsB : partySkillsA
+    });
+    if (sabotage) {
+      orderedAttacks.push({ ...sabotage, side: sideLabel, playbackIndex: playbackCounter++ });
+    }
+
     if (isA && inlinePartySkillsA && slotResult.attacks.length > 0) {
       applyPartySkillsAfterPlayerAttacks({
         attacks: slotResult.attacks,
