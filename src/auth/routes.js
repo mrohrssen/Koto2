@@ -10,11 +10,10 @@ import {
   isPersonalizedDialogueDebugUser
 } from './users.js';
 import { dataPath, getDataDir } from '../data-dir.js';
-import { parseWordList } from '../game/bootstrap/word-list-parser.js';
-import { clearSrsCache, createCard, gradeCard } from '../game/internal-srs.js';
+import { clearSrsCache } from '../game/internal-srs.js';
 import { getAnalyticsId } from './analytics-id.js';
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } });
+const registrationFields = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1024 * 1024 } }).none();
 
 const DEFAULT_USERS_FILE = dataPath('.jrpg-users.json');
 
@@ -132,15 +131,6 @@ export default function createAuthRoutes(options = {}) {
         aiDataSharingConsent: true,
         aiConversationsEnabled: false
       }, encryptionKey, usersFile);
-
-      // Seed FSRS vocab deck from uploaded word list
-      if (req.file) {
-        const words = parseWordList(req.file.buffer.toString('utf-8'));
-        for (const word of words) {
-          createCard(user.id, 'vocab', word, { word });
-          gradeCard(user.id, 'vocab', word, 'good');
-        }
-      }
 
       const token = signToken(user);
       res.json({ token, user: publicUser(user) });
@@ -329,7 +319,7 @@ export default function createAuthRoutes(options = {}) {
   }
 
   // Mount routes
-  router.post('/register', upload.single('wordList'), register);
+  router.post('/register', registrationFields, register);
   router.post('/login', login);
   router.get('/me', requireAuth, me);
   router.delete('/me', requireAuth, deleteMe);

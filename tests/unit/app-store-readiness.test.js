@@ -22,11 +22,16 @@ describe('App Store readiness static checks', () => {
   it('does not expose known-words upload during registration', () => {
     const html = read('public/index.html');
     const authJs = read('public/js/ui/auth.js');
+    const authRoutes = read('src/auth/routes.js');
 
     assert.equal(html.includes('word-list-upload'), false);
     assert.equal(html.includes('wordListField'), false);
     assert.equal(html.includes('Known Words'), false);
     assert.equal(authJs.includes('word-list-upload'), false);
+    assert.equal(authRoutes.includes('wordList'), false);
+    assert.equal(authRoutes.includes('parseWordList'), false);
+    assert.equal(authRoutes.includes('req.file'), false);
+    assert.equal(authRoutes.includes('.single('), false);
   });
 
   it('does not expose broad playtest controls in settings', () => {
