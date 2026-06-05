@@ -20,11 +20,12 @@ export function mergeAuthoritativeCombatState(currentState, result) {
     next.run = { ...(next.run || {}), creatureParty: result.creatureParty };
   }
 
-  if (!hasAuthoritativeCombat && result.enemies && currentState?.combat) {
+  const responseAllies = result.allies || result.creatureParty?.active || null;
+  if (!hasAuthoritativeCombat && currentState?.combat && (result.enemies || responseAllies)) {
     next.combat = {
       ...currentState.combat,
-      enemies: result.enemies,
-      allies: result.allies || currentState.combat.allies,
+      enemies: result.enemies || currentState.combat.enemies,
+      allies: responseAllies || currentState.combat.allies,
       turnCount: result.turnCount ?? currentState.combat.turnCount,
       actionCursor: currentState.combat.actionCursor,
       actionCount: currentState.combat.actionCount,

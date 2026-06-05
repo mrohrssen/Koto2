@@ -60,6 +60,32 @@ describe('mergeAuthoritativeCombatState', () => {
     assert.equal(merged.combat.allies[0].hp, 30);
     assert.deepEqual(merged.combat.actionCursor, { side: 'ally', index: 0, opening: false });
   });
+
+  it('syncs authoritative allies from reward responses even when enemy state is unchanged', () => {
+    const current = {
+      phase: 'combat',
+      run: { creatureParty: { active: [{ id: 'hi', hp: 10, maxHp: 20 }], reserves: [] } },
+      combat: {
+        enemies: [{ id: 'mizu', hp: 10 }],
+        allies: [{ id: 'hi', hp: 10, maxHp: 20 }],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 2
+      }
+    };
+    const healedAlly = { id: 'hi', hp: 14, maxHp: 20 };
+    const result = {
+      kanjiStreakReward: { type: 'teamHeal', streak: 3, healPercent: 0.20 },
+      allies: [healedAlly],
+      creatureParty: { active: [healedAlly], reserves: [] }
+    };
+
+    const merged = mergeAuthoritativeCombatState(current, result);
+
+    assert.equal(merged.run.creatureParty.active[0].hp, 14);
+    assert.equal(merged.combat.allies[0].hp, 14);
+    assert.deepEqual(merged.combat.enemies, [{ id: 'mizu', hp: 10 }]);
+    assert.deepEqual(merged.combat.actionCursor, { side: 'ally', index: 0, opening: false });
+  });
 });
 
 describe('formatDiagnosticArg', () => {
