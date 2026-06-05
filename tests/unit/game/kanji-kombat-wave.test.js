@@ -136,6 +136,28 @@ describe('Kanji Kombat wave completion', () => {
     assert.equal(report.wave, 5);
   });
 
+  it('forces the first three Kanji Kombat waves to spawn one enemy', () => {
+    const gm = gmWithMode();
+    gm.kanjiKombatService = new KanjiKombatService(gm);
+
+    for (const wave of [1, 2, 3]) {
+      gm.run.kanjiKombat.wave = wave;
+      withMathRandom([0.95, 0], () => gm.kanjiKombatService.spawnNextWave());
+
+      assert.equal(gm.combat.enemies.length, 1, `wave ${wave} should be a solo enemy opener`);
+    }
+  });
+
+  it('uses random enemy counts after the first three Kanji Kombat waves', () => {
+    const gm = gmWithMode();
+    gm.run.kanjiKombat.wave = 4;
+    gm.kanjiKombatService = new KanjiKombatService(gm);
+
+    withMathRandom([0.95, 0], () => gm.kanjiKombatService.spawnNextWave());
+
+    assert.equal(gm.combat.enemies.length, 3);
+  });
+
   it('heals all living allies at 3 and 9 correct answer streaks', () => {
     const gm = rewardGm({
       active: [

@@ -39,6 +39,7 @@ const STREAK_HEAL_REWARDS = {
   3: 0.20,
   9: 0.50,
 };
+const SOLO_OPENING_WAVES = 3;
 
 function createServerSeed() {
   return randomBytes(16).toString('hex');
@@ -727,8 +728,9 @@ export class KanjiKombatService {
       enemies = [boss];
       kk.currentWaveIsMiniboss = true;
     } else {
+      const maxEnemies = wave <= SOLO_OPENING_WAVES ? 1 : 3;
       enemies = generateEnemyCreatures(highestLevel, {
-        maxEnemies: 3,
+        maxEnemies,
         creaturePool: this.buildEnemyPool(),
         stage,
         encounterIndex: wave - 1,
