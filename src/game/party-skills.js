@@ -122,6 +122,10 @@ function treeIdForEntry(entry) {
   return OLD_PARTY_SKILL_ID_TO_TREE[rawId] || null;
 }
 
+export function canonicalPartySkillTreeId(entry) {
+  return treeIdForEntry(entry);
+}
+
 export function normalizePartySkills(runPartySkills = []) {
   const levelsById = new Map();
   for (const entry of runPartySkills || []) {
@@ -157,6 +161,13 @@ export function getPartySkillDisplay(id, level = 1) {
   };
 }
 
+export function getPartySkillOfferDisplay(offer) {
+  const id = canonicalPartySkillTreeId(offer);
+  if (!id) return null;
+  const level = typeof offer === 'object' && offer?.level != null ? offer.level : 1;
+  return getPartySkillDisplay(id, level);
+}
+
 export function rollSkillMasterOffers({ ownedSkillIds = [], count = 3, rng = Math.random } = {}) {
   const normalized = normalizePartySkills(ownedSkillIds);
   const byId = new Map(normalized.map(skill => [skill.id, skill.level]));
@@ -174,6 +185,7 @@ export function rollSkillMasterOffers({ ownedSkillIds = [], count = 3, rng = Mat
 }
 
 export function applyPartySkillChoice(runPartySkills, id) {
+  id = canonicalPartySkillTreeId(id);
   if (!PARTY_SKILL_TREES[id]) throw new Error(`Unknown Party Skill tree: ${id}`);
   const normalized = normalizePartySkills(runPartySkills);
   const existing = normalized.find(skill => skill.id === id);

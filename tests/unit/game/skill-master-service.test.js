@@ -18,6 +18,21 @@ function makeGmWithSkillMasterRoom({ partySkills = [] } = {}) {
   return { gm, room, svc };
 }
 
+function makeGmWithInitialSkillPick({ partySkills = [], meta = {} } = {}) {
+  const gm = {
+    run: {
+      rooms: [],
+      currentRoom: 0,
+      initialSkillPick: { offered: null, chosenId: null },
+      partySkills
+    },
+    meta,
+    emitState() {}
+  };
+  const svc = new ExplorationService(gm);
+  return { gm, svc };
+}
+
 describe('Skill Master service', () => {
   it('getSkillMasterOffers is idempotent within a room', () => {
     const originalRandom = Math.random;
@@ -67,5 +82,29 @@ describe('Skill Master service', () => {
     assert.strictEqual(room.skillMaster.chosenId, 'arcStrike');
     assert.strictEqual(room.skillMaster.completed, true);
     assert.strictEqual(room.interacted, true);
+  });
+
+  it('tutorial Skill Master legacy offers display as canonical tree offers', () => {
+    const { svc } = makeGmWithInitialSkillPick({ meta: { tutorialStep: 0 } });
+    const { offered } = svc.getSkillMasterOffers();
+    assert.deepEqual(offered.map(offer => offer.id), ['counterMaster', 'arcStrike', 'buffMaster']);
+    assert.deepEqual(offered.map(offer => offer.level), [1, 1, 1]);
+    assert.ok(offered.every(offer => PARTY_SKILL_TREE_IDS.includes(offer.id)));
+  });
+
+  it('chooseSkillMasterOffer accepts tutorial tree and legacy ids for canonical acquisition', () => {
+    const treeChoice = makeGmWithInitialSkillPick({ meta: { tutorialStep: 0 } });
+    treeChoice.svc.getSkillMasterOffers();
+    const firstChoose = treeChoice.svc.chooseSkillMasterOffer('counterMaster');
+    assert.strictEqual(firstChoose.chosenId, 'counterMaster');
+    assert.deepEqual(treeChoice.gm.run.partySkills, [{ id: 'counterMaster', level: 1 }]);
+    assert.strictEqual(treeChoice.gm.run.initialSkillPick.chosenId, 'counterMaster');
+
+    const legacyChoice = makeGmWithInitialSkillPick({ meta: { tutorialStep: 0 } });
+    legacyChoice.svc.getSkillMasterOffers();
+    const secondChoose = legacyChoice.svc.chooseSkillMasterOffer('retaliationStrike');
+    assert.strictEqual(secondChoose.chosenId, 'counterMaster');
+    assert.deepEqual(legacyChoice.gm.run.partySkills, [{ id: 'counterMaster', level: 1 }]);
+    assert.strictEqual(legacyChoice.gm.run.initialSkillPick.chosenId, 'counterMaster');
   });
 });

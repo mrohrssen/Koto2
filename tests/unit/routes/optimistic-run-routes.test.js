@@ -576,6 +576,44 @@ describe('optimistic deterministic run routes', () => {
     assert.deepEqual(res.body.state, { phase: 'room', run: { partySkills: [{ id: 'buffMaster', level: 1 }] } });
   });
 
+  it('NPC battle legacy stored offers display and acquire canonical tree ids', async () => {
+    const router = createRunRouter();
+    const offersHandler = getHandler(router, 'post', '/npc-battle-skill-offers');
+    const chooseHandler = getHandler(router, 'post', '/npc-battle-skill-choose');
+    const room = {
+      type: 'npcBattle',
+      npcBattle: { skillSelectionPending: true, offered: ['momentum'] },
+      interacted: false,
+    };
+    const run = { partySkills: [] };
+    const req = {
+      body: {},
+      user: { id: 'test-user' },
+      gameManager: {
+        run,
+        getCurrentRoom: () => room,
+      },
+      saveGame: () => {},
+      getEnrichedGameState: () => ({ phase: 'room', run: { partySkills: [...run.partySkills] } }),
+    };
+
+    const offersRes = makeRes();
+    await offersHandler(req, offersRes);
+
+    assert.equal(offersRes.statusCode, 200);
+    assert.deepEqual(offersRes.body.offered.map(offer => offer.id), ['buffMaster']);
+    assert.deepEqual(offersRes.body.offered.map(offer => offer.level), [1]);
+
+    req.body = { skillId: 'buffMaster' };
+    const chooseRes = makeRes();
+    await chooseHandler(req, chooseRes);
+
+    assert.equal(chooseRes.statusCode, 200);
+    assert.equal(chooseRes.body.chosenId, 'buffMaster');
+    assert.deepEqual(chooseRes.body.partySkills, [{ id: 'buffMaster', level: 1 }]);
+    assert.deepEqual(run.partySkills, [{ id: 'buffMaster', level: 1 }]);
+  });
+
   it('/npc-battle-skill-choose does not re-run duplicate actionId and run.partySkills length stays 1', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
     const room = {

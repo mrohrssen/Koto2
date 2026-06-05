@@ -31,9 +31,10 @@ import {
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import {
   applyPartySkillChoice,
+  canonicalPartySkillTreeId,
   normalizePartySkills,
   rollSkillMasterOffers,
-  getPartySkillDisplay
+  getPartySkillOfferDisplay
 } from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 import { SPRITE_VERSION } from '../../shared/asset-versions.js';
@@ -420,9 +421,7 @@ export default function createRunRoutes({
       }
 
       const offered = (room.npcBattle.offered || [])
-        .map(offer => typeof offer === 'string'
-          ? getPartySkillDisplay(offer, 1)
-          : getPartySkillDisplay(offer.id, offer.level))
+        .map(getPartySkillOfferDisplay)
         .filter(Boolean);
 
       const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
@@ -468,21 +467,22 @@ export default function createRunRoutes({
           room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 });
         }
 
-        const offeredIds = room.npcBattle.offered.map(offer => typeof offer === 'string' ? offer : offer.id);
-        if (!offeredIds.includes(skillId)) {
+        const canonicalSkillId = canonicalPartySkillTreeId(skillId);
+        const offeredIds = room.npcBattle.offered.map(canonicalPartySkillTreeId).filter(Boolean);
+        if (!canonicalSkillId || !offeredIds.includes(canonicalSkillId)) {
           console.warn('[npc-battle-skill-choose] skillId not in offered',
             { skillId, offeredIds, typeof_skillId: typeof skillId });
           throw new Error('Invalid skill choice');
         }
 
         if (!gm.run) throw new Error('No active run');
-        gm.run.partySkills = applyPartySkillChoice(gm.run.partySkills || [], skillId);
+        gm.run.partySkills = applyPartySkillChoice(gm.run.partySkills || [], canonicalSkillId);
 
-        room.npcBattle.chosenSkillId = skillId;
+        room.npcBattle.chosenSkillId = canonicalSkillId;
         room.npcBattle.skillSelectionPending = false;
         room.interacted = true;
 
-        return { chosenId: skillId, partySkills: gm.run.partySkills, state: req.getEnrichedGameState() };
+        return { chosenId: canonicalSkillId, partySkills: gm.run.partySkills, state: req.getEnrichedGameState() };
       },
     });
   });
