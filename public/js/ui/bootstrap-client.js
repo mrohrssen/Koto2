@@ -93,7 +93,7 @@ export function renderJpSentence(tokens, knownWords, wordDict, overrides = {}, u
     overrides,
     useKanji,
     japaneseDisplayMode: options.japaneseDisplayMode,
-    mergeSmallTsuContinuation: false,
+    mergeSmallTsuContinuation: true,
   });
 
   return cells.map(cell => {
