@@ -332,6 +332,36 @@ describe('resolveRound', () => {
     assert.equal(result.roundStartEvents.filter(e => e.type === 'buffMaster').length, 2);
   });
 
+  it('applies HP Master healing bonuses in round-based PvP actions', () => {
+    const healMove = {
+      id: 'heal',
+      name: '治す',
+      nameEn: 'Heal',
+      reading: 'なおす',
+      element: 'neutral',
+      category: 'heal',
+      target: 'self',
+      power: 20,
+      mpCost: 0,
+      accuracy: 100
+    };
+    sideA[0].moves = [healMove];
+    sideA[0].attack = 20;
+    sideA[0].hp = 10;
+    sideA[0].maxHp = 100;
+    movesA = [{ creatureIndex: 0, moveId: 'heal', targetIndex: 0 }];
+    movesB = [];
+
+    const result = withMockRandom(0.5, () => resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsA: [{ id: 'hpMaster', level: 3 }],
+      combatA: {}
+    }));
+
+    const heal = result.attacks.find(a => a.category === 'heal');
+    assert.equal(heal.healAmount, 60);
+    assert.equal(sideA[0].hp, 70);
+  });
+
   it('applies Counter Master counter attacks in PvP', () => {
     const combatA = {};
     sideA[0].attack = 30;

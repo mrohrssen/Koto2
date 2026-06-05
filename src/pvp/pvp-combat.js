@@ -338,6 +338,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     const slotResult = executeSlotMoveTurn(attackerSide, defenderSide, slot.index, choices, {
       itemBuffs: isA ? itemBuffsA : itemBuffsB,
       defeatedIndices: defeatedDummy,
+      runPartySkills: isA ? (partySkillsA || []) : (partySkillsB || []),
       onAttack(atk) {
         atk.playbackIndex = playbackCounter++;
         atk.side = sideLabel;
