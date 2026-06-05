@@ -322,6 +322,11 @@ function syncParallaxScrollWithPhase() {
     return;
   }
 
+  if (gameState.run?.mode === 'kanjiKombat' && combatLoopUI.isKanjiKombatOpeningRevealActive?.()) {
+    lastPhaseForParallax = gameState.phase;
+    return;
+  }
+
   const p = gameState.phase;
   const prev = lastPhaseForParallax;
   lastPhaseForParallax = p;
@@ -537,14 +542,20 @@ function updateScene() {
   void ensureSceneForPhase(gameState.phase);
 
   if (gameState.phase === 'combat') {
-    // Creature combat uses enemies[] array; legacy uses single enemy
-    const enemies = gameState.combat?.enemies;
-    const isBoss = !!gameState.combat?.isBoss;
-    if (enemies?.length > 1) {
-      scene.showEnemies(enemies, { isBoss });
+    const hideOpeningKanjiKombatEnemies = gameState.run?.mode === 'kanjiKombat'
+      && combatLoopUI.isKanjiKombatOpeningRevealActive?.();
+    if (hideOpeningKanjiKombatEnemies) {
+      scene.hideFormation('enemy');
     } else {
-      const enemy = enemies?.[0] || gameState.combat?.enemy;
-      if (enemy) scene.showEnemy(enemy, { isBoss });
+      // Creature combat uses enemies[] array; legacy uses single enemy
+      const enemies = gameState.combat?.enemies;
+      const isBoss = !!gameState.combat?.isBoss;
+      if (enemies?.length > 1) {
+        scene.showEnemies(enemies, { isBoss });
+      } else {
+        const enemy = enemies?.[0] || gameState.combat?.enemy;
+        if (enemy) scene.showEnemy(enemy, { isBoss });
+      }
     }
     // Show NPC skill bar if this encounter has an NPC
     const npcSkills = gameState.combat?.npcData?.skills;
@@ -1201,7 +1212,7 @@ async function startKanjiKombatSetup() {
     const result = await apiStartKanjiKombat(creatureId);
     if (result?.state) {
       updateGameState(result.state);
-      await combatLoopUI.startCombatLoop();
+      await combatLoopUI.startCombatLoop({ kanjiKombatOpening: true });
     }
   } finally {
     removeCollectionOverlay();

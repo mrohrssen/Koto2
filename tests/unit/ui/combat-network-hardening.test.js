@@ -295,7 +295,8 @@ describe('combat network hardening', () => {
     assert.match(combatLoopSource, /result\.nextWaveEnemies/);
     assert.match(combatLoopSource, /ROOM_TRAVEL_DURATION_MS/);
     assert.match(combatLoopSource, /battleScene\.formation\.walkingEnabled = true/);
-    assert.match(combatLoopSource, /syncCreatures\(\{ allies, enemies, initial: true \}\)/);
+    assert.match(combatLoopSource, /playKanjiKombatEnemyTravelReveal\(\{ enemies, allies, isBoss \}\)/);
+    assert.match(combatLoopSource, /syncCreatures\(\{ allies: revealAllies, enemies, initial: true \}\)/);
     assert.match(combatLoopSource, /updateUI\?\.\(\);/);
   });
 

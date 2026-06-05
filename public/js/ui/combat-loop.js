@@ -72,6 +72,10 @@ let _currentRoundBarks = [];
 /** Get the barks returned by the latest combat cycle response. */
 export function getCurrentBarks() { return _currentRoundBarks; }
 
+export function isKanjiKombatOpeningRevealActive() {
+  return kanjiKombatOpeningRevealActive;
+}
+
 import { playDialogueAudio } from '../tts.js';
 import { init as initMoveSelect, showMoves, clear as clearMoveSelect, setActiveLabel } from './move-select.js';
 import { init as initTargetSelect, showEnemies, showAllies, clear as clearTargetSelect } from './target-select.js';
@@ -164,6 +168,7 @@ let playerAttackTimer = null;
 let enemyAttackTimer = null;
 let animatedEnemyKoKeys = new Set();
 let creatureCombatRequestInFlight = false;
+let kanjiKombatOpeningRevealActive = false;
 
 // Move-based combat state
 let currentCreatureIndex = 0;
@@ -1168,12 +1173,13 @@ export async function startCombatLoop(opts = {}) {
   // active yet, so the transition still fires as expected.
   const mgr = getSceneManager();
   const gs = getGameState();
+  const isKanjiKombatOpening = opts.kanjiKombatOpening === true && gs.run?.mode === 'kanjiKombat';
   animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(gs.combat?.enemies || []);
   if (!(mgr.currentScene instanceof BattleScene)) {
     try {
       await mgr.transition(BattleScene, {
         allies:  gs.combat?.allies  ?? [],
-        enemies: gs.combat?.enemies ?? [],
+        enemies: isKanjiKombatOpening ? [] : (gs.combat?.enemies ?? []),
         isBoss: !!gs.combat?.isBoss,
       });
     } catch (err) {
@@ -1181,12 +1187,41 @@ export async function startCombatLoop(opts = {}) {
       console.error('[CombatLoop] BattleScene transition failed, aborting combat start', err);
       return;
     }
+  } else if (isKanjiKombatOpening) {
+    try {
+      await mgr.currentScene.syncCreatures({
+        allies: gs.combat?.allies ?? [],
+        enemies: [],
+        initial: true,
+      });
+    } catch (err) {
+      if (!(err instanceof SceneDisposedError)) {
+        console.error('[CombatLoop] failed to clear opening Kanji Kombat enemies', err);
+      }
+    }
   }
 
   // On recovery (page reload), re-render the scene before showing moves.
   // updateScene() already rendered enemy sprites, just need the move UI.
   if (opts.recovery && updateUI) {
     updateUI();
+  }
+
+  if (isKanjiKombatOpening) {
+    kanjiKombatOpeningRevealActive = true;
+    void playKanjiKombatOpeningTransition({
+      allies: gs.combat?.allies ?? [],
+      enemies: gs.combat?.enemies ?? [],
+      isBoss: !!gs.combat?.isBoss,
+    }).catch(err => {
+      console.error('[CombatLoop] Kanji Kombat opening transition failed', err);
+    }).finally(() => {
+      kanjiKombatOpeningRevealActive = false;
+      if (combatActive && isRecoveredCombatActive(getGameState()) && !getEnemyDialogueActive()) {
+        startMoveSelection();
+      }
+    });
+    return;
   }
 
   // Start move selection for the first turn
@@ -1375,12 +1410,8 @@ async function syncKanjiKombatStreakRewardVisuals(result) {
   vfx.syncStatusIconsFromResult({ ...result, allies: active });
 }
 
-async function playKanjiKombatNextWaveTransition(result) {
-  const enemies = Array.isArray(result.nextWaveEnemies)
-    ? result.nextWaveEnemies
-    : getGameState()?.combat?.enemies || [];
+async function playKanjiKombatEnemyTravelReveal({ enemies = [], allies = [], isBoss = false } = {}) {
   if (!enemies.length) {
-    updateUI?.();
     return;
   }
 
@@ -1402,8 +1433,9 @@ async function playKanjiKombatNextWaveTransition(result) {
   }
 
   const state = getGameState();
-  const allies = state?.combat?.allies || state?.run?.creatureParty?.active || result.allies || [];
-  const isBoss = !!state?.combat?.isBoss;
+  const revealAllies = allies.length > 0
+    ? allies
+    : state?.combat?.allies || state?.run?.creatureParty?.active || [];
 
   await showFormation('enemy', enemies, { isBoss, force: true });
   const enemyFormation = document.getElementById('enemy-formation');
@@ -1411,16 +1443,36 @@ async function playKanjiKombatNextWaveTransition(result) {
   const revealScene = getSceneManager().currentScene;
   if (revealScene instanceof BattleScene && !revealScene.disposed && !revealScene._exiting) {
     try {
-      await revealScene.syncCreatures({ allies, enemies, initial: true });
+      await revealScene.syncCreatures({ allies: revealAllies, enemies, initial: true });
     } catch (err) {
       if (!(err instanceof SceneDisposedError)) {
-        console.error('[CombatLoop] failed to reveal Kanji Kombat next wave', err);
+        console.error('[CombatLoop] failed to reveal Kanji Kombat enemies', err);
       }
     }
   }
 
   const freshEnemyFormation = document.getElementById('enemy-formation');
   if (freshEnemyFormation) freshEnemyFormation.style.opacity = '1';
+}
+
+async function playKanjiKombatOpeningTransition({ enemies = [], allies = [], isBoss = false } = {}) {
+  await playKanjiKombatEnemyTravelReveal({ enemies, allies, isBoss });
+}
+
+async function playKanjiKombatNextWaveTransition(result) {
+  const enemies = Array.isArray(result.nextWaveEnemies)
+    ? result.nextWaveEnemies
+    : getGameState()?.combat?.enemies || [];
+  if (!enemies.length) {
+    updateUI?.();
+    return;
+  }
+
+  const state = getGameState();
+  const allies = state?.combat?.allies || state?.run?.creatureParty?.active || result.allies || [];
+  const isBoss = !!state?.combat?.isBoss;
+
+  await playKanjiKombatEnemyTravelReveal({ enemies, allies, isBoss });
   updateUI?.();
 }
 
