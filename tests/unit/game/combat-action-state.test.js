@@ -265,6 +265,10 @@ describe('combat action state', () => {
     assert.equal(result.combatEnded, true);
     assert.equal(result.victory, true);
     assert.equal(result.actionSegments[0].attacks[0].targetDefeated, true);
+    assert.equal(result.xpEvents.length, 1);
+    assert.ok(result.xpEvents[0].xpGrants[0].xp > 0);
+    assert.ok(result.xpEvents[0].levelUps.length > 0);
+    assert.ok(result.creatureParty.active[0].level > 1);
     assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);
     assert.notEqual(gm.combat.enemies[0].hp, hpBefore);
   });

@@ -49,6 +49,46 @@ describe('Kanji Kombat optimistic answers', () => {
     assert.equal(result.stateVersion, stateVersion + 1);
     assert.equal(result.nextSeed, gm.combat.optimistic.nextTurnSeed);
   });
+
+  it('returns authoritative XP events when an accepted optimistic answer KOs an enemy', () => {
+    const gm = createTestKanjiKombatGameManager();
+    const service = gm.kanjiKombatService;
+    service.chooseNextWork = () => ({ kind: 'completePrompt' });
+    gm.combat.enemies[0].hp = 1;
+    gm.combat.enemies[0].level = 1;
+    gm.run.creatureParty.active[0].xp = 0;
+    gm.run.creatureParty.active[0].level = 1;
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const answerId = 'choice-correct';
+    const predicted = resolveKanjiKombatAnswerTurn(
+      { combat: gm.combat, run: gm.run, answerCorrect: true },
+      { seed },
+    );
+    const envelope = buildActionEnvelope({
+      actionId: 'act_kanji_ko_xp',
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'kanjiKombat.answer',
+      payload: {
+        answerId,
+        correct: true,
+        predictionMode: KANJI_KOMBAT_PREDICTION_MODE,
+      },
+      predictedTranscript: predicted.transcript,
+    });
+
+    const result = service.verifyAndCommitOptimisticAnswer(envelope);
+
+    assert.equal(result.status, 'accepted');
+    assert.equal(result.xpEvents.length, 1);
+    assert.equal(result.xpEvents[0].enemyId, 'mizu');
+    assert.ok(result.xpEvents[0].xpGrants[0].xp > 0);
+    assert.ok(result.xpEvents[0].levelUps.length > 0);
+    assert.ok(result.creatureParty.active[0].level > 1);
+    assert.equal(result.xpEvents[0].levelUps.at(-1).newLevel, result.creatureParty.active[0].level);
+  });
 });
 
 function createTestKanjiKombatGameManager() {
