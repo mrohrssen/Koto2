@@ -305,7 +305,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
           const enemyIdx = enemies.indexOf(target);
           if (enemyIdx >= 0 && !defeatedEnemyIndices.has(enemyIdx)) {
             defeatedEnemyIndices.add(enemyIdx);
-            const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks, metaMults, itemBuffs, runPartySkills);
+            const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks, metaMults, itemBuffs, runPartySkills, rng);
             xpEvents.push({ enemyId: target.id, enemyIndex: enemyIdx, enemyName: target.nameEn, ...xpEvent });
           }
         }
@@ -361,7 +361,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
           const enemyIdx = enemies.indexOf(target);
           if (enemyIdx >= 0 && !defeatedEnemyIndices.has(enemyIdx)) {
             defeatedEnemyIndices.add(enemyIdx);
-            const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks, metaMults, itemBuffs, runPartySkills);
+            const xpEvent = awardKillXp(creatureParty, target.level, itemBuffs?.xpMultiplier, itemBuffs?.xpBalanceStacks, metaMults, itemBuffs, runPartySkills, rng);
             xpEvents.push({ enemyId: target.id, enemyIndex: enemyIdx, enemyName: target.nameEn, ...xpEvent });
           }
         }
@@ -1703,7 +1703,7 @@ export function rollTalkAcceptance(enemy) {
  * When xpBalanceStacks > 0, XP is redistributed from overleveled to underleveled creatures.
  * Returns per-creature XP amounts and any level-ups that occurred.
  */
-export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBalanceStacks = 0, metaMults = null, itemBuffs = null, runPartySkills = []) {
+export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBalanceStacks = 0, metaMults = null, itemBuffs = null, runPartySkills = [], rng = Math.random) {
   const partySkillXpMultiplier = getXpMultiplier(runPartySkills);
   const baseXp = Math.floor(BASE_KILL_XP * enemyLevel * 2 * partySkillXpMultiplier);
   const activeCreatures = creatureParty.active.filter(r => r && r.hp > 0);
@@ -1773,7 +1773,7 @@ export function awardKillXp(creatureParty, enemyLevel, xpMultiplier = 1.0, xpBal
 
   if (getPartySkillLevel(runPartySkills, 'expMaster') >= 5) {
     for (const entry of entries) {
-      if (leveledCreatures.has(entry.creature) && Math.random() < 0.10) {
+      if (leveledCreatures.has(entry.creature) && rng() < 0.10) {
         const extra = addXpToCreature(entry.creature, xpToNextLevel(entry.creature.level), metaMults, itemBuffs);
         for (const lu of extra) {
           levelUps.push({

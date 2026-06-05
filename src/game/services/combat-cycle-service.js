@@ -450,7 +450,7 @@ export class CombatCycleService {
         resolvedCore = actionType === 'attack' && this.gm.combat?.actionCursor
           ? resolvePveCursorTurn(
               { combat: this.gm.combat, run: this.gm.run, moveChoices },
-              { actionType, seed: envelope.seed },
+              { actionType, seed: envelope.seed, awardKillXp },
             )
           : resolvePveTurn({
               snapshot: { combat: this.gm.combat, run: this.gm.run },
@@ -525,7 +525,7 @@ export class CombatCycleService {
     return response;
   }
 
-  _collectPoisonKoXpEvents(effectEvents, metaMults) {
+  _collectPoisonKoXpEvents(effectEvents, metaMults, rng = Math.random) {
     const xpEvents = [];
     const defeatedEnemyIndices = new Set();
     for (const event of effectEvents || []) {
@@ -546,7 +546,8 @@ export class CombatCycleService {
         this.gm.run.itemBuffs?.xpBalanceStacks,
         metaMults,
         this.gm.run.itemBuffs,
-        this.gm.run.partySkills
+        this.gm.run.partySkills,
+        rng
       );
       xpEvents.push({ enemyId: enemy.id, enemyIndex: event.targetIndex, enemyName: enemy.nameEn, ...xpEvent });
     }
@@ -1077,7 +1078,7 @@ export class CombatCycleService {
     });
 
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
-    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);
+    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults, rng);
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('attack', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 
@@ -1444,7 +1445,7 @@ export class CombatCycleService {
       rng
     });
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
-    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);
+    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults, rng);
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('defend', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 
@@ -1548,7 +1549,7 @@ export class CombatCycleService {
       combat: this.gm.combat
     });
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
-    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);
+    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults, rng);
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('befriend', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 

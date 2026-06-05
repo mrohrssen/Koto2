@@ -228,7 +228,7 @@ function applyHpMasterHeal({ target, amount, runPartySkills, rng = Math.random }
   return healed;
 }
 
-function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEnemyIndices, itemBuffs, metaMults, awardKillXp, runPartySkills }) {
+function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEnemyIndices, itemBuffs, metaMults, awardKillXp, runPartySkills, rng = Math.random }) {
   if (!creatureParty || typeof awardKillXp !== 'function') return null;
   if (enemyIdx < 0 || defeatedEnemyIndices.has(enemyIdx)) return null;
   defeatedEnemyIndices.add(enemyIdx);
@@ -240,6 +240,7 @@ function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEn
     metaMults,
     itemBuffs,
     runPartySkills,
+    rng,
   );
   return { enemyId: target.id, enemyIndex: enemyIdx, enemyName: target.nameEn, ...xpEvent };
 }
@@ -939,7 +940,8 @@ export function resolveSingleActorAction({
   runPartySkills = null,
   combat = null,
   playbackStart = 0,
-  rng = Math.random
+  rng = Math.random,
+  awardKillXp = null
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
   const actorList = isAlly ? allies : enemies;
@@ -976,6 +978,7 @@ export function resolveSingleActorAction({
     defenderItemBuffs: isAlly ? null : itemBuffs,
     defeatedIndices: new Set(),
     rng,
+    awardKillXp,
     runPartySkills: isAlly ? (runPartySkills || []) : [],
     onAttack(atk) {
       atk.playbackIndex = playbackIndex++;

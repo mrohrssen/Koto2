@@ -66,7 +66,7 @@ function collectEnemySelfSabotageEvents({ enemyAttacks, enemies, runPartySkills,
   return events;
 }
 
-function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackStart, rng }) {
+function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackStart, rng, awardKillXp = null }) {
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
   const actor = cursor.side === 'ally'
@@ -107,6 +107,7 @@ function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackS
     combat: snapshot.combat || null,
     playbackStart,
     rng,
+    awardKillXp,
   });
 
   const combat = snapshot.combat || {};
@@ -192,6 +193,7 @@ export function resolvePveCursorTurn(snapshotInput, {
   seed,
   rng,
   clone = true,
+  awardKillXp = null,
 } = {}) {
   if (actionType !== 'attack') {
     throw new Error(`Unsupported cursor action: ${actionType}`);
@@ -215,6 +217,7 @@ export function resolvePveCursorTurn(snapshotInput, {
     moveChoice: submittedChoice,
     playbackStart,
     rng: turnRng,
+    awardKillXp,
   });
   actionSegments.push(...firstResult.actionSegments);
   playbackStart = firstResult.playbackNext || actionSegments.length;
@@ -231,6 +234,7 @@ export function resolvePveCursorTurn(snapshotInput, {
       moveChoice: null,
       playbackStart,
       rng: turnRng,
+      awardKillXp,
     });
     actionSegments.push(...enemyResult.actionSegments);
     playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { createSeededRng } from '../../../src/shared/deterministic-rng.js';
 import { createPveTurnSnapshot } from '../../../src/shared/combat/pve-turn-snapshot.js';
-import { resolveKanjiKombatAnswerTurn, resolvePveTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
+import { resolveKanjiKombatAnswerTurn, resolvePveCursorTurn, resolvePveTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { rollNpcSkill } from '../../../src/game/services/npc-service.js';
 import {
@@ -348,6 +348,35 @@ describe('shared PvE turn resolver', () => {
     }, {
       answerCorrect: true,
       targetIndex: 0,
+      rng: constantRng(0.50),
+      clone: false,
+      awardKillXp,
+    });
+
+    assert.equal(result.transcript.xpEvents[0].xpGrants[0].xp, 500);
+  });
+
+  it('awards Exp Master XP in shared active-cursor predictions', () => {
+    const ally = creature({ id: 'hi', hp: 80, maxHp: 80, attack: 100 });
+    const enemy = creature({ id: 'mizu', level: 5, element: 'water', hp: 1, maxHp: 90 });
+    const result = resolvePveCursorTurn({
+      combat: {
+        active: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 0,
+        turnCount: 0,
+      },
+      run: {
+        partySkills: [{ id: 'expMaster', level: 4 }],
+        itemBuffs: null,
+        creatureParty: { active: [ally], reserves: [] },
+        crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+      },
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+    }, {
+      actionType: 'attack',
       rng: constantRng(0.50),
       clone: false,
       awardKillXp,

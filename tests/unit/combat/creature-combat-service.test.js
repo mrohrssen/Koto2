@@ -20,16 +20,6 @@ import {
 import { instantiateCreature } from '../../../src/game/creatures.js';
 import { computeRestMpGain } from '../../../src/game/rest-move.js';
 
-function withMockRandom(value, fn) {
-  const original = Math.random;
-  Math.random = typeof value === 'function' ? value : () => value;
-  try {
-    return fn();
-  } finally {
-    Math.random = original;
-  }
-}
-
 describe('Creature Combat - Move Turn', () => {
   it('each allied creature uses a move against the enemy', () => {
     const allies = [instantiateCreature('hi'), instantiateCreature('mizu')];
@@ -1457,15 +1447,25 @@ describe('Party Skill Trees - HP and EXP Master', () => {
     freshKi.xp = 0;
     const party = { active: [leveledKi, freshKi], reserves: [] };
 
-    const result = withMockRandom(0.01, () => awardKillXp(
-      party,
-      1,
-      1,
-      0,
-      null,
-      null,
-      [{ id: 'expMaster', level: 5 }]
-    ));
+    const originalRandom = Math.random;
+    Math.random = () => {
+      throw new Error('awardKillXp must use the injected rng for Exp Master bonus rolls');
+    };
+    let result;
+    try {
+      result = awardKillXp(
+        party,
+        1,
+        1,
+        0,
+        null,
+        null,
+        [{ id: 'expMaster', level: 5 }],
+        () => 0.01
+      );
+    } finally {
+      Math.random = originalRandom;
+    }
 
     assert.equal(leveledKi.level, 7, 'near-threshold copy levels once, then receives the L5 bonus level');
     assert.equal(freshKi.level, 5, 'fresh duplicate species copy should not receive an L5 bonus roll');
