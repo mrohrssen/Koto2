@@ -1,12 +1,12 @@
 import { applyStatChange, initStatStages } from './effects.js';
 import { calculateCreatureDamage, getElementMultiplier } from '../../shared/combat/creature-math.js';
-import { getPartySkillLevel } from '../party-skills.js';
+import { PARTY_SKILL_TREE_IDS, getPartySkillLevel } from '../party-skills.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
 export function toActivePartySkillIdSet(runPartySkills) {
   const ids = [];
-  for (const id of ['arcStrike', 'hpMaster', 'counterMaster', 'buffMaster', 'expMaster', 'debuffMaster']) {
+  for (const id of PARTY_SKILL_TREE_IDS) {
     if (getPartySkillLevel(runPartySkills, id) > 0) ids.push(id);
   }
   return new Set(ids);
@@ -408,6 +408,8 @@ function applyArcStrikeTree({ record, attacker, enemies, combat, rng, arcLevel }
     const target = randomFrom(targets, rng);
     const targetIndex = enemies.indexOf(target);
     const damage = Math.min(chainDamageForBounce(baseDmg, bounceIndex, arcLevel), target.hp);
+    if (damage <= 0) break;
+
     target.hp -= damage;
     combat.chainHitsThisTurn += 1;
 

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { applyAfterPlayerAttacks, applyRoundStartSkills, applyAfterEnemyAttacks, countDebuffTypes, countBuffTypes } from '../../../src/game/combat/party-skill-engine.js';
+import { PARTY_SKILL_TREE_IDS } from '../../../src/game/party-skills.js';
+import { applyAfterPlayerAttacks, applyRoundStartSkills, applyAfterEnemyAttacks, countDebuffTypes, countBuffTypes, toActivePartySkillIdSet } from '../../../src/game/combat/party-skill-engine.js';
 
 function makeAlly({ id = 'ally', hp = 50, maxHp = 100, attack = 20, element = 'fire', defense = 10 } = {}) {
   return { id, hp, maxHp, attack, defense, element, activeEffects: [], statStages: { atk: 0, def: 0 } };
@@ -37,6 +38,11 @@ test('engine exports exist and are callable', () => {
   assert.equal(typeof applyAfterEnemyAttacks, 'function');
   assert.equal(typeof countDebuffTypes, 'function');
   assert.equal(typeof countBuffTypes, 'function');
+});
+
+test('active party skill id set follows the canonical tree catalog', () => {
+  const skills = PARTY_SKILL_TREE_IDS.map(id => ({ id, level: 1 }));
+  assert.deepEqual([...toActivePartySkillIdSet(skills)], PARTY_SKILL_TREE_IDS);
 });
 
 test('applyRoundStartSkills returns empty array when no skills active', () => {
@@ -330,7 +336,7 @@ test('Arc Strike Lvl 3 uses additive 50% bounce damage scaling', () => {
       attacks,
       allies,
       enemies,
-      runPartySkills: [{ id: 'arcStrike', level: 4 }],
+      runPartySkills: [{ id: 'arcStrike', level: 3 }],
       combat: makeCombat()
     });
   });
@@ -338,6 +344,28 @@ test('Arc Strike Lvl 3 uses additive 50% bounce damage scaling', () => {
   const chainHits = attacks[0].partySkillProcs.filter(p => p.type === 'chainHit');
   assert.equal(chainHits[0].damage, 30);
   assert.equal(chainHits[1].damage, 45);
+});
+
+test('Arc Strike does not emit zero-damage chain-hit procs', () => {
+  const allies = [makeAlly({ element: 'fire' })];
+  const enemies = [
+    makeEnemy({ id: 'e1', hp: 100, element: 'fire' }),
+    makeEnemy({ id: 'e2', hp: 100, element: 'fire' })
+  ];
+  const attacks = [makeDmgRecord({ damage: 1, targetIndex: 0 })];
+
+  withStubbedRandom(0.01, () => {
+    applyAfterPlayerAttacks({
+      attacks,
+      allies,
+      enemies,
+      runPartySkills: [{ id: 'arcStrike', level: 1 }],
+      combat: makeCombat()
+    });
+  });
+
+  assert.equal(attacks[0].partySkillProcs.filter(p => p.type === 'chainHit').length, 0);
+  assert.equal(enemies[1].hp, 100);
 });
 
 test('Arc Strike Lvl 5 can keep bouncing after the second bounce', () => {
