@@ -1,5 +1,5 @@
 import { applyStatChange, applyHeal, getStageMultiplier, breakSleep, initStatStages } from './effects.js';
-import { getElementMultiplier } from '../../shared/combat/creature-math.js';
+import { calculateCreatureDamage, getElementMultiplier } from '../../shared/combat/creature-math.js';
 import { getPartySkillLevel } from '../party-skills.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -246,45 +246,40 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
  * Returns a counter record or null. Applies damage to the enemy immediately.
  */
 export function computeInlineCounter(record, allies, enemies, runPartySkills, combat, rng = Math.random) {
-  const active = toActivePartySkillIdSet(runPartySkills);
-  if (!active.size || !active.has('retaliationStrike')) return null;
+  const counterLevel = getPartySkillLevel(runPartySkills, 'counterMaster');
+  if (counterLevel <= 0) return null;
 
   if (typeof record.targetIndex !== 'number') return null;
   const defender = allies?.[record.targetIndex];
   if (!defender || defender.hp <= 0) return null;
   if (typeof record.damage !== 'number' || record.damage <= 0) return null;
 
-  if (!rollProc(0.50, rng)) return null;
+  const counterChance = counterLevel >= 3 ? 1 : counterLevel >= 2 ? 0.75 : 0.50;
+  if (!rollProc(counterChance, rng)) return null;
 
   const enemyIdx = record.attackerIndex;
   const enemy = enemies?.[enemyIdx];
   if (!enemy || enemy.hp <= 0) return null;
 
-  if (!combat.counterCounts) combat.counterCounts = {};
+  let counterDmg = calculateCreatureDamage({
+    attackerLevel: Math.max(1, defender.level || 1),
+    attack: defender.attack || 10,
+    defenderDefense: Math.max(1, enemy.defense || 5),
+    power: 7,
+    typeMultiplier: getElementMultiplier(defender.element || 'neutral', enemy.element || 'neutral'),
+    variance: 1
+  });
 
-  let counterDmg = Math.floor((defender.attack || 10) * 0.25);
-
-  if (active.has('hardenedRiposte')) {
-    initStatStages(defender);
-    const hasDefStage = (defender.statStages?.def || 0) > 0;
-    if (hasDefStage) {
-      counterDmg = Math.floor(counterDmg * 1.5);
-    }
+  if (counterLevel >= 4 && defender.hp < defender.maxHp * 0.50) {
+    counterDmg = Math.floor(counterDmg * 2);
   }
-
-  if (active.has('furyCounter')) {
-    const key = String(record.targetIndex);
-    if (!combat.counterCounts[key]) combat.counterCounts[key] = 0;
-    combat.counterCounts[key] = Math.min(combat.counterCounts[key] + 1, 10);
-    counterDmg = Math.floor(counterDmg * (1 + combat.counterCounts[key] * 0.10));
-  }
-
-  if (active.has('lastStand') && defender.hp < defender.maxHp * 0.30) {
+  if (counterLevel >= 5) {
     counterDmg = Math.floor(counterDmg * 2);
   }
 
   const actualDmg = Math.min(counterDmg, enemy.hp);
   enemy.hp -= actualDmg;
+  const active = toActivePartySkillIdSet(runPartySkills);
 
   const counterRecord = {
     type: 'counter',
@@ -295,22 +290,8 @@ export function computeInlineCounter(record, allies, enemies, runPartySkills, co
     targetName: enemy.nameEn,
     damage: actualDmg,
     targetDefeated: enemy.hp <= 0,
-    furyStacks: combat.counterCounts?.[String(record.targetIndex)] || 0,
-    isLastStand: active.has('lastStand') && defender.hp < defender.maxHp * 0.30,
     procs: []
   };
-
-  if (active.has('vengefulMark') && enemy.hp > 0) {
-    initStatStages(enemy);
-    const delta = applyStatChange(enemy, 'atk', -1);
-    if (delta !== 0) {
-      counterRecord.procs.push({
-        skillId: 'vengefulMark', skillName: 'Vengeful Mark',
-        type: 'stageChange', targetIndex: enemyIdx, targetSide: 'enemy', stat: 'atk', delta
-      });
-      tryContagionFromCounter(active, enemies, enemyIdx, 'atk', -1, counterRecord, combat, rng);
-    }
-  }
 
   if (active.has('pandemic') && enemy.hp <= 0) {
     triggerPandemicCounter(enemy, enemies, counterRecord, combat);
@@ -325,7 +306,7 @@ export function computeInlineCounter(record, allies, enemies, runPartySkills, co
  */
 export function applyAfterEnemyAttacks({ enemyAttacks, allies, enemies, runPartySkills, combat, rng = Math.random }) {
   const active = toActivePartySkillIdSet(runPartySkills);
-  if (!active.size || !active.has('retaliationStrike')) return [];
+  if (!active.size || getPartySkillLevel(runPartySkills, 'counterMaster') <= 0) return [];
   if (!Array.isArray(enemyAttacks) || enemyAttacks.length === 0) return [];
 
   const counterAttacks = [];

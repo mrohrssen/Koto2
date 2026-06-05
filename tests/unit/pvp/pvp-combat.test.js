@@ -285,7 +285,7 @@ describe('resolveRound', () => {
     assert.ok(sideA[0].statStages.atk < -1, 'Side B erosion should deepen side A debuffs');
   });
 
-  it('applies Retaliation Strike counter attacks in PvP', () => {
+  it('applies Counter Master counter attacks in PvP', () => {
     const combatA = {};
     sideA[0].attack = 30;
     sideB[0].hp = 500;
@@ -295,7 +295,7 @@ describe('resolveRound', () => {
     Math.random = () => 0.1;
     try {
       const result = resolveRound(sideA, sideB, movesA, movesB, {
-        partySkillsA: ['retaliationStrike'],
+        partySkillsA: [{ id: 'counterMaster', level: 1 }],
         combatA
       });
 
