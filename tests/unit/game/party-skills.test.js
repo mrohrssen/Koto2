@@ -7,6 +7,7 @@ import {
   getHealingMultiplier,
   getHpMasterMaxHpMultiplier,
   getPartySkillDisplay,
+  getPartySkillOfferDisplay,
   getPartySkillLevel,
   getPostCombatRecoveryMultiplier,
   getXpMultiplier,
@@ -57,6 +58,26 @@ describe('party skill trees', () => {
     const offers = rollSkillMasterOffers({ ownedSkillIds: [], count: 3, rng: () => 0.01 });
     assert.equal(offers.length, 3);
     assert.deepEqual(offers.map(o => o.level), [1, 1, 1]);
+  });
+
+  it('getPartySkillOfferDisplay derives raw offer levels from owned tree levels', () => {
+    const explicit = getPartySkillOfferDisplay(
+      { id: 'buffMaster', level: 4 },
+      [{ id: 'buffMaster', level: 1 }]
+    );
+    assert.equal(explicit.id, 'buffMaster');
+    assert.equal(explicit.level, 4);
+
+    const derived = getPartySkillOfferDisplay('momentum', [{ id: 'buffMaster', level: 1 }]);
+    assert.equal(derived.id, 'buffMaster');
+    assert.equal(derived.level, 2);
+    assert.equal(derived.title, 'Buff Master - Lvl. 2');
+
+    const objectWithoutLevel = getPartySkillOfferDisplay({ id: 'momentum' }, [{ id: 'buffMaster', level: 2 }]);
+    assert.equal(objectWithoutLevel.id, 'buffMaster');
+    assert.equal(objectWithoutLevel.level, 3);
+
+    assert.equal(getPartySkillOfferDisplay('momentum', [{ id: 'buffMaster', level: 5 }]), null);
   });
 
   it('applyPartySkillChoice creates and increments compact entries', () => {

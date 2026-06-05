@@ -416,12 +416,13 @@ export default function createRunRoutes({
       // Generate offers if not already generated (idempotent)
       if (!Array.isArray(room.npcBattle.offered)) {
         gm.run.partySkills = normalizePartySkills(gm.run?.partySkills || []);
-        room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 });
+        room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 })
+          .map(({ id, level }) => ({ id, level }));
         req.saveGame();
       }
 
       const offered = (room.npcBattle.offered || [])
-        .map(getPartySkillOfferDisplay)
+        .map(offer => getPartySkillOfferDisplay(offer, gm.run?.partySkills || []))
         .filter(Boolean);
 
       const knownSet = new Set(getKnownWordsFromFsrs(req.user.id));
@@ -464,7 +465,8 @@ export default function createRunRoutes({
           console.warn('[npc-battle-skill-choose] offered not set — generating on demand',
             { skillId, npcBattle: JSON.stringify(room.npcBattle) });
           gm.run.partySkills = normalizePartySkills(gm.run?.partySkills || []);
-          room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 });
+          room.npcBattle.offered = rollSkillMasterOffers({ ownedSkillIds: gm.run.partySkills, count: 3 })
+            .map(({ id, level }) => ({ id, level }));
         }
 
         const canonicalSkillId = canonicalPartySkillTreeId(skillId);

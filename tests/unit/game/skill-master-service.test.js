@@ -84,6 +84,26 @@ describe('Skill Master service', () => {
     assert.strictEqual(room.interacted, true);
   });
 
+  it('getSkillMasterOffers derives stored legacy offer levels from owned trees', () => {
+    const { gm, room, svc } = makeGmWithSkillMasterRoom({
+      partySkills: [{ id: 'buffMaster', level: 1 }]
+    });
+    room.skillMaster = {
+      offered: ['momentum'],
+      chosenId: null,
+      completed: false
+    };
+
+    const { offered } = svc.getSkillMasterOffers();
+    assert.deepEqual(offered.map(offer => ({ id: offer.id, level: offer.level, title: offer.title })), [
+      { id: 'buffMaster', level: 2, title: 'Buff Master - Lvl. 2' }
+    ]);
+
+    const firstChoose = svc.chooseSkillMasterOffer('buffMaster');
+    assert.strictEqual(firstChoose.chosenId, 'buffMaster');
+    assert.deepEqual(gm.run.partySkills, [{ id: 'buffMaster', level: 2 }]);
+  });
+
   it('tutorial Skill Master legacy offers display as canonical tree offers', () => {
     const { svc } = makeGmWithInitialSkillPick({ meta: { tutorialStep: 0 } });
     const { offered } = svc.getSkillMasterOffers();

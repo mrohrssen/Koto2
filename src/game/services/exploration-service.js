@@ -828,7 +828,7 @@ export class ExplorationService {
       // Tutorial step 0: offer 3 hardcoded skills (counter first)
       if (shouldOverrideSkillOffers(this.gm.meta)) {
         const offered = ['retaliationStrike', 'arcStrike', 'sharedVigor']
-          .map(getPartySkillOfferDisplay)
+          .map(offer => getPartySkillOfferDisplay(offer, this.gm.run?.partySkills || []))
           .filter(Boolean);
         pick.offered = offered.map(({ id, level }) => ({ id, level }));
         this.gm.emitState();
@@ -836,10 +836,11 @@ export class ExplorationService {
       }
       if (!Array.isArray(pick.offered)) {
         this.gm.run.partySkills = normalizePartySkills(this.gm.run?.partySkills || []);
-        pick.offered = rollSkillMasterOffers({ ownedSkillIds: this.gm.run.partySkills, count: 3 });
+        pick.offered = rollSkillMasterOffers({ ownedSkillIds: this.gm.run.partySkills, count: 3 })
+          .map(({ id, level }) => ({ id, level }));
       }
       const offered = (pick.offered || [])
-        .map(getPartySkillOfferDisplay)
+        .map(offer => getPartySkillOfferDisplay(offer, this.gm.run?.partySkills || []))
         .filter(Boolean);
       this.gm.emitState();
       return { offered };
@@ -857,11 +858,12 @@ export class ExplorationService {
     // Idempotent within room: once offered IDs exist, keep them
     if (!Array.isArray(room.skillMaster.offered)) {
       this.gm.run.partySkills = normalizePartySkills(this.gm.run?.partySkills || []);
-      room.skillMaster.offered = rollSkillMasterOffers({ ownedSkillIds: this.gm.run.partySkills, count: 3 });
+      room.skillMaster.offered = rollSkillMasterOffers({ ownedSkillIds: this.gm.run.partySkills, count: 3 })
+        .map(({ id, level }) => ({ id, level }));
     }
 
     const offered = (room.skillMaster.offered || [])
-      .map(getPartySkillOfferDisplay)
+      .map(offer => getPartySkillOfferDisplay(offer, this.gm.run?.partySkills || []))
       .filter(Boolean);
 
     this.gm.emitState();

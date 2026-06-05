@@ -161,10 +161,14 @@ export function getPartySkillDisplay(id, level = 1) {
   };
 }
 
-export function getPartySkillOfferDisplay(offer) {
+export function getPartySkillOfferDisplay(offer, ownedSkillIds = []) {
   const id = canonicalPartySkillTreeId(offer);
   if (!id) return null;
-  const level = typeof offer === 'object' && offer?.level != null ? offer.level : 1;
+  const hasStoredLevel = typeof offer === 'object' && offer?.level != null;
+  const level = hasStoredLevel
+    ? offer.level
+    : getPartySkillLevel(ownedSkillIds, id) + 1;
+  if (!hasStoredLevel && level > 5) return null;
   return getPartySkillDisplay(id, level);
 }
 
