@@ -104,79 +104,83 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
   }
 
   for (const record of attacks) {
-    if (!isQualifyingPlayerAttack(record)) continue;
+    if (!record || typeof record !== 'object') continue;
+    if (typeof record.attackerIndex !== 'number' || record.attackerIndex < 0) continue;
     if (!record.partySkillProcs) record.partySkillProcs = [];
 
     const attacker = allies?.[record.attackerIndex] || null;
+    const isHitRecord = isQualifyingPlayerAttack(record);
 
-    // ── Diverse Empowerment: +8% per buff type on attacker ──
-    if (active.has('diverseEmpowerment') && attacker) {
-      const buffCount = countBuffTypes(attacker);
-      if (buffCount >= 2) {
-        const bonusPct = buffCount * 0.08;
-        const bonus = Math.floor(record.damage * bonusPct);
-        if (bonus > 0) {
-          const target = enemies?.[record.targetIndex];
-          if (target && target.hp > 0) {
-            const capped = Math.min(bonus, target.hp - 1);
-            if (capped > 0) {
-              target.hp -= capped;
-              record.damage += capped;
-              record.partySkillProcs.push({
-                skillId: 'diverseEmpowerment', skillName: 'Diverse Empowerment',
-                type: 'bonusDamage', bonusDamage: capped
-              });
+    if (isHitRecord) {
+      // ── Diverse Empowerment: +8% per buff type on attacker ──
+      if (active.has('diverseEmpowerment') && attacker) {
+        const buffCount = countBuffTypes(attacker);
+        if (buffCount >= 2) {
+          const bonusPct = buffCount * 0.08;
+          const bonus = Math.floor(record.damage * bonusPct);
+          if (bonus > 0) {
+            const target = enemies?.[record.targetIndex];
+            if (target && target.hp > 0) {
+              const capped = Math.min(bonus, target.hp - 1);
+              if (capped > 0) {
+                target.hp -= capped;
+                record.damage += capped;
+                record.partySkillProcs.push({
+                  skillId: 'diverseEmpowerment', skillName: 'Diverse Empowerment',
+                  type: 'bonusDamage', bonusDamage: capped
+                });
+              }
             }
           }
         }
       }
-    }
 
-    // ── Radiant Aura: +15%/+30% team damage ──
-    if (active.has('radiantAura')) {
-      const creaturesAt3Plus = livingAllies(allies).filter(a => countBuffTypes(a) >= 3).length;
-      if (creaturesAt3Plus > 0) {
-        const bonusPct = creaturesAt3Plus >= 2 ? 0.30 : 0.15;
-        const bonus = Math.floor(record.damage * bonusPct);
-        if (bonus > 0) {
-          const target = enemies?.[record.targetIndex];
-          if (target && target.hp > 0) {
-            const capped = Math.min(bonus, target.hp - 1);
-            if (capped > 0) {
-              target.hp -= capped;
-              record.damage += capped;
-              record.partySkillProcs.push({
-                skillId: 'radiantAura', skillName: 'Radiant Aura',
-                type: 'bonusDamage', bonusDamage: capped
-              });
+      // ── Radiant Aura: +15%/+30% team damage ──
+      if (active.has('radiantAura')) {
+        const creaturesAt3Plus = livingAllies(allies).filter(a => countBuffTypes(a) >= 3).length;
+        if (creaturesAt3Plus > 0) {
+          const bonusPct = creaturesAt3Plus >= 2 ? 0.30 : 0.15;
+          const bonus = Math.floor(record.damage * bonusPct);
+          if (bonus > 0) {
+            const target = enemies?.[record.targetIndex];
+            if (target && target.hp > 0) {
+              const capped = Math.min(bonus, target.hp - 1);
+              if (capped > 0) {
+                target.hp -= capped;
+                record.damage += capped;
+                record.partySkillProcs.push({
+                  skillId: 'radiantAura', skillName: 'Radiant Aura',
+                  type: 'bonusDamage', bonusDamage: capped
+                });
+              }
             }
           }
         }
       }
-    }
 
-    // ── Arc Strike: chain to another enemy ──
-    if (arcLevel >= 1) {
-      applyArcStrikeTree({ record, attacker, enemies, combat, rng, arcLevel });
-    }
+      // ── Arc Strike: chain to another enemy ──
+      if (arcLevel >= 1) {
+        applyArcStrikeTree({ record, attacker, enemies, combat, rng, arcLevel });
+      }
 
-    // ── Debuff Master: random stat debuff on enemies hit by attacks ──
-    if (debuffChance > 0) {
-      for (const proc of [{ targetIndex: record.targetIndex, primary: true }, ...(record.partySkillProcs || []).filter(p => p.type === 'chainHit')]) {
-        const target = enemies?.[proc.targetIndex];
-        if (!target || target.hp <= 0) continue;
-        if (!rollProc(debuffChance, rng)) continue;
-        const { stat, delta } = applyRandomDebuff(target, rng);
-        if (delta !== 0) {
-          record.partySkillProcs.push({
-            skillId: 'debuffMaster',
-            skillName: 'Debuff Master',
-            type: 'stageChange',
-            targetSide: 'enemy',
-            targetIndex: proc.targetIndex,
-            stat,
-            delta
-          });
+      // ── Debuff Master: random stat debuff on enemies hit by attacks ──
+      if (debuffChance > 0) {
+        for (const proc of [{ targetIndex: record.targetIndex, primary: true }, ...(record.partySkillProcs || []).filter(p => p.type === 'chainHit')]) {
+          const target = enemies?.[proc.targetIndex];
+          if (!target || target.hp <= 0) continue;
+          if (!rollProc(debuffChance, rng)) continue;
+          const { stat, delta } = applyRandomDebuff(target, rng);
+          if (delta !== 0) {
+            record.partySkillProcs.push({
+              skillId: 'debuffMaster',
+              skillName: 'Debuff Master',
+              type: 'stageChange',
+              targetSide: 'enemy',
+              targetIndex: proc.targetIndex,
+              stat,
+              delta
+            });
+          }
         }
       }
     }
@@ -203,7 +207,7 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
     }
 
     // ── Check Pandemic on primary target kill ──
-    if (active.has('pandemic') && record.targetDefeated) {
+    if (isHitRecord && active.has('pandemic') && record.targetDefeated) {
       const target = enemies?.[record.targetIndex];
       if (target) {
         triggerPandemic(target, enemies, record, combat);

@@ -1069,7 +1069,8 @@ export class CombatCycleService {
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
       runPartySkills: this.gm.run.partySkills,
-      combat: this.gm.combat
+      combat: this.gm.combat,
+      rng
     });
 
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
@@ -1436,7 +1437,8 @@ export class CombatCycleService {
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
       runPartySkills: this.gm.run.partySkills,
-      combat: this.gm.combat
+      combat: this.gm.combat,
+      rng
     });
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
     const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);

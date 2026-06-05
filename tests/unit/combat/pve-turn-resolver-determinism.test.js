@@ -371,7 +371,7 @@ describe('shared PvE turn resolver', () => {
       allies: [creature({ id: 'hi', dex: 40, hp: 80, maxHp: 80 })],
       enemies: [enemy],
       moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
-      runPartySkills: ['erosion'],
+      runPartySkills: [{ id: 'buffMaster', level: 4 }],
       combat: {},
       itemBuffs: null,
     }, {
@@ -380,9 +380,10 @@ describe('shared PvE turn resolver', () => {
     });
 
     assert.equal(result.transcript.effectEvents[0]?.type, 'poison');
-    assert.equal(result.transcript.roundStartEvents[0]?.type, 'erosion');
+    assert.equal(result.transcript.roundStartEvents[0]?.type, 'buffMaster');
     assert.equal(result.transcript.enemyMpRegens[0]?.side, 'enemy');
-    assert.equal(result.transcript.stateSummary.enemies[0].statStages.atk, -2);
+    const buffStat = result.transcript.roundStartEvents[0].stat;
+    assert.equal(result.transcript.stateSummary.allies[0].statStages[buffStat], 1);
     assert.ok(result.nextCombat.enemies[0].hp < 90);
   });
 
@@ -574,6 +575,28 @@ describe('PvE combat rng injection', () => {
     });
 
     assert.deepEqual(resultA, resultB);
+  });
+
+  it('resolvePveTurn uses seeded rng for Buff Master round-start events', () => {
+    const run = randomValue => withMockRandom(randomValue, () => {
+      const allies = [creature({ id: 'hi', dex: 40, hp: 80, maxHp: 80 })];
+      const enemies = [creature({ id: 'mizu', element: 'water', hp: 90, maxHp: 90 })];
+      return resolvePveTurn({
+        allies,
+        enemies,
+        moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+        runPartySkills: [{ id: 'buffMaster', level: 1 }],
+        combat: {},
+        creatureParty: { active: allies, reserves: [] },
+        itemBuffs: null,
+      }, {
+        actionType: 'attack',
+        seed: 'buff-master-round-start-seed',
+        clone: false,
+      }).transcript.roundStartEvents;
+    });
+
+    assert.deepEqual(run(0.01), run(0.99));
   });
 
   it('shared attack resolver applies enemy self-sabotage before inline counters', () => {

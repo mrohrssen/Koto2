@@ -447,6 +447,7 @@ export function resolvePveTurn(snapshotInput, {
         enemies,
         runPartySkills,
         combat,
+        rng: turnRng,
       });
 
   if (checkAllDefeated(allies) || checkAllDefeated(enemies)) {

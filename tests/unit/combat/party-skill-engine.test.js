@@ -118,6 +118,29 @@ test('Debuff Master Lvl 5 can make an acting enemy debuff its own ally', async (
   assert.equal(enemies[event.targetIndex].statStages.atk, -1);
 });
 
+test('Buff Master Lvl 5 can buff an ally after a non-damage action', () => {
+  const attacks = [{
+    attackerIndex: 0,
+    category: 'heal',
+    healAmount: 20,
+    targetIndex: 0,
+    partySkillProcs: []
+  }];
+  const allies = [makeAlly(), makeAlly()];
+
+  applyAfterPlayerAttacks({
+    attacks,
+    allies,
+    enemies: [makeEnemy()],
+    runPartySkills: [{ id: 'buffMaster', level: 5 }],
+    combat: makeCombat(),
+    rng: () => 0.01
+  });
+
+  assert.equal(allies[0].statStages.atk, 1);
+  assert.ok(attacks[0].partySkillProcs.some(proc => proc.skillId === 'buffMaster'));
+});
+
 // ── countDebuffTypes ──
 
 test('countDebuffTypes counts negative stages and negative status effects', () => {

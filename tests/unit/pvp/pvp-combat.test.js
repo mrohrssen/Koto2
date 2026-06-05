@@ -30,6 +30,16 @@ function makeCreature(overrides = {}) {
   };
 }
 
+function withMockRandom(value, fn) {
+  const original = Math.random;
+  Math.random = typeof value === 'function' ? value : () => value;
+  try {
+    return fn();
+  } finally {
+    Math.random = original;
+  }
+}
+
 describe('buildTurnOrder', () => {
   it('sorts by effective dex descending before level', () => {
     const a1 = makeCreature({ level: 99, dex: 5, statStages: { atk: 0, def: 0, dex: 0 } });
@@ -243,13 +253,10 @@ describe('resolveRound', () => {
   it('applies Buff Master round-start skill for side A', () => {
     const combatA = {};
 
-    const origRandom = Math.random;
-    Math.random = () => 0.01;
-    const result = resolveRound(sideA, sideB, movesA, movesB, {
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
       partySkillsA: [{ id: 'buffMaster', level: 4 }],
       combatA
-    });
-    Math.random = origRandom;
+    }));
 
     assert.equal(sideA[0].statStages.atk, 1, 'Buff Master should buff side A ally atk');
     const buffEvents = result.roundStartEvents.filter(e => e.type === 'buffMaster');
@@ -259,13 +266,10 @@ describe('resolveRound', () => {
   it('applies Debuff Master hit debuff for side B', () => {
     const combatB = {};
 
-    const origRandom = Math.random;
-    Math.random = () => 0.01;
-    const result = resolveRound(sideA, sideB, movesA, movesB, {
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
       partySkillsB: [{ id: 'debuffMaster', level: 4 }],
       combatB
-    });
-    Math.random = origRandom;
+    }));
 
     assert.equal(sideA[0].statStages.atk, -1, 'Debuff Master should debuff side A target atk');
     const debuffProcs = result.attacks.flatMap(a => a.partySkillProcs || []).filter(p => p.skillId === 'debuffMaster');
@@ -275,12 +279,9 @@ describe('resolveRound', () => {
   it('applies Debuff Master self-sabotage from opposing party skills', () => {
     sideA.push(makeCreature({ id: 'a2', level: 5, hp: 100, maxHp: 100, mp: 20, maxMp: 20 }));
 
-    const origRandom = Math.random;
-    Math.random = () => 0.01;
-    const result = resolveRound(sideA, sideB, movesA, movesB, {
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
       partySkillsB: [{ id: 'debuffMaster', level: 5 }]
-    });
-    Math.random = origRandom;
+    }));
 
     const sabotage = result.attacks.find(a => a.type === 'debuffMasterSelfSabotage');
     assert.ok(sabotage, 'should produce a self-sabotage playback event');
@@ -290,19 +291,41 @@ describe('resolveRound', () => {
     assert.ok(typeof sabotage.playbackIndex === 'number', 'self-sabotage should preserve playback ordering');
   });
 
+  it('applies PvP self-sabotage before opposing counter KOs the actor', () => {
+    sideA = [
+      makeCreature({ id: 'a1', hp: 20, maxHp: 20, dex: 20, attack: 10 }),
+      makeCreature({ id: 'a2', hp: 100, maxHp: 100, dex: 1 })
+    ];
+    sideB = [makeCreature({ id: 'b1', hp: 500, maxHp: 500, dex: 1, attack: 200 })];
+    movesA = [{ creatureIndex: 0, moveId: 'slash', targetIndex: 0 }];
+    movesB = [];
+
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combatB: {}
+    }));
+
+    const sabotage = result.attacks.find(a => a.type === 'debuffMasterSelfSabotage');
+    const counter = result.attacks.find(a => a.type === 'counter');
+    assert.ok(sabotage, 'self-sabotage should resolve before the counter can KO the actor');
+    assert.ok(counter, 'counter should still resolve');
+    assert.equal(sabotage.side, 'sideA');
+    assert.equal(sabotage.targetIndex, 1);
+    assert.equal(sideA[1].statStages.atk, -1);
+    assert.equal(sideA[0].hp, 0);
+    assert.ok(sabotage.playbackIndex < counter.playbackIndex);
+  });
+
   it('applies round-start skills for both sides simultaneously', () => {
     const combatA = {};
     const combatB = {};
 
-    const origRandom = Math.random;
-    Math.random = () => 0.01;
-    const result = resolveRound(sideA, sideB, movesA, movesB, {
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
       partySkillsA: [{ id: 'buffMaster', level: 4 }],
       partySkillsB: [{ id: 'buffMaster', level: 4 }],
       combatA,
       combatB
-    });
-    Math.random = origRandom;
+    }));
 
     assert.equal(sideA[0].statStages.atk, 1, 'Side A Buff Master should buff side A');
     assert.equal(sideB[0].statStages.atk, 1, 'Side B Buff Master should buff side B');
@@ -315,9 +338,7 @@ describe('resolveRound', () => {
     sideB[0].hp = 500;
     sideB[0].maxHp = 500;
 
-    const origRandom = Math.random;
-    Math.random = () => 0.1;
-    try {
+    withMockRandom(0.1, () => {
       const result = resolveRound(sideA, sideB, movesA, movesB, {
         partySkillsA: [{ id: 'counterMaster', level: 1 }],
         combatA
@@ -331,21 +352,16 @@ describe('resolveRound', () => {
       const sideACounters = result.attacks.filter(a => a.type === 'counter' && a.side === 'sideA');
       assert.ok(sideACounters.length > 0, 'Side A should have inline counter attacks');
       assert.ok(typeof sideACounters[0].playbackIndex === 'number', 'counter should have playbackIndex');
-    } finally {
-      Math.random = origRandom;
-    }
+    });
   });
 
   it('tags roundStartEvents with correct pvpSide', () => {
     const combatA = {};
 
-    const origRandom = Math.random;
-    Math.random = () => 0.01;
-    const result = resolveRound(sideA, sideB, movesA, movesB, {
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
       partySkillsA: [{ id: 'buffMaster', level: 4 }],
       combatA
-    });
-    Math.random = origRandom;
+    }));
 
     const buffEvents = result.roundStartEvents.filter(e => e.type === 'buffMaster');
     for (const ev of buffEvents) {
@@ -423,5 +439,32 @@ describe('PvP action cursor resolution', () => {
     assert.equal(sideA[0].activeEffects[0].remainingTurns, 1);
     assert.equal(sideB[0].activeEffects[0].remainingTurns, 2);
     assert.equal(result.effectEvents.length, 1);
+  });
+
+  it('applies opposing self-sabotage in sequential PvP cursor actions', () => {
+    const sideA = [
+      makeCreature({ id: 'a', hp: 20, maxHp: 20, attack: 10 }),
+      makeCreature({ id: 'a-ally', hp: 100, maxHp: 100 })
+    ];
+    const sideB = [makeCreature({ id: 'b', hp: 500, maxHp: 500, attack: 200 })];
+
+    const result = withMockRandom(0.01, () => resolvePvpCursorAction({
+      sideA,
+      sideB,
+      cursor: { side: 'sideA', index: 0, opening: false },
+      action: { creatureIndex: 0, moveId: 'slash', targetIndex: 0 },
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combatB: {}
+    }));
+
+    const sabotage = result.attacks.find(a => a.type === 'debuffMasterSelfSabotage');
+    const counter = result.attacks.find(a => a.type === 'counter');
+    assert.ok(sabotage, 'cursor action should include opposing self-sabotage');
+    assert.ok(counter, 'cursor action should include opposing counter');
+    assert.equal(sabotage.side, 'sideA');
+    assert.equal(sabotage.targetIndex, 1);
+    assert.equal(sideA[1].statStages.atk, -1);
+    assert.equal(sideA[0].hp, 0);
+    assert.ok(sabotage.playbackIndex < counter.playbackIndex);
   });
 });
