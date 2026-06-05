@@ -10,6 +10,36 @@
 
 ---
 
+## Current Execution Handoff
+
+Updated: 2026-06-05.
+
+Worktree: `/Users/michiarohrssen/Documents/Claude/koto-dev/.worktrees/party-skill-trees`
+
+Completed and reviewed:
+- Task 1: Party Skill Tree Catalog And Helpers
+- Task 2: Save And PvP Team Migration
+- Task 3: Skill Master And NPC Reward Acquisition
+- Task 4: HP Master Max HP Sync And Recovery
+
+Implemented but not yet reviewed:
+- Task 5: Arc Strike Tree Combat
+  - Commit: `ffaa47c5 feat: replace arc strike tree combat`
+  - Worker verification passed:
+    - `node --test tests/unit/combat/party-skill-engine.test.js`
+    - `node --check src/game/combat/party-skill-engine.js`
+    - `node --check tests/unit/combat/party-skill-engine.test.js`
+
+Next agent should start here:
+1. Run Task 5 spec compliance review for `ffaa47c5`.
+2. Run Task 5 code quality review for `ffaa47c5`.
+3. If Task 5 review finds issues, fix them before Task 6.
+4. If Task 5 review passes, continue at Task 6: Counter Master Combat.
+
+Do not stage unrelated dirty generated files currently present in the worktree:
+- `creature-memory-test-user-separate.json`
+- `npc-memory-test-user-separate.json`
+
 ## File Structure
 
 - Modify `src/game/party-skills.js`: replace old individual catalog with tree catalog, display helpers, offer generation, selection, migration, and passive multiplier helpers.
@@ -32,7 +62,7 @@
 - Modify: `src/game/party-skills.js`
 - Modify: `tests/unit/game/party-skills.test.js`
 
-- [ ] **Step 1: Replace the party-skills unit tests with tree-model expectations**
+- [x] **Step 1: Replace the party-skills unit tests with tree-model expectations**
 
 Replace `tests/unit/game/party-skills.test.js` with:
 
@@ -160,7 +190,7 @@ describe('party skill trees', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run:
 
@@ -170,7 +200,7 @@ node --test tests/unit/game/party-skills.test.js
 
 Expected: FAIL with missing exports such as `PARTY_SKILL_TREES` or assertion failures from the old catalog.
 
-- [ ] **Step 3: Replace `src/game/party-skills.js` with the tree catalog and helper API**
+- [x] **Step 3: Replace `src/game/party-skills.js` with the tree catalog and helper API**
 
 Use this implementation as the new file body:
 
@@ -376,7 +406,7 @@ export function getXpMultiplier(runPartySkills) {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run:
 
@@ -386,7 +416,7 @@ node --test tests/unit/game/party-skills.test.js
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 /usr/bin/git add src/game/party-skills.js tests/unit/game/party-skills.test.js
@@ -400,7 +430,7 @@ Expected: PASS.
 - Modify: `src/routes/game/pvp.js`
 - Create: `tests/unit/game/party-skill-migration.test.js`
 
-- [ ] **Step 1: Write migration tests for runs and PvP teams**
+- [x] **Step 1: Write migration tests for runs and PvP teams**
 
 Create `tests/unit/game/party-skill-migration.test.js`:
 
@@ -455,7 +485,7 @@ describe('party skill migration integration', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run:
 
@@ -465,7 +495,7 @@ node --test tests/unit/game/party-skill-migration.test.js
 
 Expected: FAIL because `savePvpTeam()` still copies old skill entries.
 
-- [ ] **Step 3: Normalize manager run and saved PvP teams on load**
+- [x] **Step 3: Normalize manager run and saved PvP teams on load**
 
 In `src/game/manager-registry.js`, import `normalizePartySkills`:
 
@@ -497,7 +527,7 @@ if (Array.isArray(team?.partySkills)) {
 }
 ```
 
-- [ ] **Step 4: Normalize PvP team snapshots when saving**
+- [x] **Step 4: Normalize PvP team snapshots when saving**
 
 In `src/routes/game/pvp.js`, import `normalizePartySkills`:
 
@@ -511,7 +541,7 @@ Inside `savePvpTeam()`, after the `snapshot` object is created and before `refre
 snapshot.partySkills = normalizePartySkills(snapshot.partySkills || []);
 ```
 
-- [ ] **Step 5: Run migration tests**
+- [x] **Step 5: Run migration tests**
 
 Run:
 
@@ -521,7 +551,7 @@ node --test tests/unit/game/party-skill-migration.test.js
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 /usr/bin/git add src/game/manager-registry.js src/routes/game/pvp.js tests/unit/game/party-skill-migration.test.js
@@ -536,7 +566,7 @@ Expected: PASS.
 - Modify: `tests/unit/game/skill-master-service.test.js`
 - Modify: `tests/unit/routes/optimistic-run-routes.test.js`
 
-- [ ] **Step 1: Replace Skill Master service tests with level-increment expectations**
+- [x] **Step 1: Replace Skill Master service tests with level-increment expectations**
 
 In `tests/unit/game/skill-master-service.test.js`, replace imports from `PARTY_SKILLS_CATALOG` with `PARTY_SKILL_TREE_IDS`, and update the two behavior tests to:
 
@@ -570,7 +600,7 @@ In `tests/unit/game/skill-master-service.test.js`, replace imports from `PARTY_S
   });
 ```
 
-- [ ] **Step 2: Run the service test to verify it fails**
+- [x] **Step 2: Run the service test to verify it fails**
 
 Run:
 
@@ -580,7 +610,7 @@ node --test tests/unit/game/skill-master-service.test.js
 
 Expected: FAIL because stored offers are still raw old IDs and selection dedupes instead of incrementing.
 
-- [ ] **Step 3: Update `ExplorationService.getSkillMasterOffers()`**
+- [x] **Step 3: Update `ExplorationService.getSkillMasterOffers()`**
 
 In `src/game/services/exploration-service.js`, import:
 
@@ -612,7 +642,7 @@ const offered = (room.skillMaster.offered || [])
   .filter(Boolean);
 ```
 
-- [ ] **Step 4: Update `ExplorationService.chooseSkillMasterOffer()`**
+- [x] **Step 4: Update `ExplorationService.chooseSkillMasterOffer()`**
 
 In both initial-pick and room-pick selection paths, replace duplicate-push logic with:
 
@@ -628,7 +658,7 @@ const offeredIds = Array.isArray(pick.offered) ? pick.offered.map(o => typeof o 
 
 Use the same mapping for `room.skillMaster.offered`.
 
-- [ ] **Step 5: Update NPC battle reward routes**
+- [x] **Step 5: Update NPC battle reward routes**
 
 In `src/routes/game/run.js`, import `applyPartySkillChoice` and `normalizePartySkills`.
 
@@ -664,7 +694,7 @@ Replace duplicate-push logic with:
 gm.run.partySkills = applyPartySkillChoice(gm.run.partySkills || [], skillId);
 ```
 
-- [ ] **Step 6: Run acquisition tests**
+- [x] **Step 6: Run acquisition tests**
 
 Run:
 
@@ -674,7 +704,7 @@ node --test tests/unit/game/skill-master-service.test.js tests/unit/routes/optim
 
 Expected: PASS after updating route assertions that still expect `[{ id: 'momentum' }]` to use a tree entry such as `[{ id: 'buffMaster', level: 1 }]`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 /usr/bin/git add src/game/services/exploration-service.js src/routes/game/run.js tests/unit/game/skill-master-service.test.js tests/unit/routes/optimistic-run-routes.test.js
@@ -689,7 +719,7 @@ Expected: PASS after updating route assertions that still expect `[{ id: 'moment
 - Modify: `tests/unit/game/party-skills.test.js`
 - Modify: `tests/unit/game/skill-master-service.test.js`
 
-- [ ] **Step 1: Add tests for idempotent max HP sync and recovery scaling**
+- [x] **Step 1: Add tests for idempotent max HP sync and recovery scaling**
 
 Append to `tests/unit/game/party-skills.test.js`:
 
@@ -745,7 +775,7 @@ Add a recovery test to `tests/unit/game/skill-master-service.test.js`:
   });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -755,7 +785,7 @@ node --test tests/unit/game/party-skills.test.js tests/unit/game/skill-master-se
 
 Expected: FAIL because `syncPartySkillHpBonuses` does not exist and recovery is still 5%.
 
-- [ ] **Step 3: Add idempotent HP sync helpers**
+- [x] **Step 3: Add idempotent HP sync helpers**
 
 Append to `src/game/party-skills.js`:
 
@@ -798,7 +828,7 @@ export function syncPartySkillHpBonuses(party, runPartySkills) {
 }
 ```
 
-- [ ] **Step 4: Apply HP sync after skill selection and before room recovery**
+- [x] **Step 4: Apply HP sync after skill selection and before room recovery**
 
 In `src/game/services/exploration-service.js`, import `getPostCombatRecoveryMultiplier` and `syncPartySkillHpBonuses`.
 
@@ -827,7 +857,7 @@ After every `this.gm.run.partySkills = applyPartySkillChoice(...)` call in `choo
 syncPartySkillHpBonuses(this.gm.run.creatureParty, this.gm.run.partySkills);
 ```
 
-- [ ] **Step 5: Run HP tests**
+- [x] **Step 5: Run HP tests**
 
 Run:
 
@@ -837,7 +867,7 @@ node --test tests/unit/game/party-skills.test.js tests/unit/game/skill-master-se
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 /usr/bin/git add src/game/party-skills.js src/game/services/exploration-service.js tests/unit/game/party-skills.test.js tests/unit/game/skill-master-service.test.js
@@ -850,7 +880,7 @@ Expected: PASS.
 - Modify: `src/game/combat/party-skill-engine.js`
 - Modify: `tests/unit/combat/party-skill-engine.test.js`
 
-- [ ] **Step 1: Add Arc Strike tree tests**
+- [x] **Step 1: Add Arc Strike tree tests**
 
 Add these tests near the existing Arc Strike tests in `tests/unit/combat/party-skill-engine.test.js`:
 
@@ -928,7 +958,7 @@ test('Arc Strike Lvl 5 can keep bouncing after the second bounce', () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify failures**
+- [x] **Step 2: Run tests to verify failures**
 
 Run:
 
@@ -938,7 +968,7 @@ node --test tests/unit/combat/party-skill-engine.test.js
 
 Expected: FAIL because the engine still checks old `forkedArc` and `resonantArc` IDs.
 
-- [ ] **Step 3: Update party skill engine imports and level checks**
+- [x] **Step 3: Update party skill engine imports and level checks**
 
 In `src/game/combat/party-skill-engine.js`, replace the catalog import with:
 
@@ -958,7 +988,7 @@ export function toActivePartySkillIdSet(runPartySkills) {
 }
 ```
 
-- [ ] **Step 4: Replace Arc Strike bounce logic**
+- [x] **Step 4: Replace Arc Strike bounce logic**
 
 Inside `applyAfterPlayerAttacks()`, before the attack loop, add:
 
@@ -1027,7 +1057,7 @@ function applyArcStrikeTree({ record, attacker, enemies, combat, rng, arcLevel }
 
 Remove old `forkedArc`, `resonantArc`, `chainSurge`, `elementalCascade`, and `pandemic` logic from the chain block. These old skills are replaced by the new tree and should not fire.
 
-- [ ] **Step 5: Run Arc Strike tests**
+- [x] **Step 5: Run Arc Strike tests**
 
 Run:
 
@@ -1037,7 +1067,7 @@ node --test tests/unit/combat/party-skill-engine.test.js
 
 Expected: Existing old-skill tests for removed skills fail. Update those tests in the same file by deleting assertions for removed old IDs (`forkedArc`, `resonantArc`, `chainSurge`, `elementalCascade`, `pandemic`, `contagion`, `afflictionBurst`, `radiantAura`, `diverseEmpowerment`, `overflowVitality`, `sharedVigor`, `erosion`, `momentum`) and keeping only tests for new tree mechanics, count helpers, and regression playback.
 
-- [ ] **Step 6: Run the reduced combat engine test**
+- [x] **Step 6: Run the reduced combat engine test**
 
 Run:
 
@@ -1047,7 +1077,7 @@ node --test tests/unit/combat/party-skill-engine.test.js
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 /usr/bin/git add src/game/combat/party-skill-engine.js tests/unit/combat/party-skill-engine.test.js
