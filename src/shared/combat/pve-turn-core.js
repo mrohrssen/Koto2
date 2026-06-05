@@ -28,6 +28,7 @@ import {
 } from '../../game/combat/effects.js';
 import {
   applyAfterPlayerAttacks as applyPartySkillsAfterPlayerAttacks,
+  applyEnemySelfSabotage,
   checkAfflictionBurstCounter,
   computeInlineCounter,
   toActivePartySkillIdSet,
@@ -667,6 +668,7 @@ export function processInterleavedPvERound(
   const playerAttacks = [];
   const enemyAttacks = [];
   const inlineCounters = [];
+  const effectEvents = [];
   const xpEvents = [];
   const defeatedEnemyIndices = new Set();
   const pb = { n: 0 };
@@ -746,6 +748,14 @@ export function processInterleavedPvERound(
           (isAlly ? playerAttacks : enemyAttacks).push(atk);
 
           if (!isAlly && options.runPartySkills && options.combat) {
+            const sabotage = applyEnemySelfSabotage({
+              actingIndex: atk.attackerIndex,
+              enemies,
+              runPartySkills: options.runPartySkills,
+              rng
+            });
+            if (sabotage) effectEvents.push(sabotage);
+
             const counter = computeInlineCounter(atk, allies, enemies, options.runPartySkills, options.combat, rng);
             if (counter) {
               tagPlayback(counter, 'player');
@@ -800,6 +810,7 @@ export function processInterleavedPvERound(
     playerAttacks,
     enemyAttacks,
     inlineCounters,
+    effectEvents,
     allEnemiesDefeated: enemies.every(e => !e || e.hp <= 0),
     partySkillsAppliedInline: applyInlinePartySkills,
     xpEvents,
@@ -933,6 +944,14 @@ export function resolveSingleActorAction({
       segment.attacks.push(atk);
 
       if (!isAlly && runPartySkills && combat) {
+        const sabotage = applyEnemySelfSabotage({
+          actingIndex: atk.attackerIndex,
+          enemies: actorList,
+          runPartySkills,
+          rng
+        });
+        if (sabotage) segment.effectEvents.push(sabotage);
+
         const counter = computeInlineCounter(atk, allies, enemies, runPartySkills, combat, rng);
         if (counter) {
           counter.playbackIndex = playbackIndex++;

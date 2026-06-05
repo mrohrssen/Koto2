@@ -3,6 +3,7 @@ import { createPveTurnSnapshot } from './pve-turn-snapshot.js';
 import { tickEffects, resetStatStages } from '../../game/combat/effects.js';
 import {
   applyAfterEnemyAttacks,
+  applyEnemySelfSabotage,
   applyRoundStartSkills,
 } from '../../game/combat/party-skill-engine.js';
 import {
@@ -49,6 +50,20 @@ function tickAllEffectsForTurn(allies, enemies) {
 
 function checkAllDefeated(creatures = []) {
   return creatures.length === 0 || creatures.every(creature => !creature || creature.hp <= 0 || creature.befriended);
+}
+
+function collectEnemySelfSabotageEvents({ enemyAttacks, enemies, runPartySkills, rng }) {
+  const events = [];
+  for (const atk of enemyAttacks || []) {
+    const sabotage = applyEnemySelfSabotage({
+      actingIndex: atk.attackerIndex,
+      enemies,
+      runPartySkills,
+      rng
+    });
+    if (sabotage) events.push(sabotage);
+  }
+  return events;
 }
 
 function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackStart, rng }) {
@@ -459,6 +474,13 @@ export function resolvePveTurn(snapshotInput, {
   if (actionType === 'defend') {
     const defendResult = processDefendTurn(allies);
     const enemyResult = processEnemyTurn(enemies, allies, true, snapshot.itemBuffs || null, turnRng);
+    const sabotageEvents = collectEnemySelfSabotageEvents({
+      enemyAttacks: enemyResult.attacks || [],
+      enemies,
+      runPartySkills,
+      rng: turnRng,
+    });
+    effectEvents.push(...sabotageEvents);
     const counterAttacks = applyAfterEnemyAttacks({
       enemyAttacks: enemyResult.attacks || [],
       allies,
@@ -505,6 +527,9 @@ export function resolvePveTurn(snapshotInput, {
       awardKillXp,
     },
   );
+  if (Array.isArray(result.effectEvents) && result.effectEvents.length > 0) {
+    effectEvents.push(...result.effectEvents);
+  }
   const koResult = shouldProcessKoSwaps
     ? processKOSwapsForTurn(allies, snapshot.creatureParty)
     : { koSwaps: [], koRemovals: [] };

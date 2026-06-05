@@ -1097,13 +1097,6 @@ export class CombatCycleService {
     });
     const playerResult = resolvedTurn.transcript;
     playerResult.xpEvents = [...poisonXpEvents, ...(playerResult.xpEvents || [])];
-    effectEvents.push(...collectEnemySelfSabotageEvents({
-      enemyAttacks: playerResult.enemyAttacks || [],
-      enemies: this.gm.combat.enemies,
-      runPartySkills: this.gm.run.partySkills,
-      rng
-    }));
-
     // Interleaved combat applies party skills inside each player initiative slot
     // so chain kills can prevent later enemy turns. Keep this fallback for any
     // non-interleaved caller shape.
@@ -1467,12 +1460,6 @@ export class CombatCycleService {
       processKoSwaps: true,
     });
     const turnResult = resolvedTurn.transcript;
-    effectEvents.push(...collectEnemySelfSabotageEvents({
-      enemyAttacks: turnResult.enemyAttacks || [],
-      enemies: this.gm.combat.enemies,
-      runPartySkills: this.gm.run.partySkills,
-      rng
-    }));
     const koSwaps = turnResult.koSwaps || [];
     const koRemovals = turnResult.koRemovals || [];
     this.gm.combat.allies = this.gm.run.creatureParty.active;

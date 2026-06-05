@@ -576,6 +576,148 @@ describe('PvE combat rng injection', () => {
     assert.deepEqual(resultA, resultB);
   });
 
+  it('shared attack resolver applies enemy self-sabotage before inline counters', () => {
+    const allyMove = {
+      id: 'tap',
+      name: '叩く',
+      nameEn: 'Tap',
+      reading: 'たたく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 1,
+      mpCost: 0,
+    };
+    const enemyMove = {
+      id: 'poke',
+      name: '突く',
+      nameEn: 'Poke',
+      reading: 'つく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 1,
+      mpCost: 0,
+    };
+    const allies = [creature({
+      id: 'ally',
+      element: 'fire',
+      attack: 200,
+      defense: 20,
+      hp: 100,
+      maxHp: 100,
+      dex: 1,
+      moves: [allyMove],
+    })];
+    const enemies = [
+      creature({
+        id: 'e0',
+        element: 'wood',
+        attack: 1,
+        defense: 1,
+        hp: 20,
+        maxHp: 20,
+        dex: 50,
+        moves: [enemyMove],
+      }),
+      creature({
+        id: 'e1',
+        element: 'water',
+        hp: 100,
+        maxHp: 100,
+        dex: 0,
+        moves: [],
+      }),
+    ];
+
+    const result = resolvePveTurn({
+      allies,
+      enemies,
+      moveChoices: [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+      runPartySkills: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combat: {},
+      creatureParty: { active: allies, reserves: [] },
+      itemBuffs: null,
+      effectEvents: [],
+      roundStartEvents: [],
+    }, {
+      actionType: 'attack',
+      rng: constantRng(0.01),
+      clone: false,
+      processKoSwaps: false,
+    });
+
+    const sabotage = result.transcript.effectEvents.find(event => event.type === 'debuffMasterSelfSabotage');
+    assert.ok(sabotage, 'self-sabotage should resolve before the counter can KO the acting enemy');
+    assert.equal(sabotage.actingIndex, 0);
+    assert.equal(sabotage.targetIndex, 1);
+    assert.ok(enemies[1].statStages.atk <= -1);
+    assert.equal(enemies[0].hp, 0, 'counter should still KO the acting enemy afterward');
+  });
+
+  it('shared defend resolver applies enemy self-sabotage before counterattacks', () => {
+    const enemyMove = {
+      id: 'poke',
+      name: '突く',
+      nameEn: 'Poke',
+      reading: 'つく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 1,
+      mpCost: 0,
+    };
+    const allies = [creature({
+      id: 'ally',
+      element: 'fire',
+      attack: 200,
+      defense: 5,
+      hp: 500,
+      maxHp: 500,
+    })];
+    const enemies = [
+      creature({
+        id: 'e0',
+        element: 'wood',
+        attack: 40,
+        defense: 1,
+        hp: 20,
+        maxHp: 20,
+        moves: [enemyMove],
+      }),
+      creature({
+        id: 'e1',
+        element: 'water',
+        hp: 100,
+        maxHp: 100,
+        moves: [],
+      }),
+    ];
+
+    const result = resolvePveTurn({
+      allies,
+      enemies,
+      runPartySkills: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combat: {},
+      creatureParty: { active: allies, reserves: [] },
+      itemBuffs: null,
+      effectEvents: [],
+      roundStartEvents: [],
+    }, {
+      actionType: 'defend',
+      rng: constantRng(0.01),
+      clone: false,
+      processKoSwaps: false,
+    });
+
+    const sabotage = result.transcript.effectEvents.find(event => event.type === 'debuffMasterSelfSabotage');
+    assert.ok(sabotage, 'self-sabotage should resolve before defend counters can KO the acting enemy');
+    assert.equal(sabotage.actingIndex, 0);
+    assert.equal(sabotage.targetIndex, 1);
+    assert.equal(enemies[1].statStages.atk, -1);
+    assert.equal(enemies[0].hp, 0, 'counterattack should still KO the acting enemy afterward');
+  });
+
   it('active PvE cursor path produces identical transcripts with the same explicit rng', () => {
     const run = randomValue => withMockRandom(randomValue, () => {
       const gm = makeCursorGameManager();
