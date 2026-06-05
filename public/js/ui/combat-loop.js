@@ -563,6 +563,7 @@ async function runOptimisticKanjiKombatAnswer({
     throw new Error('Combat sync failed');
   }
   if (result?.kanjiStreakReward || waitForStreakRewardBanner) {
+    await syncKanjiKombatStreakRewardVisuals(result);
     void vfx.showKanjiKombatAnswerBanner(result?.kanjiAnswerCorrect, result?.kanjiStreakReward || null);
   }
 
@@ -1326,6 +1327,48 @@ function syncFinalState(result) {
   vfx.updateCreatureHpBars(result.creatureParty?.active, null);
 
   // No-op: PixiJS sprites don't leave stale inline transforms
+}
+
+async function syncKanjiKombatStreakRewardVisuals(result) {
+  if (!result?.kanjiStreakReward) return;
+
+  syncFinalState(result);
+
+  const active = result.creatureParty?.active || result.allies || [];
+  if (!Array.isArray(active) || active.length === 0) return;
+
+  const slots = Array.from(document.querySelectorAll('#player-formation .formation-slot'));
+  const renderedIds = slots.map(slot => slot.dataset.creatureId || '');
+  const activeIds = active.map(creature => creature?.id || '');
+  const rosterChanged = renderedIds.length !== activeIds.length
+    || renderedIds.some((id, index) => id !== activeIds[index]);
+
+  if (rosterChanged) {
+    await showFormation('player', active, { force: true });
+  } else {
+    vfx.updateCreatureHpBars(active, null);
+  }
+
+  const mgr = getSceneManager();
+  const scene = mgr.currentScene;
+  if (!mgr.transitioning
+    && scene instanceof BattleScene
+    && !scene.disposed
+    && !scene._exiting
+    && typeof scene.syncCreatures === 'function') {
+    try {
+      await scene.syncCreatures({
+        allies: active,
+        enemies: getGameState()?.combat?.enemies || result.enemies || [],
+      });
+    } catch (err) {
+      if (!(err instanceof SceneDisposedError)) {
+        console.error('[CombatLoop] failed to sync Kanji Kombat streak reward visuals', err);
+      }
+    }
+  }
+
+  vfx.syncStatusIconsFromResult({ ...result, allies: active });
 }
 
 async function playKanjiKombatNextWaveTransition(result) {

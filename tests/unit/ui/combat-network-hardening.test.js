@@ -306,6 +306,17 @@ describe('combat network hardening', () => {
     assert.match(combatVfxSource, /Wrong!/);
   });
 
+  it('syncs authoritative Kanji Kombat streak reward visuals before showing the reward banner', () => {
+    const optimisticKanjiSource = combatLoopSource.slice(
+      combatLoopSource.indexOf('async function runOptimisticKanjiKombatAnswer')
+    );
+    const rewardSyncIndex = optimisticKanjiSource.indexOf('await syncKanjiKombatStreakRewardVisuals(result)');
+    const bannerIndex = optimisticKanjiSource.indexOf('showKanjiKombatAnswerBanner(result?.kanjiAnswerCorrect, result?.kanjiStreakReward || null)');
+
+    assert.ok(rewardSyncIndex >= 0, 'optimistic streak rewards should sync visuals from the authoritative result');
+    assert.ok(bannerIndex > rewardSyncIndex, 'the reward banner should appear after the visual sync');
+  });
+
   it('keeps Kanji Kombat answer submissions wired to the optimistic playback path', () => {
     assert.match(
       combatLoopSource,
