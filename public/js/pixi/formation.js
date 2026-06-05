@@ -24,6 +24,7 @@ import {
   getBattlefieldSpriteScale,
   getBattlefieldShadowSpec,
 } from './battlefield-layout.js';
+import { clearAllStatusVfxForScene } from './status-vfx.js';
 
 const BATTLEFIELD_SLOT_COUNT = 3;
 const FORMATION_SPRITE_SIZE = 60;
@@ -319,12 +320,17 @@ function _syncPixiStatusLabels(ctx, side, index, keys, statStages) {
  * The creatures array submitted to showFormation is retained on the ctx so
  * uid-keyed storage can still answer legacy index-based queries.
  */
-function _getCreatureSprite(ctx, side, index) {
+function _getCreatureUid(ctx, side, index) {
   const input = ctx.lastFormationInput[side];
   const creatures = input?.creatures;
   if (!creatures || !creatures[index]) return null;
   const c = creatures[index];
-  const key = c.uid ?? `__idx_${index}_${c.id || ''}`;
+  return c.uid ?? `__idx_${index}_${c.id || ''}`;
+}
+
+function _getCreatureSprite(ctx, side, index) {
+  const key = _getCreatureUid(ctx, side, index);
+  if (!key) return null;
   return ctx.creatureSprites[side].get(key) || null;
 }
 
@@ -775,6 +781,10 @@ export function getCreatureSpriteForScene(scene, side, index) {
  */
 export async function animateKOForScene(scene, side, index) {
   if (!scene?.formation) return;
+  const uid = _getCreatureUid(scene.formation, side, index);
+  if (scene.statusVfx && uid) {
+    clearAllStatusVfxForScene(scene.statusVfx, side, uid);
+  }
   return _animateKO(scene.formation, side, index);
 }
 

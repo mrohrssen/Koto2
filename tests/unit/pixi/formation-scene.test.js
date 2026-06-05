@@ -127,6 +127,7 @@ let fakeAppState = {
     creatures: new FakeContainer(),
   },
 };
+const clearAllStatusVfxCalls = [];
 await mock.module('../../../public/js/pixi/app.js', {
   namedExports: { getApp: () => fakeAppState },
 });
@@ -207,6 +208,10 @@ await mock.module('../../../public/js/ui/event-popup.js', {
 await mock.module('../../../public/js/pixi/status-vfx.js', {
   namedExports: {
     createStatusVfxContext: (scene) => ({ scene, vfxByUid: scene?.vfxByUid ?? new Map() }),
+    clearAllStatusVfxForScene: (ctx, side, uid) => {
+      clearAllStatusVfxCalls.push({ ctx, side, uid });
+      ctx?.vfxByUid?.delete(uid);
+    },
   },
 });
 
@@ -827,6 +832,34 @@ describe('scene-facing sprite-lookup variants null-scene guards', () => {
 
     assert.equal(sprite.alpha, 0);
     assert.equal(sprite._shadow.alpha, 0);
+  });
+
+  it('animateKOForScene clears ongoing status VFX for the KO target uid', async () => {
+    clearAllStatusVfxCalls.length = 0;
+
+    const ctx = makeSceneCtx();
+    const creature = { uid: 'taunted-enemy', id: 'hi', hp: 10 };
+    const sprite = await spawnFormationSprite(ctx, 'enemy', creature, 0, {
+      slotI: 1,
+      skipEnter: true,
+    });
+    ctx.lastFormationInput.enemy = { creatures: [creature], opts: {} };
+
+    const statusVfx = {
+      vfxByUid: new Map([
+        ['taunted-enemy', { taunt: { tag: 'ring' } }],
+        ['other-enemy', { taunt: { tag: 'keep' } }],
+      ]),
+    };
+
+    await animateKOForScene({ formation: ctx, statusVfx }, 'enemy', 0);
+
+    assert.equal(sprite.alpha, 0);
+    assert.deepEqual(clearAllStatusVfxCalls, [
+      { ctx: statusVfx, side: 'enemy', uid: 'taunted-enemy' },
+    ]);
+    assert.equal(statusVfx.vfxByUid.has('taunted-enemy'), false);
+    assert.ok(statusVfx.vfxByUid.get('other-enemy')?.taunt);
   });
 
   it('showActiveGlowForScene / clearActiveGlowForScene no-op when scene.formation is missing', () => {
