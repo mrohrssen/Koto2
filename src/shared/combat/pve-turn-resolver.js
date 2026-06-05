@@ -3,6 +3,7 @@ import { createPveTurnSnapshot } from './pve-turn-snapshot.js';
 import { tickEffects, resetStatStages } from '../../game/combat/effects.js';
 import {
   applyAfterEnemyAttacks,
+  applyEnemySelfSabotage,
   applyRoundStartSkills,
 } from '../../game/combat/party-skill-engine.js';
 import {
@@ -51,7 +52,21 @@ function checkAllDefeated(creatures = []) {
   return creatures.length === 0 || creatures.every(creature => !creature || creature.hp <= 0 || creature.befriended);
 }
 
-function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackStart, rng }) {
+function collectEnemySelfSabotageEvents({ enemyAttacks, enemies, runPartySkills, rng }) {
+  const events = [];
+  for (const atk of enemyAttacks || []) {
+    const sabotage = applyEnemySelfSabotage({
+      actingIndex: atk.attackerIndex,
+      enemies,
+      runPartySkills,
+      rng
+    });
+    if (sabotage) events.push(sabotage);
+  }
+  return events;
+}
+
+function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackStart, rng, xpRng = rng, awardKillXp = null }) {
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
   const actor = cursor.side === 'ally'
@@ -92,6 +107,8 @@ function resolveCurrentPveCursorAction({ snapshot, cursor, moveChoice, playbackS
     combat: snapshot.combat || null,
     playbackStart,
     rng,
+    xpRng,
+    awardKillXp,
   });
 
   const combat = snapshot.combat || {};
@@ -176,7 +193,9 @@ export function resolvePveCursorTurn(snapshotInput, {
   actionType = 'attack',
   seed,
   rng,
+  xpRng,
   clone = true,
+  awardKillXp = null,
 } = {}) {
   if (actionType !== 'attack') {
     throw new Error(`Unsupported cursor action: ${actionType}`);
@@ -184,6 +203,7 @@ export function resolvePveCursorTurn(snapshotInput, {
 
   const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
   const turnRng = getTurnRng({ rng, seed });
+  const turnXpRng = typeof xpRng === 'function' ? xpRng : turnRng;
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
   const combat = snapshot.combat || {};
@@ -200,6 +220,8 @@ export function resolvePveCursorTurn(snapshotInput, {
     moveChoice: submittedChoice,
     playbackStart,
     rng: turnRng,
+    xpRng: turnXpRng,
+    awardKillXp,
   });
   actionSegments.push(...firstResult.actionSegments);
   playbackStart = firstResult.playbackNext || actionSegments.length;
@@ -216,6 +238,8 @@ export function resolvePveCursorTurn(snapshotInput, {
       moveChoice: null,
       playbackStart,
       rng: turnRng,
+      xpRng: turnXpRng,
+      awardKillXp,
     });
     actionSegments.push(...enemyResult.actionSegments);
     playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
@@ -272,10 +296,14 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
     targetIndex = snapshotInput?.targetIndex ?? 0,
     seed,
     rng,
+    xpRng,
     clone = true,
+    awardKillXp = null,
+    deferKillXp = false,
   } = options;
   const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
   const turnRng = getTurnRng({ rng, seed });
+  const turnXpRng = typeof xpRng === 'function' ? xpRng : turnRng;
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
   const combat = snapshot.combat || {};
@@ -306,8 +334,12 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
         itemBuffs: snapshot.itemBuffs || null,
         creatureParty: snapshot.creatureParty || null,
         metaMults: snapshot.metaMults || null,
+        runPartySkills: snapshot.runPartySkills || [],
+        awardKillXp,
         playbackStart,
         rng: turnRng,
+        xpRng: turnXpRng,
+        deferKillXp,
       })
     : resolveNoopActorAction({
         actorSide: 'ally',
@@ -340,6 +372,7 @@ export function resolveKanjiKombatAnswerTurn(snapshotInput, options = {}) {
       moveChoice: null,
       playbackStart,
       rng: turnRng,
+      xpRng: turnXpRng,
     });
     actionSegments.push(...enemyResult.actionSegments);
     playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
@@ -395,6 +428,7 @@ export function resolvePveTurn(snapshotInput, {
   actionType = 'attack',
   seed,
   rng,
+  xpRng,
   clone = true,
   awardKillXp = null,
   processKoSwaps = null,
@@ -408,6 +442,7 @@ export function resolvePveTurn(snapshotInput, {
         actionType: resolvedActionType,
         seed: envelope.seed ?? seed,
         rng: envelope.rng ?? rng,
+        xpRng: envelope.xpRng ?? xpRng,
         clone: envelope.clone ?? clone,
         awardKillXp: envelope.awardKillXp ?? awardKillXp,
         processKoSwaps: envelope.processKoSwaps ?? processKoSwaps,
@@ -417,6 +452,7 @@ export function resolvePveTurn(snapshotInput, {
 
   const snapshot = createPveTurnSnapshot(snapshotInput || {}, { clone });
   const turnRng = getTurnRng({ rng, seed });
+  const turnXpRng = typeof xpRng === 'function' ? xpRng : turnRng;
   const allies = snapshot.allies || [];
   const enemies = snapshot.enemies || [];
   const shouldProcessKoSwaps = processKoSwaps ?? actionType === 'defend';
@@ -432,6 +468,7 @@ export function resolvePveTurn(snapshotInput, {
         enemies,
         runPartySkills,
         combat,
+        rng: turnRng,
       });
 
   if (checkAllDefeated(allies) || checkAllDefeated(enemies)) {
@@ -459,6 +496,13 @@ export function resolvePveTurn(snapshotInput, {
   if (actionType === 'defend') {
     const defendResult = processDefendTurn(allies);
     const enemyResult = processEnemyTurn(enemies, allies, true, snapshot.itemBuffs || null, turnRng);
+    const sabotageEvents = collectEnemySelfSabotageEvents({
+      enemyAttacks: enemyResult.attacks || [],
+      enemies,
+      runPartySkills,
+      rng: turnRng,
+    });
+    effectEvents.push(...sabotageEvents);
     const counterAttacks = applyAfterEnemyAttacks({
       enemyAttacks: enemyResult.attacks || [],
       allies,
@@ -502,9 +546,13 @@ export function resolvePveTurn(snapshotInput, {
       runPartySkills,
       combat,
       rng: turnRng,
+      xpRng: turnXpRng,
       awardKillXp,
     },
   );
+  if (Array.isArray(result.effectEvents) && result.effectEvents.length > 0) {
+    effectEvents.push(...result.effectEvents);
+  }
   const koResult = shouldProcessKoSwaps
     ? processKOSwapsForTurn(allies, snapshot.creatureParty)
     : { koSwaps: [], koRemovals: [] };

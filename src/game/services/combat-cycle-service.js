@@ -29,6 +29,7 @@ import {
   applyPartySkillsAfterPlayerAttacks,
   applyAfterEnemyAttacks,
   applyRoundStartSkills,
+  applyEnemySelfSabotage,
   shouldTriggerBefriendQuiz,
   generateBefriendQuiz,
   processBefriendQuizAnswer,
@@ -86,6 +87,28 @@ import { applyDebugSuperAttack } from '../debug-super-attack.js';
 
 function createServerSeed() {
   return randomBytes(16).toString('hex');
+}
+
+function getXpRng(options = {}, fallbackRng = Math.random) {
+  if (typeof options.xpRng === 'function') return options.xpRng;
+  if (typeof options.verifiedSeed === 'string' && options.verifiedSeed.length > 0) {
+    return createSeededRng(`${options.verifiedSeed}:xp`);
+  }
+  return fallbackRng;
+}
+
+function collectEnemySelfSabotageEvents({ enemyAttacks, enemies, runPartySkills, rng = Math.random }) {
+  const events = [];
+  for (const atk of enemyAttacks || []) {
+    const sabotage = applyEnemySelfSabotage({
+      actingIndex: atk.attackerIndex,
+      enemies,
+      runPartySkills,
+      rng
+    });
+    if (sabotage) events.push(sabotage);
+  }
+  return events;
 }
 
 function createCombatId() {
@@ -482,6 +505,7 @@ export class CombatCycleService {
       rng: createSeededRng(envelope.seed),
       verifiedSeed: envelope.seed,
       suppressBarks: usesSharedPveCorePrediction,
+      deferXpAwards: usesSharedPveCorePrediction,
     });
     optimistic.stateVersion += 1;
     optimistic.nextTurnSeed = createServerSeed();
@@ -510,7 +534,7 @@ export class CombatCycleService {
     return response;
   }
 
-  _collectPoisonKoXpEvents(effectEvents, metaMults) {
+  _collectPoisonKoXpEvents(effectEvents, metaMults, rng = Math.random) {
     const xpEvents = [];
     const defeatedEnemyIndices = new Set();
     for (const event of effectEvents || []) {
@@ -530,10 +554,44 @@ export class CombatCycleService {
         this.gm.run.itemBuffs?.xpMultiplier,
         this.gm.run.itemBuffs?.xpBalanceStacks,
         metaMults,
-        this.gm.run.itemBuffs
+        this.gm.run.itemBuffs,
+        this.gm.run.partySkills,
+        rng
       );
       xpEvents.push({ enemyId: enemy.id, enemyIndex: event.targetIndex, enemyName: enemy.nameEn, ...xpEvent });
     }
+    return xpEvents;
+  }
+
+  _collectDeferredKillXpEvents(attacks, metaMults, rng = Math.random) {
+    const xpEvents = [];
+    const defeatedEnemyIndices = new Set();
+
+    const visit = (record) => {
+      if (!record || typeof record !== 'object') return;
+      if (record.targetDefeated === true && typeof record.targetIndex === 'number') {
+        const enemyIndex = record.targetIndex;
+        const enemy = this.gm.combat.enemies?.[enemyIndex];
+        if (enemy && !defeatedEnemyIndices.has(enemyIndex)) {
+          defeatedEnemyIndices.add(enemyIndex);
+          const xpEvent = awardKillXp(
+            this.gm.run.creatureParty,
+            enemy.level,
+            this.gm.run.itemBuffs?.xpMultiplier,
+            this.gm.run.itemBuffs?.xpBalanceStacks,
+            metaMults,
+            this.gm.run.itemBuffs,
+            this.gm.run.partySkills,
+            rng
+          );
+          xpEvents.push({ enemyId: enemy.id, enemyIndex, enemyName: enemy.nameEn, ...xpEvent });
+        }
+      }
+      for (const proc of record.partySkillProcs || []) visit(proc);
+      for (const proc of record.procs || []) visit(proc);
+    };
+
+    for (const attack of attacks || []) visit(attack);
     return xpEvents;
   }
 
@@ -615,13 +673,14 @@ export class CombatCycleService {
     switch (actionType) {
       case 'attack':  return this._handleCreatureAttackTurn(effectEvents, moveChoices, options);
       case 'defend':  return this._handleCreatureDefendTurn(effectEvents, options);
-      case 'befriend': return this._handleCreatureBefriendTurn(effectEvents);
+      case 'befriend': return this._handleCreatureBefriendTurn(effectEvents, options);
       default: throw new Error(`Unknown action: ${actionType}`);
     }
   }
 
   _resolveCurrentPveCursor(moveChoice = null, playbackStart = 0, options = {}) {
     const rng = typeof options.rng === 'function' ? options.rng : Math.random;
+    const xpRng = getXpRng(options, rng);
     const cursor = this.gm.combat.actionCursor;
     if (!cursor) throw new Error('No active action cursor');
 
@@ -663,7 +722,9 @@ export class CombatCycleService {
       runPartySkills: this.gm.run?.partySkills || null,
       combat: this.gm.combat,
       playbackStart,
-      rng
+      rng,
+      xpRng,
+      deferKillXp: options.deferXpAwards === true
     });
 
     this.gm.combat.actionCount = (this.gm.combat.actionCount || 0) + 1;
@@ -710,11 +771,16 @@ export class CombatCycleService {
 
   _handleCreatureActionCursorTurn(moveChoices = [], options = {}) {
     const rng = typeof options.rng === 'function' ? options.rng : Math.random;
+    const xpRng = getXpRng(options, rng);
     const submittedChoice = moveChoices[0] || null;
     const actionSegments = [];
     let playbackStart = 0;
 
-    const firstResult = this._resolveCurrentPveCursor(submittedChoice, playbackStart, { rng });
+    const firstResult = this._resolveCurrentPveCursor(submittedChoice, playbackStart, {
+      rng,
+      xpRng,
+      deferXpAwards: options.deferXpAwards === true,
+    });
     actionSegments.push(...firstResult.actionSegments);
     playbackStart = firstResult.playbackNext || actionSegments.length;
 
@@ -724,7 +790,11 @@ export class CombatCycleService {
       !checkAllDefeated(this.gm.combat.enemies) &&
       !checkAllDefeated(this.gm.combat.allies)
     ) {
-      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, { rng });
+      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, {
+        rng,
+        xpRng,
+        deferXpAwards: options.deferXpAwards === true,
+      });
       actionSegments.push(...enemyResult.actionSegments);
       playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
     }
@@ -739,6 +809,13 @@ export class CombatCycleService {
     const mpRegens = actionSegments.flatMap(segment => segment.mpRegens || []);
     const xpEvents = actionSegments.flatMap(segment => segment.xpEvents || []);
     const counterAttacks = actionSegments.flatMap(segment => segment.counterAttacks || []);
+    if (options.deferXpAwards === true) {
+      xpEvents.push(...this._collectDeferredKillXpEvents(
+        actionSegments.flatMap(segment => segment.actor.side === 'ally' ? segment.attacks : []),
+        this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+        xpRng,
+      ));
+    }
 
     const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(
       this.gm.combat.allies,
@@ -889,7 +966,7 @@ export class CombatCycleService {
     };
   }
 
-  resolveKanjiKombatCursorAction({ correct, targetIndex = 0, rng = Math.random } = {}) {
+  resolveKanjiKombatCursorAction({ correct, targetIndex = 0, rng = Math.random, xpRng = rng, deferXpAwards = false } = {}) {
     const cursor = this.gm.combat?.actionCursor;
     if (!this.gm.run || this.gm.run.mode !== 'kanjiKombat') {
       throw new Error('Not in Kanji Kombat');
@@ -918,8 +995,11 @@ export class CombatCycleService {
           itemBuffs: this.gm.run.itemBuffs,
           creatureParty: this.gm.run.creatureParty,
           metaMults: this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
-          rng,
+          runPartySkills: this.gm.run.partySkills,
           awardKillXp,
+          rng,
+          xpRng,
+          deferKillXp: deferXpAwards === true,
         })
       : resolveNoopActorAction({
           actorSide: 'ally',
@@ -943,15 +1023,22 @@ export class CombatCycleService {
       !checkAllDefeated(this.gm.combat.enemies) &&
       !checkAllDefeated(this.gm.combat.allies)
     ) {
-      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, { rng });
+      const enemyResult = this._resolveCurrentPveCursor(null, playbackStart, { rng, xpRng });
       result.actionSegments.push(...enemyResult.actionSegments);
       playbackStart = enemyResult.playbackNext || playbackStart + enemyResult.actionSegments.length;
     }
 
-    return this._finalizeKanjiKombatActionResult(result);
+    const deferredXpEvents = deferXpAwards === true
+      ? this._collectDeferredKillXpEvents(
+          result.actionSegments?.flatMap(segment => segment.actor.side === 'ally' ? segment.attacks : []) || [],
+          this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+          xpRng,
+        )
+      : [];
+    return this._finalizeKanjiKombatActionResult(result, deferredXpEvents);
   }
 
-  _finalizeKanjiKombatActionResult(result) {
+  _finalizeKanjiKombatActionResult(result, deferredXpEvents = []) {
     const actionSegments = result.actionSegments || [];
     const flatPlayerAttacks = actionSegments.flatMap(segment =>
       segment.actor.side === 'ally' ? segment.attacks : []
@@ -959,7 +1046,10 @@ export class CombatCycleService {
     const flatEnemyAttacks = actionSegments.flatMap(segment =>
       segment.actor.side === 'enemy' ? segment.attacks : []
     );
-    const xpEvents = actionSegments.flatMap(segment => segment.xpEvents || []);
+    const xpEvents = [
+      ...actionSegments.flatMap(segment => segment.xpEvents || []),
+      ...deferredXpEvents,
+    ];
     const { koSwaps: rawKoSwaps, koRemovals: rawKoRemovals } = processKOSwaps(
       this.gm.run.creatureParty.active,
       this.gm.run.creatureParty
@@ -1047,19 +1137,22 @@ export class CombatCycleService {
    */
   _handleCreatureAttackTurn(effectEvents, moveChoices, options = {}) {
     const rng = typeof options.rng === 'function' ? options.rng : Math.random;
+    const xpRng = getXpRng(options, rng);
+    const deferXpAwards = options.deferXpAwards === true;
     // New player move round — each creature may try はなす again
     this.gm.combat.befriendAttemptedSlots = {};
 
-    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+    // Party skills: round-start
     const roundStartEvents = applyRoundStartSkills({
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
       runPartySkills: this.gm.run.partySkills,
-      combat: this.gm.combat
+      combat: this.gm.combat,
+      rng
     });
 
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
-    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);
+    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults, xpRng);
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('attack', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 
@@ -1077,13 +1170,20 @@ export class CombatCycleService {
     }, {
       actionType: 'attack',
       rng,
+      xpRng,
       clone: false,
-      awardKillXp,
+      awardKillXp: deferXpAwards ? null : awardKillXp,
       processKoSwaps: false,
     });
     const playerResult = resolvedTurn.transcript;
     playerResult.xpEvents = [...poisonXpEvents, ...(playerResult.xpEvents || [])];
-
+    if (deferXpAwards) {
+      playerResult.xpEvents.push(...this._collectDeferredKillXpEvents(
+        playerResult.attacks || [],
+        metaMults,
+        xpRng,
+      ));
+    }
     // Interleaved combat applies party skills inside each player initiative slot
     // so chain kills can prevent later enemy turns. Keep this fallback for any
     // non-interleaved caller shape.
@@ -1416,17 +1516,19 @@ export class CombatCycleService {
    */
   _handleCreatureDefendTurn(effectEvents, options = {}) {
     const rng = typeof options.rng === 'function' ? options.rng : Math.random;
+    const xpRng = getXpRng(options, rng);
     this.gm.combat.befriendAttemptedSlots = {};
 
-    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+    // Party skills: round-start
     const roundStartEvents = applyRoundStartSkills({
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
       runPartySkills: this.gm.run.partySkills,
-      combat: this.gm.combat
+      combat: this.gm.combat,
+      rng
     });
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
-    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);
+    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults, xpRng);
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('defend', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 
@@ -1443,6 +1545,7 @@ export class CombatCycleService {
     }, {
       actionType: 'defend',
       rng,
+      xpRng,
       clone: false,
       processKoSwaps: true,
     });
@@ -1503,7 +1606,9 @@ export class CombatCycleService {
    * @returns {Object} Combat cycle result
    * @private
    */
-  _handleCreatureBefriendTurn(effectEvents) {
+  _handleCreatureBefriendTurn(effectEvents, options = {}) {
+    const rng = typeof options.rng === 'function' ? options.rng : Math.random;
+    const xpRng = getXpRng(options, rng);
     // Boss can only be befriended on rematch (after first defeat)
     if (this.gm.combat.isBoss) {
       const bossId = this.gm.combat.enemies?.[0]?.id;
@@ -1522,15 +1627,16 @@ export class CombatCycleService {
       }
     }
 
-    // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+    // Party skills: round-start
     const roundStartEvents = applyRoundStartSkills({
       allies: this.gm.combat.allies,
       enemies: this.gm.combat.enemies,
       runPartySkills: this.gm.run.partySkills,
-      combat: this.gm.combat
+      combat: this.gm.combat,
+      rng
     });
     const metaMults = this.gm.run.crestMults || { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 };
-    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults);
+    const poisonXpEvents = this._collectPoisonKoXpEvents(effectEvents, metaMults, xpRng);
     const poisonTerminal = this._finishPoisonTerminalIfNeeded('befriend', effectEvents, roundStartEvents, poisonXpEvents);
     if (poisonTerminal) return poisonTerminal;
 
@@ -1568,6 +1674,11 @@ export class CombatCycleService {
 
     // Enemy phase
     const enemyResult = processEnemyTurn(this.gm.combat.enemies, this.gm.combat.allies, false, this.gm.run.itemBuffs);
+    effectEvents.push(...collectEnemySelfSabotageEvents({
+      enemyAttacks: enemyResult.attacks || [],
+      enemies: this.gm.combat.enemies,
+      runPartySkills: this.gm.run.partySkills
+    }));
 
     // Party skills: counter attacks
     const counterAttacks = applyAfterEnemyAttacks({
@@ -1706,6 +1817,11 @@ export class CombatCycleService {
         false,
         this.gm.run.itemBuffs
       );
+      const effectEvents = collectEnemySelfSabotageEvents({
+        enemyAttacks: enemyResult.attacks || [],
+        enemies: this.gm.combat.enemies,
+        runPartySkills: this.gm.run.partySkills
+      });
 
       // Handle KO'd allies after enemy attack
       processKOSwaps(this.gm.combat.allies, this.gm.run.creatureParty);
@@ -1724,6 +1840,7 @@ export class CombatCycleService {
         swapped: true,
         freeSwap: false,
         enemyAttacks: enemyResult.attacks,
+        effectEvents,
         combatEnded: allAlliesKO,
         victory: false,
         creatureParty: party,
@@ -2012,6 +2129,11 @@ export class CombatCycleService {
     const combat = this.gm.combat;
     const run = this.gm.run;
     const enemyResult = processEnemyTurn(combat.enemies, combat.allies, false, run?.itemBuffs);
+    const effectEvents = collectEnemySelfSabotageEvents({
+      enemyAttacks: enemyResult.attacks || [],
+      enemies: combat.enemies,
+      runPartySkills: run?.partySkills
+    });
     const { koSwaps: rawSwaps, koRemovals: rawRemovals } = processKOSwaps(combat.allies, run.creatureParty);
     const koSwaps = rawSwaps.map(s => ({ slot: s.index, replacement: s.replacement.nameEn }));
     const koRemovals = rawRemovals.map(r => ({ slot: r.index, name: r.name }));
@@ -2025,6 +2147,7 @@ export class CombatCycleService {
 
     return {
       enemyAttacks: enemyResult.attacks || [],
+      effectEvents,
       koSwaps,
       koRemovals,
       combatEnded,

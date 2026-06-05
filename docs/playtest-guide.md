@@ -185,7 +185,7 @@ await page.evaluate(async () => {
 **Expected screen:**
 - Area background with Cid NPC visible
 - Narration: "Each run you can get skills to make your party stronger."
-- Three party skill cards below (e.g., Retaliation Strike, Arc Strike, Shared Vigor)
+- Three party skill cards below (e.g., Counter Master - Lvl. 1, Arc Strike - Lvl. 1, Buff Master - Lvl. 1)
 
 **Interactions:**
 1. Dismiss Cid narration (click outside)

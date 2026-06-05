@@ -6,6 +6,7 @@ import {
   executeSlotMoveTurn,
   resolveSingleActorAction,
   computeInlineCounter,
+  applyEnemySelfSabotage,
   checkAfflictionBurstCounter
 } from '../game/services/creature-combat-service.js';
 import { processKOSwaps, checkAllDefeated } from '../game/combat/resolution.js';
@@ -86,7 +87,7 @@ function winnerForSides(sideA, sideB) {
 }
 
 function remapSegmentForPvp(segment, side) {
-  const remapAttack = atk => ({ ...atk, side });
+  const remapAttack = atk => ({ ...atk, side: atk.side || side });
   return {
     ...segment,
     actor: { ...segment.actor, side },
@@ -108,7 +109,7 @@ function flattenSegments(segments) {
     attacks: segments.flatMap(segment => [
       ...(segment.attacks || []),
       ...(segment.counterAttacks || [])
-    ]),
+    ]).sort((a, b) => (a.playbackIndex ?? 0) - (b.playbackIndex ?? 0)),
     effectEvents: segments.flatMap(segment => segment.effectEvents || []),
     mpRegens: segments.flatMap(segment => segment.mpRegens || []),
     xpEvents: segments.flatMap(segment => segment.xpEvents || [])
@@ -134,16 +135,39 @@ export function resolvePvpCursorAction({
   }
 
   const isA = cursor.side === 'sideA';
+  const attackerSide = isA ? sideA : sideB;
+  const defenderSide = isA ? sideB : sideA;
+  const defenderPartySkills = isA ? partySkillsB : partySkillsA;
+  const defenderCombat = isA ? combatB : combatA;
+  let selfSabotageApplied = false;
   const result = resolveSingleActorAction({
     actorSide: 'ally',
     actorIndex: cursor.index,
-    allies: isA ? sideA : sideB,
-    enemies: isA ? sideB : sideA,
+    allies: attackerSide,
+    enemies: defenderSide,
     choices: [action],
     creatureParty: isA ? partyA : partyB,
     runPartySkills: isA ? partySkillsA : partySkillsB,
     combat: isA ? combatA : combatB,
-    playbackStart
+    playbackStart,
+    onActionRecord(atk) {
+      const responses = [];
+      if (defenderPartySkills && !selfSabotageApplied) {
+        selfSabotageApplied = true;
+        const sabotage = applyEnemySelfSabotage({
+          actingIndex: atk.attackerIndex,
+          enemies: attackerSide,
+          runPartySkills: defenderPartySkills
+        });
+        if (sabotage) responses.push({ ...sabotage, side: cursor.side });
+      }
+
+      if (defenderPartySkills && defenderCombat) {
+        const counter = computeInlineCounter(atk, defenderSide, attackerSide, defenderPartySkills, defenderCombat);
+        if (counter) responses.push({ ...counter, side: isA ? 'sideB' : 'sideA' });
+      }
+      return responses;
+    }
   });
 
   const actionSegments = result.actionSegments.map(segment => remapSegmentForPvp(segment, cursor.side));
@@ -243,7 +267,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     pvpSide: e.targetSide === 'ally' ? 'sideA' : 'sideB'
   }));
 
-  // Party skills: round-start (Erosion, Momentum, Overflow Vitality)
+  // Party skills: round-start
   const roundStartEventsA = (partySkillsA && combatA)
     ? applyRoundStartSkills({ allies: sideA, enemies: sideB, runPartySkills: partySkillsA, combat: combatA })
     : [];
@@ -309,15 +333,29 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
     const defenderPartySkills = isA ? partySkillsB : partySkillsA;
     const defenderCombat = isA ? combatB : combatA;
     const defenderCounters = isA ? inlineCountersB : inlineCountersA;
+    let selfSabotageApplied = false;
 
     const slotResult = executeSlotMoveTurn(attackerSide, defenderSide, slot.index, choices, {
       itemBuffs: isA ? itemBuffsA : itemBuffsB,
       defeatedIndices: defeatedDummy,
+      runPartySkills: isA ? (partySkillsA || []) : (partySkillsB || []),
       onAttack(atk) {
         atk.playbackIndex = playbackCounter++;
         atk.side = sideLabel;
         orderedAttacks.push(atk);
         attackerResult.attacks.push(atk);
+
+        if (defenderPartySkills && !selfSabotageApplied) {
+          selfSabotageApplied = true;
+          const sabotage = applyEnemySelfSabotage({
+            actingIndex: atk.attackerIndex,
+            enemies: attackerSide,
+            runPartySkills: defenderPartySkills
+          });
+          if (sabotage) {
+            orderedAttacks.push({ ...sabotage, side: sideLabel, playbackIndex: playbackCounter++ });
+          }
+        }
 
         // Opposing side counters
         if (defenderPartySkills && defenderCombat) {
@@ -333,6 +371,7 @@ export function resolveRound(sideA, sideB, movesA, movesB, options = {}) {
         return attackerSide[slot.index]?.hp > 0;
       }
     });
+
     if (isA && inlinePartySkillsA && slotResult.attacks.length > 0) {
       applyPartySkillsAfterPlayerAttacks({
         attacks: slotResult.attacks,

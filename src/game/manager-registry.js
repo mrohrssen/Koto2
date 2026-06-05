@@ -8,6 +8,7 @@ import { ensureTutorialFusionState } from './services/tutorial-service.js';
 import { ensureCrystalMeta } from './services/crystal-wallet-service.js';
 import { ensureKanjiKombatOnboardingState } from './state.js';
 import { normalizeRankedState } from '../pvp/ranked-rating.js';
+import { normalizePartySkills } from './party-skills.js';
 
 const SAVE_VERSION = 2;
 
@@ -147,6 +148,13 @@ export function getManager(userId) {
         }
         if (data.run) {
           manager.run = data.run;
+          if (Array.isArray(manager.run?.partySkills)) {
+            const normalized = normalizePartySkills(manager.run.partySkills);
+            if (JSON.stringify(normalized) !== JSON.stringify(manager.run.partySkills)) {
+              manager.run.partySkills = normalized;
+              needsSave = true;
+            }
+          }
           // Lazy uid backfill — old saves lack per-instance uid on creatures.
           backfillCreatureListUids(manager.run?.creatureParty?.active);
           backfillCreatureListUids(manager.run?.creatureParty?.reserves);
@@ -189,6 +197,13 @@ export function getManager(userId) {
             needsSave = syncPartyCreatureMoves(team.creatureParty) || needsSave;
             needsSave = cleanupDebugSuperAttack(team.creatureParty.active) || needsSave;
             needsSave = cleanupDebugSuperAttack(team.creatureParty.reserves) || needsSave;
+          }
+          if (Array.isArray(team?.partySkills)) {
+            const normalized = normalizePartySkills(team.partySkills);
+            if (JSON.stringify(normalized) !== JSON.stringify(team.partySkills)) {
+              team.partySkills = normalized;
+              needsSave = true;
+            }
           }
         }
       }

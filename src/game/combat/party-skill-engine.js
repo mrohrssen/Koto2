@@ -1,22 +1,39 @@
-import { applyStatChange, applyHeal, getStageMultiplier, breakSleep, initStatStages } from './effects.js';
-import { getElementMultiplier } from '../../shared/combat/creature-math.js';
-import { PARTY_SKILLS_CATALOG } from '../party-skills.js';
+import { applyStatChange, initStatStages } from './effects.js';
+import { calculateCreatureDamage, getElementMultiplier } from '../../shared/combat/creature-math.js';
+import { PARTY_SKILL_TREE_IDS, getPartySkillLevel } from '../party-skills.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
 export function toActivePartySkillIdSet(runPartySkills) {
-  if (!runPartySkills) return new Set();
   const ids = [];
-  for (const entry of runPartySkills) {
-    if (!entry) continue;
-    if (typeof entry === 'string') ids.push(entry);
-    else if (typeof entry === 'object' && typeof entry.id === 'string') ids.push(entry.id);
+  for (const id of PARTY_SKILL_TREE_IDS) {
+    if (getPartySkillLevel(runPartySkills, id) > 0) ids.push(id);
   }
-  return new Set(ids.filter(Boolean));
+  return new Set(ids);
 }
 
 function rollProc(chance, rng = Math.random) {
   return rng() < (Number(chance) || 0);
+}
+
+const RANDOM_STATS = Object.freeze(['atk', 'def', 'dex']);
+
+function randomStat(rng = Math.random) {
+  return RANDOM_STATS[Math.floor(rng() * RANDOM_STATS.length)];
+}
+
+function applyRandomBuff(target, rng = Math.random) {
+  const stat = randomStat(rng);
+  initStatStages(target);
+  const delta = applyStatChange(target, stat, 1);
+  return { stat, delta };
+}
+
+function applyRandomDebuff(target, rng = Math.random) {
+  const stat = randomStat(rng);
+  initStatStages(target);
+  const delta = applyStatChange(target, stat, -1);
+  return { stat, delta };
 }
 
 function livingEnemies(enemies) {
@@ -36,59 +53,24 @@ function randomFrom(arr, rng = Math.random) {
 
 /**
  * Called at start of each combat round, before any actions.
- * Handles: Erosion, Momentum, Overflow Vitality
+ * Handles: Buff Master
  * @returns {object[]} Array of event objects for frontend display
  */
-export function applyRoundStartSkills({ allies, enemies, runPartySkills, combat }) {
+export function applyRoundStartSkills({ allies, enemies, runPartySkills, combat, rng = Math.random }) {
   const active = toActivePartySkillIdSet(runPartySkills);
   if (!active.size) return [];
   const events = [];
 
-  // Erosion: deepen all negative stat stages on enemies by -1
-  if (active.has('erosion')) {
-    for (let i = 0; i < enemies.length; i++) {
-      const enemy = enemies[i];
-      if (!enemy || enemy.hp <= 0 || !enemy.statStages) continue;
-      for (const [stat, val] of Object.entries(enemy.statStages)) {
-        if (val < 0) {
-          const delta = applyStatChange(enemy, stat, -1);
-          if (delta !== 0) {
-            events.push({ type: 'erosion', targetSide: 'enemy', targetIndex: i, stat, delta, newVal: enemy.statStages[stat] });
-          }
-        }
-      }
-    }
-  }
-
-  // Momentum: grow all positive stat stages on allies by +1
-  if (active.has('momentum')) {
-    for (let i = 0; i < allies.length; i++) {
-      const ally = allies[i];
-      if (!ally || ally.hp <= 0 || !ally.statStages) continue;
-      for (const [stat, val] of Object.entries(ally.statStages)) {
-        if (val > 0) {
-          const delta = applyStatChange(ally, stat, 1);
-          if (delta !== 0) {
-            events.push({ type: 'momentum', targetSide: 'ally', targetIndex: i, stat, delta, newVal: ally.statStages[stat] });
-          }
-        }
-      }
-    }
-  }
-
-  // Overflow Vitality: 3+ buff types → 8% HP regen
-  if (active.has('overflowVitality')) {
+  const buffLevel = getPartySkillLevel(runPartySkills, 'buffMaster');
+  const buffChance = buffLevel >= 4 ? 1 : buffLevel >= 3 ? 0.75 : buffLevel >= 2 ? 0.50 : buffLevel >= 1 ? 0.25 : 0;
+  if (buffChance > 0) {
     for (let i = 0; i < allies.length; i++) {
       const ally = allies[i];
       if (!ally || ally.hp <= 0) continue;
-      if (countBuffTypes(ally) >= 3) {
-        const amount = Math.floor(ally.maxHp * 0.08);
-        if (amount > 0) {
-          const healed = applyHeal(ally, amount);
-          if (healed > 0) {
-            events.push({ type: 'overflowVitality', targetSide: 'ally', targetIndex: i, healAmount: healed });
-          }
-        }
+      if (!rollProc(buffChance, rng)) continue;
+      const { stat, delta } = applyRandomBuff(ally, rng);
+      if (delta !== 0) {
+        events.push({ type: 'buffMaster', targetSide: 'ally', targetIndex: i, stat, delta });
       }
     }
   }
@@ -109,6 +91,10 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
   if (!Array.isArray(attacks) || attacks.length === 0) return;
   if (!combat) return;
   if (typeof combat.chainHitsThisTurn !== 'number') combat.chainHitsThisTurn = 0;
+  const arcLevel = getPartySkillLevel(runPartySkills, 'arcStrike');
+  const buffLevel = getPartySkillLevel(runPartySkills, 'buffMaster');
+  const debuffLevel = getPartySkillLevel(runPartySkills, 'debuffMaster');
+  const debuffChance = debuffLevel >= 4 ? 0.80 : debuffLevel >= 3 ? 0.60 : debuffLevel >= 2 ? 0.40 : debuffLevel >= 1 ? 0.20 : 0;
 
   // Reset per-turn counters for legacy whole-round callers. Interleaved
   // initiative callers reset once at round start and pass resetTurnCounters=false.
@@ -117,177 +103,115 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
     combat.chainSurgeTriggeredThisTurn = false;
   }
 
+  const buffMasterActionActors = new Set();
   for (const record of attacks) {
-    if (!isQualifyingPlayerAttack(record)) continue;
+    if (!record || typeof record !== 'object') continue;
+    if (typeof record.attackerIndex !== 'number' || record.attackerIndex < 0) continue;
     if (!record.partySkillProcs) record.partySkillProcs = [];
 
     const attacker = allies?.[record.attackerIndex] || null;
+    const isHitRecord = isQualifyingPlayerAttack(record);
 
-    // ── Diverse Empowerment: +8% per buff type on attacker ──
-    if (active.has('diverseEmpowerment') && attacker) {
-      const buffCount = countBuffTypes(attacker);
-      if (buffCount >= 2) {
-        const bonusPct = buffCount * 0.08;
-        const bonus = Math.floor(record.damage * bonusPct);
-        if (bonus > 0) {
-          const target = enemies?.[record.targetIndex];
-          if (target && target.hp > 0) {
-            const capped = Math.min(bonus, target.hp - 1);
-            if (capped > 0) {
-              target.hp -= capped;
-              record.damage += capped;
-              record.partySkillProcs.push({
-                skillId: 'diverseEmpowerment', skillName: 'Diverse Empowerment',
-                type: 'bonusDamage', bonusDamage: capped
-              });
-            }
-          }
-        }
-      }
-    }
-
-    // ── Radiant Aura: +15%/+30% team damage ──
-    if (active.has('radiantAura')) {
-      const creaturesAt3Plus = livingAllies(allies).filter(a => countBuffTypes(a) >= 3).length;
-      if (creaturesAt3Plus > 0) {
-        const bonusPct = creaturesAt3Plus >= 2 ? 0.30 : 0.15;
-        const bonus = Math.floor(record.damage * bonusPct);
-        if (bonus > 0) {
-          const target = enemies?.[record.targetIndex];
-          if (target && target.hp > 0) {
-            const capped = Math.min(bonus, target.hp - 1);
-            if (capped > 0) {
-              target.hp -= capped;
-              record.damage += capped;
-              record.partySkillProcs.push({
-                skillId: 'radiantAura', skillName: 'Radiant Aura',
-                type: 'bonusDamage', bonusDamage: capped
-              });
-            }
-          }
-        }
-      }
-    }
-
-    // ── Arc Strike: chain to another enemy ──
-    if (active.has('arcStrike')) {
-      const otherEnemies = livingEnemies(enemies).filter(e => e !== enemies[record.targetIndex]);
-      if (otherEnemies.length > 0) {
-        // Track which enemies are already dead before chains (for Pandemic)
-        const deadBeforeChains = new Set(enemies.filter(e => e && e.hp <= 0));
-
-        const chainTarget = randomFrom(otherEnemies, rng);
-        const chainIdx = enemies.indexOf(chainTarget);
-        const baseDmg = Math.max(0, Number(record.damage) || 0);
-        let chainDmg = Math.floor(baseDmg * 0.30);
-
-        // Elemental Cascade: SE chains deal 2x + chance for atk -1
-        const chainElemMult = getElementMultiplier(attacker?.element || 'neutral', chainTarget.element);
-        const isSE = chainElemMult > 1;
-        if (isSE && active.has('elementalCascade')) {
-          chainDmg = Math.floor(chainDmg * 2);
-        }
-
-        // Apply chain damage (can KO)
-        const actualChainDmg = Math.min(chainDmg, chainTarget.hp);
-        chainTarget.hp -= actualChainDmg;
-        combat.chainHitsThisTurn += 1;
-
-        const chainProc = {
-          skillId: 'arcStrike', skillName: 'Arc Strike',
-          type: 'chainHit', targetIndex: chainIdx, damage: actualChainDmg,
-          element: attacker?.element || 'neutral', isSE,
-          sourceIndex: record.targetIndex
-        };
-        record.partySkillProcs.push(chainProc);
-
-        // Elemental Cascade debuff — skip when the chain hit already killed
-        // the target. Applying atk-1 to a corpse leaves it with a stat pill
-        // next to a KO'd sprite and (via Contagion) spreads a stage change
-        // that was never "seen" by the player hitting a live target.
-        if (isSE && active.has('elementalCascade') && chainTarget.hp > 0 && rollProc(0.30, rng)) {
-          initStatStages(chainTarget);
-          const delta = applyStatChange(chainTarget, 'atk', -1);
-          if (delta !== 0) {
-            record.partySkillProcs.push({
-              skillId: 'elementalCascade', skillName: 'Elemental Cascade',
-              type: 'stageChange', targetIndex: chainIdx, targetSide: 'enemy', stat: 'atk', delta
-            });
-            // Contagion trigger
-            tryContagion(active, enemies, chainIdx, 'atk', -1, record, combat, rng);
-          }
-        }
-
-        // Forked Arc: 50% chance to bounce again (up to 4 total)
-        if (active.has('forkedArc')) {
-          let prevDmg = actualChainDmg;
-          let bounceCount = 1; // already did 1 bounce
-          let lastBounceSource = record.targetIndex;
-          const arcStrikeProc = record.partySkillProcs.find(p => p.skillId === 'arcStrike' && p.type === 'chainHit');
-          if (arcStrikeProc) lastBounceSource = arcStrikeProc.targetIndex;
-          while (bounceCount < 4 && rollProc(0.50, rng)) {
-            const bounceTargets = livingEnemies(enemies);
-            if (bounceTargets.length === 0) break;
-            const bounceTarget = randomFrom(bounceTargets, rng);
-            const bounceIdx = enemies.indexOf(bounceTarget);
-
-            let bounceDmg = Math.floor(baseDmg * 0.30);
-            // Resonant Arc: +15% per bounce
-            if (active.has('resonantArc')) {
-              bounceDmg = Math.floor(baseDmg * (0.30 + 0.15 * bounceCount));
-            }
-            // Elemental Cascade on bounces
-            const bounceElemMult = getElementMultiplier(attacker?.element || 'neutral', bounceTarget.element);
-            const bounceSE = bounceElemMult > 1;
-            if (bounceSE && active.has('elementalCascade')) {
-              bounceDmg = Math.floor(bounceDmg * 2);
-            }
-
-            const actualBounceDmg = Math.min(bounceDmg, bounceTarget.hp);
-            bounceTarget.hp -= actualBounceDmg;
-            combat.chainHitsThisTurn += 1;
-            bounceCount++;
-
-            record.partySkillProcs.push({
-              skillId: 'forkedArc', skillName: 'Forked Arc',
-              type: 'chainHit', targetIndex: bounceIdx, damage: actualBounceDmg,
-              element: attacker?.element || 'neutral', isSE: bounceSE, bounceNum: bounceCount,
-              sourceIndex: lastBounceSource
-            });
-            lastBounceSource = bounceIdx;
-
-            // Elemental Cascade debuff on bounces — same guard as the chain
-            // hit above: if the bounce killed the target, don't leave a stat
-            // pill / Contagion spread hanging off the corpse.
-            if (bounceSE && active.has('elementalCascade') && bounceTarget.hp > 0 && rollProc(0.30, rng)) {
-              initStatStages(bounceTarget);
-              const delta = applyStatChange(bounceTarget, 'atk', -1);
-              if (delta !== 0) {
+    if (isHitRecord) {
+      // ── Diverse Empowerment: +8% per buff type on attacker ──
+      if (active.has('diverseEmpowerment') && attacker) {
+        const buffCount = countBuffTypes(attacker);
+        if (buffCount >= 2) {
+          const bonusPct = buffCount * 0.08;
+          const bonus = Math.floor(record.damage * bonusPct);
+          if (bonus > 0) {
+            const target = enemies?.[record.targetIndex];
+            if (target && target.hp > 0) {
+              const capped = Math.min(bonus, target.hp - 1);
+              if (capped > 0) {
+                target.hp -= capped;
+                record.damage += capped;
                 record.partySkillProcs.push({
-                  skillId: 'elementalCascade', skillName: 'Elemental Cascade',
-                  type: 'stageChange', targetIndex: bounceIdx, targetSide: 'enemy', stat: 'atk', delta
+                  skillId: 'diverseEmpowerment', skillName: 'Diverse Empowerment',
+                  type: 'bonusDamage', bonusDamage: capped
                 });
-                tryContagion(active, enemies, bounceIdx, 'atk', -1, record, combat, rng);
               }
             }
-
-            prevDmg = actualBounceDmg;
           }
         }
+      }
 
-        // Check all chain kills → Pandemic (Arc Strike + Forked Arc bounces)
-        if (active.has('pandemic')) {
-          for (const enemy of enemies) {
-            if (enemy && enemy.hp <= 0 && !deadBeforeChains.has(enemy)) {
-              triggerPandemic(enemy, enemies, record, combat);
+      // ── Radiant Aura: +15%/+30% team damage ──
+      if (active.has('radiantAura')) {
+        const creaturesAt3Plus = livingAllies(allies).filter(a => countBuffTypes(a) >= 3).length;
+        if (creaturesAt3Plus > 0) {
+          const bonusPct = creaturesAt3Plus >= 2 ? 0.30 : 0.15;
+          const bonus = Math.floor(record.damage * bonusPct);
+          if (bonus > 0) {
+            const target = enemies?.[record.targetIndex];
+            if (target && target.hp > 0) {
+              const capped = Math.min(bonus, target.hp - 1);
+              if (capped > 0) {
+                target.hp -= capped;
+                record.damage += capped;
+                record.partySkillProcs.push({
+                  skillId: 'radiantAura', skillName: 'Radiant Aura',
+                  type: 'bonusDamage', bonusDamage: capped
+                });
+              }
             }
+          }
+        }
+      }
+
+      // ── Arc Strike: chain to another enemy ──
+      if (arcLevel >= 1) {
+        applyArcStrikeTree({ record, attacker, enemies, combat, rng, arcLevel });
+      }
+
+      // ── Debuff Master: random stat debuff on enemies hit by attacks ──
+      if (debuffChance > 0) {
+        for (const proc of [{ targetIndex: record.targetIndex, primary: true }, ...(record.partySkillProcs || []).filter(p => p.type === 'chainHit')]) {
+          const target = enemies?.[proc.targetIndex];
+          if (!target || target.hp <= 0) continue;
+          if (!rollProc(debuffChance, rng)) continue;
+          const { stat, delta } = applyRandomDebuff(target, rng);
+          if (delta !== 0) {
+            record.partySkillProcs.push({
+              skillId: 'debuffMaster',
+              skillName: 'Debuff Master',
+              type: 'stageChange',
+              targetSide: 'enemy',
+              targetIndex: proc.targetIndex,
+              stat,
+              delta
+            });
+          }
+        }
+      }
+    }
+
+    // ── Buff Master Lvl 5: chance to buff a random living ally after action ──
+    if (buffLevel >= 5 && !buffMasterActionActors.has(record.attackerIndex)) {
+      buffMasterActionActors.add(record.attackerIndex);
+      if (rollProc(0.25, rng)) {
+        const targets = livingAllies(allies);
+        const target = randomFrom(targets, rng);
+        const targetIndex = allies.indexOf(target);
+        if (target) {
+          const { stat, delta } = applyRandomBuff(target, rng);
+          if (delta !== 0) {
+            record.partySkillProcs.push({
+              skillId: 'buffMaster',
+              skillName: 'Buff Master',
+              type: 'stageChange',
+              targetSide: 'ally',
+              targetIndex,
+              stat,
+              delta
+            });
           }
         }
       }
     }
 
     // ── Check Pandemic on primary target kill ──
-    if (active.has('pandemic') && record.targetDefeated) {
+    if (isHitRecord && active.has('pandemic') && record.targetDefeated) {
       const target = enemies?.[record.targetIndex];
       if (target) {
         triggerPandemic(target, enemies, record, combat);
@@ -360,45 +284,40 @@ export function applyAfterPlayerAttacks({ attacks, allies, enemies, runPartySkil
  * Returns a counter record or null. Applies damage to the enemy immediately.
  */
 export function computeInlineCounter(record, allies, enemies, runPartySkills, combat, rng = Math.random) {
-  const active = toActivePartySkillIdSet(runPartySkills);
-  if (!active.size || !active.has('retaliationStrike')) return null;
+  const counterLevel = getPartySkillLevel(runPartySkills, 'counterMaster');
+  if (counterLevel <= 0) return null;
 
   if (typeof record.targetIndex !== 'number') return null;
   const defender = allies?.[record.targetIndex];
   if (!defender || defender.hp <= 0) return null;
   if (typeof record.damage !== 'number' || record.damage <= 0) return null;
 
-  if (!rollProc(0.50, rng)) return null;
+  const counterChance = counterLevel >= 3 ? 1 : counterLevel >= 2 ? 0.75 : 0.50;
+  if (!rollProc(counterChance, rng)) return null;
 
   const enemyIdx = record.attackerIndex;
   const enemy = enemies?.[enemyIdx];
   if (!enemy || enemy.hp <= 0) return null;
 
-  if (!combat.counterCounts) combat.counterCounts = {};
+  let counterDmg = calculateCreatureDamage({
+    attackerLevel: Math.max(1, defender.level || 1),
+    attack: defender.attack || 10,
+    defenderDefense: Math.max(1, enemy.defense || 5),
+    power: 7,
+    typeMultiplier: getElementMultiplier(defender.element || 'neutral', enemy.element || 'neutral'),
+    variance: 1
+  });
 
-  let counterDmg = Math.floor((defender.attack || 10) * 0.25);
-
-  if (active.has('hardenedRiposte')) {
-    initStatStages(defender);
-    const hasDefStage = (defender.statStages?.def || 0) > 0;
-    if (hasDefStage) {
-      counterDmg = Math.floor(counterDmg * 1.5);
-    }
+  if (counterLevel >= 4 && defender.hp < defender.maxHp * 0.50) {
+    counterDmg = Math.floor(counterDmg * 2);
   }
-
-  if (active.has('furyCounter')) {
-    const key = String(record.targetIndex);
-    if (!combat.counterCounts[key]) combat.counterCounts[key] = 0;
-    combat.counterCounts[key] = Math.min(combat.counterCounts[key] + 1, 10);
-    counterDmg = Math.floor(counterDmg * (1 + combat.counterCounts[key] * 0.10));
-  }
-
-  if (active.has('lastStand') && defender.hp < defender.maxHp * 0.30) {
+  if (counterLevel >= 5) {
     counterDmg = Math.floor(counterDmg * 2);
   }
 
   const actualDmg = Math.min(counterDmg, enemy.hp);
   enemy.hp -= actualDmg;
+  const active = toActivePartySkillIdSet(runPartySkills);
 
   const counterRecord = {
     type: 'counter',
@@ -409,22 +328,8 @@ export function computeInlineCounter(record, allies, enemies, runPartySkills, co
     targetName: enemy.nameEn,
     damage: actualDmg,
     targetDefeated: enemy.hp <= 0,
-    furyStacks: combat.counterCounts?.[String(record.targetIndex)] || 0,
-    isLastStand: active.has('lastStand') && defender.hp < defender.maxHp * 0.30,
     procs: []
   };
-
-  if (active.has('vengefulMark') && enemy.hp > 0) {
-    initStatStages(enemy);
-    const delta = applyStatChange(enemy, 'atk', -1);
-    if (delta !== 0) {
-      counterRecord.procs.push({
-        skillId: 'vengefulMark', skillName: 'Vengeful Mark',
-        type: 'stageChange', targetIndex: enemyIdx, targetSide: 'enemy', stat: 'atk', delta
-      });
-      tryContagionFromCounter(active, enemies, enemyIdx, 'atk', -1, counterRecord, combat, rng);
-    }
-  }
 
   if (active.has('pandemic') && enemy.hp <= 0) {
     triggerPandemicCounter(enemy, enemies, counterRecord, combat);
@@ -439,7 +344,7 @@ export function computeInlineCounter(record, allies, enemies, runPartySkills, co
  */
 export function applyAfterEnemyAttacks({ enemyAttacks, allies, enemies, runPartySkills, combat, rng = Math.random }) {
   const active = toActivePartySkillIdSet(runPartySkills);
-  if (!active.size || !active.has('retaliationStrike')) return [];
+  if (!active.size || getPartySkillLevel(runPartySkills, 'counterMaster') <= 0) return [];
   if (!Array.isArray(enemyAttacks) || enemyAttacks.length === 0) return [];
 
   const counterAttacks = [];
@@ -453,6 +358,76 @@ export function applyAfterEnemyAttacks({ enemyAttacks, allies, enemies, runParty
   }
 
   return counterAttacks;
+}
+
+export function applyEnemySelfSabotage({ actingIndex, enemies, runPartySkills, rng = Math.random }) {
+  if (getPartySkillLevel(runPartySkills, 'debuffMaster') < 5) return null;
+  if (!rollProc(0.50, rng)) return null;
+  const acting = enemies?.[actingIndex];
+  if (!acting || acting.hp <= 0) return null;
+  const candidates = livingEnemies(enemies).filter(enemy => enemy !== acting);
+  if (candidates.length === 0) return null;
+  const target = randomFrom(candidates, rng);
+  const targetIndex = enemies.indexOf(target);
+  const { stat, delta } = applyRandomDebuff(target, rng);
+  if (delta === 0) return null;
+  return {
+    type: 'debuffMasterSelfSabotage',
+    targetSide: 'enemy',
+    actingIndex,
+    targetIndex,
+    stat,
+    delta
+  };
+}
+
+function chainDamageForBounce(baseDmg, bounceIndex, arcLevel) {
+  const basePct = 30;
+  const pct = arcLevel >= 3 ? basePct + 15 * bounceIndex : basePct;
+  return Math.floor((baseDmg * pct) / 100);
+}
+
+function shouldContinueArcBounce({ bounceIndex, arcLevel, rng }) {
+  if (bounceIndex === 0) return true;
+  if (arcLevel >= 4 && bounceIndex === 1) return true;
+  if (arcLevel >= 2 && bounceIndex === 1) return rollProc(0.50, rng);
+  if (arcLevel >= 5 && bounceIndex >= 2) return rollProc(0.25, rng);
+  return false;
+}
+
+function applyArcStrikeTree({ record, attacker, enemies, combat, rng, arcLevel }) {
+  const baseDmg = Math.max(0, Number(record.damage) || 0);
+  if (baseDmg <= 0) return;
+
+  let bounceIndex = 0;
+  let sourceIndex = record.targetIndex;
+  while (shouldContinueArcBounce({ bounceIndex, arcLevel, rng })) {
+    const targets = livingEnemies(enemies).filter(enemy => enemies.indexOf(enemy) !== sourceIndex);
+    if (targets.length === 0) break;
+
+    const target = randomFrom(targets, rng);
+    const targetIndex = enemies.indexOf(target);
+    const damage = Math.min(chainDamageForBounce(baseDmg, bounceIndex, arcLevel), target.hp);
+    if (damage <= 0) break;
+
+    target.hp -= damage;
+    combat.chainHitsThisTurn += 1;
+
+    record.partySkillProcs.push({
+      skillId: 'arcStrike',
+      skillName: 'Arc Strike',
+      type: 'chainHit',
+      targetIndex,
+      damage,
+      element: attacker?.element || 'neutral',
+      isSE: getElementMultiplier(attacker?.element || 'neutral', target.element) > 1,
+      bounceNum: bounceIndex + 1,
+      sourceIndex
+    });
+
+    sourceIndex = targetIndex;
+    bounceIndex += 1;
+  }
 }
 
 // ── Spread Mechanics ────────────────────────────────────────────────

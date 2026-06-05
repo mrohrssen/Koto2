@@ -18,7 +18,15 @@ import { addXpToCreature, xpToNextLevel, instantiateCreature, getCreatureBuyPric
 import { logger } from '../../logger.js';
 import { getDueCards } from '../internal-srs.js';
 import { hydrateCards } from '../bootstrap/word-knowledge.js';
-import { rollSkillMasterOffers, getPartySkillDisplay } from '../party-skills.js';
+import {
+  applyPartySkillChoice,
+  canonicalPartySkillTreeId,
+  getPostCombatRecoveryMultiplier,
+  normalizePartySkills,
+  rollSkillMasterOffers,
+  getPartySkillOfferDisplay,
+  syncPartySkillHpBonuses
+} from '../party-skills.js';
 import { applyHeal } from '../combat/effects.js';
 import { loadNpcs } from './npc-service.js';
 import { applyCrestBonuses } from './crest-service.js';
@@ -153,6 +161,8 @@ export class ExplorationService {
   _healAllLivingCreaturesForRoomEntry() {
     const party = this.gm.run?.creatureParty;
     if (!party) return;
+    syncPartySkillHpBonuses(party, this.gm.run?.partySkills || []);
+    const recoveryMultiplier = getPostCombatRecoveryMultiplier(this.gm.run?.partySkills || []);
 
     const active = Array.isArray(party.active) ? party.active : [];
     const reserves = Array.isArray(party.reserves) ? party.reserves : [];
@@ -162,7 +172,7 @@ export class ExplorationService {
       if (!creature || typeof creature.hp !== 'number' || creature.hp <= 0) continue; // never revive here
       if (typeof creature.maxHp !== 'number') continue;
 
-      const healAmount = Math.floor(creature.maxHp * ROOM_HEAL_PERCENT);
+      const healAmount = Math.floor(creature.maxHp * ROOM_HEAL_PERCENT * recoveryMultiplier);
       if (healAmount <= 0) continue;
       applyHeal(creature, healAmount);
     }
@@ -821,16 +831,25 @@ export class ExplorationService {
     if (isInitialPick) {
       // Tutorial step 0: offer 3 hardcoded skills (counter first)
       if (shouldOverrideSkillOffers(this.gm.meta)) {
-        pick.offered = ['retaliationStrike', 'arcStrike', 'sharedVigor'];
-        const offered = pick.offered.map(id => getPartySkillDisplay(id)).filter(Boolean);
+        const offered = [
+          { id: 'counterMaster', level: 1 },
+          { id: 'arcStrike', level: 1 },
+          { id: 'buffMaster', level: 1 }
+        ]
+          .map(offer => getPartySkillOfferDisplay(offer, this.gm.run?.partySkills || []))
+          .filter(Boolean);
+        pick.offered = offered.map(({ id, level }) => ({ id, level }));
         this.gm.emitState();
         return { offered };
       }
       if (!Array.isArray(pick.offered)) {
-        const ownedSkillIds = (this.gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
-        pick.offered = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
+        this.gm.run.partySkills = normalizePartySkills(this.gm.run?.partySkills || []);
+        pick.offered = rollSkillMasterOffers({ ownedSkillIds: this.gm.run.partySkills, count: 3 })
+          .map(({ id, level }) => ({ id, level }));
       }
-      const offered = (pick.offered || []).map(id => getPartySkillDisplay(id)).filter(Boolean);
+      const offered = (pick.offered || [])
+        .map(offer => getPartySkillOfferDisplay(offer, this.gm.run?.partySkills || []))
+        .filter(Boolean);
       this.gm.emitState();
       return { offered };
     }
@@ -846,13 +865,13 @@ export class ExplorationService {
 
     // Idempotent within room: once offered IDs exist, keep them
     if (!Array.isArray(room.skillMaster.offered)) {
-      const ownedSkillIds = (this.gm.run?.partySkills || []).map(s => s?.id).filter(Boolean);
-      const offeredIds = rollSkillMasterOffers({ ownedSkillIds, count: 3 });
-      room.skillMaster.offered = offeredIds;
+      this.gm.run.partySkills = normalizePartySkills(this.gm.run?.partySkills || []);
+      room.skillMaster.offered = rollSkillMasterOffers({ ownedSkillIds: this.gm.run.partySkills, count: 3 })
+        .map(({ id, level }) => ({ id, level }));
     }
 
     const offered = (room.skillMaster.offered || [])
-      .map(id => getPartySkillDisplay(id))
+      .map(offer => getPartySkillOfferDisplay(offer, this.gm.run?.partySkills || []))
       .filter(Boolean);
 
     this.gm.emitState();
@@ -865,20 +884,21 @@ export class ExplorationService {
     const isInitialPick = pick && !pick.chosenId;
 
     if (isInitialPick) {
-      const offeredIds = Array.isArray(pick.offered) ? pick.offered : [];
-      if (!offeredIds.includes(skillId)) {
+      const canonicalSkillId = canonicalPartySkillTreeId(skillId);
+      const offeredIds = Array.isArray(pick.offered) ? pick.offered.map(canonicalPartySkillTreeId).filter(Boolean) : [];
+      if (!canonicalSkillId || !offeredIds.includes(canonicalSkillId)) {
         throw new Error('Invalid Skill Master offer');
       }
       if (!this.gm.run) throw new Error('No active run');
-      if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
-      this.gm.run.partySkills.push({ id: skillId });
-      pick.chosenId = skillId;
+      this.gm.run.partySkills = applyPartySkillChoice(this.gm.run.partySkills || [], canonicalSkillId);
+      syncPartySkillHpBonuses(this.gm.run.creatureParty, this.gm.run.partySkills);
+      pick.chosenId = canonicalSkillId;
       // Tutorial step 0 → 1: advance after first skill pick
       if (shouldOverrideSkillOffers(this.gm.meta)) {
         advanceTutorial(this.gm.meta);
       }
       this.gm.emitState();
-      return { chosenId: skillId, partySkills: this.gm.run.partySkills };
+      return { chosenId: canonicalSkillId, partySkills: this.gm.run.partySkills };
     }
 
     // Room-based skill master
@@ -890,39 +910,38 @@ export class ExplorationService {
       room.skillMaster = { offered: null, chosenId: null, completed: false };
     }
 
+    const canonicalSkillId = canonicalPartySkillTreeId(skillId);
     if (room.skillMaster.completed === true && room.skillMaster.chosenId) {
-      if (skillId === room.skillMaster.chosenId) {
+      const chosenTreeId = canonicalPartySkillTreeId(room.skillMaster.chosenId);
+      if (canonicalSkillId && canonicalSkillId === chosenTreeId) {
         if (!this.gm.run) throw new Error('No active run');
         if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
         return {
-          chosenId: room.skillMaster.chosenId,
+          chosenId: chosenTreeId,
           partySkills: this.gm.run.partySkills
         };
       }
       throw new Error('Skill Master already completed');
     }
 
-    const offeredIds = Array.isArray(room.skillMaster.offered) ? room.skillMaster.offered : [];
-    if (!offeredIds.includes(skillId)) {
+    const offeredIds = Array.isArray(room.skillMaster.offered)
+      ? room.skillMaster.offered.map(canonicalPartySkillTreeId).filter(Boolean)
+      : [];
+    if (!canonicalSkillId || !offeredIds.includes(canonicalSkillId)) {
       throw new Error('Invalid Skill Master offer');
     }
 
     if (!this.gm.run) throw new Error('No active run');
-    if (!Array.isArray(this.gm.run.partySkills)) this.gm.run.partySkills = [];
+    this.gm.run.partySkills = applyPartySkillChoice(this.gm.run.partySkills || [], canonicalSkillId);
+    syncPartySkillHpBonuses(this.gm.run.creatureParty, this.gm.run.partySkills);
 
-    // No duplicates: choosing an already-owned skill is a no-op
-    const alreadyOwned = this.gm.run.partySkills.some(s => s?.id === skillId);
-    if (!alreadyOwned) {
-      this.gm.run.partySkills.push({ id: skillId });
-    }
-
-    room.skillMaster.chosenId = skillId;
+    room.skillMaster.chosenId = canonicalSkillId;
     room.skillMaster.completed = true;
     room.interacted = true;
 
     this.gm.emitState();
     return {
-      chosenId: skillId,
+      chosenId: canonicalSkillId,
       partySkills: this.gm.run.partySkills
     };
   }

@@ -17,7 +17,7 @@ function makeGm(overrides = {}) {
           { id: 'hanatchi', hp: 5, maxHp: 30, mp: 0, maxMp: 8, activeEffects: [] }
         ]
       },
-      partySkills: ['skill-a'],
+      partySkills: ['arcStrike', 'forkedArc'],
       itemBuffs: { atk: 2 }
     },
     ...overrides
@@ -30,6 +30,7 @@ describe('savePvpTeam', () => {
     const result = savePvpTeam(gm, 0);
     assert.strictEqual(result, true);
     assert.ok(gm.meta.pvpTeams[0], 'slot 0 should be populated');
+    assert.deepStrictEqual(gm.meta.pvpTeams[0].partySkills, [{ id: 'arcStrike', level: 2 }]);
     assert.deepStrictEqual(gm.meta.pvpTeams[1], null);
     assert.deepStrictEqual(gm.meta.pvpTeams[2], null);
   });

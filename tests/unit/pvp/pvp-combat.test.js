@@ -30,6 +30,16 @@ function makeCreature(overrides = {}) {
   };
 }
 
+function withMockRandom(value, fn) {
+  const original = Math.random;
+  Math.random = typeof value === 'function' ? value : () => value;
+  try {
+    return fn();
+  } finally {
+    Math.random = original;
+  }
+}
+
 describe('buildTurnOrder', () => {
   it('sorts by effective dex descending before level', () => {
     const a1 = makeCreature({ level: 99, dex: 5, statStages: { atk: 0, def: 0, dex: 0 } });
@@ -121,7 +131,7 @@ describe('resolveRound', () => {
 
   it('handles party skills when provided', () => {
     const combatA = { chainHitsThisTurn: 0 };
-    const partySkillsA = ['arcStrike'];
+    const partySkillsA = [{ id: 'arcStrike', level: 1 }];
 
     // Add a second enemy so arc strike has a chain target
     sideB.push(makeCreature({ id: 'b2', level: 5, hp: 100, maxHp: 100, mp: 20, maxMp: 20 }));
@@ -152,7 +162,7 @@ describe('resolveRound', () => {
     movesB = [{ creatureIndex: 1, moveId: 'slash', targetIndex: 0 }];
 
     const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsA: ['arcStrike'],
+      partySkillsA: [{ id: 'arcStrike', level: 1 }],
       combatA: { chainHitsThisTurn: 0 }
     });
 
@@ -240,62 +250,127 @@ describe('resolveRound', () => {
     assert.ok(Array.isArray(result.counterAttacks), 'counterAttacks should be an array (empty for backward compat)');
   });
 
-  it('applies Erosion round-start skill for side A', () => {
+  it('applies Buff Master round-start skill for side A', () => {
     const combatA = {};
-    sideB[0].statStages = { atk: -2, def: 0 };
 
-    const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsA: ['erosion'],
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsA: [{ id: 'buffMaster', level: 4 }],
       combatA
-    });
+    }));
 
-    assert.ok(sideB[0].statStages.atk < -2, 'Erosion should deepen negative atk stage on enemy');
-    const erosionEvents = result.roundStartEvents.filter(e => e.type === 'erosion');
-    assert.ok(erosionEvents.length > 0, 'should produce erosion events');
+    assert.equal(sideA[0].statStages.atk, 1, 'Buff Master should buff side A ally atk');
+    const buffEvents = result.roundStartEvents.filter(e => e.type === 'buffMaster');
+    assert.ok(buffEvents.length > 0, 'should produce Buff Master events');
   });
 
-  it('applies Momentum round-start skill for side B', () => {
+  it('applies Debuff Master hit debuff for side B', () => {
     const combatB = {};
-    sideB[0].statStages = { atk: 1, def: 0 };
 
-    const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsB: ['momentum'],
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsB: [{ id: 'debuffMaster', level: 4 }],
       combatB
-    });
+    }));
 
-    assert.ok(sideB[0].statStages.atk > 1, 'Momentum should grow positive atk stage on ally');
-    const momentumEvents = result.roundStartEvents.filter(e => e.type === 'momentum');
-    assert.ok(momentumEvents.length > 0, 'should produce momentum events');
+    assert.equal(sideA[0].statStages.atk, -1, 'Debuff Master should debuff side A target atk');
+    const debuffProcs = result.attacks.flatMap(a => a.partySkillProcs || []).filter(p => p.skillId === 'debuffMaster');
+    assert.ok(debuffProcs.length > 0, 'should produce Debuff Master procs');
+  });
+
+  it('applies Debuff Master self-sabotage from opposing party skills', () => {
+    sideA.push(makeCreature({ id: 'a2', level: 5, hp: 100, maxHp: 100, mp: 20, maxMp: 20 }));
+
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }]
+    }));
+
+    const sabotage = result.attacks.find(a => a.type === 'debuffMasterSelfSabotage');
+    assert.ok(sabotage, 'should produce a self-sabotage playback event');
+    assert.equal(sabotage.side, 'sideA', 'side A actor should sabotage side A');
+    assert.equal(sabotage.targetIndex, 1, 'acting creature should debuff another ally');
+    assert.equal(sideA[1].statStages.atk, -1, 'self-sabotage should debuff side A ally atk');
+    assert.ok(typeof sabotage.playbackIndex === 'number', 'self-sabotage should preserve playback ordering');
+  });
+
+  it('applies PvP self-sabotage before opposing counter KOs the actor', () => {
+    sideA = [
+      makeCreature({ id: 'a1', hp: 20, maxHp: 20, dex: 20, attack: 10 }),
+      makeCreature({ id: 'a2', hp: 100, maxHp: 100, dex: 1 })
+    ];
+    sideB = [makeCreature({ id: 'b1', hp: 500, maxHp: 500, dex: 1, attack: 200 })];
+    movesA = [{ creatureIndex: 0, moveId: 'slash', targetIndex: 0 }];
+    movesB = [];
+
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combatB: {}
+    }));
+
+    const sabotage = result.attacks.find(a => a.type === 'debuffMasterSelfSabotage');
+    const counter = result.attacks.find(a => a.type === 'counter');
+    assert.ok(sabotage, 'self-sabotage should resolve before the counter can KO the actor');
+    assert.ok(counter, 'counter should still resolve');
+    assert.equal(sabotage.side, 'sideA');
+    assert.equal(sabotage.targetIndex, 1);
+    assert.equal(sideA[1].statStages.atk, -1);
+    assert.equal(sideA[0].hp, 0);
+    assert.ok(sabotage.playbackIndex < counter.playbackIndex);
   });
 
   it('applies round-start skills for both sides simultaneously', () => {
     const combatA = {};
     const combatB = {};
-    sideB[0].statStages = { atk: -1, def: 0 };
-    sideA[0].statStages = { atk: -1, def: 0 };
 
-    const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsA: ['erosion'],
-      partySkillsB: ['erosion'],
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsA: [{ id: 'buffMaster', level: 4 }],
+      partySkillsB: [{ id: 'buffMaster', level: 4 }],
       combatA,
       combatB
-    });
+    }));
 
-    assert.ok(sideB[0].statStages.atk < -1, 'Side A erosion should deepen side B debuffs');
-    assert.ok(sideA[0].statStages.atk < -1, 'Side B erosion should deepen side A debuffs');
+    assert.equal(sideA[0].statStages.atk, 1, 'Side A Buff Master should buff side A');
+    assert.equal(sideB[0].statStages.atk, 1, 'Side B Buff Master should buff side B');
+    assert.equal(result.roundStartEvents.filter(e => e.type === 'buffMaster').length, 2);
   });
 
-  it('applies Retaliation Strike counter attacks in PvP', () => {
+  it('applies HP Master healing bonuses in round-based PvP actions', () => {
+    const healMove = {
+      id: 'heal',
+      name: '治す',
+      nameEn: 'Heal',
+      reading: 'なおす',
+      element: 'neutral',
+      category: 'heal',
+      target: 'self',
+      power: 20,
+      mpCost: 0,
+      accuracy: 100
+    };
+    sideA[0].moves = [healMove];
+    sideA[0].attack = 20;
+    sideA[0].hp = 10;
+    sideA[0].maxHp = 100;
+    movesA = [{ creatureIndex: 0, moveId: 'heal', targetIndex: 0 }];
+    movesB = [];
+
+    const result = withMockRandom(0.5, () => resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsA: [{ id: 'hpMaster', level: 3 }],
+      combatA: {}
+    }));
+
+    const heal = result.attacks.find(a => a.category === 'heal');
+    assert.equal(heal.healAmount, 60);
+    assert.equal(sideA[0].hp, 70);
+  });
+
+  it('applies Counter Master counter attacks in PvP', () => {
     const combatA = {};
     sideA[0].attack = 30;
     sideB[0].hp = 500;
     sideB[0].maxHp = 500;
 
-    const origRandom = Math.random;
-    Math.random = () => 0.1;
-    try {
+    withMockRandom(0.1, () => {
       const result = resolveRound(sideA, sideB, movesA, movesB, {
-        partySkillsA: ['retaliationStrike'],
+        partySkillsA: [{ id: 'counterMaster', level: 1 }],
         combatA
       });
 
@@ -307,22 +382,19 @@ describe('resolveRound', () => {
       const sideACounters = result.attacks.filter(a => a.type === 'counter' && a.side === 'sideA');
       assert.ok(sideACounters.length > 0, 'Side A should have inline counter attacks');
       assert.ok(typeof sideACounters[0].playbackIndex === 'number', 'counter should have playbackIndex');
-    } finally {
-      Math.random = origRandom;
-    }
+    });
   });
 
   it('tags roundStartEvents with correct pvpSide', () => {
     const combatA = {};
-    sideB[0].statStages = { atk: -2, def: 0 };
 
-    const result = resolveRound(sideA, sideB, movesA, movesB, {
-      partySkillsA: ['erosion'],
+    const result = withMockRandom(0.01, () => resolveRound(sideA, sideB, movesA, movesB, {
+      partySkillsA: [{ id: 'buffMaster', level: 4 }],
       combatA
-    });
+    }));
 
-    const erosionEvents = result.roundStartEvents.filter(e => e.type === 'erosion');
-    for (const ev of erosionEvents) {
+    const buffEvents = result.roundStartEvents.filter(e => e.type === 'buffMaster');
+    for (const ev of buffEvents) {
       assert.ok(ev.pvpSide === 'sideA' || ev.pvpSide === 'sideB', 'pvpSide should be set');
     }
   });
@@ -397,5 +469,131 @@ describe('PvP action cursor resolution', () => {
     assert.equal(sideA[0].activeEffects[0].remainingTurns, 1);
     assert.equal(sideB[0].activeEffects[0].remainingTurns, 2);
     assert.equal(result.effectEvents.length, 1);
+  });
+
+  it('applies opposing self-sabotage in sequential PvP cursor actions', () => {
+    const sideA = [
+      makeCreature({ id: 'a', hp: 20, maxHp: 20, attack: 10 }),
+      makeCreature({ id: 'a-ally', hp: 100, maxHp: 100 })
+    ];
+    const sideB = [makeCreature({ id: 'b', hp: 500, maxHp: 500, attack: 200 })];
+
+    const result = withMockRandom(0.01, () => resolvePvpCursorAction({
+      sideA,
+      sideB,
+      cursor: { side: 'sideA', index: 0, opening: false },
+      action: { creatureIndex: 0, moveId: 'slash', targetIndex: 0 },
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combatB: {}
+    }));
+
+    const sabotage = result.effectEvents.find(a => a.type === 'debuffMasterSelfSabotage');
+    const counter = result.attacks.find(a => a.type === 'counter');
+    assert.ok(sabotage, 'cursor action should include opposing self-sabotage');
+    assert.ok(counter, 'cursor action should include opposing counter');
+    assert.equal(sabotage.side, 'sideA');
+    assert.equal(sabotage.targetIndex, 1);
+    assert.equal(
+      result.actionSegments[0].counterAttacks.every(a => a.type === 'counter'),
+      true,
+      'effect playback events must not be stored with counter attacks'
+    );
+    assert.equal(sideA[1].statStages.atk, -1);
+    assert.equal(sideA[0].hp, 0);
+    assert.ok(sabotage.playbackIndex < counter.playbackIndex);
+  });
+
+  it('rolls opposing self-sabotage once for all-target cursor actions', () => {
+    const sweep = {
+      id: 'sweep',
+      name: '掃く',
+      nameEn: 'Sweep',
+      reading: 'はく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'all_enemies',
+      power: 20,
+      mpCost: 0,
+      accuracy: 100,
+      statusEffect: null,
+      statusChance: 0,
+      statusDuration: 0
+    };
+    const sideA = [
+      makeCreature({ id: 'a', hp: 100, maxHp: 100, moves: [sweep] }),
+      makeCreature({ id: 'a-ally', hp: 100, maxHp: 100 })
+    ];
+    const sideB = [
+      makeCreature({ id: 'b0', hp: 500, maxHp: 500 }),
+      makeCreature({ id: 'b1', hp: 500, maxHp: 500 })
+    ];
+
+    const result = withMockRandom(0.01, () => resolvePvpCursorAction({
+      sideA,
+      sideB,
+      cursor: { side: 'sideA', index: 0, opening: false },
+      action: { creatureIndex: 0, moveId: 'sweep', targetIndex: 0 },
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }]
+    }));
+
+    const sabotageEvents = result.effectEvents.filter(a => a.type === 'debuffMasterSelfSabotage');
+    assert.equal(result.actionSegments[0].attacks.length, 2);
+    assert.equal(sabotageEvents.length, 1);
+    assert.equal(result.actionSegments[0].effectEvents.length, 1);
+    assert.equal(result.actionSegments[0].counterAttacks.length, 0);
+    assert.equal(sideA[1].statStages.atk, -1);
+  });
+
+  it('interleaves all-target cursor self-sabotage and counters before later targets', () => {
+    const sweep = {
+      id: 'sweep',
+      name: '掃く',
+      nameEn: 'Sweep',
+      reading: 'はく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'all_enemies',
+      power: 20,
+      mpCost: 0,
+      accuracy: 100,
+      statusEffect: null,
+      statusChance: 0,
+      statusDuration: 0
+    };
+    const sideA = [
+      makeCreature({ id: 'a', hp: 20, maxHp: 20, attack: 10, moves: [sweep] }),
+      makeCreature({ id: 'a-ally', hp: 100, maxHp: 100 })
+    ];
+    const sideB = [
+      makeCreature({ id: 'b0', hp: 500, maxHp: 500, attack: 200 }),
+      makeCreature({ id: 'b1', hp: 500, maxHp: 500, attack: 200 })
+    ];
+
+    const result = withMockRandom(0.01, () => resolvePvpCursorAction({
+      sideA,
+      sideB,
+      cursor: { side: 'sideA', index: 0, opening: false },
+      action: { creatureIndex: 0, moveId: 'sweep', targetIndex: 0 },
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combatB: {}
+    }));
+
+    const sabotage = result.effectEvents.find(a => a.type === 'debuffMasterSelfSabotage');
+    const counter = result.attacks.find(a => a.type === 'counter');
+    assert.equal(result.actionSegments[0].attacks.length, 1);
+    assert.ok(sabotage, 'self-sabotage should be emitted after the first target record');
+    assert.ok(counter, 'counter should be emitted after self-sabotage');
+    assert.equal(result.actionSegments[0].effectEvents.length, 1);
+    assert.equal(
+      result.actionSegments[0].counterAttacks.every(a => a.type === 'counter'),
+      true,
+      'counterAttacks should only contain attack-like counter records'
+    );
+    assert.equal(sideA[0].hp, 0);
+    assert.deepEqual(
+      result.attacks.map(a => a.type || a.category),
+      ['damage', 'counter']
+    );
+    assert.ok(sabotage.playbackIndex < counter.playbackIndex);
   });
 });

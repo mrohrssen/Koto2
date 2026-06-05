@@ -11,6 +11,7 @@ import {
   tickAllEffects,
   resolveActorMiniRound,
   resolveSingleActorAction,
+  resolveSyntheticActorAction,
   rollTalkAcceptance,
   executeNpcSkill,
   handleBefriendAnswer,
@@ -269,16 +270,75 @@ describe('Creature Combat - Single Actor Action', () => {
         allies,
         enemies,
         choices: [{ creatureIndex: 0, moveId: 'enemy-hit', targetIndex: 0 }],
-        runPartySkills: ['retaliationStrike'],
+        runPartySkills: [{ id: 'counterMaster', level: 1 }],
         combat: {}
       });
 
       assert.equal(result.actionSegments.length, 1);
-      assert.ok(result.actionSegments[0].counterAttacks.length > 0, 'retaliationStrike should counter');
+      assert.ok(result.actionSegments[0].counterAttacks.length > 0, 'Counter Master should counter');
       assert.equal(allies[0].activeEffects[0].remainingTurns, 2, 'countering ally poison should not tick');
     } finally {
       Math.random = origRandom;
     }
+  });
+
+  it('applies enemy self-sabotage once for all-target single actor actions', () => {
+    const allies = [instantiateCreature('mizu'), instantiateCreature('ki')];
+    const enemies = [instantiateCreature('hi'), instantiateCreature('ishi')];
+    enemies[0].moves = [{
+      id: 'enemy-sweep', name: '払う', nameEn: 'Sweep', reading: 'はらう',
+      element: 'neutral', category: 'damage', target: 'all_enemies',
+      power: 10, mpCost: 0
+    }];
+
+    const result = resolveSingleActorAction({
+      actorSide: 'enemy',
+      actorIndex: 0,
+      allies,
+      enemies,
+      choices: [{ creatureIndex: 0, moveId: 'enemy-sweep', targetIndex: 0 }],
+      runPartySkills: [{ id: 'debuffMaster', level: 5 }],
+      combat: {},
+      rng: () => 0.01
+    });
+
+    const segment = result.actionSegments[0];
+    assert.equal(segment.attacks.length, 2);
+    assert.equal(segment.effectEvents.filter(event => event.type === 'debuffMasterSelfSabotage').length, 1);
+    assert.equal(enemies[1].statStages.atk, -1);
+  });
+
+  it('orders enemy self-sabotage playback before inline counters', () => {
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('hi'), instantiateCreature('ishi')];
+    allies[0].attack = 200;
+    allies[0].hp = 500;
+    allies[0].maxHp = 500;
+    enemies[0].hp = 20;
+    enemies[0].maxHp = 20;
+    enemies[0].moves = [{
+      id: 'enemy-hit', name: '打つ', nameEn: 'Hit', reading: 'うつ',
+      element: 'neutral', category: 'damage', target: 'single_enemy',
+      power: 10, mpCost: 0
+    }];
+
+    const result = resolveSingleActorAction({
+      actorSide: 'enemy',
+      actorIndex: 0,
+      allies,
+      enemies,
+      choices: [{ creatureIndex: 0, moveId: 'enemy-hit', targetIndex: 0 }],
+      runPartySkills: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combat: {},
+      rng: () => 0.01
+    });
+
+    const segment = result.actionSegments[0];
+    const sabotage = segment.effectEvents.find(event => event.type === 'debuffMasterSelfSabotage');
+    const counter = segment.counterAttacks.find(event => event.type === 'counter');
+    assert.ok(sabotage, 'self-sabotage event should be present');
+    assert.ok(counter, 'counter event should be present');
+    assert.ok(sabotage.playbackIndex < counter.playbackIndex);
   });
 });
 
@@ -1063,7 +1123,7 @@ describe('Dead creature cannot attack', () => {
       null,
       null,
       null,
-      { runPartySkills: ['arcStrike'], combat: {} }
+      { runPartySkills: [{ id: 'arcStrike', level: 1 }], combat: {} }
     );
 
     const chainProc = result.playerAttacks[0]?.partySkillProcs?.find(p => p.skillId === 'arcStrike');
@@ -1292,5 +1352,126 @@ describe('Creature Combat - Rest action in processMoveTurn', () => {
     assert.equal(atk.attackerMp, 40, '20 + ceil(100*0.20)');
     assert.equal(atk.attackerMaxMp, 100);
     assert.ok(typeof atk.attackerWord === 'string' && atk.attackerWord.length > 0);
+  });
+});
+
+describe('Party Skill Trees - HP and EXP Master', () => {
+  it('HP Master Lvl 3 makes heal moves restore 50% more HP via resolveSingleActorAction', () => {
+    const ally = instantiateCreature('mizu');
+    ally.moves.push({ id: 'test-heal', name: '治す', nameEn: 'Test Heal', element: 'neutral', category: 'heal', target: 'self', power: 20, mpCost: 0 });
+    ally.maxHp = 200;
+    ally.hp = 1;
+
+    const result = resolveSingleActorAction({
+      actorSide: 'ally',
+      actorIndex: 0,
+      allies: [ally],
+      enemies: [instantiateCreature('ki')],
+      choices: [{ creatureIndex: 0, moveId: 'test-heal', targetIndex: 0 }],
+      creatureParty: { active: [ally], reserves: [] },
+      runPartySkills: [{ id: 'hpMaster', level: 3 }],
+      combat: {},
+      rng: () => 0.50
+    });
+
+    const attack = result.actionSegments[0].attacks[0];
+    assert.ok(attack.healAmount > 0);
+    assert.equal(attack.healAmount, Math.floor(((ally.attack / 10) * 20 * 1.0) * 1.5));
+  });
+
+  it('HP Master Lvl 4 gives healed target a random buff', () => {
+    const ally = instantiateCreature('mizu');
+    ally.moves.push({ id: 'test-heal', name: '治す', nameEn: 'Test Heal', element: 'neutral', category: 'heal', target: 'self', power: 20, mpCost: 0 });
+    ally.hp = 1;
+    ally.statStages = { atk: 0, def: 0, dex: 0 };
+
+    resolveSingleActorAction({
+      actorSide: 'ally',
+      actorIndex: 0,
+      allies: [ally],
+      enemies: [instantiateCreature('ki')],
+      choices: [{ creatureIndex: 0, moveId: 'test-heal', targetIndex: 0 }],
+      creatureParty: { active: [ally], reserves: [] },
+      runPartySkills: [{ id: 'hpMaster', level: 4 }],
+      combat: {},
+      rng: () => 0.01
+    });
+
+    assert.equal(ally.statStages.atk, 1);
+  });
+
+  it('Exp Master Lvl 4 doubles kill XP through awardKillXp(..., runPartySkills)', () => {
+    const party = { active: [instantiateCreature('ki')], reserves: [] };
+
+    const result = awardKillXp(party, 5, 1, 0, null, null, [{ id: 'expMaster', level: 4 }]);
+
+    assert.equal(result.xpGrants[0].xp, 500);
+  });
+
+  it('Exp Master applies to synthetic Kanji Kombat kill XP', () => {
+    const ally = instantiateCreature('hi');
+    const enemy = instantiateCreature('ki');
+    enemy.hp = 1;
+    const party = { active: [ally], reserves: [] };
+
+    const result = resolveSyntheticActorAction({
+      actorSide: 'ally',
+      actorIndex: 0,
+      allies: [ally],
+      enemies: [enemy],
+      targetIndex: 0,
+      syntheticMove: {
+        id: 'kanji-kombat-strike',
+        name: 'Kanji Kombat Strike',
+        nameEn: 'Kanji Kombat Strike',
+        category: 'damage',
+        target: 'single_enemy',
+        element: ally.element,
+        power: 100,
+        mpCost: 0,
+      },
+      creatureParty: party,
+      runPartySkills: [{ id: 'expMaster', level: 4 }],
+      rng: () => 0.50
+    });
+
+    assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
+  });
+
+  it('Exp Master Lvl 5 bonus level only rolls for the creature instance that leveled', () => {
+    const leveledKi = instantiateCreature('ki');
+    leveledKi.uid = 'ki-near-level';
+    leveledKi.xp = 90;
+    const freshKi = instantiateCreature('ki');
+    freshKi.uid = 'ki-fresh';
+    freshKi.xp = 0;
+    const party = { active: [leveledKi, freshKi], reserves: [] };
+
+    const originalRandom = Math.random;
+    Math.random = () => {
+      throw new Error('awardKillXp must use the injected rng for Exp Master bonus rolls');
+    };
+    let result;
+    try {
+      result = awardKillXp(
+        party,
+        1,
+        1,
+        0,
+        null,
+        null,
+        [{ id: 'expMaster', level: 5 }],
+        () => 0.01
+      );
+    } finally {
+      Math.random = originalRandom;
+    }
+
+    assert.equal(leveledKi.level, 7, 'near-threshold copy levels once, then receives the L5 bonus level');
+    assert.equal(freshKi.level, 5, 'fresh duplicate species copy should not receive an L5 bonus roll');
+    assert.equal(
+      result.levelUps.filter(levelUp => levelUp.partySkillBonus === 'expMaster').length,
+      1
+    );
   });
 });

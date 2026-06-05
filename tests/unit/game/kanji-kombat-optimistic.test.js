@@ -10,6 +10,7 @@ import {
   KANJI_KOMBAT_PREDICTION_MODE,
 } from '../../../src/shared/action-protocol.js';
 import { resolveKanjiKombatAnswerTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
+import { buildOptimisticKanjiKombatAnswer } from '../../../public/js/ui/optimistic-combat-turn.js';
 
 describe('Kanji Kombat optimistic answers', () => {
   it('accepts a matching optimistic answer after recomputing the authoritative grade', () => {
@@ -88,6 +89,27 @@ describe('Kanji Kombat optimistic answers', () => {
     assert.ok(result.xpEvents[0].levelUps.length > 0);
     assert.ok(result.creatureParty.active[0].level > 1);
     assert.equal(result.xpEvents[0].levelUps.at(-1).newLevel, result.creatureParty.active[0].level);
+  });
+
+  it('accepts browser Kanji predictions when committed Exp Master XP is server-owned', () => {
+    const gm = createTestKanjiKombatGameManager();
+    gm.run.partySkills = [{ id: 'expMaster', level: 4 }];
+    gm.combat.enemies[0].level = 5;
+    gm.combat.enemies[0].hp = 1;
+    const service = new KanjiKombatService(gm);
+    const predicted = buildOptimisticKanjiKombatAnswer({
+      state: { combat: gm.combat, run: gm.run },
+      answerId: 'choice-correct',
+      actionId: 'act_browser_kanji_exp',
+    });
+
+    const result = service.verifyAndCommitOptimisticAnswer(predicted.envelope);
+
+    assert.equal(result.status, 'accepted');
+    assert.equal(typeof result.stateVersion, 'number');
+    assert.equal(result.xpEvents.length, 1);
+    assert.equal(result.actionSegments[0].xpEvents.length, 0);
+    assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
   });
 });
 

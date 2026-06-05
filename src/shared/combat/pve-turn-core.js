@@ -14,7 +14,9 @@ import {
   applyConfuse,
   applyTaunt,
   applyCleanse,
+  applyStatChange,
   applyStatChanges,
+  initStatStages,
   isIncapacitated,
   isConfused,
   getAttackMultiplier,
@@ -28,10 +30,12 @@ import {
 } from '../../game/combat/effects.js';
 import {
   applyAfterPlayerAttacks as applyPartySkillsAfterPlayerAttacks,
+  applyEnemySelfSabotage,
   checkAfflictionBurstCounter,
   computeInlineCounter,
   toActivePartySkillIdSet,
 } from '../../game/combat/party-skill-engine.js';
+import { getHealingMultiplier, getPartySkillLevel } from '../../game/party-skills.js';
 import { REST_MOVE, computeRestMpGain } from '../../game/rest-move.js';
 
 function creatureVocabFields(creature = {}, prefix) {
@@ -212,7 +216,19 @@ function applyCriticalDamage(attacker, move, damage, rng = Math.random) {
   };
 }
 
-function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEnemyIndices, itemBuffs, metaMults, awardKillXp }) {
+function applyHpMasterHeal({ target, amount, runPartySkills, rng = Math.random }) {
+  const boosted = Math.floor(amount * getHealingMultiplier(runPartySkills));
+  const healed = applyHeal(target, boosted);
+  if (healed > 0 && getPartySkillLevel(runPartySkills, 'hpMaster') >= 4) {
+    const stats = ['atk', 'def', 'dex'];
+    const stat = stats[Math.floor(rng() * stats.length)];
+    initStatStages(target);
+    applyStatChange(target, stat, 1);
+  }
+  return healed;
+}
+
+function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEnemyIndices, itemBuffs, metaMults, awardKillXp, runPartySkills, rng = Math.random }) {
   if (!creatureParty || typeof awardKillXp !== 'function') return null;
   if (enemyIdx < 0 || defeatedEnemyIndices.has(enemyIdx)) return null;
   defeatedEnemyIndices.add(enemyIdx);
@@ -223,11 +239,13 @@ function maybeAwardKillXp({ creatureParty, target, enemies, enemyIdx, defeatedEn
     itemBuffs?.xpBalanceStacks,
     metaMults,
     itemBuffs,
+    runPartySkills,
+    rng,
   );
   return { enemyId: target.id, enemyIndex: enemyIdx, enemyName: target.nameEn, ...xpEvent };
 }
 
-function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null, rng = Math.random, awardKillXp = null) {
+function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies, itemBuffs, creatureParty, defeatedEnemyIndices, metaMults = null, defenderItemBuffs = null, rng = Math.random, awardKillXp = null, runPartySkills = [], xpRng = rng, deferKillXp = false) {
   const attacks = [];
   const xpEvents = [];
   const stab = move.element !== 'neutral' && move.element === creature.element;
@@ -263,7 +281,12 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         if (damage > 0) breakSleep(target);
 
         const healAmount = move.category === 'drain'
-          ? applyHeal(creature, Math.floor(damage * 0.5))
+          ? applyHpMasterHeal({
+            target: creature,
+            amount: Math.floor(damage * 0.5),
+            runPartySkills,
+            rng
+          })
           : 0;
         const targetDefeated = target.hp <= 0;
         const effectApplied = (!targetDefeated && move.statusEffect) ? tryApplyStatus(move, target, creature, allies, rng) : null;
@@ -281,7 +304,7 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
           statChangesApplied
         }));
 
-        if (targetDefeated) {
+        if (targetDefeated && !deferKillXp) {
           const enemyIdx = enemies.indexOf(target);
           const xpEvent = maybeAwardKillXp({
             creatureParty,
@@ -292,6 +315,8 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
             itemBuffs,
             metaMults,
             awardKillXp,
+            runPartySkills,
+            rng: xpRng,
           });
           if (xpEvent) xpEvents.push(xpEvent);
         }
@@ -305,7 +330,12 @@ function executeMove(creature, creatureIndex, move, targetIndex, allies, enemies
         const target = targets[i];
         const tIdx = indices[i];
         const variance = rollVariance(rng);
-        const healAmount = applyHeal(target, Math.floor((creature.attack / 10) * move.power * variance));
+        const healAmount = applyHpMasterHeal({
+          target,
+          amount: Math.floor((creature.attack / 10) * move.power * variance),
+          runPartySkills,
+          rng
+        });
         const effectApplied = move.statusEffect ? tryApplyStatus(move, target, creature, allies, rng) : null;
         const statChangesApplied = tryApplyStatChanges(move, target, rng);
 
@@ -566,7 +596,9 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
     defenderItemBuffs = null,
     onAttack = null,
     rng = Math.random,
+    xpRng = rng,
     awardKillXp = null,
+    runPartySkills = [],
   } = options;
 
   const attacks = [];
@@ -615,6 +647,8 @@ export function executeSlotMoveTurn(allies, enemies, slotIndex, choices, options
       defenderItemBuffs,
       rng,
       awardKillXp,
+      runPartySkills,
+      xpRng,
     );
     for (const atk of result.attacks) {
       atk.attackerMp = creature.mp;
@@ -664,9 +698,11 @@ export function processInterleavedPvERound(
   }
   options = options || {};
   const rng = typeof options.rng === 'function' ? options.rng : Math.random;
+  const xpRng = typeof options.xpRng === 'function' ? options.xpRng : rng;
   const playerAttacks = [];
   const enemyAttacks = [];
   const inlineCounters = [];
+  const effectEvents = [];
   const xpEvents = [];
   const defeatedEnemyIndices = new Set();
   const pb = { n: 0 };
@@ -728,6 +764,7 @@ export function processInterleavedPvERound(
 
   for (const slot of initiative) {
     const isAlly = slot.kind === 'ally';
+    let selfSabotageApplied = false;
     const result = executeSlotMoveTurn(
       isAlly ? allies : enemies,
       isAlly ? enemies : allies,
@@ -740,12 +777,28 @@ export function processInterleavedPvERound(
         defeatedIndices: defeatedEnemyIndices,
         defenderItemBuffs: isAlly ? null : itemBuffs,
         rng,
+        xpRng,
         awardKillXp: options.awardKillXp || null,
+        runPartySkills: isAlly ? (options.runPartySkills || []) : [],
         onAttack(atk) {
           tagPlayback(atk, isAlly ? 'player' : 'enemy');
           (isAlly ? playerAttacks : enemyAttacks).push(atk);
 
           if (!isAlly && options.runPartySkills && options.combat) {
+            if (!selfSabotageApplied) {
+              selfSabotageApplied = true;
+              const sabotage = applyEnemySelfSabotage({
+                actingIndex: atk.attackerIndex,
+                enemies,
+                runPartySkills: options.runPartySkills,
+                rng
+              });
+              if (sabotage) {
+                tagPlayback(sabotage, 'enemy');
+                effectEvents.push(sabotage);
+              }
+            }
+
             const counter = computeInlineCounter(atk, allies, enemies, options.runPartySkills, options.combat, rng);
             if (counter) {
               tagPlayback(counter, 'player');
@@ -800,6 +853,7 @@ export function processInterleavedPvERound(
     playerAttacks,
     enemyAttacks,
     inlineCounters,
+    effectEvents,
     allEnemiesDefeated: enemies.every(e => !e || e.hp <= 0),
     partySkillsAppliedInline: applyInlinePartySkills,
     xpEvents,
@@ -891,7 +945,9 @@ export function resolveSingleActorAction({
   runPartySkills = null,
   combat = null,
   playbackStart = 0,
-  rng = Math.random
+  rng = Math.random,
+  xpRng = rng,
+  awardKillXp = null
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
   const actorList = isAlly ? allies : enemies;
@@ -920,6 +976,7 @@ export function resolveSingleActorAction({
     combat.chainSurgeTriggeredThisTurn = false;
   }
 
+  let selfSabotageApplied = false;
   const slotResult = executeSlotMoveTurn(actorList, defenderList, actorIndex, choices, {
     itemBuffs: isAlly ? itemBuffs : null,
     creatureParty: isAlly ? creatureParty : null,
@@ -927,12 +984,30 @@ export function resolveSingleActorAction({
     defenderItemBuffs: isAlly ? null : itemBuffs,
     defeatedIndices: new Set(),
     rng,
+    xpRng,
+    awardKillXp,
+    runPartySkills: isAlly ? (runPartySkills || []) : [],
     onAttack(atk) {
       atk.playbackIndex = playbackIndex++;
       atk.combatSide = isAlly ? 'player' : 'enemy';
       segment.attacks.push(atk);
 
       if (!isAlly && runPartySkills && combat) {
+        if (!selfSabotageApplied) {
+          selfSabotageApplied = true;
+          const sabotage = applyEnemySelfSabotage({
+            actingIndex: atk.attackerIndex,
+            enemies: actorList,
+            runPartySkills,
+            rng
+          });
+          if (sabotage) {
+            sabotage.playbackIndex = playbackIndex++;
+            sabotage.combatSide = 'enemy';
+            segment.effectEvents.push(sabotage);
+          }
+        }
+
         const counter = computeInlineCounter(atk, allies, enemies, runPartySkills, combat, rng);
         if (counter) {
           counter.playbackIndex = playbackIndex++;
@@ -986,9 +1061,12 @@ export function resolveSyntheticActorAction({
   itemBuffs = null,
   creatureParty = null,
   metaMults = null,
+  runPartySkills = [],
+  awardKillXp = null,
   playbackStart = 0,
   rng = Math.random,
-  awardKillXp = null,
+  xpRng = rng,
+  deferKillXp = false,
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
   const actorList = isAlly ? allies : enemies;
@@ -1031,6 +1109,9 @@ export function resolveSyntheticActorAction({
     isAlly ? null : itemBuffs,
     rng,
     awardKillXp,
+    isAlly ? (runPartySkills || []) : [],
+    xpRng,
+    deferKillXp,
   );
 
   for (const atk of result.attacks) {

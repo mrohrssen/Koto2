@@ -4,11 +4,12 @@ import { readFileSync } from 'node:fs';
 
 import { createSeededRng } from '../../../src/shared/deterministic-rng.js';
 import { createPveTurnSnapshot } from '../../../src/shared/combat/pve-turn-snapshot.js';
-import { resolvePveTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
+import { resolveKanjiKombatAnswerTurn, resolvePveCursorTurn, resolvePveTurn } from '../../../src/shared/combat/pve-turn-resolver.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { rollNpcSkill } from '../../../src/game/services/npc-service.js';
 import {
   executeNpcSkill,
+  awardKillXp,
   pickEnemyMoveChoice,
   pickEnemyTarget,
   processInterleavedPvERound,
@@ -179,7 +180,7 @@ function makeCursorGameManager() {
       active: true,
       player: { credits: 0 },
       creatureParty: { active: allies, reserves: [], pendingCaptures: [] },
-      partySkills: ['arcStrike'],
+      partySkills: [{ id: 'arcStrike', level: 1 }],
       itemBuffs: null,
       crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
     },
@@ -325,6 +326,110 @@ describe('shared PvE turn resolver', () => {
     assert.ok(result.nextCombat.enemies[0].hp < 90);
   });
 
+  it('applies Exp Master XP to shared Kanji Kombat synthetic kills', () => {
+    const ally = creature({ id: 'hi', attack: 100, hp: 80, maxHp: 80 });
+    const enemy = creature({ id: 'mizu', level: 5, element: 'water', hp: 1, maxHp: 90 });
+    const result = resolveKanjiKombatAnswerTurn({
+      combat: {
+        active: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 0,
+        turnCount: 0,
+      },
+      run: {
+        partySkills: [{ id: 'expMaster', level: 4 }],
+        itemBuffs: null,
+        creatureParty: { active: [ally], reserves: [] },
+        crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+      },
+      meta: {},
+    }, {
+      answerCorrect: true,
+      targetIndex: 0,
+      rng: constantRng(0.50),
+      clone: false,
+      awardKillXp,
+    });
+
+    assert.equal(result.transcript.xpEvents[0].xpGrants[0].xp, 500);
+  });
+
+  it('awards Exp Master XP in shared active-cursor predictions', () => {
+    const ally = creature({ id: 'hi', hp: 80, maxHp: 80, attack: 100 });
+    const enemy = creature({ id: 'mizu', level: 5, element: 'water', hp: 1, maxHp: 90 });
+    const result = resolvePveCursorTurn({
+      combat: {
+        active: true,
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        actionCount: 0,
+        turnCount: 0,
+      },
+      run: {
+        partySkills: [{ id: 'expMaster', level: 4 }],
+        itemBuffs: null,
+        creatureParty: { active: [ally], reserves: [] },
+        crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+      },
+      moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+    }, {
+      actionType: 'attack',
+      rng: constantRng(0.50),
+      clone: false,
+      awardKillXp,
+    });
+
+    assert.equal(result.transcript.xpEvents[0].xpGrants[0].xp, 500);
+  });
+
+  it('uses the injected rng for Exp Master L5 in shared active-cursor predictions', () => {
+    const ally = creature({
+      id: 'hi',
+      hp: 80,
+      maxHp: 80,
+      attack: 100,
+      level: 5,
+      xp: 90,
+    });
+    const enemy = creature({ id: 'mizu', level: 1, element: 'water', hp: 1, maxHp: 90 });
+    const originalRandom = Math.random;
+    Math.random = () => {
+      throw new Error('shared active-cursor XP must use the injected rng');
+    };
+
+    try {
+      const result = resolvePveCursorTurn({
+        combat: {
+          active: true,
+          allies: [ally],
+          enemies: [enemy],
+          actionCursor: { side: 'ally', index: 0, opening: false },
+          actionCount: 0,
+          turnCount: 0,
+        },
+        run: {
+          partySkills: [{ id: 'expMaster', level: 5 }],
+          itemBuffs: null,
+          creatureParty: { active: [ally], reserves: [] },
+          crestMults: { hpMult: 1, atkMult: 1, mpMult: 1, defMult: 1, xpMult: 1 },
+        },
+        moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+      }, {
+        actionType: 'attack',
+        rng: constantRng(0.01),
+        clone: false,
+        awardKillXp,
+      });
+
+      assert.ok(result.transcript.xpEvents[0].levelUps.some(levelUp => levelUp.partySkillBonus === 'expMaster'));
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+
   it('resolves defend deterministically with the supplied seed', () => {
     const slash = {
       id: 'slash',
@@ -371,7 +476,7 @@ describe('shared PvE turn resolver', () => {
       allies: [creature({ id: 'hi', dex: 40, hp: 80, maxHp: 80 })],
       enemies: [enemy],
       moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
-      runPartySkills: ['erosion'],
+      runPartySkills: [{ id: 'buffMaster', level: 4 }],
       combat: {},
       itemBuffs: null,
     }, {
@@ -380,9 +485,10 @@ describe('shared PvE turn resolver', () => {
     });
 
     assert.equal(result.transcript.effectEvents[0]?.type, 'poison');
-    assert.equal(result.transcript.roundStartEvents[0]?.type, 'erosion');
+    assert.equal(result.transcript.roundStartEvents[0]?.type, 'buffMaster');
     assert.equal(result.transcript.enemyMpRegens[0]?.side, 'enemy');
-    assert.equal(result.transcript.stateSummary.enemies[0].statStages.atk, -2);
+    const buffStat = result.transcript.roundStartEvents[0].stat;
+    assert.equal(result.transcript.stateSummary.allies[0].statStages[buffStat], 1);
     assert.ok(result.nextCombat.enemies[0].hp < 90);
   });
 
@@ -401,7 +507,7 @@ describe('shared PvE turn resolver', () => {
     const counterResult = resolvePveTurn({
       allies: [creature({ id: 'hi', hp: 100, maxHp: 100, attack: 40 })],
       enemies: [creature({ id: 'kage', hp: 100, maxHp: 100, attack: 10, moves: [strike] })],
-      runPartySkills: ['retaliationStrike'],
+      runPartySkills: [{ id: 'counterMaster', level: 1 }],
       creatureParty: { active: [creature({ id: 'hi', hp: 100, maxHp: 100, attack: 40 })], reserves: [] },
       combat: {},
     }, {
@@ -576,6 +682,170 @@ describe('PvE combat rng injection', () => {
     assert.deepEqual(resultA, resultB);
   });
 
+  it('resolvePveTurn uses seeded rng for Buff Master round-start events', () => {
+    const run = randomValue => withMockRandom(randomValue, () => {
+      const allies = [creature({ id: 'hi', dex: 40, hp: 80, maxHp: 80 })];
+      const enemies = [creature({ id: 'mizu', element: 'water', hp: 90, maxHp: 90 })];
+      return resolvePveTurn({
+        allies,
+        enemies,
+        moveChoices: [{ creatureIndex: 0, moveId: 'honoo', targetIndex: 0 }],
+        runPartySkills: [{ id: 'buffMaster', level: 1 }],
+        combat: {},
+        creatureParty: { active: allies, reserves: [] },
+        itemBuffs: null,
+      }, {
+        actionType: 'attack',
+        seed: 'buff-master-round-start-seed',
+        clone: false,
+      }).transcript.roundStartEvents;
+    });
+
+    assert.deepEqual(run(0.01), run(0.99));
+  });
+
+  it('shared attack resolver applies enemy self-sabotage before inline counters', () => {
+    const allyMove = {
+      id: 'tap',
+      name: '叩く',
+      nameEn: 'Tap',
+      reading: 'たたく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 1,
+      mpCost: 0,
+    };
+    const enemyMove = {
+      id: 'poke',
+      name: '突く',
+      nameEn: 'Poke',
+      reading: 'つく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 1,
+      mpCost: 0,
+    };
+    const allies = [creature({
+      id: 'ally',
+      element: 'fire',
+      attack: 200,
+      defense: 20,
+      hp: 100,
+      maxHp: 100,
+      dex: 1,
+      moves: [allyMove],
+    })];
+    const enemies = [
+      creature({
+        id: 'e0',
+        element: 'wood',
+        attack: 1,
+        defense: 1,
+        hp: 20,
+        maxHp: 20,
+        dex: 50,
+        moves: [enemyMove],
+      }),
+      creature({
+        id: 'e1',
+        element: 'water',
+        hp: 100,
+        maxHp: 100,
+        dex: 0,
+        moves: [],
+      }),
+    ];
+
+    const result = resolvePveTurn({
+      allies,
+      enemies,
+      moveChoices: [{ creatureIndex: 0, moveId: 'tap', targetIndex: 0 }],
+      runPartySkills: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combat: {},
+      creatureParty: { active: allies, reserves: [] },
+      itemBuffs: null,
+      effectEvents: [],
+      roundStartEvents: [],
+    }, {
+      actionType: 'attack',
+      rng: constantRng(0.01),
+      clone: false,
+      processKoSwaps: false,
+    });
+
+    const sabotage = result.transcript.effectEvents.find(event => event.type === 'debuffMasterSelfSabotage');
+    assert.ok(sabotage, 'self-sabotage should resolve before the counter can KO the acting enemy');
+    assert.equal(sabotage.actingIndex, 0);
+    assert.equal(sabotage.targetIndex, 1);
+    assert.ok(enemies[1].statStages.atk <= -1);
+    assert.equal(enemies[0].hp, 0, 'counter should still KO the acting enemy afterward');
+  });
+
+  it('shared defend resolver applies enemy self-sabotage before counterattacks', () => {
+    const enemyMove = {
+      id: 'poke',
+      name: '突く',
+      nameEn: 'Poke',
+      reading: 'つく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 1,
+      mpCost: 0,
+    };
+    const allies = [creature({
+      id: 'ally',
+      element: 'fire',
+      attack: 200,
+      defense: 5,
+      hp: 500,
+      maxHp: 500,
+    })];
+    const enemies = [
+      creature({
+        id: 'e0',
+        element: 'wood',
+        attack: 40,
+        defense: 1,
+        hp: 20,
+        maxHp: 20,
+        moves: [enemyMove],
+      }),
+      creature({
+        id: 'e1',
+        element: 'water',
+        hp: 100,
+        maxHp: 100,
+        moves: [],
+      }),
+    ];
+
+    const result = resolvePveTurn({
+      allies,
+      enemies,
+      runPartySkills: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combat: {},
+      creatureParty: { active: allies, reserves: [] },
+      itemBuffs: null,
+      effectEvents: [],
+      roundStartEvents: [],
+    }, {
+      actionType: 'defend',
+      rng: constantRng(0.01),
+      clone: false,
+      processKoSwaps: false,
+    });
+
+    const sabotage = result.transcript.effectEvents.find(event => event.type === 'debuffMasterSelfSabotage');
+    assert.ok(sabotage, 'self-sabotage should resolve before defend counters can KO the acting enemy');
+    assert.equal(sabotage.actingIndex, 0);
+    assert.equal(sabotage.targetIndex, 1);
+    assert.equal(enemies[1].statStages.atk, -1);
+    assert.equal(enemies[0].hp, 0, 'counterattack should still KO the acting enemy afterward');
+  });
+
   it('active PvE cursor path produces identical transcripts with the same explicit rng', () => {
     const run = randomValue => withMockRandom(randomValue, () => {
       const gm = makeCursorGameManager();
@@ -595,6 +865,31 @@ describe('PvE combat rng injection', () => {
     });
 
     assert.deepEqual(run(0.99), run(0.01));
+  });
+
+  it('combat-cycle Kanji Kombat synthetic kills award Exp Master XP', () => {
+    const gm = makeCursorGameManager();
+    gm.run.mode = 'kanjiKombat';
+    gm.run.partySkills = [{ id: 'expMaster', level: 4 }];
+    gm.combat.allies = [gm.combat.allies[0]];
+    gm.run.creatureParty.active = gm.combat.allies;
+    gm.combat.enemies = [creature({ id: 'mizu', level: 5, hp: 1, maxHp: 90, moves: [] })];
+    gm.combat.actionCursor = { side: 'ally', index: 0, opening: false };
+    gm.kanjiKombatService = {
+      completeWaveAndMaybeStartNext: result => ({ actionType: 'kanjiKombat', ...result }),
+      finalizeDefeat: result => ({ actionType: 'kanjiKombat', ...result }),
+      queueNextPrompt: () => null,
+      finalizeDailyComplete: result => ({ actionType: 'kanjiKombat', ...result }),
+    };
+    const service = new CombatCycleService(gm);
+
+    const result = service.resolveKanjiKombatCursorAction({
+      correct: true,
+      targetIndex: 0,
+      rng: constantRng(0.50),
+    });
+
+    assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
   });
 
   it('NPC skill rolling and single-ally target selection use explicit rng when provided', () => {

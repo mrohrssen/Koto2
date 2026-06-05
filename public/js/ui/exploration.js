@@ -13,6 +13,7 @@ import * as campfireUI from './campfire.js';
 import { buildItemEffectPills } from './item-effect-pills.js';
 import { playRoomTransition } from './room-transition.js';
 import { renderButtons, renderChoices } from './ui-components.js';
+import { escapeHtml } from './html-utils.js';
 import { showNpcDialogueCard } from './npc-dialogue-card.js';
 import { buff, itemGained } from './event-popup.js';
 import { pop, flashElement } from './dom-effects.js';
@@ -444,6 +445,69 @@ const PARTY_SKILL_CATALOG_FALLBACK = {
   }
 };
 
+const PARTY_SKILL_TREE_DISPLAY_FALLBACK = {
+  arcStrike: {
+    name: 'Arc Strike',
+    levels: [
+      { desc: 'Your attacks arc to another enemy for 30% damage.' },
+      { desc: 'Arc strikes have a 50% chance to bounce one more time.' },
+      { desc: 'Arc strike bounces deal 50% more damage per bounce.' },
+      { desc: 'Arc strikes always bounce twice when possible.' },
+      { desc: 'After the second bounce, arc strikes have a 25% chance to keep bouncing.' }
+    ]
+  },
+  hpMaster: {
+    name: 'HP Master',
+    levels: [
+      { desc: "All ally creatures' max HP increases by 25%." },
+      { desc: 'After combat, ally creatures restore 100% more HP.' },
+      { desc: 'Healing actions restore 50% more HP.' },
+      { desc: 'Healing actions give the healed creature a random buff.' },
+      { desc: "All ally creatures' max HP increases by another 100%." }
+    ]
+  },
+  counterMaster: {
+    name: 'Counter Master',
+    levels: [
+      { desc: 'When hit, ally creatures have a 50% chance to counterattack with 7 power.' },
+      { desc: 'When hit, ally creatures have a 75% chance to counterattack.' },
+      { desc: 'Ally creatures always counterattack when hit.' },
+      { desc: 'Counterattacks deal double damage while the countering creature is below 50% HP.' },
+      { desc: 'All counterattack damage is doubled.' }
+    ]
+  },
+  buffMaster: {
+    name: 'Buff Master',
+    levels: [
+      { desc: 'Each turn, ally creatures have a 25% chance to gain a random buff.' },
+      { desc: 'Each turn, ally creatures have a 50% chance to gain a random buff.' },
+      { desc: 'Each turn, ally creatures have a 75% chance to gain a random buff.' },
+      { desc: 'Each turn, ally creatures gain a random buff.' },
+      { desc: 'When an ally creature acts, it has a 25% chance to give a random ally a random buff.' }
+    ]
+  },
+  expMaster: {
+    name: 'Exp Master',
+    levels: [
+      { desc: 'Ally creatures gain 25% more XP.' },
+      { desc: 'Ally creatures gain 50% more XP.' },
+      { desc: 'Ally creatures gain 75% more XP.' },
+      { desc: 'Ally creatures gain 100% more XP.' },
+      { desc: 'When an ally creature levels up, it has a 10% chance to level up again.' }
+    ]
+  },
+  debuffMaster: {
+    name: 'Debuff Master',
+    levels: [
+      { desc: 'Enemies hit by your attacks have a 20% chance to receive a random debuff.' },
+      { desc: 'Enemies hit by your attacks have a 40% chance to receive a random debuff.' },
+      { desc: 'Enemies hit by your attacks have a 60% chance to receive a random debuff.' },
+      { desc: 'Enemies hit by your attacks have an 80% chance to receive a random debuff.' },
+      { desc: 'When an enemy acts, it has a 50% chance to give one of its own allies a random debuff.' }
+    ]
+  }
+};
+
 // Skill master local cache (for inventory display + to avoid refetch loops)
 let skillMasterState = {
   cacheKey: null,
@@ -457,6 +521,27 @@ let skillMasterState = {
   cidShown: false,
   tutorialNarrationStarted: false
 };
+
+function clampPartySkillDisplayLevel(level) {
+  const n = Math.floor(Number(level));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.min(5, n);
+}
+
+function getPartySkillInventoryDisplay(skill) {
+  const skillId = typeof skill === 'string' ? skill : (skill?.id || skill?.skillId);
+  const level = typeof skill === 'object' && skill?.level != null
+    ? clampPartySkillDisplayLevel(skill.level)
+    : null;
+  const meta = skillMasterState.catalogById?.[skillId] || PARTY_SKILL_CATALOG_FALLBACK?.[skillId];
+  const tree = PARTY_SKILL_TREE_DISPLAY_FALLBACK[skillId];
+  const treeTitle = level && tree ? `${tree.name} - Lvl. ${level}` : null;
+  const fallbackName = skill?.name || meta?.name || tree?.name || skillId || '';
+  return {
+    title: skill?.title || treeTitle || meta?.title || `${fallbackName}${level ? ` Lvl. ${level}` : ''}`,
+    desc: skill?.desc || (level && tree?.levels?.[level - 1]?.desc) || meta?.desc || ''
+  };
+}
 
 function getActiveRoomFromRun(run) {
   const room = getCurrentBufferedRoom({ run });
@@ -553,16 +638,13 @@ function showInventory() {
   const partySkillsHtml = partySkills.length > 0
     ? `<div class="inventory-section-label" style="font-size:11px;color:var(--text-secondary);margin:12px 0 4px;padding:0 4px">Party Skills</div>` +
       partySkills.map(s => {
-        const skillId = typeof s === 'string' ? s : (s?.id || s?.skillId);
-        const meta = skillMasterState.catalogById?.[skillId] || PARTY_SKILL_CATALOG_FALLBACK?.[skillId];
-        const name = meta?.name || skillId;
-        const desc = meta?.desc || '';
+        const { title, desc } = getPartySkillInventoryDisplay(s);
         return `
           <div class="inventory-item">
             <span class="inventory-item-icon">✨</span>
             <div class="inventory-item-info">
-              <span class="inventory-item-name">${name}</span>
-              ${desc ? `<span class="inventory-item-name-ja" style="opacity:0.7">${desc}</span>` : ''}
+              <span class="inventory-item-name">${escapeHtml(title)}</span>
+              ${desc ? `<span class="inventory-item-name-ja" style="opacity:0.7">${escapeHtml(desc)}</span>` : ''}
             </div>
           </div>
         `;
@@ -1825,6 +1907,7 @@ export async function renderSkillMaster() {
     for (const s of offered) {
       if (!s?.id) continue;
       skillMasterState.catalogById[s.id] = {
+        title: s.title || s.name || PARTY_SKILL_CATALOG_FALLBACK?.[s.id]?.name || s.id,
         name: s.name || PARTY_SKILL_CATALOG_FALLBACK?.[s.id]?.name || s.id,
         desc: s.desc || PARTY_SKILL_CATALOG_FALLBACK?.[s.id]?.desc || ''
       };
@@ -1857,7 +1940,7 @@ export async function renderSkillMaster() {
     renderChoices({
       heading: 'Choose a skill',
       cards: offers.slice(0, 3).map(s => ({
-        title: s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
+        title: s.title || skillMasterState.catalogById?.[s.id]?.title || s.name || skillMasterState.catalogById?.[s.id]?.name || s.id,
         subtitle: s.desc || skillMasterState.catalogById?.[s.id]?.desc || '',
       })),
       onSelect: async (index) => {
@@ -1913,7 +1996,7 @@ function renderTutorialSkillMaster(offers) {
       btn.classList.add('tutorial-dimmed');
     }
 
-    const name = s.name || skillMasterState.catalogById?.[s.id]?.name || s.id;
+    const name = s.title || skillMasterState.catalogById?.[s.id]?.title || s.name || skillMasterState.catalogById?.[s.id]?.name || s.id;
     const desc = s.desc || skillMasterState.catalogById?.[s.id]?.desc || '';
     btn.innerHTML = `
       <div class="ui-choice__info">
@@ -2405,7 +2488,7 @@ export async function renderNpcBattleSkillSelection({ onSkillChosen, fetchOffers
   renderChoices({
     heading: 'Choose a skill',
     cards: offers.slice(0, 3).map(s => ({
-      title: s.name || s.id,
+      title: s.title || s.name || s.id,
       subtitle: s.desc || '',
     })),
     onSelect: async (index) => {

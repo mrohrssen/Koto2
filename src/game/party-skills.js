@@ -1,166 +1,263 @@
-export const PARTY_SKILLS_CATALOG = {
-  // ── Loop 1: Chain Combo ──
-  arcStrike: {
-    id: 'arcStrike', name: 'Arc Strike', loop: 'chain',
-    desc: 'Attacks chain to another enemy for 30% damage, matching your element.',
-    params: { chainDamagePct: 0.30, maxBounces: 1 }
-  },
-  forkedArc: {
-    id: 'forkedArc', name: 'Forked Arc', loop: 'chain',
-    desc: 'Chain bounces have a 50% chance to bounce again (up to 4 total).',
-    requires: 'arcStrike',
-    params: { bounceChance: 0.50, maxBounces: 4 }
-  },
-  resonantArc: {
-    id: 'resonantArc', name: 'Resonant Arc', loop: 'chain',
-    desc: 'Each successive chain bounce deals +15% more than the previous.',
-    requires: 'forkedArc',
-    params: { escalation: 0.15 }
-  },
-  chainSurge: {
-    id: 'chainSurge', name: 'Chain Surge', loop: 'chain',
-    desc: '3+ chain hits in a turn: all creatures gain ATK +1 stage.',
-    requires: 'arcStrike',
-    params: { threshold: 3, stageDelta: 1 }
-  },
-  elementalCascade: {
-    id: 'elementalCascade', name: 'Elemental Cascade', loop: 'chain',
-    desc: 'Super-effective chains deal 2x and may apply ATK -1 stage.',
-    requires: 'arcStrike',
-    params: { debuffChance: 0.30, stageDelta: -1 }
-  },
-
-  // ── Loop 2: Counter Attack ──
-  retaliationStrike: {
-    id: 'retaliationStrike', name: 'Retaliation Strike', loop: 'counter',
-    desc: '50% chance to counter when hit for 25% ATK, element-matched.',
-    params: { procChance: 0.50, damagePct: 0.25 }
-  },
-  hardenedRiposte: {
-    id: 'hardenedRiposte', name: 'Hardened Riposte', loop: 'counter',
-    desc: 'Counters deal +50% when you have a positive DEF stage.',
-    requires: 'retaliationStrike',
-    params: { bonusMult: 0.50 }
-  },
-  furyCounter: {
-    id: 'furyCounter', name: 'Fury Counter', loop: 'counter',
-    desc: 'Each counter permanently adds +10% counter damage (up to 10 stacks).',
-    requires: 'retaliationStrike',
-    params: { stackBonus: 0.10, maxStacks: 10 }
-  },
-  vengefulMark: {
-    id: 'vengefulMark', name: 'Vengeful Mark', loop: 'counter',
-    desc: 'Counters apply ATK -1 stage to the attacker.',
-    requires: 'retaliationStrike',
-    params: { stageDelta: -1 }
-  },
-  lastStand: {
-    id: 'lastStand', name: 'Last Stand', loop: 'counter',
-    desc: 'Below 30% HP: counters deal double damage.',
-    requires: 'retaliationStrike',
-    params: { hpThreshold: 0.30, damageMult: 2.0 }
-  },
-
-  // ── Loop 3: Debuff Spread ──
-  contagion: {
-    id: 'contagion', name: 'Contagion', loop: 'debuff',
-    desc: '35% chance applied debuffs spread to another enemy.',
-    params: { spreadChance: 0.35 }
-  },
-  erosion: {
-    id: 'erosion', name: 'Erosion', loop: 'debuff',
-    desc: 'Each round, all negative stat stages on enemies deepen by 1.',
-    params: { tickAmount: -1 }
-  },
-  virulentChain: {
-    id: 'virulentChain', name: 'Virulent Chain', loop: 'debuff',
-    desc: 'Contagion spreads can chain up to 3 times.',
-    requires: 'contagion',
-    params: { maxChains: 3 }
-  },
-  afflictionBurst: {
-    id: 'afflictionBurst', name: 'Affliction Burst', loop: 'debuff',
-    desc: '3+ debuff types on an enemy: burst for 20% max HP. 2-turn cooldown.',
-    params: { threshold: 3, burstPct: 0.20, cooldown: 2 }
-  },
-  pandemic: {
-    id: 'pandemic', name: 'Pandemic', loop: 'debuff',
-    desc: 'Defeated debuffed enemies spread ALL debuffs to all survivors.',
-    params: {}
-  },
-
-  // ── Loop 4: Buff Spread ──
-  sharedVigor: {
-    id: 'sharedVigor', name: 'Shared Vigor', loop: 'buff',
-    desc: '50% chance buffs chain to a random ally.',
-    params: { spreadChance: 0.50 }
-  },
-  momentum: {
-    id: 'momentum', name: 'Momentum', loop: 'buff',
-    desc: 'Each round, all positive stat stages on your party grow by 1.',
-    params: { tickAmount: 1 }
-  },
-  diverseEmpowerment: {
-    id: 'diverseEmpowerment', name: 'Diverse Empowerment', loop: 'buff',
-    desc: '+8% damage per different buff type on the attacker.',
-    params: { bonusPerType: 0.08 }
-  },
-  overflowVitality: {
-    id: 'overflowVitality', name: 'Overflow Vitality', loop: 'buff',
-    desc: '3+ buff types: regenerate 8% max HP at turn start.',
-    params: { threshold: 3, regenPct: 0.08 }
-  },
-  radiantAura: {
-    id: 'radiantAura', name: 'Radiant Aura', loop: 'buff',
-    desc: '3+ buff types on any creature: +15% team damage. Two at 3+: +30%.',
-    params: { threshold: 3, singleBonus: 0.15, doubleBonus: 0.30 }
-  }
-};
-
-// Allowlist of skills that are currently offered to players. Skills outside
-// this set remain in the catalog (so already-acquired skills keep working in
-// combat) but are filtered out of new offers. Trim or extend this list to
-// change what the Skill Master can hand out.
-export const ACTIVE_PARTY_SKILL_IDS = new Set([
+export const PARTY_SKILL_TREE_IDS = Object.freeze([
   'arcStrike',
-  'retaliationStrike',
-  'furyCounter',
-  'vengefulMark',
-  'contagion',
-  'sharedVigor',
-  'momentum',
-  'diverseEmpowerment'
+  'hpMaster',
+  'counterMaster',
+  'buffMaster',
+  'expMaster',
+  'debuffMaster'
 ]);
 
-function toOwnedSet(ownedSkillIds) {
-  if (!ownedSkillIds) return new Set();
-  if (ownedSkillIds instanceof Set) return ownedSkillIds;
-  if (Array.isArray(ownedSkillIds)) return new Set(ownedSkillIds.filter(Boolean));
-  return new Set();
+export const PARTY_SKILL_TREES = Object.freeze({
+  arcStrike: {
+    id: 'arcStrike',
+    name: 'Arc Strike',
+    levels: [
+      { desc: 'Your attacks arc to another enemy for 30% damage.' },
+      { desc: 'Arc strikes have a 50% chance to bounce one more time.' },
+      { desc: 'Arc strike bounces deal 50% more damage per bounce.' },
+      { desc: 'Arc strikes always bounce twice when possible.' },
+      { desc: 'After the second bounce, arc strikes have a 25% chance to keep bouncing.' }
+    ]
+  },
+  hpMaster: {
+    id: 'hpMaster',
+    name: 'HP Master',
+    levels: [
+      { desc: "All ally creatures' max HP increases by 25%." },
+      { desc: 'After combat, ally creatures restore 100% more HP.' },
+      { desc: 'Healing actions restore 50% more HP.' },
+      { desc: 'Healing actions give the healed creature a random buff.' },
+      { desc: "All ally creatures' max HP increases by another 100%." }
+    ]
+  },
+  counterMaster: {
+    id: 'counterMaster',
+    name: 'Counter Master',
+    levels: [
+      { desc: 'When hit, ally creatures have a 50% chance to counterattack with 7 power.' },
+      { desc: 'When hit, ally creatures have a 75% chance to counterattack.' },
+      { desc: 'Ally creatures always counterattack when hit.' },
+      { desc: 'Counterattacks deal double damage while the countering creature is below 50% HP.' },
+      { desc: 'All counterattack damage is doubled.' }
+    ]
+  },
+  buffMaster: {
+    id: 'buffMaster',
+    name: 'Buff Master',
+    levels: [
+      { desc: 'Each turn, ally creatures have a 25% chance to gain a random buff.' },
+      { desc: 'Each turn, ally creatures have a 50% chance to gain a random buff.' },
+      { desc: 'Each turn, ally creatures have a 75% chance to gain a random buff.' },
+      { desc: 'Each turn, ally creatures gain a random buff.' },
+      { desc: 'When an ally creature acts, it has a 25% chance to give a random ally a random buff.' }
+    ]
+  },
+  expMaster: {
+    id: 'expMaster',
+    name: 'Exp Master',
+    levels: [
+      { desc: 'Ally creatures gain 25% more XP.' },
+      { desc: 'Ally creatures gain 50% more XP.' },
+      { desc: 'Ally creatures gain 75% more XP.' },
+      { desc: 'Ally creatures gain 100% more XP.' },
+      { desc: 'When an ally creature levels up, it has a 10% chance to level up again.' }
+    ]
+  },
+  debuffMaster: {
+    id: 'debuffMaster',
+    name: 'Debuff Master',
+    levels: [
+      { desc: 'Enemies hit by your attacks have a 20% chance to receive a random debuff.' },
+      { desc: 'Enemies hit by your attacks have a 40% chance to receive a random debuff.' },
+      { desc: 'Enemies hit by your attacks have a 60% chance to receive a random debuff.' },
+      { desc: 'Enemies hit by your attacks have an 80% chance to receive a random debuff.' },
+      { desc: 'When an enemy acts, it has a 50% chance to give one of its own allies a random debuff.' }
+    ]
+  }
+});
+
+export const OLD_PARTY_SKILL_ID_TO_TREE = Object.freeze({
+  arcStrike: 'arcStrike',
+  forkedArc: 'arcStrike',
+  resonantArc: 'arcStrike',
+  chainSurge: 'arcStrike',
+  elementalCascade: 'arcStrike',
+  retaliationStrike: 'counterMaster',
+  hardenedRiposte: 'counterMaster',
+  furyCounter: 'counterMaster',
+  vengefulMark: 'counterMaster',
+  lastStand: 'counterMaster',
+  sharedVigor: 'buffMaster',
+  momentum: 'buffMaster',
+  diverseEmpowerment: 'buffMaster',
+  overflowVitality: 'buffMaster',
+  radiantAura: 'buffMaster',
+  contagion: 'debuffMaster',
+  erosion: 'debuffMaster',
+  virulentChain: 'debuffMaster',
+  afflictionBurst: 'debuffMaster',
+  pandemic: 'debuffMaster',
+  superEffectiveMend: 'hpMaster',
+  guardPulse: 'hpMaster',
+  hasteSpark: 'buffMaster',
+  battleRhythm: 'buffMaster',
+  finisherFeast: 'expMaster'
+});
+
+export const PARTY_SKILLS_CATALOG = PARTY_SKILL_TREES;
+export const ACTIVE_PARTY_SKILL_IDS = new Set(PARTY_SKILL_TREE_IDS);
+
+function clampLevel(level) {
+  return Math.max(1, Math.min(5, Math.floor(Number(level) || 1)));
 }
 
-export function rollSkillMasterOffers({ ownedSkillIds = [], count = 3 }) {
-  const owned = toOwnedSet(ownedSkillIds);
-  const eligible = Object.keys(PARTY_SKILLS_CATALOG).filter(id => {
-    if (!ACTIVE_PARTY_SKILL_IDS.has(id)) return false;
-    if (owned.has(id)) return false;
-    const req = PARTY_SKILLS_CATALOG[id].requires;
-    if (req && !owned.has(req)) return false;
-    return true;
-  });
-  if (eligible.length === 0) return [];
+function clampOwnedLevel(level) {
+  return Math.max(0, Math.min(5, Math.floor(Number(level) || 0)));
+}
+
+function treeIdForEntry(entry) {
+  const rawId = typeof entry === 'string' ? entry : entry?.id || entry?.skillId;
+  if (!rawId) return null;
+  if (PARTY_SKILL_TREES[rawId]) return rawId;
+  return OLD_PARTY_SKILL_ID_TO_TREE[rawId] || null;
+}
+
+function allPartyCreatures(party) {
+  return [
+    ...(party?.active || []),
+    ...(party?.reserves || [])
+  ].filter(Boolean);
+}
+
+export function canonicalPartySkillTreeId(entry) {
+  return treeIdForEntry(entry);
+}
+
+export function normalizePartySkills(runPartySkills = []) {
+  const levelsById = new Map();
+  for (const entry of runPartySkills || []) {
+    const id = treeIdForEntry(entry);
+    if (!id) continue;
+    const isCompact = typeof entry === 'object' && PARTY_SKILL_TREES[entry.id] && entry.level != null;
+    const credit = isCompact ? clampLevel(entry.level) : 1;
+    levelsById.set(id, Math.min(5, (levelsById.get(id) || 0) + credit));
+  }
+  return [...levelsById.entries()].map(([id, level]) => ({ id, level: clampLevel(level) }));
+}
+
+export function getPartySkillLevel(runPartySkills, id) {
+  let level = 0;
+  for (const entry of runPartySkills || []) {
+    if (treeIdForEntry(entry) !== id) continue;
+    const isCompact = typeof entry === 'object' && PARTY_SKILL_TREES[entry.id] && entry.level != null;
+    level = Math.min(5, level + (isCompact ? clampOwnedLevel(entry.level) : 1));
+  }
+  return level;
+}
+
+export function getPartySkillDisplay(id, level = 1) {
+  const tree = PARTY_SKILL_TREES[id];
+  if (!tree) return null;
+  const clamped = clampLevel(level);
+  return {
+    id,
+    level: clamped,
+    name: tree.name,
+    title: `${tree.name} - Lvl. ${clamped}`,
+    desc: tree.levels[clamped - 1].desc
+  };
+}
+
+export function getPartySkillOfferDisplay(offer, ownedSkillIds = []) {
+  const id = canonicalPartySkillTreeId(offer);
+  if (!id) return null;
+  const hasStoredLevel = typeof offer === 'object' && offer?.level != null;
+  const level = hasStoredLevel
+    ? offer.level
+    : getPartySkillLevel(ownedSkillIds, id) + 1;
+  if (!hasStoredLevel && level > 5) return null;
+  return getPartySkillDisplay(id, level);
+}
+
+export function rollSkillMasterOffers({ ownedSkillIds = [], count = 3, rng = Math.random } = {}) {
+  const normalized = normalizePartySkills(ownedSkillIds);
+  const byId = new Map(normalized.map(skill => [skill.id, skill.level]));
+  const eligible = PARTY_SKILL_TREE_IDS
+    .map(id => ({ id, level: (byId.get(id) || 0) + 1 }))
+    .filter(offer => offer.level <= 5);
 
   for (let i = eligible.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [eligible[i], eligible[j]] = [eligible[j], eligible[i]];
   }
 
   const n = Math.max(0, Math.min(Number(count) || 0, eligible.length));
-  return eligible.slice(0, n);
+  return eligible.slice(0, n).map(offer => getPartySkillDisplay(offer.id, offer.level));
 }
 
-export function getPartySkillDisplay(id) {
-  const def = PARTY_SKILLS_CATALOG[id];
-  if (!def) return null;
-  return { id: def.id, name: def.name, desc: def.desc, loop: def.loop, params: def.params };
+export function applyPartySkillChoice(runPartySkills, id) {
+  id = canonicalPartySkillTreeId(id);
+  if (!PARTY_SKILL_TREES[id]) throw new Error(`Unknown Party Skill tree: ${id}`);
+  const normalized = normalizePartySkills(runPartySkills);
+  const existing = normalized.find(skill => skill.id === id);
+  if (existing && existing.level >= 5) throw new Error(`${PARTY_SKILL_TREES[id].name} is already at max level`);
+  if (existing) existing.level += 1;
+  else normalized.push({ id, level: 1 });
+  normalized.sort((a, b) => PARTY_SKILL_TREE_IDS.indexOf(a.id) - PARTY_SKILL_TREE_IDS.indexOf(b.id));
+  if (Array.isArray(runPartySkills)) {
+    runPartySkills.splice(0, runPartySkills.length, ...normalized.map(skill => ({ ...skill })));
+  }
+  return normalized;
+}
+
+export function getHpMasterMaxHpMultiplier(runPartySkills) {
+  const level = getPartySkillLevel(runPartySkills, 'hpMaster');
+  return 1 + (level >= 1 ? 0.25 : 0) + (level >= 5 ? 1 : 0);
+}
+
+export function syncPartySkillHpBonuses(party, runPartySkills) {
+  const nextMult = getHpMasterMaxHpMultiplier(runPartySkills);
+  for (const creature of allPartyCreatures(party)) {
+    if (!creature || typeof creature.maxHp !== 'number') continue;
+
+    const prevMult = Number(creature.partySkillHpMultiplier) || 1;
+    const savedBase = Number(creature.partySkillBaseMaxHp) || 0;
+    const expectedCurrent = savedBase > 0 ? Math.floor(savedBase * prevMult) : 0;
+    const currentMaxHp = Math.max(1, Math.floor(creature.maxHp));
+    const baseMaxHp = expectedCurrent === currentMaxHp ? savedBase : currentMaxHp;
+    const hpRatio = currentMaxHp > 0 ? Math.max(0, Math.min(1, (Number(creature.hp) || 0) / currentMaxHp)) : 1;
+    const nextMaxHp = Math.max(1, Math.floor(baseMaxHp * nextMult));
+
+    creature.maxHp = nextMaxHp;
+    if ((Number(creature.hp) || 0) <= 0) {
+      creature.hp = 0;
+    } else {
+      creature.hp = Math.max(1, Math.min(nextMaxHp, Math.round(nextMaxHp * hpRatio)));
+    }
+
+    if (nextMult === 1) {
+      delete creature.partySkillBaseMaxHp;
+      delete creature.partySkillHpMultiplier;
+    } else {
+      creature.partySkillBaseMaxHp = baseMaxHp;
+      creature.partySkillHpMultiplier = nextMult;
+    }
+  }
+}
+
+export function getPostCombatRecoveryMultiplier(runPartySkills) {
+  return getPartySkillLevel(runPartySkills, 'hpMaster') >= 2 ? 2 : 1;
+}
+
+export function getHealingMultiplier(runPartySkills) {
+  return getPartySkillLevel(runPartySkills, 'hpMaster') >= 3 ? 1.5 : 1;
+}
+
+export function getXpMultiplier(runPartySkills) {
+  const level = getPartySkillLevel(runPartySkills, 'expMaster');
+  if (level >= 4) return 2;
+  if (level >= 3) return 1.75;
+  if (level >= 2) return 1.5;
+  if (level >= 1) return 1.25;
+  return 1;
 }

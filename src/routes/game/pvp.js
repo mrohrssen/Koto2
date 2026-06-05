@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { refreshCreatureListUids } from '../../game/creatures.js';
+import { normalizePartySkills } from '../../game/party-skills.js';
 import { normalizeRankedState, toPublicRankedSummary } from '../../pvp/ranked-rating.js';
 
 /**
@@ -19,6 +20,8 @@ export function savePvpTeam(gm, slotIndex) {
     partySkills: gm.run.partySkills || [],
     itemBuffs: gm.run.itemBuffs || {}
   }));
+
+  snapshot.partySkills = normalizePartySkills(snapshot.partySkills || []);
 
   // Regenerate uids — the snapshot is a conceptually independent roster,
   // not an alias of the live run's creatures.

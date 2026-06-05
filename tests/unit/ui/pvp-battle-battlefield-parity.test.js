@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 const socketHandlers = {};
 const moveSelections = [];
 let attackDisplayImpl = () => {};
+let effectEventsImpl = async () => {};
 
 await mock.module('../../../public/js/pvp-socket.js', {
   namedExports: {
@@ -33,6 +34,9 @@ await mock.module('../../../public/js/ui/target-select.js', {
 await mock.module('../../../public/js/ui/combat-loop.js', {
   namedExports: { showAttackDisplay: (...args) => attackDisplayImpl(...args) },
 });
+await mock.module('../../../public/js/ui/combat-vfx.js', {
+  namedExports: { showEffectEvents: (...args) => effectEventsImpl(...args) },
+});
 await mock.module('../../../public/js/ui/combat-ui-utils.js', {
   namedExports: { getHpColor: () => 'green' },
 });
@@ -56,6 +60,7 @@ describe('PvP battlefield layout parity', () => {
     for (const event of Object.keys(socketHandlers)) delete socketHandlers[event];
     moveSelections.length = 0;
     attackDisplayImpl = () => {};
+    effectEventsImpl = async () => {};
     globalThis.document = {
       getElementById: () => null,
       querySelector: () => null,
@@ -253,5 +258,90 @@ describe('PvP battlefield layout parity', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     assert.deepEqual(displayOrder, ['opening-hit', 'bot-follow-up']);
+  });
+
+  it('renders action segment effect events without sending them to attack display', async () => {
+    const displayOrder = [];
+    const effectOrder = [];
+    const playbackOrder = [];
+    attackDisplayImpl = (atk) => {
+      const label = atk.type || atk.moveId || atk.category;
+      displayOrder.push(label);
+      playbackOrder.push(label);
+      return Promise.resolve();
+    };
+    effectEventsImpl = (result) => {
+      for (const event of result.effectEvents || []) {
+        effectOrder.push(event.type);
+        playbackOrder.push(event.type);
+      }
+      return Promise.resolve();
+    };
+
+    init({
+      getGameState: () => ({}),
+      updateUI: () => {},
+      actions: { setContent: () => {} },
+      scene: {
+        setBackground: () => {},
+        showFormation: () => {},
+      },
+      onPvpBattleStart: () => {},
+    });
+
+    startPvpBattle({
+      yourTeam: [
+        { id: 'a', hp: 20, maxHp: 20, dex: 5, moves: [] },
+        { id: 'a-ally', hp: 20, maxHp: 20, dex: 1, moves: [] }
+      ],
+      opponentTeam: [{ id: 'b', hp: 30, maxHp: 30, dex: 5, moves: [] }],
+      opponentName: 'RankedBot',
+      mySide: 'sideA',
+      openingResolved: true,
+      actionCursor: { side: 'sideB', index: 0 },
+    });
+
+    await socketHandlers['pvp:action-result']?.({
+      actionSegments: [{
+        actor: { side: 'sideA', index: 0 },
+        attacks: [{
+          side: 'sideA',
+          attackerIndex: 0,
+          targetIndex: 0,
+          damage: 5,
+          moveId: 'slash',
+          playbackIndex: 0
+        }],
+        effectEvents: [{
+          type: 'debuffMasterSelfSabotage',
+          side: 'sideA',
+          targetSide: 'sideA',
+          targetIndex: 1,
+          stat: 'atk',
+          change: -1,
+          playbackIndex: 1
+        }],
+        counterAttacks: [{
+          type: 'counter',
+          side: 'sideB',
+          attackerIndex: 0,
+          targetIndex: 0,
+          damage: 20,
+          playbackIndex: 2
+        }],
+      }],
+      allies: [
+        { id: 'a', hp: 0, maxHp: 20, dex: 5, moves: [] },
+        { id: 'a-ally', hp: 20, maxHp: 20, dex: 1, moves: [] }
+      ],
+      enemies: [{ id: 'b', hp: 25, maxHp: 30, dex: 5, moves: [] }],
+      winner: null,
+      actionCursor: { side: 'sideA', index: 1 },
+      openingResolved: true,
+    });
+
+    assert.deepEqual(displayOrder, ['slash', 'counter']);
+    assert.deepEqual(effectOrder, ['debuffMasterSelfSabotage']);
+    assert.deepEqual(playbackOrder, ['slash', 'debuffMasterSelfSabotage', 'counter']);
   });
 });

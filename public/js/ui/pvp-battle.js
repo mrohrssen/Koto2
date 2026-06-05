@@ -4,6 +4,7 @@ import { showMoves, setActiveLabel } from './move-select.js';
 import { escapeHtml } from './html-utils.js';
 import { init as initTargetSelect, showEnemies as showEnemyTargets, showAllies as showAllyTargets } from './target-select.js';
 import { showAttackDisplay } from './combat-loop.js';
+import { showEffectEvents } from './combat-vfx.js';
 import { getHpColor } from './combat-ui-utils.js';
 import { getSceneManager } from '../scenes/scene-manager.js';
 import { BattleScene } from '../scenes/battle-scene.js';
@@ -355,14 +356,67 @@ async function handleActionResult(result) {
 
 async function showActionSegments(segments) {
   for (const segment of segments) {
-    const attacks = [
-      ...(segment.attacks || []),
-      ...(segment.counterAttacks || [])
-    ];
-    if (attacks.length > 0) {
-      await showAttackSummary(attacks);
+    const hpTrackers = createPvpHpTrackers();
+    const deferredEffectEvents = [];
+    const orderedItems = [];
+    let fallbackOrder = 0;
+
+    for (const atk of segment.attacks || []) {
+      orderedItems.push({
+        kind: 'attack',
+        playbackIndex: typeof atk.playbackIndex === 'number' ? atk.playbackIndex : Number.MAX_SAFE_INTEGER + fallbackOrder++,
+        record: atk
+      });
+    }
+    for (const counter of segment.counterAttacks || []) {
+      orderedItems.push({
+        kind: 'attack',
+        playbackIndex: typeof counter.playbackIndex === 'number' ? counter.playbackIndex : Number.MAX_SAFE_INTEGER + fallbackOrder++,
+        record: counter
+      });
+    }
+    for (const event of segment.effectEvents || []) {
+      if (typeof event.playbackIndex === 'number') {
+        orderedItems.push({ kind: 'effect', playbackIndex: event.playbackIndex, event });
+      } else {
+        deferredEffectEvents.push(event);
+      }
+    }
+
+    orderedItems.sort((a, b) => a.playbackIndex - b.playbackIndex);
+    for (const item of orderedItems) {
+      if (item.kind === 'attack') {
+        await showAttackRecord(item.record, hpTrackers);
+      } else if (item.kind === 'effect') {
+        await showPvpEffectEvents([item.event]);
+      }
+    }
+
+    if (deferredEffectEvents.length > 0) {
+      await showPvpEffectEvents(deferredEffectEvents);
     }
   }
+}
+
+async function showPvpEffectEvents(effectEvents) {
+  if (!effectEvents.length || !pvpState) return;
+  await showEffectEvents({
+    allies: pvpState.allies,
+    enemies: pvpState.enemies,
+    effectEvents: effectEvents.map(normalizePvpEffectEvent),
+    mpRegens: [],
+  });
+}
+
+function normalizePvpEffectEvent(event) {
+  const side = event.side === 'sideA' || event.side === 'sideB'
+    ? event.side
+    : (event.targetSide === 'sideA' || event.targetSide === 'sideB' ? event.targetSide : null);
+  if (!side) return event;
+  return {
+    ...event,
+    targetSide: side === pvpState.mySide ? 'ally' : 'enemy',
+  };
 }
 
 async function syncPvpBattleScene({ initial = false } = {}) {
@@ -394,46 +448,53 @@ async function syncPvpBattleScene({ initial = false } = {}) {
  * @param {object[]} attacks - Array of attack record objects from resolveRound
  */
 async function showAttackSummary(attacks) {
-  // Build running HP maps from pre-round state (before server results applied)
+  const hpTrackers = createPvpHpTrackers();
+  for (const atk of attacks) {
+    await showAttackRecord(atk, hpTrackers);
+  }
+}
+
+function createPvpHpTrackers() {
   const allyHp = pvpState.allies.map(c => ({ hp: c.hp, maxHp: c.maxHp }));
   const enemyHp = pvpState.enemies.map(c => ({ hp: c.hp, maxHp: c.maxHp }));
+  return { allyHp, enemyHp };
+}
 
-  for (const atk of attacks) {
-    const isEnemy = (atk.side !== pvpState.mySide);
+async function showAttackRecord(atk, hpTrackers) {
+  const isEnemy = (atk.side !== pvpState.mySide);
 
-    // Resolve source/target DOM elements
-    let sourceEl, targetEl, hpTracker;
-    if (isEnemy) {
-      sourceEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
-      targetEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.targetIndex}"]`);
-      hpTracker = { map: allyHp, formation: 'player-formation' };
-    } else {
-      sourceEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
-      targetEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.targetIndex}"]`);
-      hpTracker = { map: enemyHp, formation: 'enemy-formation' };
-    }
+  // Resolve source/target DOM elements
+  let sourceEl, targetEl, hpTracker;
+  if (isEnemy) {
+    sourceEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
+    targetEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.targetIndex}"]`);
+    hpTracker = { map: hpTrackers.allyHp, formation: 'player-formation' };
+  } else {
+    sourceEl = document.querySelector(`#player-formation .formation-slot[data-index="${atk.attackerIndex}"]`);
+    targetEl = document.querySelector(`#enemy-formation .formation-slot[data-index="${atk.targetIndex}"]`);
+    hpTracker = { map: hpTrackers.enemyHp, formation: 'enemy-formation' };
+  }
 
-    const targetMaxHp = hpTracker.map[atk.targetIndex]?.maxHp || 100;
+  const targetMaxHp = hpTracker.map[atk.targetIndex]?.maxHp || 100;
 
-    // Shared display: card, sound, effects, damage number, STAB, effectiveness, tap
-    let hpUpdated = false;
-    await showAttackDisplay(atk, {
-      isEnemy, sourceEl, targetEl, targetMaxHp,
-      allies: pvpState.allies, enemies: pvpState.enemies,
-      onImpact: () => {
-        if (atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
-          hpTracker.map[atk.targetIndex].hp = Math.max(0, hpTracker.map[atk.targetIndex].hp - atk.damage);
-          updateSlotHp(hpTracker.formation, atk.targetIndex, hpTracker.map[atk.targetIndex].hp, hpTracker.map[atk.targetIndex].maxHp);
-          hpUpdated = true;
-        }
+  // Shared display: card, sound, effects, damage number, STAB, effectiveness, tap
+  let hpUpdated = false;
+  await showAttackDisplay(atk, {
+    isEnemy, sourceEl, targetEl, targetMaxHp,
+    allies: pvpState.allies, enemies: pvpState.enemies,
+    onImpact: () => {
+      if (atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
+        hpTracker.map[atk.targetIndex].hp = Math.max(0, hpTracker.map[atk.targetIndex].hp - atk.damage);
+        updateSlotHp(hpTracker.formation, atk.targetIndex, hpTracker.map[atk.targetIndex].hp, hpTracker.map[atk.targetIndex].maxHp);
+        hpUpdated = true;
       }
-    });
-
-    // Fallback: if onImpact didn't fire (no sprite/element), update HP now
-    if (!hpUpdated && atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
-      hpTracker.map[atk.targetIndex].hp = Math.max(0, hpTracker.map[atk.targetIndex].hp - atk.damage);
-      updateSlotHp(hpTracker.formation, atk.targetIndex, hpTracker.map[atk.targetIndex].hp, hpTracker.map[atk.targetIndex].maxHp);
     }
+  });
+
+  // Fallback: if onImpact didn't fire (no sprite/element), update HP now
+  if (!hpUpdated && atk.damage > 0 && hpTracker.map[atk.targetIndex]) {
+    hpTracker.map[atk.targetIndex].hp = Math.max(0, hpTracker.map[atk.targetIndex].hp - atk.damage);
+    updateSlotHp(hpTracker.formation, atk.targetIndex, hpTracker.map[atk.targetIndex].hp, hpTracker.map[atk.targetIndex].maxHp);
   }
 }
 

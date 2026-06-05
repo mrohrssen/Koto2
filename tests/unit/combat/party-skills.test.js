@@ -1,40 +1,52 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { PARTY_SKILLS_CATALOG, rollSkillMasterOffers, getPartySkillDisplay } from '../../../src/game/party-skills.js';
+import {
+  PARTY_SKILLS_CATALOG,
+  PARTY_SKILL_TREE_IDS,
+  getPartySkillDisplay,
+  rollSkillMasterOffers
+} from '../../../src/game/party-skills.js';
 import { applyPartySkillsAfterPlayerAttacks } from '../../../src/game/services/creature-combat-service.js';
 
-test('catalog has 20 skills across 4 loops', () => {
-  const skills = Object.values(PARTY_SKILLS_CATALOG);
-  assert.equal(skills.length, 20);
+test('catalog defines six five-level party skill trees', () => {
+  assert.deepEqual(Object.keys(PARTY_SKILLS_CATALOG), PARTY_SKILL_TREE_IDS);
+  assert.equal(Object.values(PARTY_SKILLS_CATALOG).length, 6);
 
-  const loops = new Set(skills.map(s => s.loop));
-  assert.deepEqual([...loops].sort(), ['buff', 'chain', 'counter', 'debuff']);
-
-  for (const loop of ['chain', 'counter', 'debuff', 'buff']) {
-    const loopSkills = skills.filter(s => s.loop === loop);
-    assert.equal(loopSkills.length, 5, `${loop} loop should have 5 skills`);
-  }
-
-  for (const skill of skills) {
-    assert.ok(skill.id, `skill missing id`);
-    assert.ok(skill.name, `${skill.id} missing name`);
-    assert.ok(skill.loop, `${skill.id} missing loop`);
-    assert.ok(skill.desc, `${skill.id} missing desc`);
+  for (const id of PARTY_SKILL_TREE_IDS) {
+    const tree = PARTY_SKILLS_CATALOG[id];
+    assert.equal(tree.id, id);
+    assert.ok(tree.name, `${id} missing name`);
+    assert.equal(tree.levels.length, 5, `${id} should have 5 levels`);
+    for (let level = 1; level <= 5; level++) {
+      const display = getPartySkillDisplay(id, level);
+      assert.equal(display.id, id);
+      assert.equal(display.level, level);
+      assert.match(display.title, /Lvl\./);
+      assert.ok(display.desc.length > 10);
+    }
   }
 });
 
-test('rollSkillMasterOffers excludes owned and returns up to count', () => {
-  const offers = rollSkillMasterOffers({ ownedSkillIds: [], count: 3 });
-  assert.equal(offers.length, 3);
-  assert.equal(new Set(offers).size, 3);
-  for (const id of offers) {
-    assert.ok(PARTY_SKILLS_CATALOG[id], `${id} not in catalog`);
-  }
+test('rollSkillMasterOffers returns next-level displays and excludes maxed trees', () => {
+  const offers = rollSkillMasterOffers({
+    ownedSkillIds: [
+      { id: 'arcStrike', level: 2 },
+      { id: 'hpMaster', level: 5 },
+    ],
+    count: 6,
+    rng: () => 0.5,
+  });
 
-  const offers2 = rollSkillMasterOffers({ ownedSkillIds: offers, count: 3 });
-  for (const id of offers2) {
-    assert.ok(!offers.includes(id), `${id} should be excluded`);
+  assert.equal(new Set(offers.map(offer => offer.id)).size, offers.length);
+  assert.equal(offers.find(offer => offer.id === 'arcStrike')?.level, 3);
+  assert.equal(offers.some(offer => offer.id === 'hpMaster'), false);
+  assert.ok(offers.length <= 5);
+  for (const offer of offers) {
+    assert.ok(PARTY_SKILLS_CATALOG[offer.id], `${offer.id} not in catalog`);
+    assert.ok(offer.level >= 1 && offer.level <= 5);
+    assert.match(offer.title, /Lvl\./);
+    assert.ok(offer.desc.length > 10);
   }
 });
 
@@ -96,11 +108,10 @@ test('non-qualifying records (NPC skill / heal / zero-damage) are ignored by the
     attacks,
     allies,
     enemies,
-    runPartySkills: ['arcStrike', 'chainSurge'],
+    runPartySkills: [{ id: 'arcStrike', level: 5 }],
     combat
   });
 
   assert.equal(allies[0].hp, 40, 'no changes from non-qualifying records');
   assert.equal(enemies[0].hp, 100, 'no chain on non-qualifying records');
 });
-
