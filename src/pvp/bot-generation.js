@@ -2,7 +2,12 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { instantiateCreatureForCombat } from '../game/creatures.js';
-import { ACTIVE_PARTY_SKILL_IDS, PARTY_SKILLS_CATALOG } from '../game/party-skills.js';
+import {
+  PARTY_SKILL_TREES,
+  applyPartySkillChoice,
+  rollSkillMasterOffers,
+  syncPartySkillHpBonuses
+} from '../game/party-skills.js';
 import { applyItem, createItemBuffs } from '../game/services/item-service.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -36,15 +41,6 @@ function pickWeighted(entries, random) {
     if (roll <= 0) return entry.value;
   }
   return entries.at(-1).value;
-}
-
-function shuffle(values, random) {
-  const copy = [...values];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
 }
 
 function rarityWeightsForStrength(strength) {
@@ -100,24 +96,13 @@ function pickCreatureTemplates({ strength, count, random }) {
   return picked;
 }
 
-function legalPartySkillIds(owned) {
-  return Object.keys(PARTY_SKILLS_CATALOG).filter(id => {
-    if (!ACTIVE_PARTY_SKILL_IDS.has(id)) return false;
-    if (owned.has(id)) return false;
-    const required = PARTY_SKILLS_CATALOG[id].requires;
-    return !required || owned.has(required);
-  });
-}
-
 function generatePartySkills(random) {
-  const owned = new Set();
-  const picked = [];
+  let picked = [];
   for (let i = 0; i < 5; i++) {
-    const eligible = legalPartySkillIds(owned);
-    if (eligible.length === 0) break;
-    const id = shuffle(eligible, random)[0];
-    owned.add(id);
-    picked.push({ id });
+    const offers = rollSkillMasterOffers({ ownedSkillIds: picked, count: 3, rng: random });
+    if (offers.length === 0) break;
+    const choice = offers[Math.floor(random() * offers.length)];
+    picked = applyPartySkillChoice(picked, choice.id);
   }
   return picked;
 }
@@ -149,6 +134,18 @@ function assignDeterministicUid(creature, seed, index) {
   creature.uid = `bot-${seed}-${index}-${creature.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
 }
 
+function isValidGeneratedPartySkill(skill) {
+  return Boolean(
+    skill
+    && typeof skill === 'object'
+    && typeof skill.id === 'string'
+    && Object.prototype.hasOwnProperty.call(PARTY_SKILL_TREES, skill.id)
+    && Number.isInteger(skill.level)
+    && skill.level >= 1
+    && skill.level <= 5
+  );
+}
+
 export function generateRankedBotProfile({ index = 0, strength = 5, seed = 'ranked-bots-v1', username = null } = {}) {
   const random = createSeededRandom(`${seed}:${index}:${strength}`);
   const teamSize = 4 + Math.floor(random() * 3);
@@ -172,6 +169,7 @@ export function generateRankedBotProfile({ index = 0, strength = 5, seed = 'rank
     savedAt: 0
   };
   applyRandomEquipment(team, random);
+  syncPartySkillHpBonuses(team.creatureParty, team.partySkills);
 
   const displayRating = targetRatingForStrength(strength, random);
   return {
@@ -210,7 +208,13 @@ export function validateGeneratedBotProfile(bot) {
   ];
   if (creatures.length < 4 || creatures.length > 6) errors.push('team_size');
   if (new Set(creatures.map(c => c.id)).size !== creatures.length) errors.push('duplicate_creatures');
-  if ((bot?.team?.partySkills || []).length !== 5) errors.push('party_skill_count');
+  const partySkills = bot?.team?.partySkills || [];
+  if (partySkills.some(skill => !isValidGeneratedPartySkill(skill))) errors.push('party_skill_invalid');
+  const partySkillLevelTotal = partySkills.reduce(
+    (sum, skill) => sum + (Number.isFinite(skill?.level) ? skill.level : 0),
+    0
+  );
+  if (partySkillLevelTotal !== 5) errors.push('party_skill_level_total');
   if (Object.keys(bot?.team?.itemBuffs || {}).length > 0) errors.push('party_item_buffs');
   for (const creature of creatures) {
     if (!creature.itemBuffs) errors.push(`missing_item_buffs:${creature.id}`);
@@ -236,7 +240,7 @@ export function summarizeBotForReview(bot) {
       rarity: creature.rarity,
       items: (creature.equippedItems || []).map(item => item.nameEn || item.id)
     })),
-    partySkills: bot.team.partySkills.map(skill => skill.id),
+    partySkills: bot.team.partySkills.map(skill => `${skill.id}:${skill.level}`),
     validation: validateGeneratedBotProfile(bot)
   };
 }

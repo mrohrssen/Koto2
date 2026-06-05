@@ -11,11 +11,12 @@ import { renderJpSentence, getKnownWords, entityToToken } from './bootstrap-clie
 
 /** Party skill names for display (matches server PARTY_SKILLS_CATALOG) */
 const PARTY_SKILL_NAMES = {
-  superEffectiveMend: 'Super-Effective Mend',
-  hasteSpark: 'Haste Spark',
-  guardPulse: 'Guard Pulse',
-  battleRhythm: 'Battle Rhythm',
-  finisherFeast: 'Finisher Feast'
+  arcStrike: 'Arc Strike',
+  hpMaster: 'HP Master',
+  counterMaster: 'Counter Master',
+  buffMaster: 'Buff Master',
+  expMaster: 'Exp Master',
+  debuffMaster: 'Debuff Master'
 };
 
 let getGameState = null;
@@ -405,7 +406,8 @@ export async function renderPvpTeamSelect() {
     const skillsHtml = skills.length > 0
       ? `<div class="pvp-party-skills">${skills.map(s => {
           const id = typeof s === 'string' ? s : (s?.id || s?.skillId || '');
-          const name = PARTY_SKILL_NAMES[id] || id;
+          const level = typeof s === 'object' && s?.level ? ` Lvl. ${s.level}` : '';
+          const name = `${PARTY_SKILL_NAMES[id] || id}${level}`;
           return `<span class="pvp-skill-tag">${escapeHtml(name)}</span>`;
         }).join('')}</div>`
       : '';
