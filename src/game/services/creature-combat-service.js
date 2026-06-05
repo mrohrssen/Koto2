@@ -996,7 +996,10 @@ export function processInterleavedPvERound(
                 runPartySkills: options.runPartySkills,
                 rng
               });
-              if (sabotage) effectEvents.push(sabotage);
+              if (sabotage) {
+                tagPlayback(sabotage, 'enemy');
+                effectEvents.push(sabotage);
+              }
             }
 
             const counter = computeInlineCounter(atk, allies, enemies, options.runPartySkills, options.combat, rng);
@@ -1072,7 +1075,8 @@ export function resolveSingleActorAction({
   runPartySkills = null,
   combat = null,
   playbackStart = 0,
-  rng = Math.random
+  rng = Math.random,
+  onActionRecord = null
 }) {
   const isAlly = actorSide === 'ally' || actorSide === 'sideA';
   const actorList = isAlly ? allies : enemies;
@@ -1114,6 +1118,17 @@ export function resolveSingleActorAction({
       atk.combatSide = isAlly ? 'player' : 'enemy';
       segment.attacks.push(atk);
 
+      if (typeof onActionRecord === 'function') {
+        const responses = onActionRecord(atk) || [];
+        for (const response of responses) {
+          if (typeof response.playbackIndex !== 'number') {
+            response.playbackIndex = playbackIndex++;
+          }
+          segment.counterAttacks.push(response);
+          if (response.type === 'counter') inlineCounters.push(response);
+        }
+      }
+
       if (!isAlly && runPartySkills && combat) {
         if (!selfSabotageApplied) {
           selfSabotageApplied = true;
@@ -1123,7 +1138,11 @@ export function resolveSingleActorAction({
             runPartySkills,
             rng
           });
-          if (sabotage) segment.effectEvents.push(sabotage);
+          if (sabotage) {
+            sabotage.playbackIndex = playbackIndex++;
+            sabotage.combatSide = 'enemy';
+            segment.effectEvents.push(sabotage);
+          }
         }
 
         const counter = computeInlineCounter(atk, allies, enemies, runPartySkills, combat, rng);

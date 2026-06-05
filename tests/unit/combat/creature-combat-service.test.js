@@ -306,6 +306,39 @@ describe('Creature Combat - Single Actor Action', () => {
     assert.equal(segment.effectEvents.filter(event => event.type === 'debuffMasterSelfSabotage').length, 1);
     assert.equal(enemies[1].statStages.atk, -1);
   });
+
+  it('orders enemy self-sabotage playback before inline counters', () => {
+    const allies = [instantiateCreature('mizu')];
+    const enemies = [instantiateCreature('hi'), instantiateCreature('ishi')];
+    allies[0].attack = 200;
+    allies[0].hp = 500;
+    allies[0].maxHp = 500;
+    enemies[0].hp = 20;
+    enemies[0].maxHp = 20;
+    enemies[0].moves = [{
+      id: 'enemy-hit', name: '打つ', nameEn: 'Hit', reading: 'うつ',
+      element: 'neutral', category: 'damage', target: 'single_enemy',
+      power: 10, mpCost: 0
+    }];
+
+    const result = resolveSingleActorAction({
+      actorSide: 'enemy',
+      actorIndex: 0,
+      allies,
+      enemies,
+      choices: [{ creatureIndex: 0, moveId: 'enemy-hit', targetIndex: 0 }],
+      runPartySkills: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combat: {},
+      rng: () => 0.01
+    });
+
+    const segment = result.actionSegments[0];
+    const sabotage = segment.effectEvents.find(event => event.type === 'debuffMasterSelfSabotage');
+    const counter = segment.counterAttacks.find(event => event.type === 'counter');
+    assert.ok(sabotage, 'self-sabotage event should be present');
+    assert.ok(counter, 'counter event should be present');
+    assert.ok(sabotage.playbackIndex < counter.playbackIndex);
+  });
 });
 
 describe('Creature Combat - Befriend (disabled in Koto2)', () => {

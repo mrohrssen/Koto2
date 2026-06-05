@@ -506,4 +506,51 @@ describe('PvP action cursor resolution', () => {
     assert.equal(sabotageEvents.length, 1);
     assert.equal(sideA[1].statStages.atk, -1);
   });
+
+  it('interleaves all-target cursor self-sabotage and counters before later targets', () => {
+    const sweep = {
+      id: 'sweep',
+      name: '掃く',
+      nameEn: 'Sweep',
+      reading: 'はく',
+      element: 'neutral',
+      category: 'damage',
+      target: 'all_enemies',
+      power: 20,
+      mpCost: 0,
+      accuracy: 100,
+      statusEffect: null,
+      statusChance: 0,
+      statusDuration: 0
+    };
+    const sideA = [
+      makeCreature({ id: 'a', hp: 20, maxHp: 20, attack: 10, moves: [sweep] }),
+      makeCreature({ id: 'a-ally', hp: 100, maxHp: 100 })
+    ];
+    const sideB = [
+      makeCreature({ id: 'b0', hp: 500, maxHp: 500, attack: 200 }),
+      makeCreature({ id: 'b1', hp: 500, maxHp: 500, attack: 200 })
+    ];
+
+    const result = withMockRandom(0.01, () => resolvePvpCursorAction({
+      sideA,
+      sideB,
+      cursor: { side: 'sideA', index: 0, opening: false },
+      action: { creatureIndex: 0, moveId: 'sweep', targetIndex: 0 },
+      partySkillsB: [{ id: 'debuffMaster', level: 5 }, { id: 'counterMaster', level: 5 }],
+      combatB: {}
+    }));
+
+    const sabotage = result.attacks.find(a => a.type === 'debuffMasterSelfSabotage');
+    const counter = result.attacks.find(a => a.type === 'counter');
+    assert.equal(result.actionSegments[0].attacks.length, 1);
+    assert.ok(sabotage, 'self-sabotage should be emitted after the first target record');
+    assert.ok(counter, 'counter should be emitted after self-sabotage');
+    assert.equal(sideA[0].hp, 0);
+    assert.deepEqual(
+      result.attacks.map(a => a.type || a.category),
+      ['damage', 'debuffMasterSelfSabotage', 'counter']
+    );
+    assert.ok(sabotage.playbackIndex < counter.playbackIndex);
+  });
 });

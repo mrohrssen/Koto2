@@ -1580,22 +1580,57 @@ async function playCreatureCombatResult(result, turnTiming, options = {}) {
   if (actionSegments.length > 0) {
     for (const segment of actionSegments) {
       const side = segment.actor?.side === 'enemy' ? 'enemy' : 'player';
+      let fallbackOrder = 0;
+      const orderedSegmentItems = [];
       for (const atk of segment.attacks || []) {
-        if (shouldSkipAttackRecord(side, atk, enemyHpMap, allyHpMap, result)) continue;
-        if (side === 'player') {
-          await playOnePlayerAttackInMoveTurn(result, atk, enemyHpMap, killedEnemies, allPendingMoveLearn, { skipAttackCards });
-        } else {
-          await vfx.showOneEnemyAttackAnimated(result, atk, allyHpMap, false, { skipAttackCards });
-        }
+        orderedSegmentItems.push({
+          kind: 'attack',
+          playbackIndex: typeof atk.playbackIndex === 'number' ? atk.playbackIndex : Number.MAX_SAFE_INTEGER + fallbackOrder++,
+          atk
+        });
       }
       for (const counter of segment.counterAttacks || []) {
-        await vfx.showOneCounterAttackAnimated(counter, enemyHpMap, result.enemies);
+        orderedSegmentItems.push({
+          kind: 'counter',
+          playbackIndex: typeof counter.playbackIndex === 'number' ? counter.playbackIndex : Number.MAX_SAFE_INTEGER + fallbackOrder++,
+          counter
+        });
       }
-      await vfx.showEffectEvents({
-        ...result,
-        effectEvents: segment.effectEvents || [],
-        mpRegens: segment.mpRegens || []
-      });
+      const deferredEffectEvents = [];
+      for (const event of segment.effectEvents || []) {
+        if (typeof event.playbackIndex === 'number') {
+          orderedSegmentItems.push({ kind: 'effect', playbackIndex: event.playbackIndex, event });
+        } else {
+          deferredEffectEvents.push(event);
+        }
+      }
+
+      orderedSegmentItems.sort((a, b) => a.playbackIndex - b.playbackIndex);
+      for (const item of orderedSegmentItems) {
+        if (item.kind === 'attack') {
+          if (shouldSkipAttackRecord(side, item.atk, enemyHpMap, allyHpMap, result)) continue;
+          if (side === 'player') {
+            await playOnePlayerAttackInMoveTurn(result, item.atk, enemyHpMap, killedEnemies, allPendingMoveLearn, { skipAttackCards });
+          } else {
+            await vfx.showOneEnemyAttackAnimated(result, item.atk, allyHpMap, false, { skipAttackCards });
+          }
+        } else if (item.kind === 'counter') {
+          await vfx.showOneCounterAttackAnimated(item.counter, enemyHpMap, result.enemies);
+        } else if (item.kind === 'effect') {
+          await vfx.showEffectEvents({
+            ...result,
+            effectEvents: [item.event],
+            mpRegens: []
+          });
+        }
+      }
+      if (deferredEffectEvents.length > 0 || (segment.mpRegens || []).length > 0) {
+        await vfx.showEffectEvents({
+          ...result,
+          effectEvents: deferredEffectEvents,
+          mpRegens: segment.mpRegens || []
+        });
+      }
     }
   } else {
     await vfx.showEffectEvents(result);

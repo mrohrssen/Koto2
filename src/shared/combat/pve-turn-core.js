@@ -757,7 +757,10 @@ export function processInterleavedPvERound(
                 runPartySkills: options.runPartySkills,
                 rng
               });
-              if (sabotage) effectEvents.push(sabotage);
+              if (sabotage) {
+                tagPlayback(sabotage, 'enemy');
+                effectEvents.push(sabotage);
+              }
             }
 
             const counter = computeInlineCounter(atk, allies, enemies, options.runPartySkills, options.combat, rng);
@@ -957,7 +960,11 @@ export function resolveSingleActorAction({
             runPartySkills,
             rng
           });
-          if (sabotage) segment.effectEvents.push(sabotage);
+          if (sabotage) {
+            sabotage.playbackIndex = playbackIndex++;
+            sabotage.combatSide = 'enemy';
+            segment.effectEvents.push(sabotage);
+          }
         }
 
         const counter = computeInlineCounter(atk, allies, enemies, runPartySkills, combat, rng);
