@@ -615,38 +615,71 @@ describe('optimistic deterministic run routes', () => {
     assert.deepEqual(run.partySkills, [{ id: 'buffMaster', level: 2 }]);
   });
 
-  it('/npc-battle-skill-choose does not re-run duplicate actionId and run.partySkills length stays 1', async () => {
+  it('/npc-battle-skill-choose syncs HP Master bonuses and does not double-apply duplicate actionId', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/npc-battle-skill-choose');
     const room = {
       type: 'npcBattle',
-      npcBattle: { skillSelectionPending: true, offered: [{ id: 'buffMaster', level: 1 }] },
+      npcBattle: { skillSelectionPending: true, offered: [{ id: 'hpMaster', level: 1 }] },
       interacted: false,
     };
     const run = {
       partySkills: [],
+      creatureParty: {
+        active: [{ id: 'hi', hp: 50, maxHp: 100 }],
+        reserves: [],
+      },
     };
     const req = {
-      body: { actionId: actionId('npcskilldupe'), skillId: 'buffMaster' },
+      body: { actionId: actionId('npcskilldupe'), skillId: 'hpMaster' },
       gameManager: {
         run,
         meta: { actionLedger: { entries: {}, order: [] } },
         getCurrentRoom: () => room,
       },
       saveGame: () => {},
-      getEnrichedGameState: () => ({ phase: 'room', run: { partySkills: [...run.partySkills] } }),
+      getEnrichedGameState: () => ({
+        phase: 'room',
+        run: {
+          partySkills: [...run.partySkills],
+          creatureParty: {
+            active: run.creatureParty.active.map(creature => ({
+              id: creature.id,
+              hp: creature.hp,
+              maxHp: creature.maxHp,
+            })),
+            reserves: [],
+          },
+        },
+      }),
     };
 
-    await handler(req, makeRes());
+    const firstRes = makeRes();
+    await handler(req, firstRes);
     const duplicateRes = makeRes();
     await handler(req, duplicateRes);
 
+    assert.equal(firstRes.statusCode, 200);
+    assert.deepEqual(firstRes.body.partySkills, [{ id: 'hpMaster', level: 1 }]);
+    assert.equal(firstRes.body.state.run.creatureParty.active[0].hp, 63);
+    assert.equal(firstRes.body.state.run.creatureParty.active[0].maxHp, 125);
     assert.equal(duplicateRes.statusCode, 200);
     assert.equal(duplicateRes.body.status, 'accepted');
     assert.equal(duplicateRes.body.actionId, actionId('npcskilldupe'));
     assert.equal(run.partySkills.length, 1);
-    assert.equal(room.npcBattle.chosenSkillId, 'buffMaster');
+    assert.equal(run.creatureParty.active[0].hp, 63);
+    assert.equal(run.creatureParty.active[0].maxHp, 125);
+    assert.equal(room.npcBattle.chosenSkillId, 'hpMaster');
     assert.equal(room.npcBattle.skillSelectionPending, false);
-    assert.deepEqual(duplicateRes.body.state, { phase: 'room', run: { partySkills: [{ id: 'buffMaster', level: 1 }] } });
+    assert.deepEqual(duplicateRes.body.state, {
+      phase: 'room',
+      run: {
+        partySkills: [{ id: 'hpMaster', level: 1 }],
+        creatureParty: {
+          active: [{ id: 'hi', hp: 63, maxHp: 125 }],
+          reserves: [],
+        },
+      },
+    });
   });
 
   it('keeps legacy NPC battle skill choice responses unchanged when actionId is absent', async () => {

@@ -34,7 +34,8 @@ import {
   canonicalPartySkillTreeId,
   normalizePartySkills,
   rollSkillMasterOffers,
-  getPartySkillOfferDisplay
+  getPartySkillOfferDisplay,
+  syncPartySkillHpBonuses
 } from '../../game/party-skills.js';
 import { getShopPurchaseFrames, getShopGreetingFrames, getShrineGreetingFrames, getGameMasterAskFrames, getGameMasterFinishFrames, getGameMasterYesFrame, getGameMasterNoFrame, getSkillSelectFrame } from '../../game/dialogue-loader.js';
 import { SPRITE_VERSION } from '../../shared/asset-versions.js';
@@ -479,6 +480,7 @@ export default function createRunRoutes({
 
         if (!gm.run) throw new Error('No active run');
         gm.run.partySkills = applyPartySkillChoice(gm.run.partySkills || [], canonicalSkillId);
+        syncPartySkillHpBonuses(gm.run.creatureParty, gm.run.partySkills);
 
         room.npcBattle.chosenSkillId = canonicalSkillId;
         room.npcBattle.skillSelectionPending = false;
