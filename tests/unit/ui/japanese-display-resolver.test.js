@@ -40,6 +40,97 @@ describe('japanese display resolver', () => {
     assert.equal(display.lookupHeadword, 'もり');
   });
 
+  it('uses spoken guides for lexicalized final は greetings', () => {
+    const display = resolveJapaneseDisplay({
+      surface: 'こんにちは',
+      base: 'こんにちは',
+      reading: 'こんにちは',
+      pos: 'Interjection',
+      normalizedForm: '今日は',
+    }, { japaneseDisplayMode: 'hiragana' });
+
+    assert.equal(display.mainText, 'こんにちは');
+    assert.equal(display.guideText, 'konnichiwa');
+    assert.equal(display.reading, 'こんにちは');
+
+    const evening = resolveJapaneseDisplay({
+      surface: 'こんばんは',
+      base: 'こんばんは',
+      reading: 'こんばんは',
+      pos0: '感動詞',
+      normalizedForm: '今晩は',
+    }, { japaneseDisplayMode: 'hiragana' });
+
+    assert.equal(evening.mainText, 'こんばんは');
+    assert.equal(evening.guideText, 'konbanwa');
+    assert.equal(evening.reading, 'こんばんは');
+
+    const kanjiGreeting = resolveJapaneseDisplay({
+      surface: '今日は',
+      base: '今日は',
+      reading: 'こんにちは',
+      pos: 'Noun',
+    }, { japaneseDisplayMode: 'hiragana' });
+
+    assert.equal(kanjiGreeting.mainText, 'こんにちは');
+    assert.equal(kanjiGreeting.guideText, 'konnichiwa');
+    assert.equal(kanjiGreeting.reading, 'こんにちは');
+  });
+
+  it('does not treat final は as wa for ordinary words or standalone kana lessons', () => {
+    const flower = resolveJapaneseDisplay({
+      surface: '花',
+      base: '花',
+      reading: 'はな',
+      pos: 'Noun',
+    }, { japaneseDisplayMode: 'hiragana' });
+    assert.equal(flower.guideText, 'hana');
+
+    const kanaCard = resolveJapaneseDisplay({
+      surface: 'は',
+      reading: 'は',
+    }, { japaneseDisplayMode: 'hiragana' });
+    assert.equal(kanaCard.guideText, 'ha');
+  });
+
+  it('uses spoken guides for kana-only greetings even without tokenizer metadata', () => {
+    const hello = resolveJapaneseDisplay({
+      surface: 'こんにちは',
+      reading: 'こんにちは',
+    }, { japaneseDisplayMode: 'hiragana' });
+    assert.equal(hello.guideText, 'konnichiwa');
+
+    const evening = resolveJapaneseDisplay({
+      surface: 'こんばんは',
+      reading: 'こんばんは',
+    }, { japaneseDisplayMode: 'hiragana' });
+    assert.equal(evening.guideText, 'konbanwa');
+  });
+
+  it('uses particle pronunciation when token metadata identifies particles', () => {
+    const wa = resolveJapaneseDisplay({
+      surface: 'は',
+      reading: 'は',
+      pos0: '助詞',
+    }, { japaneseDisplayMode: 'hiragana' });
+    assert.equal(wa.mainText, 'は');
+    assert.equal(wa.guideText, 'wa');
+
+    const e = resolveJapaneseDisplay({
+      surface: 'へ',
+      reading: 'へ',
+      pos0: '助詞',
+    }, { japaneseDisplayMode: 'hiragana' });
+    assert.equal(e.guideText, 'e');
+
+    const o = resolveJapaneseDisplay({
+      surface: 'を',
+      reading: 'を',
+      pos0: '助詞',
+    }, { japaneseDisplayMode: 'hiragana' });
+    assert.equal(o.guideText, 'o');
+  });
+
   it('preserves katakana readings in hiragana mode', () => {
     const display = resolveJapaneseDisplay({
       surface: 'コーヒー',
@@ -71,6 +162,18 @@ describe('japanese display resolver', () => {
     }, { japaneseDisplayMode: 'natural' });
     assert.equal(fallback.mainText, 'みた');
     assert.equal(fallback.guideText, 'みた');
+  });
+
+  it('uses spoken kana for natural-mode pronunciation guides', () => {
+    const display = resolveJapaneseDisplay({
+      surface: 'は',
+      reading: 'は',
+      pos0: '助詞',
+    }, { japaneseDisplayMode: 'natural' });
+
+    assert.equal(display.mainText, 'は');
+    assert.equal(display.guideText, 'わ');
+    assert.equal(display.reading, 'は');
   });
 
   it('supports grammar reading overrides', () => {

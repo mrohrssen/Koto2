@@ -28,7 +28,15 @@ await mock.module('../../../public/js/dom.js', {
   },
 });
 await mock.module('../../../public/js/ui/sprite-utils.js', { namedExports: { SPRITE_VERSION: 'test' } });
-await mock.module('../../../public/js/ui/romaji.js', { namedExports: { toRomaji: (s) => s } });
+await mock.module('../../../public/js/ui/romaji.js', {
+  namedExports: {
+    katakanaToHiragana: s => s,
+    pronunciationReading: s => s,
+    pronunciationReadingInfo: s => ({ reading: s, reasons: [] }),
+    toPronunciationRomaji: s => s,
+    toRomaji: (s) => s,
+  },
+});
 let sceneRef = null;
 await mock.module('../../../public/js/scenes/scene-manager.js', {
   namedExports: { getSceneManager: () => ({ currentScene: sceneRef }) },
