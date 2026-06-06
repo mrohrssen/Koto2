@@ -103,6 +103,14 @@ function applyKanjiKombatCorrection(pending, result) {
   api.updateGameState?.(correctPendingRunAction(pending, result));
 }
 
+function refreshKanjiKombatAction() {
+  if (typeof api.refreshAction === 'function') {
+    api.refreshAction();
+    return;
+  }
+  api.updateUI?.();
+}
+
 function shouldRollbackKanjiKombatPending(pending, result) {
   return !result || result.status === 'corrected' || !isMatchingRunActionResponse(pending, result);
 }
@@ -328,7 +336,7 @@ export function renderKanjiKombatAction(gameState) {
         if (shouldRollbackKanjiKombatPending(pending, result)) {
           applyKanjiKombatCorrection(pending, result);
           await showKanjiKombatSaveFailure();
-          api.updateUI?.();
+          refreshKanjiKombatAction();
           return;
         }
 
@@ -370,7 +378,7 @@ export function renderKanjiKombatAction(gameState) {
         if (shouldRollbackKanjiKombatPending(pending, result)) {
           applyKanjiKombatCorrection(pending, result);
           await showKanjiKombatSaveFailure();
-          api.updateUI?.();
+          refreshKanjiKombatAction();
           return;
         }
 

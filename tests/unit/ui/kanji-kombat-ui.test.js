@@ -573,7 +573,7 @@ describe('kanji-kombat ui', () => {
       }),
       updateGameState: state => calls.push(['updateGameState', state.phase, !!state.run?.kanjiKombat?.pendingIntro]),
       updateUI: () => calls.push(['updateUI']),
-      refreshAction: () => calls.push(['unexpected-refresh']),
+      refreshAction: () => calls.push(['refreshAction']),
       showNarration: async text => calls.push(['showNarration', text]),
     });
 
@@ -593,7 +593,7 @@ describe('kanji-kombat ui', () => {
       ['updateGameState', 'combat', false],
       ['updateGameState', 'combat', true],
       ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['updateUI'],
+      ['refreshAction'],
     ]);
   });
 
@@ -607,7 +607,7 @@ describe('kanji-kombat ui', () => {
       }),
       updateGameState: state => calls.push(['updateGameState', state.phase, !!state.run?.kanjiKombat?.pendingIntro]),
       updateUI: () => calls.push(['updateUI']),
-      refreshAction: () => calls.push(['unexpected-refresh']),
+      refreshAction: () => calls.push(['refreshAction']),
       showNarration: async text => calls.push(['showNarration', text]),
     });
 
@@ -627,7 +627,7 @@ describe('kanji-kombat ui', () => {
       ['updateGameState', 'combat', false],
       ['updateGameState', 'combat', true],
       ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['updateUI'],
+      ['refreshAction'],
     ]);
   });
 
@@ -639,7 +639,7 @@ describe('kanji-kombat ui', () => {
       },
       updateGameState: state => calls.push(['updateGameState', state.phase, !!state.run?.kanjiKombat?.pendingIntro]),
       updateUI: () => calls.push(['updateUI']),
-      refreshAction: () => calls.push(['unexpected-refresh']),
+      refreshAction: () => calls.push(['refreshAction']),
       showNarration: async text => calls.push(['showNarration', text]),
     });
 
@@ -659,7 +659,46 @@ describe('kanji-kombat ui', () => {
       ['updateGameState', 'combat', false],
       ['updateGameState', 'combat', true],
       ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['updateUI'],
+      ['refreshAction'],
+    ]);
+  });
+
+  it('restores intro actions after a transient intro submit failure', async () => {
+    const calls = [];
+    let currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
+    initKanjiKombatUI({
+      submitIntro: async () => null,
+      updateGameState: state => {
+        currentState = state;
+        calls.push(['updateGameState', !!state.run?.kanjiKombat?.pendingIntro]);
+      },
+      refreshAction: () => {
+        calls.push(['refreshAction']);
+        renderKanjiKombatAction(currentState);
+      },
+      updateUI: () => calls.push(['updateUI']),
+      showNarration: async text => calls.push(['showNarration', text]),
+    });
+
+    renderKanjiKombatAction(currentState);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
+    assert.deepEqual(calls, [
+      ['updateGameState', false],
+      ['updateGameState', true],
+      ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
+      ['refreshAction'],
     ]);
   });
 
@@ -705,6 +744,7 @@ describe('kanji-kombat ui', () => {
       }),
       updateGameState: state => calls.push(['updateGameState', state.phase, state.run?.kanjiKombat?.completionChoicePending === true]),
       updateUI: () => calls.push(['updateUI']),
+      refreshAction: () => calls.push(['refreshAction']),
       finishCombatResult: () => calls.push(['unexpected-finish']),
       showNarration: async text => calls.push(['showNarration', text]),
     });
@@ -723,7 +763,7 @@ describe('kanji-kombat ui', () => {
       ['updateGameState', 'combat', false],
       ['updateGameState', 'combat', true],
       ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['updateUI'],
+      ['refreshAction'],
     ]);
   });
 
@@ -738,7 +778,7 @@ describe('kanji-kombat ui', () => {
       updateGameState: state => calls.push(['updateGameState', state.phase, state.run?.kanjiKombat?.completionChoicePending === true]),
       updateUI: () => calls.push(['updateUI']),
       finishCombatResult: () => calls.push(['unexpected-finish']),
-      refreshAction: () => calls.push(['unexpected-refresh']),
+      refreshAction: () => calls.push(['refreshAction']),
       showNarration: async text => calls.push(['showNarration', text]),
     });
 
@@ -756,7 +796,7 @@ describe('kanji-kombat ui', () => {
       ['updateGameState', 'combat', false],
       ['updateGameState', 'combat', true],
       ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['updateUI'],
+      ['refreshAction'],
     ]);
   });
 
@@ -769,7 +809,7 @@ describe('kanji-kombat ui', () => {
       updateGameState: state => calls.push(['updateGameState', state.phase, state.run?.kanjiKombat?.completionChoicePending === true]),
       updateUI: () => calls.push(['updateUI']),
       finishCombatResult: () => calls.push(['unexpected-finish']),
-      refreshAction: () => calls.push(['unexpected-refresh']),
+      refreshAction: () => calls.push(['refreshAction']),
       showNarration: async text => calls.push(['showNarration', text]),
     });
 
@@ -787,7 +827,7 @@ describe('kanji-kombat ui', () => {
       ['updateGameState', 'combat', false],
       ['updateGameState', 'combat', true],
       ['showNarration', 'Kanji Kombat choice did not save. Please try again.'],
-      ['updateUI'],
+      ['refreshAction'],
     ]);
   });
 
