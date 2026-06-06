@@ -597,7 +597,7 @@ describe('combat action state', () => {
     const hpBefore = gm.combat.enemies[0].hp;
 
     const result = service.verifyAndCommitCreatureCombatCycle({
-      actionId: 'act_stale',
+      actionId: 'act_stale_test',
       combatId: gm.combat.optimistic.combatId,
       stateVersion: 99,
       seed,
@@ -621,7 +621,7 @@ describe('combat action state', () => {
     const predicted = service.previewCreatureCombatCycle({ actionType: 'attack', moveChoices, seed });
 
     const envelope = {
-      actionId: 'act_duplicate',
+      actionId: 'act_duplicate_test',
       combatId: gm.combat.optimistic.combatId,
       stateVersion,
       seed,
@@ -636,6 +636,43 @@ describe('combat action state', () => {
     assert.deepEqual(second, first);
     assert.equal(gm.combat.enemies[0].hp, hpAfterFirst);
     assert.equal(gm.combat.optimistic.stateVersion, stateVersion + 1);
+  });
+
+  it('rejects duplicate action ids when the replay envelope differs', () => {
+    const gm = createTestGameManagerWithCreatureCombat();
+    const service = new CombatCycleService(gm);
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const moveChoices = [{ creatureIndex: 0, moveId: gm.combat.allies[0].moves[0].id, targetIndex: 0 }];
+    const predicted = service.previewCreatureCombatCycle({ actionType: 'attack', moveChoices, seed });
+    const actionId = 'act_dupe_mismatch';
+
+    const first = service.verifyAndCommitCreatureCombatCycle({
+      actionId,
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion,
+      seed,
+      actionType: 'attack',
+      payload: { moveChoices },
+      predictedHash: predicted.predictedHash,
+    });
+    const hpAfterFirst = gm.combat.enemies[0].hp;
+    const versionAfterFirst = gm.combat.optimistic.stateVersion;
+    const second = service.verifyAndCommitCreatureCombatCycle({
+      actionId,
+      combatId: gm.combat.optimistic.combatId,
+      stateVersion: gm.combat.optimistic.stateVersion,
+      seed: gm.combat.optimistic.nextTurnSeed,
+      actionType: 'attack',
+      payload: { moveChoices: [] },
+      predictedHash: 'different',
+    });
+
+    assert.equal(first.status, 'accepted');
+    assert.equal(second.status, 'corrected');
+    assert.equal(second.reason, 'duplicate_action_id_mismatch');
+    assert.equal(gm.combat.enemies[0].hp, hpAfterFirst);
+    assert.equal(gm.combat.optimistic.stateVersion, versionAfterFirst);
   });
 });
 

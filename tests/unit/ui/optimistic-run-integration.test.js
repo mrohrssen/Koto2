@@ -56,6 +56,42 @@ describe('optimistic run action integration', () => {
     assert.match(explorationSource, /room\?\.interacted[\s\S]*proceedWithRevealBuffer\(\)/);
   });
 
+  it('ignores stale optimistic run responses after a pending action has been cleared or replaced', () => {
+    assert.match(explorationSource, /function isCurrentPendingRunAction\(pending\)/);
+
+    const reconcileSource = sourceBetween(
+      explorationSource,
+      'function reconcilePendingRunAction',
+      'function applyPendingRunCorrection'
+    );
+    const correctionSource = sourceBetween(
+      explorationSource,
+      'function applyPendingRunCorrection',
+      'function isInitialSkillPickChoiceResult'
+    );
+    const initialSkillSource = sourceBetween(
+      explorationSource,
+      'async function reconcileInitialSkillPickRoomEntry',
+      'function rollbackPendingRunAction'
+    );
+    const rollbackSource = sourceBetween(
+      explorationSource,
+      'function rollbackPendingRunAction',
+      'const WORD_DISCOVERY_SAVE_FAILURE_COPY'
+    );
+    const wordDiscoveryCorrectionSource = sourceBetween(
+      explorationSource,
+      'function applyWordDiscoveryCorrection',
+      'async function completeWordDiscoveryOptimistically'
+    );
+
+    assert.match(reconcileSource, /!isCurrentPendingRunAction\(pending\)/);
+    assert.match(correctionSource, /!isCurrentPendingRunAction\(pending\)/);
+    assert.match(initialSkillSource, /!isCurrentPendingRunAction\(pending\)/);
+    assert.match(rollbackSource, /!isCurrentPendingRunAction\(pending\)/);
+    assert.match(wordDiscoveryCorrectionSource, /!isCurrentPendingRunAction\(pending\)/);
+  });
+
   it('keeps dealer local changes to pending markers until the server responds', () => {
     assert.match(economySource, /pendingDealerPurchase = creatureId/);
     assert.match(economySource, /pendingDealerSale = creatureId/);

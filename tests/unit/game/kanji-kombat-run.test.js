@@ -239,7 +239,7 @@ describe('KanjiKombatService run lifecycle helpers', () => {
       /Kanji Kombat onboarding/
     );
     assert.throws(
-      () => service.verifyAndCommitOptimisticAnswer({ actionId: 'act_pending' }),
+      () => service.verifyAndCommitOptimisticAnswer({ actionId: 'act_pending_test' }),
       /Kanji Kombat onboarding/
     );
 

@@ -742,20 +742,14 @@ export async function getVocabDueCount() {
  * @returns {Promise<Object>} { ok, mastered, card }
  */
 export async function reviewVocabWord(word, grade, isDiscovery = false, options = {}) {
-  try {
-    const body = { word, grade };
-    if (isDiscovery) body.isDiscovery = true;
-    if (options?.actionId) body.actionId = options.actionId;
-    const response = await fetch(apiUrl('/api/game/known-words/review'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      body: JSON.stringify(body)
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('[API] Failed to review vocab word:', error);
-    return null;
-  }
+  const body = { word, grade };
+  if (isDiscovery) body.isDiscovery = true;
+  if (options?.actionId) body.actionId = options.actionId;
+  return apiCall('/known-words/review', 'POST', body, null, {
+    bypassLoadingGate: true,
+    returnErrorBody: true,
+    timeoutMs: options?.timeoutMs,
+  });
 }
 
 /** Mark word discovery room as complete

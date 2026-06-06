@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import createCombatRoutes from '../../../src/routes/game/combat.js';
 import createCookingRoutes from '../../../src/routes/game/cooking.js';
+import createEconomyRoutes from '../../../src/routes/game/economy.js';
 import createRunRoutes from '../../../src/routes/game/run.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 
@@ -59,6 +60,10 @@ function createCookingRouter() {
   return createCookingRoutes();
 }
 
+function createEconomyRouter() {
+  return createEconomyRoutes();
+}
+
 function makeCampfireReq({
   body = {},
   room = null,
@@ -99,6 +104,74 @@ function makeCampfireReq({
 }
 
 describe('optimistic deterministic run routes', () => {
+  it('/dealer-sell does not re-run duplicate optimistic actionId', async () => {
+    const handler = getHandler(createEconomyRouter(), 'post', '/dealer-sell');
+    const meta = { actionLedger: { entries: {}, order: [] } };
+    let sellCalls = 0;
+    let saveCalls = 0;
+    const req = {
+      body: { actionId: actionId('dealersell'), creatureId: 'mogu' },
+      gameManager: {
+        meta,
+        dealerSell: creatureId => {
+          sellCalls += 1;
+          return { sold: true, soldCreature: { id: creatureId }, coinsGained: 8 };
+        },
+      },
+      saveGame: () => { saveCalls += 1; },
+      getEnrichedGameState: () => ({ phase: 'dealer', sellCalls }),
+    };
+
+    const firstRes = makeRes();
+    await handler(req, firstRes);
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(firstRes.statusCode, 200);
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(sellCalls, 1);
+    assert.equal(saveCalls, 1);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, actionId('dealersell'));
+    assert.equal(duplicateRes.body.actionType, 'dealer.sell');
+    assert.deepEqual(duplicateRes.body.soldCreature, { id: 'mogu' });
+    assert.deepEqual(duplicateRes.body.state, { phase: 'dealer', sellCalls: 1 });
+  });
+
+  it('/dealer-buy does not re-run duplicate optimistic actionId', async () => {
+    const handler = getHandler(createEconomyRouter(), 'post', '/dealer-buy');
+    const meta = { actionLedger: { entries: {}, order: [] } };
+    let buyCalls = 0;
+    let saveCalls = 0;
+    const req = {
+      body: { actionId: actionId('dealerbuy'), creatureId: 'kumo' },
+      gameManager: {
+        meta,
+        dealerBuy: creatureId => {
+          buyCalls += 1;
+          return { bought: true, creature: { id: creatureId }, coinsSpent: 12 };
+        },
+      },
+      saveGame: () => { saveCalls += 1; },
+      getEnrichedGameState: () => ({ phase: 'dealer', buyCalls }),
+    };
+
+    const firstRes = makeRes();
+    await handler(req, firstRes);
+    const duplicateRes = makeRes();
+    await handler(req, duplicateRes);
+
+    assert.equal(firstRes.statusCode, 200);
+    assert.equal(duplicateRes.statusCode, 200);
+    assert.equal(buyCalls, 1);
+    assert.equal(saveCalls, 1);
+    assert.equal(duplicateRes.body.status, 'accepted');
+    assert.equal(duplicateRes.body.actionId, actionId('dealerbuy'));
+    assert.equal(duplicateRes.body.actionType, 'dealer.buy');
+    assert.deepEqual(duplicateRes.body.creature, { id: 'kumo' });
+    assert.deepEqual(duplicateRes.body.state, { phase: 'dealer', buyCalls: 1 });
+  });
+
   it('wraps skill-master choices with accepted optimistic status when actionId is present', async () => {
     const handler = getHandler(createRunRouter(), 'post', '/skill-master-choose');
     const res = makeRes();

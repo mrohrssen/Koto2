@@ -4,6 +4,9 @@ import { KANJI_KOMBAT_PREDICTION_MODE } from '../../shared/action-protocol.js';
 import {
   createOptimisticActionRunner,
   getOptimisticActionLedgerOwner,
+  restoreGameManager,
+  sendOptimisticActionError,
+  snapshotGameManager,
 } from './optimistic-action-response.js';
 
 function isOptimisticKanjiAnswerEnvelope(body = {}) {
@@ -81,8 +84,11 @@ export default function createKanjiKombatRoutes() {
   });
 
   router.post('/answer', (req, res) => {
+    const body = req.body || {};
+    const optimisticSnapshot = isOptimisticKanjiAnswerEnvelope(body)
+      ? snapshotGameManager(req.gameManager)
+      : null;
     try {
-      const body = req.body || {};
       const answerId = body.payload?.answerId || body.answerId;
       if (!answerId) return res.status(400).json({ error: 'answerId required' });
       const result = isOptimisticKanjiAnswerEnvelope(body)
@@ -91,6 +97,10 @@ export default function createKanjiKombatRoutes() {
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
+      if (isOptimisticKanjiAnswerEnvelope(req.body || {})) {
+        restoreGameManager(req.gameManager, optimisticSnapshot);
+        return sendOptimisticActionError(req, res, error, 409);
+      }
       res.status(400).json({ error: error.message });
     }
   });

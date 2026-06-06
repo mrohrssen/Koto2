@@ -850,6 +850,42 @@ describe('kanji-kombat ui', () => {
     assert.deepEqual(calls, ['fire']);
   });
 
+  it('reenables quiz answer buttons when submission resolves without advancing UI', async () => {
+    const submitted = [];
+
+    initKanjiKombatUI({
+      submitAnswer: async answerId => {
+        submitted.push(answerId);
+        return null;
+      },
+      updateGameState: () => submitted.push('unexpected-state'),
+      updateUI: () => submitted.push('unexpected-update'),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    renderKanjiKombatAction({
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          currentQuiz: {
+            prompt: '火',
+            choices: [
+              { id: 'fire', answer: 'Fire' },
+              { id: 'water', answer: 'Water' },
+            ],
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+
+    const buttons = actionArea.querySelectorAll('.kanji-kombat-choice');
+    await buttons[0].click();
+
+    assert.deepEqual(submitted, ['fire']);
+    assert.equal(buttons.every(button => button.disabled === false), true);
+  });
+
   it('uses submitAnswer as the owner of quiz result playback', async () => {
     const state = {
       run: {

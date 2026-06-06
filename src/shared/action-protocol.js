@@ -58,7 +58,7 @@ export function createActionId(prefix = 'act') {
 export function isActionId(value) {
   return typeof value === 'string'
     && value.length <= 96
-    && /^[a-z][a-z0-9-]{0,31}_[a-z0-9]{1,16}_[a-z0-9]{1,16}$/i.test(value);
+    && /^[a-z][a-z0-9-]{0,31}_[a-z0-9][a-z0-9_]{0,62}_[a-z0-9][a-z0-9_]{0,16}$/i.test(value);
 }
 
 export function hashTranscript(transcript) {
@@ -87,6 +87,7 @@ export function buildActionEnvelope({
 
 export function verifyActionEnvelope(envelope, expected) {
   if (!envelope?.actionId) return { ok: false, reason: 'missing_action_id' };
+  if (!isActionId(envelope.actionId)) return { ok: false, reason: 'invalid_action_id' };
   if (envelope.combatId !== expected.combatId) {
     return { ok: false, reason: 'combat_id_mismatch' };
   }
@@ -97,6 +98,18 @@ export function verifyActionEnvelope(envelope, expected) {
     return { ok: false, reason: 'seed_mismatch' };
   }
   return { ok: true };
+}
+
+export function actionReplayFingerprint(envelope = {}) {
+  return hashTranscript({
+    actionId: envelope.actionId,
+    combatId: envelope.combatId,
+    stateVersion: envelope.stateVersion,
+    actionType: envelope.actionType ?? null,
+    seed: envelope.seed,
+    payload: envelope.payload ?? null,
+    predictedHash: envelope.predictedHash ?? null,
+  });
 }
 
 export function buildAcceptedResponse({ stateVersion, nextSeed }) {

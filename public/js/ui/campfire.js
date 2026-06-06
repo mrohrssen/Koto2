@@ -48,6 +48,12 @@ export function cleanup() {
   setCookingFocusActive(false);
 }
 
+function clearCampfireUi() {
+  const actionArea = document.getElementById('action-area');
+  if (actionArea) actionArea.innerHTML = '';
+  cleanup();
+}
+
 function ingredientById() {
   return new Map((campfireState?.ingredientCatalog || []).map(ingredient => [ingredient.id, ingredient]));
 }
@@ -91,6 +97,10 @@ function clearPendingCampfireAction(pending) {
   }
 }
 
+function isCurrentPendingCampfireAction(pending) {
+  return !!pending && pendingCampfireActionId === pending.actionId;
+}
+
 function showCampfireFailure() {
   if (callbacks.showCampfireFailure) {
     callbacks.showCampfireFailure(CAMPFIRE_FAILURE_COPY);
@@ -105,11 +115,21 @@ function resetDisplayModeFromState() {
   displayMode = campfireState?.room?.cookedDish ? 'cooking' : 'entry';
 }
 
+function isCampfireActiveState(state) {
+  return state?.phase === 'campfire';
+}
+
 function applyCampfireCorrection(pending, result) {
-  if (!isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
-  callbacks.updateGameState?.(correctPendingRunAction(pending, result));
+  if (!isCurrentPendingCampfireAction(pending) || !isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
+  const correctedState = correctPendingRunAction(pending, result);
+  callbacks.updateGameState?.(correctedState);
   clearPendingCampfireAction(pending);
   showCampfireFailure();
+  if (!isCampfireActiveState(correctedState)) {
+    clearCampfireUi();
+    callbacks.updateUI?.();
+    return true;
+  }
   resetDisplayModeFromState();
   render();
   return true;
@@ -117,7 +137,7 @@ function applyCampfireCorrection(pending, result) {
 
 function confirmCampfireAction(pending, result, { refreshUi = false } = {}) {
   if (!pending || !result?.state) return false;
-  if (result.actionId && !isMatchingRunActionResponse(pending, result)) return false;
+  if (result.actionId && (!isCurrentPendingCampfireAction(pending) || !isMatchingRunActionResponse(pending, result))) return false;
   const confirmedState = result.actionId
     ? confirmPendingRunAction(pending, result)
     : result.state;
@@ -128,11 +148,13 @@ function confirmCampfireAction(pending, result, { refreshUi = false } = {}) {
 }
 
 function rollbackCampfireAction(pending) {
-  if (pending) callbacks.updateGameState?.(pending.originalState);
+  if (!isCurrentPendingCampfireAction(pending)) return false;
+  callbacks.updateGameState?.(pending.originalState);
   clearPendingCampfireAction(pending);
   showCampfireFailure();
   resetDisplayModeFromState();
   render();
+  return true;
 }
 
 function escapeAttribute(value) {

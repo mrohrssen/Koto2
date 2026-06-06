@@ -44,7 +44,7 @@ function createOptimisticCombatApp(verifierResult) {
           throw new Error('legacy combat path should not be used for optimistic envelopes');
         },
         verifyAndCommitCreatureCombatCycle(envelope) {
-          assert.equal(envelope.actionId, 'act_route');
+          assert.equal(envelope.actionId, 'act_route_test');
           combat.actionCount = 2;
           combat.cycleCount = 3;
           return verifierResult;
@@ -53,6 +53,30 @@ function createOptimisticCombatApp(verifierResult) {
     };
     req.saveGame = () => {};
     req.getEnrichedGameState = () => ({ phase: 'combat', combat: { optimistic: { stateVersion: 2 } } });
+    next();
+  });
+  app.use(createCombatRoutes({}));
+  return app;
+}
+
+function createThrowingOptimisticCombatApp() {
+  const app = express();
+  app.use(express.json());
+  app.use((req, _res, next) => {
+    const combat = { active: true, actionCount: 1, cycleCount: 2 };
+    req.gameManager = {
+      combat,
+      combatCycleService: {
+        verifyAndCommitCreatureCombatCycle() {
+          combat.actionCount = 2;
+          throw new Error('optimistic verifier failed');
+        },
+      },
+    };
+    req.saveGame = () => {
+      throw new Error('saveGame should not run');
+    };
+    req.getEnrichedGameState = () => ({ phase: 'combat', combat: req.gameManager.combat });
     next();
   });
   app.use(createCombatRoutes({}));
@@ -105,7 +129,7 @@ describe('combat route timing logs', () => {
     const response = await request(app)
       .post('/creature-combat-cycle')
       .send({
-        actionId: 'act_route',
+        actionId: 'act_route_test',
         combatId: 'cmb_test',
         stateVersion: 1,
         seed: 'seed_1',
@@ -119,5 +143,28 @@ describe('combat route timing logs', () => {
     assert.equal(response.body.reason, 'transcript_mismatch');
     assert.deepEqual(response.body.authoritativeState, { phase: 'combat', combat: { optimistic: { stateVersion: 2 } } });
     assert.deepEqual(response.body.state, { phase: 'combat', combat: { optimistic: { stateVersion: 2 } } });
+  });
+
+  it('returns corrected authoritative state when optimistic verifier throws', async () => {
+    const response = await request(createThrowingOptimisticCombatApp())
+      .post('/creature-combat-cycle')
+      .send({
+        actionId: 'act_route_error',
+        combatId: 'cmb_test',
+        stateVersion: 1,
+        seed: 'seed_1',
+        actionType: 'combat.attack',
+        payload: { moveChoices: [] },
+        predictedHash: 'bad',
+      })
+      .expect(409);
+
+    assert.equal(response.body.status, 'corrected');
+    assert.equal(response.body.actionId, 'act_route_error');
+    assert.equal(response.body.reason, 'optimistic verifier failed');
+    assert.deepEqual(response.body.authoritativeState, {
+      phase: 'combat',
+      combat: { active: true, actionCount: 1, cycleCount: 2 },
+    });
   });
 });

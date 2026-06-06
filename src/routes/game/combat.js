@@ -8,7 +8,13 @@ import { getNpcLines, getNpcDefeatFrames } from '../../game/dialogue-loader.js';
 import { selectNpcLine } from '../../game/dialogue-filter.js';
 import { getKnownWordsFromFsrs, getWordDict } from '../../game/bootstrap/word-knowledge.js';
 import { assembleFrame, selectBestFrame } from '../../game/token-format.js';
-import { createOptimisticActionRunner, getOptimisticActionLedgerOwner } from './optimistic-action-response.js';
+import {
+  createOptimisticActionRunner,
+  getOptimisticActionLedgerOwner,
+  restoreGameManager,
+  sendOptimisticActionError,
+  snapshotGameManager,
+} from './optimistic-action-response.js';
 import {
   getDebugForceBefriendForUser,
   getDebugSuperAttackForUser
@@ -228,6 +234,7 @@ export default function createCombatRoutes({
     const { actionType, moveChoices } = req.body;
     const resolvedActionType = actionType || 'attack';
     const before = getCombatTimingSnapshot(gameManager.combat);
+    const optimisticSnapshot = req.body?.actionId ? snapshotGameManager(gameManager) : null;
     let resolveMs = 0;
     let saveMs = 0;
 
@@ -263,18 +270,14 @@ export default function createCombatRoutes({
       const resultWithAudio = await attachBefriendQuizAudio(result, req);
       res.json({ ...resultWithAudio, state: req.getEnrichedGameState() });
     } catch (error) {
-      let state = null;
-      try {
-        state = req.getEnrichedGameState?.() || null;
-      } catch {
-        state = null;
-      }
+      if (req.body?.actionId) restoreGameManager(gameManager, optimisticSnapshot);
 
+      const statusCode = req.body?.actionId ? 409 : 400;
       const after = getCombatTimingSnapshot(gameManager.combat);
       const totalMs = Math.round(performance.now() - routeStartedAt);
       logCombatRouteTiming({
         actionType: resolvedActionType,
-        statusCode: 400,
+        statusCode,
         before,
         after,
         resolveMs,
@@ -282,6 +285,15 @@ export default function createCombatRoutes({
         totalMs,
       });
 
+      if (req.body?.actionId) {
+        return sendOptimisticActionError(req, res, error, 409);
+      }
+      let state = null;
+      try {
+        state = req.getEnrichedGameState?.() || null;
+      } catch {
+        state = null;
+      }
       res.status(400).json({ error: error.message, ...(state && { state }) });
     }
   });

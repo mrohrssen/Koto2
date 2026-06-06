@@ -155,6 +155,47 @@ describe('Kanji Kombat routes', () => {
     assert.equal(manager.saved, true);
   });
 
+  it('optimistic quiz answer verifier errors return corrected authoritative state', async () => {
+    const manager = {
+      run: { mode: 'kanjiKombat', kanjiKombat: { currentQuiz: { cardId: 'hiragana:a' } } },
+      combat: { mode: 'kanjiKombat', optimistic: { stateVersion: 2, nextTurnSeed: 'seed_route' } },
+      kanjiKombatService: {
+        verifyAndCommitOptimisticAnswer: () => {
+          manager.run.kanjiKombat.currentQuiz = null;
+          manager.combat.optimistic.stateVersion = 99;
+          throw new Error('Kanji optimistic verifier failed');
+        },
+      },
+    };
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/answer')
+      .send({
+        actionId: 'act_kanji_routeerr',
+        actionType: 'kanjiKombat.answer',
+        combatId: 'cmb_route',
+        stateVersion: 0,
+        seed: 'route_seed',
+        predictedHash: 'abc123',
+        payload: {
+          answerId: 'answer-1',
+          correct: true,
+          predictionMode: 'shared-kanji-kombat-v1',
+        },
+      });
+
+    assert.equal(res.status, 409);
+    assert.equal(res.body.status, 'corrected');
+    assert.equal(res.body.actionId, 'act_kanji_routeerr');
+    assert.equal(res.body.reason, 'Kanji optimistic verifier failed');
+    assert.deepEqual(res.body.authoritativeState, {
+      run: { mode: 'kanjiKombat', kanjiKombat: { currentQuiz: { cardId: 'hiragana:a' } } },
+      combat: { mode: 'kanjiKombat', optimistic: { stateVersion: 2, nextTurnSeed: 'seed_route' } },
+    });
+    assert.deepEqual(manager.run.kanjiKombat.currentQuiz, { cardId: 'hiragana:a' });
+    assert.equal(manager.combat.optimistic.stateVersion, 2);
+    assert.equal(manager.saved, undefined);
+  });
+
   it('submits a completion choice', async () => {
     const manager = {
       kanjiKombatService: {

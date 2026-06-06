@@ -5,9 +5,11 @@ import { createPveOpeningCursor } from '../combat/action-cursor.js';
 import { applyStatChange } from '../combat/effects.js';
 import { createSeededRng } from '../../shared/deterministic-rng.js';
 import {
+  actionReplayFingerprint,
   buildAcceptedResponse,
   buildCorrectedResponse,
   hashTranscript,
+  isActionId,
   KANJI_KOMBAT_PREDICTION_MODE,
   verifyActionEnvelope,
 } from '../../shared/action-protocol.js';
@@ -47,6 +49,41 @@ function createServerSeed() {
 
 function createCombatId() {
   return `cmb_${randomBytes(8).toString('hex')}`;
+}
+
+function ensureAcceptedActionCache(optimistic) {
+  if (!optimistic.acceptedActionIds || typeof optimistic.acceptedActionIds !== 'object') {
+    optimistic.acceptedActionIds = Object.create(null);
+  }
+  return optimistic.acceptedActionIds;
+}
+
+function findAcceptedActionReplay(optimistic, envelope) {
+  if (!isActionId(envelope?.actionId)) return null;
+  const cache = ensureAcceptedActionCache(optimistic);
+  if (!Object.hasOwn(cache, envelope.actionId)) return null;
+
+  const cached = cache[envelope.actionId];
+  if (cached?.requestFingerprint && cached.requestFingerprint === actionReplayFingerprint(envelope)) {
+    return cached.response;
+  }
+
+  return buildCorrectedResponse({
+    reason: 'duplicate_action_id_mismatch',
+    authoritativeTranscript: null,
+    authoritativeState: null,
+    stateVersion: optimistic.stateVersion,
+    nextSeed: optimistic.nextTurnSeed,
+  });
+}
+
+function rememberAcceptedActionReplay(optimistic, envelope, response) {
+  if (!isActionId(envelope?.actionId)) return;
+  const cache = ensureAcceptedActionCache(optimistic);
+  cache[envelope.actionId] = {
+    requestFingerprint: actionReplayFingerprint(envelope),
+    response,
+  };
 }
 
 export function getLocalDateKey(date = new Date()) {
@@ -461,7 +498,7 @@ export class KanjiKombatService {
     if (!choice) throw new Error('Invalid Kanji Kombat answer');
 
     gradeScriptCard(this.gm.userId, quiz.cardId, choice.correct ? 'good' : 'again');
-    const streakReward = choice.correct ? this.recordCorrectAnswer() : null;
+    if (choice.correct) this.recordCorrectAnswer({ applyReward: false });
     if (!choice.correct) this.recordWrongAnswer();
 
     kk.currentQuiz = null;
@@ -472,6 +509,7 @@ export class KanjiKombatService {
       xpRng: opts.xpRng,
       deferXpAwards: opts.deferXpAwards === true,
     });
+    const streakReward = choice.correct ? this.applyCurrentStreakReward() : null;
     result.kanjiAnswerCorrect = choice.correct;
     if (streakReward) result.kanjiStreakReward = streakReward;
     return result;
@@ -489,10 +527,8 @@ export class KanjiKombatService {
         nextSeed: null,
       });
     }
-    if (!optimistic.acceptedActionIds) optimistic.acceptedActionIds = {};
-    if (envelope.actionId && optimistic.acceptedActionIds[envelope.actionId]) {
-      return optimistic.acceptedActionIds[envelope.actionId];
-    }
+    const acceptedReplay = findAcceptedActionReplay(optimistic, envelope);
+    if (acceptedReplay) return acceptedReplay;
 
     const verified = verifyActionEnvelope(envelope, {
       combatId: optimistic.combatId,
@@ -561,7 +597,7 @@ export class KanjiKombatService {
       optimistic.stateVersion += 1;
       optimistic.nextTurnSeed = createServerSeed();
     }
-    if (!responseOptimistic.acceptedActionIds) responseOptimistic.acceptedActionIds = {};
+    ensureAcceptedActionCache(responseOptimistic);
 
     const protocolPayload = sharedCoreHash === envelope.predictedHash
       ? buildAcceptedResponse({
@@ -580,7 +616,7 @@ export class KanjiKombatService {
       ...committed,
       ...protocolPayload,
     };
-    responseOptimistic.acceptedActionIds[envelope.actionId] = response;
+    rememberAcceptedActionReplay(responseOptimistic, envelope, response);
     return response;
   }
 
@@ -763,14 +799,8 @@ export class KanjiKombatService {
     return enemies;
   }
 
-  recordCorrectAnswer() {
+  applyCurrentStreakReward() {
     const kk = this.gm.run.kanjiKombat;
-    kk.streak = (kk.streak || 0) + 1;
-    kk.highestStreak = Math.max(kk.highestStreak || 0, kk.streak);
-    kk.report.correctAnswers += 1;
-    kk.report.cardsReviewed += 1;
-    kk.reviewsSinceIntro += 1;
-
     let streakReward = null;
 
     if (STREAK_HEAL_REWARDS[kk.streak]) {
@@ -805,6 +835,17 @@ export class KanjiKombatService {
     }
 
     return streakReward;
+  }
+
+  recordCorrectAnswer({ applyReward = true } = {}) {
+    const kk = this.gm.run.kanjiKombat;
+    kk.streak = (kk.streak || 0) + 1;
+    kk.highestStreak = Math.max(kk.highestStreak || 0, kk.streak);
+    kk.report.correctAnswers += 1;
+    kk.report.cardsReviewed += 1;
+    kk.reviewsSinceIntro += 1;
+
+    return applyReward ? this.applyCurrentStreakReward() : null;
   }
 
   recordWrongAnswer() {

@@ -321,6 +321,32 @@ describe('campfire UI', () => {
     assert.match(renderedHtml(actionArea), /Would you like to cook\?/);
   });
 
+  it('clears campfire UI for corrected skip responses when the authoritative state left campfire', async () => {
+    let gameState = { phase: 'campfire', run: { currentRoom: 0, pendingCampfireAction: null } };
+    const messages = [];
+    let updateUiCalls = 0;
+    campfire.renderForTest(sampleState(), {
+      getGameState: () => gameState,
+      updateGameState: nextState => { gameState = nextState; },
+      updateUI: () => { updateUiCalls += 1; },
+      apiSkipCampfire: async options => ({
+        status: 'corrected',
+        actionId: options?.actionId,
+        authoritativeState: { phase: 'room', run: { currentRoom: 1, pendingCampfireAction: null } },
+        reason: 'Room changed',
+      }),
+      showCampfireFailure: message => messages.push(message),
+    });
+
+    await actionArea.querySelectorAll('.ui-btn')[1].click();
+
+    assert.deepEqual(messages, ['Campfire choice did not save. Please try again.']);
+    assert.deepEqual(gameState, { phase: 'room', run: { currentRoom: 1, pendingCampfireAction: null } });
+    assert.equal(updateUiCalls, 1);
+    assert.doesNotMatch(renderedHtml(actionArea), /Would you like to cook\?/);
+    assert.equal(sceneArea.querySelector('.campfire-scene'), null);
+  });
+
   it('renders ingredient and recipe tabs', () => {
     campfire.renderForTest(sampleState());
     openCooking();

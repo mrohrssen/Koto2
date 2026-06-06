@@ -91,6 +91,33 @@ describe('Kanji Kombat optimistic answers', () => {
     assert.equal(result.xpEvents[0].levelUps.at(-1).newLevel, result.creatureParty.active[0].level);
   });
 
+  it('keeps accepted optimistic action segments stable when a correct answer triggers the streak-6 stat reward', () => {
+    const gm = createTestKanjiKombatGameManager();
+    gm.run.kanjiKombat.streak = 5;
+    gm.combat.allies[0].attack = 10;
+    gm.run.creatureParty.active[0].attack = 10;
+    const service = gm.kanjiKombatService;
+    const predicted = buildOptimisticKanjiKombatAnswer({
+      state: { combat: gm.combat, run: gm.run },
+      answerId: 'choice-correct',
+      actionId: 'act_kanji_streak6',
+    });
+    const originalRandom = Math.random;
+    Math.random = () => 0;
+
+    try {
+      const result = service.verifyAndCommitOptimisticAnswer(predicted.envelope);
+
+      assert.equal(result.status, 'accepted');
+      assert.equal(result.kanjiStreakReward.type, 'statUp');
+      assert.equal(result.kanjiStreakReward.stat, 'atk');
+      assert.deepEqual(result.actionSegments, predicted.localTranscript.actionSegments);
+      assert.equal(result.creatureParty.active[0].statStages.atk, 1);
+    } finally {
+      Math.random = originalRandom;
+    }
+  });
+
   it('accepts browser Kanji predictions when committed Exp Master XP is server-owned', () => {
     const gm = createTestKanjiKombatGameManager();
     gm.run.partySkills = [{ id: 'expMaster', level: 4 }];
@@ -110,6 +137,39 @@ describe('Kanji Kombat optimistic answers', () => {
     assert.equal(result.xpEvents.length, 1);
     assert.equal(result.actionSegments[0].xpEvents.length, 0);
     assert.equal(result.xpEvents[0].xpGrants[0].xp, 500);
+  });
+
+  it('rejects duplicate action ids when the Kanji replay envelope differs', () => {
+    const gm = createTestKanjiKombatGameManager();
+    const service = gm.kanjiKombatService;
+    const seed = gm.combat.optimistic.nextTurnSeed;
+    const stateVersion = gm.combat.optimistic.stateVersion;
+    const predicted = buildOptimisticKanjiKombatAnswer({
+      state: { combat: gm.combat, run: gm.run },
+      answerId: 'choice-correct',
+      actionId: 'act_kanji_dupe',
+    });
+
+    const first = service.verifyAndCommitOptimisticAnswer(predicted.envelope);
+    const versionAfterFirst = gm.combat.optimistic.stateVersion;
+    const second = service.verifyAndCommitOptimisticAnswer({
+      ...predicted.envelope,
+      actionId: 'act_kanji_dupe',
+      stateVersion: versionAfterFirst,
+      seed: gm.combat.optimistic.nextTurnSeed,
+      payload: {
+        ...predicted.envelope.payload,
+        answerId: 'choice-wrong',
+      },
+      predictedHash: 'different',
+    });
+
+    assert.equal(first.status, 'accepted');
+    assert.equal(second.status, 'corrected');
+    assert.equal(second.reason, 'duplicate_action_id_mismatch');
+    assert.equal(gm.combat.optimistic.stateVersion, versionAfterFirst);
+    assert.equal(stateVersion + 1, versionAfterFirst);
+    assert.notEqual(gm.combat.optimistic.nextTurnSeed, seed);
   });
 });
 

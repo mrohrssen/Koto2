@@ -122,7 +122,7 @@ describe('action protocol', () => {
 
   it('validates version and seed before server recompute', () => {
     const envelope = {
-      actionId: 'act_1',
+      actionId: 'act_valid_1',
       combatId: 'cmb_1',
       stateVersion: 2,
       actionType: 'combat.attack',
@@ -134,6 +134,14 @@ describe('action protocol', () => {
     assert.deepEqual(verifyActionEnvelope({ ...envelope, actionId: undefined }, { combatId: 'cmb_1', stateVersion: 2, seed: 'seed-1' }), {
       ok: false,
       reason: 'missing_action_id',
+    });
+    assert.deepEqual(verifyActionEnvelope({ ...envelope, actionId: 'act_1' }, { combatId: 'cmb_1', stateVersion: 2, seed: 'seed-1' }), {
+      ok: false,
+      reason: 'invalid_action_id',
+    });
+    assert.deepEqual(verifyActionEnvelope({ ...envelope, actionId: '__proto__' }, { combatId: 'cmb_1', stateVersion: 2, seed: 'seed-1' }), {
+      ok: false,
+      reason: 'invalid_action_id',
     });
     assert.deepEqual(verifyActionEnvelope(envelope, { combatId: 'cmb_1', stateVersion: 2, seed: 'seed-1' }), { ok: true });
     assert.deepEqual(verifyActionEnvelope(envelope, { combatId: 'cmb_2', stateVersion: 2, seed: 'seed-1' }), {

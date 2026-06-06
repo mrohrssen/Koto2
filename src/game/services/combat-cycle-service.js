@@ -3,10 +3,12 @@ import { createCombatState } from '../state.js';
 import { logger } from '../../logger.js';
 import { createSeededRng } from '../../shared/deterministic-rng.js';
 import {
+  actionReplayFingerprint,
   buildAcceptedResponse,
   buildCorrectedResponse,
   hashTranscript,
   PVE_CORE_PREDICTION_MODE,
+  isActionId,
   verifyActionEnvelope,
 } from '../../shared/action-protocol.js';
 import {
@@ -113,6 +115,41 @@ function collectEnemySelfSabotageEvents({ enemyAttacks, enemies, runPartySkills,
 
 function createCombatId() {
   return `cmb_${randomBytes(8).toString('hex')}`;
+}
+
+function ensureAcceptedActionCache(optimistic) {
+  if (!optimistic.acceptedActionIds || typeof optimistic.acceptedActionIds !== 'object') {
+    optimistic.acceptedActionIds = Object.create(null);
+  }
+  return optimistic.acceptedActionIds;
+}
+
+function findAcceptedActionReplay(optimistic, envelope) {
+  if (!isActionId(envelope?.actionId)) return null;
+  const cache = ensureAcceptedActionCache(optimistic);
+  if (!Object.hasOwn(cache, envelope.actionId)) return null;
+
+  const cached = cache[envelope.actionId];
+  if (cached?.requestFingerprint && cached.requestFingerprint === actionReplayFingerprint(envelope)) {
+    return cached.response;
+  }
+
+  return buildCorrectedResponse({
+    reason: 'duplicate_action_id_mismatch',
+    authoritativeTranscript: null,
+    authoritativeState: null,
+    stateVersion: optimistic.stateVersion,
+    nextSeed: optimistic.nextTurnSeed,
+  });
+}
+
+function rememberAcceptedActionReplay(optimistic, envelope, response) {
+  if (!isActionId(envelope?.actionId)) return;
+  const cache = ensureAcceptedActionCache(optimistic);
+  cache[envelope.actionId] = {
+    requestFingerprint: actionReplayFingerprint(envelope),
+    response,
+  };
 }
 
 function normalizeCombatActionType(actionType = 'attack') {
@@ -415,10 +452,8 @@ export class CombatCycleService {
         nextSeed: null,
       });
     }
-    if (!optimistic.acceptedActionIds) optimistic.acceptedActionIds = {};
-    if (envelope.actionId && optimistic.acceptedActionIds[envelope.actionId]) {
-      return optimistic.acceptedActionIds[envelope.actionId];
-    }
+    const acceptedReplay = findAcceptedActionReplay(optimistic, envelope);
+    if (acceptedReplay) return acceptedReplay;
 
     const actionType = normalizeCombatActionType(envelope.payload?.actionType || envelope.actionType || 'attack');
     const moveChoices = moveChoicesFromEnvelope(envelope);
@@ -529,7 +564,7 @@ export class CombatCycleService {
       ...committed,
       ...protocolPayload,
     };
-    optimistic.acceptedActionIds[envelope.actionId] = response;
+    rememberAcceptedActionReplay(optimistic, envelope, response);
     return response;
   }
 

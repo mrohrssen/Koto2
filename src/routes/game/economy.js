@@ -1,32 +1,24 @@
 import { Router } from 'express';
-
-function withOptimisticRunStatus(req, payload = {}) {
-  if (!req.body?.actionId) return payload;
-  return {
-    ...payload,
-    status: 'accepted',
-    actionId: req.body.actionId,
-    state: req.getEnrichedGameState(),
-  };
-}
-
-function sendOptimisticRunCorrection(req, res, error, statusCode = 409) {
-  let authoritativeState = null;
-  try {
-    authoritativeState = req.getEnrichedGameState();
-  } catch {
-    authoritativeState = null;
-  }
-  return res.status(statusCode).json({
-    status: 'corrected',
-    actionId: req.body?.actionId,
-    reason: error?.message || 'run_action_rejected',
-    authoritativeState,
-  });
-}
+import {
+  createOptimisticActionRunner,
+  getOptimisticActionLedgerOwner,
+} from './optimistic-action-response.js';
 
 export default function createEconomyRoutes() {
   const router = Router();
+  const runDealerAction = createOptimisticActionRunner({
+    owner: req => {
+      const gm = req.gameManager;
+      if (gm && !gm.meta && typeof gm.initMeta === 'function') {
+        try {
+          gm.initMeta();
+        } catch {
+          // Let the mutation path surface validation errors normally.
+        }
+      }
+      return getOptimisticActionLedgerOwner(req);
+    },
+  });
 
   // Skip post-combat shop
   router.post('/shop-skip', async (req, res) => {
@@ -53,30 +45,30 @@ export default function createEconomyRoutes() {
 
   // Dealer room: sell a creature
   router.post('/dealer-sell', async (req, res) => {
-    const gameManager = req.gameManager;
     const { creatureId } = req.body;
-    try {
-      const result = gameManager.dealerSell(creatureId);
-      req.saveGame();
-      res.json(withOptimisticRunStatus(req, { ...result, state: req.getEnrichedGameState() }));
-    } catch (error) {
-      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
-      res.status(400).json({ error: error.message });
-    }
+    return runDealerAction(req, res, {
+      actionType: 'dealer.sell',
+      errorStatusCode: 409,
+      legacyErrorStatusCode: 400,
+      perform: () => {
+        const result = req.gameManager.dealerSell(creatureId);
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   // Dealer room: buy offered creature
   router.post('/dealer-buy', async (req, res) => {
-    const gameManager = req.gameManager;
     const { creatureId } = req.body;
-    try {
-      const result = gameManager.dealerBuy(creatureId);
-      req.saveGame();
-      res.json(withOptimisticRunStatus(req, { ...result, state: req.getEnrichedGameState() }));
-    } catch (error) {
-      if (req.body?.actionId) return sendOptimisticRunCorrection(req, res, error);
-      res.status(400).json({ error: error.message });
-    }
+    return runDealerAction(req, res, {
+      actionType: 'dealer.buy',
+      errorStatusCode: 409,
+      legacyErrorStatusCode: 400,
+      perform: () => {
+        const result = req.gameManager.dealerBuy(creatureId);
+        return { ...result, state: req.getEnrichedGameState() };
+      },
+    });
   });
 
   // Dealer room: leave

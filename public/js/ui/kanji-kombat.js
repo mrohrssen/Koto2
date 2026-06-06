@@ -167,7 +167,11 @@ function bindSingleFlightButtons(buttons, getValue, handler, { beforeSubmit = nu
       beforeSubmit?.(button, buttons);
       buttons.forEach(btn => { btn.disabled = true; });
       try {
-        await handler?.(getValue(button));
+        const handled = await handler?.(getValue(button));
+        if (handled === false) {
+          inFlight = false;
+          buttons.forEach(btn => { btn.disabled = false; });
+        }
       } catch (err) {
         inFlight = false;
         buttons.forEach(btn => { btn.disabled = false; });
@@ -385,9 +389,13 @@ export function renderKanjiKombatAction(gameState) {
     renderKanjiKombatQuiz(kk.currentQuiz, {
       onAnswer: async answerId => {
         const result = await api.submitAnswer(answerId);
-        if (result?.handledByCombatLoop) return;
+        if (result?.handledByCombatLoop) return true;
         if (result?.state) api.updateGameState(result.state);
-        if (result) api.updateUI();
+        if (result) {
+          api.updateUI();
+          return true;
+        }
+        return false;
       },
     });
     return true;

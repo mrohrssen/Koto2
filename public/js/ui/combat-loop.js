@@ -594,7 +594,7 @@ async function runOptimisticKanjiKombatAnswer({
     animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
   }
   if (result?.combatEnded || !combatActive) {
-    finishCombatLoop(result || { combatEnded: true, victory: false });
+    await finishCombatLoop(result || { combatEnded: true, victory: false });
     return true;
   }
   const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();

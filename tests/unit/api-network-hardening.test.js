@@ -140,11 +140,11 @@ describe('api network hardening', () => {
       return new Promise(resolve => pending.push(resolve));
     });
 
-    const first = api.verifyCreatureCombatCycle({ actionId: 'act_1' });
-    const second = api.verifyCreatureCombatCycle({ actionId: 'act_2' });
+    const first = api.verifyCreatureCombatCycle({ actionId: 'act_first_1' });
+    const second = api.verifyCreatureCombatCycle({ actionId: 'act_second_2' });
 
     assert.equal(globalThis.fetch.mock.callCount(), 2);
-    assert.deepEqual(bodies, [{ actionId: 'act_1' }, { actionId: 'act_2' }]);
+    assert.deepEqual(bodies, [{ actionId: 'act_first_1' }, { actionId: 'act_second_2' }]);
 
     pending[0](jsonResponse({ status: 'accepted', stateVersion: 1, nextSeed: 'next_1' }));
     pending[1](jsonResponse({ status: 'accepted', stateVersion: 1, nextSeed: 'next_2' }));
@@ -177,6 +177,60 @@ describe('api network hardening', () => {
       state,
     });
     assert.equal(globalThis.fetch.mock.callCount(), 1);
+  });
+
+  it('aborts hung optimistic vocab review requests instead of waiting forever', async () => {
+    const api = await import('../../public/js/api.js');
+    let sawSignal = false;
+    let sawAbort = false;
+    globalThis.fetch = mock.fn((_url, options = {}) => {
+      sawSignal = !!options.signal;
+      return new Promise((_resolve, reject) => {
+        options.signal?.addEventListener('abort', () => {
+          sawAbort = true;
+          const error = new Error('aborted');
+          error.name = 'AbortError';
+          reject(error);
+        });
+      });
+    });
+
+    const result = await Promise.race([
+      api.reviewVocabWord('発見', 'again', true, {
+        actionId: 'run_word_timeout',
+        timeoutMs: 5,
+      }),
+      new Promise(resolve => setTimeout(() => resolve('hung'), 30)),
+    ]);
+
+    assert.equal(result, null);
+    assert.equal(sawSignal, true);
+    assert.equal(sawAbort, true);
+  });
+
+  it('does not dedupe concurrent vocab review posts with different bodies', async () => {
+    const api = await import('../../public/js/api.js');
+    const bodies = [];
+    const pending = [];
+    globalThis.fetch = mock.fn(async (_url, options) => {
+      bodies.push(JSON.parse(options.body));
+      return new Promise(resolve => pending.push(resolve));
+    });
+
+    const first = api.reviewVocabWord('明るい', 'good');
+    const second = api.reviewVocabWord('暗い', 'again');
+
+    assert.equal(globalThis.fetch.mock.callCount(), 2);
+    assert.deepEqual(bodies, [
+      { word: '明るい', grade: 'good' },
+      { word: '暗い', grade: 'again' },
+    ]);
+
+    pending[0](jsonResponse({ ok: true, word: '明るい' }));
+    pending[1](jsonResponse({ ok: true, word: '暗い' }));
+
+    assert.equal((await first).word, '明るい');
+    assert.equal((await second).word, '暗い');
   });
 
   it('returns a transient error when game state cannot be fetched', async () => {

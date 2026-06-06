@@ -99,8 +99,12 @@ function clearPendingRunAction(pending) {
   }
 }
 
+function isCurrentPendingRunAction(pending) {
+  return !!pending && pendingRunActionId === pending.actionId;
+}
+
 function reconcilePendingRunAction(pending, result, { refreshUi = true } = {}) {
-  if (!isMatchingRunActionResponse(pending, result)) return false;
+  if (!isCurrentPendingRunAction(pending) || !isMatchingRunActionResponse(pending, result)) return false;
   if (result?.status === 'corrected') {
     updateGameState(correctPendingRunAction(pending, result));
     if (refreshUi) updateUI();
@@ -117,7 +121,7 @@ function reconcilePendingRunAction(pending, result, { refreshUi = true } = {}) {
 }
 
 function applyPendingRunCorrection(pending, result) {
-  if (!isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
+  if (!isCurrentPendingRunAction(pending) || !isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
   updateGameState(correctPendingRunAction(pending, result));
   updateUI();
   clearPendingRunAction(pending);
@@ -151,6 +155,7 @@ async function resetSceneForInitialRoomEntry(state) {
 }
 
 async function reconcileInitialSkillPickRoomEntry(pending, result) {
+  if (!isCurrentPendingRunAction(pending)) return false;
   if (!isInitialSkillPickChoiceResult(pending, result)) return false;
   updateGameState(confirmPendingRunAction(pending, result));
   clearPendingRunAction(pending);
@@ -164,10 +169,11 @@ async function reconcileInitialSkillPickRoomEntry(pending, result) {
 }
 
 function rollbackPendingRunAction(pending, { refreshUi = true } = {}) {
-  if (!pending) return;
+  if (!isCurrentPendingRunAction(pending)) return false;
   updateGameState(pending.originalState);
   if (refreshUi) updateUI();
   clearPendingRunAction(pending);
+  return true;
 }
 
 const WORD_DISCOVERY_SAVE_FAILURE_COPY = 'Word discovery did not save. Please try again.';
@@ -183,7 +189,7 @@ function showWhackAMoleSaveFailure() {
 }
 
 function applyWordDiscoveryCorrection(pending, result) {
-  if (!isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
+  if (!isCurrentPendingRunAction(pending) || !isMatchingRunActionResponse(pending, result) || result?.status !== 'corrected') return false;
   updateGameState(correctPendingRunAction(pending, result));
   updateUI();
   clearPendingRunAction(pending);
@@ -216,7 +222,7 @@ async function completeWordDiscoveryOptimistically({ learnedWords = [] } = {}) {
   }
 
   if (result?.state) {
-    reconcilePendingRunAction(pending, result, { refreshUi: false });
+    if (!reconcilePendingRunAction(pending, result, { refreshUi: false })) return null;
     if (learnedWords.length > 0) {
       apiPostCombatRefresh?.(learnedWords).catch(() => {});
     }
@@ -1387,8 +1393,10 @@ export async function renderWordDiscovery() {
         return;
       }
 
-      if (result.state) {
+      if (result.state && isCurrentPendingRunAction(pending)) {
         updateGameState(confirmPendingRunAction(pending, result));
+      } else if (result.state) {
+        return;
       }
 
       // Check if we hit the limit
@@ -1472,6 +1480,7 @@ async function completeSpeedReviewRoomOptimistically(room, { throwOnFailure = fa
   }
 
   if (completeResult?.status === 'corrected') {
+    if (!isCurrentPendingRunAction(pending)) return null;
     updateGameState(correctPendingRunAction(pending, completeResult));
     updateUI();
     clearPendingRunAction(pending);
@@ -1481,7 +1490,7 @@ async function completeSpeedReviewRoomOptimistically(room, { throwOnFailure = fa
   }
 
   if (completeResult?.state) {
-    reconcilePendingRunAction(pending, completeResult, { refreshUi: false });
+    if (!reconcilePendingRunAction(pending, completeResult, { refreshUi: false })) return null;
     speedReviewRoomLaunchState.roomId = null;
     updateUI();
     return completeResult;
@@ -1633,12 +1642,14 @@ async function completeWhackAMoleOptimistically(score) {
   }
 
   if (result?.status === 'corrected') {
-    if (isMatchingRunActionResponse(pending, result)) {
+    if (isCurrentPendingRunAction(pending) && isMatchingRunActionResponse(pending, result)) {
       updateGameState(correctPendingRunAction(pending, result));
       updateUI();
       clearPendingRunAction(pending);
-    } else {
+    } else if (isCurrentPendingRunAction(pending)) {
       rollbackPendingRunAction(pending);
+    } else {
+      return null;
     }
     showWhackAMoleSaveFailure();
     return null;
@@ -1674,12 +1685,14 @@ async function skipWhackAMoleOptimistically() {
   }
 
   if (result?.status === 'corrected') {
-    if (isMatchingRunActionResponse(pending, result)) {
+    if (isCurrentPendingRunAction(pending) && isMatchingRunActionResponse(pending, result)) {
       updateGameState(correctPendingRunAction(pending, result));
       updateUI();
       clearPendingRunAction(pending);
-    } else {
+    } else if (isCurrentPendingRunAction(pending)) {
       rollbackPendingRunAction(pending);
+    } else {
+      return null;
     }
     showWhackAMoleSaveFailure();
     return null;

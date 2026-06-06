@@ -11,7 +11,7 @@ function cloneValue(value) {
     : JSON.parse(JSON.stringify(value));
 }
 
-function snapshotGameManager(gameManager) {
+export function snapshotGameManager(gameManager) {
   if (!gameManager || typeof gameManager !== 'object') return null;
   return {
     player: cloneValue(gameManager.player),
@@ -21,7 +21,7 @@ function snapshotGameManager(gameManager) {
   };
 }
 
-function restoreGameManager(gameManager, snapshot) {
+export function restoreGameManager(gameManager, snapshot) {
   if (!gameManager || !snapshot) return;
   gameManager.player = cloneValue(snapshot.player);
   gameManager.run = cloneValue(snapshot.run);
