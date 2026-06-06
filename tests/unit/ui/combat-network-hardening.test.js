@@ -624,6 +624,121 @@ describe('combat network hardening', () => {
     assert.equal(stateFetchCount, 1);
   });
 
+  it('recovers authoritative state after an optimistic Kanji Kombat answer request fails', async () => {
+    const calls = [];
+    const updates = [];
+    let stateFetchCount = 0;
+    const move = {
+      id: 'kanji-kombat-strike',
+      name: 'Kanji Kombat Strike',
+      nameEn: 'Kanji Kombat Strike',
+      element: 'fire',
+      category: 'damage',
+      target: 'single_enemy',
+      power: 15,
+      mpCost: 0,
+      accuracy: 100,
+    };
+    const ally = {
+      id: 'hi',
+      name: '火',
+      nameEn: 'Fire',
+      reading: 'ひ',
+      element: 'fire',
+      level: 3,
+      attack: 10,
+      defense: 5,
+      dex: 10,
+      hp: 100,
+      maxHp: 100,
+      mp: 10,
+      maxMp: 10,
+      moves: [move],
+    };
+    const enemy = {
+      id: 'mizu',
+      name: '水',
+      nameEn: 'Water',
+      reading: 'みず',
+      element: 'water',
+      level: 1,
+      attack: 1,
+      defense: 1,
+      dex: 0,
+      hp: 100,
+      maxHp: 100,
+      mp: 0,
+      maxMp: 0,
+      moves: [],
+    };
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [enemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        optimistic: { combatId: 'cmb_kanji_fail', stateVersion: 2, nextTurnSeed: 'seed_kanji_fail' },
+        turnCount: 0,
+      },
+      run: {
+        mode: 'kanjiKombat',
+        partySkills: [],
+        creatureParty: { active: [ally], reserves: [] },
+        kanjiKombat: {
+          currentQuiz: {
+            cardId: 'hiragana:あ',
+            choices: [
+              { id: 'answer-correct', answer: 'a', correct: true },
+              { id: 'answer-wrong', answer: 'i', correct: false },
+            ],
+          },
+        },
+      },
+    };
+    const serverState = {
+      ...currentState,
+      combat: {
+        ...currentState.combat,
+        actionCursor: { side: 'ally', index: 0, opening: false },
+        turnCount: 0,
+      },
+    };
+    combatLoop.__combatNetworkTest.setKanjiKombatAnswerApi(async () => {
+      throw new TypeError('Load failed');
+    });
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+      fetchServerState: async () => {
+        stateFetchCount += 1;
+        return serverState;
+      },
+    });
+    combatLoop.__combatNetworkTest.setCombatActive(true);
+
+    const handled = await combatLoop.__combatNetworkTest.runOptimisticKanjiKombatAnswer({
+      answerId: 'answer-correct',
+      turnTiming: {},
+      playback: async localTranscript => {
+        calls.push({ type: 'playback', localTranscript });
+      },
+      startMoveSelection: () => {
+        calls.push({ type: 'startMoveSelection' });
+      },
+      getEnemyDialogueActive: () => false,
+    });
+
+    assert.equal(handled, true);
+    assert.equal(calls[0].type, 'playback');
+    assert.equal(stateFetchCount, 1);
+    assert.equal(updates.length, 1);
+    assert.deepEqual(updates[0].combat.actionCursor, serverState.combat.actionCursor);
+    assert.equal(calls.filter(call => call.type === 'startMoveSelection').length, 1);
+    assert.equal(combatLoop.__combatNetworkTest.isCombatActive(), true);
+  });
+
   it('accepted optimistic verification reconciles committed combat result and next seed', async () => {
     const updates = [];
     const currentState = {

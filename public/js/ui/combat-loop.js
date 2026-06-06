@@ -537,6 +537,10 @@ async function runOptimisticKanjiKombatAnswer({
   turnTiming,
   recoveryActionType = 'attack',
   nextSelectionDelayMs = 0,
+  playback = playCreatureCombatResult,
+  startMoveSelection: restartMoveSelection = startMoveSelection,
+  stopCombatLoop: finishCombatLoop = stopCombatLoop,
+  getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
 } = {}) {
   const optimistic = buildOptimisticKanjiKombatRequest(answerId);
   if (!optimistic) return false;
@@ -552,7 +556,7 @@ async function runOptimisticKanjiKombatAnswer({
   if (!waitForStreakRewardBanner) {
     void vfx.showKanjiKombatAnswerBanner(optimistic.localTranscript.kanjiAnswerCorrect);
   }
-  await playCreatureCombatResult(optimistic.localTranscript, turnTiming, {
+  await playback(optimistic.localTranscript, turnTiming, {
     choices: [],
     logMoveIntent: false,
     nextSelectionDelayMs,
@@ -561,7 +565,14 @@ async function runOptimisticKanjiKombatAnswer({
   });
 
   const verification = await verificationPromise;
-  if (verification.error) throw verification.error;
+  if (verification.error) {
+    const recovery = await recoverFromNullCombatPost(recoveryActionType, {
+      restartSelection: restartMoveSelection,
+    });
+    logCombatTurnTiming(turnTiming, null, recovery.outcome, !recovery.recovered);
+    if (recovery.recovered) return true;
+    throw verification.error;
+  }
   const result = verification.result;
   const recovery = await handleOptimisticCombatVerification(result, recoveryActionType);
   if (recovery && recovery.recovered === false) {
@@ -583,12 +594,13 @@ async function runOptimisticKanjiKombatAnswer({
     animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
   }
   if (result?.combatEnded || !combatActive) {
-    stopCombatLoop(result || { combatEnded: true, victory: false });
+    finishCombatLoop(result || { combatEnded: true, victory: false });
     return true;
   }
-  if (combatActive && isRecoveredCombatActive(getGameState()) && !getEnemyDialogueActive()) {
+  const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
+  if (combatActive && isRecoveredCombatActive(getGameState()) && !enemyDialogueActive) {
     await waitBeforeMoveSelection(nextSelectionDelayMs);
-    startMoveSelection();
+    restartMoveSelection();
   }
   return true;
 }
@@ -631,6 +643,7 @@ export const __combatNetworkTest = {
   recoverFromNullCombatPost,
   handleOptimisticCombatVerification,
   runOptimisticCreatureCombatTurn,
+  runOptimisticKanjiKombatAnswer,
   setCombatActive(value) {
     combatActive = value === true;
   },
