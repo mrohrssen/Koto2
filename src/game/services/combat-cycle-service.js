@@ -216,15 +216,14 @@ export class CombatCycleService {
 
     let enemyCreatures;
     if (isBoss) {
-      // Boss: solo creature, level × 1.25, double HP unless a tutorial override applies.
+      // Boss: solo creature, level × 1.25, double HP. Tutorial Hinoneko keeps its fixed level.
       const isStartingMeadowHinoneko = isStartingMeadowHinonekoBoss(this.gm.run);
       const bossLevel = isStartingMeadowHinoneko
         ? adjustStartingMeadowLevel(7)
         : adjustStartingMeadowLevel(Math.round(getEnemyLevel({ totalEncounters, enemyCount: 1 }) * 1.25));
       const bossCreature = generateEnemyCreature(bossLevel, [currentRoom.boss.creatureId], stage);
-      if (!isStartingMeadowHinoneko) {
-        bossCreature.hp = bossCreature.maxHp *= 2;
-      }
+      bossCreature.maxHp *= 2;
+      bossCreature.hp = bossCreature.maxHp;
       enemyCreatures = [bossCreature];
     } else if (isNpcBattle) {
       // NPC Battle: always 3 enemies at level × 1.1

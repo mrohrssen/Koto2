@@ -99,7 +99,7 @@ describe('Starting Meadow NPC battle', () => {
 });
 
 describe('Starting Meadow Hinoneko boss override', () => {
-  it('forces Hinoneko to level 5 without boss double HP', (t) => {
+  it('keeps Hinoneko at level 5 but still applies boss double HP', (t) => {
     const random = mock.method(Math, 'random', () => 0.5);
     t.after(() => random.mock.restore());
 
@@ -132,7 +132,7 @@ describe('Starting Meadow Hinoneko boss override', () => {
 
     assert.equal(result.enemy.id, 'hinoneko');
     assert.equal(result.enemy.level, 5);
-    assert.equal(result.enemy.maxHp, expectedHinoneko.maxHp);
-    assert.equal(result.enemy.hp, expectedHinoneko.maxHp);
+    assert.equal(result.enemy.maxHp, expectedHinoneko.maxHp * 2);
+    assert.equal(result.enemy.hp, expectedHinoneko.maxHp * 2);
   });
 });
