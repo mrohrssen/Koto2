@@ -1212,6 +1212,7 @@ async function startKanjiKombatSetup() {
     const result = await apiStartKanjiKombat(creatureId);
     if (result?.state) {
       updateGameState(result.state);
+      actions.clear();
       await combatLoopUI.startCombatLoop({ kanjiKombatOpening: true });
     }
   } finally {

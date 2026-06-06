@@ -739,6 +739,8 @@ export async function renderHub() {
     ? await apiGetKanjiKombatAvailability().catch(() => ({ available: false }))
     : { available: false }) || { available: false };
 
+  if (getGameState().phase !== 'hub') return;
+
   renderButtons([
     { label: `📚 Knowledge Review${dueCount > 0 ? ` (${dueCount})` : ''}`, onClick: async () => {
       // Tutorial step 4→5: advance when player clicks speed review

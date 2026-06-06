@@ -8,6 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '../../..');
 const gameSrc = readFileSync(resolve(repoRoot, 'public/game.js'), 'utf8');
 const combatLoopSrc = readFileSync(resolve(repoRoot, 'public/js/ui/combat-loop.js'), 'utf8');
+const explorationSrc = readFileSync(resolve(repoRoot, 'public/js/ui/exploration.js'), 'utf8');
 
 function sourceBetween(source, start, end) {
   const startIndex = source.indexOf(start);
@@ -25,17 +26,37 @@ test('Kanji Kombat keeps creature select covering hub until the battle scene sta
   );
 
   const startApiIndex = setupSource.indexOf('apiStartKanjiKombat(creatureId)');
+  const updateStateIndex = setupSource.indexOf('updateGameState(result.state)');
+  const clearActionsIndex = setupSource.indexOf('actions.clear()');
   const startLoopIndex = setupSource.indexOf('await combatLoopUI.startCombatLoop({ kanjiKombatOpening: true })');
   const removeOverlayIndex = setupSource.lastIndexOf('removeCollectionOverlay()');
   const updateUiIndex = setupSource.lastIndexOf('updateUI()');
 
   assert.ok(startApiIndex >= 0, 'Kanji Kombat setup should call the start API');
+  assert.ok(clearActionsIndex > updateStateIndex, 'stale hub controls should clear after entering combat state');
+  assert.ok(clearActionsIndex < startLoopIndex, 'stale hub controls should clear before the opening battle scene starts');
   assert.ok(startLoopIndex > startApiIndex, 'battle scene startup should wait for the start API state');
   assert.ok(
     removeOverlayIndex > startLoopIndex,
     'creature select overlay should remain visible until the battle scene start has been awaited'
   );
   assert.ok(updateUiIndex > removeOverlayIndex, 'the final UI refresh should happen after removing the overlay');
+});
+
+test('async hub render does not redraw hub buttons after phase changes', () => {
+  const renderHubSource = sourceBetween(
+    explorationSrc,
+    'export async function renderHub()',
+    '/** Area selection'
+  );
+
+  const availabilityIndex = renderHubSource.indexOf('apiGetKanjiKombatAvailability');
+  const phaseGuardIndex = renderHubSource.indexOf("getGameState().phase !== 'hub'");
+  const renderButtonsIndex = renderHubSource.indexOf('renderButtons([');
+
+  assert.ok(availabilityIndex >= 0, 'hub render should load Kanji Kombat availability before rendering buttons');
+  assert.ok(phaseGuardIndex > availabilityIndex, 'hub render should re-check phase after async availability loading');
+  assert.ok(phaseGuardIndex < renderButtonsIndex, 'stale hub renders should exit before drawing buttons');
 });
 
 test('Kanji Kombat opening travel delays first-wave enemies until after walking stops', () => {
