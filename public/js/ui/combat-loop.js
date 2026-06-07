@@ -472,9 +472,61 @@ function buildOptimisticCreatureCombatRequest(actionType, moveChoices = []) {
   return buildOptimisticCombatTurn({ state: getGameState(), actionType, moveChoices });
 }
 
-function buildOptimisticKanjiKombatRequest(answerId) {
+function hasKanjiKombatPromptRef(promptRef) {
+  return !!promptRef && typeof promptRef === 'object' && Object.keys(promptRef).length > 0;
+}
+
+function matchesKanjiKombatPromptRef(prompt, promptRef = {}) {
+  if (!prompt || prompt.kind !== 'quiz' || !hasKanjiKombatPromptRef(promptRef)) return false;
+  if (Object.hasOwn(promptRef, 'promptId') && prompt.promptId !== promptRef.promptId) return false;
+  if (Object.hasOwn(promptRef, 'sequence') && prompt.sequence !== promptRef.sequence) return false;
+  const cardId = prompt.cardId || prompt.quiz?.cardId || null;
+  if (Object.hasOwn(promptRef, 'cardId') && cardId !== promptRef.cardId) return false;
+  return true;
+}
+
+function getBufferedKanjiKombatQuizPrompt(state, promptRef = {}) {
+  const buffer = state?.run?.kanjiKombat?.promptBuffer;
+  if (!Array.isArray(buffer)) return null;
+  const prompt = buffer[0] || null;
+  return matchesKanjiKombatPromptRef(prompt, promptRef) ? prompt : null;
+}
+
+function stateWithBufferedKanjiKombatQuiz(state, promptRef = {}) {
+  const bufferedPrompt = getBufferedKanjiKombatQuizPrompt(state, promptRef);
+  if (!bufferedPrompt?.quiz) return state;
+  const run = state?.run || {};
+  const kk = run.kanjiKombat || {};
+  return {
+    ...state,
+    run: {
+      ...run,
+      kanjiKombat: {
+        ...kk,
+        currentQuiz: bufferedPrompt.quiz,
+      },
+    },
+  };
+}
+
+function buildOptimisticKanjiKombatRequest(answerId, promptRef = {}) {
   if (typeof apiSubmitKanjiKombatAnswer !== 'function') return null;
-  return buildOptimisticKanjiKombatAnswer({ state: getGameState(), answerId });
+  const state = stateWithBufferedKanjiKombatQuiz(getGameState(), promptRef);
+  return buildOptimisticKanjiKombatAnswer({ state, answerId });
+}
+
+function withKanjiKombatPromptRef(request, promptRef = {}) {
+  if (!hasKanjiKombatPromptRef(promptRef)) return request;
+  if (request && typeof request === 'object') {
+    return {
+      ...request,
+      payload: {
+        ...(request.payload || {}),
+        promptRef,
+      },
+    };
+  }
+  return { answerId: request, payload: { promptRef } };
 }
 
 async function runOptimisticCreatureCombatTurn({
@@ -534,6 +586,7 @@ async function runOptimisticCreatureCombatTurn({
 
 async function runOptimisticKanjiKombatAnswer({
   answerId,
+  promptRef = {},
   turnTiming,
   recoveryActionType = 'attack',
   nextSelectionDelayMs = 0,
@@ -542,11 +595,11 @@ async function runOptimisticKanjiKombatAnswer({
   stopCombatLoop: finishCombatLoop = stopCombatLoop,
   getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
 } = {}) {
-  const optimistic = buildOptimisticKanjiKombatRequest(answerId);
+  const optimistic = buildOptimisticKanjiKombatRequest(answerId, promptRef);
   if (!optimistic) return false;
 
   const requestStartedAt = performance.now();
-  const verificationPromise = apiSubmitKanjiKombatAnswer(optimistic.envelope)
+  const verificationPromise = apiSubmitKanjiKombatAnswer(withKanjiKombatPromptRef(optimistic.envelope, promptRef))
     .then(result => ({ result }), error => ({ error }));
   markCombatAnimationStart(turnTiming, requestStartedAt);
   const waitForStreakRewardBanner = willKanjiKombatAnswerTriggerStreakReward(
@@ -925,14 +978,15 @@ function submitCursorAction(choice) {
   executeCreatureMovesTurn([choice]);
 }
 
-export async function submitKanjiKombatAnswer(answerId) {
+export async function submitKanjiKombatAnswer(answerId, promptRef = {}) {
   if (typeof apiSubmitKanjiKombatAnswer !== 'function') {
     throw new Error('Kanji Kombat answer API is not configured');
   }
   await executeCreatureMovesTurn([], {
     actionType: 'kanjiKombat',
     kanjiAnswerId: answerId,
-    request: () => apiSubmitKanjiKombatAnswer(answerId),
+    kanjiPromptRef: promptRef,
+    request: () => apiSubmitKanjiKombatAnswer(withKanjiKombatPromptRef(answerId, promptRef)),
     describeIntent: () => `Kanji Kombat answer: ${answerId}`,
   });
   return { handledByCombatLoop: true };
@@ -1893,6 +1947,7 @@ async function executeCreatureMovesTurn(choices, options = {}) {
       const optimisticHandled = actionType === 'kanjiKombat' && options.kanjiAnswerId
         ? await runOptimisticKanjiKombatAnswer({
             answerId: options.kanjiAnswerId,
+            promptRef: options.kanjiPromptRef,
             turnTiming,
             recoveryActionType,
           })

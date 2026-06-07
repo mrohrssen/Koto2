@@ -124,6 +124,42 @@ describe('Kanji Kombat routes', () => {
     assert.equal(res.body.actionType, 'kanjiKombat');
   });
 
+  it('passes non-optimistic buffered answer prompt metadata into the service', async () => {
+    const calls = [];
+    const manager = {
+      kanjiKombatService: {
+        submitAnswer: (answerId, options = {}) => {
+          calls.push({ answerId, promptRef: options.promptRef });
+          return { answerId, actionType: 'kanjiKombat' };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/answer')
+      .send({
+        answerId: 'ki',
+        payload: {
+          promptRef: {
+            promptId: 'kkp_quiz_fallback',
+            sequence: 4,
+            cardId: 'hiragana:き',
+          },
+        },
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      answerId: 'ki',
+      promptRef: {
+        promptId: 'kkp_quiz_fallback',
+        sequence: 4,
+        cardId: 'hiragana:き',
+      },
+    }]);
+    assert.equal(manager.saved, true);
+  });
+
   it('submits an optimistic quiz answer envelope to the verifier', async () => {
     const manager = {
       kanjiKombatService: {

@@ -83,6 +83,13 @@ function withIntroPromptCardId(promptRef, cardId) {
   return { ...promptRef, cardId };
 }
 
+function submitKanjiKombatAnswer(manager, answerId, promptRef) {
+  const options = { promptRef };
+  return typeof manager.kanjiKombatService?.submitAnswer === 'function'
+    ? manager.kanjiKombatService.submitAnswer(answerId, options)
+    : manager.submitKanjiKombatAnswer(answerId, options);
+}
+
 export default function createKanjiKombatRoutes() {
   const router = Router();
   const runOptimisticAction = createOptimisticActionRunner({ owner: getOptimisticActionLedgerOwner });
@@ -171,15 +178,24 @@ export default function createKanjiKombatRoutes() {
 
   router.post('/answer', (req, res) => {
     const body = req.body || {};
-    const optimisticSnapshot = isOptimisticKanjiAnswerEnvelope(body)
+    const optimisticAnswer = isOptimisticKanjiAnswerEnvelope(body);
+    let promptRef = null;
+    if (!optimisticAnswer) {
+      try {
+        promptRef = promptRefFromBody(body);
+      } catch (error) {
+        return res.status(400).json({ error: error.message });
+      }
+    }
+    const optimisticSnapshot = optimisticAnswer
       ? snapshotGameManager(req.gameManager)
       : null;
     try {
       const answerId = body.payload?.answerId || body.answerId;
       if (!answerId) return res.status(400).json({ error: 'answerId required' });
-      const result = isOptimisticKanjiAnswerEnvelope(body)
+      const result = optimisticAnswer
         ? req.gameManager.kanjiKombatService.verifyAndCommitOptimisticAnswer(body)
-        : req.gameManager.submitKanjiKombatAnswer(answerId);
+        : submitKanjiKombatAnswer(req.gameManager, answerId, promptRef);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
