@@ -183,6 +183,34 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(kanjiKombatSource, /correctAnswerId[\s\S]{0,400}submitIntro/);
   });
 
+  it('wires Kanji Kombat prompt buffer API calls', () => {
+    const apiSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/api.js'), 'utf8');
+    const kanjiSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/kanji-kombat.js'), 'utf8');
+    const promptOptionsSource = sourceBetween(
+      apiSource,
+      'function applyKanjiKombatPromptOptions',
+      'async function submitKanjiKombatIntro'
+    );
+    const introSource = sourceBetween(
+      apiSource,
+      'async function submitKanjiKombatIntro',
+      'async function submitKanjiKombatAnswer'
+    );
+    const completionSource = sourceBetween(
+      apiSource,
+      'async function submitKanjiKombatCompletionChoice',
+      'async function refillKanjiKombatPromptBuffer'
+    );
+
+    assert.match(apiSource, /refillKanjiKombatPromptBuffer/);
+    assert.match(apiSource, /\/kanji-kombat\/prompt-buffer\/refill/);
+    assert.match(promptOptionsSource, /promptId/);
+    assert.match(promptOptionsSource, /promptSequence/);
+    assert.match(introSource, /applyKanjiKombatPromptOptions\(body, options\)/);
+    assert.match(completionSource, /applyKanjiKombatPromptOptions\(body, options\)/);
+    assert.match(kanjiSource, /refillPromptBuffer/);
+  });
+
   it('routes Whack-a-Mole completion and skip through verified run actions', () => {
     assert.match(apiSource, /async function completeWhackAMole\(score, options = \{\}\)/);
     assert.match(apiSource, /verifiedRunAction\('\/whack-a-mole-complete', \{ score, actionId: options\.actionId \}\)/);

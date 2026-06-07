@@ -12,6 +12,7 @@ let api = {
   submitIntro: null,
   submitCompletionChoice: null,
   submitOnboarding: null,
+  refillPromptBuffer: null,
   updateGameState: null,
   updateUI: null,
   refreshAction: null,
