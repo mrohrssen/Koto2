@@ -52,6 +52,7 @@ import {
   buildOptimisticCombatTurn,
   buildOptimisticKanjiKombatAnswer,
 } from './optimistic-combat-turn.js';
+import { getKanjiKombatSyncQueue } from './kanji-kombat-sync-queue.js';
 import { getTutorialNarration, getBefriendWrongNarration } from './tutorial-copy.js';
 import { restoreBefriendQuizEnemyUi } from './befriend-quiz-state.js';
 
@@ -169,6 +170,7 @@ let enemyAttackTimer = null;
 let animatedEnemyKoKeys = new Set();
 let creatureCombatRequestInFlight = false;
 let kanjiKombatOpeningRevealActive = false;
+let kanjiKombatQueuedVerificationPending = false;
 
 // Move-based combat state
 let currentCreatureIndex = 0;
@@ -562,6 +564,62 @@ function withKanjiKombatPromptRef(request, promptRef = {}) {
   return { answerId: request, payload: { promptRef } };
 }
 
+function localStateAfterKanjiKombatPrediction(state, optimistic, promptRef = {}) {
+  const next = JSON.parse(JSON.stringify(state || {}));
+  const kk = next.run?.kanjiKombat;
+  let consumedPromptHead = false;
+  let promptHeadBlockedCurrentQuizFallback = false;
+  if (kk && Array.isArray(kk.promptBuffer)) {
+    const head = kk.promptBuffer[0] || null;
+    const matchesPrompt =
+      !promptRef?.promptId
+      || (
+        head?.promptId === promptRef.promptId
+        && head?.sequence === promptRef.sequence
+        && (!Object.hasOwn(promptRef, 'cardId') || head?.cardId === promptRef.cardId)
+      );
+    if (matchesPrompt) {
+      consumedPromptHead = true;
+      kk.promptBuffer = kk.promptBuffer.slice(1);
+      const nextPrompt = kk.promptBuffer[0] || null;
+      kk.currentQuiz = nextPrompt?.kind === 'quiz' ? nextPrompt.quiz : null;
+      kk.pendingIntro = nextPrompt?.kind === 'intro'
+        ? {
+            cardId: nextPrompt.cardId,
+            card: nextPrompt.intro.card,
+            source: nextPrompt.source || nextPrompt.intro.source || null,
+            promptId: nextPrompt.promptId,
+            sequence: nextPrompt.sequence,
+          }
+        : null;
+      kk.completionChoicePending = nextPrompt?.kind === 'completePrompt';
+    } else if (head) {
+      promptHeadBlockedCurrentQuizFallback = true;
+    }
+  }
+  if (kk?.currentQuiz && !consumedPromptHead && !promptHeadBlockedCurrentQuizFallback) {
+    const currentQuizCardId = kk.currentQuiz.cardId || kk.currentQuiz.card?.id || null;
+    const promptRefMatchesCurrentQuiz =
+      !hasKanjiKombatPromptRef(promptRef)
+      || (
+        (!Object.hasOwn(promptRef, 'promptId') || kk.currentQuiz.promptId === promptRef.promptId)
+        && (!Object.hasOwn(promptRef, 'sequence') || kk.currentQuiz.sequence === promptRef.sequence)
+        && (!Object.hasOwn(promptRef, 'cardId') || currentQuizCardId === promptRef.cardId)
+      );
+    if (promptRefMatchesCurrentQuiz) {
+      kk.currentQuiz = null;
+    }
+  }
+
+  if (optimistic.localNextCombat && next.combat) {
+    next.combat = { ...next.combat, ...optimistic.localNextCombat };
+  }
+  if (optimistic.localTranscript?.creatureParty && next.run) {
+    next.run.creatureParty = optimistic.localTranscript.creatureParty;
+  }
+  return next;
+}
+
 async function runOptimisticCreatureCombatTurn({
   actionType,
   moveChoices = [],
@@ -628,12 +686,26 @@ async function runOptimisticKanjiKombatAnswer({
   stopCombatLoop: finishCombatLoop = stopCombatLoop,
   getEnemyDialogueActive: isEnemyDialogueActive = getEnemyDialogueActive,
 } = {}) {
+  if (kanjiKombatQueuedVerificationPending) {
+    console.warn('[KanjiKombat] queued answer verification pending; ignoring duplicate answer');
+    playerAttackPending = false;
+    return true;
+  }
+
   const optimistic = buildOptimisticKanjiKombatRequest(answerId, promptRef);
   if (!optimistic) return false;
+  const hasLocalCombatEnd =
+    optimistic.localTranscript?.combatEnded === true
+    || optimistic.localTranscript?.allEnemiesDefeated === true
+    || optimistic.localTranscript?.allAlliesDefeated === true
+    || !!optimistic.localTranscript?.pendingCombatEnd;
+  const queue = getKanjiKombatSyncQueue();
+  if (queue && typeof queue.canConsumePrompt === 'function' && !queue.canConsumePrompt()) {
+    console.warn('[KanjiKombat] sync queue full; using server answer path');
+    return false;
+  }
 
   const requestStartedAt = performance.now();
-  const verificationPromise = apiSubmitKanjiKombatAnswer(withKanjiKombatPromptRef(optimistic.envelope, promptRef))
-    .then(result => ({ result }), error => ({ error }));
   markCombatAnimationStart(turnTiming, requestStartedAt);
   const waitForStreakRewardBanner = willKanjiKombatAnswerTriggerStreakReward(
     getGameState(),
@@ -650,41 +722,93 @@ async function runOptimisticKanjiKombatAnswer({
     deferNextSelection: true,
   });
 
-  const verification = await verificationPromise;
-  if (verification.error) {
-    const recovery = await recoverFromNullCombatPost(recoveryActionType, {
-      restartSelection: restartMoveSelection,
+  const localState = localStateAfterKanjiKombatPrediction(getGameState(), optimistic, promptRef);
+  updateGameState(localState);
+  playerAttackPending = false;
+  combatActive = isRecoveredCombatActive(localState);
+
+  const sync = () => apiSubmitKanjiKombatAnswer(withKanjiKombatPromptRef(optimistic.envelope, promptRef));
+  const handleQueuedVerificationResult = async (result, warningPrefix) => {
+    try {
+      const recovery = await handleOptimisticCombatVerification(result, recoveryActionType);
+      if (recovery?.recovered === false) throw new Error('Combat sync failed');
+
+      const pendingMoveLearn = showXpEvents(result?.xpEvents);
+      if (pendingMoveLearn?.length) {
+        await processPendingMoveLearn(pendingMoveLearn);
+      }
+      if (result?.kanjiStreakReward || waitForStreakRewardBanner) {
+        await syncKanjiKombatStreakRewardVisuals(result);
+        void vfx.showKanjiKombatAnswerBanner(result.kanjiAnswerCorrect, result.kanjiStreakReward || null);
+      }
+      if (result?.nextWave) {
+        await playKanjiKombatNextWaveTransition(result);
+        animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
+      }
+      if (result?.combatEnded || !isRecoveredCombatActive(getGameState())) {
+        await finishCombatLoop(result || { combatEnded: true, victory: false });
+      }
+    } catch (error) {
+      console.warn(warningPrefix, error?.message || error);
+    } finally {
+      kanjiKombatQueuedVerificationPending = false;
+    }
+  };
+  const handleAcceptedSync = result => handleQueuedVerificationResult(
+    result,
+    '[KanjiKombat] queued answer sync failed:',
+  );
+  const handleCorrectedSync = async result => {
+    await handleQueuedVerificationResult(
+      result,
+      '[KanjiKombat] queued answer correction failed:',
+    );
+  };
+  const handleSyncFailure = async error => {
+    try {
+      console.warn('[KanjiKombat] queued answer sync failed:', error?.message || error);
+      const recovery = await recoverFromNullCombatPost(recoveryActionType, {
+        restartSelection: restartMoveSelection,
+      });
+      logCombatTurnTiming(turnTiming, null, recovery.outcome, !recovery.recovered);
+    } finally {
+      kanjiKombatQueuedVerificationPending = false;
+    }
+  };
+
+  if (queue) {
+    const enqueueResult = queue.enqueue({
+      actionId: optimistic.envelope.actionId,
+      kind: 'quiz',
+      promptId: promptRef?.promptId || null,
+      sequence: promptRef?.sequence ?? null,
+      cardId: promptRef?.cardId || null,
+      answerId,
+      envelope: optimistic.envelope,
+      sync,
+      onAccepted: handleAcceptedSync,
+      onCorrected: handleCorrectedSync,
     });
-    logCombatTurnTiming(turnTiming, null, recovery.outcome, !recovery.recovered);
-    if (recovery.recovered) return true;
-    throw verification.error;
-  }
-  const result = verification.result;
-  const recovery = await handleOptimisticCombatVerification(result, recoveryActionType);
-  if (recovery && recovery.recovered === false) {
-    throw new Error('Combat sync failed');
-  }
-  const pendingMoveLearn = showXpEvents(result?.xpEvents);
-  if (pendingMoveLearn?.length) {
-    await processPendingMoveLearn(pendingMoveLearn);
-  }
-  if (result?.kanjiStreakReward || waitForStreakRewardBanner) {
-    await syncKanjiKombatStreakRewardVisuals(result);
-    void vfx.showKanjiKombatAnswerBanner(result?.kanjiAnswerCorrect, result?.kanjiStreakReward || null);
+    if (enqueueResult?.accepted === false) {
+      console.warn('[KanjiKombat] sync queue rejected answer; verifying answer in background');
+      kanjiKombatQueuedVerificationPending = true;
+      void sync()
+        .then(result => (result?.status === 'corrected' ? handleCorrectedSync(result) : handleAcceptedSync(result)))
+        .catch(handleSyncFailure);
+    } else {
+      kanjiKombatQueuedVerificationPending = true;
+    }
+  } else {
+    console.warn('[KanjiKombat] sync queue unavailable; verifying answer in background');
+    kanjiKombatQueuedVerificationPending = true;
+    void sync()
+      .then(result => (result?.status === 'corrected' ? handleCorrectedSync(result) : handleAcceptedSync(result)))
+      .catch(handleSyncFailure);
   }
 
-  playerAttackPending = false;
-  combatActive = isRecoveredCombatActive(getGameState());
-  if (result?.nextWave) {
-    await playKanjiKombatNextWaveTransition(result);
-    animatedEnemyKoKeys = collectExistingEnemyKoAnimationKeys(getGameState()?.combat?.enemies || []);
-  }
-  if (result?.combatEnded || !combatActive) {
-    await finishCombatLoop(result || { combatEnded: true, victory: false });
-    return true;
-  }
+  logCombatTurnTiming(turnTiming, optimistic.localTranscript, 'optimistic_queued');
   const enemyDialogueActive = typeof isEnemyDialogueActive === 'function' && isEnemyDialogueActive();
-  if (combatActive && isRecoveredCombatActive(getGameState()) && !enemyDialogueActive) {
+  if (!hasLocalCombatEnd && combatActive && isRecoveredCombatActive(getGameState()) && !enemyDialogueActive) {
     await waitBeforeMoveSelection(nextSelectionDelayMs);
     restartMoveSelection();
   }
@@ -701,6 +825,7 @@ export const __combatNetworkTest = {
     apiGetGameState = null;
     playerAttackPending = false;
     enemyAttackPending = false;
+    kanjiKombatQueuedVerificationPending = false;
   },
   setVerifyCreatureCombatApi(fn) {
     apiVerifyCreatureCombatCycle = fn;
@@ -716,6 +841,7 @@ export const __combatNetworkTest = {
   resetPendingFlags() {
     playerAttackPending = false;
     enemyAttackPending = false;
+    kanjiKombatQueuedVerificationPending = false;
   },
   setSyncIndicatorDelayMs(ms) {
     combatSyncIndicatorDelayMs = ms;
@@ -1118,6 +1244,7 @@ export function cleanupCombat() {
   combatActive = false;
   playerAttackPending = false;
   enemyAttackPending = false;
+  kanjiKombatQueuedVerificationPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
   animatedEnemyKoKeys = new Set();
@@ -1255,6 +1382,7 @@ export async function startCombatLoop(opts = {}) {
   combatActive = true;
   playerAttackPending = false;
   enemyAttackPending = false;
+  kanjiKombatQueuedVerificationPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
 
@@ -2437,6 +2565,7 @@ export async function stopCombatLoop(result) {
   combatActive = false;
   playerAttackPending = false;
   enemyAttackPending = false;
+  kanjiKombatQueuedVerificationPending = false;
   combatPausedForVocab = false;
   _currentRoundBarks = [];
   animatedEnemyKoKeys = new Set();

@@ -203,14 +203,25 @@ function createReviewSyncQueue() {
       if (item.kind === 'completionChoice') {
         return api.submitCompletionChoice(item.keepGoing, item.options);
       }
+      if (item.kind === 'quiz') {
+        return item.sync();
+      }
       throw new Error(`Unsupported Kanji Kombat sync item: ${item.kind}`);
     },
-    onAccepted: (_item, result) => {
+    onAccepted: (item, result) => {
+      if (typeof item.onAccepted === 'function') {
+        void item.onAccepted(result);
+        return;
+      }
       if (result?.state) applyServerStateIfNotBehindLocalProgress(result.state);
       if (!result?.combatEnded) requestPromptBufferRefillIfLow(result?.state || currentKanjiKombatState());
       if (result?.combatEnded) api.finishCombatResult?.(result);
     },
-    onCorrected: (_item, result) => {
+    onCorrected: (item, result) => {
+      if (typeof item.onCorrected === 'function') {
+        void item.onCorrected(result);
+        return;
+      }
       const state = result?.authoritativeState || result?.state;
       if (state) applyServerStateIfNotBehindLocalProgress(state);
       refreshKanjiKombatAction();

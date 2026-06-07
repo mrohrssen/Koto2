@@ -115,6 +115,29 @@ describe('kanji-kombat sync queue', () => {
     assert.equal(queue.pendingCount(), 0);
   });
 
+  it('can drain externally enqueued quiz items through the same ordered queue', async () => {
+    const calls = [];
+    const queue = createKanjiKombatSyncQueue({
+      syncItem: async item => {
+        calls.push([item.kind, item.actionId, item.envelope?.actionType]);
+        return { status: 'accepted', actionId: item.actionId };
+      },
+    });
+
+    queue.enqueue({
+      actionId: 'run_quiz',
+      kind: 'quiz',
+      promptId: 'kkp_quiz',
+      envelope: { actionType: 'kanjiKombat.answer' },
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    assert.deepEqual(calls, [['quiz', 'run_quiz', 'kanjiKombat.answer']]);
+    assert.equal(queue.pendingCount(), 0);
+  });
+
   it('keeps a failed head item and retries with configured backoff', async () => {
     const scheduler = createManualScheduler();
     let attempts = 0;
