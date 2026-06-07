@@ -1,8 +1,0 @@
-{
-  "name": "baseline-dev-ios",
-  "description": "Control profile. Capture deployed dev iOS WebView traffic through mitmproxy without artificial impairment.",
-  "matchHost": "jrpg-dev.up.railway.app",
-  "seed": "koto-baseline-dev-ios-2026-06-06",
-  "delay": { "baseMs": 0, "jitterMs": 0 },
-  "failure": { "rate": 0, "status": 599, "body": "Koto dev iOS benchmark injected failure" }
-}

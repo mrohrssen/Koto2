@@ -1,4 +1,0 @@
-[API Timing] POST /api/game/creature-combat-cycle -> 200 in 1500ms
-[Combat Timing] request {"actionType":"attack","requestMs":1500,"indicatorShown":true,"failed":false}
-[Combat Timing] turn {"actionType":"attack","requestMs":1500,"animationMs":500,"totalMs":2000,"outcome":"optimistic_verified","failed":false}
-[Combat Timing] server {"actionType":"attack","statusCode":200,"actionCountBefore":1,"actionCountAfter":2,"cycleCountBefore":0,"cycleCountAfter":1,"resolveMs":20,"saveMs":10,"totalMs":30}
