@@ -6,11 +6,16 @@ import { join } from 'path';
 import { State } from 'ts-fsrs';
 import { clearSrsCache, configureSrs, loadSrsData, saveSrsData } from '../../../src/game/internal-srs.js';
 import {
+  DAILY_NEW_LIMIT,
   ensureScriptDeckSeeded,
   getScriptDailyState,
   SCRIPT_DECK,
 } from '../../../src/game/script-srs.js';
-import { getLocalDateKey, KanjiKombatService } from '../../../src/game/services/kanji-kombat-service.js';
+import {
+  createInitialKanjiKombatState,
+  getLocalDateKey,
+  KanjiKombatService,
+} from '../../../src/game/services/kanji-kombat-service.js';
 import { CombatCycleService } from '../../../src/game/services/combat-cycle-service.js';
 import { createNewRun } from '../../../src/game/state.js';
 
@@ -104,6 +109,8 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     });
     assert.equal(gm.run.kanjiKombat.onboardingPending, false);
     assert.ok(gm.run.kanjiKombat.currentQuiz || gm.run.kanjiKombat.pendingIntro);
+    assert.ok(gm.run.kanjiKombat.promptBuffer.length > 0);
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0].kind, gm.run.kanjiKombat.currentQuiz ? 'quiz' : 'intro');
     assert.equal(gm.run.kanjiKombat.report.scriptDeck, 'kanji');
     assert.equal(result.onboarding.completed, true);
     assert.equal(result.kanjiKombat, gm.run.kanjiKombat);
@@ -369,5 +376,195 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(Array.isArray(ally.moves), true);
     assert.equal(ally.hp, ally.maxHp);
     assert.equal(ally.mp, ally.maxMp);
+  });
+
+  it('starts an onboarding-complete run with a prompt buffer and legacy head mirror', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    const service = new KanjiKombatService(gm);
+
+    service.startRunWithCreature(fakeCreature('hi'));
+
+    assert.equal(gm.run.kanjiKombat.onboardingPending, false);
+    assert.ok(gm.run.kanjiKombat.promptBuffer.length > 0);
+    assert.equal(gm.run.kanjiKombat.promptBuffer.length <= 5, true);
+    assert.equal(gm.run.kanjiKombat.pendingIntro.cardId, gm.run.kanjiKombat.promptBuffer[0].cardId);
+  });
+
+  it('intro prompt commits consume one prompt and refill the server buffer', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    const head = gm.run.kanjiKombat.promptBuffer[0];
+
+    const result = service.submitIntroChoice(head.cardId, 'unknown', {
+      promptId: head.promptId,
+      sequence: head.sequence,
+    });
+
+    assert.equal(result.graded.id, head.cardId);
+    assert.notEqual(gm.run.kanjiKombat.promptBuffer[0]?.promptId, head.promptId);
+    assert.equal(gm.run.kanjiKombat.promptBuffer.length <= 5, true);
+    assert.equal(gm.run.kanjiKombat.pendingIntro?.promptId, gm.run.kanjiKombat.promptBuffer[0]?.promptId);
+  });
+
+  it('buffered no-due intro commits preserve the practice queue while refilling', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    ensureScriptDeckSeeded(gm.userId);
+    const data = loadSrsData(gm.userId);
+    data.kanjiKombatDaily = {
+      date: getLocalDateKey(),
+      introducedCount: DAILY_NEW_LIMIT - 1,
+      completed: false,
+    };
+    saveSrsData(gm.userId, data);
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    const head = gm.run.kanjiKombat.promptBuffer[0];
+    assert.equal(head.kind, 'intro');
+    assert.equal(head.source, 'noDueBatch');
+
+    service.submitIntroChoice(head.cardId, 'unknown', {
+      promptId: head.promptId,
+      sequence: head.sequence,
+    });
+
+    const kk = gm.run.kanjiKombat;
+    const mirrorCardId = kk.currentQuiz?.cardId || kk.pendingIntro?.cardId || null;
+    assert.equal(kk.noDuePracticeQueue.includes(head.cardId), true);
+    assert.notEqual(kk.promptBuffer[0]?.promptId, head.promptId);
+    assert.equal(mirrorCardId, kk.promptBuffer[0]?.cardId || null);
+    assert.equal(kk.completionChoicePending, kk.promptBuffer[0]?.kind === 'completePrompt');
+  });
+
+  it('rejects stale buffered intro prompt commits without grading', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    const head = gm.run.kanjiKombat.promptBuffer[0];
+
+    assert.throws(
+      () => service.submitIntroChoice(head.cardId, 'known', {
+        promptId: 'kkp_stale',
+        sequence: head.sequence,
+      }),
+      /Kanji Kombat prompt mismatch/
+    );
+
+    const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === head.cardId);
+    assert.equal(savedCard.reps || 0, 0);
+  });
+
+  it('rejects supplied empty intro prompt ids without grading or consuming', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    const head = gm.run.kanjiKombat.promptBuffer[0];
+
+    assert.throws(
+      () => service.submitIntroChoice(head.cardId, 'known', {
+        promptId: '',
+        sequence: head.sequence,
+      }),
+      /Kanji Kombat prompt mismatch/
+    );
+
+    const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === head.cardId);
+    assert.equal(savedCard.reps || 0, 0);
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.promptId, head.promptId);
+  });
+
+  it('rejects supplied intro prompt card id mismatches without grading or consuming', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    const head = gm.run.kanjiKombat.promptBuffer[0];
+
+    assert.throws(
+      () => service.submitIntroChoice(head.cardId, 'known', {
+        promptId: head.promptId,
+        sequence: head.sequence,
+        cardId: '',
+      }),
+      /Kanji Kombat prompt mismatch/
+    );
+
+    const savedCard = loadSrsData(gm.userId)[SCRIPT_DECK].cards.find(card => card.id === head.cardId);
+    assert.equal(savedCard.reps || 0, 0);
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.promptId, head.promptId);
+  });
+
+  it('marks daily complete when a buffered complete prompt becomes active after an answer', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    const card = ensureScriptDeckSeeded(gm.userId).find(candidate => candidate.id === 'hiragana:あ');
+    const quiz = {
+      cardId: card.id,
+      choices: [
+        { id: 'choice-correct', answer: card.answer, correct: true },
+        { id: 'choice-wrong', answer: 'wrong', correct: false },
+      ],
+    };
+    gm.run.mode = 'kanjiKombat';
+    gm.run.kanjiKombat = createInitialKanjiKombatState({ localDate: getLocalDateKey() });
+    gm.run.kanjiKombat.report.scriptDeck = 'hiragana';
+    gm.run.kanjiKombat.currentQuiz = quiz;
+    gm.run.kanjiKombat.promptBuffer = [
+      { promptId: 'kkp_final_quiz', sequence: 1, kind: 'quiz', cardId: card.id, quiz },
+      { promptId: 'kkp_final_complete', sequence: 2, kind: 'completePrompt', cardId: null, source: 'dailyComplete' },
+    ];
+    gm.run.kanjiKombat.promptBufferSeq = 2;
+    gm.combat = { active: true, allies: gm.run.creatureParty.active, enemies: [{ hp: 1, id: 'enemy' }] };
+    gm.combatCycleService = {
+      resolveKanjiKombatCursorAction: () => ({ actionType: 'kanjiKombat' }),
+    };
+    const service = new KanjiKombatService(gm);
+
+    service.submitAnswer('choice-correct', {
+      promptRef: { promptId: 'kkp_final_quiz', sequence: 1, cardId: card.id },
+    });
+
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'completePrompt');
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, true);
+    assert.equal(gm.run.kanjiKombat.report.completedDaily, true);
+    assert.equal(getScriptDailyState(gm.userId, getLocalDateKey()).completed, true);
+  });
+
+  it('accepts a buffered completion prompt with keep-going and queues endless work', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    ensureScriptDeckSeeded(gm.userId);
+    const data = loadSrsData(gm.userId);
+    for (const card of data[SCRIPT_DECK].cards.filter(candidate => candidate.type === 'hiragana')) {
+      card.reps = 1;
+      card.due = new Date('2100-01-01T00:00:00Z');
+    }
+    data.kanjiKombatDaily = { date: getLocalDateKey(), introducedCount: DAILY_NEW_LIMIT, completed: true };
+    saveSrsData(gm.userId, data);
+    gm.run.mode = 'kanjiKombat';
+    gm.run.kanjiKombat = createInitialKanjiKombatState({ localDate: getLocalDateKey() });
+    gm.run.kanjiKombat.completionChoicePending = true;
+    gm.run.kanjiKombat.report.completedDaily = true;
+    gm.run.kanjiKombat.promptBuffer = [
+      { promptId: 'kkp_keep_going_complete', sequence: 1, kind: 'completePrompt', cardId: null, source: 'dailyComplete' },
+    ];
+    gm.run.kanjiKombat.promptBufferSeq = 1;
+    gm.combat = { active: true, allies: gm.run.creatureParty.active, enemies: [{ hp: 1, id: 'enemy' }] };
+    const service = new KanjiKombatService(gm);
+
+    const result = service.resolveCompletionChoice(true);
+
+    assert.equal(result.combatEnded, false);
+    assert.equal(gm.run.active, true);
+    assert.equal(gm.combat.active, true);
+    assert.equal(gm.run.kanjiKombat.endlessMode, true);
+    assert.equal(gm.run.kanjiKombat.completionChoicePending, false);
+    assert.equal(gm.run.kanjiKombat.currentQuiz?.cardId, gm.run.kanjiKombat.promptBuffer[0]?.cardId);
+    assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'quiz');
   });
 });

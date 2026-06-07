@@ -171,6 +171,42 @@ describe('Kanji Kombat optimistic answers', () => {
     assert.equal(stateVersion + 1, versionAfterFirst);
     assert.notEqual(gm.combat.optimistic.nextTurnSeed, seed);
   });
+
+  it('optimistic buffered answers validate and consume the prompt head', () => {
+    const gm = createTestKanjiKombatGameManager();
+    const service = gm.kanjiKombatService;
+    const prompt = {
+      promptId: 'kkp_answer_1',
+      sequence: 1,
+      kind: 'quiz',
+      cardId: 'hiragana:あ',
+      quiz: gm.run.kanjiKombat.currentQuiz,
+    };
+    gm.run.kanjiKombat.promptBuffer = [prompt];
+    gm.run.kanjiKombat.promptBufferSeq = 1;
+    const predicted = buildOptimisticKanjiKombatAnswer({
+      state: { combat: gm.combat, run: gm.run },
+      answerId: 'choice-correct',
+      actionId: 'act_buffered_kanji',
+    });
+    predicted.envelope.payload.promptRef = {
+      promptId: prompt.promptId,
+      sequence: prompt.sequence,
+      cardId: prompt.cardId,
+    };
+    gm.run.kanjiKombat.currentQuiz = null;
+    assert.deepEqual(predicted.envelope.payload.promptRef, {
+      promptId: prompt.promptId,
+      sequence: prompt.sequence,
+      cardId: prompt.cardId,
+    });
+
+    const result = service.verifyAndCommitOptimisticAnswer(predicted.envelope);
+
+    assert.equal(result.status, 'accepted');
+    assert.equal(result.kanjiAnswerCorrect, true);
+    assert.equal(gm.run.kanjiKombat.promptBuffer.some(entry => entry.promptId === prompt.promptId), false);
+  });
 });
 
 function createTestKanjiKombatGameManager() {
