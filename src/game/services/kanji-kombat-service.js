@@ -36,6 +36,9 @@ import {
 } from '../script-srs.js';
 
 export const NO_DUE_DISCOVERY_CHAIN_LIMIT = 3;
+export const PROMPT_BUFFER_TARGET = 5;
+export const PROMPT_BUFFER_REFILL_THRESHOLD = 3;
+const PROMPT_ID_PREFIX = 'kkp';
 const STREAK_BUFF_STATS = ['atk', 'def', 'dex'];
 const STREAK_HEAL_REWARDS = {
   3: 0.20,
@@ -110,6 +113,8 @@ export function createInitialKanjiKombatState({ localDate = getLocalDateKey(), r
     localDate,
     currentQuiz: null,
     pendingIntro: null,
+    promptBuffer: [],
+    promptBufferSeq: 0,
     report: {
       wavesCleared: 0,
       minibossesDefeated: 0,
@@ -174,8 +179,10 @@ function getEarlyReviewCards(cards, excludedIds = []) {
   return sortByDueDate(excludeCards(cards, excludedIds).filter(card => (card.reps || 0) > 0));
 }
 
-function promptForDailyCompletion(userId, state) {
-  markScriptDailyComplete(userId, state.localDate);
+function promptForDailyCompletion(userId, state, opts = {}) {
+  if (opts.preview !== true) {
+    markScriptDailyComplete(userId, state.localDate);
+  }
   state.currentQuiz = null;
   state.pendingIntro = null;
   state.completionChoicePending = true;
@@ -187,6 +194,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
   const now = opts.now || new Date();
   const random = opts.random || Math.random;
   const excludedIds = opts.excludeCardIds || [];
+  const excludedPracticeIds = opts.excludePracticeCardIds || excludedIds;
   const activeType = opts.activeType || getActiveScriptType(userId, opts.onboarding);
   state.report.scriptDeck = activeType;
   if (!Array.isArray(state.noDuePracticeQueue)) state.noDuePracticeQueue = [];
@@ -200,7 +208,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     return { kind: 'completePrompt' };
   }
 
-  const daily = getScriptDailyState(userId, state.localDate);
+  const daily = opts.previewDailyState || getScriptDailyState(userId, state.localDate);
   if (daily.completed === true && !state.endlessMode) {
     state.currentQuiz = null;
     state.pendingIntro = null;
@@ -245,7 +253,7 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
 
   while (state.noDuePracticeQueue.length > 0) {
     const practiceCardId = state.noDuePracticeQueue.shift();
-    if (excludedIds.includes(practiceCardId)) continue;
+    if (excludedPracticeIds.includes(practiceCardId)) continue;
     const card = allCards.find(candidate => candidate.id === practiceCardId);
     if (!card) continue;
     const quiz = buildQuizForCard(card, allCards, random);
@@ -275,7 +283,225 @@ export function chooseNextScriptWork(userId, state, opts = {}) {
     }
   }
 
-  return promptForDailyCompletion(userId, state);
+  return promptForDailyCompletion(userId, state, opts);
+}
+
+function createPromptId(sequence) {
+  return `${PROMPT_ID_PREFIX}_${sequence}_${randomBytes(6).toString('hex')}`;
+}
+
+function clonePlanningState(state) {
+  return JSON.parse(JSON.stringify({
+    ...state,
+    currentQuiz: null,
+    pendingIntro: null,
+    completionChoicePending: false,
+    promptBuffer: [],
+  }));
+}
+
+function getMaxPromptSequence(buffer) {
+  return buffer.reduce((max, prompt) => {
+    return Number.isInteger(prompt?.sequence) ? Math.max(max, prompt.sequence) : max;
+  }, 0);
+}
+
+function ensurePromptBufferState(state) {
+  if (!Array.isArray(state.promptBuffer)) state.promptBuffer = [];
+  const maxSequence = getMaxPromptSequence(state.promptBuffer);
+  if (!Number.isInteger(state.promptBufferSeq) || state.promptBufferSeq < maxSequence) {
+    state.promptBufferSeq = maxSequence;
+  }
+  return state.promptBuffer;
+}
+
+function nextPromptSequence(state) {
+  state.promptBufferSeq = (state.promptBufferSeq || 0) + 1;
+  return state.promptBufferSeq;
+}
+
+function promptFromWork(state, work) {
+  const sequence = nextPromptSequence(state);
+  const base = {
+    promptId: createPromptId(sequence),
+    sequence,
+    kind: work.kind,
+    cardId: work.card?.id || work.quiz?.cardId || null,
+    source: work.source || null,
+  };
+  if (work.kind === 'quiz') {
+    return { ...base, quiz: work.quiz };
+  }
+  if (work.kind === 'intro') {
+    return {
+      ...base,
+      intro: {
+        cardId: work.card.id,
+        card: work.card,
+        source: work.source || null,
+      },
+    };
+  }
+  if (work.kind === 'completePrompt') {
+    return { ...base, cardId: null, source: 'dailyComplete' };
+  }
+  return null;
+}
+
+function syncKanjiKombatLegacyPromptFields(state) {
+  const head = getKanjiKombatActivePrompt(state);
+  state.currentQuiz = head?.kind === 'quiz' ? head.quiz : null;
+  state.pendingIntro = head?.kind === 'intro'
+    ? {
+        cardId: head.cardId,
+        card: head.intro.card,
+        source: head.source || head.intro.source || null,
+        promptId: head.promptId,
+        sequence: head.sequence,
+      }
+    : null;
+  state.completionChoicePending = head?.kind === 'completePrompt';
+  return head || null;
+}
+
+function advancePlanningStateAfterPrompt(planningState, prompt, random = Math.random) {
+  planningState.currentQuiz = null;
+  planningState.pendingIntro = null;
+  if (prompt.kind === 'quiz') {
+    planningState.reviewsSinceIntro = (planningState.reviewsSinceIntro || 0) + 1;
+    const practiceIndex = Array.isArray(planningState.noDuePracticeQueue)
+      ? planningState.noDuePracticeQueue.indexOf(prompt.cardId)
+      : -1;
+    if (practiceIndex !== -1) {
+      planningState.noDuePracticeQueue.splice(practiceIndex, 1);
+    }
+    return;
+  }
+  if (prompt.kind === 'intro') {
+    planningState.reviewsSinceIntro = 0;
+    planningState.nextIntroAfter = rollIntroInterval(random);
+    if (prompt.source === 'noDueBatch') {
+      if (!Array.isArray(planningState.noDuePracticeQueue)) planningState.noDuePracticeQueue = [];
+      if (!planningState.noDuePracticeQueue.includes(prompt.cardId)) {
+        planningState.noDuePracticeQueue.push(prompt.cardId);
+      }
+      planningState.noDueDiscoveryChainCount = Math.max(
+        planningState.noDueDiscoveryChainCount || 0,
+        planningState.noDuePracticeQueue.length
+      );
+    }
+    return;
+  }
+  if (prompt.kind === 'completePrompt') {
+    planningState.completionChoicePending = true;
+  }
+}
+
+function advancePreviewDailyStateAfterPrompt(previewDailyState, prompt) {
+  if (!previewDailyState) return;
+  if (prompt.kind === 'intro') {
+    previewDailyState.introducedCount = Math.min(
+      DAILY_NEW_LIMIT,
+      (previewDailyState.introducedCount || 0) + 1
+    );
+    return;
+  }
+  if (prompt.kind === 'completePrompt') {
+    previewDailyState.completed = true;
+  }
+}
+
+function createPreviewDailyState(userId, state, opts = {}) {
+  const daily = opts.previewDailyState || getScriptDailyState(userId, state.localDate);
+  return {
+    date: daily.date || state.localDate,
+    introducedCount: daily.introducedCount || 0,
+    completed: daily.completed === true,
+  };
+}
+
+export function getKanjiKombatActivePrompt(state) {
+  return Array.isArray(state?.promptBuffer) ? state.promptBuffer[0] || null : null;
+}
+
+export function validateKanjiKombatPromptHead(state, ref = {}) {
+  const head = getKanjiKombatActivePrompt(state);
+  if (!head) throw new Error('No active Kanji Kombat prompt');
+  if (Object.hasOwn(ref, 'promptId') && head.promptId !== ref.promptId) {
+    throw new Error('Kanji Kombat prompt mismatch');
+  }
+  if (Object.hasOwn(ref, 'sequence') && head.sequence !== ref.sequence) {
+    throw new Error('Kanji Kombat prompt mismatch');
+  }
+  if (Object.hasOwn(ref, 'kind') && head.kind !== ref.kind) {
+    throw new Error('Kanji Kombat prompt mismatch');
+  }
+  if (Object.hasOwn(ref, 'cardId') && head.cardId !== ref.cardId) {
+    throw new Error('Kanji Kombat prompt mismatch');
+  }
+  return head;
+}
+
+export function consumeKanjiKombatPromptHead(state, ref = {}) {
+  const head = validateKanjiKombatPromptHead(state, ref);
+  state.promptBuffer.shift();
+  syncKanjiKombatLegacyPromptFields(state);
+  return head;
+}
+
+export function fillKanjiKombatPromptBuffer(userId, state, opts = {}) {
+  const buffer = ensurePromptBufferState(state);
+  const target = Number.isInteger(opts.target) && opts.target > 0
+    ? opts.target
+    : PROMPT_BUFFER_TARGET;
+  const terminalIndex = buffer.findIndex(prompt => prompt.kind === 'completePrompt');
+  if (terminalIndex !== -1) {
+    buffer.splice(terminalIndex + 1);
+    syncKanjiKombatLegacyPromptFields(state);
+    return buffer;
+  }
+  if (buffer.length >= target) {
+    syncKanjiKombatLegacyPromptFields(state);
+    return buffer;
+  }
+
+  const random = opts.random || Math.random;
+  const planningState = clonePlanningState(state);
+  planningState.promptBuffer = [];
+  const previewDailyState = createPreviewDailyState(userId, state, opts);
+  const baseExcludeCardIds = opts.excludeCardIds || [];
+  const excludedIds = new Set([
+    ...baseExcludeCardIds,
+    ...buffer.map(prompt => prompt.cardId).filter(Boolean),
+  ]);
+  const excludedPracticeIds = opts.excludePracticeCardIds || baseExcludeCardIds;
+
+  for (const prompt of buffer) {
+    advancePlanningStateAfterPrompt(planningState, prompt, random);
+    advancePreviewDailyStateAfterPrompt(previewDailyState, prompt);
+  }
+
+  while (buffer.length < target) {
+    const work = chooseNextScriptWork(userId, planningState, {
+      ...opts,
+      random,
+      preview: true,
+      previewDailyState,
+      excludeCardIds: [...excludedIds],
+      excludePracticeCardIds: excludedPracticeIds,
+    });
+    if (work.kind === 'complete') break;
+    const prompt = promptFromWork(state, work);
+    if (!prompt) break;
+    buffer.push(prompt);
+    if (prompt.cardId) excludedIds.add(prompt.cardId);
+    advancePlanningStateAfterPrompt(planningState, prompt, random);
+    advancePreviewDailyStateAfterPrompt(previewDailyState, prompt);
+    if (prompt.kind === 'completePrompt') break;
+  }
+
+  syncKanjiKombatLegacyPromptFields(state);
+  return buffer;
 }
 
 export function resolveIntroChoice(userId, state, cardId, choice, opts = {}) {
