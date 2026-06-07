@@ -43,7 +43,7 @@ const ONBOARDING_COPY = {
 
 let onboardingInProgress = false;
 const KANJI_KOMBAT_SAVE_FAILURE_COPY = 'Kanji Kombat choice did not save. Please try again.';
-const PROMPT_BUFFER_REFILL_THRESHOLD = 3;
+const PROMPT_BUFFER_REFILL_THRESHOLD = 10;
 let promptBufferRefillPromise = null;
 let latestKanjiKombatState = null;
 

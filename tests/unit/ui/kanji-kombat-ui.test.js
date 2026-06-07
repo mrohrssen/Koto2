@@ -1560,41 +1560,77 @@ describe('kanji-kombat ui', () => {
     );
   });
 
-  it('requests a single-flight refill when the local prompt buffer drops below three', async () => {
-    const calls = [];
-    initKanjiKombatUI({
-      submitIntro: async (_cardId, _choice, options = {}) => ({ status: 'accepted', actionId: options.actionId, state: { phase: 'combat', run: { kanjiKombat: { promptBuffer: [] } } } }),
-      refillPromptBuffer: async () => {
-        calls.push(['refill']);
-        return { state: { phase: 'combat', run: { kanjiKombat: { promptBuffer: [] } } } };
-      },
-      updateGameState: () => calls.push(['updateGameState']),
-      refreshAction: () => calls.push(['refreshAction']),
-      playCorrectAnswerAudio: () => {},
-    });
+  function introPrompt(index) {
+    return {
+      promptId: `kkp_intro_${index}`,
+      sequence: index + 1,
+      kind: 'intro',
+      cardId: `hiragana:${index}`,
+      intro: { card: { id: `hiragana:${index}`, prompt: 'か', reading: 'か', answer: 'ka' } },
+    };
+  }
 
-    const gameState = {
+  function combatStateWithPromptBuffer(promptBuffer) {
+    return {
       phase: 'combat',
       run: {
         mode: 'kanjiKombat',
-        kanjiKombat: {
-          promptBuffer: [{
-            promptId: 'kkp_intro',
-            sequence: 1,
-            kind: 'intro',
-            cardId: 'hiragana:か',
-            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
-          }],
-        },
+        kanjiKombat: { promptBuffer },
       },
       combat: { actionCursor: { side: 'ally', index: 0 } },
     };
+  }
 
-    renderKanjiKombatAction(gameState);
+  it('requests a single-flight refill when the local prompt buffer drops below ten', async () => {
+    const calls = [];
+    const promptBuffer = Array.from({ length: 10 }, (_, index) => introPrompt(index));
+    const remainingBuffer = promptBuffer.slice(1);
+    initKanjiKombatUI({
+      submitIntro: async (_cardId, _choice, options = {}) => ({
+        status: 'accepted',
+        actionId: options.actionId,
+      }),
+      refillPromptBuffer: async () => {
+        calls.push(['refill']);
+        return { state: combatStateWithPromptBuffer(remainingBuffer) };
+      },
+      updateGameState: () => calls.push(['updateGameState']),
+      refreshAction: () => calls.push(['refreshAction']),
+      updateUI: () => calls.push(['updateUI']),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    renderKanjiKombatAction(combatStateWithPromptBuffer(promptBuffer));
     await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
     await flushPromises(4);
 
     assert.equal(calls.filter(call => call[0] === 'refill').length, 1);
+  });
+
+  it('does not request a refill when consuming the local prompt buffer leaves ten prompts', async () => {
+    const calls = [];
+    const promptBuffer = Array.from({ length: 11 }, (_, index) => introPrompt(index));
+    const remainingBuffer = promptBuffer.slice(1);
+    initKanjiKombatUI({
+      submitIntro: async (_cardId, _choice, options = {}) => ({
+        status: 'accepted',
+        actionId: options.actionId,
+      }),
+      refillPromptBuffer: async () => {
+        calls.push(['refill']);
+        return { state: combatStateWithPromptBuffer(remainingBuffer) };
+      },
+      updateGameState: () => calls.push(['updateGameState']),
+      refreshAction: () => calls.push(['refreshAction']),
+      updateUI: () => calls.push(['updateUI']),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    renderKanjiKombatAction(combatStateWithPromptBuffer(promptBuffer));
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
+    await flushPromises(4);
+
+    assert.equal(calls.filter(call => call[0] === 'refill').length, 0);
   });
 
   it('keeps prompt buffer refill single-flight across multiple below-threshold opportunities', async () => {
