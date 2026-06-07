@@ -2212,6 +2212,7 @@ async function initGame() {
     finishCombatResult: result => combatLoopUI.stopCombatLoop(result),
     updateGameState,
     getGameState: () => gameState,
+    fetchGameState: apiGetGameState,
     updateUI,
     refreshAction: () => combatLoopUI.startMoveSelection(),
     showCidSprite: showKanjiKombatCidSprite,

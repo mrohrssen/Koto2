@@ -68,6 +68,7 @@ globalThis.requestAnimationFrame = callback => setImmediate(() => callback(Date.
 globalThis.cancelAnimationFrame = id => clearImmediate(id);
 
 const combatLoop = await import('../../../public/js/ui/combat-loop.js');
+const { clearSceneManager, setSceneManager } = await import('../../../public/js/scenes/scene-manager.js');
 const originalConsoleLog = console.log;
 const combatLoopSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/combat-loop.js'), 'utf8');
 const combatVfxSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/combat-vfx.js'), 'utf8');
@@ -83,6 +84,7 @@ describe('combat network hardening', () => {
 
   afterEach(() => {
     console.log = originalConsoleLog;
+    clearSceneManager();
   });
 
   it('uses the injected creature combat API for attack requests', async () => {
@@ -893,6 +895,71 @@ describe('combat network hardening', () => {
     assert.equal(updates.at(-1).combat.enemies[0].hp, 11);
     assert.equal(updates.at(-1).run.creatureParty.active[0].hp, 18);
     assert.equal(updates.at(-1).combat.turnCount, 1);
+  });
+
+  it('syncs the active battle scene after an optimistic Kanji Kombat correction', async () => {
+    const updates = [];
+    const syncCalls = [];
+    const ally = { id: 'hi', uid: 'ally-hi', hp: 100, maxHp: 100 };
+    const staleEnemy = { id: 'ishi', uid: 'enemy-ishi-stale', hp: 0, maxHp: 100 };
+    const authoritativeEnemy = { id: 'kyojin', uid: 'enemy-kyojin', hp: 80, maxHp: 100 };
+    const currentState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [staleEnemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+      },
+      run: {
+        mode: 'kanjiKombat',
+        creatureParty: { active: [ally], reserves: [] },
+      },
+    };
+    const authoritativeState = {
+      phase: 'combat',
+      combat: {
+        active: true,
+        mode: 'kanjiKombat',
+        allies: [ally],
+        enemies: [authoritativeEnemy],
+        actionCursor: { side: 'ally', index: 0, opening: false },
+      },
+      run: {
+        mode: 'kanjiKombat',
+        creatureParty: { active: [ally], reserves: [] },
+      },
+    };
+
+    setSceneManager({
+      transitioning: false,
+      currentScene: {
+        disposed: false,
+        _exiting: false,
+        syncCreatures: async args => syncCalls.push(args),
+      },
+    });
+    combatLoop.__combatNetworkTest.setStateAccessors({
+      get: () => updates.at(-1) || currentState,
+      update: state => updates.push(state),
+    });
+
+    const result = await combatLoop.__combatNetworkTest.handleOptimisticCombatVerification({
+      status: 'corrected',
+      reason: 'Kanji Kombat prompt mismatch',
+      authoritativeState,
+    });
+
+    assert.equal(result.recovered, true);
+    assert.equal(updates.length, 1);
+    assert.deepEqual(updates[0].combat.enemies, [authoritativeEnemy]);
+    assert.equal(syncCalls.length, 1);
+    assert.deepEqual(syncCalls[0], {
+      allies: [ally],
+      enemies: [authoritativeEnemy],
+      initial: false,
+    });
   });
 
   it('stops pending optimistic combat end after accepted terminal verification without restarting selection', async () => {

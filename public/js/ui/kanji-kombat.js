@@ -7,7 +7,7 @@ import {
   isMatchingRunActionResponse,
 } from './optimistic-run-action.js';
 
-let api = {
+const DEFAULT_API = {
   submitAnswer: null,
   submitIntro: null,
   submitCompletionChoice: null,
@@ -15,6 +15,7 @@ let api = {
   refillPromptBuffer: null,
   updateGameState: null,
   getGameState: null,
+  fetchGameState: null,
   updateUI: null,
   refreshAction: null,
   finishCombatResult: null,
@@ -24,6 +25,8 @@ let api = {
   showNarration: null,
   forceHideNarration: null,
 };
+
+let api = { ...DEFAULT_API };
 
 const ONBOARDING_COPY = {
   welcome: 'Hey, welcome to Kanji Kombat. Here, you can practice your hiragana, katakana, and kanji all the way up to full fluency.',
@@ -59,7 +62,7 @@ function createKanjiKombatPendingAction(gameState, actionType, applyLocal) {
 }
 
 export function initKanjiKombatUI(deps) {
-  api = { ...api, ...deps };
+  api = { ...DEFAULT_API, ...deps };
   latestKanjiKombatState = null;
   promptBufferRefillPromise = null;
 }
@@ -152,6 +155,47 @@ function promptIdentity(prompt) {
 
 function promptBufferHeadIdentity(state) {
   return promptIdentity(getActiveBufferedPrompt(state?.run?.kanjiKombat));
+}
+
+function visiblePromptIdentity(state) {
+  const kk = state?.run?.kanjiKombat;
+  const buffered = getActiveBufferedPrompt(kk);
+  if (buffered) return promptIdentity(buffered);
+  if (kk?.pendingIntro?.card || kk?.pendingIntro?.cardId) {
+    const cardId = kk.pendingIntro.cardId || kk.pendingIntro.card?.id || '';
+    return `intro|||${cardId}`;
+  }
+  if (kk?.currentQuiz) {
+    const cardId = kk.currentQuiz.cardId || '';
+    return `quiz|||${cardId || kk.currentQuiz.prompt || ''}`;
+  }
+  if (kk?.completionChoicePending) return 'completePrompt|||';
+  return null;
+}
+
+function isUsableFetchedState(state) {
+  return !!state && state.transient !== true && !state.error && state.phase;
+}
+
+function fetchedStateAdvancedPastOriginal(originalState, fetchedState) {
+  if (!isUsableFetchedState(fetchedState)) return false;
+  if (fetchedState.phase !== originalState?.phase) return true;
+  return visiblePromptIdentity(fetchedState) !== visiblePromptIdentity(originalState);
+}
+
+async function recoverFromNullKanjiKombatResponse(pending) {
+  if (typeof api.fetchGameState !== 'function') return false;
+  let fetchedState = null;
+  try {
+    fetchedState = await api.fetchGameState();
+  } catch (error) {
+    console.warn('[KanjiKombat] server state recovery failed:', error?.message || error);
+    return false;
+  }
+  if (!fetchedStateAdvancedPastOriginal(pending?.originalState, fetchedState)) return false;
+  updateKanjiKombatGameState(fetchedState);
+  refreshKanjiKombatAction();
+  return true;
 }
 
 function promptRef(prompt) {
@@ -438,6 +482,7 @@ export function renderKanjiKombatAction(gameState) {
         }
 
         if (shouldRollbackKanjiKombatPending(pending, result)) {
+          if (!result && await recoverFromNullKanjiKombatResponse(pending)) return;
           applyKanjiKombatCorrection(pending, result);
           await showKanjiKombatSaveFailure();
           refreshKanjiKombatAction();
@@ -489,6 +534,7 @@ export function renderKanjiKombatAction(gameState) {
         }
 
         if (shouldRollbackKanjiKombatPending(pending, result)) {
+          if (!result && await recoverFromNullKanjiKombatResponse(pending)) return;
           applyKanjiKombatCorrection(pending, result);
           await showKanjiKombatSaveFailure();
           refreshKanjiKombatAction();

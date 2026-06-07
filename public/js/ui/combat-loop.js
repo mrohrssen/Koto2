@@ -381,6 +381,33 @@ function resetCombatRecoveryPendingFlag(actionType) {
   }
 }
 
+async function syncCombatSceneToState(state, { initial = false } = {}) {
+  let mgr = null;
+  try {
+    mgr = getSceneManager();
+  } catch {
+    return false;
+  }
+
+  const scene = mgr?.currentScene;
+  if (mgr?.transitioning || !scene || scene.disposed || scene._exiting) return false;
+  if (typeof scene.syncCreatures !== 'function') return false;
+
+  try {
+    await scene.syncCreatures({
+      allies: state?.combat?.allies || state?.run?.creatureParty?.active || [],
+      enemies: state?.combat?.enemies || [],
+      initial,
+    });
+    return true;
+  } catch (error) {
+    if (!(error instanceof SceneDisposedError)) {
+      console.error('[CombatLoop] failed to sync combat scene after state recovery', error);
+    }
+    return false;
+  }
+}
+
 function finishRecoveredCombatState(mergedState, actionType, outcome, options = {}) {
   resetCombatRecoveryPendingFlag(actionType);
   combatActive = isRecoveredCombatActive(mergedState);
@@ -406,6 +433,7 @@ function recoverFromCombatErrorState(result, actionType, options = {}) {
 
   const merged = mergeAuthoritativeCombatState(getGameState(), result);
   updateGameState(merged);
+  void syncCombatSceneToState(merged);
   return finishRecoveredCombatState(merged, actionType, 'stale_error_state_recovered', options);
 }
 
@@ -428,6 +456,7 @@ async function recoverFromNullCombatPost(actionType, options = {}) {
 
   const merged = mergeAuthoritativeCombatState(getGameState(), { state: fetchedState });
   updateGameState(merged);
+  await syncCombatSceneToState(merged);
   return finishRecoveredCombatState(merged, actionType, 'null_post_state_recovered', options);
 }
 
@@ -440,7 +469,7 @@ async function handleOptimisticCombatVerification(verification, recoveryActionTy
     const state = getGameState();
     if (!state?.combat) return { recovered: true, outcome: 'optimistic_accepted', combatActive };
     const merged = mergeAuthoritativeCombatState(state, verification);
-    updateGameState({
+    const updatedState = {
       ...merged,
       combat: {
         ...merged.combat,
@@ -450,7 +479,9 @@ async function handleOptimisticCombatVerification(verification, recoveryActionTy
           nextTurnSeed: verification.nextSeed,
         },
       },
-    });
+    };
+    updateGameState(updatedState);
+    await syncCombatSceneToState(updatedState);
     return { recovered: true, outcome: 'optimistic_accepted', combatActive };
   }
 
@@ -458,6 +489,7 @@ async function handleOptimisticCombatVerification(verification, recoveryActionTy
     const authoritativeState = verification.authoritativeState || verification.state;
     if (authoritativeState) {
       updateGameState(authoritativeState);
+      await syncCombatSceneToState(authoritativeState);
       updateUI?.();
       return { recovered: true, outcome: verification.reason || 'optimistic_corrected', combatActive };
     }

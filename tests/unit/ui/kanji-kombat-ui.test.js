@@ -702,6 +702,66 @@ describe('kanji-kombat ui', () => {
     ]);
   });
 
+  it('uses fetched server state after a null intro response instead of replaying the submitted card', async () => {
+    const calls = [];
+    let currentState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          pendingIntro: { card: { id: 'hiragana:ka', prompt: 'か', reading: 'か', answer: 'ka' } },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
+    const serverState = {
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          currentQuiz: {
+            prompt: 'き',
+            choices: [{ id: 'ki', answer: 'ki' }],
+          },
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    };
+
+    initKanjiKombatUI({
+      submitIntro: async () => null,
+      fetchGameState: async () => {
+        calls.push(['fetchGameState']);
+        return serverState;
+      },
+      updateGameState: state => {
+        currentState = state;
+        calls.push([
+          'updateGameState',
+          !!state.run?.kanjiKombat?.pendingIntro,
+          state.run?.kanjiKombat?.currentQuiz?.prompt || null,
+        ]);
+      },
+      refreshAction: () => {
+        calls.push(['refreshAction']);
+        renderKanjiKombatAction(currentState);
+      },
+      updateUI: () => calls.push(['updateUI']),
+      showNarration: async text => calls.push(['showNarration', text]),
+    });
+
+    renderKanjiKombatAction(currentState);
+    await actionArea.querySelectorAll('.kanji-kombat-intro-action')[1].click();
+
+    assert.deepEqual(calls, [
+      ['updateGameState', false, null],
+      ['fetchGameState'],
+      ['updateGameState', false, 'き'],
+      ['refreshAction'],
+    ]);
+    assert.equal(actionArea.querySelector('.kanji-kombat-prompt').textContent, 'き');
+  });
+
   it('submits completion choices with an action id and waits for server finish handling', async () => {
     const calls = [];
     initKanjiKombatUI({
