@@ -124,6 +124,42 @@ describe('Kanji Kombat routes', () => {
     assert.equal(res.body.actionType, 'kanjiKombat');
   });
 
+  it('passes non-optimistic buffered answer prompt metadata into the service', async () => {
+    const calls = [];
+    const manager = {
+      kanjiKombatService: {
+        submitAnswer: (answerId, options = {}) => {
+          calls.push({ answerId, promptRef: options.promptRef });
+          return { answerId, actionType: 'kanjiKombat' };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/answer')
+      .send({
+        answerId: 'ki',
+        payload: {
+          promptRef: {
+            promptId: 'kkp_quiz_fallback',
+            sequence: 4,
+            cardId: 'hiragana:き',
+          },
+        },
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      answerId: 'ki',
+      promptRef: {
+        promptId: 'kkp_quiz_fallback',
+        sequence: 4,
+        cardId: 'hiragana:き',
+      },
+    }]);
+    assert.equal(manager.saved, true);
+  });
+
   it('submits an optimistic quiz answer envelope to the verifier', async () => {
     const manager = {
       kanjiKombatService: {
@@ -373,6 +409,303 @@ describe('Kanji Kombat routes', () => {
     assert.equal(res.body.reason, 'No Kanji Kombat completion choice is pending');
     assert.deepEqual(res.body.authoritativeState, { run: manager.run, combat: manager.combat });
     assert.equal(manager.saved, undefined);
+  });
+
+  it('refills the Kanji Kombat prompt buffer', async () => {
+    const manager = {
+      run: { mode: 'kanjiKombat', kanjiKombat: { promptBuffer: [] } },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        refillPromptBuffer: () => [{ promptId: 'kkp_1', sequence: 1, kind: 'quiz' }],
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/prompt-buffer/refill')
+      .send({});
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.promptBuffer, [{ promptId: 'kkp_1', sequence: 1, kind: 'quiz' }]);
+    assert.deepEqual(res.body.state, { run: manager.run, combat: manager.combat });
+    assert.equal(manager.saved, true);
+  });
+
+  it('passes buffered intro prompt metadata into the service', async () => {
+    const calls = [];
+    const manager = {
+      meta: { actionLedger: { entries: {}, order: [] } },
+      run: { mode: 'kanjiKombat' },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        submitIntroChoice: (cardId, choice, promptRef) => {
+          calls.push({ cardId, choice, promptRef });
+          return { cardId, choice };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/intro')
+      .send({
+        actionId: actionId('introbuf'),
+        cardId: 'hiragana:a',
+        choice: 'known',
+        promptId: 'kkp_intro',
+        sequence: 7,
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      cardId: 'hiragana:a',
+      choice: 'known',
+      promptRef: { promptId: 'kkp_intro', sequence: 7, cardId: 'hiragana:a' },
+    }]);
+  });
+
+  it('preserves supplied intro prompt card metadata for service validation', async () => {
+    const calls = [];
+    const manager = {
+      meta: { actionLedger: { entries: {}, order: [] } },
+      run: { mode: 'kanjiKombat' },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        submitIntroChoice: (cardId, choice, promptRef) => {
+          calls.push({ cardId, choice, promptRef });
+          return { cardId, choice };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/intro')
+      .send({
+        actionId: actionId('introstale'),
+        cardId: 'hiragana:a',
+        choice: 'known',
+        payload: {
+          promptRef: { promptId: 'kkp_intro_stale', sequence: 8, cardId: 'hiragana:i' },
+        },
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      cardId: 'hiragana:a',
+      choice: 'known',
+      promptRef: { promptId: 'kkp_intro_stale', sequence: 8, cardId: 'hiragana:i' },
+    }]);
+  });
+
+  it('passes buffered completion prompt metadata into the service', async () => {
+    const calls = [];
+    const manager = {
+      meta: { actionLedger: { entries: {}, order: [] } },
+      run: { mode: 'kanjiKombat' },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        resolveCompletionChoice: (keepGoing, promptRef) => {
+          calls.push({ keepGoing, promptRef });
+          return { keepGoing, actionType: 'kanjiKombat' };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/completion-choice')
+      .send({
+        actionId: actionId('finishbuf'),
+        keepGoing: true,
+        promptId: 'kkp_complete',
+        promptSequence: 11,
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      keepGoing: true,
+      promptRef: { promptId: 'kkp_complete', sequence: 11 },
+    }]);
+  });
+
+  it('does not add omitted fields to promptId-only prompt metadata', async () => {
+    const calls = [];
+    const manager = {
+      meta: { actionLedger: { entries: {}, order: [] } },
+      run: { mode: 'kanjiKombat' },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        resolveCompletionChoice: (keepGoing, promptRef) => {
+          calls.push({ keepGoing, promptRef });
+          return { keepGoing, actionType: 'kanjiKombat' };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/completion-choice')
+      .send({
+        actionId: actionId('finishidonly'),
+        keepGoing: false,
+        promptId: 'kkp_prompt_id_only',
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      keepGoing: false,
+      promptRef: { promptId: 'kkp_prompt_id_only' },
+    }]);
+  });
+
+  it('passes promptSequence-only metadata into the service', async () => {
+    const calls = [];
+    const manager = {
+      meta: { actionLedger: { entries: {}, order: [] } },
+      run: { mode: 'kanjiKombat' },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        resolveCompletionChoice: (keepGoing, promptRef) => {
+          calls.push({ keepGoing, promptRef });
+          return { keepGoing, actionType: 'kanjiKombat' };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/completion-choice')
+      .send({
+        actionId: actionId('finishseqonly'),
+        keepGoing: true,
+        promptSequence: 12,
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      keepGoing: true,
+      promptRef: { sequence: 12 },
+    }]);
+  });
+
+  it('passes flat payload prompt metadata into the service', async () => {
+    const calls = [];
+    const manager = {
+      meta: { actionLedger: { entries: {}, order: [] } },
+      run: { mode: 'kanjiKombat' },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        resolveCompletionChoice: (keepGoing, promptRef) => {
+          calls.push({ keepGoing, promptRef });
+          return { keepGoing, actionType: 'kanjiKombat' };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/completion-choice')
+      .send({
+        actionId: actionId('finishpayload'),
+        keepGoing: true,
+        payload: {
+          promptId: 'kkp_payload',
+          promptSequence: 13,
+          cardId: 'hiragana:u',
+        },
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      keepGoing: true,
+      promptRef: { promptId: 'kkp_payload', sequence: 13, cardId: 'hiragana:u' },
+    }]);
+  });
+
+  it('preserves zero prompt sequence metadata', async () => {
+    const calls = [];
+    const manager = {
+      meta: { actionLedger: { entries: {}, order: [] } },
+      run: { mode: 'kanjiKombat' },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        resolveCompletionChoice: (keepGoing, promptRef) => {
+          calls.push({ keepGoing, promptRef });
+          return { keepGoing, actionType: 'kanjiKombat' };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/completion-choice')
+      .send({
+        actionId: actionId('finishseqzero'),
+        keepGoing: true,
+        promptSequence: 0,
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      keepGoing: true,
+      promptRef: { sequence: 0 },
+    }]);
+  });
+
+  it('rejects malformed prompt sequence metadata before calling the service', async () => {
+    const calls = [];
+    const manager = {
+      meta: { actionLedger: { entries: {}, order: [] } },
+      run: { mode: 'kanjiKombat' },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        resolveCompletionChoice: (keepGoing, promptRef) => {
+          calls.push({ keepGoing, promptRef });
+          return { keepGoing, actionType: 'kanjiKombat' };
+        },
+      },
+    };
+
+    for (const [index, promptSequence] of ['', false, 'nope'].entries()) {
+      const res = await request(appWithManager(manager))
+        .post('/kanji-kombat/completion-choice')
+        .send({
+          actionId: actionId(`badseq${index}`),
+          keepGoing: true,
+          promptSequence,
+        });
+
+      assert.equal(res.status, 400);
+      assert.equal(res.body.error, 'promptSequence integer required');
+    }
+
+    assert.deepEqual(calls, []);
+  });
+
+  it('preserves supplied empty prompt card metadata for service validation', async () => {
+    const calls = [];
+    const manager = {
+      meta: { actionLedger: { entries: {}, order: [] } },
+      run: { mode: 'kanjiKombat' },
+      combat: { mode: 'kanjiKombat' },
+      kanjiKombatService: {
+        submitIntroChoice: (cardId, choice, promptRef) => {
+          calls.push({ cardId, choice, promptRef });
+          return { cardId, choice };
+        },
+      },
+    };
+
+    const res = await request(appWithManager(manager))
+      .post('/kanji-kombat/intro')
+      .send({
+        actionId: actionId('introemptycard'),
+        cardId: 'hiragana:a',
+        choice: 'known',
+        payload: {
+          promptRef: { promptId: 'kkp_empty_card', cardId: '' },
+        },
+      });
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(calls, [{
+      cardId: 'hiragana:a',
+      choice: 'known',
+      promptRef: { promptId: 'kkp_empty_card', cardId: '' },
+    }]);
   });
 
   it('returns Kanji Kombat leaderboard data for 24h and weekly periods', async () => {

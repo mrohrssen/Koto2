@@ -214,6 +214,7 @@ import {
   submitKanjiKombatIntro as apiSubmitKanjiKombatIntro,
   submitKanjiKombatAnswer as apiSubmitKanjiKombatAnswer,
   submitKanjiKombatCompletionChoice as apiSubmitKanjiKombatCompletionChoice,
+  refillKanjiKombatPromptBuffer as apiRefillKanjiKombatPromptBuffer,
   getCreatureCollection as apiGetCreatureCollection,
   getFusionState as apiGetFusionState,
   startFusion as apiStartFusion,
@@ -2204,11 +2205,13 @@ async function initGame() {
 
   kanjiKombatUI.initKanjiKombatUI({
     submitIntro: apiSubmitKanjiKombatIntro,
-    submitAnswer: answerId => combatLoopUI.submitKanjiKombatAnswer(answerId),
+    submitAnswer: (answerId, promptRef) => combatLoopUI.submitKanjiKombatAnswer(answerId, promptRef),
     submitCompletionChoice: apiSubmitKanjiKombatCompletionChoice,
     submitOnboarding: apiSubmitKanjiKombatOnboarding,
+    refillPromptBuffer: apiRefillKanjiKombatPromptBuffer,
     finishCombatResult: result => combatLoopUI.stopCombatLoop(result),
     updateGameState,
+    getGameState: () => gameState,
     updateUI,
     refreshAction: () => combatLoopUI.startMoveSelection(),
     showCidSprite: showKanjiKombatCidSprite,

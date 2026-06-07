@@ -8,6 +8,7 @@ const campfireSource = readFileSync(resolve(import.meta.dirname, '../../../publi
 const economySource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/economy.js'), 'utf8');
 const apiSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/api.js'), 'utf8');
 const gameSource = readFileSync(resolve(import.meta.dirname, '../../../public/game.js'), 'utf8');
+const combatLoopSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/combat-loop.js'), 'utf8');
 
 function sourceBetween(source, start, end) {
   const startIndex = source.indexOf(start);
@@ -175,12 +176,57 @@ describe('optimistic run action integration', () => {
     assert.match(kanjiKombatSource, /KANJI_KOMBAT_SAVE_FAILURE_COPY = 'Kanji Kombat choice did not save\. Please try again\.'/);
     assert.match(kanjiKombatSource, /actionType: 'kanjiKombat\.intro'/);
     assert.match(kanjiKombatSource, /actionType: 'kanjiKombat\.completionChoice'/);
-    assert.match(kanjiKombatSource, /api\.submitIntro\(kk\.pendingIntro\.card\.id, choice, \{ actionId: pending\.actionId \}\)/);
-    assert.match(kanjiKombatSource, /api\.submitCompletionChoice\(keepGoing, \{ actionId: pending\.actionId \}\)/);
+    assert.match(kanjiKombatSource, /api\.submitIntro\(introCard\.id, choice, \{\s*actionId: pending\.actionId,\s*\.\.\.promptRef\(introPrompt\),\s*\}\)/);
+    assert.match(kanjiKombatSource, /api\.submitCompletionChoice\(keepGoing, \{\s*actionId: pending\.actionId,\s*\.\.\.promptRef\(bufferedPrompt\?\.kind === 'completePrompt' \? bufferedPrompt : null\),\s*\}\)/);
     assert.match(kanjiKombatSource, /correctPendingRunAction\(pending, result\)/);
     assert.match(kanjiKombatSource, /isMatchingRunActionResponse/);
     assert.match(kanjiKombatSource, /shouldRollbackKanjiKombatPending\(pending, result\)/);
     assert.doesNotMatch(kanjiKombatSource, /correctAnswerId[\s\S]{0,400}submitIntro/);
+  });
+
+  it('wires Kanji Kombat prompt buffer API calls', () => {
+    const apiSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/api.js'), 'utf8');
+    const kanjiSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/kanji-kombat.js'), 'utf8');
+    const promptOptionsSource = sourceBetween(
+      apiSource,
+      'function applyKanjiKombatPromptOptions',
+      'async function submitKanjiKombatIntro'
+    );
+    const introSource = sourceBetween(
+      apiSource,
+      'async function submitKanjiKombatIntro',
+      'async function submitKanjiKombatAnswer'
+    );
+    const completionSource = sourceBetween(
+      apiSource,
+      'async function submitKanjiKombatCompletionChoice',
+      'async function refillKanjiKombatPromptBuffer'
+    );
+
+    assert.match(apiSource, /refillKanjiKombatPromptBuffer/);
+    assert.match(apiSource, /\/kanji-kombat\/prompt-buffer\/refill/);
+    assert.match(promptOptionsSource, /promptId/);
+    assert.match(promptOptionsSource, /promptSequence/);
+    assert.match(introSource, /applyKanjiKombatPromptOptions\(body, options\)/);
+    assert.match(completionSource, /applyKanjiKombatPromptOptions\(body, options\)/);
+    assert.match(kanjiSource, /refillPromptBuffer/);
+  });
+
+  it('passes Kanji Kombat quiz prompt refs through the production answer adapter', () => {
+    const kanjiInitSource = sourceBetween(
+      gameSource,
+      'kanjiKombatUI.initKanjiKombatUI({',
+      'explorationUI.init({'
+    );
+
+    assert.match(kanjiInitSource, /submitAnswer: \(answerId, promptRef\) => combatLoopUI\.submitKanjiKombatAnswer\(answerId, promptRef\)/);
+    assert.match(combatLoopSource, /export async function submitKanjiKombatAnswer\(answerId, promptRef = \{\}\)/);
+    assert.match(combatLoopSource, /function buildOptimisticKanjiKombatRequest\(answerId, promptRef = \{\}\)/);
+    assert.match(combatLoopSource, /stateWithBufferedKanjiKombatQuiz\(getGameState\(\), promptRef\)/);
+    assert.match(combatLoopSource, /currentQuiz: bufferedPrompt\.quiz/);
+    assert.match(combatLoopSource, /kanjiPromptRef: promptRef/);
+    assert.match(combatLoopSource, /withKanjiKombatPromptRef\(optimistic\.envelope, promptRef\)/);
+    assert.match(combatLoopSource, /request: \(\) => apiSubmitKanjiKombatAnswer\(withKanjiKombatPromptRef\(answerId, promptRef\)\)/);
   });
 
   it('routes Whack-a-Mole completion and skip through verified run actions', () => {

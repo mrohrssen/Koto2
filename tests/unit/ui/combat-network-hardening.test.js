@@ -225,12 +225,28 @@ describe('combat network hardening', () => {
                 { id: 'answer-wrong', answer: 'i', correct: false },
               ],
             },
+            promptBuffer: [{
+              promptId: 'kkp_network',
+              sequence: 9,
+              kind: 'quiz',
+              cardId: 'hiragana:あ',
+              quiz: {
+                cardId: 'hiragana:あ',
+                choices: [
+                  { id: 'answer-correct', answer: 'a', correct: true },
+                  { id: 'answer-wrong', answer: 'i', correct: false },
+                ],
+              },
+            }],
           },
         },
       }),
     });
 
-    const result = combatLoop.__combatNetworkTest.buildOptimisticKanjiKombatRequest('answer-correct');
+    const result = combatLoop.__combatNetworkTest.buildOptimisticKanjiKombatRequest(
+      'answer-correct',
+      { promptId: 'kkp_network', sequence: 9, cardId: 'hiragana:あ' },
+    );
 
     assert.equal(result.envelope.actionType, 'kanjiKombat.answer');
     assert.equal(result.envelope.combatId, 'cmb_kanji');
@@ -238,6 +254,14 @@ describe('combat network hardening', () => {
     assert.equal(result.envelope.seed, 'seed_kanji');
     assert.equal(result.envelope.payload.answerId, 'answer-correct');
     assert.equal(result.envelope.payload.predictionMode, 'shared-kanji-kombat-v1');
+    assert.equal(result.envelope.payload.promptId, 'kkp_network');
+    assert.equal(result.envelope.payload.promptSequence, 9);
+    assert.equal(result.envelope.payload.cardId, 'hiragana:あ');
+    assert.deepEqual(result.envelope.payload.promptRef, {
+      promptId: 'kkp_network',
+      sequence: 9,
+      cardId: 'hiragana:あ',
+    });
     assert.equal(result.localTranscript.actionType, 'kanjiKombat');
     assert.equal(result.localTranscript.kanjiAnswerCorrect, true);
   });

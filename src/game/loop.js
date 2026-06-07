@@ -574,7 +574,7 @@ export class GameManager {
   creatureCombatCycle(actionType = 'attack', moveChoices = []) { return this.combatCycleService.creatureCombatCycle(actionType, moveChoices); }
   startKanjiKombat(creature) { return this.kanjiKombatService.startRunWithCreature(creature); }
   submitKanjiKombatIntro(cardId, choice) { return this.kanjiKombatService.submitIntroChoice(cardId, choice); }
-  submitKanjiKombatAnswer(answerId) { return this.kanjiKombatService.submitAnswer(answerId); }
+  submitKanjiKombatAnswer(answerId, opts = {}) { return this.kanjiKombatService.submitAnswer(answerId, opts); }
   rollPostCombatShop() { return this.combatCycleService.rollPostCombatShop(); }
   selectShopItem(itemIndex, targetIndex = 0) { return this.combatCycleService.selectShopItem(itemIndex, targetIndex); }
   swapCreature(activeIndex, reserveIndex) { return this.combatCycleService.swapCreature(activeIndex, reserveIndex); }

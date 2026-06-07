@@ -123,6 +123,7 @@ export function buildOptimisticKanjiKombatAnswer({
   state,
   answerId,
   actionId = createActionId('kanji'),
+  promptRef = null,
 } = {}) {
   if (!canRunOptimisticKanjiKombatAnswer(state, answerId)) return null;
 
@@ -151,6 +152,16 @@ export function buildOptimisticKanjiKombatAnswer({
       answerId,
       correct,
       predictionMode: KANJI_KOMBAT_PREDICTION_MODE,
+      ...(promptRef?.promptId ? {
+        promptId: promptRef.promptId,
+        promptSequence: promptRef.sequence,
+        cardId: promptRef.cardId,
+        promptRef: {
+          promptId: promptRef.promptId,
+          sequence: promptRef.sequence,
+          cardId: promptRef.cardId,
+        },
+      } : {}),
     },
     predictedTranscript: resolved.transcript,
   });

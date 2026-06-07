@@ -14,9 +14,95 @@ function isOptimisticKanjiAnswerEnvelope(body = {}) {
     || body?.payload?.predictionMode === KANJI_KOMBAT_PREDICTION_MODE;
 }
 
+function hasOwn(value, key) {
+  return !!value && typeof value === 'object' && Object.hasOwn(value, key);
+}
+
+function firstPresent(...candidates) {
+  for (const [value, key] of candidates) {
+    if (hasOwn(value, key)) return value[key];
+  }
+  return undefined;
+}
+
+function normalizePromptSequence(sequence) {
+  if (Number.isSafeInteger(sequence)) return sequence;
+  if (typeof sequence === 'string' && sequence.trim() !== '') {
+    const numeric = Number(sequence);
+    if (Number.isSafeInteger(numeric)) return numeric;
+  }
+  throw new Error('promptSequence integer required');
+}
+
+function assignPromptSequence(ref, ...candidates) {
+  const sequence = firstPresent(...candidates);
+  if (sequence !== undefined) ref.sequence = normalizePromptSequence(sequence);
+}
+
+function promptRefFromBody(body = {}) {
+  const payload = body.payload && typeof body.payload === 'object' ? body.payload : {};
+  const suppliedPromptRef = hasOwn(payload, 'promptRef') && payload.promptRef && typeof payload.promptRef === 'object'
+    ? payload.promptRef
+    : null;
+
+  if (suppliedPromptRef) {
+    const ref = {};
+    if (hasOwn(suppliedPromptRef, 'promptId')) ref.promptId = suppliedPromptRef.promptId;
+    assignPromptSequence(ref, [suppliedPromptRef, 'sequence'], [suppliedPromptRef, 'promptSequence']);
+    if (hasOwn(suppliedPromptRef, 'cardId')) ref.cardId = suppliedPromptRef.cardId;
+    return ref;
+  }
+
+  const hasPromptMetadata = hasOwn(body, 'promptId')
+    || hasOwn(body, 'sequence')
+    || hasOwn(body, 'promptSequence')
+    || hasOwn(payload, 'promptId')
+    || hasOwn(payload, 'sequence')
+    || hasOwn(payload, 'promptSequence')
+    || hasOwn(payload, 'cardId');
+  if (!hasPromptMetadata) return null;
+
+  const ref = {};
+  if (hasOwn(body, 'promptId') || hasOwn(payload, 'promptId')) {
+    ref.promptId = firstPresent([body, 'promptId'], [payload, 'promptId']);
+  }
+  assignPromptSequence(
+    ref,
+    [body, 'sequence'],
+    [body, 'promptSequence'],
+    [payload, 'sequence'],
+    [payload, 'promptSequence']
+  );
+  if (hasOwn(payload, 'cardId')) ref.cardId = payload.cardId;
+  return ref;
+}
+
+function withIntroPromptCardId(promptRef, cardId) {
+  if (!promptRef) return {};
+  if (hasOwn(promptRef, 'cardId')) return promptRef;
+  return { ...promptRef, cardId };
+}
+
+function submitKanjiKombatAnswer(manager, answerId, promptRef) {
+  const options = { promptRef };
+  return typeof manager.kanjiKombatService?.submitAnswer === 'function'
+    ? manager.kanjiKombatService.submitAnswer(answerId, options)
+    : manager.submitKanjiKombatAnswer(answerId, options);
+}
+
 export default function createKanjiKombatRoutes() {
   const router = Router();
   const runOptimisticAction = createOptimisticActionRunner({ owner: getOptimisticActionLedgerOwner });
+
+  router.post('/prompt-buffer/refill', (req, res) => {
+    try {
+      const promptBuffer = req.gameManager.kanjiKombatService.refillPromptBuffer();
+      req.saveGame();
+      res.json({ promptBuffer, state: req.getEnrichedGameState() });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
 
   router.get('/leaderboard', (req, res) => {
     try {
@@ -67,6 +153,12 @@ export default function createKanjiKombatRoutes() {
 
   router.post('/intro', (req, res) => {
     const { cardId, choice } = req.body || {};
+    let promptRef = null;
+    try {
+      promptRef = promptRefFromBody(req.body || {});
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
     return runOptimisticAction(req, res, {
       actionType: 'kanjiKombat.intro',
       errorStatusCode: 409,
@@ -75,9 +167,10 @@ export default function createKanjiKombatRoutes() {
         if (!cardId || !['known', 'unknown'].includes(choice)) {
           throw new Error('cardId and choice (known|unknown) required');
         }
-        const result = req.gameManager.submitKanjiKombatIntro
-          ? req.gameManager.submitKanjiKombatIntro(cardId, choice)
-          : req.gameManager.kanjiKombatService.submitIntroChoice(cardId, choice);
+        const introPromptRef = withIntroPromptCardId(promptRef, cardId);
+        const result = req.gameManager.kanjiKombatService?.submitIntroChoice
+          ? req.gameManager.kanjiKombatService.submitIntroChoice(cardId, choice, introPromptRef)
+          : req.gameManager.submitKanjiKombatIntro(cardId, choice, introPromptRef);
         return { ...result, state: req.getEnrichedGameState() };
       },
     });
@@ -85,15 +178,24 @@ export default function createKanjiKombatRoutes() {
 
   router.post('/answer', (req, res) => {
     const body = req.body || {};
-    const optimisticSnapshot = isOptimisticKanjiAnswerEnvelope(body)
+    const optimisticAnswer = isOptimisticKanjiAnswerEnvelope(body);
+    let promptRef = null;
+    if (!optimisticAnswer) {
+      try {
+        promptRef = promptRefFromBody(body);
+      } catch (error) {
+        return res.status(400).json({ error: error.message });
+      }
+    }
+    const optimisticSnapshot = optimisticAnswer
       ? snapshotGameManager(req.gameManager)
       : null;
     try {
       const answerId = body.payload?.answerId || body.answerId;
       if (!answerId) return res.status(400).json({ error: 'answerId required' });
-      const result = isOptimisticKanjiAnswerEnvelope(body)
+      const result = optimisticAnswer
         ? req.gameManager.kanjiKombatService.verifyAndCommitOptimisticAnswer(body)
-        : req.gameManager.submitKanjiKombatAnswer(answerId);
+        : submitKanjiKombatAnswer(req.gameManager, answerId, promptRef);
       req.saveGame();
       res.json({ ...result, state: req.getEnrichedGameState() });
     } catch (error) {
@@ -107,6 +209,12 @@ export default function createKanjiKombatRoutes() {
 
   router.post('/completion-choice', (req, res) => {
     const { keepGoing } = req.body || {};
+    let promptRef = null;
+    try {
+      promptRef = promptRefFromBody(req.body || {});
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
     return runOptimisticAction(req, res, {
       actionType: 'kanjiKombat.completionChoice',
       errorStatusCode: 409,
@@ -115,7 +223,7 @@ export default function createKanjiKombatRoutes() {
         if (typeof keepGoing !== 'boolean') {
           throw new Error('keepGoing boolean required');
         }
-        const result = req.gameManager.kanjiKombatService.resolveCompletionChoice(keepGoing);
+        const result = req.gameManager.kanjiKombatService.resolveCompletionChoice(keepGoing, promptRef || {});
         return { ...result, state: req.getEnrichedGameState() };
       },
     });

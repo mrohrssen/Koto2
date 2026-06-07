@@ -5,19 +5,33 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { State } from 'ts-fsrs';
 import { clearSrsCache, configureSrs, loadSrsData, saveSrsData } from '../../../src/game/internal-srs.js';
-import { ensureScriptDeckSeeded, getScriptDailyState, gradeScriptCard } from '../../../src/game/script-srs.js';
+import { DAILY_NEW_LIMIT, ensureScriptDeckSeeded, getScriptDailyState, gradeScriptCard } from '../../../src/game/script-srs.js';
 import {
   buildQuizForCard,
   chooseNextScriptWork,
+  consumeKanjiKombatPromptHead,
   createInitialKanjiKombatState,
+  fillKanjiKombatPromptBuffer,
+  getKanjiKombatActivePrompt,
   getLocalDateKey,
   NO_DUE_DISCOVERY_CHAIN_LIMIT,
+  PROMPT_BUFFER_REFILL_THRESHOLD,
+  PROMPT_BUFFER_TARGET,
   resolveIntroChoice,
+  validateKanjiKombatPromptHead,
 } from '../../../src/game/services/kanji-kombat-service.js';
 
 describe('kanji-kombat deck controller', () => {
   let tempDir;
   const userId = 'kanji-kombat-user';
+
+  function summarizePrompts(prompts) {
+    return prompts.map(prompt => ({
+      kind: prompt.kind,
+      cardId: prompt.cardId,
+      source: prompt.source,
+    }));
+  }
 
   beforeEach(() => {
     tempDir = mkdtempSync(join(tmpdir(), 'koto-kk-deck-'));
@@ -332,5 +346,238 @@ describe('kanji-kombat deck controller', () => {
     assert.equal(work.kind, 'intro');
     assert.equal(work.card.id, 'kanji:言');
     assert.equal(work.card.frequencyRank, 2);
+  });
+
+  it('fills a five-prompt server runway without mutating persistent daily completion', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2026-05-30T00:00:00Z');
+      card.reps = 1;
+    }
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    const prompts = fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(PROMPT_BUFFER_TARGET, 5);
+    assert.equal(PROMPT_BUFFER_REFILL_THRESHOLD, 3);
+    assert.equal(prompts.length, 5);
+    assert.equal(state.promptBuffer.length, 5);
+    assert.equal(state.currentQuiz.cardId, state.promptBuffer[0].cardId);
+    assert.equal(state.pendingIntro, null);
+    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.promptId)).size, 5);
+    assert.equal(new Set(state.promptBuffer.map(prompt => prompt.cardId).filter(Boolean)).size, 5);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
+  });
+
+  it('builds intro prompts in the buffer without recording daily intro counts', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    const prompts = fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.equal(prompts[0].kind, 'intro');
+    assert.equal(prompts[0].intro.card.id, prompts[0].cardId);
+    assert.equal(prompts[0].source, 'noDueBatch');
+    assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, 0);
+    assert.equal(state.pendingIntro.cardId, prompts[0].cardId);
+  });
+
+  it('validates and consumes only the canonical prompt head', () => {
+    const data = loadSrsData(userId);
+    const dueCard = data.script.cards.find(c => c.id === 'hiragana:あ');
+    dueCard.due = new Date('2026-05-30T00:00:00Z');
+    dueCard.reps = 1;
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    const head = getKanjiKombatActivePrompt(state);
+    assert.equal(validateKanjiKombatPromptHead(state, {
+      promptId: head.promptId,
+      sequence: head.sequence,
+      cardId: head.cardId,
+      kind: head.kind,
+    }), head);
+    assert.throws(
+      () => validateKanjiKombatPromptHead(state, {
+        promptId: 'kkp_wrong',
+        sequence: head.sequence,
+        cardId: head.cardId,
+        kind: head.kind,
+      }),
+      /Kanji Kombat prompt mismatch/
+    );
+
+    const consumed = consumeKanjiKombatPromptHead(state, head);
+    assert.equal(consumed.promptId, head.promptId);
+    assert.notEqual(getKanjiKombatActivePrompt(state)?.promptId, head.promptId);
+  });
+
+  it('refills by replaying buffered prompts so partial planning matches a fresh full fill', () => {
+    const data = loadSrsData(userId);
+    const hiragana = data.script.cards.filter(c => c.type === 'hiragana');
+    for (const card of hiragana.slice(0, 4)) {
+      card.due = new Date('2026-05-30T00:00:00Z');
+      card.reps = 1;
+    }
+    saveSrsData(userId, data);
+
+    const partialState = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    partialState.reviewsSinceIntro = partialState.nextIntroAfter;
+    fillKanjiKombatPromptBuffer(userId, partialState, {
+      target: 3,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+    const refilled = fillKanjiKombatPromptBuffer(userId, partialState, {
+      target: 5,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    const freshState = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    freshState.reviewsSinceIntro = freshState.nextIntroAfter;
+    const fresh = fillKanjiKombatPromptBuffer(userId, freshState, {
+      target: 5,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.deepEqual(summarizePrompts(refilled), summarizePrompts(fresh));
+    assert.deepEqual(refilled.map(prompt => prompt.kind), ['intro', 'quiz', 'quiz', 'quiz', 'intro']);
+  });
+
+  it('reserves virtual daily intro budget while previewing prompts', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+    }
+    data.kanjiKombatDaily = {
+      date: '2026-05-31',
+      introducedCount: DAILY_NEW_LIMIT - 1,
+      completed: false,
+    };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    const prompts = fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.deepEqual(prompts.map(prompt => prompt.kind), ['intro', 'quiz', 'completePrompt']);
+    assert.equal(prompts.filter(prompt => prompt.kind === 'intro').length, 1);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').introducedCount, DAILY_NEW_LIMIT - 1);
+    assert.equal(getScriptDailyState(userId, '2026-05-31').completed, false);
+  });
+
+  it('does not append after an existing completion prompt', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2099-01-01T00:00:00Z');
+      card.reps = 1;
+    }
+    data.kanjiKombatDaily = {
+      date: '2026-05-31',
+      introducedCount: DAILY_NEW_LIMIT,
+      completed: false,
+    };
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.deepEqual(state.promptBuffer.map(prompt => prompt.kind), ['completePrompt']);
+  });
+
+  it('validates present prompt reference fields even when their values are falsy', () => {
+    const data = loadSrsData(userId);
+    const dueCard = data.script.cards.find(c => c.id === 'hiragana:あ');
+    dueCard.due = new Date('2026-05-30T00:00:00Z');
+    dueCard.reps = 1;
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      target: 1,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+    const head = getKanjiKombatActivePrompt(state);
+
+    assert.throws(
+      () => validateKanjiKombatPromptHead(state, {
+        promptId: '',
+        sequence: head.sequence,
+        cardId: head.cardId,
+        kind: head.kind,
+      }),
+      /Kanji Kombat prompt mismatch/
+    );
+    assert.throws(
+      () => validateKanjiKombatPromptHead(state, {
+        promptId: head.promptId,
+        sequence: head.sequence,
+        cardId: null,
+        kind: head.kind,
+      }),
+      /Kanji Kombat prompt mismatch/
+    );
+    assert.throws(
+      () => validateKanjiKombatPromptHead(state, {
+        promptId: head.promptId,
+        sequence: head.sequence,
+        cardId: head.cardId,
+        kind: '',
+      }),
+      /Kanji Kombat prompt mismatch/
+    );
+  });
+
+  it('continues prompt sequences from the buffered maximum when state sequence is missing', () => {
+    const data = loadSrsData(userId);
+    for (const card of data.script.cards.filter(c => c.type === 'hiragana')) {
+      card.due = new Date('2026-05-30T00:00:00Z');
+      card.reps = 1;
+    }
+    saveSrsData(userId, data);
+
+    const state = createInitialKanjiKombatState({ localDate: '2026-05-31', random: () => 0 });
+    fillKanjiKombatPromptBuffer(userId, state, {
+      target: 1,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+    delete state.promptBufferSeq;
+
+    fillKanjiKombatPromptBuffer(userId, state, {
+      target: 2,
+      random: () => 0,
+      now: new Date('2026-05-31T00:00:00Z'),
+    });
+
+    assert.deepEqual(state.promptBuffer.map(prompt => prompt.sequence), [1, 2]);
   });
 });

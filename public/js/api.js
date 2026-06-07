@@ -819,9 +819,22 @@ async function submitKanjiKombatOnboarding(knowsHiragana, knowsKatakana) {
   return apiCall('/kanji-kombat/onboarding', 'POST', { knowsHiragana, knowsKatakana }, null, { bypassLoadingGate: true });
 }
 
+function hasOption(options, key) {
+  return !!options && typeof options === 'object' && Object.hasOwn(options, key);
+}
+
+function applyKanjiKombatPromptOptions(body, options = {}) {
+  if (hasOption(options, 'promptId')) body.promptId = options.promptId;
+  const promptSequence = Number.isInteger(options?.promptSequence)
+    ? options.promptSequence
+    : options?.sequence;
+  if (Number.isInteger(promptSequence)) body.promptSequence = promptSequence;
+}
+
 async function submitKanjiKombatIntro(cardId, choice, options = {}) {
   const body = { cardId, choice };
   if (options?.actionId) body.actionId = options.actionId;
+  applyKanjiKombatPromptOptions(body, options);
   return apiCall('/kanji-kombat/intro', 'POST', body, null, {
     bypassLoadingGate: true,
     returnErrorBody: true,
@@ -842,9 +855,17 @@ async function submitKanjiKombatAnswer(answerOrEnvelope) {
 async function submitKanjiKombatCompletionChoice(keepGoing, options = {}) {
   const body = { keepGoing };
   if (options?.actionId) body.actionId = options.actionId;
+  applyKanjiKombatPromptOptions(body, options);
   return apiCall('/kanji-kombat/completion-choice', 'POST', body, null, {
     bypassLoadingGate: true,
     timeoutMs: COMBAT_CYCLE_TIMEOUT_MS,
+    returnErrorBody: true,
+  });
+}
+
+async function refillKanjiKombatPromptBuffer() {
+  return apiCall('/kanji-kombat/prompt-buffer/refill', 'POST', {}, null, {
+    bypassLoadingGate: true,
     returnErrorBody: true,
   });
 }
@@ -1049,6 +1070,7 @@ export {
   submitKanjiKombatIntro,
   submitKanjiKombatAnswer,
   submitKanjiKombatCompletionChoice,
+  refillKanjiKombatPromptBuffer,
   getKanjiKombatLeaderboard,
   getCreatureCollection,
   rollPostCombatShop,
