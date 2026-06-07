@@ -942,22 +942,32 @@ export class KanjiKombatService {
     return response;
   }
 
-  resolveCompletionChoice(keepGoing) {
+  resolveCompletionChoice(keepGoing, promptRef = {}) {
     const kk = this.gm.run?.kanjiKombat;
     this.assertOnboardingComplete();
+    const prompt = hasPromptReference(promptRef)
+      ? validateKanjiKombatPromptHead(kk, {
+          ...promptRef,
+          kind: 'completePrompt',
+        })
+      : null;
     if (!kk?.completionChoicePending) {
       throw new Error('No Kanji Kombat completion choice is pending');
     }
 
     kk.completionChoicePending = false;
     kk.report.completedDaily = true;
+    if (prompt) {
+      consumeKanjiKombatPromptHead(kk, prompt, { userId: this.gm.userId });
+      kk.completionChoicePending = false;
+    }
 
     if (!keepGoing) {
       return this.finalizeDailyComplete();
     }
 
     kk.endlessMode = true;
-    if (getKanjiKombatActivePrompt(kk)?.kind === 'completePrompt') {
+    if (!prompt && getKanjiKombatActivePrompt(kk)?.kind === 'completePrompt') {
       consumeKanjiKombatPromptHead(kk, { kind: 'completePrompt' }, { userId: this.gm.userId });
       kk.completionChoicePending = false;
     }

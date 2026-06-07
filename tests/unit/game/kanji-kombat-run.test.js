@@ -567,4 +567,30 @@ describe('KanjiKombatService run lifecycle helpers', () => {
     assert.equal(gm.run.kanjiKombat.currentQuiz?.cardId, gm.run.kanjiKombat.promptBuffer[0]?.cardId);
     assert.equal(gm.run.kanjiKombat.promptBuffer[0]?.kind, 'quiz');
   });
+
+  it('validates buffered completion prompt choices before resolving', () => {
+    const gm = buildGm();
+    gm.meta.kanjiKombatOnboarding = { completed: true, knowsHiragana: false, knowsKatakana: false };
+    const service = new KanjiKombatService(gm);
+    service.startRunWithCreature(fakeCreature('hi'));
+    gm.run.kanjiKombat.promptBuffer = [{
+      promptId: 'kkp_complete',
+      sequence: 1,
+      kind: 'completePrompt',
+      cardId: null,
+      source: 'dailyComplete',
+    }];
+    gm.run.kanjiKombat.completionChoicePending = true;
+
+    assert.throws(
+      () => service.resolveCompletionChoice(true, { promptId: 'kkp_wrong', sequence: 1 }),
+      /Kanji Kombat prompt mismatch/
+    );
+
+    const result = service.resolveCompletionChoice(true, { promptId: 'kkp_complete', sequence: 1 });
+
+    assert.equal(result.actionType, 'kanjiKombat');
+    assert.equal(gm.run.kanjiKombat.endlessMode, true);
+    assert.notEqual(gm.run.kanjiKombat.promptBuffer[0]?.promptId, 'kkp_complete');
+  });
 });
