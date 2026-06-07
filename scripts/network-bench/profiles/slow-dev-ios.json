@@ -1,0 +1,8 @@
+{
+  "name": "slow-dev-ios",
+  "description": "Sluggish but mostly reliable deployed dev iOS connection. Adds latency and jitter to dev-origin traffic.",
+  "matchHost": "jrpg-dev.up.railway.app",
+  "seed": "koto-slow-dev-ios-2026-06-06",
+  "delay": { "baseMs": 500, "jitterMs": 500 },
+  "failure": { "rate": 0, "status": 599, "body": "Koto dev iOS benchmark injected failure" }
+}
