@@ -453,6 +453,25 @@ describe('optimistic combat turn client', () => {
     assert.equal(typeof result.envelope.predictedHash, 'string');
   });
 
+  it('includes buffered prompt metadata in Kanji Kombat answer envelopes', () => {
+    const kkState = kanjiKombatState();
+    const result = buildOptimisticKanjiKombatAnswer({
+      state: kkState,
+      answerId: 'answer-correct',
+      actionId: 'act_kanji_prompt',
+      promptRef: { promptId: 'kkp_quiz', sequence: 4, cardId: 'hiragana:あ' },
+    });
+
+    assert.equal(result.envelope.payload.promptId, 'kkp_quiz');
+    assert.equal(result.envelope.payload.promptSequence, 4);
+    assert.equal(result.envelope.payload.cardId, 'hiragana:あ');
+    assert.deepEqual(result.envelope.payload.promptRef, {
+      promptId: 'kkp_quiz',
+      sequence: 4,
+      cardId: 'hiragana:あ',
+    });
+  });
+
   it('refuses optimistic Kanji Kombat answers when visible quiz choices omit correctness', () => {
     const kkState = kanjiKombatState({
       run: {

@@ -512,12 +512,13 @@ function stateWithBufferedKanjiKombatQuiz(state, promptRef = {}) {
 function buildOptimisticKanjiKombatRequest(answerId, promptRef = {}) {
   if (typeof apiSubmitKanjiKombatAnswer !== 'function') return null;
   const state = stateWithBufferedKanjiKombatQuiz(getGameState(), promptRef);
-  return buildOptimisticKanjiKombatAnswer({ state, answerId });
+  return buildOptimisticKanjiKombatAnswer({ state, answerId, promptRef });
 }
 
 function withKanjiKombatPromptRef(request, promptRef = {}) {
   if (!hasKanjiKombatPromptRef(promptRef)) return request;
   if (request && typeof request === 'object') {
+    if (request.payload?.promptRef?.promptId) return request;
     return {
       ...request,
       payload: {
