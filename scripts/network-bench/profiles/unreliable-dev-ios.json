@@ -1,0 +1,8 @@
+{
+  "name": "unreliable-dev-ios",
+  "description": "Sluggish deployed dev iOS connection with seeded low-rate request failures.",
+  "matchHost": "jrpg-dev.up.railway.app",
+  "seed": "koto-unreliable-dev-ios-2026-06-06",
+  "delay": { "baseMs": 500, "jitterMs": 1000 },
+  "failure": { "rate": 0.03, "status": 599, "body": "Koto dev iOS benchmark injected failure" }
+}
