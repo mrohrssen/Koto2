@@ -49,6 +49,8 @@ let promptBufferRefillPromise = null;
 let latestKanjiKombatState = null;
 let reviewSyncQueue = null;
 let consumedPromptIds = new Set();
+let reviewSyncOnlineDrainTarget = null;
+let reviewSyncVisibilityDrainTarget = null;
 
 function createKanjiKombatPendingAction(gameState, actionType, applyLocal) {
   const actionTypeByName = {
@@ -73,6 +75,24 @@ export function initKanjiKombatUI(deps) {
   reviewSyncQueue = createReviewSyncQueue();
   if (Array.isArray(deps?.__testQueueSeed)) {
     reviewSyncQueue = createSeededReviewSyncQueue(reviewSyncQueue, deps.__testQueueSeed);
+  }
+  if (
+    typeof window !== 'undefined'
+    && typeof window.addEventListener === 'function'
+    && reviewSyncOnlineDrainTarget !== window
+  ) {
+    reviewSyncOnlineDrainTarget = window;
+    window.addEventListener('online', () => reviewSyncQueue?.drainNow());
+  }
+  if (
+    typeof document !== 'undefined'
+    && typeof document.addEventListener === 'function'
+    && reviewSyncVisibilityDrainTarget !== document
+  ) {
+    reviewSyncVisibilityDrainTarget = document;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'hidden') reviewSyncQueue?.drainNow();
+    });
   }
 }
 
@@ -166,6 +186,12 @@ function currentKanjiKombatState() {
 
 function canConsumeKanjiKombatPrompt() {
   return !reviewSyncQueue || reviewSyncQueue.canConsumePrompt();
+}
+
+async function settleImmediateReviewSync() {
+  for (let i = 0; i < 5; i++) {
+    await Promise.resolve();
+  }
 }
 
 function createSeededReviewSyncQueue(queue, seedItems = []) {
@@ -572,7 +598,6 @@ export function renderKanjiKombatAction(gameState) {
 
         rememberConsumedPrompt(bufferedPrompt);
         updateKanjiKombatGameState(pending.state);
-        if (!renderKanjiKombatAction(pending.state)) clearActionArea();
 
         reviewSyncQueue.enqueue({
           actionId: pending.actionId,
@@ -587,7 +612,11 @@ export function renderKanjiKombatAction(gameState) {
           },
         });
 
-        requestPromptBufferRefillIfLow(pending.state);
+        // Let immediately accepted syncs clear before deciding whether the runway is empty.
+        await settleImmediateReviewSync();
+        if (!renderKanjiKombatAction(pending.state)) clearActionArea();
+
+        if (reviewSyncQueue?.pendingCount() > 0) requestPromptBufferRefillIfLow(pending.state);
         return true;
       },
     });
@@ -616,7 +645,6 @@ export function renderKanjiKombatAction(gameState) {
 
         rememberConsumedPrompt(introPrompt);
         updateKanjiKombatGameState(pending.state);
-        if (!renderKanjiKombatAction(pending.state)) clearActionArea();
 
         reviewSyncQueue.enqueue({
           actionId: pending.actionId,
@@ -631,7 +659,11 @@ export function renderKanjiKombatAction(gameState) {
           },
         });
 
-        requestPromptBufferRefillIfLow(pending.state);
+        // Let immediately accepted syncs clear before deciding whether the runway is empty.
+        await settleImmediateReviewSync();
+        if (!renderKanjiKombatAction(pending.state)) clearActionArea();
+
+        if (reviewSyncQueue?.pendingCount() > 0) requestPromptBufferRefillIfLow(pending.state);
         return true;
       },
     });
@@ -652,6 +684,12 @@ export function renderKanjiKombatAction(gameState) {
         return false;
       },
     });
+    return true;
+  }
+
+  if (!hasBufferedPrompt && reviewSyncQueue?.pendingCount() > 0) {
+    clearActionArea();
+    void showKanjiKombatSyncPause();
     return true;
   }
 

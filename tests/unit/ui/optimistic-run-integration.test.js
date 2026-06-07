@@ -188,6 +188,21 @@ describe('optimistic run action integration', () => {
     assert.doesNotMatch(kanjiInitSource, /Kanji Kombat choice did not save\. Please try again\./);
   });
 
+  it('Kanji Kombat subway sync uses bounded queue and no unbounded retry loop', () => {
+    const queueSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/kanji-kombat-sync-queue.js'), 'utf8');
+
+    assert.match(queueSource, /REVIEW_SYNC_QUEUE_SOFT_LIMIT = 40/);
+    assert.match(queueSource, /REVIEW_SYNC_QUEUE_HARD_LIMIT = 60/);
+    assert.match(queueSource, /REVIEW_SYNC_QUEUE_RESUME_LIMIT = 30/);
+    assert.match(queueSource, /REVIEW_SYNC_RETRY_DELAYS_MS = \[0, 500, 1000, 2000, 4000, 8000, 15000\]/);
+    assert.doesNotMatch(queueSource, /while\s*\(\s*true\s*\)/);
+  });
+
+  it('registers Kanji Kombat subway sync drain triggers on reconnect and visibility return', () => {
+    assert.match(kanjiInitSource, /addEventListener\('online', \(\) => reviewSyncQueue\?\.drainNow\(\)\)/);
+    assert.match(kanjiInitSource, /addEventListener\('visibilitychange', \(\) => \{\s*if \(document\.visibilityState !== 'hidden'\) reviewSyncQueue\?\.drainNow\(\);\s*\}\)/);
+  });
+
   it('wires Kanji Kombat prompt buffer API calls', () => {
     const apiSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/api.js'), 'utf8');
     const kanjiSource = readFileSync(resolve(import.meta.dirname, '../../../public/js/ui/kanji-kombat.js'), 'utf8');

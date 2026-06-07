@@ -167,6 +167,35 @@ describe('kanji-kombat sync queue', () => {
     assert.equal(queue.pendingCount(), 0);
   });
 
+  it('drainNow clears retry delay and immediately attempts the head item', async () => {
+    const scheduler = createManualScheduler();
+    let attempts = 0;
+    let cancelCount = 0;
+    const queue = createKanjiKombatSyncQueue({
+      schedule: scheduler.schedule,
+      cancel: timerId => {
+        cancelCount += 1;
+        scheduler.cancel(timerId);
+      },
+      syncItem: async item => {
+        attempts += 1;
+        if (attempts === 1) throw new Error('offline');
+        return { status: 'accepted', actionId: item.actionId };
+      },
+    });
+
+    queue.enqueue({ actionId: 'run_online', kind: 'intro', promptId: 'kkp_online' });
+    await Promise.resolve();
+    await Promise.resolve();
+    assert.equal(queue.pendingCount(), 1);
+
+    queue.drainNow();
+    await Promise.resolve();
+    await Promise.resolve();
+    assert.equal(cancelCount, 1);
+    assert.equal(queue.pendingCount(), 0);
+  });
+
   it('treats corrected responses as resolved and calls onCorrected', async () => {
     const corrected = [];
     const queue = createKanjiKombatSyncQueue({

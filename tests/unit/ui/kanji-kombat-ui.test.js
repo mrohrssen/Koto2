@@ -208,6 +208,24 @@ describe('kanji-kombat ui', () => {
     }
   }
 
+  function createFakeEventTarget(base = {}) {
+    const listeners = new Map();
+    return {
+      ...base,
+      listeners,
+      addEventListener(type, handler) {
+        if (!listeners.has(type)) listeners.set(type, []);
+        listeners.get(type).push(handler);
+      },
+      dispatch(type) {
+        for (const handler of listeners.get(type) || []) handler();
+      },
+      listenerCount(type) {
+        return listeners.get(type)?.length || 0;
+      },
+    };
+  }
+
   function pendingOnboardingState(overrides = {}) {
     const {
       phase = 'combat',
@@ -745,6 +763,206 @@ describe('kanji-kombat ui', () => {
     assert.deepEqual(calls, [
       ['showNarration', 'Connection is spotty. Your reviews will sync when you reconnect.'],
     ]);
+  });
+
+  it('shows spotty connection copy when no prompt is available but sync is pending', async () => {
+    const calls = [];
+    initKanjiKombatUI({
+      showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
+      __testQueueSeed: [{
+        actionId: 'run_pending_empty',
+        kind: 'intro',
+        promptId: 'kkp_pending_empty',
+      }],
+    });
+
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{
+            promptId: 'kkp_stale_intro',
+            sequence: 1,
+            kind: 'intro',
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 2);
+
+    const handled = renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [],
+          currentQuiz: null,
+          pendingIntro: null,
+          completionChoicePending: false,
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+    await flushPromises(2);
+
+    assert.equal(handled, true);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 0);
+    assert.deepEqual(calls, [
+      ['showNarration', 'Connection is spotty. Your reviews will sync when you reconnect.'],
+    ]);
+  });
+
+  it('shows the sync pause after consuming the last intro while submit is pending', async () => {
+    const calls = [];
+    let resolveSubmit;
+    const submitPromise = new Promise(resolve => { resolveSubmit = resolve; });
+
+    initKanjiKombatUI({
+      submitIntro: async (cardId, choice, options = {}) => {
+        calls.push(['submitIntro', cardId, choice, options.promptId, options.sequence]);
+        return submitPromise;
+      },
+      updateGameState: state => calls.push(['updateGameState', state.run.kanjiKombat.promptBuffer.length]),
+      showNarration: async text => calls.push(['showNarration', text]),
+      playCorrectAnswerAudio: () => {},
+    });
+
+    renderKanjiKombatAction({
+      phase: 'combat',
+      run: {
+        mode: 'kanjiKombat',
+        kanjiKombat: {
+          promptBuffer: [{
+            promptId: 'kkp_last_intro',
+            sequence: 3,
+            kind: 'intro',
+            cardId: 'hiragana:か',
+            intro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          }],
+        },
+      },
+      combat: { actionCursor: { side: 'ally', index: 0 } },
+    });
+
+    const handled = await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+    await flushPromises(4);
+
+    assert.equal(handled, true);
+    assert.equal(actionArea.querySelectorAll('.kanji-kombat-intro-action').length, 0);
+    assert.deepEqual(calls.slice(0, 3), [
+      ['updateGameState', 0],
+      ['submitIntro', 'hiragana:か', 'unknown', 'kkp_last_intro', 3],
+      ['showNarration', 'Connection is spotty. Your reviews will sync when you reconnect.'],
+    ]);
+
+    resolveSubmit({
+      status: 'accepted',
+      state: {
+        phase: 'combat',
+        run: { mode: 'kanjiKombat', kanjiKombat: { promptBuffer: [] } },
+        combat: { actionCursor: { side: 'ally', index: 0 } },
+      },
+    });
+    await flushPromises(4);
+  });
+
+  it('drains the current sync queue on reconnect and visible tab return without duplicate listeners', async () => {
+    const originalWindow = global.window;
+    const originalDocument = global.document;
+    const fakeWindow = createFakeEventTarget();
+    const fakeDocument = createFakeEventTarget({ ...global.document, visibilityState: 'visible' });
+    let staleAttempts = 0;
+    let attempts = 0;
+
+    try {
+      global.window = fakeWindow;
+      global.document = fakeDocument;
+
+      initKanjiKombatUI({
+        submitIntro: async () => {
+          staleAttempts += 1;
+          throw new Error('stale queue should not drain');
+        },
+        showNarration: async () => {},
+        playCorrectAnswerAudio: () => {},
+      });
+      initKanjiKombatUI({
+        submitIntro: async () => {
+          attempts += 1;
+          if (attempts % 2 === 1) throw new Error('offline');
+          return { status: 'accepted', actionId: `run_listener_${attempts}` };
+        },
+        showNarration: async () => {},
+        playCorrectAnswerAudio: () => {},
+      });
+      initKanjiKombatUI({
+        submitIntro: async () => {
+          attempts += 1;
+          if (attempts % 2 === 1) throw new Error('offline');
+          return { status: 'accepted', actionId: `run_listener_${attempts}` };
+        },
+        showNarration: async () => {},
+        playCorrectAnswerAudio: () => {},
+      });
+
+      assert.equal(fakeWindow.listenerCount('online'), 1);
+      assert.equal(fakeDocument.listenerCount('visibilitychange'), 1);
+
+      renderKanjiKombatAction({
+        phase: 'combat',
+        run: {
+          mode: 'kanjiKombat',
+          kanjiKombat: {
+            pendingIntro: { card: { id: 'hiragana:か', prompt: 'か', reading: 'か', answer: 'ka' } },
+          },
+        },
+        combat: { actionCursor: { side: 'ally', index: 0 } },
+      });
+      await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+      await flushPromises(4);
+      assert.equal(attempts, 1);
+
+      fakeWindow.dispatch('online');
+      await flushPromises(4);
+      assert.equal(attempts, 2);
+      assert.equal(staleAttempts, 0);
+
+      renderKanjiKombatAction({
+        phase: 'combat',
+        run: {
+          mode: 'kanjiKombat',
+          kanjiKombat: {
+            pendingIntro: { card: { id: 'hiragana:き', prompt: 'き', reading: 'き', answer: 'ki' } },
+          },
+        },
+        combat: { actionCursor: { side: 'ally', index: 0 } },
+      });
+      await actionArea.querySelectorAll('.kanji-kombat-intro-action')[0].click();
+      await flushPromises(4);
+      assert.equal(attempts, 3);
+
+      fakeDocument.visibilityState = 'hidden';
+      fakeDocument.dispatch('visibilitychange');
+      await flushPromises(4);
+      assert.equal(attempts, 3);
+
+      fakeDocument.visibilityState = 'visible';
+      fakeDocument.dispatch('visibilitychange');
+      await flushPromises(4);
+      assert.equal(attempts, 4);
+    } finally {
+      if (originalWindow === undefined) {
+        delete global.window;
+      } else {
+        global.window = originalWindow;
+      }
+      global.document = originalDocument;
+    }
   });
 
   it('queues keep-going completion choices and advances locally before submit resolves', async () => {
